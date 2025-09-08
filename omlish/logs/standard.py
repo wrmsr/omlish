@@ -80,10 +80,14 @@ def _locking_logging_module_lock() -> ta.Iterator[None]:
 def configure_standard_logging(
         level: ta.Union[int, str] = logging.INFO,
         *,
-        json: bool = False,
         target: ta.Optional[logging.Logger] = None,
+
         force: bool = False,
+
         handler_factory: ta.Optional[ta.Callable[[], logging.Handler]] = None,
+
+        formatter: ta.Optional[logging.Formatter] = None,  # noqa
+        json: bool = False,
 ) -> ta.Optional[StandardConfiguredLoggingHandler]:
     with _locking_logging_module_lock():
         if target is None:
@@ -104,11 +108,11 @@ def configure_standard_logging(
 
         #
 
-        formatter: logging.Formatter
-        if json:
-            formatter = JsonLoggingFormatter()
-        else:
-            formatter = StandardLoggingFormatter(StandardLoggingFormatter.build_log_format(STANDARD_LOG_FORMAT_PARTS))
+        if formatter is None:
+            if json:
+                formatter = JsonLoggingFormatter()
+            else:
+                formatter = StandardLoggingFormatter(StandardLoggingFormatter.build_log_format(STANDARD_LOG_FORMAT_PARTS))  # noqa
         handler.setFormatter(formatter)
 
         #
