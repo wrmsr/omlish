@@ -487,9 +487,6 @@ with _auto_proxy_init(
     )
 
     from ..lite.maysync import (  # noqa
-        mark_maysync,
-        is_maysync,
-
         AnyMaysyncFn,
 
         MaywaitableAlreadyConsumedError,
@@ -504,6 +501,12 @@ with _auto_proxy_init(
         is_running_maysync,
 
         run_maysync,
+
+        RunMaysyncContextManager,
+        run_maysync_context_manager,
+
+        mark_maysync,
+        is_maysync,
     )
 
     from ..lite.objects import (  # noqa

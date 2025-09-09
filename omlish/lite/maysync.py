@@ -523,6 +523,27 @@ def run_maysync(m):
 ##
 
 
+@ta.final
+class RunMaysyncContextManager(ta.Generic[T]):
+    def __init__(self, acm: ta.AsyncContextManager[T]) -> None:
+        self._acm = acm
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self._acm!r})'
+
+    def __enter__(self) -> T:
+        return run_maysync(self._acm.__aenter__())
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return run_maysync(self._acm.__aexit__(exc_type, exc_val, exc_tb))
+
+
+run_maysync_context_manager = RunMaysyncContextManager
+
+
+##
+
+
 _MAYSYNC_MARK_ATTR = '__maysync__'
 
 
