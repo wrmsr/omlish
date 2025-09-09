@@ -16,7 +16,7 @@ class _ProxyInit:
         package: str
 
     class _Import(ta.NamedTuple):
-        pkg: str
+        spec: str
         attr: str | None
 
     def __init__(
@@ -30,7 +30,7 @@ class _ProxyInit:
         self._name_package = name_package
 
         self._imps_by_attr: dict[str, _ProxyInit._Import] = {}
-        self._mods_by_pkgs: dict[str, ta.Any] = {}
+        self._mods_by_spec: dict[str, ta.Any] = {}
 
     @property
     def name_package(self) -> NamePackage:
@@ -62,14 +62,14 @@ class _ProxyInit:
         val: ta.Any
 
         if imp.attr is None:
-            val = self._import_module(imp.pkg)
+            val = self._import_module(imp.spec)
 
         else:
             try:
-                mod = self._mods_by_pkgs[imp.pkg]
+                mod = self._mods_by_spec[imp.spec]
             except KeyError:
-                mod = self._import_module(imp.pkg)
-                self._mods_by_pkgs[imp.pkg] = mod
+                mod = self._import_module(imp.spec)
+                self._mods_by_spec[imp.spec] = mod
 
             val = getattr(mod, imp.attr)
 
@@ -78,7 +78,7 @@ class _ProxyInit:
 
 def proxy_init(
         init_globals: ta.MutableMapping[str, ta.Any],
-        package: str,
+        spec: str,
         attrs: ta.Iterable[str | tuple[str | None, str | None] | None] | None = None,
 ) -> None:
     if isinstance(attrs, str):
@@ -87,7 +87,7 @@ def proxy_init(
     if attrs is None:
         attrs = [None]
 
-    whole_attr = package.split('.')[-1]
+    whole_attr = spec.split('.')[-1]
     al: list[tuple[str | None, str]] = []
     for attr in attrs:
         if attr is None:
@@ -130,7 +130,7 @@ def proxy_init(
         if pi.name_package != init_name_package:
             raise Exception(f'Wrong init name: {pi.name_package=} != {init_name_package=}')
 
-    pi.add(package, al)
+    pi.add(spec, al)
 
 
 ##
@@ -148,19 +148,12 @@ def auto_proxy_init(
 
         update_exports: bool = False,
 ) -> ta.Iterator[ImportCapture]:
-    """
-    This is a bit extreme, but worth it. For simplicity, it currently relies on temporarily patching
-    `__builtins__.__import__` for the duration of its context manager, but it can be switched to use any number of other
-    import hooks (like `sys.meta_path`). It does not rely on any permanent modification to import machinery, only for
-    the duration of its capture.
-    """
-
     inst = ImportCapture(
         init_globals,
         disable=disable,
     )
 
-    with inst._capture(  # noqa
+    with inst.capture(
             unreferenced_callback=unreferenced_callback,
             raise_unreferenced=raise_unreferenced,
     ):
@@ -169,7 +162,7 @@ def auto_proxy_init(
     for pi in inst.captured.imports:
         proxy_init(
             init_globals,
-            pi.package,
+            pi.spec,
             pi.attrs,
         )
 

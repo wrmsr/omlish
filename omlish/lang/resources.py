@@ -3,7 +3,7 @@ import functools
 import os.path
 import typing as ta
 
-from .imports.lazy import proxy_import
+from .imports.proxy import proxy_import
 
 
 if ta.TYPE_CHECKING:

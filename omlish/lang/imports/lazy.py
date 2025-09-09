@@ -1,5 +1,4 @@
 import importlib.util
-import types
 import typing as ta
 
 
@@ -40,27 +39,3 @@ def lazy_import(
         return mod
 
     return inner
-
-
-def proxy_import(
-        name: str,
-        package: str | None = None,
-        extras: ta.Iterable[str] | None = None,
-) -> types.ModuleType:
-    if isinstance(extras, str):
-        raise TypeError(extras)
-
-    omod = None
-
-    def __getattr__(att):  # noqa
-        nonlocal omod
-        if omod is None:
-            omod = importlib.import_module(name, package=package)
-            if extras:
-                for x in extras:
-                    importlib.import_module(f'{name}.{x}', package=package)
-        return getattr(omod, att)
-
-    lmod = types.ModuleType(name)
-    lmod.__getattr__ = __getattr__  # type: ignore[method-assign]
-    return lmod

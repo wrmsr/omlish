@@ -273,7 +273,12 @@ with _auto_proxy_init(
 
     from .imports.lazy import (  # noqa
         lazy_import,
+    )
+
+    from .imports.proxy import (  # noqa
         proxy_import,
+
+        auto_proxy_import,
     )
 
     from .imports.proxyinit import (  # noqa

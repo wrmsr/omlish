@@ -215,11 +215,11 @@ class _ImportCaptureImpl:
     @contextlib.contextmanager
     def hook_context(
             self,
-            init_globals: ta.MutableMapping[str, ta.Any],  # noqa
+            mod_globals: ta.MutableMapping[str, ta.Any],  # noqa
             *,
             forbid_uncaptured_imports: bool = False,
     ) -> ta.Iterator[None]:
-        if self._MOD_SELF_ATTR in init_globals:
+        if self._MOD_SELF_ATTR in mod_globals:
             raise ImportCaptureErrors.HookError
 
         old_import = builtins.__import__
@@ -255,7 +255,7 @@ class _ImportCaptureImpl:
 
         #
 
-        init_globals[self._MOD_SELF_ATTR] = self
+        mod_globals[self._MOD_SELF_ATTR] = self
         builtins.__import__ = new_import
 
         try:
@@ -263,19 +263,19 @@ class _ImportCaptureImpl:
 
         finally:
             if not (
-                    init_globals[self._MOD_SELF_ATTR] is self and
+                    mod_globals[self._MOD_SELF_ATTR] is self and
                     builtins.__import__ is new_import
             ):
                 raise ImportCaptureErrors.HookError
 
-            del init_globals[self._MOD_SELF_ATTR]
+            del mod_globals[self._MOD_SELF_ATTR]
             builtins.__import__ = old_import
 
     #
 
     def verify_state(
             self,
-            init_globals: ta.MutableMapping[str, ta.Any],  # noqa
+            mod_globals: ta.MutableMapping[str, ta.Any],  # noqa
     ) -> None:
         for m in self._modules_by_spec.values():
             for a, o in m.module_obj.__dict__.items():
@@ -294,7 +294,7 @@ class _ImportCaptureImpl:
 
     def build_captured(
             self,
-            init_globals: ta.MutableMapping[str, ta.Any],  # noqa
+            mod_globals: ta.MutableMapping[str, ta.Any],  # noqa
             *,
             collect_unreferenced: bool = False,
     ) -> 'ImportCapture.Captured':
@@ -306,7 +306,7 @@ class _ImportCaptureImpl:
             rem_whole_mods.update([m for m in self._modules_by_spec.values() if m.imported_whole])
             rem_mod_attrs.update(self._attrs)
 
-        for attr, obj in init_globals.items():
+        for attr, obj in mod_globals.items():
             if isinstance(obj, _ImportCaptureImpl._ModuleAttr):
                 try:
                     m, a = self._attrs[obj]
@@ -363,8 +363,15 @@ class _ImportCaptureImpl:
 
 
 class ImportCapture:
+    """
+    This is a bit extreme, but worth it. For simplicity, it currently relies on temporarily patching
+    `__builtins__.__import__` for the duration of its context manager, but it can be switched to use any number of other
+    import hooks (like `sys.meta_path`). It does not rely on any permanent modification to import machinery, only for
+    the duration of its capture.
+    """
+
     class Import(ta.NamedTuple):
-        package: str
+        spec: str
         attrs: ta.Sequence[tuple[str | None, str]]
 
     class Captured(ta.NamedTuple):
@@ -381,19 +388,19 @@ class ImportCapture:
 
     def __init__(
             self,
-            init_globals: ta.MutableMapping[str, ta.Any],
+            mod_globals: ta.MutableMapping[str, ta.Any],
             *,
             disable: bool = False,
     ) -> None:
         super().__init__()
 
-        self._init_globals = init_globals
+        self._mod_globals = mod_globals
 
-        self._disable = disable
+        self._disabled = disable
 
     @property
-    def disable(self) -> bool:
-        return self._disable
+    def disabled(self) -> bool:
+        return self._disabled
 
     #
 
@@ -419,34 +426,34 @@ class ImportCapture:
     #
 
     @contextlib.contextmanager
-    def _capture(
+    def capture(
             self,
             *,
             unreferenced_callback: ta.Callable[[ta.Mapping[str, ta.Sequence[str | None]]], None] | None = None,
             raise_unreferenced: bool = False,
-    ) -> ta.Iterator[None]:
+    ) -> ta.Iterator[ta.Self]:
         if self._result_ is not None:
             raise ImportCaptureError('capture already complete')
 
-        if self._disable:
+        if self._disabled:
             self._result_ = ImportCapture._Result(
                 ImportCapture.Captured(
                     [],
                     None,
                 ),
             )
-            yield
+            yield self
             return
 
         cap = _ImportCaptureImpl()
 
-        with cap.hook_context(self._init_globals):
-            yield
+        with cap.hook_context(self._mod_globals):
+            yield self
 
-        cap.verify_state(self._init_globals)
+        cap.verify_state(self._mod_globals)
 
         blt = cap.build_captured(
-            self._init_globals,
+            self._mod_globals,
             collect_unreferenced=unreferenced_callback is not None or raise_unreferenced,
         )
 
@@ -458,7 +465,7 @@ class ImportCapture:
 
         for pi in blt.imports:
             for _, a in pi.attrs:
-                del self._init_globals[a]
+                del self._mod_globals[a]
 
         self._result_ = ImportCapture._Result(
             blt,
@@ -470,12 +477,12 @@ class ImportCapture:
         cap = self._result.captured
 
         try:
-            al: ta.Any = self._init_globals['__all__']
+            al: ta.Any = self._mod_globals['__all__']
         except KeyError:
-            al = self._init_globals['__all__'] = [k for k in self._init_globals if not k.startswith('_')]
+            al = self._mod_globals['__all__'] = [k for k in self._mod_globals if not k.startswith('_')]
         else:
             if not isinstance(al, ta.MutableSequence):
-                al = self._init_globals['__all__'] = list(al)
+                al = self._mod_globals['__all__'] = list(al)
 
         al_s = set(al)
         for a in cap.attrs:

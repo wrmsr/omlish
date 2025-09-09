@@ -6,7 +6,7 @@ import pytest
 import sniffio
 
 from ...lite.maysync import run_maysync
-from ..imports.lazy import proxy_import
+from ..imports.proxy import proxy_import
 from ..maysync import make_maysync
 
 
