@@ -8651,16 +8651,17 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
             stack_offset: int = 0,
             stack_info: bool = False,
     ) -> None:
-        # TODO: Name, Msg, Extra
-
         if time_ns is None:
             time_ns = time.time_ns()
+
+        # Done early to not trample on sys.exc_info()
+        exc = LoggingContextInfos.Exc.build(exc_info)
 
         self._infos: ta.Dict[ta.Type[LoggingContextInfo], LoggingContextInfo] = {}
         self._set_info(
             LoggingContextInfos.Level.build(level),
+            exc,
             LoggingContextInfos.Time.build(time_ns),
-            LoggingContextInfos.Exc.build(exc_info),
         )
 
         if caller is not CaptureLoggingContextImpl.NOT_SET:
@@ -10016,22 +10017,6 @@ class LoggingContextInfoRecordAdapters:
                 args=rec.args,
             )
 
-    # FIXME: handled specially - all unknown attrs on LogRecord
-    # class Extra(Adapter[LoggingContextInfos.Extra]):
-    #     _record_attrs: ta.ClassVar[ta.Mapping[str, ta.Union[ta.Any, ta.Tuple[ta.Any, ta.Any]]]] = dict()
-    #
-    #     def info_to_record(self, info: ta.Optional[LoggingContextInfos.Extra]) -> ta.Mapping[str, ta.Any]:
-    #         # FIXME:
-    #         # if extra is not None:
-    #         #     for key in extra:
-    #         #         if (key in ["message", "asctime"]) or (key in rv.__dict__):
-    #         #             raise KeyError("Attempt to overwrite %r in LogRecord" % key)
-    #         #         rv.__dict__[key] = extra[key]
-    #         return dict()
-    #
-    #     def record_to_info(self, rec: logging.LogRecord) -> ta.Optional[LoggingContextInfos.Extra]:
-    #         return None
-
     class Time(RequiredAdapter[LoggingContextInfos.Time]):
         info_cls: ta.ClassVar[ta.Type[LoggingContextInfos.Time]] = LoggingContextInfos.Time
 
@@ -10412,12 +10397,19 @@ class LoggingContextLogRecord(logging.LogRecord):
     #  - exc_info: LoggingExcInfoTuple | None
     #  - func: str | None = None -> funcName
     #  - sinfo: str | None = None -> stack_info
+    #
 
     def __init__(self, *, _logging_context: LoggingContext) -> None:  # noqa
-        self._logging_context = _logging_context
+        self.__dict__.update(_logging_context=_logging_context)
 
         for ad in _LOGGING_CONTEXT_INFO_RECORD_ADAPTERS_:
             self.__dict__.update(ad.context_to_record(_logging_context))
+
+    _logging_context: LoggingContext
+
+    # FIXME: track extra
+    # def __setattr__(self, key, value):
+    #     super().__setattr__(key, value)
 
 
 ##
@@ -10431,10 +10423,29 @@ class LogRecordLoggingContext(LoggingContext):
 
         self._rec = rec
 
-        self._infos: ta.Dict[ta.Type[LoggingContextInfo], LoggingContextInfo] = {
-            type(info): info
+        infos: ta.List[LoggingContextInfo] = [
+            info
             for ad in _LOGGING_CONTEXT_INFO_RECORD_ADAPTERS_
             if (info := ad.record_to_info(rec)) is not None
+        ]
+
+        # FIXME:
+        # if extra is not None:
+        #     for key in extra:
+        #         if (key in ["message", "asctime"]) or (key in rv.__dict__):
+        #             raise KeyError("Attempt to overwrite %r in LogRecord" % key)
+        #         rv.__dict__[key] = extra[key]
+
+        if (extra := {
+            a: v
+            for a, v in rec.__dict__.items()
+            if a not in _KNOWN_STD_LOGGING_RECORD_ATTR_SET
+        }):
+            infos.append(LoggingContextInfos.Extra(extra))
+
+        self._infos: ta.Dict[ta.Type[LoggingContextInfo], LoggingContextInfo] = {
+            type(info): info
+            for info in infos
         }
 
     def get_info(self, ty: ta.Type[LoggingContextInfoT]) -> ta.Optional[LoggingContextInfoT]:

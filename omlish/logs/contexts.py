@@ -93,16 +93,17 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
             stack_offset: int = 0,
             stack_info: bool = False,
     ) -> None:
-        # TODO: Name, Msg, Extra
-
         if time_ns is None:
             time_ns = time.time_ns()
+
+        # Done early to not trample on sys.exc_info()
+        exc = LoggingContextInfos.Exc.build(exc_info)
 
         self._infos: ta.Dict[ta.Type[LoggingContextInfo], LoggingContextInfo] = {}
         self._set_info(
             LoggingContextInfos.Level.build(level),
+            exc,
             LoggingContextInfos.Time.build(time_ns),
-            LoggingContextInfos.Exc.build(exc_info),
         )
 
         if caller is not CaptureLoggingContextImpl.NOT_SET:
