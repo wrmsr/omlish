@@ -31,11 +31,13 @@ https://docs.python.org/3/library/typing.html#user-defined-generic-types
 """
 import dataclasses as dc
 import logging
+import typing as ta
 import unittest
 
 from ..bindings import FullTypedLoggerBindings
 from ..bindings import TypedLoggerValueWrapper
 from ..types import DefaultTypedLoggerValue
+from ..types import MultiTypedLoggerValue
 from ..types import TypedLoggerValue
 from .api import DEFAULT_TYPED_LOGGER_BINDINGS
 from .api import TypedLogger
@@ -49,6 +51,15 @@ log = logging.getLogger(__name__)
 
 class Tag(TypedLoggerValue[str]):
     _default_key = True
+
+
+class Tags(MultiTypedLoggerValue[ta.AbstractSet[str]]):
+    # FIXME:
+    # _default_key = True
+
+    @classmethod
+    def merge_values(cls, *values: ta.AbstractSet[str]) -> ta.AbstractSet[str]:
+        return frozenset(e for s in values for e in s)
 
 
 @dc.dataclass(frozen=True)
@@ -85,6 +96,8 @@ class TestTyped(unittest.TestCase):
                 ('foo', 'bar'),
                 Thingy('wrap me'),  # type: ignore
                 Thingy2Tlv,
+                Tags({'a tags'}),
+                Tags({'b tags'}),
                 barf=True,
             )
 

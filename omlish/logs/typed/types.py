@@ -181,7 +181,6 @@ class TypedLoggerValue(Abstract, ta.Generic[T]):
     def _typed_logger_unwrap_field_value(self, ctx: 'TypedLoggerContext') -> UnwrappedTypedLoggerFieldValue:  # noqa
         return self._v
 
-    @ta.final
     def _typed_logger_visit_bindings(self, vst: 'TypedLoggerBindings._Visitor') -> None:  # noqa
         vst.accept_values(((type(self), self),))
         vst.accept_const_values(((type(self), self),))
@@ -231,6 +230,22 @@ class DefaultTypedLoggerValue(TypedLoggerValue[T], Abstract):
     @classmethod
     def _typed_logger_maybe_provide_default_value(cls, ctx: 'TypedLoggerContext') -> ta.Tuple[TypedLoggerValueOrAbsent, ...]:  # noqa
         return (cls.default_provider().provide_value(ctx),)
+
+
+class MultiTypedLoggerValue(TypedLoggerValue[T], Abstract):
+    """
+    Note: There is no DefaultMultiTypedLoggerValue.
+    """
+
+    @classmethod
+    @abc.abstractmethod
+    def merge_values(cls, *values: T) -> T:
+        raise NotImplementedError
+
+    #
+
+    def _typed_logger_visit_bindings(self, vst: 'TypedLoggerBindings._Visitor') -> None:  # noqa
+        vst.accept_multi_values(((type(self), self),))
 
 
 ##
