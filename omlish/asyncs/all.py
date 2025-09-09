@@ -16,7 +16,3 @@ from .flavors import (  # noqa
     mark_trio,
     with_adapter_loop,
 )
-
-from .utils import (  # noqa
-    call_with_async_exit_stack,
-)

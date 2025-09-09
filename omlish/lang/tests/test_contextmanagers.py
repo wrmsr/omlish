@@ -1,9 +1,12 @@
+import contextlib
 import typing as ta
 
 import pytest
 
+from ...lite.contextmanagers import adefer
 from ..contextmanagers import AsyncContextManager
 from ..contextmanagers import ContextManager
+from ..contextmanagers import call_with_async_exit_stack
 from ..contextmanagers import context_wrapped
 
 
@@ -91,3 +94,19 @@ async def test_asynccontextmanager_class():
         assert n == 420
         assert c.c == 1
     assert c.c == 2
+
+
+@pytest.mark.asyncs
+async def test_call_with_async_exit_stack():
+    c = 0
+
+    async def foo(aes: contextlib.AsyncExitStack, i: int) -> int:
+        async def bar():
+            nonlocal c
+            c += 1
+
+        await aes.enter_async_context(adefer(bar()))  # noqa
+        return i + 1
+
+    assert (await call_with_async_exit_stack(foo, 5)) == 6
+    assert c == 1

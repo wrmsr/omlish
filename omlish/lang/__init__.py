@@ -184,6 +184,9 @@ with _auto_proxy_init(
         Timer,
 
         double_check_setdefault,
+
+        call_with_exit_stack,
+        call_with_async_exit_stack,
     )
 
     from .datetimes import (  # noqa

@@ -20,6 +20,8 @@ T = ta.TypeVar('T')
 K = ta.TypeVar('K')
 V = ta.TypeVar('V')
 
+P = ta.ParamSpec('P')
+
 
 ##
 
@@ -382,3 +384,24 @@ def double_check_setdefault(
         v = fn()
         dct[k] = v
         return v
+
+
+##
+
+
+def call_with_exit_stack(
+        fn: ta.Callable[ta.Concatenate[contextlib.ExitStack, P], T],
+        *args: ta.Any,
+        **kwargs: ta.Any,
+) -> T:
+    with contextlib.ExitStack() as es:
+        return fn(es, *args, **kwargs)
+
+
+async def call_with_async_exit_stack(
+        fn: ta.Callable[ta.Concatenate[contextlib.AsyncExitStack, P], ta.Awaitable[T]],
+        *args: ta.Any,
+        **kwargs: ta.Any,
+) -> T:
+    async with contextlib.AsyncExitStack() as aes:
+        return await fn(aes, *args, **kwargs)
