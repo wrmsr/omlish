@@ -33,5 +33,5 @@ def create_injector(es: Elements) -> Injector:
     mi = MaysyncInjector()
     ai = AsyncInjectorImpl(ElementCollection(es), internal_consts={Key(Injector): mi})
     mi._ai = ai  # noqa
-    lang.run_maysync(ai.init())
+    lang.run_maysync(ai._init())  # noqa
     return mi

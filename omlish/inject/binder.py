@@ -19,6 +19,7 @@ from .multis import SetBinding
 from .multis import is_map_multi_key
 from .multis import is_set_multi_key
 from .privates import Expose
+from .providers import AsyncFnProvider
 from .providers import ConstProvider
 from .providers import CtorProvider
 from .providers import FnProvider
@@ -83,6 +84,7 @@ def bind(
         *,
         tag: ta.Any = None,
 
+        to_async_fn: ta.Any = None,
         to_fn: ta.Any = None,
         to_ctor: ta.Any = None,
         to_const: ta.Any = None,
@@ -102,6 +104,7 @@ def bind(
     ##
 
     has_to = (
+        to_async_fn is not None or
         to_fn is not None or
         to_ctor is not None or
         to_const is not None or
@@ -137,6 +140,8 @@ def bind(
     ##
 
     providers: list[Provider] = []
+    if to_async_fn is not None:
+        providers.append(AsyncFnProvider(to_async_fn))
     if to_fn is not None:
         providers.append(FnProvider(to_fn))
     if to_ctor is not None:

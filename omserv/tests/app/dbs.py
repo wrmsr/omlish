@@ -1,4 +1,3 @@
-
 import sqlalchemy as sa
 import sqlalchemy.event
 import sqlalchemy.ext.asyncio as saa
@@ -48,7 +47,7 @@ def bind_dbs() -> inj.Elemental:
 
         inj.bind(
             sau.AsyncEngine,
-            to_fn=inj.make_async_managed_provider(
+            to_async_fn=inj.make_async_managed_provider(
                 _build_engine,
                 lambda e: lang.adefer(e.dispose()),  # noqa
             ),

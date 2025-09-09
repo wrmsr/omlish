@@ -7,7 +7,6 @@ import pytest
 from ... import dataclasses as dc  # noqa
 from ... import inject as inj
 from ... import lang  # noqa
-from ...asyncs import all as au
 from ...testing import pytest as ptu
 
 
@@ -73,12 +72,12 @@ async def test_async_managed(eager):
                 SomeAsyncManager,
                 singleton=True,
                 eager=eager,
-                to_fn=inj.make_async_managed_provider(SomeAsyncManager),
+                to_async_fn=inj.make_async_managed_provider(SomeAsyncManager),
             ),
     ) as i:
-        sam = await au.s_to_a(i.provide)(SomeAsyncManager)
+        sam = await i.provide(SomeAsyncManager)
         assert sam.ec == 1
-        assert i[SomeAsyncManager] is sam
+        assert await i[SomeAsyncManager] is sam
         assert sam.ec == 1
         assert sam.xc == 0
     assert sam.ec == 1

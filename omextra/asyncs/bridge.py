@@ -39,21 +39,21 @@ import types
 import typing as ta
 import weakref
 
-from .. import check
-from .. import lang
-from .. import sync
-from ..concurrent import threadlets
+from omlish import check
+from omlish import lang
+from omlish import sync
+from omlish.concurrent import threadlets
 
 
 if ta.TYPE_CHECKING:
     import asyncio
 
-    from . import anyio as aiu
+    from omlish.asyncs import anyio as aiu
 
 else:
     asyncio = lang.proxy_import('asyncio')
 
-    aiu = lang.proxy_import('.anyio', __package__)
+    aiu = lang.proxy_import('omlish.asyncs.anyio')
 
 
 T = ta.TypeVar('T')

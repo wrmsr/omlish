@@ -100,7 +100,7 @@ class AsyncInjectorImpl(AsyncInjector, lang.Final):
 
     _has_run_init: bool = False
 
-    async def init(self) -> bool:
+    async def _init(self) -> bool:
         if self._has_run_init:
             return False
 
@@ -185,7 +185,7 @@ class AsyncInjectorImpl(AsyncInjector, lang.Final):
 
     async def _try_provide(self, key: ta.Any, *, source: ta.Any = None) -> lang.Maybe[ta.Any]:
         if not self._has_run_init:
-            await self.init()
+            await self._init()
 
         key = as_key(key)
 
@@ -258,5 +258,5 @@ class AsyncInjectorImpl(AsyncInjector, lang.Final):
 
 async def create_async_injector(es: Elements) -> AsyncInjector:
     i = AsyncInjectorImpl(ElementCollection(es))
-    await i.init()
+    await i._init()  # noqa
     return i

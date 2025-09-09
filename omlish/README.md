@@ -185,9 +185,6 @@ examples are:
 - **pytest** - What is used for all standard testing - as lite code has no dependencies of any kind its testing uses
   stdlib's [unittest](https://docs.python.org/3/library/unittest.html).
 - **wrapt** - For (optionally-enabled) injector circular proxies.
-- **greenlet** - For some gnarly stuff like the
-  [sync<->async bridge](https://github.com/wrmsr/omlish/blob/master/omlish/asyncs/bridge.py) and the
-  [io trampoline](https://github.com/wrmsr/omlish/blob/master/omextra/io/trampoline.py).
 - **sqlalchemy** - Parts of the codebase use SQLAlchemy for db stuff, but it is being migrated away from in favor of the
   internal api. It will however likely still remain as an optional dep for the api adapter.
 

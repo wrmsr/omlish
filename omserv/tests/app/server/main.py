@@ -14,7 +14,7 @@ from .inject import bind_db_user_store
 from .inject import bind_in_memory_user_store
 
 
-#
+##
 
 
 class UserStoreKind(enum.Enum):

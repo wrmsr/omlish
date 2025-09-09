@@ -108,7 +108,7 @@ def bind_asgi_server(*args: inj.Elemental) -> inj.Elemental:
 @au.with_adapter_loop(wait=True)
 async def a_run_shell(*args: inj.Elemental) -> None:
     async with inj.create_async_managed_injector(*args) as i:
-        tasks = await au.s_to_a(i.provide)(ta.AbstractSet[ShellTask])
+        tasks = await i.provide(ta.AbstractSet[ShellTask])
 
         shutdown = anyio.Event()
         async with anyio.create_task_group() as tg:
