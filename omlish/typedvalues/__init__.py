@@ -1,7 +1,7 @@
 from .. import lang as _lang
 
 
-with _lang.auto_proxy_init(globals()) as _api_cap:
+with _lang.auto_proxy_init(globals()):
     ##
 
     from .accessor import (  # noqa

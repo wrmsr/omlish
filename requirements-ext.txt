@@ -23,7 +23,7 @@ torchvision==0.23.0
 diffusers==0.35.1
 
 scipy==1.16.1
-scikit-learn==1.7.1
+scikit-learn==1.7.2
 scikit-image==0.25.2
 
 safetensors==0.6.2

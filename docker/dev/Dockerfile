@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 COPY docker/.timestamp /
 
 
@@ -58,7 +58,7 @@ RUN \
         nano \
         ncdu \
         net-tools \
-        netcat \
+        netcat-openbsd \
         nodejs \
         npm \
         openssh-server \
@@ -170,11 +170,32 @@ RUN ( \
 ## rustup
 
 RUN ( \
-    curl --proto '=https' --tlsv1.2 -sSf 'https://sh.rustup.rs' | sh -s -- -y && \
-    echo "\n\
-source ~/.cargo/env \n\
-\n\
-" >> ~/.bashrc \
+    curl --proto '=https' --tlsv1.2 -sSf 'https://sh.rustup.rs' | sh -s -- -y \
+)
+
+
+## go
+
+RUN ( \
+    export GO_VERSION=1.25.1 && \
+    curl -fsSL "https://go.dev/dl/go${GO_VERSION}.linux-$(dpkg --print-architecture).tar.gz" | tar -C "$HOME" -xzf - && \
+    mv "$HOME/go" "$HOME/.go" && \
+    echo '\n\
+export GOROOT="$HOME/.go"\n\
+export PATH="$GOROOT/bin:$PATH"\
+' >> ~/.bashrc \
+)
+
+
+## zig
+
+RUN ( \
+    export ZIG_VERSION=0.15.1 && \
+    curl -fsSL "https://ziglang.org/download/${ZIG_VERSION}/zig-$(uname -m)-linux-${ZIG_VERSION}.tar.xz" | tar -xJ -C "$HOME" && \
+    mv "$HOME/zig-$(uname -m)-linux-${ZIG_VERSION}" "$HOME/.zig" && \
+    echo '\n\
+export PATH="$HOME/.zig:$PATH"\
+' >> ~/.bashrc \
 )
 
 
@@ -183,10 +204,9 @@ source ~/.cargo/env \n\
 RUN ( \
     git clone 'https://github.com/microsoft/vcpkg' /root/.vcpkg_root && \
     (cd /root/.vcpkg_root && ./bootstrap-vcpkg.sh) && \
-    echo "\n\
-export VCPKG_ROOT="$HOME/.vcpkg_root" \n\
-\n\
-" >> ~/.bashrc \
+    echo '\n\
+export VCPKG_ROOT="$HOME/.vcpkg_root"\
+' >> ~/.bashrc \
 )
 
 
@@ -204,7 +224,7 @@ RUN \
     grep '^PYTHON_' /root/.versions | while read L ; do \
         K=$(echo "$L" | cut -d= -f1 | cut -d_ -f2-) && \
         case $K in \
-            13) true ;; \
+            8|13) true ;; \
             *) continue ;; \
         esac && \
         echo "Installing Python $K" && \

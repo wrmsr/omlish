@@ -368,10 +368,8 @@ class Literal(Parser):
         )
 
         return (
-            f'Literal({value})'
-            if isinstance(self.value, tuple)
-            else "Literal('%s'%s)"  # noqa: UP031
-            % (''.join(value), ', case_sensitive' if self.case_sensitive else '')
+            f'Literal({value})' if isinstance(self.value, tuple) else
+            ("Literal('%s'%s)" % (''.join(value), ', case_sensitive' if self.case_sensitive else ''))  # noqa: UP031
         )
 
 
@@ -561,9 +559,8 @@ class Rule(Parser):
 
         crlf = '\r\n'
         with (
-            open(path, newline=crlf, encoding='ascii')
-            if isinstance(path, str)
-            else path.open('r', newline=crlf, encoding='ascii')
+            open(path, newline=crlf, encoding='ascii') if isinstance(path, str) else
+            path.open('r', newline=crlf, encoding='ascii')
         ) as f:
             src = f.read()
         cls.load_grammar(src)

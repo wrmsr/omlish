@@ -260,6 +260,12 @@ with _auto_proxy_init(
         nextgen,
     )
 
+    from .imports.capture import (  # noqa
+        ImportCaptureError,
+        ImportCaptureErrors,
+        ImportCapture,
+    )
+
     from .imports.conditional import (  # noqa
         register_conditional_import,
         trigger_conditional_imports,
@@ -273,9 +279,6 @@ with _auto_proxy_init(
     from .imports.proxyinit import (  # noqa
         proxy_init,
 
-        AutoProxyInitError,
-        AutoProxyInitErrors,
-        AutoProxyInit,
         auto_proxy_init,
     )
 

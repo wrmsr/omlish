@@ -32,7 +32,7 @@ _dc.init_package(
 from .. import lang as _lang  # noqa
 
 
-with _lang.auto_proxy_init(globals()) as _api_cap:
+with _lang.auto_proxy_init(globals()):
     ##
 
     from .base.configs import (  # noqa

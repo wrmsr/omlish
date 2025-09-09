@@ -114,30 +114,10 @@ class FullTypedLoggerBindings(TypedLoggerBindings):
             self,
             *items: TypedLoggerBindingItem,
             override: bool = False,
+            override_multis: bool = False,
     ) -> None:
         kd: ta.Dict[str, TypedLoggerFieldValue] = {}
         dup_kd: ta.Dict[str, ta.List[TypedLoggerFieldValue]] = {}
-
-        vd: ta.Dict[ta.Type[TypedLoggerValue], TypedLoggerValueOrProviderOrAbsent] = {}
-        dup_vd: ta.Dict[ta.Type[TypedLoggerValue], ta.List[TypedLoggerValueOrProviderOrAbsent]] = {}
-
-        mvd: ta.Dict[ta.Type[MultiTypedLoggerValue], ta.List[MultiTypedLoggerValue]] = {}
-
-        cvd: ta.Dict[ta.Type[TypedLoggerValue], TypedLoggerValueOrAbsent] = {}
-
-        vwl: ta.List[ta.Union[TypedLoggerValueWrapper, FullTypedLoggerBindings._ValueWrappingState]] = []
-
-        vst: TypedLoggerBindings._Visitor
-
-        def add_mvd(mvd_k: 'ta.Type[MultiTypedLoggerValue]', mvd_v: MultiTypedLoggerValue) -> None:  # noqa
-            try:
-                mvd_l = mvd[mvd_k]
-            except KeyError:
-                mvd_l = mvd[mvd_k] = []
-            mvd_l.append(mvd_v)
-
-        def add_mvds(it: 'ta.Iterable[ta.Tuple[ta.Type[MultiTypedLoggerValue], MultiTypedLoggerValue]]') -> None:
-            collections.deque(itertools.starmap(add_mvd, it), maxlen=0)
 
         if not override:
             def add_kd(kd_k: str, kd_v: TypedLoggerFieldValue) -> None:  # noqa
@@ -149,6 +129,16 @@ class FullTypedLoggerBindings(TypedLoggerBindings):
             def add_kds(it: 'ta.Iterable[ta.Tuple[str, TypedLoggerFieldValue]]') -> None:  # noqa
                 collections.deque(itertools.starmap(add_kd, it), maxlen=0)
 
+        else:
+            add_kd = kd.__setitem__  # type: ignore[assignment]
+            add_kds = kd.update  # type: ignore[assignment]
+
+        #
+
+        vd: ta.Dict[ta.Type[TypedLoggerValue], TypedLoggerValueOrProviderOrAbsent] = {}
+        dup_vd: ta.Dict[ta.Type[TypedLoggerValue], ta.List[TypedLoggerValueOrProviderOrAbsent]] = {}
+
+        if not override:
             def add_vd(vd_k: 'ta.Type[TypedLoggerValue]', vd_v: TypedLoggerValueOrProviderOrAbsent) -> None:  # noqa
                 if vd_k in vd:
                     dup_vd.setdefault(vd_k, []).append(vd_v)
@@ -158,36 +148,49 @@ class FullTypedLoggerBindings(TypedLoggerBindings):
             def add_vds(it: 'ta.Iterable[ta.Tuple[ta.Type[TypedLoggerValue], TypedLoggerValueOrProviderOrAbsent]]') -> None:  # noqa
                 collections.deque(itertools.starmap(add_vd, it), maxlen=0)
 
-            vst = TypedLoggerBindings._Visitor(  # noqa
-                add_kd,
-                add_kds,
+        else:
+            add_vd = vd.__setitem__  # type: ignore[assignment]
+            add_vds = vd.update  # type: ignore[assignment]
 
-                add_vd,
-                add_vds,
+        #
 
-                add_mvd,
-                add_mvds,
+        mvd: ta.Dict[ta.Type[MultiTypedLoggerValue], ta.List[MultiTypedLoggerValue]] = {}
 
-                cvd.update,
+        if override_multis:
+            def add_mvd(mvd_k: 'ta.Type[MultiTypedLoggerValue]', mvd_v: MultiTypedLoggerValue) -> None:  # noqa
+                try:
+                    mvd_l = mvd[mvd_k]
+                except KeyError:
+                    mvd_l = mvd[mvd_k] = []
+                mvd_l.append(mvd_v)
 
-                vwl.append,
-            )
+            def add_mvds(it: 'ta.Iterable[ta.Tuple[ta.Type[MultiTypedLoggerValue], MultiTypedLoggerValue]]') -> None:
+                collections.deque(itertools.starmap(add_mvd, it), maxlen=0)
 
         else:
-            vst = TypedLoggerBindings._Visitor(  # noqa
-                kd.__setitem__,
-                kd.update,
+            add_mvd = mvd.__setitem__  # type: ignore[assignment]
+            add_mvds = mvd.update  # type: ignore[assignment]
 
-                vd.__setitem__,
-                vd.update,
+        #
 
-                add_mvd,
-                add_mvds,
+        cvd: ta.Dict[ta.Type[TypedLoggerValue], TypedLoggerValueOrAbsent] = {}
 
-                cvd.update,
+        vwl: ta.List[ta.Union[TypedLoggerValueWrapper, FullTypedLoggerBindings._ValueWrappingState]] = []
 
-                vwl.append,
-            )
+        vst = TypedLoggerBindings._Visitor(  # noqa
+            add_kd,
+            add_kds,
+
+            add_vd,
+            add_vds,
+
+            add_mvd,
+            add_mvds,
+
+            cvd.update,
+
+            vwl.append,
+        )
 
         for o in items:
             o._typed_logger_visit_bindings(vst)  # noqa
@@ -310,14 +313,6 @@ class ChainTypedLoggerBindings(TypedLoggerBindings):
         kd: ta.Dict[str, TypedLoggerFieldValue] = {}
         dup_kd: ta.Dict[str, ta.List[TypedLoggerFieldValue]] = {}
 
-        vd: ta.Dict[ta.Type[TypedLoggerValue], TypedLoggerValueOrProviderOrAbsent] = {}
-        dup_vd: ta.Dict[ta.Type[TypedLoggerValue], ta.List[TypedLoggerValueOrProviderOrAbsent]] = {}
-
-        pcv = dict(parent.const_value_map)
-        cvd: ta.Dict[ta.Type[TypedLoggerValue], TypedLoggerValueOrAbsent] = {}
-
-        mvd: ta.Dict[ta.Type[MultiTypedLoggerValue], ta.List[MultiTypedLoggerValue]] = {}
-
         def add_kd(kd_k: str, kd_v: TypedLoggerFieldValue) -> None:  # noqa
             if kd_k in kd:
                 dup_kd.setdefault(kd_k, []).append(kd_v)
@@ -326,6 +321,13 @@ class ChainTypedLoggerBindings(TypedLoggerBindings):
 
         def add_kds(it: 'ta.Iterable[ta.Tuple[str, TypedLoggerFieldValue]]') -> None:  # noqa
             collections.deque(itertools.starmap(add_kd, it), maxlen=0)
+
+        #
+
+        vd: ta.Dict[ta.Type[TypedLoggerValue], TypedLoggerValueOrProviderOrAbsent] = {}
+        dup_vd: ta.Dict[ta.Type[TypedLoggerValue], ta.List[TypedLoggerValueOrProviderOrAbsent]] = {}
+
+        pcv = dict(parent.const_value_map)
 
         def add_vd(vd_k: 'ta.Type[TypedLoggerValue]', vd_v: TypedLoggerValueOrProviderOrAbsent) -> None:  # noqa
             if vd_k in vd:
@@ -337,6 +339,10 @@ class ChainTypedLoggerBindings(TypedLoggerBindings):
         def add_vds(it: 'ta.Iterable[ta.Tuple[ta.Type[TypedLoggerValue], TypedLoggerValueOrProviderOrAbsent]]') -> None:  # noqa
             collections.deque(itertools.starmap(add_vd, it), maxlen=0)
 
+        #
+
+        mvd: ta.Dict[ta.Type[MultiTypedLoggerValue], ta.List[MultiTypedLoggerValue]] = {}
+
         def add_mvd(mvd_k: 'ta.Type[MultiTypedLoggerValue]', mvd_v: MultiTypedLoggerValue) -> None:  # noqa
             try:
                 mvd_l = mvd[mvd_k]
@@ -346,6 +352,10 @@ class ChainTypedLoggerBindings(TypedLoggerBindings):
 
         def add_mvds(it: 'ta.Iterable[ta.Tuple[ta.Type[MultiTypedLoggerValue], MultiTypedLoggerValue]]') -> None:
             collections.deque(itertools.starmap(add_mvd, it), maxlen=0)
+
+        #
+
+        cvd: ta.Dict[ta.Type[TypedLoggerValue], TypedLoggerValueOrAbsent] = {}
 
         def bad_type(*args, **kwargs):  # noqa
             raise ChainTypedLoggerBindingsUnhandledItemError

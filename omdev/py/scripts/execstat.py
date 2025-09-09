@@ -17,13 +17,14 @@ import typing as ta
 
 
 def _run(
+        report: 'ta.Callable[[dict], None]',
         src: str,
         *,
         setup: 'ta.Optional[str]' = None,
         time: bool = False,
         rss: bool = False,
         modules: bool = False,
-) -> dict:
+) -> None:
     if rss:
         import resource  # noqa
 
@@ -61,26 +62,28 @@ def _run(
 
     #
 
-    exec(code, globals(), ns)
+    try:
+        exec(code, globals(), ns)
 
-    #
+    finally:
+        #
 
-    if time:
-        end_time = get_time()
+        if time:
+            end_time = get_time()
 
-    if rss:
-        end_rss = get_rss()
+        if rss:
+            end_rss = get_rss()
 
-    if modules:
-        end_modules = get_modules()
+        if modules:
+            end_modules = get_modules()
 
-    #
+        #
 
-    return {
-        **({'time': (end_time - start_time)} if time else {}),  # noqa
-        **({'rss': (end_rss - start_rss)} if rss else {}),  # noqa
-        **({'modules': [m for m in end_modules if m not in start_modules]} if modules else {}),  # noqa
-    }
+        report({
+            **({'time': (end_time - start_time)} if time else {}),  # noqa
+            **({'rss': (end_rss - start_rss)} if rss else {}),  # noqa
+            **({'modules': [m for m in end_modules if m not in start_modules]} if modules else {}),  # noqa
+        })
 
 
 #
@@ -145,13 +148,10 @@ def _main() -> None:
 
         payload = '\n'.join([
             inspect.getsource(_run),
-            f'dct = _run(**{run_kw!r})',
-            f'import json',
-            f'with open({out_file!r}, "w") as f:',  # noqa
-            f'    f.write(json.dumps(dct))',
+            f'with open({out_file!r}, "w") as f: _run(lambda dct: f.write(__import__("json").dumps(dct)), **{run_kw!r})',  # noqa
         ])
 
-        subprocess.check_call([exe, '-c', payload])
+        subprocess.call([exe, '-c', payload])
 
         with open(out_file) as f:
             result = json.load(f)
