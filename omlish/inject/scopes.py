@@ -7,6 +7,7 @@ from .. import dataclasses as dc
 from .. import lang
 from .bindings import Binding
 from .elements import Element
+from .injector import AsyncInjector
 from .keys import Key
 from .keys import as_key
 from .providers import Provider
@@ -65,7 +66,7 @@ class SeededScope(Scope, lang.Final):
 
     class Manager(lang.Abstract):
         @abc.abstractmethod
-        def __call__(self, seeds: ta.Mapping[Key, ta.Any]) -> ta.ContextManager[None]:
+        def __call__(self, seeds: ta.Mapping[Key, ta.Any]) -> ta.AsyncContextManager[None]:
             raise NotImplementedError
 
 
@@ -81,11 +82,23 @@ def bind_scope_seed(k: ta.Any, ss: SeededScope) -> Element:
     return Binding(k, ScopeSeededProvider(ss, k))
 
 
-@contextlib.contextmanager
+@contextlib.asynccontextmanager
+async def async_enter_seeded_scope(
+        i: injector_.AsyncInjector,
+        ss: SeededScope,
+        keys: ta.Mapping[Key, ta.Any],
+) -> ta.AsyncGenerator[None]:
+    async with (await i.provide(Key(SeededScope.Manager, tag=ss)))(keys):
+        yield
+
+
 def enter_seeded_scope(
         i: injector_.Injector,
         ss: SeededScope,
         keys: ta.Mapping[Key, ta.Any],
-) -> ta.Generator[None]:
-    with i.provide(Key(SeededScope.Manager, tag=ss))(keys):
-        yield
+) -> ta.ContextManager[None]:
+    return lang.run_maysync_context_manager(async_enter_seeded_scope(
+        i[AsyncInjector],
+        ss,
+        keys,
+    ))

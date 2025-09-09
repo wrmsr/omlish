@@ -5,9 +5,9 @@ from ... import lang
 def test_provision_listener():
     ks = []
 
-    def pl(injector, key, binding, fn):
+    async def pl(injector, key, binding, fn):
         ks.append(key)
-        v = fn()
+        v = await fn()
         if isinstance(v, int):
             return v + 1
         if isinstance(v, str):

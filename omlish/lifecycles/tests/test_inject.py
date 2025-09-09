@@ -34,17 +34,17 @@ class _LifecycleRegistrar(lang.Final):
         key: inj.Key
         deps: list['_LifecycleRegistrar.Dep'] = dc.field(default_factory=list)
 
-    def _on_provision(
+    async def _on_provision(
             self,
-            injector: inj.Injector,
+            injector: inj.AsyncInjector,
             key: inj.Key,
             binding: inj.Binding | None,
-            fn: ta.Callable[[], ta.Any],
-    ) -> ta.Callable[[], ta.Any]:
+            fn: ta.Callable[[], ta.Awaitable[ta.Any]],
+    ) -> ta.Awaitable[ta.Any]:
         st = _LifecycleRegistrar.State(key)
         self._stack.append(st)
         try:
-            obj = fn()
+            obj = await fn()
         finally:
             popped = self._stack.pop()
             check.state(popped is st)
@@ -54,7 +54,7 @@ class _LifecycleRegistrar(lang.Final):
                 self._stack[-1].deps.append(_LifecycleRegistrar.Dep(binding, obj))
 
             if obj not in self._seen:
-                mgr = injector[LifecycleManager]
+                mgr = await injector[LifecycleManager]
                 dep_objs = [d.obj for d in st.deps]
                 mgr.add(obj, dep_objs)
                 self._seen.add(obj)

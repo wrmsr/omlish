@@ -7,8 +7,9 @@ import typing as ta
 
 from ... import dataclasses as dc
 from ... import lang
-from ..injector import Injector
+from ..injector import AsyncInjector
 from ..inspect import KwargsTarget
+from ..providers import AsyncFnProvider
 from ..providers import ConstProvider
 from ..providers import CtorProvider
 from ..providers import FnProvider
@@ -27,7 +28,7 @@ class ProviderImpl(lang.Abstract):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def provide(self, injector: Injector) -> ta.Any:
+    def provide(self, injector: AsyncInjector) -> ta.Awaitable[ta.Any]:
         raise NotImplementedError
 
 
@@ -43,6 +44,22 @@ class InternalProvider(Provider):
 
 
 @dc.dataclass(frozen=True, eq=False)
+class AsyncCallableProviderImpl(ProviderImpl, lang.Final):
+    p: AsyncFnProvider
+    kt: KwargsTarget
+
+    @property
+    def providers(self) -> ta.Iterable[Provider]:
+        return (self.p,)
+
+    async def provide(self, injector: AsyncInjector) -> ta.Any:
+        return await (await injector.inject(self.kt))
+
+
+##
+
+
+@dc.dataclass(frozen=True, eq=False)
 class CallableProviderImpl(ProviderImpl, lang.Final):
     p: FnProvider | CtorProvider
     kt: KwargsTarget
@@ -51,8 +68,8 @@ class CallableProviderImpl(ProviderImpl, lang.Final):
     def providers(self) -> ta.Iterable[Provider]:
         return (self.p,)
 
-    def provide(self, injector: Injector) -> ta.Any:
-        return injector.inject(self.kt)
+    async def provide(self, injector: AsyncInjector) -> ta.Any:
+        return await injector.inject(self.kt)
 
 
 ##
@@ -66,7 +83,7 @@ class ConstProviderImpl(ProviderImpl, lang.Final):
     def providers(self) -> ta.Iterable[Provider]:
         return (self.p,)
 
-    def provide(self, injector: Injector) -> ta.Any:
+    async def provide(self, injector: AsyncInjector) -> ta.Any:
         return self.p.v
 
 
@@ -81,14 +98,15 @@ class LinkProviderImpl(ProviderImpl, lang.Final):
     def providers(self) -> ta.Iterable[Provider]:
         return (self.p,)
 
-    def provide(self, injector: Injector) -> ta.Any:
-        return injector.provide(self.p.k)
+    async def provide(self, injector: AsyncInjector) -> ta.Any:
+        return await injector.provide(self.p.k)
 
 
 ##
 
 
 PROVIDER_IMPLS_BY_PROVIDER: dict[type[Provider], ta.Callable[..., ProviderImpl]] = {
+    AsyncFnProvider: lambda p: AsyncCallableProviderImpl(p, build_kwargs_target(p.fn)),
     FnProvider: lambda p: CallableProviderImpl(p, build_kwargs_target(p.fn)),
     CtorProvider: lambda p: CallableProviderImpl(p, build_kwargs_target(p.ty)),
     ConstProvider: ConstProviderImpl,

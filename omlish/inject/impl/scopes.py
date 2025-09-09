@@ -17,7 +17,7 @@ from ..elements import Elements
 from ..elements import as_elements
 from ..errors import ScopeAlreadyOpenError
 from ..errors import ScopeNotOpenError
-from ..injector import Injector
+from ..injector import AsyncInjector
 from ..keys import Key
 from ..providers import FnProvider
 from ..providers import Provider
@@ -51,7 +51,7 @@ class ScopeImpl(lang.Abstract):
         return None
 
     @abc.abstractmethod
-    def provide(self, binding: BindingImpl, injector: Injector) -> ta.Any:
+    def provide(self, binding: BindingImpl, injector: AsyncInjector) -> ta.Awaitable[ta.Any]:
         raise NotImplementedError
 
 
@@ -60,8 +60,8 @@ class UnscopedScopeImpl(ScopeImpl, lang.Final):
     def scope(self) -> Unscoped:
         return Unscoped()
 
-    def provide(self, binding: BindingImpl, injector: Injector) -> ta.Any:
-        return binding.provider.provide(injector)
+    async def provide(self, binding: BindingImpl, injector: AsyncInjector) -> ta.Any:
+        return await binding.provider.provide(injector)
 
 
 class SingletonScopeImpl(ScopeImpl, lang.Final):
@@ -74,12 +74,12 @@ class SingletonScopeImpl(ScopeImpl, lang.Final):
     def scope(self) -> Singleton:
         return Singleton()
 
-    def provide(self, binding: BindingImpl, injector: Injector) -> ta.Any:
+    async def provide(self, binding: BindingImpl, injector: AsyncInjector) -> ta.Any:
         try:
             return self._dct[binding]
         except KeyError:
             pass
-        v = binding.provider.provide(injector)
+        v = await binding.provider.provide(injector)
         self._dct[binding] = v
         return v
 
@@ -94,7 +94,7 @@ class ThreadScopeImpl(ScopeImpl, lang.Final):
     def scope(self) -> ThreadScope:
         return ThreadScope()
 
-    def provide(self, binding: BindingImpl, injector: Injector) -> ta.Any:
+    async def provide(self, binding: BindingImpl, injector: AsyncInjector) -> ta.Any:
         dct: dict[BindingImpl, ta.Any]
         try:
             dct = self._local.dct
@@ -104,7 +104,7 @@ class ThreadScopeImpl(ScopeImpl, lang.Final):
             return dct[binding]
         except KeyError:
             pass
-        v = binding.provider.provide(injector)
+        v = await binding.provider.provide(injector)
         dct[binding] = v
         return v
 
@@ -120,8 +120,8 @@ class ScopeSeededProviderImpl(ProviderImpl):
     def providers(self) -> ta.Iterable[Provider]:
         return (self.p,)
 
-    def provide(self, injector: Injector) -> ta.Any:
-        ii = check.isinstance(injector, injector_.InjectorImpl)
+    async def provide(self, injector: AsyncInjector) -> ta.Any:
+        ii = check.isinstance(injector, injector_.AsyncInjectorImpl)
         ssi = check.isinstance(ii.get_scope_impl(self.p.ss), SeededScopeImpl)
         return ssi.must_state().seeds[self.p.key]
 
@@ -151,20 +151,20 @@ class SeededScopeImpl(ScopeImpl):
         return st
 
     class Manager(SeededScope.Manager, lang.Final):
-        def __init__(self, ss: SeededScope, i: Injector) -> None:
+        def __init__(self, ss: SeededScope, i: AsyncInjector) -> None:
             super().__init__()
 
             self._ss = check.isinstance(ss, SeededScope)
-            self._ii = check.isinstance(i, injector_.InjectorImpl)
+            self._ii = check.isinstance(i, injector_.AsyncInjectorImpl)
             self._ssi = check.isinstance(self._ii.get_scope_impl(self._ss), SeededScopeImpl)
 
-        @contextlib.contextmanager
-        def __call__(self, seeds: ta.Mapping[Key, ta.Any]) -> ta.Generator[None]:
+        @contextlib.asynccontextmanager
+        async def __call__(self, seeds: ta.Mapping[Key, ta.Any]) -> ta.AsyncGenerator[None]:
             try:
                 if self._ssi._st is not None:  # noqa
                     raise ScopeAlreadyOpenError(self._ss)
                 self._ssi._st = SeededScopeImpl.State(dict(seeds))  # noqa
-                self._ii._instantiate_eagers(self._ss)  # noqa
+                await self._ii._instantiate_eagers(self._ss)  # noqa
                 yield
             finally:
                 if self._ssi._st is None:  # noqa
@@ -180,13 +180,13 @@ class SeededScopeImpl(ScopeImpl):
             ),
         )
 
-    def provide(self, binding: BindingImpl, injector: Injector) -> ta.Any:
+    async def provide(self, binding: BindingImpl, injector: AsyncInjector) -> ta.Any:
         st = self.must_state()
         try:
             return st.prvs[binding]
         except KeyError:
             pass
-        v = binding.provider.provide(injector)
+        v = await binding.provider.provide(injector)
         st.prvs[binding] = v
         return v
 

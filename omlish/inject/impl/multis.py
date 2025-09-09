@@ -3,7 +3,7 @@ import typing as ta
 from ... import dataclasses as dc
 from ... import lang
 from ..elements import Element
-from ..injector import Injector
+from ..injector import AsyncInjector
 from ..multis import MapBinding
 from ..multis import MapProvider
 from ..multis import SetBinding
@@ -26,10 +26,10 @@ class SetProviderImpl(ProviderImpl, lang.Final):
         for p in self.ps:
             yield from p.providers
 
-    def provide(self, injector: Injector) -> ta.Any:
+    async def provide(self, injector: AsyncInjector) -> ta.Any:
         rv = set()
         for ep in self.ps:
-            o = ep.provide(injector)
+            o = await ep.provide(injector)
             rv.add(o)
         return rv
 
@@ -47,10 +47,10 @@ class MapProviderImpl(ProviderImpl, lang.Final):
         for e in self.es:
             yield from e.v.providers
 
-    def provide(self, injector: Injector) -> ta.Any:
+    async def provide(self, injector: AsyncInjector) -> ta.Any:
         rv = {}
         for e in self.es:
-            o = e.v.provide(injector)
+            o = await e.v.provide(injector)
             rv[e.k] = o
         return rv
 

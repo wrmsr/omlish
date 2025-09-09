@@ -12,14 +12,14 @@ from ... import lang
 from ..bindings import Binding
 from ..eagers import Eager
 from ..elements import Element
-from ..injector import Injector
+from ..injector import AsyncInjector
 from ..keys import Key
 from ..privates import Expose
 from ..privates import Private
 from ..providers import Provider
 from ..scopes import Singleton
 from .elements import ElementCollection
-from .injector import InjectorImpl
+from .injector import AsyncInjectorImpl
 from .providers import InternalProvider
 from .providers import ProviderImpl
 
@@ -47,8 +47,8 @@ class PrivateInjectorProviderImpl(ProviderImpl, lang.Final):
     def providers(self) -> ta.Iterable[Provider]:
         return ()
 
-    def provide(self, injector: Injector) -> ta.Any:
-        return check.isinstance(injector, InjectorImpl).create_child(self.ec)
+    async def provide(self, injector: AsyncInjector) -> ta.Any:
+        return check.isinstance(injector, AsyncInjectorImpl).create_child(self.ec)
 
 
 ##
@@ -63,9 +63,9 @@ class ExposedPrivateProviderImpl(ProviderImpl, lang.Final):
     def providers(self) -> ta.Iterable[Provider]:
         return ()
 
-    def provide(self, injector: Injector) -> ta.Any:
-        pi = injector.provide(self.pik)
-        return pi.provide(self.k)
+    async def provide(self, injector: AsyncInjector) -> ta.Any:
+        pi = await injector.provide(self.pik)
+        return await pi.provide(self.k)
 
 
 ##
@@ -82,7 +82,7 @@ class PrivateInfo(lang.Final):
 
     @cached.property
     def pik(self) -> Key:
-        return Key(InjectorImpl, tag=self.id)
+        return Key(AsyncInjectorImpl, tag=self.id)
 
     @cached.function
     def element_collection(self) -> ElementCollection:

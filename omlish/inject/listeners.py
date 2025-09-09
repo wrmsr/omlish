@@ -4,7 +4,7 @@ from .. import dataclasses as dc
 from .. import lang
 from .bindings import Binding
 from .elements import Element
-from .injector import Injector
+from .injector import AsyncInjector
 from .keys import Key
 
 
@@ -12,11 +12,11 @@ from .keys import Key
 
 
 ProvisionListener: ta.TypeAlias = ta.Callable[[
-    Injector,
+    AsyncInjector,
     Key,
     Binding | None,
-    ta.Callable[[], ta.Any],
-], ta.Callable[[], ta.Any]]
+    ta.Callable[[], ta.Awaitable[ta.Any]],
+], ta.Awaitable[ta.Any]]
 
 
 @dc.dataclass(frozen=True)

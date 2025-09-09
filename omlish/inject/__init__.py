@@ -46,8 +46,11 @@ from .errors import (  # noqa
 )
 
 from .injector import (  # noqa
-    create_injector,
+    AsyncInjector,
+    create_async_injector,
+
     Injector,
+    create_injector,
 )
 
 from .inspect import (  # noqa

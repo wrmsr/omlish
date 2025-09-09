@@ -25,7 +25,7 @@ from ...logs import all as logs
 from ..elements import Elements
 from ..errors import CyclicDependencyError
 from ..errors import UnboundKeyError
-from ..injector import Injector
+from ..injector import AsyncInjector
 from ..inspect import KwargsTarget
 from ..keys import Key
 from ..keys import as_key
@@ -55,15 +55,22 @@ DEFAULT_SCOPES: list[Scope] = [
 ]
 
 
-class InjectorImpl(Injector, lang.Final):
-    def __init__(self, ec: ElementCollection, p: ta.Optional['InjectorImpl'] = None) -> None:
+class AsyncInjectorImpl(AsyncInjector, lang.Final):
+    def __init__(
+            self,
+            ec: ElementCollection,
+            p: ta.Optional['AsyncInjectorImpl'] = None,
+            *,
+            internal_consts: dict[Key, ta.Any] | None = None,
+    ) -> None:
         super().__init__()
 
         self._ec = check.isinstance(ec, ElementCollection)
-        self._p: InjectorImpl | None = check.isinstance(p, (InjectorImpl, None))
+        self._p: AsyncInjectorImpl | None = check.isinstance(p, (AsyncInjectorImpl, None))
 
         self._internal_consts: dict[Key, ta.Any] = {
-            Key(Injector): self,
+            Key(AsyncInjector): self,
+            **(internal_consts or {}),
         }
 
         self._bim = ec.binding_impl_map()
@@ -76,10 +83,10 @@ class InjectorImpl(Injector, lang.Final):
             )
         )
 
-        self._cs: weakref.WeakSet[InjectorImpl] | None = None
-        self._root: InjectorImpl = p._root if p is not None else self  # noqa
+        self._cs: weakref.WeakSet[AsyncInjectorImpl] | None = None
+        self._root: AsyncInjectorImpl = p._root if p is not None else self  # noqa
 
-        self.__cur_req: InjectorImpl._Request | None = None
+        self.__cur_req: AsyncInjectorImpl._Request | None = None
 
         ss = [
             *DEFAULT_SCOPES,
@@ -89,27 +96,41 @@ class InjectorImpl(Injector, lang.Final):
             s: make_scope_impl(s) for s in ss
         }
 
-        self._instantiate_eagers(Unscoped())
-        self._instantiate_eagers(Singleton())
+    #
 
-    _root: 'InjectorImpl'
+    _has_run_init: bool = False
 
-    def _instantiate_eagers(self, sc: Scope) -> None:
+    async def init(self) -> bool:
+        if self._has_run_init:
+            return False
+
+        self._has_run_init = True
+
+        await self._instantiate_eagers(Unscoped())
+        await self._instantiate_eagers(Singleton())
+
+        return True
+
+    #
+
+    _root: 'AsyncInjectorImpl'
+
+    async def _instantiate_eagers(self, sc: Scope) -> None:
         for k in self._ekbs.get(sc, ()):
-            self.provide(k)
+            await self.provide(k)
 
     def get_scope_impl(self, sc: Scope) -> ScopeImpl:
         return self._scopes[sc]
 
-    def create_child(self, ec: ElementCollection) -> Injector:
-        c = InjectorImpl(ec, self)
+    def create_child(self, ec: ElementCollection) -> AsyncInjector:
+        c = AsyncInjectorImpl(ec, self)
         if self._cs is None:
             self._cs = weakref.WeakSet()
         self._cs.add(c)
         return c
 
     class _Request:
-        def __init__(self, injector: 'InjectorImpl') -> None:
+        def __init__(self, injector: 'AsyncInjectorImpl') -> None:
             super().__init__()
 
             self._injector = injector
@@ -162,10 +183,13 @@ class InjectorImpl(Injector, lang.Final):
             finally:
                 self.__cur_req = None
 
-    def _try_provide(self, key: ta.Any, *, source: ta.Any = None) -> lang.Maybe[ta.Any]:
+    async def _try_provide(self, key: ta.Any, *, source: ta.Any = None) -> lang.Maybe[ta.Any]:
+        if not self._has_run_init:
+            await self.init()
+
         key = as_key(key)
 
-        cr: InjectorImpl._Request
+        cr: AsyncInjectorImpl._Request
         with self._current_request() as cr:
             with cr.push_source(source):
                 if (rv := cr.handle_key(key)).present:
@@ -182,55 +206,57 @@ class InjectorImpl(Injector, lang.Final):
                     fn = lambda: sc.provide(bi, self)  # noqa
                     for pl in self._pls:
                         fn = functools.partial(pl, self, key, bi.binding, fn)
-                    v = fn()
+                    v = await fn()
 
                     return cr.handle_provision(key, lang.just(v))
 
                 if self._p is not None:
-                    pv = self._p._try_provide(key, source=source)  # noqa
+                    pv = await self._p._try_provide(key, source=source)  # noqa
                     if pv.present:
                         return cr.handle_provision(key, pv)
 
                 return cr.handle_provision(key, lang.empty())
 
-    def _provide(self, key: ta.Any, *, source: ta.Any = None) -> ta.Any:
-        v = self._try_provide(key, source=source)
+    async def _provide(self, key: ta.Any, *, source: ta.Any = None) -> ta.Any:
+        v = await self._try_provide(key, source=source)
         if v.present:
             return v.must()
         raise UnboundKeyError(key)
 
     #
 
-    def try_provide(self, key: ta.Any) -> lang.Maybe[ta.Any]:
+    def try_provide(self, key: ta.Any) -> ta.Awaitable[lang.Maybe[ta.Any]]:
         return self._try_provide(key)
 
-    def provide(self, key: ta.Any) -> ta.Any:
-        v = self._try_provide(key)
+    async def provide(self, key: ta.Any) -> ta.Any:
+        v = await self._try_provide(key)
         if v.present:
             return v.must()
         raise UnboundKeyError(key)
 
-    def provide_kwargs(self, kt: KwargsTarget) -> ta.Mapping[str, ta.Any]:
+    async def provide_kwargs(self, kt: KwargsTarget) -> ta.Mapping[str, ta.Any]:
         ret: dict[str, ta.Any] = {}
         for kw in kt.kwargs:
             if kw.has_default:
-                if not (mv := self._try_provide(kw.key, source=kt)).present:
+                if not (mv := await self._try_provide(kw.key, source=kt)).present:
                     continue
                 v = mv.must()
             else:
-                v = self._provide(kw.key, source=kt)
+                v = await self._provide(kw.key, source=kt)
             ret[kw.name] = v
         return ret
 
-    def inject(self, obj: ta.Any) -> ta.Any:
+    async def inject(self, obj: ta.Any) -> ta.Any:
         if isinstance(obj, KwargsTarget):
             obj, kt = obj.obj, obj
         else:
             kt = build_kwargs_target(obj)
-        kws = self.provide_kwargs(kt)
+        kws = await self.provide_kwargs(kt)
         # FIXME: still 'injecting' (as in has a req) if ctor needs and uses Injector
         return obj(**kws)
 
 
-def create_injector(es: Elements) -> Injector:
-    return InjectorImpl(ElementCollection(es))
+async def create_async_injector(es: Elements) -> AsyncInjector:
+    i = AsyncInjectorImpl(ElementCollection(es))
+    await i.init()
+    return i
