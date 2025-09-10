@@ -1,8 +1,6 @@
 """
-TODO:
-
 Objects:
- - Object keys may be an ECMAScript 5.1 IdentifierName.
+ + Object keys may be an ECMAScript 5.1 IdentifierName.
  + Objects may have a single trailing comma.
 Arrays:
  + Arrays may have a single trailing comma.
@@ -18,7 +16,7 @@ Numbers:
 Comments:
  + Single and multi-line comments are allowed.
 White Space:
- - Additional white space characters are allowed.
+ + Additional white space characters are allowed.
 """
 import dataclasses as dc
 import itertools
@@ -50,9 +48,11 @@ class JsonStreamValueParser(lang.ExitStacked):
         self._lex = JsonStreamLexer(
             include_raw=self.include_raw,
 
-            allow_comments=True,
-            allow_single_quotes=True,
+            allow_extended_space=True,
 
+            allow_comments=True,
+
+            allow_single_quotes=True,
             string_literal_parser=parse_string_literal,
 
             allow_extended_number_literals=True,

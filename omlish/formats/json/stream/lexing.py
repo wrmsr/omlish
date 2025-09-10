@@ -126,6 +126,8 @@ class JsonStreamLexer(GenMachine[str, Token]):
             self,
             *,
             include_raw: bool = False,
+
+            allow_extended_space: bool = False,
             include_space: bool = False,
 
             allow_comments: bool = False,
@@ -140,6 +142,8 @@ class JsonStreamLexer(GenMachine[str, Token]):
             allow_extended_idents: bool = False,
     ) -> None:
         self._include_raw = include_raw
+
+        self._allow_extended_space = allow_extended_space
         self._include_space = include_space
 
         self._allow_comments = allow_comments
@@ -220,7 +224,33 @@ class JsonStreamLexer(GenMachine[str, Token]):
             if not c:
                 return None
 
-            if c.isspace():
+            if c.isspace() or (self._allow_extended_space and c in (
+                    '\u0009'
+                    '\u000A'
+                    '\u000B'
+                    '\u000C'
+                    '\u000D'
+                    '\u0020'
+                    '\u00A0'
+                    '\u2028'
+                    '\u2029'
+                    '\uFEFF'
+                    '\u1680'
+                    '\u2000'
+                    '\u2001'
+                    '\u2002'
+                    '\u2003'
+                    '\u2004'
+                    '\u2005'
+                    '\u2006'
+                    '\u2007'
+                    '\u2008'
+                    '\u2009'
+                    '\u200A'
+                    '\u202F'
+                    '\u205F'
+                    '\u3000'
+            )):
                 if self._include_space:
                     yield self._make_tok('SPACE', c, c, self.pos)
                 continue
@@ -373,10 +403,36 @@ class JsonStreamLexer(GenMachine[str, Token]):
 
         return self._do_main()
 
+    def _do_unicode_escape(self):
+        try:
+            c = self._char_in((yield None))  # noqa
+        except GeneratorExit:
+            self._raise('Unexpected end of input')
+
+        if c != 'u':
+            self._raise('Illegal identifier escape')
+
+        ux = []
+        for _ in range(4):
+            try:
+                c = self._char_in((yield None))  # noqa
+            except GeneratorExit:
+                self._raise('Unexpected end of input')
+
+            if c not in '0123456789abcdefABCDEF':
+                self._raise('Illegal identifier escape')
+
+            ux.append(c)
+
+        return chr(int(''.join(ux), 16))
+
     def _do_extended_ident(self, c: str):
         check.state(self._buf.tell() == 0)
 
-        if not (c in '$_' or unicodedata.category(c).startswith('L')):
+        if c == '\\':
+            c = yield from self._do_unicode_escape()
+
+        elif not (c in '$_' or unicodedata.category(c).startswith('L')):
             self._raise('Illegal identifier start')
 
         self._buf.write(c)
@@ -390,19 +446,16 @@ class JsonStreamLexer(GenMachine[str, Token]):
                 self._raise('Unexpected end of input')
 
             if c == '\\':
-                raise NotImplementedError
+                c = yield from self._do_unicode_escape()
+                self._buf.write(c)
+                continue
 
             if not c:
                 break
 
             if c not in '$_\u200C\u200D':
                 uc = unicodedata.category(c)
-                if not (
-                        uc.startswith('L') or
-                        uc.startswith('M') or
-                        uc.startswith('N') or
-                        uc == 'Pc'
-                ):
+                if not (uc.startswith(('L', 'M', 'N')) or uc == 'Pc'):
                     break
 
             self._buf.write(c)
