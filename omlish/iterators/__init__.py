@@ -1,23 +1,29 @@
-from .iterators import (  # noqa
-    PeekIterator,
-    PrefetchIterator,
-    ProxyIterator,
-    RetainIterator,
-)
+from .. import lang as _lang  # noqa
 
-from .recipes import (  # noqa
-    sliding_window,
-)
 
-from .tools import (  # noqa
-    expand_indexed_pairs,
-    merge_on,
-    take,
-    unzip,
-)
+with _lang.auto_proxy_init(globals()):
+    ##
 
-from .unique import (  # noqa
-    UniqueItem,
-    UniqueIterator,
-    UniqueStats,
-)
+    from .iterators import (  # noqa
+        PeekIterator,
+        PrefetchIterator,
+        ProxyIterator,
+        RetainIterator,
+    )
+
+    from .recipes import (  # noqa
+        sliding_window,
+    )
+
+    from .tools import (  # noqa
+        expand_indexed_pairs,
+        merge_on,
+        take,
+        unzip,
+    )
+
+    from .unique import (  # noqa
+        UniqueItem,
+        UniqueIterator,
+        UniqueStats,
+    )
