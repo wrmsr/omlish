@@ -11,7 +11,7 @@ from ..lite.attrops import attr_repr
 from ..lite.check import check
 
 
-AtomicPathSwapKind = ta.Literal['dir', 'file']
+AtomicPathSwapKind = ta.Literal['dir', 'file']  # ta.TypeAlias
 AtomicPathSwapState = ta.Literal['open', 'committed', 'aborted']  # ta.TypeAlias
 
 

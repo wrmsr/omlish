@@ -108,7 +108,7 @@ AsyncExitStackedT = ta.TypeVar('AsyncExitStackedT', bound='AsyncExitStacked')
 LogLevel = int  # ta.TypeAlias
 
 # ../../omlish/sockets/addresses.py
-SocketAddress = ta.Any
+SocketAddress = ta.Any  # ta.TypeAlias
 
 # github/api/v2/api.py
 GithubCacheServiceV2RequestT = ta.TypeVar('GithubCacheServiceV2RequestT')
@@ -150,10 +150,10 @@ HttpHandler = ta.Callable[['HttpHandlerRequest'], 'HttpHandlerResponse']  # ta.T
 HttpHandlerResponseData = ta.Union[bytes, 'HttpHandlerResponseStreamedData']  # ta.TypeAlias  # noqa
 
 # ../../omlish/lite/inject.py
-InjectorKeyCls = ta.Union[type, ta.NewType]
-InjectorProviderFn = ta.Callable[['Injector'], ta.Any]
-InjectorProviderFnMap = ta.Mapping['InjectorKey', 'InjectorProviderFn']
-InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']
+InjectorKeyCls = ta.Union[type, ta.NewType]  # ta.TypeAlias
+InjectorProviderFn = ta.Callable[['Injector'], ta.Any]  # ta.TypeAlias
+InjectorProviderFnMap = ta.Mapping['InjectorKey', 'InjectorProviderFn']  # ta.TypeAlias
+InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']  # ta.TypeAlias
 
 # ../../omlish/logs/contexts.py
 LoggingContextInfoT = ta.TypeVar('LoggingContextInfoT', bound=LoggingContextInfo)
@@ -165,7 +165,7 @@ SocketServerHandler = ta.Callable[['SocketAndAddress'], None]  # ta.TypeAlias
 DataServerTargetT = ta.TypeVar('DataServerTargetT', bound='DataServerTarget')
 
 # ../../omlish/http/coro/server/server.py
-CoroHttpServerFactory = ta.Callable[[SocketAddress], 'CoroHttpServer']
+CoroHttpServerFactory = ta.Callable[[SocketAddress], 'CoroHttpServer']  # ta.TypeAlias
 
 # ../../omlish/subprocesses/base.py
 SubprocessChannelOption = ta.Literal['pipe', 'stdout', 'devnull']  # ta.TypeAlias

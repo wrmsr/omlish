@@ -3,7 +3,7 @@
 import typing as ta
 
 
-ConfigMap = ta.Mapping[str, ta.Any]
+ConfigMap = ta.Mapping[str, ta.Any]  # ta.TypeAlias
 
 
 ##

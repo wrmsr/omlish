@@ -77,7 +77,7 @@ from ...versions import HttpProtocolVersion
 from ...versions import HttpProtocolVersions
 
 
-CoroHttpServerFactory = ta.Callable[[SocketAddress], 'CoroHttpServer']
+CoroHttpServerFactory = ta.Callable[[SocketAddress], 'CoroHttpServer']  # ta.TypeAlias
 
 
 ##

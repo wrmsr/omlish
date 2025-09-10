@@ -6,7 +6,7 @@ import typing as ta
 
 
 def _hands_off_repr(obj: ta.Any) -> str:
-    return f'{obj.__class__.__qualname__}@{hex(id(obj))[2:]}'
+    return f'{obj.__class__.__qualname__}@{id(obj):x}'
 
 
 def _fn_repr(fn: ta.Callable) -> str:

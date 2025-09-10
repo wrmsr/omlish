@@ -9,7 +9,7 @@ import socket as socket_
 import typing as ta
 
 
-SocketAddress = ta.Any
+SocketAddress = ta.Any  # ta.TypeAlias
 
 
 ##

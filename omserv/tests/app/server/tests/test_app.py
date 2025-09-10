@@ -28,7 +28,7 @@ from ..inject import bind_in_memory_user_store
 
 
 def randhex(l: int) -> str:
-    return hex(secrets.randbits(4 * l))[2:]
+    return f'{secrets.randbits(4 * l):x}'
 
 
 @pytest.mark.integration

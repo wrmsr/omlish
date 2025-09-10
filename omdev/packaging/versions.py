@@ -27,13 +27,13 @@ import re
 import typing as ta
 
 
-VersionLocalType = ta.Tuple[ta.Union[int, str], ...]
+VersionLocalType = ta.Tuple[ta.Union[int, str], ...]  # ta.TypeAlias
 
-VersionCmpPrePostDevType = ta.Union['InfinityVersionType', 'NegativeInfinityVersionType', ta.Tuple[str, int]]
-_VersionCmpLocalType0 = ta.Tuple[ta.Union[ta.Tuple[int, str], ta.Tuple['NegativeInfinityVersionType', ta.Union[int, str]]], ...]  # noqa
-VersionCmpLocalType = ta.Union['NegativeInfinityVersionType', _VersionCmpLocalType0]
-VersionCmpKey = ta.Tuple[int, ta.Tuple[int, ...], VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpLocalType]  # noqa
-VersionComparisonMethod = ta.Callable[[VersionCmpKey, VersionCmpKey], bool]
+VersionCmpPrePostDevType = ta.Union['InfinityVersionType', 'NegativeInfinityVersionType', ta.Tuple[str, int]]  # ta.TypeAlias  # noqa
+_VersionCmpLocalType0 = ta.Tuple[ta.Union[ta.Tuple[int, str], ta.Tuple['NegativeInfinityVersionType', ta.Union[int, str]]], ...]  # ta.TypeAlias  # noqa
+VersionCmpLocalType = ta.Union['NegativeInfinityVersionType', _VersionCmpLocalType0]  # ta.TypeAlias
+VersionCmpKey = ta.Tuple[int, ta.Tuple[int, ...], VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpLocalType]  # ta.TypeAlias  # noqa
+VersionComparisonMethod = ta.Callable[[VersionCmpKey, VersionCmpKey], bool]  # ta.TypeAlias
 
 
 ##

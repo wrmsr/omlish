@@ -102,7 +102,7 @@ if sys.version_info < (3, 8):
 
 
 # ../../omlish/configs/types.py
-ConfigMap = ta.Mapping[str, ta.Any]
+ConfigMap = ta.Mapping[str, ta.Any]  # ta.TypeAlias
 
 # ../../omlish/formats/ini/sections.py
 IniSectionSettingsMap = ta.Mapping[str, ta.Mapping[str, ta.Union[str, ta.Sequence[str]]]]  # ta.TypeAlias
@@ -135,7 +135,7 @@ A2 = ta.TypeVar('A2')
 LogLevel = int  # ta.TypeAlias
 
 # ../../omlish/sockets/addresses.py
-SocketAddress = ta.Any
+SocketAddress = ta.Any  # ta.TypeAlias
 
 # events.py
 EventCallback = ta.Callable[['Event'], None]  # ta.TypeAlias
@@ -166,16 +166,16 @@ HttpHandler = ta.Callable[['HttpHandlerRequest'], 'HttpHandlerResponse']  # ta.T
 HttpHandlerResponseData = ta.Union[bytes, 'HttpHandlerResponseStreamedData']  # ta.TypeAlias  # noqa
 
 # ../../omlish/lite/inject.py
-InjectorKeyCls = ta.Union[type, ta.NewType]
-InjectorProviderFn = ta.Callable[['Injector'], ta.Any]
-InjectorProviderFnMap = ta.Mapping['InjectorKey', 'InjectorProviderFn']
-InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']
+InjectorKeyCls = ta.Union[type, ta.NewType]  # ta.TypeAlias
+InjectorProviderFn = ta.Callable[['Injector'], ta.Any]  # ta.TypeAlias
+InjectorProviderFnMap = ta.Mapping['InjectorKey', 'InjectorProviderFn']  # ta.TypeAlias
+InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']  # ta.TypeAlias
 
 # ../../omlish/logs/contexts.py
 LoggingContextInfoT = ta.TypeVar('LoggingContextInfoT', bound=LoggingContextInfo)
 
 # ../../omlish/http/coro/server/server.py
-CoroHttpServerFactory = ta.Callable[[SocketAddress], 'CoroHttpServer']
+CoroHttpServerFactory = ta.Callable[[SocketAddress], 'CoroHttpServer']  # ta.TypeAlias
 
 
 ########################################
@@ -2054,7 +2054,7 @@ class AttrOps(ta.Generic[T]):
             return (
                 f'{o.__class__.__module__ + "." if self._with_module else ""}'
                 f'{o.__class__.__qualname__ if self._use_qualname else o.__class__.__name__}'
-                f'{("@" + hex(id(o))[2:]) if self._with_id else ""}'
+                f'{("@" + hex(id(o))[2:]) if self._with_id else ""}'  # noqa
                 f'({vs})'
             )
 

@@ -58,7 +58,7 @@ if sys.version_info < (3, 8):
 
 
 # ../../../../omlish/configs/types.py
-ConfigMap = ta.Mapping[str, ta.Any]
+ConfigMap = ta.Mapping[str, ta.Any]  # ta.TypeAlias
 
 # ../../../../omlish/formats/ini/sections.py
 IniSectionSettingsMap = ta.Mapping[str, ta.Mapping[str, ta.Union[str, ta.Sequence[str]]]]  # ta.TypeAlias
@@ -1529,7 +1529,7 @@ class AttrOps(ta.Generic[T]):
             return (
                 f'{o.__class__.__module__ + "." if self._with_module else ""}'
                 f'{o.__class__.__qualname__ if self._use_qualname else o.__class__.__name__}'
-                f'{("@" + hex(id(o))[2:]) if self._with_id else ""}'
+                f'{("@" + hex(id(o))[2:]) if self._with_id else ""}'  # noqa
                 f'({vs})'
             )
 

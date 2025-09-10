@@ -16,7 +16,7 @@ class Param(lang.Final):
         if self.n is not None:
             return f'{self.__class__.__name__}({self.n!r})'
         else:
-            return f'{self.__class__.__name__}(@{hex(id(self))[2:]})'
+            return f'{self.__class__.__name__}(@{id(self):x})'
 
     def __eq__(self, other):
         if not isinstance(other, Param):

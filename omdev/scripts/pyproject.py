@@ -84,12 +84,12 @@ if sys.version_info < (3, 8):
 
 
 # ../packaging/versions.py
-VersionLocalType = ta.Tuple[ta.Union[int, str], ...]
-VersionCmpPrePostDevType = ta.Union['InfinityVersionType', 'NegativeInfinityVersionType', ta.Tuple[str, int]]
-_VersionCmpLocalType0 = ta.Tuple[ta.Union[ta.Tuple[int, str], ta.Tuple['NegativeInfinityVersionType', ta.Union[int, str]]], ...]  # noqa
-VersionCmpLocalType = ta.Union['NegativeInfinityVersionType', _VersionCmpLocalType0]
-VersionCmpKey = ta.Tuple[int, ta.Tuple[int, ...], VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpLocalType]  # noqa
-VersionComparisonMethod = ta.Callable[[VersionCmpKey, VersionCmpKey], bool]
+VersionLocalType = ta.Tuple[ta.Union[int, str], ...]  # ta.TypeAlias
+VersionCmpPrePostDevType = ta.Union['InfinityVersionType', 'NegativeInfinityVersionType', ta.Tuple[str, int]]  # ta.TypeAlias  # noqa
+_VersionCmpLocalType0 = ta.Tuple[ta.Union[ta.Tuple[int, str], ta.Tuple['NegativeInfinityVersionType', ta.Union[int, str]]], ...]  # ta.TypeAlias  # noqa
+VersionCmpLocalType = ta.Union['NegativeInfinityVersionType', _VersionCmpLocalType0]  # ta.TypeAlias
+VersionCmpKey = ta.Tuple[int, ta.Tuple[int, ...], VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpPrePostDevType, VersionCmpLocalType]  # ta.TypeAlias  # noqa
+VersionComparisonMethod = ta.Callable[[VersionCmpKey, VersionCmpKey], bool]  # ta.TypeAlias
 
 # ../../omlish/formats/toml/parser.py
 TomlParseFloat = ta.Callable[[str], ta.Any]  # ta.TypeAlias
@@ -117,9 +117,9 @@ A2 = ta.TypeVar('A2')
 LogLevel = int  # ta.TypeAlias
 
 # ../packaging/specifiers.py
-UnparsedVersion = ta.Union['Version', str]
+UnparsedVersion = ta.Union['Version', str]  # ta.TypeAlias
 UnparsedVersionVar = ta.TypeVar('UnparsedVersionVar', bound=UnparsedVersion)
-CallableVersionOperator = ta.Callable[['Version', str], bool]
+CallableVersionOperator = ta.Callable[['Version', str], bool]  # ta.TypeAlias
 
 # ../../omlish/argparse/cli.py
 ArgparseCmdFn = ta.Callable[[], ta.Optional[int]]  # ta.TypeAlias
@@ -141,10 +141,10 @@ LoggingContextInfo = ta.Any  # ta.TypeAlias
 AwaitableT = ta.TypeVar('AwaitableT', bound=ta.Awaitable)
 
 # ../../omlish/lite/inject.py
-InjectorKeyCls = ta.Union[type, ta.NewType]
-InjectorProviderFn = ta.Callable[['Injector'], ta.Any]
-InjectorProviderFnMap = ta.Mapping['InjectorKey', 'InjectorProviderFn']
-InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']
+InjectorKeyCls = ta.Union[type, ta.NewType]  # ta.TypeAlias
+InjectorProviderFn = ta.Callable[['Injector'], ta.Any]  # ta.TypeAlias
+InjectorProviderFnMap = ta.Mapping['InjectorKey', 'InjectorProviderFn']  # ta.TypeAlias
+InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']  # ta.TypeAlias
 
 # ../../omlish/logs/contexts.py
 LoggingContextInfoT = ta.TypeVar('LoggingContextInfoT', bound=LoggingContextInfo)

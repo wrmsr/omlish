@@ -45,7 +45,7 @@ class GenMachine(ta.Generic[I, O]):
     _gen: MachineGen | None
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}@{hex(id(self))[2:]}<{self.state}>'
+        return f'{self.__class__.__name__}@{id(self):x}<{self.state}>'
 
     #
 

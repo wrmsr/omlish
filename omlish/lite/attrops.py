@@ -212,7 +212,7 @@ class AttrOps(ta.Generic[T]):
             return (
                 f'{o.__class__.__module__ + "." if self._with_module else ""}'
                 f'{o.__class__.__qualname__ if self._use_qualname else o.__class__.__name__}'
-                f'{("@" + hex(id(o))[2:]) if self._with_id else ""}'
+                f'{("@" + hex(id(o))[2:]) if self._with_id else ""}'  # noqa
                 f'({vs})'
             )
 

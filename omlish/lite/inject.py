@@ -21,12 +21,12 @@ T = ta.TypeVar('T')
 U = ta.TypeVar('U')
 
 
-InjectorKeyCls = ta.Union[type, ta.NewType]
+InjectorKeyCls = ta.Union[type, ta.NewType]  # ta.TypeAlias
 
-InjectorProviderFn = ta.Callable[['Injector'], ta.Any]
-InjectorProviderFnMap = ta.Mapping['InjectorKey', 'InjectorProviderFn']
+InjectorProviderFn = ta.Callable[['Injector'], ta.Any]  # ta.TypeAlias
+InjectorProviderFnMap = ta.Mapping['InjectorKey', 'InjectorProviderFn']  # ta.TypeAlias
 
-InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']
+InjectorBindingOrBindings = ta.Union['InjectorBinding', 'InjectorBindings']  # ta.TypeAlias
 
 
 ###
