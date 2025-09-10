@@ -51,13 +51,14 @@ def test_arrays():
     assert parse('[1,[2,3,],]') == [1, [2, 3]]
 
 
-# def test_objects():
-#     assert parse('{"a":1}') == {'a': 1}
-#     assert parse('{"a":1,}') == {'a': 1}
-#     assert parse("{'a':1}") == {'a': 1}
-#     assert parse('{a:1}') == {'a': 1}
-#     assert parse('{$_:1,_$:2,a\u200C:3}') == {'$_': 1, '_$': 2, 'a\u200C': 3}
-#     assert parse('{ùńîċõďë:9}') == {'ùńîċõďë': 9}
-#     assert parse('{\\u0061\\u0062:1,\\u0024\\u005F:2,\\u005F\\u0024:3}') == {'ab': 1, '$_': 2, '_$': 3}
-#     assert parse('{abc:1,def:2}') == {'abc': 1, 'def': 2}
-#     assert parse('{a:{b:2}}') == {'a': {'b': 2}}
+def test_objects():
+    assert parse('{"a":1}') == {'a': 1}
+    assert parse('{"a":1,}') == {'a': 1}
+    assert parse("{'a':1}") == {'a': 1}
+    assert parse('{a:1}') == {'a': 1}
+    assert parse('{$_:1,_$:2,a\u200C:3}') == {'$_': 1, '_$': 2, 'a\u200C': 3}
+    assert parse('{$_:1,_$:2,a\\u200C:3}') == {'$_': 1, '_$': 2, 'a\u200C': 3}
+    assert parse('{ùńîċõďë:9}') == {'ùńîċõďë': 9}
+    assert parse('{\\u0061\\u0062:1,\\u0024\\u005F:2,\\u005F\\u0024:3}') == {'ab': 1, '$_': 2, '_$': 3}
+    assert parse('{abc:1,def:2}') == {'abc': 1, 'def': 2}
+    assert parse('{a:{b:2}}') == {'a': {'b': 2}}

@@ -58,11 +58,13 @@ class JsonStreamValueParser(lang.ExitStacked):
             allow_extended_number_literals=True,
             number_literal_parser=parse_number_literal,
 
-            allow_extended_identifiers=True,
+            allow_extended_idents=True,
         )
 
         self._parse = JsonStreamParser(
             allow_trailing_commas=True,
+
+            allow_extended_idents=True,
         )
 
         self._build = JsonValueBuilder(

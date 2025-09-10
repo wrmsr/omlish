@@ -13,8 +13,13 @@ import re
 import typing as ta
 
 from .... import check
+from .... import lang
 from ....funcs.genmachine import GenMachine
 from .errors import JsonStreamError
+
+
+with lang.auto_proxy_import(globals()):
+    import unicodedata
 
 
 ##
@@ -132,7 +137,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
             allow_extended_number_literals: bool = False,
             number_literal_parser: ta.Callable[[str], ta.Any] | None = None,
 
-            allow_extended_identifiers: bool = False,
+            allow_extended_idents: bool = False,
     ) -> None:
         self._include_raw = include_raw
         self._include_space = include_space
@@ -148,7 +153,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
         self._allow_extended_number_literals = allow_extended_number_literals
         self._number_literal_parser = number_literal_parser
 
-        self._allow_extended_identifiers = allow_extended_identifiers
+        self._allow_extended_idents = allow_extended_idents
 
         self._ofs = 0
         self._line = 1
@@ -230,12 +235,15 @@ class JsonStreamLexer(GenMachine[str, Token]):
             if c.isdigit() or c == '-' or (self._allow_extended_number_literals and c in '.+'):
                 return self._do_number(c)
 
-            if c in 'tfnIN':
-                return self._do_const(c)
-
             if self._allow_comments and c == '/':
                 yield from self._do_comment()
                 continue
+
+            if self._allow_extended_idents:
+                return self._do_extended_ident(c)
+
+            if c in 'tfnIN':
+                return self._do_const(c)
 
             self._raise(f'Unexpected character: {c}')
 
@@ -364,6 +372,46 @@ class JsonStreamLexer(GenMachine[str, Token]):
         yield self._make_tok('IDENT', raw, raw, pos)
 
         return self._do_main()
+
+    def _do_extended_ident(self, c: str):
+        check.state(self._buf.tell() == 0)
+
+        if not (c in '$_' or unicodedata.category(c).startswith('L')):
+            self._raise('Illegal identifier start')
+
+        self._buf.write(c)
+
+        pos = self.pos
+
+        while True:
+            try:
+                c = self._char_in((yield None))  # noqa
+            except GeneratorExit:
+                self._raise('Unexpected end of input')
+
+            if c == '\\':
+                raise NotImplementedError
+
+            if not c:
+                break
+
+            if c not in '$_\u200C\u200D':
+                uc = unicodedata.category(c)
+                if not (
+                        uc.startswith('L') or
+                        uc.startswith('M') or
+                        uc.startswith('N') or
+                        uc == 'Pc'
+                ):
+                    break
+
+            self._buf.write(c)
+
+        raw = self._flip_buf()
+
+        yield self._make_tok('IDENT', raw, raw, pos)
+
+        return self._do_main(c)
 
     def _do_comment(self):
         check.state(self._buf.tell() == 0)

@@ -100,8 +100,12 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
             self,
             *,
             allow_trailing_commas: bool = False,
+
+            allow_extended_idents: bool = False,
     ) -> None:
         self._allow_trailing_commas = allow_trailing_commas
+
+        self._allow_extended_idents = allow_extended_idents
 
         self._stack: list[ta.Literal['OBJECT', 'KEY', 'ARRAY']] = []
 
@@ -209,7 +213,7 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
         except GeneratorExit:
             raise JsonStreamParseError('Expected object body') from None
 
-        if tok.kind == 'STRING':
+        if tok.kind == 'STRING' or (self._allow_trailing_commas and tok.kind == 'IDENT'):
             k = tok.value
 
             try:
