@@ -47,14 +47,12 @@ from .multis import make_multi_provider_impl
 from .origins import Origins
 from .origins import set_origins
 from .providers import ProviderImpl
-from .providers import make_provider_impl
+from .providers2 import make_provider_impl
 from .scopes import make_scope_impl
 
 
-if ta.TYPE_CHECKING:
-    from . import privates as privates_
-else:
-    privates_ = lang.proxy_import('.privates', __package__)
+with lang.auto_proxy_import(globals()):
+    from . import privates as _privates
 
 
 ElementT = ta.TypeVar('ElementT', bound=Element)
@@ -69,17 +67,17 @@ class ElementCollection(lang.Final):
 
         self._es = check.isinstance(es, Elements)
 
-        self._private_infos: ta.MutableMapping[Private, privates_.PrivateInfo] | None = None
+        self._private_infos: ta.MutableMapping[Private, _privates.PrivateInfo] | None = None
 
     ##
 
-    def _get_private_info(self, p: Private) -> 'privates_.PrivateInfo':
+    def _get_private_info(self, p: Private) -> '_privates.PrivateInfo':
         if (pis := self._private_infos) is None:
             self._private_infos = pis = col.IdentityKeyDict()
         try:
             return pis[p]
         except KeyError:
-            pis[p] = ec = privates_.PrivateInfo(self, p)
+            pis[p] = ec = _privates.PrivateInfo(self, p)
             return ec
 
     ##

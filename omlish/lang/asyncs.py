@@ -79,3 +79,21 @@ def sync_async_list(
         raise TypeError(lst)
 
     return lst
+
+
+@ta.final
+class SyncAsyncContextManager(ta.Generic[T]):
+    def __init__(self, acm: ta.AsyncContextManager[T]) -> None:
+        self._acm = acm
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self._acm!r})'
+
+    def __enter__(self) -> T:
+        return sync_await(self._acm.__aenter__())
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return sync_await(self._acm.__aexit__(exc_type, exc_val, exc_tb))
+
+
+sync_async_context_manager = SyncAsyncContextManager

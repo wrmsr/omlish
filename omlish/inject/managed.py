@@ -5,13 +5,16 @@ TODO:
 import contextlib
 import typing as ta
 
+from .. import lang
 from .binder import bind
 from .elements import Elemental
 from .impl.inspect import build_kwargs_target
-from .injector import AsyncInjector
-from .injector import Injector
-from .injector import create_async_injector
-from .injector import create_injector
+
+
+with lang.auto_proxy_import(globals()):
+    from . import injector as _injector
+    from . import maysync as _maysync
+    from . import sync as _sync
 
 
 T = ta.TypeVar('T')
@@ -20,9 +23,43 @@ T = ta.TypeVar('T')
 ##
 
 
+@contextlib.asynccontextmanager
+async def create_async_managed_injector(*args: Elemental) -> ta.AsyncGenerator['_injector.AsyncInjector']:
+    ai = await _injector.create_async_injector(
+        bind(contextlib.AsyncExitStack, singleton=True, eager=True),
+        *args,
+    )
+    async with (await ai[contextlib.AsyncExitStack]):
+        yield ai
+
+
+def make_async_managed_provider(
+        fac: ta.Callable[..., T],
+        *fns: ta.Callable[[T], ta.AsyncContextManager[T]],
+) -> ta.Callable[..., ta.Awaitable[T]]:
+    kt = build_kwargs_target(fac)
+
+    async def _provide(
+            ai: _injector.AsyncInjector,
+            aes: contextlib.AsyncExitStack,
+    ):
+        obj = await ai.inject(kt)
+        if not fns:
+            obj = await aes.enter_async_context(obj)
+        else:
+            for fn in fns:
+                await aes.enter_async_context(fn(obj))
+        return obj
+
+    return _provide
+
+
+##
+
+
 @contextlib.contextmanager
-def create_managed_injector(*args: Elemental) -> ta.Generator[Injector]:
-    i = create_injector(
+def create_managed_injector(*args: Elemental) -> ta.Generator['_sync.Injector']:
+    i = _sync.create_injector(
         bind(contextlib.ExitStack, singleton=True, eager=True),
         *args,
     )
@@ -37,7 +74,7 @@ def make_managed_provider(
     kt = build_kwargs_target(fac)
 
     def _provide(
-            i: Injector,
+            i: _sync.Injector,
             es: contextlib.ExitStack,
     ):
         obj = i.inject(kt)
@@ -54,32 +91,32 @@ def make_managed_provider(
 ##
 
 
-@contextlib.asynccontextmanager
-async def create_async_managed_injector(*args: Elemental) -> ta.AsyncGenerator[AsyncInjector]:
-    ai = await create_async_injector(
-        bind(contextlib.AsyncExitStack, singleton=True, eager=True),
+@contextlib.contextmanager
+def create_maysync_managed_injector(*args: Elemental) -> ta.Generator['_maysync.MaysyncInjector']:
+    i = _maysync.create_maysync_injector(
+        bind(contextlib.ExitStack, singleton=True, eager=True),
         *args,
     )
-    async with (await ai[contextlib.AsyncExitStack]):
-        yield ai
+    with i[contextlib.ExitStack]:
+        yield i
 
 
-def make_async_managed_provider(
+def make_maysync_managed_provider(
         fac: ta.Callable[..., T],
-        *fns: ta.Callable[[T], ta.AsyncContextManager[T]],
-) -> ta.Callable[..., ta.Awaitable[T]]:
+        *fns: ta.Callable[[T], ta.ContextManager[T]],
+) -> ta.Callable[..., T]:
     kt = build_kwargs_target(fac)
 
-    async def _provide(
-            ai: AsyncInjector,
-            aes: contextlib.AsyncExitStack,
+    def _provide(
+            i: _maysync.MaysyncInjector,
+            es: contextlib.ExitStack,
     ):
-        obj = await ai.inject(kt)
+        obj = i.inject(kt)
         if not fns:
-            obj = await aes.enter_async_context(obj)
+            obj = es.enter_context(obj)
         else:
             for fn in fns:
-                await aes.enter_async_context(fn(obj))
+                es.enter_context(fn(obj))
         return obj
 
     return _provide

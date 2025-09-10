@@ -5,7 +5,6 @@ from ..elements import Elements
 from ..injector import AsyncInjector
 from ..inspect import KwargsTarget
 from ..keys import Key
-from ..maysync import MaysyncInjector
 from ..sync import Injector
 from .elements import ElementCollection
 from .injector import AsyncInjectorImpl
@@ -14,31 +13,30 @@ from .injector import AsyncInjectorImpl
 ##
 
 
-class MaysyncInjectorImpl(MaysyncInjector, lang.Final):
+class InjectorImpl(Injector, lang.Final):
     _ai: AsyncInjector
 
     def try_provide(self, key: ta.Any) -> lang.Maybe[ta.Any]:
-        return lang.run_maysync(self._ai.try_provide(key))
+        return lang.sync_await(self._ai.try_provide(key))
 
     def provide(self, key: ta.Any) -> ta.Any:
-        return lang.run_maysync(self._ai.provide(key))
+        return lang.sync_await(self._ai.provide(key))
 
     def provide_kwargs(self, kt: KwargsTarget) -> ta.Mapping[str, ta.Any]:
-        return lang.run_maysync(self._ai.provide_kwargs(kt))
+        return lang.sync_await(self._ai.provide_kwargs(kt))
 
     def inject(self, obj: ta.Any) -> ta.Any:
-        return lang.run_maysync(self._ai.inject(obj))
+        return lang.sync_await(self._ai.inject(obj))
 
 
-def create_maysync_injector(es: Elements) -> MaysyncInjector:
-    si = MaysyncInjectorImpl()
+def create_injector(es: Elements) -> Injector:
+    si = InjectorImpl()
     ai = AsyncInjectorImpl(
         ElementCollection(es),
         internal_consts={
-            Key(MaysyncInjector): si,
             Key(Injector): si,
         },
     )
     si._ai = ai  # noqa
-    lang.run_maysync(ai._init())  # noqa
+    lang.sync_await(ai._init())  # noqa
     return si

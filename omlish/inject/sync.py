@@ -9,7 +9,7 @@ from .keys import Key
 
 
 with lang.auto_proxy_import(globals()):
-    from .impl import injector as _injector
+    from .impl import sync as _sync
 
 
 T = ta.TypeVar('T')
@@ -18,29 +18,29 @@ T = ta.TypeVar('T')
 ##
 
 
-class AsyncInjector(lang.Abstract):
+class Injector(lang.Abstract):
     @abc.abstractmethod
-    def try_provide(self, key: ta.Any) -> ta.Awaitable[lang.Maybe[ta.Any]]:
+    def try_provide(self, key: ta.Any) -> lang.Maybe[ta.Any]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def provide(self, key: ta.Any) -> ta.Awaitable[ta.Any]:
+    def provide(self, key: ta.Any) -> ta.Any:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def provide_kwargs(self, kt: KwargsTarget) -> ta.Awaitable[ta.Mapping[str, ta.Any]]:
+    def provide_kwargs(self, kt: KwargsTarget) -> ta.Mapping[str, ta.Any]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def inject(self, obj: ta.Any) -> ta.Awaitable[ta.Any]:
+    def inject(self, obj: ta.Any) -> ta.Any:
         raise NotImplementedError
 
     def __getitem__(
             self,
             target: Key[T] | type[T],
-    ) -> ta.Awaitable[T]:
+    ) -> T:
         return self.provide(target)
 
 
-def create_async_injector(*args: Elemental) -> ta.Awaitable[AsyncInjector]:
-    return _injector.create_async_injector(as_elements(*args))
+def create_injector(*args: Elemental) -> Injector:
+    return _sync.create_injector(as_elements(*args))

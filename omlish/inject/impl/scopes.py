@@ -28,14 +28,11 @@ from ..scopes import ThreadScope
 from ..types import Scope
 from ..types import Unscoped
 from .bindings import BindingImpl
-from .providers import PROVIDER_IMPLS_BY_PROVIDER
 from .providers import ProviderImpl
 
 
-if ta.TYPE_CHECKING:
-    from . import injector as injector_
-else:
-    injector_ = lang.proxy_import('.injector', __package__)
+with lang.auto_proxy_import(globals()):
+    from . import injector as _injector
 
 
 ##
@@ -121,12 +118,9 @@ class ScopeSeededProviderImpl(ProviderImpl):
         return (self.p,)
 
     async def provide(self, injector: AsyncInjector) -> ta.Any:
-        ii = check.isinstance(injector, injector_.AsyncInjectorImpl)
+        ii = check.isinstance(injector, _injector.AsyncInjectorImpl)
         ssi = check.isinstance(ii.get_scope_impl(self.p.ss), SeededScopeImpl)
         return ssi.must_state().seeds[self.p.key]
-
-
-PROVIDER_IMPLS_BY_PROVIDER[ScopeSeededProvider] = ScopeSeededProviderImpl
 
 
 class SeededScopeImpl(ScopeImpl):
@@ -155,7 +149,7 @@ class SeededScopeImpl(ScopeImpl):
             super().__init__()
 
             self._ss = check.isinstance(ss, SeededScope)
-            self._ii = check.isinstance(i, injector_.AsyncInjectorImpl)
+            self._ii = check.isinstance(i, _injector.AsyncInjectorImpl)
             self._ssi = check.isinstance(self._ii.get_scope_impl(self._ss), SeededScopeImpl)
 
         @contextlib.asynccontextmanager

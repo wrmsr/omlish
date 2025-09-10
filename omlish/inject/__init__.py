@@ -13,132 +13,155 @@ _dc.init_package(
 ##
 
 
-from .binder import (  # noqa
-    bind,
-    bind_as_fn,
-    bind_map_entry_const,
-    bind_set_entry_const,
-)
-
-from .bindings import (  # noqa
-    Binding,
-)
-
-from .eagers import (  # noqa
-    Eager,
-)
-
-from .elements import (  # noqa
-    Element,
-    Elemental,
-    Elements,
-    as_elements,
-)
-
-from .errors import (  # noqa
-    BaseKeyError,
-    ConflictingKeyError,
-    CyclicDependencyError,
-    ScopeAlreadyOpenError,
-    ScopeError,
-    ScopeNotOpenError,
-    UnboundKeyError,
-)
-
-from .injector import (  # noqa
-    AsyncInjector,
-    create_async_injector,
-
-    Injector,
-    create_injector,
-)
-
-from .inspect import (  # noqa
-    Kwarg,
-    KwargsTarget,
-    build_kwargs_target,
-    tag,
-)
-
-from .keys import (  # noqa
-    Key,
-    as_key,
-)
-
-from .listeners import (  # noqa
-    ProvisionListener,
-    ProvisionListenerBinding,
-    bind_provision_listener,
-)
-
-from .managed import (  # noqa
-    create_async_managed_injector,
-    create_managed_injector,
-    make_async_managed_provider,
-    make_managed_provider,
-)
-
-from .multis import (  # noqa
-    MapBinding,
-    MapProvider,
-    SetBinding,
-    SetProvider,
-    MapBinder,
-    SetBinder,
-
-    MapBinder as map_binder,  # noqa
-    SetBinder as set_binder,  # noqa
-)
+from .. import lang as _lang  # noqa
 
 
-from .overrides import (  # noqa
-    Overrides,
-    override,
-)
+with _lang.auto_proxy_init(globals()):
+    ##
 
-from .origins import (  # noqa
-    HasOrigins,
-    Origin,
-    Origins,
-)
+    from .binder import (  # noqa
+        bind,
+        bind_as_fn,
+        bind_map_entry_const,
+        bind_set_entry_const,
+    )
 
-from .privates import (  # noqa
-    Expose,
-    Private,
-    private,
+    from .bindings import (  # noqa
+        Binding,
+    )
 
-    Expose as expose,  # noqa
-)
+    from .eagers import (  # noqa
+        Eager,
+    )
 
-from .providers import (  # noqa
-    ConstProvider,
-    CtorProvider,
-    FnProvider,
-    LinkProvider,
-    Provider,
-)
+    from .elements import (  # noqa
+        Element,
+        Elemental,
+        Elements,
+        as_elements,
+    )
 
-from .scopes import (  # noqa
-    ScopeBinding,
-    ScopeSeededProvider,
-    SeededScope,
-    Singleton,
-    ThreadScope,
-    bind_scope,
-    bind_scope_seed,
-    enter_seeded_scope,
-)
+    from .errors import (  # noqa
+        BaseKeyError,
+        ConflictingKeyError,
+        CyclicDependencyError,
+        ScopeAlreadyOpenError,
+        ScopeError,
+        ScopeNotOpenError,
+        UnboundKeyError,
+    )
 
-from .tags import (  # noqa
-    Id,
-)
+    from .injector import (  # noqa
+        AsyncInjector,
+        create_async_injector,
+    )
 
-from .types import (  # noqa
-    Scope,
-    Tag,
-    Unscoped,
-)
+    from .inspect import (  # noqa
+        Kwarg,
+        KwargsTarget,
+        build_kwargs_target,
+        tag,
+    )
 
-from .utils import (  # noqa
-    ConstFn,
-)
+    from .keys import (  # noqa
+        Key,
+        as_key,
+    )
+
+    from .listeners import (  # noqa
+        ProvisionListener,
+        ProvisionListenerBinding,
+        bind_provision_listener,
+    )
+
+    from .managed import (  # noqa
+        create_async_managed_injector,
+        make_async_managed_provider,
+
+        create_managed_injector,
+        make_managed_provider,
+
+        create_maysync_managed_injector,
+        make_maysync_managed_provider,
+    )
+
+    from .maysync import (  # noqa
+        MaysyncInjector,
+        create_maysync_injector,
+    )
+
+    from .multis import (  # noqa
+        MapBinding,
+        MapProvider,
+        SetBinding,
+        SetProvider,
+        MapBinder,
+        SetBinder,
+
+        MapBinder as map_binder,  # noqa
+        SetBinder as set_binder,  # noqa
+    )
+
+
+    from .overrides import (  # noqa
+        Overrides,
+        override,
+    )
+
+    from .origins import (  # noqa
+        HasOrigins,
+        Origin,
+        Origins,
+    )
+
+    from .privates import (  # noqa
+        Expose,
+        Private,
+        private,
+
+        Expose as expose,  # noqa
+    )
+
+    from .providers import (  # noqa
+        ConstProvider,
+        CtorProvider,
+        FnProvider,
+        LinkProvider,
+        Provider,
+    )
+
+    from .scopes import (  # noqa
+        ScopeBinding,
+        bind_scope,
+
+        Singleton,
+
+        ThreadScope,
+
+        SeededScope,
+        ScopeSeededProvider,
+        bind_scope_seed,
+
+        async_enter_seeded_scope,
+        enter_seeded_scope,
+        maysync_enter_seeded_scope,
+    )
+
+    from .sync import (  # noqa
+        Injector,
+        create_injector,
+    )
+
+    from .tags import (  # noqa
+        Id,
+    )
+
+    from .types import (  # noqa
+        Scope,
+        Tag,
+        Unscoped,
+    )
+
+    from .utils import (  # noqa
+        ConstFn,
+    )

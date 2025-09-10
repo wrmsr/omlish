@@ -14,10 +14,10 @@ from .providers import Provider
 from .types import Scope
 
 
-if ta.TYPE_CHECKING:
-    from . import injector as injector_
-else:
-    injector_ = lang.proxy_import('.injector', __package__)
+with lang.auto_proxy_import(globals()):
+    from . import injector as _injector
+    from . import maysync as _maysync
+    from . import sync as _sync
 
 
 ##
@@ -82,9 +82,12 @@ def bind_scope_seed(k: ta.Any, ss: SeededScope) -> Element:
     return Binding(k, ScopeSeededProvider(ss, k))
 
 
+##
+
+
 @contextlib.asynccontextmanager
 async def async_enter_seeded_scope(
-        i: injector_.AsyncInjector,
+        i: '_injector.AsyncInjector',
         ss: SeededScope,
         keys: ta.Mapping[Key, ta.Any],
 ) -> ta.AsyncGenerator[None]:
@@ -93,11 +96,23 @@ async def async_enter_seeded_scope(
 
 
 def enter_seeded_scope(
-        i: injector_.Injector,
+        i: '_sync.Injector',
         ss: SeededScope,
         keys: ta.Mapping[Key, ta.Any],
 ) -> ta.ContextManager[None]:
     return lang.run_maysync_context_manager(async_enter_seeded_scope(
+        i[AsyncInjector],
+        ss,
+        keys,
+    ))
+
+
+def maysync_enter_seeded_scope(
+        i: '_maysync.MaysyncInjector',
+        ss: SeededScope,
+        keys: ta.Mapping[Key, ta.Any],
+) -> ta.ContextManager[None]:
+    return lang.sync_async_context_manager(async_enter_seeded_scope(
         i[AsyncInjector],
         ss,
         keys,

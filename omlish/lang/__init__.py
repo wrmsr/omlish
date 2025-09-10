@@ -15,6 +15,9 @@ with _auto_proxy_init(
 
         sync_await,
         sync_async_list,
+
+        SyncAsyncContextManager,
+        sync_async_context_manager,
     )
 
     from .attrstorage import (  # noqa

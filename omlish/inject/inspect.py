@@ -4,10 +4,8 @@ from .. import lang
 from .keys import Key
 
 
-if ta.TYPE_CHECKING:
+with lang.auto_proxy_import(globals()):
     from .impl import inspect as _inspect
-else:
-    _inspect = lang.proxy_import('.impl.inspect', __package__)
 
 
 T = ta.TypeVar('T')

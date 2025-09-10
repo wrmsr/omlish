@@ -32,10 +32,8 @@ from .types import Scope
 from .types import Unscoped
 
 
-if ta.TYPE_CHECKING:
-    from .impl.inspect import inspect as _inspect
-else:
-    _inspect = lang.proxy_import('.impl.inspect', __package__)
+with lang.auto_proxy_import(globals()):
+    from .impl import inspect as _inspect
 
 
 T = ta.TypeVar('T')

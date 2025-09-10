@@ -1,6 +1,6 @@
 from ...lite import inject as lij
-from ..injector import create_injector
 from ..lite import convert_from_lite
+from ..sync import create_injector
 
 
 ##
