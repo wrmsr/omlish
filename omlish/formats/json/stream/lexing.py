@@ -95,6 +95,7 @@ CONTROL_TOKENS: ta.Mapping[str, TokenKind] = {
 
 CONST_TOKENS: ta.Mapping[str, tuple[TokenKind, str | float | None]] = {
     'NaN': ('SPECIAL_NUMBER', float('nan')),
+    '-NaN': ('SPECIAL_NUMBER', float('-nan')),  # distinguished in parsing even if indistinguishable in value
     'Infinity': ('SPECIAL_NUMBER', float('inf')),
     '-Infinity': ('SPECIAL_NUMBER', float('-inf')),
 
@@ -120,19 +121,29 @@ class JsonStreamLexer(GenMachine[str, Token]):
             *,
             include_raw: bool = False,
             include_space: bool = False,
+
             allow_comments: bool = False,
             include_comments: bool = False,
+
             allow_single_quotes: bool = False,
             string_literal_parser: ta.Callable[[str], str] | None = None,
+
+            allow_extended_number_literals: bool = False,
+            number_literal_parser: ta.Callable[[str], ta.Any] | None = None,
     ) -> None:
         self._include_raw = include_raw
         self._include_space = include_space
+
         self._allow_comments = allow_comments
         self._include_comments = include_comments
+
         self._allow_single_quotes = allow_single_quotes
         if string_literal_parser is None:
             string_literal_parser = json.loads
         self._string_literal_parser = string_literal_parser
+
+        self._allow_extended_number_literals = allow_extended_number_literals
+        self._number_literal_parser = number_literal_parser
 
         self._ofs = 0
         self._line = 1
@@ -211,7 +222,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
             if c == '"' or (self._allow_single_quotes and c == "'"):
                 return self._do_string(c)
 
-            if c.isdigit() or c == '-':
+            if c.isdigit() or c == '-' or (self._allow_extended_number_literals and c in '.+'):
                 return self._do_number(c)
 
             if c in 'tfnIN':
@@ -269,7 +280,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
             if not c:
                 break
 
-            if not (c.isdigit() or c in '.eE+-'):
+            if not (c.isdigit() or c in '.eE+-' or (self._allow_extended_number_literals and c in 'xabcdefABCDEF')):
                 break
             self._buf.write(c)
 
@@ -277,33 +288,48 @@ class JsonStreamLexer(GenMachine[str, Token]):
 
         #
 
-        if not NUMBER_PAT.fullmatch(raw):
-            # Can only be -Infinity
+        if raw == '-':
+            for svs in [
+                'Infinity',
+                *(['NaN'] if self._allow_extended_number_literals else []),
+            ]:
+                if c != svs[0]:
+                    continue
 
-            if not c:
-                self._raise('Unexpected end of input')
+                if not c:
+                    self._raise('Unexpected end of input')
 
-            raw += c
-            try:
-                for _ in range(7):
-                    raw += self._char_in((yield None))  # noqa
-            except GeneratorExit:
-                self._raise('Unexpected end of input')
+                raw += c
+                try:
+                    for _ in range(len(svs) - 1):
+                        raw += self._char_in((yield None))  # noqa
+                except GeneratorExit:
+                    self._raise('Unexpected end of input')
 
-            if raw != '-Infinity':
-                self._raise(f'Invalid number format: {raw}')
+                if raw != '-' + svs:
+                    self._raise(f'Invalid number format: {raw}')
 
-            tk, tv = CONST_TOKENS[raw]
-            yield self._make_tok(tk, tv, raw, pos)
+                tk, tv = CONST_TOKENS[raw]
+                yield self._make_tok(tk, tv, raw, pos)
 
-            return self._do_main()
+                return self._do_main()
 
         #
 
-        if '.' in raw or 'e' in raw or 'E' in raw:
-            nv = float(raw)
+        nv: ta.Any
+
+        if (np := self._number_literal_parser) is not None:
+            nv = np(raw)
+
         else:
-            nv = int(raw)
+            if not NUMBER_PAT.fullmatch(raw):
+                self._raise(f'Invalid number format: {raw}')
+
+            if '.' in raw or 'e' in raw or 'E' in raw:
+                nv = float(raw)
+            else:
+                nv = int(raw)
+
         yield self._make_tok('NUMBER', nv, raw, pos)
 
         #

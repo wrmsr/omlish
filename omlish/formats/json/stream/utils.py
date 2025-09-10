@@ -24,6 +24,7 @@ TODO:
    - Name/value pairs separated by ; instead of ,.
 """
 import dataclasses as dc
+import itertools
 import typing as ta
 
 from .... import lang
@@ -62,7 +63,7 @@ class JsonStreamValueParser(lang.ExitStacked):
         )
 
     def feed(self, i: ta.Iterable[str]) -> ta.Iterator[ta.Any]:
-        for c in i:
+        for c in itertools.chain(i, ['']):
             for t in self._lex(c):
                 for e in self._parse(t):
                     for v in self._build(e):  # noqa

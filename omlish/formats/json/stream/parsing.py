@@ -95,10 +95,16 @@ class JsonStreamObject(list):
 
 
 class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
-    def __init__(self) -> None:
-        super().__init__(self._do_value())
+    def __init__(
+            self,
+            *,
+            allow_trailing_commas: bool = False,
+    ) -> None:
+        self._allow_trailing_commas = allow_trailing_commas
 
         self._stack: list[ta.Literal['OBJECT', 'KEY', 'ARRAY']] = []
+
+        super().__init__(self._do_value())
 
     #
 
@@ -225,7 +231,7 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
             raise JsonStreamParseError('Expected continuation') from None
 
         if tok.kind == 'COMMA':
-            return self._do_object_body(must_be_present=True)
+            return self._do_object_body(must_be_present=not self._allow_trailing_commas)
 
         elif tok.kind == 'RBRACE':
             y, r = self._emit_end_object()
@@ -258,7 +264,7 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
             raise JsonStreamParseError('Expected continuation') from None
 
         if tok.kind == 'COMMA':
-            return self._do_value(must_be_present=True)
+            return self._do_value(must_be_present=not self._allow_trailing_commas)
 
         elif tok.kind == 'RBRACKET':
             y, r = self._emit_end_array()

@@ -32,6 +32,7 @@ def test_empty():
 
 def test_objects():
     assert parsing.parse('{"a":1}') == {'a': 1}
+    assert parsing.parse('{"a":1,}') == {'a': 1}
     assert parsing.parse("{'a':1}") == {'a': 1}
     assert parsing.parse('{a:1}') == {'a': 1}
     assert parsing.parse('{$_:1,_$:2,a\u200C:3}') == {'$_': 1, '_$': 2, 'a\u200C': 3}
@@ -46,6 +47,9 @@ def test_arrays():
     assert parsing.parse('[1]') == [1]
     assert parsing.parse('[1,2]') == [1, 2]
     assert parsing.parse('[1,[2,3]]') == [1, [2, 3]]
+    assert parsing.parse('[1,]') == [1]
+    assert parsing.parse('[1,2,]') == [1, 2]
+    assert parsing.parse('[1,[2,3,],]') == [1, [2, 3]]
 
 
 def test_nulls():

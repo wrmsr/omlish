@@ -1,7 +1,5 @@
 import math
 
-import pytest
-
 from ..stream import stream_parse_one_value
 
 
@@ -26,7 +24,6 @@ def test_strings():
     assert parse("'\u2028\u2029'") == '\u2028\u2029'
 
 
-@pytest.mark.skip('fixme')
 def test_numbers():
     assert parse('[0,0.,0e0]') == [0, 0, 0]
     assert parse('[1,23,456,7890]') == [1, 23, 456, 7890]
@@ -42,3 +39,13 @@ def test_numbers():
     assert parse('+1.23e100') == 1.23e100
     assert parse('0x1') == 0x1
     assert parse('-0x0123456789abcdefABCDEF') == -0x0123456789abcdefABCDEF
+
+
+def test_arrays():
+    assert parse('[]') == []
+    assert parse('[1]') == [1]
+    assert parse('[1,2]') == [1, 2]
+    assert parse('[1,[2,3]]') == [1, [2, 3]]
+    assert parse('[1,]') == [1]
+    assert parse('[1,2,]') == [1, 2]
+    assert parse('[1,[2,3,],]') == [1, [2, 3]]
