@@ -20,13 +20,11 @@ from .errors import JsonStreamError
 ##
 
 
+IdentTokenKind: ta.TypeAlias = ta.Literal['IDENT']
+
 ValueTokenKind: ta.TypeAlias = ta.Literal[
     'STRING',
     'NUMBER',
-
-    'SPECIAL_NUMBER',
-    'BOOLEAN',
-    'NULL',
 ]
 
 VALUE_TOKEN_KINDS = frozenset(check.isinstance(a, str) for a in ta.get_args(ValueTokenKind))
@@ -45,6 +43,7 @@ SpaceTokenKind: ta.TypeAlias = ta.Literal['SPACE']
 CommentTokenKind: ta.TypeAlias = ta.Literal['COMMENT']
 
 TokenKind: ta.TypeAlias = ta.Union[  # noqa
+    IdentTokenKind,
     ValueTokenKind,
     ControlTokenKind,
     SpaceTokenKind,
@@ -93,16 +92,18 @@ CONTROL_TOKENS: ta.Mapping[str, TokenKind] = {
     ':': 'COLON',
 }
 
-CONST_TOKENS: ta.Mapping[str, tuple[TokenKind, str | float | None]] = {
-    'NaN': ('SPECIAL_NUMBER', float('nan')),
-    '-NaN': ('SPECIAL_NUMBER', float('-nan')),  # distinguished in parsing even if indistinguishable in value
-    'Infinity': ('SPECIAL_NUMBER', float('inf')),
-    '-Infinity': ('SPECIAL_NUMBER', float('-inf')),
+CONST_IDENT_VALUES: ta.Mapping[str, str | float | None] = {
+    'NaN': float('nan'),
+    '-NaN': float('-nan'),  # distinguished in parsing even if indistinguishable in value
+    'Infinity': float('inf'),
+    '-Infinity': float('-inf'),
 
-    'true': ('BOOLEAN', True),
-    'false': ('BOOLEAN', False),
-    'null': ('NULL', None),
+    'true': True,
+    'false': False,
+    'null': None,
 }
+
+MAX_CONST_IDENT_LEN = max(map(len, CONST_IDENT_VALUES))
 
 
 ##
@@ -130,6 +131,8 @@ class JsonStreamLexer(GenMachine[str, Token]):
 
             allow_extended_number_literals: bool = False,
             number_literal_parser: ta.Callable[[str], ta.Any] | None = None,
+
+            allow_extended_identifiers: bool = False,
     ) -> None:
         self._include_raw = include_raw
         self._include_space = include_space
@@ -144,6 +147,8 @@ class JsonStreamLexer(GenMachine[str, Token]):
 
         self._allow_extended_number_literals = allow_extended_number_literals
         self._number_literal_parser = number_literal_parser
+
+        self._allow_extended_identifiers = allow_extended_identifiers
 
         self._ofs = 0
         self._line = 1
@@ -302,15 +307,17 @@ class JsonStreamLexer(GenMachine[str, Token]):
                 raw += c
                 try:
                     for _ in range(len(svs) - 1):
-                        raw += self._char_in((yield None))  # noqa
+                        c = self._char_in((yield None))  # noqa
+                        if not c:
+                            break
+                        raw += c
                 except GeneratorExit:
                     self._raise('Unexpected end of input')
 
                 if raw != '-' + svs:
                     self._raise(f'Invalid number format: {raw}')
 
-                tk, tv = CONST_TOKENS[raw]
-                yield self._make_tok(tk, tv, raw, pos)
+                yield self._make_tok('IDENT', raw, raw, pos)
 
                 return self._do_main()
 
@@ -348,14 +355,13 @@ class JsonStreamLexer(GenMachine[str, Token]):
             except GeneratorExit:
                 self._raise('Unexpected end of input')
 
-            if raw in CONST_TOKENS:
+            if raw in CONST_IDENT_VALUES:
                 break
 
-            if len(raw) > 8:  # None of the keywords are longer than 8 characters
+            if len(raw) > MAX_CONST_IDENT_LEN:
                 self._raise(f'Invalid literal: {raw}')
 
-        tk, tv = CONST_TOKENS[raw]
-        yield self._make_tok(tk, tv, raw, pos)
+        yield self._make_tok('IDENT', raw, raw, pos)
 
         return self._do_main()
 

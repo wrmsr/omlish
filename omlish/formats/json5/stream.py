@@ -57,6 +57,8 @@ class JsonStreamValueParser(lang.ExitStacked):
 
             allow_extended_number_literals=True,
             number_literal_parser=parse_number_literal,
+
+            allow_extended_identifiers=True,
         )
 
         self._parse = JsonStreamParser(

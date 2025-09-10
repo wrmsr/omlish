@@ -8,6 +8,7 @@ from .errors import (  # noqa
 
 
 from .lexing import (  # noqa
+    IdentTokenKind,
     ValueTokenKind,
     VALUE_TOKEN_KINDS,
     ControlTokenKind,
@@ -22,7 +23,7 @@ from .lexing import (  # noqa
     Token,
 
     CONTROL_TOKENS,
-    CONST_TOKENS,
+    CONST_IDENT_VALUES,
 
     JsonStreamLexError,
     JsonStreamLexer,

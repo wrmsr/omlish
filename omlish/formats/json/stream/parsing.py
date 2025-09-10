@@ -4,6 +4,7 @@ import typing as ta
 from .... import lang
 from ....funcs.genmachine import GenMachine
 from .errors import JsonStreamError
+from .lexing import CONST_IDENT_VALUES
 from .lexing import SCALAR_VALUE_TYPES
 from .lexing import VALUE_TOKEN_KINDS
 from .lexing import Position
@@ -153,6 +154,15 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
 
         if tok.kind in VALUE_TOKEN_KINDS:
             y, r = self._emit_event(tok.value)
+            yield y
+            return r
+
+        elif tok.kind == 'IDENT':
+            try:
+                cv = CONST_IDENT_VALUES[tok.value]
+            except KeyError:
+                raise JsonStreamParseError('Expected value', tok.pos) from None
+            y, r = self._emit_event(cv)
             yield y
             return r
 
