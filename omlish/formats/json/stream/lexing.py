@@ -151,7 +151,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
 
         self._allow_single_quotes = allow_single_quotes
         if string_literal_parser is None:
-            string_literal_parser = json.loads
+            string_literal_parser = json.loads  # noqa
         self._string_literal_parser = string_literal_parser
 
         self._allow_extended_number_literals = allow_extended_number_literals

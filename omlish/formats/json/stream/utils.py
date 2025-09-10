@@ -23,7 +23,6 @@ TODO:
    - Names and values separated by = or => instead of :.
    - Name/value pairs separated by ; instead of ,.
 """
-import abc
 import itertools
 import typing as ta
 
@@ -31,35 +30,36 @@ from .... import lang
 from .building import JsonValueBuilder
 from .errors import JsonStreamError
 from .lexing import JsonStreamLexer
+from .lexing import Token
 from .parsing import JsonStreamParser
+from .parsing import JsonStreamParserEvent
 
 
 ##
 
 
-class AbstractJsonStreamValueParser(lang.ExitStacked, lang.Abstract):
-    _lex: JsonStreamLexer
-    _parse: JsonStreamParser
-    _build: JsonValueBuilder
+class JsonStreamValueParser(lang.ExitStacked):
+    class Machinery(ta.NamedTuple):
+        lex: JsonStreamLexer
+        parse: JsonStreamParser
+        build: JsonValueBuilder
 
-    @abc.abstractmethod
-    def _make(self) -> tuple[
-        JsonStreamLexer,
-        JsonStreamParser,
-        JsonValueBuilder,
-    ]:
-        raise NotImplementedError
+    def __init__(self, m: Machinery) -> None:
+        super().__init__()
+
+        self._m = m
 
     #
 
     def _enter_contexts(self) -> None:
-        self._lex, self._parse, self._build = self._make()
+        self._enter_context(self._m.lex)
+        self._enter_context(self._m.parse)
 
     def feed(self, i: ta.Iterable[str]) -> ta.Iterator[ta.Any]:
         for c in i:
-            for t in self._lex(c):
-                for e in self._parse(t):
-                    for v in self._build(e):  # noqa
+            for t in self._m.lex(c):
+                for e in self._m.parse(t):
+                    for v in self._m.build(e):  # noqa
                         yield v
 
     #
@@ -67,30 +67,30 @@ class AbstractJsonStreamValueParser(lang.ExitStacked, lang.Abstract):
     @classmethod
     def parse_values(
             cls,
+            m: Machinery,
             i: ta.Iterable[str],
-            **kwargs: ta.Any,
-    ) -> ta.Generator[ta.Any]:
-        with cls(**kwargs) as p:
+    ) -> ta.Iterator[ta.Any]:
+        with cls(m) as p:
             yield from p.feed(itertools.chain(i, ['']))
 
     @classmethod
     def parse_one_value(
             cls,
+            m: Machinery,
             i: ta.Iterable[str],
-            **kwargs: ta.Any,
     ) -> ta.Any:
-        with cls(**kwargs) as p:
+        with cls(m) as p:
             return next(p.feed(itertools.chain(i, [''])))
 
     @classmethod
     def parse_exactly_one_value(
             cls,
+            m: Machinery,
             i: ta.Iterable[str],
-            **kwargs: ta.Any,
     ) -> ta.Any:
         r: ta.Any
         r = not_set = object()
-        with cls(**kwargs) as p:
+        with cls(m) as p:
             for v in p.feed(itertools.chain(i, [''])):
                 if r is not_set:
                     r = v
@@ -104,36 +104,55 @@ class AbstractJsonStreamValueParser(lang.ExitStacked, lang.Abstract):
 ##
 
 
-class JsonStreamValueParser(AbstractJsonStreamValueParser):
-    def __init__(
-            self,
-            *,
-            include_raw: bool = False,
-            yield_object_lists: bool = False,
-    ) -> None:
-        super().__init__()
+class DebugJsonStreamValueParser(JsonStreamValueParser):
+    def __init__(self, m: JsonStreamValueParser.Machinery) -> None:
+        super().__init__(m)
 
-        self._include_raw = include_raw
-        self._yield_object_lists = yield_object_lists
+        self._chars: list[str] = []
+        self._tokens: list[Token] = []
+        self._events: list[JsonStreamParserEvent] = []
+        self._values: list[ta.Any] = []
 
-    def _make(self) -> tuple[
-        JsonStreamLexer,
-        JsonStreamParser,
-        JsonValueBuilder,
-    ]:
-        return (
-            JsonStreamLexer(
-                include_raw=self._include_raw,
-            ),
-
-            JsonStreamParser(),
-
-            JsonValueBuilder(
-                yield_object_lists=self._yield_object_lists,
-            ),
-        )
+    def feed(self, i: ta.Iterable[str]) -> ta.Iterator[ta.Any]:
+        for c in i:
+            self._chars.append(c)
+            for t in self._m.lex(c):
+                self._tokens.append(t)
+                for e in self._m.parse(t):
+                    self._events.append(e)
+                    for v in self._m.build(e):
+                        self._values.append(v)
+                        yield v
 
 
-stream_parse_values = JsonStreamValueParser.parse_values
-stream_parse_one_value = JsonStreamValueParser.parse_one_value
-stream_parse_exactly_one_value = JsonStreamValueParser.parse_exactly_one_value
+##
+
+
+def make_machinery(
+        *,
+        include_raw: bool = False,
+        yield_object_lists: bool = False,
+) -> JsonStreamValueParser.Machinery:
+    return JsonStreamValueParser.Machinery(
+        JsonStreamLexer(
+            include_raw=include_raw,
+        ),
+
+        JsonStreamParser(),
+
+        JsonValueBuilder(
+            yield_object_lists=yield_object_lists,
+        ),
+    )
+
+
+def stream_parse_values(i: ta.Iterable[str], **kwargs: ta.Any) -> ta.Iterator[ta.Any]:
+    return JsonStreamValueParser.parse_values(make_machinery(**kwargs), i)
+
+
+def stream_parse_one_value(i: ta.Iterable[str], **kwargs: ta.Any) -> ta.Any:
+    return JsonStreamValueParser.parse_one_value(make_machinery(**kwargs), i)
+
+
+def stream_parse_exactly_one_value(i: ta.Iterable[str], **kwargs: ta.Any) -> ta.Any:
+    return JsonStreamValueParser.parse_exactly_one_value(make_machinery(**kwargs), i)

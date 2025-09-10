@@ -18,6 +18,8 @@ Comments:
 White Space:
  + Additional white space characters are allowed.
 """
+import typing as ta
+
 from ..json.stream.building import JsonValueBuilder
 from ..json.stream.lexing import JsonStreamLexer
 from ..json.stream.parsing import JsonStreamParser
@@ -29,41 +31,47 @@ from .literals import parse_string_literal
 ##
 
 
-class Json5StreamValueParser(JsonStreamValueParser):
-    def _make(self) -> tuple[
-        JsonStreamLexer,
-        JsonStreamParser,
-        JsonValueBuilder,
-    ]:
-        return (
-            JsonStreamLexer(
-                include_raw=self._include_raw,
+def make_machinery(
+        *,
+        include_raw: bool = False,
+        yield_object_lists: bool = False,
+) -> JsonStreamValueParser.Machinery:
+    return JsonStreamValueParser.Machinery(
+        JsonStreamLexer(
+            include_raw=include_raw,
 
-                allow_extended_space=True,
+            allow_extended_space=True,
 
-                allow_comments=True,
+            allow_comments=True,
 
-                allow_single_quotes=True,
-                string_literal_parser=parse_string_literal,
+            allow_single_quotes=True,
+            string_literal_parser=parse_string_literal,
 
-                allow_extended_number_literals=True,
-                number_literal_parser=parse_number_literal,
+            allow_extended_number_literals=True,
+            number_literal_parser=parse_number_literal,
 
-                allow_extended_idents=True,
-            ),
+            allow_extended_idents=True,
+        ),
 
-            JsonStreamParser(
-                allow_trailing_commas=True,
+        JsonStreamParser(
+            allow_trailing_commas=True,
 
-                allow_extended_idents=True,
-            ),
+            allow_extended_idents=True,
+        ),
 
-            JsonValueBuilder(
-                yield_object_lists=self._yield_object_lists,
-            ),
-        )
+        JsonValueBuilder(
+            yield_object_lists=yield_object_lists,
+        ),
+    )
 
 
-stream_parse_values = Json5StreamValueParser.parse_values
-stream_parse_one_value = Json5StreamValueParser.parse_one_value
-stream_parse_exactly_one_value = Json5StreamValueParser.parse_exactly_one_value
+def stream_parse_values(i: ta.Iterable[str], **kwargs: ta.Any) -> ta.Iterator[ta.Any]:
+    return JsonStreamValueParser.parse_values(make_machinery(**kwargs), i)
+
+
+def stream_parse_one_value(i: ta.Iterable[str], **kwargs: ta.Any) -> ta.Any:
+    return JsonStreamValueParser.parse_one_value(make_machinery(**kwargs), i)
+
+
+def stream_parse_exactly_one_value(i: ta.Iterable[str], **kwargs: ta.Any) -> ta.Any:
+    return JsonStreamValueParser.parse_exactly_one_value(make_machinery(**kwargs), i)

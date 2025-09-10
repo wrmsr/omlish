@@ -1,25 +1,48 @@
 import typing as ta
 
+from ..json.stream.utils import DebugJsonStreamValueParser
+from ..json.stream.utils import JsonStreamValueParser
 from .errors import Json5Error
-from .stream import stream_parse_exactly_one_value
-from .stream import stream_parse_values
+from .stream import make_machinery
 
 
 ##
 
 
-def parse(buf: str) -> ta.Any:
+def parse(
+        buf: str,
+        *,
+        debug: bool = False,
+) -> ta.Any:
+    m = make_machinery()
+
+    if debug:
+        vc: type[JsonStreamValueParser] = DebugJsonStreamValueParser
+    else:
+        vc = JsonStreamValueParser
+
     try:
-        return stream_parse_exactly_one_value(buf)
+        yield from vc.parse_exactly_one_value(m, buf)
 
     except Exception as e:  # noqa
         # FIXME: lol
         raise Json5Error from e
 
 
-def parse_many(buf: str) -> ta.Iterator[ta.Any]:
+def parse_many(
+        buf: str,
+        *,
+        debug: bool = False,
+) -> ta.Iterator[ta.Any]:
+    m = make_machinery()
+
+    if debug:
+        vc: type[JsonStreamValueParser] = DebugJsonStreamValueParser
+    else:
+        vc = JsonStreamValueParser
+
     try:
-        return stream_parse_values(buf)
+        yield from vc.parse_values(m, buf)
 
     except Exception as e:  # noqa
         # FIXME: lol
