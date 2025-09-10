@@ -22,7 +22,7 @@ def parse(
         vc = JsonStreamValueParser
 
     try:
-        yield from vc.parse_exactly_one_value(m, buf)
+        return vc.parse_exactly_one_value(m, buf)
 
     except Exception as e:  # noqa
         # FIXME: lol
