@@ -1,5 +1,6 @@
 import typing as ta
 
+from ..json.stream.errors import JsonStreamError
 from ..json.stream.utils import DebugJsonStreamValueParser
 from ..json.stream.utils import JsonStreamValueParser
 from .errors import Json5Error
@@ -24,8 +25,10 @@ def parse(
     try:
         return vc.parse_exactly_one_value(m, buf)
 
-    except Exception as e:  # noqa
-        # FIXME: lol
+    except Json5Error:
+        raise
+
+    except JsonStreamError as e:
         raise Json5Error from e
 
 
@@ -44,6 +47,8 @@ def parse_many(
     try:
         yield from vc.parse_values(m, buf)
 
-    except Exception as e:  # noqa
-        # FIXME: lol
+    except Json5Error:
+        raise
+
+    except JsonStreamError as e:
         raise Json5Error from e

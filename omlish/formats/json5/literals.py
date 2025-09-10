@@ -124,7 +124,10 @@ def parse_string_literal(s: str) -> str:
 def parse_number_literal(s: str) -> int | float:
     s = s.lower()
 
-    if 'x' in s:
-        return int(s, 16)
-    else:
-        return float(s)
+    try:
+        if 'x' in s:
+            return int(s, 16)
+        else:
+            return float(s)
+    except ValueError as e:
+        raise Json5Error from e
