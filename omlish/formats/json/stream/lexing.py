@@ -322,7 +322,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
             if not c:
                 break
 
-            if not (c.isdigit() or c in '.eE+-' or (self._allow_extended_number_literals and c in 'xabcdefABCDEF')):
+            if not (c.isdigit() or c in '.eE+-' or (self._allow_extended_number_literals and c in 'xXabcdefABCDEF')):
                 break
             self._buf.write(c)
 
@@ -330,7 +330,12 @@ class JsonStreamLexer(GenMachine[str, Token]):
 
         #
 
-        if raw == '-':
+        if self._allow_extended_number_literals:
+            p = 1 if raw[0] in '+-' else 0
+            if (len(raw) - p) > 1 and raw[p] == '0' and raw[p + 1].isdigit():
+                self._raise('Invalid number literal')
+
+        if raw == '-' or (self._allow_extended_number_literals and raw == '+'):
             for svs in [
                 'Infinity',
                 *(['NaN'] if self._allow_extended_number_literals else []),
@@ -351,8 +356,11 @@ class JsonStreamLexer(GenMachine[str, Token]):
                 except GeneratorExit:
                     self._raise('Unexpected end of input')
 
-                if raw != '-' + svs:
+                if raw[1:] != svs:
                     self._raise(f'Invalid number format: {raw}')
+
+                if raw[0] == '+':
+                    raw = raw[1:]
 
                 yield self._make_tok('IDENT', raw, raw, pos)
 
