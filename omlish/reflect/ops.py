@@ -1,3 +1,12 @@
+"""
+TODO:
+ - visitor / transformer
+  - gson had an ObjectNavigator:
+   - https://github.com/google/gson/blob/f291c4d33ea5fcc52afcfa5713e519e663378bda/gson/src/main/java/com/google/gson/ObjectNavigator.java
+   - removed in 25c6ae177b1ca56db7f3c29eb574bdd032a06165
+ - uniform collection isinstance - items() for mappings, iter() for other
+ - also check instance type in isinstance not just items lol
+"""  # noqa
 import dataclasses as dc
 import typing as ta
 

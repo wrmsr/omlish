@@ -9,12 +9,8 @@ give it some guiding North Star to make all of its decisions for it, and to add 
 meet, join, solve, ...), but it's quite a bit of work and not a priority at the moment.
 
 TODO:
- - visitor / transformer
- - uniform collection isinstance - items() for mappings, iter() for other
- - also check instance type in isinstance not just items lol
- - ta.Generic in mro causing trouble - omit? no longer 1:1
- - cache this shit, esp generic_mro shit
-  - cache __hash__ in Generic/Union
+ - !! cache this shit !!
+  - especially generic_mro shit
 """
 import dataclasses as dc
 import threading
@@ -22,6 +18,7 @@ import types
 import typing as ta
 
 from ..lite.abstract import Abstract
+from ..lite.dataclasses import dataclass_cache_hash
 
 
 _NoneType = types.NoneType  # type: ignore
@@ -51,6 +48,7 @@ if not isinstance(_Protocol, type) or not issubclass(_Protocol, _Generic):
 ##
 
 
+@dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class _Special:
     name: str
@@ -68,6 +66,7 @@ class _Special:
         )
 
 
+@dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class _LazySpecial:
     name: str
@@ -297,6 +296,7 @@ TYPES: tuple[type, ...] = (
 ##
 
 
+@dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class Union(TypeInfo):
     args: frozenset[Type]
@@ -320,6 +320,7 @@ class Union(TypeInfo):
 GenericLikeCls = ta.TypeVar('GenericLikeCls')
 
 
+@dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class GenericLike(TypeInfo, Abstract, ta.Generic[GenericLikeCls]):
     cls: GenericLikeCls
@@ -363,6 +364,7 @@ class Protocol(GenericLike[ta.Any]):
 #
 
 
+@dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class NewType(TypeInfo):
     obj: ta.Any
@@ -372,6 +374,7 @@ class NewType(TypeInfo):
 #
 
 
+@dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class Annotated(TypeInfo):
     ty: Type
@@ -383,6 +386,7 @@ class Annotated(TypeInfo):
 #
 
 
+@dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class Literal(TypeInfo):
     args: tuple[ta.Any, ...]
@@ -415,6 +419,15 @@ _TRIVIAL_TYPES: set[ta.Any] = {
     object,
     type(None),
 }
+
+
+# TODO: speed up is_type: `if obj.__class__ in _NOT_SUBCLASSED_SPECIAL_TYPES: return True`
+# _NOT_SUBCLASSED_SPECIAL_TYPES: set[type] = {
+#     type(ta.Any),
+#     _UnionGenericAlias,
+#     ta.NewType,
+# }
+# TODO: static_init(for t in _NOT_SUBCLASSED_SPECIAL_TYPES: if (sts := t.__subclasses__()): raise TypeError)
 
 
 class Reflector:

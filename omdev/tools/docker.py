@@ -13,12 +13,14 @@ import re
 import shutil
 import subprocess
 import sys
+import threading
 import typing as ta
 
 from omlish import check
 from omlish import lang
 from omlish import marshal as msh
 from omlish.argparse import all as ap
+from omlish.concurrent import all as conc
 from omlish.docker import all as dck
 from omlish.docker.ns1 import build_docker_ns1_run_cmd
 from omlish.formats import json
@@ -204,6 +206,7 @@ class Cli(ap.Cli):
 
     @ap.cmd(
         ap.arg('-f', '--file'),
+        ap.arg('-p', '--parallelism', type=int, default=4),
     )
     def compose_image_updates(self) -> None:
         if self.args.file:
@@ -215,23 +218,32 @@ class Cli(ap.Cli):
             yml_src = f.read()
 
         cfg_dct = yaml.safe_load(yml_src)
-        for svc_name, svc_dct in cfg_dct.get('services', {}).items():
-            if not (img := svc_dct.get('image')):
-                continue
 
+        print_lock = threading.Lock()
+
+        def do_svc(svc_name: str, img: str) -> None:  # noqa
             repo, _, base = img.partition(':')
             try:
                 if (info := dck.get_hub_repo_info(repo)) is None:
-                    continue
+                    return
 
                 lt = dck.select_latest_tag(info.tags, base=base)
                 if f'{repo}:{lt}' == img:
-                    continue
+                    return
 
-                print(f'{svc_name}: {lt}')
+                with print_lock:
+                    print(f'{svc_name}: {lt}')
 
             except Exception as e:  # noqa
-                print(f'Error checking docker update for {svc_name}: {e!r}', file=sys.stderr)
+                with print_lock:
+                    print(f'Error checking docker update for {svc_name}: {e!r}', file=sys.stderr)
+
+        with conc.new_executor(self.args.parallelism) as exe:
+            conc.wait_futures([
+                exe.submit(do_svc, svc_name, img)
+                for svc_name, svc_dct in cfg_dct.get('services', {}).items()
+                if (img := svc_dct.get('image'))
+            ])
 
     #
 

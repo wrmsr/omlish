@@ -1,3 +1,28 @@
+r"""
+TODO:
+ - gson switches
+  - Strictness.LEGACY_STRICT
+   - JsonReader allows the literals true, false and null to have any capitalization, for example fAlSe or NULL
+   - JsonReader supports the escape sequence \', representing a ' (single-quote)
+   - JsonReader supports the escape sequence \LF (with LF being the Unicode character U+000A), resulting in a LF within
+     the read JSON string
+   - JsonReader allows unescaped control characters (U+0000 through U+001F)
+  - Strictness.LENIENT
+   - In lenient mode, all input that is accepted in legacy strict mode is accepted in addition to the following
+     departures from RFC 8259:
+   - Streams that start with the non-execute prefix, ")]'\n"}
+   - Streams that include multiple top-level values. With legacy strict or strict parsing, each stream must contain
+     exactly one top-level value.
+   - Numbers may be NaNs or infinities represented by NaN and (-)Infinity respectively.
+   - End of line comments starting with // or # and ending with a newline character.
+   - C-style comments starting with /* and ending with */. Such comments may not be nested.
+   - Names that are unquoted or 'single quoted'.
+   - Strings that are unquoted or 'single quoted'.
+   - Array elements separated by ; instead of ,.
+   - Unnecessary array separators. These are interpreted as if null was the omitted value.
+   - Names and values separated by = or => instead of :.
+   - Name/value pairs separated by ; instead of ,.
+"""
 import dataclasses as dc
 import typing as ta
 
@@ -15,7 +40,7 @@ class JsonStreamValueParser(lang.ExitStacked):
     include_raw: bool = False
     yield_object_lists: bool = False
 
-    allow_comments: bool = False
+    json5: bool = False
 
     #
 
@@ -26,7 +51,8 @@ class JsonStreamValueParser(lang.ExitStacked):
     def _enter_contexts(self) -> None:
         self._lex = JsonStreamLexer(
             include_raw=self.include_raw,
-            allow_comments=self.allow_comments,
+            allow_comments=self.json5,
+            allow_single_quotes=self.json5,
         )
 
         self._parse = JsonStreamParser()

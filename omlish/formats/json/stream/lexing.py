@@ -122,11 +122,17 @@ class JsonStreamLexer(GenMachine[str, Token]):
             include_space: bool = False,
             allow_comments: bool = False,
             include_comments: bool = False,
+            allow_single_quotes: bool = False,
+            string_literal_parser: ta.Callable[[str], str] | None = None,
     ) -> None:
         self._include_raw = include_raw
         self._include_space = include_space
         self._allow_comments = allow_comments
         self._include_comments = include_comments
+        self._allow_single_quotes = allow_single_quotes
+        if string_literal_parser is None:
+            string_literal_parser = json.loads
+        self._string_literal_parser = string_literal_parser
 
         self._ofs = 0
         self._line = 1
@@ -202,8 +208,8 @@ class JsonStreamLexer(GenMachine[str, Token]):
                 yield self._make_tok(CONTROL_TOKENS[c], c, c, self.pos)
                 continue
 
-            if c == '"':
-                return self._do_string()
+            if c == '"' or (self._allow_single_quotes and c == "'"):
+                return self._do_string(c)
 
             if c.isdigit() or c == '-':
                 return self._do_number(c)
@@ -217,9 +223,9 @@ class JsonStreamLexer(GenMachine[str, Token]):
 
             self._raise(f'Unexpected character: {c}')
 
-    def _do_string(self):
+    def _do_string(self, q: str):
         check.state(self._buf.tell() == 0)
-        self._buf.write('"')
+        self._buf.write(q)
 
         pos = self.pos
 
@@ -234,13 +240,13 @@ class JsonStreamLexer(GenMachine[str, Token]):
                 self._raise(f'Unterminated string literal: {self._buf.getvalue()}')
 
             self._buf.write(c)
-            if c == '"' and last != '\\':
+            if c == q and last != '\\':
                 break
             last = c
 
         raw = self._flip_buf()
         try:
-            sv = json.loads(raw)
+            sv = self._string_literal_parser(raw)
         except json.JSONDecodeError as e:
             self._raise(f'Invalid string literal: {raw!r}', e)
 

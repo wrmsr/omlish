@@ -23,8 +23,8 @@ import sys
 import typing as ta
 
 from omlish import check
-from omlish import concurrent as cu
 from omlish import lang
+from omlish.concurrent import all as conc
 
 from ...cli import CliModule
 
@@ -163,7 +163,7 @@ def run(
         specs.append(spec)
 
     out: dict[str, Item] = {}
-    with cu.new_executor(num_threads) as ex:
+    with conc.new_executor(num_threads) as ex:
         futs = [ex.submit(run_one, spec, **kwargs) for spec in specs]
         for fut in futs:
             item = fut.result()

@@ -1,14 +1,24 @@
 # ruff: noqa: I001
 """
 TODO:
- - redacted
- - strongly typed MarshalerFactory base class?
- - strongly typed Composite/Cached Marshaler/Unmarshaler factories - footgun
- - streaming? Start/EndObject, etc..
- - lang.Marker - class name, handle type[Foo]
-  - can't disambiguate from str - can't coexist in bare union
- - factories being free MatchFns does more harm than good - in practice these are such big guns you want to write a
-   class body if only ceremonially
+ - streaming?
+ - datatypes
+  - redacted
+  - lang.Marker - class name, handle type[Foo]
+  - pathlib.Path
+  - decimal.Decimal
+  - datetime.date, datetime.time
+  - ipaddress
+  - numpy types
+ - jackson switches
+  - accept_case_insensitive_enums
+  - accept_case_insensitive_properties
+  - accept_case_insensitive_values
+  - allow_coercion_of_scalars
+  - use_base_type_as_default_impl
+ - codegen
+ - context-local switches
+  - mutable_collections
  - simple lite interop like inj - alt ObjMarshalerManager impl for Context
 
 See:
@@ -16,6 +26,8 @@ See:
  - https://github.com/jcrist/msgspec
  - https://github.com/Fatal1ty/mashumaro
  - https://github.com/Kotlin/kotlinx.serialization/blob/master/docs/serializers.md#custom-serializers
+ - https://github.com/yukinarit/pyserde
+ - https://github.com/FasterXML/jackson
 """
 from .. import dataclasses as _dc  # noqa
 
