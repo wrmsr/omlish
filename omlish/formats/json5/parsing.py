@@ -26,7 +26,7 @@ def parse(
 
     except Exception as e:  # noqa
         # FIXME: lol
-        raise Json5Error from e
+       raise Json5Error from e
 
 
 def parse_many(

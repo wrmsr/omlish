@@ -266,8 +266,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
                 return self._do_number(c)
 
             if self._allow_comments and c == '/':
-                yield from self._do_comment()
-                continue
+                return self._do_comment()
 
             if self._allow_extended_idents:
                 return self._do_extended_ident(c)
@@ -482,7 +481,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
                 except GeneratorExit:
                     self._raise('Unexpected end of input')
 
-                if ic == '\n':
+                if not ic or ic == '\n':
                     break
 
                 if self._include_comments:
@@ -492,6 +491,9 @@ class JsonStreamLexer(GenMachine[str, Token]):
                 cmt = self._flip_buf()
                 raw = f'//{cmt}\n' if self._include_raw else None
                 yield self._make_tok('COMMENT', cmt, raw, pos)
+
+            if not ic:
+                return
 
         elif oc == '*':
             lc: str | None = None
@@ -515,3 +517,5 @@ class JsonStreamLexer(GenMachine[str, Token]):
 
         else:
             self._raise(f'Unexpected character after comment start: {oc}')
+
+        return self._do_main()
