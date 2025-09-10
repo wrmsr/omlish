@@ -1,6 +1,7 @@
 import typing as ta
 
-from ...graphs import dot
+from omlish.graphs import dot
+
 from . import runtime as antlr4
 from .utils import yield_contexts
 

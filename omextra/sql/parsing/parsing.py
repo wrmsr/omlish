@@ -3,10 +3,10 @@ import typing as ta
 
 from omlish import check
 from omlish.sql import queries as no
-from omlish.text.antlr import runtime as antlr4
-from omlish.text.antlr.delimit import DelimitingLexer
-from omlish.text.antlr.errors import SilentRaisingErrorListener
 
+from ...text.antlr import runtime as antlr4
+from ...text.antlr.delimit import DelimitingLexer
+from ...text.antlr.errors import SilentRaisingErrorListener
 from ._antlr.MinisqlLexer import MinisqlLexer  # type: ignore
 from ._antlr.MinisqlParser import MinisqlParser  # type: ignore
 from ._antlr.MinisqlVisitor import MinisqlVisitor  # type: ignore

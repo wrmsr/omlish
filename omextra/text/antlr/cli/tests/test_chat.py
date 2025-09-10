@@ -1,5 +1,4 @@
-from omlish.text.antlr import runtime as antlr4
-
+from ... import runtime as antlr4
 from ._antlr.ChatLexer import ChatLexer  # type: ignore
 from ._antlr.ChatParser import ChatParser  # type: ignore
 from ._antlr.ChatVisitor import ChatVisitor  # type: ignore

@@ -2,7 +2,8 @@
 import io
 import typing as ta
 
-from ... import check
+from omlish import check
+
 from . import runtime as antlr4
 
 
