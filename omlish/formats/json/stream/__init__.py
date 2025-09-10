@@ -55,4 +55,5 @@ from .utils import (  # noqa
 
     stream_parse_values,
     stream_parse_one_value,
+    stream_parse_exactly_one_value,
 )

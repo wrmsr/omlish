@@ -92,6 +92,7 @@ def test_json5_tests():
 
                 with pytest.raises(Json5Error):
                     parse(src)
+                    # breakpoint()
 
                 if json5 is not None:
                     with pytest.raises(Exception):  # noqa

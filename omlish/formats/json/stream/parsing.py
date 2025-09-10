@@ -155,6 +155,8 @@ class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
                 raise JsonStreamParseError('Expected value') from None
             else:
                 raise
+        # except Exception as e:
+        #     raise
 
         if tok.kind in VALUE_TOKEN_KINDS:
             y, r = self._emit_event(tok.value)

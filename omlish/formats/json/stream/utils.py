@@ -23,12 +23,13 @@ TODO:
    - Names and values separated by = or => instead of :.
    - Name/value pairs separated by ; instead of ,.
 """
-import dataclasses as dc
+import abc
 import itertools
 import typing as ta
 
 from .... import lang
 from .building import JsonValueBuilder
+from .errors import JsonStreamError
 from .lexing import JsonStreamLexer
 from .parsing import JsonStreamParser
 
@@ -36,51 +37,103 @@ from .parsing import JsonStreamParser
 ##
 
 
-@dc.dataclass(kw_only=True)
-class JsonStreamValueParser(lang.ExitStacked):
-    include_raw: bool = False
-    yield_object_lists: bool = False
+class AbstractJsonStreamValueParser(lang.ExitStacked, lang.Abstract):
+    _lex: JsonStreamLexer
+    _parse: JsonStreamParser
+    _build: JsonValueBuilder
 
-    json5: bool = False
+    @abc.abstractmethod
+    def _make(self) -> tuple[
+        JsonStreamLexer,
+        JsonStreamParser,
+        JsonValueBuilder,
+    ]:
+        raise NotImplementedError
 
     #
 
-    _lex: JsonStreamLexer = dc.field(init=False)
-    _parse: JsonStreamParser = dc.field(init=False)
-    _build: JsonValueBuilder = dc.field(init=False)
-
     def _enter_contexts(self) -> None:
-        self._lex = JsonStreamLexer(
-            include_raw=self.include_raw,
-            allow_comments=self.json5,
-            allow_single_quotes=self.json5,
-        )
-
-        self._parse = JsonStreamParser()
-
-        self._build = JsonValueBuilder(
-            yield_object_lists=self.yield_object_lists,
-        )
+        self._lex, self._parse, self._build = self._make()
 
     def feed(self, i: ta.Iterable[str]) -> ta.Iterator[ta.Any]:
-        for c in itertools.chain(i, ['']):
+        for c in i:
             for t in self._lex(c):
                 for e in self._parse(t):
                     for v in self._build(e):  # noqa
                         yield v
 
+    #
 
-def stream_parse_values(
-        i: ta.Iterable[str],
-        **kwargs: ta.Any,
-) -> ta.Generator[ta.Any]:
-    with JsonStreamValueParser(**kwargs) as p:
-        yield from p.feed(i)
+    @classmethod
+    def parse_values(
+            cls,
+            i: ta.Iterable[str],
+            **kwargs: ta.Any,
+    ) -> ta.Generator[ta.Any]:
+        with cls(**kwargs) as p:
+            yield from p.feed(itertools.chain(i, ['']))
+
+    @classmethod
+    def parse_one_value(
+            cls,
+            i: ta.Iterable[str],
+            **kwargs: ta.Any,
+    ) -> ta.Any:
+        with cls(**kwargs) as p:
+            return next(p.feed(itertools.chain(i, [''])))
+
+    @classmethod
+    def parse_exactly_one_value(
+            cls,
+            i: ta.Iterable[str],
+            **kwargs: ta.Any,
+    ) -> ta.Any:
+        r: ta.Any
+        r = not_set = object()
+        with cls(**kwargs) as p:
+            for v in p.feed(itertools.chain(i, [''])):
+                if r is not_set:
+                    r = v
+                else:
+                    raise JsonStreamError('Unexpected input')
+        if r is not_set:
+            raise JsonStreamError('No value')
+        return r
 
 
-def stream_parse_one_value(
-        i: ta.Iterable[str],
-        **kwargs: ta.Any,
-) -> ta.Any:
-    with JsonStreamValueParser(**kwargs) as p:
-        return next(p.feed(i))
+##
+
+
+class JsonStreamValueParser(AbstractJsonStreamValueParser):
+    def __init__(
+            self,
+            *,
+            include_raw: bool = False,
+            yield_object_lists: bool = False,
+    ) -> None:
+        super().__init__()
+
+        self._include_raw = include_raw
+        self._yield_object_lists = yield_object_lists
+
+    def _make(self) -> tuple[
+        JsonStreamLexer,
+        JsonStreamParser,
+        JsonValueBuilder,
+    ]:
+        return (
+            JsonStreamLexer(
+                include_raw=self._include_raw,
+            ),
+
+            JsonStreamParser(),
+
+            JsonValueBuilder(
+                yield_object_lists=self._yield_object_lists,
+            ),
+        )
+
+
+stream_parse_values = JsonStreamValueParser.parse_values
+stream_parse_one_value = JsonStreamValueParser.parse_one_value
+stream_parse_exactly_one_value = JsonStreamValueParser.parse_exactly_one_value
