@@ -40,6 +40,17 @@ class SrcFile:
     has_binary_resources: bool = False
 
 
+def drop_amalg_comment_lines(lines: ta.Iterable[tks.Tokens]) -> list[tks.Tokens]:
+    out: list[tks.Tokens] = []
+    for l in lines:
+        cl = list(tks.ignore_ws(l, drop_nl=True, keep=['COMMENT']))
+        if len(cl) == 1 and (t := cl[0]).name == 'COMMENT':
+            if t.src.split()[1:2] == ['@omlish-amalg']:
+                continue
+        out.append(l)
+    return out
+
+
 def make_src_file(
         path: str,
         *,
@@ -50,6 +61,8 @@ def make_src_file(
 
     tokens = tks.src_to_tokens(src)
     lines = tks.split_lines(tokens)
+
+    lines = drop_amalg_comment_lines(lines)
 
     header_lines, cls = split_header_lines(lines)
 

@@ -1,4 +1,5 @@
 # ruff: noqa: UP006 UP007 UP045
+# @omlish-amalg ../../omdev/scripts/marshal.py
 """
 TODO:
  - pickle stdlib objs? have to pin to 3.8 pickle protocol, will be cross-version

@@ -27,6 +27,7 @@ def is_ws(tok: Token) -> bool:
 def ignore_ws(
         toks: ta.Iterable[Token],
         *,
+        drop_nl: bool = False,
         keep: ta.Container[str] = (),
 ) -> ta.Iterable[Token]:
     if isinstance(keep, str):
@@ -34,7 +35,7 @@ def ignore_ws(
     return (
         t
         for t in toks
-        if t.name in keep or t.name not in WS_NAMES
+        if t.name in keep or (t.name not in WS_NAMES and not (drop_nl and t.name == 'NL'))
     )
 
 
