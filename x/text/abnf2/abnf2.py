@@ -1,7 +1,3 @@
-"""
-TODO:
- - desugar Literal - StringLiteral, RangeLiteral
-"""
 import abc
 import typing as ta
 
@@ -89,9 +85,22 @@ class RangeLiteral(Literal):
             source = ctx.source[start]
         except IndexError:
             return
-
+        # ranges are always case-sensitive
         if (value := self._value).lo <= source <= value.hi:
             yield Match(self, start, 1)
+
+
+##
+
+
+class Concat(Parser):
+    def __init__(self, *parsers: Parser) -> None:
+        super().__init__()
+
+        self._parsers = parsers
+
+    def parse(self, ctx: Context, start: int) -> ta.Iterator[Match]:
+        pass
 
 
 ##

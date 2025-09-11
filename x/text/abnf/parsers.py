@@ -172,12 +172,10 @@ class Concatenation(Parser):
 
             for match in match_list:
                 try:  # noqa: SIM105
-                    current_match_list.extend(
-                        [
-                            Match(match.nodes + m.nodes, m.start)
-                            for m in parser.lparse(source, match.start)
-                        ],
-                    )
+                    current_match_list.extend([
+                        Match(match.nodes + m.nodes, m.start)
+                        for m in parser.lparse(source, match.start)
+                    ])
                 except ParseError:  # noqa: PERF203
                     pass
 
