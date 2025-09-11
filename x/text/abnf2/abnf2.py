@@ -13,33 +13,12 @@ from omlish import lang
 
 
 @dc.dataclass(frozen=True)
-class Node(lang.Abstract, lang.Sealed):
-    pass
-
-
-@dc.dataclass(frozen=True)
-@dc.extra_class_params(cache_hash=True)
-class ConcatenateNode(Node):
-    parser: 'Parser'
-    children: tuple['Node', ...]
-
-
-@dc.dataclass(frozen=True)
-@dc.extra_class_params(cache_hash=True)
-class LiteralNode(Node):
-    parser: 'Literal'
-    start: int
-    length: int
-
-
-@dc.dataclass(frozen=True)
 @dc.extra_class_params(cache_hash=True)
 class Match(lang.Final):
+    parser: 'Parser'
     start: int
-    nodes: tuple[Node, ...]
-
-
-##
+    length: int
+    children: tuple['Match', ...] | None = dc.xfield(None, repr_fn=lang.opt_repr)
 
 
 @dc.dataclass(frozen=True)
@@ -66,11 +45,14 @@ class StringLiteral(Parser):
 
         self._value = value
 
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self._value!r})'
+
     def parse(self, ctx: Context, start: int) -> ta.Iterator[Match]:
         if start < len(ctx.source):
             source = ctx.source[start : start + len(self._value)]
             if source == self._value:
-                yield Match(start, (LiteralNode(self, start, len(source)),))
+                yield Match(self, start, len(source))
 
 
 class CaseInsensitiveStringLiteral(Literal):
@@ -79,11 +61,14 @@ class CaseInsensitiveStringLiteral(Literal):
 
         self._value = value.casefold()
 
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self._value!r})'
+
     def parse(self, ctx: Context, start: int) -> ta.Iterator[Match]:
         if start < len(ctx.source):
             source = ctx.source[start : start + len(self._value)].casefold()
             if source == self._value:
-                yield Match(start, (LiteralNode(self, start, len(source)),))
+                yield Match(self, start, len(source))
 
 
 class RangeLiteral(Literal):
@@ -96,15 +81,17 @@ class RangeLiteral(Literal):
 
         self._value = value
 
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self._value!r})'
+
     def parse(self, ctx: Context, start: int) -> ta.Iterator[Match]:
         try:
             source = ctx.source[start]
         except IndexError:
             return
 
-        # ranges are always case-sensitive
         if (value := self._value).lo <= source <= value.hi:
-            yield Match(start, (LiteralNode(self, start, 1),))
+            yield Match(self, start, 1)
 
 
 ##
