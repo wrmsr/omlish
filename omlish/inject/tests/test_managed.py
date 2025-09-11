@@ -7,7 +7,6 @@ import pytest
 from ... import dataclasses as dc  # noqa
 from ... import inject as inj
 from ... import lang  # noqa
-from ...testing import pytest as ptu
 
 
 T = ta.TypeVar('T')
@@ -63,7 +62,6 @@ class SomeAsyncManager:
         self.xc += 1
 
 
-@ptu.skip.if_cant_import('greenlet')
 @pytest.mark.asyncs('asyncio')
 @pytest.mark.parametrize('eager', [False, True])
 async def test_async_managed(eager):
