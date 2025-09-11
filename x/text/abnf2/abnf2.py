@@ -1,9 +1,8 @@
 import abc
-import dataclasses as dc
 import typing as ta
 
+from omlish import dataclasses as dc
 from omlish import lang
-from omlish.lite.dataclasses import dataclass_cache_hash
 
 
 ##
@@ -14,23 +13,23 @@ class Node(lang.Abstract, lang.Sealed):
     pass
 
 
-@dataclass_cache_hash()
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(cache_hash=True)
 class ConcatenateNode(Node, lang.Final):
     parser: 'Parser'
     children: tuple['Node', ...]
 
 
-@dataclass_cache_hash()
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(cache_hash=True)
 class LiteralNode(Node, lang.Final):
     parser: 'Literal'
     start: int
     length: int
 
 
-@dataclass_cache_hash()
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(cache_hash=True)
 class Match(lang.Final):
     start: int
     nodes: tuple[Node, ...]
