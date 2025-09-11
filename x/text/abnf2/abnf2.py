@@ -14,7 +14,6 @@ class Node(lang.Abstract, lang.Sealed):
     pass
 
 
-@ta.final
 @dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class ConcatenateNode(Node, lang.Final):
@@ -22,7 +21,6 @@ class ConcatenateNode(Node, lang.Final):
     children: tuple['Node', ...]
 
 
-@ta.final
 @dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class LiteralNode(Node, lang.Final):
@@ -31,7 +29,6 @@ class LiteralNode(Node, lang.Final):
     length: int
 
 
-@ta.final
 @dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class Match(lang.Final):
@@ -56,7 +53,7 @@ class Parser(lang.Abstract):
 ##
 
 
-class Literal(Parser, lang.Abstract):
+class Literal(Parser, lang.Final):
     class Range(ta.NamedTuple):
         lo: int
         hi: int
@@ -81,12 +78,13 @@ class Literal(Parser, lang.Abstract):
         if not isinstance(value := self._value, str):
             raise NotImplementedError
 
-        if start < len(ctx.source):
-            source = ctx.source[start : start + len(self._value)]
-            if self._case_insensitive:
-                source = source.casefold()
-            if source == value:
-                yield Match(start, (LiteralNode(self, start, len(source)),))
+        else:
+            if start < len(ctx.source):
+                source = ctx.source[start : start + len(self._value)]
+                if self._case_insensitive:
+                    source = source.casefold()
+                if source == value:
+                    yield Match(start, (LiteralNode(self, start, len(source)),))
 
 
 ##
@@ -95,7 +93,7 @@ class Literal(Parser, lang.Abstract):
 def _main() -> None:
     ctx = Context('foo')
     parser = Literal('foo')
-    print(parser.parse(ctx, 0))
+    print(list(parser.parse(ctx, 0)))
 
 
 if __name__ == '__main__':
