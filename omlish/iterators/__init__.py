@@ -22,6 +22,8 @@ with _lang.auto_proxy_init(globals()):
         unzip,
     )
 
+    from . import transforms as tf  # noqa
+
     from .unique import (  # noqa
         UniqueItem,
         UniqueIterator,
