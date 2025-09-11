@@ -1,3 +1,7 @@
+"""
+TODO:
+ - desugar Literal - StringLiteral, RangeLiteral
+"""
 import abc
 import typing as ta
 
@@ -15,14 +19,14 @@ class Node(lang.Abstract, lang.Sealed):
 
 @dc.dataclass(frozen=True)
 @dc.extra_class_params(cache_hash=True)
-class ConcatenateNode(Node, lang.Final):
+class ConcatenateNode(Node):
     parser: 'Parser'
     children: tuple['Node', ...]
 
 
 @dc.dataclass(frozen=True)
 @dc.extra_class_params(cache_hash=True)
-class LiteralNode(Node, lang.Final):
+class LiteralNode(Node):
     parser: 'Literal'
     start: int
     length: int
@@ -39,11 +43,11 @@ class Match(lang.Final):
 
 
 @dc.dataclass(frozen=True)
-class Context:
+class Context(lang.Final):
     source: str
 
 
-class Parser(lang.Abstract):
+class Parser(lang.Abstract, lang.Sealed):
     @abc.abstractmethod
     def parse(self, ctx: Context, start: int) -> ta.Iterator[Match]:
         raise NotImplementedError
@@ -52,45 +56,55 @@ class Parser(lang.Abstract):
 ##
 
 
-class Literal(Parser, lang.Final):
+class Literal(Parser, lang.Abstract):
+    pass
+
+
+class StringLiteral(Parser):
+    def __init__(self, value: str) -> None:
+        super().__init__()
+
+        self._value = value
+
+    def parse(self, ctx: Context, start: int) -> ta.Iterator[Match]:
+        if start < len(ctx.source):
+            source = ctx.source[start : start + len(self._value)]
+            if source == self._value:
+                yield Match(start, (LiteralNode(self, start, len(source)),))
+
+
+class CaseInsensitiveStringLiteral(Literal):
+    def __init__(self, value: str) -> None:
+        super().__init__()
+
+        self._value = value.casefold()
+
+    def parse(self, ctx: Context, start: int) -> ta.Iterator[Match]:
+        if start < len(ctx.source):
+            source = ctx.source[start : start + len(self._value)].casefold()
+            if source == self._value:
+                yield Match(start, (LiteralNode(self, start, len(source)),))
+
+
+class RangeLiteral(Literal):
     class Range(ta.NamedTuple):
         lo: str
         hi: str
 
-    def __init__(
-            self,
-            value: str | Range,
-            *,
-            case_insensitive: bool | None = None,
-    ) -> None:
+    def __init__(self, value: Range) -> None:
         super().__init__()
 
-        if isinstance(value, str):
-            if case_insensitive:
-                value = value.casefold()
-        elif case_insensitive is not None:
-            raise TypeError('Should not set case_insensitive with non-string literal')
         self._value = value
-        self._case_insensitive = case_insensitive
 
     def parse(self, ctx: Context, start: int) -> ta.Iterator[Match]:
-        if not isinstance(value := self._value, str):
-            try:
-                source = ctx.source[start]
-            except IndexError:
-                return
+        try:
+            source = ctx.source[start]
+        except IndexError:
+            return
 
-            # ranges are always case-sensitive
-            if value.lo <= source <= value.hi:
-                yield Match(start, (LiteralNode(self, start, 1),))
-
-        else:
-            if start < len(ctx.source):
-                source = ctx.source[start : start + len(self._value)]
-                if self._case_insensitive:
-                    source = source.casefold()
-                if source == value:
-                    yield Match(start, (LiteralNode(self, start, len(source)),))
+        # ranges are always case-sensitive
+        if (value := self._value).lo <= source <= value.hi:
+            yield Match(start, (LiteralNode(self, start, 1),))
 
 
 ##
@@ -98,7 +112,7 @@ class Literal(Parser, lang.Final):
 
 def _main() -> None:
     ctx = Context('foo')
-    parser = Literal('foo')
+    parser = StringLiteral('foo')
     print(list(parser.parse(ctx, 0)))
 
 
