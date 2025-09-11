@@ -31,8 +31,8 @@ from .building import JsonValueBuilder
 from .errors import JsonStreamError
 from .lexing import JsonStreamLexer
 from .lexing import Token
+from .parsing import Event
 from .parsing import JsonStreamParser
-from .parsing import JsonStreamParserEvent
 
 
 ##
@@ -110,7 +110,7 @@ class DebugJsonStreamValueParser(JsonStreamValueParser):
 
         self._chars: list[str] = []
         self._tokens: list[Token] = []
-        self._events: list[JsonStreamParserEvent] = []
+        self._events: list[Event] = []
         self._values: list[ta.Any] = []
 
     def feed(self, i: ta.Iterable[str]) -> ta.Iterator[ta.Any]:

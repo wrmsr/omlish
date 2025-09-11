@@ -5,8 +5,8 @@ from .parsing import BeginArray
 from .parsing import BeginObject
 from .parsing import EndArray
 from .parsing import EndObject
+from .parsing import Event
 from .parsing import JsonStreamObject
-from .parsing import JsonStreamParserEvent
 from .parsing import Key
 
 
@@ -62,7 +62,7 @@ class JsonValueBuilder:
         else:
             raise self.StateError
 
-    def __call__(self, e: JsonStreamParserEvent) -> ta.Iterable[ta.Any]:
+    def __call__(self, e: Event) -> ta.Iterable[ta.Any]:
         stk = self._stack
 
         #

@@ -7,14 +7,14 @@ from .parsing import BeginArray
 from .parsing import BeginObject
 from .parsing import EndArray
 from .parsing import EndObject
-from .parsing import JsonStreamParserEvent
+from .parsing import Event
 from .parsing import Key
 
 
 ##
 
 
-class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[JsonStreamParserEvent]]):
+class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[Event]]):
     def __init__(
             self,
             *,
@@ -36,7 +36,7 @@ class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[JsonStreamParserEvent]
             self,
             o: ta.Any,
             state: AbstractJsonRenderer.State = AbstractJsonRenderer.State.VALUE,
-    ) -> ta.Generator[str]:
+    ) -> ta.Iterator[str]:
         if self._style is not None:
             pre, post = self._style(o, state)
             yield pre
@@ -52,7 +52,7 @@ class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[JsonStreamParserEvent]
         if post:
             yield post
 
-    def _render(self, e: JsonStreamParserEvent) -> ta.Generator[str]:
+    def _render(self, e: Event) -> ta.Iterator[str]:
         if self._need_delimit:
             yield self._delimiter
             self._need_delimit = False
@@ -124,12 +124,12 @@ class StreamJsonRenderer(AbstractJsonRenderer[ta.Iterable[JsonStreamParserEvent]
         else:
             raise TypeError(e)
 
-    def render(self, events: ta.Iterable[JsonStreamParserEvent]) -> ta.Generator[str]:
+    def render(self, events: ta.Iterable[Event]) -> ta.Iterator[str]:
         for e in events:
             yield from self._render(e)
 
     @classmethod
-    def render_str(cls, i: ta.Iterable[JsonStreamParserEvent], /, **kwargs: ta.Any) -> str:
+    def render_str(cls, i: ta.Iterable[Event], /, **kwargs: ta.Any) -> str:
         out = io.StringIO()
         for s in cls(**kwargs).render(i):
             out.write(s)

@@ -195,7 +195,7 @@ def _main() -> None:
         else:
             in_file = es.enter_context(open(args.file, 'rb'))
 
-        def yield_input() -> ta.Generator[bytes]:
+        def yield_input() -> ta.Iterator[bytes]:
             fd = check.isinstance(in_file.fileno(), int)
 
             while True:
@@ -240,7 +240,7 @@ def _main() -> None:
                 def flush_output(
                         fn: ta.Callable[[T], ta.Iterable[U]],
                         i: T,
-                ) -> ta.Generator[U]:
+                ) -> ta.Iterator[U]:
                     n = 0
                     for o in fn(i):
                         yield o
@@ -259,7 +259,7 @@ def _main() -> None:
                     def append_newlines(
                             fn: ta.Callable[[T], ta.Iterable[str]],
                             i: T,
-                    ) -> ta.Generator[str]:
+                    ) -> ta.Iterator[str]:
                         yield from fn(i)
                         yield '\n'
 
@@ -267,15 +267,15 @@ def _main() -> None:
                     pipeline = fp.bind(append_newlines, pipeline)  # Any -> [str]
                     pipeline = fp.bind(lang.flatmap, pipeline)  # [Any] -> [str]
                     pipeline = fp.pipe(fp.bind(lang.flatmap, processor.process), pipeline)  # [Any] -> [str]
-                    pipeline = fp.pipe(fp.bind(lang.flatmap, builder.build), pipeline)  # [JsonStreamParserEvent] -> [str]  # noqa
+                    pipeline = fp.pipe(fp.bind(lang.flatmap, builder.build), pipeline)  # [Event] -> [str]  # noqa
                     pipeline = fp.pipe(parser.parse, pipeline)  # bytes -> [str]
 
                 else:
                     renderer = StreamRenderer(cfg.rendering)
                     trailing_newline = True
 
-                    pipeline = renderer.render  # JsonStreamParserEvent -> [str]
-                    pipeline = fp.bind(lang.flatmap, pipeline)  # [JsonStreamParserEvent] -> [str]
+                    pipeline = renderer.render  # Event -> [str]
+                    pipeline = fp.bind(lang.flatmap, pipeline)  # [Event] -> [str]
                     pipeline = fp.pipe(parser.parse, pipeline)  # bytes -> [str]
 
                 pipeline = fp.bind(flush_output, pipeline)  # bytes -> [str]

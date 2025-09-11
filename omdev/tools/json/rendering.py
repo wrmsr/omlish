@@ -4,7 +4,7 @@ import typing as ta
 
 from omlish import lang
 from omlish.formats.json.rendering import JsonRenderer
-from omlish.formats.json.stream.parsing import JsonStreamParserEvent
+from omlish.formats.json.stream.parsing import Event
 from omlish.formats.json.stream.rendering import StreamJsonRenderer
 from omlish.formats.json5.rendering import Json5Renderer
 from omlish.term import codes as tc
@@ -101,5 +101,5 @@ class StreamRenderer(Renderer):
             **self._kw,
         )
 
-    def render(self, e: JsonStreamParserEvent) -> ta.Generator[str]:
+    def render(self, e: Event) -> ta.Iterator[str]:
         return self._renderer.render((e,))

@@ -36,8 +36,8 @@ from .parsing import (  # noqa
     BeginArray,
     EndArray,
 
-    JsonStreamParserEvent,
-    JsonStreamParserEvents,
+    Event,
+    Events,
 
     yield_parser_events,
 

@@ -35,7 +35,7 @@ class EndArray(lang.Marker):
     pass
 
 
-JsonStreamParserEvent: ta.TypeAlias = ta.Union[  # noqa
+Event: ta.TypeAlias = ta.Union[  # noqa
     type[BeginObject],
     Key,
     type[EndObject],
@@ -47,7 +47,7 @@ JsonStreamParserEvent: ta.TypeAlias = ta.Union[  # noqa
 ]
 
 
-class JsonStreamParserEvents(lang.Namespace):
+class Events(lang.Namespace):
     BeginObject = BeginObject
     Key = Key
     EndObject = EndObject
@@ -59,7 +59,7 @@ class JsonStreamParserEvents(lang.Namespace):
 ##
 
 
-def yield_parser_events(obj: ta.Any) -> ta.Generator[JsonStreamParserEvent]:
+def yield_parser_events(obj: ta.Any) -> ta.Iterator[Event]:
     if isinstance(obj, SCALAR_VALUE_TYPES):
         yield obj  # type: ignore
 
@@ -95,7 +95,7 @@ class JsonStreamObject(list):
         return f'{self.__class__.__name__}({super().__repr__()})'
 
 
-class JsonStreamParser(GenMachine[Token, JsonStreamParserEvent]):
+class JsonStreamParser(GenMachine[Token, Event]):
     def __init__(
             self,
             *,
