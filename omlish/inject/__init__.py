@@ -123,6 +123,7 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .providers import (  # noqa
+        AsyncFnProvider,
         ConstProvider,
         CtorProvider,
         FnProvider,
