@@ -40,7 +40,7 @@ class OpMarshalerUnmarshaler(msh.Marshaler, msh.Unmarshaler):
         return col.make_map(((o.name, o) for _, o in self.ns), strict=True)
 
     def marshal(self, ctx: msh.MarshalContext, o: ta.Any) -> msh.Value:
-        return check.isinstance(o, self.ty).name  # type: ignore  # noqa
+        return check.isinstance(o, self.ty).name
 
     def unmarshal(self, ctx: msh.UnmarshalContext, v: msh.Value) -> ta.Any:
         return self.by_name[check.isinstance(v, str)]

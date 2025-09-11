@@ -41,7 +41,7 @@ dependencies of any kind**.
   - **[identity](https://github.com/wrmsr/omlish/blob/master/omlish/collections/identity.py)** - Identity-keyed
     collections.
   - **[sorted](https://github.com/wrmsr/omlish/blob/master/omlish/collections/sorted)** - Interfaces for value-sorted
-    collections and key-sorted mappings, and a simple but - correct skiplist-backed implementation.
+    collections and key-sorted mappings, and a simple but correct skiplist-backed implementation.
   - **[persistent](https://github.com/wrmsr/omlish/blob/master/omlish/collections/persistent)** - Interfaces for
     [persistent](https://en.wikipedia.org/wiki/Persistent_data_structure) maps, and a simple but correct treap-backed
     implementation.

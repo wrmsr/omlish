@@ -22,7 +22,7 @@ torchvision==0.23.0
 
 diffusers==0.35.1
 
-scipy==1.16.1
+scipy==1.16.2
 scikit-learn==1.7.2
 scikit-image==0.25.2
 
@@ -46,7 +46,7 @@ jedi==0.19.2
 jedi-language-server==0.45.1
 
 tree-sitter==0.25.1
-tree-sitter-python==0.23.6
+tree-sitter-python==0.25.0
 
 watchdog==6.0.0
 

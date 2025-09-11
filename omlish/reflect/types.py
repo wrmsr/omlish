@@ -225,7 +225,7 @@ def is_simple_generic_alias_type(oty: type) -> bool:
 
 def get_params(obj: ta.Any) -> tuple[ta.TypeVar, ...]:
     if isinstance(obj, type):
-        if issubclass(obj, ta.Generic):  # type: ignore
+        if issubclass(obj, ta.Generic):
             return obj.__dict__.get('__parameters__', ())  # noqa
 
         if (ks := _KNOWN_SPECIALS.get_by_origin(obj)) is not None:
@@ -591,7 +591,7 @@ class Reflector:
                     obj,
                 )
 
-            if issubclass(obj, ta.Generic):  # type: ignore
+            if issubclass(obj, ta.Generic):
                 params = get_params(obj)
                 if params:
                     return Generic(

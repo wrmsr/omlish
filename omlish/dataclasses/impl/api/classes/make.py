@@ -142,7 +142,7 @@ def make_dataclass(  # noqa
 
     if module is None:
         try:
-            module = sys._getframemodulename(_frame_offset) or '__main__'  # type: ignore  # noqa
+            module = sys._getframemodulename(_frame_offset) or '__main__'  # noqa
         except AttributeError:
             with contextlib.suppress(AttributeError, ValueError):
                 module = sys._getframe(_frame_offset).f_globals.get('__name__', '__main__')  # noqa

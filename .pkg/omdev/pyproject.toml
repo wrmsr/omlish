@@ -36,7 +36,7 @@ all = [
     'markdown-it-py ~= 4.0',
     'mdit-py-plugins ~= 0.5',
     'pygments ~= 2.19',
-    'mypy ~= 1.17',
+    'mypy ~= 1.18',
     'gprof2dot ~= 2025.4',
     'prompt-toolkit ~= 3.0',
     'segno ~= 1.6',
@@ -55,7 +55,7 @@ doc = [
     'pygments ~= 2.19',
 ]
 mypy = [
-    'mypy ~= 1.17',
+    'mypy ~= 1.18',
 ]
 prof = [
     'gprof2dot ~= 2025.4',

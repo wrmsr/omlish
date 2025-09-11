@@ -19,7 +19,7 @@ class _ClassOrInstanceMethod:
 
 class BindableClass(ta.Generic[T]):
     # FIXME: apparently can't have TypeVars in ClassVars, but could stick in a @classmethod (which gets transformed)...
-    _bound: ta.ClassVar[type[T] | None] = None  # type: ignore[misc]
+    _bound: ta.ClassVar[type[T] | None] = None
 
     def __init__(self, *, _bound):
         super().__init__()
