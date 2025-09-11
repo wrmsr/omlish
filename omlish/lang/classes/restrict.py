@@ -32,6 +32,14 @@ class Final(Abstract):
             elif Final in base.__mro__:
                 raise FinalTypeError(base)
 
+        # Per `ta.final`:
+        try:
+            cls.__final__ = True  # type: ignore[attr-defined]
+        except (AttributeError, TypeError):
+            # Skip the attribute silently if it is not writable. AttributeError happens if the object has __slots__ or
+            # a read-only property, TypeError if it's a builtin class.
+            pass
+
 
 ##
 

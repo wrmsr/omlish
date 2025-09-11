@@ -5,8 +5,8 @@ from omlish.formats.json5.errors import Json5Error
 from omlish.formats.json5.literals import LITERAL_VALUES
 from omlish.formats.json5.literals import parse_number_literal
 from omlish.formats.json5.literals import parse_string_literal
-from omlish.text import antlr
 
+from ...text import antlr
 from ._antlr.Json5Lexer import Json5Lexer  # type: ignore
 from ._antlr.Json5Parser import Json5Parser  # type: ignore
 from ._antlr.Json5Visitor import Json5Visitor  # type: ignore
