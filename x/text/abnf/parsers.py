@@ -22,10 +22,9 @@ from .nodes import Node
 
 
 class Parser(abc.ABC):
-    # def parse(
-    #    self, source: str, start: int
-    # ) -> tuple[Nodes, int]:  # pragma: no cover
-    #   ...
+    # def parse(self, source: str, start: int) -> tuple[Nodes, int]:  # pragma: no cover
+    #     ...
+
     @abc.abstractmethod
     def lparse(self, source: str, start: int) -> Matches:
         raise NotImplementedError
@@ -567,7 +566,9 @@ class Rule(Parser):
 
     @classmethod
     def get(
-        cls, name: str, default: ta.Self | None = None,
+            cls,
+            name: str,
+            default: ta.Self | None = None,
     ) -> ta.Optional['Rule']:
         """
         Retrieves Rule by name. If a Rule object matching name is found, it is returned. Otherwise default is returned,

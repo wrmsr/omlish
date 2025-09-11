@@ -1,8 +1,6 @@
 import typing as ta
 
-
-if ta.TYPE_CHECKING:
-    from .nodes import Nodes
+from .nodes import Nodes
 
 
 ##
@@ -23,7 +21,7 @@ class Match:
         return f'Match({"".join(n.value for n in self.nodes)}, {self.start})'
 
     def __eq__(self, /, o: object) -> bool:
-        return isinstance(o, self.__class__) and hash(self) == hash(o)
+        return isinstance(o, self.__class__) and hash(self) == hash(o)  # FIXME: ???
 
 
 MatchSet: ta.TypeAlias = set[Match]
