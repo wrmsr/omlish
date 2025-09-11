@@ -55,8 +55,8 @@ class Parser(lang.Abstract):
 
 class Literal(Parser, lang.Final):
     class Range(ta.NamedTuple):
-        lo: int
-        hi: int
+        lo: str
+        hi: str
 
     def __init__(
             self,
@@ -76,7 +76,14 @@ class Literal(Parser, lang.Final):
 
     def parse(self, ctx: Context, start: int) -> ta.Iterator[Match]:
         if not isinstance(value := self._value, str):
-            raise NotImplementedError
+            try:
+                source = ctx.source[start]
+            except IndexError:
+                return
+
+            # ranges are always case-sensitive
+            if value.lo <= source <= value.hi:
+                yield Match(start, (LiteralNode(self, start, 1),))
 
         else:
             if start < len(ctx.source):
