@@ -39,7 +39,7 @@ class Match(ta.NamedTuple):
         if isinstance(self.parser, (StringLiteral, CaseInsensitiveStringLiteral)):
             write(f'literal<{self.start}-{self.end}>({self.parser.value!r})')
         elif isinstance(self.parser, RangeLiteral):
-            write(f'literal<{self.start}-{self.end}>({self.parser.value.lo}-{self.parser.value.hi})')
+            write(f'literal<{self.start}-{self.end}>({self.parser.value.lo!r}-{self.parser.value.hi!r})')
         else:
             write(f'{self.parser.__class__.__name__.lower()}<{self.start}-{self.end}>(')
             for i, c in enumerate(self.children):

@@ -423,11 +423,9 @@ def _main() -> None:
     #     token = 1*( %x21 / %x23-27 / %x2A-2B / %x2D-2E / %x30-39 / %x41-5A / %x5E-7A / %x7C )
     # """
 
-    source = r"""
-        x = "x"
-    """
+    source = '"x"'
 
-    print(GRAMMAR_GRAMMAR.parse(source))
+    print(GRAMMAR_GRAMMAR.parse(source, root='quoted-string'))
 
 
 if __name__ == '__main__':
