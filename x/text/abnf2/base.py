@@ -414,8 +414,9 @@ class Rule(Parser):
     def _match_repr(self) -> str:
         return repr(self)
 
+    # noinspection PyProtectedMember
     def _parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
-        raise NotImplementedError
+        return ctx.parse(ctx._grammar._rules[self._name], start)
 
 
 rule = Rule
@@ -424,11 +425,30 @@ rule = Rule
 ##
 
 
-def _main() -> None:
-    def parse(p: Parser, s: str) -> list[Match]:  # noqa
-        g = Grammar({'root': p}, root='root')
-        return list(g.parse(s))
+@ta.overload
+def parse(grammar: Grammar, source: str) -> ta.Iterator[Match]:
+    ...
 
+
+@ta.overload
+def parse(parser: Parser, source: str) -> ta.Iterator[Match]:
+    ...
+
+
+def parse(obj, src):
+    if isinstance(obj, Grammar):
+        gram = obj
+    elif isinstance(obj, Parser):
+        gram = Grammar({'root': obj}, 'root')
+    else:
+        raise TypeError(obj)
+    return gram.parse(src)
+
+
+##
+
+
+def _main() -> None:
     for p, s in [
         (Concat(StringLiteral('foo'), StringLiteral('bar')), 'foobar'),
         (Repeat(Repeat.Times(3), StringLiteral('ab')), 'ababab'),
