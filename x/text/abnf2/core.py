@@ -1,3 +1,4 @@
+import textwrap
 import typing as ta
 
 from .base import Parser
@@ -426,9 +427,11 @@ def _main() -> None:
 
         token = 1*( %x21 / %x23-27 / %x2A-2B / %x2D-2E / %x30-39 / %x41-5A / %x5E-7A / %x7C )
     """
-    source = """HTTP-date    = rfc1123-date"""
+    # source = r"""
+    #     HTTP-date    = rfc1123-date
+    # """
 
-    print(GRAMMAR_GRAMMAR.parse(fix_grammar_newlines(source), 'rule'))
+    print(GRAMMAR_GRAMMAR.parse(fix_grammar_newlines(textwrap.dedent(source)), 'rulelist'))
 
     # g = Grammar(
     #     CORE_RULES,

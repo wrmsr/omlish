@@ -1,3 +1,8 @@
+"""
+TODO:
+ - match-powered optimizer
+  - greedily compile regexes
+"""
 import abc
 import io
 import typing as ta
