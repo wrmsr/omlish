@@ -394,38 +394,41 @@ GRAMMAR_GRAMMAR = Grammar(
 )
 
 
+def fix_grammar_newlines(s: str) -> str:
+    return s.rstrip().replace('\r', '').replace('\n', '\r\n') + '\r\n'
+
+
 ##
 
 
 def _main() -> None:
     # # rfc_2616
-    # source = r"""
-    #     HTTP-date    = rfc1123-date / rfc850-date / asctime-date
-    #     rfc1123-date = wkday "," SP date1 SP time SP "GMT"
-    #     rfc850-date  = weekday "," SP date2 SP time SP "GMT"
-    #     asctime-date = wkday SP date3 SP time SP 4DIGIT
-    #     date1        = 2DIGIT SP month SP 4DIGIT
-    #                     ; day month year (e.g., 02 Jun 1982)
-    #     date2        = 2DIGIT "-" month "-" 2DIGIT
-    #                     ; day-month-year (e.g., 02-Jun-82)
-    #     date3        = month SP ( 2DIGIT / ( SP 1DIGIT ))
-    #                     ; month day (e.g., Jun  2)
-    #     time         = 2DIGIT ":" 2DIGIT ":" 2DIGIT
-    #                     ; 00:00:00 - 23:59:59
-    #     wkday        = "Mon" / "Tue" / "Wed"
-    #                 / "Thu" / "Fri" / "Sat" / "Sun"
-    #     weekday      = "Monday" / "Tuesday" / "Wednesday"
-    #                 / "Thursday" / "Friday" / "Saturday" / "Sunday"
-    #     month        = "Jan" / "Feb" / "Mar" / "Apr"
-    #                 / "May" / "Jun" / "Jul" / "Aug"
-    #                 / "Sep" / "Oct" / "Nov" / "Dec"
-    #
-    #     token = 1*( %x21 / %x23-27 / %x2A-2B / %x2D-2E / %x30-39 / %x41-5A / %x5E-7A / %x7C )
-    # """
+    source = r"""
+        HTTP-date    = rfc1123-date / rfc850-date / asctime-date
+        rfc1123-date = wkday "," SP date1 SP time SP "GMT"
+        rfc850-date  = weekday "," SP date2 SP time SP "GMT"
+        asctime-date = wkday SP date3 SP time SP 4DIGIT
+        date1        = 2DIGIT SP month SP 4DIGIT
+                        ; day month year (e.g., 02 Jun 1982)
+        date2        = 2DIGIT "-" month "-" 2DIGIT
+                        ; day-month-year (e.g., 02-Jun-82)
+        date3        = month SP ( 2DIGIT / ( SP 1DIGIT ))
+                        ; month day (e.g., Jun  2)
+        time         = 2DIGIT ":" 2DIGIT ":" 2DIGIT
+                        ; 00:00:00 - 23:59:59
+        wkday        = "Mon" / "Tue" / "Wed"
+                    / "Thu" / "Fri" / "Sat" / "Sun"
+        weekday      = "Monday" / "Tuesday" / "Wednesday"
+                    / "Thursday" / "Friday" / "Saturday" / "Sunday"
+        month        = "Jan" / "Feb" / "Mar" / "Apr"
+                    / "May" / "Jun" / "Jul" / "Aug"
+                    / "Sep" / "Oct" / "Nov" / "Dec"
 
-    source = 'a = SP'
+        token = 1*( %x21 / %x23-27 / %x2A-2B / %x2D-2E / %x30-39 / %x41-5A / %x5E-7A / %x7C )
+    """
+    source = """HTTP-date    = rfc1123-date"""
 
-    print(GRAMMAR_GRAMMAR.parse('abc123 = defg\r\n', 'rule'))
+    print(GRAMMAR_GRAMMAR.parse(fix_grammar_newlines(source), 'rule'))
 
     # g = Grammar(
     #     CORE_RULES,
