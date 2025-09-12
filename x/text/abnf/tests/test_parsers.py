@@ -179,6 +179,13 @@ def test_concatenation_foobar():
     print(match)
 
 
+def test_repeat_foobar():
+    parser = Repetition(Repeat(2, 4), Literal('ab'))
+    result = parser.lparse('abababababa', 0)
+    match = next(result)
+    print(match)
+
+
 def test_repeat_str():
     assert str(Repeat())
 

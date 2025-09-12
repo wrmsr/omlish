@@ -8,13 +8,12 @@ from omlish import lang
 ##
 
 
-@dc.dataclass(frozen=True)
-@dc.extra_class_params(cache_hash=True)
-class Match(lang.Final):
+@ta.final
+class Match(ta.NamedTuple):
     parser: 'Parser'
     start: int
     end: int
-    children: tuple['Match', ...] | None = dc.xfield(None, repr_fn=lang.opt_repr)
+    children: tuple['Match', ...]
 
 
 @dc.dataclass(frozen=True)
@@ -48,7 +47,7 @@ class StringLiteral(Parser):
         if start < len(ctx.source):
             source = ctx.source[start : start + len(self._value)]
             if source == self._value:
-                yield Match(self, start, start + len(source))
+                yield Match(self, start, start + len(source), ())
 
 
 class CaseInsensitiveStringLiteral(Literal):
@@ -64,7 +63,7 @@ class CaseInsensitiveStringLiteral(Literal):
         if start < len(ctx.source):
             source = ctx.source[start : start + len(self._value)].casefold()
             if source == self._value:
-                yield Match(self, start, start + len(source))
+                yield Match(self, start, start + len(source), ())
 
 
 class RangeLiteral(Literal):
@@ -87,43 +86,82 @@ class RangeLiteral(Literal):
             return
         # ranges are always case-sensitive
         if (value := self._value).lo <= source <= value.hi:
-            yield Match(self, start, start + 1)
+            yield Match(self, start, start + 1, ())
 
 
 ##
 
 
 class Concat(Parser):
-    def __init__(self, *parsers: Parser) -> None:
+    def __init__(self, *children: Parser) -> None:
         super().__init__()
 
-        self._parsers = parsers
+        self._children = children
 
     def parse(self, ctx: Context, start: int) -> ta.Iterator[Match]:
         i = 0
-        match_lists: list[list[Match]] = [[]]
-        for cur in self._parsers:
-            cur_match_lists: list[list[Match]] = []
-            for ml in match_lists:
-                for cm in cur.parse(ctx, ml[-1].end if ml else 0):
-                    cur_match_lists.append([*ml, cm])
+        match_tups: list[tuple[Match, ...]] = [()]
+        for cur in self._children:
+            next_match_tups: list[tuple[Match, ...]] = []
+            for mt in match_tups:
+                for cm in cur.parse(ctx, mt[-1].end if mt else 0):
+                    next_match_tups.append((*mt, cm))
                     i += 1
-            if not cur_match_lists:
+            if not next_match_tups:
                 return
-            match_lists = cur_match_lists
+            match_tups = next_match_tups
         if not i:
             return
-        for ml in sorted(match_lists, key=lambda ml: -len(ml)):
-            yield Match(self, start, ml[-1].end, ml)
+        for mt in sorted(match_tups, key=len, reverse=True):
+            yield Match(self, start, mt[-1].end, mt)
+
+
+##
+
+
+class Repeat(Parser):
+    @dc.dataclass(frozen=True)
+    class Times:
+        min: int
+        max: int | None = None
+
+    def __init__(self, times: Times, child: Parser) -> None:
+        super().__init__()
+
+        self._times = times
+        self._child = child
+
+    def parse(self, ctx: Context, start: int) -> ta.Iterator[Match]:
+        match_tup_set: set[tuple[Match, ...]] = set()
+        last_match_tup_set: set[tuple[Match, ...]] = {()}
+        i = 0
+        while True:
+            if self._times.max is not None and i == self._times.max:
+                break
+            next_match_tup_set: set[tuple[Match, ...]] = set()
+            for mt in last_match_tup_set:
+                for cm in self._child.parse(ctx, mt[-1].end if mt else start):
+                    next_match_tup_set.add((*mt, cm))
+            if next_match_tup_set < match_tup_set:
+                break
+            i += 1
+            match_tup_set |= next_match_tup_set
+            last_match_tup_set = next_match_tup_set
+        if i < self._times.min:
+            return
+        for mt in sorted(match_tup_set, key=len, reverse=True):
+            yield Match(self, start, mt[-1].end, mt)
 
 
 ##
 
 
 def _main() -> None:
-    ctx = Context('foobar')
-    parser = Concat(StringLiteral('foo'), StringLiteral('bar'))
-    print(list(parser.parse(ctx, 0)))
+    def parse(p: Parser, s: str) -> list[Match]:
+        return list(p.parse(Context(s), 0))
+
+    print(parse(Concat(StringLiteral('foo'), StringLiteral('bar')), 'foobar'))
+    print(parse(Repeat(Repeat.Times(3), StringLiteral('ab')), 'ababab'))
 
 
 if __name__ == '__main__':
