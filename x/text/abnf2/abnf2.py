@@ -1,4 +1,10 @@
+"""
+TODO:
+ - alternate
+ - option
+"""
 import abc
+import io
 import typing as ta
 
 from omlish import dataclasses as dc
@@ -23,6 +29,24 @@ class Match(ta.NamedTuple):
             f'{self.start}, {self.end}'
             f'{f", {self.children!r}" if self.children else ""})'
         )
+
+    def _write_str(self, write: ta.Callable[[str], ta.Any]) -> None:
+        if isinstance(self.parser, (StringLiteral, CaseInsensitiveStringLiteral)):
+            write(f'literal<{self.start}-{self.end}>({self.parser.value!r})')
+        elif isinstance(self.parser, RangeLiteral):
+            write(f'literal<{self.start}-{self.end}>({self.parser.value.lo}-{self.parser.value.hi})')
+        else:
+            write(f'{self.parser.__class__.__name__.lower()}<{self.start}-{self.end}>(')
+            for i, c in enumerate(self.children):
+                if i:
+                    write(', ')
+                c._write_str(write)
+            write(')')
+
+    def __str__(self) -> str:
+        sb = io.StringIO()
+        self._write_str(sb.write)
+        return sb.getvalue()
 
 
 class Context(lang.Final):
@@ -63,6 +87,10 @@ class StringLiteral(Literal):
 
         self._value = value
 
+    @property
+    def value(self) -> str:
+        return self._value
+
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}@{id(self):x}({self._value!r})'
 
@@ -79,6 +107,10 @@ class CaseInsensitiveStringLiteral(Literal):
         super().__init__()
 
         self._value = value.casefold()
+
+    @property
+    def value(self) -> str:
+        return self._value
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}@{id(self):x}({self._value!r})'
@@ -100,6 +132,10 @@ class RangeLiteral(Literal):
         super().__init__()
 
         self._value = value
+
+    @property
+    def value(self) -> Range:
+        return self._value
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}@{id(self):x}({self._value!r})'
@@ -124,16 +160,20 @@ class Concat(Parser):
 
         self._children = children
 
+    @property
+    def children(self) -> ta.Sequence[Parser]:
+        return self._children
+
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}@{id(self):x}({", ".join(map(repr, self._children))})'
 
     def _parse(self, ctx: Context, start: int) -> ta.Iterator[Match]:
         i = 0
         match_tups: list[tuple[Match, ...]] = [()]
-        for cur in self._children:
+        for cp in self._children:
             next_match_tups: list[tuple[Match, ...]] = []
             for mt in match_tups:
-                for cm in ctx.parse(cur, mt[-1].end if mt else 0):
+                for cm in ctx.parse(cp, mt[-1].end if mt else start):
                     next_match_tups.append((*mt, cm))
                     i += 1
             if not next_match_tups:
@@ -142,7 +182,7 @@ class Concat(Parser):
         if not i:
             return
         for mt in sorted(match_tups, key=len, reverse=True):
-            yield Match(self, start, mt[-1].end, mt)
+            yield Match(self, start, mt[-1].end if mt else start, mt)
 
 
 ##
@@ -162,6 +202,14 @@ class Repeat(Parser):
 
         self._times = times
         self._child = child
+
+    @property
+    def times(self) -> Times:
+        return self._times
+
+    @property
+    def child(self) -> Parser:
+        return self._child
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}@{id(self):x}({self._times}, {self._child!r})'
@@ -185,7 +233,42 @@ class Repeat(Parser):
         if i < self._times.min:
             return
         for mt in sorted(match_tup_set, key=len, reverse=True):
-            yield Match(self, start, mt[-1].end, mt)  # noqa
+            yield Match(self, start, mt[-1].end if mt else start, mt)  # noqa
+
+
+##
+
+
+class Alternate(Parser):
+    def __init__(self, *children: Parser, first_match: bool = False) -> None:
+        super().__init__()
+
+        self._children = children
+        self._first_match = first_match
+
+    @property
+    def children(self) -> ta.Sequence[Parser]:
+        return self._children
+
+    @property
+    def first_match(self) -> bool:
+        return self._first_match
+
+    def _match_repr(self) -> str:
+        return (
+            f'{self.__class__.__name__}@{id(self):x}('
+            f'{", ".join(map(repr, self._children))}'
+            f'{", first_match=True" if self._first_match else ""})'
+        )
+
+    def _parse(self, ctx: Context, start: int) -> ta.Iterator[Match]:
+        for cp in self._children:
+            found = False
+            for cm in ctx.parse(cp, start):
+                found = True
+                yield Match(self, start, cm.end, (cm,))
+            if found and self._first_match:
+                return
 
 
 ##
@@ -195,8 +278,14 @@ def _main() -> None:
     def parse(p: Parser, s: str) -> list[Match]:
         return list(Context(s).parse(p, 0))
 
-    print(parse(Concat(StringLiteral('foo'), StringLiteral('bar')), 'foobar'))
-    print(parse(Repeat(Repeat.Times(3), StringLiteral('ab')), 'ababab'))
+    for p, s in [
+        (Concat(StringLiteral('foo'), StringLiteral('bar')), 'foobar'),
+        (Repeat(Repeat.Times(3), StringLiteral('ab')), 'ababab'),
+    ]:
+        print(p)
+        print(repr(s))
+        print('\n'.join(map(str, parse(p, s))))
+        print()
 
 
 if __name__ == '__main__':
