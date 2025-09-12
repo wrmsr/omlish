@@ -423,36 +423,36 @@ def _main() -> None:
     #     token = 1*( %x21 / %x23-27 / %x2A-2B / %x2D-2E / %x30-39 / %x41-5A / %x5E-7A / %x7C )
     # """
 
-    source = '"abcd"'
+    source = 'a = SP'
 
-    print(GRAMMAR_GRAMMAR.parse(source, root='quoted-string'))
+    print(GRAMMAR_GRAMMAR.parse('abc123 = defg\r\n', 'rule'))
 
-    g =Grammar(
-        CORE_RULES,
-        {'root': concat(
-            repeat(rule('WSP')),
-            repeat(1, literal('a', 'z')),
-            repeat(rule('WSP')),
-            literal('='),
-            repeat(rule('WSP')),
-            literal('"'),
-            repeat(
-                either(
-                    literal('a', 'z'),
-                    literal(' '),
-                ),
-            ),
-            literal('"'),
-        )},
-        root='root',
-    )
-    for s in [
-        'x = "y"',
-        'x=  "y"',
-        'xy= "az"',
-    ]:
-        m = g.parse(s)
-        print(m)
+    # g = Grammar(
+    #     CORE_RULES,
+    #     {'root': concat(
+    #         repeat(rule('WSP')),
+    #         repeat(1, literal('a', 'z')),
+    #         repeat(rule('WSP')),
+    #         literal('='),
+    #         repeat(rule('WSP')),
+    #         literal('"'),
+    #         repeat(
+    #             either(
+    #                 literal('a', 'z'),
+    #                 literal(' '),
+    #             ),
+    #         ),
+    #         literal('"'),
+    #     )},
+    #     root='root',
+    # )
+    # for s in [
+    #     'x = "y"',
+    #     'x=  "y"',
+    #     'xy= "az"',
+    # ]:
+    #     m = g.parse(s)
+    #     print(m)
 
 
 if __name__ == '__main__':
