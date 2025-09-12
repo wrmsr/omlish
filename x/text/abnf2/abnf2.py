@@ -26,6 +26,7 @@ class Context(lang.Final):
     def source(self) -> str:
         return self._source
 
+    # noinspection PyProtectedMember
     def parse(self, parser: 'Parser', start: int) -> ta.Iterator[Match]:
         return parser._parse(self, start)
 
@@ -43,7 +44,6 @@ class Literal(Parser, lang.Abstract):
     pass
 
 
-# noinspection PyProtectedMember
 class StringLiteral(Parser):
     def __init__(self, value: str) -> None:
         super().__init__()
@@ -53,6 +53,7 @@ class StringLiteral(Parser):
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self._value!r})'
 
+    # noinspection PyProtectedMember
     def _parse(self, ctx: Context, start: int) -> ta.Iterator[Match]:
         if start < len(ctx._source):
             source = ctx._source[start : start + len(self._value)]
@@ -60,7 +61,6 @@ class StringLiteral(Parser):
                 yield Match(self, start, start + len(source), ())
 
 
-# noinspection PyProtectedMember
 class CaseInsensitiveStringLiteral(Literal):
     def __init__(self, value: str) -> None:
         super().__init__()
@@ -70,6 +70,7 @@ class CaseInsensitiveStringLiteral(Literal):
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self._value!r})'
 
+    # noinspection PyProtectedMember
     def _parse(self, ctx: Context, start: int) -> ta.Iterator[Match]:
         if start < len(ctx._source):
             source = ctx._source[start : start + len(self._value)].casefold()
@@ -77,7 +78,6 @@ class CaseInsensitiveStringLiteral(Literal):
                 yield Match(self, start, start + len(source), ())
 
 
-# noinspection PyProtectedMember
 class RangeLiteral(Literal):
     class Range(ta.NamedTuple):
         lo: str
@@ -91,6 +91,7 @@ class RangeLiteral(Literal):
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self._value!r})'
 
+    # noinspection PyProtectedMember
     def _parse(self, ctx: Context, start: int) -> ta.Iterator[Match]:
         try:
             source = ctx._source[start]
@@ -162,7 +163,7 @@ class Repeat(Parser):
         if i < self._times.min:
             return
         for mt in sorted(match_tup_set, key=len, reverse=True):
-            yield Match(self, start, mt[-1].end, mt)
+            yield Match(self, start, mt[-1].end, mt)  # noqa
 
 
 ##
