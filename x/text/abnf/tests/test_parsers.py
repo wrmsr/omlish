@@ -172,6 +172,13 @@ def test_concatenation_str():
     assert str(Concatenation(Literal('a')))
 
 
+def test_concatenation_foobar():
+    parser = Concatenation(Literal('foo'), Literal('bar'))
+    result = parser.lparse('foobar', 0)
+    match = next(result)
+    print(match)
+
+
 def test_repeat_str():
     assert str(Repeat())
 

@@ -13,7 +13,7 @@ from omlish import lang
 class Match(lang.Final):
     parser: 'Parser'
     start: int
-    length: int
+    end: int
     children: tuple['Match', ...] | None = dc.xfield(None, repr_fn=lang.opt_repr)
 
 
@@ -48,7 +48,7 @@ class StringLiteral(Parser):
         if start < len(ctx.source):
             source = ctx.source[start : start + len(self._value)]
             if source == self._value:
-                yield Match(self, start, len(source))
+                yield Match(self, start, start + len(source))
 
 
 class CaseInsensitiveStringLiteral(Literal):
@@ -64,7 +64,7 @@ class CaseInsensitiveStringLiteral(Literal):
         if start < len(ctx.source):
             source = ctx.source[start : start + len(self._value)].casefold()
             if source == self._value:
-                yield Match(self, start, len(source))
+                yield Match(self, start, start + len(source))
 
 
 class RangeLiteral(Literal):
@@ -87,7 +87,7 @@ class RangeLiteral(Literal):
             return
         # ranges are always case-sensitive
         if (value := self._value).lo <= source <= value.hi:
-            yield Match(self, start, 1)
+            yield Match(self, start, start + 1)
 
 
 ##
@@ -100,7 +100,21 @@ class Concat(Parser):
         self._parsers = parsers
 
     def parse(self, ctx: Context, start: int) -> ta.Iterator[Match]:
-        pass
+        i = 0
+        match_lists: list[list[Match]] = [[]]
+        for cur in self._parsers:
+            cur_match_lists: list[list[Match]] = []
+            for ml in match_lists:
+                for cm in cur.parse(ctx, ml[-1].end if ml else 0):
+                    cur_match_lists.append([*ml, cm])
+                    i += 1
+            if not cur_match_lists:
+                return
+            match_lists = cur_match_lists
+        if not i:
+            return
+        for ml in sorted(match_lists, key=lambda ml: -len(ml)):
+            yield Match(self, start, ml[-1].end, ml)
 
 
 ##
