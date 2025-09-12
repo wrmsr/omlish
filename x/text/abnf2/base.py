@@ -77,7 +77,7 @@ class Grammar(lang.Final):
         rules_f: dict[str, Parser] = {}
         for n, p in rules.items():
             check.not_in(n_f := n.casefold(), rules_f)
-            rules_f[n] = p
+            rules_f[n_f] = p
         self._rules_f: ta.Mapping[str, Parser] = rules_f
         self._root_f = root.casefold() if root is not None else None
 
