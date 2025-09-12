@@ -50,28 +50,68 @@ class Match(ta.NamedTuple):
         return sb.getvalue()
 
 
-class Context(lang.Final):
-    def __init__(self, source: str) -> None:
+class Parser(lang.Abstract, lang.Sealed):
+    def _match_repr(self) -> str:
+        return f'{self.__class__.__name__}@{id(self)}'
+
+    @abc.abstractmethod
+    def _parse(self, ctx: '_Context', start: int) -> ta.Iterator[Match]:
+        raise NotImplementedError
+
+
+class ParseError(Exception):
+    pass
+
+
+class Grammar(lang.Final):
+    def __init__(
+            self,
+            rules: ta.Mapping[str, Parser],
+            root: str | None = None,
+    ) -> None:
         super().__init__()
 
+        self._rules = rules
+        self._root = root
+        if root is not None:
+            check.in_(root, rules)
+
+    @property
+    def rules(self) -> ta.Mapping[str, Parser]:
+        return self._rules
+
+    @property
+    def root(self) -> str | None:
+        return self._root
+
+    def parse(self, source: str, root: str | None = None) -> ta.Iterator[Match]:
+        if root is None:
+            if (root := self._root) is None:
+                raise ParseError('No root or default root specified')
+
+        rule = self._rules[root]  # noqa
+        ctx = _Context(self, source)
+        return ctx.parse(rule, 0)
+
+
+class _Context(lang.Final):
+    def __init__(self, grammar: Grammar, source: str) -> None:
+        super().__init__()
+
+        self._grammar = grammar
         self._source = source
+
+    @property
+    def grammar(self) -> Grammar:
+        return self._grammar
 
     @property
     def source(self) -> str:
         return self._source
 
     # noinspection PyProtectedMember
-    def parse(self, parser: 'Parser', start: int) -> ta.Iterator[Match]:
+    def parse(self, parser: Parser, start: int) -> ta.Iterator[Match]:
         return parser._parse(self, start)
-
-
-class Parser(lang.Abstract, lang.Sealed):
-    def _match_repr(self) -> str:
-        return f'{self.__class__.__name__}@{id(self)}'
-
-    @abc.abstractmethod
-    def _parse(self, ctx: Context, start: int) -> ta.Iterator[Match]:
-        raise NotImplementedError
 
 
 ##
@@ -96,7 +136,7 @@ class StringLiteral(Literal):
         return f'{self.__class__.__name__}@{id(self):x}({self._value!r})'
 
     # noinspection PyProtectedMember
-    def _parse(self, ctx: Context, start: int) -> ta.Iterator[Match]:
+    def _parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
         if start < len(ctx._source):
             source = ctx._source[start : start + len(self._value)]
             if source == self._value:
@@ -117,7 +157,7 @@ class CaseInsensitiveStringLiteral(Literal):
         return f'{self.__class__.__name__}@{id(self):x}({self._value!r})'
 
     # noinspection PyProtectedMember
-    def _parse(self, ctx: Context, start: int) -> ta.Iterator[Match]:
+    def _parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
         if start < len(ctx._source):
             source = ctx._source[start : start + len(self._value)].casefold()
             if source == self._value:
@@ -146,7 +186,7 @@ class RangeLiteral(Literal):
         return f'{self.__class__.__name__}@{id(self):x}({self._value!r})'
 
     # noinspection PyProtectedMember
-    def _parse(self, ctx: Context, start: int) -> ta.Iterator[Match]:
+    def _parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
         try:
             source = ctx._source[start]
         except IndexError:
@@ -198,7 +238,7 @@ class Concat(Parser):
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}@{id(self):x}({", ".join(map(repr, self._children))})'
 
-    def _parse(self, ctx: Context, start: int) -> ta.Iterator[Match]:
+    def _parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
         i = 0
         match_tups: list[tuple[Match, ...]] = [()]
         for cp in self._children:
@@ -252,7 +292,7 @@ class Repeat(Parser):
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}@{id(self):x}({self._times}, {self._child!r})'
 
-    def _parse(self, ctx: Context, start: int) -> ta.Iterator[Match]:
+    def _parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
         match_tup_set: set[tuple[Match, ...]] = set()
         last_match_tup_set: set[tuple[Match, ...]] = {()}
         i = 0
@@ -346,7 +386,7 @@ class Alternate(Parser):
             f'{", first_match=True" if self._first_match else ""})'
         )
 
-    def _parse(self, ctx: Context, start: int) -> ta.Iterator[Match]:
+    def _parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
         for cp in self._children:
             found = False
             for cm in ctx.parse(cp, start):
@@ -374,7 +414,7 @@ class Rule(Parser):
     def _match_repr(self) -> str:
         return repr(self)
 
-    def _parse(self, ctx: Context, start: int) -> ta.Iterator[Match]:
+    def _parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
         raise NotImplementedError
 
 
@@ -385,8 +425,9 @@ rule = Rule
 
 
 def _main() -> None:
-    def parse(p: Parser, s: str) -> list[Match]:
-        return list(Context(s).parse(p, 0))
+    def parse(p: Parser, s: str) -> list[Match]:  # noqa
+        g = Grammar({'root': p}, root='root')
+        return list(g.parse(s))
 
     for p, s in [
         (Concat(StringLiteral('foo'), StringLiteral('bar')), 'foobar'),
