@@ -236,6 +236,14 @@ class Repeat(Parser):
             yield Match(self, start, mt[-1].end if mt else start, mt)  # noqa
 
 
+class Option(Repeat):
+    def __init__(self, child: Parser) -> None:
+        super().__init__(Repeat.Times(0, 1), child)
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}@{id(self):x}({self._child!r})'
+
+
 ##
 
 
