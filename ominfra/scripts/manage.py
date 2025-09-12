@@ -2547,6 +2547,7 @@ class AttrOps(ta.Generic[T]):
                 o: ta.Union[
                     str,
                     ta.Tuple[str, str],
+                    ta.Mapping[str, ta.Any],
                     'AttrOps.Attr',
                 ],
         ) -> 'AttrOps.Attr':
@@ -2554,12 +2555,16 @@ class AttrOps(ta.Generic[T]):
                 return o
             elif isinstance(o, str):
                 return cls(o)
-            else:
+            elif isinstance(o, tuple):
                 name, disp = o
                 return cls(
                     name,
                     display=disp,
                 )
+            elif isinstance(o, ta.Mapping):
+                return cls(**o)
+            else:
+                raise TypeError(o)
 
         @property
         def name(self) -> str:
@@ -2583,6 +2588,7 @@ class AttrOps(ta.Generic[T]):
             *attrs: ta.Sequence[ta.Union[
                 str,
                 ta.Tuple[str, str],
+                ta.Mapping[str, ta.Any],
                 Attr,
             ]],
             with_module: bool = False,
@@ -2667,8 +2673,8 @@ class AttrOps(ta.Generic[T]):
 
         attrs: ta.List[AttrOps.Attr] = []
         for o in raw:
-            if isinstance(o, AttrOps.Attr):
-                attrs.append(o)
+            if isinstance(o, (AttrOps.Attr, ta.Mapping)):
+                attrs.append(AttrOps.Attr.of(o))
                 continue
 
             if isinstance(o, tuple):

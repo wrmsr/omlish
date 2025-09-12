@@ -36,7 +36,7 @@ class LifecycleContextManager(ta.Generic[LifecycleT]):
         self._lifecycle = lifecycle
         self._controller = lifecycle if isinstance(lifecycle, LifecycleController) else LifecycleController(lifecycle)
 
-    __repr__ = lang.attr_ops('lifecycle', 'state').repr
+    __repr__ = lang.attr_ops(lambda o: (o.lifecycle, o.state)).repr
 
     @property
     def lifecycle(self) -> LifecycleT:

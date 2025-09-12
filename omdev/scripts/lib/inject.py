@@ -3,7 +3,7 @@
 # @omlish-lite
 # @omlish-script
 # @omlish-generated
-# @omlish-amalg-output ../../omlish/lite/inject.py
+# @omlish-amalg-output ../../../omlish/lite/inject.py
 # @omlish-git-diff-omit
 # ruff: noqa: UP006 UP007 UP036 UP043 UP045
 import abc

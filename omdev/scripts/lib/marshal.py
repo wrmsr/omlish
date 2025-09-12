@@ -3,7 +3,7 @@
 # @omlish-lite
 # @omlish-script
 # @omlish-generated
-# @omlish-amalg-output ../../omlish/lite/marshal.py
+# @omlish-amalg-output ../../../omlish/lite/marshal.py
 # @omlish-git-diff-omit
 # ruff: noqa: UP006 UP007 UP036 UP045
 """
