@@ -33,7 +33,10 @@ RUN \
         emacs \
         file \
         flex \
+        g++ \
+        g++-14 \
         gcc \
+        gcc-14 \
         gdb \
         git \
         gnupg \
@@ -224,7 +227,7 @@ RUN \
     grep '^PYTHON_' /root/.versions | while read L ; do \
         K=$(echo "$L" | cut -d= -f1 | cut -d_ -f2-) && \
         case $K in \
-            8|13) true ;; \
+            8|13|14) true ;; \
             *) continue ;; \
         esac && \
         echo "Installing Python $K" && \
