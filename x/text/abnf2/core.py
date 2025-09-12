@@ -6,6 +6,7 @@ from .base import concat
 from .base import literal
 from .base import repeat
 from .base import rule
+from .base import option
 
 
 ##
@@ -81,323 +82,305 @@ CORE_RULES: ta.Mapping[str, Parser] = {
 
 GRAMMAR_RULES: ta.Mapping[str, Parser] = {
 
-    ('rulelist', Repetition(
-        Repeat(1),
-        Alternation(
+    'rulelist': repeat(
+        1,
+        alternate(
             rule('rule'),
-            Concatenation(
-                Repetition(
-                    Repeat(),
+            concat(
+                repeat(
                     rule('c-wsp'),
                 ),
                 rule('c-nl'),
             ),
         ),
-    )),
+    ),
 
-    ('rule', Concatenation(
+    'rule': concat(
         rule('rulename'),
         rule('defined-as'),
         rule('elements'),
         rule('c-nl'),
-    )),
+    ),
 
-    ('rulename', Concatenation(
-        Rule('ALPHA'),
-        Repetition(
-            Repeat(),
-            Alternation(
-                Rule('ALPHA'),
-                Rule('DIGIT'),
-                Literal('-'),
+    'rulename': concat(
+        rule('ALPHA'),
+        repeat(
+            alternate(
+                rule('ALPHA'),
+                rule('DIGIT'),
+                literal('-'),
             ),
         ),
-    )),
+    ),
 
-    ('defined-as', Concatenation(
-        Repetition(
-            Repeat(),
+    'defined-as': concat(
+        repeat(
             rule('c-wsp'),
         ),
-        Alternation(
-            Literal('=/'),
-            Literal('='),
+        alternate(
+            literal('=/'),
+            literal('='),
         ),
-        Repetition(
-            Repeat(),
+        repeat(
             rule('c-wsp'),
         ),
-    )),
+    ),
 
-    ('elements', Concatenation(
+    'elements': concat(
         rule('alternation'),
-        Repetition(
-            Repeat(),
+        repeat(
             rule('c-wsp'),
         ),
-    )),
+    ),
 
-    ('c-wsp', Alternation(
-        Rule('WSP'),
-        Concatenation(
+    'c-wsp': alternate(
+        rule('WSP'),
+        concat(
             rule('c-nl'),
-            Rule('WSP'),
+            rule('WSP'),
         ),
-    )),
+    ),
 
-    ('c-nl', Alternation(
+    'c-nl': alternate(
         rule('comment'),
-        Rule('CRLF'),
-    )),
+        rule('CRLF'),
+    ),
 
-    ('comment', Concatenation(
-        Literal(';'),
-        Repetition(
-            Repeat(),
-            Alternation(
-                Rule('WSP'),
-                Rule('VCHAR'),
+    'comment': concat(
+        literal(';'),
+        repeat(
+            alternate(
+                rule('WSP'),
+                rule('VCHAR'),
             )),
-        Rule('CRLF'),
-    )),
+        rule('CRLF'),
+    ),
 
-    ('alternation', Concatenation(
+    'alternation': concat(
         rule('concatenation'),
-        Repetition(
-            Repeat(),
-            Concatenation(
-                Repetition(
-                    Repeat(),
+        repeat(
+            concat(
+                repeat(
                     rule('c-wsp'),
                 ),
-                Literal('/'),
-                Repetition(
-                    Repeat(),
+                literal('/'),
+                repeat(
                     rule('c-wsp'),
                 ),
                 rule('concatenation'),
             ),
         ),
-    )),
+    ),
 
-    ('concatenation', Concatenation(
+    'concatenation': concat(
         rule('repetition'),
-        Repetition(
-            Repeat(),
-            Concatenation(
-                Repetition(
-                    Repeat(1),
+        repeat(
+            concat(
+                repeat(
+                    1,
                     rule('c-wsp'),
                 ),
                 rule('repetition'),
             ),
         ),
-    )),
+    ),
 
-    ('repetition', Concatenation(
-        Option(
+    'repetition': concat(
+        option(
             rule('repeat'),
         ),
         rule('element'),
-    )),
+    ),
 
-    ('repeat', Alternation(
-        Concatenation(
-            Repetition(
-                Repeat(0, None),
-                Rule('DIGIT'),
+    'repeat': alternate(
+        concat(
+            repeat(
+                rule('DIGIT'),
             ),
-            Literal('*'),
-            Repetition(
-                Repeat(0, None),
-                Rule('DIGIT'),
+            literal('*'),
+            repeat(
+                rule('DIGIT'),
             ),
         ),
-        Repetition(
-            Repeat(1, None),
-            Rule('DIGIT'),
+        repeat(
+            1,
+            rule('DIGIT'),
         ),
-    )),
+    ),
 
-    ('element', Alternation(
+    'element': alternate(
         rule('rulename'),
         rule('group'),
         rule('option'),
         rule('char-val'),
         rule('num-val'),
         rule('prose-val'),
-    )),
+    ),
 
-    ('group', Concatenation(
-        Literal('('),
-        Repetition(
-            Repeat(),
+    'group': concat(
+        literal('('),
+        repeat(
             rule('c-wsp'),
         ),
         rule('alternation'),
-        Repetition(
-            Repeat(),
+        repeat(
             rule('c-wsp'),
         ),
-        Literal(')'),
-    )),
+        literal(')'),
+    ),
 
-    ('option', Concatenation(
-        Literal('['),
-        Repetition(
-            Repeat(),
+    'option': concat(
+        literal('['),
+        repeat(
             rule('c-wsp'),
         ),
         rule('alternation'),
-        Repetition(
-            Repeat(),
+        repeat(
             rule('c-wsp'),
         ),
-        Literal(']'),
-    )),
+        literal(']'),
+    ),
 
-    ('num-val', Concatenation(
-        Literal('%'),
-        Alternation(
+    'num-val': concat(
+        literal('%'),
+        alternate(
             rule('bin-val'),
             rule('dec-val'),
             rule('hex-val'),
         ),
-    )),
+    ),
 
-    ('bin-val', Concatenation(
-        Literal('b'),
-        Concatenation(
-            Repetition(
-                Repeat(1),
-                Rule('BIT'),
+    'bin-val': concat(
+        literal('b'),
+        concat(
+            repeat(
+                1,
+                rule('BIT'),
             ),
-            Option(
-                Alternation(
-                    Repetition(
-                        Repeat(1),
-                        Concatenation(
-                            Literal('.'),
-                            Repetition(
-                                Repeat(1),
-                                Rule('BIT'),
+            option(
+                alternate(
+                    repeat(
+                        1,
+                        concat(
+                            literal('.'),
+                            repeat(
+                                1,
+                                rule('BIT'),
                             ),
                         ),
                     ),
-                    Concatenation(
-                        Literal('-'),
-                        Repetition(
-                            Repeat(1),
-                            Rule('BIT'),
+                    concat(
+                        literal('-'),
+                        repeat(
+                            1,
+                            rule('BIT'),
                         ),
                     ),
                 ),
             ),
         ),
-    )),
+    ),
 
-    ('dec-val', Concatenation(
-        Literal('d'),
-        Concatenation(
-            Repetition(
-                Repeat(1),
-                Rule('DIGIT'),
+    'dec-val': concat(
+        literal('d'),
+        concat(
+            repeat(
+                1,
+                rule('DIGIT'),
             ),
-            Option(
-                Alternation(
-                    Repetition(
-                        Repeat(1),
-                        Concatenation(
-                            Literal('.'),
-                            Repetition(
-                                Repeat(1),
-                                Rule('DIGIT'),
+            option(
+                alternate(
+                    repeat(
+                        1,
+                        concat(
+                            literal('.'),
+                            repeat(
+                                1,
+                                rule('DIGIT'),
                             ),
                         ),
                     ),
-                    Concatenation(
-                        Literal('-'),
-                        Repetition(
-                            Repeat(1),
-                            Rule('DIGIT'),
+                    concat(
+                        literal('-'),
+                        repeat(
+                            1,
+                            rule('DIGIT'),
                         ),
                     ),
                 ),
             ),
         ),
-    )),
+    ),
 
-    ('hex-val', Concatenation(
-        Literal('x'),
-        Concatenation(
-            Repetition(
-                Repeat(1),
-                Rule('HEXDIG'),
+    'hex-val': concat(
+        literal('x'),
+        concat(
+            repeat(
+                1,
+                rule('HEXDIG'),
             ),
-            Option(
-                Alternation(
-                    Repetition(
-                        Repeat(1),
-                        Concatenation(
-                            Literal('.'),
-                            Repetition(
-                                Repeat(1),
-                                Rule('HEXDIG'),
+            option(
+                alternate(
+                    repeat(
+                        1,
+                        concat(
+                            literal('.'),
+                            repeat(
+                                1,
+                                rule('HEXDIG'),
                             ),
                         ),
                     ),
-                    Concatenation(
-                        Literal('-'),
-                        Repetition(
-                            Repeat(1),
-                            Rule('HEXDIG'),
+                    concat(
+                        literal('-'),
+                        repeat(
+                            1,
+                            rule('HEXDIG'),
                         ),
                     ),
                 ),
             ),
         ),
-    )),
+    ),
 
-    ('prose-val', Concatenation(
-        Literal('<'),
-        Repetition(
-            Repeat(),
-            Alternation(
-                Literal(('\x20', '\x3d')),
-                Literal(('\x3f', '\x7e')),
+    'prose-val': concat(
+        literal('<'),
+        repeat(
+            alternate(
+                literal('\x20', '\x3d'),
+                literal('\x3f', '\x7e'),
             ),
         ),
-        Literal('>'),
-    )),
+        literal('>'),
+    ),
 
     # definitions from RFC 7405
-    ('char-val', Alternation(
+    'char-val': alternate(
         rule('case-insensitive-string'),
         rule('case-sensitive-string'),
-    )),
+    ),
 
-    ('case-insensitive-string', Concatenation(
-        Option(
-            Literal('%i'),
+    'case-insensitive-string': concat(
+        option(
+            literal('%i'),
         ),
         rule('quoted-string'),
-    )),
+    ),
 
-    ('case-sensitive-string', Concatenation(
-        Literal('%s'),
+    'case-sensitive-string': concat(
+        literal('%s'),
         rule('quoted-string'),
-    )),
+    ),
 
-    ('quoted-string', Concatenation(
-        Rule('DQUOTE'),
-        Repetition(
-            Repeat(),
-            Alternation(
-                Literal(('\x20', '\x21')),
-                Literal(('\x23', '\x7e')),
+    'quoted-string': concat(
+        rule('DQUOTE'),
+        repeat(
+            alternate(
+                literal('\x20', '\x21'),
+                literal('\x23', '\x7e'),
             ),
         ),
-        Rule('DQUOTE'),
-    )),
+        rule('DQUOTE'),
+    ),
 
 }

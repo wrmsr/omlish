@@ -301,7 +301,7 @@ def repeat(min: int, max: int | None, child: Parser) -> Repeat:  # noqa
 
 
 def repeat(*args):
-    if not args:
+    if len(args) < 2:
         [child] = args
         (min, max) = (0, None)  # noqa
     elif len(args) > 2:
