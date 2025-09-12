@@ -1,8 +1,3 @@
-"""
-TODO:
- - alternate
- - option
-"""
 import abc
 import io
 import typing as ta
@@ -415,7 +410,7 @@ def repeat(*args):
 ##
 
 
-class Alternate(Parser):
+class Either(Parser):
     def __init__(self, *children: Parser, first_match: bool = False) -> None:
         super().__init__()
 
@@ -447,7 +442,7 @@ class Alternate(Parser):
                 return
 
 
-alternate = Alternate
+either = Either
 
 
 ##

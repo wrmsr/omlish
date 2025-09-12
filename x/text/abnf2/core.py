@@ -1,7 +1,7 @@
 import typing as ta
 
 from .base import Parser
-from .base import alternate
+from .base import either
 from .base import concat
 from .base import literal
 from .base import repeat
@@ -15,19 +15,19 @@ from .base import Grammar
 
 CORE_RULES: ta.Mapping[str, Parser] = {
 
-    'ALPHA': alternate(
+    'ALPHA': either(
         literal('\x41', '\x5a'),
         literal('\x61', '\x7a'),
     ),
 
-    'BIT': alternate(
+    'BIT': either(
         literal('0'),
         literal('1'),
     ),
 
     'CHAR': literal('\x01', '\x7f'),
 
-    'CTL': alternate(
+    'CTL': either(
         literal('\x00', '\x1f'),
         literal('\x7f', case_sensitive=True),
     ),
@@ -43,7 +43,7 @@ CORE_RULES: ta.Mapping[str, Parser] = {
 
     'DQUOTE': literal('\x22', case_sensitive=True),
 
-    'HEXDIG': alternate(
+    'HEXDIG': either(
         rule('DIGIT'),
         literal('A'),
         literal('B'),
@@ -58,7 +58,7 @@ CORE_RULES: ta.Mapping[str, Parser] = {
     'LF': literal('\x0a', case_sensitive=True),
 
     'LWSP': repeat(
-        alternate(
+        either(
             rule('WSP'),
             concat(
                 rule('CRLF'),
@@ -73,7 +73,7 @@ CORE_RULES: ta.Mapping[str, Parser] = {
 
     'VCHAR': literal('\x21', '\x7e'),
 
-    'WSP': alternate(
+    'WSP': either(
         rule('SP'),
         rule('HTAB'),
     ),
@@ -85,7 +85,7 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
 
     'rulelist': repeat(
         1,
-        alternate(
+        either(
             rule('rule'),
             concat(
                 repeat(
@@ -106,7 +106,7 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
     'rulename': concat(
         rule('ALPHA'),
         repeat(
-            alternate(
+            either(
                 rule('ALPHA'),
                 rule('DIGIT'),
                 literal('-'),
@@ -118,7 +118,7 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
         repeat(
             rule('c-wsp'),
         ),
-        alternate(
+        either(
             literal('=/'),
             literal('='),
         ),
@@ -134,7 +134,7 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
         ),
     ),
 
-    'c-wsp': alternate(
+    'c-wsp': either(
         rule('WSP'),
         concat(
             rule('c-nl'),
@@ -142,7 +142,7 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
         ),
     ),
 
-    'c-nl': alternate(
+    'c-nl': either(
         rule('comment'),
         rule('CRLF'),
     ),
@@ -150,7 +150,7 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
     'comment': concat(
         literal(';'),
         repeat(
-            alternate(
+            either(
                 rule('WSP'),
                 rule('VCHAR'),
             )),
@@ -193,7 +193,7 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
         rule('element'),
     ),
 
-    'repeat': alternate(
+    'repeat': either(
         concat(
             repeat(
                 rule('DIGIT'),
@@ -209,7 +209,7 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
         ),
     ),
 
-    'element': alternate(
+    'element': either(
         rule('rulename'),
         rule('group'),
         rule('option'),
@@ -244,7 +244,7 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
 
     'num-val': concat(
         literal('%'),
-        alternate(
+        either(
             rule('bin-val'),
             rule('dec-val'),
             rule('hex-val'),
@@ -259,7 +259,7 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
                 rule('BIT'),
             ),
             option(
-                alternate(
+                either(
                     repeat(
                         1,
                         concat(
@@ -290,7 +290,7 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
                 rule('DIGIT'),
             ),
             option(
-                alternate(
+                either(
                     repeat(
                         1,
                         concat(
@@ -321,7 +321,7 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
                 rule('HEXDIG'),
             ),
             option(
-                alternate(
+                either(
                     repeat(
                         1,
                         concat(
@@ -347,7 +347,7 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
     'prose-val': concat(
         literal('<'),
         repeat(
-            alternate(
+            either(
                 literal('\x20', '\x3d'),
                 literal('\x3f', '\x7e'),
             ),
@@ -356,7 +356,7 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
     ),
 
     # definitions from RFC 7405
-    'char-val': alternate(
+    'char-val': either(
         rule('case-insensitive-string'),
         rule('case-sensitive-string'),
     ),
@@ -376,7 +376,7 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
     'quoted-string': concat(
         rule('DQUOTE'),
         repeat(
-            alternate(
+            either(
                 literal('\x20', '\x21'),
                 literal('\x23', '\x7e'),
             ),
@@ -423,9 +423,36 @@ def _main() -> None:
     #     token = 1*( %x21 / %x23-27 / %x2A-2B / %x2D-2E / %x30-39 / %x41-5A / %x5E-7A / %x7C )
     # """
 
-    source = '"x"'
+    source = '"abcd"'
 
     print(GRAMMAR_GRAMMAR.parse(source, root='quoted-string'))
+
+    g =Grammar(
+        CORE_RULES,
+        {'root': concat(
+            repeat(rule('WSP')),
+            repeat(1, literal('a', 'z')),
+            repeat(rule('WSP')),
+            literal('='),
+            repeat(rule('WSP')),
+            literal('"'),
+            repeat(
+                either(
+                    literal('a', 'z'),
+                    literal(' '),
+                ),
+            ),
+            literal('"'),
+        )},
+        root='root',
+    )
+    for s in [
+        'x = "y"',
+        'x=  "y"',
+        'xy= "az"',
+    ]:
+        m = g.parse(s)
+        print(m)
 
 
 if __name__ == '__main__':
