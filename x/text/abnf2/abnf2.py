@@ -15,6 +15,15 @@ class Match(ta.NamedTuple):
     end: int
     children: tuple['Match', ...]
 
+    # noinspection PyProtectedMember
+    def __repr__(self) -> str:
+        return (
+            f'{self.__class__.__name__}('
+            f'{self.parser._match_repr()}, '
+            f'{self.start}, {self.end}'
+            f'{f", {self.children!r}" if self.children else ""})'
+        )
+
 
 class Context(lang.Final):
     def __init__(self, source: str) -> None:
@@ -32,6 +41,9 @@ class Context(lang.Final):
 
 
 class Parser(lang.Abstract, lang.Sealed):
+    def _match_repr(self) -> str:
+        return f'{self.__class__.__name__}@{id(self)}'
+
     @abc.abstractmethod
     def _parse(self, ctx: Context, start: int) -> ta.Iterator[Match]:
         raise NotImplementedError
@@ -41,17 +53,18 @@ class Parser(lang.Abstract, lang.Sealed):
 
 
 class Literal(Parser, lang.Abstract):
-    pass
+    def _match_repr(self) -> str:
+        return repr(self)
 
 
-class StringLiteral(Parser):
+class StringLiteral(Literal):
     def __init__(self, value: str) -> None:
         super().__init__()
 
         self._value = value
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({self._value!r})'
+        return f'{self.__class__.__name__}@{id(self):x}({self._value!r})'
 
     # noinspection PyProtectedMember
     def _parse(self, ctx: Context, start: int) -> ta.Iterator[Match]:
@@ -68,7 +81,7 @@ class CaseInsensitiveStringLiteral(Literal):
         self._value = value.casefold()
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({self._value!r})'
+        return f'{self.__class__.__name__}@{id(self):x}({self._value!r})'
 
     # noinspection PyProtectedMember
     def _parse(self, ctx: Context, start: int) -> ta.Iterator[Match]:
@@ -89,7 +102,7 @@ class RangeLiteral(Literal):
         self._value = value
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({self._value!r})'
+        return f'{self.__class__.__name__}@{id(self):x}({self._value!r})'
 
     # noinspection PyProtectedMember
     def _parse(self, ctx: Context, start: int) -> ta.Iterator[Match]:
@@ -110,6 +123,9 @@ class Concat(Parser):
         super().__init__()
 
         self._children = children
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}@{id(self):x}({", ".join(map(repr, self._children))})'
 
     def _parse(self, ctx: Context, start: int) -> ta.Iterator[Match]:
         i = 0
@@ -138,11 +154,17 @@ class Repeat(Parser):
         min: int
         max: int | None = None
 
+        def __repr__(self) -> str:
+            return f'{self.__class__.__name__}({self.min}{f", {self.max!r}" if self.max is not None else ""})'
+
     def __init__(self, times: Times, child: Parser) -> None:
         super().__init__()
 
         self._times = times
         self._child = child
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}@{id(self):x}({self._times}, {self._child!r})'
 
     def _parse(self, ctx: Context, start: int) -> ta.Iterator[Match]:
         match_tup_set: set[tuple[Match, ...]] = set()
