@@ -66,21 +66,28 @@ class ParseError(Exception):
 class Grammar(lang.Final):
     def __init__(
             self,
-            rules: ta.Mapping[str, Parser],
+            *rules: ta.Mapping[str, Parser] | ta.Iterable[tuple[str, Parser]],
             root: str | None = None,
     ) -> None:
         super().__init__()
 
-        self._rules = rules
+        rules_dct: dict[str, Parser] = {}
+        rules_f_dct: dict[str, Parser] = {}
+        for rs in rules:
+            if isinstance(rs, ta.Mapping):
+                rts: ta.Iterable[tuple[str, Parser]] = rs.items()
+            else:
+                rts = rs
+            for n, p in rts:
+                check.not_in(n, rules_dct)
+                check.not_in(n_f := n.casefold(), rules_f_dct)
+                rules_dct[n] = p
+                rules_f_dct[n_f] = p
+        self._rules = rules_dct
+        self._rules_f: ta.Mapping[str, Parser] = rules_f_dct
+
         self._root = root
-
-        rules_f: dict[str, Parser] = {}
-        for n, p in rules.items():
-            check.not_in(n_f := n.casefold(), rules_f)
-            rules_f[n_f] = p
-        self._rules_f: ta.Mapping[str, Parser] = rules_f
         self._root_f = root.casefold() if root is not None else None
-
         if self._root_f is not None:
             check.not_none(self._root_f)
 
@@ -314,7 +321,7 @@ class Repeat(Parser):
             for mt in last_match_tup_set:
                 for cm in ctx.parse(self._child, mt[-1].end if mt else start):
                     next_match_tup_set.add((*mt, cm))
-            if next_match_tup_set < match_tup_set:
+            if not next_match_tup_set or next_match_tup_set < match_tup_set:
                 break
             i += 1
             match_tup_set |= next_match_tup_set
@@ -451,7 +458,7 @@ def parse(obj, src):
     if isinstance(obj, Grammar):
         gram = obj
     elif isinstance(obj, Parser):
-        gram = Grammar({'root': obj}, 'root')
+        gram = Grammar({'root': obj}, root='root')
     else:
         raise TypeError(obj)
     return gram.parse(src)
