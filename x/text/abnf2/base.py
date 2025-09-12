@@ -102,14 +102,20 @@ class Grammar(lang.Final):
     def rule(self, name: str) -> Parser | None:
         return self._rules_f.get(name.casefold())
 
-    def parse(self, source: str, root: str | None = None) -> ta.Iterator[Match]:
+    def parse(
+            self,
+            source: str,
+            root: str | None = None,
+            *,
+            start: int = 0,
+    ) -> ta.Iterator[Match]:
         if root is None:
             if (root := self._root) is None:
                 raise ParseError('No root or default root specified')
 
         rule = check.not_none(self.rule(root))  # noqa
         ctx = _Context(self, source)
-        return ctx.parse(rule, 0)
+        return ctx.parse(rule, start)
 
 
 class _Context(lang.Final):
@@ -444,24 +450,27 @@ rule = Rule
 ##
 
 
-@ta.overload
-def parse(grammar: Grammar, source: str) -> ta.Iterator[Match]:
-    ...
-
-
-@ta.overload
-def parse(parser: Parser, source: str) -> ta.Iterator[Match]:
-    ...
-
-
-def parse(obj, src):
+def parse(
+        obj: Grammar | Parser,
+        src: str,
+        *,
+        root: str | None = None,
+        start: int = 0,
+) -> ta.Iterator[Match]:
     if isinstance(obj, Grammar):
         gram = obj
     elif isinstance(obj, Parser):
-        gram = Grammar({'root': obj}, root='root')
+        if root is None:
+            root = 'root'
+        gram = Grammar({root: obj}, root=root)
     else:
         raise TypeError(obj)
-    return gram.parse(src)
+
+    return gram.parse(
+        src,
+        root,
+        start=start,
+    )
 
 
 ##
