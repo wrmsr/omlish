@@ -2,6 +2,7 @@ import itertools
 
 import pytest
 
+from .. import core  # noqa
 from ..parsers import Rule
 
 

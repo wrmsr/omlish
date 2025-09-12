@@ -387,7 +387,7 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
 }
 
 
-CORE_GRAMMAR = Grammar(
+GRAMMAR_GRAMMAR = Grammar(
     CORE_RULES,
     GRAMMAR_RULES,
     root='rulelist',
@@ -427,8 +427,7 @@ def _main() -> None:
         x = "x"
     """
 
-    for m in CORE_GRAMMAR.parse(source):
-        print(m)
+    print(GRAMMAR_GRAMMAR.parse(source))
 
 
 if __name__ == '__main__':

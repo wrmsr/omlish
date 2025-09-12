@@ -22,6 +22,10 @@ class Match(ta.NamedTuple):
     end: int
     children: tuple['Match', ...]
 
+    @property
+    def length(self) -> int:
+        return self.end - self.start
+
     # noinspection PyProtectedMember
     def __repr__(self) -> str:
         return (
@@ -50,12 +54,22 @@ class Match(ta.NamedTuple):
         return sb.getvalue()
 
 
+def longest_match(ms: ta.Iterable[Match]) -> Match | None:
+    bm: Match | None = None
+    bl = 0
+    for m in ms:
+        l = m.length
+        if bm is None or l > bl:
+            bm, bl = m, l
+    return bm
+
+
 class Parser(lang.Abstract, lang.Sealed):
     def _match_repr(self) -> str:
         return f'{self.__class__.__name__}@{id(self)}'
 
     @abc.abstractmethod
-    def _parse(self, ctx: '_Context', start: int) -> ta.Iterator[Match]:
+    def _iter_parse(self, ctx: '_Context', start: int) -> ta.Iterator[Match]:
         raise NotImplementedError
 
 
@@ -102,7 +116,7 @@ class Grammar(lang.Final):
     def rule(self, name: str) -> Parser | None:
         return self._rules_f.get(name.casefold())
 
-    def parse(
+    def iter_parse(
             self,
             source: str,
             root: str | None = None,
@@ -115,7 +129,20 @@ class Grammar(lang.Final):
 
         rule = check.not_none(self.rule(root))  # noqa
         ctx = _Context(self, source)
-        return ctx.parse(rule, start)
+        return ctx.iter_parse(rule, start)
+
+    def parse(
+            self,
+            source: str,
+            root: str | None = None,
+            *,
+            start: int = 0,
+    ) -> Match | None:
+        return longest_match(self.iter_parse(
+            source,
+            root,
+            start=start,
+        ))
 
 
 class _Context(lang.Final):
@@ -134,8 +161,8 @@ class _Context(lang.Final):
         return self._source
 
     # noinspection PyProtectedMember
-    def parse(self, parser: Parser, start: int) -> ta.Iterator[Match]:
-        return parser._parse(self, start)
+    def iter_parse(self, parser: Parser, start: int) -> ta.Iterator[Match]:
+        return parser._iter_parse(self, start)
 
 
 ##
@@ -160,7 +187,7 @@ class StringLiteral(Literal):
         return f'{self.__class__.__name__}@{id(self):x}({self._value!r})'
 
     # noinspection PyProtectedMember
-    def _parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
+    def _iter_parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
         if start < len(ctx._source):
             source = ctx._source[start : start + len(self._value)]
             if source == self._value:
@@ -181,7 +208,7 @@ class CaseInsensitiveStringLiteral(Literal):
         return f'{self.__class__.__name__}@{id(self):x}({self._value!r})'
 
     # noinspection PyProtectedMember
-    def _parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
+    def _iter_parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
         if start < len(ctx._source):
             source = ctx._source[start : start + len(self._value)].casefold()
             if source == self._value:
@@ -210,7 +237,7 @@ class RangeLiteral(Literal):
         return f'{self.__class__.__name__}@{id(self):x}({self._value!r})'
 
     # noinspection PyProtectedMember
-    def _parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
+    def _iter_parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
         try:
             source = ctx._source[start]
         except IndexError:
@@ -262,13 +289,13 @@ class Concat(Parser):
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}@{id(self):x}({", ".join(map(repr, self._children))})'
 
-    def _parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
+    def _iter_parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
         i = 0
         match_tups: list[tuple[Match, ...]] = [()]
         for cp in self._children:
             next_match_tups: list[tuple[Match, ...]] = []
             for mt in match_tups:
-                for cm in ctx.parse(cp, mt[-1].end if mt else start):
+                for cm in ctx.iter_parse(cp, mt[-1].end if mt else start):
                     next_match_tups.append((*mt, cm))
                     i += 1
             if not next_match_tups:
@@ -316,7 +343,7 @@ class Repeat(Parser):
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}@{id(self):x}({self._times}, {self._child!r})'
 
-    def _parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
+    def _iter_parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
         match_tup_set: set[tuple[Match, ...]] = set()
         last_match_tup_set: set[tuple[Match, ...]] = {()}
         i = 0
@@ -325,7 +352,7 @@ class Repeat(Parser):
                 break
             next_match_tup_set: set[tuple[Match, ...]] = set()
             for mt in last_match_tup_set:
-                for cm in ctx.parse(self._child, mt[-1].end if mt else start):
+                for cm in ctx.iter_parse(self._child, mt[-1].end if mt else start):
                     next_match_tup_set.add((*mt, cm))
             if not next_match_tup_set or next_match_tup_set < match_tup_set:
                 break
@@ -334,7 +361,7 @@ class Repeat(Parser):
             last_match_tup_set = next_match_tup_set
         if i < self._times.min:
             return
-        for mt in sorted(match_tup_set, key=len, reverse=True):
+        for mt in sorted(match_tup_set or [()], key=len, reverse=True):
             yield Match(self, start, mt[-1].end if mt else start, mt)  # noqa
 
 
@@ -410,10 +437,10 @@ class Alternate(Parser):
             f'{", first_match=True" if self._first_match else ""})'
         )
 
-    def _parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
+    def _iter_parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
         for cp in self._children:
             found = False
-            for cm in ctx.parse(cp, start):
+            for cm in ctx.iter_parse(cp, start):
                 found = True
                 yield Match(self, start, cm.end, (cm,))
             if found and self._first_match:
@@ -440,8 +467,8 @@ class Rule(Parser):
         return repr(self)
 
     # noinspection PyProtectedMember
-    def _parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
-        return ctx.parse(ctx._grammar._rules_f[self._name_f], start)
+    def _iter_parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
+        return ctx.iter_parse(ctx._grammar._rules_f[self._name_f], start)
 
 
 rule = Rule
@@ -450,7 +477,7 @@ rule = Rule
 ##
 
 
-def parse(
+def iter_parse(
         obj: Grammar | Parser,
         src: str,
         *,
@@ -466,11 +493,26 @@ def parse(
     else:
         raise TypeError(obj)
 
-    return gram.parse(
+    return gram.iter_parse(
         src,
         root,
         start=start,
     )
+
+
+def parse(
+        obj: Grammar | Parser,
+        src: str,
+        *,
+        root: str | None = None,
+        start: int = 0,
+) -> Match | None:
+    return longest_match(iter_parse(
+        obj,
+        src,
+        root=root,
+        start=start,
+    ))
 
 
 ##
@@ -483,7 +525,7 @@ def _main() -> None:
     ]:
         print(p)
         print(repr(s))
-        print('\n'.join(map(str, parse(p, s))))
+        print(parse(p, s))
         print()
 
 
