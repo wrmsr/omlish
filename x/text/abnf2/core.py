@@ -84,22 +84,22 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
     ('rulelist', Repetition(
         Repeat(1),
         Alternation(
-            GrammarRule('rule'),
+            rule('rule'),
             Concatenation(
                 Repetition(
                     Repeat(),
-                    GrammarRule('c-wsp'),
+                    rule('c-wsp'),
                 ),
-                GrammarRule('c-nl'),
+                rule('c-nl'),
             ),
         ),
     )),
 
     ('rule', Concatenation(
-        GrammarRule('rulename'),
-        GrammarRule('defined-as'),
-        GrammarRule('elements'),
-        GrammarRule('c-nl'),
+        rule('rulename'),
+        rule('defined-as'),
+        rule('elements'),
+        rule('c-nl'),
     )),
 
     ('rulename', Concatenation(
@@ -117,7 +117,7 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
     ('defined-as', Concatenation(
         Repetition(
             Repeat(),
-            GrammarRule('c-wsp'),
+            rule('c-wsp'),
         ),
         Alternation(
             Literal('=/'),
@@ -125,28 +125,28 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
         ),
         Repetition(
             Repeat(),
-            GrammarRule('c-wsp'),
+            rule('c-wsp'),
         ),
     )),
 
     ('elements', Concatenation(
-        GrammarRule('alternation'),
+        rule('alternation'),
         Repetition(
             Repeat(),
-            GrammarRule('c-wsp'),
+            rule('c-wsp'),
         ),
     )),
 
     ('c-wsp', Alternation(
         Rule('WSP'),
         Concatenation(
-            GrammarRule('c-nl'),
+            rule('c-nl'),
             Rule('WSP'),
         ),
     )),
 
     ('c-nl', Alternation(
-        GrammarRule('comment'),
+        rule('comment'),
         Rule('CRLF'),
     )),
 
@@ -162,43 +162,43 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
     )),
 
     ('alternation', Concatenation(
-        GrammarRule('concatenation'),
+        rule('concatenation'),
         Repetition(
             Repeat(),
             Concatenation(
                 Repetition(
                     Repeat(),
-                    GrammarRule('c-wsp'),
+                    rule('c-wsp'),
                 ),
                 Literal('/'),
                 Repetition(
                     Repeat(),
-                    GrammarRule('c-wsp'),
+                    rule('c-wsp'),
                 ),
-                GrammarRule('concatenation'),
+                rule('concatenation'),
             ),
         ),
     )),
 
     ('concatenation', Concatenation(
-        GrammarRule('repetition'),
+        rule('repetition'),
         Repetition(
             Repeat(),
             Concatenation(
                 Repetition(
                     Repeat(1),
-                    GrammarRule('c-wsp'),
+                    rule('c-wsp'),
                 ),
-                GrammarRule('repetition'),
+                rule('repetition'),
             ),
         ),
     )),
 
     ('repetition', Concatenation(
         Option(
-            GrammarRule('repeat'),
+            rule('repeat'),
         ),
-        GrammarRule('element'),
+        rule('element'),
     )),
 
     ('repeat', Alternation(
@@ -220,24 +220,24 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
     )),
 
     ('element', Alternation(
-        GrammarRule('rulename'),
-        GrammarRule('group'),
-        GrammarRule('option'),
-        GrammarRule('char-val'),
-        GrammarRule('num-val'),
-        GrammarRule('prose-val'),
+        rule('rulename'),
+        rule('group'),
+        rule('option'),
+        rule('char-val'),
+        rule('num-val'),
+        rule('prose-val'),
     )),
 
     ('group', Concatenation(
         Literal('('),
         Repetition(
             Repeat(),
-            GrammarRule('c-wsp'),
+            rule('c-wsp'),
         ),
-        GrammarRule('alternation'),
+        rule('alternation'),
         Repetition(
             Repeat(),
-            GrammarRule('c-wsp'),
+            rule('c-wsp'),
         ),
         Literal(')'),
     )),
@@ -246,12 +246,12 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
         Literal('['),
         Repetition(
             Repeat(),
-            GrammarRule('c-wsp'),
+            rule('c-wsp'),
         ),
-        GrammarRule('alternation'),
+        rule('alternation'),
         Repetition(
             Repeat(),
-            GrammarRule('c-wsp'),
+            rule('c-wsp'),
         ),
         Literal(']'),
     )),
@@ -259,9 +259,9 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
     ('num-val', Concatenation(
         Literal('%'),
         Alternation(
-            GrammarRule('bin-val'),
-            GrammarRule('dec-val'),
-            GrammarRule('hex-val'),
+            rule('bin-val'),
+            rule('dec-val'),
+            rule('hex-val'),
         ),
     )),
 
@@ -372,20 +372,20 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
 
     # definitions from RFC 7405
     ('char-val', Alternation(
-        GrammarRule('case-insensitive-string'),
-        GrammarRule('case-sensitive-string'),
+        rule('case-insensitive-string'),
+        rule('case-sensitive-string'),
     )),
 
     ('case-insensitive-string', Concatenation(
         Option(
             Literal('%i'),
         ),
-        GrammarRule('quoted-string'),
+        rule('quoted-string'),
     )),
 
     ('case-sensitive-string', Concatenation(
         Literal('%s'),
-        GrammarRule('quoted-string'),
+        rule('quoted-string'),
     )),
 
     ('quoted-string', Concatenation(
