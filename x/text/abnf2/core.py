@@ -384,3 +384,14 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
     ),
 
 }
+
+
+##
+
+
+def _main() -> None:
+    pass
+
+
+if __name__ == '__main__':
+    _main()

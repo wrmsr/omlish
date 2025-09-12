@@ -73,8 +73,16 @@ class Grammar(lang.Final):
 
         self._rules = rules
         self._root = root
-        if root is not None:
-            check.in_(root, rules)
+
+        rules_f: dict[str, Parser] = {}
+        for n, p in rules.items():
+            check.not_in(n_f := n.casefold(), rules_f)
+            rules_f[n] = p
+        self._rules_f: ta.Mapping[str, Parser] = rules_f
+        self._root_f = root.casefold() if root is not None else None
+
+        if self._root_f is not None:
+            check.not_none(self._root_f)
 
     @property
     def rules(self) -> ta.Mapping[str, Parser]:
@@ -84,12 +92,15 @@ class Grammar(lang.Final):
     def root(self) -> str | None:
         return self._root
 
+    def rule(self, name: str) -> Parser | None:
+        return self._rules_f.get(name.casefold())
+
     def parse(self, source: str, root: str | None = None) -> ta.Iterator[Match]:
         if root is None:
             if (root := self._root) is None:
                 raise ParseError('No root or default root specified')
 
-        rule = self._rules[root]  # noqa
+        rule = check.not_none(self.rule(root))  # noqa
         ctx = _Context(self, source)
         return ctx.parse(rule, 0)
 
@@ -407,6 +418,7 @@ class Rule(Parser):
         super().__init__()
 
         self._name = name
+        self._name_f = name.casefold()
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}@{id(self):x}({self._name!r})'
@@ -416,7 +428,7 @@ class Rule(Parser):
 
     # noinspection PyProtectedMember
     def _parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
-        return ctx.parse(ctx._grammar._rules[self._name], start)
+        return ctx.parse(ctx._grammar._rules_f[self._name_f], start)
 
 
 rule = Rule
