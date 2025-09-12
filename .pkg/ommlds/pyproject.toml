@@ -31,8 +31,8 @@ dependencies = [
 [project.optional-dependencies]
 all = [
     'llama-cpp-python ~= 0.3',
-    'mlx ~= 0.28',
-    'mlx-lm ~= 0.26; sys_platform == "darwin"',
+    'mlx ~= 0.29',
+    'mlx-lm ~= 0.27; sys_platform == "darwin"',
     'tiktoken ~= 0.11',
     'tinygrad ~= 0.11',
     'tokenizers ~= 0.22',
@@ -52,8 +52,8 @@ all = [
 ]
 backends = [
     'llama-cpp-python ~= 0.3',
-    'mlx ~= 0.28',
-    'mlx-lm ~= 0.26; sys_platform == "darwin"',
+    'mlx ~= 0.29',
+    'mlx-lm ~= 0.27; sys_platform == "darwin"',
     'tiktoken ~= 0.11',
     'tinygrad ~= 0.11',
     'tokenizers ~= 0.22',
