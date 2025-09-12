@@ -90,6 +90,7 @@ class GithubCacheServiceV2:
     class CreateCacheEntryResponse:
         ok: bool
         signed_upload_url: str
+        message: ta.Optional[str] = None
 
     CREATE_CACHE_ENTRY_METHOD: Method[
         CreateCacheEntryRequest,
