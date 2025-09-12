@@ -114,6 +114,7 @@ class GithubCacheServiceV2:
     class FinalizeCacheEntryUploadResponse:
         ok: bool
         entry_id: str
+        message: ta.Optional[str] = None
 
     FINALIZE_CACHE_ENTRY_METHOD: Method[
         FinalizeCacheEntryUploadRequest,

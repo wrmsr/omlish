@@ -107,8 +107,8 @@ class Concat(Parser):
 
 
 def _main() -> None:
-    ctx = Context('foo')
-    parser = StringLiteral('foo')
+    ctx = Context('foobar')
+    parser = Concat(StringLiteral('foo'), StringLiteral('bar'))
     print(list(parser.parse(ctx, 0)))
 
 
