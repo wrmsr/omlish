@@ -4,7 +4,7 @@ https://datatracker.ietf.org/doc/html/rfc5234
 import typing as ta
 
 from .base import Grammar
-from .base import Parser
+from .base import Rule
 from .parsers import concat
 from .parsers import either
 from .parsers import literal
@@ -16,37 +16,37 @@ from .parsers import rule
 ##
 
 
-CORE_RULES: ta.Mapping[str, Parser] = {
+CORE_RULES: ta.Sequence[Rule] = [
 
-    'ALPHA': either(
+    Rule('ALPHA', either(
         literal('\x41', '\x5a'),
         literal('\x61', '\x7a'),
-    ),
+    )),
 
-    'BIT': either(
+    Rule('BIT', either(
         literal('0'),
         literal('1'),
-    ),
+    )),
 
-    'CHAR': literal('\x01', '\x7f'),
+    Rule('CHAR', literal('\x01', '\x7f')),
 
-    'CTL': either(
+    Rule('CTL', either(
         literal('\x00', '\x1f'),
         literal('\x7f', case_sensitive=True),
-    ),
+    )),
 
-    'CR': literal('\x0d', case_sensitive=True),
+    Rule('CR', literal('\x0d', case_sensitive=True)),
 
-    'CRLF': concat(
+    Rule('CRLF', concat(
         rule('CR'),
         rule('LF'),
-    ),
+    )),
 
-    'DIGIT': literal('\x30', '\x39'),
+    Rule('DIGIT', literal('\x30', '\x39')),
 
-    'DQUOTE': literal('\x22', case_sensitive=True),
+    Rule('DQUOTE', literal('\x22', case_sensitive=True)),
 
-    'HEXDIG': either(
+    Rule('HEXDIG', either(
         rule('DIGIT'),
         literal('A'),
         literal('B'),
@@ -54,13 +54,13 @@ CORE_RULES: ta.Mapping[str, Parser] = {
         literal('D'),
         literal('E'),
         literal('F'),
-    ),
+    )),
 
-    'HTAB': literal('\x09', case_sensitive=True),
+    Rule('HTAB', literal('\x09', case_sensitive=True)),
 
-    'LF': literal('\x0a', case_sensitive=True),
+    Rule('LF', literal('\x0a', case_sensitive=True)),
 
-    'LWSP': repeat(
+    Rule('LWSP', repeat(
         either(
             rule('WSP'),
             concat(
@@ -68,20 +68,20 @@ CORE_RULES: ta.Mapping[str, Parser] = {
                 rule('WSP'),
             ),
         ),
-    ),
+    )),
 
-    'OCTET': literal('\x00', '\xff'),
+    Rule('OCTET', literal('\x00', '\xff')),
 
-    'SP': literal('\x20', case_sensitive=True),
+    Rule('SP', literal('\x20', case_sensitive=True)),
 
-    'VCHAR': literal('\x21', '\x7e'),
+    Rule('VCHAR', literal('\x21', '\x7e')),
 
-    'WSP': either(
+    Rule('WSP', either(
         rule('SP'),
         rule('HTAB'),
-    ),
+    )),
 
-}
+]
 
 CORE_WS_RULES: ta.AbstractSet[str] = {
     'CR',
@@ -97,9 +97,9 @@ CORE_WS_RULES: ta.AbstractSet[str] = {
 ##
 
 
-GRAMMAR_RULES: ta.Mapping[str, Parser] = {
+GRAMMAR_RULES: ta.Sequence[Rule] = [
 
-    'rulelist': repeat(
+    Rule('rulelist', repeat(
         1,
         either(
             rule('rule'),
@@ -110,16 +110,16 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
                 rule('c-nl'),
             ),
         ),
-    ),
+    )),
 
-    'rule': concat(
+    Rule('rule', concat(
         rule('rulename'),
         rule('defined-as'),
         rule('elements'),
         rule('c-nl'),
-    ),
+    )),
 
-    'rulename': concat(
+    Rule('rulename', concat(
         rule('ALPHA'),
         repeat(
             either(
@@ -128,9 +128,9 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
                 literal('-'),
             ),
         ),
-    ),
+    )),
 
-    'defined-as': concat(
+    Rule('defined-as', concat(
         repeat(
             rule('c-wsp'),
         ),
@@ -141,29 +141,29 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
         repeat(
             rule('c-wsp'),
         ),
-    ),
+    )),
 
-    'elements': concat(
+    Rule('elements', concat(
         rule('alternation'),
         repeat(
             rule('c-wsp'),
         ),
-    ),
+    )),
 
-    'c-wsp': either(
+    Rule('c-wsp', either(
         rule('WSP'),
         concat(
             rule('c-nl'),
             rule('WSP'),
         ),
-    ),
+    )),
 
-    'c-nl': either(
+    Rule('c-nl', either(
         rule('comment'),
         rule('CRLF'),
-    ),
+    )),
 
-    'comment': concat(
+    Rule('comment', concat(
         literal(';'),
         repeat(
             either(
@@ -171,9 +171,9 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
                 rule('VCHAR'),
             )),
         rule('CRLF'),
-    ),
+    )),
 
-    'alternation': concat(
+    Rule('alternation', concat(
         rule('concatenation'),
         repeat(
             concat(
@@ -187,9 +187,9 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
                 rule('concatenation'),
             ),
         ),
-    ),
+    )),
 
-    'concatenation': concat(
+    Rule('concatenation', concat(
         rule('repetition'),
         repeat(
             concat(
@@ -200,16 +200,16 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
                 rule('repetition'),
             ),
         ),
-    ),
+    )),
 
-    'repetition': concat(
+    Rule('repetition', concat(
         option(
             rule('repeat'),
         ),
         rule('element'),
-    ),
+    )),
 
-    'repeat': either(
+    Rule('repeat', either(
         concat(
             repeat(
                 rule('DIGIT'),
@@ -223,18 +223,18 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
             1,
             rule('DIGIT'),
         ),
-    ),
+    )),
 
-    'element': either(
+    Rule('element', either(
         rule('rulename'),
         rule('group'),
         rule('option'),
         rule('char-val'),
         rule('num-val'),
         rule('prose-val'),
-    ),
+    )),
 
-    'group': concat(
+    Rule('group', concat(
         literal('('),
         repeat(
             rule('c-wsp'),
@@ -244,9 +244,9 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
             rule('c-wsp'),
         ),
         literal(')'),
-    ),
+    )),
 
-    'option': concat(
+    Rule('option', concat(
         literal('['),
         repeat(
             rule('c-wsp'),
@@ -256,18 +256,18 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
             rule('c-wsp'),
         ),
         literal(']'),
-    ),
+    )),
 
-    'num-val': concat(
+    Rule('num-val', concat(
         literal('%'),
         either(
             rule('bin-val'),
             rule('dec-val'),
             rule('hex-val'),
         ),
-    ),
+    )),
 
-    'bin-val': concat(
+    Rule('bin-val', concat(
         literal('b'),
         concat(
             repeat(
@@ -296,9 +296,9 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
                 ),
             ),
         ),
-    ),
+    )),
 
-    'dec-val': concat(
+    Rule('dec-val', concat(
         literal('d'),
         concat(
             repeat(
@@ -327,9 +327,9 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
                 ),
             ),
         ),
-    ),
+    )),
 
-    'hex-val': concat(
+    Rule('hex-val', concat(
         literal('x'),
         concat(
             repeat(
@@ -358,9 +358,9 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
                 ),
             ),
         ),
-    ),
+    )),
 
-    'prose-val': concat(
+    Rule('prose-val', concat(
         literal('<'),
         repeat(
             either(
@@ -369,27 +369,27 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
             ),
         ),
         literal('>'),
-    ),
+    )),
 
     # definitions from RFC 7405
-    'char-val': either(
+    Rule('char-val', either(
         rule('case-insensitive-string'),
         rule('case-sensitive-string'),
-    ),
+    )),
 
-    'case-insensitive-string': concat(
+    Rule('case-insensitive-string', concat(
         option(
             literal('%i'),
         ),
         rule('quoted-string'),
-    ),
+    )),
 
-    'case-sensitive-string': concat(
+    Rule('case-sensitive-string', concat(
         literal('%s'),
         rule('quoted-string'),
-    ),
+    )),
 
-    'quoted-string': concat(
+    Rule('quoted-string', concat(
         rule('DQUOTE'),
         repeat(
             either(
@@ -398,9 +398,9 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
             ),
         ),
         rule('DQUOTE'),
-    ),
+    )),
 
-}
+]
 
 GRAMMAR_WS_RULES: ta.AbstractSet[str] = {
     'c-wsp',
@@ -413,8 +413,8 @@ GRAMMAR_WS_RULES: ta.AbstractSet[str] = {
 
 
 GRAMMAR_GRAMMAR = Grammar(
-    CORE_RULES,
-    GRAMMAR_RULES,
+    *CORE_RULES,
+    *GRAMMAR_RULES,
     root='rulelist',
 )
 

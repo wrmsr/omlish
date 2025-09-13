@@ -4,6 +4,7 @@ from .base import (  # noqa
 
     Parser,
 
+    Rule,
     Grammar,
 
     iter_parse,
@@ -42,7 +43,7 @@ from .parsers import (  # noqa
     Either,
     either,
 
-    Rule,
+    RuleRef,
     rule,
 )
 

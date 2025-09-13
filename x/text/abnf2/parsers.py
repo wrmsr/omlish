@@ -297,7 +297,7 @@ either = Either
 ##
 
 
-class Rule(Parser):
+class RuleRef(Parser):
     def __init__(self, name: str) -> None:
         super().__init__()
 
@@ -321,4 +321,4 @@ class Rule(Parser):
             yield Match(self, cm.start, cm.end, (cm,))
 
 
-rule = Rule
+rule = RuleRef

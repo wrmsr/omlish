@@ -13,7 +13,7 @@ from .. import parsers as pa
 from .. import utils as ut
 
 
-CORE_GRAMMAR = ba.Grammar(co.CORE_RULES)
+CORE_GRAMMAR = ba.Grammar(*co.CORE_RULES)
 
 
 @pytest.mark.parametrize('src', [chr(x) for x in itertools.chain(range(0x41, 0x5b), range(0x61, 0x7b))])
@@ -48,7 +48,7 @@ def test_core() -> None:
             visit_match(c)
 
     @visit_parser.register
-    def visit_parser_rule(p: pa.Rule, m: ba.Match) -> None:
+    def visit_parser_rule(p: pa.RuleRef, m: ba.Match) -> None:
         print(p.name)
         for c in m.children:
             visit_match(c)

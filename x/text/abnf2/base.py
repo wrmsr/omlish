@@ -64,7 +64,7 @@ class Match(ta.NamedTuple):
             write(f'literal<{self.start}-{self.end}>({p.value.lo!r}-{p.value.hi!r})')
         else:
             write(f'{p.__class__.__name__.lower()}<{self.start}-{self.end}>')
-            if isinstance(p, parsers.Rule):
+            if isinstance(p, parsers.RuleRef):
                 write(f':{p.name}')
             if self.children:
                 write('(')
@@ -126,71 +126,91 @@ class Parser(lang.Abstract, lang.PackageSealed):
 ##
 
 
-class Grammar(lang.Final):
-    @ta.final
-    class _Rule:
-        def __init__(self, name: str, parser: Parser) -> None:
-            self.name = check.non_empty_str(name)
-            self.name_f = name.casefold()
-            self.parser = check.isinstance(parser, Parser)
+class Rule(lang.Final):
+    def __init__(self, name: str, parser: Parser) -> None:
+        super().__init__()
 
+        self._name = check.non_empty_str(name)
+        self._name_f = name.casefold()
+        self._parser = check.isinstance(parser, Parser)
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self._name!r})'
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def name_f(self) -> str:
+        return self._name_f
+
+    @property
+    def parser(self) -> Parser:
+        return self._parser
+
+
+class Grammar(lang.Final):
+    # noinspection PyProtectedMember
     def __init__(
             self,
-            *rules: ta.Mapping[str, Parser] | ta.Iterable[tuple[str, Parser]],
-            root: str | None = None,
+            *rules: Rule,
+            root: Rule | str | None = None,
     ) -> None:
         super().__init__()
 
-        rules_by_name: dict[str, Grammar._Rule] = {}
-        rules_by_name_f: dict[str, Grammar._Rule] = {}
-        rules_by_parser: dict[Parser, Grammar._Rule] = {}
-        for rs in rules:
-            if isinstance(rs, ta.Mapping):
-                rts: ta.Iterable[tuple[str, Parser]] = rs.items()
-            else:
-                rts = rs
-            for n, p in rts:
-                gr = Grammar._Rule(n, p)
-                check.not_in(gr.name, rules_by_name)
-                check.not_in(gr.name_f, rules_by_name_f)
-                check.not_in(gr.parser, rules_by_parser)
-                rules_by_name[n] = gr
-                rules_by_name_f[gr.name_f] = gr
-                rules_by_parser[gr.parser] = gr
-        self._rules_by_name: ta.Mapping[str, Grammar._Rule] = rules_by_name
-        self._rules_by_name_f: ta.Mapping[str, Grammar._Rule] = rules_by_name_f
-        self._rules_by_parser: ta.Mapping[Parser, Grammar._Rule] = rules_by_parser
+        rules_set: set[Rule] = set()
+        rules_by_name: dict[str, Rule] = {}
+        rules_by_name_f: dict[str, Rule] = {}
+        rules_by_parser: dict[Parser, Rule] = {}
+        for gr in rules:
+            check.not_in(gr, rules_set)
+            check.not_in(gr._name, rules_by_name)
+            check.not_in(gr._name_f, rules_by_name_f)
+            check.not_in(gr._parser, rules_by_parser)
+            rules_by_name[gr._name] = gr
+            rules_by_name_f[gr._name_f] = gr
+            rules_by_parser[gr._parser] = gr
+        self._rules = rules_set
+        self._rules_by_name: ta.Mapping[str, Rule] = rules_by_name
+        self._rules_by_name_f: ta.Mapping[str, Rule] = rules_by_name_f
+        self._rules_by_parser: ta.Mapping[Parser, Rule] = rules_by_parser
 
+        if isinstance(root, str):
+            root = rules_by_name_f[root.casefold()]
         self._root = root
-        self._root_f = root.casefold() if root is not None else None
-        if self._root_f is not None:
-            check.not_none(self._root_f)
 
     @property
-    def root(self) -> str | None:
+    def root(self) -> Rule | None:
         return self._root
 
+    # noinspection PyProtectedMember
     def rule(self, name: str) -> Parser | None:
         try:
             gr = self._rules_by_name_f[name.casefold()]
         except KeyError:
             return None
-        return gr.parser
+        return gr._parser
 
+    # noinspection PyProtectedMember
     def iter_parse(
             self,
             source: str,
-            root: str | None = None,
+            root: Rule | str | None = None,
             *,
             start: int = 0,
     ) -> ta.Iterator[Match]:
         if root is None:
             if (root := self._root) is None:
                 raise AbnfError('No root or default root specified')
+        else:
+            if isinstance(root, str):
+                root = self._rules_by_name_f[root.casefold()]
+            else:
+                root = check.in_(check.isinstance(root, Rule), self._rules)
 
-        rule = check.not_none(self.rule(root))  # noqa
         ctx = _Context(self, source)
-        return ctx.iter_parse(rule, start)
+        return ctx.iter_parse(root._parser, start)
 
     def parse(
             self,
@@ -233,7 +253,7 @@ class _Context(lang.Final):
 
 
 def iter_parse(
-        obj: Grammar | Parser,
+        obj: Grammar | Rule | Parser,
         src: str,
         *,
         root: str | None = None,
@@ -241,10 +261,12 @@ def iter_parse(
 ) -> ta.Iterator[Match]:
     if isinstance(obj, Grammar):
         gram = obj
+    elif isinstance(obj, Rule):
+        check.none(root)
+        gram = Grammar(obj, root=obj)
     elif isinstance(obj, Parser):
-        if root is None:
-            root = 'root'
-        gram = Grammar({root: obj}, root=root)
+        check.none(root)
+        gram = Grammar(Rule('root', obj), root='root')
     else:
         raise TypeError(obj)
 
@@ -256,7 +278,7 @@ def iter_parse(
 
 
 def parse(
-        obj: Grammar | Parser,
+        obj: Grammar | Rule | Parser,
         src: str,
         *,
         root: str | None = None,
