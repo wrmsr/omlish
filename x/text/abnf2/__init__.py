@@ -45,5 +45,5 @@ from .parsers import (  # noqa
 
 from .utils import (  # noqa
     strip_match_rules,
-    collapse_match,
+    only_match_rules,
 )

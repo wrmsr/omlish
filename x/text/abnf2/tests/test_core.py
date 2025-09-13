@@ -78,7 +78,7 @@ def test_core() -> None:
     source = co.fix_grammar_ws(textwrap.dedent(source))
     ggm = check.not_none(co.GRAMMAR_GRAMMAR.parse(source, 'rulelist'))
     ggm = ut.strip_match_rules(ggm, {'SP', 'WSP', 'CR', 'LF', 'CRLF', 'LWSP', 'HTAB', 'c-wsp', 'c-nl'})
-    ggm = ut.collapse_match(ggm)
+    ggm = ut.only_match_rules(ggm)
     print(ggm.render(indent=2))
     print(visit_match(ggm))
 

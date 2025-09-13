@@ -1,9 +1,7 @@
 import typing as ta
+import itertools
 
 from .base import Match
-from .parsers import Concat
-from .parsers import Either
-from .parsers import Repeat
 from .parsers import Rule
 
 
@@ -18,20 +16,10 @@ def strip_match_rules(m: Match, names: ta.Container[str]) -> Match:
     return rec(m)
 
 
-# def strip_all_but_rules(m: Match) -> Match:
-#     def rec(c: Match) -> Match:
-#         raise NotImplementedError
-#     return m.flat_map_children()
-
-
-def collapse_match(m: Match) -> Match:
+def only_match_rules(m: Match) -> Match:
     def rec(c: Match) -> ta.Iterable[Match]:
-        if isinstance(c.parser, Either) and len(c.children) == 1:
-            return rec(c.children[0])
-        elif isinstance(c.parser, Repeat) and c.length == 0:
-            return ()
-        elif isinstance(c.parser, Concat) and not c.children:
-            return ()
-        else:
+        if isinstance(c.parser, Rule):
             return (c.flat_map_children(rec),)
+        else:
+            return itertools.chain.from_iterable(map(rec, c.children))
     return m.flat_map_children(rec)
