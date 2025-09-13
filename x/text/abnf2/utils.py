@@ -18,6 +18,12 @@ def strip_match_rules(m: Match, names: ta.Container[str]) -> Match:
     return rec(m)
 
 
+# def strip_all_but_rules(m: Match) -> Match:
+#     def rec(c: Match) -> Match:
+#         raise NotImplementedError
+#     return m.flat_map_children()
+
+
 def collapse_match(m: Match) -> Match:
     def rec(c: Match) -> ta.Iterable[Match]:
         if isinstance(c.parser, Either) and len(c.children) == 1:

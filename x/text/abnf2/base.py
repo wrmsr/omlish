@@ -114,7 +114,7 @@ def longest_match(ms: ta.Iterable[Match]) -> Match | None:
 ##
 
 
-class Parser(lang.Abstract, lang.Sealed):
+class Parser(lang.Abstract, lang.PackageSealed):
     def _match_repr(self) -> str:
         return f'{self.__class__.__name__}@{id(self)}'
 
