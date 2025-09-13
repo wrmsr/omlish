@@ -315,6 +315,7 @@ class Cli(ap.Cli):
         ap.arg('-g', '--message-generator', nargs='?'),
         ap.arg('--dry-run', action='store_true'),
         ap.arg('-y', '--no-confirmation', action='store_true'),
+        ap.arg('-r', '--repository'),
         ap.arg('dir', nargs='*'),
         aliases=['acp'],
     )
@@ -354,7 +355,7 @@ class Cli(ap.Cli):
 
                 check_call('git', 'commit', '-m', msg)
 
-            check_call('git', 'push')
+            check_call('git', 'push', *([self.args.repository] if self.args.repository is not None else []))
 
         if not self.args.dir:
             run(None)
