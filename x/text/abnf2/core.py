@@ -1,14 +1,23 @@
+"""
+https://datatracker.ietf.org/doc/html/rfc5234
+"""
+import functools
 import textwrap
 import typing as ta
 
+from omlish import check
+
+from .base import Grammar
+from .base import Rule
+from .base import Match
 from .base import Parser
-from .base import either
+from .base import Repeat
 from .base import concat
+from .base import either
 from .base import literal
+from .base import option
 from .base import repeat
 from .base import rule
-from .base import option
-from .base import Grammar
 
 
 ##
@@ -403,6 +412,28 @@ def fix_grammar_newlines(s: str) -> str:
 
 
 def _main() -> None:
+    rule_fns = {}
+
+    def add_rule_fn(*names):
+        def inner(fn):
+            rule_fns.update({n: fn for n in names})
+            return fn
+        return inner
+
+    @functools.singledispatch
+    def visit_parser(p: Parser, m: Match) -> None:
+        for c in m.children:
+            visit_match(c)
+
+    @visit_parser.register
+    def visit_parser_rule(p: Rule, m: Match) -> None:
+        pass
+
+    def visit_match(m: Match) -> ta.Any:
+        visit_parser(m.parser, m)
+
+    ##
+
     # # rfc_2616
     source = r"""
         HTTP-date    = rfc1123-date / rfc850-date / asctime-date
@@ -427,11 +458,10 @@ def _main() -> None:
 
         token = 1*( %x21 / %x23-27 / %x2A-2B / %x2D-2E / %x30-39 / %x41-5A / %x5E-7A / %x7C )
     """
-    # source = r"""
-    #     HTTP-date    = rfc1123-date
-    # """
 
-    print(GRAMMAR_GRAMMAR.parse(fix_grammar_newlines(textwrap.dedent(source)), 'rulelist'))
+    ggm = check.not_none(GRAMMAR_GRAMMAR.parse(fix_grammar_newlines(textwrap.dedent(source)), 'rulelist'))
+    print(ggm)
+    print(visit_match(ggm))
 
     # g = Grammar(
     #     CORE_RULES,

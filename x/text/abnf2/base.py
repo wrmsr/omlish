@@ -1,7 +1,11 @@
 """
 TODO:
+ - cache lol
+ - get greedier
  - match-powered optimizer
   - greedily compile regexes
+ - mro-attr registry powered rule name dispatched visitor
+  - also doable via a singledispatchmethod w/ Literal support
 """
 import abc
 import io
@@ -10,6 +14,10 @@ import typing as ta
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
+
+
+C = ta.TypeVar('C')
+R = ta.TypeVar('R')
 
 
 ##
@@ -73,11 +81,19 @@ class Parser(lang.Abstract, lang.Sealed):
         raise NotImplementedError
 
 
+
 class ParseError(Exception):
     pass
 
 
 class Grammar(lang.Final):
+    @ta.final
+    class _Rule:
+        def __init__(self, name: str, parser: Parser) -> None:
+            self.name = check.non_empty_str(name)
+            self.name_f = name.casefold()
+            self.parser = check.isinstance(parser, Parser)
+
     def __init__(
             self,
             *rules: ta.Mapping[str, Parser] | ta.Iterable[tuple[str, Parser]],
@@ -85,20 +101,25 @@ class Grammar(lang.Final):
     ) -> None:
         super().__init__()
 
-        rules_dct: dict[str, Parser] = {}
-        rules_f_dct: dict[str, Parser] = {}
+        rules_by_name: dict[str, Grammar._Rule] = {}
+        rules_by_name_f: dict[str, Grammar._Rule] = {}
+        rules_by_parser: dict[Parser, Grammar._Rule] = {}
         for rs in rules:
             if isinstance(rs, ta.Mapping):
                 rts: ta.Iterable[tuple[str, Parser]] = rs.items()
             else:
                 rts = rs
             for n, p in rts:
-                check.not_in(n, rules_dct)
-                check.not_in(n_f := n.casefold(), rules_f_dct)
-                rules_dct[n] = p
-                rules_f_dct[n_f] = p
-        self._rules = rules_dct
-        self._rules_f: ta.Mapping[str, Parser] = rules_f_dct
+                gr = Grammar._Rule(n, p)
+                check.not_in(gr.name, rules_by_name)
+                check.not_in(gr.name_f, rules_by_name_f)
+                check.not_in(gr.parser, rules_by_parser)
+                rules_by_name[n] = gr
+                rules_by_name_f[gr.name_f] = gr
+                rules_by_parser[gr.parser] = gr
+        self._rules_by_name: ta.Mapping[str, Grammar._Rule] = rules_by_name
+        self._rules_by_name_f: ta.Mapping[str, Grammar._Rule] = rules_by_name_f
+        self._rules_by_parser: ta.Mapping[Parser, Grammar._Rule] = rules_by_parser
 
         self._root = root
         self._root_f = root.casefold() if root is not None else None
@@ -106,15 +127,15 @@ class Grammar(lang.Final):
             check.not_none(self._root_f)
 
     @property
-    def rules(self) -> ta.Mapping[str, Parser]:
-        return self._rules
-
-    @property
     def root(self) -> str | None:
         return self._root
 
     def rule(self, name: str) -> Parser | None:
-        return self._rules_f.get(name.casefold())
+        try:
+            gr = self._rules_by_name_f[name.casefold()]
+        except KeyError:
+            return None
+        return gr.parser
 
     def iter_parse(
             self,
@@ -468,7 +489,7 @@ class Rule(Parser):
 
     # noinspection PyProtectedMember
     def _iter_parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
-        return ctx.iter_parse(ctx._grammar._rules_f[self._name_f], start)
+        return ctx.iter_parse(ctx._grammar._rules_by_name_f[self._name_f].parser, start)
 
 
 rule = Rule
