@@ -1,14 +1,19 @@
+import functools
 import itertools
+import textwrap
+import typing as ta
 
 import pytest
 
 from omlish import check
 
-from ..core import CORE_RULES
-from ..base import Grammar
+from .. import base as ba
+from .. import core as co
+from .. import parsers as pa
+from .. import utils as ut
 
 
-CORE_GRAMMAR = Grammar(CORE_RULES)
+CORE_GRAMMAR = ba.Grammar(co.CORE_RULES)
 
 
 @pytest.mark.parametrize('src', [chr(x) for x in itertools.chain(range(0x41, 0x5b), range(0x61, 0x7b))])
@@ -38,17 +43,17 @@ def test_core() -> None:
         return inner
 
     @functools.singledispatch
-    def visit_parser(p: Parser, m: Match) -> None:
+    def visit_parser(p: ba.Parser, m: ba.Match) -> None:
         for c in m.children:
             visit_match(c)
 
     @visit_parser.register
-    def visit_parser_rule(p: Rule, m: Match) -> None:
+    def visit_parser_rule(p: pa.Rule, m: ba.Match) -> None:
         print(p.name)
         for c in m.children:
             visit_match(c)
 
-    def visit_match(m: Match) -> ta.Any:
+    def visit_match(m: ba.Match) -> ta.Any:
         visit_parser(m.parser, m)
 
     ##
@@ -70,10 +75,10 @@ def test_core() -> None:
         token        = 1*( %x21 / %x23-27 / %x2A-2B / %x2D-2E / %x30-39 / %x41-5A / %x5E-7A / %x7C )
     """
 
-    source = fix_grammar_newlines(textwrap.dedent(source))
-    ggm = check.not_none(GRAMMAR_GRAMMAR.parse(source, 'rulelist'))
-    ggm = strip_match_rules(ggm, {'SP', 'WSP', 'CR', 'LF', 'CRLF', 'LWSP', 'HTAB', 'c-wsp', 'c-nl'})
-    ggm = collapse_match(ggm)
+    source = co.fix_grammar_ws(textwrap.dedent(source))
+    ggm = check.not_none(co.GRAMMAR_GRAMMAR.parse(source, 'rulelist'))
+    ggm = ut.strip_match_rules(ggm, {'SP', 'WSP', 'CR', 'LF', 'CRLF', 'LWSP', 'HTAB', 'c-wsp', 'c-nl'})
+    ggm = ut.collapse_match(ggm)
     print(ggm.render(indent=2))
     print(visit_match(ggm))
 
