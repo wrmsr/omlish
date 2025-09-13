@@ -1,0 +1,2 @@
+class AbnfError(Exception):
+    pass

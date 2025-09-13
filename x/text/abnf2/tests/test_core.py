@@ -26,3 +26,80 @@ def test_lwsp(src):
     print(m)
     # [m] = CORE_GRAMMAR.parse(src, 'LWSP')
     # assert src[m.start:m.end] == src
+
+
+def test_core() -> None:
+    rule_fns = {}
+
+    def add_rule_fn(*names):
+        def inner(fn):
+            rule_fns.update({n: fn for n in names})
+            return fn
+        return inner
+
+    @functools.singledispatch
+    def visit_parser(p: Parser, m: Match) -> None:
+        for c in m.children:
+            visit_match(c)
+
+    @visit_parser.register
+    def visit_parser_rule(p: Rule, m: Match) -> None:
+        print(p.name)
+        for c in m.children:
+            visit_match(c)
+
+    def visit_match(m: Match) -> ta.Any:
+        visit_parser(m.parser, m)
+
+    ##
+
+    # # rfc_2616
+    source = r"""
+        HTTP-date    = rfc1123-date / rfc850-date / asctime-date
+        rfc1123-date = wkday "," SP date1 SP time SP "GMT"
+        rfc850-date  = weekday "," SP date2 SP time SP "GMT"
+        asctime-date = wkday SP date3 SP time SP 4DIGIT
+        date1        = 2DIGIT SP month SP 4DIGIT          ; day month year (e.g., 02 Jun 1982)
+        date2        = 2DIGIT "-" month "-" 2DIGIT        ; day-month-year (e.g., 02-Jun-82)
+        date3        = month SP ( 2DIGIT / ( SP 1DIGIT )) ; month day (e.g., Jun  2)
+        time         = 2DIGIT ":" 2DIGIT ":" 2DIGIT       ; 00:00:00 - 23:59:59
+        wkday        = "Mon" / "Tue" / "Wed" / "Thu" / "Fri" / "Sat" / "Sun"
+        weekday      = "Monday" / "Tuesday" / "Wednesday" / "Thursday" / "Friday" / "Saturday" / "Sunday"
+        month        = "Jan" / "Feb" / "Mar" / "Apr" / "May" / "Jun" / "Jul" / "Aug" / "Sep" / "Oct" / "Nov" / "Dec"
+
+        token        = 1*( %x21 / %x23-27 / %x2A-2B / %x2D-2E / %x30-39 / %x41-5A / %x5E-7A / %x7C )
+    """
+
+    source = fix_grammar_newlines(textwrap.dedent(source))
+    ggm = check.not_none(GRAMMAR_GRAMMAR.parse(source, 'rulelist'))
+    ggm = strip_match_rules(ggm, {'SP', 'WSP', 'CR', 'LF', 'CRLF', 'LWSP', 'HTAB', 'c-wsp', 'c-nl'})
+    ggm = collapse_match(ggm)
+    print(ggm.render(indent=2))
+    print(visit_match(ggm))
+
+    # g = Grammar(
+    #     CORE_RULES,
+    #     {'root': concat(
+    #         repeat(rule('WSP')),
+    #         repeat(1, literal('a', 'z')),
+    #         repeat(rule('WSP')),
+    #         literal('='),
+    #         repeat(rule('WSP')),
+    #         literal('"'),
+    #         repeat(
+    #             either(
+    #                 literal('a', 'z'),
+    #                 literal(' '),
+    #             ),
+    #         ),
+    #         literal('"'),
+    #     )},
+    #     root='root',
+    # )
+    # for s in [
+    #     'x = "y"',
+    #     'x=  "y"',
+    #     'xy= "az"',
+    # ]:
+    #     m = g.parse(s)
+    #     print(m)
