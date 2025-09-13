@@ -7,11 +7,13 @@ import typing as ta
 
 from omlish import check
 
+from .base import Concat
+from .base import Either
 from .base import Grammar
-from .base import Rule
 from .base import Match
 from .base import Parser
 from .base import Repeat
+from .base import Rule
 from .base import concat
 from .base import either
 from .base import literal
@@ -411,6 +413,30 @@ def fix_grammar_newlines(s: str) -> str:
 ##
 
 
+def strip_match_rules(m: Match, names: ta.Container[str]) -> Match:
+    def rec(c: Match) -> Match:
+        return c.flat_map_children(
+            lambda x: (rec(x),) if not (isinstance((xp := x.parser), Rule) and xp.name in names) else (),  # noqa
+        )
+    return rec(m)
+
+
+def collapse_match(m: Match) -> Match:
+    def rec(c: Match) -> ta.Iterable[Match]:
+        if isinstance(c.parser, Either) and len(c.children) == 1:
+            return rec(c.children[0])
+        elif isinstance(c.parser, Repeat) and c.length == 0:
+            return ()
+        elif isinstance(c.parser, Concat) and not c.children:
+            return ()
+        else:
+            return c.flat_map_children(rec)
+    return m.flat_map_children(rec)
+
+
+##
+
+
 def _main() -> None:
     rule_fns = {}
 
@@ -427,7 +453,9 @@ def _main() -> None:
 
     @visit_parser.register
     def visit_parser_rule(p: Rule, m: Match) -> None:
-        visit_parser(p, m)
+        print(p.name)
+        for c in m.children:
+            visit_match(c)
 
     def visit_match(m: Match) -> ta.Any:
         visit_parser(m.parser, m)
@@ -440,26 +468,21 @@ def _main() -> None:
         rfc1123-date = wkday "," SP date1 SP time SP "GMT"
         rfc850-date  = weekday "," SP date2 SP time SP "GMT"
         asctime-date = wkday SP date3 SP time SP 4DIGIT
-        date1        = 2DIGIT SP month SP 4DIGIT
-                        ; day month year (e.g., 02 Jun 1982)
-        date2        = 2DIGIT "-" month "-" 2DIGIT
-                        ; day-month-year (e.g., 02-Jun-82)
-        date3        = month SP ( 2DIGIT / ( SP 1DIGIT ))
-                        ; month day (e.g., Jun  2)
-        time         = 2DIGIT ":" 2DIGIT ":" 2DIGIT
-                        ; 00:00:00 - 23:59:59
-        wkday        = "Mon" / "Tue" / "Wed"
-                    / "Thu" / "Fri" / "Sat" / "Sun"
-        weekday      = "Monday" / "Tuesday" / "Wednesday"
-                    / "Thursday" / "Friday" / "Saturday" / "Sunday"
-        month        = "Jan" / "Feb" / "Mar" / "Apr"
-                    / "May" / "Jun" / "Jul" / "Aug"
-                    / "Sep" / "Oct" / "Nov" / "Dec"
+        date1        = 2DIGIT SP month SP 4DIGIT          ; day month year (e.g., 02 Jun 1982)
+        date2        = 2DIGIT "-" month "-" 2DIGIT        ; day-month-year (e.g., 02-Jun-82)
+        date3        = month SP ( 2DIGIT / ( SP 1DIGIT )) ; month day (e.g., Jun  2)
+        time         = 2DIGIT ":" 2DIGIT ":" 2DIGIT       ; 00:00:00 - 23:59:59
+        wkday        = "Mon" / "Tue" / "Wed" / "Thu" / "Fri" / "Sat" / "Sun"
+        weekday      = "Monday" / "Tuesday" / "Wednesday" / "Thursday" / "Friday" / "Saturday" / "Sunday"
+        month        = "Jan" / "Feb" / "Mar" / "Apr" / "May" / "Jun" / "Jul" / "Aug" / "Sep" / "Oct" / "Nov" / "Dec"
 
-        token = 1*( %x21 / %x23-27 / %x2A-2B / %x2D-2E / %x30-39 / %x41-5A / %x5E-7A / %x7C )
+        token        = 1*( %x21 / %x23-27 / %x2A-2B / %x2D-2E / %x30-39 / %x41-5A / %x5E-7A / %x7C )
     """
 
-    ggm = check.not_none(GRAMMAR_GRAMMAR.parse(fix_grammar_newlines(textwrap.dedent(source)), 'rulelist'))
+    source = fix_grammar_newlines(textwrap.dedent(source))
+    ggm = check.not_none(GRAMMAR_GRAMMAR.parse(source, 'rulelist'))
+    ggm = strip_match_rules(ggm, {'SP', 'WSP', 'CR', 'LF', 'CRLF', 'LWSP', 'HTAB', 'c-wsp', 'c-nl'})
+    ggm = collapse_match(ggm)
     print(ggm.render(indent=2))
     print(visit_match(ggm))
 

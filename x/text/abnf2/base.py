@@ -9,6 +9,7 @@ TODO:
 """
 import abc
 import io
+import itertools
 import typing as ta
 
 from omlish import check
@@ -33,6 +34,8 @@ class Match(ta.NamedTuple):
     @property
     def length(self) -> int:
         return self.end - self.start
+
+    #
 
     # noinspection PyProtectedMember
     def __repr__(self) -> str:
@@ -87,6 +90,14 @@ class Match(ta.NamedTuple):
 
     def __str__(self) -> str:
         return self.render()
+
+    #
+
+    def map_children(self, fn: ta.Callable[['Match'], 'Match']) -> 'Match':
+        return self._replace(children=tuple(map(fn, self.children)))
+
+    def flat_map_children(self, fn: ta.Callable[['Match'], ta.Iterable['Match']]) -> 'Match':
+        return self._replace(children=tuple(itertools.chain.from_iterable(map(fn, self.children))))
 
 
 def longest_match(ms: ta.Iterable[Match]) -> Match | None:
