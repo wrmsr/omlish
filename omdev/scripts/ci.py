@@ -3255,6 +3255,70 @@ class ArgparseCli:
 
 
 ########################################
+# ../../../omlish/http/coro/io.py
+
+
+##
+
+
+class CoroHttpIo:
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
+
+    def __init_subclass__(cls, **kwargs):  # noqa
+        raise TypeError
+
+    #
+
+    MAX_LINE: ta.ClassVar[int] = 65536
+
+    #
+
+    class Io(Abstract):
+        pass
+
+    #
+
+    class AnyLogIo(Io, Abstract):
+        pass
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class ConnectIo(Io):
+        args: ta.Tuple[ta.Any, ...]
+        kwargs: ta.Optional[ta.Dict[str, ta.Any]] = None
+
+    #
+
+    class CloseIo(Io):
+        pass
+
+    #
+
+    class AnyReadIo(Io):  # noqa
+        pass
+
+    @dc.dataclass(frozen=True)
+    class ReadIo(AnyReadIo):
+        sz: ta.Optional[int]
+
+    @dc.dataclass(frozen=True)
+    class ReadLineIo(AnyReadIo):
+        sz: int
+
+    @dc.dataclass(frozen=True)
+    class PeekIo(AnyReadIo):
+        sz: int
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class WriteIo(Io):
+        data: bytes
+
+
+########################################
 # ../../../omlish/http/parsing.py
 # PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2
 # --------------------------------------------
@@ -9247,40 +9311,13 @@ class CoroHttpServer:
 
     #
 
-    class Io(Abstract):
-        pass
-
-    #
-
-    class AnyLogIo(Io):
-        pass
-
     @dc.dataclass(frozen=True)
-    class ParsedRequestLogIo(AnyLogIo):
+    class ParsedRequestLogIo(CoroHttpIo.AnyLogIo):
         request: ParsedHttpRequest
 
     @dc.dataclass(frozen=True)
-    class ErrorLogIo(AnyLogIo):
+    class ErrorLogIo(CoroHttpIo.AnyLogIo):
         error: 'CoroHttpServer.Error'
-
-    #
-
-    class AnyReadIo(Io):  # noqa
-        pass
-
-    @dc.dataclass(frozen=True)
-    class ReadIo(AnyReadIo):
-        sz: int
-
-    @dc.dataclass(frozen=True)
-    class ReadLineIo(AnyReadIo):
-        sz: int
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class WriteIo(Io):
-        data: bytes
 
     #
 
@@ -9288,7 +9325,7 @@ class CoroHttpServer:
     class CoroHandleResult:
         close_reason: ta.Literal['response', 'internal', None] = None
 
-    def coro_handle(self) -> ta.Generator[Io, ta.Optional[bytes], CoroHandleResult]:
+    def coro_handle(self) -> ta.Generator[CoroHttpIo.Io, ta.Optional[bytes], CoroHandleResult]:
         return self._coro_run_handler(self._coro_handle_one())
 
     class Close(Exception):  # noqa
@@ -9297,20 +9334,20 @@ class CoroHttpServer:
     def _coro_run_handler(
             self,
             gen: ta.Generator[
-                ta.Union[AnyLogIo, AnyReadIo, _Response],
+                ta.Union[CoroHttpIo.AnyLogIo, CoroHttpIo.AnyReadIo, _Response],
                 ta.Optional[bytes],
                 None,
             ],
-    ) -> ta.Generator[Io, ta.Optional[bytes], CoroHandleResult]:
+    ) -> ta.Generator[CoroHttpIo.Io, ta.Optional[bytes], CoroHandleResult]:
         i: ta.Optional[bytes]
         o: ta.Any = next(gen)
         while True:
             try:
-                if isinstance(o, self.AnyLogIo):
+                if isinstance(o, CoroHttpIo.AnyLogIo):
                     i = None
                     yield o
 
-                elif isinstance(o, self.AnyReadIo):
+                elif isinstance(o, CoroHttpIo.AnyReadIo):
                     i = check.isinstance((yield o), bytes)
 
                 elif isinstance(o, self._Response):
@@ -9318,10 +9355,10 @@ class CoroHttpServer:
 
                     r = self._preprocess_response(o)
                     hb = self._build_response_head_bytes(r)
-                    check.none((yield self.WriteIo(hb)))
+                    check.none((yield CoroHttpIo.WriteIo(hb)))
 
                     for b in self._yield_response_data(r):
-                        yield self.WriteIo(b)
+                        yield CoroHttpIo.WriteIo(b)
 
                     o.close()
                     if o.close_connection:
@@ -9349,7 +9386,7 @@ class CoroHttpServer:
                 raise
 
     def _coro_handle_one(self) -> ta.Generator[
-        ta.Union[AnyLogIo, AnyReadIo, _Response],
+        ta.Union[CoroHttpIo.AnyLogIo, CoroHttpIo.AnyReadIo, _Response],
         ta.Optional[bytes],
         None,
     ]:
@@ -9359,7 +9396,7 @@ class CoroHttpServer:
         sz = next(gen)
         while True:
             try:
-                line = check.isinstance((yield self.ReadLineIo(sz)), bytes)
+                line = check.isinstance((yield CoroHttpIo.ReadLineIo(sz)), bytes)
                 sz = gen.send(line)
             except StopIteration as e:
                 parsed = e.value
@@ -9398,7 +9435,7 @@ class CoroHttpServer:
 
         request_data: ta.Optional[bytes]
         if (cl := parsed.headers.get('Content-Length')) is not None:
-            request_data = check.isinstance((yield self.ReadIo(int(cl))), bytes)
+            request_data = check.isinstance((yield CoroHttpIo.ReadIo(int(cl))), bytes)
         else:
             request_data = None
 
@@ -11443,7 +11480,7 @@ class CoroHttpServerSocketHandler(SocketHandler_):
             server_factory: CoroHttpServerFactory,
             *,
             keep_alive: bool = False,
-            log_handler: ta.Optional[ta.Callable[[CoroHttpServer, CoroHttpServer.AnyLogIo], None]] = None,
+            log_handler: ta.Optional[ta.Callable[[CoroHttpServer, CoroHttpIo.AnyLogIo], None]] = None,
     ) -> None:
         super().__init__()
 
@@ -11472,18 +11509,18 @@ class CoroHttpServerSocketHandler(SocketHandler_):
 
         o = next(gen)
         while True:
-            if isinstance(o, CoroHttpServer.AnyLogIo):
+            if isinstance(o, CoroHttpIo.AnyLogIo):
                 i = None
                 if self._log_handler is not None:
                     self._log_handler(server, o)
 
-            elif isinstance(o, CoroHttpServer.ReadIo):
-                i = fp.r.read(o.sz)
+            elif isinstance(o, CoroHttpIo.ReadIo):
+                i = fp.r.read(check.not_none(o.sz))
 
-            elif isinstance(o, CoroHttpServer.ReadLineIo):
+            elif isinstance(o, CoroHttpIo.ReadLineIo):
                 i = fp.r.readline(o.sz)
 
-            elif isinstance(o, CoroHttpServer.WriteIo):
+            elif isinstance(o, CoroHttpIo.WriteIo):
                 i = None
                 fp.w.write(o.data)
                 fp.w.flush()

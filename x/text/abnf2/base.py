@@ -6,6 +6,7 @@ TODO:
   - greedily compile regexes
  - mro-attr registry powered rule name dispatched visitor
   - also doable via a singledispatchmethod w/ Literal support
+ - error reporting
 """
 import abc
 import io

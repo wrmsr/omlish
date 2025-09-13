@@ -9,6 +9,7 @@ from ....io.fdio.handlers import SocketFdioHandler
 from ....lite.check import check
 from ....sockets.addresses import SocketAddress
 from ...handlers import HttpHandler
+from ..io import CoroHttpIo
 from .server import CoroHttpServer
 
 
@@ -24,7 +25,7 @@ class CoroHttpServerConnectionFdioHandler(SocketFdioHandler):
             *,
             read_size: int = 0x10000,
             write_size: int = 0x10000,
-            log_handler: ta.Optional[ta.Callable[[CoroHttpServer, CoroHttpServer.AnyLogIo], None]] = None,
+            log_handler: ta.Optional[ta.Callable[[CoroHttpServer, CoroHttpIo.AnyLogIo], None]] = None,
     ) -> None:
         check.state(not sock.getblocking())
 
@@ -44,13 +45,13 @@ class CoroHttpServerConnectionFdioHandler(SocketFdioHandler):
         )
         self._srv_coro: ta.Optional[
             ta.Generator[
-                CoroHttpServer.Io,
+                CoroHttpIo.Io,
                 ta.Optional[bytes],
                 CoroHttpServer.CoroHandleResult,
             ],
         ] = self._coro_srv.coro_handle()
 
-        self._cur_io: ta.Optional[CoroHttpServer.Io] = None
+        self._cur_io: ta.Optional[CoroHttpIo.Io] = None
         self._next_io()
 
     #
@@ -73,22 +74,22 @@ class CoroHttpServerConnectionFdioHandler(SocketFdioHandler):
                     o = None
                     break
 
-            if isinstance(o, CoroHttpServer.AnyLogIo):
+            if isinstance(o, CoroHttpIo.AnyLogIo):
                 if self._log_handler is not None:
                     self._log_handler(self._coro_srv, o)
                 o = None
 
-            elif isinstance(o, CoroHttpServer.ReadIo):
+            elif isinstance(o, CoroHttpIo.ReadIo):
                 if (d := self._read_buf.read(o.sz)) is None:
                     break
                 o = None
 
-            elif isinstance(o, CoroHttpServer.ReadLineIo):
+            elif isinstance(o, CoroHttpIo.ReadLineIo):
                 if (d := self._read_buf.read_until(b'\n')) is None:
                     break
                 o = None
 
-            elif isinstance(o, CoroHttpServer.WriteIo):
+            elif isinstance(o, CoroHttpIo.WriteIo):
                 check.none(self._write_buf)
                 self._write_buf = IncrementalWriteBuffer(o.data, write_size=self._write_size)
                 break
@@ -122,11 +123,11 @@ class CoroHttpServerConnectionFdioHandler(SocketFdioHandler):
 
         self._read_buf.feed(buf)
 
-        if isinstance(self._cur_io, CoroHttpServer.AnyReadIo):
+        if isinstance(self._cur_io, CoroHttpIo.AnyReadIo):
             self._next_io()
 
     def on_writable(self) -> None:
-        check.isinstance(self._cur_io, CoroHttpServer.WriteIo)
+        check.isinstance(self._cur_io, CoroHttpIo.WriteIo)
         wb = check.not_none(self._write_buf)
         while wb.rem > 0:
             def send(d: bytes) -> int:

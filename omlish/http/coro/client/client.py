@@ -47,9 +47,9 @@ import typing as ta
 import urllib.parse
 
 from ....lite.check import check
+from ..io import CoroHttpIo
 from .errors import CoroHttpClientErrors
 from .headers import CoroHttpClientHeaders
-from .io import CoroHttpClientIo
 from .response import CoroHttpClientResponse
 from .status import CoroHttpClientStatusLine
 from .validation import CoroHttpClientValidation
@@ -58,10 +58,7 @@ from .validation import CoroHttpClientValidation
 ##
 
 
-class CoroHttpClientConnection(
-    CoroHttpClientErrors,
-    CoroHttpClientIo,
-):
+class CoroHttpClientConnection:
     """
     HTTPConnection goes through a number of "states", which define when a client may legally make another request or
     fetch the response for a particular request. This diagram details these state transitions:
@@ -178,7 +175,7 @@ class CoroHttpClientConnection(
                     if host[i + 1:] == '':  # http://foo.com:/ == http://foo.com/
                         port = self.default_port
                     else:
-                        raise self.InvalidUrlError(f"non-numeric port: '{host[i + 1:]}'") from None
+                        raise CoroHttpClientErrors.InvalidUrlError(f"non-numeric port: '{host[i + 1:]}'") from None
                 host = host[:i]
             else:
                 port = self.default_port
@@ -232,7 +229,7 @@ class CoroHttpClientConnection(
             encoded_host = self._tunnel_host.encode('idna').decode('ascii')
             self._tunnel_headers['Host'] = f'{encoded_host}:{self._tunnel_port:d}'
 
-    def _tunnel(self) -> ta.Generator[CoroHttpClientIo.Io, ta.Optional[bytes], None]:
+    def _tunnel(self) -> ta.Generator[CoroHttpIo.Io, ta.Optional[bytes], None]:
         connect = b'CONNECT %s:%d %s\r\n' % (
             self._wrap_ipv6(check.not_none(self._tunnel_host).encode('idna')),
             check.not_none(self._tunnel_port),
@@ -251,7 +248,7 @@ class CoroHttpClientConnection(
 
         try:
             (version, code, message) = (yield from CoroHttpClientStatusLine.read())
-        except self.BadStatusLineError:  # noqa
+        except CoroHttpClientErrors.BadStatusLineError:  # noqa
             # self._close_conn()
             raise
 
@@ -277,13 +274,13 @@ class CoroHttpClientConnection(
 
     #
 
-    def connect(self) -> ta.Generator[CoroHttpClientIo.Io, None, None]:
+    def connect(self) -> ta.Generator[CoroHttpIo.Io, None, None]:
         """Connect to the host and port specified in __init__."""
 
         if self._connected:
             return
 
-        check.none((yield self.ConnectIo(
+        check.none((yield CoroHttpIo.ConnectIo(
             ((self._host, self._port),),
             dict(
                 source_address=self._source_address,
@@ -298,14 +295,14 @@ class CoroHttpClientConnection(
 
     #
 
-    def close(self) -> ta.Generator[CoroHttpClientIo.Io, ta.Optional[bytes], None]:
+    def close(self) -> ta.Generator[CoroHttpIo.Io, ta.Optional[bytes], None]:
         """Close the connection to the HTTP server."""
 
         self._state = self._State.IDLE
 
         try:
             if self._connected:
-                yield self.CloseIo()  # Close it manually... there may be other refs
+                yield CoroHttpIo.CloseIo()  # Close it manually... there may be other refs
                 self._connected = False
 
         finally:
@@ -322,7 +319,7 @@ class CoroHttpClientConnection(
 
         return isinstance(stream, io.TextIOBase)
 
-    def send(self, data: ta.Any) -> ta.Generator[CoroHttpClientIo.Io, ta.Optional[bytes], None]:
+    def send(self, data: ta.Any) -> ta.Generator[CoroHttpIo.Io, ta.Optional[bytes], None]:
         """
         Send `data' to the server. ``data`` can be a string object, a bytes object, an array object, a file-like object
         that supports a .read() method, or an iterable object.
@@ -332,7 +329,7 @@ class CoroHttpClientConnection(
             if self._auto_open:
                 yield from self.connect()
             else:
-                raise self.NotConnectedError
+                raise CoroHttpClientErrors.NotConnectedError
 
         check.state(self._connected)
 
@@ -341,15 +338,15 @@ class CoroHttpClientConnection(
             while data_block := data.read(self._block_size):
                 if encode:
                     data_block = data_block.encode('iso-8859-1')
-                check.none((yield self.WriteIo(data_block)))
+                check.none((yield CoroHttpIo.WriteIo(data_block)))
             return
 
         if isinstance(data, (bytes, bytearray)):
-            check.none((yield self.WriteIo(data)))
+            check.none((yield CoroHttpIo.WriteIo(data)))
 
         elif isinstance(data, collections.abc.Iterable):
             for d in data:
-                check.none((yield self.WriteIo(d)))
+                check.none((yield CoroHttpIo.WriteIo(d)))
 
         else:
             raise TypeError(f'data should be a bytes-like object or an iterable, got {type(data)!r}') from None
@@ -374,7 +371,7 @@ class CoroHttpClientConnection(
             self,
             message_body: ta.Optional[ta.Any] = None,
             encode_chunked: bool = False,
-    ) -> ta.Generator[CoroHttpClientIo.Io, ta.Optional[bytes], None]:
+    ) -> ta.Generator[CoroHttpIo.Io, ta.Optional[bytes], None]:
         """
         Send the currently buffered request and clear the buffer.
 
@@ -476,7 +473,7 @@ class CoroHttpClientConnection(
         if self._state == self._State.IDLE:
             self._state = self._State.REQ_STARTED
         else:
-            raise self.CannotSendRequestError(self._state)
+            raise CoroHttpClientErrors.CannotSendRequestError(self._state)
 
         CoroHttpClientValidation.validate_method(method)
 
@@ -568,7 +565,7 @@ class CoroHttpClientConnection(
         """
 
         if self._state != self._State.REQ_STARTED:
-            raise self.CannotSendHeaderError
+            raise CoroHttpClientErrors.CannotSendHeaderError
 
         if hasattr(header, 'encode'):
             bh = header.encode('ascii')
@@ -598,7 +595,7 @@ class CoroHttpClientConnection(
             message_body: ta.Optional[ta.Any] = None,
             *,
             encode_chunked: bool = False,
-    ) -> ta.Generator[CoroHttpClientIo.Io, ta.Optional[bytes], None]:
+    ) -> ta.Generator[CoroHttpIo.Io, ta.Optional[bytes], None]:
         """
         Indicate that the last header line has been sent to the server.
 
@@ -609,7 +606,7 @@ class CoroHttpClientConnection(
         if self._state == self._State.REQ_STARTED:
             self._state = self._State.REQ_SENT
         else:
-            raise self.CannotSendHeaderError
+            raise CoroHttpClientErrors.CannotSendHeaderError
 
         yield from self._send_output(message_body, encode_chunked=encode_chunked)
 
@@ -623,7 +620,7 @@ class CoroHttpClientConnection(
             headers: ta.Optional[ta.Mapping[str, str]] = None,
             *,
             encode_chunked: bool = False,
-    ) -> ta.Generator[CoroHttpClientIo.Io, ta.Optional[bytes], None]:
+    ) -> ta.Generator[CoroHttpIo.Io, ta.Optional[bytes], None]:
         """Send a complete request to the server."""
 
         yield from self._send_request(method, url, body, dict(headers or {}), encode_chunked)
@@ -693,7 +690,7 @@ class CoroHttpClientConnection(
             body: ta.Optional[ta.Any],
             headers: ta.Mapping[str, str],
             encode_chunked: bool,
-    ) -> ta.Generator[CoroHttpClientIo.Io, ta.Optional[bytes], None]:
+    ) -> ta.Generator[CoroHttpIo.Io, ta.Optional[bytes], None]:
         # Honor explicitly requested Host: and Accept-Encoding: headers.
         header_names = frozenset(k.lower() for k in headers)
         skips = {}
@@ -740,7 +737,7 @@ class CoroHttpClientConnection(
     def _new_response(self) -> CoroHttpClientResponse:
         return CoroHttpClientResponse(check.not_none(self._method))
 
-    def get_response(self) -> ta.Generator[CoroHttpClientIo.Io, ta.Optional[bytes], CoroHttpClientResponse]:
+    def get_response(self) -> ta.Generator[CoroHttpIo.Io, ta.Optional[bytes], CoroHttpClientResponse]:
         """
         Get the response from the server.
 
@@ -766,7 +763,7 @@ class CoroHttpClientConnection(
         #  1) will_close: this connection was reset and the prior socket and response operate independently
         #  2) persistent: the response was retained and we await its is_closed() status to become true.
         if self._state != self._State.REQ_SENT or self._response:
-            raise self.ResponseNotReadyError(self._state)
+            raise CoroHttpClientErrors.ResponseNotReadyError(self._state)
 
         resp = self._new_response()
         resp_state = resp._state  # noqa

@@ -3,13 +3,21 @@
 import dataclasses as dc
 import typing as ta
 
-from ....lite.abstract import Abstract
+from ...lite.abstract import Abstract
 
 
 ##
 
 
-class CoroHttpClientIo:
+class CoroHttpIo:
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
+
+    def __init_subclass__(cls, **kwargs):  # noqa
+        raise TypeError
+
+    #
+
     MAX_LINE: ta.ClassVar[int] = 65536
 
     #
@@ -19,10 +27,17 @@ class CoroHttpClientIo:
 
     #
 
+    class AnyLogIo(Io, Abstract):
+        pass
+
+    #
+
     @dc.dataclass(frozen=True)
     class ConnectIo(Io):
         args: ta.Tuple[ta.Any, ...]
         kwargs: ta.Optional[ta.Dict[str, ta.Any]] = None
+
+    #
 
     class CloseIo(Io):
         pass

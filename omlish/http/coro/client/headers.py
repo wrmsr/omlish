@@ -40,8 +40,8 @@ import email.parser
 import typing as ta
 
 from ....lite.check import check
+from ..io import CoroHttpIo
 from .errors import CoroHttpClientErrors
-from .io import CoroHttpClientIo
 
 
 ##
@@ -56,7 +56,7 @@ class CoroHttpClientHeaders:
     MAX_HEADERS: ta.ClassVar[int] = 100
 
     @classmethod
-    def read_headers(cls) -> ta.Generator[CoroHttpClientIo.Io, ta.Optional[bytes], ta.List[bytes]]:
+    def read_headers(cls) -> ta.Generator[CoroHttpIo.Io, ta.Optional[bytes], ta.List[bytes]]:
         """
         Reads potential header lines into a list from a file pointer.
 
@@ -65,8 +65,8 @@ class CoroHttpClientHeaders:
 
         headers = []
         while True:
-            line = check.isinstance((yield CoroHttpClientIo.ReadLineIo(CoroHttpClientIo.MAX_LINE + 1)), bytes)
-            if len(line) > CoroHttpClientIo.MAX_LINE:
+            line = check.isinstance((yield CoroHttpIo.ReadLineIo(CoroHttpIo.MAX_LINE + 1)), bytes)
+            if len(line) > CoroHttpIo.MAX_LINE:
                 raise CoroHttpClientErrors.LineTooLongError(CoroHttpClientErrors.LineTooLongError.LineType.HEADER)
 
             headers.append(line)
@@ -92,7 +92,7 @@ class CoroHttpClientHeaders:
         return email.parser.Parser().parsestr(text)
 
     @classmethod
-    def parse_headers(cls) -> ta.Generator[CoroHttpClientIo.Io, ta.Optional[bytes], email.message.Message]:
+    def parse_headers(cls) -> ta.Generator[CoroHttpIo.Io, ta.Optional[bytes], email.message.Message]:
         """Parses only RFC2822 headers from a file pointer."""
 
         headers = yield from cls.read_headers()

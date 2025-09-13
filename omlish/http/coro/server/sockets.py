@@ -7,6 +7,7 @@ from ....lite.check import check
 from ....sockets.addresses import SocketAddress
 from ....sockets.handlers import SocketHandler_
 from ....sockets.io import SocketIoPair
+from ..io import CoroHttpIo
 from .server import CoroHttpServer
 from .server import CoroHttpServerFactory
 
@@ -20,7 +21,7 @@ class CoroHttpServerSocketHandler(SocketHandler_):
             server_factory: CoroHttpServerFactory,
             *,
             keep_alive: bool = False,
-            log_handler: ta.Optional[ta.Callable[[CoroHttpServer, CoroHttpServer.AnyLogIo], None]] = None,
+            log_handler: ta.Optional[ta.Callable[[CoroHttpServer, CoroHttpIo.AnyLogIo], None]] = None,
     ) -> None:
         super().__init__()
 
@@ -49,18 +50,18 @@ class CoroHttpServerSocketHandler(SocketHandler_):
 
         o = next(gen)
         while True:
-            if isinstance(o, CoroHttpServer.AnyLogIo):
+            if isinstance(o, CoroHttpIo.AnyLogIo):
                 i = None
                 if self._log_handler is not None:
                     self._log_handler(server, o)
 
-            elif isinstance(o, CoroHttpServer.ReadIo):
-                i = fp.r.read(o.sz)
+            elif isinstance(o, CoroHttpIo.ReadIo):
+                i = fp.r.read(check.not_none(o.sz))
 
-            elif isinstance(o, CoroHttpServer.ReadLineIo):
+            elif isinstance(o, CoroHttpIo.ReadLineIo):
                 i = fp.r.readline(o.sz)
 
-            elif isinstance(o, CoroHttpServer.WriteIo):
+            elif isinstance(o, CoroHttpIo.WriteIo):
                 i = None
                 fp.w.write(o.data)
                 fp.w.flush()

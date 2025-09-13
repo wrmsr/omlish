@@ -38,8 +38,8 @@
 import typing as ta
 
 from ....lite.check import check
+from ..io import CoroHttpIo
 from .errors import CoroHttpClientErrors
-from .io import CoroHttpClientIo
 
 
 #
@@ -51,9 +51,9 @@ class CoroHttpClientStatusLine(ta.NamedTuple):
     reason: str
 
     @classmethod
-    def read(cls) -> ta.Generator[CoroHttpClientIo.Io, ta.Optional[bytes], 'CoroHttpClientStatusLine']:
-        line = str(check.isinstance((yield CoroHttpClientIo.ReadLineIo(CoroHttpClientIo.MAX_LINE + 1)), bytes), 'iso-8859-1')  # noqa
-        if len(line) > CoroHttpClientIo.MAX_LINE:
+    def read(cls) -> ta.Generator[CoroHttpIo.Io, ta.Optional[bytes], 'CoroHttpClientStatusLine']:
+        line = str(check.isinstance((yield CoroHttpIo.ReadLineIo(CoroHttpIo.MAX_LINE + 1)), bytes), 'iso-8859-1')
+        if len(line) > CoroHttpIo.MAX_LINE:
             raise CoroHttpClientErrors.LineTooLongError(CoroHttpClientErrors.LineTooLongError.LineType.STATUS)
         if not line:
             # Presumably, the server closed the connection before sending a valid response.
