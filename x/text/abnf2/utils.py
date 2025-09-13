@@ -1,5 +1,5 @@
-import typing as ta
 import itertools
+import typing as ta
 
 from omlish import check
 
