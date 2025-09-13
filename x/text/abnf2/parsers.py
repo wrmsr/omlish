@@ -30,10 +30,9 @@ class StringLiteral(Literal):
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}@{id(self):x}({self._value!r})'
 
-    # noinspection PyProtectedMember
     def _iter_parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
-        if start < len(ctx._source):
-            source = ctx._source[start : start + len(self._value)]
+        if start < len(ctx._source):  # noqa
+            source = ctx._source[start : start + len(self._value)]  # noqa
             if source == self._value:
                 yield Match(self, start, start + len(source), ())
 
@@ -51,10 +50,9 @@ class CaseInsensitiveStringLiteral(Literal):
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}@{id(self):x}({self._value!r})'
 
-    # noinspection PyProtectedMember
     def _iter_parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
-        if start < len(ctx._source):
-            source = ctx._source[start : start + len(self._value)].casefold()
+        if start < len(ctx._source):  # noqa
+            source = ctx._source[start : start + len(self._value)].casefold()  # noqa
             if source == self._value:
                 yield Match(self, start, start + len(source), ())
 
@@ -80,10 +78,9 @@ class RangeLiteral(Literal):
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}@{id(self):x}({self._value!r})'
 
-    # noinspection PyProtectedMember
     def _iter_parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
         try:
-            source = ctx._source[start]
+            source = ctx._source[start]  # noqa
         except IndexError:
             return
         # ranges are always case-sensitive
@@ -314,9 +311,8 @@ class RuleRef(Parser):
     def _match_repr(self) -> str:
         return repr(self)
 
-    # noinspection PyProtectedMember
     def _iter_parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
-        cp = ctx._grammar._rules_by_name_f[self._name_f].parser
+        cp = ctx._grammar._rules_by_name_f[self._name_f].parser  # noqa
         for cm in ctx.iter_parse(cp, start):
             yield Match(self, cm.start, cm.end, (cm,))
 

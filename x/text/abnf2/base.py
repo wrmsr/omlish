@@ -38,11 +38,10 @@ class Match(ta.NamedTuple):
 
     #
 
-    # noinspection PyProtectedMember
     def __repr__(self) -> str:
         return (
             f'{self.__class__.__name__}('
-            f'{self.parser._match_repr()}, '
+            f'{self.parser._match_repr()}, '  # noqa
             f'{self.start}, {self.end}'
             f'{f", {self.children!r}" if self.children else ""})'
         )
@@ -127,12 +126,19 @@ class Parser(lang.Abstract, lang.PackageSealed):
 
 
 class Rule(lang.Final):
-    def __init__(self, name: str, parser: Parser) -> None:
+    def __init__(
+            self,
+            name: str,
+            parser: Parser,
+            *,
+            insignificant: bool = False,
+    ) -> None:
         super().__init__()
 
         self._name = check.non_empty_str(name)
         self._name_f = name.casefold()
         self._parser = check.isinstance(parser, Parser)
+        self._insignificant = insignificant
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self._name!r})'
@@ -149,9 +155,12 @@ class Rule(lang.Final):
     def parser(self) -> Parser:
         return self._parser
 
+    @property
+    def insignificant(self) -> bool:
+        return self._insignificant
+
 
 class Grammar(lang.Final):
-    # noinspection PyProtectedMember
     def __init__(
             self,
             *rules: Rule,
@@ -165,12 +174,12 @@ class Grammar(lang.Final):
         rules_by_parser: dict[Parser, Rule] = {}
         for gr in rules:
             check.not_in(gr, rules_set)
-            check.not_in(gr._name, rules_by_name)
-            check.not_in(gr._name_f, rules_by_name_f)
-            check.not_in(gr._parser, rules_by_parser)
-            rules_by_name[gr._name] = gr
-            rules_by_name_f[gr._name_f] = gr
-            rules_by_parser[gr._parser] = gr
+            check.not_in(gr._name, rules_by_name)  # noqa
+            check.not_in(gr._name_f, rules_by_name_f)  # noqa
+            check.not_in(gr._parser, rules_by_parser)  # noqa
+            rules_by_name[gr._name] = gr  # noqa
+            rules_by_name_f[gr._name_f] = gr  # noqa
+            rules_by_parser[gr._parser] = gr  # noqa
         self._rules = rules_set
         self._rules_by_name: ta.Mapping[str, Rule] = rules_by_name
         self._rules_by_name_f: ta.Mapping[str, Rule] = rules_by_name_f
@@ -184,15 +193,9 @@ class Grammar(lang.Final):
     def root(self) -> Rule | None:
         return self._root
 
-    # noinspection PyProtectedMember
-    def rule(self, name: str) -> Parser | None:
-        try:
-            gr = self._rules_by_name_f[name.casefold()]
-        except KeyError:
-            return None
-        return gr._parser
+    def rule(self, name: str) -> Rule | None:
+        return self._rules_by_name_f.get(name.casefold())
 
-    # noinspection PyProtectedMember
     def iter_parse(
             self,
             source: str,
@@ -210,7 +213,7 @@ class Grammar(lang.Final):
                 root = check.in_(check.isinstance(root, Rule), self._rules)
 
         ctx = _Context(self, source)
-        return ctx.iter_parse(root._parser, start)
+        return ctx.iter_parse(root._parser, start)  # noqa
 
     def parse(
             self,
@@ -244,9 +247,8 @@ class _Context(lang.Final):
     def source(self) -> str:
         return self._source
 
-    # noinspection PyProtectedMember
     def iter_parse(self, parser: Parser, start: int) -> ta.Iterator[Match]:
-        return parser._iter_parse(self, start)
+        return parser._iter_parse(self, start)  # noqa
 
 
 ##

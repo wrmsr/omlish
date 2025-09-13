@@ -13,10 +13,8 @@ from .base import (  # noqa
 
 from .core import (  # noqa
     CORE_RULES,
-    CORE_WS_RULES,
 
     GRAMMAR_RULES,
-    GRAMMAR_WS_RULES,
 
     GRAMMAR_GRAMMAR,
     fix_grammar_ws,
@@ -48,6 +46,6 @@ from .parsers import (  # noqa
 )
 
 from .utils import (  # noqa
-    strip_match_rules,
+    strip_insignificant_match_rules,
     only_match_rules,
 )
