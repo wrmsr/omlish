@@ -489,7 +489,9 @@ class Rule(Parser):
 
     # noinspection PyProtectedMember
     def _iter_parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
-        return ctx.iter_parse(ctx._grammar._rules_by_name_f[self._name_f].parser, start)
+        cp = ctx._grammar._rules_by_name_f[self._name_f].parser
+        for cm in ctx.iter_parse(cp, start):
+            yield Match(self, cm.start, cm.end, (cm,))
 
 
 rule = Rule

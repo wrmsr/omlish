@@ -427,7 +427,7 @@ def _main() -> None:
 
     @visit_parser.register
     def visit_parser_rule(p: Rule, m: Match) -> None:
-        pass
+        visit_parser(p, m)
 
     def visit_match(m: Match) -> ta.Any:
         visit_parser(m.parser, m)
