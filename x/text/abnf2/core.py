@@ -83,6 +83,19 @@ CORE_RULES: ta.Mapping[str, Parser] = {
 
 }
 
+CORE_WS_RULES: ta.AbstractSet[str] = {
+    'CR',
+    'CRLF',
+    'HTAB',
+    'LF',
+    'LWSP',
+    'SP',
+    'WSP',
+}
+
+
+##
+
 
 GRAMMAR_RULES: ta.Mapping[str, Parser] = {
 
@@ -388,6 +401,15 @@ GRAMMAR_RULES: ta.Mapping[str, Parser] = {
     ),
 
 }
+
+GRAMMAR_WS_RULES: ta.AbstractSet[str] = {
+    'c-wsp',
+    'c-nl',
+    # 'comment',
+}
+
+
+##
 
 
 GRAMMAR_GRAMMAR = Grammar(

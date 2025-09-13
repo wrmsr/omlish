@@ -16,10 +16,13 @@ def strip_match_rules(m: Match, names: ta.Container[str]) -> Match:
     return rec(m)
 
 
-def only_match_rules(m: Match) -> Match:
+def only_match_rules(m: Match, *, exclude: ta.Container[str] | None = None) -> Match:
     def rec(c: Match) -> ta.Iterable[Match]:
         if isinstance(c.parser, Rule):
-            return (c.flat_map_children(rec),)
+            if exclude is not None and c.parser.name in exclude:
+                return ()
+            else:
+                return (c.flat_map_children(rec),)
         else:
             return itertools.chain.from_iterable(map(rec, c.children))
     return m.flat_map_children(rec)

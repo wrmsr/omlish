@@ -12,9 +12,12 @@ from .base import (  # noqa
 
 from .core import (  # noqa
     CORE_RULES,
-    GRAMMAR_RULES,
-    GRAMMAR_GRAMMAR,
+    CORE_WS_RULES,
 
+    GRAMMAR_RULES,
+    GRAMMAR_WS_RULES,
+
+    GRAMMAR_GRAMMAR,
     fix_grammar_ws,
 )
 
