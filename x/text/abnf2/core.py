@@ -430,7 +430,7 @@ def collapse_match(m: Match) -> Match:
         elif isinstance(c.parser, Concat) and not c.children:
             return ()
         else:
-            return c.flat_map_children(rec)
+            return (c.flat_map_children(rec),)
     return m.flat_map_children(rec)
 
 
