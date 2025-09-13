@@ -460,7 +460,7 @@ def _main() -> None:
     """
 
     ggm = check.not_none(GRAMMAR_GRAMMAR.parse(fix_grammar_newlines(textwrap.dedent(source)), 'rulelist'))
-    print(ggm)
+    print(ggm.render(indent=2))
     print(visit_match(ggm))
 
     # g = Grammar(

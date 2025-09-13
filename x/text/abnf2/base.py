@@ -43,23 +43,50 @@ class Match(ta.NamedTuple):
             f'{f", {self.children!r}" if self.children else ""})'
         )
 
-    def _write_str(self, write: ta.Callable[[str], ta.Any]) -> None:
-        if isinstance(self.parser, (StringLiteral, CaseInsensitiveStringLiteral)):
-            write(f'literal<{self.start}-{self.end}>({self.parser.value!r})')
-        elif isinstance(self.parser, RangeLiteral):
-            write(f'literal<{self.start}-{self.end}>({self.parser.value.lo!r}-{self.parser.value.hi!r})')
+    def render_to(
+            self,
+            write: ta.Callable[[str], ta.Any],
+            *,
+            indent: int | None = None,
+            _level: int = 0,
+    ) -> None:
+        ix: str | None = (' ' * (indent * _level)) if indent is not None else None
+        if ix:
+            write(ix)
+        p = self.parser
+        if isinstance(p, (StringLiteral, CaseInsensitiveStringLiteral)):
+            write(f'literal<{self.start}-{self.end}>({p.value!r})')
+        elif isinstance(p, RangeLiteral):
+            write(f'literal<{self.start}-{self.end}>({p.value.lo!r}-{p.value.hi!r})')
         else:
-            write(f'{self.parser.__class__.__name__.lower()}<{self.start}-{self.end}>(')
-            for i, c in enumerate(self.children):
-                if i:
-                    write(', ')
-                c._write_str(write)
-            write(')')
+            write(f'{p.__class__.__name__.lower()}<{self.start}-{self.end}>')
+            if isinstance(p, Rule):
+                write(f':{p.name}')
+            if self.children:
+                write('(')
+                if ix is not None:
+                    write('\n')
+                for i, c in enumerate(self.children):
+                    if i and ix is None:
+                        write(', ')
+                    c.render_to(write, indent=indent, _level=_level + 1)
+                    if ix is not None:
+                        write(',\n')
+                if ix:
+                    write(ix)
+                write(')')
+
+    def render(
+            self,
+            *,
+            indent: int | None = None,
+    ) -> str:
+        sb = io.StringIO()
+        self.render_to(sb.write, indent=indent)
+        return sb.getvalue()
 
     def __str__(self) -> str:
-        sb = io.StringIO()
-        self._write_str(sb.write)
-        return sb.getvalue()
+        return self.render()
 
 
 def longest_match(ms: ta.Iterable[Match]) -> Match | None:
@@ -480,6 +507,10 @@ class Rule(Parser):
 
         self._name = name
         self._name_f = name.casefold()
+
+    @property
+    def name(self) -> str:
+        return self._name
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}@{id(self):x}({self._name!r})'
