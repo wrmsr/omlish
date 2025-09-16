@@ -1,6 +1,6 @@
 import pytest
 
-from ... import lang
+from ..headers import DuplicateHttpHeaderError
 from ..headers import HttpHeaders
 
 
@@ -137,5 +137,5 @@ def test_http_headers_invalid_init():
 def test_http_headers_duplicate_key_error():
     src = {'Content-Type': ['text/html', 'application/json']}
     headers = HttpHeaders(src)
-    with pytest.raises(lang.DuplicateKeyError):
+    with pytest.raises(DuplicateHttpHeaderError):
         headers.strict_dct  # noqa

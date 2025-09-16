@@ -62,6 +62,7 @@ with _lang.auto_proxy_init(globals()):
 
     from .headers import (  # noqa
         CanHttpHeaders,
+        DuplicateHttpHeaderError,
         HttpHeaders,
         headers,
     )

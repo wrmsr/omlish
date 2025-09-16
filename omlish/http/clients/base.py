@@ -1,3 +1,4 @@
+# ruff: noqa: UP006 UP007 UP045
 """
 TODO:
  - ?? lite ?? whole point is an async client in lite code
@@ -9,9 +10,9 @@ TODO:
 """
 import typing as ta
 
-from ... import cached
 from ... import dataclasses as dc
-from ... import lang
+from ...lite.abstract import Abstract
+from ...lite.cached import cached_property
 from ..headers import CanHttpHeaders
 from ..headers import HttpHeaders
 
@@ -32,17 +33,18 @@ def is_success_status(status: int) -> bool:
 ##
 
 
+@ta.final
 @dc.dataclass(frozen=True)
-class HttpRequest(lang.Final):
+class HttpRequest:
     url: str
-    method: str | None = None  # noqa
+    method: ta.Optional[str] = None  # noqa
 
     _: dc.KW_ONLY
 
-    headers: CanHttpHeaders | None = dc.xfield(None, repr=dc.truthy_repr)
-    data: bytes | str | None = dc.xfield(None, repr_fn=lambda v: '...' if v is not None else None)
+    headers: ta.Optional[CanHttpHeaders] = dc.xfield(None, repr=dc.truthy_repr)
+    data: ta.Union[bytes, str, None] = dc.xfield(None, repr_fn=lambda v: '...' if v is not None else None)
 
-    timeout_s: float | None = None
+    timeout_s: ta.Optional[float] = None
 
     #
 
@@ -54,8 +56,8 @@ class HttpRequest(lang.Final):
             return 'POST'
         return 'GET'
 
-    @cached.property
-    def headers_(self) -> HttpHeaders | None:
+    @cached_property
+    def headers_(self) -> ta.Optional[HttpHeaders]:
         return HttpHeaders(self.headers) if self.headers is not None else None
 
 
@@ -63,10 +65,10 @@ class HttpRequest(lang.Final):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class BaseHttpResponse(lang.Abstract):
+class BaseHttpResponse(Abstract):
     status: int
 
-    headers: HttpHeaders | None = dc.xfield(None, repr=dc.truthy_repr)
+    headers: ta.Optional[HttpHeaders] = dc.xfield(None, repr=dc.truthy_repr)
 
     request: HttpRequest
     underlying: ta.Any = dc.field(default=None, repr=False)
@@ -76,9 +78,10 @@ class BaseHttpResponse(lang.Abstract):
         return is_success_status(self.status)
 
 
+@ta.final
 @dc.dataclass(frozen=True, kw_only=True)
-class HttpResponse(BaseHttpResponse, lang.Final):
-    data: bytes | None = dc.xfield(None, repr_fn=lambda v: '...' if v is not None else None)
+class HttpResponse(BaseHttpResponse):
+    data: ta.Optional[bytes] = dc.xfield(None, repr_fn=lambda v: '...' if v is not None else None)
 
 
 ##
@@ -86,7 +89,7 @@ class HttpResponse(BaseHttpResponse, lang.Final):
 
 class HttpClientError(Exception):
     @property
-    def cause(self) -> BaseException | None:
+    def cause(self) -> ta.Optional[BaseException]:
         return self.__cause__
 
 
