@@ -1,9 +1,13 @@
+# ruff: noqa: UP045
+# @omlish-lite
 import abc
 import contextlib
+import dataclasses as dc
 import typing as ta
 
-from ... import dataclasses as dc
-from ... import lang
+from ...lite.abstract import Abstract
+from ...lite.dataclasses import dataclass_maybe_post_init
+from ...lite.dataclasses import dataclass_shallow_asdict
 from .base import BaseHttpResponse
 from .base import BaseHttpResponseT
 from .base import HttpRequest
@@ -11,19 +15,34 @@ from .base import HttpResponse
 from .base import HttpStatusError
 
 
+StreamHttpResponseT = ta.TypeVar('StreamHttpResponseT', bound='StreamHttpResponse')
+HttpClientT = ta.TypeVar('HttpClientT', bound='HttpClient')
+
+
 ##
 
 
-@dc.dataclass(frozen=True, kw_only=True)
-class StreamHttpResponse(BaseHttpResponse, lang.Final):
+@ta.final
+@dc.dataclass(frozen=True)  # kw_only=True
+class StreamHttpResponse(BaseHttpResponse):
     class Stream(ta.Protocol):
         def read(self, /, n: int = -1) -> bytes: ...
 
-    stream: Stream
+    @ta.final
+    class _NullStream:
+        def read(self, /, n: int = -1) -> bytes:
+            raise TypeError
 
-    _closer: ta.Callable[[], None] | None = dc.field(default=None, repr=False)
+    stream: Stream = _NullStream()
 
-    def __enter__(self) -> ta.Self:
+    _closer: ta.Optional[ta.Callable[[], None]] = None
+
+    def __post_init__(self) -> None:
+        dataclass_maybe_post_init(super())
+        if isinstance(self.stream, StreamHttpResponse._NullStream):
+            raise TypeError(self.stream)
+
+    def __enter__(self: StreamHttpResponseT) -> StreamHttpResponseT:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -69,7 +88,7 @@ def read_response(resp: BaseHttpResponse) -> HttpResponse:
     elif isinstance(resp, StreamHttpResponse):
         data = resp.stream.read()
         return HttpResponse(**{
-            **{k: v for k, v in dc.shallow_asdict(resp).items() if k not in ('stream', '_closer')},
+            **{k: v for k, v in dataclass_shallow_asdict(resp).items() if k not in ('stream', '_closer')},
             'data': data,
         })
 
@@ -80,8 +99,8 @@ def read_response(resp: BaseHttpResponse) -> HttpResponse:
 ##
 
 
-class HttpClient(lang.Abstract):
-    def __enter__(self) -> ta.Self:
+class HttpClient(Abstract):
+    def __enter__(self: HttpClientT) -> HttpClientT:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):

@@ -1,4 +1,5 @@
 # ruff: noqa: UP006 UP007 UP045
+# @omlish-lite
 """
 TODO:
  - ?? lite ?? whole point is an async client in lite code
@@ -8,10 +9,11 @@ TODO:
  - return non-200 HttpResponses
  - async
 """
+import dataclasses as dc
 import typing as ta
 
-from ... import dataclasses as dc
 from ...lite.abstract import Abstract
+from ...lite.attrops import AttrOps
 from ...lite.cached import cached_property
 from ..headers import CanHttpHeaders
 from ..headers import HttpHeaders
@@ -39,12 +41,22 @@ class HttpRequest:
     url: str
     method: ta.Optional[str] = None  # noqa
 
-    _: dc.KW_ONLY
+    # _: dc.KW_ONLY
 
-    headers: ta.Optional[CanHttpHeaders] = dc.xfield(None, repr_fn=dc.truthy_repr)
-    data: ta.Union[bytes, str, None] = dc.xfield(None, repr_fn=lambda v: '...' if v is not None else None)
+    headers: ta.Optional[CanHttpHeaders] = None
+    data: ta.Union[bytes, str, None] = None
 
-    timeout_s: ta.Optional[float] = dc.xfield(None, repr_fn=dc.opt_repr)
+    timeout_s: ta.Optional[float] = None
+
+    #
+
+    __repr__ = AttrOps['HttpRequest'](lambda o: (
+        o.url,
+        o.method,
+        (o.headers, dict(repr_fn=AttrOps.truthy_repr)),
+        (o.data, dict(repr_fn=lambda v: '...' if v is not None else None)),
+        (o.timeout_s, dict(repr_fn=AttrOps.opt_repr)),
+    )).repr
 
     #
 
@@ -64,14 +76,25 @@ class HttpRequest:
 #
 
 
-@dc.dataclass(frozen=True, kw_only=True)
+@dc.dataclass(frozen=True)  # kw_only=True
 class BaseHttpResponse(Abstract):
+    request: HttpRequest
+
     status: int
 
-    headers: ta.Optional[HttpHeaders] = dc.xfield(None, repr_fn=dc.truthy_repr)
+    headers: ta.Optional[HttpHeaders] = None
 
-    request: HttpRequest
-    underlying: ta.Any = dc.field(default=None, repr=False)
+    underlying: ta.Any = None
+
+    #
+
+    __repr__ = AttrOps['BaseHttpResponse'](lambda o: (
+        o.status,
+        (o.headers, dict(repr_fn=AttrOps.truthy_repr)),
+        o.request,
+    )).repr
+
+    #
 
     @property
     def is_success(self) -> bool:
@@ -79,9 +102,18 @@ class BaseHttpResponse(Abstract):
 
 
 @ta.final
-@dc.dataclass(frozen=True, kw_only=True)
+@dc.dataclass(frozen=True)  # kw_only=True
 class HttpResponse(BaseHttpResponse):
-    data: ta.Optional[bytes] = dc.xfield(None, repr_fn=lambda v: '...' if v is not None else None)
+    data: ta.Optional[bytes] = None
+
+    #
+
+    __repr__ = AttrOps['HttpResponse'](lambda o: (
+        o.status,
+        (o.headers, dict(repr_fn=AttrOps.truthy_repr)),
+        (o.data, dict(repr_fn=lambda v: '...' if v is not None else None)),
+        o.request,
+    )).repr
 
 
 ##
