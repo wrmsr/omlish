@@ -73,6 +73,41 @@ class TestAttrOps(unittest.TestCase):
         assert repr(P3(1, 2)) == 'P3(x=1)'
         assert repr(P3(1, 4)) == 'P3(x=1, y=4)'
 
+    def test_cache_hash(self):
+        class A:
+            hc = 0
+
+            def __hash__(self):
+                self.hc += 1
+                return 42
+
+        class B:
+            def __init__(self, a: A) -> None:
+                self.a = a
+
+            AttrOps['B'](lambda o: (o.a,)).install(locals())
+
+        b0 = B(A())
+        assert b0.a.hc == 0
+        assert isinstance(hash(b0), int)
+        assert b0.a.hc == 1
+        b1 = B(A())
+        assert hash(b0) == hash(b1)
+        assert b0.a.hc == 2
+        assert b1.a.hc == 1
+
+        class C(B):
+            AttrOps['C'](lambda o: (o.a,), cache_hash=True).install(locals())
+
+        c0 = C(A())
+        assert c0.a.hc == 0
+        assert isinstance(hash(c0), int)
+        assert c0.a.hc == 1
+        c1 = C(A())
+        assert hash(c0) == hash(c1)
+        assert c0.a.hc == 1
+        assert c1.a.hc == 1
+
 
 class TestAttrRepr(unittest.TestCase):
     def test_attr_repr(self):

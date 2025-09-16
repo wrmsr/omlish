@@ -121,6 +121,7 @@ class AttrOps(ta.Generic[T]):
             repr_filter: ta.Optional[ta.Callable[[ta.Any], bool]] = None,
             recursive: bool = False,
 
+            cache_hash: ta.Union[bool, str] = False,
             subtypes_eq: bool = False,
     ) -> None:
         ...
@@ -143,6 +144,7 @@ class AttrOps(ta.Generic[T]):
             repr_filter: ta.Optional[ta.Callable[[ta.Any], bool]] = None,
             recursive: bool = False,
 
+            cache_hash: ta.Union[bool, str] = False,
             subtypes_eq: bool = False,
     ) -> None:
         ...
@@ -158,6 +160,7 @@ class AttrOps(ta.Generic[T]):
             repr_filter=None,
             recursive=False,
 
+            cache_hash=False,
             subtypes_eq=False,
     ) -> None:
         if args and len(args) == 1 and callable(args[0]):
@@ -172,6 +175,7 @@ class AttrOps(ta.Generic[T]):
         self._repr_filter: ta.Optional[ta.Callable[[ta.Any], bool]] = repr_filter
         self._recursive: bool = recursive
 
+        self._cache_hash: ta.Union[bool, str] = cache_hash
         self._subtypes_eq: bool = subtypes_eq
 
     @property
@@ -288,6 +292,8 @@ class AttrOps(ta.Generic[T]):
 
     #
 
+    _DEFAULT_CACHED_HASH_ATTR: ta.ClassVar[str] = '__cached_hash__'
+
     _hash: ta.Callable[[T], int]
 
     @property
@@ -297,12 +303,32 @@ class AttrOps(ta.Generic[T]):
         except AttributeError:
             pass
 
-        def _hash(o: T) -> int:
+        def _calc_hash(o: T) -> int:
             return hash(tuple(
                 getattr(o, a._name)  # noqa
                 for a in self._attrs
                 if a._hash  # noqa
             ))
+
+        if (ch := self._cache_hash) is not False:
+            if ch is True:
+                cha = self._DEFAULT_CACHED_HASH_ATTR
+            elif isinstance(ch, str):
+                cha = ch
+            else:
+                raise TypeError(ch)
+
+            def _cached_hash(o: T) -> int:
+                try:
+                    return object.__getattribute__(o, cha)
+                except AttributeError:
+                    object.__setattr__(o, cha, h := _calc_hash(o))
+                return h
+
+            _hash = _cached_hash
+
+        else:
+            _hash = _calc_hash
 
         self._hash = _hash
         return _hash
