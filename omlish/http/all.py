@@ -4,23 +4,45 @@ from .. import lang as _lang
 with _lang.auto_proxy_init(globals()):
     ##
 
-    from . import consts  # noqa
+    from .clients.base import (  # noqa
+        DEFAULT_ENCODING,
 
-    from .clients import (  # noqa
-        BaseHttpResponse,
-        HttpClient,
-        HttpClientError,
+        is_success_status,
+
         HttpRequest,
+
+        BaseHttpResponse,
         HttpResponse,
-        HttpxHttpClient,
-        StreamHttpResponse,
-        UrllibHttpClient,
+
+        HttpClientError,
+        HttpStatusError,
+    )
+
+    from .clients.default import (  # noqa
         client,
+
+        request,
+    )
+
+    from .clients.httpx import (  # noqa
+        HttpxHttpClient,
+    )
+
+    from .clients.sync import (  # noqa
+        StreamHttpResponse,
+
         close_response,
         closing_response,
         read_response,
-        request,
+
+        HttpClient,
     )
+
+    from .clients.urllib import (  # noqa
+        UrllibHttpClient,
+    )
+
+    from . import consts  # noqa
 
     from .cookies import (  # noqa
         CookieTooBigError,

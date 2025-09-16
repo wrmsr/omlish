@@ -5,9 +5,9 @@ import typing as ta
 import urllib.parse
 
 from .....lite.check import check
-from ....clients import HttpRequest
-from ....clients import StreamHttpResponse
+from ....clients.base import HttpRequest
 from ....clients.sync import HttpClient
+from ....clients.sync import StreamHttpResponse
 from ....headers import HttpHeaders
 from ...io import CoroHttpIo
 from ..connection import CoroHttpClientConnection

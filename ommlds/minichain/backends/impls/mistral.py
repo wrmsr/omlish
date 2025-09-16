@@ -27,7 +27,7 @@ from ...chat.messages import UserMessage
 # )
 @static_check_is_chat_choices_service
 class MistralChatChoicesService:
-    model: ta.ClassVar[str] = 'mistral-large-latest'
+    model: ta.ClassVar[str] = 'mistral-medium-2508'
 
     ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
         SystemMessage: 'system',

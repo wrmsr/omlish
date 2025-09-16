@@ -79,7 +79,7 @@ duckdb==1.4.0  # @omlish-venv !13t !13dt !14t
 
 
 pycparser==2.23
-cffi==2.0.0
+cffi==1.17.1
 pcpp==1.30
 
 # !! LGPL
