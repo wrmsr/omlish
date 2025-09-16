@@ -113,12 +113,14 @@ class AttrOps(ta.Generic[T]):
                 ta.Mapping[str, ta.Any],
                 Attr,
             ]],
+
             with_module: bool = False,
             use_qualname: bool = False,
             with_id: bool = False,
             terse: bool = False,
             repr_filter: ta.Optional[ta.Callable[[ta.Any], bool]] = None,
             recursive: bool = False,
+
             subtypes_eq: bool = False,
     ) -> None:
         ...
@@ -133,12 +135,14 @@ class AttrOps(ta.Generic[T]):
             ], ...]],
             /,
             *,
+
             with_module: bool = False,
             use_qualname: bool = False,
             with_id: bool = False,
             terse: bool = False,
             repr_filter: ta.Optional[ta.Callable[[ta.Any], bool]] = None,
             recursive: bool = False,
+
             subtypes_eq: bool = False,
     ) -> None:
         ...
@@ -146,12 +150,14 @@ class AttrOps(ta.Generic[T]):
     def __init__(
             self,
             *args,
+
             with_module=False,
             use_qualname=False,
             with_id=False,
             terse=False,
             repr_filter=None,
             recursive=False,
+
             subtypes_eq=False,
     ) -> None:
         if args and len(args) == 1 and callable(args[0]):
@@ -165,6 +171,7 @@ class AttrOps(ta.Generic[T]):
         self._terse: bool = terse
         self._repr_filter: ta.Optional[ta.Callable[[ta.Any], bool]] = repr_filter
         self._recursive: bool = recursive
+
         self._subtypes_eq: bool = subtypes_eq
 
     @property

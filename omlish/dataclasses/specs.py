@@ -1,6 +1,7 @@
 """Should be kept pure. No references to dc std, no references to impl detail."""
 import dataclasses as dc
 import enum
+import types
 import typing as ta
 
 from .. import check
@@ -28,6 +29,30 @@ class DefaultFactory(ta.NamedTuple):
 ##
 
 
+class _SpecBase:
+    _BOOL_FIELDS: ta.ClassVar[ta.Sequence[dc.Field]]
+    _OPT_BOOL_FIELDS: ta.ClassVar[ta.Sequence[dc.Field]]
+
+    def _check_spec_base_fields(self) -> None:
+        for f in self._BOOL_FIELDS:
+            if not isinstance(bv := getattr(self, f.name), bool):
+                raise TypeError(f'dataclass {self.__class__.__name__} attr {f.name} must be bool, got {bv!r}')
+
+        for f in self._OPT_BOOL_FIELDS:
+            if not isinstance(bv := getattr(self, f.name), (bool, types.NoneType)):
+                raise TypeError(f'dataclass {self.__class__.__name__} attr {f.name} must be bool or None, got {bv!r}')
+
+
+def _init_spec_base(cls):
+    cls._BOOL_FIELDS = [f for f in dc.fields(cls) if f.type is bool]  # noqa
+    cls._OPT_BOOL_FIELDS = [f for f in dc.fields(cls) if f.type in (bool | None, ta.Optional[bool])]  # noqa
+
+    return cls
+
+
+##
+
+
 class FieldType(enum.StrEnum):
     INSTANCE = enum.auto()
     CLASS_VAR = enum.auto()
@@ -36,8 +61,9 @@ class FieldType(enum.StrEnum):
     __repr__ = lang.enum_name_repr
 
 
+@_init_spec_base
 @dc.dataclass(frozen=True, kw_only=True, eq=False)
-class FieldSpec(lang.Final):
+class FieldSpec(_SpecBase, lang.Final):
     name: str
     annotation: ta.Any
 
@@ -91,15 +117,11 @@ class FieldSpec(lang.Final):
     ##
     # validate
 
-    _BOOL_FIELDS: ta.ClassVar[ta.Sequence[dc.Field]]
-
     def __post_init__(self) -> None:
         check.non_empty_str(self.name)
         check.arg(self.name.isidentifier())
 
-        for bf in self._BOOL_FIELDS:
-            if not isinstance(bv := getattr(self, bf.name), bool):
-                raise TypeError(f'dataclass field spec attr {bf.name} must be bool, got {bv!r}')
+        self._check_spec_base_fields()
 
         if self.field_type in (FieldType.CLASS_VAR, FieldType.INIT_VAR):
             if isinstance(self.default.or_else(None), DefaultFactory):
@@ -124,14 +146,12 @@ class FieldSpec(lang.Final):
             )
 
 
-FieldSpec._BOOL_FIELDS = [f for f in dc.fields(FieldSpec) if f.type is bool]  # noqa
-
-
 ##
 
 
+@_init_spec_base
 @dc.dataclass(frozen=True, kw_only=True, eq=False)
-class ClassSpec(lang.Final):
+class ClassSpec(_SpecBase, lang.Final):
     ##
     # fields
 
@@ -217,12 +237,8 @@ class ClassSpec(lang.Final):
     ##
     # validate
 
-    _BOOL_FIELDS: ta.ClassVar[ta.Sequence[dc.Field]]
-
     def __post_init__(self) -> None:
-        for bf in self._BOOL_FIELDS:
-            if not isinstance(bv := getattr(self, bf.name), bool):
-                raise TypeError(f'dataclass field spec attr {bf.name} must be bool, got {bv!r}')
+        self._check_spec_base_fields()
 
         fields_by_name: dict[str, FieldSpec] = {}
         for f in self.fields:
@@ -242,6 +258,3 @@ class ClassSpec(lang.Final):
 
         if self.order and not self.eq:
             raise ValueError('eq must be true if order is true')
-
-
-ClassSpec._BOOL_FIELDS = [f for f in dc.fields(ClassSpec) if f.type is bool]  # noqa
