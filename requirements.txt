@@ -20,7 +20,7 @@ lz4==4.4.4
 # git+https://github.com/wrmsr/python-lz4@wrmsr_20240830_GIL_NOT_USED
 
 python-snappy==0.7.3; python_version < "3.14"  # @omlish-venv !13t !13dt
-zstandard==0.24.0; python_version < "3.14"  # @omlish-venv !13t !13dt
+zstandard==0.25.0; python_version < "3.14"  # @omlish-venv !13t !13dt
 brotli==1.1.0
 
 
@@ -30,7 +30,7 @@ sqlalchemy[asyncio]==2.0.43
 
 ## sql
 
-pg8000==1.31.4
+pg8000==1.31.5
 #> psycopg2==2.9.10
 #> psycopg==3.2.2
 

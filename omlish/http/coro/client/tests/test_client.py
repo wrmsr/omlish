@@ -7,9 +7,9 @@ import urllib.parse
 import pytest
 
 from .....lite.check import check
+from ...io import CoroHttpIo
 from ..client import CoroHttpClientConnection
 from ..client import CoroHttpClientResponse
-from ..io import CoroHttpClientIo
 
 
 ##
@@ -72,11 +72,11 @@ def run_coro(
     sock: ta.Optional[socket.socket] = None
     sock_file: ta.Optional[ta.Any] = None
 
-    def handle_io(o: CoroHttpClientIo.Io) -> ta.Any:
+    def handle_io(o: CoroHttpIo.Io) -> ta.Any:
         nonlocal sock
         nonlocal sock_file
 
-        if isinstance(o, CoroHttpClientIo.ConnectIo):
+        if isinstance(o, CoroHttpIo.ConnectIo):
             check.none(sock)
             sock = socket.create_connection(*o.args, **(o.kwargs or {}))
 
@@ -91,21 +91,21 @@ def run_coro(
 
             return None
 
-        elif isinstance(o, CoroHttpClientIo.CloseIo):
+        elif isinstance(o, CoroHttpIo.CloseIo):
             check.not_none(sock).close()
             return None
 
-        elif isinstance(o, CoroHttpClientIo.WriteIo):
+        elif isinstance(o, CoroHttpIo.WriteIo):
             check.not_none(sock).sendall(o.data)
             return None
 
-        elif isinstance(o, CoroHttpClientIo.ReadIo):
+        elif isinstance(o, CoroHttpIo.ReadIo):
             if (sz := o.sz) is not None:
                 return check.not_none(sock_file).read(sz)
             else:
                 return check.not_none(sock_file).read()
 
-        elif isinstance(o, CoroHttpClientIo.ReadLineIo):
+        elif isinstance(o, CoroHttpIo.ReadLineIo):
             return check.not_none(sock_file).readline(o.sz)
 
         else:
