@@ -2822,10 +2822,12 @@ class TestHash(unittest.TestCase):
             test(case, unsafe_hash, eq, frozen, False, res_no_defined_hash)
             test(case, unsafe_hash, eq, frozen, True,  res_defined_hash)
 
+            ## **NOTE**: DIVERGENCE FROM STDLIB: we forbid non-bool values in the name of error detection.
+            ##
             # Test non-bool truth values, too.  This is just to make sure the data-driven table in the decorator handles
             # non-bool values.
-            test(case, non_bool(unsafe_hash), non_bool(eq), non_bool(frozen), False, res_no_defined_hash)
-            test(case, non_bool(unsafe_hash), non_bool(eq), non_bool(frozen), True,  res_defined_hash)
+            # test(case, non_bool(unsafe_hash), non_bool(eq), non_bool(frozen), False, res_no_defined_hash)
+            # test(case, non_bool(unsafe_hash), non_bool(eq), non_bool(frozen), True,  res_defined_hash)
 
     def test_eq_only(self):
         # If a class defines __eq__, __hash__ is automatically added and set to None.  This is normal Python behavior,

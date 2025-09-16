@@ -10,14 +10,6 @@ with _auto_proxy_init(
 
     from .asyncs import (  # noqa
         as_async,
-
-        async_list,
-
-        sync_await,
-        sync_async_list,
-
-        SyncAsyncContextManager,
-        sync_async_context_manager,
     )
 
     from .attrstorage import (  # noqa
@@ -169,8 +161,6 @@ with _auto_proxy_init(
         disposing,
         breakpoint_on_exception,
         context_var_setting,
-
-        as_async_context_manager,
 
         ContextWrappable,
         ContextWrapped,
@@ -465,6 +455,18 @@ with _auto_proxy_init(
 
     from ..lite.asyncs import (  # noqa
         opt_await,
+        async_list,
+
+        SyncAwaitCoroutineNotTerminatedError,
+        sync_await,
+
+        sync_async_list,
+
+        SyncAwaitContextManager,
+        sync_await_context_manager,
+
+        SyncToAsyncContextManager,
+        as_async_context_manager,
     )
 
     from ..lite.attrops import (  # noqa

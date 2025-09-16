@@ -35,12 +35,11 @@ class _SpecBase:
 
     def _check_spec_base_fields(self) -> None:
         for f in self._BOOL_FIELDS:
-            # NOTE: stdlib explicitly tests for and allows ints
-            if not isinstance(bv := getattr(self, f.name), (bool, int)):
+            if not isinstance(bv := getattr(self, f.name), bool):
                 raise TypeError(f'dataclass {self.__class__.__name__} attr {f.name} must be bool, got {bv!r}')
 
         for f in self._OPT_BOOL_FIELDS:
-            if not isinstance(bv := getattr(self, f.name), (bool, int, types.NoneType)):
+            if not isinstance(bv := getattr(self, f.name), (bool, types.NoneType)):
                 raise TypeError(f'dataclass {self.__class__.__name__} attr {f.name} must be bool or None, got {bv!r}')
 
 

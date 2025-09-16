@@ -196,15 +196,6 @@ def context_var_setting(var: contextvars.ContextVar[T], val: T) -> ta.Iterator[T
 ##
 
 
-@contextlib.asynccontextmanager
-async def as_async_context_manager(cm: ta.ContextManager[T]) -> ta.AsyncIterator[T]:
-    with cm as v:
-        yield v
-
-
-##
-
-
 ContextWrappable: ta.TypeAlias = ta.ContextManager | str | ta.Callable[..., ta.ContextManager]
 
 
