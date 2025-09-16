@@ -5,10 +5,10 @@ import urllib.request
 
 from ..headers import HttpHeaders
 from .base import DEFAULT_ENCODING
-from .base import HttpClient
 from .base import HttpClientError
 from .base import HttpRequest
-from .base import StreamHttpResponse
+from .sync import HttpClient
+from .sync import StreamHttpResponse
 
 
 ##

@@ -7,6 +7,17 @@ import typing as ta
 ##
 
 
+def dataclass_shallow_astuple(o: ta.Any) -> ta.Tuple[ta.Any, ...]:
+    return tuple(getattr(o, f.name) for f in dc.fields(o))
+
+
+def dataclass_shallow_asdict(o: ta.Any) -> ta.Dict[str, ta.Any]:
+    return {f.name: getattr(o, f.name) for f in dc.fields(o)}
+
+
+##
+
+
 def is_immediate_dataclass(cls: type) -> bool:
     if not isinstance(cls, type):
         raise TypeError(cls)

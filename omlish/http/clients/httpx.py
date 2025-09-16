@@ -1,13 +1,17 @@
+"""
+TODO:
+ - standardize following redirects
+"""
 import functools
 import typing as ta
 
 from ... import dataclasses as dc
 from ... import lang
 from ..headers import HttpHeaders
-from .base import HttpClient
 from .base import HttpClientError
 from .base import HttpRequest
-from .base import StreamHttpResponse
+from .sync import HttpClient
+from .sync import StreamHttpResponse
 
 
 if ta.TYPE_CHECKING:

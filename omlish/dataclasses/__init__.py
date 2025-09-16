@@ -119,11 +119,6 @@ with _lang.auto_proxy_init(globals()) as _api_cap:
         ClassSpec,
     )
 
-    from .tools.as_ import (  # noqa
-        shallow_asdict,
-        shallow_astuple,
-    )
-
     from .tools.iter import (  # noqa
         fields_dict,
 
@@ -158,6 +153,9 @@ with _lang.auto_proxy_init(globals()) as _api_cap:
     # lite imports
 
     from ..lite.dataclasses import (  # noqa
+        dataclass_shallow_asdict as shallow_asdict,
+        dataclass_shallow_astuple as shallow_astuple,
+
         is_immediate_dataclass,
 
         dataclass_maybe_post_init as maybe_post_init,

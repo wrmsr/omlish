@@ -1,153 +1,44 @@
-# ruff: noqa: UP006 UP007 UP043 UP045
-import errno
-import socket
-import typing as ta
-import urllib.parse
-
 import pytest
 
-from .....lite.check import check
-from ...io import CoroHttpIo
-from ..client import CoroHttpClientConnection
-from ..client import CoroHttpClientResponse
+from ....clients.base import HttpRequest
+from .client import CoroHttpClient
 
 
-##
+# @pytest.skip('FIXME')
+@pytest.mark.online
+@pytest.mark.parametrize('data', [None, '{}', b'{}'])
+@pytest.mark.parametrize('read_all', [False, True])
+def test_clients_stream(data, read_all):
+    with CoroHttpClient() as cli:
+        with cli.stream_request(HttpRequest(
+                'https://httpbun.org/drip?duration=1&numbytes=10&code=200&delay=1',
+                'POST' if data is not None else 'GET',
+                headers={'User-Agent': 'omlish'},
+                data=data,
+        )) as resp:
+            print(resp)
+            assert resp.status == 200
 
-
-def run_httpx(
-        url: str,
-) -> None:
-    import asyncio
-
-    import httpx
-
-    async def inner():
-        async with httpx.AsyncClient() as client:
-            async with client.stream('GET', url) as response:
-                response.raise_for_status()
-                async for chunk in response.aiter_bytes():
-                    print(chunk.decode('utf-8'), end='')
-
-    asyncio.run(inner())
-
-
-def run_urllib(
-        url: str,
-) -> None:
-    import urllib.request
-
-    req = urllib.request.Request(url)  # noqa
-
-    with urllib.request.urlopen(req) as resp:  # noqa
-        print(resp.read())
-
-
-def run_stdlib(
-        url: str,
-) -> None:
-    conn_cls = __import__('http.client').client.HTTPConnection
-
-    ups = urllib.parse.urlparse(url)
-    conn = conn_cls(ups.hostname)
-
-    conn.request('GET', ups.path or '/')
-    r1 = conn.get_response() if hasattr(conn, 'get_response') else conn.getresponse()  # noqa
-    print((r1.status, r1.reason))
-
-    # data1 = r1.read()
-
-    while chunk := r1.read(200):
-        print(repr(chunk))
-
-
-def run_coro(
-        url: str,
-) -> None:
-    conn_cls = CoroHttpClientConnection
-
-    ups = urllib.parse.urlparse(url)
-    conn = conn_cls(check.not_none(ups.hostname))
-
-    sock: ta.Optional[socket.socket] = None
-    sock_file: ta.Optional[ta.Any] = None
-
-    def handle_io(o: CoroHttpIo.Io) -> ta.Any:
-        nonlocal sock
-        nonlocal sock_file
-
-        if isinstance(o, CoroHttpIo.ConnectIo):
-            check.none(sock)
-            sock = socket.create_connection(*o.args, **(o.kwargs or {}))
-
-            # Might fail in OSs that don't implement TCP_NODELAY
-            try:
-                sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-            except OSError as e:
-                if e.errno != errno.ENOPROTOOPT:
-                    raise
-
-            sock_file = sock.makefile('rb')
-
-            return None
-
-        elif isinstance(o, CoroHttpIo.CloseIo):
-            check.not_none(sock).close()
-            return None
-
-        elif isinstance(o, CoroHttpIo.WriteIo):
-            check.not_none(sock).sendall(o.data)
-            return None
-
-        elif isinstance(o, CoroHttpIo.ReadIo):
-            if (sz := o.sz) is not None:
-                return check.not_none(sock_file).read(sz)
+            if read_all:
+                data = resp.stream.read()
             else:
-                return check.not_none(sock_file).read()
+                l = []
+                while (b := resp.stream.read(1)):
+                    l.append(b)
+                data = b''.join(l)
 
-        elif isinstance(o, CoroHttpIo.ReadLineIo):
-            return check.not_none(sock_file).readline(o.sz)
-
-        else:
-            raise TypeError(o)
-
-    resp: ta.Optional[CoroHttpClientResponse] = None
-
-    def get_resp():
-        nonlocal resp
-        resp = yield from conn.get_response()
-
-    def print_resp():
-        d = yield from check.not_none(resp).read()
-        print(d)
-
-    for f in [
-        conn.connect,
-        lambda: conn.request('GET', ups.path or '/'),
-        get_resp,
-        print_resp,
-        conn.close,
-    ]:
-        g = f()
-        i = None
-        while True:
-            try:
-                o = g.send(i)
-            except StopIteration:
-                break
-            i = handle_io(o)
+            assert data == b'**********'
 
 
 @pytest.mark.online
-def test_client() -> None:
-    # run = run_httpx
-    # run = run_urllib
-    # run = run_stdlib
-    run = run_coro
+def test_get_zombo():
+    from ....clients.default import request
+    from ....clients.httpx import HttpxHttpClient  # noqa
+    from ....clients.urllib import UrllibHttpClient  # noqa
 
-    for url in [
-        'http://www.example.com',
-        'https://www.baidu.com',
-        'https://anglesharp.azurewebsites.net/Chunked',
-    ]:
-        run(url)
+    print(request(
+        'https://zombo.com/',
+        client=CoroHttpClient(),
+        # client=HttpxHttpClient(),
+        # client=UrllibHttpClient(),
+    ).data)

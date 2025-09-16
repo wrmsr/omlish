@@ -7,10 +7,10 @@ import urllib.parse
 from .....lite.check import check
 from ....clients import HttpRequest
 from ....clients import StreamHttpResponse
-from ....clients.base import HttpClient
+from ....clients.sync import HttpClient
 from ....headers import HttpHeaders
 from ...io import CoroHttpIo
-from ..client import CoroHttpClientConnection
+from ..connection import CoroHttpClientConnection
 from ..response import CoroHttpClientResponse
 
 
@@ -20,7 +20,7 @@ T = ta.TypeVar('T')
 ##
 
 
-class CoroHttpClientHttpClient(HttpClient):
+class CoroHttpClient(HttpClient):
     class _Connection:
         def __init__(self, req: HttpRequest) -> None:
             super().__init__()
@@ -28,25 +28,41 @@ class CoroHttpClientHttpClient(HttpClient):
             self._req = req
             self._ups = urllib.parse.urlparse(req.url)
 
-        _cc: CoroHttpClientConnection
-        _resp: CoroHttpClientResponse
+        _cc: ta.Optional[CoroHttpClientConnection] = None
+        _resp: ta.Optional[CoroHttpClientResponse] = None
 
         _sock: ta.Optional[socket.socket] = None
         _sock_file: ta.Optional[ta.BinaryIO] = None
 
         def setup(self) -> StreamHttpResponse:
-            self._cc = CoroHttpClientConnection(check.not_none(self._ups.hostname))
-            self._run_coro(self._cc.connect())
-            self._run_coro(self._cc.request('GET', self._ups.path or '/'))
-            self._resp = self._run_coro(self._cc.get_response())
-            return StreamHttpResponse(
-                status=self._resp._state.status,  # noqa
-                headers=HttpHeaders(self._resp._state.headers.items()),  # noqa
-                request=self._req,
-                underlying=self,
-                stream=self,
-                _closer=self.close,
-            )
+            check.none(self._sock)
+
+            self._cc = cc = CoroHttpClientConnection(check.not_none(self._ups.hostname))
+
+            try:
+                self._run_coro(cc.connect())
+
+                self._run_coro(cc.request(
+                    self._req.method or 'GET',
+                    self._ups.path or '/',
+                    self._req.data,
+                    hh.single_str_dct if (hh := self._req.headers_) is not None else {},
+                ))
+
+                self._resp = resp = self._run_coro(cc.get_response())
+
+                return StreamHttpResponse(
+                    status=resp._state.status,  # noqa
+                    headers=HttpHeaders(resp._state.headers.items()),  # noqa
+                    request=self._req,
+                    underlying=self,
+                    stream=self,
+                    _closer=self.close,
+                )
+
+            except Exception:
+                self.close()
+                raise
 
         def _run_coro(self, g: ta.Generator[ta.Any, ta.Any, T]) -> T:
             i = None
@@ -94,12 +110,14 @@ class CoroHttpClientHttpClient(HttpClient):
                 raise TypeError(o)
 
         def read(self, /, n: int = -1) -> bytes:
-            # return self._handle_io(self._cc.get_response())
-            raise NotImplementedError
+            return self._run_coro(check.not_none(self._resp).read(n if n >= 0 else None))
 
         def close(self) -> None:
-            raise NotImplementedError
+            if self._resp is not None:
+                self._resp.close()
+            if self._sock is not None:
+                self._sock.close()
 
     def _stream_request(self, req: HttpRequest) -> StreamHttpResponse:
-        conn = CoroHttpClientHttpClient._Connection(req)
+        conn = CoroHttpClient._Connection(req)
         return conn.setup()

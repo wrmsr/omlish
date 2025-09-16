@@ -1,9 +1,9 @@
 import typing as ta
 
 from ..headers import CanHttpHeaders
-from .base import HttpClient
 from .base import HttpRequest
 from .base import HttpResponse
+from .sync import HttpClient
 from .urllib import UrllibHttpClient
 
 

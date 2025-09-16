@@ -79,7 +79,7 @@ duckdb==1.4.0  # @omlish-venv !13t !13dt !14t
 
 
 pycparser==2.23
-cffi==1.17.1
+cffi==2.0.0
 pcpp==1.30
 
 # !! LGPL
@@ -126,7 +126,7 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.40.31
+boto3>=1.40.32
 
 antlr4-python3-runtime==4.13.2
 

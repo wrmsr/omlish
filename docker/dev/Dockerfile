@@ -155,18 +155,15 @@ RUN \
     --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
     --mount=target=/var/cache/apt,type=cache,sharing=locked \
 ( \
-    add-apt-repository ppa:openjdk-r/ppa && \
+    sudo apt install gnupg ca-certificates curl && \
+    curl -s https://repos.azul.com/azul-repo.key | sudo gpg --dearmor -o /usr/share/keyrings/azul.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/azul.gpg] https://repos.azul.com/zulu/deb stable main" | sudo tee /etc/apt/sources.list.d/zulu.list && \
     apt-get update && \
     apt-get install -y \
     \
-        openjdk-21-jdk \
+        zulu21-ca-jdk \
+        zulu25-ca-jdk \
     \
-)
-
-RUN ( \
-    # https://stackoverflow.com/questions/6784463/error-trustanchors-parameter-must-be-non-empty \
-    /usr/bin/printf '\xfe\xed\xfe\xed\x00\x00\x00\x02\x00\x00\x00\x00\xe2\x68\x6e\x45\xfb\x43\xdf\xa4\xd9\x92\xdd\x41\xce\xb6\xb2\x1c\x63\x30\xd7\x92' > /etc/ssl/certs/java/cacerts && \
-    /var/lib/dpkg/info/ca-certificates-java.postinst configure \
 )
 
 

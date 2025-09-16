@@ -7,16 +7,9 @@ from .base import (  # noqa
 
     BaseHttpResponse,
     HttpResponse,
-    StreamHttpResponse,
-
-    close_response,
-    closing_response,
-    read_response,
 
     HttpClientError,
     HttpStatusError,
-
-    HttpClient,
 )
 
 from .default import (  # noqa
@@ -27,6 +20,16 @@ from .default import (  # noqa
 
 from .httpx import (  # noqa
     HttpxHttpClient,
+)
+
+from .sync import (  # noqa
+    StreamHttpResponse,
+
+    close_response,
+    closing_response,
+    read_response,
+
+    HttpClient,
 )
 
 from .urllib import (  # noqa
