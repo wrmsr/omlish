@@ -91,9 +91,15 @@ class FieldSpec(lang.Final):
     ##
     # validate
 
+    _BOOL_FIELDS: ta.ClassVar[ta.Sequence[dc.Field]]
+
     def __post_init__(self) -> None:
         check.non_empty_str(self.name)
         check.arg(self.name.isidentifier())
+
+        for bf in self._BOOL_FIELDS:
+            if not isinstance(bv := getattr(self, bf.name), bool):
+                raise TypeError(f'dataclass field spec attr {bf.name} must be bool, got {bv!r}')
 
         if self.field_type in (FieldType.CLASS_VAR, FieldType.INIT_VAR):
             if isinstance(self.default.or_else(None), DefaultFactory):
@@ -116,6 +122,9 @@ class FieldSpec(lang.Final):
                 f'mutable default {type(dfv)} for field {self.name} '
                 f'is not allowed: use default_factory',
             )
+
+
+FieldSpec._BOOL_FIELDS = [f for f in dc.fields(FieldSpec) if f.type is bool]  # noqa
 
 
 ##
@@ -208,7 +217,13 @@ class ClassSpec(lang.Final):
     ##
     # validate
 
+    _BOOL_FIELDS: ta.ClassVar[ta.Sequence[dc.Field]]
+
     def __post_init__(self) -> None:
+        for bf in self._BOOL_FIELDS:
+            if not isinstance(bv := getattr(self, bf.name), bool):
+                raise TypeError(f'dataclass field spec attr {bf.name} must be bool, got {bv!r}')
+
         fields_by_name: dict[str, FieldSpec] = {}
         for f in self.fields:
             check.not_in(f.name, fields_by_name)
@@ -227,3 +242,6 @@ class ClassSpec(lang.Final):
 
         if self.order and not self.eq:
             raise ValueError('eq must be true if order is true')
+
+
+ClassSpec._BOOL_FIELDS = [f for f in dc.fields(ClassSpec) if f.type is bool]  # noqa

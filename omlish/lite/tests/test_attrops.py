@@ -52,6 +52,27 @@ class TestAttrOps(unittest.TestCase):
         assert repr(p2) == 'Point(x=40, y=30)'
         assert p1 == p2
 
+    def test_kwargs(self):
+        class P0:
+            def __init__(self, x: int, y: int) -> None:
+                self.x, self.y = x, y
+
+        class P1(P0):
+            AttrOps['P1'](lambda o: (o.x, o.y)).install(locals())
+
+        assert repr(P1(1, 2)) == 'P1(x=1, y=2)'
+
+        class P2(P0):
+            AttrOps['P2'](lambda o: (o.x, o.y), terse=True).install(locals())
+
+        assert repr(P2(1, 2)) == 'P2(1, 2)'
+
+        class P3(P0):
+            AttrOps['P3'](lambda o: (o.x, (o.y, dict(repr_fn=lambda v: repr(v) if v > 3 else None)))).install(locals())
+
+        assert repr(P3(1, 2)) == 'P3(x=1)'
+        assert repr(P3(1, 4)) == 'P3(x=1, y=4)'
+
 
 class TestAttrRepr(unittest.TestCase):
     def test_attr_repr(self):

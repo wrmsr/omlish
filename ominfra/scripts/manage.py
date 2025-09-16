@@ -2524,6 +2524,8 @@ class AttrOps(ta.Generic[T]):
                 display: ta.Optional[str] = None,
 
                 repr: bool = True,  # noqa
+                repr_fn: ta.Optional[ta.Callable[[ta.Any], ta.Optional[str]]] = None,
+
                 hash: bool = True,  # noqa
                 eq: bool = True,
         ) -> None:
@@ -2538,6 +2540,8 @@ class AttrOps(ta.Generic[T]):
             self._display = display
 
             self._repr = repr
+            self._repr_fn = repr_fn
+
             self._hash = hash
             self._eq = eq
 
@@ -2586,6 +2590,16 @@ class AttrOps(ta.Generic[T]):
         def eq(self) -> bool:
             return self._eq
 
+    @staticmethod
+    def opt_repr(o: ta.Any) -> ta.Optional[str]:
+        return repr(o) if o is not None else None
+
+    @staticmethod
+    def truthy_repr(o: ta.Any) -> ta.Optional[str]:
+        return repr(o) if o else None
+
+    #
+
     @ta.overload
     def __init__(
             self,
@@ -2598,6 +2612,7 @@ class AttrOps(ta.Generic[T]):
             with_module: bool = False,
             use_qualname: bool = False,
             with_id: bool = False,
+            terse: bool = False,
             repr_filter: ta.Optional[ta.Callable[[ta.Any], bool]] = None,
             recursive: bool = False,
             subtypes_eq: bool = False,
@@ -2617,6 +2632,7 @@ class AttrOps(ta.Generic[T]):
             with_module: bool = False,
             use_qualname: bool = False,
             with_id: bool = False,
+            terse: bool = False,
             repr_filter: ta.Optional[ta.Callable[[ta.Any], bool]] = None,
             recursive: bool = False,
             subtypes_eq: bool = False,
@@ -2629,6 +2645,7 @@ class AttrOps(ta.Generic[T]):
             with_module=False,
             use_qualname=False,
             with_id=False,
+            terse=False,
             repr_filter=None,
             recursive=False,
             subtypes_eq=False,
@@ -2641,6 +2658,7 @@ class AttrOps(ta.Generic[T]):
         self._with_module: bool = with_module
         self._use_qualname: bool = use_qualname
         self._with_id: bool = with_id
+        self._terse: bool = terse
         self._repr_filter: ta.Optional[ta.Callable[[ta.Any], bool]] = repr_filter
         self._recursive: bool = recursive
         self._subtypes_eq: bool = subtypes_eq
@@ -2714,19 +2732,27 @@ class AttrOps(ta.Generic[T]):
             pass
 
         def _repr(o: T) -> str:
-            vs = ', '.join(
-                f'{a._display}={v!r}'  # noqa
-                for a in self._attrs
-                if a._repr  # noqa
-                for v in [getattr(o, a._name)]  # noqa
-                if self._repr_filter is None or self._repr_filter(v)
-            )
+            vs: ta.List[str] = []
+            for a in self._attrs:
+                if not a._repr:  # noqa
+                    continue
+                v = getattr(o, a._name)  # noqa
+                if self._repr_filter is not None and not self._repr_filter(v):
+                    continue
+                if (rfn := a._repr_fn) is None:  # noqa
+                    rfn = repr
+                if (vr := rfn(v)) is None:
+                    continue
+                if self._terse:
+                    vs.append(vr)
+                else:
+                    vs.append(f'{a._display}={vr}')  # noqa
 
             return (
                 f'{o.__class__.__module__ + "." if self._with_module else ""}'
                 f'{o.__class__.__qualname__ if self._use_qualname else o.__class__.__name__}'
                 f'{("@" + hex(id(o))[2:]) if self._with_id else ""}'  # noqa
-                f'({vs})'
+                f'({", ".join(vs)})'
             )
 
         if self._recursive:

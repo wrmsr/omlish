@@ -41,10 +41,10 @@ class HttpRequest:
 
     _: dc.KW_ONLY
 
-    headers: ta.Optional[CanHttpHeaders] = dc.xfield(None, repr=dc.truthy_repr)
+    headers: ta.Optional[CanHttpHeaders] = dc.xfield(None, repr_fn=dc.truthy_repr)
     data: ta.Union[bytes, str, None] = dc.xfield(None, repr_fn=lambda v: '...' if v is not None else None)
 
-    timeout_s: ta.Optional[float] = None
+    timeout_s: ta.Optional[float] = dc.xfield(None, repr_fn=dc.opt_repr)
 
     #
 
@@ -68,7 +68,7 @@ class HttpRequest:
 class BaseHttpResponse(Abstract):
     status: int
 
-    headers: ta.Optional[HttpHeaders] = dc.xfield(None, repr=dc.truthy_repr)
+    headers: ta.Optional[HttpHeaders] = dc.xfield(None, repr_fn=dc.truthy_repr)
 
     request: HttpRequest
     underlying: ta.Any = dc.field(default=None, repr=False)
