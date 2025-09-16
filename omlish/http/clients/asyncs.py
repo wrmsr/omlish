@@ -1,10 +1,13 @@
-# ruff: noqa: UP043
+# ruff: noqa: UP043 UP045
+# @omlish-lite
 import abc
 import contextlib
+import dataclasses as dc
 import typing as ta
 
-from ... import dataclasses as dc
-from ... import lang
+from ...lite.abstract import Abstract
+from ...lite.dataclasses import dataclass_maybe_post_init
+from ...lite.dataclasses import dataclass_shallow_asdict
 from .base import BaseHttpResponse
 from .base import BaseHttpResponseT
 from .base import HttpRequest
@@ -12,19 +15,34 @@ from .base import HttpResponse
 from .base import HttpStatusError
 
 
+AsyncStreamHttpResponseT = ta.TypeVar('AsyncStreamHttpResponseT', bound='AsyncStreamHttpResponse')
+AsyncHttpClientT = ta.TypeVar('AsyncHttpClientT', bound='AsyncHttpClient')
+
+
 ##
 
 
-@dc.dataclass(frozen=True, kw_only=True)
-class AsyncStreamHttpResponse(BaseHttpResponse, lang.Final):
+@ta.final
+@dc.dataclass(frozen=True)  # kw_only=True
+class AsyncStreamHttpResponse(BaseHttpResponse):
     class Stream(ta.Protocol):
         def read(self, /, n: int = -1) -> ta.Awaitable[bytes]: ...
 
-    stream: Stream
+    @ta.final
+    class _NullStream:
+        def read(self, /, n: int = -1) -> ta.Awaitable[bytes]:
+            raise TypeError
 
-    _closer: ta.Callable[[], ta.Awaitable[None]] | None = dc.field(default=None, repr=False)
+    stream: Stream = _NullStream()
 
-    async def __aenter__(self) -> ta.Self:
+    _closer: ta.Optional[ta.Callable[[], ta.Awaitable[None]]] = None
+
+    def __post_init__(self) -> None:
+        dataclass_maybe_post_init(super())
+        if isinstance(self.stream, AsyncStreamHttpResponse._NullStream):
+            raise TypeError(self.stream)
+
+    async def __aenter__(self: AsyncStreamHttpResponseT) -> AsyncStreamHttpResponseT:
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
@@ -72,7 +90,7 @@ async def async_read_response(resp: BaseHttpResponse) -> HttpResponse:
     elif isinstance(resp, AsyncStreamHttpResponse):
         data = await resp.stream.read()
         return HttpResponse(**{
-            **{k: v for k, v in dc.shallow_asdict(resp).items() if k not in ('stream', '_closer')},
+            **{k: v for k, v in dataclass_shallow_asdict(resp).items() if k not in ('stream', '_closer')},
             'data': data,
         })
 
@@ -83,8 +101,8 @@ async def async_read_response(resp: BaseHttpResponse) -> HttpResponse:
 ##
 
 
-class AsyncHttpClient(lang.Abstract):
-    async def __aenter__(self) -> ta.Self:
+class AsyncHttpClient(Abstract):
+    async def __aenter__(self: AsyncHttpClientT) -> AsyncHttpClientT:
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
