@@ -2545,10 +2545,10 @@ class AttrOps(ta.Generic[T]):
         def of(
                 cls,
                 o: ta.Union[
-                    str,
-                    ta.Tuple[str, str],
-                    ta.Mapping[str, ta.Any],
                     'AttrOps.Attr',
+                    str,
+                    ta.Tuple[str, ta.Union[str, ta.Mapping[str, ta.Any]]],
+                    ta.Mapping[str, ta.Any],
                 ],
         ) -> 'AttrOps.Attr':
             if isinstance(o, AttrOps.Attr):
@@ -2556,11 +2556,15 @@ class AttrOps(ta.Generic[T]):
             elif isinstance(o, str):
                 return cls(o)
             elif isinstance(o, tuple):
-                name, disp = o
-                return cls(
-                    name,
-                    display=disp,
-                )
+                name, x = o
+                kw: ta.Mapping[str, ta.Any]
+                if isinstance(x, str):
+                    kw = dict(display=x)
+                elif isinstance(x, ta.Mapping):
+                    kw = x
+                else:
+                    raise TypeError(x)
+                return cls(name, **kw)
             elif isinstance(o, ta.Mapping):
                 return cls(**o)
             else:
@@ -2587,7 +2591,7 @@ class AttrOps(ta.Generic[T]):
             self,
             *attrs: ta.Sequence[ta.Union[
                 str,
-                ta.Tuple[str, str],
+                ta.Tuple[str, ta.Union[str, ta.Mapping[str, ta.Any]]],
                 ta.Mapping[str, ta.Any],
                 Attr,
             ]],
@@ -2605,7 +2609,7 @@ class AttrOps(ta.Generic[T]):
             self,
             attrs_fn: ta.Callable[[T], ta.Tuple[ta.Union[
                 ta.Any,
-                ta.Tuple[str, ta.Any],
+                ta.Tuple[ta.Any, ta.Union[str, ta.Mapping[str, ta.Any]]],
                 Attr,
             ], ...]],
             /,
@@ -2677,16 +2681,23 @@ class AttrOps(ta.Generic[T]):
                 attrs.append(AttrOps.Attr.of(o))
                 continue
 
+            kw: ta.Mapping[str, ta.Any]
             if isinstance(o, tuple):
-                disp, cap, = o
+                cap, x = o
+                if isinstance(x, str):
+                    kw = dict(display=x)
+                elif isinstance(x, ta.Mapping):
+                    kw = x
+                else:
+                    raise TypeError(x)
             else:
-                disp, cap = None, o
+                cap, kw = o, {}
 
             path = tuple(rec(cap))
 
             attrs.append(AttrOps.Attr(
                 '.'.join(path),
-                display=disp,
+                **kw,
             ))
 
         return attrs
