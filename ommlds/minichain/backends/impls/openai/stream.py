@@ -1,3 +1,6 @@
+"""
+https://platform.openai.com/docs/api-reference/responses-streaming
+"""
 import typing as ta
 
 from omlish import check

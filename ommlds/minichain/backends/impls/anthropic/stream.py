@@ -2,12 +2,16 @@ import typing as ta
 
 from omlish import check
 from omlish import lang
+from omlish import marshal as msh
 from omlish import typedvalues as tv
 from omlish.formats import json
 from omlish.http import all as http
 from omlish.http import sse
 from omlish.io.buffers import DelimitingBuffer
 
+from .....backends.anthropic.protocol import types as pt
+from .....backends.anthropic.protocol.sse.assemble import AnthropicSseMessageAssembler
+from .....backends.anthropic.protocol.sse.events import AnthropicSseDecoderEvents
 from ....chat.choices.services import ChatChoicesOutputs
 from ....chat.messages import SystemMessage
 from ....chat.stream.services import ChatChoicesStreamRequest
@@ -15,6 +19,7 @@ from ....chat.stream.services import ChatChoicesStreamResponse
 from ....chat.stream.services import static_check_is_chat_choices_stream_service
 from ....chat.stream.types import AiChoiceDelta
 from ....chat.stream.types import AiChoiceDeltas
+from ....chat.stream.types import AiMessageDelta
 from ....configs import Config
 from ....resources import UseResources
 from ....standard import ApiKey
@@ -85,6 +90,7 @@ class AnthropicChatChoicesStreamService:
             def yield_choices() -> ta.Generator[AiChoiceDeltas, None, ta.Sequence[ChatChoicesOutputs] | None]:
                 db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
                 sd = sse.SseDecoder()
+                ass = AnthropicSseMessageAssembler()
                 while True:
                     # FIXME: read1 not on response stream protocol
                     b = http_response.stream.read1(self.READ_CHUNK_SIZE)  # type: ignore[attr-defined]
@@ -95,24 +101,20 @@ class AnthropicChatChoicesStreamService:
 
                         # FIXME: https://docs.anthropic.com/en/docs/build-with-claude/streaming
                         for so in sd.process_line(l):
-                            # FIXME: AnthropicSseMessageAssembler lol
-                            if isinstance(so, sse.SseEvent) and so.type == b'message':
+                            if isinstance(so, sse.SseEvent):
                                 ss = so.data.decode('utf-8')
                                 if ss == '[DONE]':
                                     return []
 
-                                sj = json.loads(ss)  # ChatCompletionChunk
-
-                                check.state(sj['object'] == 'chat.completion.chunk')
-
-                                # FIXME: stop reason
-                                if not sj['choices']:
-                                    continue
-
-                                yield [
-                                    AiChoiceDelta(choice['delta'])
-                                    for choice in sj['choices']
-                                ]
+                                dct = json.loads(ss)
+                                check.equal(dct['type'], so.type.decode('utf-8'))
+                                ae = msh.unmarshal(dct, AnthropicSseDecoderEvents.Event)
+                                for am in ass(ae):
+                                    if isinstance(am, pt.Message):
+                                        mt = check.isinstance(check.single(check.not_none(am.content)), pt.Text)
+                                        yield [
+                                            AiChoiceDelta(AiMessageDelta(mt.text)),
+                                        ]
 
                     if not b:
                         return []

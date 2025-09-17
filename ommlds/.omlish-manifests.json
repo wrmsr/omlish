@@ -63,7 +63,7 @@
     "module": ".minichain.backends.impls.anthropic.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/anthropic/stream.py",
-    "line": 29,
+    "line": 34,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.anthropic.stream",
@@ -341,7 +341,7 @@
     "module": ".minichain.backends.impls.openai.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/openai/stream.py",
-    "line": 31,
+    "line": 34,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.openai.stream",
