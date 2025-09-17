@@ -4,10 +4,13 @@ https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models
 import typing as ta
 
 from omlish import check
+from omlish import marshal as msh
 from omlish import typedvalues as tv
 from omlish.formats import json
 from omlish.http import all as http
 
+from .....backends.google.protocol.types import GenerateContentRequest
+from .....backends.google.protocol.types import GenerateContentResponse
 from ....chat.choices.services import ChatChoicesRequest
 from ....chat.choices.services import ChatChoicesResponse
 from ....chat.choices.services import static_check_is_chat_choices_service
@@ -63,19 +66,19 @@ class GoogleChatChoicesService:
     ) -> ChatChoicesResponse:
         key = check.not_none(self._api_key).reveal()
 
-        req_dct = {
-            'contents': [
-                {
-                    'role': self.ROLES_MAP[type(m)],
-                    'parts': [
-                        {
-                            'text': self._get_msg_content(m),
-                        },
-                    ],
-                }
+        g_req = GenerateContentRequest(
+            contents=[
+                GenerateContentRequest.Content(
+                    parts=[GenerateContentRequest.Content.Part(
+                        text=check.not_none(self._get_msg_content(m)),
+                    )],
+                    role=self.ROLES_MAP[type(m)],  # type: ignore[arg-type]
+                )
                 for m in request.v
             ],
-        }
+        )
+
+        req_dct = msh.marshal(g_req)
 
         model_name = MODEL_NAMES.resolve(self._model_name.v)
 
@@ -88,7 +91,9 @@ class GoogleChatChoicesService:
 
         resp_dct = json.loads(check.not_none(resp.data).decode('utf-8'))
 
+        g_resp = msh.unmarshal(resp_dct, GenerateContentResponse)
+
         return ChatChoicesResponse([
-            AiChoice(AiMessage(c['content']['parts'][0]['text']))
-            for c in resp_dct['candidates']
+            AiChoice(AiMessage(c.content.parts[0].text))
+            for c in g_resp.candidates
         ])
