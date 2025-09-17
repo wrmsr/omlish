@@ -1,11 +1,7 @@
 from .imports.proxyinit import auto_proxy_init as _auto_proxy_init
 
 
-with _auto_proxy_init(
-        globals(),
-        update_exports=True,
-        # eager=True,
-):
+with _auto_proxy_init(globals(), update_exports=True):
     ##
 
     from .asyncs import (  # noqa
@@ -459,6 +455,7 @@ with _auto_proxy_init(
     from ..lite.asyncs import (  # noqa
         opt_await,
         async_list,
+        async_enumerate,
 
         SyncAwaitCoroutineNotTerminatedError,
         sync_await,

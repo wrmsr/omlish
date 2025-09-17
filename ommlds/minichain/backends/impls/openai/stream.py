@@ -4,6 +4,7 @@ https://platform.openai.com/docs/api-reference/responses-streaming
 import typing as ta
 
 from omlish import check
+from omlish import lang
 from omlish import marshal as msh
 from omlish import typedvalues as tv
 from omlish.formats import json
@@ -78,11 +79,14 @@ class OpenaiChatChoicesStreamService:
             data=json.dumps(raw_request).encode('utf-8'),
         )
 
-        with UseResources.or_new(request.options) as rs:
+        async with UseResources.or_new(request.options) as rs:
             http_client = rs.enter_context(http.client())
             http_response = rs.enter_context(http_client.stream_request(http_request))
 
-            def yield_choices() -> ta.Generator[AiChoiceDeltas, None, ta.Sequence[ChatChoicesOutputs] | None]:
+            @lang.async_generator_with_return
+            async def yield_choices(
+                    set_value: ta.Callable[[ta.Sequence[ChatChoicesOutputs] | None], None],
+            ) -> ta.AsyncGenerator[AiChoiceDeltas]:
                 db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
                 sd = sse.SseDecoder()
                 while True:
@@ -91,14 +95,16 @@ class OpenaiChatChoicesStreamService:
                     for l in db.feed(b):
                         if isinstance(l, DelimitingBuffer.Incomplete):
                             # FIXME: handle
-                            return []
+                            set_value([])
+                            return
 
                         # FIXME: https://platform.openai.com/docs/guides/function-calling?api-mode=responses#streaming
                         for so in sd.process_line(l):
                             if isinstance(so, sse.SseEvent) and so.type == b'message':
                                 ss = so.data.decode('utf-8')
                                 if ss == '[DONE]':
-                                    return []
+                                    set_value([])
+                                    return
 
                                 sj = json.loads(ss)  # ChatCompletionChunk
 
@@ -117,9 +123,10 @@ class OpenaiChatChoicesStreamService:
                                 ]
 
                     if not b:
-                        return []
+                        set_value([])
+                        return
 
             # raw_response = json.loads(check.not_none(http_response.data).decode('utf-8'))
             # return rh.build_response(raw_response)
 
-            return new_stream_response(rs, yield_choices())
+            return await new_stream_response(rs, yield_choices())

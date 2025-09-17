@@ -2,6 +2,7 @@ import typing as ta
 
 from omlish import check
 from omlish import dataclasses as dc
+from omlish import lang
 
 from ...services import Response
 from ..choices.services import ChatChoicesRequest
@@ -34,9 +35,9 @@ class ChatChoicesStreamServiceChatChoicesService:
         lst: list[ChatChoicesStreamServiceChatChoicesService._Choice] = []
 
         resp = await self.service.invoke(request)
-        with resp.v as resp_v:
+        async with resp.v as resp_v:
             i = -1  # noqa
-            for i, cs in enumerate(resp_v):
+            async for i, cs in lang.async_enumerate(resp_v):
                 if i == 0:
                     for c in cs:
                         m = c.m

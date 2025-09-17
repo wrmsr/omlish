@@ -17,6 +17,12 @@ async def async_list(ai: ta.AsyncIterable[T]) -> ta.List[T]:
     return [v async for v in ai]
 
 
+async def async_enumerate(ai: ta.AsyncIterable[T]) -> ta.AsyncIterable[ta.Tuple[int, T]]:
+    i = 0
+    async for e in ai:
+        yield (i, e)
+
+
 ##
 
 

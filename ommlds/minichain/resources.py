@@ -109,7 +109,7 @@ class Resources(lang.Final, lang.NotPicklable):
 
     #
 
-    async def enter_context(self, cm: ta.ContextManager[T]) -> T:
+    def enter_context(self, cm: ta.ContextManager[T]) -> T:
         check.state(not self._closed)
         return self._aes.enter_context(cm)
 
