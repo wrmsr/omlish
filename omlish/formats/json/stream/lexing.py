@@ -4,7 +4,6 @@ TODO:
  - max recursion depth
  - mark start pos of tokens, currently returning end
  - _do_string inner loop optimization somehow
- - json5 mode
 """
 import dataclasses as dc
 import io
