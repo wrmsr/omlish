@@ -1359,6 +1359,8 @@ class InstanceType(_enum.Enum):
     I8GE_48XLARGE = 'i8ge.48xlarge'
     I8GE_METAL_24XL = 'i8ge.metal-24xl'
     I8GE_METAL_48XL = 'i8ge.metal-48xl'
+    MAC_M4_METAL = 'mac-m4.metal'
+    MAC_M4PRO_METAL = 'mac-m4pro.metal'
 
 
 class InstanceTypeHypervisor(_enum.Enum):

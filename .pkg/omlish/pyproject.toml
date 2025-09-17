@@ -37,7 +37,7 @@ all = [
     'brotli ~= 1.1',
     'asttokens ~= 3.0',
     'executing ~= 2.2',
-    'psutil ~= 7.0',
+    'psutil ~= 7.1',
     'orjson ~= 3.11',
     'ujson ~= 5.11',
     'pyyaml ~= 6.0',
@@ -82,7 +82,7 @@ compress = [
 diag = [
     'asttokens ~= 3.0',
     'executing ~= 2.2',
-    'psutil ~= 7.0',
+    'psutil ~= 7.1',
 ]
 formats = [
     'orjson ~= 3.11',

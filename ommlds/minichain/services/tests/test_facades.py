@@ -26,7 +26,7 @@ def test_facade():
     local_chat_service = ServiceFacade(local_chat_service_impl)
     # ta.reveal_type(local_chat_service)
 
-    print(local_chat_service([Message('user', 'hi')], MaxTokens(10)))
+    print(lang.sync_await(local_chat_service([Message('user', 'hi')], MaxTokens(11))))
     # print(local_chat_service([Message('user', 'hi')], ApiKey('secret')))  # ❌
 
     local_chat_service2 = ServiceFacade[
@@ -37,7 +37,7 @@ def test_facade():
     ](local_chat_service_impl)
     # ta.reveal_type(local_chat_service2)
 
-    print(local_chat_service2([Message('user', 'hi')], MaxTokens(10)))
+    print(lang.sync_await(local_chat_service2([Message('user', 'hi')], MaxTokens(10))))
     # print(local_chat_service2([Message('user', 'hi')], ApiKey('secret')))  # ❌
 
 
