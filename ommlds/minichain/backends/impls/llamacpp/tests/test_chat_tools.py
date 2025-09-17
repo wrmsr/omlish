@@ -3,6 +3,7 @@ import os.path
 import pytest
 
 from omlish import check
+from omlish import lang
 
 from .....chat.choices.adapters import ChatChoicesServiceChatService
 from .....chat.messages import AiMessage
@@ -59,14 +60,14 @@ def test_llamacpp_chat_model_tools_qwen_raw(model_path):
         desc='Gets the weather in the given location.',
     )
 
-    resp = llm.invoke(Request(
+    resp = lang.sync_await(llm.invoke(Request(
         [UserMessage('What is the weather in Seattle?')],
         [
             # Temperature(.1),
             # MaxTokens(64),
             Tool(tool_spec),
         ],
-    ))
+    )))
 
     print(resp)
     assert resp.v[0].m
@@ -117,10 +118,10 @@ def test_llamacpp_chat_model_tools_qwen_parsed(model_path):
         UserMessage('What is the weather in Seattle?'),
     ]
 
-    resp = llm.invoke(Request(
+    resp = lang.sync_await(llm.invoke(Request(
         chat,
         [Tool(tool_spec)],
-    ))
+    )))
 
     print(resp)
     assert resp.v
@@ -137,10 +138,10 @@ def test_llamacpp_chat_model_tools_qwen_parsed(model_path):
     )
     chat.append(tem)
 
-    resp = llm.invoke(Request(
+    resp = lang.sync_await(llm.invoke(Request(
         chat,
         [Tool(tool_spec)],
-    ))
+    )))
     print(resp)
 
 

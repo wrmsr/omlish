@@ -1,5 +1,6 @@
 import pytest
 
+from omlish import lang
 from omlish.secrets.tests.harness import HarnessSecrets
 
 from .....chat.messages import UserMessage
@@ -21,7 +22,7 @@ def test_anthropic_chat_stream_model(harness):
     ]:
         print(foo_req)
 
-        with llm.invoke(foo_req).v as it:
+        with lang.sync_await(llm.invoke(foo_req)).v as it:
             for o in it:
                 print(o)
             print(it.outputs)

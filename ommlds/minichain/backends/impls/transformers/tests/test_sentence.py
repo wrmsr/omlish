@@ -1,5 +1,7 @@
 import pytest
 
+from omlish import lang
+
 from .....models.configs import ModelPath
 from .....services import Request
 from ..sentence import SentenceTransformersEmbeddingService
@@ -11,5 +13,5 @@ def test_sentence_transformers_embedding():
     mdl = SentenceTransformersEmbeddingService(
         ModelPath('clip-ViT-B-32'),
     )
-    e = mdl.invoke(Request('hi'))
+    e = lang.sync_await(mdl.invoke(Request('hi')))
     print(e)

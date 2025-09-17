@@ -60,7 +60,7 @@ class GoogleChatChoicesService:
         AiMessage: 'assistant',
     }
 
-    def invoke(
+    async def invoke(
             self,
             request: ChatChoicesRequest,
     ) -> ChatChoicesResponse:

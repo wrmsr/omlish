@@ -43,9 +43,9 @@ class WrappedStreamService(ta.Generic[StreamRequestT, V, OutputT, StreamOutputT]
 
     #
 
-    def invoke(self, request: StreamRequestT) -> StreamResponse[V, OutputT, StreamOutputT]:
+    async def invoke(self, request: StreamRequestT) -> StreamResponse[V, OutputT, StreamOutputT]:
         with Resources.new() as rs:
-            in_response = self._inner.invoke(self._process_request(request))
+            in_response = await self._inner.invoke(self._process_request(request))
             in_vs: ResponseGenerator[V, OutputT] = rs.enter_context(in_response.v)
             out_vs = self._process_vs(in_vs)
 

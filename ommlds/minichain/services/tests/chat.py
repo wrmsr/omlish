@@ -130,7 +130,7 @@ RemoteChatService: ta.TypeAlias = Service[RemoteChatRequest, RemoteChatResponse]
 
 
 class RemoteChatServiceImpl:  # (RemoteChatService):
-    def invoke(self, request: RemoteChatRequest) -> RemoteChatResponse:
+    async def invoke(self, request: RemoteChatRequest) -> RemoteChatResponse:
         return RemoteChatResponse(
             Message('ai', f'(remote reply): {request.v[-1].message}'),
             [
@@ -151,7 +151,7 @@ lang.static_check_issubclass[LocalChatService](RemoteChatServiceImpl)  # type: i
 
 
 class LocalChatServiceImpl:  # (LocalChatService):
-    def invoke(self, request: LocalChatRequest) -> LocalChatResponse:
+    async def invoke(self, request: LocalChatRequest) -> LocalChatResponse:
         return LocalChatResponse(
             Message('ai', f'(local reply): {request.v[-1].message}'),
             [

@@ -1,5 +1,7 @@
 import pytest
 
+from omlish import lang
+
 from .....chat.messages import UserMessage
 from .....chat.services import ChatRequest
 from ..stream import LlamacppChatChoicesStreamService
@@ -16,6 +18,6 @@ def test_llamacpp_chat_stream_model():
         ]:
             print(foo_req)
 
-            with foo_svc.invoke(foo_req).v as it:
+            with lang.sync_await(foo_svc.invoke(foo_req)).v as it:
                 for o in it:
                     print(o)

@@ -29,7 +29,7 @@ class OpenaiCompletionService:
         with tv.consume(*configs) as cc:
             self._api_key = ApiKey.pop_secret(cc, env='OPENAI_API_KEY')
 
-    def invoke(self, t: CompletionRequest) -> CompletionResponse:
+    async def invoke(self, t: CompletionRequest) -> CompletionResponse:
         raw_request = dict(
             model=self.DEFAULT_MODEL_NAME,
             prompt=t.v,

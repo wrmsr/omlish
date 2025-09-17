@@ -63,9 +63,9 @@ class HistoryAddingChatService:
         self._inner = inner
         self._history = history
 
-    def invoke(self, request: ChatRequest) -> ChatResponse:
+    async def invoke(self, request: ChatRequest) -> ChatResponse:
         new_req = dc.replace(request, v=[*self._history.get(), *request.v])
-        response = self._inner.invoke(new_req)
+        response = await self._inner.invoke(new_req)
         self._history.add(
             *request.v,
             response.v,

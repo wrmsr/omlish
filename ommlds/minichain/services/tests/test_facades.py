@@ -1,3 +1,5 @@
+from omlish import lang
+
 from ..facades import ServiceFacade
 from ..requests import Request
 from .chat import ApiKey
@@ -46,19 +48,19 @@ def test_facade_types():
     chat_request: ChatRequest = Request([Message('user', 'hi')], [MaxTokens(10)])
     chat_request2 = ChatRequest([Message('user', 'hi')], [MaxTokens(10)])
 
-    local_chat_service.invoke(chat_request)  # OK
-    local_chat_service.invoke(chat_request2)  # OK
+    lang.sync_await(local_chat_service.invoke(chat_request))  # OK
+    lang.sync_await(local_chat_service.invoke(chat_request2))  # OK
 
     # (b) Still type-checks when you pass LocalChatRequest
 
     local_chat_request: LocalChatRequest = Request([Message('user', 'hi')], [MaxTokens(10), ModelPath('my_model')])
     local_chat_request2 = LocalChatRequest([Message('user', 'hi')], [MaxTokens(10), ModelPath('my_model')])
-    local_chat_service.invoke(local_chat_request)  # OK
-    local_chat_service.invoke(local_chat_request2)  # OK
+    lang.sync_await(local_chat_service.invoke(local_chat_request))  # OK
+    lang.sync_await(local_chat_service.invoke(local_chat_request2))  # OK
 
     # (c) The result LocalChatResponse can be assigned to ChatResponse
 
-    local_chat_response_as_chat_response: ChatResponse = local_chat_service.invoke(local_chat_request)  # OK  # noqa
+    local_chat_response_as_chat_response: ChatResponse = lang.sync_await(local_chat_service.invoke(local_chat_request))  # OK  # noqa
 
     # (d) Remote side: also works with ChatService
 
@@ -68,10 +70,10 @@ def test_facade_types():
     # (e) These should all fail mypy:
 
     #  1) Cannot give RemoteRequest to LocalChatService
-    # local_chat_service.invoke(remote_chat_request)  # ❌
+    # lang.sync_await(local_chat_service.invoke(remote_chat_request))  # ❌
 
     #  2) Cannot treat LocalChatResponse as RemoteChatResponse
-    # local_chat_response_as_remote: RemoteChatResponse = local_chat_service.invoke(local_chat_request)  # ❌
+    # local_chat_response_as_remote: RemoteChatResponse = lang.sync_await(local_chat_service.invoke(local_chat_request))  # ❌  # noqa
 
     #  3) Cannot give LocalChatRequest to RemoteChatService
-    # remote_chat_service.invoke(local_chat_request)  # ❌
+    # lang.sync_await(remote_chat_service.invoke(local_chat_request))  # ❌

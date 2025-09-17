@@ -1,3 +1,4 @@
+from omlish import lang
 from omlish.secrets.tests.harness import HarnessSecrets
 
 from .....chat.choices.adapters import ChatChoicesServiceChatService
@@ -24,7 +25,7 @@ def test_openai_chat_stream_model(harness):
     ]:
         print(foo_req)
 
-        with llm.invoke(foo_req).v as it:
+        with lang.sync_await(llm.invoke(foo_req)).v as it:
             for o in it:
                 print(o)
             print(it.outputs)
@@ -78,7 +79,7 @@ def test_use_resources(harness):
         with Resources.new() as rs:
             print(foo_req)
 
-            with llm.invoke(foo_req.with_options(UseResources(rs))).v as it:
+            with lang.sync_await(llm.invoke(foo_req.with_options(UseResources(rs)))).v as it:
                 for o in it:
                     print(o)
                 print(it.outputs)
@@ -98,4 +99,4 @@ def test_adapters(harness):
         Request([UserMessage('Is water dry?')]),
         Request([UserMessage('Is air wet?')]),
     ]:
-        print(llm.invoke(foo_req))
+        print(lang.sync_await(llm.invoke(foo_req)))

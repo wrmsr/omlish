@@ -3,6 +3,7 @@ https://docs.anthropic.com/en/api/getting-started
 """
 import pytest
 
+from omlish import lang
 from omlish.formats import json
 from omlish.http import all as hu
 from omlish.secrets.tests.harness import HarnessSecrets
@@ -42,12 +43,12 @@ def test_anthropic_http(harness, cli_cls):
 def test_anthropic_chat(harness):
     key = harness[HarnessSecrets].get_or_skip('anthropic_api_key')
     svc = AnthropicChatChoicesService(ApiKey(key.reveal()))
-    resp = svc.invoke(Request([UserMessage('hi')]))
+    resp = lang.sync_await(svc.invoke(Request([UserMessage('hi')])))
     print(resp.v)
 
 
 def test_anthropic_chat_model_name(harness):
     key = harness[HarnessSecrets].get_or_skip('anthropic_api_key')
     svc = AnthropicChatChoicesService(ApiKey(key.reveal()), ModelName('claude-sonnet-4-20250514'))
-    resp = svc.invoke(Request([UserMessage('hi')]))
+    resp = lang.sync_await(svc.invoke(Request([UserMessage('hi')])))
     print(resp.v)

@@ -96,7 +96,7 @@ class MlxChatChoicesService(lang.ExitStacked):
         max_tokens=MaxTokens,
     )
 
-    def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
+    async def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
         loaded_model = self._load_model()
 
         tokenizer = loaded_model.tokenization.tokenizer

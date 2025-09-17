@@ -64,7 +64,7 @@ class InteractiveChatSession(ChatSession['InteractiveChatSession.Config']):
 
                 req_msg = mc.UserMessage(prompt)
 
-                response = mdl.invoke(mc.ChatChoicesRequest([*state.chat, req_msg]))
+                response = await mdl.invoke(mc.ChatChoicesRequest([*state.chat, req_msg]))
 
                 resp_msg = response.v[0].m
 

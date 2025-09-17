@@ -51,7 +51,7 @@ class LlamacppCompletionService:
         temperatur=Temperature,
     )
 
-    def invoke(self, request: CompletionRequest) -> CompletionResponse:
+    async def invoke(self, request: CompletionRequest) -> CompletionResponse:
         kwargs: dict = dict(
             # temperature=0,
             max_tokens=1024,

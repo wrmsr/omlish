@@ -64,10 +64,10 @@ class OpenaiGitAiBackend(GitAiBackend['OpenaiGitAiBackend.Config']):
 
         llm = OpenaiChatChoicesService()
 
-        resp = llm.invoke(mc.ChatChoicesRequest(
+        resp = lang.sync_await(llm.invoke(mc.ChatChoicesRequest(
             [mc.UserMessage(prompt)],
             # FIXME:  *((MaxTokens(self._config.max_tokens),) if self._config.max_tokens is not None else ()),
-        ))
+        )))
         return check.not_empty(check.isinstance(resp.v[0].m.c, str))
 
 
@@ -93,10 +93,10 @@ class MlxGitAiBackend(GitAiBackend['MlxGitAiBackend.Config']):
 
     def _run_prompt(self, prompt: str) -> str:
         with mc_mlx_chat.MlxChatChoicesService(mc.ModelRepo.parse(self._config.model)) as llm:
-            resp = llm.invoke(mc.ChatChoicesRequest(
+            resp = lang.sync_await(llm.invoke(mc.ChatChoicesRequest(
                 [mc.UserMessage(prompt)],
                 # FIXME: *((MaxTokens(self._config.max_tokens),) if self._config.max_tokens is not None else ()),
-            ))
+            )))
             text = check.not_empty(check.isinstance(resp.v[0].m.c, str))
 
             text = _strip_markdown_code_block(text)

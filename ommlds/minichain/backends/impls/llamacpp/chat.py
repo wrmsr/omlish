@@ -54,7 +54,7 @@ class LlamacppChatChoicesService:
         temperatur=Temperature,
     )
 
-    def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
+    async def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
         kwargs: dict = dict(
             # temperature=0,
             max_tokens=1024,

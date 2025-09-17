@@ -116,7 +116,7 @@ class BaseTinygradLlama3ChatService(lang.ExitStacked, lang.Abstract):
 # )
 @static_check_is_chat_choices_service
 class TinygradLlama3ChatChoicesService(BaseTinygradLlama3ChatService):
-    def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
+    async def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
         llm = self._load_model()
         toks = _prepare_toks(llm, request.v, request.options)
 
@@ -136,7 +136,7 @@ class TinygradLlama3ChatChoicesService(BaseTinygradLlama3ChatService):
 # )
 @static_check_is_chat_choices_stream_service
 class TinygradLlama3ChatChoicesStreamService(BaseTinygradLlama3ChatService):
-    def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
+    async def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
         with UseResources.or_new(request.options) as rs:
             llm = self._load_model()
             toks = _prepare_toks(

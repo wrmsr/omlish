@@ -17,7 +17,7 @@ from ....search import static_check_is_search_service
 # )
 @static_check_is_search_service
 class DuckduckgoSearchService:
-    def invoke(self, request: SearchRequest) -> SearchResponse:
+    async def invoke(self, request: SearchRequest) -> SearchResponse:
         dsch = ddgs.DDGS()
         res = dsch.text(request.v)
         return SearchResponse(SearchHits(

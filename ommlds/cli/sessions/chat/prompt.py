@@ -75,10 +75,10 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
             self._config.backend or DEFAULT_CHAT_MODEL_BACKEND,
             *([mc.ModelName(mn)] if (mn := self._config.model_name) is not None else []),
         )) as mdl:
-            with mdl.invoke(mc.ChatChoicesStreamRequest(
+            with (await mdl.invoke(mc.ChatChoicesStreamRequest(
                     [*state.chat, *new_chat],
                     (self._chat_options or []),
-            )).v as st_resp:
+            ))).v as st_resp:
                 lst: list[str] = []
                 for o in st_resp:
                     if o:
@@ -112,7 +112,7 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
                 self._config.backend or DEFAULT_CHAT_MODEL_BACKEND,
                 *([mc.ModelName(mn)] if (mn := self._config.model_name) is not None else []),
         )) as mdl:
-            response: mc.ChatChoicesResponse = mdl.invoke(mc.ChatChoicesRequest(
+            response: mc.ChatChoicesResponse = await mdl.invoke(mc.ChatChoicesRequest(
                 [*state.chat, *new_chat],
                 (self._chat_options or []),
             ))
@@ -130,7 +130,7 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
                 print(trm.c)
                 new_chat.append(trm)
 
-                response = mdl.invoke(mc.ChatChoicesRequest(
+                response = await mdl.invoke(mc.ChatChoicesRequest(
                     [*state.chat, *new_chat],
                     (self._chat_options or []),
                 ))

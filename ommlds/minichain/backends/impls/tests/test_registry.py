@@ -1,3 +1,4 @@
+from omlish import lang
 from omlish.secrets.tests.harness import HarnessSecrets
 
 from ....chat.choices.services import ChatChoicesRequest
@@ -16,7 +17,7 @@ def test_new_backend_openai(harness):
         ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
     )
 
-    resp = llm.invoke(ChatChoicesRequest([UserMessage('what is 2 + 2?')]))
+    resp = lang.sync_await(llm.invoke(ChatChoicesRequest([UserMessage('what is 2 + 2?')])))
     print(resp.v)
 
 
@@ -26,5 +27,5 @@ def test_new_backend_openai2(harness):
         ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
     ))
 
-    resp = llm([UserMessage('what is 2 + 2?')])
+    resp = lang.sync_await(llm([UserMessage('what is 2 + 2?')]))
     print(resp.v)

@@ -59,7 +59,7 @@ class TransformersCompletionService(lang.ExitStacked):
             self._pipeline_kwargs = cc.pop(TransformersPipelineKwargs, [])
             self._huggingface_hub_token = HuggingfaceHubToken.pop_secret(cc, env='HUGGINGFACE_HUB_TOKEN')
 
-    def invoke(self, request: CompletionRequest) -> CompletionResponse:
+    async def invoke(self, request: CompletionRequest) -> CompletionResponse:
         pkw: dict[str, ta.Any] = dict(
             model=self._model_path.v,
             device='mps' if sys.platform == 'darwin' else 'cuda',
@@ -162,7 +162,7 @@ class TransformersChatChoicesService(lang.ExitStacked):
             **pkw,
         )
 
-    def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
+    async def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
         check.empty(request.options)
 
         pipeline = self._load_pipeline()

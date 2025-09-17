@@ -19,10 +19,10 @@ class RequestChatTransformingChatService:
     ct: ChatTransform
     svc: ChatService
 
-    def invoke(self, request: ChatRequest) -> ChatResponse:
+    async def invoke(self, request: ChatRequest) -> ChatResponse:
         new_chat = self.ct.transform_chat(request.v)
         new_req = dc.replace(request, v=new_chat)
-        return self.svc.invoke(new_req)
+        return await self.svc.invoke(new_req)
 
 
 #
@@ -34,7 +34,7 @@ class ResponseMessageTransformingChatService:
     mt: MessageTransform[AiMessage]
     svc: ChatService
 
-    def invoke(self, request: ChatRequest) -> ChatResponse:
-        orig_resp = self.svc.invoke(request)
+    async def invoke(self, request: ChatRequest) -> ChatResponse:
+        orig_resp = await self.svc.invoke(request)
         new_msg = self.mt.transform_message(orig_resp.v)
         return dc.replace(orig_resp, v=check.isinstance(new_msg, AiMessage))

@@ -50,7 +50,7 @@ class MistralChatChoicesService:
         else:
             raise TypeError(m)
 
-    def invoke(
+    async def invoke(
             self,
             request: ChatChoicesRequest,
     ) -> ChatChoicesResponse:

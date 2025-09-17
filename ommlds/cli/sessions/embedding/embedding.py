@@ -38,5 +38,5 @@ class EmbeddingSession(Session['EmbeddingSession.Config']):
             mc.EmbeddingService,
             self._config.backend or DEFAULT_EMBEDDING_MODEL_BACKEND,
         )) as mdl:
-            response = mdl.invoke(mc.EmbeddingRequest(self._config.content))
+            response = await mdl.invoke(mc.EmbeddingRequest(self._config.content))
             print(json.dumps_compact(list(map(float, response.v))))

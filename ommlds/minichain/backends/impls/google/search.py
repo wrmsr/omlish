@@ -88,7 +88,7 @@ class CseSearchService:
         self._cse_id = cse_id
         self._cse_api_key = cse_api_key
 
-    def invoke(
+    async def invoke(
             self,
             request: SearchRequest,
     ) -> SearchResponse:

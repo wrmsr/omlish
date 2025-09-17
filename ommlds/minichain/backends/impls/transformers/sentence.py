@@ -33,7 +33,7 @@ class SentenceTransformersEmbeddingService:
         with tv.consume(*configs) as cc:
             self._model_path = cc.pop(ModelPath(self.DEFAULT_MODEL))
 
-    def invoke(self, request: EmbeddingRequest) -> EmbeddingResponse:
+    async def invoke(self, request: EmbeddingRequest) -> EmbeddingResponse:
         mdl = stfm.SentenceTransformer(
             self._model_path.v,
         )

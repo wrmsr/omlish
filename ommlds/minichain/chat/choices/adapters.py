@@ -17,6 +17,6 @@ from .types import ChatChoicesOutputs
 class ChatChoicesServiceChatService:
     service: ChatChoicesService
 
-    def invoke(self, request: ChatRequest) -> Response[AiMessage, ChatChoicesOutputs]:
-        resp = self.service.invoke(request)
+    async def invoke(self, request: ChatRequest) -> Response[AiMessage, ChatChoicesOutputs]:
+        resp = await self.service.invoke(request)
         return Response(check.single(resp.v).m, resp.outputs)

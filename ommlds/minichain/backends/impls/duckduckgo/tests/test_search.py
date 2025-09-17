@@ -1,6 +1,7 @@
 import ddgs.exceptions
 import pytest
 
+from omlish import lang
 from omlish.testing import pytest as ptu
 
 from .....registries.globals import registry_new
@@ -13,7 +14,7 @@ from ..search import DuckduckgoSearchService
 @pytest.mark.online
 def test_search():
     try:
-        res = DuckduckgoSearchService().invoke(Request('the disco biscuits'))
+        res = lang.sync_await(DuckduckgoSearchService().invoke(Request('the disco biscuits')))
     except (ddgs.exceptions.RatelimitException, TimeoutError) as e:
         print(e)
         return

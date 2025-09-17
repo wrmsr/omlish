@@ -36,5 +36,5 @@ def static_check_is_chat_service[T: ChatService](t: type[T]) -> type[T]:
 @static_check_is_chat_service
 class AbstractChatService(lang.Abstract):
     @abc.abstractmethod
-    def invoke(self, request: ChatRequest) -> ChatResponse:
+    def invoke(self, request: ChatRequest) -> ta.Awaitable[ChatResponse]:
         raise NotImplementedError

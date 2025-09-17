@@ -1,5 +1,7 @@
 import pytest
 
+from omlish import lang
+
 from .....chat.choices.services import ChatChoicesRequest
 from .....chat.messages import UserMessage
 from .....completion import CompletionRequest
@@ -20,11 +22,11 @@ def test_transformers_completion():
             # device=None,
         )),
     ) as llm:
-        resp = llm.invoke(CompletionRequest('Is water dry?'))
+        resp = lang.sync_await(llm.invoke(CompletionRequest('Is water dry?')))
         print(resp)
         assert resp.v
 
-        resp = llm.invoke(Request('Is water dry?'))
+        resp = lang.sync_await(llm.invoke(Request('Is water dry?')))
         print(resp)
         assert resp.v
 
@@ -39,7 +41,7 @@ def test_transformers_chat():
             # device=None,
         )),
     ) as llm:
-        resp = llm.invoke(ChatChoicesRequest([UserMessage('Is water dry?')]))
+        resp = lang.sync_await(llm.invoke(ChatChoicesRequest([UserMessage('Is water dry?')])))
         print(resp)
         assert resp
 

@@ -44,15 +44,15 @@ class ServiceFacade(
         ],
     ]
 
-    def invoke(self, request: Request[RequestV, OptionT]) -> Response[ResponseV, OutputT]:
+    def invoke(self, request: Request[RequestV, OptionT]) -> ta.Awaitable[Response[ResponseV, OutputT]]:
         return self.service.invoke(request)
 
     @ta.overload
-    def __call__(self, request: Request[RequestV, OptionT]) -> Response[ResponseV, OutputT]:
+    def __call__(self, request: Request[RequestV, OptionT]) -> ta.Awaitable[Response[ResponseV, OutputT]]:
         ...
 
     @ta.overload
-    def __call__(self, v: RequestV, *options: OptionT) -> Response[ResponseV, OutputT]:
+    def __call__(self, v: RequestV, *options: OptionT) -> ta.Awaitable[Response[ResponseV, OutputT]]:
         ...
 
     def __call__(self, o, *args):

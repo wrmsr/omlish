@@ -28,7 +28,7 @@ from .chat import RemoteChatServiceImpl
 
 def test_impl_mros():  # noqa
     class FooLcs:  # noqa
-        def invoke(self, request: LocalChatRequest) -> LocalChatResponse:
+        async def invoke(self, request: LocalChatRequest) -> LocalChatResponse:
             raise NotImplementedError
 
     lang.static_check_issubclass[ChatService](FooLcs)
@@ -38,7 +38,7 @@ def test_impl_mros():  # noqa
     cs: ChatService = FooLcs()
 
     class BarLcs:  # noqa
-        def invoke(self, request: LocalChatRequest) -> LocalChatResponse:
+        async def invoke(self, request: LocalChatRequest) -> LocalChatResponse:
             raise NotImplementedError
 
     lang.static_check_issubclass[ChatService](BarLcs)
@@ -48,7 +48,7 @@ def test_impl_mros():  # noqa
     cs = FooLcs()  # noqa
 
     class FooCs:
-        def invoke(self, request: ChatRequest) -> ChatResponse:
+        async def invoke(self, request: ChatRequest) -> ChatResponse:
             raise NotImplementedError
 
     lang.static_check_issubclass[ChatService](FooCs)
@@ -76,7 +76,7 @@ def test_mypy():
 
     # (c) The result LocalChatResponse can be assigned to ChatResponse
 
-    local_chat_response_as_chat_response: ChatResponse = local_chat_service.invoke(local_chat_request)  # OK  # noqa
+    local_chat_response_as_chat_response: ChatResponse = lang.sync_await(local_chat_service.invoke(local_chat_request))  # OK  # noqa
 
     # (d) Remote side: also works with ChatService
 
@@ -88,7 +88,7 @@ def test_mypy():
     remote_chat_service.invoke(remote_chat_request)  # OK
     remote_chat_service.invoke(remote_chat_request2)  # OK
 
-    remote_chat_response_as_chat_response: ChatResponse = remote_chat_service.invoke(remote_chat_request)  # OK  # noqa
+    remote_chat_response_as_chat_response: ChatResponse = lang.sync_await(remote_chat_service.invoke(remote_chat_request))  # OK  # noqa
 
     # (e) These should all fail mypy:
 

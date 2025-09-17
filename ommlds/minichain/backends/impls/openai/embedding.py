@@ -28,7 +28,7 @@ class OpenaiEmbeddingService:
         with tv.consume(*configs) as cc:
             self._api_key = ApiKey.pop_secret(cc, env='OPENAI_API_KEY')
 
-    def invoke(self, request: EmbeddingRequest) -> EmbeddingResponse:
+    async def invoke(self, request: EmbeddingRequest) -> EmbeddingResponse:
         raw_request = dict(
             model=self.model,
             input=check.isinstance(request.v, str),

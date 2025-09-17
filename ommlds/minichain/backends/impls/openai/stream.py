@@ -48,7 +48,7 @@ class OpenaiChatChoicesStreamService:
 
     READ_CHUNK_SIZE = 64 * 1024
 
-    def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
+    async def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
         # check.isinstance(request, ChatRequest)
 
         rh = OpenaiChatRequestHandler(

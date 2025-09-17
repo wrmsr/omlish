@@ -50,7 +50,7 @@ class DummyFnService:
 
 @static_check_is_chat_service
 class DummyChatService(DummyFnService):
-    def invoke(self, request: ChatRequest) -> ChatResponse:
+    async def invoke(self, request: ChatRequest) -> ChatResponse:
         return ChatResponse(self.fn(request.v))
 
 
@@ -59,7 +59,7 @@ class DummyChatService(DummyFnService):
 
 @static_check_is_chat_choices_service
 class DummyChatChoicesService(DummyFnService):
-    def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
+    async def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
         return ChatChoicesResponse([AiChoice(self.fn(request.v))])
 
 
@@ -68,7 +68,7 @@ class DummyChatChoicesService(DummyFnService):
 
 @static_check_is_chat_choices_stream_service
 class DummyChatChoicesStreamService(DummyFnService):
-    def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
+    async def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
         with UseResources.or_new(request.options) as rs:
             def yield_choices() -> ChatChoicesStreamGenerator:
                 am = self.fn(request.v)

@@ -49,7 +49,7 @@ class LlamacppChatChoicesStreamService(lang.ExitStacked):
             verbose=False,
         )))
 
-    def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
+    async def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
         lcu.install_logging_hook()
 
         with UseResources.or_new(request.options) as rs:

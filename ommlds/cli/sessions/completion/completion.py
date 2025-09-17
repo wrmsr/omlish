@@ -40,5 +40,5 @@ class CompletionSession(Session['CompletionSession.Config']):
                 mc.CompletionService,
                 self._config.backend or DEFAULT_COMPLETION_MODEL_BACKEND,
         )) as mdl:
-            response = mdl.invoke(mc.CompletionRequest(prompt))
+            response = await mdl.invoke(mc.CompletionRequest(prompt))
             print(response.v.strip())

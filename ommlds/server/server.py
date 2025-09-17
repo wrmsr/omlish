@@ -47,10 +47,10 @@ class McServerHandler(HttpHandler_):
 
         log.info('Server got prompt: %s', prompt)
 
-        resp = self.llm.invoke(mc.ChatChoicesRequest(
+        resp = lang.sync_await(self.llm.invoke(mc.ChatChoicesRequest(
             [mc.UserMessage(prompt)],
             # Temperature(.1),
-        ))
+        )))
         resp_txt = check.isinstance(resp.v[0].m.c, str)
 
         log.info('Server got response: %s', resp_txt)

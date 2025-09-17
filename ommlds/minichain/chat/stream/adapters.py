@@ -27,13 +27,13 @@ class ChatChoicesStreamServiceChatChoicesService:
         parts: list[str]
         trs: list[ToolExecRequest]
 
-    def invoke(self, request: ChatChoicesRequest) -> Response[
+    async def invoke(self, request: ChatChoicesRequest) -> Response[
         AiChoices,
         ChatChoicesOutputs | ChatChoicesStreamOutputs,
     ]:
         lst: list[ChatChoicesStreamServiceChatChoicesService._Choice] = []
 
-        resp = self.service.invoke(request)
+        resp = await self.service.invoke(request)
         with resp.v as resp_v:
             i = -1  # noqa
             for i, cs in enumerate(resp_v):

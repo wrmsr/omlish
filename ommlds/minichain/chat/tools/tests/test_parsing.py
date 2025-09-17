@@ -1,5 +1,6 @@
 from omlish import check
 from omlish import dataclasses as dc
+from omlish import lang
 
 from ....text.toolparsing.dumb import DumbToolExecParser
 from ...messages import AiMessage
@@ -17,7 +18,7 @@ class DummyChatService:
     prefix: str = ''
     suffix: str = ''
 
-    def invoke(self, request: ChatRequest) -> ChatResponse:
+    async def invoke(self, request: ChatRequest) -> ChatResponse:
         um = check.isinstance(request.v[-1], UserMessage)
         return ChatResponse(AiMessage(''.join([self.prefix, check.isinstance(um.c, str), self.suffix])))
 
@@ -31,7 +32,7 @@ TOOL_RESPONSE = """\
 
 def test_response_message_transforming_chat_service():
     dcs = DummyChatService(prefix=TOOL_RESPONSE + '\n')
-    print(dcs.invoke(ChatRequest([UserMessage('hi')])))
+    print(lang.sync_await(dcs.invoke(ChatRequest([UserMessage('hi')]))))
 
     tcs = ResponseMessageTransformingChatService(
         ToolExecParsingMessageTransform(
@@ -43,4 +44,4 @@ def test_response_message_transforming_chat_service():
         ),
         dcs,
     )
-    print(tcs.invoke(ChatRequest([UserMessage('hi')])))
+    print(lang.sync_await(tcs.invoke(ChatRequest([UserMessage('hi')]))))

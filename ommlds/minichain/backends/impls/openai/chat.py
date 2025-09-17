@@ -47,7 +47,7 @@ class OpenaiChatChoicesService:
             self._api_key = ApiKey.pop_secret(cc, env='OPENAI_API_KEY')
             self._default_options: tv.TypedValues = DefaultOptions.pop(cc)
 
-    def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
+    async def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
         # check.isinstance(request, ChatRequest)
 
         rh = OpenaiChatRequestHandler(

@@ -1,6 +1,7 @@
 import typing as ta
 
 from omlish import check
+from omlish import lang
 from omlish import marshal as msh
 from omlish.secrets.tests.harness import HarnessSecrets
 
@@ -38,7 +39,7 @@ def test_openai(harness):
     req2 = msh.unmarshal(rm, ChatChoicesRequest)
     print(req2)
 
-    resp = llm.invoke(req)
+    resp = lang.sync_await(llm.invoke(req))
     print(resp)
     assert resp.v
 
@@ -59,7 +60,7 @@ def test_openai_content(harness):
     req2 = msh.unmarshal(rm, ChatChoicesRequest)
     print(req2)
 
-    resp = llm.invoke(req)
+    resp = lang.sync_await(llm.invoke(req))
     print(resp)
     assert resp.v
 
@@ -84,14 +85,14 @@ def test_openai_tools(harness):
         UserMessage('What is the weather in Seattle?'),
     ]
 
-    resp = llm.invoke(ChatChoicesRequest(
+    resp = lang.sync_await(llm.invoke(ChatChoicesRequest(
         chat,
         [
             Temperature(.1),
             MaxTokens(64),
             Tool(tool_spec),
         ],
-    ))
+    )))
 
     print(resp)
     assert resp.v
@@ -108,14 +109,14 @@ def test_openai_tools(harness):
         c='"rain"',
     ))
 
-    resp = llm.invoke(ChatChoicesRequest(
+    resp = lang.sync_await(llm.invoke(ChatChoicesRequest(
         chat,
         [
             Temperature(.1),
             MaxTokens(64),
             Tool(tool_spec),
         ],
-    ))
+    )))
 
     print(resp)
     assert resp.v
@@ -126,8 +127,8 @@ def test_openai_chat_promote(harness):
         ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
     ))
 
-    assert llm.invoke(ChatChoicesRequest([UserMessage('Hi!')])).v
-    assert llm.invoke(ChatChoicesRequest([UserMessage('Hi!')])).v
+    assert lang.sync_await(llm.invoke(ChatChoicesRequest([UserMessage('Hi!')]))).v
+    assert lang.sync_await(llm.invoke(ChatChoicesRequest([UserMessage('Hi!')]))).v
 
 
 def test_default_options(harness):
@@ -136,5 +137,5 @@ def test_default_options(harness):
         DefaultOptions([MaxTokens(100)]),
     ))
 
-    assert llm.invoke(ChatChoicesRequest([UserMessage('Hi!')])).v
-    assert llm.invoke(ChatChoicesRequest([UserMessage('Hi!')], [MaxTokens(101)])).v
+    assert lang.sync_await(llm.invoke(ChatChoicesRequest([UserMessage('Hi!')]))).v
+    assert lang.sync_await(llm.invoke(ChatChoicesRequest([UserMessage('Hi!')], [MaxTokens(101)]))).v
