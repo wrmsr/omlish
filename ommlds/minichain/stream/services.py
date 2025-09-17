@@ -31,7 +31,7 @@ StreamOptions: ta.TypeAlias = StreamOption | ResourcesOption
 ##
 
 
-class ResponseGenerator(lang.Final, ta.Generic[V, OutputT]):
+class ResponseGenerator(ta.AsyncGenerator[V, OutputT], lang.Final, ta.Generic[V, OutputT]):
     def __init__(self, agr: lang.AsyncGeneratorWithReturn[V, None, ta.Sequence[OutputT] | None]) -> None:
         super().__init__()
 
@@ -51,12 +51,9 @@ class ResponseGenerator(lang.Final, ta.Generic[V, OutputT]):
     def outputs(self) -> tv.TypedValues[OutputT]:
         return self._outputs
 
-    def __aiter__(self) -> ta.AsyncIterator[V]:
-        return self
-
-    async def __anext__(self) -> V:
+    async def asend(self, value) -> V:
         try:
-            return await self._agr.__anext__()
+            return await self._agr.asend(value)
         except StopAsyncIteration:
             self._is_done = True
             if (v := self._agr.value.must()) is not None:
@@ -64,6 +61,12 @@ class ResponseGenerator(lang.Final, ta.Generic[V, OutputT]):
             else:
                 self._outputs = tv.TypedValues()
             raise
+
+    async def athrow(self, typ, val=None, tb=None):
+        return await self._agr.athrow(typ, val)
+
+    async def aclose(self):
+        await self._agr.aclose()
 
 
 StreamResponse: ta.TypeAlias = Response[

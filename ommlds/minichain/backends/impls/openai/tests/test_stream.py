@@ -26,8 +26,7 @@ def test_openai_chat_stream_model(harness):
         print(foo_req)
 
         with lang.sync_await_context_manager(lang.sync_await(llm.invoke(foo_req)).v) as it:
-            # FIXME: lang.sync_aiter
-            for o in lang.sync_async_list(it):
+            for o in lang.run_maysync(it):
                 print(o)
             print(it.outputs)
 
