@@ -4,12 +4,14 @@ https://platform.openai.com/docs/api-reference/responses-streaming
 import typing as ta
 
 from omlish import check
+from omlish import marshal as msh
 from omlish import typedvalues as tv
 from omlish.formats import json
 from omlish.http import all as http
 from omlish.http import sse
 from omlish.io.buffers import DelimitingBuffer
 
+from .....backends.openai.protocol.chatcompletion.chunk import ChatCompletionChunk
 from ....chat.choices.services import ChatChoicesOutputs
 from ....chat.stream.services import ChatChoicesStreamRequest
 from ....chat.stream.services import ChatChoicesStreamResponse
@@ -101,6 +103,9 @@ class OpenaiChatChoicesStreamService:
                                 sj = json.loads(ss)  # ChatCompletionChunk
 
                                 check.state(sj['object'] == 'chat.completion.chunk')
+
+                                ccc = msh.unmarshal(sj, ChatCompletionChunk)  # noqa
+                                # print(ccc)
 
                                 # FIXME: stop reason
                                 if not sj['choices']:

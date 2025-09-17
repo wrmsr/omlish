@@ -3,6 +3,7 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
+from ..completionusage import CompletionUsage
 from .tokenlogprob import ChatCompletionTokenLogprob
 
 
@@ -87,3 +88,7 @@ class ChatCompletionChunk(lang.Final):
     ] | None = None
 
     system_fingerprint: str | None = None
+
+    usage: CompletionUsage | None = None
+
+    obfuscation: str | None = None
