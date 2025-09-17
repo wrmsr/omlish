@@ -153,8 +153,6 @@ class _JustMaybe(_Maybe[T]):
     __slots__ = ('_v', '_hash')
 
     def __init__(self, v: T) -> None:
-        super().__init__()
-
         self._v = v
 
     @property

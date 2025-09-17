@@ -7,10 +7,9 @@ T = ta.TypeVar('T')
 ##
 
 
+@ta.final
 class _ClassOrInstanceMethod:
     def __init__(self, func):
-        super().__init__()
-
         self.__func__ = func
 
     def __get__(self, instance, owner=None):
