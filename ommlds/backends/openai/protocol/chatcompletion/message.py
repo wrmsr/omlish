@@ -12,7 +12,7 @@ from .contentpart import TextChatCompletionContentPart
 
 
 class ChatCompletionMessage(lang.Abstract, lang.Sealed):
-    _ROLE_TAG: ta.ClassVar[str]
+    pass
 
 
 #
@@ -20,8 +20,6 @@ class ChatCompletionMessage(lang.Abstract, lang.Sealed):
 
 @dc.dataclass(frozen=True, kw_only=True)
 class DeveloperChatCompletionMessage(ChatCompletionMessage, lang.Final):
-    _ROLE_TAG: ta.ClassVar[str] = 'developer'
-
     content: str | ta.Iterable[TextChatCompletionContentPart]
     name: str | None = None
 
@@ -31,8 +29,6 @@ class DeveloperChatCompletionMessage(ChatCompletionMessage, lang.Final):
 
 @dc.dataclass(frozen=True, kw_only=True)
 class SystemChatCompletionMessage(ChatCompletionMessage, lang.Final):
-    _ROLE_TAG: ta.ClassVar[str] = 'system'
-
     content: str | ta.Iterable[TextChatCompletionContentPart]
     name: str | None = None
 
@@ -42,8 +38,6 @@ class SystemChatCompletionMessage(ChatCompletionMessage, lang.Final):
 
 @dc.dataclass(frozen=True, kw_only=True)
 class UserChatCompletionMessage(ChatCompletionMessage, lang.Final):
-    _ROLE_TAG: ta.ClassVar[str] = 'user'
-
     content: str | ta.Iterable[ChatCompletionContentPart]
     name: str | None = None
 
@@ -53,8 +47,6 @@ class UserChatCompletionMessage(ChatCompletionMessage, lang.Final):
 
 @dc.dataclass(frozen=True, kw_only=True)
 class AssistantChatCompletionMessage(ChatCompletionMessage, lang.Final):
-    _ROLE_TAG: ta.ClassVar[str] = 'assistant'
-
     @dc.dataclass(frozen=True, kw_only=True)
     class Audio(lang.Final):
         id: str
@@ -88,8 +80,6 @@ class AssistantChatCompletionMessage(ChatCompletionMessage, lang.Final):
 
 @dc.dataclass(frozen=True, kw_only=True)
 class ToolChatCompletionMessage(ChatCompletionMessage, lang.Final):
-    _ROLE_TAG: ta.ClassVar[str] = 'tool'
-
     content: str | ta.Iterable[TextChatCompletionContentPart]
     tool_call_id: str
 
@@ -99,7 +89,5 @@ class ToolChatCompletionMessage(ChatCompletionMessage, lang.Final):
 
 @dc.dataclass(frozen=True, kw_only=True)
 class FunctionChatCompletionMessage(ChatCompletionMessage, lang.Final):
-    _ROLE_TAG: ta.ClassVar[str] = 'function'
-
     content: str | None
     name: str
