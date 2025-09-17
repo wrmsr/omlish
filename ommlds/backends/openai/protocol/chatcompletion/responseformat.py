@@ -1,41 +1,44 @@
-# ruff: noqa: UP007 UP045
 import typing as ta
+
+from omlish import dataclasses as dc
+from omlish import lang
 
 
 ##
 
 
-class TextChatCompletionResponseFormat(ta.TypedDict):
-    type: ta.Literal['text']
+class ChatCompletionResponseFormat(lang.Abstract, lang.Sealed):
+    _TYPE_TAG: ta.ClassVar[str]
 
 
 #
 
 
-class JsonSchemaChatCompletionResponseFormatJsonSchema(ta.TypedDict, total=False):
-    name: ta.Required[str]
-    description: str
-    schema: ta.Mapping[str, ta.Any]
-    strict: bool
-
-
-class JsonSchemaChatCompletionResponseFormat(ta.TypedDict):
-    json_schema: JsonSchemaChatCompletionResponseFormatJsonSchema
-    type: ta.Literal['json_schema']
+@dc.dataclass(frozen=True, kw_only=True)
+class TextChatCompletionResponseFormat(ChatCompletionResponseFormat, lang.Final):
+    _TYPE_TAG: ta.ClassVar[str] = 'text'
 
 
 #
 
 
-class JsonObjectChatCompletionResponseFormat(ta.TypedDict):
-    type: ta.Literal['json_object']
+@dc.dataclass(frozen=True, kw_only=True)
+class JsonSchemaChatCompletionResponseFormat(ChatCompletionResponseFormat, lang.Final):
+    _TYPE_TAG: ta.ClassVar[str] = 'json_schema'
+
+    @dc.dataclass(frozen=True, kw_only=True)
+    class JsonSchema(lang.Final):
+        name: str
+        description: str | None = None
+        schema: ta.Mapping[str, ta.Any] | None = None
+        strict: bool | None = None
+
+    json_schema: JsonSchema
 
 
 #
 
 
-ChatCompletionResponseFormat: ta.TypeAlias = ta.Union[
-    TextChatCompletionResponseFormat,
-    JsonSchemaChatCompletionResponseFormat,
-    JsonObjectChatCompletionResponseFormat,
-]
+@dc.dataclass(frozen=True, kw_only=True)
+class JsonObjectChatCompletionResponseFormat(ChatCompletionResponseFormat, lang.Final):
+    _TYPE_TAG: ta.ClassVar[str] = 'json_object'

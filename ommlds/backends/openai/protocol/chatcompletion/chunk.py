@@ -1,71 +1,89 @@
 import typing as ta
 
+from omlish import dataclasses as dc
+from omlish import lang
+
 from .tokenlogprob import ChatCompletionTokenLogprob
 
 
 ##
 
 
-class ChatCompletionChunkChoiceDeltaToolCallFunction(ta.TypedDict, total=False):
-    arguments: str
-    name: str
+@dc.dataclass(frozen=True, kw_only=True)
+class ChatCompletionChunkChoiceDelta(lang.Final):
+    content: str | None = None
 
+    refusal: str | None = None
 
-class ChatCompletionChunkChoiceDeltaToolCall(ta.TypedDict):
-    index: int
-    id: ta.NotRequired[str]
-    function: ta.NotRequired[ChatCompletionChunkChoiceDeltaToolCallFunction]
-    type: ta.Literal['function']
-
-
-#
-
-
-class ChatCompletionChunkChoiceDelta(ta.TypedDict, total=False):
-    content: str
-    refusal: str
     role: ta.Literal[
         'developer',
         'system',
         'user',
         'assistant',
         'tool',
-    ]
-    tool_calls: ta.Sequence[ChatCompletionChunkChoiceDeltaToolCall]
+    ] | None = None
+
+    @dc.dataclass(frozen=True, kw_only=True)
+    class ToolCall(lang.Final):
+        index: int
+
+        id: str | None = None
+
+        @dc.dataclass(frozen=True, kw_only=True)
+        class Function(lang.Final):
+            arguments: str | None = None
+            name: str | None = None
+
+        function: Function | None = None
+
+        type: ta.Literal['function'] = dc.xfield('function', repr=False)
+
+    tool_calls: ta.Sequence[ToolCall] | None = None
 
 
 #
 
 
-class ChatCompletionChunkChoiceLogprobs(ta.TypedDict, total=False):
-    content: ta.Sequence[ChatCompletionTokenLogprob]
-    refusal: ta.Sequence[ChatCompletionTokenLogprob]
-
-
-class ChatCompletionChunkChoice(ta.TypedDict):
+@dc.dataclass(frozen=True, kw_only=True)
+class ChatCompletionChunkChoice(lang.Final):
     delta: ChatCompletionChunkChoiceDelta
-    finish_reason: ta.NotRequired[ta.Literal[
+
+    finish_reason: ta.Literal[
         'stop',
         'length',
         'tool_calls',
         'content_filter',
-    ]]
+    ] | None = None
+
     index: int
-    logprobs: ta.NotRequired[ChatCompletionChunkChoiceLogprobs]
+
+    @dc.dataclass(frozen=True, kw_only=True)
+    class Logprobs(lang.Final):
+        content: ta.Sequence[ChatCompletionTokenLogprob] | None = None
+        refusal: ta.Sequence[ChatCompletionTokenLogprob] | None = None
+
+    logprobs: Logprobs | None = None
 
 
 #
 
 
-class ChatCompletionChunk(ta.TypedDict):
+@dc.dataclass(frozen=True, kw_only=True)
+class ChatCompletionChunk(lang.Final):
     id: str
+
     choices: ta.Sequence[ChatCompletionChunkChoice]
+
     created: int
+
     model: str
-    object: ta.Literal['chat.completion.chunk']
-    service_tier: ta.NotRequired[ta.Literal[
+
+    object: ta.Literal['chat.completion.chunk'] = dc.xfield('chat.completion.chunk', repr=False)
+
+    service_tier: ta.Literal[
         'auto',
         'default',
         'flex',
-    ]]
-    system_fingerprint: ta.NotRequired[str]
+    ] | None = None
+
+    system_fingerprint: str | None = None

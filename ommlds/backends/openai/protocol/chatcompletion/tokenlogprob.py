@@ -1,17 +1,22 @@
 import typing as ta
 
+from omlish import dataclasses as dc
+from omlish import lang
+
 
 ##
 
 
-class ChatCompletionTokenLogprobTopLogprob(ta.TypedDict):
+@dc.dataclass(frozen=True, kw_only=True)
+class ChatCompletionTokenLogprob(lang.Final):
     token: str
-    bytes: ta.NotRequired[ta.Sequence[int]]
+    bytes: ta.Sequence[int] | None = None
     logprob: float
 
+    @dc.dataclass(frozen=True, kw_only=True)
+    class TopLogprob(lang.Final):
+        token: str
+        bytes: ta.Sequence[int] | None = None
+        logprob: float
 
-class ChatCompletionTokenLogprob(ta.TypedDict):
-    token: str
-    bytes: ta.NotRequired[ta.Sequence[int]]
-    logprob: float
-    top_logprobs: ta.Sequence[ChatCompletionTokenLogprobTopLogprob]
+    top_logprobs: ta.Sequence[TopLogprob]

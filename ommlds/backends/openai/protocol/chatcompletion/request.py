@@ -1,5 +1,8 @@
-# ruff: noqa: UP007 UP045
+# ruff: noqa: UP007
 import typing as ta
+
+from omlish import dataclasses as dc
+from omlish import lang
 
 from .contentpart import TextChatCompletionContentPart
 from .message import ChatCompletionMessage
@@ -9,73 +12,72 @@ from .responseformat import ChatCompletionResponseFormat
 ##
 
 
-class ChatCompletionRequestWebSearchOptionsUserLocationApproximate(ta.TypedDict, total=False):
-    city: str
-    country: str
-    region: str
-    timezone: str
-
-
-class ChatCompletionRequestWebSearchOptionsUserLocation(ta.TypedDict):
-    approximate: ChatCompletionRequestWebSearchOptionsUserLocationApproximate
-    type: ta.Literal['approximate']
-
-
-class ChatCompletionRequestWebSearchOptions(ta.TypedDict, total=False):
+@dc.dataclass(frozen=True, kw_only=True)
+class ChatCompletionRequestWebSearchOptions(lang.Final):
     search_context_size: ta.Literal[
         'low',
         'medium',
         'high',
-    ]
-    user_location: ChatCompletionRequestWebSearchOptionsUserLocation
+    ] | None = None
+
+    @dc.dataclass(frozen=True, kw_only=True)
+    class UserLocation(lang.Final):
+        @dc.dataclass(frozen=True, kw_only=True)
+        class Approximate(lang.Final):
+            city: str | None = None
+            country: str | None = None
+            region: str | None = None
+            timezone: str | None = None
+
+        approximate: Approximate
+        type: ta.Literal['approximate'] | None = None
+
+    user_location: UserLocation | None = None
 
 
 #
 
 
-class ChatCompletionRequestPrediction(ta.TypedDict):
+@dc.dataclass(frozen=True, kw_only=True)
+class ChatCompletionRequestPrediction(lang.Final):
     content: str | ta.Iterable[TextChatCompletionContentPart]
-    type: ta.Literal['content']
+    type: ta.Literal['content'] | None = None
 
 
 #
 
 
-class ChatCompletionRequestToolFunction(ta.TypedDict, total=False):
-    name: ta.Required[str]
-    description: str
-    parameters: ta.Mapping[str, ta.Any]
-    strict: bool
+@dc.dataclass(frozen=True, kw_only=True)
+class ChatCompletionRequestTool(lang.Final):
+    @dc.dataclass(frozen=True, kw_only=True)
+    class Function(lang.Final):
+        name: str
+        description: str | None = None
+        parameters: ta.Mapping[str, ta.Any] | None = None
+        strict: bool | None = None
 
-
-class ChatCompletionRequestTool(ta.TypedDict):
-    function: ChatCompletionRequestToolFunction
-    type: ta.Literal['function']
-
-
-#
-
-
-class ChatCompletionRequestStreamOptions(ta.TypedDict, total=False):
-    include_usage: bool
+    function: Function
+    type: ta.Literal['function'] | None = None
 
 
 #
 
 
-class ChatCompletionRequestNamedToolChoiceFunction(ta.TypedDict):
-    name: str
+@dc.dataclass(frozen=True, kw_only=True)
+class ChatCompletionRequestNamedToolChoice(lang.Final):
+    @dc.dataclass(frozen=True, kw_only=True)
+    class Function(lang.Final):
+        name: str
 
-
-class ChatCompletionRequestNamedToolChoice(ta.TypedDict):
-    function: ChatCompletionRequestNamedToolChoiceFunction
-    type: ta.Literal['function']
+    function: Function
+    type: ta.Literal['function'] | None = None
 
 
 #
 
 
-class ChatCompletionRequestAudio(ta.TypedDict):
+@dc.dataclass(frozen=True, kw_only=True)
+class ChatCompletionRequestAudio(lang.Final):
     format: ta.Literal[
         'wav',
         'aac',
@@ -91,40 +93,64 @@ class ChatCompletionRequestAudio(ta.TypedDict):
 #
 
 
-class ChatCompletionRequest(ta.TypedDict, total=False):
-    messages: ta.Required[ta.Iterable[ChatCompletionMessage]]
-    model: ta.Required[str]
-    audio: ChatCompletionRequestAudio
-    frequency_penalty: float
-    logit_bias: ta.Mapping[str, int]
-    logprobs: bool
-    max_completion_tokens: int
-    max_tokens: int
-    metadata: ta.Mapping[str, str]
+@dc.dataclass(frozen=True, kw_only=True)
+class ChatCompletionRequest(lang.Final):
+    messages: ta.Iterable[ChatCompletionMessage]
+
+    model: str
+
+    audio: ChatCompletionRequestAudio | None = None
+
+    frequency_penalty: float | None = None
+    logit_bias: ta.Mapping[str, int] | None = None
+    logprobs: bool | None = None
+
+    max_completion_tokens: int | None = None
+    max_tokens: int | None = None
+
+    metadata: ta.Mapping[str, str] | None = None
+
     modalities: ta.Sequence[ta.Literal[
         'text',
         'audio',
-    ]]
-    n: int
-    parallel_tool_calls: bool
-    prediction: ChatCompletionRequestPrediction
-    presence_penalty: float
+    ]] | None = None
+
+    n: int | None = None
+
+    parallel_tool_calls: bool | None = None
+
+    prediction: ChatCompletionRequestPrediction | None = None
+
+    presence_penalty: float | None = None
+
     reasoning_effort: ta.Literal[
         'low',
         'medium',
         'high',
-    ]
-    response_format: ChatCompletionResponseFormat
-    seed: int
+    ] | None = None
+
+    response_format: ChatCompletionResponseFormat | None = None
+
+    seed: int | None = None
+
     service_tier: ta.Literal[
         'auto',
         'default',
         'flex',
-    ]
-    stop: ta.Union[str, ta.Sequence[str], None]
-    store: bool
-    stream_options: ChatCompletionRequestStreamOptions
-    temperature: float
+    ] | None = None
+
+    stop: ta.Union[str, ta.Sequence[str], None] = None
+
+    store: bool | None = None
+
+    @dc.dataclass(frozen=True, kw_only=True)
+    class StreamOptions(lang.Final):
+        include_usage: bool | None = None
+
+    stream_options: StreamOptions | None = None
+
+    temperature: float | None = None
+
     tool_choice: ta.Union[
         ta.Literal[
             'none',
@@ -132,9 +158,13 @@ class ChatCompletionRequest(ta.TypedDict, total=False):
             'required',
         ],
         ChatCompletionRequestNamedToolChoice,
-    ]
-    tools: ta.Iterable[ChatCompletionRequestTool]
-    top_logprobs: int
-    top_p: float
-    user: str
-    web_search_options: ChatCompletionRequestWebSearchOptions
+    ] | None = None
+
+    tools: ta.Iterable[ChatCompletionRequestTool] | None = None
+
+    top_logprobs: int | None = None
+    top_p: float | None = None
+
+    user: str | None = None
+
+    web_search_options: ChatCompletionRequestWebSearchOptions | None = None

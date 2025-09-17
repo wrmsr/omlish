@@ -5,11 +5,8 @@ https://github.com/openai/openai-openapi/blob/master/openapi.yaml
 # ruff: noqa: I001
 
 from .chatcompletion.chunk import (  # noqa
-    ChatCompletionChunkChoiceDeltaToolCallFunction,
-    ChatCompletionChunkChoiceDeltaToolCall,
     ChatCompletionChunkChoiceDelta,
 
-    ChatCompletionChunkChoiceLogprobs,
     ChatCompletionChunkChoice,
 
     ChatCompletionChunk,
@@ -18,13 +15,10 @@ from .chatcompletion.chunk import (  # noqa
 from .chatcompletion.contentpart import (  # noqa
     TextChatCompletionContentPart,
 
-    ImageChatCompletionContentPartImageUrl,
     ImageChatCompletionContentPart,
 
-    FileChatCompletionContentPartFileInfo,
     FileChatCompletionContentPart,
 
-    InputAudioChatCompletionContentPartInputAudio,
     InputAudioChatCompletionContentPart,
 
     RefusalChatCompletionContentPart,
@@ -39,9 +33,6 @@ from .chatcompletion.message import (  # noqa
 
     UserChatCompletionMessage,
 
-    AssistantChatCompletionMessageAudio,
-    AssistantChatCompletionMessageToolCallFunction,
-    AssistantChatCompletionMessageToolCall,
     AssistantChatCompletionMessage,
 
     ToolChatCompletionMessage,
@@ -52,18 +43,12 @@ from .chatcompletion.message import (  # noqa
 )
 
 from .chatcompletion.request import (  # noqa
-    ChatCompletionRequestWebSearchOptionsUserLocationApproximate,
-    ChatCompletionRequestWebSearchOptionsUserLocation,
     ChatCompletionRequestWebSearchOptions,
 
     ChatCompletionRequestPrediction,
 
-    ChatCompletionRequestToolFunction,
     ChatCompletionRequestTool,
 
-    ChatCompletionRequestStreamOptions,
-
-    ChatCompletionRequestNamedToolChoiceFunction,
     ChatCompletionRequestNamedToolChoice,
 
     ChatCompletionRequestAudio,
@@ -72,16 +57,8 @@ from .chatcompletion.request import (  # noqa
 )
 
 from .chatcompletion.response import (  # noqa
-    ChatCompletionResponseAnnotationUrlCitation,
-    ChatCompletionResponseAnnotation,
-
-    ChatCompletionResponseAudio,
-
-    ChatCompletionResponseMessageToolCallFunction,
-    ChatCompletionResponseMessageToolCall,
     ChatCompletionResponseMessage,
 
-    ChatCompletionResponseChoiceLogprobs,
     ChatCompletionResponseChoice,
 
     ChatCompletionResponse,
@@ -90,7 +67,6 @@ from .chatcompletion.response import (  # noqa
 from .chatcompletion.responseformat import (  # noqa
     TextChatCompletionResponseFormat,
 
-    JsonSchemaChatCompletionResponseFormatJsonSchema,
     JsonSchemaChatCompletionResponseFormat,
 
     JsonObjectChatCompletionResponseFormat,
@@ -99,12 +75,9 @@ from .chatcompletion.responseformat import (  # noqa
 )
 
 from .chatcompletion.tokenlogprob import (  # noqa
-    ChatCompletionTokenLogprobTopLogprob,
     ChatCompletionTokenLogprob,
 )
 
 from .completionusage import (  # noqa
-    CompletionUsageCompletionTokensDetails,
-    CompletionUsagePromptTokensDetails,
     CompletionUsage,
 )

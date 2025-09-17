@@ -1,5 +1,7 @@
-# ruff: noqa: UP007 UP045
 import typing as ta
+
+from omlish import dataclasses as dc
+from omlish import lang
 
 from .contentpart import ChatCompletionContentPart
 from .contentpart import RefusalChatCompletionContentPart
@@ -9,83 +11,95 @@ from .contentpart import TextChatCompletionContentPart
 ##
 
 
-class DeveloperChatCompletionMessage(ta.TypedDict):
-    content: str | ta.Iterable[TextChatCompletionContentPart]
-    role: ta.Literal['developer']
-    name: ta.NotRequired[str]
+class ChatCompletionMessage(lang.Abstract, lang.Sealed):
+    _ROLE_TAG: ta.ClassVar[str]
 
 
 #
 
 
-class SystemChatCompletionMessage(ta.TypedDict):
+@dc.dataclass(frozen=True, kw_only=True)
+class DeveloperChatCompletionMessage(ChatCompletionMessage, lang.Final):
+    _ROLE_TAG: ta.ClassVar[str] = 'developer'
+
     content: str | ta.Iterable[TextChatCompletionContentPart]
-    role: ta.Literal['system']
-    name: ta.NotRequired[str]
+    name: str | None = None
 
 
 #
 
 
-class UserChatCompletionMessage(ta.TypedDict):
+@dc.dataclass(frozen=True, kw_only=True)
+class SystemChatCompletionMessage(ChatCompletionMessage, lang.Final):
+    _ROLE_TAG: ta.ClassVar[str] = 'system'
+
+    content: str | ta.Iterable[TextChatCompletionContentPart]
+    name: str | None = None
+
+
+#
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class UserChatCompletionMessage(ChatCompletionMessage, lang.Final):
+    _ROLE_TAG: ta.ClassVar[str] = 'user'
+
     content: str | ta.Iterable[ChatCompletionContentPart]
-    role: ta.Literal['user']
-    name: ta.NotRequired[str]
+    name: str | None = None
 
 
 #
 
 
-class AssistantChatCompletionMessageAudio(ta.TypedDict):
-    id: str
+@dc.dataclass(frozen=True, kw_only=True)
+class AssistantChatCompletionMessage(ChatCompletionMessage, lang.Final):
+    _ROLE_TAG: ta.ClassVar[str] = 'assistant'
 
+    @dc.dataclass(frozen=True, kw_only=True)
+    class Audio(lang.Final):
+        id: str
 
-class AssistantChatCompletionMessageToolCallFunction(ta.TypedDict):
-    arguments: str
-    name: str
+    audio: Audio | None = None
 
+    content: str | ta.Iterable[TextChatCompletionContentPart | RefusalChatCompletionContentPart] | None = None
 
-class AssistantChatCompletionMessageToolCall(ta.TypedDict):
-    id: str
-    function: AssistantChatCompletionMessageToolCallFunction
-    type: ta.Literal['function']
+    name: str | None = None
 
+    refusal: str | None = None
 
-class AssistantChatCompletionMessage(ta.TypedDict, total=False):
-    role: ta.Required[ta.Literal['assistant']]
-    audio: AssistantChatCompletionMessageAudio
-    content: str | ta.Iterable[TextChatCompletionContentPart | RefusalChatCompletionContentPart]
-    name: str
-    refusal: str
-    tool_calls: ta.Iterable[AssistantChatCompletionMessageToolCall]
+    @dc.dataclass(frozen=True, kw_only=True)
+    class ToolCall(lang.Final):
+        id: str
+
+        @dc.dataclass(frozen=True, kw_only=True)
+        class Function(lang.Final):
+            arguments: str
+            name: str
+
+        function: Function
+
+        type: ta.Literal['function'] = dc.xfield('function', repr=False)
+
+    tool_calls: ta.Iterable[ToolCall] | None = None
 
 
 #
 
 
-class ToolChatCompletionMessage(ta.TypedDict):
+@dc.dataclass(frozen=True, kw_only=True)
+class ToolChatCompletionMessage(ChatCompletionMessage, lang.Final):
+    _ROLE_TAG: ta.ClassVar[str] = 'tool'
+
     content: str | ta.Iterable[TextChatCompletionContentPart]
-    role: ta.Literal['tool']
     tool_call_id: str
 
 
 #
 
 
-class FunctionChatCompletionMessage(ta.TypedDict):
+@dc.dataclass(frozen=True, kw_only=True)
+class FunctionChatCompletionMessage(ChatCompletionMessage, lang.Final):
+    _ROLE_TAG: ta.ClassVar[str] = 'function'
+
     content: str | None
     name: str
-    role: ta.Literal['function']
-
-
-#
-
-
-ChatCompletionMessage: ta.TypeAlias = ta.Union[
-    DeveloperChatCompletionMessage,
-    SystemChatCompletionMessage,
-    UserChatCompletionMessage,
-    AssistantChatCompletionMessage,
-    ToolChatCompletionMessage,
-    FunctionChatCompletionMessage,
-]
