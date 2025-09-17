@@ -39,7 +39,8 @@ import types
 import typing as ta
 import weakref
 
-from ...logs.protocols import LoggerLike
+from omlish.logs.protocols import LoggerLike
+
 from .core import BlueletCoro
 from .core import BlueletExcInfo
 from .core import CoreBlueletEvent

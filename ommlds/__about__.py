@@ -56,7 +56,7 @@ class Project(ProjectBase):
         ],
 
         'search': [
-            'ddgs ~= 9.5',
+            'ddgs ~= 9.6',
         ],
 
         'wiki': [

@@ -10,7 +10,8 @@ import time
 import types
 import typing as ta
 
-from ...lite.abstract import Abstract
+from omlish.lite.abstract import Abstract
+
 from .events import BlueletEvent
 from .events import BlueletFuture
 from .events import WaitableBlueletEvent

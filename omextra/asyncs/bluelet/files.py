@@ -8,7 +8,8 @@
 import dataclasses as dc
 import typing as ta
 
-from ...lite.abstract import Abstract
+from omlish.lite.abstract import Abstract
+
 from .core import DelegationBlueletEvent
 from .core import ReturnBlueletEvent
 from .events import BlueletEvent

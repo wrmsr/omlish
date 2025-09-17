@@ -1,7 +1,12 @@
 import functools
 import typing as ta
 
+from ..lite.maybes import Maybe
 
+
+O = ta.TypeVar('O')
+I = ta.TypeVar('I')
+R = ta.TypeVar('R')
 T = ta.TypeVar('T')
 P = ta.ParamSpec('P')
 
@@ -14,3 +19,48 @@ def as_async(fn: ta.Callable[P, T], *, wrap: bool = False) -> ta.Callable[P, ta.
         return fn(*args, **kwargs)
 
     return functools.wraps(fn)(inner) if wrap else inner
+
+
+##
+
+
+@ta.final
+class AsyncGeneratorWithReturn(ta.AsyncGenerator[O, I], ta.Generic[O, I, R]):
+    def __init__(self, ag: ta.AsyncGenerator[O, I]) -> None:
+        self._ag = ag
+
+    _v: Maybe[R] = Maybe.empty()
+
+    @property
+    def value(self) -> Maybe[R]:
+        return self._v
+
+    def _set_value(self, v: R) -> None:
+        if self._v.present:
+            raise TypeError('Return value already set')
+        self._v = Maybe.just(v)
+
+    def __anext__(self):
+        return self._ag.__anext__()
+
+    def asend(self, value):
+        return self._ag.asend(value)
+
+    def athrow(self, typ, val=None, tb=None):
+        return self._ag.athrow(typ, val, tb)
+
+    def aclose(self):
+        return self._ag.aclose()
+
+
+def async_generator_with_return(
+        fn: ta.Callable[ta.Concatenate[ta.Callable[[R], None], P], ta.AsyncGenerator[O, I]],
+) -> ta.Callable[P, AsyncGeneratorWithReturn[O, I, R]]:
+    @functools.wraps(fn)
+    def inner(*args, **kwargs):
+        def set_value(v):
+            x._set_value(v)  # noqa
+
+        return (x := AsyncGeneratorWithReturn(fn(set_value, *args, **kwargs)))  # type: ignore[var-annotated]
+
+    return inner

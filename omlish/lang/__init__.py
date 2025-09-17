@@ -10,6 +10,9 @@ with _auto_proxy_init(
 
     from .asyncs import (  # noqa
         as_async,
+
+        AsyncGeneratorWithReturn,
+        async_generator_with_return,
     )
 
     from .attrstorage import (  # noqa
