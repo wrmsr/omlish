@@ -28,7 +28,7 @@ from .chat import RemoteChatServiceImpl
 
 def test_impl_mros():  # noqa
     class FooLcs:  # noqa
-        async def invoke(self, request: LocalChatRequest) -> LocalChatResponse:
+        def invoke(self, request: LocalChatRequest) -> ta.Awaitable[LocalChatResponse]:
             raise NotImplementedError
 
     lang.static_check_issubclass[ChatService](FooLcs)
@@ -38,7 +38,7 @@ def test_impl_mros():  # noqa
     cs: ChatService = FooLcs()
 
     class BarLcs:  # noqa
-        async def invoke(self, request: LocalChatRequest) -> LocalChatResponse:
+        def invoke(self, request: LocalChatRequest) -> ta.Awaitable[LocalChatResponse]:
             raise NotImplementedError
 
     lang.static_check_issubclass[ChatService](BarLcs)
@@ -48,7 +48,7 @@ def test_impl_mros():  # noqa
     cs = FooLcs()  # noqa
 
     class FooCs:
-        async def invoke(self, request: ChatRequest) -> ChatResponse:
+        def invoke(self, request: ChatRequest) -> ta.Awaitable[ChatResponse]:
             raise NotImplementedError
 
     lang.static_check_issubclass[ChatService](FooCs)
@@ -64,15 +64,15 @@ def test_mypy():
     chat_request2 = ChatRequest([Message('user', 'hi')], [MaxTokens(10)])
 
     local_chat_service: LocalChatService = LocalChatServiceImpl()
-    local_chat_service.invoke(chat_request)  # OK
-    local_chat_service.invoke(chat_request2)  # OK
+    lang.sync_await(local_chat_service.invoke(chat_request))  # OK
+    lang.sync_await(local_chat_service.invoke(chat_request2))  # OK
 
     # (b) Still type-checks when you pass LocalChatRequest
 
     local_chat_request: LocalChatRequest = Request([Message('user', 'hi')], [MaxTokens(10), ModelPath('my_model')])
     local_chat_request2 = LocalChatRequest([Message('user', 'hi')], [MaxTokens(10), ModelPath('my_model')])
-    local_chat_service.invoke(local_chat_request)  # OK
-    local_chat_service.invoke(local_chat_request2)  # OK
+    lang.sync_await(local_chat_service.invoke(local_chat_request))  # OK
+    lang.sync_await(local_chat_service.invoke(local_chat_request2))  # OK
 
     # (c) The result LocalChatResponse can be assigned to ChatResponse
 
@@ -81,12 +81,12 @@ def test_mypy():
     # (d) Remote side: also works with ChatService
 
     remote_chat_service: RemoteChatService = RemoteChatServiceImpl()
-    remote_chat_service.invoke(chat_request)  # OK
+    lang.sync_await(remote_chat_service.invoke(chat_request))  # OK
 
     remote_chat_request: RemoteChatRequest = Request([Message('user', 'hi')], [MaxTokens(10), ApiKey('secret')])
     remote_chat_request2 = RemoteChatRequest([Message('user', 'hi')], [MaxTokens(10), ApiKey('secret')])
-    remote_chat_service.invoke(remote_chat_request)  # OK
-    remote_chat_service.invoke(remote_chat_request2)  # OK
+    lang.sync_await(remote_chat_service.invoke(remote_chat_request))  # OK
+    lang.sync_await(remote_chat_service.invoke(remote_chat_request2))  # OK
 
     remote_chat_response_as_chat_response: ChatResponse = lang.sync_await(remote_chat_service.invoke(remote_chat_request))  # OK  # noqa
 
