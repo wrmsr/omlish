@@ -32,14 +32,14 @@ StreamOptions: ta.TypeAlias = StreamOption | ResourcesOption
 
 
 class ResponseGenerator(lang.Final, ta.Generic[V, OutputT]):
-    def __init__(self, g: ta.Generator[V, None, ta.Sequence[OutputT] | None]) -> None:
+    def __init__(self, agr: lang.AsyncGeneratorWithReturn[V, None, ta.Sequence[OutputT] | None]) -> None:
         super().__init__()
 
-        self._g = g
+        self._agr = agr
         self._is_done = False
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}<{self._g!r}>'
+        return f'{self.__class__.__name__}<{self._agr!r}>'
 
     _outputs: tv.TypedValues[OutputT]
 
@@ -51,16 +51,16 @@ class ResponseGenerator(lang.Final, ta.Generic[V, OutputT]):
     def outputs(self) -> tv.TypedValues[OutputT]:
         return self._outputs
 
-    def __iter__(self) -> ta.Iterator[V]:
+    def __aiter__(self) -> ta.AsyncIterator[V]:
         return self
 
-    def __next__(self) -> V:
+    async def __anext__(self) -> V:
         try:
-            return next(self._g)
-        except StopIteration as e:
+            return await self._agr.__anext__()
+        except StopAsyncIteration:
             self._is_done = True
-            if e.value is not None:
-                self._outputs = tv.TypedValues(*check.isinstance(e.value, ta.Sequence))
+            if (v := self._agr.value.must()) is not None:
+                self._outputs = tv.TypedValues(*check.isinstance(v, ta.Sequence))
             else:
                 self._outputs = tv.TypedValues()
             raise
@@ -77,17 +77,17 @@ StreamResponse: ta.TypeAlias = Response[
 ]
 
 
-def new_stream_response(
+async def new_stream_response(
         rs: Resources,
-        g: ta.Generator[V, None, ta.Sequence[OutputT] | None],
+        agr: lang.AsyncGeneratorWithReturn[V, None, ta.Sequence[OutputT] | None],
         outputs: ta.Sequence[StreamOutputT] | None = None,
 ) -> StreamResponse[V, OutputT, StreamOutputT]:
     return StreamResponse(
         rs.new_managed(
             ResponseGenerator(
-                rs.enter_context(
-                    contextlib.closing(
-                        g,
+                await rs.enter_async_context(
+                    contextlib.aclosing(
+                        agr,
                     ),
                 ),
             ),

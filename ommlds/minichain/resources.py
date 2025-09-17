@@ -3,7 +3,6 @@ TODO:
  - unify with omlish.sql.api.resources -> omlish.resources
 """
 import contextlib
-import threading
 import typing as ta
 
 from omlish import check
@@ -43,17 +42,17 @@ class Resources(lang.Final, lang.NotPicklable):
 
         self._no_autoclose = no_autoclose
 
-        self._lock = threading.RLock()
-
         self._closed = False
 
         self._refs: ta.MutableSet[ResourcesRef] = col.IdentitySet()
 
-        self._es = contextlib.ExitStack()
-        self._es.__enter__()
+        self._aes = contextlib.AsyncExitStack()
 
         if init_ref is not None:
             self.add_ref(init_ref)
+
+    async def init(self) -> None:
+        await self._aes.__aenter__()
 
     @property
     def autoclose(self) -> bool:
@@ -61,8 +60,7 @@ class Resources(lang.Final, lang.NotPicklable):
 
     @property
     def num_refs(self) -> int:
-        with self._lock:
-            return len(self._refs)
+        return len(self._refs)
 
     @property
     def closed(self) -> bool:
@@ -77,15 +75,16 @@ class Resources(lang.Final, lang.NotPicklable):
         pass
 
     @classmethod
-    def new(cls, **kwargs: ta.Any) -> ta.ContextManager['Resources']:
-        @contextlib.contextmanager
-        def inner():
+    def new(cls, **kwargs: ta.Any) -> ta.AsyncContextManager['Resources']:
+        @contextlib.asynccontextmanager
+        async def inner():
             init_ref = Resources._InitRef()
             res = Resources(init_ref=init_ref, **kwargs)
+            await res.init()
             try:
                 yield res
             finally:
-                res.remove_ref(init_ref)
+                await res.remove_ref(init_ref)
 
         return inner()
 
@@ -93,30 +92,30 @@ class Resources(lang.Final, lang.NotPicklable):
 
     def add_ref(self, ref: ResourcesRef) -> None:
         check.isinstance(ref, ResourcesRef)
-        with self._lock:
-            check.state(not self._closed)
-            self._refs.add(ref)
+        check.state(not self._closed)
+        self._refs.add(ref)
 
     def has_ref(self, ref: ResourcesRef) -> bool:
-        with self._lock:
-            return ref in self._refs
+        return ref in self._refs
 
-    def remove_ref(self, ref: ResourcesRef) -> None:
+    async def remove_ref(self, ref: ResourcesRef) -> None:
         check.isinstance(ref, ResourcesRef)
-        with self._lock:
-            try:
-                self._refs.remove(ref)
-            except KeyError:
-                raise ResourcesRefNotRegisteredError(ref) from None
-            if not self._no_autoclose and not self._refs:
-                self.close()
+        try:
+            self._refs.remove(ref)
+        except KeyError:
+            raise ResourcesRefNotRegisteredError(ref) from None
+        if not self._no_autoclose and not self._refs:
+            await self.aclose()
 
     #
 
-    def enter_context(self, cm: ta.ContextManager[T]) -> T:
-        with self._lock:
-            check.state(not self._closed)
-            return self._es.enter_context(cm)
+    async def enter_context(self, cm: ta.ContextManager[T]) -> T:
+        check.state(not self._closed)
+        return self._aes.enter_context(cm)
+
+    async def enter_async_context(self, cm: ta.AsyncContextManager[T]) -> T:
+        check.state(not self._closed)
+        return await self._aes.enter_async_context(cm)
 
     #
 
@@ -125,12 +124,11 @@ class Resources(lang.Final, lang.NotPicklable):
 
     #
 
-    def close(self) -> None:
-        with self._lock:
-            try:
-                self._es.__exit__(None, None, None)
-            finally:
-                self._closed = True
+    async def aclose(self) -> None:
+        try:
+            await self._aes.__aexit__(None, None, None)
+        finally:
+            self._closed = True
 
     def __del__(self) -> None:
         if not self._closed:
@@ -159,11 +157,11 @@ class ResourceManaged(ResourcesRef, lang.Final, lang.NotPicklable, ta.Generic[T]
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}<{self._v!r}>'
 
-    def __enter__(self) -> T:
+    async def __aenter__(self) -> T:
         return self._v
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.__resources.remove_ref(self)
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.__resources.remove_ref(self)
 
 
 ##
@@ -175,11 +173,11 @@ class ResourcesOption(Option, lang.Abstract):
 
 class UseResources(tv.UniqueScalarTypedValue[Resources], ResourcesOption, lang.Final):
     @classmethod
-    @contextlib.contextmanager
-    def or_new(cls, options: ta.Sequence[Option]) -> ta.Iterator[Resources]:
+    @contextlib.asynccontextmanager
+    async def or_new(cls, options: ta.Sequence[Option]) -> ta.AsyncGenerator[Resources]:
         if (ur := tv.as_collection(options).get(UseResources)) is not None:
-            with ResourceManaged(ur.v, ur.v) as rs:
+            async with ResourceManaged(ur.v, ur.v) as rs:
                 yield rs
         else:
-            with Resources.new() as rs:
+            async with Resources.new() as rs:
                 yield rs

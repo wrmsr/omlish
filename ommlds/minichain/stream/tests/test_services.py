@@ -1,3 +1,7 @@
+import typing as ta
+
+import pytest
+
 from omlish import lang
 
 from ...resources import UseResources
@@ -10,14 +14,17 @@ from ..services import new_stream_response
 
 class FooStreamService:
     async def invoke(self, request: Request[str, StreamOptions]) -> StreamResponse[str, Output, Output]:
-        with UseResources.or_new(request.options) as rs:
-            def yield_vs():
+        async with UseResources.or_new(request.options) as rs:
+            @lang.async_generator_with_return
+            async def yield_vs(set_value):
                 for c in request.v:
                     yield c + '!'
-            return new_stream_response(rs, yield_vs())
+                set_value(None)
+            return await new_stream_response(rs, yield_vs())
 
 
-def test_foo_stream_service():
-    with lang.sync_await(FooStreamService().invoke(Request('hi there!'))).v as it:
-        lst = list(it)
+@pytest.mark.asyncs('asyncio')
+async def test_foo_stream_service():
+    async with (await FooStreamService().invoke(Request('hi there!'))).v as it:
+        lst = await lang.async_list(it)
     assert lst == [c + '!' for c in 'hi there!']

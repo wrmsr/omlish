@@ -1,6 +1,8 @@
+import abc
 import functools
 import typing as ta
 
+from ..lite.abstract import Abstract
 from ..lite.maybes import Maybe
 
 
@@ -24,10 +26,22 @@ def as_async(fn: ta.Callable[P, T], *, wrap: bool = False) -> ta.Callable[P, ta.
 ##
 
 
+class AsyncGeneratorWithReturn(ta.AsyncGenerator[O, I], Abstract, ta.Generic[O, I, R]):
+    @property
+    @abc.abstractmethod
+    def value(self) -> Maybe[R]:
+        raise NotImplementedError
+
+
 @ta.final
-class AsyncGeneratorWithReturn(ta.AsyncGenerator[O, I], ta.Generic[O, I, R]):
+class _AsyncGeneratorWithReturn(AsyncGeneratorWithReturn[O, I, R]):
     def __init__(self, ag: ta.AsyncGenerator[O, I]) -> None:
+        if isinstance(ag, _AsyncGeneratorWithReturn):
+            raise TypeError(ag)
         self._ag = ag
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self._ag!r})'
 
     _v: Maybe[R] = Maybe.empty()
 
@@ -61,6 +75,6 @@ def async_generator_with_return(
         def set_value(v):
             x._set_value(v)  # noqa
 
-        return (x := AsyncGeneratorWithReturn(fn(set_value, *args, **kwargs)))  # type: ignore[var-annotated]
+        return (x := _AsyncGeneratorWithReturn(fn(set_value, *args, **kwargs)))  # type: ignore[var-annotated]
 
     return inner
