@@ -36,7 +36,7 @@ class CompletionSession(Session['CompletionSession.Config']):
         prompt = check.isinstance(self._config.content, str)
 
         mdl: mc.CompletionService
-        with lang.maybe_managing(self._backend_catalog.get_backend(
+        async with lang.async_maybe_managing(self._backend_catalog.get_backend(
                 mc.CompletionService,
                 self._config.backend or DEFAULT_COMPLETION_MODEL_BACKEND,
         )) as mdl:

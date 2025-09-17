@@ -35,7 +35,7 @@ class WrappedStreamService(ta.Generic[StreamRequestT, V, OutputT, StreamOutputT]
     def _process_stream_outputs(self, outputs: ta.Sequence[StreamOutputT]) -> ta.Sequence[StreamOutputT]:
         return outputs
 
-    def _process_vs(self, vs: ta.Iterator[V]) -> ta.Iterator[V]:
+    def _process_vs(self, vs: ta.AsyncGenerator[V]) -> ta.AsyncGenerator[V]:
         return vs
 
     def _process_outputs(self, outputs: ta.Sequence[OutputT]) -> ta.Sequence[OutputT]:
@@ -44,9 +44,9 @@ class WrappedStreamService(ta.Generic[StreamRequestT, V, OutputT, StreamOutputT]
     #
 
     async def invoke(self, request: StreamRequestT) -> StreamResponse[V, OutputT, StreamOutputT]:
-        with Resources.new() as rs:
+        async with Resources.new() as rs:
             in_response = await self._inner.invoke(self._process_request(request))
-            in_vs: ResponseGenerator[V, OutputT] = rs.enter_context(in_response.v)
+            in_vs: ResponseGenerator[V, OutputT] = await rs.enter_async_context(in_response.v)
             out_vs = self._process_vs(in_vs)
 
             def yield_vs() -> ta.Generator[V, None, ta.Sequence[OutputT] | None]:

@@ -54,7 +54,7 @@ class InteractiveChatSession(ChatSession['InteractiveChatSession.Config']):
             backend = DEFAULT_CHAT_MODEL_BACKEND
 
         mdl: mc.ChatChoicesService
-        with lang.maybe_managing(self._backend_catalog.get_backend(
+        async with lang.async_maybe_managing(self._backend_catalog.get_backend(
                 mc.ChatChoicesService,
                 backend,
                 *([mc.ModelName(mn)] if (mn := self._config.model_name) is not None else []),

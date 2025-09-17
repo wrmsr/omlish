@@ -70,17 +70,17 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
         ]
 
         mdl: mc.ChatChoicesStreamService
-        with lang.maybe_managing(self._backend_catalog.get_backend(
+        async with lang.async_maybe_managing(self._backend_catalog.get_backend(
             mc.ChatChoicesStreamService,
             self._config.backend or DEFAULT_CHAT_MODEL_BACKEND,
             *([mc.ModelName(mn)] if (mn := self._config.model_name) is not None else []),
         )) as mdl:
-            with (await mdl.invoke(mc.ChatChoicesStreamRequest(
+            async with (await mdl.invoke(mc.ChatChoicesStreamRequest(
                     [*state.chat, *new_chat],
                     (self._chat_options or []),
             ))).v as st_resp:
                 lst: list[str] = []
-                for o in st_resp:
+                async for o in st_resp:
                     if o:
                         m = check.single(o).m
                         if m.c is not None:
@@ -107,7 +107,7 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
         ]
 
         mdl: mc.ChatChoicesService
-        with lang.maybe_managing(self._backend_catalog.get_backend(
+        async with lang.async_maybe_managing(self._backend_catalog.get_backend(
             mc.ChatChoicesService,
                 self._config.backend or DEFAULT_CHAT_MODEL_BACKEND,
                 *([mc.ModelName(mn)] if (mn := self._config.model_name) is not None else []),

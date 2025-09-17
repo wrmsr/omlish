@@ -157,6 +157,8 @@ with _auto_proxy_init(globals(), update_exports=True):
         ContextManager,
 
         maybe_managing,
+        async_maybe_managing,
+
         disposing,
         breakpoint_on_exception,
         context_var_setting,

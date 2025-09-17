@@ -2,9 +2,11 @@ import dataclasses as dc
 import typing as ta
 
 from omlish import check
+from omlish import lang
 
 from ...resources import UseResources
 from ...stream.services import new_stream_response
+from ..choices.services import ChatChoicesOutputs
 from ..choices.services import ChatChoicesRequest
 from ..choices.services import ChatChoicesResponse
 from ..choices.services import static_check_is_chat_choices_service
@@ -69,8 +71,11 @@ class DummyChatChoicesService(DummyFnService):
 @static_check_is_chat_choices_stream_service
 class DummyChatChoicesStreamService(DummyFnService):
     async def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
-        with UseResources.or_new(request.options) as rs:
-            def yield_choices() -> ChatChoicesStreamGenerator:
+        async with UseResources.or_new(request.options) as rs:
+            @lang.async_generator_with_return
+            async def yield_choices(
+                    set_value: ta.Callable[[ta.Sequence[ChatChoicesOutputs] | None], None],
+            ) -> ChatChoicesStreamGenerator:
                 am = self.fn(request.v)
                 yield [AiChoiceDelta(AiMessageDelta(
                     am.c,
@@ -78,5 +83,5 @@ class DummyChatChoicesStreamService(DummyFnService):
                     # am.tool_exec_requests,
                     None,
                 ))]
-                return []
-            return new_stream_response(rs, yield_choices())
+                set_value([])
+            return await new_stream_response(rs, yield_choices())

@@ -341,7 +341,7 @@
     "module": ".minichain.backends.impls.openai.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/openai/stream.py",
-    "line": 36,
+    "line": 37,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.openai.stream",

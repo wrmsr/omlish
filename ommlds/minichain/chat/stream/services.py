@@ -48,4 +48,4 @@ class AbstractChatChoicesStreamService(lang.Abstract):
 ##
 
 
-ChatChoicesStreamGenerator: ta.TypeAlias = ta.Generator[AiChoiceDeltas, None, ta.Sequence[ChatChoicesOutputs] | None]
+ChatChoicesStreamGenerator: ta.TypeAlias = lang.AsyncGeneratorWithReturn[AiChoiceDeltas, None, ta.Sequence[ChatChoicesOutputs] | None]  # noqa

@@ -167,6 +167,18 @@ def maybe_managing(obj: T) -> ta.Iterator[T]:
         yield obj
 
 
+@contextlib.asynccontextmanager
+async def async_maybe_managing(obj: T) -> ta.AsyncGenerator[T]:
+    if isinstance(obj, ta.AsyncContextManager):
+        async with obj:
+            yield obj
+    else:
+        yield obj
+
+
+##
+
+
 @contextlib.contextmanager
 def disposing(obj: T, attr: str = 'dispose') -> ta.Iterator[T]:
     try:
