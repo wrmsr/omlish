@@ -39,6 +39,14 @@ use_uv = true
 inherits = ['_default']
 requires = ['-rrequirements-ext.txt']
 
+[tool.omlish.pyproject.venvs.check]
+inherits = ['_default']
+requires_pats = [
+    'flake8(-.*)?',
+    'ruff',
+    'mypy',
+]
+
 [tool.omlish.pyproject.venvs.'13d']
 inherits = ['_default']
 interp = '@13d'

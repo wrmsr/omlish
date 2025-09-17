@@ -33,6 +33,12 @@ from omlish.lite.check import check
 from .specifiers import Specifier
 
 
+RequiresMarkerVar = ta.Union['RequiresVariable', 'RequiresValue']  # ta.TypeAlias
+
+RequiresMarkerAtom = ta.Union['RequiresMarkerItem', ta.Sequence['RequiresMarkerAtom']]  # ta.TypeAlias
+RequiresMarkerList = ta.Sequence[ta.Union['RequiresMarkerList', 'RequiresMarkerAtom', str]]  # ta.TypeAlias
+
+
 ##
 
 
@@ -227,12 +233,6 @@ class RequiresValue(RequiresNode):
 class RequiresOp(RequiresNode):
     def serialize(self) -> str:
         return str(self)
-
-
-RequiresMarkerVar = ta.Union['RequiresVariable', 'RequiresValue']
-
-RequiresMarkerAtom = ta.Union['RequiresMarkerItem', ta.Sequence['RequiresMarkerAtom']]
-RequiresMarkerList = ta.Sequence[ta.Union['RequiresMarkerList', 'RequiresMarkerAtom', str]]
 
 
 class RequiresMarkerItem(ta.NamedTuple):

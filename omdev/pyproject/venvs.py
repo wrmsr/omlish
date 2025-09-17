@@ -1,6 +1,7 @@
 # ruff: noqa: UP006 UP007 UP045
 import glob
 import os.path
+import re
 import typing as ta
 
 from omlish.lite.cached import async_cached_nullary
@@ -42,7 +43,13 @@ class Venv:
 
     @cached_nullary
     def _iv(self) -> InterpVenv:
-        rr = RequirementsRewriter(self._name)
+        rr = RequirementsRewriter(
+            venv=self._name,
+            only_pats=(
+                [re.compile(p) for p in self._cfg.requires_pats]
+                if self._cfg.requires_pats is not None else None
+            ),
+        )
 
         return InterpVenv(
             self.dir_name,

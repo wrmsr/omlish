@@ -21,6 +21,7 @@ from .types import InterpSpecifier
 class InterpVenvConfig:
     interp: ta.Optional[str] = None
     requires: ta.Optional[ta.Sequence[str]] = None
+    requires_pats: ta.Optional[ta.Sequence[str]] = None
     use_uv: ta.Optional[bool] = None
 
 

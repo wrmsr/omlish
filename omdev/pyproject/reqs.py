@@ -4,11 +4,15 @@ TODO:
 """
 # ruff: noqa: UP007 UP045
 import os.path
+import re
 import tempfile
 import typing as ta
 
 from omlish.lite.cached import cached_nullary
 from omlish.logs.modules import get_module_logger
+
+from ..packaging.requires import RequiresParserSyntaxError
+from ..packaging.requires import parse_requirement
 
 
 log = get_module_logger(globals())  # noqa
@@ -20,11 +24,14 @@ log = get_module_logger(globals())  # noqa
 class RequirementsRewriter:
     def __init__(
             self,
+            *,
             venv: ta.Optional[str] = None,
+            only_pats: ta.Optional[ta.Sequence[re.Pattern]] = None,
     ) -> None:
         super().__init__()
 
         self._venv = venv
+        self._only_pats = only_pats
 
     @cached_nullary
     def _tmp_dir(self) -> str:
@@ -40,17 +47,32 @@ class RequirementsRewriter:
         out_lines = []
 
         for l in in_lines:
-            if self.VENV_MAGIC in l:
-                lp, _, rp = l.partition(self.VENV_MAGIC)
-                rp = rp.partition('#')[0]
+            if l.split('#')[0].strip():
                 omit = False
-                for v in rp.split():
-                    if v[0] == '!':
-                        if self._venv is not None and self._venv == v[1:]:
-                            omit = True
-                            break
+
+                if self.VENV_MAGIC in l:
+                    lp, _, rp = l.partition(self.VENV_MAGIC)
+                    rp = rp.partition('#')[0]
+                    for v in rp.split():
+                        if v[0] == '!':
+                            if self._venv is not None and self._venv == v[1:]:
+                                omit = True
+                                break
+                        else:
+                            raise NotImplementedError
+
+                if (
+                        not omit and
+                        (ops := self._only_pats) is not None and
+                        not l.strip().startswith('-')
+                ):
+                    try:
+                        pr = parse_requirement(l.split('#')[0].strip())
+                    except RequiresParserSyntaxError:
+                        pass
                     else:
-                        raise NotImplementedError
+                        if not any(op.fullmatch(pr.name) for op in ops):
+                            omit = True
 
                 if omit:
                     out_lines.append('# OMITTED:  ' + l)
