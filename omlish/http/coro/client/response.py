@@ -227,7 +227,7 @@ class CoroHttpClientResponse:
         if self._state.chunked:
             return (yield from self._read_chunked(amt))
 
-        if amt is not None:
+        if amt is not None and amt >= 0:
             if self._state.length is not None and amt > self._state.length:
                 # Clip the read to the "end of response"
                 amt = self._state.length
@@ -328,6 +328,8 @@ class CoroHttpClientResponse:
             amt: ta.Optional[int] = None,
     ) -> ta.Generator[CoroHttpIo.Io, ta.Optional[bytes], bytes]:
         check.state(hasattr(self._state, 'chunked'))
+        if amt is not None and amt < 0:
+            amt = None
         value = []
         try:
             while (chunk_left := (yield from self._get_chunk_left())) is not None:
