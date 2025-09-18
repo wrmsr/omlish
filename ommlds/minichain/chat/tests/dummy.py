@@ -2,7 +2,6 @@ import dataclasses as dc
 import typing as ta
 
 from omlish import check
-from omlish import lang
 
 from ...resources import UseResources
 from ...stream.services import new_stream_response
@@ -17,11 +16,12 @@ from ..messages import UserMessage
 from ..services import ChatRequest
 from ..services import ChatResponse
 from ..services import static_check_is_chat_service
-from ..stream.services import ChatChoicesStreamGenerator
 from ..stream.services import ChatChoicesStreamRequest
 from ..stream.services import ChatChoicesStreamResponse
+from ...stream.services import StreamResponseSink
 from ..stream.services import static_check_is_chat_choices_stream_service
 from ..stream.types import AiChoiceDelta
+from ..stream.types import AiChoiceDeltas
 from ..stream.types import AiMessageDelta
 
 
@@ -72,16 +72,13 @@ class DummyChatChoicesService(DummyFnService):
 class DummyChatChoicesStreamService(DummyFnService):
     async def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
         async with UseResources.or_new(request.options) as rs:
-            @lang.async_generator_with_return
-            async def yield_choices(
-                    set_value: ta.Callable[[ta.Sequence[ChatChoicesOutputs] | None], None],
-            ) -> ChatChoicesStreamGenerator:
+            async def inner(sink: StreamResponseSink[AiChoiceDeltas]) -> ta.Sequence[ChatChoicesOutputs]:
                 am = self.fn(request.v)
-                yield [AiChoiceDelta(AiMessageDelta(
+                await sink.emit([AiChoiceDelta(AiMessageDelta(
                     am.c,
                     # FIXME
                     # am.tool_exec_requests,
                     None,
-                ))]
-                set_value([])
-            return await new_stream_response(rs, yield_choices())
+                ))])
+                return []
+            return await new_stream_response(rs, inner)

@@ -43,9 +43,3 @@ class AbstractChatChoicesStreamService(lang.Abstract):
     @abc.abstractmethod
     def invoke(self, request: ChatChoicesStreamRequest) -> ta.Awaitable[ChatChoicesStreamResponse]:
         raise NotImplementedError
-
-
-##
-
-
-ChatChoicesStreamGenerator: ta.TypeAlias = lang.AsyncGeneratorWithReturn[AiChoiceDeltas, None, ta.Sequence[ChatChoicesOutputs] | None]  # noqa

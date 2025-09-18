@@ -4,7 +4,6 @@ https://platform.openai.com/docs/api-reference/responses-streaming
 import typing as ta
 
 from omlish import check
-from omlish import lang
 from omlish import marshal as msh
 from omlish import typedvalues as tv
 from omlish.formats import json
@@ -26,6 +25,7 @@ from ....resources import UseResources
 from ....standard import ApiKey
 from ....stream.services import StreamOption
 from ....stream.services import new_stream_response
+from ....stream.services import StreamResponseSink
 from .chat import OpenaiChatChoicesService
 from .format import OpenaiChatRequestHandler
 from .names import MODEL_NAMES
@@ -83,10 +83,7 @@ class OpenaiChatChoicesStreamService:
             http_client = rs.enter_context(http.client())
             http_response = rs.enter_context(http_client.stream_request(http_request))
 
-            @lang.async_generator_with_return
-            async def yield_choices(
-                    set_value: ta.Callable[[ta.Sequence[ChatChoicesOutputs] | None], None],
-            ) -> ta.AsyncGenerator[AiChoiceDeltas]:
+            async def inner(sink: StreamResponseSink[AiChoiceDeltas]) -> ta.Sequence[ChatChoicesOutputs]:
                 db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
                 sd = sse.SseDecoder()
                 while True:
@@ -95,16 +92,14 @@ class OpenaiChatChoicesStreamService:
                     for l in db.feed(b):
                         if isinstance(l, DelimitingBuffer.Incomplete):
                             # FIXME: handle
-                            set_value([])
-                            return
+                            return []
 
                         # FIXME: https://platform.openai.com/docs/guides/function-calling?api-mode=responses#streaming
                         for so in sd.process_line(l):
                             if isinstance(so, sse.SseEvent) and so.type == b'message':
                                 ss = so.data.decode('utf-8')
                                 if ss == '[DONE]':
-                                    set_value([])
-                                    return
+                                    return []
 
                                 sj = json.loads(ss)  # ChatCompletionChunk
 
@@ -117,16 +112,15 @@ class OpenaiChatChoicesStreamService:
                                 if not sj['choices']:
                                     continue
 
-                                yield [
+                                await sink.emit([
                                     AiChoiceDelta(rh.build_ai_message_delta(choice['delta']))
                                     for choice in sj['choices']
-                                ]
+                                ])
 
                     if not b:
-                        set_value([])
-                        return
+                        return []
 
             # raw_response = json.loads(check.not_none(http_response.data).decode('utf-8'))
             # return rh.build_response(raw_response)
 
-            return await new_stream_response(rs, yield_choices())
+            return await new_stream_response(rs, inner)

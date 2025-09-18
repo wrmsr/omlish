@@ -9,7 +9,7 @@ from .test_services import FooStreamService
 
 class WrappedFooStreamService(WrappedStreamService):
     @ta.override
-    def _process_value(self, v: str) -> ta.Iterable[str]:
+    async def _process_value(self, v: str) -> ta.Iterable[str]:
         return [v + '?']
 
 

@@ -10,19 +10,21 @@ from ....chat.choices.services import ChatChoicesRequest
 from ....chat.choices.services import ChatChoicesResponse
 from ....chat.choices.services import static_check_is_chat_choices_service
 from ....chat.choices.types import AiChoice
+from ....chat.choices.types import ChatChoicesOutputs
 from ....chat.messages import AiMessage
 from ....chat.messages import Chat
 from ....chat.messages import SystemMessage
 from ....chat.messages import UserMessage
-from ....chat.stream.services import ChatChoicesStreamGenerator
 from ....chat.stream.services import ChatChoicesStreamRequest
 from ....chat.stream.services import ChatChoicesStreamResponse
 from ....chat.stream.services import static_check_is_chat_choices_stream_service
 from ....chat.stream.types import AiChoiceDelta
+from ....chat.stream.types import AiChoiceDeltas
 from ....chat.stream.types import AiMessageDelta
 from ....chat.types import ChatOption
 from ....llms.types import LlmOption
 from ....resources import UseResources
+from ....stream.services import StreamResponseSink
 from ....stream.services import new_stream_response
 
 
@@ -137,7 +139,7 @@ class TinygradLlama3ChatChoicesService(BaseTinygradLlama3ChatService):
 @static_check_is_chat_choices_stream_service
 class TinygradLlama3ChatChoicesStreamService(BaseTinygradLlama3ChatService):
     async def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
-        with UseResources.or_new(request.options) as rs:
+        async with UseResources.or_new(request.options) as rs:
             llm = self._load_model()
             toks = _prepare_toks(
                 llm,
@@ -145,12 +147,12 @@ class TinygradLlama3ChatChoicesStreamService(BaseTinygradLlama3ChatService):
                 request.options.get_any((ChatOption, LlmOption)),  # FIXME  # noqa
             )
 
-            def yield_choices() -> ChatChoicesStreamGenerator:
+            async def inner(sink: StreamResponseSink[AiChoiceDeltas]) -> ta.Sequence[ChatChoicesOutputs]:
                 for s in tgl3.run_llm(llm, toks):
-                    yield [AiChoiceDelta(AiMessageDelta(s))]
+                    await sink.emit([AiChoiceDelta(AiMessageDelta(s))])
                 return []
 
-            return new_stream_response(rs, yield_choices())
+            return await new_stream_response(rs, inner)
 
 
 ##

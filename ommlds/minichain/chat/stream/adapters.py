@@ -34,10 +34,9 @@ class ChatChoicesStreamServiceChatChoicesService:
     ]:
         lst: list[ChatChoicesStreamServiceChatChoicesService._Choice] = []
 
-        resp = await self.service.invoke(request)
-        async with resp.v as resp_v:
+        async with (resp := await self.service.invoke(request)).v as it:  # noqa
             i = -1  # noqa
-            async for i, cs in lang.async_enumerate(resp_v):
+            async for i, cs in lang.async_enumerate(it):
                 if i == 0:
                     for c in cs:
                         m = c.m
@@ -57,7 +56,7 @@ class ChatChoicesStreamServiceChatChoicesService:
                         # if m.tool_exec_requests:
                         #     ch.trs.extend(m.tool_exec_requests)
 
-        check.state(resp_v.is_done)
+        # check.state(resp_v.is_done)
 
         ret: list[AiChoice] = []
         for ch in lst:
