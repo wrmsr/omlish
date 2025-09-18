@@ -19,7 +19,7 @@ class Project(ProjectBase):
             'llama-cpp-python ~= 0.3',
 
             'mlx ~= 0.29',
-            'mlx-lm ~= 0.27; sys_platform == "darwin"',
+            'mlx-lm ~= 0.28; sys_platform == "darwin"',
 
             # 'sentencepiece ~= 0.2',  # FIXME: https://github.com/google/sentencepiece/issues/1121
 

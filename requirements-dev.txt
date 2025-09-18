@@ -4,7 +4,7 @@ build>=1.2.2
 twine>=6.2.0  # @omlish-venv !14t
 wheel>=0.45.1
 
-uv>=0.8.17
+uv>=0.8.18
 
 pytest==8.4.2
 pytest-benchmark==5.1.0
@@ -131,7 +131,7 @@ boto3>=1.40.33
 antlr4-python3-runtime==4.13.2
 
 mlx==0.29.1; sys_platform == "darwin" and python_version < "3.14"  # @omlish-venv !13t !13dt !14t
-mlx-lm==0.27.1; sys_platform == "darwin" and python_version < "3.14"  # @omlish-venv !13t !13dt !14t
+mlx-lm==0.28.0; sys_platform == "darwin" and python_version < "3.14"  # @omlish-venv !13t !13dt !14t
 
 apsw==3.50.4.0
 
