@@ -31,8 +31,10 @@ from .bindings import BindingImpl
 from .providers import ProviderImpl
 
 
-with lang.auto_proxy_import(globals()):
+if ta.TYPE_CHECKING:
     from . import injector as _injector
+else:
+    _injector = lang.proxy_import('.injector', __package__)
 
 
 ##

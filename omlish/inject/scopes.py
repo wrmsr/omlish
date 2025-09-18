@@ -14,10 +14,14 @@ from .providers import Provider
 from .types import Scope
 
 
-with lang.auto_proxy_import(globals()):
+if ta.TYPE_CHECKING:
     from . import injector as _injector
     from . import maysync as _maysync
     from . import sync as _sync
+else:
+    _injector = lang.proxy_import('.injector', __package__)
+    _maysync = lang.proxy_import('.maysync', __package__)
+    _sync = lang.proxy_import('.sync', __package__)
 
 
 ##

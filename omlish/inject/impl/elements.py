@@ -51,8 +51,10 @@ from .providers2 import make_provider_impl
 from .scopes import make_scope_impl
 
 
-with lang.auto_proxy_import(globals()):
+if ta.TYPE_CHECKING:
     from . import privates as _privates
+else:
+    _privates = lang.proxy_import('.privates', __package__)
 
 
 ElementT = ta.TypeVar('ElementT', bound=Element)

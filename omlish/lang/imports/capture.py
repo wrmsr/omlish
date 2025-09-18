@@ -1,6 +1,20 @@
+"""
+Insufficient alt impls:
+ - `sys.meta_path`:
+  - need access to the `fromlist` and `level` arguments passed to `__import__`
+  - need to return fake modules to the import operation which are not added to `sys.modules`
+ - `sys.addaudithook`: cannot prevent import or inject result
+ - `sys.settrace` / bytecode tracing: same
+ - jit bytecode rewriting: slower than just importing everything
+
+Possible alt impls:
+ - aot static analysis, codegen, compare, if valid skip ctxmgr body and inject proxies, otherwise warn and run
+"""
 import builtins
 import contextlib
 import functools
+import sys
+import threading
 import types
 import typing as ta
 
@@ -319,9 +333,6 @@ class _ImportCaptureHook:
         )
 
 
-##
-
-
 class _AbstractBuiltinImportCaptureHook(_ImportCaptureHook):
     def _new_import(
             self,
@@ -355,7 +366,7 @@ class _AbstractBuiltinImportCaptureHook(_ImportCaptureHook):
         )
 
 
-class _GlobalBuiltinImportCaptureHook(_AbstractBuiltinImportCaptureHook):
+class _UnsafeGlobalBuiltinImportCaptureHook(_AbstractBuiltinImportCaptureHook):
     @contextlib.contextmanager
     def hook_context(
             self,
@@ -364,12 +375,13 @@ class _GlobalBuiltinImportCaptureHook(_AbstractBuiltinImportCaptureHook):
         if self._MOD_SELF_ATTR in mod_globals:
             raise ImportCaptureErrors.HookError
 
-        old_import = builtins.__import__
-
         #
 
+        old_import = builtins.__import__
+        new_import = functools.partial(self._new_import, old_import)
+
         mod_globals[self._MOD_SELF_ATTR] = self
-        builtins.__import__ = new_import = functools.partial(self._new_import, old_import)
+        builtins.__import__ = new_import
 
         try:
             yield
@@ -383,6 +395,185 @@ class _GlobalBuiltinImportCaptureHook(_AbstractBuiltinImportCaptureHook):
 
             del mod_globals[self._MOD_SELF_ATTR]
             builtins.__import__ = old_import
+
+
+class _SomewhatThreadSafeGlobalBuiltinImportCaptureHook(_AbstractBuiltinImportCaptureHook):
+    class _AlreadyPatchedError(Exception):
+        pass
+
+    @ta.final
+    class _Patch:
+        __lock: ta.ClassVar[threading.Lock] = threading.Lock()
+
+        def __init__(self, old_import):
+            self.__old_import = old_import
+            self.__hooks = {}
+            self.__uninstalled = False
+
+        @classmethod
+        def _add_hook(cls, mod_globals, new_import) -> '_SomewhatThreadSafeGlobalBuiltinImportCaptureHook._Patch':
+            gi = id(mod_globals)
+            for _ in range(1_000):
+                try:
+                    with cls.__lock:
+                        x: ta.Any = builtins.__import__
+                        p: _SomewhatThreadSafeGlobalBuiltinImportCaptureHook._Patch
+                        if x.__class__ is cls:
+                            p = x
+                            if p.__uninstalled:  # noqa
+                                raise _SomewhatThreadSafeGlobalBuiltinImportCaptureHook._AlreadyPatchedError  # noqa
+                        else:
+                            p = cls(x)
+                            builtins.__import__ = p
+                        p.__hooks[gi] = (mod_globals, new_import)
+                        return p
+                except _SomewhatThreadSafeGlobalBuiltinImportCaptureHook._AlreadyPatchedError:
+                    pass
+            raise ImportCaptureErrors.HookError('Failed to install builtins hook')
+
+        def _remove_hook(self, mod_globals, *, no_raise=False):
+            gi = id(mod_globals)
+            with self.__lock:
+                tg, _ = self.__hooks[gi]
+                del self.__hooks[gi]
+                if not self.__uninstalled and not self.__hooks:
+                    self.__uninstalled = True
+                    if builtins.__import__ is not self:
+                        if not no_raise:
+                            # TODO: warn?
+                            raise ImportCaptureErrors.HookError('Unexpected builtins hook')
+                    else:
+                        builtins.__import__ = self.__old_import
+                if tg is not mod_globals:
+                    if not no_raise:
+                        # TODO: warn?
+                        raise ImportCaptureErrors.HookError('Mismatched globals')
+
+        def __call__(
+                self,
+                name,
+                globals=None,  # noqa
+                locals=None,  # noqa
+                fromlist=None,
+                level=0,
+        ):
+            if globals is not None and (tup := self.__hooks.get(id(globals))) is not None:
+                tg, tf = tup
+                if tg is globals:
+                    return tf(
+                        self.__old_import,
+                        name,
+                        globals=globals,
+                        locals=locals,
+                        fromlist=fromlist,
+                        level=level,
+                    )
+                else:
+                    self._remove_hook(tg, no_raise=True)
+
+            return self.__old_import(
+                name,
+                globals=globals,
+                locals=locals,
+                fromlist=fromlist,
+                level=level,
+            )
+
+    @contextlib.contextmanager
+    def hook_context(
+            self,
+            mod_globals: ta.MutableMapping[str, ta.Any],  # noqa
+    ) -> ta.Iterator[None]:
+        if self._MOD_SELF_ATTR in mod_globals:
+            raise ImportCaptureErrors.HookError
+
+        #
+
+        mod_globals[self._MOD_SELF_ATTR] = self
+        patch = _SomewhatThreadSafeGlobalBuiltinImportCaptureHook._Patch._add_hook(mod_globals, self._new_import)  # noqa
+
+        try:
+            yield
+
+        finally:
+            patch._remove_hook(mod_globals)  # noqa
+
+            if mod_globals[self._MOD_SELF_ATTR] is not self:
+                raise ImportCaptureErrors.HookError
+            del mod_globals[self._MOD_SELF_ATTR]
+
+
+class _FrameBuiltinImportCaptureHook(_AbstractBuiltinImportCaptureHook):
+    def __init__(
+            self,
+            *,
+            _frame: types.FrameType,
+            **kwargs: ta.Any,
+    ) -> None:
+        super().__init__(**kwargs)
+
+        self._frame = _frame
+
+    @classmethod
+    def _set_frame_builtins(
+            cls,
+            frame: types.FrameType,
+            new_builtins: dict[str, ta.Any],
+    ) -> None:
+        # FIXME: cext...
+        frame.f_builtins = new_builtins  # type: ignore[misc]  # noqa
+
+    @contextlib.contextmanager
+    def hook_context(
+            self,
+            mod_globals: ta.MutableMapping[str, ta.Any],  # noqa
+    ) -> ta.Iterator[None]:
+        if self._MOD_SELF_ATTR in mod_globals:
+            raise ImportCaptureErrors.HookError
+
+        #
+
+        old_builtins = self._frame.f_builtins
+        old_import = old_builtins['__import__']
+        new_import = functools.partial(self._new_import, old_import)
+
+        mod_globals[self._MOD_SELF_ATTR] = self
+        new_builtins = dict(old_builtins)
+        new_builtins['__import__'] = new_import
+        self._set_frame_builtins(self._frame, new_builtins)
+
+        try:
+            yield
+
+        finally:
+            if not (
+                    mod_globals[self._MOD_SELF_ATTR] is self and
+                    self._frame.f_builtins is new_builtins
+            ):
+                raise ImportCaptureErrors.HookError
+
+            del mod_globals[self._MOD_SELF_ATTR]
+            self._set_frame_builtins(self._frame, old_builtins)
+
+
+def _new_import_capture_hook(
+        mod_globals: ta.MutableMapping[str, ta.Any],  # noqa
+        *,
+        stack_offset: int = 0,
+        **kwargs: ta.Any,
+) -> '_ImportCaptureHook':
+    frame: types.FrameType | None = sys._getframe(1 + stack_offset)  # noqa
+    if frame is None or frame.f_globals is not mod_globals:
+        raise ImportCaptureError("Can't find importing frame")
+
+    # return _FrameBuiltinImportCaptureHook(
+    #     _frame=frame,
+    #     **kwargs,
+    # )
+
+    # return _UnsafeGlobalBuiltinImportCaptureHook(**kwargs)
+
+    return _SomewhatThreadSafeGlobalBuiltinImportCaptureHook(**kwargs)
 
 
 ##
@@ -409,11 +600,14 @@ class ImportCapture:
             self,
             mod_globals: ta.MutableMapping[str, ta.Any],
             *,
+            _hook: _ImportCaptureHook,
+
             disable: bool = False,
     ) -> None:
         super().__init__()
 
         self._mod_globals = mod_globals
+        self._hook = _hook
 
         self._disabled = disable
 
@@ -464,14 +658,12 @@ class ImportCapture:
             yield self
             return
 
-        hook = _GlobalBuiltinImportCaptureHook()
-
-        with hook.hook_context(self._mod_globals):
+        with self._hook.hook_context(self._mod_globals):
             yield self
 
-        hook.verify_state(self._mod_globals)
+        self._hook.verify_state(self._mod_globals)
 
-        blt = hook.build_captured(
+        blt = self._hook.build_captured(
             self._mod_globals,
             collect_unreferenced=unreferenced_callback is not None or raise_unreferenced,
         )

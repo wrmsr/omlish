@@ -8,8 +8,10 @@ from .inspect import KwargsTarget
 from .keys import Key
 
 
-with lang.auto_proxy_import(globals()):
+if ta.TYPE_CHECKING:
     from .impl import injector as _injector
+else:
+    _injector = lang.proxy_import('.impl.injector', __package__)
 
 
 T = ta.TypeVar('T')

@@ -5,6 +5,7 @@ import typing as ta
 
 from ..lazyglobals import LazyGlobals
 from .capture import ImportCapture
+from .capture import _new_import_capture_hook
 
 
 ##
@@ -146,14 +147,20 @@ def auto_proxy_init(
         raise_unreferenced: bool = False,
 
         update_exports: bool = False,
+
+        _stack_offset: int = 0,
 ) -> ta.ContextManager[ImportCapture]:
+    inst = ImportCapture(
+        init_globals,
+        _hook=_new_import_capture_hook(
+            init_globals,
+            stack_offset=_stack_offset + 1,
+        ),
+        disable=disable,
+    )
+
     @contextlib.contextmanager
     def inner() -> ta.Iterator[ImportCapture]:
-        inst = ImportCapture(
-            init_globals,
-            disable=disable,
-        )
-
         with inst.capture(
                 unreferenced_callback=unreferenced_callback,
                 raise_unreferenced=raise_unreferenced,

@@ -17,8 +17,10 @@ from ....funcs.genmachine import GenMachine
 from .errors import JsonStreamError
 
 
-with lang.auto_proxy_import(globals()):
+if ta.TYPE_CHECKING:
     import unicodedata
+else:
+    unicodedata = lang.proxy_import('unicodedata')
 
 
 ##
@@ -242,8 +244,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
         if (s := self._char_in_str) is None:
             return None
 
-        p = self._char_in_str_pos
-        if p >= self._char_in_str_len:
+        if (p := self._char_in_str_pos) >= self._char_in_str_len:
             self._char_in_str = None
             return None
 

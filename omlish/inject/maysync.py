@@ -6,8 +6,10 @@ from .elements import as_elements
 from .sync import Injector
 
 
-with lang.auto_proxy_import(globals()):
+if ta.TYPE_CHECKING:
     from .impl import maysync as _maysync
+else:
+    _maysync = lang.proxy_import('.impl.maysync', __package__)
 
 
 T = ta.TypeVar('T')

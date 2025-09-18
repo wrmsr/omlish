@@ -8,8 +8,10 @@ from .inspect import KwargsTarget
 from .keys import Key
 
 
-with lang.auto_proxy_import(globals()):
+if ta.TYPE_CHECKING:
     from .impl import sync as _sync
+else:
+    _sync = lang.proxy_import('.impl.sync', __package__)
 
 
 T = ta.TypeVar('T')

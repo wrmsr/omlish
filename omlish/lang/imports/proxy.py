@@ -4,6 +4,7 @@ import types
 import typing as ta
 
 from .capture import ImportCapture
+from .capture import _new_import_capture_hook
 
 
 ##
@@ -43,14 +44,20 @@ def auto_proxy_import(
 
         unreferenced_callback: ta.Callable[[ta.Mapping[str, ta.Sequence[str | None]]], None] | None = None,
         raise_unreferenced: bool = False,
+
+        _stack_offset: int = 0,
 ) -> ta.ContextManager[ImportCapture]:
+    inst = ImportCapture(
+        mod_globals,
+        _hook=_new_import_capture_hook(
+            mod_globals,
+            stack_offset=_stack_offset + 1,
+        ),
+        disable=disable,
+    )
+
     @contextlib.contextmanager
     def inner() -> ta.Iterator[ImportCapture]:
-        inst = ImportCapture(
-            mod_globals,
-            disable=disable,
-        )
-
         with inst.capture(
                 unreferenced_callback=unreferenced_callback,
                 raise_unreferenced=raise_unreferenced,
