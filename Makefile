@@ -263,6 +263,14 @@ test:
 		--junitxml="${PYTEST_JUNIT_XML_PATH}" \
 		--no-slow \
 
+.PHONY: test-lf
+test-lf:
+	${PYPROJECT_VENV} \
+		test \
+		-- \
+		${PYTEST_OPTS} \
+		--lf
+
 
 ### Alts
 

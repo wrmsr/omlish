@@ -63,7 +63,7 @@
     "module": ".minichain.backends.impls.anthropic.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/anthropic/stream.py",
-    "line": 34,
+    "line": 35,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.anthropic.stream",
@@ -184,7 +184,7 @@
     "module": ".minichain.backends.impls.llamacpp.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/llamacpp/stream.py",
-    "line": 31,
+    "line": 32,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.llamacpp.stream",
@@ -356,7 +356,7 @@
     "module": ".minichain.backends.impls.tinygrad.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/tinygrad/chat.py",
-    "line": 113,
+    "line": 115,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.tinygrad.chat",
@@ -371,7 +371,7 @@
     "module": ".minichain.backends.impls.tinygrad.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/tinygrad/chat.py",
-    "line": 133,
+    "line": 135,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.tinygrad.chat",
@@ -386,7 +386,7 @@
     "module": ".minichain.backends.impls.tinygrad.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/tinygrad/chat.py",
-    "line": 159,
+    "line": 161,
     "value": {
       "!.minichain.backends.strings.manifests.BackendStringsManifest": {
         "service_cls_names": [

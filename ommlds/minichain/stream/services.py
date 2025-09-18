@@ -1,3 +1,24 @@
+"""
+TODO:
+ - StreamResponseIterator result -> outputs, wrap in tv
+
+class ResponseGenerator(lang.Final, ta.Generic[V, OutputT]):
+    def __init__(self, g: ta.Generator[V, None, ta.Sequence[OutputT] | None]) -> None:
+
+    _outputs: tv.TypedValues[OutputT]
+
+    @property
+    def outputs(self) -> tv.TypedValues[OutputT]:
+        return self._outputs
+
+    ...
+
+            if e.value is not None:
+                self._outputs = tv.TypedValues(*check.isinstance(e.value, ta.Sequence))
+            else:
+                self._outputs = tv.TypedValues()
+
+"""
 import abc
 import typing as ta
 

@@ -462,6 +462,7 @@ with _auto_proxy_init(globals(), update_exports=True):
         SyncAwaitCoroutineNotTerminatedError,
         sync_await,
 
+        sync_aiter,
         sync_async_list,
 
         SyncAwaitContextManager,

@@ -19,6 +19,7 @@ from ....chat.stream.types import AiMessageDelta
 from ....configs import Config
 from ....models.configs import ModelPath
 from ....resources import UseResources
+from ....stream.services import StreamResponseSink
 from ....stream.services import new_stream_response
 from .chat import LlamacppChatChoicesService
 from .format import ROLES_MAP
@@ -52,7 +53,7 @@ class LlamacppChatChoicesStreamService(lang.ExitStacked):
     async def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
         lcu.install_logging_hook()
 
-        with UseResources.or_new(request.options) as rs:
+        async with UseResources.or_new(request.options) as rs:
             rs.enter_context(self._lock)
 
             model: ta.Any = self._load_model()  # FIXME: the types are awful lol
@@ -74,7 +75,7 @@ class LlamacppChatChoicesStreamService(lang.ExitStacked):
 
             rs.enter_context(lang.defer(close_output))
 
-            def yield_choices() -> ta.Generator[AiChoiceDeltas, None, ta.Sequence[ChatChoicesOutputs] | None]:
+            async def inner(sink: StreamResponseSink[AiChoiceDeltas]) -> ta.Sequence[ChatChoicesOutputs] | None:
                 for chunk in output:
                     check.state(chunk['object'] == 'chat.completion.chunk')
                     l: list[AiChoiceDelta] = []
@@ -86,7 +87,7 @@ class LlamacppChatChoicesStreamService(lang.ExitStacked):
                         if not (content := delta.get('content', '')):
                             continue
                         l.append(AiChoiceDelta(AiMessageDelta(content)))
-                    yield l
+                    await sink.emit(l)
                 return None
 
-            return new_stream_response(rs, yield_choices())
+            return await new_stream_response(rs, inner)

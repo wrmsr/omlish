@@ -18,6 +18,6 @@ def test_llamacpp_chat_stream_model():
         ]:
             print(foo_req)
 
-            with lang.sync_await(foo_svc.invoke(foo_req)).v as it:
-                for o in it:
+            with lang.sync_await_context_manager(lang.sync_await(foo_svc.invoke(foo_req)).v) as it:
+                for o in lang.sync_aiter(it):
                     print(o)

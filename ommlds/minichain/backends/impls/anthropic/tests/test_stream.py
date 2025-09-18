@@ -22,7 +22,7 @@ def test_anthropic_chat_stream_model(harness):
     ]:
         print(foo_req)
 
-        with lang.sync_await(llm.invoke(foo_req)).v as it:
-            for o in it:
+        with lang.sync_await_context_manager(lang.sync_await(llm.invoke(foo_req)).v) as it:
+            for o in lang.sync_aiter(it):
                 print(o)
-            print(it.outputs)
+            print(it.result)

@@ -48,12 +48,12 @@ class WrappedStreamService(ta.Generic[StreamRequestT, V, OutputT, StreamOutputT]
             in_resp = await self._inner.invoke(await self._process_request(request))
             in_vs = await rs.enter_async_context(in_resp.v)
 
-            async def inner(sink: StreamResponseSink[V]) ->  ta.Sequence[OutputT] | None:
+            async def inner(sink: StreamResponseSink[V]) -> ta.Sequence[OutputT] | None:
                 async for in_v in in_vs:
                     for out_v in (await self._process_value(in_v)):
                         await sink.emit(out_v)
 
-                return await self._process_outputs(in_vs.result)
+                return await self._process_outputs(in_vs.result or [])
 
             return await new_stream_response(
                 rs,

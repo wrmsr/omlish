@@ -21,6 +21,7 @@ async def async_enumerate(ai: ta.AsyncIterable[T]) -> ta.AsyncIterable[ta.Tuple[
     i = 0
     async for e in ai:
         yield (i, e)
+        i += 1
 
 
 ##
@@ -71,6 +72,15 @@ def sync_await(aw: ta.Awaitable[T]) -> T:
 
 
 #
+
+
+def sync_aiter(ai: ta.AsyncIterator[T]) -> ta.Iterator[T]:
+    while True:
+        try:
+            o = sync_await(ai.__anext__())
+        except StopAsyncIteration:
+            break
+        yield o
 
 
 def sync_async_list(ai: ta.AsyncIterable[T]) -> ta.List[T]:

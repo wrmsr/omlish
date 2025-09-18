@@ -4,6 +4,7 @@ import typing as ta
 from omlish import check
 
 from ...resources import UseResources
+from ...stream.services import StreamResponseSink
 from ...stream.services import new_stream_response
 from ..choices.services import ChatChoicesOutputs
 from ..choices.services import ChatChoicesRequest
@@ -18,7 +19,6 @@ from ..services import ChatResponse
 from ..services import static_check_is_chat_service
 from ..stream.services import ChatChoicesStreamRequest
 from ..stream.services import ChatChoicesStreamResponse
-from ...stream.services import StreamResponseSink
 from ..stream.services import static_check_is_chat_choices_stream_service
 from ..stream.types import AiChoiceDelta
 from ..stream.types import AiChoiceDeltas

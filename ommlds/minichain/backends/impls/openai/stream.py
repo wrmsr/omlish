@@ -24,8 +24,8 @@ from ....resources import ResourcesOption
 from ....resources import UseResources
 from ....standard import ApiKey
 from ....stream.services import StreamOption
-from ....stream.services import new_stream_response
 from ....stream.services import StreamResponseSink
+from ....stream.services import new_stream_response
 from .chat import OpenaiChatChoicesService
 from .format import OpenaiChatRequestHandler
 from .names import MODEL_NAMES

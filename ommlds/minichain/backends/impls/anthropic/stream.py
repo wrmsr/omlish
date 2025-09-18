@@ -23,6 +23,7 @@ from ....chat.stream.types import AiMessageDelta
 from ....configs import Config
 from ....resources import UseResources
 from ....standard import ApiKey
+from ....stream.services import StreamResponseSink
 from ....stream.services import new_stream_response
 from .chat import AnthropicChatChoicesService
 from .names import MODEL_NAMES
@@ -83,11 +84,11 @@ class AnthropicChatChoicesStreamService:
             data=json.dumps(raw_request).encode('utf-8'),
         )
 
-        with UseResources.or_new(request.options) as rs:
+        async with UseResources.or_new(request.options) as rs:
             http_client = rs.enter_context(http.client())
             http_response = rs.enter_context(http_client.stream_request(http_request))
 
-            def yield_choices() -> ta.Generator[AiChoiceDeltas, None, ta.Sequence[ChatChoicesOutputs] | None]:
+            async def inner(sink: StreamResponseSink[AiChoiceDeltas]) -> ta.Sequence[ChatChoicesOutputs] | None:
                 db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
                 sd = sse.SseDecoder()
                 ass = AnthropicSseMessageAssembler()
@@ -112,9 +113,9 @@ class AnthropicChatChoicesStreamService:
                                 for am in ass(ae):
                                     if isinstance(am, pt.Message):
                                         mt = check.isinstance(check.single(check.not_none(am.content)), pt.Text)
-                                        yield [
+                                        await sink.emit([
                                             AiChoiceDelta(AiMessageDelta(mt.text)),
-                                        ]
+                                        ])
 
                     if not b:
                         return []
@@ -122,4 +123,4 @@ class AnthropicChatChoicesStreamService:
             # raw_response = json.loads(check.not_none(http_response.data).decode('utf-8'))
             # return rh.build_response(raw_response)
 
-            return new_stream_response(rs, yield_choices())
+            return await new_stream_response(rs, inner)

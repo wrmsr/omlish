@@ -26,9 +26,9 @@ def test_openai_chat_stream_model(harness):
         print(foo_req)
 
         with lang.sync_await_context_manager(lang.sync_await(llm.invoke(foo_req)).v) as it:
-            for o in lang.run_maysync(it):
+            for o in lang.sync_aiter(it):
                 print(o)
-            print(it.outputs)
+            print(it.result)
 
 
 # def test_openai_stream_tools(harness):
@@ -76,13 +76,13 @@ def test_use_resources(harness):
         ChatChoicesStreamRequest([UserMessage('Is water dry?')]),
         ChatChoicesStreamRequest([UserMessage('Is air wet?')]),
     ]:
-        with Resources.new() as rs:
+        with lang.sync_await_context_manager(Resources.new()) as rs:
             print(foo_req)
 
-            with lang.sync_await(llm.invoke(foo_req.with_options(UseResources(rs)))).v as it:
-                for o in it:
+            with lang.sync_await_context_manager(lang.sync_await(llm.invoke(foo_req.with_options(UseResources(rs)))).v) as it:  # noqa
+                for o in lang.sync_aiter(it):
                     print(o)
-                print(it.outputs)
+                print(it.result)
 
 
 def test_adapters(harness):
