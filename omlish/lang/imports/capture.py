@@ -319,7 +319,43 @@ class _ImportCaptureHook:
         )
 
 
-class _GlobalBuiltinImportCaptureHook(_ImportCaptureHook):
+##
+
+
+class _AbstractBuiltinImportCaptureHook(_ImportCaptureHook):
+    def _new_import(
+            self,
+            old_import,
+            name,
+            globals=None,  # noqa
+            locals=None,  # noqa
+            fromlist=None,
+            level=0,
+    ):
+        if (im := self._intercept_import(
+                name,
+                globals=globals,
+                from_list=fromlist,
+                level=level,
+        )) is not None:
+            return im
+
+        if self._forbid_uncaptured_imports:
+            raise ImportCaptureErrors.UncapturedImportForbiddenError(
+                str(_ImportCaptureHook.ModuleSpec(name, level)),
+                fromlist,
+            )
+
+        return old_import(
+            name,
+            globals=globals,
+            locals=locals,
+            fromlist=fromlist,
+            level=level,
+        )
+
+
+class _GlobalBuiltinImportCaptureHook(_AbstractBuiltinImportCaptureHook):
     @contextlib.contextmanager
     def hook_context(
             self,
@@ -330,39 +366,10 @@ class _GlobalBuiltinImportCaptureHook(_ImportCaptureHook):
 
         old_import = builtins.__import__
 
-        def new_import(
-                name,
-                globals=None,  # noqa
-                locals=None,  # noqa
-                fromlist=None,
-                level=0,
-        ):
-            if (im := self._intercept_import(
-                    name,
-                    globals=globals,
-                    from_list=fromlist,
-                    level=level,
-            )) is not None:
-                return im
-
-            if self._forbid_uncaptured_imports:
-                raise ImportCaptureErrors.UncapturedImportForbiddenError(
-                    str(_ImportCaptureHook.ModuleSpec(name, level)),
-                    fromlist,
-                )
-
-            return old_import(
-                name,
-                globals=globals,
-                locals=locals,
-                fromlist=fromlist,
-                level=level,
-            )
-
         #
 
         mod_globals[self._MOD_SELF_ATTR] = self
-        builtins.__import__ = new_import
+        builtins.__import__ = new_import = functools.partial(self._new_import, old_import)
 
         try:
             yield
