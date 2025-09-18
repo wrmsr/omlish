@@ -5,7 +5,6 @@ from ..resources import Resources
 from ..services import Request
 from ..services import Service
 from ..types import Output
-from .services import StreamResponseIterator
 from .services import StreamResponse
 from .services import StreamResponseSink
 from .services import new_stream_response
@@ -49,16 +48,15 @@ class WrappedStreamService(ta.Generic[StreamRequestT, V, OutputT, StreamOutputT]
             in_resp = await self._inner.invoke(await self._process_request(request))
             in_vs = await rs.enter_async_context(in_resp.v)
 
-            def inner(sink: StreamResponseSink) -> ta.Generator[V, None, ta.Sequence[OutputT] | None]:
-                while True:
-                    try:
-                        out_v = next(out_vs)
-                    except StopIteration as se:
-                        return self._process_outputs(se.value)
-                    yield out_v
+            async def inner(sink: StreamResponseSink[V]) ->  ta.Sequence[OutputT] | None:
+                async for in_v in in_vs:
+                    for out_v in (await self._process_value(in_v)):
+                        await sink.emit(out_v)
 
-            return new_stream_response(
+                return await self._process_outputs(in_vs.result)
+
+            return await new_stream_response(
                 rs,
-                yield_vs(),
-                self._process_stream_outputs(in_resp.outputs),
+                inner,
+                await self._process_stream_outputs(in_resp.outputs),
             )

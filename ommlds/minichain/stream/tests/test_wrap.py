@@ -14,6 +14,12 @@ class WrappedFooStreamService(WrappedStreamService):
 
 
 def test_wrap():
-    with lang.sync_await(WrappedFooStreamService(FooStreamService()).invoke(Request('hi there!'))).v as it:
-        lst = list(it)
+    async def inner():
+        lst: list = []
+        async with (await WrappedFooStreamService(FooStreamService()).invoke(Request('hi there!'))).v as it:
+            async for e in it:
+                lst.append(e)
+        return lst
+
+    lst = lang.sync_await(inner())
     assert lst == [c + '!?' for c in 'hi there!']

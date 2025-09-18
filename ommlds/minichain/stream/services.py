@@ -1,6 +1,7 @@
 import abc
 import typing as ta
 
+from omlish import check
 from omlish import lang
 
 from ..resources import ResourceManaged
@@ -107,11 +108,14 @@ class _StreamServiceResponse(StreamResponseIterator[O, R]):
         def emit(self, item: O2) -> ta.Awaitable[None]:
             return _StreamServiceResponse._Emit(self._ssr, item)
 
+    _state: ta.Literal['new', 'running', 'closed'] = 'new'
     _sink: _Sink[O]
     _a: ta.Any
     _cr: ta.Any
 
     async def __aenter__(self) -> ta.Self:
+        check.state(self._state == 'new')
+        self._state = 'running'
         self._sink = _StreamServiceResponse._Sink(self)
         self._cr = self._fn(self._sink)
         self._a = self._cr.__await__()
@@ -119,7 +123,11 @@ class _StreamServiceResponse(StreamResponseIterator[O, R]):
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
-        if not hasattr(self, '_result'):
+        old_state = self._state
+        self._state = 'closed'
+        if old_state != 'running':
+            return
+        if self._cr.cr_running:
             cex = StreamServiceCancelledError()
             try:
                 self._g.throw(cex)
@@ -140,6 +148,7 @@ class _StreamServiceResponse(StreamResponseIterator[O, R]):
         return self._result
 
     async def __anext__(self) -> O:
+        check.state(self._state == 'running')
         while True:
             try:
                 x = self._g.send(None)
