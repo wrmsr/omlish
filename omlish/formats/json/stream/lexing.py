@@ -190,7 +190,9 @@ class JsonStreamLexer(GenMachine[str, Token]):
 
         self._allow_extended_idents = allow_extended_idents
 
-        self._char_in_it: ta.Iterator[str] | None = None
+        self._char_in_str: str | None = None
+        self._char_in_str_len: int = 0
+        self._char_in_str_pos: int = 0
 
         self._ofs = 0
         self._line = 1
@@ -223,29 +225,30 @@ class JsonStreamLexer(GenMachine[str, Token]):
         return c
 
     def _yield_char_in(self, c: str) -> str:
-        if self._char_in_it is not None:
+        if self._char_in_str is not None:
             raise JsonStreamError
 
-        if len(c) > 1:
-            in_it = iter(c)
-            next(in_it)
-            self._char_in_it = in_it
+        if (cl := len(c)) > 1:
+            self._char_in_str = c
+            self._char_in_str_len = cl
+            self._char_in_str_pos = 1
             c = c[0]
 
         self._advance_pos(c)
 
         return c
 
-    def _it_char_in(self) -> str | None:
-        if (it := self._char_in_it) is None:
+    def _str_char_in(self) -> str | None:
+        if (s := self._char_in_str) is None:
             return None
 
-        try:
-            c = next(it)
-        except StopIteration:
-            self._char_in_it = None
+        p = self._char_in_str_pos
+        if p >= self._char_in_str_len:
+            self._char_in_str = None
             return None
 
+        c = s[p]
+        self._char_in_str_pos += 1
         return self._advance_pos(c)
 
     def _make_tok(
@@ -278,7 +281,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
                 c = peek
                 peek = None
             else:
-                if (c := self._it_char_in()) is None:  # type: ignore[assignment]
+                if (c := self._str_char_in()) is None:  # type: ignore[assignment]
                     c = self._yield_char_in((yield None))  # noqa
 
             if not c:
@@ -320,13 +323,17 @@ class JsonStreamLexer(GenMachine[str, Token]):
 
         buf = self._buf
 
-        char_in_it = self._char_in_it
+        char_in_str = self._char_in_str
+        char_in_str_len = self._char_in_str_len
+        char_in_str_pos = self._char_in_str_pos
         ofs = self._ofs
         line = self._line
         col = self._col
 
         def restore_state():
-            self._char_in_it = char_in_it
+            self._char_in_str = char_in_str
+            self._char_in_str_len = char_in_str_len
+            self._char_in_str_pos = char_in_str_pos
             self._ofs = ofs
             self._line = line
             self._col = col
@@ -335,11 +342,12 @@ class JsonStreamLexer(GenMachine[str, Token]):
         while True:
             c: str | None = None
 
-            if char_in_it is not None:
-                try:
-                    c = next(char_in_it)
-                except StopIteration:
-                    char_in_it = None
+            if char_in_str is not None:
+                if char_in_str_pos < char_in_str_len:
+                    c = char_in_str[char_in_str_pos]
+                    char_in_str_pos += 1
+                else:
+                    char_in_str = None
 
             if c is None:
                 try:
@@ -349,9 +357,9 @@ class JsonStreamLexer(GenMachine[str, Token]):
                     self._raise('Unexpected end of input')
 
                 if len(c) > 1:
-                    in_it = iter(c)
-                    next(in_it)
-                    char_in_it = in_it
+                    char_in_str = c
+                    char_in_str_len = len(char_in_str)
+                    char_in_str_pos = 1
                     c = c[0]
 
             if c and len(c) != 1:
@@ -396,7 +404,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
 
         while True:
             try:
-                if (c := self._it_char_in()) is None:  # type: ignore[assignment]
+                if (c := self._str_char_in()) is None:  # type: ignore[assignment]
                     c = self._yield_char_in((yield None))  # noqa
             except GeneratorExit:
                 self._raise('Unexpected end of input')
@@ -431,7 +439,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
                 raw += c
                 try:
                     for _ in range(len(svs) - 1):
-                        if (c := self._it_char_in()) is None:  # type: ignore[assignment]
+                        if (c := self._str_char_in()) is None:  # type: ignore[assignment]
                             c = self._yield_char_in((yield None))  # noqa
                         if not c:
                             break
@@ -479,7 +487,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
         raw = c
         while True:
             try:
-                if (c := self._it_char_in()) is None:  # type: ignore[assignment]
+                if (c := self._str_char_in()) is None:  # type: ignore[assignment]
                     c = self._yield_char_in((yield None))  # noqa
             except GeneratorExit:
                 self._raise('Unexpected end of input')
@@ -498,7 +506,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
 
     def _do_unicode_escape(self):
         try:
-            if (c := self._it_char_in()) is None:
+            if (c := self._str_char_in()) is None:
                 c = self._yield_char_in((yield None))  # noqa
         except GeneratorExit:
             self._raise('Unexpected end of input')
@@ -509,7 +517,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
         ux = []
         for _ in range(4):
             try:
-                if (c := self._it_char_in()) is None:
+                if (c := self._str_char_in()) is None:
                     c = self._yield_char_in((yield None))  # noqa
             except GeneratorExit:
                 self._raise('Unexpected end of input')
@@ -536,7 +544,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
 
         while True:
             try:
-                if (c := self._it_char_in()) is None:  # type: ignore[assignment]
+                if (c := self._str_char_in()) is None:  # type: ignore[assignment]
                     c = self._yield_char_in((yield None))  # noqa
             except GeneratorExit:
                 self._raise('Unexpected end of input')
@@ -567,7 +575,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
 
         pos = self.pos
         try:
-            if (oc := self._it_char_in()) is None:
+            if (oc := self._str_char_in()) is None:
                 oc = self._yield_char_in((yield None))  # noqa
         except GeneratorExit:
             self._raise('Unexpected end of input')
@@ -575,7 +583,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
         if oc == '/':
             while True:
                 try:
-                    if (ic := self._it_char_in()) is None:
+                    if (ic := self._str_char_in()) is None:
                         ic = self._yield_char_in((yield None))  # noqa
                 except GeneratorExit:
                     self._raise('Unexpected end of input')
@@ -598,7 +606,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
             lc: str | None = None
             while True:
                 try:
-                    if (ic := self._it_char_in()) is None:
+                    if (ic := self._str_char_in()) is None:
                         ic = self._yield_char_in((yield None))  # noqa
                 except GeneratorExit:
                     self._raise('Unexpected end of input')
