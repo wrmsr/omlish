@@ -1,4 +1,4 @@
-import functools
+import functools  # noqa
 import sys
 import threading
 import time
@@ -28,15 +28,24 @@ def _main() -> None:
     cl0 = sync.CountDownLatch(2)
     ev0 = threading.Event()
 
-    def thr_main(arg):
-        say('0')
+    def a_main():
         cl0.count_down()
-        say('1')
         ev0.wait()
-        say('2')
 
-    a_thr = threading.Thread(name='a', target=functools.partial(thr_main, 'a'))
-    b_thr = threading.Thread(name='b', target=functools.partial(thr_main, 'b'))
+        say('start')
+        from .base import moda  # noqa
+        say('end')
+
+    def b_main():
+        cl0.count_down()
+        ev0.wait()
+
+        say('start')
+        from .base import modb  # noqa
+        say('end')
+
+    a_thr = threading.Thread(name='a', target=a_main)
+    b_thr = threading.Thread(name='b', target=b_main)
 
     a_thr.start()
     b_thr.start()

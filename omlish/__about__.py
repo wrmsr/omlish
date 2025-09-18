@@ -174,6 +174,7 @@ class SetuptoolsBase:
             '*.cu',
             '*.g4',
             '*.h',
+            '*.hh',
 
             '.omlish-manifests.json',
 
