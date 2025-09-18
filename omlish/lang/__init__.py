@@ -1,4 +1,4 @@
-from .imports.proxyinit import auto_proxy_init as _auto_proxy_init
+from .imports.proxy import auto_proxy_init as _auto_proxy_init
 
 
 with _auto_proxy_init(globals(), update_exports=True):
@@ -274,13 +274,9 @@ with _auto_proxy_init(globals(), update_exports=True):
 
     from .imports.proxy import (  # noqa
         proxy_import,
-
         auto_proxy_import,
-    )
 
-    from .imports.proxyinit import (  # noqa
         proxy_init,
-
         auto_proxy_init,
     )
 
