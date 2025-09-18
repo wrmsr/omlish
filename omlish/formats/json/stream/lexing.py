@@ -344,6 +344,9 @@ class JsonStreamLexer(GenMachine[str, Token]):
 
             if char_in_str is not None:
                 if char_in_str_pos < char_in_str_len:
+                    # TODO:
+                    # if (qp := char_in_str.find(q)) >= 0:
+                    #     raise NotImplementedError
                     c = char_in_str[char_in_str_pos]
                     char_in_str_pos += 1
                 else:
