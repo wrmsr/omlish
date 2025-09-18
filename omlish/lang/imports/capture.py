@@ -58,7 +58,10 @@ class ImportCaptureErrors:
         pass
 
 
-class _ImportCaptureImpl:
+##
+
+
+class _ImportCaptureHook:
     class ModuleSpec(ta.NamedTuple):
         name: str
         level: int
@@ -69,20 +72,26 @@ class _ImportCaptureImpl:
         def __repr__(self) -> str:
             return repr(str(self))
 
-    def __init__(self) -> None:
+    def __init__(
+            self,
+            *,
+            forbid_uncaptured_imports: bool = False,
+    ) -> None:
         super().__init__()
 
-        self._modules_by_spec: dict[_ImportCaptureImpl.ModuleSpec, _ImportCaptureImpl._Module] = {}
-        self._modules_by_module_obj: dict[types.ModuleType, _ImportCaptureImpl._Module] = {}
+        self._forbid_uncaptured_imports = forbid_uncaptured_imports
 
-        self._attrs: dict[_ImportCaptureImpl._ModuleAttr, tuple[_ImportCaptureImpl._Module, str]] = {}
+        self._modules_by_spec: dict[_ImportCaptureHook.ModuleSpec, _ImportCaptureHook._Module] = {}
+        self._modules_by_module_obj: dict[types.ModuleType, _ImportCaptureHook._Module] = {}
+
+        self._attrs: dict[_ImportCaptureHook._ModuleAttr, tuple[_ImportCaptureHook._Module, str]] = {}
 
     #
 
     class _ModuleAttr:
         def __init__(
                 self,
-                module: '_ImportCaptureImpl._Module',
+                module: '_ImportCaptureHook._Module',
                 name: str,
         ) -> None:
             super().__init__()
@@ -96,9 +105,9 @@ class _ImportCaptureImpl:
     class _Module:
         def __init__(
                 self,
-                spec: '_ImportCaptureImpl.ModuleSpec',
+                spec: '_ImportCaptureHook.ModuleSpec',
                 *,
-                getattr_handler: ta.Callable[['_ImportCaptureImpl._Module', str], ta.Any] | None = None,
+                getattr_handler: ta.Callable[['_ImportCaptureHook._Module', str], ta.Any] | None = None,
         ) -> None:
             super().__init__()
 
@@ -109,7 +118,7 @@ class _ImportCaptureImpl:
                 self.module_obj.__getattr__ = functools.partial(getattr_handler, self)  # type: ignore[method-assign]  # noqa
             self.initial_module_dict = dict(self.module_obj.__dict__)
 
-            self.contents: dict[str, _ImportCaptureImpl._ModuleAttr | types.ModuleType] = {}
+            self.contents: dict[str, _ImportCaptureHook._ModuleAttr | types.ModuleType] = {}
             self.imported_whole = False
 
         def __repr__(self) -> str:
@@ -133,17 +142,17 @@ class _ImportCaptureImpl:
         if attr in module.contents:
             raise ImportCaptureErrors.AttrError(str(module.spec), attr)
 
-        v: _ImportCaptureImpl._ModuleAttr | types.ModuleType
+        v: _ImportCaptureHook._ModuleAttr | types.ModuleType
         if not module.spec.name:
             if not module.spec.level:
                 raise ImportCaptureError
-            cs = _ImportCaptureImpl.ModuleSpec(attr, module.spec.level)
+            cs = _ImportCaptureHook.ModuleSpec(attr, module.spec.level)
             cm = self._get_or_make_module(cs)
             cm.imported_whole = True
             v = cm.module_obj
 
         else:
-            ma = _ImportCaptureImpl._ModuleAttr(module, attr)
+            ma = _ImportCaptureHook._ModuleAttr(module, attr)
             self._attrs[ma] = (module, attr)
             v = ma
 
@@ -173,7 +182,7 @@ class _ImportCaptureImpl:
                 bad = False
                 if x is not module.contents.get(attr):
                     bad = True
-                if isinstance(x, _ImportCaptureImpl._ModuleAttr):
+                if isinstance(x, _ImportCaptureHook._ModuleAttr):
                     if self._attrs[x] != (module, attr):
                         bad = True
                 elif isinstance(x, types.ModuleType):
@@ -202,7 +211,7 @@ class _ImportCaptureImpl:
         ):
             return None
 
-        spec = _ImportCaptureImpl.ModuleSpec(name, level)
+        spec = _ImportCaptureHook.ModuleSpec(name, level)
         module = self._get_or_make_module(spec)
 
         self._handle_import(
@@ -212,64 +221,12 @@ class _ImportCaptureImpl:
 
         return module.module_obj
 
-    @contextlib.contextmanager
+    # @abc.abstractmethod
     def hook_context(
             self,
             mod_globals: ta.MutableMapping[str, ta.Any],  # noqa
-            *,
-            forbid_uncaptured_imports: bool = False,
-    ) -> ta.Iterator[None]:
-        if self._MOD_SELF_ATTR in mod_globals:
-            raise ImportCaptureErrors.HookError
-
-        old_import = builtins.__import__
-
-        def new_import(
-                name,
-                globals=None,  # noqa
-                locals=None,  # noqa
-                fromlist=None,
-                level=0,
-        ):
-            if (im := self._intercept_import(
-                    name,
-                    globals=globals,
-                    from_list=fromlist,
-                    level=level,
-            )) is not None:
-                return im
-
-            if forbid_uncaptured_imports:
-                raise ImportCaptureErrors.UncapturedImportForbiddenError(
-                    str(_ImportCaptureImpl.ModuleSpec(name, level)),
-                    fromlist,
-                )
-
-            return old_import(
-                name,
-                globals=globals,
-                locals=locals,
-                fromlist=fromlist,
-                level=level,
-            )
-
-        #
-
-        mod_globals[self._MOD_SELF_ATTR] = self
-        builtins.__import__ = new_import
-
-        try:
-            yield
-
-        finally:
-            if not (
-                    mod_globals[self._MOD_SELF_ATTR] is self and
-                    builtins.__import__ is new_import
-            ):
-                raise ImportCaptureErrors.HookError
-
-            del mod_globals[self._MOD_SELF_ATTR]
-            builtins.__import__ = old_import
+    ) -> ta.ContextManager[None]:
+        raise NotImplementedError
 
     #
 
@@ -298,16 +255,16 @@ class _ImportCaptureImpl:
             *,
             collect_unreferenced: bool = False,
     ) -> 'ImportCapture.Captured':
-        dct: dict[_ImportCaptureImpl._Module, list[tuple[str | None, str]]] = {}
+        dct: dict[_ImportCaptureHook._Module, list[tuple[str | None, str]]] = {}
 
-        rem_whole_mods: set[_ImportCaptureImpl._Module] = set()
-        rem_mod_attrs: set[_ImportCaptureImpl._ModuleAttr] = set()
+        rem_whole_mods: set[_ImportCaptureHook._Module] = set()
+        rem_mod_attrs: set[_ImportCaptureHook._ModuleAttr] = set()
         if collect_unreferenced:
             rem_whole_mods.update([m for m in self._modules_by_spec.values() if m.imported_whole])
             rem_mod_attrs.update(self._attrs)
 
         for attr, obj in mod_globals.items():
-            if isinstance(obj, _ImportCaptureImpl._ModuleAttr):
+            if isinstance(obj, _ImportCaptureHook._ModuleAttr):
                 try:
                     m, a = self._attrs[obj]
                 except KeyError:
@@ -315,7 +272,7 @@ class _ImportCaptureImpl:
                 dct.setdefault(m, []).append((a, attr))
                 rem_mod_attrs.discard(obj)
 
-            elif isinstance(obj, _ImportCaptureImpl._Module):
+            elif isinstance(obj, _ImportCaptureHook._Module):
                 raise ImportCaptureErrors.AttrError(None, attr) from None
 
             elif isinstance(obj, types.ModuleType):
@@ -362,14 +319,69 @@ class _ImportCaptureImpl:
         )
 
 
-class ImportCapture:
-    """
-    This is a bit extreme, but worth it. For simplicity, it currently relies on temporarily patching
-    `__builtins__.__import__` for the duration of its context manager, but it can be switched to use any number of other
-    import hooks (like `sys.meta_path`). It does not rely on any permanent modification to import machinery, only for
-    the duration of its capture.
-    """
+class _GlobalBuiltinImportCaptureHook(_ImportCaptureHook):
+    @contextlib.contextmanager
+    def hook_context(
+            self,
+            mod_globals: ta.MutableMapping[str, ta.Any],  # noqa
+    ) -> ta.Iterator[None]:
+        if self._MOD_SELF_ATTR in mod_globals:
+            raise ImportCaptureErrors.HookError
 
+        old_import = builtins.__import__
+
+        def new_import(
+                name,
+                globals=None,  # noqa
+                locals=None,  # noqa
+                fromlist=None,
+                level=0,
+        ):
+            if (im := self._intercept_import(
+                    name,
+                    globals=globals,
+                    from_list=fromlist,
+                    level=level,
+            )) is not None:
+                return im
+
+            if self._forbid_uncaptured_imports:
+                raise ImportCaptureErrors.UncapturedImportForbiddenError(
+                    str(_ImportCaptureHook.ModuleSpec(name, level)),
+                    fromlist,
+                )
+
+            return old_import(
+                name,
+                globals=globals,
+                locals=locals,
+                fromlist=fromlist,
+                level=level,
+            )
+
+        #
+
+        mod_globals[self._MOD_SELF_ATTR] = self
+        builtins.__import__ = new_import
+
+        try:
+            yield
+
+        finally:
+            if not (
+                    mod_globals[self._MOD_SELF_ATTR] is self and
+                    builtins.__import__ is new_import
+            ):
+                raise ImportCaptureErrors.HookError
+
+            del mod_globals[self._MOD_SELF_ATTR]
+            builtins.__import__ = old_import
+
+
+##
+
+
+class ImportCapture:
     class Import(ta.NamedTuple):
         spec: str
         attrs: ta.Sequence[tuple[str | None, str]]
@@ -445,14 +457,14 @@ class ImportCapture:
             yield self
             return
 
-        cap = _ImportCaptureImpl()
+        hook = _GlobalBuiltinImportCaptureHook()
 
-        with cap.hook_context(self._mod_globals):
+        with hook.hook_context(self._mod_globals):
             yield self
 
-        cap.verify_state(self._mod_globals)
+        hook.verify_state(self._mod_globals)
 
-        blt = cap.build_captured(
+        blt = hook.build_captured(
             self._mod_globals,
             collect_unreferenced=unreferenced_callback is not None or raise_unreferenced,
         )

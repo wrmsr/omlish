@@ -199,7 +199,7 @@
     "module": ".minichain.backends.impls.mistral",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/mistral.py",
-    "line": 24,
+    "line": 29,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.mistral",

@@ -35,6 +35,6 @@ async def test_foo_stream_service():
 def test_foo_stream_service_sync():
     svc = FooStreamService()
     req: Request = Request('hi there!')
-    with lang.sync_await_context_manager(lang.sync_await(svc.invoke(req)).v) as it:
+    with lang.sync_async_with(lang.sync_await(svc.invoke(req)).v) as it:
         lst = lang.sync_async_list(it)
     assert lst == [c + '!' for c in 'hi there!']

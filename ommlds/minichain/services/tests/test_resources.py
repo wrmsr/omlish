@@ -12,7 +12,7 @@ IntManagerResponse: ta.TypeAlias = Response[ResourceManaged[Response[int, Output
 
 
 def test_int_response():
-    with lang.sync_await_context_manager(Resources.new()) as rsrc:
+    with lang.sync_async_with(Resources.new()) as rsrc:
         irm = IntManagerResponse(
             ResourceManaged(
                 Response[int, Output](420),
@@ -22,7 +22,7 @@ def test_int_response():
 
         # ta.reveal_type(irm)
 
-        with lang.sync_await_context_manager(irm.v) as irm2:
+        with lang.sync_async_with(irm.v) as irm2:
             # ta.reveal_type(irm2)
             assert not irm.v._ResourceManaged__resources.closed  # type: ignore[attr-defined]  # noqa
             print(irm2.v * 2)
@@ -44,7 +44,7 @@ IntStreamManagerResponse: ta.TypeAlias = Response[
 
 
 def test_int_stream_response():
-    with lang.sync_await_context_manager(Resources.new()) as rsrc:
+    with lang.sync_async_with(Resources.new()) as rsrc:
         irm = IntStreamManagerResponse(
             ResourceManaged(
                 iter([Response[int, Output](420)]),
@@ -53,7 +53,7 @@ def test_int_stream_response():
         )
         # ta.reveal_type(irm)
 
-        with lang.sync_await_context_manager(irm.v) as irm2s:
+        with lang.sync_async_with(irm.v) as irm2s:
             # ta.reveal_type(irm2s)
             for irm2 in irm2s:
                 # ta.reveal_type(irm2)
@@ -65,7 +65,7 @@ def test_int_stream_response():
 
 def test_int_stream_response_from_fn():
     def fn():
-        with lang.sync_await_context_manager(Resources.new()) as rsrc:
+        with lang.sync_async_with(Resources.new()) as rsrc:
             return IntStreamManagerResponse(
                 ResourceManaged(
                     iter([Response[int, Output](420)]),
@@ -74,7 +74,7 @@ def test_int_stream_response_from_fn():
             )
 
     irm = fn()
-    with lang.sync_await_context_manager(irm.v) as irm2s:
+    with lang.sync_async_with(irm.v) as irm2s:
         # ta.reveal_type(irm2s)
         for irm2 in irm2s:
             # ta.reveal_type(irm2)

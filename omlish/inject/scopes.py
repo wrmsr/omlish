@@ -112,7 +112,7 @@ def maysync_enter_seeded_scope(
         ss: SeededScope,
         keys: ta.Mapping[Key, ta.Any],
 ) -> ta.ContextManager[None]:
-    return lang.sync_await_context_manager(async_enter_seeded_scope(
+    return lang.sync_async_with(async_enter_seeded_scope(
         i[AsyncInjector],
         ss,
         keys,

@@ -466,7 +466,7 @@ with _auto_proxy_init(globals(), update_exports=True):
         sync_async_list,
 
         SyncAwaitContextManager,
-        sync_await_context_manager,
+        sync_async_with,
 
         SyncToAsyncContextManager,
         as_async_context_manager,

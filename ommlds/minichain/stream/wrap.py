@@ -1,7 +1,7 @@
 # ruff: noqa: UP028
 import typing as ta
 
-from ..resources import Resources
+from ..resources import UseResources
 from ..services import Request
 from ..services import Service
 from ..types import Output
@@ -44,7 +44,7 @@ class WrappedStreamService(ta.Generic[StreamRequestT, V, OutputT, StreamOutputT]
     #
 
     async def invoke(self, request: StreamRequestT) -> StreamResponse[V, OutputT, StreamOutputT]:
-        async with Resources.new() as rs:
+        async with UseResources.or_new(request.options) as rs:  # noqa
             in_resp = await self._inner.invoke(await self._process_request(request))
             in_vs = await rs.enter_async_context(in_resp.v)
 

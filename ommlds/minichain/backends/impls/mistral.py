@@ -21,6 +21,11 @@ from ...chat.messages import UserMessage
 ##
 
 
+# TODO: generalize lol
+class TooManyRequestsMistralError(Exception):
+    pass
+
+
 # @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
 #     name='mistral',
 #     type='ChatChoicesService',
@@ -78,6 +83,9 @@ class MistralChatChoicesService:
                 'Authorization': f'Bearer {key}',
             },
         )
+
+        if resp.status == 429:
+            raise TooManyRequestsMistralError
 
         resp_dct = json.loads(check.not_none(resp.data).decode('utf-8'))
 

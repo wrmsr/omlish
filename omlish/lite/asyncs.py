@@ -122,7 +122,7 @@ class SyncAwaitContextManager(ta.Generic[T]):
         return sync_await(self._acm.__aexit__(exc_type, exc_val, exc_tb))
 
 
-sync_await_context_manager = SyncAwaitContextManager
+sync_async_with = SyncAwaitContextManager
 
 
 ##
