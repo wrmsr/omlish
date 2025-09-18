@@ -136,7 +136,6 @@ def proxy_init(
 ##
 
 
-@contextlib.contextmanager
 def auto_proxy_init(
         init_globals: ta.MutableMapping[str, ta.Any],
         *,
@@ -147,30 +146,34 @@ def auto_proxy_init(
         raise_unreferenced: bool = False,
 
         update_exports: bool = False,
-) -> ta.Iterator[ImportCapture]:
-    inst = ImportCapture(
-        init_globals,
-        disable=disable,
-    )
-
-    with inst.capture(
-            unreferenced_callback=unreferenced_callback,
-            raise_unreferenced=raise_unreferenced,
-    ):
-        yield inst
-
-    for pi in inst.captured.imports:
-        proxy_init(
+) -> ta.ContextManager[ImportCapture]:
+    @contextlib.contextmanager
+    def inner() -> ta.Iterator[ImportCapture]:
+        inst = ImportCapture(
             init_globals,
-            pi.spec,
-            pi.attrs,
+            disable=disable,
         )
 
-    if eager:
-        lg = LazyGlobals.install(init_globals)
+        with inst.capture(
+                unreferenced_callback=unreferenced_callback,
+                raise_unreferenced=raise_unreferenced,
+        ):
+            yield inst
 
-        for a in inst.captured.attrs:
-            lg.get(a)
+        for pi in inst.captured.imports:
+            proxy_init(
+                init_globals,
+                pi.spec,
+                pi.attrs,
+            )
 
-    if update_exports:
-        inst.update_exports()
+        if eager:
+            lg = LazyGlobals.install(init_globals)
+
+            for a in inst.captured.attrs:
+                lg.get(a)
+
+        if update_exports:
+            inst.update_exports()
+
+    return inner()

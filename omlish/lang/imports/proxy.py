@@ -36,7 +36,6 @@ def proxy_import(
 ##
 
 
-@contextlib.contextmanager
 def auto_proxy_import(
         mod_globals: ta.MutableMapping[str, ta.Any],
         *,
@@ -44,19 +43,23 @@ def auto_proxy_import(
 
         unreferenced_callback: ta.Callable[[ta.Mapping[str, ta.Sequence[str | None]]], None] | None = None,
         raise_unreferenced: bool = False,
-) -> ta.Iterator[ImportCapture]:
-    inst = ImportCapture(
-        mod_globals,
-        disable=disable,
-    )
+) -> ta.ContextManager[ImportCapture]:
+    @contextlib.contextmanager
+    def inner() -> ta.Iterator[ImportCapture]:
+        inst = ImportCapture(
+            mod_globals,
+            disable=disable,
+        )
 
-    with inst.capture(
-            unreferenced_callback=unreferenced_callback,
-            raise_unreferenced=raise_unreferenced,
-    ):
-        yield inst
+        with inst.capture(
+                unreferenced_callback=unreferenced_callback,
+                raise_unreferenced=raise_unreferenced,
+        ):
+            yield inst
 
-    pkg = mod_globals.get('__package__')
-    for pi in inst.captured.imports:
-        for sa, ma in pi.attrs:
-            mod_globals[ma] = proxy_import(pi.spec + (('.' + sa) if sa is not None else ''), pkg)
+        pkg = mod_globals.get('__package__')
+        for pi in inst.captured.imports:
+            for sa, ma in pi.attrs:
+                mod_globals[ma] = proxy_import(pi.spec + (('.' + sa) if sa is not None else ''), pkg)
+
+    return inner()
