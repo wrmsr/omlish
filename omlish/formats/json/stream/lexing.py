@@ -3,7 +3,6 @@ TODO:
  - max buf size
  - max recursion depth
  - mark start pos of tokens, currently returning end
- - _do_string inner loop optimization somehow
 """
 import dataclasses as dc
 import io
@@ -343,33 +342,56 @@ class JsonStreamLexer(GenMachine[str, Token]):
         while True:
             c: str | None = None
 
-            if char_in_str is not None:
-                if char_in_str_pos < char_in_str_len:
-                    # FIXME: handle str chunks separately
-                    # if (qp := char_in_str.find(q)) >= 0 and (not qp or (char_in_str[qp - 1] != '\\')):
-                    #     ofs += qp + 1
-                    #     line += char_in_str.count('\n', end=)
-                    #     if (np := char_in_str.rfind('\n')) >= 0
+            while True:
+                if char_in_str is not None:
+                    if char_in_str_pos >= char_in_str_len:
+                        char_in_str = None
+                        continue
+
+                    skip_to = char_in_str_len
+                    if (qp := char_in_str.find(q, char_in_str_pos)) >= 0 and qp < skip_to:
+                        skip_to = qp
+                    if (sp := char_in_str.find('\\', char_in_str_pos)) >= 0 and sp < skip_to:
+                        skip_to = sp
+
+                    if skip_to != char_in_str_pos:
+                        ofs += skip_to - char_in_str_pos
+                        if (np := char_in_str.rfind('\n', char_in_str_pos, skip_to)) >= 0:
+                            line += char_in_str.count('\n', char_in_str_pos, skip_to)
+                            col = np - char_in_str_pos
+                        else:
+                            col += skip_to - char_in_str_pos
+                        buf.write(char_in_str[char_in_str_pos:skip_to])
+
+                        if skip_to >= char_in_str_len:
+                            char_in_str = None
+                            continue
+                        char_in_str_pos = skip_to
+
                     c = char_in_str[char_in_str_pos]
                     char_in_str_pos += 1
-                else:
-                    char_in_str = None
 
-            if c is None:
-                try:
-                    c = (yield None)
-                except GeneratorExit:
-                    restore_state()
-                    self._raise('Unexpected end of input')
+                if c is None:
+                    try:
+                        c = (yield None)
+                    except GeneratorExit:
+                        restore_state()
+                        self._raise('Unexpected end of input')
 
-                if len(c) > 1:
-                    char_in_str = c
-                    char_in_str_len = len(char_in_str)
-                    char_in_str_pos = 1
-                    c = c[0]
+                    if len(c) > 1:
+                        char_in_str = c
+                        char_in_str_len = len(char_in_str)
+                        char_in_str_pos = 0
+                        c = None
+                        continue
 
-            if c and len(c) != 1:
-                raise JsonStreamError(c)
+                if c is None:
+                    raise JsonStreamError
+
+                if c and len(c) != 1:
+                    raise JsonStreamError(c)
+
+                break
 
             ofs += 1
 
