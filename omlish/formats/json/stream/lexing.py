@@ -344,9 +344,11 @@ class JsonStreamLexer(GenMachine[str, Token]):
 
             if char_in_str is not None:
                 if char_in_str_pos < char_in_str_len:
-                    # TODO:
-                    # if (qp := char_in_str.find(q)) >= 0:
-                    #     raise NotImplementedError
+                    # FIXME: handle str chunks separately
+                    # if (qp := char_in_str.find(q)) >= 0 and (not qp or (char_in_str[qp - 1] != '\\')):
+                    #     ofs += qp + 1
+                    #     line += char_in_str.count('\n', end=)
+                    #     if (np := char_in_str.rfind('\n')) >= 0
                     c = char_in_str[char_in_str_pos]
                     char_in_str_pos += 1
                 else:
