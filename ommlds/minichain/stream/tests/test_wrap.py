@@ -8,9 +8,9 @@ from .test_services import FooStreamService
 
 
 class WrappedFooStreamService(WrappedStreamService):
-    def _process_vs(self, vs: ta.Iterator[str]) -> ta.Iterator[str]:
-        for v in vs:
-            yield v + '?'
+    @ta.override
+    def _process_value(self, v: str) -> ta.Iterable[str]:
+        return [v + '?']
 
 
 def test_wrap():

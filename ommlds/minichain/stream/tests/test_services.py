@@ -1,3 +1,4 @@
+import typing as ta
 
 import pytest
 
@@ -8,24 +9,26 @@ from ...services import Request
 from ...types import Output
 from ..services import StreamOptions
 from ..services import StreamResponse
+from ..services import StreamResponseSink
 from ..services import new_stream_response
 
 
 class FooStreamService:
     async def invoke(self, request: Request[str, StreamOptions]) -> StreamResponse[str, Output, Output]:
         async with UseResources.or_new(request.options) as rs:
-            @lang.async_generator_with_return
-            async def yield_vs(set_value):
+            async def inner(sink: StreamResponseSink[str]) -> ta.Sequence[Output] | None:
                 for c in request.v:
-                    yield c + '!'
-                set_value(None)
-            return await new_stream_response(rs, yield_vs())
+                    await sink.emit(c + '!')
+                return []
+            return await new_stream_response(rs, inner)
 
 
 @pytest.mark.asyncs('asyncio')
 async def test_foo_stream_service():
+    lst: list = []
     async with (await FooStreamService().invoke(Request('hi there!'))).v as it:
-        lst = await lang.async_list(it)
+        async for e in it:
+            lst.append(e)
     assert lst == [c + '!' for c in 'hi there!']
 
 

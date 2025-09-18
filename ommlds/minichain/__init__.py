@@ -322,7 +322,12 @@ with _lang.auto_proxy_init(
         StreamOption,
         StreamOptions,
 
-        ResponseGenerator,
+        StreamResponseSink,
+        StreamResponseIterator,
+
+        StreamServiceCancelledError,
+        StreamServiceNotAwaitedError,
+
         StreamResponse,
         new_stream_response,
     )

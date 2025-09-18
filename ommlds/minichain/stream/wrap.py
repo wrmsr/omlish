@@ -5,8 +5,9 @@ from ..resources import Resources
 from ..services import Request
 from ..services import Service
 from ..types import Output
-from .services import ResponseGenerator
+from .services import StreamResponseIterator
 from .services import StreamResponse
+from .services import StreamResponseSink
 from .services import new_stream_response
 
 
@@ -29,27 +30,26 @@ class WrappedStreamService(ta.Generic[StreamRequestT, V, OutputT, StreamOutputT]
 
     #
 
-    def _process_request(self, request: StreamRequestT) -> StreamRequestT:
+    async def _process_request(self, request: StreamRequestT) -> StreamRequestT:
         return request
 
-    def _process_stream_outputs(self, outputs: ta.Sequence[StreamOutputT]) -> ta.Sequence[StreamOutputT]:
+    async def _process_stream_outputs(self, outputs: ta.Sequence[StreamOutputT]) -> ta.Sequence[StreamOutputT]:
         return outputs
 
-    def _process_vs(self, vs: ta.AsyncGenerator[V]) -> ta.AsyncGenerator[V]:
-        return vs
+    async def _process_value(self, v: V) -> ta.Iterable[V]:
+        return [v]
 
-    def _process_outputs(self, outputs: ta.Sequence[OutputT]) -> ta.Sequence[OutputT]:
+    async def _process_outputs(self, outputs: ta.Sequence[OutputT]) -> ta.Sequence[OutputT]:
         return outputs
 
     #
 
     async def invoke(self, request: StreamRequestT) -> StreamResponse[V, OutputT, StreamOutputT]:
         async with Resources.new() as rs:
-            in_response = await self._inner.invoke(self._process_request(request))
-            in_vs: ResponseGenerator[V, OutputT] = await rs.enter_async_context(in_response.v)
-            out_vs = self._process_vs(in_vs)
+            in_resp = await self._inner.invoke(await self._process_request(request))
+            in_vs = await rs.enter_async_context(in_resp.v)
 
-            def yield_vs() -> ta.Generator[V, None, ta.Sequence[OutputT] | None]:
+            def inner(sink: StreamResponseSink) -> ta.Generator[V, None, ta.Sequence[OutputT] | None]:
                 while True:
                     try:
                         out_v = next(out_vs)
@@ -60,5 +60,5 @@ class WrappedStreamService(ta.Generic[StreamRequestT, V, OutputT, StreamOutputT]
             return new_stream_response(
                 rs,
                 yield_vs(),
-                self._process_stream_outputs(in_response.outputs),
+                self._process_stream_outputs(in_resp.outputs),
             )
