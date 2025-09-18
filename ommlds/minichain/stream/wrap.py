@@ -53,7 +53,7 @@ class WrappedStreamService(ta.Generic[StreamRequestT, V, OutputT, StreamOutputT]
                     for out_v in (await self._process_value(in_v)):
                         await sink.emit(out_v)
 
-                return await self._process_outputs(in_vs.result or [])
+                return await self._process_outputs(in_vs.outputs)
 
             return await new_stream_response(
                 rs,

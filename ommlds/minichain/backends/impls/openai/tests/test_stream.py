@@ -28,7 +28,7 @@ def test_openai_chat_stream_model(harness):
         with lang.sync_await_context_manager(lang.sync_await(llm.invoke(foo_req)).v) as it:
             for o in lang.sync_aiter(it):
                 print(o)
-            print(it.result)
+            print(it.outputs)
 
 
 # def test_openai_stream_tools(harness):
@@ -82,7 +82,7 @@ def test_use_resources(harness):
             with lang.sync_await_context_manager(lang.sync_await(llm.invoke(foo_req.with_options(UseResources(rs)))).v) as it:  # noqa
                 for o in lang.sync_aiter(it):
                     print(o)
-                print(it.result)
+                print(it.outputs)
 
 
 def test_adapters(harness):
