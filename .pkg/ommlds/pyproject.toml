@@ -108,6 +108,7 @@ exclude = [
     '*.cu',
     '*.g4',
     '*.h',
+    '*.hh',
     '.omlish-manifests.json',
     'LICENSE',
     'LICENSE.txt',
