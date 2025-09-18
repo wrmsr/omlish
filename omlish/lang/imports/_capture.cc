@@ -1,5 +1,5 @@
 // @omlish-cext
-#include <stdatomic.h>
+#include <atomic>
 
 #define PY_SSIZE_T_CLEAN
 #define Py_BUILD_CORE 1
@@ -16,9 +16,6 @@
 #define _MODULE_NAME "_capture"
 #define _PACKAGE_NAME "omlish.lang.imports"
 #define _MODULE_FULL_NAME _PACKAGE_NAME "." _MODULE_NAME
-
-typedef struct capture_state {
-} capture_state;
 
 //
 
@@ -51,9 +48,14 @@ _set_frame_builtins(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    _Atomic(PyObject*) *builtins_ptr = (_Atomic(PyObject*) *)&iframe->f_builtins;
-    PyObject *expected = old_builtins;
-    int success = atomic_compare_exchange_strong(builtins_ptr, &expected, new_builtins);
+    std::atomic_ref<PyObject*> builtins_ref(iframe->f_builtins);
+    PyObject* expected = old_builtins;
+    bool success = builtins_ref.compare_exchange_strong(
+        expected,
+        new_builtins,
+        std::memory_order_acq_rel,
+        std::memory_order_acquire
+    );
 
     if (success) {
         Py_RETURN_TRUE;
@@ -81,7 +83,7 @@ static struct PyModuleDef capture_module = {
     .m_base = PyModuleDef_HEAD_INIT,
     .m_name = _MODULE_NAME,
     .m_doc = capture_doc,
-    .m_size = sizeof(capture_state),
+    .m_size = 0,
     .m_methods = capture_methods,
     .m_slots = capture_slots,
     .m_traverse = NULL,
