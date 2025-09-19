@@ -36,6 +36,7 @@ def test_assemble():
                         dct = json.loads(ss)
                         check.equal(dct['type'], so.type.decode('utf-8'))
                         ae = msh.unmarshal(dct, AnthropicSseDecoderEvents.Event)
+
                         for am in ass(ae):
                             if isinstance(am, Message):
                                 yield am
