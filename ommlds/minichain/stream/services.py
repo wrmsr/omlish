@@ -41,15 +41,11 @@ class StreamResponseSink(lang.Abstract, ta.Generic[V]):
         raise NotImplementedError
 
 
-class StreamResponseIterator(lang.Abstract, ta.Generic[V, OutputT]):
-    @abc.abstractmethod
-    def __aenter__(self) -> ta.Awaitable[ta.Self]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def __aexit__(self, exc_type, exc_val, exc_tb) -> ta.Awaitable[None]:
-        raise NotImplementedError
-
+class StreamResponseIterator(
+    ta.AsyncContextManager['StreamResponseIterator[V, OutputT]'],
+    lang.Abstract,
+    ta.Generic[V, OutputT],
+):
     @property
     @abc.abstractmethod
     def outputs(self) -> tv.TypedValues[OutputT]:
@@ -122,7 +118,7 @@ class _StreamServiceResponse(StreamResponseIterator[V, OutputT]):
         return self
 
     @types.coroutine
-    def __aexit__(self, exc_type, exc_val, exc_tb) -> ta.Generator[ta.Any]:
+    def _aexit(self, exc_type, exc_val, exc_tb):
         old_state = self._state
         self._state = 'closed'
         if old_state != 'running':
@@ -147,6 +143,9 @@ class _StreamServiceResponse(StreamResponseIterator[V, OutputT]):
         self._a.close()
         self._cr.close()
 
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        return await self._aexit(exc_type, exc_val, exc_tb)
+
     _outputs: tv.TypedValues[OutputT]
 
     @property
@@ -154,7 +153,7 @@ class _StreamServiceResponse(StreamResponseIterator[V, OutputT]):
         return self._outputs
 
     @types.coroutine
-    def __anext__(self) -> ta.Generator[ta.Any, None, V]:
+    def _anext(self):
         check.state(self._state == 'running')
         while True:
             try:
@@ -172,6 +171,9 @@ class _StreamServiceResponse(StreamResponseIterator[V, OutputT]):
                 return x.value
 
             yield x
+
+    async def __anext__(self) -> V:
+        return await self._anext()
 
 
 ##
