@@ -14,7 +14,7 @@ from .....chat.stream.types import AiMessageDelta
 def test_assemble():
     with open(os.path.join(
             os.path.dirname(__file__),
-            '../../../../../backends/anthropic/protocol/sse/tests/hello.txt',  # >_<
+            '../../../../../backends/anthropic/protocol/sse/tests/story.txt',  # >_<
     ), 'rb') as f:
         src_b = f.read()
 

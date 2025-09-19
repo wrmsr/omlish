@@ -12,7 +12,7 @@ from ..events import AnthropicSseDecoderEvents
 
 
 def test_assemble():
-    with open(os.path.join(os.path.dirname(__file__), 'hello.txt'), 'rb') as f:
+    with open(os.path.join(os.path.dirname(__file__), 'story.txt'), 'rb') as f:
         src_b = f.read()
 
     def run(bs):
