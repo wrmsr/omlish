@@ -1,4 +1,5 @@
 import abc
+import itertools
 import typing as ta
 
 from omlish import check
@@ -124,13 +125,19 @@ class _StreamServiceResponse(StreamResponseIterator[V, OutputT]):
         self._state = 'closed'
         if old_state != 'running':
             return
-        if self._cr.cr_running:
+        if self._cr.cr_running or self._cr.cr_suspended:
             cex = StreamServiceCancelledError()
-            try:
-                self._g.throw(cex)
-            except StreamServiceCancelledError as cex2:
-                if cex2 is not cex:
+            for i in itertools.count():
+                try:
+                    if not i:
+                        x = self._g.throw(cex)
+                    else:
+                        x = self._g.send(None)
+                except StreamServiceCancelledError as cex2:
+                    if cex2 is cex:
+                        break
                     raise
+                await x
         if self._cr.cr_running:
             raise RuntimeError(f'Coroutine {self._cr!r} not terminated')
         if self._g is not self._a:
