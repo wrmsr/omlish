@@ -9,6 +9,8 @@ Insufficient alt impls:
 
 Possible alt impls:
  - aot static analysis, codegen, compare, if valid skip ctxmgr body and inject proxies, otherwise warn and run
+  - or just gen code inline, if ta.TYPE_CHECKING: .... else: # @omlish-generate-auto-proxy-import/init
+   - generate classic `foo = _lang.proxy_import('.foo', __package__)` blocks
 """
 import builtins
 import contextlib

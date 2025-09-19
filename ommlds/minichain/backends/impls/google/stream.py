@@ -19,7 +19,9 @@ from ....chat.messages import UserMessage
 from ....chat.stream.services import ChatChoicesStreamRequest
 from ....chat.stream.services import ChatChoicesStreamResponse
 from ....chat.stream.services import static_check_is_chat_choices_stream_service
+from ....chat.stream.types import AiChoiceDelta
 from ....chat.stream.types import AiChoiceDeltas
+from ....chat.stream.types import AiMessageDelta
 from ....models.configs import ModelName
 from ....resources import UseResources
 from ....standard import ApiKey
@@ -64,6 +66,8 @@ class GoogleChatChoicesStreamService:
         AiMessage: 'assistant',
     }
 
+    READ_CHUNK_SIZE = 64 * 1024
+
     async def invoke(
             self,
             request: ChatChoicesStreamRequest,
@@ -87,7 +91,7 @@ class GoogleChatChoicesStreamService:
         model_name = MODEL_NAMES.resolve(self._model_name.v)
 
         http_request = http.HttpRequest(
-            f'{self.BASE_URL.rstrip("/")}/{model_name}:generateContent?key={key}',
+            f'{self.BASE_URL.rstrip("/")}/{model_name}:streamGenerateContent?alt=sse&key={key}',
             headers={'Content-Type': 'application/json'},
             data=json.dumps_compact(req_dct).encode('utf-8'),
             method='POST',
@@ -111,6 +115,11 @@ class GoogleChatChoicesStreamService:
                             continue
                         if l.startswith('data: '):
                             gcr = msh.unmarshal(json.loads(l[6:]), pt.GenerateContentResponse)  # noqa
-                            await sink.emit([])
+                            cnd = check.single(check.not_none(gcr.candidates))
+                            for p in check.not_none(cnd.content).parts or []:
+                                await sink.emit([AiChoiceDelta(AiMessageDelta(check.not_none(p.text)))])
+
+                    if not b:
+                        return []
 
             return await new_stream_response(rs, inner)

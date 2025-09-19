@@ -4,12 +4,12 @@ from omlish.secrets.tests.harness import HarnessSecrets
 from .....chat.messages import UserMessage
 from .....chat.stream.services import ChatChoicesStreamRequest
 from .....standard import ApiKey
-from ..stream import AnthropicChatChoicesStreamService
+from ..stream import GoogleChatChoicesStreamService
 
 
-def test_anthropic_chat_stream_model(harness):
-    llm = AnthropicChatChoicesStreamService(
-        ApiKey(harness[HarnessSecrets].get_or_skip('anthropic_api_key').reveal()),
+def test_google_chat_stream_model(harness):
+    llm = GoogleChatChoicesStreamService(
+        ApiKey(harness[HarnessSecrets].get_or_skip('gemini_api_key').reveal()),
     )
 
     foo_req: ChatChoicesStreamRequest

@@ -29,6 +29,7 @@ from omlish.logs import all as logs
 
 from .base import Precheck
 from .base import PrecheckContext
+from .blanklines import BlankLinesPrecheck
 from .caches import AstCache
 from .caches import DirWalkCache
 from .caches import HeadersCache
@@ -87,6 +88,7 @@ def _check_cmd(args) -> None:
     )
 
     pc_cfgs: list[Precheck.Config] = [
+        BlankLinesPrecheck.Config(),
         GitBlacklistPrecheck.Config(),
         LitePython8Precheck.Config(),
         ManifestsPrecheck.Config(),

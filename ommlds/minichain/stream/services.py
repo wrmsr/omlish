@@ -1,5 +1,6 @@
 import abc
 import itertools
+import types
 import typing as ta
 
 from omlish import check
@@ -120,7 +121,8 @@ class _StreamServiceResponse(StreamResponseIterator[V, OutputT]):
         self._g = iter(self._a)
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
+    @types.coroutine
+    def __aexit__(self, exc_type, exc_val, exc_tb) -> ta.Generator[ta.Any]:
         old_state = self._state
         self._state = 'closed'
         if old_state != 'running':
@@ -137,7 +139,7 @@ class _StreamServiceResponse(StreamResponseIterator[V, OutputT]):
                     if cex2 is cex:
                         break
                     raise
-                await x
+                yield x
         if self._cr.cr_running:
             raise RuntimeError(f'Coroutine {self._cr!r} not terminated')
         if self._g is not self._a:
@@ -151,7 +153,8 @@ class _StreamServiceResponse(StreamResponseIterator[V, OutputT]):
     def outputs(self) -> tv.TypedValues[OutputT]:
         return self._outputs
 
-    async def __anext__(self) -> V:
+    @types.coroutine
+    def __anext__(self) -> ta.Generator[ta.Any, None, V]:
         check.state(self._state == 'running')
         while True:
             try:
@@ -168,7 +171,7 @@ class _StreamServiceResponse(StreamResponseIterator[V, OutputT]):
                 x.done = True
                 return x.value
 
-            await x
+            yield x
 
 
 ##
