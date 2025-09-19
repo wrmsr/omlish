@@ -7,6 +7,8 @@ from omlish.http import sse
 from omlish.io.buffers import DelimitingBuffer
 
 from ......backends.anthropic.protocol.sse.events import AnthropicSseDecoderEvents
+from .....chat.stream.types import AiChoiceDelta
+from .....chat.stream.types import AiMessageDelta
 
 
 def test_assemble():
@@ -45,15 +47,28 @@ def test_assemble():
                             case AnthropicSseDecoderEvents.MessageStart():
                                 check.none(msg_start)
                                 msg_start = ae
-                                yield msg_start
+                                if msg_start.message.content:
+                                    raise NotImplementedError
 
                             case AnthropicSseDecoderEvents.ContentBlockStart():
                                 check.not_none(msg_start)
                                 check.none(cbk_start)
                                 cbk_start = ae
+                                if isinstance(ae.content_block, AnthropicSseDecoderEvents.ContentBlockStart.Text):
+                                    yield [AiChoiceDelta(AiMessageDelta(
+                                        ae.content_block.text,
+                                    ))]
+                                else:
+                                    raise TypeError(ae.content_block)
 
                             case AnthropicSseDecoderEvents.ContentBlockDelta():
                                 check.not_none(cbk_start)
+                                if isinstance(ae.delta, AnthropicSseDecoderEvents.ContentBlockDelta.TextDelta):
+                                    yield [AiChoiceDelta(AiMessageDelta(
+                                        ae.delta.text,
+                                    ))]
+                                else:
+                                    raise TypeError(ae.delta)
 
                             case AnthropicSseDecoderEvents.ContentBlockStop():
                                 check.not_none(cbk_start)
