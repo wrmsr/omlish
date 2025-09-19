@@ -8,18 +8,23 @@ from omlish import marshal as msh
 from omlish import typedvalues as tv
 from omlish.formats import json
 from omlish.http import all as http
+from omlish.io.buffers import DelimitingBuffer
 
 from .....backends.google.protocol import types as pt
-from ....chat.choices.services import ChatChoicesRequest
-from ....chat.choices.services import ChatChoicesResponse
-from ....chat.choices.services import static_check_is_chat_choices_service
-from ....chat.choices.types import AiChoice
+from ....chat.choices.types import ChatChoicesOutputs
 from ....chat.messages import AiMessage
 from ....chat.messages import Message
 from ....chat.messages import SystemMessage
 from ....chat.messages import UserMessage
+from ....chat.stream.services import ChatChoicesStreamRequest
+from ....chat.stream.services import ChatChoicesStreamResponse
+from ....chat.stream.services import static_check_is_chat_choices_stream_service
+from ....chat.stream.types import AiChoiceDeltas
 from ....models.configs import ModelName
+from ....resources import UseResources
 from ....standard import ApiKey
+from ....stream.services import StreamResponseSink
+from ....stream.services import new_stream_response
 from .names import MODEL_NAMES
 
 
@@ -28,10 +33,10 @@ from .names import MODEL_NAMES
 
 # @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
 #     name='google',
-#     type='ChatChoicesService',
+#     type='ChatChoicesStreamService',
 # )
-@static_check_is_chat_choices_service
-class GoogleChatChoicesService:
+@static_check_is_chat_choices_stream_service
+class GoogleChatChoicesStreamService:
     DEFAULT_MODEL_NAME: ta.ClassVar[ModelName] = ModelName(check.not_none(MODEL_NAMES.default))
 
     def __init__(self, *configs: ApiKey | ModelName) -> None:
@@ -61,8 +66,8 @@ class GoogleChatChoicesService:
 
     async def invoke(
             self,
-            request: ChatChoicesRequest,
-    ) -> ChatChoicesResponse:
+            request: ChatChoicesStreamRequest,
+    ) -> ChatChoicesStreamResponse:
         key = check.not_none(self._api_key).reveal()
 
         g_req = pt.GenerateContentRequest(
@@ -81,18 +86,31 @@ class GoogleChatChoicesService:
 
         model_name = MODEL_NAMES.resolve(self._model_name.v)
 
-        resp = http.request(
+        http_request = http.HttpRequest(
             f'{self.BASE_URL.rstrip("/")}/{model_name}:generateContent?key={key}',
             headers={'Content-Type': 'application/json'},
             data=json.dumps_compact(req_dct).encode('utf-8'),
             method='POST',
         )
 
-        resp_dct = json.loads(check.not_none(resp.data).decode('utf-8'))
+        async with UseResources.or_new(request.options) as rs:
+            http_client = rs.enter_context(http.client())
+            http_response = rs.enter_context(http_client.stream_request(http_request))
 
-        g_resp = msh.unmarshal(resp_dct, pt.GenerateContentResponse)
+            async def inner(sink: StreamResponseSink[AiChoiceDeltas]) -> ta.Sequence[ChatChoicesOutputs] | None:
+                db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
+                while True:
+                    # FIXME: read1 not on response stream protocol
+                    b = http_response.stream.read1(self.READ_CHUNK_SIZE)  # type: ignore[attr-defined]
+                    for bl in db.feed(b):
+                        if isinstance(bl, DelimitingBuffer.Incomplete):
+                            # FIXME: handle
+                            return []
+                        l = bl.decode('utf-8')
+                        if not l:
+                            continue
+                        if l.startswith('data: '):
+                            gcr = msh.unmarshal(json.loads(l[6:]), pt.GenerateContentResponse)  # noqa
+                            await sink.emit([])
 
-        return ChatChoicesResponse([
-            AiChoice(AiMessage(check.not_none(check.not_none(check.not_none(c.content).parts)[0].text)))
-            for c in g_resp.candidates or []
-        ])
+            return await new_stream_response(rs, inner)

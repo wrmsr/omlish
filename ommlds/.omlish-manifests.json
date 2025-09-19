@@ -96,7 +96,7 @@
     "module": ".minichain.backends.impls.google.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/google/chat.py",
-    "line": 30,
+    "line": 29,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.google.chat",
@@ -131,6 +131,21 @@
             "gemini": "gemini-flash"
           }
         }
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.impls.google.stream",
+    "attr": null,
+    "file": "ommlds/minichain/backends/impls/google/stream.py",
+    "line": 34,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "ommlds.minichain.backends.impls.google.stream",
+        "attr": "GoogleChatChoicesStreamService",
+        "name": "google",
+        "aliases": null,
+        "type": "ChatChoicesStreamService"
       }
     }
   },
