@@ -9,8 +9,6 @@ from omlish.http import all as http
 from omlish.http import sse
 from omlish.io.buffers import DelimitingBuffer
 
-from .....backends.anthropic.protocol import types as pt
-from .....backends.anthropic.protocol.sse.assemble import AnthropicSseMessageAssembler
 from .....backends.anthropic.protocol.sse.events import AnthropicSseDecoderEvents
 from ....chat.choices.services import ChatChoicesOutputs
 from ....chat.messages import SystemMessage
@@ -89,9 +87,12 @@ class AnthropicChatChoicesStreamService:
             http_response = rs.enter_context(http_client.stream_request(http_request))
 
             async def inner(sink: StreamResponseSink[AiChoiceDeltas]) -> ta.Sequence[ChatChoicesOutputs] | None:
+                msg_start: AnthropicSseDecoderEvents.MessageStart | None = None
+                cbk_start: AnthropicSseDecoderEvents.ContentBlockStart | None = None
+                msg_stop: AnthropicSseDecoderEvents.MessageStop | None = None
+
                 db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
                 sd = sse.SseDecoder()
-                ass = AnthropicSseMessageAssembler()
                 while True:
                     # FIXME: read1 not on response stream protocol
                     b = http_response.stream.read1(self.READ_CHUNK_SIZE)  # type: ignore[attr-defined]
@@ -110,14 +111,56 @@ class AnthropicChatChoicesStreamService:
                                 dct = json.loads(ss)
                                 check.equal(dct['type'], so.type.decode('utf-8'))
                                 ae = msh.unmarshal(dct, AnthropicSseDecoderEvents.Event)
-                                for am in ass(ae):
-                                    if isinstance(am, pt.Message):
-                                        mt = check.isinstance(check.single(check.not_none(am.content)), pt.Text)
-                                        await sink.emit([
-                                            AiChoiceDelta(AiMessageDelta(mt.text)),
-                                        ])
+
+                                match ae:
+                                    case AnthropicSseDecoderEvents.MessageStart():
+                                        check.none(msg_start)
+                                        msg_start = ae
+                                        if msg_start.message.content:
+                                            raise NotImplementedError
+
+                                    case AnthropicSseDecoderEvents.ContentBlockStart():
+                                        check.not_none(msg_start)
+                                        check.none(cbk_start)
+                                        cbk_start = ae
+                                        if isinstance(ae.content_block, AnthropicSseDecoderEvents.ContentBlockStart.Text):  # noqa
+                                            await sink.emit([AiChoiceDelta(AiMessageDelta(
+                                                ae.content_block.text,
+                                            ))])
+                                        else:
+                                            raise TypeError(ae.content_block)
+
+                                    case AnthropicSseDecoderEvents.ContentBlockDelta():
+                                        check.not_none(cbk_start)
+                                        if isinstance(ae.delta, AnthropicSseDecoderEvents.ContentBlockDelta.TextDelta):
+                                            await sink.emit([AiChoiceDelta(AiMessageDelta(
+                                                ae.delta.text,
+                                            ))])
+                                        else:
+                                            raise TypeError(ae.delta)
+
+                                    case AnthropicSseDecoderEvents.ContentBlockStop():
+                                        check.not_none(cbk_start)
+                                        cbk_start = None
+
+                                    case AnthropicSseDecoderEvents.MessageDelta():
+                                        check.not_none(msg_start)
+                                        check.none(cbk_start)
+
+                                    case AnthropicSseDecoderEvents.MessageStop():
+                                        check.not_none(msg_start)
+                                        check.none(msg_stop)
+                                        msg_stop = ae
+
+                                    case AnthropicSseDecoderEvents.Ping():
+                                        pass
+
+                                    case _:
+                                        raise TypeError(ae)
 
                     if not b:
+                        check.not_none(msg_stop)
+                        check.none(cbk_start)
                         return []
 
             # raw_response = json.loads(check.not_none(http_response.data).decode('utf-8'))

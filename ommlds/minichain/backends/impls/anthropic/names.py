@@ -34,7 +34,10 @@ MODEL_NAMES = ModelNameCollection(
 
 # @omlish-manifest
 _BACKEND_STRINGS_MANIFEST = BackendStringsManifest(
-    ['ChatChoicesService'],
+    [
+        'ChatChoicesService',
+        'ChatChoicesStreamService',
+    ],
     'anthropic',
     model_names=MODEL_NAMES,
 )
