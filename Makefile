@@ -483,11 +483,11 @@ ci-bash:
 ### Package
 
 .PHONY: package
-package: gen check clean-package
+package: gen check
 	${MAKE} _package
 
 .PHONY: _package
-_package:
+_package: clean-package
 	PYTHONPATH=. ${PYTHON} ${PYPROJECT_SRC} pkg -b -r gen
 
 .PHONY: test-install
