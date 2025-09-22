@@ -7,13 +7,13 @@ import typing as ta
 import sqlalchemy as sa
 import sqlalchemy.sql.schema
 
-from .tabledefs import TableDef
+from ..tabledefs import TableDef
 
 
 ##
 
 
-def build_sa_table(
+def build_td_table(
         td: TableDef,
         *,
         metadata: sa.MetaData | None = None,
