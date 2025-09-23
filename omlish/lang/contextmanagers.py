@@ -408,3 +408,15 @@ async def call_with_async_exit_stack(
 ) -> T:
     async with contextlib.AsyncExitStack() as aes:
         return await fn(aes, *args, **kwargs)
+
+
+def with_exit_stack(
+        fn: ta.Callable[ta.Concatenate[contextlib.ExitStack, P], T],
+) -> ta.Callable[P, T]:
+    return functools.partial(call_with_exit_stack, fn)
+
+
+def with_async_exit_stack(
+        fn: ta.Callable[ta.Concatenate[contextlib.AsyncExitStack, P], ta.Awaitable[T]],
+) -> ta.Callable[P, ta.Awaitable[T]]:
+    return functools.partial(call_with_async_exit_stack, fn)

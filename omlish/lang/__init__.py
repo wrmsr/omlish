@@ -181,6 +181,9 @@ with _auto_proxy_init(globals(), update_exports=True):
 
         call_with_exit_stack,
         call_with_async_exit_stack,
+
+        with_exit_stack,
+        with_async_exit_stack,
     )
 
     from .datetimes import (  # noqa
