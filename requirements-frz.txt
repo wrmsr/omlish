@@ -5,7 +5,7 @@ aiomysql==0.2.0
 aiosignal==1.4.0
 aiosqlite==0.21.0
 antlr4-python3-runtime==4.13.2
-anyio==4.10.0
+anyio==4.11.0
 appnope==0.1.4
 apsw==3.50.4.0
 argon2-cffi==25.1.0
@@ -89,7 +89,7 @@ hpack==4.1.0
 httpcore==1.0.9
 httplib2==0.31.0
 httpx==0.28.1
-huggingface-hub==0.35.0
+huggingface-hub==0.35.1
 humanfriendly==10.0
 hyperframe==6.1.0
 id==1.5.0
@@ -200,7 +200,7 @@ psutil==7.1.0
 psycopg==3.2.10
 psycopg2==2.9.10
 ptyprocess==0.7.0
-pudb==2025.1
+pudb==2025.1.1
 pure_eval==0.2.3
 py-cpuinfo==9.0.0
 pyaes==1.6.1
@@ -274,7 +274,7 @@ sortedcontainers==2.4.0
 soupsieve==2.8
 SQLAlchemy==2.0.43
 sqlean.py==3.50.4.3
-sqlglot==27.16.3
+sqlglot==27.17.0
 sqlite-vec==0.1.6
 sqlparse==0.4.4
 stack-data==0.6.3
@@ -313,7 +313,7 @@ uritemplate==4.2.0
 urllib3==2.5.0
 urwid==3.0.3
 urwid_readline==0.15.1
-uv==0.8.19
+uv==0.8.21
 watchdog==6.0.0
 wcwidth==0.2.14
 webcolors==24.11.1
