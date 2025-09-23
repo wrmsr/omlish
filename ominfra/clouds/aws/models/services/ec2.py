@@ -1361,6 +1361,18 @@ class InstanceType(_enum.Enum):
     I8GE_METAL_48XL = 'i8ge.metal-48xl'
     MAC_M4_METAL = 'mac-m4.metal'
     MAC_M4PRO_METAL = 'mac-m4pro.metal'
+    R8GN_MEDIUM = 'r8gn.medium'
+    R8GN_LARGE = 'r8gn.large'
+    R8GN_XLARGE = 'r8gn.xlarge'
+    R8GN_2XLARGE = 'r8gn.2xlarge'
+    R8GN_4XLARGE = 'r8gn.4xlarge'
+    R8GN_8XLARGE = 'r8gn.8xlarge'
+    R8GN_12XLARGE = 'r8gn.12xlarge'
+    R8GN_16XLARGE = 'r8gn.16xlarge'
+    R8GN_24XLARGE = 'r8gn.24xlarge'
+    R8GN_48XLARGE = 'r8gn.48xlarge'
+    R8GN_METAL_24XL = 'r8gn.metal-24xl'
+    R8GN_METAL_48XL = 'r8gn.metal-48xl'
 
 
 class InstanceTypeHypervisor(_enum.Enum):
