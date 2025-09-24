@@ -72,7 +72,7 @@ frozenlist==1.7.0
 fsspec==2025.9.0
 gguf==0.17.1
 google-api-core==2.25.1
-google-api-python-client==2.182.0
+google-api-python-client==2.183.0
 google-auth==2.40.3
 google-auth-httplib2==0.2.0
 google-cloud-compute==1.38.0
@@ -313,7 +313,7 @@ uritemplate==4.2.0
 urllib3==2.5.0
 urwid==3.0.3
 urwid_readline==0.15.1
-uv==0.8.21
+uv==0.8.22
 watchdog==6.0.0
 wcwidth==0.2.14
 webcolors==24.11.1
