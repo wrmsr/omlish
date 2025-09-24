@@ -29,7 +29,18 @@ def call_with(fn: ta.Any, *args: ta.Any, **kwargs: ta.Any) -> ta.Callable[[T], T
     return inner
 
 
-def maybe_call(obj: ta.Any, att: str, *args, default: ta.Any = None, **kwargs: ta.Any) -> ta.Any:
+def opt_fn(fn: ta.Callable[[F], T]) -> ta.Callable[[F | None], T | None]:
+    @functools.wraps(fn)
+    def inner(v: F | None) -> T | None:
+        if v is not None:
+            return fn(v)
+        else:
+            return None
+
+    return inner
+
+
+def opt_call(obj: ta.Any, att: str, *args, default: ta.Any = None, **kwargs: ta.Any) -> ta.Any:
     try:
         fn = getattr(obj, att)
     except AttributeError:
@@ -39,7 +50,7 @@ def maybe_call(obj: ta.Any, att: str, *args, default: ta.Any = None, **kwargs: t
 
 
 def recurse(fn: ta.Callable[..., T], *args, **kwargs) -> T:
-    def rec(*args, **kwargs) -> T:
+    def rec(*args, **kwargs) -> T:  # noqa
         return fn(rec, *args, **kwargs)
 
     return rec(*args, **kwargs)
@@ -89,20 +100,6 @@ def finally_(fn: ta.Callable[P, T], fin: ta.Callable) -> ta.Callable[P, T]:
 
 def identity(obj: T) -> T:
     return obj
-
-
-def opt_fn(fn: ta.Callable[[F], T]) -> ta.Callable[[F | None], T | None]:
-    @functools.wraps(fn)
-    def inner(v: F | None) -> T | None:
-        if v is not None:
-            return fn(v)
-        else:
-            return None
-
-    return inner
-
-
-##
 
 
 class _constant(ta.Generic[T]):  # noqa
@@ -196,6 +193,13 @@ def periodically(
 
 
 ##
+
+
+def opt_getattr(obj: ta.Any, att: str, default: ta.Any = None) -> ta.Any:
+    try:
+        return getattr(obj, att)
+    except AttributeError:
+        return default
 
 
 def coalesce(*vs: T | None) -> T:

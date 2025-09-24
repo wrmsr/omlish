@@ -19,6 +19,8 @@ from . import lang
 
 T = ta.TypeVar('T')
 
+ObjectMetadataT = ta.TypeVar('ObjectMetadataT', bound='ObjectMetadata')
+
 
 ##
 
@@ -94,12 +96,32 @@ def append_object_metadata(obj: T, *mds: ObjectMetadata) -> T:
 _type = type
 
 
+@ta.overload
+def get_object_metadata(
+        obj: ta.Any,
+        *,
+        strict: bool = False,
+        type: ta.Type[ObjectMetadataT],  # noqa
+) -> ta.Sequence[ObjectMetadataT]:
+    ...
+
+
+@ta.overload
 def get_object_metadata(
         obj: ta.Any,
         *,
         strict: bool = False,
         type: ta.Type | tuple[ta.Type, ...] | None = None,  # noqa
-) -> ta.Sequence[ObjectMetadata]:
+) -> ta.Sequence[ta.Any]:
+    ...
+
+
+def get_object_metadata(
+        obj,
+        *,
+        strict=False,
+        type=None,  # noqa
+):
     try:
         tgt = _unwrap_object_metadata_target(obj)
     except ObjectMetadataTargetTypeError:

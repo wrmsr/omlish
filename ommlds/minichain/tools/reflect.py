@@ -23,6 +23,7 @@ from omlish import metadata as md
 from omlish import reflect as rfl
 from omlish.lite.cached import cached_nullary
 
+from ..content.materialize import CanContent
 from .types import EnumToolDtype
 from .types import MappingToolDtype
 from .types import NullableToolDtype
@@ -160,14 +161,22 @@ class ToolReflector:
 
         #
 
+        p_ovr_dct: dict[str, dict[str, ta.Any]] = {}
         ts_ovr: dict[str, ta.Any] = {}
+        o: _ToolSpecOverride
         for o in md.get_object_metadata(fn, type=_ToolSpecOverride):
-            # TODO: better params handling / merging
             ts_ovr.update({
                 k: v
                 for k, v in dc.asdict(o).items()
-                if v is not None
+                if k != 'params'
+                and v is not None
             })
+            for op in (o.params or []):
+                p_ovr_dct.setdefault(check.non_empty_str(op.name), {}).update({
+                    k: v
+                    for k, v in dc.asdict(op).items()
+                    if v is not None
+                })
 
         #
 
@@ -207,23 +216,39 @@ class ToolReflector:
         if 'params' not in ts_kw:
             ds_p_dct = {
                 ds_p.arg_name: ds_p
-                for ds_p in (ds.params if ds is not None else [])
+                for ds_p in (ds.params if ds is not None else {})
             }
 
+            sig_p_dct = sig().parameters
+
+            pns: list[str] = list({**p_ovr_dct, **ds_p_dct, **sig_p_dct})
+
             params: dict[str, ToolParam] = {}
-            for sig_p in sig().parameters.values():
-                check.not_in(sig_p.name, params)
+            for pn in pns:
+                ovr_p = p_ovr_dct.get(pn, {})
+                ds_p = ds_p_dct.get(pn)
+                sig_p = sig_p_dct.get(pn)
 
-                ds_p = ds_p_dct.get(sig_p.name)
+                p_desc: CanContent
+                if (p_desc := ovr_p.get('desc')) is None:
+                    if ds_p is not None:
+                        p_desc = ds_p.description
 
-                params[sig_p.name] = ToolParam(
-                    sig_p.name,
+                p_type: ToolDtype | None
+                if (p_type := ovr_p.get('type')) is None:
+                    if sig_p is not None and sig_p.name in th():
+                        p_type = self.reflect_type(rfl.type_(th()[sig_p.name]))
 
-                    desc=self._prepare_desc(ds_p.description) if ds_p is not None else None,
+                p_required: bool | None
+                if (p_required := ovr_p.get('required')) is None:
+                    if sig_p is not None:
+                        p_required = sig_p.default is inspect.Parameter.empty
 
-                    type=self.reflect_type(rfl.type_(th()[sig_p.name])) if sig_p.name in th() else None,
-
-                    required=sig_p.default is inspect.Parameter.empty,
+                params[pn] = ToolParam(
+                    pn,
+                    desc=self._prepare_desc(p_desc) if p_desc is not None else None,
+                    type=p_type,
+                    required=p_required,
                 )
 
             ts_kw.update(params=tuple(params.values()) if params else None)

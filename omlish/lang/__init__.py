@@ -68,10 +68,12 @@ with _auto_proxy_init(globals(), update_exports=True):
     )
 
     from .classes.abstract import (  # noqa
-        get_abstracts,
-        is_abstract,
-        is_abstract_class,
         is_abstract_method,
+
+        is_abstract_class,
+        is_abstract,
+
+        get_abstracts,
         make_abstract,
     )
 
@@ -81,8 +83,8 @@ with _auto_proxy_init(globals(), update_exports=True):
 
     from .classes.namespaces import (  # noqa
         GenericNamespaceMeta,
-        Namespace,
         NamespaceMeta,
+        Namespace,
     )
 
     from .classes.protocols import (  # noqa
@@ -91,54 +93,65 @@ with _auto_proxy_init(globals(), update_exports=True):
     )
 
     from .classes.restrict import (  # noqa
-        AnySensitive,
-        Final,
         FinalTypeError,
-        NoBool,
+        Final,
+
+        SealedError,
+        Sealed,
+        PackageSealed,
+
         NotInstantiable,
         NotPicklable,
-        PackageSealed,
-        SENSITIVE_ATTR,
-        Sealed,
-        SealedError,
-        Sensitive,
+
+        NoBool,
         no_bool,
+
+        SENSITIVE_ATTR,
+        Sensitive,
+        AnySensitive,
     )
 
     from .classes.simple import (  # noqa
-        LazySingleton,
-        Marker,
         SimpleMetaDict,
+
+        Marker,
+
         Singleton,
+        LazySingleton,
     )
 
     from .classes.virtual import (  # noqa
-        Callable,
-        Descriptor,
-        Picklable,
         Virtual,
         virtual_check,
+
+        Descriptor,
+        Picklable,
+
+        Callable,
     )
 
     from .clsdct import (  # noqa
+        is_possibly_cls_dct,
+        get_caller_cls_dct,
+
         ClassDctFn,
         cls_dct_fn,
-        get_caller_cls_dct,
-        is_possibly_cls_dct,
     )
 
     from .collections import (  # noqa
-        empty_map,
-        merge_dicts,
         yield_dict_init,
+        merge_dicts,
+
+        empty_map,
     )
 
     from .comparison import (  # noqa
-        Infinity,
-        InfinityType,
-        NegativeInfinity,
-        NegativeInfinityType,
         cmp,
+
+        InfinityType,
+        Infinity,
+        NegativeInfinityType,
+        NegativeInfinity,
     )
 
     from .contextmanagers import (  # noqa
@@ -197,19 +210,26 @@ with _auto_proxy_init(globals(), update_exports=True):
     )
 
     from .descriptors import (  # noqa
+        attr_property,
+        item_property,
+
+        is_method_descriptor,
+        unwrap_method_descriptors,
+
+        unwrap_func_with_partials,
+        unwrap_func,
+
+        unwrap_callable_with_partials,
+        unwrap_callable,
+
+        update_wrapper,
+
+        decorator,
+
         AccessForbiddenError,
         access_forbidden,
-        attr_property,
+
         classonly,
-        decorator,
-        is_method_descriptor,
-        item_property,
-        unwrap_callable,
-        unwrap_callable_with_partials,
-        unwrap_func,
-        unwrap_func_with_partials,
-        unwrap_method_descriptors,
-        update_wrapper,
     )
 
     from .enums import (  # noqa
@@ -221,43 +241,57 @@ with _auto_proxy_init(globals(), update_exports=True):
     )
 
     from .functions import (  # noqa
-        VoidError,
-        call_with,
-        coalesce,
-        cond_kw,
-        constant,
-        finally_,
-        identity,
         is_lambda,
+
+        call_with,
+        opt_call,
+        opt_fn,
+        recurse,
+
+        raise_,
+        raising,
+        try_,
+        finally_,
+
+        identity,
+        constant,
+        nullary_constant,
+
         is_none,
         is_not_none,
         isinstance_of,
         issubclass_of,
-        maybe_call,
+        strict_eq,
+
+        VoidError,
+        Void,
+        void,
+
+        periodically,
+
+        opt_getattr,
+        coalesce,
+        opt_coalesce,
+
+        cond_kw,
+        opt_kw,
+        truthy_kw,
+
         new_function,
         new_function_kwargs,
-        nullary_constant,
-        opt_coalesce,
-        opt_fn,
-        opt_kw,
-        periodically,
-        raise_,
-        raising,
-        recurse,
-        strict_eq,
-        truthy_kw,
-        try_,
-        void,
     )
 
     from .generators import (  # noqa
-        GeneratorLike,
-        GeneratorMappedIterator,
-        autostart,
-        capture_coroutine,
-        capture_generator,
-        genmap,
         nextgen,
+        autostart,
+
+        GeneratorLike,
+
+        capture_generator,
+        capture_coroutine,
+
+        GeneratorMappedIterator,
+        genmap,
     )
 
     from .imports.capture import (  # noqa
@@ -297,21 +331,26 @@ with _auto_proxy_init(globals(), update_exports=True):
     )
 
     from .iterables import (  # noqa
-        IteratorWithReturn,
-        asrange,
-        chunk,
-        common_prefix_len,
-        consume,
-        flatmap,
-        flatten,
         ilen,
-        interleave,
-        itergen,
-        peek,
-        prodrange,
-        readiter,
-        renumerate,
         take,
+        consume,
+        peek,
+        chunk,
+        interleave,
+        renumerate,
+        common_prefix_len,
+
+        readiter,
+
+        itergen,
+
+        flatten,
+        flatmap,
+
+        asrange,
+        prodrange,
+
+        IteratorWithReturn,
     )
 
     from .lazyglobals import (  # noqa
@@ -333,27 +372,38 @@ with _auto_proxy_init(globals(), update_exports=True):
     )
 
     from .objects import (  # noqa
-        Identity,
-        SimpleProxy,
-        anon_object,
         arg_repr,
-        can_weakref,
-        deep_subclasses,
-        new_type,
         opt_repr,
+
+        can_weakref,
+
+        new_type,
         super_meta,
+
+        deep_subclasses,
+
+        SimpleProxy,
+
+        anon_object,
+
+        Identity,
     )
 
     from .outcomes import (  # noqa
-        Either,
-        Error,
-        Outcome,
         OutcomeAlreadyUnwrappedError,
-        Value,
-        acapture,
+
         capture,
-        error,
+        acapture,
+
+        Outcome,
+
+        Value,
         value,
+
+        Error,
+        error,
+
+        Either,
     )
 
     from .overrides import (  # noqa
@@ -366,29 +416,35 @@ with _auto_proxy_init(globals(), update_exports=True):
     )
 
     from .params import (  # noqa
-        ArgsParam,
-        KwOnlyParam,
-        KwargsParam,
         Param,
-        ParamSeparator,
-        ParamSpec,
-        PosOnlyParam,
-        ValParam,
+
         VarParam,
+        ArgsParam,
+        KwargsParam,
+
+        ValParam,
+        PosOnlyParam,
+        KwOnlyParam,
+
+        ParamSeparator,
+
+        ParamSpec,
+
         param_render,
     )
 
     from .recursion import (  # noqa
         LimitedRecursionError,
-        recursion_limiting,
         recursion_limiting_context,
+
+        recursion_limiting,
     )
 
     from .resolving import (  # noqa
-        Resolvable,
         ResolvableClassNameError,
         get_cls_fqcn,
         get_fqcn_cls,
+        Resolvable,
     )
 
     from .resources import (  # noqa
@@ -398,24 +454,31 @@ with _auto_proxy_init(globals(), update_exports=True):
     )
 
     from .strings import (  # noqa
-        BOOL_FALSE_STRINGS,
-        BOOL_STRINGS,
-        BOOL_TRUE_STRINGS,
-        STRING_BOOL_VALUES,
-        find_any,
-        indent_lines,
-        is_dunder,
-        is_ident,
-        is_ident_cont,
-        is_ident_start,
-        is_sunder,
-        iter_pat,
         prefix_delimited,
         prefix_lines,
-        replace_many,
-        rfind_any,
+        indent_lines,
+
         strip_prefix,
         strip_suffix,
+
+        replace_many,
+
+        find_any,
+        rfind_any,
+
+        is_dunder,
+        is_sunder,
+
+        is_ident_start,
+        is_ident_cont,
+        is_ident,
+
+        BOOL_STRINGS,
+        BOOL_FALSE_STRINGS,
+        BOOL_TRUE_STRINGS,
+        STRING_BOOL_VALUES,
+
+        iter_pat,
     )
 
     from .sys import (  # noqa
