@@ -5,148 +5,16 @@ TODO:
  - fs cache
  - track changes
 """
-import difflib
 import io
 import itertools
-import os.path
-import typing as ta
 
 from omlish import lang
 
-from ...tools.execution.catalog import ToolCatalogEntry
-from ...tools.execution.reflect import reflect_tool_catalog_entry
-from ...tools.reflect import tool_spec_override
-from ...tools.types import ToolParam
-
-
-##
-
-
-IMAGE_FILE_EXTENSIONS: ta.AbstractSet[str] = frozenset([
-    'jpg',
-    'jpeg',
-    'png',
-    'gif',
-    'bmp',
-    'webp',
-])
-
-
-ARCHIVE_FILE_EXTENSIONS: ta.AbstractSet[str] = frozenset([
-    'zip',
-    'tar',
-    'gz',
-    'xz',
-    '7z',
-])
-
-
-DOC_FILE_EXTENSIONS: ta.AbstractSet[str] = frozenset([
-    'doc',
-    'docx',
-    'xls',
-    'xlsx',
-    'ppt',
-    'pptx',
-    'odt',
-    'ods',
-    'odp',
-])
-
-
-EXECUTABLE_FILE_EXTENSIONS: ta.AbstractSet[str] = frozenset([
-    'exe',
-    'dll',
-    'so',
-
-    'obj',
-    'o',
-    'a',
-    'lib',
-
-    'class',
-    'jar',
-    'war',
-
-    'wasm',
-
-    'pyc',
-    'pyo',
-])
-
-
-BLOB_FILE_EXTENSIONS: ta.AbstractSet[str] = frozenset([
-    'bin',
-    'dat',
-])
-
-
-BINARY_FILE_EXTENSIONS: ta.AbstractSet[str] = frozenset([
-    *IMAGE_FILE_EXTENSIONS,
-    *ARCHIVE_FILE_EXTENSIONS,
-    *DOC_FILE_EXTENSIONS,
-    *EXECUTABLE_FILE_EXTENSIONS,
-    *BLOB_FILE_EXTENSIONS,
-])
-
-
-def has_binary_file_extension(file_path: str) -> bool:
-    return os.path.basename(file_path).partition('.')[-1] in BINARY_FILE_EXTENSIONS
-
-
-##
-
-
-def is_binary_file(
-        file_path: str,
-        *,
-        chunk_size: int = 0x1000,
-        non_printable_cutoff: float = .3,
-
-        st: os.stat_result | None = None,
-) -> bool:
-    if st is None:
-        try:
-            st = os.stat(file_path)
-        except OSError:
-            return False
-
-    if not st.st_size:
-        return False
-
-    with open(file_path, 'rb') as f:
-        chunk = f.read(chunk_size)
-
-    if 0 in chunk:
-        return True
-
-    # Count "non-printable" ASCII-ish control chars (excluding TAB/LF/CR)
-    np = sum(1 for b in chunk if b < 9 or (13 < b < 32))
-    return (np / len(chunk)) > non_printable_cutoff
-
-
-##
-
-
-def get_suggestions(
-        file_path: str,
-        n: int = 3,
-        *,
-        cutoff: float = .6,
-) -> ta.Sequence[str] | None:
-    fl = [
-        e.name
-        for e in os.scandir(os.path.dirname(file_path))
-        if e.is_file()
-        and not has_binary_file_extension(e.name)
-    ]
-
-    return difflib.get_close_matches(
-        os.path.basename(file_path),
-        fl,
-        n,
-        cutoff=cutoff,
-    )
+from ....tools.execution.catalog import ToolCatalogEntry
+from ....tools.execution.reflect import reflect_tool_catalog_entry
+from ....tools.reflect import tool_spec_override
+from ....tools.types import ToolParam
+from ..context import fs_tool_context
 
 
 ##
@@ -196,17 +64,8 @@ def execute_read_tool(
         line_offset: int = 0,
         num_lines: int = DEFAULT_MAX_NUM_LINES,
 ) -> str:
-    try:
-        st = os.stat(file_path)
-    except OSError:
-        if (sug := get_suggestions(file_path)):
-            raise FileNotFoundError(
-                f'File not found: {file_path}\nDid you mean one of these?\n{"\n".join(sug)}',
-            ) from None
-        raise FileNotFoundError(f'File not found: {file_path}') from None
-
-    if is_binary_file(file_path, st=st):
-        raise OSError(f'Cannot read binary file: {file_path}')
+    ft_ctx = fs_tool_context()
+    ft_ctx.check_stat_file(file_path, text=True)
 
     out = io.StringIO()
     out.write('<file>\n')

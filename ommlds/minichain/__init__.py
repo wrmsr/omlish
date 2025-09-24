@@ -361,6 +361,10 @@ with _lang.auto_proxy_init(
         reflect_tool_catalog_entry,
     )
 
+    from .tools.execution.errors import (  # noqa
+        ToolExecutionError,
+    )
+
     from .tools.fns import (  # noqa
         ToolFn,
 

@@ -22,6 +22,11 @@ from ..pip import lookup_latest_package_version
 ##
 
 
+DEV_DEP_NAMES: ta.AbstractSet[str] = frozenset([
+    'pydevd-pycharm',
+])
+
+
 class Cli(ap.Cli):
     @ap.cmd(
         ap.arg('package'),
@@ -48,6 +53,9 @@ class Cli(ap.Cli):
         out = []
         for l in src.splitlines(keepends=True):
             if l.startswith('-e'):
+                continue
+            pr = parse_requirement(l)
+            if pr.name in DEV_DEP_NAMES:
                 continue
             out.append(l)
 

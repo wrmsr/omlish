@@ -47,13 +47,14 @@ def bind_tools(tools_config: ToolsConfig) -> inj.Elements:
     #
 
     if tools_config.enable_fs_tools:
-        from ...minichain.lib.fs.ls.execution import ls_tool
-
+        from ...minichain.lib.fs.catalog.ls import ls_tool
         els.append(bind_tool(ls_tool()))
+
+        from ...minichain.lib.fs.catalog.read import read_tool
+        els.append(bind_tool(read_tool()))
 
     if tools_config.enable_unsafe_bash_tool:
         from ...minichain.lib.bash import bash_tool
-
         els.append(bind_tool(bash_tool()))
 
     if tools_config.enable_test_weather_tool:

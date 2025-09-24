@@ -1,4 +1,5 @@
 import dataclasses as dc
+import os
 
 from omlish import check
 from omlish import lang
@@ -125,7 +126,13 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
 
                 tr: mc.ToolExecRequest = check.single(check.not_none(trs))
 
-                trm = await self._tool_exec_request_executor.execute_tool_request(tr)
+                # FIXME: lol
+                from ....minichain.lib.fs.context import FsToolContext
+
+                trm = await self._tool_exec_request_executor.execute_tool_request(
+                    tr,
+                    FsToolContext(root_dir=os.getcwd()),
+                )
 
                 print(trm.c)
                 new_chat.append(trm)

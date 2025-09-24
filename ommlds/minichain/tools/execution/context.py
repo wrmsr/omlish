@@ -2,8 +2,8 @@ import contextlib
 import contextvars
 import typing as ta
 
+from omlish import check
 from omlish import collections as col
-from omlish import dataclasses as dc
 from omlish import lang
 
 
@@ -13,30 +13,34 @@ T = ta.TypeVar('T')
 ##
 
 
-@dc.dataclass(frozen=True)
 class ToolContext(lang.Final):
-    dct: col.TypeMap = col.TypeMap()
+    def __init__(self, *items: ta.Any) -> None:
+        super().__init__()
 
-    @classmethod
-    def new(cls, *objs: ta.Any) -> 'ToolContext':
-        return cls(col.TypeMap(objs))
+        self._dct: col.TypeMap = col.TypeMap(items)
+        if ToolContext in self._dct:
+            raise KeyError(ToolContext)
 
-    #
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}<{", ".join(ic.__name__ for ic in self._dct)}>'
 
     def __len__(self) -> int:
-        return len(self.dct)
+        return len(self._dct)
 
     def __iter__(self) -> ta.Iterator[ta.Any]:
-        return iter(self.dct)
+        return iter(self._dct)
+
+    def __contains__(self, ty: type[T]) -> bool:
+        return ty in self._dct
 
     def get(self, ty: type[T]) -> T | None:
-        return self.dct.get(ty)
+        return self._dct.get(ty)
 
     def __getitem__(self, cls: type[T]) -> T:
-        return self.dct[cls]
+        return self._dct[cls]
 
     def get_any(self, cls: type | tuple[type, ...]) -> ta.Sequence[T]:
-        return self.dct.get_any(cls)
+        return self._dct.get_any(cls)
 
 
 ##
@@ -45,8 +49,24 @@ class ToolContext(lang.Final):
 _TOOL_CONTEXT: contextvars.ContextVar[ToolContext] = contextvars.ContextVar(f'{__name__}._TOOL_CONTEXT')
 
 
-@contextlib.contextmanager
-def bind_tool_context(ctx: ToolContext) -> ta.Generator[ToolContext]:
+@ta.overload
+def bind_tool_context(ctx: ToolContext) -> ta.ContextManager[ToolContext]:
+    ...
+
+
+@ta.overload
+def bind_tool_context(*items: ta.Any) -> ta.ContextManager[ToolContext]:
+    ...
+
+
+@contextlib.contextmanager  # type: ignore[misc]
+def bind_tool_context(*args):
+    if args and isinstance(args[0], ToolContext):
+        check.arg(len(args) == 1)
+        ctx = args[0]
+    else:
+        ctx = ToolContext(*args)
+
     try:
         cur = _TOOL_CONTEXT.get()
     except LookupError:

@@ -63,6 +63,9 @@ class TypeMap(ta.Generic[T]):
     def __iter__(self) -> ta.Iterator[T]:
         return iter(self._items)
 
+    def __contains__(self, ty: type[T]) -> bool:
+        return ty in self._items
+
     def get(self, ty: type[T]) -> T | None:
         return self._dct.get(ty)
 
