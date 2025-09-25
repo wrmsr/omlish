@@ -53,6 +53,13 @@ def bind_tools(tools_config: ToolsConfig) -> inj.Elements:
         from ...minichain.lib.fs.catalog.read import read_tool
         els.append(bind_tool(read_tool()))
 
+    if tools_config.enable_todo_tools:
+        from ...minichain.lib.todo.catalog.read import todo_read_tool
+        els.append(bind_tool(todo_read_tool()))
+
+        from ...minichain.lib.todo.catalog.write import todo_write_tool
+        els.append(bind_tool(todo_write_tool()))
+
     if tools_config.enable_unsafe_bash_tool:
         from ...minichain.lib.bash import bash_tool
         els.append(bind_tool(bash_tool()))

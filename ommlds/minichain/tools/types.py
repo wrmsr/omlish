@@ -127,6 +127,15 @@ class EnumToolDtype(ToolDtype):
     values: ta.Sequence[ta.Any]
 
 
+#
+
+
+@dc.dataclass(frozen=True)
+@dc.extra_class_params(terse_repr=True)
+class ObjectToolDtype(ToolDtype):
+    fields: ta.Mapping[str, ToolDtype]
+
+
 ##
 
 

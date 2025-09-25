@@ -67,6 +67,7 @@ async def _a_main(args: ta.Any = None) -> None:
     parser.add_argument('-j', '--image', action='store_true')
 
     parser.add_argument('--enable-fs-tools', action='store_true')
+    parser.add_argument('--enable-todo-tools', action='store_true')
     parser.add_argument('--enable-unsafe-bash-tool', action='store_true')
     parser.add_argument('--enable-test-weather-tool', action='store_true')
     parser.add_argument('--dangerous-no-tool-confirmation', action='store_true')
@@ -75,7 +76,7 @@ async def _a_main(args: ta.Any = None) -> None:
 
     #
 
-    content: mc.Content
+    content: mc.Content | None
 
     if args.image:
         content = mc.ImageContent(pimg.open(check.non_empty_str(check.single(args.prompt))))
@@ -86,9 +87,15 @@ async def _a_main(args: ta.Any = None) -> None:
             return
         content = ec
 
-    elif args.interactive or args.code:
+    elif args.interactive:
         if args.prompt:
             raise ValueError('Must not provide prompt')
+
+    elif args.code:
+        if args.prompt:
+            content = ' '.join(args.prompt)
+        else:
+            content = None
 
     elif not args.prompt:
         raise ValueError('Must provide prompt')
@@ -96,6 +103,7 @@ async def _a_main(args: ta.Any = None) -> None:
     else:
         prompt = ' '.join(args.prompt)
 
+        # FIXME: ptk / maysync
         if not sys.stdin.isatty() and not pycharm.is_pycharm_hosted():
             stdin_data = sys.stdin.read()
             prompt = '\n'.join([prompt, stdin_data])
@@ -134,23 +142,25 @@ async def _a_main(args: ta.Any = None) -> None:
             model_name=args.model_name,
             new=bool(args.new),
             dangerous_no_tool_confirmation=bool(args.dangerous_no_tool_confirmation),
+            initial_message=content,  # noqa
+            markdown=bool(args.markdown),
         )
 
     elif args.embed:
         session_cfg = EmbeddingSession.Config(
-            content,  # noqa
+            check.not_none(content),  # noqa
             backend=args.backend,
         )
 
     elif args.completion:
         session_cfg = CompletionSession.Config(
-            content,  # noqa
+            check.not_none(content),  # noqa
             backend=args.backend,
         )
 
     else:
         session_cfg = PromptChatSession.Config(
-            content,  # noqa
+            check.not_none(content),  # noqa
             backend=args.backend,
             model_name=args.model_name,
             new=bool(args.new),
@@ -162,7 +172,8 @@ async def _a_main(args: ta.Any = None) -> None:
     #
 
     tools_config = ToolsConfig(
-        enable_fs_tools=args.enable_fs_tools,
+        enable_fs_tools=args.enable_fs_tools or args.code,
+        enable_todo_tools=args.enable_todo_tools or args.code,
         enable_unsafe_bash_tool=args.enable_unsafe_bash_tool,
         enable_test_weather_tool=args.enable_test_weather_tool,
     )

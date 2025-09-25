@@ -1,5 +1,8 @@
 import dataclasses as dc
+import itertools
+import os.path
 
+from omlish import check
 from omlish import lang
 
 from .... import minichain as mc
@@ -28,6 +31,8 @@ class CodeChatSession(ChatSession['CodeChatSession.Config']):
 
         backend: str | None = None
         model_name: str | None = None
+
+        initial_message: mc.Content | None = None
 
     def __init__(
             self,
@@ -61,24 +66,49 @@ class CodeChatSession(ChatSession['CodeChatSession.Config']):
         if backend is None:
             backend = DEFAULT_CHAT_MODEL_BACKEND
 
+        # FIXME: lol
+        from ....minichain.lib.fs.context import FsToolContext
+        fs_tool_context = FsToolContext(root_dir=os.getcwd())
+        from ....minichain.lib.todo.context import TodoToolContext
+        todo_tool_context = TodoToolContext()
+
         mdl: mc.ChatChoicesService
         async with lang.async_maybe_managing(self._backend_catalog.get_backend(
                 mc.ChatChoicesService,
                 backend,
                 *([mc.ModelName(mn)] if (mn := self._config.model_name) is not None else []),
         )) as mdl:
-            while True:
-                prompt = await ptk.prompt('> ')
+            for i in itertools.count():
+                if not i and self._config.initial_message is not None:
+                    req_msg = mc.UserMessage(self._config.initial_message)
+                else:
+                    prompt = await ptk.prompt('> ')
+                    req_msg = mc.UserMessage(prompt)
 
-                req_msg = mc.UserMessage(prompt)
+                state = self._state_manager.extend_chat([req_msg])
 
-                response = await mdl.invoke(mc.ChatChoicesRequest(
-                    [*state.chat, req_msg],
-                    (self._chat_options or []),
-                ))
+                while True:
+                    response = await mdl.invoke(mc.ChatChoicesRequest(
+                        state.chat,
+                        (self._chat_options or []),
+                    ))
+                    resp_msg = check.single(response.v).m
 
-                resp_msg = response.v[0].m
+                    self._printer.print(resp_msg)
+                    state = self._state_manager.extend_chat([resp_msg])
 
-                self._printer.print(resp_msg)
+                    if not (trs := resp_msg.tool_exec_requests):
+                        break
 
-                state = self._state_manager.extend_chat([req_msg, resp_msg])
+                    tool_resp_lst = []
+                    for tr in trs:
+                        trm = await self._tool_exec_request_executor.execute_tool_request(
+                            tr,
+                            fs_tool_context,
+                            todo_tool_context,
+                        )
+
+                        self._printer.print(trm.c)
+                        tool_resp_lst.append(trm)
+
+                    state = self._state_manager.extend_chat(tool_resp_lst)

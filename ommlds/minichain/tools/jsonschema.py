@@ -9,6 +9,7 @@ from ..content.prepare import default_content_str_preparer
 from .types import EnumToolDtype
 from .types import MappingToolDtype
 from .types import NullableToolDtype
+from .types import ObjectToolDtype
 from .types import PrimitiveToolDtype
 from .types import SequenceToolDtype
 from .types import ToolDtype
@@ -72,6 +73,15 @@ class ToolJsonschemaRenderer:
                 'enum': list(t.values),
             }
 
+        if isinstance(t, ObjectToolDtype):
+            return {
+                'type': 'object',
+                'properties': {
+                    k: self.render_type(v)
+                    for k, v in t.fields.items()
+                },
+            }
+
         raise TypeError(t)
 
     def render_tool_params(self, ts: ToolSpec) -> dict:
@@ -98,7 +108,7 @@ class ToolJsonschemaRenderer:
         }
 
     def render_tool(self, ts: ToolSpec) -> dict:
-        pa_dct = self.render_tool_params(ts)
+        pa_dct = self.render_tool_params(ts) if ts.params else None
 
         ret_dct = {
             **({'description': self._content_str_preparer.prepare_str(ts.returns_desc)} if ts.returns_desc is not None else {}),  # noqa

@@ -27,6 +27,7 @@ from ..content.materialize import CanContent
 from .types import EnumToolDtype
 from .types import MappingToolDtype
 from .types import NullableToolDtype
+from .types import ObjectToolDtype
 from .types import PrimitiveToolDtype
 from .types import SequenceToolDtype
 from .types import ToolDtype
@@ -109,6 +110,12 @@ class ToolReflector:
     ])
 
     def reflect_type(self, rty: rfl.Type) -> ToolDtype:
+        if isinstance(rty, type) and dc.is_dataclass(rty):
+            return ObjectToolDtype({
+                f.name: self.reflect_type(rfl.type_(f.type))
+                for f in dc.fields(rty)
+            })
+
         if isinstance(rty, (type, rfl.Any)):
             return PrimitiveToolDtype.of(rty)
 

@@ -47,8 +47,9 @@ class AskingToolExecutionConfirmation(ToolExecutionConfirmation):
     ) -> None:
         tr_dct = dict(
             id=tr.id,
-            spec=msh.marshal(tce.spec),
+            name=tce.spec.name,
             args=tr.args,
+            spec=msh.marshal(tce.spec),
         )
         cr = await ptk.strict_confirm(f'Execute requested tool?\n\n{json.dumps_pretty(tr_dct)}\n\n')
 

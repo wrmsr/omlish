@@ -263,9 +263,11 @@ from ..types import TodoItem
         complete all requirements successfully.
     """,
 )
-def execute_todo_write_tool(todo_items: ta.Sequence[TodoItem]) -> None:
+def execute_todo_write_tool(todo_items: ta.Sequence[TodoItem]) -> str:
     ctx = todo_tool_context()
     ctx.set_items(todo_items)
+
+    return 'Todo list updated.'
 
 
 @lang.cached_function

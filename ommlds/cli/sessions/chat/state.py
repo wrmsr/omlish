@@ -106,4 +106,5 @@ class StateStorageChatStateManager(ChatStateManager):
             updated_at=lang.utcnow(),
         )
         self._storage.save_state(self._key, state, ChatState)
+        self._state = state
         return state
