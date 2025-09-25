@@ -254,7 +254,7 @@ def stream_generate(
                 add_special_tokens=add_special_tokens,
             )
 
-        prompt = mx.array(prompt)  # type: ignore[arg-type]
+        prompt = mx.array(ta.cast(ta.Any, prompt))
 
     detokenizer = tokenization.detokenizer
     detokenizer.reset()

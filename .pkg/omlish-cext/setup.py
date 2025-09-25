@@ -8,5 +8,5 @@ st.setup(
             sources=['omlish/lang/imports/_capture.cc'],
             extra_compile_args=['-std=c++20'],
         ),
-    ]
+    ],
 )

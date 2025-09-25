@@ -489,7 +489,7 @@ class _PyprojectCextPackageGenerator(BasePyprojectPackageGenerator):
             'st.setup(',
             '    ext_modules=[',
             *['        ' + l for l in ext_lines],
-            '    ]',
+            '    ],',
             ')',
             '',
         ])

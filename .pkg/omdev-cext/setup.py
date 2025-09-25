@@ -8,5 +8,5 @@ st.setup(
             sources=['omdev/cexts/_boilerplate.cc'],
             extra_compile_args=['-std=c++20'],
         ),
-    ]
+    ],
 )
