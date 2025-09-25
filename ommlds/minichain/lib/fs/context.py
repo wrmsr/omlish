@@ -86,7 +86,7 @@ class FsToolContext:
                 req_path,
                 suggested_paths=get_path_suggestions(
                     req_path,
-                    filter=lambda e: (e.is_file() and not has_binary_file_extension(e.name)),
+                    filter=lambda e: (e.is_file() and not (text and has_binary_file_extension(e.name))),
                 ),
             ) from None
 

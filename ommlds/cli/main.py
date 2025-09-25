@@ -24,6 +24,7 @@ from omlish.subprocesses.sync import subprocesses
 from .. import minichain as mc
 from .inject import bind_main
 from .sessions.base import Session
+from .sessions.chat.code import CodeChatSession
 from .sessions.chat.interactive import InteractiveChatSession
 from .sessions.chat.prompt import PromptChatSession
 from .sessions.completion.completion import CompletionSession
@@ -58,6 +59,7 @@ async def _a_main(args: ta.Any = None) -> None:
 
     parser.add_argument('-e', '--editor', action='store_true')
     parser.add_argument('-i', '--interactive', action='store_true')
+    parser.add_argument('-c', '--code', action='store_true')
     parser.add_argument('-s', '--stream', action='store_true')
     parser.add_argument('-M', '--markdown', action='store_true')
 
@@ -84,7 +86,7 @@ async def _a_main(args: ta.Any = None) -> None:
             return
         content = ec
 
-    elif args.interactive:
+    elif args.interactive or args.code:
         if args.prompt:
             raise ValueError('Must not provide prompt')
 
@@ -120,6 +122,14 @@ async def _a_main(args: ta.Any = None) -> None:
 
     if args.interactive:
         session_cfg = InteractiveChatSession.Config(
+            backend=args.backend,
+            model_name=args.model_name,
+            new=bool(args.new),
+            dangerous_no_tool_confirmation=bool(args.dangerous_no_tool_confirmation),
+        )
+
+    elif args.code:
+        session_cfg = CodeChatSession.Config(
             backend=args.backend,
             model_name=args.model_name,
             new=bool(args.new),

@@ -81,7 +81,6 @@ from prompt_toolkit.search import SearchDirection
 from prompt_toolkit.selection import SelectionType
 from prompt_toolkit.shortcuts import confirm
 from prompt_toolkit.shortcuts import print_formatted_text
-from prompt_toolkit.shortcuts import prompt
 from prompt_toolkit.styles import BaseStyle
 from prompt_toolkit.styles import DynamicStyle
 from prompt_toolkit.styles import Style
@@ -97,7 +96,9 @@ from prompt_toolkit.widgets.toolbars import SearchToolbar
 from prompt_toolkit.widgets.toolbars import SystemToolbar
 from prompt_toolkit.widgets.toolbars import ValidationToolbar
 
-from .confirm import create_strict_confirm_session
+from .prompts import create_strict_confirm_session  # noqa
+from .prompts import prompt  # noqa
 
 #
-from .confirm import strict_confirm
+from .prompts import session_prompt  # noqa
+from .prompts import strict_confirm  # noqa

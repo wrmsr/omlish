@@ -7,12 +7,9 @@ from omlish import lang
 from .... import minichain as mc
 
 
-if ta.TYPE_CHECKING:
+with lang.auto_proxy_import(globals()):
     from omdev import ptk
     from omdev.ptk import markdown as ptk_md
-else:
-    ptk = lang.proxy_import('omdev.ptk')
-    ptk_md = lang.proxy_import('omdev.ptk.markdown')
 
 
 ##

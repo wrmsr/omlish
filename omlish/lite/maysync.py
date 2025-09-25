@@ -25,6 +25,7 @@ Internally, it's not really correct to say that there is 'no event loop' in the 
 ===
 
 TODO:
+ - ! impl iterators not just generators !
  - __del__
  - (test) maysync context managers
  - CancelledError
@@ -33,11 +34,6 @@ TODO:
   - works down to 3.8
  - make_maysync_from_sync can run with asyncio.run_in_thread
  - make_maysync_from_async can run with asyncio.run_soon
-
-TODO OVERHAUL:
- - no more sync/async context, just one Context, and it means sync
- - make FpMaywaitable *not reusable*
-  - `cannot reuse already awaited coroutine`
 """
 import abc
 import inspect

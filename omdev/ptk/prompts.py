@@ -12,6 +12,17 @@ from omlish import lang
 ##
 
 
+async def session_prompt(session, *args, **kwargs):
+    return await lang.make_maysync(session.prompt, ta.cast(ta.Any, session.prompt_async))(*args, **kwargs)
+
+
+async def prompt(*args, **kwargs):
+    return await session_prompt(PromptSession(), *args, **kwargs)
+
+
+##
+
+
 def create_strict_confirm_session(
         message: str,
         suffix: str = ' (y/n) ',
@@ -38,9 +49,6 @@ def create_strict_confirm_session(
         key_bindings=bindings,
     )
     return session
-
-
-##
 
 
 async def strict_confirm(message: str = 'Confirm?', suffix: str = ' (y/n) ') -> bool:

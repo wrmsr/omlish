@@ -9,10 +9,8 @@ from omlish.formats import json
 from .... import minichain as mc
 
 
-if ta.TYPE_CHECKING:
+with lang.auto_proxy_import(globals()):
     from omdev import ptk
-else:
-    ptk = lang.proxy_import('omdev.ptk')
 
 
 ##

@@ -119,7 +119,7 @@ def _pydevd() -> types.ModuleType | None:
 
 
 def is_present() -> bool:
-    return _pydevd() is not None
+    return lang.can_import('pydevd')
 
 
 def get_setup() -> dict | None:

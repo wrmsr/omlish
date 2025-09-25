@@ -21,8 +21,8 @@ def execute_ls_tool(
         dir_path: The dir to list the contents of. Must be an absolute path.
     """
 
-    ft_ctx = fs_tool_context()
-    ft_ctx.check_stat_dir(dir_path)
+    ctx = fs_tool_context()
+    ctx.check_stat_dir(dir_path)
 
     out = io.StringIO()
     out.write('<dir>\n')

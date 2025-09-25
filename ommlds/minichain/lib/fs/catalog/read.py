@@ -26,8 +26,8 @@ MAX_LINE_LENGTH = 2_000
 
 
 @tool_spec_override(
-    desc=rf"""
-        Reads a file from the local filesystem. You can access any file directly by using this tool.
+    desc=f"""
+         Reads a file from the local filesystem. You can access any file directly by using this tool.
 
         Assume this tool is able to read all files on the machine. If the User provides a path to a file assume that
         path is valid. It is okay to read a file that does not exist; an error will be returned.
@@ -42,7 +42,7 @@ MAX_LINE_LENGTH = 2_000
         - Results are returned using cat -n format, with line numbers starting at 1 and suffixed with a pipe character
           "|".
         - This tool cannot read binary files, including images.
-""",
+    """,
     params=[
         ToolParam(
             'file_path',
@@ -64,8 +64,8 @@ def execute_read_tool(
         line_offset: int = 0,
         num_lines: int = DEFAULT_MAX_NUM_LINES,
 ) -> str:
-    ft_ctx = fs_tool_context()
-    ft_ctx.check_stat_file(file_path, text=True)
+    ctx = fs_tool_context()
+    ctx.check_stat_file(file_path, text=True)
 
     out = io.StringIO()
     out.write('<file>\n')
