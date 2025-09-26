@@ -67,10 +67,10 @@ class CodeChatSession(ChatSession['CodeChatSession.Config']):
             backend = DEFAULT_CHAT_MODEL_BACKEND
 
         # FIXME: lol
-        from ....minichain.lib.fs.context import FsToolContext
-        fs_tool_context = FsToolContext(root_dir=os.getcwd())
-        from ....minichain.lib.todo.context import TodoToolContext
-        todo_tool_context = TodoToolContext()
+        from ....minichain.lib.fs.context import FsContext
+        fs_tool_context = FsContext(root_dir=os.getcwd())
+        from ....minichain.lib.todo.context import TodoContext
+        todo_tool_context = TodoContext()
 
         mdl: mc.ChatChoicesService
         async with lang.async_maybe_managing(self._backend_catalog.get_backend(

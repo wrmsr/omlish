@@ -15,7 +15,7 @@ from .suggestions import get_path_suggestions
 ##
 
 
-class FsToolContext:
+class FsContext:
     def __init__(
             self,
             *,
@@ -108,5 +108,5 @@ class FsToolContext:
         return st
 
 
-def fs_tool_context() -> FsToolContext:
-    return tool_context()[FsToolContext]
+def fs_tool_context() -> FsContext:
+    return tool_context()[FsContext]

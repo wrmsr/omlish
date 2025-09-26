@@ -1,5 +1,3 @@
-import typing as ta
-
 from ..base.types import MarshalerFactory
 from ..base.types import UnmarshalerFactory
 from .marshal import PolymorphismMarshalerFactory
@@ -15,8 +13,8 @@ from .unmarshal import PolymorphismUnmarshalerFactory
 def standard_polymorphism_factories(
         poly: Polymorphism,
         tt: TypeTagging = WrapperTypeTagging(),
-) -> ta.Sequence[MarshalerFactory | UnmarshalerFactory]:
-    return [
+) -> tuple[MarshalerFactory, UnmarshalerFactory]:
+    return (
         PolymorphismMarshalerFactory(poly, tt),
         PolymorphismUnmarshalerFactory(poly, tt),
-    ]
+    )

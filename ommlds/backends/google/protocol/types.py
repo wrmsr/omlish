@@ -171,57 +171,48 @@ Struct: ta.TypeAlias = ta.Mapping[str, 'Value']
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
 @msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
 class Value(lang.Abstract, lang.Sealed):
-    pass
+    """https://protobuf.dev/reference/protobuf/google.protobuf/#value"""
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
 class NullValue(Value, lang.Final):
     null_value: None = None
 
 
 @dc.dataclass(frozen=True, kw_only=True)
 @msh.update_fields_metadata(omit_if=lang.is_none)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
 class NumberValue(Value, lang.Final):
     number_value: float
 
 
 @dc.dataclass(frozen=True, kw_only=True)
 @msh.update_fields_metadata(omit_if=lang.is_none)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
 class StringValue(Value, lang.Final):
     string_value: str
 
 
 @dc.dataclass(frozen=True, kw_only=True)
 @msh.update_fields_metadata(omit_if=lang.is_none)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
 class BoolValue(Value, lang.Final):
     bool_value: bool
 
 
 @dc.dataclass(frozen=True, kw_only=True)
 @msh.update_fields_metadata(omit_if=lang.is_none)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
 class StructValue(Value, lang.Final):
     struct_value: Struct
 
 
 @dc.dataclass(frozen=True, kw_only=True)
 @msh.update_fields_metadata(omit_if=lang.is_none)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
 class ListValue(Value, lang.Final):
     list_value: ta.Sequence[Value]
 
 
 @dc.dataclass(frozen=True, kw_only=True)
 @msh.update_fields_metadata(omit_if=lang.is_none)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
 class Schema(lang.Final):
     type: Type | None = None
     format: str | None = None
@@ -341,6 +332,182 @@ class Tool(lang.Final):
     url_context: UrlContext | None = None
 
 
+FunctionCallingMode: ta.TypeAlias = ta.Literal[
+    # Unspecified function calling mode. This value should not be used.
+    'MODE_UNSPECIFIED',
+
+    # Default model behavior, model decides to predict either a function call or a natural language response.
+    'AUTO',
+
+    # Model is constrained to always predicting a function call only. If "allowedFunctionNames" are set, the predicted
+    # function call will be limited to any one of "allowedFunctionNames", else the predicted function call will be any
+    # one of the provided "functionDeclarations".
+    'ANY',
+
+    # Model will not predict any function call. Model behavior is same as when not passing any function declarations.
+    'NONE',
+
+    # Model decides to predict either a function call or a natural language response, but will validate function calls
+    # with constrained decoding. If "allowedFunctionNames" are set, the predicted function call will be limited to any
+    # one of "allowedFunctionNames", else the predicted function call will be any one of the provided
+    # "functionDeclarations".
+    'VALIDATED',
+]
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+@msh.update_fields_metadata(omit_if=lang.is_none)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+class FunctionCallingConfig(lang.Final):
+    mode: FunctionCallingMode | None = None
+    allowed_function_names: ta.Sequence[str] | None = None
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+@msh.update_fields_metadata(omit_if=lang.is_none)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+class ToolConfig(lang.Final):
+    function_calling_config: FunctionCallingConfig | None = None
+
+
+HarmCategory: ta.TypeAlias = ta.Literal[
+    # Category is unspecified.
+    'HARM_CATEGORY_UNSPECIFIED',
+
+    # PaLM - Negative or harmful comments targeting identity and/or protected attribute.
+    'HARM_CATEGORY_DEROGATORY',
+
+    # PaLM - Content that is rude, disrespectful, or profane.
+    'HARM_CATEGORY_TOXICITY',
+
+    # PaLM - Describes scenarios depicting violence against an individual or group, or general descriptions of gore.
+    'HARM_CATEGORY_VIOLENCE',
+
+    # PaLM - Contains references to sexual acts or other lewd content.
+    'HARM_CATEGORY_SEXUAL',
+
+    # PaLM - Promotes unchecked medical advice.
+    'HARM_CATEGORY_MEDICAL',
+
+    # PaLM - Dangerous content that promotes, facilitates, or encourages harmful acts.
+    'HARM_CATEGORY_DANGEROUS',
+
+    # Gemini - Harassment content.
+    'HARM_CATEGORY_HARASSMENT',
+
+    # Gemini - Hate speech and content.
+    'HARM_CATEGORY_HATE_SPEECH',
+
+    # Gemini - Sexually explicit content.
+    'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+
+    # Gemini - Dangerous content.
+    'HARM_CATEGORY_DANGEROUS_CONTENT',
+
+    # Gemini - Content that may be used to harm civic integrity. DEPRECATED: use enableEnhancedCivicAnswers instead.
+    'HARM_CATEGORY_CIVIC_INTEGRITY',
+]
+
+
+HarmBlockThreshold: ta.TypeAlias = ta.Literal[
+    # Threshold is unspecified.
+    'HARM_BLOCK_THRESHOLD_UNSPECIFIED',
+
+    # Content with NEGLIGIBLE will be allowed.
+    'BLOCK_LOW_AND_ABOVE',
+
+    # Content with NEGLIGIBLE and LOW will be allowed.
+    'BLOCK_MEDIUM_AND_ABOVE',
+
+    # Content with NEGLIGIBLE, LOW, and MEDIUM will be allowed.
+    'BLOCK_ONLY_HIGH',
+
+    # All content will be allowed.
+    'BLOCK_NONE',
+
+    # Turn off the safety filter.
+    'OFF',
+]
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+@msh.update_fields_metadata(omit_if=lang.is_none)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+class SafetySetting(lang.Final):
+    category: HarmCategory
+    threshold: HarmBlockThreshold
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+@msh.update_fields_metadata(omit_if=lang.is_none)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+class ThinkingConfig(lang.Final):
+    include_thoughts: bool | None = None
+    thinking_budget: int | None = None
+
+
+Modality: ta.TypeAlias = ta.Literal[
+    # Default value.
+    'MODALITY_UNSPECIFIED',
+
+    # Indicates the model should return text.
+    'TEXT',
+
+    # Indicates the model should return images.
+    'IMAGE',
+
+    # Indicates the model should return audio.
+    'AUDIO',
+]
+
+
+MediaResolution: ta.TypeAlias = ta.Literal[
+    # Media resolution has not been set.
+    'MEDIA_RESOLUTION_UNSPECIFIED',
+
+    # Media resolution set to low (64 tokens).
+    'MEDIA_RESOLUTION_LOW',
+
+    # Media resolution set to medium (256 tokens).
+    'MEDIA_RESOLUTION_MEDIUM',
+
+    # Media resolution set to high (zoomed reframing with 256 tokens).
+    'MEDIA_RESOLUTION_HIGH',
+]
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+@msh.update_fields_metadata(omit_if=lang.is_none)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+class GenerationConfig(lang.Final):
+    stop_sequences: ta.Sequence[str] | None = None
+
+    response_mime_type: str | None = None
+    response_schema: Schema | None = None
+    response_json_schema: Value | None = None
+    response_modalities: ta.Sequence[Modality] | None = None
+
+    candidate_count: int | None = None
+    max_output_tokens: int | None = None
+    temperature: float | None = None
+    top_p: float | None = None
+    top_k: int | None = None
+    seed: int | None = None
+    presence_penalty: float | None = None
+    frequency_penalty: float | None = None
+
+    response_logprobs: bool | None = None
+    logprobs: int | None = None
+
+    enable_enhanced_civic_answers: bool | None = None
+
+    # speech_config: SpeechConfig | None = None
+
+    thinking_config: ThinkingConfig | None = None
+
+    media_resolution: MediaResolution | None = None
+
+
 @dc.dataclass(frozen=True, kw_only=True)
 @msh.update_fields_metadata(omit_if=lang.is_none)
 @msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
@@ -348,6 +515,12 @@ class GenerateContentRequest(lang.Final):
     """https://ai.google.dev/api/generate-content#request-body"""
 
     contents: ta.Sequence[Content] | None = None
+    tools: ta.Sequence[Tool] | None = None
+    tool_config: ToolConfig | None = None
+    safety_settings: ta.Sequence[SafetySetting] | None = None
+    system_instruction: Content | None = None
+    generation_config: GenerationConfig | None = None
+    cached_content: str | None = None
 
 
 @dc.dataclass(frozen=True, kw_only=True)

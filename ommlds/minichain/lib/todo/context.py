@@ -7,7 +7,7 @@ from .types import TodoItem
 ##
 
 
-class TodoToolContext:
+class TodoContext:
     def __init__(
             self,
             items: ta.Sequence[TodoItem] | None = None,
@@ -23,5 +23,5 @@ class TodoToolContext:
         self._items = list(items) if items is not None else None
 
 
-def todo_tool_context() -> TodoToolContext:
-    return tool_context()[TodoToolContext]
+def todo_tool_context() -> TodoContext:
+    return tool_context()[TodoContext]

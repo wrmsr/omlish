@@ -127,11 +127,11 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
                 tr: mc.ToolExecRequest = check.single(check.not_none(trs))
 
                 # FIXME: lol
-                from ....minichain.lib.fs.context import FsToolContext
+                from ....minichain.lib.fs.context import FsContext
 
                 trm = await self._tool_exec_request_executor.execute_tool_request(
                     tr,
-                    FsToolContext(root_dir=os.getcwd()),
+                    FsContext(root_dir=os.getcwd()),
                 )
 
                 print(trm.c)

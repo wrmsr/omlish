@@ -183,7 +183,7 @@ async def _a_main(args: ta.Any = None) -> None:
     with inj.create_managed_injector(bind_main(
             session_cfg=session_cfg,
             tools_config=tools_config,
-            enable_backend_strings=isinstance(session_cfg, PromptChatSession.Config),
+            enable_backend_strings=isinstance(session_cfg, (PromptChatSession.Config, CodeChatSession.Config)),
     )) as injector:
         await injector[Session].run()
 

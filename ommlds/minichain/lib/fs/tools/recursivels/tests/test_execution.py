@@ -8,7 +8,7 @@ from ......chat.tools.execution import execute_tool_request
 from ......tools.execution.context import ToolContext
 from ......tools.execution.executors import NameSwitchedToolExecutor
 from ......tools.jsonschema import build_tool_spec_json_schema
-from ....context import FsToolContext
+from ....context import FsContext
 from ..execution import recursive_ls_tool
 
 
@@ -41,7 +41,7 @@ def test_recursive_ls_tool():
     tool_exec_result = lang.run_maysync(execute_tool_request(
         ToolContext(
             tool_exec_request,
-            FsToolContext(root_dir=root_dir),
+            FsContext(root_dir=root_dir),
         ),
         tool_executor,
         tool_exec_request,

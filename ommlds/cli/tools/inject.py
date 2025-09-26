@@ -47,17 +47,17 @@ def bind_tools(tools_config: ToolsConfig) -> inj.Elements:
     #
 
     if tools_config.enable_fs_tools:
-        from ...minichain.lib.fs.catalog.ls import ls_tool
+        from ...minichain.lib.fs.tools.ls import ls_tool
         els.append(bind_tool(ls_tool()))
 
-        from ...minichain.lib.fs.catalog.read import read_tool
+        from ...minichain.lib.fs.tools.read import read_tool
         els.append(bind_tool(read_tool()))
 
     if tools_config.enable_todo_tools:
-        from ...minichain.lib.todo.catalog.read import todo_read_tool
+        from ...minichain.lib.todo.tools.read import todo_read_tool
         els.append(bind_tool(todo_read_tool()))
 
-        from ...minichain.lib.todo.catalog.write import todo_write_tool
+        from ...minichain.lib.todo.tools.write import todo_write_tool
         els.append(bind_tool(todo_write_tool()))
 
     if tools_config.enable_unsafe_bash_tool:

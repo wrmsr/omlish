@@ -452,6 +452,7 @@ class Cli(ap.Cli):
     BUILTIN_COMMIT_MESSAGES: ta.Mapping[str, str] = {
         'tableflip': '(╯°□°)╯︵ ┻━┻',
         'tableunflip': '┬─┬ノ(º _ ºノ)',
+        'shrug': r'¯\_(ツ)_/¯',
     }
 
     @ap.cmd(
