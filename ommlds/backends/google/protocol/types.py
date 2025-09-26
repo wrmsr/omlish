@@ -1,3 +1,6 @@
+"""
+https://ai.google.dev/api/generate-content
+"""
 import typing as ta
 
 from omlish import dataclasses as dc
@@ -8,19 +11,31 @@ from omlish import marshal as msh
 ##
 
 
+def _set_class_marshal_options(cls):
+    msh.update_object_metadata(
+        cls,
+        field_naming=msh.Naming.LOW_CAMEL,
+        field_defaults=msh.FieldMetadata(
+            options=msh.FieldOptions(
+                omit_if=lang.is_none,
+            ),
+        ),
+    )
+
+    return cls
+
+
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@_set_class_marshal_options
 class Blob(lang.Final):
     mine_type: str
     data: bytes
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@_set_class_marshal_options
 class FunctionCall(lang.Final):
-    id: str
+    id: str | None = None
     name: str
     args: ta.Mapping[str, ta.Any] | None = None
 
@@ -42,8 +57,7 @@ Scheduling: ta.TypeAlias = ta.Literal[
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@_set_class_marshal_options
 class FunctionResponse(lang.Final):
     id: str
     name: str
@@ -53,8 +67,7 @@ class FunctionResponse(lang.Final):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@_set_class_marshal_options
 class FileData(lang.Final):
     mime_type: str
     file_uri: str
@@ -70,8 +83,7 @@ Language: ta.TypeAlias = ta.Literal[
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@_set_class_marshal_options
 class ExecutableCode(lang.Final):
     language: Language
     code: str
@@ -93,16 +105,14 @@ Outcome: ta.TypeAlias = ta.Literal[
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@_set_class_marshal_options
 class CodeExecutionResult(lang.Final):
     outcome: Outcome
     output: str
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@_set_class_marshal_options
 class VideoMetadata(lang.Final):
     start_offset: str  # Duration
     end_offset: str  # Duration
@@ -110,8 +120,7 @@ class VideoMetadata(lang.Final):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@_set_class_marshal_options
 class Part(lang.Final):
     # TODO: data: msh.oneof ...
     text: str | None = None
@@ -130,8 +139,7 @@ class Part(lang.Final):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@_set_class_marshal_options
 class Content(lang.Final):
     parts: ta.Sequence[Part] | None = None
     role: ta.Literal['user', 'model'] | None = None
@@ -171,48 +179,48 @@ Struct: ta.TypeAlias = ta.Mapping[str, 'Value']
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
 class Value(lang.Abstract, lang.Sealed):
     """https://protobuf.dev/reference/protobuf/google.protobuf/#value"""
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
 class NullValue(Value, lang.Final):
     null_value: None = None
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
+@_set_class_marshal_options
 class NumberValue(Value, lang.Final):
     number_value: float
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
+@_set_class_marshal_options
 class StringValue(Value, lang.Final):
     string_value: str
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
+@_set_class_marshal_options
 class BoolValue(Value, lang.Final):
     bool_value: bool
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
+@_set_class_marshal_options
 class StructValue(Value, lang.Final):
     struct_value: Struct
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
+@_set_class_marshal_options
 class ListValue(Value, lang.Final):
     list_value: ta.Sequence[Value]
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
+@_set_class_marshal_options
 class Schema(lang.Final):
     type: Type | None = None  # FIXME: required
     format: str | None = None
@@ -252,8 +260,7 @@ FunctionBehavior: ta.TypeAlias = ta.Literal[
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@_set_class_marshal_options
 class FunctionDeclaration(lang.Final):
     name: str
     description: str
@@ -277,8 +284,7 @@ DynamicRetrievalMode: ta.TypeAlias = ta.Literal[
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@_set_class_marshal_options
 class DynamicRetrievalConfig(lang.Final):
     mode: DynamicRetrievalMode | None = None
 
@@ -286,44 +292,38 @@ class DynamicRetrievalConfig(lang.Final):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@_set_class_marshal_options
 class GoogleSearchRetrieval(lang.Final):
     dynamic_retrieval_config: DynamicRetrievalConfig
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@_set_class_marshal_options
 class CodeExecution(lang.Final):
     pass
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@_set_class_marshal_options
 class Interval(lang.Final):
     start_time: str  # Timestamp
     end_time: str  # Timestamp
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@_set_class_marshal_options
 class GoogleSearch(lang.Final):
     time_range_filter: Interval | None = None
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@_set_class_marshal_options
 class UrlContext(lang.Final):
     pass
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@_set_class_marshal_options
 class Tool(lang.Final):
     function_declarations: ta.Sequence[FunctionDeclaration] | None = None
     google_search_retrieval: GoogleSearchRetrieval | None = None
@@ -356,16 +356,14 @@ FunctionCallingMode: ta.TypeAlias = ta.Literal[
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@_set_class_marshal_options
 class FunctionCallingConfig(lang.Final):
     mode: FunctionCallingMode | None = None
     allowed_function_names: ta.Sequence[str] | None = None
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@_set_class_marshal_options
 class ToolConfig(lang.Final):
     function_calling_config: FunctionCallingConfig | None = None
 
@@ -431,16 +429,14 @@ HarmBlockThreshold: ta.TypeAlias = ta.Literal[
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@_set_class_marshal_options
 class SafetySetting(lang.Final):
     category: HarmCategory
     threshold: HarmBlockThreshold
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@_set_class_marshal_options
 class ThinkingConfig(lang.Final):
     include_thoughts: bool | None = None
     thinking_budget: int | None = None
@@ -477,8 +473,7 @@ MediaResolution: ta.TypeAlias = ta.Literal[
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@_set_class_marshal_options
 class GenerationConfig(lang.Final):
     stop_sequences: ta.Sequence[str] | None = None
 
@@ -509,8 +504,7 @@ class GenerationConfig(lang.Final):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@_set_class_marshal_options
 class GenerateContentRequest(lang.Final):
     """https://ai.google.dev/api/generate-content#request-body"""
 
@@ -570,14 +564,12 @@ FinishReason: ta.TypeAlias = ta.Literal[
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(omit_if=lang.is_none)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@_set_class_marshal_options
 class GenerateContentResponse(lang.Final):
     """https://ai.google.dev/api/generate-content#v1beta.GenerateContentResponse"""
 
     @dc.dataclass(frozen=True, kw_only=True)
-    @msh.update_fields_metadata(omit_if=lang.is_none)
-    @msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+    @_set_class_marshal_options
     class Candidate(lang.Final):
         content: Content | None = None
         finish_reason: FinishReason | None = None
@@ -594,8 +586,7 @@ class GenerateContentResponse(lang.Final):
     candidates: ta.Sequence[Candidate] | None = None
 
     @dc.dataclass(frozen=True, kw_only=True)
-    @msh.update_fields_metadata(omit_if=lang.is_none)
-    @msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+    @_set_class_marshal_options
     class UsageMetadata(lang.Final):
         prompt_token_count: int | None = None
         cached_content_token_count: int | None = None
@@ -604,8 +595,7 @@ class GenerateContentResponse(lang.Final):
         thoughts_token_count: int | None = None
 
         @dc.dataclass(frozen=True, kw_only=True)
-        @msh.update_fields_metadata(omit_if=lang.is_none)
-        @msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+        @_set_class_marshal_options
         class ModalityTokenCount:
             modality: str | None = None
             token_count: int | None = None
