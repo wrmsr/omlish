@@ -45,7 +45,7 @@ gguf==0.17.1
 jedi==0.19.2
 jedi-language-server==0.45.1
 
-tree-sitter==0.25.1
+tree-sitter==0.25.2
 tree-sitter-python==0.25.0
 
 watchdog==6.0.0
@@ -67,5 +67,5 @@ pyinstrument==5.1.1
 # jupyter
 
 jupyter==1.1.1
-jupyterlab==4.4.8
-notebook==7.4.5
+jupyterlab==4.4.9
+notebook==7.4.6
