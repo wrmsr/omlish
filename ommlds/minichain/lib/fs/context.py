@@ -21,20 +21,20 @@ class FsContext:
             self,
             *,
             root_dir: str | None = None,
-            writes_allowed: bool = False,
+            writes_permitted: bool = False,
     ) -> None:
         super().__init__()
 
         self._root_dir = root_dir
-        self._writes_allowed = writes_allowed
+        self._writes_permitted = writes_permitted
 
         self._abs_root_dir = os.path.abspath(root_dir) if root_dir is not None else None
 
     #
 
     @property
-    def writes_allowed(self) -> bool:
-        return self._writes_allowed
+    def writes_permitted(self) -> bool:
+        return self._writes_permitted
 
     #
 
@@ -116,7 +116,7 @@ class FsContext:
                 actual_type='binary file',
             )
 
-        if write and not self._writes_allowed:
+        if write and not self._writes_permitted:
             raise RequestedPathWriteNotPermittedError(req_path)
 
         return st

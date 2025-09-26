@@ -7,6 +7,7 @@ from omlish import lang
 
 from .... import minichain as mc
 from ....minichain.lib.code.prompts import CODE_AGENT_SYSTEM_PROMPT
+from ...tools.config import ToolsConfig
 from .base import DEFAULT_CHAT_MODEL_BACKEND
 from .base import ChatOptions
 from .base import ChatSession
@@ -43,6 +44,7 @@ class CodeChatSession(ChatSession['CodeChatSession.Config']):
             printer: ChatSessionPrinter,
             backend_catalog: mc.BackendCatalog,
             tool_exec_request_executor: ToolExecRequestExecutor,
+            tools_config: ToolsConfig | None = None,
     ) -> None:
         super().__init__(config)
 
@@ -51,6 +53,7 @@ class CodeChatSession(ChatSession['CodeChatSession.Config']):
         self._printer = printer
         self._backend_catalog = backend_catalog
         self._tool_exec_request_executor = tool_exec_request_executor
+        self._tools_config = tools_config
 
     async def run(self) -> None:
         if self._config.new:
@@ -68,7 +71,11 @@ class CodeChatSession(ChatSession['CodeChatSession.Config']):
 
         # FIXME: lol
         from ....minichain.lib.fs.context import FsContext
-        fs_tool_context = FsContext(root_dir=os.getcwd())
+        fs_tool_context = FsContext(
+            root_dir=os.getcwd(),
+            writes_permitted=self._tools_config is not None and self._tools_config.enable_unsafe_tools_do_not_use_lol,
+        )
+
         from ....minichain.lib.todo.context import TodoContext
         todo_tool_context = TodoContext()
 
