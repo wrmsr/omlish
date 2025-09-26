@@ -18,9 +18,11 @@ from ....chat.messages import AiMessage
 from ....chat.messages import Message
 from ....chat.messages import SystemMessage
 from ....chat.messages import UserMessage
+from ....chat.tools.types import Tool
 from ....models.configs import ModelName
 from ....standard import ApiKey
 from .names import MODEL_NAMES
+from .tools import build_tool_spec_schema
 
 
 ##
@@ -54,7 +56,6 @@ class GoogleChatChoicesService:
     BASE_URL: ta.ClassVar[str] = 'https://generativelanguage.googleapis.com/v1beta/models'
 
     ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
-        SystemMessage: 'system',
         UserMessage: 'user',
         AiMessage: 'assistant',
     }
@@ -65,16 +66,37 @@ class GoogleChatChoicesService:
     ) -> ChatChoicesResponse:
         key = check.not_none(self._api_key).reveal()
 
-        g_req = pt.GenerateContentRequest(
-            contents=[
-                pt.Content(
+        g_sys_content: pt.Content | None = None
+        g_contents: list[pt.Content] = []
+        for i, m in enumerate(request.v):
+            if isinstance(m, SystemMessage):
+                check.arg(i == 0)
+                check.none(g_sys_content)
+                g_sys_content = pt.Content(
+                    parts=[pt.Part(
+                        text=check.not_none(self._get_msg_content(m)),
+                    )],
+                )
+            else:
+                g_contents.append(pt.Content(
                     parts=[pt.Part(
                         text=check.not_none(self._get_msg_content(m)),
                     )],
                     role=self.ROLES_MAP[type(m)],  # type: ignore[arg-type]
-                )
-                for m in request.v
-            ],
+                ))
+
+        g_tools: list[pt.Tool] = []
+        with tv.TypedValues(*request.options).consume() as oc:
+            t: Tool
+            for t in oc.pop(Tool, []):
+                g_tools.append(pt.Tool(
+                    function_declarations=[build_tool_spec_schema(t.spec)],
+                ))
+
+        g_req = pt.GenerateContentRequest(
+            contents=g_contents or None,
+            tools=g_tools or None,
+            system_instruction=g_sys_content,
         )
 
         req_dct = msh.marshal(g_req)
