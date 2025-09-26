@@ -17,6 +17,7 @@ from ....chat.choices.types import AiChoice
 from ....chat.messages import AiMessage
 from ....chat.messages import Message
 from ....chat.messages import SystemMessage
+from ....chat.messages import ToolExecResultMessage
 from ....chat.messages import UserMessage
 from ....chat.tools.types import Tool
 from ....models.configs import ModelName
@@ -78,6 +79,25 @@ class GoogleChatChoicesService:
                         text=check.not_none(self._get_msg_content(m)),
                     )],
                 )
+            elif isinstance(m, ToolExecResultMessage):
+                tr_resp_val: pt.Value
+                if m.c is None:
+                    tr_resp_val = pt.NullValue()  # type: ignore[unreachable]
+                elif isinstance(m.c, str):
+                    tr_resp_val = pt.StringValue(m.c)
+                else:
+                    raise TypeError(m.c)
+                g_contents.append(pt.Content(
+                    parts=[pt.Part(
+                        function_response=pt.FunctionResponse(
+                            id=m.id,
+                            name=m.name,
+                            response={
+                                'value': tr_resp_val,
+                            },
+                        ),
+                    )],
+                ))
             else:
                 g_contents.append(pt.Content(
                     parts=[pt.Part(

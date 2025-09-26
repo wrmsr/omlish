@@ -64,7 +64,7 @@ Scheduling: ta.TypeAlias = ta.Literal[
 @dc.dataclass(frozen=True, kw_only=True)
 @_set_class_marshal_options
 class FunctionResponse(lang.Final):
-    id: str
+    id: str | None = None
     name: str
     response: ta.Mapping[str, ta.Any] | None = None
     will_continue: bool | None = None
@@ -188,42 +188,42 @@ Type: ta.TypeAlias = ta.Literal[
 Struct: ta.TypeAlias = ta.Mapping[str, 'Value']
 
 
-@dc.dataclass(frozen=True, kw_only=True)
+@dc.dataclass(frozen=True)
 class Value(lang.Abstract, lang.Sealed):
     """https://protobuf.dev/reference/protobuf/google.protobuf/#value"""
 
 
-@dc.dataclass(frozen=True, kw_only=True)
+@dc.dataclass(frozen=True)
 @msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
 class NullValue(Value, lang.Final):
     null_value: None = None
 
 
-@dc.dataclass(frozen=True, kw_only=True)
+@dc.dataclass(frozen=True)
 @_set_class_marshal_options
 class NumberValue(Value, lang.Final):
     number_value: float
 
 
-@dc.dataclass(frozen=True, kw_only=True)
+@dc.dataclass(frozen=True)
 @_set_class_marshal_options
 class StringValue(Value, lang.Final):
     string_value: str
 
 
-@dc.dataclass(frozen=True, kw_only=True)
+@dc.dataclass(frozen=True)
 @_set_class_marshal_options
 class BoolValue(Value, lang.Final):
     bool_value: bool
 
 
-@dc.dataclass(frozen=True, kw_only=True)
+@dc.dataclass(frozen=True)
 @_set_class_marshal_options
 class StructValue(Value, lang.Final):
     struct_value: Struct
 
 
-@dc.dataclass(frozen=True, kw_only=True)
+@dc.dataclass(frozen=True)
 @_set_class_marshal_options
 class ListValue(Value, lang.Final):
     list_value: ta.Sequence[Value]
