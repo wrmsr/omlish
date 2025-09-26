@@ -3,6 +3,7 @@ import typing as ta
 
 from ... import check
 from ... import lang
+from ...lite.dataclasses import is_immediate_dataclass
 
 
 if ta.TYPE_CHECKING:
@@ -40,6 +41,8 @@ def update_fields(
     def inner(cls):
         if issubclass(cls, meta.DataMeta):
             raise TypeError('update_fields() cannot be used on DataMeta subclasses')
+        if is_immediate_dataclass(cls):
+            raise TypeError('update_fields() cannot be used on already processed dataclasses')
 
         if fields is None:
             for a, v in list(cls.__dict__.items()):
@@ -51,6 +54,8 @@ def update_fields(
                 try:
                     v = cls.__dict__[a]
                 except KeyError:
+                    if hasattr(cls, a):
+                        raise TypeError('update_fields() cannot be used on parent dataclass fields') from None
                     v = dc.field()
                 else:
                     if not isinstance(v, dc.Field):

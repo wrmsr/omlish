@@ -27,6 +27,11 @@ def _set_class_marshal_options(cls):
 
 @dc.dataclass(frozen=True, kw_only=True)
 @_set_class_marshal_options
+@msh.update_fields_metadata(
+    ['data'],
+    marshaler=msh.Base64MarshalerUnmarshaler(bytes),
+    unmarshaler=msh.Base64MarshalerUnmarshaler(bytes),
+)
 class Blob(lang.Final):
     mine_type: str
     data: bytes
@@ -120,6 +125,11 @@ class VideoMetadata(lang.Final):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+@msh.update_fields_metadata(
+    ['thought_signature'],
+    marshaler=msh.OptionalMarshaler(msh.Base64MarshalerUnmarshaler(bytes)),
+    unmarshaler=msh.OptionalUnmarshaler(msh.Base64MarshalerUnmarshaler(bytes)),
+)
 @_set_class_marshal_options
 class Part(lang.Final):
     # TODO: data: msh.oneof ...

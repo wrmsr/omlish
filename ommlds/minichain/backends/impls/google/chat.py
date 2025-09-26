@@ -21,6 +21,7 @@ from ....chat.messages import UserMessage
 from ....chat.tools.types import Tool
 from ....models.configs import ModelName
 from ....standard import ApiKey
+from ....tools.types import ToolExecRequest
 from .names import MODEL_NAMES
 from .tools import build_tool_spec_schema
 
@@ -114,7 +115,19 @@ class GoogleChatChoicesService:
 
         g_resp = msh.unmarshal(resp_dct, pt.GenerateContentResponse)
 
-        return ChatChoicesResponse([
-            AiChoice(AiMessage(check.not_none(check.not_none(check.not_none(c.content).parts)[0].text)))
-            for c in g_resp.candidates or []
-        ])
+        ai_choices: list[AiChoice] = []
+        for c in g_resp.candidates or []:
+            g_resp_part = check.single(check.not_none(check.not_none(c.content).parts))
+            ter: ToolExecRequest | None = None
+            if (g_fc := g_resp_part.function_call) is not None:
+                ter = ToolExecRequest(
+                    id=g_fc.id,
+                    name=g_fc.name,
+                    args=g_fc.args or {},
+                )
+            ai_choices.append(AiChoice(AiMessage(
+                c=g_resp_part.text,
+                tool_exec_requests=[ter] if ter is not None else None,
+            )))
+
+        return ChatChoicesResponse(ai_choices)
