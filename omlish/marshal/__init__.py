@@ -108,6 +108,11 @@ with _lang.auto_proxy_init(globals()):
         IterableUnmarshaler,
     )
 
+    from .composite.optionals import (  # noqa
+        OptionalMarshaler,
+        OptionalUnmarshaler,
+    )
+
     from .composite.wrapped import (  # noqa
         WrappedMarshaler,
         WrappedUnmarshaler,
@@ -225,6 +230,7 @@ with _lang.auto_proxy_init(globals()):
     from .singular.base64 import (  # noqa
         BASE64_MARSHALER_FACTORY,
         BASE64_UNMARSHALER_FACTORY,
+        Base64MarshalerUnmarshaler,
     )
 
     from .singular.primitives import (  # noqa
