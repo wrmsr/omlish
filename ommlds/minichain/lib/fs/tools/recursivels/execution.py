@@ -2,7 +2,7 @@ from omlish import lang
 
 from .....tools.execution.catalog import ToolCatalogEntry
 from .....tools.execution.reflect import reflect_tool_catalog_entry
-from ...context import fs_tool_context
+from ...context import tool_fs_context
 from .rendering import LsLinesRenderer
 from .running import LsRunner
 
@@ -23,7 +23,7 @@ def execute_recursive_ls_tool(
         A formatted string of the recursive directory contents.
     """
 
-    ft_ctx = fs_tool_context()
+    ft_ctx = tool_fs_context()
     ft_ctx.check_requested_path(base_path)
 
     root = LsRunner().run(base_path)

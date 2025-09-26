@@ -9,7 +9,7 @@ from omlish import lang
 from ....tools.execution.catalog import ToolCatalogEntry
 from ....tools.execution.reflect import reflect_tool_catalog_entry
 from ....tools.reflect import tool_spec_override
-from ..context import todo_tool_context
+from ..context import tool_todo_context
 from ..types import TODO_ITEM_FIELD_DESCS
 from ..types import TodoItem
 
@@ -28,6 +28,10 @@ from ..types import TodoItem
         - content: {TODO_ITEM_FIELD_DESCS['content']}
         - priority: {TODO_ITEM_FIELD_DESCS['priority']}
         - status: {TODO_ITEM_FIELD_DESCS['status']}
+
+        When using the todo write tool:
+        - All items must be present on each use of the tool.
+        - All fields must be present on all items.
 
         Todo item priorities are as follows:
         - pending: Task not yet started.
@@ -264,7 +268,7 @@ from ..types import TodoItem
     """,
 )
 def execute_todo_write_tool(todo_items: ta.Sequence[TodoItem]) -> str:
-    ctx = todo_tool_context()
+    ctx = tool_todo_context()
     ctx.set_items(todo_items)
 
     return 'Todo list updated.'

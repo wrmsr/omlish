@@ -584,7 +584,7 @@ def dotenv_values(
     For example, `foo=bar` results in `{"foo": "bar"}` whereas `foo` alone results in
     `{"foo": None}`
 
-    Parameters:
+    Args:
         path: Absolute or relative path to the .env file.
         stream: `StringIO` object with .env content, used if `path` is `None`.
         verbose: Whether to output a warning if the .env file is missing.

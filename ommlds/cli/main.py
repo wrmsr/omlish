@@ -68,7 +68,7 @@ async def _a_main(args: ta.Any = None) -> None:
 
     parser.add_argument('--enable-fs-tools', action='store_true')
     parser.add_argument('--enable-todo-tools', action='store_true')
-    parser.add_argument('--enable-unsafe-bash-tool', action='store_true')
+    parser.add_argument('--enable-unsafe-tools-do-not-use-lol', action='store_true')
     parser.add_argument('--enable-test-weather-tool', action='store_true')
     parser.add_argument('--dangerous-no-tool-confirmation', action='store_true')
 
@@ -174,7 +174,7 @@ async def _a_main(args: ta.Any = None) -> None:
     tools_config = ToolsConfig(
         enable_fs_tools=args.enable_fs_tools or args.code,
         enable_todo_tools=args.enable_todo_tools or args.code,
-        enable_unsafe_bash_tool=args.enable_unsafe_bash_tool,
+        enable_unsafe_tools_do_not_use_lol=args.enable_unsafe_tools_do_not_use_lol,
         enable_test_weather_tool=args.enable_test_weather_tool,
     )
 

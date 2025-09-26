@@ -60,9 +60,12 @@ def bind_tools(tools_config: ToolsConfig) -> inj.Elements:
         from ...minichain.lib.todo.tools.write import todo_write_tool
         els.append(bind_tool(todo_write_tool()))
 
-    if tools_config.enable_unsafe_bash_tool:
+    if tools_config.enable_unsafe_tools_do_not_use_lol:
         from ...minichain.lib.bash import bash_tool
         els.append(bind_tool(bash_tool()))
+
+        from ...minichain.lib.fs.tools.edit import edit_tool
+        els.append(bind_tool(edit_tool()))
 
     if tools_config.enable_test_weather_tool:
         els.append(bind_tool(WEATHER_TOOL))

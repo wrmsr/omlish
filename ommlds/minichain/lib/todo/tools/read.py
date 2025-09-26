@@ -4,7 +4,7 @@ from omlish.formats import json
 from ....tools.execution.catalog import ToolCatalogEntry
 from ....tools.execution.reflect import reflect_tool_catalog_entry
 from ....tools.reflect import tool_spec_override
-from ..context import todo_tool_context
+from ..context import tool_todo_context
 
 
 ##
@@ -29,7 +29,7 @@ from ..context import todo_tool_context
     """,
 )
 def execute_todo_read_tool() -> str:
-    ctx = todo_tool_context()
+    ctx = tool_todo_context()
 
     return json.dumps_compact(ctx.get_items() or [])
 

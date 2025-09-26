@@ -14,7 +14,7 @@ from ....tools.execution.catalog import ToolCatalogEntry
 from ....tools.execution.reflect import reflect_tool_catalog_entry
 from ....tools.reflect import tool_spec_override
 from ....tools.types import ToolParam
-from ..context import fs_tool_context
+from ..context import tool_fs_context
 
 
 ##
@@ -64,7 +64,7 @@ def execute_read_tool(
         line_offset: int = 0,
         num_lines: int = DEFAULT_MAX_NUM_LINES,
 ) -> str:
-    ctx = fs_tool_context()
+    ctx = tool_fs_context()
     ctx.check_stat_file(file_path, text=True)
 
     out = io.StringIO()

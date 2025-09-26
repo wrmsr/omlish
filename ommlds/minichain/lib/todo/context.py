@@ -23,5 +23,5 @@ class TodoContext:
         self._items = list(items) if items is not None else None
 
 
-def todo_tool_context() -> TodoContext:
+def tool_todo_context() -> TodoContext:
     return tool_context()[TodoContext]

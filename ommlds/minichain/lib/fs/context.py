@@ -8,6 +8,7 @@ from .binfiles import has_binary_file_extension
 from .binfiles import is_binary_file
 from .errors import RequestedPathDoesNotExistError
 from .errors import RequestedPathOutsideRootDirError
+from .errors import RequestedPathWriteNotPermittedError
 from .errors import RequestedPathWrongTypeError
 from .suggestions import get_path_suggestions
 
@@ -20,11 +21,20 @@ class FsContext:
             self,
             *,
             root_dir: str | None = None,
+            writes_allowed: bool = False,
     ) -> None:
         super().__init__()
 
         self._root_dir = root_dir
+        self._writes_allowed = writes_allowed
+
         self._abs_root_dir = os.path.abspath(root_dir) if root_dir is not None else None
+
+    #
+
+    @property
+    def writes_allowed(self) -> bool:
+        return self._writes_allowed
 
     #
 
@@ -76,6 +86,7 @@ class FsContext:
             req_path: str,
             *,
             text: bool = False,
+            write: bool = False,
     ) -> os.stat_result:
         self.check_requested_path(req_path)
 
@@ -105,8 +116,11 @@ class FsContext:
                 actual_type='binary file',
             )
 
+        if write and not self._writes_allowed:
+            raise RequestedPathWriteNotPermittedError(req_path)
+
         return st
 
 
-def fs_tool_context() -> FsContext:
+def tool_fs_context() -> FsContext:
     return tool_context()[FsContext]

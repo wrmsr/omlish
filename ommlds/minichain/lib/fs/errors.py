@@ -93,3 +93,9 @@ class RequestedPathDoesNotExistError(RequestedPathError):
             f'Requested path {self.requested_path!r} does not exist.',
             *([f' Did you mean one of these valid paths: {self.suggested_paths!r}?'] if self.suggested_paths else []),
         ])
+
+
+class RequestedPathWriteNotPermittedError(RequestedPathError):
+    @property
+    def content(self) -> str:
+        return f'Writes are not permitted to requested path {self.requested_path!r}.'

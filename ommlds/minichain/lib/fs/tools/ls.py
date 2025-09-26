@@ -5,7 +5,7 @@ from omlish import lang
 
 from ....tools.execution.catalog import ToolCatalogEntry
 from ....tools.execution.reflect import reflect_tool_catalog_entry
-from ..context import fs_tool_context
+from ..context import tool_fs_context
 
 
 ##
@@ -21,7 +21,7 @@ def execute_ls_tool(
         dir_path: The dir to list the contents of. Must be an absolute path.
     """
 
-    ctx = fs_tool_context()
+    ctx = tool_fs_context()
     ctx.check_stat_dir(dir_path)
 
     out = io.StringIO()
