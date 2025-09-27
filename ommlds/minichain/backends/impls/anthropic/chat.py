@@ -1,4 +1,5 @@
 """
+https://docs.claude.com/en/api/messages
 https://github.com/anthropics/anthropic-sdk-python/tree/cd80d46f7a223a5493565d155da31b898a4c6ee5/src/anthropic/types
 https://github.com/anthropics/anthropic-sdk-python/blob/cd80d46f7a223a5493565d155da31b898a4c6ee5/src/anthropic/resources/completions.py#L53
 https://github.com/anthropics/anthropic-sdk-python/blob/cd80d46f7a223a5493565d155da31b898a4c6ee5/src/anthropic/resources/messages.py#L70
@@ -18,9 +19,13 @@ from ....chat.choices.types import AiChoice
 from ....chat.messages import AiMessage
 from ....chat.messages import Message
 from ....chat.messages import SystemMessage
+from ....chat.messages import ToolExecResultMessage
 from ....chat.messages import UserMessage
+from ....chat.tools.types import Tool
 from ....models.configs import ModelName
 from ....standard import ApiKey
+from ....tools.jsonschema import build_tool_spec_params_json_schema
+from ....tools.types import ToolExecRequest
 from .names import MODEL_NAMES
 
 
@@ -75,15 +80,35 @@ class AnthropicChatChoicesService:
                 if i != 0 or system is not None:
                     raise Exception('Only supports one system message and must be first')
                 system = self._get_msg_content(m)
+            elif isinstance(m, ToolExecResultMessage):
+                messages.append(dict(
+                    role='user',
+                    content=dict(
+                        tool_use_id=m.id,
+                        type='tool_result',
+                        content=m.c,
+                    ),
+                ))
             else:
                 messages.append(dict(
                     role=self.ROLES_MAP[type(m)],  # noqa
                     content=check.isinstance(self._get_msg_content(m), str),
                 ))
 
+        tools: list[dict[str, ta.Any]] = []
+        with tv.TypedValues(*request.options).consume() as oc:
+            t: Tool
+            for t in oc.pop(Tool, []):
+                tools.append(dict(
+                    name=check.not_none(t.spec.name),
+                    description=t.spec.desc,
+                    input_schema=build_tool_spec_params_json_schema(t.spec),
+                ))
+
         raw_request = dict(
             model=MODEL_NAMES.resolve(self._model_name.v),
             **lang.opt_kw(system=system),
+            **(dict(tools=tools) if tools else {}),
             messages=messages,
             max_tokens=max_tokens,
         )
@@ -100,6 +125,24 @@ class AnthropicChatChoicesService:
 
         response = json.loads(check.not_none(raw_response.data).decode('utf-8'))
 
+        resp_c: ta.Any = None
+        ters: list[ToolExecRequest] = []
+        for c in response['content']:
+            if c['type'] == 'text':
+                check.none(resp_c)
+                resp_c = check.not_none(c['text'])
+            elif c['type'] == 'tool_use':
+                ters.append(ToolExecRequest(
+                    id=c['id'],
+                    name=c['name'],
+                    args=c['input'],
+                ))
+            else:
+                raise TypeError(c['type'])
+
         return ChatChoicesResponse([
-            AiChoice(AiMessage(response['content'][0]['text'])),  # noqa
+            AiChoice(AiMessage(
+                resp_c,
+                tool_exec_requests=ters if ters else None,
+            )),
         ])
