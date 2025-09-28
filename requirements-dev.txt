@@ -68,7 +68,7 @@ mysqlclient==2.2.7; sys_platform == "darwin"  # brew install mysql pkg-config  #
 
 ujson==5.11.0
 
-markupsafe==3.0.2
+markupsafe==3.0.3
 
 redis==6.4.0
 
@@ -131,7 +131,7 @@ boto3>=1.40.40
 antlr4-python3-runtime==4.13.2
 
 mlx==0.29.2; sys_platform == "darwin" and python_version < "3.14"  # @omlish-venv !13t !13dt !14t
-mlx-lm==0.28.0; sys_platform == "darwin" and python_version < "3.14"  # @omlish-venv !13t !13dt !14t
+mlx-lm==0.28.1; sys_platform == "darwin" and python_version < "3.14"  # @omlish-venv !13t !13dt !14t
 
 apsw==3.50.4.0
 

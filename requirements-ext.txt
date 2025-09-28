@@ -68,4 +68,4 @@ pyinstrument==5.1.1
 
 jupyter==1.1.1
 jupyterlab==4.4.9
-notebook==7.4.6
+notebook==7.4.7
