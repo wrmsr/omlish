@@ -16,7 +16,7 @@ astpretty==3.0.0
 asttokens==3.0.0
 async-lru==2.0.5
 asyncpg==0.30.0
-asyncssh==2.21.0
+asyncssh==2.21.1
 attrs==25.3.0
 babel==2.17.0
 basedpyright==1.31.5
