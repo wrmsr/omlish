@@ -7,11 +7,12 @@ https://github.com/anthropics/anthropic-sdk-python/blob/cd80d46f7a223a5493565d15
 import typing as ta
 
 from omlish import check
-from omlish import lang
+from omlish import marshal as msh
 from omlish import typedvalues as tv
 from omlish.formats import json
 from omlish.http import all as http
 
+from .....backends.anthropic.protocol import types as pt
 from ....chat.choices.services import ChatChoicesRequest
 from ....chat.choices.services import ChatChoicesResponse
 from ....chat.choices.services import static_check_is_chat_choices_service
@@ -74,45 +75,68 @@ class AnthropicChatChoicesService:
             *,
             max_tokens: int = 4096,  # FIXME: ChatOption
     ) -> ChatChoicesResponse:
-        messages = []
-        system: str | None = None
+        messages: list[pt.Message] = []
+        system: list[pt.Content] | None = None
         for i, m in enumerate(request.v):
             if isinstance(m, SystemMessage):
                 if i != 0 or system is not None:
                     raise Exception('Only supports one system message and must be first')
-                system = self._get_msg_content(m)
+                system = [pt.Text(check.not_none(self._get_msg_content(m)))]
+
             elif isinstance(m, ToolExecResultMessage):
-                messages.append(dict(
+                messages.append(pt.Message(
                     role='user',
-                    content=dict(
-                        tool_use_id=m.id,
-                        type='tool_result',
-                        content=m.c,
-                    ),
-                ))
-            else:
-                messages.append(dict(
-                    role=self.ROLES_MAP[type(m)],  # noqa
-                    content=check.isinstance(self._get_msg_content(m), str),
+                    content=[pt.ToolResult(
+                        tool_use_id=check.not_none(m.id),
+                        content=json.dumps_compact(msh.marshal(m.c)) if not isinstance(m.c, str) else m.c,
+                    )],
                 ))
 
-        tools: list[dict[str, ta.Any]] = []
+            elif isinstance(m, AiMessage):
+                # messages.append(pt.Message(
+                #     role=self.ROLES_MAP[type(m)],  # noqa
+                #     content=[pt.Text(check.isinstance(self._get_msg_content(m), str))],
+                # ))
+                a_tus: list[pt.ToolUse] = []
+                for tr in m.tool_exec_requests or []:
+                    a_tus.append(pt.ToolUse(
+                        id=check.not_none(tr.id),
+                        name=check.not_none(tr.name),
+                        input=tr.args,
+                    ))
+                messages.append(pt.Message(
+                    role='assistant',
+                    content=[
+                        *([pt.Text(check.isinstance(m.c, str))] if m.c is not None else []),
+                        *a_tus,
+                    ],
+                ))
+
+            else:
+                messages.append(pt.Message(
+                    role=self.ROLES_MAP[type(m)],  # type: ignore[arg-type]
+                    content=[pt.Text(check.isinstance(self._get_msg_content(m), str))],
+                ))
+
+        tools: list[pt.ToolSpec] = []
         with tv.TypedValues(*request.options).consume() as oc:
             t: Tool
             for t in oc.pop(Tool, []):
-                tools.append(dict(
+                tools.append(pt.ToolSpec(
                     name=check.not_none(t.spec.name),
                     description=prepare_content_str(t.spec.desc),
                     input_schema=build_tool_spec_params_json_schema(t.spec),
                 ))
 
-        raw_request = dict(
+        a_req = pt.MessagesRequest(
             model=MODEL_NAMES.resolve(self._model_name.v),
-            **lang.opt_kw(system=system),
-            **(dict(tools=tools) if tools else {}),
+            system=system,
             messages=messages,
+            tools=tools or None,
             max_tokens=max_tokens,
         )
+
+        raw_request = msh.marshal(a_req)
 
         raw_response = http.request(
             'https://api.anthropic.com/v1/messages',

@@ -3,6 +3,7 @@ import typing as ta
 
 from omlish import check
 from omlish import lang
+from omlish.formats import json
 
 from .... import minichain as mc
 
@@ -47,6 +48,9 @@ class StringChatSessionPrinter(ChatSessionPrinter, lang.Abstract):
                 self._print_str(check.isinstance(obj.c, str))
             else:
                 raise TypeError(obj)
+
+        elif isinstance(obj, mc.JsonContent):
+            self._print_str(json.dumps_pretty(obj.v))
 
         elif isinstance(obj, str):
             self._print_str(obj)

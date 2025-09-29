@@ -76,7 +76,7 @@ class AnthropicSseMessageAssembler(
             elif isinstance(ae, AnthropicSseDecoderEvents.MessageStop):
                 yield [Message(
                     id=ms.message.id,
-                    role=ms.message.role,
+                    role=ms.message.role,  # type: ignore[arg-type]
                     model=ms.message.model,
                     content=content,
                     stop_reason=dct['stop_reason'],

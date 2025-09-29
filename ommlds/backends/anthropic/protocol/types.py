@@ -1,8 +1,27 @@
+"""
+https://docs.claude.com/en/api/messages
+"""
 import typing as ta
 
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
+
+
+##
+
+
+def _set_class_marshal_options(cls):
+    msh.update_object_metadata(
+        cls,
+        field_defaults=msh.FieldMetadata(
+            options=msh.FieldOptions(
+                omit_if=lang.is_none,
+            ),
+        ),
+    )
+
+    return cls
 
 
 ##
@@ -18,7 +37,7 @@ class Content(lang.Abstract, lang.Sealed):
 
 
 @dc.dataclass(frozen=True)
-@msh.update_fields_metadata(['cache_control'], omit_if=lang.is_none)
+@_set_class_marshal_options
 class Text(Content):
     text: str
 
@@ -28,7 +47,7 @@ class Text(Content):
 
 
 @dc.dataclass(frozen=True)
-@msh.update_fields_metadata(['cache_control'], omit_if=lang.is_none)
+@_set_class_marshal_options
 class ToolUse(Content):
     id: str
     name: str
@@ -40,6 +59,7 @@ class ToolUse(Content):
 
 
 @dc.dataclass(frozen=True)
+@_set_class_marshal_options
 class ToolResult(Content):
     tool_use_id: str
     content: str
@@ -49,7 +69,7 @@ class ToolResult(Content):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_object_metadata(field_defaults=msh.FieldMetadata(options=msh.FieldOptions(omit_if=lang.is_none)))
+@_set_class_marshal_options
 class CacheCreation:
     ephemeral_5m_input_tokens: int | None = None
     ephemeral_1h_input_tokens: int | None = None
@@ -59,7 +79,7 @@ class CacheCreation:
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_object_metadata(field_defaults=msh.FieldMetadata(options=msh.FieldOptions(omit_if=lang.is_none)))
+@_set_class_marshal_options
 class Usage:
     input_tokens: int | None = None
     output_tokens: int | None = None
@@ -75,15 +95,15 @@ class Usage:
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_object_metadata(field_defaults=msh.FieldMetadata(options=msh.FieldOptions(omit_if=lang.is_none)))
+@_set_class_marshal_options
 class Message:
     id: str | None = None
 
-    role: str | None = None
+    role: ta.Literal['user', 'assistant']
 
     model: str | None = None
 
-    content: ta.Sequence[Content] | None = None
+    content: str | ta.Sequence[Content] | None = None
 
     stop_reason: str | None = None
     stop_sequence: str | None = None
@@ -95,6 +115,7 @@ class Message:
 
 
 @dc.dataclass(frozen=True)
+@_set_class_marshal_options
 class ToolSpec:
     name: str
     description: str
@@ -105,7 +126,7 @@ class ToolSpec:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_defaults=msh.FieldMetadata(options=msh.FieldOptions(omit_if=lang.is_none)))
+@_set_class_marshal_options
 class MessagesRequest:
     model: str
 
@@ -113,7 +134,7 @@ class MessagesRequest:
 
     _: dc.KW_ONLY
 
-    system: ta.Sequence[Content] | None = None
+    system: str | ta.Sequence[Content] | None = None
 
     tools: ta.Sequence[ToolSpec] | None = None
 

@@ -197,6 +197,10 @@ with _lang.auto_proxy_init(
         ImageContent,
     )
 
+    from .content.json import (  # noqa
+        JsonContent,
+    )
+
     from .content.materialize import (  # noqa
         CanContent,
 
@@ -493,6 +497,12 @@ with _lang.auto_proxy_init(
     from .envs import (  # noqa
         Env,
         EnvKey,
+    )
+
+    from .json import (  # noqa
+        JsonSchema,
+
+        JsonValue,
     )
 
     from .metadata import (  # noqa
