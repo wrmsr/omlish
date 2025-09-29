@@ -9,7 +9,7 @@ from ...services import Service
 from ...stream.services import StreamResponse
 from ..choices.types import ChatChoicesOutputs
 from ..messages import Chat
-from .types import AiChoiceDeltas
+from .types import AiChoicesDeltas
 from .types import ChatChoicesStreamOptions
 from .types import ChatChoicesStreamOutputs
 
@@ -20,7 +20,7 @@ from .types import ChatChoicesStreamOutputs
 ChatChoicesStreamRequest: ta.TypeAlias = Request[Chat, ChatChoicesStreamOptions]
 
 ChatChoicesStreamResponse: ta.TypeAlias = StreamResponse[
-    AiChoiceDeltas,
+    AiChoicesDeltas,
     ChatChoicesOutputs,
     ChatChoicesStreamOutputs,
 ]

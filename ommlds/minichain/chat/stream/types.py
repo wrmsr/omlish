@@ -44,6 +44,7 @@ class AiChoiceDelta(lang.Sealed, lang.Abstract):
 
 
 AiChoiceDeltas: ta.TypeAlias = ta.Sequence[AiChoiceDelta]
+AiChoicesDeltas: ta.TypeAlias = ta.Sequence[AiChoiceDeltas]
 
 
 #

@@ -22,19 +22,20 @@ from ..stream.services import ChatChoicesStreamResponse
 from ..stream.services import static_check_is_chat_choices_stream_service
 from ..stream.types import AiChoiceDelta
 from ..stream.types import AiChoiceDeltas
-from ..stream.types import AiMessageDelta
+from ..stream.types import ContentAiChoiceDelta
+from ..messages import AiChat
 
 
 ##
 
 
-DummyFn: ta.TypeAlias = ta.Callable[[Chat], AiMessage]
+DummyFn: ta.TypeAlias = ta.Callable[[Chat], AiChat]
 SimpleDummyFn: ta.TypeAlias = ta.Callable[[str], str]
 
 
 def simple_dummy_fn(simple_fn: SimpleDummyFn) -> DummyFn:
-    def inner(chat: Chat) -> AiMessage:
-        return AiMessage(simple_fn(check.isinstance(check.isinstance(chat[-1], UserMessage).c, str)))
+    def inner(chat: Chat) -> AiChat:
+        return [AiMessage(simple_fn(check.isinstance(check.isinstance(chat[-1], UserMessage).c, str)))]
     return inner
 
 
@@ -74,7 +75,7 @@ class DummyChatChoicesStreamService(DummyFnService):
         async with UseResources.or_new(request.options) as rs:
             async def inner(sink: StreamResponseSink[AiChoiceDeltas]) -> ta.Sequence[ChatChoicesOutputs]:
                 am = self.fn(request.v)
-                await sink.emit([AiChoiceDelta(AiMessageDelta(
+                await sink.emit([AiChoiceDelta(ContentAiChoiceDelta(
                     am.c,
                     # FIXME
                     # am.tool_exec_requests,
