@@ -34,7 +34,7 @@ else:
 Ocr: ta.TypeAlias = ta.Callable[['Image.Image'], str]
 
 OCR_BACKENDS: ta.Mapping[str, Ocr] = {
-    'rapidocr': lambda img: '\n'.join(text[1] for text in rapidocr.RapidOCR()(img)[0] or []),
+    'rapidocr': lambda img: '\n'.join(text[1] for text in rapidocr.RapidOCR()(_get_img_png_bytes(img))[0] or []),
     'tesseract': lambda img: pytesseract.image_to_string(img),
 }
 
@@ -60,6 +60,12 @@ def _get_img_data(file: str | None) -> ta.Any:
 
     else:
         return sys.stdin.buffer
+
+
+def _get_img_png_bytes(img: 'Image.Image') -> bytes:
+    out = io.BytesIO()
+    img.save(out, format='PNG')
+    return out.getvalue()
 
 
 def _main() -> None:

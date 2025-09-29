@@ -606,7 +606,7 @@
     "module": ".tools.ocr",
     "attr": "_CLI_MODULE",
     "file": "ommlds/tools/ocr.py",
-    "line": 83,
+    "line": 89,
     "value": {
       "!omdev.cli.types.CliModule": {
         "name": "ocr",
