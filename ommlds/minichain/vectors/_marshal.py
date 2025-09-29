@@ -49,7 +49,7 @@ class _VectorUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
 
 
 @lang.static_init
-def _install_standard_marshalling() -> None:
+def _install_standard_marshaling() -> None:
     msh.install_standard_factories(
         _VectorMarshalerFactory(),
         _VectorUnmarshalerFactory(),

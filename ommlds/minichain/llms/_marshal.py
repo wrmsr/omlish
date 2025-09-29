@@ -42,7 +42,7 @@ class TokensUnmarshalerFactory(msh.SimpleUnmarshalerFactory):
 
 
 @lang.static_init
-def _install_standard_marshalling() -> None:
+def _install_standard_marshaling() -> None:
     msh.install_standard_factories(
         TokensMarshalerFactory(),
         TokensUnmarshalerFactory(),

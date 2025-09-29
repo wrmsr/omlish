@@ -134,7 +134,7 @@ class _RequestResponseUnmarshalerFactory(msh.SimpleUnmarshalerFactory):
 
 
 @lang.static_init
-def _install_standard_marshalling() -> None:
+def _install_standard_marshaling() -> None:
     msh.install_standard_factories(
         _RequestResponseMarshalerFactory(),
         _RequestResponseUnmarshalerFactory(),

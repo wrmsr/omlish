@@ -39,7 +39,7 @@ class ExtractAction(Action, lang.Final):
 
 
 @lang.static_init
-def _install_standard_marshalling() -> None:
+def _install_standard_marshaling() -> None:
     actions_poly = msh.polymorphism_from_subclasses(Action, naming=msh.Naming.SNAKE, strip_suffix=True)
     msh.install_standard_factories(
         msh.PolymorphismMarshalerFactory(actions_poly),

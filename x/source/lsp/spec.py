@@ -202,7 +202,7 @@ class LspSpec:
 
 
 @lang.static_init
-def _install_lsp_marshalling() -> None:
+def _install_lsp_marshaling() -> None:
     extended_content_poly = msh.polymorphism_from_subclasses(
         LspType,
         naming=msh.Naming.LOW_CAMEL,

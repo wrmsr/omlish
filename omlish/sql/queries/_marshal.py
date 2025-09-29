@@ -63,7 +63,7 @@ class LowerEnumMarshaler(msh.Marshaler, msh.Unmarshaler):
 
 
 @lang.static_init
-def _install_standard_marshalling() -> None:
+def _install_standard_marshaling() -> None:
     for ty, ns in [
         (BinaryOp, BinaryOps),
         (UnaryOp, UnaryOps),

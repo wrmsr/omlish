@@ -4,6 +4,7 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 
+from ...content.types import Content
 from ..fns import ToolFn
 from ..types import ToolSpec
 from .context import ToolContext
@@ -68,7 +69,7 @@ class ToolCatalog(ToolExecutor):
             ctx: ToolContext,
             name: str,
             args: ta.Mapping[str, ta.Any],
-    ) -> str:
+    ) -> Content:
         e = self._by_name[name]
 
         return await e.executor().execute_tool(

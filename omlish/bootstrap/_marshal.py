@@ -8,7 +8,7 @@ from .harness import BOOTSTRAP_TYPES_BY_NAME
 
 
 @lang.static_init
-def _install_standard_marshalling() -> None:
+def _install_standard_marshaling() -> None:
     cfgs_poly = msh.Polymorphism(
         Bootstrap.Config,
         [msh.Impl(b.Config, n) for n, b in BOOTSTRAP_TYPES_BY_NAME.items()],

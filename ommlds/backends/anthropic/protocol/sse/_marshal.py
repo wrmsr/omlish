@@ -8,7 +8,7 @@ from .events import AnthropicSseDecoderEvents
 
 
 @lang.static_init
-def _install_standard_marshalling() -> None:
+def _install_standard_marshaling() -> None:
     for root_cls in [
         AnthropicSseDecoderEvents.Event,
         AnthropicSseDecoderEvents.ContentBlockStart.ContentBlock,

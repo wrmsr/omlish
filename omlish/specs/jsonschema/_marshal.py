@@ -22,7 +22,7 @@ class _KeywordsUnmarshaler(msh.Unmarshaler):
 
 
 @lang.static_init
-def _install_standard_marshalling() -> None:
+def _install_standard_marshaling() -> None:
     msh.install_standard_factories(
         msh.TypeMapMarshalerFactory({Keywords: _KeywordsMarshaler()}),
         msh.TypeMapUnmarshalerFactory({Keywords: _KeywordsUnmarshaler()}),

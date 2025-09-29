@@ -93,7 +93,7 @@ class GithubContentSpec(Spec):
 
 
 @lang.static_init
-def _install_standard_marshalling() -> None:
+def _install_standard_marshaling() -> None:
     specs_poly = msh.polymorphism_from_subclasses(Spec, naming=msh.Naming.SNAKE, strip_suffix=True)
     msh.install_standard_factories(
         msh.PolymorphismMarshalerFactory(specs_poly),

@@ -56,7 +56,7 @@ class RequiresMarkerListMarshalerFactory(msh.MarshalerFactoryMatchClass):
 
 
 @lang.static_init
-def _install_standard_marshalling() -> None:
+def _install_standard_marshaling() -> None:
     requires_node_poly = msh.Polymorphism(
         RequiresNode,
         [

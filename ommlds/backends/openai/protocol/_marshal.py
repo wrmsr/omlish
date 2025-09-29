@@ -10,7 +10,7 @@ from .chatcompletion.responseformat import ChatCompletionResponseFormat
 
 
 @lang.static_init
-def _install_standard_marshalling() -> None:
+def _install_standard_marshaling() -> None:
     for root_cls, tag_field in [
         (ChatCompletionContentPart, 'type'),
         (ChatCompletionMessage, 'role'),

@@ -9,6 +9,7 @@ from omlish import reflect as rfl
 from omlish.funcs import match as mfs
 
 from .images import ImageContent  # noqa
+from .json import JsonContent  # noqa
 from .materialize import CanContent
 from .materialize import _InnerCanContent
 from .sequence import BlockContent  # noqa
@@ -139,28 +140,48 @@ class _ImageContentUnmarshaler(msh.Unmarshaler):
 ##
 
 
+class _JsonContentMarshaler(msh.Marshaler):
+    def marshal(self, ctx: msh.MarshalContext, o: ta.Any) -> msh.Value:
+        return ta.cast(msh.Value, check.isinstance(o, JsonContent).v)
+
+
+class _JsonContentUnmarshaler(msh.Unmarshaler):
+    def unmarshal(self, ctx: msh.UnmarshalContext, v: msh.Value) -> ta.Any:
+        return JsonContent(v)
+
+
+##
+
+
 @lang.static_init
-def _install_standard_marshalling() -> None:
+def _install_standard_marshaling() -> None:
     extended_content_poly = msh.Polymorphism(
         ExtendedContent,
         [
             msh.Impl(InlineContent, 'inline'),
             msh.Impl(BlockContent, 'block'),
             msh.Impl(ImageContent, 'image'),
+            msh.Impl(JsonContent, 'json'),
             msh.Impl(TextContent, 'text'),
         ],
     )
 
     msh.install_standard_factories(
         msh.PolymorphismMarshalerFactory(extended_content_poly),
-        msh.TypeMapMarshalerFactory({ImageContent: _ImageContentMarshaler()}),
+        msh.TypeMapMarshalerFactory({
+            ImageContent: _ImageContentMarshaler(),
+            JsonContent: _JsonContentMarshaler(),
+        }),
         _ContentMarshalerFactory(),
         _CanContentMarshalerFactory(),
     )
 
     msh.install_standard_factories(
         msh.PolymorphismUnmarshalerFactory(extended_content_poly),
-        msh.TypeMapUnmarshalerFactory({ImageContent: _ImageContentUnmarshaler()}),
+        msh.TypeMapUnmarshalerFactory({
+            ImageContent: _ImageContentUnmarshaler(),
+            JsonContent: _JsonContentUnmarshaler(),
+        }),
         _ContentUnmarshalerFactory(),
         _CanContentUnmarshalerFactory(),
     )

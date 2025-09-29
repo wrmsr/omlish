@@ -16,6 +16,6 @@ def _install_poly(cls: type) -> None:
 
 
 @lang.static_init
-def _install_standard_marshalling() -> None:
+def _install_standard_marshaling() -> None:
     _install_poly(Dtype)
     _install_poly(Element)

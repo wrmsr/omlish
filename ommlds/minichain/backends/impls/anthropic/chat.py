@@ -22,6 +22,7 @@ from ....chat.messages import SystemMessage
 from ....chat.messages import ToolExecResultMessage
 from ....chat.messages import UserMessage
 from ....chat.tools.types import Tool
+from ....content.prepare import prepare_content_str
 from ....models.configs import ModelName
 from ....standard import ApiKey
 from ....tools.jsonschema import build_tool_spec_params_json_schema
@@ -101,7 +102,7 @@ class AnthropicChatChoicesService:
             for t in oc.pop(Tool, []):
                 tools.append(dict(
                     name=check.not_none(t.spec.name),
-                    description=t.spec.desc,
+                    description=prepare_content_str(t.spec.desc),
                     input_schema=build_tool_spec_params_json_schema(t.spec),
                 ))
 

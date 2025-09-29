@@ -12,7 +12,7 @@ from .messages import Message
 
 
 @lang.static_init
-def _install_standard_marshalling() -> None:
+def _install_standard_marshaling() -> None:
     msgs_poly = msh.polymorphism_from_subclasses(
         Message,
         naming=msh.Naming.SNAKE,

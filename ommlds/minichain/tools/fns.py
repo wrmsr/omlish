@@ -9,7 +9,9 @@ from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
 from omlish import reflect as rfl
-from omlish.formats import json
+
+from ..content.json import JsonContent
+from ..content.types import Content
 
 
 D = ta.TypeVar('D')
@@ -111,7 +113,7 @@ async def execute_tool_fn(
         args: ta.Mapping[str, ta.Any],
         *,
         forbid_sync_as_async: bool = False,
-) -> str:
+) -> Content:
     m_fn: ta.Callable[..., ta.Awaitable[ta.Any]]
     if isinstance(tfn.impl, ToolFn.FnImpl):
         s_fn = tfn.impl.s
@@ -150,13 +152,13 @@ async def execute_tool_fn(
 
     #
 
-    ret: str
+    ret: Content
     if isinstance(tfn.output, ToolFn.DataclassOutput):
         raise NotImplementedError
 
     elif isinstance(tfn.output, ToolFn.MarshalOutput):
         out_v = msh.marshal(fn_out, tfn.output.rty)
-        ret = json.dumps_compact(out_v)
+        ret = JsonContent(out_v)
 
     elif isinstance(tfn.output, ToolFn.RawStringOutput):
         ret = check.isinstance(fn_out, str)

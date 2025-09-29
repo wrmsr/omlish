@@ -1,9 +1,14 @@
+"""
+TODO:
+ - args is Mapping[str, Content] too
+"""
 import abc
 import typing as ta
 
 from omlish import dataclasses as dc
 from omlish import lang
 
+from ...content.types import Content
 from ..fns import ToolFn
 from ..fns import execute_tool_fn
 from .context import ToolContext
@@ -20,7 +25,7 @@ class ToolExecutor(lang.Abstract):
             ctx: ToolContext,
             name: str,
             args: ta.Mapping[str, ta.Any],
-    ) -> ta.Awaitable[str]:
+    ) -> ta.Awaitable[Content]:
         raise NotImplementedError
 
 
@@ -36,7 +41,7 @@ class ToolFnToolExecutor(ToolExecutor):
             ctx: ToolContext,
             name: str,
             args: ta.Mapping[str, ta.Any],
-    ) -> str:
+    ) -> Content:
         with bind_tool_context(ctx):
             return await execute_tool_fn(
                 self.tool_fn,
@@ -56,5 +61,5 @@ class NameSwitchedToolExecutor(ToolExecutor):
             ctx: ToolContext,
             name: str,
             args: ta.Mapping[str, ta.Any],
-    ) -> str:
+    ) -> Content:
         return await self.tool_executors_by_name[name].execute_tool(ctx, name, args)
