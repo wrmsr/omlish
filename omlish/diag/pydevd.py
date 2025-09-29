@@ -119,7 +119,19 @@ def _pydevd() -> types.ModuleType | None:
 
 
 def is_present() -> bool:
-    return lang.can_import('pydevd')
+    # FIXME: try to use `lang.can_import('pydevd'), but raises with:
+    # INTERNALERROR>   File "/Users/spinlock/src/wrmsr/omlish/omlish/lang/imports/resolving.py", line 16, in can_import
+    # INTERNALERROR>     spec = importlib.util.find_spec(name, package)
+    # INTERNALERROR>   File "<frozen importlib.util>", line 111, in find_spec
+    # INTERNALERROR> ValueError: pydevd.__spec__ is None
+    # Really want to avoid actually importing pydevd due to side-effects, slowness, and even a pkg_resources deprecation
+    # warning...
+    try:
+        __import__('pydevd')
+    except ImportError:
+        return False
+    else:
+        return True
 
 
 def get_setup() -> dict | None:

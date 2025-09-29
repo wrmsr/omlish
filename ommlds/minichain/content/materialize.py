@@ -130,7 +130,13 @@ class ContentMaterializer:
 
     @_materialize.register
     def _materialize_iterable(self, o: ta.Iterable) -> Content:
-        return [self.materialize(e) for e in o]
+        # `collections.abc.Iterable` appears as a virtual base in the dispatch c3.mro for ContentNamespace before `type`
+        # does (due to NamespaceMeta having `__iter__`), so handle that here too.
+        if isinstance(o, type) and issubclass(o, ContentNamespace):
+            return self._materialize_namespace_type(o)
+
+        else:
+            return [self.materialize(e) for e in o]
 
     @_materialize.register
     def _materialize_none(self, o: None) -> Content:
@@ -151,25 +157,12 @@ class ContentMaterializer:
     def _materialize_namespace_type(self, o: type[ContentNamespace]) -> Content:
         check.issubclass(o, ContentNamespace)
 
-        def rec(v: ta.Any) -> ta.Generator[Content]:
-            if isinstance(v, (bytes, bytearray, ta.Mapping)):
-                return
-
-            elif isinstance(v, type):
-                if issubclass(v, ContentNamespace):
-                    for n, e in v:
-                        if n.startswith('_'):
-                            continue
-                        yield from rec(e)
-
-            elif isinstance(v, ta.Iterable):
-                for e in v:
-                    yield from rec(e)
-
-            else:
-                yield self.materialize(v)
-
-        return list(rec(o))
+        out: list[Content] = []
+        for n, e in o:
+            if n.startswith('_'):
+                continue
+            out.append(self.materialize(e))
+        return out
 
     #
 

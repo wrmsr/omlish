@@ -199,6 +199,8 @@ with _lang.auto_proxy_init(
 
     from .content.materialize import (  # noqa
         CanContent,
+
+        materialize_content,
     )
 
     from .content.metadata import (  # noqa
