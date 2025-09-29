@@ -9,7 +9,7 @@ from omlish import lang
 
 from ...types import Option
 from ...types import Output
-from ..messages import AnyAiMessage
+from ..messages import AiChat
 from ..types import ChatOptions
 from ..types import ChatOutputs
 
@@ -39,7 +39,7 @@ ChatChoicesOutputs: ta.TypeAlias = ChatChoicesOutput | ChatOutputs
 
 @dc.dataclass(frozen=True)
 class AiChoice(lang.Final):
-    m: AnyAiMessage
+    ms: AiChat
 
 
 AiChoices: ta.TypeAlias = ta.Sequence[AiChoice]

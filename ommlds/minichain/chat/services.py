@@ -7,7 +7,7 @@ from ..registries.globals import register_type
 from ..services import Request
 from ..services import Response
 from ..services import Service
-from .messages import AiMessage
+from .messages import AiChat
 from .messages import Chat
 from .types import ChatOptions
 from .types import ChatOutputs
@@ -18,7 +18,7 @@ from .types import ChatOutputs
 
 ChatRequest: ta.TypeAlias = Request[Chat, ChatOptions]
 
-ChatResponse: ta.TypeAlias = Response[AiMessage, ChatOutputs]
+ChatResponse: ta.TypeAlias = Response[AiChat, ChatOutputs]
 
 # @omlish-manifest $.minichain.registries.manifests.RegistryTypeManifest
 ChatService: ta.TypeAlias = Service[ChatRequest, ChatResponse]
