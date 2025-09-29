@@ -13,7 +13,7 @@ from .base import ChatOptions
 from .base import ChatSession
 from .printing import ChatSessionPrinter
 from .state import ChatStateManager
-from .tools import ToolExecRequestExecutor
+from .tools import ToolUseExecutor
 
 
 with lang.auto_proxy_import(globals()):
@@ -43,7 +43,7 @@ class CodeChatSession(ChatSession['CodeChatSession.Config']):
             chat_options: ChatOptions | None = None,
             printer: ChatSessionPrinter,
             backend_catalog: mc.BackendCatalog,
-            tool_exec_request_executor: ToolExecRequestExecutor,
+            tool_exec_request_executor: ToolUseExecutor,
             tools_config: ToolsConfig | None = None,
     ) -> None:
         super().__init__(config)
@@ -112,13 +112,13 @@ class CodeChatSession(ChatSession['CodeChatSession.Config']):
 
                     tool_resp_lst = []
                     for tr in trs:
-                        trm = await self._tool_exec_request_executor.execute_tool_request(
+                        trm = await self._tool_exec_request_executor.execute_tool_use(
                             tr,
                             fs_tool_context,
                             todo_tool_context,
                         )
 
-                        self._printer.print(trm.c)
+                        self._printer.print(trm.tur.c)
                         tool_resp_lst.append(trm)
 
                     state = self._state_manager.extend_chat(tool_resp_lst)

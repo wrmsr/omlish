@@ -10,7 +10,7 @@ from .base import ChatOptions
 from .base import ChatSession
 from .printing import ChatSessionPrinter
 from .state import ChatStateManager
-from .tools import ToolExecRequestExecutor
+from .tools import ToolUseExecutor
 
 
 ##
@@ -42,7 +42,7 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
             chat_options: ChatOptions | None = None,
             printer: ChatSessionPrinter,
             backend_catalog: mc.BackendCatalog,
-            tool_exec_request_executor: ToolExecRequestExecutor,
+            tool_exec_request_executor: ToolUseExecutor,
     ) -> None:
         super().__init__(config)
 
@@ -124,17 +124,17 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
             if (trs := resp_m.tool_exec_requests):
                 check.state(resp_m.c is None)
 
-                tr: mc.ToolExecRequest = check.single(check.not_none(trs))
+                tr: mc.ToolUse = check.single(check.not_none(trs))
 
                 # FIXME: lol
                 from ....minichain.lib.fs.context import FsContext
 
-                trm = await self._tool_exec_request_executor.execute_tool_request(
+                trm = await self._tool_exec_request_executor.execute_tool_use(
                     tr,
                     FsContext(root_dir=os.getcwd()),
                 )
 
-                print(trm.c)
+                print(trm.tur.c)
                 new_chat.append(trm)
 
                 response = await mdl.invoke(mc.ChatChoicesRequest(

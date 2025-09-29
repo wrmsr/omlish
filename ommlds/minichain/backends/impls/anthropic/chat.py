@@ -20,14 +20,14 @@ from ....chat.choices.types import AiChoice
 from ....chat.messages import AiMessage
 from ....chat.messages import Message
 from ....chat.messages import SystemMessage
-from ....chat.messages import ToolExecResultMessage
+from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
 from ....chat.tools.types import Tool
 from ....content.prepare import prepare_content_str
 from ....models.configs import ModelName
 from ....standard import ApiKey
 from ....tools.jsonschema import build_tool_spec_params_json_schema
-from ....tools.types import ToolExecRequest
+from ....tools.types import ToolUse
 from .names import MODEL_NAMES
 
 
@@ -83,12 +83,12 @@ class AnthropicChatChoicesService:
                     raise Exception('Only supports one system message and must be first')
                 system = [pt.Text(check.not_none(self._get_msg_content(m)))]
 
-            elif isinstance(m, ToolExecResultMessage):
+            elif isinstance(m, ToolUseResultMessage):
                 messages.append(pt.Message(
                     role='user',
                     content=[pt.ToolResult(
-                        tool_use_id=check.not_none(m.id),
-                        content=json.dumps_compact(msh.marshal(m.c)) if not isinstance(m.c, str) else m.c,
+                        tool_use_id=check.not_none(m.tur.id),
+                        content=json.dumps_compact(msh.marshal(m.tur.c)) if not isinstance(m.tur.c, str) else m.tur.c,
                     )],
                 ))
 
@@ -151,13 +151,13 @@ class AnthropicChatChoicesService:
         response = json.loads(check.not_none(raw_response.data).decode('utf-8'))
 
         resp_c: ta.Any = None
-        ters: list[ToolExecRequest] = []
+        ters: list[ToolUse] = []
         for c in response['content']:
             if c['type'] == 'text':
                 check.none(resp_c)
                 resp_c = check.not_none(c['text'])
             elif c['type'] == 'tool_use':
-                ters.append(ToolExecRequest(
+                ters.append(ToolUse(
                     id=c['id'],
                     name=c['name'],
                     args=c['input'],

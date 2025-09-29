@@ -3,8 +3,8 @@ import os.path
 from omlish import check
 from omlish import lang
 
-from ......chat.messages import ToolExecRequest
-from ......chat.tools.execution import execute_tool_request
+from ......chat.messages import ToolUse
+from ......chat.tools.execution import execute_tool_use
 from ......tools.execution.context import ToolContext
 from ......tools.execution.executors import NameSwitchedToolExecutor
 from ......tools.jsonschema import build_tool_spec_json_schema
@@ -28,7 +28,7 @@ def test_recursive_ls_tool():
         'base_path': root_dir,
     }
 
-    tool_exec_request = ToolExecRequest(
+    tool_exec_request = ToolUse(
         id='foo_id',
         name=check.not_none(rlt.spec.name),
         args=tool_args,
@@ -38,7 +38,7 @@ def test_recursive_ls_tool():
         check.not_none(rlt.name): rlt.executor(),
     })
 
-    tool_exec_result = lang.run_maysync(execute_tool_request(
+    tool_exec_result = lang.run_maysync(execute_tool_use(
         ToolContext(
             tool_exec_request,
             FsContext(root_dir=root_dir),
@@ -48,4 +48,4 @@ def test_recursive_ls_tool():
     ))
 
     print()
-    print(tool_exec_result.c)
+    print(tool_exec_result.tur.c)

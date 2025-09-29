@@ -17,13 +17,13 @@ from ....chat.choices.types import AiChoice
 from ....chat.messages import AiMessage
 from ....chat.messages import Message
 from ....chat.messages import SystemMessage
-from ....chat.messages import ToolExecResultMessage
+from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
 from ....chat.tools.types import Tool
 from ....content.types import Content
 from ....models.configs import ModelName
 from ....standard import ApiKey
-from ....tools.types import ToolExecRequest
+from ....tools.types import ToolUse
 from .names import MODEL_NAMES
 from .tools import build_tool_spec_schema
 
@@ -81,19 +81,19 @@ class GoogleChatChoicesService:
                     )],
                 )
 
-            elif isinstance(m, ToolExecResultMessage):
+            elif isinstance(m, ToolUseResultMessage):
                 tr_resp_val: pt.Value
-                if m.c is None:
+                if m.tur.c is None:
                     tr_resp_val = pt.NullValue()  # type: ignore[unreachable]
-                elif isinstance(m.c, str):
-                    tr_resp_val = pt.StringValue(m.c)
+                elif isinstance(m.tur.c, str):
+                    tr_resp_val = pt.StringValue(m.tur.c)
                 else:
-                    raise TypeError(m.c)
+                    raise TypeError(m.tur.c)
                 g_contents.append(pt.Content(
                     parts=[pt.Part(
                         function_response=pt.FunctionResponse(
-                            id=m.id,
-                            name=m.name,
+                            id=m.tur.id,
+                            name=m.tur.name,
                             response={
                                 'value': tr_resp_val,
                             },
@@ -160,13 +160,13 @@ class GoogleChatChoicesService:
         ai_choices: list[AiChoice] = []
         for c in g_resp.candidates or []:
             ai_c: Content | None = None
-            ters: list[ToolExecRequest] = []
+            ters: list[ToolUse] = []
             for g_resp_part in check.not_none(check.not_none(c.content).parts):
                 if (g_txt := g_resp_part.text) is not None:
                     check.none(ai_c)
                     ai_c = g_txt
                 elif (g_fc := g_resp_part.function_call) is not None:
-                    ters.append(ToolExecRequest(
+                    ters.append(ToolUse(
                         id=g_fc.id,
                         name=g_fc.name,
                         args=g_fc.args or {},

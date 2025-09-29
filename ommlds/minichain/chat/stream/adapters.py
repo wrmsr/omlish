@@ -10,7 +10,7 @@ from ..choices.services import static_check_is_chat_choices_service
 from ..choices.types import AiChoice
 from ..choices.types import AiChoices
 from ..messages import AiMessage
-from ..messages import ToolExecRequest
+from ..messages import ToolUse
 from .services import ChatChoicesOutputs
 from .services import ChatChoicesStreamOutputs
 from .services import ChatChoicesStreamService
@@ -26,7 +26,7 @@ class ChatChoicesStreamServiceChatChoicesService:
 
     class _Choice(ta.NamedTuple):
         parts: list[str]
-        trs: list[ToolExecRequest]
+        trs: list[ToolUse]
 
     async def invoke(self, request: ChatChoicesRequest) -> Response[
         AiChoices,

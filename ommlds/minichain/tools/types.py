@@ -6,11 +6,14 @@ from omlish import cached
 from omlish import check
 from omlish import collections as col
 from omlish import dataclasses as dc
+from omlish import dispatch
 from omlish import lang
 from omlish import marshal as msh
 from omlish import reflect as rfl
 
 from ..content.materialize import CanContent
+from ..content.transforms.base import ContentTransform
+from ..content.types import Content
 
 
 msh.register_global_module_import('._marshal', __package__)
@@ -186,9 +189,25 @@ class ToolSpec:
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class ToolExecRequest(lang.Final):
+class ToolUse(lang.Final):
     id: str | None = None
     name: str
     args: ta.Mapping[str, ta.Any]
 
     raw_args: str | None = None
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class ToolUseResult(lang.Final):
+    id: str | None = None
+    name: str
+    c: Content
+
+
+##
+
+
+class _ToolUseContentTransform(ContentTransform, lang.Final, lang.NotInstantiable):
+    @dispatch.install_method(ContentTransform.apply)
+    def apply_tool_use_result(self, tur: ToolUseResult) -> ToolUseResult:
+        return dc.replace(tur, c=self.apply(tur.c))  # noqa

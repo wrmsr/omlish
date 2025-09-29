@@ -13,7 +13,8 @@ from ..content.materialize import CanContent
 from ..content.transforms.base import ContentTransform
 from ..content.types import Content
 from ..metadata import MetadataContainer
-from ..tools.types import ToolExecRequest
+from ..tools.types import ToolUse
+from ..tools.types import ToolUseResult
 from .metadata import MessageMetadatas
 
 
@@ -74,17 +75,15 @@ class UserMessage(Message, lang.Final):
 class AiMessage(Message, lang.Final):
     c: Content | None = dc.xfield(None, repr_fn=dc.opt_repr)
 
-    tool_exec_requests: ta.Sequence[ToolExecRequest] | None = dc.xfield(None, repr_fn=dc.opt_repr)
+    tool_exec_requests: ta.Sequence[ToolUse] | None = dc.xfield(None, repr_fn=dc.opt_repr)
 
 
 #
 
 
-@dc.dataclass(frozen=True, kw_only=True)
-class ToolExecResultMessage(Message, lang.Final):
-    id: str | None = None
-    name: str
-    c: Content
+@dc.dataclass(frozen=True)
+class ToolUseResultMessage(Message, lang.Final):
+    tur: ToolUseResult
 
 
 ##
@@ -110,5 +109,5 @@ class _MessageContentTransform(ContentTransform, lang.Final, lang.NotInstantiabl
         return dc.replace(m, c=self.apply(m.c))
 
     @dispatch.install_method(ContentTransform.apply)
-    def apply_tool_exec_result_message(self, m: ToolExecResultMessage) -> ToolExecResultMessage:
-        return m
+    def apply_tool_exec_result_message(self, m: ToolUseResultMessage) -> ToolUseResultMessage:
+        return dc.replace(m, tur=self.apply(m.tur))

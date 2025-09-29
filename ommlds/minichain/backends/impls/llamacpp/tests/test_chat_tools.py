@@ -7,10 +7,10 @@ from omlish import lang
 
 from .....chat.choices.adapters import ChatChoicesServiceChatService
 from .....chat.messages import AiMessage
-from .....chat.messages import ToolExecResultMessage
+from .....chat.messages import ToolUseResultMessage
 from .....chat.messages import UserMessage
 from .....chat.services import ChatService
-from .....chat.tools.ids import ToolExecRequestIdAddingMessageTransform
+from .....chat.tools.ids import ToolUseIdAddingMessageTransform
 from .....chat.tools.parsing import ToolExecParsingMessageTransform
 from .....chat.tools.types import Tool
 from .....chat.transforms.base import CompositeMessageTransform
@@ -23,6 +23,7 @@ from .....text.toolparsing.dumb import DumbToolExecParser
 from .....tools.types import ToolDtype
 from .....tools.types import ToolParam
 from .....tools.types import ToolSpec
+from .....tools.types import ToolUseResult
 from ..chat import LlamacppChatChoicesService
 
 
@@ -97,7 +98,7 @@ def test_llamacpp_chat_model_tools_qwen_parsed(model_path):
                     strip_whitespace=True,
                 ),
             ),
-            ToolExecRequestIdAddingMessageTransform(),
+            ToolUseIdAddingMessageTransform(),
         ]),
         llm,
     )
@@ -131,11 +132,11 @@ def test_llamacpp_chat_model_tools_qwen_parsed(model_path):
 
     ter = check.single(check.not_none(air.tool_exec_requests))
 
-    tem = ToolExecResultMessage(
+    tem = ToolUseResultMessage(ToolUseResult(
         id=ter.id,
         name=ter.name,
         c='"The weather in Seattle is rainy."',
-    )
+    ))
     chat.append(tem)
 
     resp = lang.sync_await(llm.invoke(Request(

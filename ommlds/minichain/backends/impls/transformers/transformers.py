@@ -18,7 +18,7 @@ from ....chat.choices.services import static_check_is_chat_choices_service
 from ....chat.messages import AiMessage
 from ....chat.messages import Message
 from ....chat.messages import SystemMessage
-from ....chat.messages import ToolExecResultMessage
+from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
 from ....completion import CompletionRequest
 from ....completion import CompletionResponse
@@ -113,11 +113,11 @@ def build_chat_message(m: Message) -> ta.Mapping[str, ta.Any]:
             content=check.isinstance(m.c, str),
         )
 
-    elif isinstance(m, ToolExecResultMessage):
+    elif isinstance(m, ToolUseResultMessage):
         return dict(
             role='tool',
-            tool_call_id=m.id,
-            content=check.isinstance(m.c, str),
+            tool_call_id=m.tur.id,
+            content=check.isinstance(m.tur.c, str),
         )
 
     else:

@@ -14,9 +14,9 @@ from .state import ChatStateManager
 from .state import StateStorageChatStateManager
 from .tools import AskingToolExecutionConfirmation
 from .tools import NopToolExecutionConfirmation
-from .tools import ToolExecRequestExecutor
-from .tools import ToolExecRequestExecutorImpl
 from .tools import ToolExecutionConfirmation
+from .tools import ToolUseExecutor
+from .tools import ToolUseExecutorImpl
 
 
 ##
@@ -89,8 +89,8 @@ def bind_chat_session(cfg: ChatSession.Config) -> inj.Elements:
     #
 
     els.extend([
-        inj.bind(ToolExecRequestExecutorImpl, singleton=True),
-        inj.bind(ToolExecRequestExecutor, to_key=ToolExecRequestExecutorImpl),
+        inj.bind(ToolUseExecutorImpl, singleton=True),
+        inj.bind(ToolUseExecutor, to_key=ToolUseExecutorImpl),
     ])
 
     #

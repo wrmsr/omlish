@@ -13,7 +13,7 @@ from ....chat.messages import AiMessage
 from ....chat.messages import Chat
 from ....chat.messages import Message
 from ....chat.messages import SystemMessage
-from ....chat.messages import ToolExecResultMessage
+from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
 from ....chat.stream.types import AiMessageDelta
 from ....chat.tools.types import Tool
@@ -23,8 +23,8 @@ from ....llms.types import Temperature
 from ....llms.types import TokenUsage
 from ....llms.types import TokenUsageOutput
 from ....tools.jsonschema import build_tool_spec_json_schema
-from ....tools.types import ToolExecRequest
 from ....tools.types import ToolSpec
+from ....tools.types import ToolUse
 from ....types import Option
 
 
@@ -61,11 +61,11 @@ def build_request_message(m: Message) -> ta.Mapping[str, ta.Any]:
             content=prepare_content_str(m.c),
         )
 
-    elif isinstance(m, ToolExecResultMessage):
+    elif isinstance(m, ToolUseResultMessage):
         return dict(
             role='tool',
-            tool_call_id=m.id,
-            content=check.isinstance(m.c, str),
+            tool_call_id=m.tur.id,
+            content=check.isinstance(m.tur.c, str),
         )
 
     else:
@@ -94,7 +94,7 @@ class OpenaiChatRequestHandler:
         SystemMessage: 'system',
         UserMessage: 'user',
         AiMessage: 'assistant',
-        ToolExecResultMessage: 'tool',
+        ToolUseResultMessage: 'tool',
     }
 
     DEFAULT_OPTIONS: ta.ClassVar[tv.TypedValues[Option]] = tv.TypedValues(
@@ -167,7 +167,7 @@ class OpenaiChatRequestHandler:
         return AiMessage(
             message.get('content'),
             tool_exec_requests=[
-                ToolExecRequest(
+                ToolUse(
                     id=tc['id'],
                     name=tc['function']['name'],
                     args=json.loads(tc['function']['arguments'] or '{}'),
@@ -198,7 +198,7 @@ class OpenaiChatRequestHandler:
             delta.get('content'),
             # FIXME:
             # tool_exec_requests=[
-            #     ToolExecRequest(
+            #     ToolUse(
             #         id=tc['id'],
             #         spec=self._process_options().tools_by_name[tc['function']['name']],
             #         args=json.loads(tc['function']['arguments'] or '{}'),

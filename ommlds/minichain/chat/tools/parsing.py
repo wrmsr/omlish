@@ -5,7 +5,7 @@ from ...content.types import Content
 from ...text.toolparsing.base import ParsedToolExec
 from ...text.toolparsing.base import ToolExecParser
 from ..messages import AiMessage
-from ..messages import ToolExecRequest
+from ..messages import ToolUse
 from ..transforms.base import MessageTransform
 
 
@@ -20,10 +20,10 @@ class ToolExecParsingMessageTransform(MessageTransform[AiMessage]):
         pts = self.parser.parse_tool_execs_(check.isinstance(message.c or '', str))
 
         sl: list[str] = []
-        xl: list[ToolExecRequest] = []
+        xl: list[ToolUse] = []
         for pt in pts:
             if isinstance(pt, ParsedToolExec):
-                xl.append(ToolExecRequest(
+                xl.append(ToolUse(
                     id=pt.id,
                     name=pt.name,
                     args=pt.args,

@@ -9,7 +9,7 @@ from .....chat.choices.services import ChatChoicesRequest
 from .....chat.choices.services import ChatChoicesService
 from .....chat.messages import Message
 from .....chat.messages import SystemMessage
-from .....chat.messages import ToolExecResultMessage
+from .....chat.messages import ToolUseResultMessage
 from .....chat.messages import UserMessage
 from .....chat.tools.types import Tool
 from .....content.text import TextContent
@@ -20,6 +20,7 @@ from .....standard import DefaultOptions
 from .....tools.types import ToolDtype
 from .....tools.types import ToolParam
 from .....tools.types import ToolSpec
+from .....tools.types import ToolUseResult
 from ..chat import OpenaiChatChoicesService
 
 
@@ -103,11 +104,11 @@ def test_openai_tools(harness):
     assert tr.name == 'get_weather'
     assert tr.args == {'location': 'Seattle'}
 
-    chat.append(ToolExecResultMessage(
+    chat.append(ToolUseResultMessage(ToolUseResult(
         id=tr.id,
         name=tr.name,
         c='"rain"',
-    ))
+    )))
 
     resp = lang.sync_await(llm.invoke(ChatChoicesRequest(
         chat,

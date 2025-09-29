@@ -44,8 +44,8 @@ class StringChatSessionPrinter(ChatSessionPrinter, lang.Abstract):
             elif isinstance(obj, mc.AiMessage):
                 if obj.c is not None:
                     self._print_str(check.isinstance(obj.c, str))
-            elif isinstance(obj, mc.ToolExecResultMessage):
-                self._print_str(check.isinstance(obj.c, str))
+            elif isinstance(obj, mc.ToolUseResultMessage):
+                self._print_str(check.isinstance(obj.tur.c, str))
             else:
                 raise TypeError(obj)
 

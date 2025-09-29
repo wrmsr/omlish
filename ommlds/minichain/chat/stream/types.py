@@ -36,7 +36,7 @@ ChatChoicesStreamOutputs: ta.TypeAlias = ChatChoicesStreamOutput
 
 
 @dc.dataclass(frozen=True)
-class ToolExecRequestDelta(lang.Final):
+class ToolUseDelta(lang.Final):
     index: int | None = None
     id: str | None = None
     name: str | None = None
@@ -48,7 +48,7 @@ class ToolExecRequestDelta(lang.Final):
 class AiMessageDelta(lang.Final):
     c: Content | None = dc.xfield(None, repr_fn=dc.opt_repr)
 
-    tool_exec_requests: ta.Sequence[ToolExecRequestDelta] | None = dc.xfield(None, repr_fn=dc.opt_repr)
+    tool_exec_requests: ta.Sequence[ToolUseDelta] | None = dc.xfield(None, repr_fn=dc.opt_repr)
 
 
 @dc.dataclass(frozen=True)

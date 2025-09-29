@@ -107,14 +107,14 @@ with _lang.auto_proxy_init(
         ChatChoicesStreamOutput,
         ChatChoicesStreamOutputs,
 
-        ToolExecRequestDelta,
+        ToolUseDelta,
         AiMessageDelta,
         AiChoiceDelta,
         AiChoiceDeltas,
     )
 
     from .chat.tools.execution import (  # noqa
-        execute_tool_request,
+        execute_tool_use,
     )
 
     from .chat.transforms.base import (  # noqa
@@ -157,7 +157,7 @@ with _lang.auto_proxy_init(
         Chat,
         Message,
         SystemMessage,
-        ToolExecResultMessage,
+        ToolUseResultMessage,
         UserMessage,
     )
 
@@ -407,7 +407,8 @@ with _lang.auto_proxy_init(
 
         ToolSpec,
 
-        ToolExecRequest,
+        ToolUse,
+        ToolUseResult,
     )
 
     ##

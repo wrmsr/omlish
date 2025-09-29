@@ -191,9 +191,23 @@ def pycharm_remote_debugger_attach(prd: PycharmRemoteDebugger) -> None:
     else:
         pydevd_pycharm = _import_pydevd_pycharm(version=version)
 
+    import inspect
+    st_sig = inspect.signature(pydevd_pycharm.settrace)
+
+    kw: dict = {}
+    if 'stdoutToServer' in st_sig.parameters:
+        kw.update(
+            stdoutToServer=True,
+            stderrToServer=True,
+        )
+    else:
+        kw.update(
+            stdout_to_server=True,
+            stderr_to_server=True,
+        )
+
     pydevd_pycharm.settrace(
         host,
         port=prd.port,
-        stdoutToServer=True,
-        stderrToServer=True,
+        **kw,
     )

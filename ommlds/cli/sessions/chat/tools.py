@@ -23,7 +23,7 @@ class ToolExecutionConfirmation(lang.Abstract):
     @abc.abstractmethod
     def confirm_tool_execution_or_raise(
             self,
-            tr: mc.ToolExecRequest,
+            tr: mc.ToolUse,
             tce: mc.ToolCatalogEntry,
     ) -> ta.Awaitable[None]:
         raise NotImplementedError
@@ -32,7 +32,7 @@ class ToolExecutionConfirmation(lang.Abstract):
 class NopToolExecutionConfirmation(ToolExecutionConfirmation):
     async def confirm_tool_execution_or_raise(
             self,
-            tr: mc.ToolExecRequest,
+            tr: mc.ToolUse,
             tce: mc.ToolCatalogEntry,
     ) -> None:
         pass
@@ -41,7 +41,7 @@ class NopToolExecutionConfirmation(ToolExecutionConfirmation):
 class AskingToolExecutionConfirmation(ToolExecutionConfirmation):
     async def confirm_tool_execution_or_raise(
             self,
-            tr: mc.ToolExecRequest,
+            tr: mc.ToolUse,
             tce: mc.ToolCatalogEntry,
     ) -> None:
         tr_dct = dict(
@@ -59,17 +59,17 @@ class AskingToolExecutionConfirmation(ToolExecutionConfirmation):
 ##
 
 
-class ToolExecRequestExecutor(lang.Abstract):
+class ToolUseExecutor(lang.Abstract):
     @abc.abstractmethod
-    def execute_tool_request(
+    def execute_tool_use(
             self,
-            tr: mc.ToolExecRequest,
+            tr: mc.ToolUse,
             *ctx_items: ta.Any,
-    ) -> ta.Awaitable[mc.ToolExecResultMessage]:
+    ) -> ta.Awaitable[mc.ToolUseResultMessage]:
         raise NotImplementedError
 
 
-class ToolExecRequestExecutorImpl(ToolExecRequestExecutor):
+class ToolUseExecutorImpl(ToolUseExecutor):
     def __init__(
             self,
             *,
@@ -81,16 +81,16 @@ class ToolExecRequestExecutorImpl(ToolExecRequestExecutor):
         self._catalog = catalog
         self._confirmation = confirmation
 
-    async def execute_tool_request(
+    async def execute_tool_use(
             self,
-            tr: mc.ToolExecRequest,
+            tr: mc.ToolUse,
             *ctx_items: ta.Any,
-    ) -> mc.ToolExecResultMessage:
+    ) -> mc.ToolUseResultMessage:
         tce = self._catalog.by_name[check.non_empty_str(tr.name)]
 
         await self._confirmation.confirm_tool_execution_or_raise(tr, tce)
 
-        return await mc.execute_tool_request(
+        return await mc.execute_tool_use(
             mc.ToolContext(
                 tr,
                 *ctx_items,

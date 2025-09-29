@@ -1,25 +1,26 @@
 from ...tools.execution.context import ToolContext
 from ...tools.execution.executors import ToolExecutor
-from ..messages import ToolExecRequest
-from ..messages import ToolExecResultMessage
+from ...tools.types import ToolUseResult
+from ..messages import ToolUse
+from ..messages import ToolUseResultMessage
 
 
 ##
 
 
-async def execute_tool_request(
+async def execute_tool_use(
         ctx: ToolContext,
         tex: ToolExecutor,
-        ter: ToolExecRequest,
-) -> ToolExecResultMessage:
+        ter: ToolUse,
+) -> ToolUseResultMessage:
     result_str = await tex.execute_tool(
         ctx,
         ter.name,
         ter.args,
     )
 
-    return ToolExecResultMessage(
+    return ToolUseResultMessage(ToolUseResult(
         id=ter.id,
         name=ter.name,
         c=result_str,
-    )
+    ))

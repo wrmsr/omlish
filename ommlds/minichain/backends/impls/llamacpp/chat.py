@@ -15,7 +15,7 @@ from ....chat.choices.services import static_check_is_chat_choices_service
 from ....chat.choices.types import AiChoice
 from ....chat.choices.types import ChatChoicesOptions
 from ....chat.messages import AiMessage
-from ....chat.messages import ToolExecResultMessage
+from ....chat.messages import ToolUseResultMessage
 from ....chat.tools.types import Tool
 from ....configs import Config
 from ....llms.types import MaxTokens
@@ -100,13 +100,14 @@ class LlamacppChatChoicesService:
 
             ims: list = []
             for rm in request.v:
-                if isinstance(rm, ToolExecResultMessage):
+                if isinstance(rm, ToolUseResultMessage):
                     ims.append(dict(
                         role='tool',
-                        **(dict(id=rm.id) if rm.id is not None else {}),
-                        name=rm.name,
-                        content=check.isinstance(rm.c, str),
+                        **(dict(id=rm.tur.id) if rm.tur.id is not None else {}),
+                        name=rm.tur.name,
+                        content=check.isinstance(rm.tur.c, str),
                     ))
+
                 elif isinstance(rm, AiMessage):
                     tcs: list[dict] = []
                     for ter in rm.tool_exec_requests or []:
@@ -123,6 +124,7 @@ class LlamacppChatChoicesService:
                         **(dict(content=mc) if (mc := get_msg_content(rm)) is not None else {}),
                         **(dict(tool_calls=tcs) if tcs else {}),
                     ))
+
                 else:
                     ims.append(dict(
                         role=ROLES_MAP[type(rm)],
