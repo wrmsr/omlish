@@ -59,12 +59,21 @@ class AnyUserMessage(Message, lang.Abstract):
     pass
 
 
+UserChat: ta.TypeAlias = ta.Sequence[AnyUserMessage]
+
+
+#
+
+
 @dc.dataclass(frozen=True)
 class AnyAiMessage(Message, lang.Abstract):
     pass
 
 
-#
+AiChat: ta.TypeAlias = ta.Sequence[AnyAiMessage]
+
+
+##
 
 
 @dc.dataclass(frozen=True)
