@@ -3,7 +3,6 @@ import typing as ta
 
 from omlish import check
 from omlish import lang
-from omlish import marshal as msh
 from omlish.formats import json
 
 from .... import minichain as mc
@@ -49,7 +48,7 @@ class AskingToolExecutionConfirmation(ToolExecutionConfirmation):
             id=tr.id,
             name=tce.spec.name,
             args=tr.args,
-            spec=msh.marshal(tce.spec),
+            # spec=msh.marshal(tce.spec),
         )
         cr = await ptk.strict_confirm(f'Execute requested tool?\n\n{json.dumps_pretty(tr_dct)}\n\n')
 

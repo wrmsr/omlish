@@ -33,10 +33,10 @@ class TodoContext:
 
     def set_items(self, items: ta.Sequence[TodoItem] | None) -> ta.Sequence[TodoItem] | None:
         if items and any(item.id is None for item in items):
-            max_id = max(
+            max_id = max([
                 *[ii for item in items if (ii := _try_int(item.id)) is not None],
                 self._next_id - 1,
-            )
+            ])
             new_items: list[TodoItem] = []
             for item in items:
                 if item.id is None:

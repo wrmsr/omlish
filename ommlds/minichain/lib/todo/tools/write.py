@@ -1,11 +1,13 @@
 """
 TODO:
- - ContentNamespace
+ - ContentNamespace Example materializable class
 """
 import typing as ta
 
 from omlish import lang
+from omlish import marshal as msh
 
+from ....content.namespaces import ContentNamespace
 from ....tools.execution.catalog import ToolCatalogEntry
 from ....tools.execution.reflect import reflect_tool_catalog_entry
 from ....tools.reflect import tool_spec_override
@@ -17,41 +19,53 @@ from ..types import TodoItem
 ##
 
 
-@tool_spec_override(
-    desc=f"""
+class TodoWriteDescriptionChunks(ContentNamespace):
+    INTRO: ta.ClassVar[str] = """
         Use this tool to create and manage a structured list of todo items corresponding to subtasks for your current
         session. This helps you track progress, organize complex tasks, and demonstrate thoroughness to the user. It
         also helps the user understand the progress of the overall task and progress of their requests.
+    """
 
+    FIELD_DESCRIPTIONS: ta.ClassVar[str] = f"""
         A todo item is comprised of the following fields:
         - id: {TODO_ITEM_FIELD_DESCS['id']}
         - content: {TODO_ITEM_FIELD_DESCS['content']}
         - priority: {TODO_ITEM_FIELD_DESCS['priority']}
         - status: {TODO_ITEM_FIELD_DESCS['status']}
+    """
 
+    WHEN_USING_THIS_TOOL: ta.ClassVar[str] = """
         When using the todo write tool:
         - All items must be present on each use of the tool.
         - All fields except the id field must be present on all items. If not given, the id field will be automatically
           set to a valid integer.
+    """
 
-        Todo item priorities are as follows:
+    STATUS_DESCRIPTIONS: ta.ClassVar[str] = """
+        Todo item statuses are as follows:
         - pending: Task not yet started.
         - in_progress: Currently working on (limit to ONE task at a time).
         - completed: Task finished successfully.
         - cancelled: Task no longer needed.
+    """
 
+    MANAGING_ITEMS: ta.ClassVar[str] = """
         Manage todo items in the following manner:
         - Update todo item status in real-time as you work.
         - Mark todo items complete IMMEDIATELY after finishing (don't batch completions).
         - Only have ONE todo item task in_progress at any time.
         - Complete current todo item tasks before starting new ones.
         - Cancel todo items that become irrelevant.
+    """
 
+    BREAKING_DOWN: ta.ClassVar[str] = """
         Breakdown tasks in the following manner:
         - Create specific, actionable items.
         - Break complex tasks into smaller, manageable steps.
         - Use clear, descriptive task names.
+    """
 
+    USE_PROACTIVELY: ta.ClassVar[str] = """
         Use this tool proactively in these scenarios:
         - Complex multi-step tasks - When a task requires 3 or more distinct steps or actions.
         - Non-trivial and complex tasks - Tasks that require careful planning or multiple operations.
@@ -62,18 +76,26 @@ from ..types import TodoItem
         - After completing a task - Mark it complete and add any new follow-up tasks
         - When you start working on a new task, mark the todo item as in_progress. Ideally you should only have one todo
           item as in_progress at a time. Complete existing tasks before starting new ones.
+    """
 
+    SKIP_USE_WHEN: ta.ClassVar[str] = """
         Skip using this tool when:
         - There is only a single, straightforward task.
         - The task is trivial and tracking it provides no organizational benefit.
         - The task can be completed in less than 3 trivial steps.
         - The task is purely conversational or informational.
+    """
 
+    SKIP_WHEN_TRIVIAL: ta.ClassVar[str] = """
         You should not use this tool if there is only one trivial task to do. In this case you are better off just doing
         the task directly.
+    """
 
+    EXAMPLES_WHEN_HEADER: ta.ClassVar[str] = """
         ## Examples of WHEN to use the todo list
+    """
 
+    EXAMPLE_WHEN_1: ta.ClassVar[str] = """
         <example>
             <user>
                 I want to add a dark mode toggle to the application settings. Make sure you run the tests and build when
@@ -101,7 +123,9 @@ from ..types import TodoItem
                   the final task.
             </reasoning>
         </example>
+    """
 
+    EXAMPLE_WHEN_2: ta.ClassVar[str] = """
         <example>
             <user>
                 Help me rename the function getCwd to getCurrentWorkingDirectory across my project
@@ -128,7 +152,9 @@ from ..types import TodoItem
                 - This approach prevents missing any occurrences and maintains code consistency.
             </reasoning>
         </example>
+    """
 
+    EXAMPLE_WHEN_3: ta.ClassVar[str] = """
         <example>
             <user>
                 I need to implement these features for my e-commerce site: user registration, product catalog, shopping
@@ -151,7 +177,9 @@ from ..types import TodoItem
                 - This approach allows for tracking progress across the entire implementation.
             </reasoning>
         </example>
+    """
 
+    EXAMPLE_WHEN_4: ta.ClassVar[str] = """
         <example>
             <user>
                 Can you help optimize my React application? It's rendering slowly and has performance issues.
@@ -187,9 +215,13 @@ from ..types import TodoItem
                 - This systematic approach ensures all performance bottlenecks are addressed.
             </reasoning>
         </example>
+    """
 
+    EXAMPLES_WHEN_NOT_HEADER: ta.ClassVar[str] = """
         ## Examples of when NOT to use the todo list
+    """
 
+    EXAMPLE_WHEN_NOT_1: ta.ClassVar[str] = """
         <example>
             <user>
                 How do I print 'Hello World' in Python?
@@ -205,8 +237,10 @@ from ..types import TodoItem
                 The assistant did not use the todo list because this is a single, trivial task that can be completed in
                 one step. There's no need to track multiple tasks or steps for such a straightforward request.
             </reasoning>
-        </counter>
+        </example>
+    """
 
+    EXAMPLE_WHEN_NOT_2: ta.ClassVar[str] = """
         <example>
             <user>
                 What does the git status command do?
@@ -222,7 +256,9 @@ from ..types import TodoItem
                 multiple steps or tasks.
             </reasoning>
         </example>
+    """
 
+    EXAMPLE_WHEN_NOT_3: ta.ClassVar[str] = """
         <example>
             <user>
                 Can you add a comment to the calculateTotal function to explain what it does?
@@ -239,7 +275,9 @@ from ..types import TodoItem
                 organization.
             </reasoning>
         </example>
+    """
 
+    EXAMPLE_WHEN_NOT_4: ta.ClassVar[str] = """
         <example>
             <user>
                 Run npm install for me and tell me what happens.
@@ -263,12 +301,24 @@ from ..types import TodoItem
                 straightforward task.
             </reasoning>
         </example>
+    """
 
+    OUTRO: ta.ClassVar[str] = """
         When in doubt, use this tool. Being proactive with task management demonstrates attentiveness and ensures you
         complete all requirements successfully.
-    """,
+    """
+
+
+@tool_spec_override(
+    desc=TodoWriteDescriptionChunks,
 )
 def execute_todo_write_tool(todo_items: ta.Sequence[TodoItem]) -> str:
+    if todo_items:
+        todo_items = [
+            msh.unmarshal(o, TodoItem) if not isinstance(o, TodoItem) else o  # noqa
+            for o in todo_items
+        ]
+
     ctx = tool_todo_context()
     ctx.set_items(todo_items)
 

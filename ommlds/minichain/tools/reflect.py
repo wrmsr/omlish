@@ -155,10 +155,10 @@ class ToolReflector:
 
     #
 
-    def _prepare_desc(self, s: str | None) -> str | None:
+    def _prepare_desc(self, s: CanContent) -> CanContent:
         if s is None:
             return None
-        if not self._raw_descs:
+        if not self._raw_descs and isinstance(s, str):
             s = s.strip()
         return s
 
