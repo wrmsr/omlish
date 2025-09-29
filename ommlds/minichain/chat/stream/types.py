@@ -1,4 +1,3 @@
-import operator
 import typing as ta
 
 from omlish import dataclasses as dc
@@ -7,9 +6,13 @@ from omlish import marshal as msh
 
 from ...content.types import Content
 from ...stream.services import StreamOptions
+from ...tools.types import ToolUse
 from ...types import Option
 from ...types import Output
 from ..choices.types import ChatChoicesOptions
+
+
+msh.register_global_module_import('._marshal', __package__)
 
 
 ##
@@ -36,24 +39,21 @@ ChatChoicesStreamOutputs: ta.TypeAlias = ChatChoicesStreamOutput
 
 
 @dc.dataclass(frozen=True)
-class ToolUseDelta(lang.Final):
-    index: int | None = None  # FIXME: backend-specific, ditch
-    id: str | None = None
-    name: str | None = None
-    args: str | None = None
-
-
-@dc.dataclass(frozen=True)
-@msh.update_fields_metadata(['tool_exec_requests'], omit_if=operator.not_)
-class AiMessageDelta(lang.Final):
-    c: Content | None = dc.xfield(None, repr_fn=dc.opt_repr)
-
-    tool_exec_requests: ta.Sequence[ToolUseDelta] | None = dc.xfield(None, repr_fn=dc.opt_repr)
-
-
-@dc.dataclass(frozen=True)
-class AiChoiceDelta(lang.Final):
-    m: AiMessageDelta
+class AiChoiceDelta(lang.Sealed, lang.Abstract):
+    pass
 
 
 AiChoiceDeltas: ta.TypeAlias = ta.Sequence[AiChoiceDelta]
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class ContentAiChoiceDelta(AiChoiceDelta, lang.Final):
+    c: Content
+
+
+@dc.dataclass(frozen=True)
+class ToolUseAiChoiceDelta(AiChoiceDelta, lang.Final):
+    tu: ToolUse

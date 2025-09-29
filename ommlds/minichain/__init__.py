@@ -107,10 +107,11 @@ with _lang.auto_proxy_init(
         ChatChoicesStreamOutput,
         ChatChoicesStreamOutputs,
 
-        ToolUseDelta,
-        AiMessageDelta,
         AiChoiceDelta,
         AiChoiceDeltas,
+
+        ContentAiChoiceDelta,
+        ToolUseAiChoiceDelta,
     )
 
     from .chat.tools.execution import (  # noqa
