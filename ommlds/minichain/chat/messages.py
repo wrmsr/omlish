@@ -51,11 +51,24 @@ class Message(  # noqa
 Chat: ta.TypeAlias = ta.Sequence[Message]
 
 
+##
+
+
+@dc.dataclass(frozen=True)
+class AnyUserMessage(Message, lang.Abstract):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class AnyAiMessage(Message, lang.Abstract):
+    pass
+
+
 #
 
 
 @dc.dataclass(frozen=True)
-class SystemMessage(Message, lang.Final):
+class SystemMessage(AnyUserMessage, lang.Final):
     c: CanContent
 
 
@@ -64,7 +77,7 @@ class SystemMessage(Message, lang.Final):
 
 @dc.dataclass(frozen=True)
 @msh.update_fields_metadata(['name'], omit_if=operator.not_)
-class UserMessage(Message, lang.Final):
+class UserMessage(AnyUserMessage, lang.Final):
     c: CanContent
 
     name: str | None = dc.xfield(None, repr_fn=dc.opt_repr)
@@ -74,7 +87,7 @@ class UserMessage(Message, lang.Final):
 
 
 @dc.dataclass(frozen=True)
-class AiMessage(Message, lang.Final):
+class AiMessage(AnyAiMessage, lang.Final):
     c: Content | None = dc.xfield(None, repr_fn=dc.opt_repr)
 
 
@@ -82,12 +95,12 @@ class AiMessage(Message, lang.Final):
 
 
 @dc.dataclass(frozen=True)
-class ToolUseMessage(Message, lang.Final):
+class ToolUseMessage(AnyAiMessage, lang.Final):
     tu: ToolUse
 
 
 @dc.dataclass(frozen=True)
-class ToolUseResultMessage(Message, lang.Final):
+class ToolUseResultMessage(AnyUserMessage, lang.Final):
     tur: ToolUseResult
 
 

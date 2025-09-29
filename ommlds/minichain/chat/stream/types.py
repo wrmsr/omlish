@@ -37,7 +37,7 @@ ChatChoicesStreamOutputs: ta.TypeAlias = ChatChoicesStreamOutput
 
 @dc.dataclass(frozen=True)
 class ToolUseDelta(lang.Final):
-    index: int | None = None
+    index: int | None = None  # FIXME: backend-specific, ditch
     id: str | None = None
     name: str | None = None
     args: str | None = None

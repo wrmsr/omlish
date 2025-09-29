@@ -5,6 +5,8 @@ TODO:
 from omlish import lang
 from omlish import marshal as msh
 
+from .messages import AnyAiMessage
+from .messages import AnyUserMessage
 from .messages import Message
 
 
@@ -13,12 +15,17 @@ from .messages import Message
 
 @lang.static_init
 def _install_standard_marshaling() -> None:
-    msgs_poly = msh.polymorphism_from_subclasses(
+    for cls in [
+        AnyAiMessage,
+        AnyUserMessage,
         Message,
-        naming=msh.Naming.SNAKE,
-        strip_suffix=True,
-    )
-    msh.install_standard_factories(
-        msh.PolymorphismMarshalerFactory(msgs_poly),
-        msh.PolymorphismUnmarshalerFactory(msgs_poly),
-    )
+    ]:
+        cls_poly = msh.polymorphism_from_subclasses(
+            cls,
+            naming=msh.Naming.SNAKE,
+            strip_suffix=True,
+        )
+        msh.install_standard_factories(
+            msh.PolymorphismMarshalerFactory(cls_poly),
+            msh.PolymorphismUnmarshalerFactory(cls_poly),
+        )
