@@ -48,6 +48,9 @@ class Message(  # noqa
         return dc.replace(self, _metadata=tv.TypedValues(*self._metadata, *mds, override=override))
 
 
+Chat: ta.TypeAlias = ta.Sequence[Message]
+
+
 #
 
 
@@ -71,25 +74,21 @@ class UserMessage(Message, lang.Final):
 
 
 @dc.dataclass(frozen=True)
-@msh.update_fields_metadata(['tool_exec_requests'], omit_if=operator.not_)
 class AiMessage(Message, lang.Final):
     c: Content | None = dc.xfield(None, repr_fn=dc.opt_repr)
-
-    tool_exec_requests: ta.Sequence[ToolUse] | None = dc.xfield(None, repr_fn=dc.opt_repr)
 
 
 #
 
 
 @dc.dataclass(frozen=True)
+class ToolUseMessage(Message, lang.Final):
+    tu: ToolUse
+
+
+@dc.dataclass(frozen=True)
 class ToolUseResultMessage(Message, lang.Final):
     tur: ToolUseResult
-
-
-##
-
-
-Chat: ta.TypeAlias = ta.Sequence[Message]
 
 
 ##
@@ -109,5 +108,9 @@ class _MessageContentTransform(ContentTransform, lang.Final, lang.NotInstantiabl
         return dc.replace(m, c=self.apply(m.c))
 
     @dispatch.install_method(ContentTransform.apply)
-    def apply_tool_exec_result_message(self, m: ToolUseResultMessage) -> ToolUseResultMessage:
+    def apply_tool_use_message(self, m: ToolUseMessage) -> ToolUseMessage:
+        return dc.replace(m, tu=self.apply(m.tu))
+
+    @dispatch.install_method(ContentTransform.apply)
+    def apply_tool_use_result_message(self, m: ToolUseResultMessage) -> ToolUseResultMessage:
         return dc.replace(m, tur=self.apply(m.tur))

@@ -209,5 +209,9 @@ class ToolUseResult(lang.Final):
 
 class _ToolUseContentTransform(ContentTransform, lang.Final, lang.NotInstantiable):
     @dispatch.install_method(ContentTransform.apply)
+    def apply_tool_use(self, tu: ToolUse) -> ToolUse:
+        return tu  # TODO: args are Content
+
+    @dispatch.install_method(ContentTransform.apply)
     def apply_tool_use_result(self, tur: ToolUseResult) -> ToolUseResult:
         return dc.replace(tur, c=self.apply(tur.c))  # noqa

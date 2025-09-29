@@ -153,12 +153,14 @@ with _lang.auto_proxy_init(
     )
 
     from .chat.messages import (  # noqa
-        AiMessage,
-        Chat,
         Message,
+        Chat,
+
         SystemMessage,
-        ToolUseResultMessage,
         UserMessage,
+        AiMessage,
+        ToolUseMessage,
+        ToolUseResultMessage,
     )
 
     from .chat.services import (  # noqa
