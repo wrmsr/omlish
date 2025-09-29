@@ -89,7 +89,10 @@ class CodeChatSession(ChatSession['CodeChatSession.Config']):
                 if not i and self._config.initial_message is not None:
                     req_msg = mc.UserMessage(self._config.initial_message)
                 else:
-                    prompt = await ptk.prompt('> ')
+                    try:
+                        prompt = await ptk.prompt('> ')
+                    except EOFError:
+                        break
                     req_msg = mc.UserMessage(prompt)
 
                 state = self._state_manager.extend_chat([req_msg])

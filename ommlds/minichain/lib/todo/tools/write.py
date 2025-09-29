@@ -39,6 +39,7 @@ class TodoWriteDescriptionChunks(ContentNamespace):
         - All items must be present on each use of the tool.
         - All fields except the id field must be present on all items. If not given, the id field will be automatically
           set to a valid integer.
+        - The new todo list, including any generated ids, will be returned from the tool.
     """
 
     STATUS_DESCRIPTIONS: ta.ClassVar[str] = """
@@ -312,7 +313,7 @@ class TodoWriteDescriptionChunks(ContentNamespace):
 @tool_spec_override(
     desc=TodoWriteDescriptionChunks,
 )
-def execute_todo_write_tool(todo_items: ta.Sequence[TodoItem]) -> str:
+def execute_todo_write_tool(todo_items: ta.Sequence[TodoItem]) -> ta.Sequence[TodoItem]:
     if todo_items:
         todo_items = [
             msh.unmarshal(o, TodoItem) if not isinstance(o, TodoItem) else o  # noqa
@@ -320,11 +321,15 @@ def execute_todo_write_tool(todo_items: ta.Sequence[TodoItem]) -> str:
         ]
 
     ctx = tool_todo_context()
-    ctx.set_items(todo_items)
+    out_items = ctx.set_items(todo_items)
 
-    return 'Todo list updated.'
+    return out_items or []
 
 
 @lang.cached_function
 def todo_write_tool() -> ToolCatalogEntry:
-    return reflect_tool_catalog_entry(execute_todo_write_tool)
+    return reflect_tool_catalog_entry(
+        execute_todo_write_tool,
+        marshal_input=True,
+        marshal_output=True,
+    )

@@ -7,6 +7,9 @@ import typing as ta
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
+from omlish import marshal as msh
+from omlish import reflect as rfl
+from omlish.formats import json
 
 
 D = ta.TypeVar('D')
@@ -51,7 +54,11 @@ class ToolFn(lang.Final):
             check.arg(dc.is_dataclass(self.cls))
 
     @dc.dataclass(frozen=True)
-    class KwargsInput(Input, lang.Final):
+    class MarshalInput(Input, lang.Final):
+        rtys: ta.Mapping[str, rfl.Type]
+
+    @dc.dataclass(frozen=True)
+    class RawKwargsInput(Input, lang.Final):
         pass
 
     input: Input
@@ -69,6 +76,10 @@ class ToolFn(lang.Final):
         def __post_init__(self) -> None:
             check.isinstance(self.cls, type)
             check.arg(dc.is_dataclass(self.cls))
+
+    @dc.dataclass(frozen=True)
+    class MarshalOutput(Output, lang.Final):
+        rty: rfl.Type
 
     @dc.dataclass(frozen=True)
     class RawStringOutput(Output, lang.Final):
@@ -115,20 +126,44 @@ async def execute_tool_fn(
     else:
         raise TypeError(tfn.impl)
 
-    out: ta.Any
+    #
+
+    fn_kw: ta.Mapping[str, ta.Any]
     if isinstance(tfn.input, ToolFn.DataclassInput):
         raise NotImplementedError
-    elif isinstance(tfn.input, ToolFn.KwargsInput):
-        out = await m_fn(**args)
+
+    elif isinstance(tfn.input, ToolFn.MarshalInput):
+        fn_kw_dct: dict[str, ta.Any] = {}
+        for k, v in args.items():
+            fn_kw_dct[k] = msh.unmarshal(v, tfn.input.rtys[k])
+        fn_kw = fn_kw_dct
+
+    elif isinstance(tfn.input, ToolFn.RawKwargsInput):
+        fn_kw = args
+
     else:
-        raise NotImplementedError
+        raise TypeError(tfn.input)
+
+    #
+
+    fn_out = await m_fn(**fn_kw)
+
+    #
 
     ret: str
     if isinstance(tfn.output, ToolFn.DataclassOutput):
         raise NotImplementedError
+
+    elif isinstance(tfn.output, ToolFn.MarshalOutput):
+        out_v = msh.marshal(fn_out, tfn.output.rty)
+        ret = json.dumps_compact(out_v)
+
     elif isinstance(tfn.output, ToolFn.RawStringOutput):
-        ret = check.isinstance(out, str)
+        ret = check.isinstance(fn_out, str)
+
     else:
-        raise NotImplementedError
+        raise TypeError(tfn.output)
+
+    #
 
     return ret
