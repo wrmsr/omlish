@@ -3829,7 +3829,7 @@ def dir_dict(o: ta.Any) -> ta.Dict[str, ta.Any]:
 ##
 
 
-DEFAULT_PYCHARM_VERSION = '242.23726.102'
+DEFAULT_PYCHARM_VERSION = '252.26199.168'
 
 
 @dc.dataclass(frozen=True)

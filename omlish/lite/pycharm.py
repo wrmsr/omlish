@@ -6,7 +6,7 @@ import typing as ta
 ##
 
 
-DEFAULT_PYCHARM_VERSION = '242.23726.102'
+DEFAULT_PYCHARM_VERSION = '252.26199.168'
 
 
 @dc.dataclass(frozen=True)
