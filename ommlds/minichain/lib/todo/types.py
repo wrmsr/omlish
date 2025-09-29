@@ -38,7 +38,12 @@ TOOL_PRIORITIES: ta.Sequence[str] = str_literal_values(ToolPriority)
 
 @dc.dataclass(frozen=True, kw_only=True)
 class TodoItem(lang.Final):
-    id: str = dc.field(metadata=tool_param_metadata(desc='A unique identifier for this todo item.'))
+    id: str | None = dc.field(default=None, metadata=tool_param_metadata(
+        desc=(
+            'A unique identifier for this todo item within the current session. '
+            'If this is not provided it will be automatically set to an integer.'
+        ),
+    ))
     content: str = dc.field(metadata=tool_param_metadata(desc='A brief description of the task.'))
     priority: ToolPriority = dc.field(metadata=tool_param_metadata(
         desc=f'Priority of the task: {join_human_readable_str_list(map(repr, TOOL_PRIORITIES))}.',

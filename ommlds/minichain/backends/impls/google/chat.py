@@ -20,6 +20,7 @@ from ....chat.messages import SystemMessage
 from ....chat.messages import ToolExecResultMessage
 from ....chat.messages import UserMessage
 from ....chat.tools.types import Tool
+from ....content.types import Content
 from ....models.configs import ModelName
 from ....standard import ApiKey
 from ....tools.types import ToolExecRequest
@@ -59,7 +60,7 @@ class GoogleChatChoicesService:
 
     ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
         UserMessage: 'user',
-        AiMessage: 'assistant',
+        AiMessage: 'model',
     }
 
     async def invoke(
@@ -79,6 +80,7 @@ class GoogleChatChoicesService:
                         text=check.not_none(self._get_msg_content(m)),
                     )],
                 )
+
             elif isinstance(m, ToolExecResultMessage):
                 tr_resp_val: pt.Value
                 if m.c is None:
@@ -98,6 +100,26 @@ class GoogleChatChoicesService:
                         ),
                     )],
                 ))
+
+            elif isinstance(m, AiMessage):
+                ai_parts: list[pt.Part] = []
+                if m.c is not None:
+                    ai_parts.append(pt.Part(
+                        text=check.not_none(self._get_msg_content(m)),
+                    ))
+                for teq in m.tool_exec_requests or []:
+                    ai_parts.append(pt.Part(
+                        function_call=pt.FunctionCall(
+                            id=teq.id,
+                            name=teq.name,
+                            args=teq.args,
+                        ),
+                    ))
+                g_contents.append(pt.Content(
+                    parts=ai_parts,
+                    role='model',
+                ))
+
             else:
                 g_contents.append(pt.Content(
                     parts=[pt.Part(
@@ -137,17 +159,23 @@ class GoogleChatChoicesService:
 
         ai_choices: list[AiChoice] = []
         for c in g_resp.candidates or []:
-            g_resp_part = check.single(check.not_none(check.not_none(c.content).parts))
-            ter: ToolExecRequest | None = None
-            if (g_fc := g_resp_part.function_call) is not None:
-                ter = ToolExecRequest(
-                    id=g_fc.id,
-                    name=g_fc.name,
-                    args=g_fc.args or {},
-                )
+            ai_c: Content | None = None
+            ters: list[ToolExecRequest] = []
+            for g_resp_part in check.not_none(check.not_none(c.content).parts):
+                if (g_txt := g_resp_part.text) is not None:
+                    check.none(ai_c)
+                    ai_c = g_txt
+                elif (g_fc := g_resp_part.function_call) is not None:
+                    ters.append(ToolExecRequest(
+                        id=g_fc.id,
+                        name=g_fc.name,
+                        args=g_fc.args or {},
+                    ))
+                else:
+                    raise TypeError(g_resp_part)
             ai_choices.append(AiChoice(AiMessage(
-                c=g_resp_part.text,
-                tool_exec_requests=[ter] if ter is not None else None,
+                c=ai_c,
+                tool_exec_requests=ters if ters else None,
             )))
 
         return ChatChoicesResponse(ai_choices)

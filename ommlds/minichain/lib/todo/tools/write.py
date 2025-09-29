@@ -31,7 +31,8 @@ from ..types import TodoItem
 
         When using the todo write tool:
         - All items must be present on each use of the tool.
-        - All fields must be present on all items.
+        - All fields except the id field must be present on all items. If not given, the id field will be automatically
+          set to a valid integer.
 
         Todo item priorities are as follows:
         - pending: Task not yet started.
