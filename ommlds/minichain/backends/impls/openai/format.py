@@ -206,7 +206,7 @@ class OpenaiChatRequestHandler:
 
     def build_ai_choice_delta(self, delta: ta.Mapping[str, ta.Any]) -> ContentAiChoiceDelta:
         return ContentAiChoiceDelta(
-            delta.get('content'),
+            check.not_none(delta.get('content')),
             # FIXME:
             # tool_exec_requests=[
             #     ToolUse(

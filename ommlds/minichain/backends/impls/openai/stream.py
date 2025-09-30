@@ -113,12 +113,13 @@ class OpenaiChatChoicesStreamService:
                                 if not sj['choices']:
                                     continue
 
-                                await sink.emit(AiChoicesDeltas([
-                                    AiChoiceDeltas([
-                                        rh.build_ai_choice_delta(choice['delta']),
-                                    ])
-                                    for choice in sj['choices']
-                                ]))
+                                if any(choice['delta'] for choice in sj['choices']):
+                                    await sink.emit(AiChoicesDeltas([
+                                        AiChoiceDeltas(
+                                            [rh.build_ai_choice_delta(choice['delta'])] if choice['delta'] else [],
+                                        )
+                                        for choice in sj['choices']
+                                    ]))
 
                     if not b:
                         return []
