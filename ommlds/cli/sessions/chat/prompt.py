@@ -83,10 +83,10 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
                 lst: list[str] = []
                 async for o in st_resp:
                     if o:
-                        m = check.isinstance(check.single(check.single(o.choices).deltas), mc.AiMessage)
-                        if m.c is not None:
-                            print(check.isinstance(m.c, str), end='', flush=True)
-                            lst.append(check.isinstance(m.c, str))
+                        c = check.isinstance(check.single(check.single(o.choices).deltas), mc.ContentAiChoiceDelta).c
+                        if c is not None:
+                            print(check.isinstance(c, str), end='', flush=True)
+                            lst.append(check.isinstance(c, str))
                 print()
 
             resp_m = mc.AiMessage(''.join(lst))

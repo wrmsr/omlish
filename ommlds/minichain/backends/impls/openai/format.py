@@ -20,6 +20,7 @@ from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
 from ....chat.stream.types import ContentAiChoiceDelta
 from ....chat.tools.types import Tool
+from ....content.json import JsonContent
 from ....content.prepare import prepare_content_str
 from ....llms.types import MaxTokens
 from ....llms.types import Temperature
@@ -72,10 +73,17 @@ def build_request_messages(chat: Chat) -> ta.Sequence[ta.Mapping[str, ta.Any]]:
             ))
 
         elif isinstance(m, ToolUseResultMessage):
+            tc: str
+            if isinstance(m.tur.c, str):
+                tc = m.tur.c
+            elif isinstance(m.tur.c, JsonContent):
+                tc = json.dumps_compact(m.tur.c)
+            else:
+                raise TypeError(m.tur.c)
             out.append(dict(
                 role='tool',
                 tool_call_id=m.tur.id,
-                content=check.isinstance(m.tur.c, str),
+                content=tc,
             ))
 
         else:

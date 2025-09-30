@@ -242,6 +242,9 @@ class ReplicaMode(_enum.Enum):
     MOUNTED = 'mounted'
 
 
+SensitiveString = _ta.NewType('SensitiveString', str)
+
+
 @_dc.dataclass(frozen=True, kw_only=True)
 class SnapshotQuotaExceededFault(
     _base.Shape,
@@ -740,9 +743,9 @@ class CreateDBInstanceMessage(
         shape_name='String',
     ))
 
-    master_user_password: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+    master_user_password: SensitiveString | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='MasterUserPassword',
-        shape_name='String',
+        shape_name='SensitiveString',
     ))
 
     db_security_groups: DBSecurityGroupNameList | None = _dc.field(default=None, metadata=_base.field_metadata(
@@ -817,6 +820,11 @@ class CreateDBInstanceMessage(
         shape_name='IntegerOptional',
     ))
 
+    storage_throughput: IntegerOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='StorageThroughput',
+        shape_name='IntegerOptional',
+    ))
+
     option_group_name: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='OptionGroupName',
         shape_name='String',
@@ -858,9 +866,9 @@ class CreateDBInstanceMessage(
         shape_name='String',
     ))
 
-    tde_credential_password: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+    tde_credential_password: SensitiveString | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='TdeCredentialPassword',
-        shape_name='String',
+        shape_name='SensitiveString',
     ))
 
     storage_encrypted: BooleanOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
@@ -981,8 +989,8 @@ class CreateDBInstanceMessage(
         shape_name='BooleanOptional',
     ))
 
-    custom_iam_instance_profile: str | None = _dc.field(default=None, metadata=_base.field_metadata(
-        member_name='CustomIamInstanceProfile',
+    network_type: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='NetworkType',
         shape_name='String',
     ))
 
@@ -991,14 +999,19 @@ class CreateDBInstanceMessage(
         shape_name='String',
     ))
 
-    network_type: str | None = _dc.field(default=None, metadata=_base.field_metadata(
-        member_name='NetworkType',
+    custom_iam_instance_profile: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='CustomIamInstanceProfile',
         shape_name='String',
     ))
 
-    storage_throughput: IntegerOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
-        member_name='StorageThroughput',
-        shape_name='IntegerOptional',
+    db_system_id: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='DBSystemId',
+        shape_name='String',
+    ))
+
+    ca_certificate_identifier: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='CACertificateIdentifier',
+        shape_name='String',
     ))
 
     manage_master_user_password: BooleanOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
@@ -1011,23 +1024,13 @@ class CreateDBInstanceMessage(
         shape_name='String',
     ))
 
-    ca_certificate_identifier: str | None = _dc.field(default=None, metadata=_base.field_metadata(
-        member_name='CACertificateIdentifier',
-        shape_name='String',
-    ))
-
-    db_system_id: str | None = _dc.field(default=None, metadata=_base.field_metadata(
-        member_name='DBSystemId',
-        shape_name='String',
+    multi_tenant: BooleanOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='MultiTenant',
+        shape_name='BooleanOptional',
     ))
 
     dedicated_log_volume: BooleanOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='DedicatedLogVolume',
-        shape_name='BooleanOptional',
-    ))
-
-    multi_tenant: BooleanOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
-        member_name='MultiTenant',
         shape_name='BooleanOptional',
     ))
 
@@ -1062,9 +1065,9 @@ class PendingModifiedValues(
         shape_name='IntegerOptional',
     ))
 
-    master_user_password: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+    master_user_password: SensitiveString | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='MasterUserPassword',
-        shape_name='String',
+        shape_name='SensitiveString',
     ))
 
     port: IntegerOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
@@ -1094,6 +1097,11 @@ class PendingModifiedValues(
 
     iops: IntegerOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Iops',
+        shape_name='IntegerOptional',
+    ))
+
+    storage_throughput: IntegerOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='StorageThroughput',
         shape_name='IntegerOptional',
     ))
 
@@ -1128,11 +1136,6 @@ class PendingModifiedValues(
         shape_name='ProcessorFeatureList',
     ))
 
-    iam_database_authentication_enabled: BooleanOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
-        member_name='IAMDatabaseAuthenticationEnabled',
-        shape_name='BooleanOptional',
-    ))
-
     automation_mode: AutomationMode | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='AutomationMode',
         shape_name='AutomationMode',
@@ -1143,14 +1146,14 @@ class PendingModifiedValues(
         shape_name='TStamp',
     ))
 
-    storage_throughput: IntegerOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
-        member_name='StorageThroughput',
-        shape_name='IntegerOptional',
+    multi_tenant: BooleanOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='MultiTenant',
+        shape_name='BooleanOptional',
     ))
 
-    engine: str | None = _dc.field(default=None, metadata=_base.field_metadata(
-        member_name='Engine',
-        shape_name='String',
+    iam_database_authentication_enabled: BooleanOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='IAMDatabaseAuthenticationEnabled',
+        shape_name='BooleanOptional',
     ))
 
     dedicated_log_volume: BooleanOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
@@ -1158,9 +1161,9 @@ class PendingModifiedValues(
         shape_name='BooleanOptional',
     ))
 
-    multi_tenant: BooleanOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
-        member_name='MultiTenant',
-        shape_name='BooleanOptional',
+    engine: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='Engine',
+        shape_name='String',
     ))
 
 
@@ -1260,11 +1263,6 @@ class DBInstance(
     db_instance_status: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='DBInstanceStatus',
         shape_name='String',
-    ))
-
-    automatic_restart_time: TStamp | None = _dc.field(default=None, metadata=_base.field_metadata(
-        member_name='AutomaticRestartTime',
-        shape_name='TStamp',
     ))
 
     master_username: str | None = _dc.field(default=None, metadata=_base.field_metadata(
@@ -1389,6 +1387,11 @@ class DBInstance(
 
     iops: IntegerOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Iops',
+        shape_name='IntegerOptional',
+    ))
+
+    storage_throughput: IntegerOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='StorageThroughput',
         shape_name='IntegerOptional',
     ))
 
@@ -1569,10 +1572,14 @@ class DBInstance(
         shape_name='TagList',
     ))
 
-    db_instance_automated_backups_replications: DBInstanceAutomatedBackupsReplicationList | None = _dc.field(default=None, metadata=_base.field_metadata(
-        member_name='DBInstanceAutomatedBackupsReplications',
-        value_type=_base.ListValueType(DBInstanceAutomatedBackupsReplication),
-        shape_name='DBInstanceAutomatedBackupsReplicationList',
+    automation_mode: AutomationMode | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='AutomationMode',
+        shape_name='AutomationMode',
+    ))
+
+    resume_full_automation_mode_time: TStamp | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='ResumeFullAutomationModeTime',
+        shape_name='TStamp',
     ))
 
     customer_owned_ip_enabled: BooleanOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
@@ -1580,8 +1587,8 @@ class DBInstance(
         shape_name='BooleanOptional',
     ))
 
-    aws_backup_recovery_point_arn: str | None = _dc.field(default=None, metadata=_base.field_metadata(
-        member_name='AwsBackupRecoveryPointArn',
+    network_type: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='NetworkType',
         shape_name='String',
     ))
 
@@ -1610,13 +1617,24 @@ class DBInstance(
         shape_name='BooleanOptional',
     ))
 
-    automation_mode: AutomationMode | None = _dc.field(default=None, metadata=_base.field_metadata(
-        member_name='AutomationMode',
-        shape_name='AutomationMode',
+    aws_backup_recovery_point_arn: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='AwsBackupRecoveryPointArn',
+        shape_name='String',
     ))
 
-    resume_full_automation_mode_time: TStamp | None = _dc.field(default=None, metadata=_base.field_metadata(
-        member_name='ResumeFullAutomationModeTime',
+    db_instance_automated_backups_replications: DBInstanceAutomatedBackupsReplicationList | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='DBInstanceAutomatedBackupsReplications',
+        value_type=_base.ListValueType(DBInstanceAutomatedBackupsReplication),
+        shape_name='DBInstanceAutomatedBackupsReplicationList',
+    ))
+
+    backup_target: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='BackupTarget',
+        shape_name='String',
+    ))
+
+    automatic_restart_time: TStamp | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='AutomaticRestartTime',
         shape_name='TStamp',
     ))
 
@@ -1625,24 +1643,14 @@ class DBInstance(
         shape_name='String',
     ))
 
-    backup_target: str | None = _dc.field(default=None, metadata=_base.field_metadata(
-        member_name='BackupTarget',
-        shape_name='String',
-    ))
-
-    network_type: str | None = _dc.field(default=None, metadata=_base.field_metadata(
-        member_name='NetworkType',
-        shape_name='String',
-    ))
-
     activity_stream_policy_status: ActivityStreamPolicyStatus | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ActivityStreamPolicyStatus',
         shape_name='ActivityStreamPolicyStatus',
     ))
 
-    storage_throughput: IntegerOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
-        member_name='StorageThroughput',
-        shape_name='IntegerOptional',
+    certificate_details: CertificateDetails | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='CertificateDetails',
+        shape_name='CertificateDetails',
     ))
 
     db_system_id: str | None = _dc.field(default=None, metadata=_base.field_metadata(
@@ -1655,11 +1663,6 @@ class DBInstance(
         shape_name='MasterUserSecret',
     ))
 
-    certificate_details: CertificateDetails | None = _dc.field(default=None, metadata=_base.field_metadata(
-        member_name='CertificateDetails',
-        shape_name='CertificateDetails',
-    ))
-
     read_replica_source_db_cluster_identifier: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='ReadReplicaSourceDBClusterIdentifier',
         shape_name='String',
@@ -1670,6 +1673,11 @@ class DBInstance(
         shape_name='String',
     ))
 
+    multi_tenant: BooleanOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='MultiTenant',
+        shape_name='BooleanOptional',
+    ))
+
     dedicated_log_volume: bool | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='DedicatedLogVolume',
         shape_name='Boolean',
@@ -1677,11 +1685,6 @@ class DBInstance(
 
     is_storage_config_upgrade_available: BooleanOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='IsStorageConfigUpgradeAvailable',
-        shape_name='BooleanOptional',
-    ))
-
-    multi_tenant: BooleanOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
-        member_name='MultiTenant',
         shape_name='BooleanOptional',
     ))
 
@@ -1872,6 +1875,7 @@ DELETE_DB_INSTANCE = _base.Operation(
         DBSnapshotAlreadyExistsFault,
         InvalidDBClusterStateFault,
         InvalidDBInstanceStateFault,
+        KMSKeyNotAccessibleFault,
         SnapshotQuotaExceededFault,
     ],
 )
@@ -1892,6 +1896,7 @@ REBOOT_DB_INSTANCE = _base.Operation(
     errors=[
         DBInstanceNotFoundFault,
         InvalidDBInstanceStateFault,
+        KMSKeyNotAccessibleFault,
     ],
 )
 
