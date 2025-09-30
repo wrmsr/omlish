@@ -18,6 +18,7 @@ from ....chat.stream.services import ChatChoicesStreamResponse
 from ....chat.stream.services import static_check_is_chat_choices_stream_service
 from ....chat.stream.types import AiChoiceDelta
 from ....chat.stream.types import AiChoiceDeltas
+from ....chat.stream.types import AiChoicesDeltas
 from ....chat.stream.types import ChatChoicesStreamOption
 from ....configs import Config
 from ....resources import ResourcesOption
@@ -83,7 +84,7 @@ class OpenaiChatChoicesStreamService:
             http_client = rs.enter_context(http.client())
             http_response = rs.enter_context(http_client.stream_request(http_request))
 
-            async def inner(sink: StreamResponseSink[AiChoiceDeltas]) -> ta.Sequence[ChatChoicesOutputs]:
+            async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ta.Sequence[ChatChoicesOutputs]:
                 db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
                 sd = sse.SseDecoder()
                 while True:
@@ -112,10 +113,12 @@ class OpenaiChatChoicesStreamService:
                                 if not sj['choices']:
                                     continue
 
-                                await sink.emit([
-                                    AiChoiceDelta(rh.build_ai_message_delta(choice['delta']))
+                                await sink.emit(AiChoicesDeltas([
+                                    AiChoiceDeltas([
+                                        rh.build_ai_choice_delta(choice['delta']),
+                                    ])
                                     for choice in sj['choices']
-                                ])
+                                ]))
 
                     if not b:
                         return []
