@@ -19,9 +19,10 @@ from ....chat.messages import UserMessage
 from ....chat.stream.services import ChatChoicesStreamRequest
 from ....chat.stream.services import ChatChoicesStreamResponse
 from ....chat.stream.services import static_check_is_chat_choices_stream_service
+from ....chat.stream.types import ContentAiChoiceDelta
 from ....chat.stream.types import AiChoiceDelta
 from ....chat.stream.types import AiChoiceDeltas
-from ....chat.stream.types import AiMessageDelta
+from ....chat.stream.types import AiChoicesDeltas
 from ....models.configs import ModelName
 from ....resources import UseResources
 from ....standard import ApiKey
@@ -101,7 +102,7 @@ class GoogleChatChoicesStreamService:
             http_client = rs.enter_context(http.client())
             http_response = rs.enter_context(http_client.stream_request(http_request))
 
-            async def inner(sink: StreamResponseSink[AiChoiceDeltas]) -> ta.Sequence[ChatChoicesOutputs] | None:
+            async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ta.Sequence[ChatChoicesOutputs] | None:
                 db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
                 while True:
                     # FIXME: read1 not on response stream protocol
@@ -117,7 +118,11 @@ class GoogleChatChoicesStreamService:
                             gcr = msh.unmarshal(json.loads(l[6:]), pt.GenerateContentResponse)  # noqa
                             cnd = check.single(check.not_none(gcr.candidates))
                             for p in check.not_none(cnd.content).parts or []:
-                                await sink.emit([AiChoiceDelta(AiMessageDelta(check.not_none(p.text)))])
+                                await sink.emit(AiChoicesDeltas([
+                                    AiChoiceDeltas([
+                                        ContentAiChoiceDelta(check.not_none(p.text)),
+                                    ]),
+                                ]))
 
                     if not b:
                         return []

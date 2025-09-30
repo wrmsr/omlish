@@ -34,7 +34,7 @@ from ....types import Option
 ##
 
 
-def build_request_messages(chat: Chat) -> list[ta.Mapping[str, ta.Any]]:
+def build_request_messages(chat: Chat) -> ta.Sequence[ta.Mapping[str, ta.Any]]:
     out: list[dict[str, ta.Any]] = []
 
     for m in chat:
