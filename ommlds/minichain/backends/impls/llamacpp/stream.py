@@ -13,9 +13,10 @@ from ....chat.choices.services import ChatChoicesOutputs
 from ....chat.stream.services import ChatChoicesStreamRequest
 from ....chat.stream.services import ChatChoicesStreamResponse
 from ....chat.stream.services import static_check_is_chat_choices_stream_service
+from ....chat.stream.types import ContentAiChoiceDelta
 from ....chat.stream.types import AiChoiceDelta
 from ....chat.stream.types import AiChoiceDeltas
-from ....chat.stream.types import AiMessageDelta
+from ....chat.stream.types import AiChoicesDeltas
 from ....configs import Config
 from ....models.configs import ModelPath
 from ....resources import UseResources
@@ -75,10 +76,10 @@ class LlamacppChatChoicesStreamService(lang.ExitStacked):
 
             rs.enter_context(lang.defer(close_output))
 
-            async def inner(sink: StreamResponseSink[AiChoiceDeltas]) -> ta.Sequence[ChatChoicesOutputs] | None:
+            async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ta.Sequence[ChatChoicesOutputs] | None:
                 for chunk in output:
                     check.state(chunk['object'] == 'chat.completion.chunk')
-                    l: list[AiChoiceDelta] = []
+                    l: list[AiChoiceDeltas] = []
                     for choice in chunk['choices']:
                         # FIXME: check role is assistant
                         # FIXME: stop reason
@@ -86,8 +87,8 @@ class LlamacppChatChoicesStreamService(lang.ExitStacked):
                             continue
                         if not (content := delta.get('content', '')):
                             continue
-                        l.append(AiChoiceDelta(AiMessageDelta(content)))
-                    await sink.emit(l)
+                        l.append(AiChoiceDeltas([ContentAiChoiceDelta(content)]))
+                    await sink.emit(AiChoicesDeltas(l))
                 return None
 
             return await new_stream_response(rs, inner)
