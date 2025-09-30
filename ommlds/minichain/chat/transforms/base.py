@@ -16,7 +16,7 @@ MessageT = ta.TypeVar('MessageT', bound=Message)
 
 class MessageTransform(lang.Abstract, ta.Generic[MessageT]):
     @abc.abstractmethod
-    def transform_message(self, message: MessageT) -> MessageT:
+    def transform_message(self, message: MessageT) -> Chat:
         raise NotImplementedError
 
 
@@ -24,17 +24,18 @@ class MessageTransform(lang.Abstract, ta.Generic[MessageT]):
 class CompositeMessageTransform(MessageTransform):
     mts: ta.Sequence[MessageTransform]
 
-    def transform_message(self, message: Message) -> Message:
+    def transform_message(self, message: Message) -> Chat:
+        chat: Chat = [message]
         for mt in self.mts:
-            message = mt.transform_message(message)
-        return message
+            chat = [o for i in chat for o in mt.transform_message(i)]
+        return chat
 
 
 @dc.dataclass(frozen=True)
 class FnMessageTransform(MessageTransform, ta.Generic[MessageT]):
     fn: ta.Callable[[MessageT], MessageT]
 
-    def transform_message(self, message: MessageT) -> MessageT:
+    def transform_message(self, message: MessageT) -> Chat:
         return self.fn(message)
 
 
@@ -43,16 +44,16 @@ class TypeFilteredMessageTransform(MessageTransform[Message], ta.Generic[Message
     ty: type | tuple[type, ...]
     mt: MessageTransform[MessageT]
 
-    def transform_message(self, message: Message) -> Message:
+    def transform_message(self, message: Message) -> Chat:
         if isinstance(message, self.ty):
             return self.mt.transform_message(ta.cast(MessageT, message))
         else:
-            return message
+            return [message]
 
 
 @ta.overload
 def fn_message_transform(
-        fn: ta.Callable[[MessageT], MessageT],
+        fn: ta.Callable[[MessageT], Chat],
         ty: type[MessageT],
 ) -> MessageTransform[MessageT]:
     ...
@@ -60,7 +61,7 @@ def fn_message_transform(
 
 @ta.overload
 def fn_message_transform(
-        fn: ta.Callable[[Message], Message],
+        fn: ta.Callable[[Message], Chat],
         ty: type | tuple[type, ...] | None = None,
 ) -> MessageTransform:
     ...
@@ -108,7 +109,7 @@ class MessageTransformChatTransform(ChatTransform):
     mt: MessageTransform
 
     def transform_chat(self, chat: Chat) -> Chat:
-        return [self.mt.transform_message(m) for m in chat]
+        return [o for i in chat for o in self.mt.transform_message(i)]
 
 
 @dc.dataclass(frozen=True)

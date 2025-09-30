@@ -10,11 +10,14 @@ from ....chat.choices.services import ChatChoicesResponse
 from ....chat.choices.types import AiChoice
 from ....chat.choices.types import ChatChoicesOptions
 from ....chat.messages import AiMessage
+from ....chat.messages import AiChat
 from ....chat.messages import Chat
 from ....chat.messages import Message
+from ....chat.messages import AnyAiMessage
 from ....chat.messages import SystemMessage
 from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
+from ....chat.messages import ToolUseMessage
 from ....chat.stream.types import ContentAiChoiceDelta
 from ....chat.tools.types import Tool
 from ....content.prepare import prepare_content_str
@@ -31,45 +34,54 @@ from ....types import Option
 ##
 
 
-def build_request_message(m: Message) -> ta.Mapping[str, ta.Any]:
-    if isinstance(m, SystemMessage):
-        return dict(
-            role='system',
-            content=m.c,
-        )
+def build_request_messages(chat: Chat) -> list[ta.Mapping[str, ta.Any]]:
+    out: list[dict[str, ta.Any]] = []
 
-    elif isinstance(m, AiMessage):
-        return dict(
-            role='assistant',
-            content=check.isinstance(m.c, (str, None)),
-            **(dict(tool_calls=[
-                dict(
-                    id=te.id,
-                    function=dict(
-                        arguments=check.not_none(te.raw_args),
-                        name=te.name,
+    for m in chat:
+        if isinstance(m, SystemMessage):
+            out.append(dict(
+                role='system',
+                content=m.c,
+            ))
+
+        elif isinstance(m, AiMessage):
+            out.append(dict(
+                role='assistant',
+                content=check.isinstance(m.c, (str, None)),
+            ))
+
+        elif isinstance(m, ToolUseMessage):
+            out.append(dict(
+                role='assistant',
+                tool_calls=[
+                    dict(
+                        id=m.tu.id,
+                        function=dict(
+                            arguments=check.not_none(m.tu.raw_args),
+                            name=m.tu.name,
+                        ),
+                        type='function',
                     ),
-                    type='function',
-                )
-                for te in m.tool_exec_requests
-            ]) if m.tool_exec_requests else {}),
-        )
+                ],
+            ))
 
-    elif isinstance(m, UserMessage):
-        return dict(
-            role='user',
-            content=prepare_content_str(m.c),
-        )
+        elif isinstance(m, UserMessage):
+            out.append(dict(
+                role='user',
+                content=prepare_content_str(m.c),
+            ))
 
-    elif isinstance(m, ToolUseResultMessage):
-        return dict(
-            role='tool',
-            tool_call_id=m.tur.id,
-            content=check.isinstance(m.tur.c, str),
-        )
+        elif isinstance(m, ToolUseResultMessage):
+            out.append(dict(
+                role='tool',
+                tool_call_id=m.tur.id,
+                content=check.isinstance(m.tur.c, str),
+            ))
 
-    else:
-        raise TypeError(m)
+        else:
+            raise TypeError(m)
+
+    return out
 
 
 ##
@@ -94,10 +106,11 @@ class OpenaiChatRequestHandler:
         SystemMessage: 'system',
         UserMessage: 'user',
         AiMessage: 'assistant',
+        ToolUseMessage: 'assistant',
         ToolUseResultMessage: 'tool',
     }
 
-    DEFAULT_OPTIONS: ta.ClassVar[tv.TypedValues[Option]] = tv.TypedValues(
+    DEFAULT_OPTIONS: ta.ClassVar[tv.TypedValues[Option]] = tv.TypedValues[Option](
         Temperature(0.),
         MaxTokens(1024),
     )
@@ -152,10 +165,7 @@ class OpenaiChatRequestHandler:
 
         return dict(
             model=self._model,
-            messages=[
-                build_request_message(m)
-                for m in self._chat
-            ],
+            messages=build_request_messages(self._chat),
             top_p=1,
             **lang.opt_kw(tools=tools),
             frequency_penalty=0.0,
@@ -163,24 +173,25 @@ class OpenaiChatRequestHandler:
             **po.kwargs,
         )
 
-    def build_ai_message(self, message: ta.Mapping[str, ta.Any]) -> AiMessage:
-        return AiMessage(
-            message.get('content'),
-            tool_exec_requests=[
+    def build_ai_chat(self, message: ta.Mapping[str, ta.Any]) -> AiChat:
+        out: list[AnyAiMessage] = []
+        if (c := message.get('content')) is not None:
+            out.append(AiMessage(c))
+        for tc in message.get('tool_calls', []):
+            out.append(ToolUseMessage(
                 ToolUse(
                     id=tc['id'],
                     name=tc['function']['name'],
                     args=json.loads(tc['function']['arguments'] or '{}'),
                     raw_args=tc['function']['arguments'],
                 )
-                for tc in message.get('tool_calls', [])
-            ] or None,
-        )
+            ))
+        return out
 
     def build_response(self, raw_response: ta.Mapping[str, ta.Any]) -> ChatChoicesResponse:
         return ChatChoicesResponse(
             [
-                AiChoice(self.build_ai_message(choice['message']))
+                AiChoice(self.build_ai_chat(choice['message']))
                 for choice in raw_response['choices']
             ],
 

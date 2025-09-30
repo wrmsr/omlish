@@ -14,9 +14,10 @@ from .....chat.tools.ids import ToolUseIdAddingMessageTransform
 from .....chat.tools.parsing import ToolExecParsingMessageTransform
 from .....chat.tools.types import Tool
 from .....chat.transforms.base import CompositeMessageTransform
+from .....chat.transforms.base import MessageTransformChatTransform
 from .....chat.transforms.metadata import CreatedAtAddingMessageTransform
 from .....chat.transforms.metadata import UuidAddingMessageTransform
-from .....chat.transforms.services import ResponseMessageTransformingChatService
+from .....chat.transforms.services import ResponseChatTransformingChatService
 from .....models.configs import ModelPath
 from .....services import Request
 from .....text.toolparsing.dumb import DumbToolExecParser
@@ -87,19 +88,21 @@ def test_llamacpp_chat_model_tools_qwen_parsed(model_path):
         ),
     )
 
-    llm = ResponseMessageTransformingChatService(
-        CompositeMessageTransform([
-            CreatedAtAddingMessageTransform(),
-            UuidAddingMessageTransform(),
-            ToolExecParsingMessageTransform(
-                DumbToolExecParser(
-                    '<tool_call>',
-                    '</tool_call>',
-                    strip_whitespace=True,
+    llm = ResponseChatTransformingChatService(
+        MessageTransformChatTransform(
+            CompositeMessageTransform([
+                CreatedAtAddingMessageTransform(),
+                UuidAddingMessageTransform(),
+                ToolExecParsingMessageTransform(
+                    DumbToolExecParser(
+                        '<tool_call>',
+                        '</tool_call>',
+                        strip_whitespace=True,
+                    ),
                 ),
-            ),
-            ToolUseIdAddingMessageTransform(),
-        ]),
+                ToolUseIdAddingMessageTransform(),
+            ]),
+        ),
         llm,
     )
 

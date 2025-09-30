@@ -8,7 +8,8 @@ from ...messages import UserMessage
 from ...services import ChatRequest
 from ...services import ChatResponse
 from ...services import static_check_is_chat_service
-from ...transforms.services import ResponseMessageTransformingChatService
+from ...transforms.services import ResponseChatTransformingChatService
+from ...transforms.base import MessageTransformChatTransform
 from ..parsing import ToolExecParsingMessageTransform
 
 
@@ -34,12 +35,14 @@ def test_response_message_transforming_chat_service():
     dcs = DummyChatService(prefix=TOOL_RESPONSE + '\n')
     print(lang.sync_await(dcs.invoke(ChatRequest([UserMessage('hi')]))))
 
-    tcs = ResponseMessageTransformingChatService(
-        ToolExecParsingMessageTransform(
-            DumbToolExecParser(
-                '<tools>',
-                '</tools>',
-                strip_whitespace=True,
+    tcs = ResponseChatTransformingChatService(
+        MessageTransformChatTransform(
+            ToolExecParsingMessageTransform(
+                DumbToolExecParser(
+                    '<tools>',
+                    '</tools>',
+                    strip_whitespace=True,
+                ),
             ),
         ),
         dcs,

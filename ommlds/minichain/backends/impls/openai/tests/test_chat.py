@@ -10,6 +10,7 @@ from .....chat.choices.services import ChatChoicesService
 from .....chat.messages import Message
 from .....chat.messages import SystemMessage
 from .....chat.messages import ToolUseResultMessage
+from .....chat.messages import ToolUseMessage
 from .....chat.messages import UserMessage
 from .....chat.tools.types import Tool
 from .....content.text import TextContent
@@ -98,9 +99,10 @@ def test_openai_tools(harness):
     print(resp)
     assert resp.v
 
-    chat.append(resp.v[0].m)
+    tum = check.isinstance(check.single(check.single(resp.v).ms), ToolUseMessage)
+    chat.append(tum)
 
-    tr = check.single(check.not_none(resp.v[0].m.tool_exec_requests))
+    tr = tum.tu
     assert tr.name == 'get_weather'
     assert tr.args == {'location': 'Seattle'}
 

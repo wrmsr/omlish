@@ -17,4 +17,4 @@ def test_llamacpp_chat_model():
         # MaxTokens(64),
     )))
     print(resp)
-    assert resp.v[0].m.c
+    assert resp.v[0].ms[0]

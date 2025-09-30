@@ -12,6 +12,7 @@ from .....backends import llamacpp as lcu
 from ....chat.choices.services import ChatChoicesRequest
 from ....chat.choices.services import ChatChoicesResponse
 from ....chat.choices.services import static_check_is_chat_choices_service
+from ....chat.messages import ToolUseMessage
 from ....chat.choices.types import AiChoice
 from ....chat.choices.types import ChatChoicesOptions
 from ....chat.messages import AiMessage
@@ -109,20 +110,22 @@ class LlamacppChatChoicesService:
                     ))
 
                 elif isinstance(rm, AiMessage):
-                    tcs: list[dict] = []
-                    for ter in rm.tool_exec_requests or []:
-                        tcs.append(dict(
-                            id=check.not_none(ter.id),
-                            type='function',
-                            function=dict(
-                                name=ter.name,
-                                arguments=check.isinstance(ter.raw_args, str),
-                            ),
-                        ))
                     ims.append(dict(
                         role=ROLES_MAP[type(rm)],
                         **(dict(content=mc) if (mc := get_msg_content(rm)) is not None else {}),
-                        **(dict(tool_calls=tcs) if tcs else {}),
+                    ))
+
+                elif isinstance(rm, ToolUseMessage):
+                    ims.append(dict(
+                        role=ROLES_MAP[type(rm)],
+                        tool_calls=[dict(
+                            id=check.not_none(rm.tu.id),
+                            type='function',
+                            function=dict(
+                                name=rm.tu.name,
+                                arguments=check.isinstance(rm.tu.raw_args, str),
+                            ),
+                        )],
                     ))
 
                 else:
@@ -139,6 +142,6 @@ class LlamacppChatChoicesService:
             out: list[AiChoice] = []
             for c in ta.cast(ta.Any, output)['choices']:
                 m = c['message']
-                out.append(AiChoice(AiMessage(m['content'])))
+                out.append(AiChoice([AiMessage(m['content'])]))
 
             return ChatChoicesResponse(out)

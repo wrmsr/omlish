@@ -8,22 +8,25 @@ from ...services import ChatRequest
 from ...services import ChatResponse
 from ...services import static_check_is_chat_service
 from ..base import FnMessageTransform
-from ..services import ResponseMessageTransformingChatService
+from ..services import ResponseChatTransformingChatService
+from ..base import MessageTransformChatTransform
 
 
 @static_check_is_chat_service
 class DummyChatService:
     async def invoke(self, request: ChatRequest) -> ChatResponse:
         um = check.isinstance(request.v[-1], UserMessage)
-        return ChatResponse(AiMessage(check.isinstance(um.c, str) + '!'))
+        return ChatResponse([AiMessage(check.isinstance(um.c, str) + '!')])
 
 
 def test_response_message_transforming_chat_service():
     dcs = DummyChatService()
     print(lang.sync_await(dcs.invoke(ChatRequest([UserMessage('hi')]))))
 
-    tcs = ResponseMessageTransformingChatService(
-        FnMessageTransform(lambda m: dc.replace(m, c=check.isinstance(m.c, str) + '?')),
+    tcs = ResponseChatTransformingChatService(
+        MessageTransformChatTransform(
+            FnMessageTransform(lambda m: [dc.replace(m, c=check.isinstance(m.c, str) + '?')]),
+        ),
         dcs,
     )
     print(lang.sync_await(tcs.invoke(ChatRequest([UserMessage('hi')]))))

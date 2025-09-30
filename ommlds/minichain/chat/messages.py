@@ -97,7 +97,7 @@ class UserMessage(AnyUserMessage, lang.Final):
 
 @dc.dataclass(frozen=True)
 class AiMessage(AnyAiMessage, lang.Final):
-    c: Content | None = dc.xfield(None, repr_fn=dc.opt_repr)
+    c: Content = dc.xfield(None, repr_fn=dc.opt_repr)  # TODO: non-null?
 
 
 #
