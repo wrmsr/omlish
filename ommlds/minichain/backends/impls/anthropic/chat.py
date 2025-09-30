@@ -18,8 +18,10 @@ from ....chat.choices.services import ChatChoicesResponse
 from ....chat.choices.services import static_check_is_chat_choices_service
 from ....chat.choices.types import AiChoice
 from ....chat.messages import AiMessage
+from ....chat.messages import AnyAiMessage
 from ....chat.messages import Message
 from ....chat.messages import SystemMessage
+from ....chat.messages import ToolUseMessage
 from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
 from ....chat.tools.types import Tool
@@ -46,6 +48,7 @@ class AnthropicChatChoicesService:
         SystemMessage: 'system',
         UserMessage: 'user',
         AiMessage: 'assistant',
+        ToolUseMessage: 'assistant',
     }
 
     def __init__(
@@ -97,18 +100,22 @@ class AnthropicChatChoicesService:
                 #     role=self.ROLES_MAP[type(m)],  # noqa
                 #     content=[pt.Text(check.isinstance(self._get_msg_content(m), str))],
                 # ))
-                a_tus: list[pt.ToolUse] = []
-                for tr in m.tool_exec_requests or []:
-                    a_tus.append(pt.ToolUse(
-                        id=check.not_none(tr.id),
-                        name=check.not_none(tr.name),
-                        input=tr.args,
-                    ))
                 messages.append(pt.Message(
                     role='assistant',
                     content=[
                         *([pt.Text(check.isinstance(m.c, str))] if m.c is not None else []),
-                        *a_tus,
+                    ],
+                ))
+
+            elif isinstance(m, ToolUseMessage):
+                messages.append(pt.Message(
+                    role='assistant',
+                    content=[
+                        pt.ToolUse(
+                            id=check.not_none(m.tu.id),
+                            name=check.not_none(m.tu.name),
+                            input=m.tu.args,
+                        )
                     ],
                 ))
 
@@ -150,24 +157,21 @@ class AnthropicChatChoicesService:
 
         response = json.loads(check.not_none(raw_response.data).decode('utf-8'))
 
-        resp_c: ta.Any = None
-        ters: list[ToolUse] = []
+        out: list[AnyAiMessage] = []
         for c in response['content']:
             if c['type'] == 'text':
-                check.none(resp_c)
-                resp_c = check.not_none(c['text'])
+                out.append(AiMessage(
+                    check.not_none(c['text']),
+                ))
             elif c['type'] == 'tool_use':
-                ters.append(ToolUse(
+                out.append(ToolUseMessage(ToolUse(
                     id=c['id'],
                     name=c['name'],
                     args=c['input'],
-                ))
+                )))
             else:
                 raise TypeError(c['type'])
 
         return ChatChoicesResponse([
-            AiChoice(AiMessage(
-                resp_c,
-                tool_exec_requests=ters if ters else None,
-            )),
+            AiChoice(out),
         ])
