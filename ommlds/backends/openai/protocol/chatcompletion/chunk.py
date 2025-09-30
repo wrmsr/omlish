@@ -3,6 +3,7 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
+from .._common import _set_class_marshal_options
 from ..completionusage import CompletionUsage
 from .tokenlogprob import ChatCompletionTokenLogprob
 
@@ -11,6 +12,7 @@ from .tokenlogprob import ChatCompletionTokenLogprob
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+@_set_class_marshal_options
 class ChatCompletionChunkChoiceDelta(lang.Final):
     content: str | None = None
 
@@ -46,6 +48,7 @@ class ChatCompletionChunkChoiceDelta(lang.Final):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+@_set_class_marshal_options
 class ChatCompletionChunkChoice(lang.Final):
     delta: ChatCompletionChunkChoiceDelta
 
@@ -70,6 +73,7 @@ class ChatCompletionChunkChoice(lang.Final):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+@_set_class_marshal_options
 class ChatCompletionChunk(lang.Final):
     id: str
 

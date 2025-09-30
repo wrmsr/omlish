@@ -4,6 +4,7 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
+from .._common import _set_class_marshal_options
 from .contentpart import TextChatCompletionContentPart
 from .message import ChatCompletionMessage
 from .responseformat import ChatCompletionResponseFormat
@@ -13,6 +14,7 @@ from .responseformat import ChatCompletionResponseFormat
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+@_set_class_marshal_options
 class ChatCompletionRequestWebSearchOptions(lang.Final):
     search_context_size: ta.Literal[
         'low',
@@ -21,8 +23,10 @@ class ChatCompletionRequestWebSearchOptions(lang.Final):
     ] | None = None
 
     @dc.dataclass(frozen=True, kw_only=True)
+    @_set_class_marshal_options
     class UserLocation(lang.Final):
         @dc.dataclass(frozen=True, kw_only=True)
+        @_set_class_marshal_options
         class Approximate(lang.Final):
             city: str | None = None
             country: str | None = None
@@ -39,6 +43,7 @@ class ChatCompletionRequestWebSearchOptions(lang.Final):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+@_set_class_marshal_options
 class ChatCompletionRequestPrediction(lang.Final):
     content: str | ta.Iterable[TextChatCompletionContentPart]
     type: ta.Literal['content'] | None = None
@@ -48,8 +53,10 @@ class ChatCompletionRequestPrediction(lang.Final):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+@_set_class_marshal_options
 class ChatCompletionRequestTool(lang.Final):
     @dc.dataclass(frozen=True, kw_only=True)
+    @_set_class_marshal_options
     class Function(lang.Final):
         name: str
         description: str | None = None
@@ -64,8 +71,10 @@ class ChatCompletionRequestTool(lang.Final):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+@_set_class_marshal_options
 class ChatCompletionRequestNamedToolChoice(lang.Final):
     @dc.dataclass(frozen=True, kw_only=True)
+    @_set_class_marshal_options
     class Function(lang.Final):
         name: str
 
@@ -77,6 +86,7 @@ class ChatCompletionRequestNamedToolChoice(lang.Final):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+@_set_class_marshal_options
 class ChatCompletionRequestAudio(lang.Final):
     format: ta.Literal[
         'wav',
@@ -94,6 +104,7 @@ class ChatCompletionRequestAudio(lang.Final):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+@_set_class_marshal_options
 class ChatCompletionRequest(lang.Final):
     messages: ta.Iterable[ChatCompletionMessage]
 
@@ -144,6 +155,7 @@ class ChatCompletionRequest(lang.Final):
     store: bool | None = None
 
     @dc.dataclass(frozen=True, kw_only=True)
+    @_set_class_marshal_options
     class StreamOptions(lang.Final):
         include_usage: bool | None = None
 

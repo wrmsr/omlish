@@ -3,6 +3,7 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
+from .._common import _set_class_marshal_options
 from ..completionusage import CompletionUsage
 from .tokenlogprob import ChatCompletionTokenLogprob
 
@@ -11,16 +12,19 @@ from .tokenlogprob import ChatCompletionTokenLogprob
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+@_set_class_marshal_options
 class ChatCompletionResponseMessage(lang.Final):
     content: str | None = None
     refusal: str | None = None
     role: ta.Literal['assistant'] = dc.xfield('assistant', repr=False)
 
     @dc.dataclass(frozen=True, kw_only=True)
+    @_set_class_marshal_options
     class Annotation(lang.Final):
         type: ta.Literal['url_citation'] = dc.xfield('url_citation', repr=False)
 
         @dc.dataclass(frozen=True, kw_only=True)
+        @_set_class_marshal_options
         class UrlCitation(lang.Final):
             end_index: int
             start_index: int
@@ -32,6 +36,7 @@ class ChatCompletionResponseMessage(lang.Final):
     annotations: ta.Sequence[Annotation] | None = None
 
     @dc.dataclass(frozen=True, kw_only=True)
+    @_set_class_marshal_options
     class Audio(lang.Final):
         id: str
         data: str
@@ -41,10 +46,12 @@ class ChatCompletionResponseMessage(lang.Final):
     audio: Audio | None = None
 
     @dc.dataclass(frozen=True, kw_only=True)
+    @_set_class_marshal_options
     class ToolCall(lang.Final):
         id: str
 
         @dc.dataclass(frozen=True, kw_only=True)
+        @_set_class_marshal_options
         class Function(lang.Final):
             arguments: str
             name: str
@@ -60,6 +67,7 @@ class ChatCompletionResponseMessage(lang.Final):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+@_set_class_marshal_options
 class ChatCompletionResponseChoice(lang.Final):
     finish_reason: ta.Literal[
         'stop',
@@ -71,6 +79,7 @@ class ChatCompletionResponseChoice(lang.Final):
     index: int
 
     @dc.dataclass(frozen=True, kw_only=True)
+    @_set_class_marshal_options
     class Logprobs(lang.Final):
         content: ta.Sequence[ChatCompletionTokenLogprob] | None = None
         refusal: ta.Sequence[ChatCompletionTokenLogprob] | None = None
@@ -84,6 +93,7 @@ class ChatCompletionResponseChoice(lang.Final):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+@_set_class_marshal_options
 class ChatCompletionResponse(lang.Final):
     id: str
 

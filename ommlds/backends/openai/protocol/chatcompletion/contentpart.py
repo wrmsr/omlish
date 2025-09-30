@@ -3,6 +3,8 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
+from .._common import _set_class_marshal_options
+
 
 ##
 
@@ -15,6 +17,7 @@ class ChatCompletionContentPart(lang.Abstract):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+@_set_class_marshal_options
 class TextChatCompletionContentPart(ChatCompletionContentPart, lang.Final):
     text: str
 
@@ -23,6 +26,7 @@ class TextChatCompletionContentPart(ChatCompletionContentPart, lang.Final):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+@_set_class_marshal_options
 class ImageUrlChatCompletionContentPart(ChatCompletionContentPart, lang.Final):
     @dc.dataclass(frozen=True, kw_only=True)
     class ImageUrl(lang.Final):
@@ -40,6 +44,7 @@ class ImageUrlChatCompletionContentPart(ChatCompletionContentPart, lang.Final):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+@_set_class_marshal_options
 class FileChatCompletionContentPart(ChatCompletionContentPart, lang.Final):
     @dc.dataclass(frozen=True, kw_only=True)
     class File(lang.Final):
@@ -54,8 +59,10 @@ class FileChatCompletionContentPart(ChatCompletionContentPart, lang.Final):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+@_set_class_marshal_options
 class InputAudioChatCompletionContentPart(ChatCompletionContentPart, lang.Final):
     @dc.dataclass(frozen=True, kw_only=True)
+    @_set_class_marshal_options
     class InputAudio(lang.Final):
         data: str
         format: ta.Literal[
@@ -70,5 +77,6 @@ class InputAudioChatCompletionContentPart(ChatCompletionContentPart, lang.Final)
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+@_set_class_marshal_options
 class RefusalChatCompletionContentPart(ChatCompletionContentPart, lang.Final):
     refusal: str
