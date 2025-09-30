@@ -43,13 +43,6 @@ class AiChoiceDelta(lang.Sealed, lang.Abstract):
     pass
 
 
-AiChoiceDeltas: ta.TypeAlias = ta.Sequence[AiChoiceDelta]
-AiChoicesDeltas: ta.TypeAlias = ta.Sequence[AiChoiceDeltas]
-
-
-#
-
-
 @dc.dataclass(frozen=True)
 class ContentAiChoiceDelta(AiChoiceDelta, lang.Final):
     c: Content
@@ -58,3 +51,16 @@ class ContentAiChoiceDelta(AiChoiceDelta, lang.Final):
 @dc.dataclass(frozen=True)
 class ToolUseAiChoiceDelta(AiChoiceDelta, lang.Final):
     tu: ToolUse
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class AiChoiceDeltas(lang.Final):
+    deltas: ta.Sequence[AiChoiceDelta]
+
+
+@dc.dataclass(frozen=True)
+class AiChoicesDeltas(lang.Final):
+    choices: ta.Sequence[AiChoiceDeltas]
