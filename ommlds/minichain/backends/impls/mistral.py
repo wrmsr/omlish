@@ -90,6 +90,6 @@ class MistralChatChoicesService:
         resp_dct = json.loads(check.not_none(resp.data).decode('utf-8'))
 
         return ChatChoicesResponse([
-            AiChoice(AiMessage(c['message']['content']))
+            AiChoice([AiMessage(c['message']['content'])])
             for c in resp_dct['choices']
         ])

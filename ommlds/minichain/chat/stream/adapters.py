@@ -1,5 +1,3 @@
-import typing as ta
-
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
@@ -51,6 +49,7 @@ class ChatChoicesStreamServiceChatChoicesService:
 
         async with (resp := await self.service.invoke(request)).v as it:  # noqa
             i = -1  # noqa
+            l: list[list[str] | ToolUse]
             async for i, cs in lang.async_enumerate(it):
                 if i == 0:
                     for c in cs.choices:
