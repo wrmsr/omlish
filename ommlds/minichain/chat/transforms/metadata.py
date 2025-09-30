@@ -9,8 +9,8 @@ from omlish import typedvalues as tv
 from ...metadata import CreatedAt
 from ...metadata import Uuid
 from ..messages import Chat
-from ..metadata import MessageMetadata
 from ..messages import Message
+from ..metadata import MessageMetadata
 from .base import MessageTransform
 
 

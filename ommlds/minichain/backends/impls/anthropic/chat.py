@@ -115,7 +115,7 @@ class AnthropicChatChoicesService:
                             id=check.not_none(m.tu.id),
                             name=check.not_none(m.tu.name),
                             input=m.tu.args,
-                        )
+                        ),
                     ],
                 ))
 

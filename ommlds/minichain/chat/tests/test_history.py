@@ -3,8 +3,8 @@ from omlish import lang
 
 from ..history import HistoryAddingChatService
 from ..history import ListChatHistory
-from ..messages import AiMessage
 from ..messages import AiChat
+from ..messages import AiMessage
 from ..messages import Chat
 from ..messages import UserMessage
 from ..services import ChatRequest

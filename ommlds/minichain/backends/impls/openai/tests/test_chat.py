@@ -9,8 +9,8 @@ from .....chat.choices.services import ChatChoicesRequest
 from .....chat.choices.services import ChatChoicesService
 from .....chat.messages import Message
 from .....chat.messages import SystemMessage
-from .....chat.messages import ToolUseResultMessage
 from .....chat.messages import ToolUseMessage
+from .....chat.messages import ToolUseResultMessage
 from .....chat.messages import UserMessage
 from .....chat.tools.types import Tool
 from .....content.text import TextContent

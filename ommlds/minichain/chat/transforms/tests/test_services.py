@@ -8,8 +8,8 @@ from ...services import ChatRequest
 from ...services import ChatResponse
 from ...services import static_check_is_chat_service
 from ..base import FnMessageTransform
-from ..services import ResponseChatTransformingChatService
 from ..base import MessageTransformChatTransform
+from ..services import ResponseChatTransformingChatService
 
 
 @static_check_is_chat_service

@@ -18,11 +18,10 @@ from ....chat.messages import AiMessage
 from ....chat.messages import AnyAiMessage
 from ....chat.messages import Message
 from ....chat.messages import SystemMessage
+from ....chat.messages import ToolUseMessage
 from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
-from ....chat.messages import ToolUseMessage
 from ....chat.tools.types import Tool
-from ....content.types import Content
 from ....models.configs import ModelName
 from ....standard import ApiKey
 from ....tools.types import ToolUse

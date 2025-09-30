@@ -9,15 +9,15 @@ from omlish.formats import json
 from ....chat.choices.services import ChatChoicesResponse
 from ....chat.choices.types import AiChoice
 from ....chat.choices.types import ChatChoicesOptions
-from ....chat.messages import AiMessage
 from ....chat.messages import AiChat
+from ....chat.messages import AiMessage
+from ....chat.messages import AnyAiMessage
 from ....chat.messages import Chat
 from ....chat.messages import Message
-from ....chat.messages import AnyAiMessage
 from ....chat.messages import SystemMessage
+from ....chat.messages import ToolUseMessage
 from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
-from ....chat.messages import ToolUseMessage
 from ....chat.stream.types import ContentAiChoiceDelta
 from ....chat.tools.types import Tool
 from ....content.prepare import prepare_content_str
@@ -184,7 +184,7 @@ class OpenaiChatRequestHandler:
                     name=tc['function']['name'],
                     args=json.loads(tc['function']['arguments'] or '{}'),
                     raw_args=tc['function']['arguments'],
-                )
+                ),
             ))
         return out
 

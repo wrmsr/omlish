@@ -6,12 +6,11 @@ from omlish import check
 from omlish import lang
 
 from .....chat.choices.adapters import ChatChoicesServiceChatService
-from .....chat.messages import AiMessage
+from .....chat.messages import ToolUseMessage
 from .....chat.messages import ToolUseResultMessage
 from .....chat.messages import UserMessage
 from .....chat.services import ChatService
 from .....chat.tools.ids import ToolUseIdAddingMessageTransform
-from .....chat.messages import ToolUseMessage
 from .....chat.tools.parsing import ToolExecParsingMessageTransform
 from .....chat.tools.types import Tool
 from .....chat.transforms.base import CompositeMessageTransform

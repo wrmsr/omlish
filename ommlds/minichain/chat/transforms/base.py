@@ -10,10 +10,10 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
-from ..messages import Chat
-from ..messages import Message
 from ..messages import AnyAiMessage
 from ..messages import AnyUserMessage
+from ..messages import Chat
+from ..messages import Message
 
 
 MessageF = ta.TypeVar('MessageF', bound=Message)

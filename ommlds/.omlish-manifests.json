@@ -18,7 +18,7 @@
     "module": ".minichain.backends.impls.anthropic.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/anthropic/chat.py",
-    "line": 37,
+    "line": 39,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.anthropic.chat",
@@ -47,9 +47,9 @@
             "claude-opus-4-1-20250805": null,
             "claude-opus-4-1": "claude-opus-4-1-20250805",
             "claude-opus": "claude-opus-4-1",
-            "claude-sonnet-4-20250514": null,
-            "claude-sonnet-4": "claude-sonnet-4-20250514",
-            "claude-sonnet": "claude-sonnet-4",
+            "claude-sonnet-4-5-20250929": null,
+            "claude-sonnet-4-5": "claude-sonnet-4-5-20250929",
+            "claude-sonnet": "claude-sonnet-4-5",
             "claude-3-5-haiku-latest": null,
             "claude-haiku-3-5-latest": "claude-3-5-haiku-latest",
             "claude-haiku-3-5": "claude-haiku-3-5-latest",
@@ -96,7 +96,7 @@
     "module": ".minichain.backends.impls.google.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/google/chat.py",
-    "line": 34,
+    "line": 35,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.google.chat",
@@ -170,7 +170,7 @@
     "module": ".minichain.backends.impls.llamacpp.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/llamacpp/chat.py",
-    "line": 32,
+    "line": 33,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.llamacpp.chat",
@@ -402,7 +402,7 @@
     "module": ".minichain.backends.impls.tinygrad.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/tinygrad/chat.py",
-    "line": 161,
+    "line": 166,
     "value": {
       "!.minichain.backends.strings.manifests.BackendStringsManifest": {
         "service_cls_names": [
@@ -435,7 +435,7 @@
     "module": ".minichain.backends.impls.transformers.transformers",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/transformers/transformers.py",
-    "line": 41,
+    "line": 43,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.transformers.transformers",
@@ -452,7 +452,7 @@
     "module": ".minichain.backends.impls.transformers.transformers",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/transformers/transformers.py",
-    "line": 127,
+    "line": 131,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.transformers.transformers",
@@ -592,7 +592,7 @@
     "module": ".tools.git",
     "attr": null,
     "file": "ommlds/tools/git.py",
-    "line": 172,
+    "line": 188,
     "value": {
       "!omdev.tools.git.messages.GitMessageGeneratorManifest": {
         "module": "ommlds.tools.git",

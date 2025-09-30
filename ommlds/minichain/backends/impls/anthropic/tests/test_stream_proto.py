@@ -7,10 +7,9 @@ from omlish.http import sse
 from omlish.io.buffers import DelimitingBuffer
 
 from ......backends.anthropic.protocol.sse.events import AnthropicSseDecoderEvents
-from .....chat.stream.types import ContentAiChoiceDelta
-from .....chat.stream.types import AiChoiceDelta
 from .....chat.stream.types import AiChoiceDeltas
 from .....chat.stream.types import AiChoicesDeltas
+from .....chat.stream.types import ContentAiChoiceDelta
 
 
 def test_assemble():

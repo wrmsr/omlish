@@ -3,20 +3,20 @@ from omlish import dataclasses as dc
 from omlish import lang
 
 from ...services import Response
+from ...tools.types import ToolUse
 from ..choices.services import ChatChoicesRequest
 from ..choices.services import static_check_is_chat_choices_service
 from ..choices.types import AiChoice
 from ..choices.types import AiChoices
 from ..messages import AiMessage
 from ..messages import AnyAiMessage
-from ...tools.types import ToolUse
 from ..messages import ToolUseMessage
-from .types import AiChoiceDelta
-from .types import ContentAiChoiceDelta
-from .types import ToolUseAiChoiceDelta
 from .services import ChatChoicesOutputs
 from .services import ChatChoicesStreamOutputs
 from .services import ChatChoicesStreamService
+from .types import AiChoiceDelta
+from .types import ContentAiChoiceDelta
+from .types import ToolUseAiChoiceDelta
 
 
 ##

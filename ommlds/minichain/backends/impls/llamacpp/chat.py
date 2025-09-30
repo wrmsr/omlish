@@ -12,10 +12,10 @@ from .....backends import llamacpp as lcu
 from ....chat.choices.services import ChatChoicesRequest
 from ....chat.choices.services import ChatChoicesResponse
 from ....chat.choices.services import static_check_is_chat_choices_service
-from ....chat.messages import ToolUseMessage
 from ....chat.choices.types import AiChoice
 from ....chat.choices.types import ChatChoicesOptions
 from ....chat.messages import AiMessage
+from ....chat.messages import ToolUseMessage
 from ....chat.messages import ToolUseResultMessage
 from ....chat.tools.types import Tool
 from ....configs import Config
