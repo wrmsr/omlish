@@ -15,9 +15,10 @@ from ....chat.messages import SystemMessage
 from ....chat.stream.services import ChatChoicesStreamRequest
 from ....chat.stream.services import ChatChoicesStreamResponse
 from ....chat.stream.services import static_check_is_chat_choices_stream_service
+from ....chat.stream.types import ContentAiChoiceDelta
 from ....chat.stream.types import AiChoiceDelta
 from ....chat.stream.types import AiChoiceDeltas
-from ....chat.stream.types import AiMessageDelta
+from ....chat.stream.types import AiChoicesDeltas
 from ....configs import Config
 from ....resources import UseResources
 from ....standard import ApiKey
@@ -86,7 +87,7 @@ class AnthropicChatChoicesStreamService:
             http_client = rs.enter_context(http.client())
             http_response = rs.enter_context(http_client.stream_request(http_request))
 
-            async def inner(sink: StreamResponseSink[AiChoiceDeltas]) -> ta.Sequence[ChatChoicesOutputs] | None:
+            async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ta.Sequence[ChatChoicesOutputs] | None:
                 msg_start: AnthropicSseDecoderEvents.MessageStart | None = None
                 cbk_start: AnthropicSseDecoderEvents.ContentBlockStart | None = None
                 msg_stop: AnthropicSseDecoderEvents.MessageStop | None = None
@@ -124,18 +125,18 @@ class AnthropicChatChoicesStreamService:
                                         check.none(cbk_start)
                                         cbk_start = ae
                                         if isinstance(ae.content_block, AnthropicSseDecoderEvents.ContentBlockStart.Text):  # noqa
-                                            await sink.emit([AiChoiceDelta(AiMessageDelta(
+                                            await sink.emit(AiChoicesDeltas([AiChoiceDeltas([ContentAiChoiceDelta(
                                                 ae.content_block.text,
-                                            ))])
+                                            )])]))
                                         else:
                                             raise TypeError(ae.content_block)
 
                                     case AnthropicSseDecoderEvents.ContentBlockDelta():
                                         check.not_none(cbk_start)
                                         if isinstance(ae.delta, AnthropicSseDecoderEvents.ContentBlockDelta.TextDelta):
-                                            await sink.emit([AiChoiceDelta(AiMessageDelta(
+                                            await sink.emit(AiChoicesDeltas([AiChoiceDeltas([ContentAiChoiceDelta(
                                                 ae.delta.text,
-                                            ))])
+                                            )])]))
                                         else:
                                             raise TypeError(ae.delta)
 
