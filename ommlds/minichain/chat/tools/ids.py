@@ -4,6 +4,8 @@ import uuid
 from omlish import dataclasses as dc
 
 from ..messages import AiMessage
+from ..messages import ToolUseMessage
+from ..messages import Chat
 from ..messages import Message
 from ..messages import ToolUse
 from ..transforms.base import MessageTransform
@@ -20,14 +22,8 @@ def simple_uuid_tool_exec_request_id_factory(m: AiMessage, ter: ToolUse) -> str:
 class ToolUseIdAddingMessageTransform(MessageTransform):
     id_factory: ta.Callable[[AiMessage, ToolUse], str] = dc.field(default=simple_uuid_tool_exec_request_id_factory)  # noqa
 
-    def transform_message(self, m: Message) -> Message:
-        if not isinstance(m, AiMessage) or not m.tool_exec_requests:
-            return m
+    def transform_message(self, m: Message) -> Chat:
+        if not isinstance(m, ToolUseMessage) or m.tu.id is not None:
+            return [m]
 
-        lst: list[ToolUse] = []
-        for ter in m.tool_exec_requests:
-            if ter.id is None:
-                ter = dc.replace(ter, id=self.id_factory(m, ter))
-            lst.append(ter)
-
-        return dc.replace(m, tool_exec_requests=lst)
+        return [dc.replace(m, tu=dc.replace(m.tu, id=self.id_factory(m, m.tu)))]

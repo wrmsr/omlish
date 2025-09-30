@@ -11,6 +11,7 @@ from .....chat.messages import ToolUseResultMessage
 from .....chat.messages import UserMessage
 from .....chat.services import ChatService
 from .....chat.tools.ids import ToolUseIdAddingMessageTransform
+from .....chat.messages import ToolUseMessage
 from .....chat.tools.parsing import ToolExecParsingMessageTransform
 from .....chat.tools.types import Tool
 from .....chat.transforms.base import CompositeMessageTransform
@@ -130,14 +131,12 @@ def test_llamacpp_chat_model_tools_qwen_parsed(model_path):
     print(resp)
     assert resp.v
 
-    air = check.isinstance(resp.v, AiMessage)
-    chat.append(air)
-
-    ter = check.single(check.not_none(air.tool_exec_requests))
+    tum = check.isinstance(resp.v[-1], ToolUseMessage)
+    chat.append(tum)
 
     tem = ToolUseResultMessage(ToolUseResult(
-        id=ter.id,
-        name=ter.name,
+        id=tum.tu.id,
+        name=tum.tu.name,
         c='"The weather in Seattle is rainy."',
     ))
     chat.append(tem)

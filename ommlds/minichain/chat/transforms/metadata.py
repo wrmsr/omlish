@@ -3,12 +3,18 @@ import typing as ta
 import uuid
 
 from omlish import dataclasses as dc
+from omlish import lang
+from omlish import typedvalues as tv
 
 from ...metadata import CreatedAt
 from ...metadata import Uuid
 from ..messages import Chat
+from ..metadata import MessageMetadata
 from ..messages import Message
 from .base import MessageTransform
+
+
+MessageT = ta.TypeVar('MessageT', bound=Message)
 
 
 ##
@@ -32,3 +38,22 @@ class CreatedAtAddingMessageTransform(MessageTransform):
         if CreatedAt not in m.metadata:
             m = m.with_metadata(CreatedAt(self.clock()))
         return [m]
+
+
+##
+
+
+# FIXME: Unique?
+class TransformedMessageOrigin(tv.ScalarTypedValue[Message], MessageMetadata, lang.Final):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class OriginAddingMessageTransform(MessageTransform):
+    child: MessageTransform
+
+    def transform_message(self, m: Message) -> Chat:
+        return [
+            o.with_metadata(TransformedMessageOrigin(m)) if TransformedMessageOrigin not in o.metadata else m
+            for o in self.child.transform_message(m)
+        ]

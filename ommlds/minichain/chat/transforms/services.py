@@ -1,7 +1,6 @@
-from omlish import check
 from omlish import dataclasses as dc
 
-from ..messages import AnyAiMessage
+from ..messages import check_ai_chat
 from ..services import ChatRequest
 from ..services import ChatResponse
 from ..services import ChatService
@@ -35,7 +34,5 @@ class ResponseChatTransformingChatService:
 
     async def invoke(self, request: ChatRequest) -> ChatResponse:
         orig_resp = await self.svc.invoke(request)
-        new_chat = self.ct.transform_chat(orig_resp.v)
-        for m in new_chat:
-            check.isinstance(m, AnyAiMessage)
+        new_chat = check_ai_chat(self.ct.transform_chat(orig_resp.v))
         return dc.replace(orig_resp, v=new_chat)

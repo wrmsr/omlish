@@ -68,6 +68,6 @@ class HistoryAddingChatService:
         response = await self._inner.invoke(new_req)
         self._history.add(
             *request.v,
-            response.v,
+            *response.v,
         )
         return response

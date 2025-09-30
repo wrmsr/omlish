@@ -1,54 +1,42 @@
+import typing as ta
+
 from omlish import check
 from omlish import dataclasses as dc
 
-from ...content.types import Content
 from ...text.toolparsing.base import ParsedToolExec
 from ...text.toolparsing.base import ToolExecParser
 from ..messages import AiMessage
+from ..messages import AnyAiMessage
 from ..messages import ToolUse
-from ..transforms.base import MessageTransform
+from ..messages import ToolUseMessage
+from ..transforms.base import AiMessageTransform
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class ToolExecParsingMessageTransform(MessageTransform[AiMessage]):
+class ToolExecParsingMessageTransform(AiMessageTransform):
     parser: ToolExecParser
 
-    def transform_message(self, message: AiMessage) -> AiMessage:
+    def transform_message(self, message: AnyAiMessage) -> ta.Sequence[AnyAiMessage]:
         pts = self.parser.parse_tool_execs_(check.isinstance(message.c or '', str))
 
-        sl: list[str] = []
-        xl: list[ToolUse] = []
+        out: list[AnyAiMessage] = []
+
         for pt in pts:
             if isinstance(pt, ParsedToolExec):
-                xl.append(ToolUse(
+                out.append(ToolUseMessage(ToolUse(
                     id=pt.id,
                     name=pt.name,
                     args=pt.args,
                     raw_args=pt.raw_body,
-                ))
+                )))
 
             elif isinstance(pt, str):
-                sl.append(pt)
+                out.append(AiMessage(pt))
 
             else:
                 raise TypeError(pt)
 
-        c: Content | None
-        if len(sl) == 1:
-            [c] = sl
-        elif sl:
-            c = sl
-        else:
-            c = None
-
-        return dc.replace(
-            message,
-            c=c,
-            tool_exec_requests=[
-                *(message.tool_exec_requests or []),
-                *xl,
-            ],
-        )
+        return out

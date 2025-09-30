@@ -1,3 +1,9 @@
+"""
+Mirrors omlish.funcs.pairs.
+
+TODO:
+ - MessagesTransform ? MessageTransformMessagesTransform? :| ...
+"""
 import abc
 import typing as ta
 
@@ -6,18 +12,25 @@ from omlish import lang
 
 from ..messages import Chat
 from ..messages import Message
+from ..messages import AnyAiMessage
+from ..messages import AnyUserMessage
 
 
+MessageF = ta.TypeVar('MessageF', bound=Message)
 MessageT = ta.TypeVar('MessageT', bound=Message)
 
 
 ##
 
 
-class MessageTransform(lang.Abstract, ta.Generic[MessageT]):
+class MessageTransform(lang.Abstract, ta.Generic[MessageF, MessageT]):
     @abc.abstractmethod
-    def transform_message(self, message: MessageT) -> Chat:
+    def transform_message(self, message: MessageF) -> ta.Sequence[MessageT]:
         raise NotImplementedError
+
+
+AiMessageTransform: ta.TypeAlias = MessageTransform[AnyAiMessage, AnyAiMessage]
+UserMessageTransform: ta.TypeAlias = MessageTransform[AnyUserMessage, AnyUserMessage]
 
 
 @dc.dataclass(frozen=True)
@@ -32,19 +45,19 @@ class CompositeMessageTransform(MessageTransform):
 
 
 @dc.dataclass(frozen=True)
-class FnMessageTransform(MessageTransform, ta.Generic[MessageT]):
-    fn: ta.Callable[[MessageT], MessageT]
+class FnMessageTransform(MessageTransform, ta.Generic[MessageF, MessageT]):
+    fn: ta.Callable[[MessageF], ta.Sequence[MessageT]]
 
-    def transform_message(self, message: MessageT) -> Chat:
+    def transform_message(self, message: MessageT) -> ta.Sequence[MessageT]:
         return self.fn(message)
 
 
 @dc.dataclass(frozen=True)
-class TypeFilteredMessageTransform(MessageTransform[Message], ta.Generic[MessageT]):
+class TypeFilteredMessageTransform(MessageTransform[MessageF, MessageT]):
     ty: type | tuple[type, ...]
-    mt: MessageTransform[MessageT]
+    mt: MessageTransform[MessageF, MessageT]
 
-    def transform_message(self, message: Message) -> Chat:
+    def transform_message(self, message: MessageF) -> ta.Sequence[MessageT]:
         if isinstance(message, self.ty):
             return self.mt.transform_message(ta.cast(MessageT, message))
         else:
@@ -53,9 +66,9 @@ class TypeFilteredMessageTransform(MessageTransform[Message], ta.Generic[Message
 
 @ta.overload
 def fn_message_transform(
-        fn: ta.Callable[[MessageT], Chat],
-        ty: type[MessageT],
-) -> MessageTransform[MessageT]:
+        fn: ta.Callable[[MessageF], ta.Sequence[MessageT]],
+        ty: type[MessageF],
+) -> MessageTransform[MessageF, MessageT]:
     ...
 
 
@@ -67,7 +80,7 @@ def fn_message_transform(
     ...
 
 
-def fn_message_transform(fn, ty=None) -> MessageTransform[MessageT]:
+def fn_message_transform(fn, ty=None) -> MessageTransform:
     mt: MessageTransform = FnMessageTransform(fn)
     if ty is not None:
         mt = TypeFilteredMessageTransform(ty, mt)
@@ -118,6 +131,6 @@ class LastMessageTransformChatTransform(ChatTransform):
 
     def transform_chat(self, chat: Chat) -> Chat:
         if chat:
-            return [*chat[:-1], self.mt.transform_message(chat[-1])]
+            return [*chat[:-1], *self.mt.transform_message(chat[-1])]
         else:
             return []

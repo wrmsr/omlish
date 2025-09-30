@@ -159,9 +159,11 @@ with _lang.auto_proxy_init(
 
         AnyUserMessage,
         UserChat,
+        check_user_chat,
 
         AnyAiMessage,
         AiChat,
+        check_ai_chat,
 
         SystemMessage,
         UserMessage,

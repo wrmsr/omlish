@@ -62,6 +62,12 @@ class AnyUserMessage(Message, lang.Abstract):
 UserChat: ta.TypeAlias = ta.Sequence[AnyUserMessage]
 
 
+def check_user_chat(chat: Chat) -> UserChat:
+    for m in chat:
+        check.isinstance(m, AnyUserMessage)
+    return ta.cast(UserChat, chat)
+
+
 #
 
 
@@ -71,6 +77,12 @@ class AnyAiMessage(Message, lang.Abstract):
 
 
 AiChat: ta.TypeAlias = ta.Sequence[AnyAiMessage]
+
+
+def check_ai_chat(chat: Chat) -> AiChat:
+    for m in chat:
+        check.isinstance(m, AnyAiMessage)
+    return ta.cast(AiChat, chat)
 
 
 ##

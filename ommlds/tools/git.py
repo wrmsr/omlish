@@ -45,6 +45,22 @@ class GitAiBackend(Configurable[GitAiBackendConfigT], lang.Abstract):
         raise NotImplementedError
 
 
+def _get_single_ai_message_str(resp: mc.ChatChoicesResponse) -> str:
+    return check.not_empty(
+        check.isinstance(
+            check.isinstance(
+                check.single(
+                    check.single(
+                        resp.v,
+                    ).ms,
+                ),
+                mc.AiMessage,
+            ).c,
+            str,
+        ),
+    )
+
+
 #
 
 
@@ -68,7 +84,7 @@ class OpenaiGitAiBackend(GitAiBackend['OpenaiGitAiBackend.Config']):
             [mc.UserMessage(prompt)],
             # FIXME:  *((MaxTokens(self._config.max_tokens),) if self._config.max_tokens is not None else ()),
         )))
-        return check.not_empty(check.isinstance(resp.v[0].m.c, str))
+        return _get_single_ai_message_str(resp)
 
 
 #
@@ -97,7 +113,7 @@ class MlxGitAiBackend(GitAiBackend['MlxGitAiBackend.Config']):
                 [mc.UserMessage(prompt)],
                 # FIXME: *((MaxTokens(self._config.max_tokens),) if self._config.max_tokens is not None else ()),
             )))
-            text = check.not_empty(check.isinstance(resp.v[0].m.c, str))
+            text = _get_single_ai_message_str(resp)
 
             text = _strip_markdown_code_block(text)
 

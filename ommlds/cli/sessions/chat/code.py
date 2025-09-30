@@ -102,23 +102,28 @@ class CodeChatSession(ChatSession['CodeChatSession.Config']):
                         state.chat,
                         (self._chat_options or []),
                     ))
-                    resp_msg = check.single(response.v).m
-
-                    self._printer.print(resp_msg)
-                    state = self._state_manager.extend_chat([resp_msg])
-
-                    if not (trs := resp_msg.tool_exec_requests):
-                        break
 
                     tool_resp_lst = []
-                    for tr in trs:
-                        trm = await self._tool_exec_request_executor.execute_tool_use(
-                            tr,
-                            fs_tool_context,
-                            todo_tool_context,
-                        )
+                    for resp_msg in check.single(response.v).ms:
+                        state = self._state_manager.extend_chat([resp_msg])
 
-                        self._printer.print(trm.tur.c)
-                        tool_resp_lst.append(trm)
+                        if isinstance(resp_msg, mc.AiMessage):
+                            self._printer.print(resp_msg)
+
+                        elif isinstance(resp_msg, mc.ToolUseMessage):
+                            trm = await self._tool_exec_request_executor.execute_tool_use(
+                                resp_msg.tu,
+                                fs_tool_context,
+                                todo_tool_context,
+                            )
+
+                            self._printer.print(trm.tur.c)
+                            tool_resp_lst.append(trm)
+
+                        else:
+                            raise TypeError(resp_msg)
+
+                    if not tool_resp_lst:
+                        break
 
                     state = self._state_manager.extend_chat(tool_resp_lst)

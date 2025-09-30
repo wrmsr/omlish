@@ -118,6 +118,7 @@ class LlamacppChatChoicesService:
                 elif isinstance(rm, ToolUseMessage):
                     ims.append(dict(
                         role=ROLES_MAP[type(rm)],
+                        content='',
                         tool_calls=[dict(
                             id=check.not_none(rm.tu.id),
                             type='function',
