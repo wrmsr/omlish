@@ -15,10 +15,12 @@ from ....chat.choices.services import ChatChoicesResponse
 from ....chat.choices.services import static_check_is_chat_choices_service
 from ....chat.choices.types import AiChoice
 from ....chat.messages import AiMessage
+from ....chat.messages import AnyAiMessage
 from ....chat.messages import Message
 from ....chat.messages import SystemMessage
 from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
+from ....chat.messages import ToolUseMessage
 from ....chat.tools.types import Tool
 from ....content.types import Content
 from ....models.configs import ModelName
@@ -61,6 +63,7 @@ class GoogleChatChoicesService:
     ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
         UserMessage: 'user',
         AiMessage: 'model',
+        ToolUseMessage: 'model',
     }
 
     async def invoke(
@@ -102,21 +105,22 @@ class GoogleChatChoicesService:
                 ))
 
             elif isinstance(m, AiMessage):
-                ai_parts: list[pt.Part] = []
-                if m.c is not None:
-                    ai_parts.append(pt.Part(
-                        text=check.not_none(self._get_msg_content(m)),
-                    ))
-                for teq in m.tool_exec_requests or []:
-                    ai_parts.append(pt.Part(
-                        function_call=pt.FunctionCall(
-                            id=teq.id,
-                            name=teq.name,
-                            args=teq.args,
-                        ),
-                    ))
                 g_contents.append(pt.Content(
-                    parts=ai_parts,
+                    parts=[pt.Part(
+                        text=check.not_none(self._get_msg_content(m)),
+                    )],
+                    role='model',
+                ))
+
+            elif isinstance(m, ToolUseMessage):
+                g_contents.append(pt.Content(
+                    parts=[pt.Part(
+                        function_call=pt.FunctionCall(
+                            id=m.tu.id,
+                            name=m.tu.name,
+                            args=m.tu.args,
+                        ),
+                    )],
                     role='model',
                 ))
 
@@ -159,23 +163,18 @@ class GoogleChatChoicesService:
 
         ai_choices: list[AiChoice] = []
         for c in g_resp.candidates or []:
-            ai_c: Content | None = None
-            ters: list[ToolUse] = []
+            out: list[AnyAiMessage] = []
             for g_resp_part in check.not_none(check.not_none(c.content).parts):
                 if (g_txt := g_resp_part.text) is not None:
-                    check.none(ai_c)
-                    ai_c = g_txt
+                    out.append(AiMessage(g_txt))
                 elif (g_fc := g_resp_part.function_call) is not None:
-                    ters.append(ToolUse(
+                    out.append(ToolUseMessage(ToolUse(
                         id=g_fc.id,
                         name=g_fc.name,
                         args=g_fc.args or {},
-                    ))
+                    )))
                 else:
                     raise TypeError(g_resp_part)
-            ai_choices.append(AiChoice(AiMessage(
-                c=ai_c,
-                tool_exec_requests=ters if ters else None,
-            )))
+            ai_choices.append(AiChoice(out))
 
         return ChatChoicesResponse(ai_choices)
