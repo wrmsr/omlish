@@ -15,7 +15,7 @@ from ....chat.messages import Message
 from ....chat.messages import SystemMessage
 from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
-from ....chat.stream.types import AiMessageDelta
+from ....chat.stream.types import ContentAiChoiceDelta
 from ....chat.tools.types import Tool
 from ....content.prepare import prepare_content_str
 from ....llms.types import MaxTokens
@@ -193,8 +193,8 @@ class OpenaiChatRequestHandler:
             ),
         )
 
-    def build_ai_message_delta(self, delta: ta.Mapping[str, ta.Any]) -> AiMessageDelta:
-        return AiMessageDelta(
+    def build_ai_choice_delta(self, delta: ta.Mapping[str, ta.Any]) -> ContentAiChoiceDelta:
+        return ContentAiChoiceDelta(
             delta.get('content'),
             # FIXME:
             # tool_exec_requests=[

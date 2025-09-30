@@ -107,23 +107,34 @@ class Polymorphism:
         return self._impls
 
 
+class AutoStripSuffix(lang.Marker):
+    pass
+
+
 def polymorphism_from_impls(
         ty: type,
         impls: ta.Iterable[type],
         *,
         naming: Naming | None = None,
-        strip_suffix: bool | ta.Literal['auto'] = False,
+        strip_suffix: bool | type[AutoStripSuffix] | str = False,
 ) -> Polymorphism:
     impls = set(impls)
 
-    if strip_suffix == 'auto':
+    ssx: str | None
+    if strip_suffix is AutoStripSuffix:
         strip_suffix = all(c.__name__.endswith(ty.__name__) for c in impls)
+    if isinstance(strip_suffix, bool):
+        ssx = ty.__name__ if strip_suffix else None
+    elif isinstance(strip_suffix, str):
+        ssx = strip_suffix
+    else:
+        raise TypeError(strip_suffix)
 
     dct: dict[str, Impl] = {}
     for cur in impls:
         name = cur.__name__
-        if strip_suffix:
-            name = lang.strip_suffix(name, ty.__name__)
+        if ssx is not None:
+            name = lang.strip_suffix(name, ssx)
         if naming is not None:
             name = translate_name(name, naming)
         if name in dct:
@@ -141,7 +152,7 @@ def polymorphism_from_subclasses(
         ty: type,
         *,
         naming: Naming | None = None,
-        strip_suffix: bool | ta.Literal['auto'] = False,
+        strip_suffix: bool | type[AutoStripSuffix] | str = False,
 ) -> Polymorphism:
     return polymorphism_from_impls(
         ty,

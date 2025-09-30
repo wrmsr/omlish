@@ -197,6 +197,7 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .polymorphism.metadata import (  # noqa
+        AutoStripSuffix,
         FieldTypeTagging,
         Impl,
         Impls,

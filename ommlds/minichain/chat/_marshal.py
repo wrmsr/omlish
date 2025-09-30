@@ -23,7 +23,7 @@ def _install_standard_marshaling() -> None:
         cls_poly = msh.polymorphism_from_subclasses(
             cls,
             naming=msh.Naming.SNAKE,
-            strip_suffix=True,
+            strip_suffix='Message',
         )
         msh.install_standard_factories(
             msh.PolymorphismMarshalerFactory(cls_poly),

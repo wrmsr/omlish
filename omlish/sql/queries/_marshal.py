@@ -92,7 +92,7 @@ def _install_standard_marshaling() -> None:
         p = msh.polymorphism_from_subclasses(
             cls,
             naming=msh.Naming.SNAKE,
-            strip_suffix='auto',
+            strip_suffix=msh.AutoStripSuffix,
         )
         msh.install_standard_factories(
             msh.PolymorphismMarshalerFactory(p),
