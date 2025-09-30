@@ -118,33 +118,35 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
                 (self._chat_options or []),
             ))
 
-            resp_m = response.v[0].m
-            new_chat.append(resp_m)
-
-            if (trs := resp_m.tool_exec_requests):
-                check.state(resp_m.c is None)
-
-                tr: mc.ToolUse = check.single(check.not_none(trs))
-
-                # FIXME: lol
-                from ....minichain.lib.fs.context import FsContext
-
-                trm = await self._tool_exec_request_executor.execute_tool_use(
-                    tr,
-                    FsContext(root_dir=os.getcwd()),
-                )
-
-                print(trm.tur.c)
-                new_chat.append(trm)
-
-                response = await mdl.invoke(mc.ChatChoicesRequest(
-                    [*state.chat, *new_chat],
-                    (self._chat_options or []),
-                ))
-
-                resp_m = response.v[0].m
+            for resp_m in response.v[0].ms:
                 new_chat.append(resp_m)
 
-            self._printer.print(resp_m)
+                if isinstance(resp_m, mc.AiMessage):
+                    self._printer.print(resp_m)
+
+                elif isinstance(resp_m, mc.ToolUseMessage):
+                    tr: mc.ToolUse = resp_m.tu
+
+                    # FIXME: lol
+                    from ....minichain.lib.fs.context import FsContext
+
+                    trm = await self._tool_exec_request_executor.execute_tool_use(
+                        tr,
+                        FsContext(root_dir=os.getcwd()),
+                    )
+
+                    print(trm.tur.c)
+                    new_chat.append(trm)
+
+                    response = await mdl.invoke(mc.ChatChoicesRequest(
+                        [*state.chat, *new_chat],
+                        (self._chat_options or []),
+                    ))
+
+                    resp_m = check.isinstance(check.single(response.v[0].ms), mc.AiMessage)
+                    new_chat.append(resp_m)
+
+                else:
+                    raise TypeError(resp_m)
 
         self._state_manager.extend_chat(new_chat)

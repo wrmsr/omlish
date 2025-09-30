@@ -1,5 +1,6 @@
 import dataclasses as dc
 
+from omlish import check
 from omlish import lang
 
 from .... import minichain as mc
@@ -63,7 +64,7 @@ class InteractiveChatSession(ChatSession['InteractiveChatSession.Config']):
 
                 response = await mdl.invoke(mc.ChatChoicesRequest([*state.chat, req_msg]))
 
-                resp_msg = response.v[0].m
+                resp_msg = check.isinstance(check.single(response.v[0].ms), mc.AiMessage)
 
                 self._printer.print(resp_msg)
 

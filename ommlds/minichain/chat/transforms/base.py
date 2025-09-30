@@ -48,43 +48,20 @@ class CompositeMessageTransform(MessageTransform):
 class FnMessageTransform(MessageTransform, ta.Generic[MessageF, MessageT]):
     fn: ta.Callable[[MessageF], ta.Sequence[MessageT]]
 
-    def transform_message(self, message: MessageT) -> ta.Sequence[MessageT]:
+    def transform_message(self, message: MessageF) -> ta.Sequence[MessageT]:
         return self.fn(message)
 
 
 @dc.dataclass(frozen=True)
-class TypeFilteredMessageTransform(MessageTransform[MessageF, MessageT]):
+class TypeFilteredMessageTransform(MessageTransform, ta.Generic[MessageF, MessageT]):
     ty: type | tuple[type, ...]
     mt: MessageTransform[MessageF, MessageT]
 
-    def transform_message(self, message: MessageF) -> ta.Sequence[MessageT]:
+    def transform_message(self, message: Message) -> Chat:
         if isinstance(message, self.ty):
-            return self.mt.transform_message(ta.cast(MessageT, message))
+            return self.mt.transform_message(ta.cast(MessageF, message))
         else:
             return [message]
-
-
-@ta.overload
-def fn_message_transform(
-        fn: ta.Callable[[MessageF], ta.Sequence[MessageT]],
-        ty: type[MessageF],
-) -> MessageTransform[MessageF, MessageT]:
-    ...
-
-
-@ta.overload
-def fn_message_transform(
-        fn: ta.Callable[[Message], Chat],
-        ty: type | tuple[type, ...] | None = None,
-) -> MessageTransform:
-    ...
-
-
-def fn_message_transform(fn, ty=None) -> MessageTransform:
-    mt: MessageTransform = FnMessageTransform(fn)
-    if ty is not None:
-        mt = TypeFilteredMessageTransform(ty, mt)
-    return mt
 
 
 ##

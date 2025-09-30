@@ -73,7 +73,7 @@ def test_llamacpp_chat_model_tools_qwen_raw(model_path):
     )))
 
     print(resp)
-    assert resp.v[0].m
+    assert resp.v[0].ms
 
 
 @pytest.mark.not_docker_guest

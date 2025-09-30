@@ -123,7 +123,6 @@ with _lang.auto_proxy_init(
         CompositeMessageTransform,
         FnMessageTransform,
         TypeFilteredMessageTransform,
-        fn_message_transform,
 
         ChatTransform,
         CompositeChatTransform,

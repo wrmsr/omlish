@@ -20,6 +20,9 @@ class ToolExecParsingMessageTransform(AiMessageTransform):
     parser: ToolExecParser
 
     def transform_message(self, message: AnyAiMessage) -> ta.Sequence[AnyAiMessage]:
+        if not isinstance(message, AiMessage):
+            return [message]
+
         pts = self.parser.parse_tool_execs_(check.isinstance(message.c or '', str))
 
         out: list[AnyAiMessage] = []

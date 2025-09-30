@@ -21,7 +21,7 @@ class DummyChatService:
 
     async def invoke(self, request: ChatRequest) -> ChatResponse:
         um = check.isinstance(request.v[-1], UserMessage)
-        return ChatResponse(AiMessage(''.join([self.prefix, check.isinstance(um.c, str), self.suffix])))
+        return ChatResponse([AiMessage(''.join([self.prefix, check.isinstance(um.c, str), self.suffix]))])
 
 
 TOOL_RESPONSE = """\
