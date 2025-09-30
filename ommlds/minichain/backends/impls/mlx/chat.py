@@ -137,5 +137,5 @@ class MlxChatChoicesService(lang.ExitStacked):
         )
 
         return ChatChoicesResponse([
-            AiChoice(AiMessage(response))  # noqa
+            AiChoice([AiMessage(response)])  # noqa
         ])

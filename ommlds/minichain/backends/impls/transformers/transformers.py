@@ -15,9 +15,11 @@ from omlish import typedvalues as tv
 from ....chat.choices.services import ChatChoicesRequest
 from ....chat.choices.services import ChatChoicesResponse
 from ....chat.choices.services import static_check_is_chat_choices_service
+from ....chat.choices.types import AiChoice
 from ....chat.messages import AiMessage
 from ....chat.messages import Message
 from ....chat.messages import SystemMessage
+from ....chat.messages import ToolUseMessage
 from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
 from ....completion import CompletionRequest
@@ -94,17 +96,19 @@ def build_chat_message(m: Message) -> ta.Mapping[str, ta.Any]:
         return dict(
             role='assistant',
             content=check.isinstance(m.c, str),
-            **(dict(tool_calls=[
-                dict(
-                    id=te.id,
-                    function=dict(
-                        arguments=te.args,
-                        name=te.name,
-                    ),
-                    type='function',
-                )
-                for te in m.tool_exec_requests
-            ]) if m.tool_exec_requests else {}),
+        )
+
+    elif isinstance(m, ToolUseMessage):
+        return dict(
+            role='assistant',
+            tool_calls=[dict(
+                id=m.tu.id,
+                function=dict(
+                    arguments=m.tu.args,
+                    name=m.tu.name,
+                ),
+                type='function',
+            )],
         )
 
     elif isinstance(m, UserMessage):
@@ -174,4 +178,4 @@ class TransformersChatChoicesService(lang.ExitStacked):
             ],
         )
 
-        return ChatChoicesResponse(output)
+        return ChatChoicesResponse([AiChoice([output])])

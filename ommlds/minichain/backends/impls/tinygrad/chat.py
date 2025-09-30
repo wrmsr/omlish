@@ -20,7 +20,6 @@ from ....chat.stream.services import ChatChoicesStreamResponse
 from ....chat.stream.services import static_check_is_chat_choices_stream_service
 from ....chat.stream.types import AiChoiceDelta
 from ....chat.stream.types import AiChoiceDeltas
-from ....chat.stream.types import AiMessageDelta
 from ....chat.types import ChatOption
 from ....llms.types import LlmOption
 from ....resources import UseResources
@@ -126,7 +125,7 @@ class TinygradLlama3ChatChoicesService(BaseTinygradLlama3ChatService):
         for s in tgl3.run_llm(llm, toks):
             out.append(s)
 
-        return ChatChoicesResponse([AiChoice(AiMessage(''.join(out)))])
+        return ChatChoicesResponse([AiChoice([AiMessage(''.join(out))])])
 
 
 ##
