@@ -132,36 +132,43 @@ class PrimitiveUnionUnmarshalerFactory(SimpleUnmarshalerFactory):
         )
 
 
-#
-
-
-PRIMITIVE_UNION_MARSHALER_FACTORY = PrimitiveUnionMarshalerFactory()
-PRIMITIVE_UNION_UNMARSHALER_FACTORY = PrimitiveUnionUnmarshalerFactory()
-
-
 ##
 
 
 class DestructuredLiteralUnionType(ta.NamedTuple):
     lit: rfl.Literal
     v_ty: type
-    non_lits: ta.Sequence[rfl.Type]
+    non_lit: rfl.Type
 
 
 def _destructure_literal_union_type(rty: rfl.Type) -> DestructuredLiteralUnionType | None:
     if not isinstance(rty, rfl.Union):
         return None
     lits, non_lits = col.partition(rty.args, lang.isinstance_of(rfl.Literal))  # noqa
-    if len(lits) != 1:
+    if len(lits) != 1 or len(non_lits) != 1:
         return None
-    lit = check.isinstance(lits[0], rfl.Literal)
+    lit = check.isinstance(check.single(lits), rfl.Literal)
     v_tys = set(map(type, lit.args))
     if len(v_tys) != 1:
         return None
     [v_ty] = v_tys
     if v_ty in rty.args:
         return None
-    return DestructuredLiteralUnionType(lit, v_ty, non_lits)
+    return DestructuredLiteralUnionType(lit, v_ty, check.single(non_lits))
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class LiteralUnionMarshaler(Marshaler):
+    vty: type
+    e: Marshaler
+    vs: frozenset
+    x: Marshaler
+
+    def marshal(self, ctx: MarshalContext, o: ta.Any | None) -> Value:
+        return self.e.marshal(ctx, check.in_(o, self.vs))
 
 
 class LiteralUnionMarshalerFactory(SimpleMarshalerFactory):
@@ -174,6 +181,20 @@ class LiteralUnionMarshalerFactory(SimpleMarshalerFactory):
         # return LiteralMarshaler(ctx.make(ety), frozenset(lty.args))
         ds = check.not_none(_destructure_literal_union_type(rty))
         raise NotImplementedError
+
+
+#
+
+
+@dc.dataclass(frozen=True)
+class LiteralUnionUnmarshaler(Unmarshaler):
+    vty: type
+    e: Unmarshaler
+    vs: frozenset
+    x: Unmarshaler
+
+    def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any | None:
+        return check.in_(self.e.unmarshal(ctx, v), self.vs)
 
 
 class LiteralUnionUnmarshalerFactory(SimpleUnmarshalerFactory):
