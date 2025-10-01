@@ -16,7 +16,7 @@ class ChatCompletionContentPart(lang.Abstract):
 #
 
 
-@dc.dataclass(frozen=True, kw_only=True)
+@dc.dataclass(frozen=True)
 @_set_class_marshal_options
 class TextChatCompletionContentPart(ChatCompletionContentPart, lang.Final):
     text: str
@@ -25,10 +25,10 @@ class TextChatCompletionContentPart(ChatCompletionContentPart, lang.Final):
 #
 
 
-@dc.dataclass(frozen=True, kw_only=True)
+@dc.dataclass(frozen=True)
 @_set_class_marshal_options
 class ImageUrlChatCompletionContentPart(ChatCompletionContentPart, lang.Final):
-    @dc.dataclass(frozen=True, kw_only=True)
+    @dc.dataclass(frozen=True)
     class ImageUrl(lang.Final):
         url: str
         detail: ta.Literal[
@@ -43,7 +43,7 @@ class ImageUrlChatCompletionContentPart(ChatCompletionContentPart, lang.Final):
 #
 
 
-@dc.dataclass(frozen=True, kw_only=True)
+@dc.dataclass(frozen=True)
 @_set_class_marshal_options
 class FileChatCompletionContentPart(ChatCompletionContentPart, lang.Final):
     @dc.dataclass(frozen=True, kw_only=True)
@@ -58,10 +58,10 @@ class FileChatCompletionContentPart(ChatCompletionContentPart, lang.Final):
 #
 
 
-@dc.dataclass(frozen=True, kw_only=True)
+@dc.dataclass(frozen=True)
 @_set_class_marshal_options
 class InputAudioChatCompletionContentPart(ChatCompletionContentPart, lang.Final):
-    @dc.dataclass(frozen=True, kw_only=True)
+    @dc.dataclass(frozen=True)
     @_set_class_marshal_options
     class InputAudio(lang.Final):
         data: str
@@ -76,7 +76,7 @@ class InputAudioChatCompletionContentPart(ChatCompletionContentPart, lang.Final)
 #
 
 
-@dc.dataclass(frozen=True, kw_only=True)
+@dc.dataclass(frozen=True)
 @_set_class_marshal_options
 class RefusalChatCompletionContentPart(ChatCompletionContentPart, lang.Final):
     refusal: str

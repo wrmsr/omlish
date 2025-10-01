@@ -2,15 +2,20 @@ import json
 
 from omlish import marshal as msh
 
+from .. import TextChatCompletionContentPart
+from ..chatcompletion.message import AssistantChatCompletionMessage
 from ..chatcompletion.responseformat import ChatCompletionResponseFormat
 from ..chatcompletion.responseformat import TextChatCompletionResponseFormat
 
 
 def test_marshal():
-    crf = TextChatCompletionResponseFormat()
-    mv = msh.marshal(crf, ChatCompletionResponseFormat)
-    mj = json.dumps(mv)
-    print(mj)
+    for cls, obj in [
+        (ChatCompletionResponseFormat, TextChatCompletionResponseFormat()),
+        (AssistantChatCompletionMessage, AssistantChatCompletionMessage(content=(TextChatCompletionContentPart('hi'),))),  # noqa
+    ]:
+        mv = msh.marshal(obj, cls)
+        mj = json.dumps(mv)
+        print(mj)
 
-    crf2 = msh.unmarshal(json.loads(mj), ChatCompletionResponseFormat)
-    assert crf2 == crf
+        obj2 = msh.unmarshal(json.loads(mj), cls)
+        assert obj2 == obj
