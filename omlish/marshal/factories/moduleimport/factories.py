@@ -43,11 +43,11 @@ class _ModuleImportingFactory(mfs.MatchFn[[ContextT, rfl.Type], R]):
         self._callback = callback
 
         self._lock = threading.RLock()
-        self._has_imported = False
+        self._last_mis: ta.Any = None
 
-    def _do_import(self, ctx: ContextT) -> None:
+    def _do_import(self, ctx: ContextT, mis: ta.Sequence[ModuleImport]) -> None:
         c = 0
-        for mi in ctx.config_registry.get_of(None, ModuleImport):
+        for mi in mis:
             if mi.import_if_necessary():
                 c += 1
 
@@ -56,13 +56,11 @@ class _ModuleImportingFactory(mfs.MatchFn[[ContextT, rfl.Type], R]):
                 self._callback()
 
     def _import_if_necessary(self, ctx: ContextT) -> None:
-        # FIXME:
-        # if not self._has_imported:
-        #     with self._lock:
-        #         if not self._has_imported:
-        #             self._do_import(ctx)
-        #             self._has_imported = True
-        self._do_import(ctx)
+        if (mis := ctx.config_registry.get_of(None, ModuleImport)) and mis is not self._last_mis:
+            with self._lock:
+                if (mis := ctx.config_registry.get_of(None, ModuleImport)) and mis is not self._last_mis:
+                    self._do_import(ctx, mis)
+                    self._last_mis = mis
 
     def guard(self, ctx: ContextT, rty: rfl.Type) -> bool:
         self._import_if_necessary(ctx)
