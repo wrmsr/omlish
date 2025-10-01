@@ -34,7 +34,8 @@ class ChatCompletionRequestWebSearchOptions(lang.Final):
             timezone: str | None = None
 
         approximate: Approximate
-        type: ta.Literal['approximate'] | None = None
+
+        type: ta.Literal['approximate'] = dc.xfield('approximate', repr=False, kw_only=True)
 
     user_location: UserLocation | None = None
 
@@ -46,13 +47,14 @@ class ChatCompletionRequestWebSearchOptions(lang.Final):
 @_set_class_marshal_options
 class ChatCompletionRequestPrediction(lang.Final):
     content: str | ta.Iterable[TextChatCompletionContentPart]
-    type: ta.Literal['content'] | None = None
+
+    type: ta.Literal['content'] = dc.xfield('content', repr=False, kw_only=True)
 
 
 #
 
 
-@dc.dataclass(frozen=True, kw_only=True)
+@dc.dataclass(frozen=True)
 @_set_class_marshal_options
 class ChatCompletionRequestTool(lang.Final):
     @dc.dataclass(frozen=True, kw_only=True)
@@ -64,22 +66,24 @@ class ChatCompletionRequestTool(lang.Final):
         strict: bool | None = None
 
     function: Function
-    type: ta.Literal['function'] = dc.xfield('function', repr=False)
+
+    type: ta.Literal['function'] = dc.xfield('function', repr=False, kw_only=True)
 
 
 #
 
 
-@dc.dataclass(frozen=True, kw_only=True)
+@dc.dataclass(frozen=True)
 @_set_class_marshal_options
 class ChatCompletionRequestNamedToolChoice(lang.Final):
-    @dc.dataclass(frozen=True, kw_only=True)
+    @dc.dataclass(frozen=True)
     @_set_class_marshal_options
     class Function(lang.Final):
         name: str
 
     function: Function
-    type: ta.Literal['function'] = dc.xfield('function', repr=False)
+
+    type: ta.Literal['function'] = dc.xfield('function', repr=False, kw_only=True)
 
 
 #

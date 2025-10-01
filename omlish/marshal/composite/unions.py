@@ -135,9 +135,15 @@ class PrimitiveUnionUnmarshalerFactory(SimpleUnmarshalerFactory):
 ##
 
 
+LITERAL_UNION_TYPES: tuple[type, ...] = (
+    int,
+    str,
+)
+
+
 class DestructuredLiteralUnionType(ta.NamedTuple):
-    lit: rfl.Literal
     v_ty: type
+    lit: rfl.Literal
     non_lit: rfl.Type
 
 
@@ -152,9 +158,9 @@ def _destructure_literal_union_type(rty: rfl.Type) -> DestructuredLiteralUnionTy
     if len(v_tys) != 1:
         return None
     [v_ty] = v_tys
-    if v_ty in rty.args:
+    if v_ty in rty.args or v_ty not in LITERAL_UNION_TYPES:
         return None
-    return DestructuredLiteralUnionType(lit, v_ty, check.single(non_lits))
+    return DestructuredLiteralUnionType(v_ty, lit, check.single(non_lits))
 
 
 #
@@ -162,13 +168,15 @@ def _destructure_literal_union_type(rty: rfl.Type) -> DestructuredLiteralUnionTy
 
 @dc.dataclass(frozen=True)
 class LiteralUnionMarshaler(Marshaler):
-    vty: type
-    e: Marshaler
-    vs: frozenset
+    v_ty: type
+    l: Marshaler
     x: Marshaler
 
     def marshal(self, ctx: MarshalContext, o: ta.Any | None) -> Value:
-        return self.e.marshal(ctx, check.in_(o, self.vs))
+        if isinstance(o, self.v_ty):
+            return self.l.marshal(ctx, o)
+        else:
+            return self.x.marshal(ctx, o)
 
 
 class LiteralUnionMarshalerFactory(SimpleMarshalerFactory):
@@ -176,11 +184,8 @@ class LiteralUnionMarshalerFactory(SimpleMarshalerFactory):
         return _destructure_literal_union_type(rty) is not None
 
     def fn(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
-        # lty = check.isinstance(rty, rfl.Literal)
-        # ety = check.single(set(map(type, lty.args)))
-        # return LiteralMarshaler(ctx.make(ety), frozenset(lty.args))
         ds = check.not_none(_destructure_literal_union_type(rty))
-        raise NotImplementedError
+        return LiteralUnionMarshaler(ds.v_ty, ctx.make(ds.lit), ctx.make(ds.non_lit))
 
 
 #
@@ -188,13 +193,15 @@ class LiteralUnionMarshalerFactory(SimpleMarshalerFactory):
 
 @dc.dataclass(frozen=True)
 class LiteralUnionUnmarshaler(Unmarshaler):
-    vty: type
-    e: Unmarshaler
-    vs: frozenset
+    v_ty: type
+    l: Unmarshaler
     x: Unmarshaler
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any | None:
-        return check.in_(self.e.unmarshal(ctx, v), self.vs)
+        if isinstance(v, self.v_ty):
+            return self.l.unmarshal(ctx, v)  # type: ignore[arg-type]
+        else:
+            return self.x.unmarshal(ctx, v)
 
 
 class LiteralUnionUnmarshalerFactory(SimpleUnmarshalerFactory):
@@ -202,8 +209,5 @@ class LiteralUnionUnmarshalerFactory(SimpleUnmarshalerFactory):
         return _destructure_literal_union_type(rty) is not None
 
     def fn(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
-        # lty = check.isinstance(rty, rfl.Literal)
-        # ety = check.single(set(map(type, lty.args)))
-        # return LiteralUnmarshaler(ctx.make(ety), frozenset(lty.args))
         ds = check.not_none(_destructure_literal_union_type(rty))
-        raise NotImplementedError
+        return LiteralUnionUnmarshaler(ds.v_ty, ctx.make(ds.lit), ctx.make(ds.non_lit))
