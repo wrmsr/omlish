@@ -12,8 +12,6 @@ from .composite.iterables import IterableMarshalerFactory
 from .composite.iterables import IterableUnmarshalerFactory
 from .composite.literals import LiteralMarshalerFactory
 from .composite.literals import LiteralUnmarshalerFactory
-from .composite.unions import LiteralUnionMarshalerFactory
-from .composite.unions import LiteralUnionUnmarshalerFactory
 from .composite.mappings import MappingMarshalerFactory
 from .composite.mappings import MappingUnmarshalerFactory
 from .composite.maybes import MaybeMarshalerFactory
@@ -24,6 +22,8 @@ from .composite.optionals import OptionalMarshalerFactory
 from .composite.optionals import OptionalUnmarshalerFactory
 from .composite.special import SequenceNotStrMarshalerFactory
 from .composite.special import SequenceNotStrUnmarshalerFactory
+from .composite.unions import LiteralUnionMarshalerFactory
+from .composite.unions import LiteralUnionUnmarshalerFactory
 from .composite.unions import PrimitiveUnionMarshalerFactory
 from .composite.unions import PrimitiveUnionUnmarshalerFactory
 from .factories.invalidate import InvalidatableMarshalerFactory

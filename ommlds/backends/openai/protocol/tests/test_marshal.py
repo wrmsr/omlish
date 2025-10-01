@@ -16,8 +16,7 @@ def test_marshal():
         (ChatCompletionResponseFormat, TextChatCompletionResponseFormat()),
         (AssistantChatCompletionMessage, AssistantChatCompletionMessage(content=(TextChatCompletionContentPart('hi'),))),  # noqa
         (ChatCompletionRequest, ChatCompletionRequest(messages=(), model='no', tool_choice='auto')),
-        (ChatCompletionRequest, ChatCompletionRequest(messages=(), model='no', tool_choice=ChatCompletionRequestNamedToolChoice(ChatCompletionRequestNamedToolChoice.Function('barf')))),
-        # noqa
+        (ChatCompletionRequest, ChatCompletionRequest(messages=(), model='no', tool_choice=ChatCompletionRequestNamedToolChoice(ChatCompletionRequestNamedToolChoice.Function('barf')))),  # noqa
     ]:
         mv = msh.marshal(obj, cls)
         mj = json.dumps(mv)
