@@ -7,12 +7,14 @@ from .. import TextChatCompletionContentPart
 from ..chatcompletion.message import AssistantChatCompletionMessage
 from ..chatcompletion.responseformat import ChatCompletionResponseFormat
 from ..chatcompletion.responseformat import TextChatCompletionResponseFormat
+from ..chatcompletion.request import ChatCompletionRequest
 
 
 def test_marshal():
     for cls, obj in [
         (ChatCompletionResponseFormat, TextChatCompletionResponseFormat()),
         (AssistantChatCompletionMessage, AssistantChatCompletionMessage(content=(TextChatCompletionContentPart('hi'),))),  # noqa
+        (ChatCompletionRequest, ChatCompletionRequest(messages=[], model='no')),
     ]:
         mv = msh.marshal(obj, cls)
         mj = json.dumps(mv)
