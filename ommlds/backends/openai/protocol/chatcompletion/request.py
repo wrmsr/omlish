@@ -64,7 +64,7 @@ class ChatCompletionRequestTool(lang.Final):
         strict: bool | None = None
 
     function: Function
-    type: ta.Literal['function'] | None = None
+    type: ta.Literal['function'] = dc.xfield('function', repr=False)
 
 
 #
@@ -79,7 +79,7 @@ class ChatCompletionRequestNamedToolChoice(lang.Final):
         name: str
 
     function: Function
-    type: ta.Literal['function'] | None = None
+    type: ta.Literal['function'] = dc.xfield('function', repr=False)
 
 
 #
@@ -153,6 +153,8 @@ class ChatCompletionRequest(lang.Final):
     stop: ta.Union[str, ta.Sequence[str], None] = None
 
     store: bool | None = None
+
+    stream: bool | None = None
 
     @dc.dataclass(frozen=True, kw_only=True)
     @_set_class_marshal_options

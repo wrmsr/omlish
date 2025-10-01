@@ -14,17 +14,20 @@ TODO:
 import typing as ta
 
 from omlish import check
+from omlish import marshal as msh
 from omlish import typedvalues as tv
 from omlish.formats import json
 from omlish.http import all as http
 
+from .....backends.openai import protocol as pt
 from ....chat.choices.services import ChatChoicesRequest
 from ....chat.choices.services import ChatChoicesResponse
 from ....chat.choices.services import static_check_is_chat_choices_service
 from ....models.configs import ModelName
 from ....standard import ApiKey
 from ....standard import DefaultOptions
-from .format import OpenaiChatRequestHandler
+from .format2 import OpenaiChatRequestHandler
+from .format2 import build_mc_choices_response
 from .names import MODEL_NAMES
 
 
@@ -63,7 +66,7 @@ class OpenaiChatChoicesService:
             ),
         )
 
-        raw_request = rh.raw_request()
+        raw_request = msh.marshal(rh.oai_request())
 
         http_response = http.request(
             'https://api.openai.com/v1/chat/completions',
@@ -76,4 +79,4 @@ class OpenaiChatChoicesService:
 
         raw_response = json.loads(check.not_none(http_response.data).decode('utf-8'))
 
-        return rh.build_response(raw_response)
+        return build_mc_choices_response(msh.unmarshal(raw_response, pt.ChatCompletionResponse))
