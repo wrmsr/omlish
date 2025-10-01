@@ -24,7 +24,7 @@ from ....llms.types import MaxTokens
 from ....llms.types import Temperature
 from ....llms.types import TokenUsage
 from ....llms.types import TokenUsageOutput
-from ....tools.jsonschema import build_tool_spec_json_schema
+from ....tools.jsonschema import build_tool_spec_params_json_schema
 from ....tools.types import ToolSpec
 from ....tools.types import ToolUse
 from ....types import Option
@@ -50,7 +50,7 @@ def build_oai_request_msgs(mc_chat: Chat) -> ta.Sequence[pt.ChatCompletionMessag
         elif isinstance(mc_msg, ToolUseMessage):
             oai_msgs.append(pt.AssistantChatCompletionMessage(
                 tool_calls=[pt.AssistantChatCompletionMessage.ToolCall(
-                    id=mc_msg.tu.id,
+                    id=check.not_none(mc_msg.tu.id),
                     function=pt.AssistantChatCompletionMessage.ToolCall.Function(
                         arguments=check.not_none(mc_msg.tu.raw_args),
                         name=mc_msg.tu.name,
@@ -72,7 +72,7 @@ def build_oai_request_msgs(mc_chat: Chat) -> ta.Sequence[pt.ChatCompletionMessag
             else:
                 raise TypeError(mc_msg.tur.c)
             oai_msgs.append(pt.ToolChatCompletionMessage(
-                tool_call_id=mc_msg.tur.id,
+                tool_call_id=check.not_none(mc_msg.tur.id),
                 content=tc,
             ))
 
@@ -190,7 +190,11 @@ class OpenaiChatRequestHandler:
 
         tools: list[pt.ChatCompletionRequestTool] = [
             pt.ChatCompletionRequestTool(
-                function=build_tool_spec_json_schema(ts),
+                function=pt.ChatCompletionRequestTool.Function(
+                    name=check.not_none(ts.name),
+                    description=prepare_content_str(ts.desc),
+                    parameters=build_tool_spec_params_json_schema(ts),
+                ),
             )
             for ts in po.tools_by_name.values()
         ]

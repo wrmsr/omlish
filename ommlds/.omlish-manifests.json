@@ -260,7 +260,7 @@
     "module": ".minichain.backends.impls.openai.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/openai/chat.py",
-    "line": 34,
+    "line": 37,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.openai.chat",
