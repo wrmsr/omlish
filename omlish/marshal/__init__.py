@@ -113,6 +113,17 @@ with _lang.auto_proxy_init(globals()):
         OptionalUnmarshaler,
     )
 
+    from .composite.unions import (  # noqa
+        MatchUnionMarshaler,
+        MatchUnionUnmarshaler,
+
+        PRIMITIVE_UNION_TYPES,
+        PrimitiveUnionMarshaler,
+        PrimitiveUnionMarshalerFactory,
+        PrimitiveUnionUnmarshaler,
+        PrimitiveUnionUnmarshalerFactory,
+    )
+
     from .composite.wrapped import (  # noqa
         WrappedMarshaler,
         WrappedUnmarshaler,
@@ -213,13 +224,8 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .polymorphism.unions import (  # noqa
-        PRIMITIVE_UNION_TYPES,
         PolymorphismUnionMarshalerFactory,
         PolymorphismUnionUnmarshalerFactory,
-        PrimitiveUnionMarshaler,
-        PrimitiveUnionMarshalerFactory,
-        PrimitiveUnionUnmarshaler,
-        PrimitiveUnionUnmarshalerFactory,
     )
 
     from .polymorphism.unmarshal import (  # noqa

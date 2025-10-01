@@ -22,6 +22,8 @@ from .composite.optionals import OptionalMarshalerFactory
 from .composite.optionals import OptionalUnmarshalerFactory
 from .composite.special import SequenceNotStrMarshalerFactory
 from .composite.special import SequenceNotStrUnmarshalerFactory
+from .composite.unions import PrimitiveUnionMarshalerFactory
+from .composite.unions import PrimitiveUnionUnmarshalerFactory
 from .factories.invalidate import InvalidatableMarshalerFactory
 from .factories.invalidate import InvalidatableUnmarshalerFactory
 from .factories.moduleimport.factories import ModuleImportingMarshalerFactory
@@ -36,8 +38,6 @@ from .objects.dataclasses import DataclassMarshalerFactory
 from .objects.dataclasses import DataclassUnmarshalerFactory
 from .objects.namedtuples import NamedtupleMarshalerFactory
 from .objects.namedtuples import NamedtupleUnmarshalerFactory
-from .polymorphism.unions import PrimitiveUnionMarshalerFactory
-from .polymorphism.unions import PrimitiveUnionUnmarshalerFactory
 from .singular.datetimes import DATETIME_MARSHALER_FACTORY
 from .singular.datetimes import DATETIME_UNMARSHALER_FACTORY
 from .singular.enums import EnumMarshalerFactory

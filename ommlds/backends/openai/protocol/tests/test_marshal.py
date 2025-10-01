@@ -1,4 +1,5 @@
 import json
+import typing as ta
 
 from omlish import marshal as msh
 
@@ -17,5 +18,5 @@ def test_marshal():
         mj = json.dumps(mv)
         print(mj)
 
-        obj2 = msh.unmarshal(json.loads(mj), cls)
+        obj2: ta.Any = msh.unmarshal(json.loads(mj), cls)
         assert obj2 == obj
