@@ -1,3 +1,7 @@
+"""
+TODO:
+ - squash literal unions - typing machinery doesn't
+"""
 import dataclasses as dc
 import typing as ta
 
@@ -26,7 +30,7 @@ class LiteralMarshaler(Marshaler):
 
 class LiteralMarshalerFactory(SimpleMarshalerFactory):
     def guard(self, ctx: MarshalContext, rty: rfl.Type) -> bool:
-        return isinstance(rty, rfl.Literal)
+        return isinstance(rty, rfl.Literal) and len(set(map(type, rty.args))) == 1
 
     def fn(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
         lty = check.isinstance(rty, rfl.Literal)
@@ -45,7 +49,7 @@ class LiteralUnmarshaler(Unmarshaler):
 
 class LiteralUnmarshalerFactory(SimpleUnmarshalerFactory):
     def guard(self, ctx: UnmarshalContext, rty: rfl.Type) -> bool:
-        return isinstance(rty, rfl.Literal)
+        return isinstance(rty, rfl.Literal) and len(set(map(type, rty.args))) == 1
 
     def fn(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
         lty = check.isinstance(rty, rfl.Literal)

@@ -1,6 +1,7 @@
 import typing as ta
 
 from ... import check
+from ... import lang
 from ... import collections as col
 from ... import dataclasses as dc
 from ... import reflect as rfl
@@ -136,3 +137,52 @@ class PrimitiveUnionUnmarshalerFactory(SimpleUnmarshalerFactory):
 
 PRIMITIVE_UNION_MARSHALER_FACTORY = PrimitiveUnionMarshalerFactory()
 PRIMITIVE_UNION_UNMARSHALER_FACTORY = PrimitiveUnionUnmarshalerFactory()
+
+
+##
+
+
+class DestructuredLiteralUnionType(ta.NamedTuple):
+    lit: rfl.Literal
+    v_ty: type
+    non_lits: ta.Sequence[rfl.Type]
+
+
+def _destructure_literal_union_type(rty: rfl.Type) -> DestructuredLiteralUnionType | None:
+    if not isinstance(rty, rfl.Union):
+        return None
+    lits, non_lits = col.partition(rty.args, lang.isinstance_of(rfl.Literal))  # noqa
+    if len(lits) != 1:
+        return None
+    lit = check.isinstance(lits[0], rfl.Literal)
+    v_tys = set(map(type, lit.args))
+    if len(v_tys) != 1:
+        return None
+    [v_ty] = v_tys
+    if v_ty in rty.args:
+        return None
+    return DestructuredLiteralUnionType(lit, v_ty, non_lits)
+
+
+class LiteralUnionMarshalerFactory(SimpleMarshalerFactory):
+    def guard(self, ctx: MarshalContext, rty: rfl.Type) -> bool:
+        return _destructure_literal_union_type(rty) is not None
+
+    def fn(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
+        # lty = check.isinstance(rty, rfl.Literal)
+        # ety = check.single(set(map(type, lty.args)))
+        # return LiteralMarshaler(ctx.make(ety), frozenset(lty.args))
+        ds = check.not_none(_destructure_literal_union_type(rty))
+        raise NotImplementedError
+
+
+class LiteralUnionUnmarshalerFactory(SimpleUnmarshalerFactory):
+    def guard(self, ctx: UnmarshalContext, rty: rfl.Type) -> bool:
+        return _destructure_literal_union_type(rty) is not None
+
+    def fn(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
+        # lty = check.isinstance(rty, rfl.Literal)
+        # ety = check.single(set(map(type, lty.args)))
+        # return LiteralUnmarshaler(ctx.make(ety), frozenset(lty.args))
+        ds = check.not_none(_destructure_literal_union_type(rty))
+        raise NotImplementedError

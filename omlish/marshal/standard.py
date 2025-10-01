@@ -12,6 +12,8 @@ from .composite.iterables import IterableMarshalerFactory
 from .composite.iterables import IterableUnmarshalerFactory
 from .composite.literals import LiteralMarshalerFactory
 from .composite.literals import LiteralUnmarshalerFactory
+from .composite.unions import LiteralUnionMarshalerFactory
+from .composite.unions import LiteralUnionUnmarshalerFactory
 from .composite.mappings import MappingMarshalerFactory
 from .composite.mappings import MappingUnmarshalerFactory
 from .composite.maybes import MaybeMarshalerFactory
@@ -65,6 +67,7 @@ DEFAULT_STANDARD_FACTORIES = StandardFactories(
         PRIMITIVE_MARSHALER_FACTORY,
         NewtypeMarshalerFactory(),
         OptionalMarshalerFactory(),
+        LiteralUnionMarshalerFactory(),
         PrimitiveUnionMarshalerFactory(),
         DataclassMarshalerFactory(),
         NamedtupleMarshalerFactory(),
@@ -84,6 +87,7 @@ DEFAULT_STANDARD_FACTORIES = StandardFactories(
         PRIMITIVE_UNMARSHALER_FACTORY,
         NewtypeUnmarshalerFactory(),
         OptionalUnmarshalerFactory(),
+        LiteralUnionUnmarshalerFactory(),
         PrimitiveUnionUnmarshalerFactory(),
         DataclassUnmarshalerFactory(),
         NamedtupleUnmarshalerFactory(),
