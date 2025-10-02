@@ -34,6 +34,7 @@ import io
 import itertools
 import json
 import logging
+import operator
 import os
 import os.path
 import platform
@@ -7415,6 +7416,13 @@ class _EmptyMaybe(_Maybe[T]):
 
 
 Maybe._empty = _EmptyMaybe()  # noqa
+
+
+##
+
+
+setattr(Maybe, 'just', _JustMaybe)  # noqa
+setattr(Maybe, 'empty', functools.partial(operator.attrgetter('_empty'), Maybe))
 
 
 ########################################

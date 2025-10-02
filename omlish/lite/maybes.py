@@ -1,6 +1,7 @@
 # ruff: noqa: UP007 UP045
 import abc
 import functools
+import operator
 import typing as ta
 
 from .abstract import Abstract
@@ -208,3 +209,10 @@ class _EmptyMaybe(_Maybe[T]):
 
 
 Maybe._empty = _EmptyMaybe()  # noqa
+
+
+##
+
+
+setattr(Maybe, 'just', _JustMaybe)  # noqa
+setattr(Maybe, 'empty', functools.partial(operator.attrgetter('_empty'), Maybe))

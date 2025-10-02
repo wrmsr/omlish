@@ -13,6 +13,7 @@ import contextvars
 import dataclasses as dc
 import functools
 import inspect
+import operator
 import sys
 import threading
 import types
@@ -951,6 +952,13 @@ class _EmptyMaybe(_Maybe[T]):
 
 
 Maybe._empty = _EmptyMaybe()  # noqa
+
+
+##
+
+
+setattr(Maybe, 'just', _JustMaybe)  # noqa
+setattr(Maybe, 'empty', functools.partial(operator.attrgetter('_empty'), Maybe))
 
 
 ########################################
