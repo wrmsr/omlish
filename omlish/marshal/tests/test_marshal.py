@@ -7,7 +7,9 @@ import typing as ta
 
 from ..base.configs import ConfigRegistry
 from ..base.contexts import MarshalContext
+from ..base.contexts import MarshalFactoryContext
 from ..base.contexts import UnmarshalContext
+from ..base.contexts import UnmarshalFactoryContext
 from ..standard import new_standard_marshaler_factory
 from ..standard import new_standard_unmarshaler_factory
 from .foox import Foox
@@ -45,18 +47,20 @@ def test_marshal():
     print(obj)
     print()
 
-    mc = MarshalContext(config_registry=reg, marshaler_factory=mf)
+    mfc = MarshalFactoryContext(config_registry=reg, marshaler_factory=mf)
+    mc = MarshalContext(config_registry=reg, marshal_factory_context=mfc)
     for _ in range(2):
-        mobj = mc.make_marshaler(type(obj)).marshal(mc, obj)
+        mobj = mfc.make_marshaler(type(obj)).marshal(mc, obj)
         print(mobj)
     print()
 
     uf = new_standard_unmarshaler_factory()
 
-    uc = UnmarshalContext(config_registry=reg, unmarshaler_factory=uf)
+    ufc = UnmarshalFactoryContext(config_registry=reg, unmarshaler_factory=uf)
+    uc = UnmarshalContext(config_registry=reg, unmarshal_factory_context=ufc)
     for _ in range(2):
-        uobj = uc.make_unmarshaler(type(obj)).unmarshal(uc, mobj)  # noqa
+        uobj = ufc.make_unmarshaler(type(obj)).unmarshal(uc, mobj)  # noqa
         print(uobj)
     print()
 
-    print(uc.make_unmarshaler(ta.Any).unmarshal(uc, 420))
+    print(ufc.make_unmarshaler(ta.Any).unmarshal(uc, 420))
