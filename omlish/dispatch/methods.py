@@ -34,9 +34,8 @@ class Method(ta.Generic[P, R]):
     it must be explicitly `@register`'ed itself. This is a feature, allowing for selective de-registration of
     implementations in subclasses via name shadowing.
 
-    Methods have ability to choose to allow external installation of implementations outside of direct subclasses. This
-    is to be used *extremely* rarely - basically only in the rare case of externally extensible type hierarchies with
-    visitors.
+    Methods can choose to allow external installation of implementations outside of direct subclasses. This is to be
+    used *extremely* rarely - basically only in the rare case of externally extensible type hierarchies with visitors.
     """
 
     def __init__(

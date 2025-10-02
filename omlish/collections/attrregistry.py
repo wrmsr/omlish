@@ -24,6 +24,20 @@ class DuplicatesForbiddenError(Exception):
 
 
 class AttrRegistry(ta.Generic[K, V]):
+    """
+    MRO-honoring class member registry. There are many ways to do this, and this one is attr name based: a class is
+    considered to have objects registered to it based on whether or not they are accessible by a non-shadowed,
+    MRO-resolved named attribute on that class.
+
+    Care must be taken when overriding registered objects from superclasses in subclasses - shadowing the attribute name
+    of the superclass member will not automatically register the new member with the same name to the registry - it must
+    be explicitly registered itself. This is a feature, allowing for selective de-registration of objects in subclasses
+    via name shadowing.
+
+    Registries can choose to allow external installation of objects outside of direct subclasses. This is to be used
+    rarely - such as in the rare case of externally extensible type hierarchies with visitors.
+    """
+
     def __init__(
             self,
             *,
