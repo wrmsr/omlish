@@ -53,12 +53,19 @@ class MultiGuardFn(ta.Generic[P, T]):
     def __init__(
             self,
             *children: GuardFn[P, T],
+            default: GuardFn[P, T] | None = None,
             strict: bool = False,
     ) -> None:
-        self._children, self._strict = children, strict
+        self._children, self._default, self._strict = children, default, strict
+
+    lang.attr_ops(lambda self: (
+        self._children,
+        self._default,
+        self._strict
+    )).install(locals())
 
     def __get__(self, instance, owner=None):
-        return MultiGuardFn(*map(operator.methodcaller('__get__', instance, owner), self._children), strict=self._strict)  # noqa
+        return MultiGuardFn(*map(operator.methodcaller('__get__', instance, owner), self._children), default=self._default.__get__(instance, owner) if self._default is not None else None, strict=self._strict)  # noqa
 
     def __call__(self, *args: P.args, **kwargs: P.kwargs) -> ta.Callable[[], T] | None:
         matches = []
@@ -68,7 +75,10 @@ class MultiGuardFn(ta.Generic[P, T]):
                     return m
                 matches.append(m)
         if not matches:
-            return None
+            if (dfl := self._default) is not None:
+                return dfl(*args, **kwargs)
+            else:
+                return None
         elif len(matches) > 1:
             raise AmbiguousGuardFnError
         else:
@@ -88,13 +98,13 @@ class _BaseGuardFnMethod(lang.Abstract, ta.Generic[P, T]):
             strict: bool = False,
             requires_override: bool = False,
             instance_cache: bool = False,
-            prototype: ta.Callable[P, T] | None = None,
+            default: GuardFn[P, T] | None = None,
     ) -> None:
         super().__init__()
 
         self._strict = strict
         self._instance_cache = instance_cache
-        self._prototype = prototype
+        self._default = default
 
         self._registry: col.AttrRegistry[ta.Callable, None] = col.AttrRegistry(
             requires_override=requires_override,
@@ -122,6 +132,7 @@ class _BaseGuardFnMethod(lang.Abstract, ta.Generic[P, T]):
     def _prepare(self, instance_cls: type, collected: ta.Mapping[str, tuple[ta.Callable, None]]) -> MultiGuardFn:
         return MultiGuardFn(
             *[getattr(instance_cls, a) for a in collected],
+            default=self._default,
             strict=self._strict,
         )
 
@@ -153,6 +164,7 @@ class _BaseGuardFnMethod(lang.Abstract, ta.Generic[P, T]):
 #
 
 
+@ta.final
 class GuardFnMethod(_BaseGuardFnMethod[P, T]):
     def _bind(self, instance, owner):
         return self._cache.get(type(instance)).__get__(instance, owner)  # noqa
@@ -166,13 +178,14 @@ def method(
         strict: bool = False,
         requires_override: bool = False,
         instance_cache: bool = False,
+        default: bool = False,
 ) -> ta.Callable[[ta.Callable[P, T]], GuardFnMethod[P, T]]:  # noqa
     def inner(fn):
         return GuardFnMethod(
             strict=strict,
             requires_override=requires_override,
             instance_cache=instance_cache,
-            prototype=fn,
+            default=fn if default else None,
         )
 
     return inner
@@ -181,15 +194,13 @@ def method(
 #
 
 
-class DumbGuardFnMethod(_BaseGuardFnMethod[P, T]):
+@ta.final
+class ImmediateGuardFnMethod(_BaseGuardFnMethod[P, T]):
     def _bind(self, instance, owner):
         gf = self._cache.get(type(instance)).__get__(instance, owner)  # noqa
-        x = self._prototype.__get__(instance, owner)  # type: ignore
 
         def inner(*args, **kwargs):
-            if (m := gf(*args, **kwargs)) is not None:
-                return m()
-            return x(*args, **kwargs)
+            return gf(*args, **kwargs)()  # Note: cannot be None due to non-optional default
 
         return inner
 
@@ -197,18 +208,18 @@ class DumbGuardFnMethod(_BaseGuardFnMethod[P, T]):
         return self._call(*args, **kwargs)
 
 
-def dumb_method(
+def immediate_method(
         *,
         strict: bool = False,
         requires_override: bool = False,
         instance_cache: bool = False,
-) -> ta.Callable[[ta.Callable[P, T]], DumbGuardFnMethod[P, T]]:  # noqa
+) -> ta.Callable[[ta.Callable[P, T]], ImmediateGuardFnMethod[P, T]]:  # noqa
     def inner(fn):
-        return DumbGuardFnMethod(
+        return ImmediateGuardFnMethod(
             strict=strict,
             requires_override=requires_override,
             instance_cache=instance_cache,
-            prototype=fn,
+            default=(lambda *args, **kwargs: lambda: fn(*args, **kwargs)),
         )
 
     return inner

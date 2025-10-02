@@ -96,3 +96,15 @@ class Marshaling(lang.Abstract):
     @ta.final
     def unmarshal(self, v, ty, **kwargs):
         return self.new_unmarshal_context(**kwargs).unmarshal(v, ty)
+
+
+##
+
+
+# MarshalerOrUnmarshaler: ta.TypeAlias = Marshaler | Unmarshaler
+# MarshalerOrUnmarshalerT = ta.TypeVar('MarshalerOrUnmarshalerT', bound=MarshalerOrUnmarshaler)
+#
+# MarshalContextOrUnmarshalContext: ta.TypeAlias = MarshalContext | UnmarshalContext
+# MarshalContextOrUnmarshalContextT = ta.TypeVar('MarshalContextOrUnmarshalContextT', bound=MarshalContextOrUnmarshalContext)  # noqa
+#
+# MarshalerMakerOrUnmarshalerMaker: ta.TypeAlias = MarshalerMaker | UnmarshalerMaker

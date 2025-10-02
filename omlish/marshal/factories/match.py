@@ -1,6 +1,8 @@
+import typing as ta
+
 from ... import lang
 from ... import reflect as rfl
-from ...funcs import match as mfs
+from ...funcs import guard as gfs
 from ..base.contexts import MarshalContext
 from ..base.contexts import UnmarshalContext
 from ..base.types import Marshaler
@@ -14,21 +16,13 @@ from ..base.types import UnmarshalerMaker
 ##
 
 
-class MarshalerFactoryMatchClass(
-    MarshalerFactory,
-    mfs.MatchFnClass[[MarshalContext, rfl.Type], Marshaler],
-    lang.Abstract,
-):
-    @property
-    def make_marshaler(self) -> MarshalerMaker:
+class MarshalerFactoryMethodClass(MarshalerFactory, lang.Abstract):
+    @gfs.method()
+    def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         return self  # noqa
 
 
-class UnmarshalerFactoryMatchClass(
-    UnmarshalerFactory,
-    mfs.MatchFnClass[[UnmarshalContext, rfl.Type], Unmarshaler],
-    lang.Abstract,
-):
-    @property
-    def make_unmarshaler(self) -> UnmarshalerMaker:
+class UnmarshalerFactoryMethodClass(UnmarshalerFactory, lang.Abstract):
+    @gfs.method()
+    def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         return self  # noqa

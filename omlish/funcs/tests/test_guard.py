@@ -79,9 +79,9 @@ def test_guard_method(instance_cache):
 
 
 @pytest.mark.parametrize('instance_cache', [False, True])
-def test_dumb_guard_method(instance_cache):
+def test_immediate_guard_method(instance_cache):
     class A:
-        @gfs.dumb_method(strict=True, instance_cache=instance_cache)
+        @gfs.immediate_method(strict=True, instance_cache=instance_cache)
         def foo(self, x: ta.Any) -> str:
             return f'A.foo: {x}'
 
