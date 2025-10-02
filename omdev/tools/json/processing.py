@@ -53,8 +53,11 @@ class Processor:
 
     def _marshal(self, v: ta.Any) -> ta.Any:
         return msh.MarshalContext(
-            config_registry=msh.global_config_registry(),
-            marshaler_factory=self._marshaler_factory(),
+            configs=msh.global_config_registry(),
+            marshal_factory_context=msh.MarshalFactoryContext(
+                configs=msh.global_config_registry(),
+                marshaler_factory=self._marshaler_factory(),
+            ),
         ).marshal(v)
 
     def process(self, v: ta.Any) -> ta.Iterator[ta.Any]:

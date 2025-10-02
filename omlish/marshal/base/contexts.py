@@ -6,7 +6,7 @@ from ... import collections as col
 from ... import lang
 from ... import reflect as rfl
 from .configs import EMPTY_CONFIG_REGISTRY
-from .configs import ConfigRegistry
+from .configs import Configs
 from .errors import UnhandledTypeError
 from .options import Option
 from .overrides import ReflectOverride
@@ -28,12 +28,12 @@ T = ta.TypeVar('T')
 
 @dc.dataclass(frozen=True, kw_only=True)
 class BaseContext(lang.Abstract, lang.Sealed):
-    config_registry: ConfigRegistry = EMPTY_CONFIG_REGISTRY
+    configs: Configs = EMPTY_CONFIG_REGISTRY
     options: col.TypeMap[Option] = col.TypeMap()
 
     def _reflect(self, o: ta.Any) -> rfl.Type:
         def override(o):
-            if (ovr := self.config_registry.get_of(o, ReflectOverride)):
+            if (ovr := self.configs.get_of(o, ReflectOverride)):
                 return ovr[-1].rty
             return None
 

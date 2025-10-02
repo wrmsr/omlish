@@ -47,8 +47,8 @@ def test_marshal():
     print(obj)
     print()
 
-    mfc = MarshalFactoryContext(config_registry=reg, marshaler_factory=mf)
-    mc = MarshalContext(config_registry=reg, marshal_factory_context=mfc)
+    mfc = MarshalFactoryContext(configs=reg, marshaler_factory=mf)
+    mc = MarshalContext(configs=reg, marshal_factory_context=mfc)
     for _ in range(2):
         mobj = mfc.make_marshaler(type(obj)).marshal(mc, obj)
         print(mobj)
@@ -56,8 +56,8 @@ def test_marshal():
 
     uf = new_standard_unmarshaler_factory()
 
-    ufc = UnmarshalFactoryContext(config_registry=reg, unmarshaler_factory=uf)
-    uc = UnmarshalContext(config_registry=reg, unmarshal_factory_context=ufc)
+    ufc = UnmarshalFactoryContext(configs=reg, unmarshaler_factory=uf)
+    uc = UnmarshalContext(configs=reg, unmarshal_factory_context=ufc)
     for _ in range(2):
         uobj = ufc.make_unmarshaler(type(obj)).unmarshal(uc, mobj)  # noqa
         print(uobj)

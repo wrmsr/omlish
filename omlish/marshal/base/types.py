@@ -69,13 +69,13 @@ class Marshaling(lang.Abstract):
 
     def new_marshal_factory_context(self) -> MarshalFactoryContext:
         return MarshalFactoryContext(
-            config_registry=self.config_registry(),
+            configs=self.config_registry(),
             marshaler_factory=self.marshaler_factory(),
         )
 
     def new_unmarshal_factory_context(self) -> UnmarshalFactoryContext:
         return UnmarshalFactoryContext(
-            config_registry=self.config_registry(),
+            configs=self.config_registry(),
             unmarshaler_factory=self.unmarshaler_factory(),
         )
 
@@ -83,13 +83,13 @@ class Marshaling(lang.Abstract):
 
     def new_marshal_context(self) -> MarshalContext:
         return MarshalContext(
-            config_registry=self.config_registry(),
+            configs=self.config_registry(),
             marshal_factory_context=self.new_marshal_factory_context(),
         )
 
     def new_unmarshal_context(self) -> UnmarshalContext:
         return UnmarshalContext(
-            config_registry=self.config_registry(),
+            configs=self.config_registry(),
             unmarshal_factory_context=self.new_unmarshal_factory_context(),
         )
 

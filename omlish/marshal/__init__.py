@@ -49,6 +49,8 @@ with _lang.auto_proxy_init(globals()):
 
     from .base.configs import (  # noqa
         Config,
+        Configs,
+
         ConfigRegistry,
     )
 

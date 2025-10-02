@@ -3,6 +3,7 @@ TODO:
  - col.TypeMap?
   - at least get_any
 """
+import abc
 import dataclasses as dc
 import threading
 import typing as ta
@@ -21,11 +22,38 @@ RegistryItemT = ta.TypeVar('RegistryItemT', bound=RegistryItem)
 RegistryItemU = ta.TypeVar('RegistryItemU', bound=RegistryItem)
 
 
+##
+
+
+class RegistryView(lang.Abstract, ta.Generic[RegistryItemT]):
+    @abc.abstractmethod
+    def get(
+            self,
+            key: ta.Any,
+            *,
+            identity: bool | None = None,
+    ) -> ta.Sequence[RegistryItemT]:
+        ...
+
+    @abc.abstractmethod
+    def get_of(
+            self,
+            key: ta.Any,
+            item_ty: type[RegistryItemU],
+            *,
+            identity: bool | None = None,
+    ) -> ta.Sequence[RegistryItemU]:
+        ...
+
+
+##
+
+
 class RegistrySealedError(Exception):
     pass
 
 
-class Registry(ta.Generic[RegistryItemT]):
+class Registry(RegistryView[RegistryItemT]):
     def __init__(
             self,
             *,
@@ -203,8 +231,8 @@ class Registry(ta.Generic[RegistryItemT]):
             key: ta.Any,
             *,
             identity: bool | None = None,
-    ) -> ta.Sequence[RegistryItem]:
-        return self._state.get(key, identity=identity)
+    ) -> ta.Sequence[RegistryItemT]:
+        return self._state.get(key, identity=identity)  # type: ignore [return-value]
 
     def get_of(
             self,
@@ -213,4 +241,4 @@ class Registry(ta.Generic[RegistryItemT]):
             *,
             identity: bool | None = None,
     ) -> ta.Sequence[RegistryItemU]:
-        return self._state.get_of(key, item_ty, identity=identity)  # type: ignore[return-value]
+        return self._state.get_of(key, item_ty, identity=identity)  # type: ignore [return-value]

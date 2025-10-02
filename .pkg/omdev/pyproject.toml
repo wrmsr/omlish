@@ -29,7 +29,7 @@ dependencies = [
 
 [project.optional-dependencies]
 all = [
-    'black ~= 25.1',
+    'black ~= 25.9',
     'pycparser ~= 2.23',
     'pcpp ~= 1.30',
     'docutils ~= 0.22',
@@ -42,7 +42,7 @@ all = [
     'segno ~= 1.6',
 ]
 black = [
-    'black ~= 25.1',
+    'black ~= 25.9',
 ]
 c = [
     'pycparser ~= 2.23',

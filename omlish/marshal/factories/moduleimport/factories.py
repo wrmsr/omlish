@@ -52,9 +52,9 @@ class _ModuleImportingFactory(ta.Generic[FactoryT]):
                 self._callback()
 
     def _import_if_necessary(self, ctx: BaseContext) -> None:
-        if (mis := ctx.config_registry.get_of(None, ModuleImport)) and mis is not self._last_mis:
+        if (mis := ctx.configs.get_of(None, ModuleImport)) and mis is not self._last_mis:
             with self._lock:
-                if (mis := ctx.config_registry.get_of(None, ModuleImport)) and mis is not self._last_mis:
+                if (mis := ctx.configs.get_of(None, ModuleImport)) and mis is not self._last_mis:
                     self._do_import(ctx, mis)
                     self._last_mis = mis
 
