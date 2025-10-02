@@ -13,6 +13,7 @@ from ... import reflect as rfl
 from ...lite import marshal as lm
 from ..base.contexts import MarshalContext
 from ..base.contexts import UnmarshalContext
+from ..base.errors import UnhandledTypeError
 from ..base.options import Option
 from ..base.types import Marshaler
 from ..base.types import MarshalerFactory
@@ -169,7 +170,9 @@ def _make_field_obj(
     if obj is not None:
         return obj
     if fac is not None:
-        return getattr(fac, fac_attr)(ctx, ty)
+        if (m := getattr(fac, fac_attr)(ctx, ty)) is None:
+            raise UnhandledTypeError(ty)
+        return m()
     return ctx.make(ty)
 
 
