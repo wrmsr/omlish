@@ -1,42 +1,36 @@
 import typing as ta
 
-from ... import check
-from ... import lang
 from ... import reflect as rfl
-from ...funcs import match as mfs
 from ..base.contexts import MarshalContext
 from ..base.contexts import UnmarshalContext
 from ..base.types import Marshaler
 from ..base.types import MarshalerFactory
-from ..base.types import MarshalerMaker
 from ..base.types import Unmarshaler
 from ..base.types import UnmarshalerFactory
-from ..base.types import UnmarshalerMaker
 from ..base.values import Value
 
 
 FactoryT = ta.TypeVar('FactoryT', bound=MarshalerFactory | UnmarshalerFactory)
 T = ta.TypeVar('T')
-R = ta.TypeVar('R')
-C = ta.TypeVar('C')
 
 
 ##
 
 
-class _RecursiveTypeFactory(ta.Generic[FactoryT]):
+class _RecursiveFactory(ta.Generic[FactoryT]):
     def __init__(
             self,
             fac: FactoryT,
-            prx: ta.Callable[[], tuple[R, ta.Callable[[R], None]]],
+            prx: ta.Callable[[], tuple[ta.Any, ta.Callable[[ta.Any], None]]],
     ) -> None:
         super().__init__()
 
         self._fac = fac
         self._prx = prx
-        self._dct: dict[rfl.Type, R] = {}
 
-    def _wrap(self, m, rty):
+        self._dct: dict[rfl.Type, ta.Any] = {}
+
+    def _wrap(self, m: ta.Callable[[], ta.Any], rty):
         try:
             return self._dct[rty]
         except KeyError:
@@ -79,7 +73,7 @@ class _ProxyMarshaler(_Proxy[Marshaler], Marshaler):
         return self._obj.marshal(ctx, o)
 
 
-class RecursiveMarshalerFactory(_RecursiveTypeFactory[MarshalerFactory], MarshalerFactory):
+class RecursiveMarshalerFactory(_RecursiveFactory[MarshalerFactory], MarshalerFactory):
     def __init__(self, fac: MarshalerFactory) -> None:
         super().__init__(fac, _ProxyMarshaler._new)  # noqa
 
@@ -97,7 +91,7 @@ class _ProxyUnmarshaler(_Proxy[Unmarshaler], Unmarshaler):
         return self._obj.unmarshal(ctx, v)
 
 
-class RecursiveUnmarshalerFactory(_RecursiveTypeFactory[UnmarshalerFactory], UnmarshalerFactory):
+class RecursiveUnmarshalerFactory(_RecursiveFactory[UnmarshalerFactory], UnmarshalerFactory):
     def __init__(self, fac: UnmarshalerFactory) -> None:
         super().__init__(fac, _ProxyUnmarshaler._new)  # noqa
 

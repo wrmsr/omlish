@@ -1,111 +1,58 @@
+"""
+FIXME:
+ - fix Context lifetime broken design already
+"""
 import threading
 import typing as ta
 
 from ... import check
 from ... import reflect as rfl
-from ...funcs import match as mfs
 from ..base.contexts import MarshalContext
 from ..base.contexts import UnmarshalContext
 from ..base.types import Marshaler
 from ..base.types import MarshalerFactory
-from ..base.types import MarshalerMaker
 from ..base.types import Unmarshaler
 from ..base.types import UnmarshalerFactory
-from ..base.types import UnmarshalerMaker
 
 
-R = ta.TypeVar('R')
-C = ta.TypeVar('C')
+FactoryT = ta.TypeVar('FactoryT', bound=MarshalerFactory | UnmarshalerFactory)
 
 
 ##
 
 
-class _TypeCacheFactory(mfs.MatchFn[[C, rfl.Type], R]):
-    def __init__(self, f: mfs.MatchFn[[C, rfl.Type], R]) -> None:
+class _TypeCacheFactory(ta.Generic[FactoryT]):
+    def __init__(self, fac: FactoryT) -> None:
         super().__init__()
 
-        self._f = f
-        self._dct: dict[rfl.Type, R | None] = {}
+        self._fac = fac
+
+        self._dct: dict[rfl.Type, ta.Any | None] = {}
         self._lock = threading.RLock()
 
-    def guard(self, ctx: C, rty: rfl.Type) -> bool:
+    def _make(self, rty, dfl):
         check.isinstance(rty, rfl.TYPES)
 
         try:
-            return self._dct[rty] is not None
+            return self._dct[rty]
         except KeyError:
             pass
 
         with self._lock:
             try:
-                e = self._dct[rty]
-
+                return self._dct[rty]
             except KeyError:
-                if self._f.guard(ctx, rty):
-                    return True
-                else:
-                    self._dct[rty] = None
-                    return False
+                pass
 
-            else:
-                return e is not None
-
-    def fn(self, ctx: C, rty: rfl.Type) -> R:
-        check.isinstance(rty, rfl.TYPES)
-
-        try:
-            e = self._dct[rty]
-        except KeyError:
-            pass
-        else:
-            if e is None:
-                raise mfs.MatchGuardError(ctx, rty)
-            else:
-                return e
-
-        with self._lock:
-            try:
-                e = self._dct[rty]
-
-            except KeyError:
-                try:
-                    ret = self._f(ctx, rty)
-                except mfs.MatchGuardError:
-                    self._dct[rty] = None
-                    raise
-                else:
-                    self._dct[rty] = ret
-                    return ret
-
-            if e is None:
-                raise mfs.MatchGuardError(ctx, rty)
-            else:
-                return e
+            m = self._dct[rty] = dfl()
+            return m
 
 
-##
+class TypeCacheMarshalerFactory(_TypeCacheFactory[MarshalerFactory], MarshalerFactory):
+    def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+        return self._make(rty, lambda: self._fac.make_marshaler(ctx, rty))
 
 
-class TypeCacheMarshalerFactory(MarshalerFactory):
-    def __init__(self, f: MarshalerFactory) -> None:
-        super().__init__()
-
-        self._f = f
-        self._tcf: _TypeCacheFactory[MarshalContext, Marshaler] = _TypeCacheFactory(f.make_marshaler)
-
-    @property
-    def make_marshaler(self) -> MarshalerMaker:
-        return self._tcf
-
-
-class TypeCacheUnmarshalerFactory(UnmarshalerFactory):
-    def __init__(self, f: UnmarshalerFactory) -> None:
-        super().__init__()
-
-        self._f = f
-        self._tcf: _TypeCacheFactory[UnmarshalContext, Unmarshaler] = _TypeCacheFactory(f.make_unmarshaler)
-
-    @property
-    def make_unmarshaler(self) -> UnmarshalerMaker:
-        return self._tcf
+class TypeCacheUnmarshalerFactory(_TypeCacheFactory[UnmarshalerFactory], UnmarshalerFactory):
+    def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+        return self._make(rty, lambda: self._fac.make_unmarshaler(ctx, rty))
