@@ -6,7 +6,9 @@ from ... import reflect as rfl
 from ...funcs import guard as gfs
 from .configs import ConfigRegistry
 from .contexts import MarshalContext
+from .contexts import MarshalerFactoryContext
 from .contexts import UnmarshalContext
+from .contexts import UnmarshalerFactoryContext
 from .values import Value
 
 
@@ -31,19 +33,19 @@ class Unmarshaler(lang.Abstract):
 ##
 
 
-MarshalerMaker: ta.TypeAlias = gfs.GuardFn[[MarshalContext, rfl.Type], Marshaler]
-UnmarshalerMaker: ta.TypeAlias = gfs.GuardFn[[UnmarshalContext, rfl.Type], Unmarshaler]
+MarshalerMaker: ta.TypeAlias = gfs.GuardFn[[MarshalerFactoryContext, rfl.Type], Marshaler]
+UnmarshalerMaker: ta.TypeAlias = gfs.GuardFn[[UnmarshalerFactoryContext, rfl.Type], Unmarshaler]
 
 
 class MarshalerFactory(lang.Abstract):
     @abc.abstractmethod
-    def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+    def make_marshaler(self, ctx: MarshalerFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         raise NotImplementedError
 
 
 class UnmarshalerFactory(lang.Abstract):
     @abc.abstractmethod
-    def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+    def make_unmarshaler(self, ctx: UnmarshalerFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         raise NotImplementedError
 
 
@@ -63,7 +65,23 @@ class Marshaling(lang.Abstract):
     def unmarshaler_factory(self) -> UnmarshalerFactory:
         raise NotImplementedError
 
-    #
+    ##
+
+    def new_marshal_factory_context(self, **kwargs: ta.Any) -> MarshalerFactoryContext:
+        return MarshalerFactoryContext(
+            config_registry=self.config_registry(),
+            marshaler_factory=self.marshaler_factory(),
+            **kwargs,
+        )
+
+    def new_unmarshal_factory_context(self, **kwargs: ta.Any) -> UnmarshalerFactoryContext:
+        return UnmarshalerFactoryContext(
+            config_registry=self.config_registry(),
+            unmarshaler_factory=self.unmarshaler_factory(),
+            **kwargs,
+        )
+
+    ##
 
     def new_marshal_context(self, **kwargs: ta.Any) -> MarshalContext:
         return MarshalContext(

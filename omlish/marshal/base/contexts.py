@@ -27,7 +27,7 @@ T = ta.TypeVar('T')
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class BaseContext(lang.Abstract):
+class BaseContext(lang.Abstract, lang.Sealed):
     config_registry: ConfigRegistry = EMPTY_CONFIG_REGISTRY
     options: col.TypeMap[Option] = col.TypeMap()
 
@@ -40,8 +40,11 @@ class BaseContext(lang.Abstract):
         return rfl.Reflector(override=override).type(o)
 
 
+#
+
+
 @dc.dataclass(frozen=True, kw_only=True)
-class MarshalContext(BaseContext, lang.Final):
+class MarshalerFactoryContext(BaseContext, lang.Final):
     marshaler_factory: ta.Optional['MarshalerFactory'] = None
 
     def make_marshaler(self, o: ta.Any) -> 'Marshaler':
@@ -51,12 +54,9 @@ class MarshalContext(BaseContext, lang.Final):
             raise UnhandledTypeError(rty)  # noqa
         return mfn()
 
-    def marshal(self, obj: ta.Any, ty: ta.Any | None = None) -> 'Value':
-        return self.make_marshaler(ty if ty is not None else type(obj)).marshal(self, obj)
-
 
 @dc.dataclass(frozen=True, kw_only=True)
-class UnmarshalContext(BaseContext, lang.Final):
+class UnmarshalerFactoryContext(BaseContext, lang.Final):
     unmarshaler_factory: ta.Optional['UnmarshalerFactory'] = None
 
     def make_unmarshaler(self, o: ta.Any) -> 'Unmarshaler':
@@ -65,6 +65,22 @@ class UnmarshalContext(BaseContext, lang.Final):
         if (mfn := fac.make_unmarshaler(self, rty)) is None:
             raise UnhandledTypeError(rty)  # noqa
         return mfn()
+
+
+#
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class MarshalContext(BaseContext):
+    marshaler_factory_context: MarshalerFactoryContext
+
+    def marshal(self, obj: ta.Any, ty: ta.Any | None = None) -> 'Value':
+        return self.marshaler_factory_context.make_marshaler(ty if ty is not None else type(obj)).marshal(self, obj)
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class UnmarshalContext(BaseContext):
+    unmarshaler_factory_context: UnmarshalerFactoryContext
 
     @ta.overload
     def unmarshal(self, v: 'Value', ty: type[T]) -> T:
@@ -75,4 +91,4 @@ class UnmarshalContext(BaseContext, lang.Final):
         ...
 
     def unmarshal(self, v, ty):
-        return self.make_unmarshaler(ty).unmarshal(self, v)
+        return self.unmarshaler_factory_context.make_unmarshaler(ty).unmarshal(self, v)
