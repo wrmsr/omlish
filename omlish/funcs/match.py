@@ -5,6 +5,8 @@ TODO:
  - unify MatchFnClass with dispatch.method?
   - __call__ = mfs.method(); @__call__.register(lambda: ...) def _call_... ?
   - not really the same thing, dispatch is unordered this is necessarily ordered
+  - !! well.. unify interface at least?
+   - guard(*a, **k) -> bool + fn(*a, **k) -> T becomes dispatch(*a, **k) -> (Callable -> T) | None
 """
 import abc
 import dataclasses as dc

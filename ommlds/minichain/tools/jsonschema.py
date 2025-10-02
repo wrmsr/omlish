@@ -85,12 +85,11 @@ class ToolJsonschemaRenderer:
         raise TypeError(t)
 
     def render_tool_params(self, ts: ToolSpec) -> dict:
-        pr_dct: dict[str, dict] | None = None
+        pr_dct: dict[str, dict] = {}
         req_lst: list[str] | None = None
-        if ts.params is not None:
-            pr_dct = {}
+        if ts.params:
             req_lst = []
-            for p in ts.params or []:
+            for p in ts.params:
                 pr_dct[check.non_empty_str(p.name)] = {
                     **({'description': self._content_str_preparer.prepare_str(p.desc)} if p.desc is not None else {}),
                     **(self.render_type(p.type) if p.type is not None else {}),
@@ -100,7 +99,7 @@ class ToolJsonschemaRenderer:
 
         return {
             'type': 'object',
-            **({'properties': pr_dct} if pr_dct is not None else {}),
+            'properties': pr_dct,
             **({'required': req_lst} if req_lst is not None else {}),
             # By default any additional properties are allowed.
             # https://json-schema.org/understanding-json-schema/reference/object#additionalproperties
@@ -108,7 +107,7 @@ class ToolJsonschemaRenderer:
         }
 
     def render_tool(self, ts: ToolSpec) -> dict:
-        pa_dct = self.render_tool_params(ts) if ts.params else None
+        pa_dct = self.render_tool_params(ts)
 
         ret_dct = {
             **({'description': self._content_str_preparer.prepare_str(ts.returns_desc)} if ts.returns_desc is not None else {}),  # noqa
