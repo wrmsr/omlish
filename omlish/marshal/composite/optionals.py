@@ -6,10 +6,10 @@ from ... import reflect as rfl
 from ..base.contexts import MarshalContext
 from ..base.contexts import UnmarshalContext
 from ..base.types import Marshaler
+from ..base.types import MarshalerFactory
 from ..base.types import Unmarshaler
+from ..base.types import UnmarshalerFactory
 from ..base.values import Value
-from ..factories.simple import SimpleMarshalerFactory
-from ..factories.simple import SimpleUnmarshalerFactory
 
 
 ##
@@ -25,12 +25,11 @@ class OptionalMarshaler(Marshaler):
         return self.e.marshal(ctx, o)
 
 
-class OptionalMarshalerFactory(SimpleMarshalerFactory):
-    def guard(self, ctx: MarshalContext, rty: rfl.Type) -> bool:
-        return isinstance(rty, rfl.Union) and rty.is_optional
-
-    def fn(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
-        return OptionalMarshaler(ctx.make(check.isinstance(rty, rfl.Union).without_none()))
+class OptionalMarshalerFactory(MarshalerFactory):
+    def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+        if not (isinstance(rty, rfl.Union) and rty.is_optional):
+            return None
+        return lambda: OptionalMarshaler(ctx.make(check.isinstance(rty, rfl.Union).without_none()))
 
 
 @dc.dataclass(frozen=True)
@@ -43,9 +42,8 @@ class OptionalUnmarshaler(Unmarshaler):
         return self.e.unmarshal(ctx, v)
 
 
-class OptionalUnmarshalerFactory(SimpleUnmarshalerFactory):
-    def guard(self, ctx: UnmarshalContext, rty: rfl.Type) -> bool:
-        return isinstance(rty, rfl.Union) and rty.is_optional
-
-    def fn(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
-        return OptionalUnmarshaler(ctx.make(check.isinstance(rty, rfl.Union).without_none()))
+class OptionalUnmarshalerFactory(UnmarshalerFactory):
+    def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+        if not (isinstance(rty, rfl.Union) and rty.is_optional):
+            return None
+        return lambda: OptionalUnmarshaler(ctx.make(check.isinstance(rty, rfl.Union).without_none()))

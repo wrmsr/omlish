@@ -15,9 +15,9 @@ from ..base.contexts import MarshalContext
 from ..base.contexts import UnmarshalContext
 from ..base.options import Option
 from ..base.types import Marshaler
+from ..base.types import MarshalerFactory
 from ..base.types import Unmarshaler
-from ..factories.simple import SimpleMarshalerFactory
-from ..factories.simple import SimpleUnmarshalerFactory
+from ..base.types import UnmarshalerFactory
 from ..naming import Naming
 from ..naming import translate_name
 from .marshal import ObjectMarshaler
@@ -200,119 +200,125 @@ def _type_or_generic_base(rty: rfl.Type) -> type | None:
         return None
 
 
-class DataclassMarshalerFactory(AbstractDataclassFactory, SimpleMarshalerFactory):
-    def guard(self, ctx: MarshalContext, rty: rfl.Type) -> bool:
-        return (
+class DataclassMarshalerFactory(AbstractDataclassFactory, MarshalerFactory):
+    def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+        if not (
             (ty := _type_or_generic_base(rty)) is not None and
             dc.is_dataclass(ty) and
             not lang.is_abstract_class(ty)
-        )
+        ):
+            return None
 
-    def fn(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
-        ty = check.isinstance(_type_or_generic_base(rty), type)
-        check.state(dc.is_dataclass(ty))
-        check.state(not lang.is_abstract_class(ty))
+        def inner() -> Marshaler:
+            ty = check.isinstance(_type_or_generic_base(rty), type)
+            check.state(dc.is_dataclass(ty))
+            check.state(not lang.is_abstract_class(ty))
 
-        dc_md = self._get_metadata(ty)
-        fis = self._get_field_infos(ty, ctx.options)
+            dc_md = self._get_metadata(ty)
+            fis = self._get_field_infos(ty, ctx.options)
 
-        fields = [
-            (
-                fi,
-                _make_field_obj(
-                    ctx,
-                    fi.type,
-                    fi.metadata.marshaler,
-                    fi.metadata.marshaler_factory,
-                    'make_marshaler',
-                ),
+            fields = [
+                (
+                    fi,
+                    _make_field_obj(
+                        ctx,
+                        fi.type,
+                        fi.metadata.marshaler,
+                        fi.metadata.marshaler_factory,
+                        'make_marshaler',
+                    ),
+                )
+                for fi in fis
+                if fi.name not in dc_md.specials.set
+            ]
+
+            return ObjectMarshaler(
+                fields,
+                specials=dc_md.specials,
             )
-            for fi in fis
-            if fi.name not in dc_md.specials.set
-        ]
 
-        return ObjectMarshaler(
-            fields,
-            specials=dc_md.specials,
-        )
+        return inner
 
 
 ##
 
 
-class DataclassUnmarshalerFactory(AbstractDataclassFactory, SimpleUnmarshalerFactory):
-    def guard(self, ctx: UnmarshalContext, rty: rfl.Type) -> bool:
-        return (
+class DataclassUnmarshalerFactory(AbstractDataclassFactory, UnmarshalerFactory):
+    def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+        if not (
             (ty := _type_or_generic_base(rty)) is not None and
             dc.is_dataclass(ty) and
             not lang.is_abstract_class(ty)
-        )
+        ):
+            return None
 
-    def fn(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
-        ty = check.isinstance(_type_or_generic_base(rty), type)
-        check.state(dc.is_dataclass(ty))
-        check.state(not lang.is_abstract_class(ty))
+        def inner() -> Unmarshaler:
+            ty = check.isinstance(_type_or_generic_base(rty), type)
+            check.state(dc.is_dataclass(ty))
+            check.state(not lang.is_abstract_class(ty))
 
-        dc_md = self._get_metadata(ty)
-        fis = self._get_field_infos(ty, ctx.options)
+            dc_md = self._get_metadata(ty)
+            fis = self._get_field_infos(ty, ctx.options)
 
-        d: dict[str, tuple[FieldInfo, Unmarshaler]] = {}
-        defaults: dict[str, ta.Any] = {}
-        embeds: dict[str, type] = {}
-        embeds_by_unmarshal_name: dict[str, tuple[str, str]] = {}
+            d: dict[str, tuple[FieldInfo, Unmarshaler]] = {}
+            defaults: dict[str, ta.Any] = {}
+            embeds: dict[str, type] = {}
+            embeds_by_unmarshal_name: dict[str, tuple[str, str]] = {}
 
-        def add_field(fi: FieldInfo, *, prefixes: ta.Iterable[str] = ('',)) -> ta.Iterable[str]:
-            ret: list[str] = []
+            def add_field(fi: FieldInfo, *, prefixes: ta.Iterable[str] = ('',)) -> ta.Iterable[str]:
+                ret: list[str] = []
 
-            if fi.options.embed:
-                e_ty = check.isinstance(fi.type, type)
-                check.state(dc.is_dataclass(e_ty))
-                e_dc_md = get_dataclass_metadata(e_ty)
-                if e_dc_md.specials.set:
-                    raise Exception(f'Embedded fields cannot have specials: {e_ty}')
+                if fi.options.embed:
+                    e_ty = check.isinstance(fi.type, type)
+                    check.state(dc.is_dataclass(e_ty))
+                    e_dc_md = get_dataclass_metadata(e_ty)
+                    if e_dc_md.specials.set:
+                        raise Exception(f'Embedded fields cannot have specials: {e_ty}')
 
-                embeds[fi.name] = e_ty
-                for e_fi in self._get_field_infos(e_ty, ctx.options):
-                    e_ns = add_field(e_fi, prefixes=[p + ep for p in prefixes for ep in fi.unmarshal_names])
-                    embeds_by_unmarshal_name.update({e_f: (fi.name, e_fi.name) for e_f in e_ns})
-                    ret.extend(e_ns)
+                    embeds[fi.name] = e_ty
+                    for e_fi in self._get_field_infos(e_ty, ctx.options):
+                        e_ns = add_field(e_fi, prefixes=[p + ep for p in prefixes for ep in fi.unmarshal_names])
+                        embeds_by_unmarshal_name.update({e_f: (fi.name, e_fi.name) for e_f in e_ns})
+                        ret.extend(e_ns)
 
-            else:
-                tup = (
-                    fi,
-                    _make_field_obj(
-                        ctx,
-                        fi.type,
-                        fi.metadata.unmarshaler,
-                        fi.metadata.unmarshaler_factory,
-                        'make_unmarshaler',
-                    ),
-                )
+                else:
+                    tup = (
+                        fi,
+                        _make_field_obj(
+                            ctx,
+                            fi.type,
+                            fi.metadata.unmarshaler,
+                            fi.metadata.unmarshaler_factory,
+                            'make_unmarshaler',
+                        ),
+                    )
 
-                for pfx in prefixes:
-                    for un in fi.unmarshal_names:
-                        un = pfx + un
-                        if un in d:
-                            raise KeyError(f'Duplicate fields for name {un!r}: {fi.name!r}, {d[un][0].name!r}')
-                        d[un] = tup
-                        ret.append(un)
+                    for pfx in prefixes:
+                        for un in fi.unmarshal_names:
+                            un = pfx + un
+                            if un in d:
+                                raise KeyError(f'Duplicate fields for name {un!r}: {fi.name!r}, {d[un][0].name!r}')
+                            d[un] = tup
+                            ret.append(un)
 
-                if fi.options.default.present:
-                    defaults[fi.name] = fi.options.default.must()
+                    if fi.options.default.present:
+                        defaults[fi.name] = fi.options.default.must()
 
-            return ret
+                return ret
 
-        for fi in fis:
-            if fi.name in dc_md.specials.set:
-                continue
-            add_field(fi)
+            for fi in fis:
+                if fi.name in dc_md.specials.set:
+                    continue
+                add_field(fi)
 
-        return ObjectUnmarshaler(
-            ty,
-            d,
-            specials=dc_md.specials,
-            defaults=defaults,
-            embeds=embeds,
-            embeds_by_unmarshal_name=embeds_by_unmarshal_name,
-            ignore_unknown=dc_md.ignore_unknown,
-        )
+            return ObjectUnmarshaler(
+                ty,
+                d,
+                specials=dc_md.specials,
+                defaults=defaults,
+                embeds=embeds,
+                embeds_by_unmarshal_name=embeds_by_unmarshal_name,
+                ignore_unknown=dc_md.ignore_unknown,
+            )
+
+        return inner

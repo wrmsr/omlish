@@ -22,10 +22,10 @@ from .composite.optionals import OptionalMarshalerFactory
 from .composite.optionals import OptionalUnmarshalerFactory
 from .composite.special import SequenceNotStrMarshalerFactory
 from .composite.special import SequenceNotStrUnmarshalerFactory
-from .composite.unions import LiteralUnionMarshalerFactory
-from .composite.unions import LiteralUnionUnmarshalerFactory
-from .composite.unions import PrimitiveUnionMarshalerFactory
-from .composite.unions import PrimitiveUnionUnmarshalerFactory
+from .composite.unions.literals import LiteralUnionMarshalerFactory
+from .composite.unions.literals import LiteralUnionUnmarshalerFactory
+from .composite.unions.primitives import PrimitiveUnionMarshalerFactory
+from .composite.unions.primitives import PrimitiveUnionUnmarshalerFactory
 from .factories.invalidate import InvalidatableMarshalerFactory
 from .factories.invalidate import InvalidatableUnmarshalerFactory
 from .factories.moduleimport.factories import ModuleImportingMarshalerFactory
@@ -119,11 +119,11 @@ def new_standard_marshaler_factory(
         nonlocal gl
         gl = DEFAULT_STANDARD_FACTORIES
 
-        fi: MarshalerFactory = MultiMarshalerFactory([
+        fi: MarshalerFactory = MultiMarshalerFactory(
             *(first if first is not None else []),
             *gl.marshaler_factories,
             *(last if last is not None else []),
-        ])
+        )
 
         fi = RecursiveMarshalerFactory(fi)
 
@@ -152,11 +152,11 @@ def new_standard_unmarshaler_factory(
         nonlocal gl
         gl = DEFAULT_STANDARD_FACTORIES
 
-        fi: UnmarshalerFactory = MultiUnmarshalerFactory([
+        fi: UnmarshalerFactory = MultiUnmarshalerFactory(
             *(first if first is not None else []),
             *gl.unmarshaler_factories,
             *(last if last is not None else []),
-        ])
+        )
 
         fi = RecursiveUnmarshalerFactory(fi)
 

@@ -6,8 +6,8 @@ from ... import dataclasses as dc
 from ... import reflect as rfl
 from ..base.contexts import UnmarshalContext
 from ..base.types import Unmarshaler
+from ..base.types import UnmarshalerFactory
 from ..base.values import Value
-from ..factories.simple import SimpleUnmarshalerFactory
 from .metadata import FieldInfo
 from .metadata import FieldInfos
 from .metadata import ObjectSpecials
@@ -118,24 +118,27 @@ class ObjectUnmarshaler(Unmarshaler):
 
 
 @dc.dataclass(frozen=True)
-class SimpleObjectUnmarshalerFactory(SimpleUnmarshalerFactory):
+class SimpleObjectUnmarshalerFactory(UnmarshalerFactory):
     dct: ta.Mapping[type, ta.Sequence[FieldInfo]]
 
     _: dc.KW_ONLY
 
     specials: ObjectSpecials = ObjectSpecials()
 
-    def guard(self, ctx: UnmarshalContext, rty: rfl.Type) -> bool:
-        return isinstance(rty, type) and rty in self.dct
+    def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+        if not (isinstance(rty, type) and rty in self.dct):
+            return None
 
-    def fn(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
-        ty = check.isinstance(rty, type)
+        def inner() -> Unmarshaler:
+            ty = check.isinstance(rty, type)
 
-        fis = FieldInfos(self.dct[ty])
+            fis = FieldInfos(self.dct[ty])
 
-        return ObjectUnmarshaler.make(
-            ctx,
-            ty,
-            fis,
-            specials=self.specials,
-        )
+            return ObjectUnmarshaler.make(
+                ctx,
+                ty,
+                fis,
+                specials=self.specials,
+            )
+
+        return inner

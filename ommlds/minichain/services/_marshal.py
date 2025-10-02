@@ -57,26 +57,30 @@ class _RequestResponseMarshaler(msh.Marshaler):
         }
 
 
-class _RequestResponseMarshalerFactory(msh.SimpleMarshalerFactory):
-    def guard(self, ctx: msh.MarshalContext, rty: rfl.Type) -> bool:
-        return _is_rr_rty(rty)
+class _RequestResponseMarshalerFactory(msh.MarshalerFactory):
+    def make_marshaler(self, ctx: msh.MarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
+        if not _is_rr_rty(rty):
+            return None
 
-    def fn(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
         if isinstance(rty, type):
             rty = rfl.type_(rfl.get_orig_class(rty))
-        if isinstance(rty, rfl.Generic):
-            v_rty, tv_rty = rty.args
-        else:
-            # FIXME: ...
-            raise TypeError(rty)
-        v_m: msh.Marshaler | None = None
-        if not isinstance(v_rty, ta.TypeVar):
-            v_m = ctx.make(v_rty)
-        return _RequestResponseMarshaler(
-            rty,
-            _get_tv_fld(rty),
-            v_m,
-        )
+
+        def inner() -> msh.Marshaler:
+            if isinstance(rty, rfl.Generic):
+                v_rty, tv_rty = rty.args
+            else:
+                # FIXME: ...
+                raise TypeError(rty)
+            v_m: msh.Marshaler | None = None
+            if not isinstance(v_rty, ta.TypeVar):
+                v_m = ctx.make(v_rty)
+            return _RequestResponseMarshaler(
+                rty,
+                _get_tv_fld(rty),
+                v_m,
+            )
+
+        return inner
 
 
 #
@@ -108,26 +112,29 @@ class _RequestResponseUnmarshaler(msh.Unmarshaler):
         return cty(v, tvs)  # type: ignore
 
 
-class _RequestResponseUnmarshalerFactory(msh.SimpleUnmarshalerFactory):
-    def guard(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> bool:
-        return _is_rr_rty(rty)
+class _RequestResponseUnmarshalerFactory(msh.UnmarshalerFactory):
+    def make_unmarshaler(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:
+        if not _is_rr_rty(rty):
+            return None
 
-    def fn(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
-        if isinstance(rty, rfl.Generic):
-            v_rty, tv_rty = rty.args
-        else:
-            # FIXME: ...
-            raise TypeError(rty)
-        tv_types_set = check.isinstance(tv_rty, rfl.Union).args
-        tv_ta = tv.TypedValues[ta.Union[*tv_types_set]]  # type: ignore
-        tv_u = ctx.make(tv_ta)
-        v_u = ctx.make(v_rty)
-        return _RequestResponseUnmarshaler(
-            rty,
-            _get_tv_fld(rty),
-            v_u,
-            tv_u,
-        )
+        def inner() -> msh.Unmarshaler:
+            if isinstance(rty, rfl.Generic):
+                v_rty, tv_rty = rty.args
+            else:
+                # FIXME: ...
+                raise TypeError(rty)
+            tv_types_set = check.isinstance(tv_rty, rfl.Union).args
+            tv_ta = tv.TypedValues[ta.Union[*tv_types_set]]  # type: ignore
+            tv_u = ctx.make(tv_ta)
+            v_u = ctx.make(v_rty)
+            return _RequestResponseUnmarshaler(
+                rty,
+                _get_tv_fld(rty),
+                v_u,
+                tv_u,
+            )
+
+        return inner
 
 
 ##

@@ -10,10 +10,10 @@ from ... import reflect as rfl
 from ..base.contexts import MarshalContext
 from ..base.contexts import UnmarshalContext
 from ..base.types import Marshaler
+from ..base.types import MarshalerFactory
 from ..base.types import Unmarshaler
+from ..base.types import UnmarshalerFactory
 from ..base.values import Value
-from ..factories.simple import SimpleMarshalerFactory
-from ..factories.simple import SimpleUnmarshalerFactory
 
 
 ##
@@ -28,14 +28,12 @@ class LiteralMarshaler(Marshaler):
         return self.e.marshal(ctx, check.in_(o, self.vs))
 
 
-class LiteralMarshalerFactory(SimpleMarshalerFactory):
-    def guard(self, ctx: MarshalContext, rty: rfl.Type) -> bool:
-        return isinstance(rty, rfl.Literal) and len(set(map(type, rty.args))) == 1
-
-    def fn(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
-        lty = check.isinstance(rty, rfl.Literal)
-        ety = check.single(set(map(type, lty.args)))
-        return LiteralMarshaler(ctx.make(ety), frozenset(lty.args))
+class LiteralMarshalerFactory(MarshalerFactory):
+    def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+        if not (isinstance(rty, rfl.Literal) and len(set(map(type, rty.args))) == 1):
+            return None
+        ety = check.single(set(map(type, rty.args)))
+        return lambda: LiteralMarshaler(ctx.make(ety), frozenset(rty.args))
 
 
 @dc.dataclass(frozen=True)
@@ -47,11 +45,9 @@ class LiteralUnmarshaler(Unmarshaler):
         return check.in_(self.e.unmarshal(ctx, v), self.vs)
 
 
-class LiteralUnmarshalerFactory(SimpleUnmarshalerFactory):
-    def guard(self, ctx: UnmarshalContext, rty: rfl.Type) -> bool:
-        return isinstance(rty, rfl.Literal) and len(set(map(type, rty.args))) == 1
-
-    def fn(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
-        lty = check.isinstance(rty, rfl.Literal)
-        ety = check.single(set(map(type, lty.args)))
-        return LiteralUnmarshaler(ctx.make(ety), frozenset(lty.args))
+class LiteralUnmarshalerFactory(UnmarshalerFactory):
+    def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+        if not (isinstance(rty, rfl.Literal) and len(set(map(type, rty.args))) == 1):
+            return None
+        ety = check.single(set(map(type, rty.args)))
+        return lambda: LiteralUnmarshaler(ctx.make(ety), frozenset(rty.args))

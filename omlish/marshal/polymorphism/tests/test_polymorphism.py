@@ -56,21 +56,21 @@ P_POLYMORPHISM = Polymorphism(
 def _test_polymorphism(tt):
     mf: MarshalerFactory = TypeCacheMarshalerFactory(
         RecursiveMarshalerFactory(
-            MultiMarshalerFactory([
+            MultiMarshalerFactory(
                 PolymorphismMarshalerFactory(P_POLYMORPHISM, tt),
                 DataclassMarshalerFactory(),
                 PRIMITIVE_MARSHALER_FACTORY,
-            ]),
+            ),
         ),
     )
 
     uf: UnmarshalerFactory = TypeCacheUnmarshalerFactory(
         RecursiveUnmarshalerFactory(
-            MultiUnmarshalerFactory([
+            MultiUnmarshalerFactory(
                 PolymorphismUnmarshalerFactory(P_POLYMORPHISM, tt),
                 DataclassUnmarshalerFactory(),
                 PRIMITIVE_UNMARSHALER_FACTORY,
-            ]),
+            ),
         ),
     )
 

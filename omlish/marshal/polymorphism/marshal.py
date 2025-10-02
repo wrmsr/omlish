@@ -7,8 +7,8 @@ from ... import lang
 from ... import reflect as rfl
 from ..base.contexts import MarshalContext
 from ..base.types import Marshaler
+from ..base.types import MarshalerFactory
 from ..base.values import Value
-from ..factories.simple import SimpleMarshalerFactory
 from .metadata import FieldTypeTagging
 from .metadata import Impls
 from .metadata import Polymorphism
@@ -68,13 +68,11 @@ def make_polymorphism_marshaler(
 
 
 @dc.dataclass(frozen=True)
-class PolymorphismMarshalerFactory(SimpleMarshalerFactory):
+class PolymorphismMarshalerFactory(MarshalerFactory):
     p: Polymorphism
     tt: TypeTagging = WrapperTypeTagging()
 
-    def guard(self, ctx: MarshalContext, rty: rfl.Type) -> bool:
-        return rty is self.p.ty
-
-    def fn(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
-        check.is_(rty, self.p.ty)
-        return make_polymorphism_marshaler(self.p.impls, self.tt, ctx)
+    def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+        if rty is not self.p.ty:
+            return None
+        return lambda: make_polymorphism_marshaler(self.p.impls, self.tt, ctx)

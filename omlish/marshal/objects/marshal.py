@@ -6,8 +6,8 @@ from ... import dataclasses as dc
 from ... import reflect as rfl
 from ..base.contexts import MarshalContext
 from ..base.types import Marshaler
+from ..base.types import MarshalerFactory
 from ..base.values import Value
-from ..factories.simple import SimpleMarshalerFactory
 from .metadata import FieldInfo
 from .metadata import FieldInfos
 from .metadata import ObjectSpecials
@@ -86,23 +86,26 @@ class ObjectMarshaler(Marshaler):
 
 
 @dc.dataclass(frozen=True)
-class SimpleObjectMarshalerFactory(SimpleMarshalerFactory):
+class SimpleObjectMarshalerFactory(MarshalerFactory):
     dct: ta.Mapping[type, ta.Sequence[FieldInfo]]
 
     _: dc.KW_ONLY
 
     specials: ObjectSpecials = ObjectSpecials()
 
-    def guard(self, ctx: MarshalContext, rty: rfl.Type) -> bool:
-        return isinstance(rty, type) and rty in self.dct
+    def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+        if not (isinstance(rty, type) and rty in self.dct):
+            return None
 
-    def fn(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
-        ty = check.isinstance(rty, type)
+        def inner() -> Marshaler:
+            ty = check.isinstance(rty, type)
 
-        fis = FieldInfos(self.dct[ty])
+            fis = FieldInfos(self.dct[ty])
 
-        return ObjectMarshaler.make(
-            ctx,
-            fis,
-            specials=self.specials,
-        )
+            return ObjectMarshaler.make(
+                ctx,
+                fis,
+                specials=self.specials,
+            )
+
+        return inner

@@ -9,9 +9,9 @@ from ..base.contexts import MarshalContext
 from ..base.contexts import UnmarshalContext
 from ..base.options import Option
 from ..base.types import Marshaler
+from ..base.types import MarshalerFactory
 from ..base.types import Unmarshaler
-from ..factories.simple import SimpleMarshalerFactory
-from ..factories.simple import SimpleUnmarshalerFactory
+from ..base.types import UnmarshalerFactory
 from .marshal import ObjectMarshaler
 from .metadata import FieldInfo
 from .metadata import FieldInfos
@@ -55,57 +55,63 @@ def get_namedtuple_field_infos(
 ##
 
 
-class NamedtupleMarshalerFactory(SimpleMarshalerFactory):
-    def guard(self, ctx: MarshalContext, rty: rfl.Type) -> bool:
-        return _is_namedtuple(rty)
+class NamedtupleMarshalerFactory(MarshalerFactory):
+    def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+        if not _is_namedtuple(rty):
+            return None
 
-    def fn(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
-        check.state(_is_namedtuple(rty))
-        ty = check.isinstance(rty, type)
-        check.state(not lang.is_abstract_class(ty))
+        def inner() -> Marshaler:
+            check.state(_is_namedtuple(rty))
+            ty = check.isinstance(rty, type)
+            check.state(not lang.is_abstract_class(ty))
 
-        fis = get_namedtuple_field_infos(ty, ctx.options)
+            fis = get_namedtuple_field_infos(ty, ctx.options)
 
-        fields = [
-            (fi, ctx.make(fi.type))
-            for fi in fis
-        ]
+            fields = [
+                (fi, ctx.make(fi.type))
+                for fi in fis
+            ]
 
-        return ObjectMarshaler(
-            fields,
-        )
+            return ObjectMarshaler(
+                fields,
+            )
+
+        return inner
 
 
 ##
 
 
-class NamedtupleUnmarshalerFactory(SimpleUnmarshalerFactory):
-    def guard(self, ctx: UnmarshalContext, rty: rfl.Type) -> bool:
-        return _is_namedtuple(rty)
+class NamedtupleUnmarshalerFactory(UnmarshalerFactory):
+    def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+        if not _is_namedtuple(rty):
+            return None
 
-    def fn(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
-        check.state(_is_namedtuple(rty))
-        ty = check.isinstance(rty, type)
-        check.state(not lang.is_abstract_class(ty))
+        def inner() -> Unmarshaler:
+            check.state(_is_namedtuple(rty))
+            ty = check.isinstance(rty, type)
+            check.state(not lang.is_abstract_class(ty))
 
-        fis = get_namedtuple_field_infos(ty, ctx.options)
+            fis = get_namedtuple_field_infos(ty, ctx.options)
 
-        d: dict[str, tuple[FieldInfo, Unmarshaler]] = {}
-        defaults: dict[str, ta.Any] = {}
+            d: dict[str, tuple[FieldInfo, Unmarshaler]] = {}
+            defaults: dict[str, ta.Any] = {}
 
-        for fi in fis:
-            tup = (fi, ctx.make(fi.type))
+            for fi in fis:
+                tup = (fi, ctx.make(fi.type))
 
-            for un in fi.unmarshal_names:
-                if un in d:
-                    raise KeyError(f'Duplicate fields for name {un!r}: {fi.name!r}, {d[un][0].name!r}')
-                d[un] = tup
+                for un in fi.unmarshal_names:
+                    if un in d:
+                        raise KeyError(f'Duplicate fields for name {un!r}: {fi.name!r}, {d[un][0].name!r}')
+                    d[un] = tup
 
-            if fi.options.default.present:
-                defaults[fi.name] = fi.options.default.must()
+                if fi.options.default.present:
+                    defaults[fi.name] = fi.options.default.must()
 
-        return ObjectUnmarshaler(
-            ty,
-            d,
-            defaults=defaults,
-        )
+            return ObjectUnmarshaler(
+                ty,
+                d,
+                defaults=defaults,
+            )
+
+        return inner

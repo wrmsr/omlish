@@ -7,10 +7,10 @@ from ... import reflect as rfl
 from ..base.contexts import MarshalContext
 from ..base.contexts import UnmarshalContext
 from ..base.types import Marshaler
+from ..base.types import MarshalerFactory
 from ..base.types import Unmarshaler
+from ..base.types import UnmarshalerFactory
 from ..base.values import Value
-from ..factories.simple import SimpleMarshalerFactory
-from ..factories.simple import SimpleUnmarshalerFactory
 
 
 ##
@@ -24,14 +24,11 @@ class EnumMarshaler(Marshaler):
         return o.name
 
 
-class EnumMarshalerFactory(SimpleMarshalerFactory):
-    def guard(self, ctx: MarshalContext, rty: rfl.Type) -> bool:
-        return isinstance(rty, type) and issubclass(rty, enum.Enum)
-
-    def fn(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
-        ty = check.isinstance(rty, type)
-        check.state(issubclass(ty, enum.Enum))
-        return EnumMarshaler(ty)  # noqa
+class EnumMarshalerFactory(MarshalerFactory):
+    def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+        if not (isinstance(rty, type) and issubclass(rty, enum.Enum)):
+            return None
+        return lambda: EnumMarshaler(rty)  # noqa
 
 
 @dc.dataclass(frozen=True)
@@ -42,11 +39,8 @@ class EnumUnmarshaler(Unmarshaler):
         return self.ty[check.isinstance(v, str)]
 
 
-class EnumUnmarshalerFactory(SimpleUnmarshalerFactory):
-    def guard(self, ctx: UnmarshalContext, rty: rfl.Type) -> bool:
-        return isinstance(rty, type) and issubclass(rty, enum.Enum)
-
-    def fn(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
-        ty = check.isinstance(rty, type)
-        check.state(issubclass(ty, enum.Enum))
-        return EnumUnmarshaler(ty)
+class EnumUnmarshalerFactory(UnmarshalerFactory):
+    def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+        if not (isinstance(rty, type) and issubclass(rty, enum.Enum)):
+            return None
+        return lambda: EnumUnmarshaler(rty)  # noqa

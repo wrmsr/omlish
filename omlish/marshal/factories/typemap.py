@@ -49,7 +49,7 @@ class TypeMapUnmarshalerFactory(UnmarshalerFactory):
         },
     )
 
-    def make_marshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+    def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         check.isinstance(rty, rfl.TYPES)
         try:
             u = self.u[rty]

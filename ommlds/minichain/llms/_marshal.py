@@ -2,6 +2,8 @@
 TODO:
  - can this for reuse
 """
+import typing as ta
+
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
@@ -14,31 +16,35 @@ from .tokens import Tokens
 ##
 
 
-class TokensMarshalerFactory(msh.SimpleMarshalerFactory):
-    def guard(self, ctx: msh.MarshalContext, rty: rfl.Type) -> bool:
-        return rty is Tokens
+class TokensMarshalerFactory(msh.MarshalerFactory):
+    def make_marshaler(self, ctx: msh.MarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
+        if rty is not Tokens:
+            return None
 
-    def fn(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
-        rty = check.isinstance(check.is_(rty, Tokens), type)
-        dc_rfl = dc.reflect(rty)
-        dc_f = check.single(dc_rfl.fields.values())
-        v_rty = rfl.type_(dc_f.type)
-        v_m = ctx.make(v_rty)
-        f_n = dc_f.name
-        return msh.WrappedMarshaler(lambda _, o: getattr(o, f_n), v_m)
+        def inner() -> msh.Marshaler:
+            dc_rfl = dc.reflect(rty)
+            dc_f = check.single(dc_rfl.fields.values())
+            v_rty = rfl.type_(dc_f.type)
+            v_m = ctx.make(v_rty)
+            f_n = dc_f.name
+            return msh.WrappedMarshaler(lambda _, o: getattr(o, f_n), v_m)
+
+        return inner
 
 
-class TokensUnmarshalerFactory(msh.SimpleUnmarshalerFactory):
-    def guard(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> bool:
-        return rty is Tokens
+class TokensUnmarshalerFactory(msh.UnmarshalerFactory):
+    def make_unmarshaler(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:
+        if rty is not Tokens:
+            return None
 
-    def fn(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
-        rty = check.isinstance(check.is_(rty, Tokens), type)
-        dc_rfl = dc.reflect(rty)
-        dc_f = check.single(dc_rfl.fields.values())
-        v_rty = rfl.type_(dc_f.type)
-        v_u = ctx.make(v_rty)
-        return msh.WrappedUnmarshaler(lambda _, v: rty(v), v_u)
+        def inner() -> msh.Unmarshaler:
+            dc_rfl = dc.reflect(rty)
+            dc_f = check.single(dc_rfl.fields.values())
+            v_rty = rfl.type_(dc_f.type)
+            v_u = ctx.make(v_rty)
+            return msh.WrappedUnmarshaler(lambda _, v: rty(v), v_u)
+
+        return inner
 
 
 @lang.static_init

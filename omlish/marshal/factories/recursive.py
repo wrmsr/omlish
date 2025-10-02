@@ -30,20 +30,23 @@ class _RecursiveFactory(ta.Generic[FactoryT]):
 
         self._dct: dict[rfl.Type, ta.Any] = {}
 
-    def _wrap(self, m: ta.Callable[[], ta.Any], rty):
-        try:
-            return self._dct[rty]
-        except KeyError:
-            pass
+    def _wrap(self, m, rty):
+        def inner():
+            try:
+                return self._dct[rty]
+            except KeyError:
+                pass
 
-        p, sp = self._prx()
-        self._dct[rty] = p
-        try:
-            r = m()
-            sp(r)
-            return r
-        finally:
-            del self._dct[rty]
+            p, sp = self._prx()
+            self._dct[rty] = p
+            try:
+                r = m()
+                sp(r)
+                return r
+            finally:
+                del self._dct[rty]
+
+        return inner
 
 
 class _Proxy(ta.Generic[T]):

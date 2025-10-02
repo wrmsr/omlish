@@ -1,3 +1,5 @@
+import typing as ta
+
 from ... import cached
 from ... import check
 from ... import dataclasses as dc
@@ -6,9 +8,9 @@ from ... import reflect as rfl
 from ..base.contexts import MarshalContext
 from ..base.contexts import UnmarshalContext
 from ..base.types import Marshaler
+from ..base.types import MarshalerFactory
 from ..base.types import Unmarshaler
-from ..factories.simple import SimpleMarshalerFactory
-from ..factories.simple import SimpleUnmarshalerFactory
+from ..base.types import UnmarshalerFactory
 from .marshal import make_polymorphism_marshaler
 from .metadata import Impls
 from .metadata import TypeTagging
@@ -44,12 +46,12 @@ class _BasePolymorphismUnionFactory(lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
-class PolymorphismUnionMarshalerFactory(_BasePolymorphismUnionFactory, SimpleMarshalerFactory):
-    def fn(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
-        return make_polymorphism_marshaler(self.get_impls(rty), self.tt, ctx)
+class PolymorphismUnionMarshalerFactory(_BasePolymorphismUnionFactory, MarshalerFactory):
+    def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+        return lambda: make_polymorphism_marshaler(self.get_impls(rty), self.tt, ctx)
 
 
 @dc.dataclass(frozen=True)
-class PolymorphismUnionUnmarshalerFactory(_BasePolymorphismUnionFactory, SimpleUnmarshalerFactory):
-    def fn(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
-        return make_polymorphism_unmarshaler(self.get_impls(rty), self.tt, ctx)
+class PolymorphismUnionUnmarshalerFactory(_BasePolymorphismUnionFactory, UnmarshalerFactory):
+    def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+        return lambda: make_polymorphism_unmarshaler(self.get_impls(rty), self.tt, ctx)

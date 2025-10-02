@@ -8,8 +8,8 @@ from ... import lang
 from ... import reflect as rfl
 from ..base.contexts import UnmarshalContext
 from ..base.types import Unmarshaler
+from ..base.types import UnmarshalerFactory
 from ..base.values import Value
-from ..factories.simple import SimpleUnmarshalerFactory
 from .metadata import FieldTypeTagging
 from .metadata import Impls
 from .metadata import Polymorphism
@@ -75,13 +75,11 @@ def make_polymorphism_unmarshaler(
 
 
 @dc.dataclass(frozen=True)
-class PolymorphismUnmarshalerFactory(SimpleUnmarshalerFactory):
+class PolymorphismUnmarshalerFactory(UnmarshalerFactory):
     p: Polymorphism
     tt: TypeTagging = WrapperTypeTagging()
 
-    def guard(self, ctx: UnmarshalContext, rty: rfl.Type) -> bool:
-        return rty is self.p.ty
-
-    def fn(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
-        check.is_(rty, self.p.ty)
-        return make_polymorphism_unmarshaler(self.p.impls, self.tt, ctx)
+    def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+        if rty is not self.p.ty:
+            return None
+        return lambda: make_polymorphism_unmarshaler(self.p.impls, self.tt, ctx)

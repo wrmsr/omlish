@@ -113,7 +113,15 @@ with _lang.auto_proxy_init(globals()):
         OptionalUnmarshaler,
     )
 
-    from .composite.unions import (  # noqa
+    from .composite.unions.literals import (  # noqa
+        LITERAL_UNION_TYPES,
+        LiteralUnionMarshaler,
+        LiteralUnionMarshalerFactory,
+        LiteralUnionUnmarshaler,
+        LiteralUnionUnmarshalerFactory,
+    )
+
+    from .composite.unions.primitives import (  # noqa
         PRIMITIVE_UNION_TYPES,
         PrimitiveUnionMarshaler,
         PrimitiveUnionMarshalerFactory,
@@ -126,9 +134,9 @@ with _lang.auto_proxy_init(globals()):
         WrappedUnmarshaler,
     )
 
-    from .factories.match import (  # noqa
-        MarshalerFactoryMatchClass,
-        UnmarshalerFactoryMatchClass,
+    from .factories.method import (  # noqa
+        MarshalerFactoryMethodClass,
+        UnmarshalerFactoryMethodClass,
     )
 
     from .factories.moduleimport.configs import (  # noqa
