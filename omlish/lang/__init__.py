@@ -334,8 +334,6 @@ with _auto_proxy_init(globals(), update_exports=True):
         ilen,
         take,
         consume,
-        iterslice,
-        iterrange,
         peek,
         chunk,
         interleave,
@@ -453,6 +451,13 @@ with _auto_proxy_init(globals(), update_exports=True):
         ReadableResource,
         get_package_resources,
         get_relative_resources,
+    )
+
+    from .sequences import (  # noqa
+        iterslice,
+        iterrange,
+
+        SeqView,
     )
 
     from .strings import (  # noqa
