@@ -7,7 +7,7 @@ from ...dispatch import method
 
 
 class C:
-    @method
+    @method()
     def f(self, x):
         return 'object'
 

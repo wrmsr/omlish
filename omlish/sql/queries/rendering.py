@@ -81,7 +81,7 @@ class Renderer(lang.Abstract):
     def args(self) -> lang.Args:
         return self._params_preparer.prepare()
 
-    @dispatch.method
+    @dispatch.method()
     def render(self, o: ta.Any) -> tp.Part:
         raise TypeError(o)
 

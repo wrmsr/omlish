@@ -42,6 +42,7 @@ class Method(ta.Generic[P, R]):
             *,
             installable: bool = False,
             requires_override: bool = False,
+            instance_cache: bool = False,
     ) -> None:
         super().__init__()
 
@@ -50,6 +51,7 @@ class Method(ta.Generic[P, R]):
 
         self._func = func
         self._installable = installable
+        self._instance_cache = instance_cache
 
         self._registry: col.AttrRegistry[ta.Callable, Method._Entry] = col.AttrRegistry(
             requires_override=requires_override,
@@ -149,8 +151,18 @@ class Method(ta.Generic[P, R]):
             # FIXME: classmethod/staticmethod
             return self
 
-        func = self._cache.get(type(instance))
-        return func.__get__(instance, owner)  # noqa
+        if self._instance_cache:
+            try:
+                return instance.__dict__[self._name]
+            except KeyError:
+                pass
+
+        bound = self._cache.get(type(instance)).__get__(instance, owner)  # noqa
+
+        if self._instance_cache:
+            instance.__dict__[self._name] = bound
+
+        return bound
 
     def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R:
         instance, *rest = args
@@ -168,44 +180,18 @@ class Method(ta.Generic[P, R]):
 ##
 
 
-@ta.overload
 def method(
-        func: ta.Callable[P, R],
-        /,
         *,
         installable: bool = False,
         requires_override: bool = False,
-) -> Method[P, R]:  # noqa
-    ...
-
-
-@ta.overload
-def method(
-        func: None = None,
-        /,
-        *,
-        installable: bool = False,
-        requires_override: bool = False,
+        instance_cache: bool = False,
 ) -> ta.Callable[[ta.Callable[P, R]], Method[P, R]]:  # noqa
-    ...
-
-
-def method(
-        func=None,
-        /,
-        *,
-        installable=False,
-        requires_override=False,
-):
-    kw = dict(
+    return functools.partial(
+        Method,  # type: ignore[arg-type]
         installable=installable,
         requires_override=requires_override,
+        instance_cache=instance_cache,
     )
-
-    if func is None:
-        return functools.partial(Method, **kw)
-
-    return Method(func, **kw)
 
 
 #

@@ -33,7 +33,7 @@ class ContentInterleaver:
             cs = lang.interleave(cs, separator)
         return list(cs)
 
-    @dispatch.method
+    @dispatch.method()
     def interleave(self, c: Content) -> Content:
         return c
 

@@ -22,7 +22,7 @@ class ContentSqueezer:
 
         self._strip_strings = strip_strings
 
-    @dispatch.method
+    @dispatch.method()
     def squeeze(self, c: Content) -> ta.Iterable[SingleContent]:
         raise TypeError(c)
 

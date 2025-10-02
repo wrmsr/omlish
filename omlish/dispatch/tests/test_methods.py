@@ -8,7 +8,7 @@ from .. import methods
 
 def test_method():
     class A:
-        @methods.method
+        @methods.method()
         def f(self, x: object):
             return 'A:object'
 
@@ -24,7 +24,7 @@ def test_method():
 
 def test_method_mro():
     class A:
-        @methods.method
+        @methods.method()
         def f(self, x: object):
             return 'A:object'
 
@@ -122,14 +122,14 @@ def test_method_no_set_name():
     def f(self, x: object):
         return 'A:object'
 
-    A.f = methods.method(f)  # type: ignore
+    A.f = methods.method()(f)  # type: ignore
 
     assert A().f(None) == 'A:object'  # type: ignore
 
 
 def test_accessor_wrapper_atts():
     class A:
-        @methods.method
+        @methods.method()
         def f(self, x: object):
             """foo"""
             return 'A:object'

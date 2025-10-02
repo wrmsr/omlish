@@ -17,7 +17,7 @@ class AstVisitor(ta.Generic[C, T]):
     def visit(self, n: ast.AST, c: C) -> T:
         return self._visit(n, c)
 
-    @dispatch.method
+    @dispatch.method()
     def _visit(self, n: ast.AST, c: C) -> T:
         raise TypeError(n)
 

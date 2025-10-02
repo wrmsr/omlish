@@ -24,7 +24,7 @@ class ContentStringWriter:
 
         self._out = out
 
-    @dispatch.method
+    @dispatch.method()
     def write(self, c: Content) -> None:
         raise TypeError(c)
 

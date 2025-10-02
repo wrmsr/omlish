@@ -112,7 +112,7 @@ class ContentMaterializer:
         finally:
             self._cur_depth -= 1
 
-    @dispatch.method
+    @dispatch.method()
     def _materialize(self, o: CanContent) -> Content:
         raise TypeError(o)
 

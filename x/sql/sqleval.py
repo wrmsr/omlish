@@ -22,7 +22,7 @@ class StmtEvaluator:
         self._rels = RelationEvaluator()
         self._exprs = ExprEvaluator()
 
-    @dispatch.method
+    @dispatch.method()
     def eval(self, node: no.Stmt) -> ta.Sequence[StrMap]:
         raise TypeError(node)
 
@@ -60,7 +60,7 @@ class StmtEvaluator:
 
 
 class RelationEvaluator:
-    @dispatch.method
+    @dispatch.method()
     def eval(self, node: no.Relation) -> ta.Sequence[StrMap]:
         raise TypeError(node)
 
@@ -122,7 +122,7 @@ OPS_BY_UNARY_OP = {
 
 
 class ExprEvaluator:
-    @dispatch.method
+    @dispatch.method()
     def eval(self, node: no.Expr, ns: StrMap) -> ta.Any:
         raise TypeError(node)
 
