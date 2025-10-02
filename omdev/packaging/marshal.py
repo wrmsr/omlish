@@ -43,7 +43,7 @@ class RequiresMarkerListMarshaler(msh.Marshaler):
 
 
 class RequiresMarkerListMarshalerFactory(msh.MarshalerFactory):
-    def make_marshaler(self, ctx: msh.MarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
+    def make_marshaler(self, ctx: msh.MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
         if rty is not MarshalRequiresMarkerList:
             return None
         return lambda: RequiresMarkerListMarshaler(

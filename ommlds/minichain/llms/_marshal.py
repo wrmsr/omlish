@@ -17,7 +17,7 @@ from .tokens import Tokens
 
 
 class TokensMarshalerFactory(msh.MarshalerFactory):
-    def make_marshaler(self, ctx: msh.MarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
+    def make_marshaler(self, ctx: msh.MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
         if rty is not Tokens:
             return None
 
@@ -34,7 +34,7 @@ class TokensMarshalerFactory(msh.MarshalerFactory):
 
 
 class TokensUnmarshalerFactory(msh.UnmarshalerFactory):
-    def make_unmarshaler(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:
+    def make_unmarshaler(self, ctx: msh.UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:  # noqa
         if rty is not Tokens:
             return None
 

@@ -17,7 +17,7 @@ from .json import JsonValue
 class _TypedValuesFieldMarshalerFactory(msh.MarshalerFactory):
     tvs_rty: rfl.Type
 
-    def make_marshaler(self, ctx: msh.MarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
+    def make_marshaler(self, ctx: msh.MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
         return lambda: build_typed_values_marshaler(ctx, self.tvs_rty)
 
 
@@ -25,7 +25,7 @@ class _TypedValuesFieldMarshalerFactory(msh.MarshalerFactory):
 class _TypedValuesFieldUnmarshalerFactory(msh.UnmarshalerFactory):
     tvs_rty: rfl.Type
 
-    def make_unmarshaler(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:
+    def make_unmarshaler(self, ctx: msh.UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:  # noqa
         return lambda: build_typed_values_unmarshaler(ctx, self.tvs_rty)
 
 
@@ -37,14 +37,14 @@ class MarshalJsonValue(lang.NotInstantiable, lang.Final):
 
 
 class _JsonValueMarshalerFactory(msh.MarshalerFactory):
-    def make_marshaler(self, ctx: msh.MarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
+    def make_marshaler(self, ctx: msh.MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
         if rty is not MarshalJsonValue:
             return None
         return lambda: msh.NopMarshalerUnmarshaler()
 
 
 class _JsonValueUnmarshalerFactory(msh.UnmarshalerFactory):
-    def make_unmarshaler(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:
+    def make_unmarshaler(self, ctx: msh.UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:  # noqa
         if rty is not MarshalJsonValue:
             return None
         return lambda: msh.NopMarshalerUnmarshaler()

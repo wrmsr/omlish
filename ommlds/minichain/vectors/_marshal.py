@@ -25,7 +25,7 @@ class _VectorMarshaler(msh.Marshaler):
 
 
 class _VectorMarshalerFactory(msh.MarshalerFactory):
-    def make_marshaler(self, ctx: msh.MarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
+    def make_marshaler(self, ctx: msh.MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
         if rty is not Vector:
             return None
         return lambda: _VectorMarshaler(ctx.make_marshaler(ta.Sequence[float]))
@@ -40,7 +40,7 @@ class _VectorUnmarshaler(msh.Unmarshaler):
 
 
 class _VectorUnmarshalerFactory(msh.UnmarshalerFactory):
-    def make_unmarshaler(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:
+    def make_unmarshaler(self, ctx: msh.UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:  # noqa
         if rty is not Vector:
             return None
         return lambda: _VectorUnmarshaler(ctx.make_unmarshaler(ta.Sequence[float]))

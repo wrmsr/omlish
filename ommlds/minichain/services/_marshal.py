@@ -40,14 +40,14 @@ class _RequestResponseMarshaler(msh.Marshaler):
     def marshal(self, ctx: msh.MarshalContext, o: ta.Any) -> msh.Value:
         tv_types_set = o._typed_values_info().tv_types_set  # noqa  # FIXME
         tv_ta = tv.TypedValues[ta.Union[*tv_types_set]]  # type: ignore
-        tv_m = ctx.make_marshaler(tv_ta)
+        tv_m = ctx.marshal_factory_context.make_marshaler(tv_ta)  # FIXME:
         tv_v = check.isinstance(tv_m.marshal(ctx, o._typed_values), ta.Sequence)  # noqa
 
         if self.v_m is None:
             orty: rfl.Generic = check.isinstance(rfl.type_(rfl.get_orig_class(o)), rfl.Generic)
             check.state(orty.cls in (Request, Response))
             v_rty, tv_rty = orty.args
-            v_v = ctx.make_marshaler(v_rty).marshal(ctx, o.v)
+            v_v = ctx.marshal_factory_context.make_marshaler(v_rty).marshal(ctx, o.v)  # FIXME
         else:
             v_v = self.v_m.marshal(ctx, o.v)
 
@@ -58,7 +58,7 @@ class _RequestResponseMarshaler(msh.Marshaler):
 
 
 class _RequestResponseMarshalerFactory(msh.MarshalerFactory):
-    def make_marshaler(self, ctx: msh.MarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
+    def make_marshaler(self, ctx: msh.MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
         if not _is_rr_rty(rty):
             return None
 
@@ -113,7 +113,7 @@ class _RequestResponseUnmarshaler(msh.Unmarshaler):
 
 
 class _RequestResponseUnmarshalerFactory(msh.UnmarshalerFactory):
-    def make_unmarshaler(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:
+    def make_unmarshaler(self, ctx: msh.UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:  # noqa
         if not _is_rr_rty(rty):
             return None
 

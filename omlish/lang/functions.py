@@ -59,11 +59,11 @@ def recurse(fn: ta.Callable[..., T], *args, **kwargs) -> T:
 ##
 
 
-def raise_(o: BaseException) -> ta.NoReturn:
+def raise_(o: BaseException | type[BaseException]) -> ta.NoReturn:
     raise o
 
 
-def raising(o: BaseException) -> ta.Callable[..., ta.NoReturn]:
+def raising(o: BaseException | type[BaseException]) -> ta.Callable[..., ta.NoReturn]:
     def inner(*args, **kwargs):
         raise o
 
