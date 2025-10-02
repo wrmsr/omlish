@@ -1,3 +1,13 @@
+"""
+TODO:
+ - StrView, BytesView - in lieu of hkt lol
+ - cext? even necessary?
+ - __eq__, cmp, __hash__
+ - __buffer__
+ - optimize `slice(None)`, keep as SeqView but fast path ops
+ - shorter repr if __len__ > some threshold
+  - use materialize()?
+"""
 import typing as ta
 
 
@@ -28,7 +38,7 @@ def iterrange(
 
 @ta.final
 class SeqView(ta.Sequence[T]):
-    def __init__(self, data: ta.Sequence[T], slice_: slice) -> None:
+    def __init__(self, data: ta.Sequence[T], slice_: slice = slice(None)) -> None:
         if data.__class__ is SeqView:
             self._data = data._data  # type: ignore[attr-defined]  # noqa
             self._range = data._range[slice_]  # type: ignore[attr-defined]  # noqa

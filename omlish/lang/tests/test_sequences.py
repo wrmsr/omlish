@@ -1,4 +1,5 @@
 import itertools
+import secrets
 
 import pytest
 
@@ -83,3 +84,32 @@ def test_seq_view():
         v.index(42)
 
     assert a[v.slice] == list(v) == v.materialize()
+
+
+def test_seq_view_str():
+    s = secrets.token_hex(512)
+    assert len(s) == 1024
+
+    v = SeqView(s)
+    r = s
+
+    ops = [
+        slice(5, None, None),     # drop a prefix
+        slice(None, None, -1),    # reverse
+        slice(10, 900, 2),        # strided forward
+        slice(-300, -100, None),  # negative bounds, implicit step=1
+        slice(None, None, -3),    # strided reverse
+    ]
+
+    for slc in ops:
+        v = SeqView(v, slc)
+        r = r[slc]
+        assert v.materialize() == r
+        assert len(v) == len(r)
+        assert ''.join(v) == r
+
+    if len(v) > 0:
+        assert v[0] == r[0]
+        assert v[-1] == r[-1]
+    if len(v) >= 3:
+        assert v[1:3].materialize() == r[1:3]  # type: ignore[union-attr]  # FIXME
