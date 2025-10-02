@@ -173,8 +173,7 @@ class Method(ta.Generic[P, R]):
         #     func = self.build_dispatch_func(att_disp)
         #     return func.__get__(instance, instance.__thisclass__)(*rest, **kwargs)
 
-        func = self._cache.get(type(instance))
-        return func.__get__(instance)(*rest, **kwargs)  # noqa
+        return self.__get__(instance)(*rest, **kwargs)
 
 
 ##
@@ -216,7 +215,7 @@ def install_method(
         if on is None:
             cls = owner
         else:
-            cls = check.issubclass(on, owner)
+            cls = check.issubclass(on, owner)  # noqa
 
         check.arg(not hasattr(cls, a))
         setattr(cls, a, fn)

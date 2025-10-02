@@ -1,9 +1,11 @@
+import abc
 import functools
 import operator
 import typing as ta
 
 from .. import check
 from .. import collections as col
+from .. import lang
 
 
 T = ta.TypeVar('T')
@@ -79,7 +81,7 @@ multi = MultiGuardFn
 ##
 
 
-class GuardFnMethod(ta.Generic[P, T]):
+class _BaseGuardFnMethod(lang.Abstract, ta.Generic[P, T]):
     def __init__(
             self,
             *,
@@ -103,8 +105,8 @@ class GuardFnMethod(ta.Generic[P, T]):
             self._prepare,
         )
 
-        self._owner: type | None = None
-        self._name: str | None = None
+    _owner: type | None = None
+    _name: str | None = None
 
     def __set_name__(self, owner, name):
         if self._owner is None:
@@ -123,6 +125,10 @@ class GuardFnMethod(ta.Generic[P, T]):
             strict=self._strict,
         )
 
+    @abc.abstractmethod
+    def _bind(self, instance, owner):
+        raise NotImplementedError
+
     def __get__(self, instance, owner=None):
         if instance is None:
             return self
@@ -133,17 +139,26 @@ class GuardFnMethod(ta.Generic[P, T]):
             except KeyError:
                 pass
 
-        bound = self._cache.get(type(instance)).__get__(instance, owner)  # noqa
+        bound = self._bind(instance, owner)
 
         if self._instance_cache:
             instance.__dict__[self._name] = bound
 
         return bound
 
-    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> ta.Callable[[], T] | None:
+    def _call(self, *args, **kwargs):
         instance, *rest = args
-        func = self._cache.get(type(instance))
-        return func.__get__(instance)(*rest, **kwargs)  # noqa
+        return self.__get__(instance)(*rest, **kwargs)
+
+#
+
+
+class GuardFnMethod(_BaseGuardFnMethod[P, T]):
+    def _bind(self, instance, owner):
+        return self._cache.get(type(instance)).__get__(instance, owner)  # noqa
+
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> ta.Callable[[], T] | None:
+        return self._call(*args, **kwargs)
 
 
 def method(
@@ -166,38 +181,34 @@ def method(
 #
 
 
-@ta.final
-class _DumbGuardFnMethod:
-    def __init__(self, gfm: GuardFnMethod, x: ta.Callable) -> None:
-        self._gfm, self._x = gfm, x
+class DumbGuardFnMethod(_BaseGuardFnMethod[P, T]):
+    def _bind(self, instance, owner):
+        gf = self._cache.get(type(instance)).__get__(instance, owner)  # noqa
+        x = self._prototype.__get__(instance, owner)  # type: ignore
 
-    def __get__(self, instance, owner=None):
-        return _DumbGuardFnMethod(
-            self._gfm.__get__(instance, owner),
-            self._x.__get__(instance, owner),  # noqa
-        )
+        def inner(*args, **kwargs):
+            if (m := gf(*args, **kwargs)) is not None:
+                return m()
+            return x(*args, **kwargs)
 
-    def __call__(self, *args, **kwargs):
-        if (m := self._gfm(*args, **kwargs)) is not None:
-            return m()
-        return self._x(*args, **kwargs)
+        return inner
+
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> T:
+        return self._call(*args, **kwargs)
 
 
 def dumb_method(
         *,
         strict: bool = False,
         requires_override: bool = False,
-) -> ta.Callable[[ta.Callable[P, T]], ta.Callable[P, T]]:  # noqa
+        instance_cache: bool = False,
+) -> ta.Callable[[ta.Callable[P, T]], DumbGuardFnMethod[P, T]]:  # noqa
     def inner(fn):
-        return functools.wraps(fn)(
-            _DumbGuardFnMethod(
-                GuardFnMethod(
-                    strict=strict,
-                    requires_override=requires_override,
-                    prototype=fn,
-                ),
-                fn,
-            ),
+        return DumbGuardFnMethod(
+            strict=strict,
+            requires_override=requires_override,
+            instance_cache=instance_cache,
+            prototype=fn,
         )
 
     return inner
