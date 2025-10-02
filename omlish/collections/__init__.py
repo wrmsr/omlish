@@ -64,9 +64,10 @@ with _lang.auto_proxy_init(globals()):
     from . import kv  # noqa
 
     from .mappings import (  # noqa
+        DynamicTypeMap,
         MissingDict,
         TypeMap,
-        DynamicTypeMap,
+        dict_factory,
         guarded_map_update,
         multikey_dict,
     )

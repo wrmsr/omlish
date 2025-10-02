@@ -1,6 +1,12 @@
 import typing as ta
 import weakref
 
+from .. import lang
+
+
+with lang.auto_proxy_import(globals()):
+    from . import identity as _identity
+
 
 T = ta.TypeVar('T')
 K = ta.TypeVar('K')
@@ -141,3 +147,22 @@ class MissingDict(dict[K, V]):
     def __missing__(self, key):
         v = self[key] = self._missing_fn(key)
         return v
+
+
+##
+
+
+def dict_factory[K, V](
+        *,
+        identity: bool = False,
+        weak: bool = False,
+) -> ta.Callable[..., ta.MutableMapping[K, V]]:
+    if identity:
+        if weak:
+            return _identity.IdentityWeakKeyDictionary
+        else:
+            return _identity.IdentityKeyDict
+    elif weak:
+        return weakref.WeakKeyDictionary
+    else:
+        return dict
