@@ -59,13 +59,13 @@ class _ModuleImportingFactory(ta.Generic[FactoryT]):
                     self._last_mis = mis
 
 
-class ModuleImportingMarshalerFactory(MarshalerFactory, _ModuleImportingFactory[MarshalerFactory]):
+class ModuleImportingMarshalerFactory(_ModuleImportingFactory[MarshalerFactory], MarshalerFactory):
     def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         self._import_if_necessary(ctx)
         return self._fac.make_marshaler(ctx, rty)
 
 
-class ModuleImportingUnmarshalerFactory(UnmarshalerFactory, _ModuleImportingFactory[UnmarshalerFactory]):
+class ModuleImportingUnmarshalerFactory(_ModuleImportingFactory[UnmarshalerFactory], UnmarshalerFactory):
     def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         self._import_if_necessary(ctx)
         return self._fac.make_unmarshaler(ctx, rty)

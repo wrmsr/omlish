@@ -15,6 +15,7 @@ from ..base.types import UnmarshalerMaker
 from ..base.values import Value
 
 
+FactoryT = ta.TypeVar('FactoryT', bound=MarshalerFactory | UnmarshalerFactory)
 T = ta.TypeVar('T')
 R = ta.TypeVar('R')
 C = ta.TypeVar('C')
@@ -23,39 +24,32 @@ C = ta.TypeVar('C')
 ##
 
 
-class _RecursiveTypeFactory(mfs.MatchFn[[C, rfl.Type], R]):
+class _RecursiveTypeFactory(ta.Generic[FactoryT]):
     def __init__(
             self,
-            f: mfs.MatchFn[[C, rfl.Type], R],
+            fac: FactoryT,
             prx: ta.Callable[[], tuple[R, ta.Callable[[R], None]]],
     ) -> None:
         super().__init__()
 
-        self._f = f
+        self._fac = fac
         self._prx = prx
         self._dct: dict[rfl.Type, R] = {}
 
-    def guard(self, ctx: C, rty: rfl.Type) -> bool:
-        check.isinstance(rty, rfl.TYPES)
-        return self._f.guard(ctx, rty)
-
-    def fn(self, ctx: C, rty: rfl.Type) -> R:
-        check.isinstance(rty, rfl.TYPES)
+    def _wrap(self, m, rty):
         try:
             return self._dct[rty]
         except KeyError:
             pass
+
         p, sp = self._prx()
         self._dct[rty] = p
         try:
-            r = self._f(ctx, rty)
+            r = m()
             sp(r)
             return r
         finally:
             del self._dct[rty]
-
-
-##
 
 
 class _Proxy(ta.Generic[T]):
@@ -77,7 +71,7 @@ class _Proxy(ta.Generic[T]):
         return (p := cls()), p._set_obj  # noqa
 
 
-##
+#
 
 
 class _ProxyMarshaler(_Proxy[Marshaler], Marshaler):
@@ -85,19 +79,17 @@ class _ProxyMarshaler(_Proxy[Marshaler], Marshaler):
         return self._obj.marshal(ctx, o)
 
 
-class RecursiveMarshalerFactory(MarshalerFactory, lang.Final):
-    def __init__(self, f: MarshalerFactory) -> None:
-        super().__init__()
+class RecursiveMarshalerFactory(_RecursiveTypeFactory[MarshalerFactory], MarshalerFactory):
+    def __init__(self, fac: MarshalerFactory) -> None:
+        super().__init__(fac, _ProxyMarshaler._new)  # noqa
 
-        self._f = f
-        self._rtf: _RecursiveTypeFactory[MarshalContext, Marshaler] = _RecursiveTypeFactory(
-            self._f.make_marshaler,  # noqa
-            _ProxyMarshaler._new,  # noqa
-        )
+    def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+        if (m := self._fac.make_marshaler(ctx, rty)) is None:
+            return None
+        return self._wrap(m, rty)
 
-    @property
-    def make_marshaler(self) -> MarshalerMaker:
-        return self._rtf
+
+#
 
 
 class _ProxyUnmarshaler(_Proxy[Unmarshaler], Unmarshaler):
@@ -105,16 +97,11 @@ class _ProxyUnmarshaler(_Proxy[Unmarshaler], Unmarshaler):
         return self._obj.unmarshal(ctx, v)
 
 
-class RecursiveUnmarshalerFactory(UnmarshalerFactory, lang.Final):
-    def __init__(self, f: UnmarshalerFactory) -> None:
-        super().__init__()
+class RecursiveUnmarshalerFactory(_RecursiveTypeFactory[UnmarshalerFactory], UnmarshalerFactory):
+    def __init__(self, fac: UnmarshalerFactory) -> None:
+        super().__init__(fac, _ProxyUnmarshaler._new)  # noqa
 
-        self._f = f
-        self._rtf: _RecursiveTypeFactory[UnmarshalContext, Unmarshaler] = _RecursiveTypeFactory(
-            self._f.make_unmarshaler,  # noqa
-            _ProxyUnmarshaler._new,  # noqa
-        )
-
-    @property
-    def make_unmarshaler(self) -> UnmarshalerMaker:
-        return self._rtf
+    def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+        if (m := self._fac.make_unmarshaler(ctx, rty)) is None:
+            return None
+        return self._wrap(m, rty)

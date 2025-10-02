@@ -58,11 +58,11 @@ class _InvalidatableFactory(ta.Generic[FactoryT]):
         return f
 
 
-class InvalidatableMarshalerFactory(MarshalerFactory, _InvalidatableFactory[MarshalerFactory]):
+class InvalidatableMarshalerFactory(_InvalidatableFactory[MarshalerFactory], MarshalerFactory):
     def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         return self._fac().make_marshaler(ctx, rty)
 
 
-class InvalidatableUnmarshalerFactory(UnmarshalerFactory, _InvalidatableFactory[UnmarshalerFactory]):
+class InvalidatableUnmarshalerFactory(_InvalidatableFactory[UnmarshalerFactory], UnmarshalerFactory):
     def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         return self._fac().make_unmarshaler(ctx, rty)
