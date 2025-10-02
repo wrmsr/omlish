@@ -26,12 +26,20 @@ def consume(it: ta.Iterable[ta.Any]) -> None:
     collections.deque(it, maxlen=0)
 
 
-def iterfrom(seq: ta.Sequence[T], start: int = 0, stop: int | None = None) -> ta.Iterator[T]:
-    if start < 0:
-        start += len(seq)
-    if stop is None:
-        stop = len(seq)
-    return map(seq.__getitem__, range(start, stop))
+def iterslice(
+        seq: ta.Sequence[T],
+        slc: slice,
+) -> ta.Iterator[T]:
+    return map(seq.__getitem__, range(*slc.indices(len(seq))))
+
+
+def iterrange(
+    seq: ta.Sequence[T],
+    start: int | None = None,
+    stop: int | None = None,
+    step: int | None = None,
+) -> ta.Iterator[T]:
+    return iterslice(seq, slice(start, stop, step))
 
 
 def peek(vs: ta.Iterable[T]) -> tuple[T, ta.Iterator[T]]:
