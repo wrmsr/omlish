@@ -16,15 +16,18 @@ def test_method():
         def f_str(self, x: str):
             return 'A:str'
 
-    assert A().f(object()) == 'A:object'
-    assert A().f(None) == 'A:object'
-    assert A().f(1) == 'A:object'
-    assert A().f('') == 'A:str'
+    for _ in range(2):
+        a = A()
+        assert a.f(object()) == 'A:object'
+        assert a.f(None) == 'A:object'
+        assert a.f(1) == 'A:object'
+        assert a.f('') == 'A:str'
 
 
-def test_method_mro():
+@pytest.mark.parametrize('instance_cache', [False, True])
+def test_method_mro(instance_cache):
     class A:
-        @methods.method()
+        @methods.method(instance_cache=instance_cache)
         def f(self, x: object):
             return 'A:object'
 

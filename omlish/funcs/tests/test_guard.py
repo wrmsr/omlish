@@ -1,5 +1,7 @@
 import typing as ta
 
+import pytest
+
 from ... import check
 from .. import guard as gfs
 
@@ -25,9 +27,10 @@ def test_guard_fns():
     assert mgf(1.0) is None
 
 
-def test_guard_method():
+@pytest.mark.parametrize('instance_cache', [False, True])
+def test_guard_method(instance_cache):
     class A:
-        @gfs.method(strict=True)
+        @gfs.method(strict=True, instance_cache=instance_cache)
         def foo(self, x: ta.Any) -> str:
             raise NotImplementedError
 

@@ -150,11 +150,13 @@ def method(
         *,
         strict: bool = False,
         requires_override: bool = False,
+        instance_cache: bool = False,
 ) -> ta.Callable[[ta.Callable[P, T]], GuardFnMethod[P, T]]:  # noqa
     def inner(fn):
         return GuardFnMethod(
             strict=strict,
             requires_override=requires_override,
+            instance_cache=instance_cache,
             prototype=fn,
         )
 
