@@ -7,6 +7,7 @@ from omlish import lang
 from omlish import marshal as msh
 from omlish import reflect as rfl
 from omlish import typedvalues as tv
+from omlish.funcs import guard as gfs
 
 
 if ta.TYPE_CHECKING:
@@ -73,13 +74,11 @@ def _tv_field_metadata(
             options=msh.FieldOptions(
                 omit_if=operator.not_,
             ),
-            marshaler_factory=msh.FuncMarshalerFactory(
-                lambda ctx, rty: True,
+            marshaler_factory=msh.FuncMarshalerFactory(gfs.dumb(
                 lambda ctx, rty: _marshal._TypedValuesFieldMarshalerFactory(tvs_rty)(ctx, rty),  # noqa
-            ),
-            unmarshaler_factory=msh.FuncUnmarshalerFactory(
-                lambda ctx, rty: True,
+            )),
+            unmarshaler_factory=msh.FuncUnmarshalerFactory(gfs.dumb(
                 lambda ctx, rty: _marshal._TypedValuesFieldUnmarshalerFactory(tvs_rty)(ctx, rty),  # noqa
-            ),
+            )),
         ),
     }

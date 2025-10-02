@@ -3,63 +3,62 @@ import typing as ta
 from ... import check
 from ... import dataclasses as dc
 from ... import reflect as rfl
-from ...funcs import match as mfs
 from ..base.contexts import MarshalContext
 from ..base.contexts import UnmarshalContext
 from ..base.types import Marshaler
 from ..base.types import MarshalerFactory
-from ..base.types import MarshalerMaker
 from ..base.types import Unmarshaler
 from ..base.types import UnmarshalerFactory
-from ..base.types import UnmarshalerMaker
-
-
-R = ta.TypeVar('R')
-C = ta.TypeVar('C')
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class _TypeMapFactory(mfs.MatchFn[[C, rfl.Type], R]):
-    m: ta.Mapping[rfl.Type, R] = dc.field(default_factory=dict)
+class TypeMapMarshalerFactory(MarshalerFactory):
+    m: ta.Mapping[rfl.Type, Marshaler | MarshalerFactory] = dc.xfield(
+        default_factory=dict,
+        coerce=lambda d: {
+            check.isinstance(k, rfl.TYPES): check.isinstance(v, (Marshaler, UnmarshalerFactory))
+            for k, v in d.items()
+        },
+    )
 
-    def __post_init__(self) -> None:
-        for k in self.m:
-            if not isinstance(k, rfl.TYPES):
-                raise TypeError(k)
-
-    def guard(self, ctx: C, rty: rfl.Type) -> bool:
-        check.isinstance(rty, rfl.TYPES)
-        return rty in self.m
-
-    def fn(self, ctx: C, rty: rfl.Type) -> R:
+    def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         check.isinstance(rty, rfl.TYPES)
         try:
-            return self.m[rty]
+            m = self.m[rty]
         except KeyError:
-            raise mfs.MatchGuardError(ctx, rty)  # noqa
+            return None
 
-
-##
-
-
-@dc.dataclass(frozen=True)
-class TypeMapMarshalerFactory(
-    _TypeMapFactory[MarshalContext, Marshaler],
-    MarshalerFactory,
-):
-    @property
-    def make_marshaler(self) -> MarshalerMaker:
-        return self  # noqa
+        if isinstance(m, Marshaler):
+            return lambda: m
+        elif isinstance(m, MarshalerFactory):
+            return m.make_marshaler(ctx, rty)
+        else:
+            raise TypeError(m)
 
 
 @dc.dataclass(frozen=True)
-class TypeMapUnmarshalerFactory(
-    _TypeMapFactory[UnmarshalContext, Unmarshaler],
-    UnmarshalerFactory,
-):
-    @property
-    def make_unmarshaler(self) -> UnmarshalerMaker:
-        return self  # noqa
+class TypeMapUnmarshalerFactory(UnmarshalerFactory):
+    u: ta.Mapping[rfl.Type, Unmarshaler | UnmarshalerFactory] = dc.xfield(
+        default_factory=dict,
+        coerce=lambda d: {
+            check.isinstance(k, rfl.TYPES): check.isinstance(v, (Unmarshaler, UnmarshalerFactory))
+            for k, v in d.items()
+        },
+    )
+
+    def make_marshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+        check.isinstance(rty, rfl.TYPES)
+        try:
+            u = self.u[rty]
+        except KeyError:
+            return None
+
+        if isinstance(u, Unmarshaler):
+            return lambda: u
+        elif isinstance(u, UnmarshalerFactory):
+            return u.make_unmarshaler(ctx, rty)
+        else:
+            raise TypeError(u)

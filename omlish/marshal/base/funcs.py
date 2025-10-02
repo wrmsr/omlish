@@ -3,7 +3,7 @@ import typing as ta
 
 from ... import lang
 from ... import reflect as rfl
-from ...funcs import match as mfs
+from ...funcs import guard as gfs
 from .contexts import MarshalContext
 from .contexts import UnmarshalContext
 from .types import Marshaler
@@ -39,19 +39,24 @@ class FuncUnmarshaler(Unmarshaler, lang.Final):
 
 @dc.dataclass(frozen=True)
 class FuncMarshalerFactory(MarshalerFactory):  # noqa
-    guard: ta.Callable[[MarshalContext, rfl.Type], bool]
-    fn: ta.Callable[[MarshalContext, rfl.Type], Marshaler]
+    gf: MarshalerMaker
 
-    @lang.cached_property
-    def make_marshaler(self) -> MarshalerMaker:
-        return mfs.simple(self.guard, self.fn)
+    def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+        return self.gf(ctx, rty)
 
 
 @dc.dataclass(frozen=True)
 class FuncUnmarshalerFactory(UnmarshalerFactory):  # noqa
-    guard: ta.Callable[[UnmarshalContext, rfl.Type], bool]
-    fn: ta.Callable[[UnmarshalContext, rfl.Type], Unmarshaler]
+    gfn: UnmarshalerMaker
 
-    @lang.cached_property
-    def make_unmarshaler(self) -> UnmarshalerMaker:
-        return mfs.simple(self.guard, self.fn)
+    def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+        return self.gfn(ctx, rty)
+
+
+##
+
+
+class GuardMethodMarshalerFactory(MarshalerFactory):
+    @gfs.method(instance_cache=True)
+    def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+        raise NotImplementedError

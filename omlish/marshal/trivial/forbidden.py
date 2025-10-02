@@ -2,45 +2,40 @@ import dataclasses as dc
 import typing as ta
 
 from ... import reflect as rfl
-from ...funcs import match as mfs
 from ..base.contexts import MarshalContext
 from ..base.contexts import UnmarshalContext
 from ..base.errors import ForbiddenTypeError
 from ..base.types import Marshaler
+from ..base.types import MarshalerFactory
 from ..base.types import Unmarshaler
-from ..factories.simple import SimpleMarshalerFactory
-from ..factories.simple import SimpleUnmarshalerFactory
-
-
-C = ta.TypeVar('C')
-R = ta.TypeVar('R')
+from ..base.types import UnmarshalerFactory
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class ForbiddenTypeFactory(mfs.MatchFn[[C, rfl.Type], R]):
+class ForbiddenTypeMarshalerFactoryUnmarshalerFactory(MarshalerFactory, UnmarshalerFactory):
     rtys: ta.AbstractSet[rfl.Type]
 
-    def guard(self, ctx: C, rty: rfl.Type) -> bool:
-        return rty in self.rtys
+    def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+        if rty not in self.rtys:
+            return None
 
-    def fn(self, ctx: C, rty: rfl.Type) -> R:
-        raise ForbiddenTypeError(rty)
+        def inner():
+            raise ForbiddenTypeError(rty)
+
+        return inner
+
+    def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+        if rty not in self.rtys:
+            return None
+
+        def inner():
+            raise ForbiddenTypeError(rty)
+
+        return inner
 
 
-@dc.dataclass(frozen=True)
-class ForbiddenTypeMarshalerFactory(
-    ForbiddenTypeFactory[MarshalContext, Marshaler],
-    SimpleMarshalerFactory,
-):
-    pass
-
-
-@dc.dataclass(frozen=True)
-class ForbiddenTypeUnmarshalerFactory(
-    ForbiddenTypeFactory[UnmarshalContext, Unmarshaler],
-    SimpleUnmarshalerFactory,
-):
-    pass
+ForbiddenTypeMarshalerFactory = ForbiddenTypeMarshalerFactoryUnmarshalerFactory
+ForbiddenTypeUnmarshalerFactory = ForbiddenTypeMarshalerFactoryUnmarshalerFactory

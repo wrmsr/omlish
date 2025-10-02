@@ -1,8 +1,10 @@
 # ruff: noqa: PT009 PT027
 import dataclasses as dc
 import unittest
+import typing as ta
 
 from ..dataclasses import dataclass_cache_hash
+from ..dataclasses import dataclass_descriptor_method
 from ..dataclasses import dataclass_kw_only_init
 from ..dataclasses import dataclass_maybe_post_init
 from ..dataclasses import is_immediate_dataclass
@@ -139,3 +141,28 @@ class TestKwOnlyInit(unittest.TestCase):
 
         with self.assertRaises(TypeError):
             Foo(1, '2')
+
+
+##
+
+
+def test_dc_desc():
+    @dc.dataclass()
+    class Foo:
+        __get__ = dataclass_descriptor_method('fn')
+
+        i: int
+        fn: ta.Callable[[int], int]
+
+        def __call__(self, i: int) -> int:
+            return self.fn(i + self.i)
+
+    assert Foo(1, lambda i: i + 1)(1) == 3
+
+    class Bar:
+        def _fn(self, i: int) -> int:
+            return i + 1
+
+        fn = Foo(1, _fn)
+
+    assert Bar().fn(1) == 3

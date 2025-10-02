@@ -3,7 +3,7 @@ import typing as ta
 
 from ... import lang
 from ... import reflect as rfl
-from ...funcs import match as mfs
+from ...funcs import guard as gfs
 from .configs import ConfigRegistry
 from .contexts import MarshalContext
 from .contexts import UnmarshalContext
@@ -31,21 +31,19 @@ class Unmarshaler(lang.Abstract):
 ##
 
 
-MarshalerMaker: ta.TypeAlias = mfs.MatchFn[[MarshalContext, rfl.Type], Marshaler]
-UnmarshalerMaker: ta.TypeAlias = mfs.MatchFn[[UnmarshalContext, rfl.Type], Unmarshaler]
+MarshalerMaker: ta.TypeAlias = gfs.GuardFn[[MarshalContext, rfl.Type], Marshaler]
+UnmarshalerMaker: ta.TypeAlias = gfs.GuardFn[[UnmarshalContext, rfl.Type], Unmarshaler]
 
 
 class MarshalerFactory(lang.Abstract):
-    @property
     @abc.abstractmethod
-    def make_marshaler(self) -> MarshalerMaker:
+    def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         raise NotImplementedError
 
 
 class UnmarshalerFactory(lang.Abstract):
-    @property
     @abc.abstractmethod
-    def make_unmarshaler(self) -> UnmarshalerMaker:
+    def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         raise NotImplementedError
 
 

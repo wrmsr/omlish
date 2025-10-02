@@ -129,11 +129,6 @@ with _lang.auto_proxy_init(globals()):
         WrappedUnmarshaler,
     )
 
-    from .factories.simple import (  # noqa
-        SimpleMarshalerFactory,
-        SimpleUnmarshalerFactory,
-    )
-
     from .factories.match import (  # noqa
         MarshalerFactoryMatchClass,
         UnmarshalerFactoryMatchClass,
@@ -246,6 +241,7 @@ with _lang.auto_proxy_init(globals()):
 
     from .trivial.forbidden import (  # noqa
         ForbiddenTypeMarshalerFactory,
+        ForbiddenTypeMarshalerFactoryUnmarshalerFactory,
         ForbiddenTypeUnmarshalerFactory,
     )
 

@@ -159,6 +159,8 @@ with _lang.auto_proxy_init(globals()) as _api_cap:
         is_immediate_dataclass,
 
         dataclass_maybe_post_init as maybe_post_init,
+
+        dataclass_descriptor_method as descriptor_method,
     )
 
 

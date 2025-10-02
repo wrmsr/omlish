@@ -5,7 +5,7 @@ from ... import check
 from ... import collections as col
 from ... import lang
 from ... import reflect as rfl
-from ...funcs import match as mfs
+from ...funcs import guard as gfs
 from .configs import EMPTY_CONFIG_REGISTRY
 from .configs import ConfigRegistry
 from .errors import UnhandledTypeError
@@ -48,10 +48,9 @@ class MarshalContext(BaseContext, lang.Final):
     def make(self, o: ta.Any) -> 'Marshaler':
         rty = self._reflect(o)
         fac = check.not_none(self.factory)
-        try:
-            return fac.make_marshaler(self, rty)
-        except mfs.MatchGuardError:
+        if (mfn := fac.make_marshaler(self, rty)) is None:
             raise UnhandledTypeError(rty)  # noqa
+        return mfn()
 
     def marshal(self, obj: ta.Any, ty: ta.Any | None = None) -> 'Value':
         return self.make(ty if ty is not None else type(obj)).marshal(self, obj)
@@ -64,10 +63,9 @@ class UnmarshalContext(BaseContext, lang.Final):
     def make(self, o: ta.Any) -> 'Unmarshaler':
         rty = self._reflect(o)
         fac = check.not_none(self.factory)
-        try:
-            return fac.make_unmarshaler(self, rty)
-        except mfs.MatchGuardError:
+        if (mfn := fac.make_unmarshaler(self, rty)) is None:
             raise UnhandledTypeError(rty)  # noqa
+        return mfn()
 
     @ta.overload
     def unmarshal(self, v: 'Value', ty: type[T]) -> T:
