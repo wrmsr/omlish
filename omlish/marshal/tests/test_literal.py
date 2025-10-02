@@ -16,9 +16,9 @@ def test_literal():
     r = ConfigRegistry()
 
     mf = new_standard_marshaler_factory()
-    mc = MarshalContext(config_registry=r, factory=mf)
+    mc = MarshalContext(config_registry=r, marshaler_factory=mf)
     assert check.not_none(mf.make_marshaler(mc, rfl.type_(Foo)))().marshal(mc, 'a') == 'a'
 
     uf = new_standard_unmarshaler_factory()
-    uc = UnmarshalContext(config_registry=r, factory=uf)
+    uc = UnmarshalContext(config_registry=r, unmarshaler_factory=uf)
     assert check.not_none(uf.make_unmarshaler(uc, rfl.type_(Foo)))().unmarshal(uc, 'a') == 'a'

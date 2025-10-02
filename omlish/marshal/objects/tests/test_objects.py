@@ -72,7 +72,7 @@ def test_decorated_unknown_field():
         'frab': False,
     }
 
-    uc = UnmarshalContext(factory=new_standard_unmarshaler_factory())
+    uc = UnmarshalContext(unmarshaler_factory=new_standard_unmarshaler_factory())
     u = uc.make_unmarshaler(ImageUploadResponse)
 
     o = u.unmarshal(uc, d)

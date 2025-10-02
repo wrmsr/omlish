@@ -68,14 +68,14 @@ class Marshaling(lang.Abstract):
     def new_marshal_context(self, **kwargs: ta.Any) -> MarshalContext:
         return MarshalContext(
             config_registry=self.config_registry(),
-            factory=self.marshaler_factory(),
+            marshaler_factory=self.marshaler_factory(),
             **kwargs,
         )
 
     def new_unmarshal_context(self, **kwargs: ta.Any) -> UnmarshalContext:
         return UnmarshalContext(
             config_registry=self.config_registry(),
-            factory=self.unmarshaler_factory(),
+            unmarshaler_factory=self.unmarshaler_factory(),
             **kwargs,
         )
 

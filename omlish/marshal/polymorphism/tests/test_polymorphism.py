@@ -78,11 +78,11 @@ def _test_polymorphism(tt):
 
     reg = ConfigRegistry()
 
-    mc = MarshalContext(config_registry=reg, factory=mf)
+    mc = MarshalContext(config_registry=reg, marshaler_factory=mf)
     v = mc.make_marshaler(PB).marshal(mc, o)
     print(v)
 
-    uc = UnmarshalContext(config_registry=reg, factory=uf)
+    uc = UnmarshalContext(config_registry=reg, unmarshaler_factory=uf)
     o2 = uc.make_unmarshaler(PB).unmarshal(uc, v)
     print(o2)
 

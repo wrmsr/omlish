@@ -42,11 +42,11 @@ class BaseContext(lang.Abstract):
 
 @dc.dataclass(frozen=True, kw_only=True)
 class MarshalContext(BaseContext, lang.Final):
-    factory: ta.Optional['MarshalerFactory'] = None
+    marshaler_factory: ta.Optional['MarshalerFactory'] = None
 
     def make_marshaler(self, o: ta.Any) -> 'Marshaler':
         rty = self._reflect(o)
-        fac = check.not_none(self.factory)
+        fac = check.not_none(self.marshaler_factory)
         if (mfn := fac.make_marshaler(self, rty)) is None:
             raise UnhandledTypeError(rty)  # noqa
         return mfn()
@@ -57,11 +57,11 @@ class MarshalContext(BaseContext, lang.Final):
 
 @dc.dataclass(frozen=True, kw_only=True)
 class UnmarshalContext(BaseContext, lang.Final):
-    factory: ta.Optional['UnmarshalerFactory'] = None
+    unmarshaler_factory: ta.Optional['UnmarshalerFactory'] = None
 
     def make_unmarshaler(self, o: ta.Any) -> 'Unmarshaler':
         rty = self._reflect(o)
-        fac = check.not_none(self.factory)
+        fac = check.not_none(self.unmarshaler_factory)
         if (mfn := fac.make_unmarshaler(self, rty)) is None:
             raise UnhandledTypeError(rty)  # noqa
         return mfn()
