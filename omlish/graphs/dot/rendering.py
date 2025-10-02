@@ -29,7 +29,7 @@ class Renderer:
 
         self._out = out
 
-    @dispatch.method()
+    @dispatch.method(instance_cache=True)
     def render(self, item: Item) -> None:
         raise TypeError(item)
 

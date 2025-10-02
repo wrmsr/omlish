@@ -75,7 +75,7 @@ class PartTransform:
     def __call__(self, part: Part | None) -> Part:
         return self._transform(part)
 
-    @dispatch.method()
+    @dispatch.method(instance_cache=True)
     def _transform(self, part: Part | None) -> Part:
         raise TypeError(part)
 
