@@ -160,8 +160,10 @@ def get_dataclass_field_infos(
     return FieldInfos(ret)
 
 
+# FIXME: really
 def _make_field_obj(
         ctx,
+        ctx_attr,
         ty,
         obj,
         fac,
@@ -173,7 +175,7 @@ def _make_field_obj(
         if (m := getattr(fac, fac_attr)(ctx, ty)) is None:
             raise UnhandledTypeError(ty)
         return m()
-    return ctx.make(ty)
+    return getattr(ctx, ctx_attr)(ty)
 
 
 ##
@@ -225,6 +227,7 @@ class DataclassMarshalerFactory(AbstractDataclassFactory, MarshalerFactory):
                     fi,
                     _make_field_obj(
                         ctx,
+                        'make_marshaler',
                         fi.type,
                         fi.metadata.marshaler,
                         fi.metadata.marshaler_factory,
@@ -289,6 +292,7 @@ class DataclassUnmarshalerFactory(AbstractDataclassFactory, UnmarshalerFactory):
                         fi,
                         _make_field_obj(
                             ctx,
+                            'make_unmarshaler',
                             fi.type,
                             fi.metadata.unmarshaler,
                             fi.metadata.unmarshaler_factory,

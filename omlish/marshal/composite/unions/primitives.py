@@ -68,7 +68,7 @@ class PrimitiveUnionMarshalerFactory(MarshalerFactory):
             return None
         return lambda: PrimitiveUnionMarshaler(
             ds.prim,
-            ctx.make(check.single(ds.non_prim)) if ds.non_prim else None,
+            ctx.make_marshaler(check.single(ds.non_prim)) if ds.non_prim else None,
         )
 
 
@@ -97,5 +97,5 @@ class PrimitiveUnionUnmarshalerFactory(UnmarshalerFactory):
             return None
         return lambda: PrimitiveUnionUnmarshaler(
             ds.prim,
-            ctx.make(check.single(ds.non_prim)) if ds.non_prim else None,
+            ctx.make_unmarshaler(check.single(ds.non_prim)) if ds.non_prim else None,
         )

@@ -55,7 +55,7 @@ def make_polymorphism_marshaler(
         ctx: MarshalContext,
 ) -> Marshaler:
     m = {
-        i.ty: (i.tag, ctx.make(i.ty))
+        i.ty: (i.tag, ctx.make_marshaler(i.ty))
         for i in impls
     }
     if isinstance(tt, WrapperTypeTagging):

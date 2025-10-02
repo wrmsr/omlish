@@ -33,7 +33,7 @@ class LiteralMarshalerFactory(MarshalerFactory):
         if not (isinstance(rty, rfl.Literal) and len(set(map(type, rty.args))) == 1):
             return None
         ety = check.single(set(map(type, rty.args)))
-        return lambda: LiteralMarshaler(ctx.make(ety), frozenset(rty.args))
+        return lambda: LiteralMarshaler(ctx.make_marshaler(ety), frozenset(rty.args))
 
 
 @dc.dataclass(frozen=True)
@@ -50,4 +50,4 @@ class LiteralUnmarshalerFactory(UnmarshalerFactory):
         if not (isinstance(rty, rfl.Literal) and len(set(map(type, rty.args))) == 1):
             return None
         ety = check.single(set(map(type, rty.args)))
-        return lambda: LiteralUnmarshaler(ctx.make(ety), frozenset(rty.args))
+        return lambda: LiteralUnmarshaler(ctx.make_unmarshaler(ety), frozenset(rty.args))

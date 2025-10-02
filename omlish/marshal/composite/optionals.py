@@ -29,7 +29,7 @@ class OptionalMarshalerFactory(MarshalerFactory):
     def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         if not (isinstance(rty, rfl.Union) and rty.is_optional):
             return None
-        return lambda: OptionalMarshaler(ctx.make(check.isinstance(rty, rfl.Union).without_none()))
+        return lambda: OptionalMarshaler(ctx.make_marshaler(check.isinstance(rty, rfl.Union).without_none()))
 
 
 @dc.dataclass(frozen=True)
@@ -46,4 +46,4 @@ class OptionalUnmarshalerFactory(UnmarshalerFactory):
     def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         if not (isinstance(rty, rfl.Union) and rty.is_optional):
             return None
-        return lambda: OptionalUnmarshaler(ctx.make(check.isinstance(rty, rfl.Union).without_none()))
+        return lambda: OptionalUnmarshaler(ctx.make_unmarshaler(check.isinstance(rty, rfl.Union).without_none()))

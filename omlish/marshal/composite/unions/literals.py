@@ -65,7 +65,7 @@ class LiteralUnionMarshalerFactory(MarshalerFactory):
     def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         if (ds := _destructure_literal_union_type(rty)) is None:
             return None
-        return lambda: LiteralUnionMarshaler(ds.v_ty, ctx.make(ds.lit), ctx.make(ds.non_lit))
+        return lambda: LiteralUnionMarshaler(ds.v_ty, ctx.make_marshaler(ds.lit), ctx.make_marshaler(ds.non_lit))
 
 
 #
@@ -88,4 +88,4 @@ class LiteralUnionUnmarshalerFactory(UnmarshalerFactory):
     def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         if (ds := _destructure_literal_union_type(rty)) is None:
             return None
-        return lambda: LiteralUnionUnmarshaler(ds.v_ty, ctx.make(ds.lit), ctx.make(ds.non_lit))
+        return lambda: LiteralUnionUnmarshaler(ds.v_ty, ctx.make_unmarshaler(ds.lit), ctx.make_unmarshaler(ds.non_lit))

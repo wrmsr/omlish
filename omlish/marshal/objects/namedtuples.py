@@ -68,7 +68,7 @@ class NamedtupleMarshalerFactory(MarshalerFactory):
             fis = get_namedtuple_field_infos(ty, ctx.options)
 
             fields = [
-                (fi, ctx.make(fi.type))
+                (fi, ctx.make_marshaler(fi.type))
                 for fi in fis
             ]
 
@@ -98,7 +98,7 @@ class NamedtupleUnmarshalerFactory(UnmarshalerFactory):
             defaults: dict[str, ta.Any] = {}
 
             for fi in fis:
-                tup = (fi, ctx.make(fi.type))
+                tup = (fi, ctx.make_unmarshaler(fi.type))
 
                 for un in fi.unmarshal_names:
                     if un in d:

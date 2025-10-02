@@ -41,7 +41,7 @@ class ObjectUnmarshaler(Unmarshaler):
             **kwargs: ta.Any,
     ) -> Unmarshaler:
         fields_by_unmarshal_name = {
-            n: (fi, ctx.make(fi.type))
+            n: (fi, ctx.make_unmarshaler(fi.type))
             for fi in fis
             for n in fi.unmarshal_names
         }

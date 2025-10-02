@@ -36,7 +36,7 @@ class NotSpecifiedUnionMarshalerFactory(msh.MarshalerFactory):
         def inner() -> msh.Marshaler:
             args = set(check.isinstance(rty, rfl.Union).args) - {_NOT_SPECIFIED_RTY}
             nty = rfl.type_(ta.Union[*args])
-            m = ctx.make(nty)
+            m = ctx.make_marshaler(nty)
             return NotSpecifiedUnionMarshaler(m)
 
         return inner
@@ -54,7 +54,7 @@ class NotSpecifiedUnionUnmarshalerFactory(msh.UnmarshalerFactory):
         def inner() -> msh.Unmarshaler:
             args = set(check.isinstance(rty, rfl.Union).args) - {_NOT_SPECIFIED_RTY}
             nty = rfl.type_(ta.Union[*args])
-            return ctx.make(nty)
+            return ctx.make_unmarshaler(nty)
 
         return inner
 

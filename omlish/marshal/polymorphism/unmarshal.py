@@ -63,7 +63,7 @@ def make_polymorphism_unmarshaler(
     m = {
         t: u
         for i in impls
-        for u in [ctx.make(i.ty)]
+        for u in [ctx.make_unmarshaler(i.ty)]
         for t in [i.tag, *i.alts]
     }
     if isinstance(tt, WrapperTypeTagging):

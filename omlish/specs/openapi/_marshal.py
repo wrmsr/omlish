@@ -39,7 +39,10 @@ class _ReferenceUnionMarshalerFactory(msh.MarshalerFactory):
     def make_marshaler(self, ctx: msh.MarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
         if (rua := _reference_union_arg(rty)) is None:
             return None
-        return lambda: _ReferenceUnionMarshaler(ctx.make(check.not_none(rua)), ctx.make(Reference))
+        return lambda: _ReferenceUnionMarshaler(
+            ctx.make_marshaler(check.not_none(rua)),
+            ctx.make_marshaler(Reference),
+        )
 
 
 #
@@ -63,7 +66,10 @@ class _ReferenceUnionUnmarshalerFactory(msh.UnmarshalerFactory):
     def make_unmarshaler(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:
         if (rua := _reference_union_arg(rty)) is None:
             return None
-        return lambda: _ReferenceUnionUnmarshaler(ctx.make(check.not_none(rua)), ctx.make(Reference))
+        return lambda: _ReferenceUnionUnmarshaler(
+            ctx.make_unmarshaler(check.not_none(rua)),
+            ctx.make_unmarshaler(Reference),
+        )
 
 
 ##
@@ -93,11 +99,11 @@ class _SchemaMarshalerFactory(msh.MarshalerFactory):
             return None
         return lambda: _SchemaMarshaler(
             {
-                f: (msh.translate_name(f, msh.Naming.LOW_CAMEL), ctx.make(rfl.type_(a)))
+                f: (msh.translate_name(f, msh.Naming.LOW_CAMEL), ctx.make_marshaler(rfl.type_(a)))
                 for f, a in dc.reflect(Schema).field_annotations.items()
                 if f != 'keywords'
             },
-            ctx.make(jsch.Keywords),
+            ctx.make_marshaler(jsch.Keywords),
         )
 
 
@@ -129,11 +135,11 @@ class _SchemaUnmarshalerFactory(msh.UnmarshalerFactory):
             return None
         return lambda: _SchemaUnmarshaler(
             {
-                msh.translate_name(f, msh.Naming.LOW_CAMEL): (f, ctx.make(rfl.type_(a)))
+                msh.translate_name(f, msh.Naming.LOW_CAMEL): (f, ctx.make_unmarshaler(rfl.type_(a)))
                 for f, a in dc.reflect(Schema).field_annotations.items()
                 if f != 'keywords'
             },
-            ctx.make(jsch.Keywords),
+            ctx.make_unmarshaler(jsch.Keywords),
         )
 
 

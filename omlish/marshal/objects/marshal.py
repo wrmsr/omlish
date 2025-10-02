@@ -34,7 +34,7 @@ class ObjectMarshaler(Marshaler):
             **kwargs: ta.Any,
     ) -> Marshaler:
         fields = [
-            (fi, ctx.make(fi.type))
+            (fi, ctx.make_marshaler(fi.type))
             for fi in fis
         ]
 

@@ -47,8 +47,8 @@ class RequiresMarkerListMarshalerFactory(msh.MarshalerFactory):
         if rty is not MarshalRequiresMarkerList:
             return None
         return lambda: RequiresMarkerListMarshaler(
-            ctx.make(RequiresMarkerItem),
-            ctx.make(RequiresNode),
+            ctx.make_marshaler(RequiresMarkerItem),
+            ctx.make_marshaler(RequiresNode),
         )
 
 

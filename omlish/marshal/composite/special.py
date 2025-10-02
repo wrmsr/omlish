@@ -22,7 +22,7 @@ class SequenceNotStrMarshalerFactory(MarshalerFactory):
     def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         if not (isinstance(rty, rfl.Protocol) and rty.cls is lang.SequenceNotStr):
             return None
-        return lambda: IterableMarshaler(ctx.make(check.single(rty.args)))
+        return lambda: IterableMarshaler(ctx.make_marshaler(check.single(rty.args)))
 
 
 class SequenceNotStrUnmarshalerFactory(UnmarshalerFactory):
@@ -30,4 +30,4 @@ class SequenceNotStrUnmarshalerFactory(UnmarshalerFactory):
         if not (isinstance(rty, rfl.Protocol) and rty.cls is lang.SequenceNotStr):
             return None
         cty = DEFAULT_ITERABLE_CONCRETE_TYPES[collections.abc.Sequence]  # type: ignore[type-abstract]
-        return lambda: IterableUnmarshaler(cty, ctx.make(check.single(rty.args)))
+        return lambda: IterableUnmarshaler(cty, ctx.make_unmarshaler(check.single(rty.args)))

@@ -73,7 +73,7 @@ def test_decorated_unknown_field():
     }
 
     uc = UnmarshalContext(factory=new_standard_unmarshaler_factory())
-    u = uc.make(ImageUploadResponse)
+    u = uc.make_unmarshaler(ImageUploadResponse)
 
     o = u.unmarshal(uc, d)
 

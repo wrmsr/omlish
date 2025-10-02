@@ -56,7 +56,7 @@ class _ContentMarshalerFactory(msh.MarshalerFactory):
     def make_marshaler(self, ctx: msh.MarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
         if not (rty is MarshalContent or rty == _MARSHAL_CONTENT_UNION_RTY):
             return None
-        return lambda: _ContentMarshaler(ctx.make(ExtendedContent))
+        return lambda: _ContentMarshaler(ctx.make_marshaler(ExtendedContent))
 
 
 @dc.dataclass(frozen=True)
@@ -78,7 +78,7 @@ class _ContentUnmarshalerFactory(msh.UnmarshalerFactory):
     def make_unmarshaler(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:
         if not (rty is MarshalContent or rty == _MARSHAL_CONTENT_UNION_RTY):
             return None
-        return lambda: _ContentUnmarshaler(ctx.make(ExtendedContent))
+        return lambda: _ContentUnmarshaler(ctx.make_unmarshaler(ExtendedContent))
 
 
 ##
@@ -109,7 +109,7 @@ class _CanContentMarshalerFactory(msh.MarshalerFactory):
     def make_marshaler(self, ctx: msh.MarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
         if not (rty is MarshalCanContent or rty == _MARSHAL_CAN_CONTENT_UNION_RTY):
             return None
-        return lambda: _CanContentMarshaler(ctx.make(Content))
+        return lambda: _CanContentMarshaler(ctx.make_marshaler(Content))
 
 
 @dc.dataclass(frozen=True)
@@ -124,7 +124,7 @@ class _CanContentUnmarshalerFactory(msh.UnmarshalerFactory):
     def make_unmarshaler(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:
         if not (rty is MarshalCanContent or rty == _MARSHAL_CAN_CONTENT_UNION_RTY):
             return None
-        return lambda: _CanContentUnmarshaler(ctx.make(Content))
+        return lambda: _CanContentUnmarshaler(ctx.make_unmarshaler(Content))
 
 
 ##

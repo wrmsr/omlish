@@ -37,7 +37,7 @@ class TypedValueMarshalerFactory(msh.MarshalerFactoryMethodClass):
         def inner() -> msh.Marshaler:
             dc_rfl = dc.reflect(check.isinstance(rty, type))
             v_rty = check.single(dc_rfl.fields_inspection.generic_replaced_field_annotations.values())
-            v_m = ctx.make(v_rty)
+            v_m = ctx.make_marshaler(v_rty)
             return msh.WrappedMarshaler(lambda _, o: o.v, v_m)
 
         return inner
@@ -71,7 +71,7 @@ class TypedValueUnmarshalerFactory(msh.UnmarshalerFactoryMethodClass):
         def inner() -> msh.Unmarshaler:
             dc_rfl = dc.reflect(rty)
             v_rty = check.single(dc_rfl.fields_inspection.generic_replaced_field_annotations.values())
-            v_u = ctx.make(v_rty)
+            v_u = ctx.make_unmarshaler(v_rty)
             return msh.WrappedUnmarshaler(lambda _, v: rty(v), v_u)
 
         return inner

@@ -37,13 +37,13 @@ class MaybeMarshalerFactory(MarshalerFactoryMethodClass):
     def _make_generic(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         if not (isinstance(rty, rfl.Generic) and rty.cls is lang.Maybe):
             return None
-        return lambda: MaybeMarshaler(ctx.make(check.single(rty.args)))
+        return lambda: MaybeMarshaler(ctx.make_marshaler(check.single(rty.args)))
 
     @MarshalerFactoryMethodClass.make_marshaler.register
     def _make_concrete(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         if not (isinstance(rty, type) and issubclass(rty, lang.Maybe)):
             return None
-        return lambda: MaybeMarshaler(ctx.make(ta.Any))
+        return lambda: MaybeMarshaler(ctx.make_marshaler(ta.Any))
 
 
 #
@@ -65,10 +65,10 @@ class MaybeUnmarshalerFactory(UnmarshalerFactoryMethodClass):
     def _make_generic(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         if not (isinstance(rty, rfl.Generic) and rty.cls is lang.Maybe):
             return None
-        return lambda: MaybeUnmarshaler(ctx.make(check.single(rty.args)))
+        return lambda: MaybeUnmarshaler(ctx.make_unmarshaler(check.single(rty.args)))
 
     @UnmarshalerFactoryMethodClass.make_unmarshaler.register
     def _make_concrete(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         if not (isinstance(rty, type) and issubclass(rty, lang.Maybe)):
             return None
-        return lambda: MaybeUnmarshaler(ctx.make(ta.Any))
+        return lambda: MaybeUnmarshaler(ctx.make_unmarshaler(ta.Any))

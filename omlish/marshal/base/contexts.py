@@ -44,7 +44,7 @@ class BaseContext(lang.Abstract):
 class MarshalContext(BaseContext, lang.Final):
     factory: ta.Optional['MarshalerFactory'] = None
 
-    def make(self, o: ta.Any) -> 'Marshaler':
+    def make_marshaler(self, o: ta.Any) -> 'Marshaler':
         rty = self._reflect(o)
         fac = check.not_none(self.factory)
         if (mfn := fac.make_marshaler(self, rty)) is None:
@@ -52,14 +52,14 @@ class MarshalContext(BaseContext, lang.Final):
         return mfn()
 
     def marshal(self, obj: ta.Any, ty: ta.Any | None = None) -> 'Value':
-        return self.make(ty if ty is not None else type(obj)).marshal(self, obj)
+        return self.make_marshaler(ty if ty is not None else type(obj)).marshal(self, obj)
 
 
 @dc.dataclass(frozen=True, kw_only=True)
 class UnmarshalContext(BaseContext, lang.Final):
     factory: ta.Optional['UnmarshalerFactory'] = None
 
-    def make(self, o: ta.Any) -> 'Unmarshaler':
+    def make_unmarshaler(self, o: ta.Any) -> 'Unmarshaler':
         rty = self._reflect(o)
         fac = check.not_none(self.factory)
         if (mfn := fac.make_unmarshaler(self, rty)) is None:
@@ -75,4 +75,4 @@ class UnmarshalContext(BaseContext, lang.Final):
         ...
 
     def unmarshal(self, v, ty):
-        return self.make(ty).unmarshal(self, v)
+        return self.make_unmarshaler(ty).unmarshal(self, v)
