@@ -8,14 +8,13 @@ import typing as ta
 from ... import check
 from ... import lang
 from ... import reflect as rfl
-from ...funcs import match as mfs
 from ..base.contexts import MarshalContext
 from ..base.contexts import UnmarshalContext
 from ..base.types import Marshaler
 from ..base.types import Unmarshaler
 from ..base.values import Value
-from ..factories.match import MarshalerFactoryMatchClass
-from ..factories.match import UnmarshalerFactoryMatchClass
+from ..factories.method import MarshalerFactoryMethodClass
+from ..factories.method import UnmarshalerFactoryMethodClass
 
 
 ##
@@ -33,15 +32,21 @@ class MaybeMarshaler(Marshaler):
             return []
 
 
-class MaybeMarshalerFactory(MarshalerFactoryMatchClass):
-    @mfs.simple(lambda _, ctx, rty: isinstance(rty, rfl.Generic) and rty.cls is lang.Maybe)
-    def _build_generic(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
-        gty = check.isinstance(rty, rfl.Generic)
-        return MaybeMarshaler(ctx.make(check.single(gty.args)))
+class MaybeMarshalerFactory(MarshalerFactoryMethodClass):
+    @MarshalerFactoryMethodClass.make_marshaler.register
+    def _make_generic(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+        if not (isinstance(rty, rfl.Generic) and rty.cls is lang.Maybe):
+            return None
+        return lambda: MaybeMarshaler(ctx.make(check.single(rty.args)))
 
-    @mfs.simple(lambda _, ctx, rty: isinstance(rty, type) and issubclass(rty, lang.Maybe))
-    def _build_concrete(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
-        return MaybeMarshaler(ctx.make(ta.Any))
+    @MarshalerFactoryMethodClass.make_marshaler.register
+    def _make_concrete(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+        if not isinstance(rty, type) and issubclass(rty, lang.Maybe):
+            return None
+        return lambda: MaybeMarshaler(ctx.make(ta.Any))
+
+
+#
 
 
 @dc.dataclass(frozen=True)
@@ -55,12 +60,15 @@ class MaybeUnmarshaler(Unmarshaler):
             return lang.empty()
 
 
-class MaybeUnmarshalerFactory(UnmarshalerFactoryMatchClass):
-    @mfs.simple(lambda _, ctx, rty: isinstance(rty, rfl.Generic) and rty.cls is lang.Maybe)
-    def _build_generic(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
-        gty = check.isinstance(rty, rfl.Generic)
-        return MaybeUnmarshaler(ctx.make(check.single(gty.args)))
+class MaybeUnmarshalerFactory(UnmarshalerFactoryMethodClass):
+    @UnmarshalerFactoryMethodClass.make_unmarshaler.register
+    def _make_generic(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+        if not (isinstance(rty, rfl.Generic) and rty.cls is lang.Maybe):
+            return None
+        return lambda: MaybeUnmarshaler(ctx.make(check.single(rty.args)))
 
-    @mfs.simple(lambda _, ctx, rty: isinstance(rty, type) and issubclass(rty, lang.Maybe))
-    def _build_concrete(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
-        return MaybeUnmarshaler(ctx.make(ta.Any))
+    @UnmarshalerFactoryMethodClass.make_unmarshaler.register
+    def _make_concrete(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+        if not (isinstance(rty, type) and issubclass(rty, lang.Maybe)):
+            return None
+        return lambda: MaybeUnmarshaler(ctx.make(ta.Any))

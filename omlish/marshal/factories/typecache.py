@@ -1,6 +1,7 @@
 """
 FIXME:
  - fix Context lifetime broken design already
+  - obvious: FactoryContext
 """
 import threading
 import typing as ta

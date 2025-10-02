@@ -7,10 +7,8 @@ from ..base.contexts import MarshalContext
 from ..base.contexts import UnmarshalContext
 from ..base.types import Marshaler
 from ..base.types import MarshalerFactory
-from ..base.types import MarshalerMaker
 from ..base.types import Unmarshaler
 from ..base.types import UnmarshalerFactory
-from ..base.types import UnmarshalerMaker
 
 
 ##
@@ -19,10 +17,10 @@ from ..base.types import UnmarshalerMaker
 class MarshalerFactoryMethodClass(MarshalerFactory, lang.Abstract):
     @gfs.method()
     def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
-        return self  # noqa
+        raise NotImplementedError
 
 
 class UnmarshalerFactoryMethodClass(UnmarshalerFactory, lang.Abstract):
     @gfs.method()
     def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
-        return self  # noqa
+        raise NotImplementedError
