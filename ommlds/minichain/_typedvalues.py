@@ -7,7 +7,6 @@ from omlish import lang
 from omlish import marshal as msh
 from omlish import reflect as rfl
 from omlish import typedvalues as tv
-from omlish.funcs import guard as gfs
 
 
 if ta.TYPE_CHECKING:

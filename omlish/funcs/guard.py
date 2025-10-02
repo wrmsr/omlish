@@ -61,7 +61,7 @@ class MultiGuardFn(ta.Generic[P, T]):
     lang.attr_ops(lambda self: (
         self._children,
         self._default,
-        self._strict
+        self._strict,
     )).install(locals())
 
     def __get__(self, instance, owner=None):

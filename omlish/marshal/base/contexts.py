@@ -5,7 +5,6 @@ from ... import check
 from ... import collections as col
 from ... import lang
 from ... import reflect as rfl
-from ...funcs import guard as gfs
 from .configs import EMPTY_CONFIG_REGISTRY
 from .configs import ConfigRegistry
 from .errors import UnhandledTypeError

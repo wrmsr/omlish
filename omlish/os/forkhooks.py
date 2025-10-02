@@ -1,5 +1,9 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
+"""
+TODO:
+ - https://github.com/python/cpython/issues/50970
+"""
 import os
 import threading
 import typing as ta

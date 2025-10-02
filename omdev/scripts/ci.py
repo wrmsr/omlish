@@ -1516,6 +1516,36 @@ def dataclass_repr_omit_falsey(obj: ta.Any) -> str:
 ##
 
 
+def dataclass_descriptor_method(*bind_attrs: str, bind_owner: bool = False) -> ta.Callable:
+    if not bind_attrs:
+        def __get__(self, instance, owner=None):  # noqa
+            return self
+
+    elif bind_owner:
+        def __get__(self, instance, owner=None):  # noqa
+            # Guaranteed to return a new instance even with no attrs
+            return dc.replace(self, **{
+                a: v.__get__(instance, owner) if (v := getattr(self, a)) is not None else None
+                for a in bind_attrs
+            })
+
+    else:
+        def __get__(self, instance, owner=None):  # noqa
+            if instance is None:
+                return self
+
+            # Guaranteed to return a new instance even with no attrs
+            return dc.replace(self, **{
+                a: v.__get__(instance, owner) if (v := getattr(self, a)) is not None else None
+                for a in bind_attrs
+            })
+
+    return __get__
+
+
+##
+
+
 def dataclass_kw_only_init():
     def inner(cls):
         if not isinstance(cls, type) and dc.is_dataclass(cls):

@@ -1854,6 +1854,8 @@ TODO:
  - per-attr repr transform / filter
  - __ne__ ? cases where it still matters
  - ordering ?
+ - repr_filter: ta.Union[ta.Callable[[ta.Any], ta.Optional[str]], ta.Literal['not_none', 'truthy']]] ?
+  - unify repr/repr_fn/repr_filter
 """
 
 

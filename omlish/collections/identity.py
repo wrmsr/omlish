@@ -105,6 +105,7 @@ class IdentityWeakKeyDictionary(ta.MutableMapping[K, V]):
 
     TODO:
      - audit for freethreaded
+      - leans on stdlib impls so shouldn't matter?
     """
 
     def __init__(self, *args: ta.Any, **kwargs: ta.Any) -> None:

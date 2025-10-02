@@ -1,7 +1,7 @@
 # ruff: noqa: PT009 PT027
 import dataclasses as dc
-import unittest
 import typing as ta
+import unittest
 
 from ..dataclasses import dataclass_cache_hash
 from ..dataclasses import dataclass_descriptor_method

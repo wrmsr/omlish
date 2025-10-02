@@ -32,7 +32,7 @@ class _BasePolymorphismUnionFactory(lang.Abstract):
     def rtys(self) -> frozenset[rfl.Type]:
         return frozenset(i.ty for i in self.impls)
 
-    def guard(self, ctx: MarshalContext | UnmarshalContext, rty: rfl.Type) -> bool:
+    def _guard(self, ctx: MarshalContext | UnmarshalContext, rty: rfl.Type) -> bool:
         if not isinstance(rty, rfl.Union):
             return False
         if self.allow_partial:
@@ -48,10 +48,14 @@ class _BasePolymorphismUnionFactory(lang.Abstract):
 @dc.dataclass(frozen=True)
 class PolymorphismUnionMarshalerFactory(_BasePolymorphismUnionFactory, MarshalerFactory):
     def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+        if not self._guard(ctx, rty):
+            return None
         return lambda: make_polymorphism_marshaler(self.get_impls(rty), self.tt, ctx)
 
 
 @dc.dataclass(frozen=True)
 class PolymorphismUnionUnmarshalerFactory(_BasePolymorphismUnionFactory, UnmarshalerFactory):
     def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+        if not self._guard(ctx, rty):
+            return None
         return lambda: make_polymorphism_unmarshaler(self.get_impls(rty), self.tt, ctx)

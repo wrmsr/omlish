@@ -2,7 +2,6 @@ import abc
 import dataclasses as dc
 import typing as ta
 
-from ... import check
 from ... import lang
 from ... import reflect as rfl
 from ..base.contexts import MarshalContext

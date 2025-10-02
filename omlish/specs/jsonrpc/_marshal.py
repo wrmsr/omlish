@@ -5,7 +5,6 @@ from ... import dataclasses as dc
 from ... import lang
 from ... import marshal as msh
 from ... import reflect as rfl
-from ...funcs import match as mfs
 from .types import NotSpecified
 
 
