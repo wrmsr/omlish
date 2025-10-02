@@ -15,14 +15,6 @@ V = ta.TypeVar('V')
 ##
 
 
-@dc.dataclass()
-class DuplicatesForbiddenError(Exception):
-    owner_cls: type
-    instance_cls: type
-    att: str
-    ex_att: str
-
-
 class AttrRegistry(ta.Generic[K, V]):
     """
     MRO-honoring class member registry. There are many ways to do this, and this one is attr name based: a class is
@@ -33,24 +25,21 @@ class AttrRegistry(ta.Generic[K, V]):
     of the superclass member will not automatically register the new member with the same name to the registry - it must
     be explicitly registered itself. This is a feature, allowing for selective de-registration of objects in subclasses
     via name shadowing.
-
-    Registries can choose to allow external installation of objects outside of direct subclasses. This is to be used
-    rarely - such as in the rare case of externally extensible type hierarchies with visitors.
     """
 
     def __init__(
             self,
             *,
-            installable: bool = False,
             requires_override: bool = False,
+            is_override: ta.Callable[[ta.Any], bool] | None = None,
             forbid_duplicates: bool = False,
             identity: bool = False,
             weak: bool = False,
     ) -> None:
         super().__init__()
 
-        self._installable = installable
         self._requires_override = requires_override
+        self._is_override = is_override
         self._forbid_duplicates = forbid_duplicates
         self._identity = identity
         self._weak = weak
@@ -80,6 +69,13 @@ class AttrRegistry(ta.Generic[K, V]):
             return lang.empty()
         else:
             return lang.just(val)
+
+    @dc.dataclass()
+    class DuplicatesForbiddenError(Exception):
+        owner_cls: type
+        instance_cls: type
+        att: str
+        ex_att: str
 
     def collect(self, instance_cls: type, owner_cls: type | None = None) -> dict[str, tuple[K, V]]:
         if owner_cls is None:
@@ -117,7 +113,7 @@ class AttrRegistry(ta.Generic[K, V]):
             _, obj = lst[-1]
 
             if len(lst) > 1:
-                if self._requires_override and not lang.is_override(obj):
+                if self._requires_override and not (self._is_override or lang.is_override)(obj):
                     raise lang.RequiresOverrideError(
                         att,
                         instance_cls,
@@ -134,7 +130,7 @@ class AttrRegistry(ta.Generic[K, V]):
                 except KeyError:
                     pass
                 else:
-                    raise DuplicatesForbiddenError(owner_cls, instance_cls, att, ex_att)  # noqa
+                    raise AttrRegistry.DuplicatesForbiddenError(owner_cls, instance_cls, att, ex_att)  # noqa
                 seen[obj] = att
 
             out[att] = (obj, mv.must())
