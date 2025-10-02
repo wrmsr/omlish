@@ -47,10 +47,10 @@ class FuncMarshalerFactory(MarshalerFactory):  # noqa
 
 @dc.dataclass(frozen=True)
 class FuncUnmarshalerFactory(UnmarshalerFactory):  # noqa
-    gfn: UnmarshalerMaker
+    gf: UnmarshalerMaker
 
     def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
-        return self.gfn(ctx, rty)
+        return self.gf(ctx, rty)
 
 
 ##

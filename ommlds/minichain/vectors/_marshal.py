@@ -9,7 +9,6 @@ from omlish import check
 from omlish import lang
 from omlish import marshal as msh
 from omlish import reflect as rfl
-from omlish.funcs import match as mfs
 
 from .types import Vector
 
@@ -25,10 +24,11 @@ class _VectorMarshaler(msh.Marshaler):
         return self.et.marshal(ctx, list(map(float, check.isinstance(o, Vector))))
 
 
-class _VectorMarshalerFactory(msh.MarshalerFactoryMatchClass):
-    @mfs.simple(lambda _, ctx, rty: rty is Vector)
-    def _build(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
-        return _VectorMarshaler(ctx.make(ta.Sequence[float]))
+class _VectorMarshalerFactory(msh.MarshalerFactory):
+    def make_marshaler(self, ctx: msh.MarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
+        if rty is not Vector:
+            return None
+        return lambda: _VectorMarshaler(ctx.make(ta.Sequence[float]))
 
 
 @dc.dataclass(frozen=True)
@@ -39,10 +39,11 @@ class _VectorUnmarshaler(msh.Unmarshaler):
         return Vector(self.et.unmarshal(ctx, v))
 
 
-class _VectorUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
-    @mfs.simple(lambda _, ctx, rty: rty is Vector)
-    def _build(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
-        return _VectorUnmarshaler(ctx.make(ta.Sequence[float]))
+class _VectorUnmarshalerFactory(msh.UnmarshalerFactory):
+    def make_unmarshaler(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:
+        if rty is not Vector:
+            return None
+        return lambda: _VectorUnmarshaler(ctx.make(ta.Sequence[float]))
 
 
 ##

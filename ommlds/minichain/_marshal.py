@@ -1,8 +1,9 @@
+import typing as ta
+
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
 from omlish import reflect as rfl
-from omlish.funcs import match as mfs
 from omlish.typedvalues.marshal import build_typed_values_marshaler
 from omlish.typedvalues.marshal import build_typed_values_unmarshaler
 
@@ -13,21 +14,19 @@ from .json import JsonValue
 
 
 @dc.dataclass()
-class _TypedValuesFieldMarshalerFactory(msh.MarshalerFactoryMatchClass):
+class _TypedValuesFieldMarshalerFactory(msh.MarshalerFactory):
     tvs_rty: rfl.Type
 
-    @mfs.simple(lambda _, ctx, rty: True)
-    def _build(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
-        return build_typed_values_marshaler(ctx, self.tvs_rty)
+    def make_marshaler(self, ctx: msh.MarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
+        return lambda: build_typed_values_marshaler(ctx, self.tvs_rty)
 
 
 @dc.dataclass()
-class _TypedValuesFieldUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
+class _TypedValuesFieldUnmarshalerFactory(msh.UnmarshalerFactory):
     tvs_rty: rfl.Type
 
-    @mfs.simple(lambda _, ctx, rty: True)
-    def _build(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
-        return build_typed_values_unmarshaler(ctx, self.tvs_rty)
+    def make_unmarshaler(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:
+        return lambda: build_typed_values_unmarshaler(ctx, self.tvs_rty)
 
 
 ##
@@ -37,16 +36,18 @@ class MarshalJsonValue(lang.NotInstantiable, lang.Final):
     pass
 
 
-class _JsonValueMarshalerFactory(msh.MarshalerFactoryMatchClass):
-    @mfs.simple(lambda _, ctx, rty: rty is MarshalJsonValue)
-    def _build(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
-        return msh.NopMarshalerUnmarshaler()
+class _JsonValueMarshalerFactory(msh.MarshalerFactory):
+    def make_marshaler(self, ctx: msh.MarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
+        if rty is not MarshalJsonValue:
+            return None
+        return lambda: msh.NopMarshalerUnmarshaler()
 
 
-class _JsonValueUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
-    @mfs.simple(lambda _, ctx, rty: rty is MarshalJsonValue)
-    def _build(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
-        return msh.NopMarshalerUnmarshaler()
+class _JsonValueUnmarshalerFactory(msh.UnmarshalerFactory):
+    def make_unmarshaler(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:
+        if rty is not MarshalJsonValue:
+            return None
+        return lambda: msh.NopMarshalerUnmarshaler()
 
 
 ##

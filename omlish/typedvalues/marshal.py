@@ -1,9 +1,10 @@
+import typing as ta
+
 from .. import check
 from .. import dataclasses as dc
 from .. import lang
 from .. import marshal as msh
 from .. import reflect as rfl
-from ..funcs import match as mfs
 from .collection import TypedValues
 from .reflect import reflect_typed_values_impls
 from .values import ScalarTypedValue
@@ -14,7 +15,7 @@ from .values import TypedValue
 
 
 def _build_typed_value_poly(rty: rfl.Type) -> msh.Polymorphism:
-    ty: type[TypedValue] = check.issubclass(check.isinstance(rty, type), TypedValue)
+    ty: type[TypedValue] = check.issubclass(check.isinstance(rty, type), TypedValue)  # noqa
     check.state(lang.is_abstract_class(ty))
     return msh.polymorphism_from_subclasses(
         ty,
@@ -23,51 +24,68 @@ def _build_typed_value_poly(rty: rfl.Type) -> msh.Polymorphism:
     )
 
 
-class TypedValueMarshalerFactory(msh.MarshalerFactoryMatchClass):
-    @mfs.simple(lambda _, ctx, rty: (
-        isinstance(rty, type) and
-        issubclass(rty, ScalarTypedValue) and
-        not lang.is_abstract_class(rty)
-    ))
-    def _build_scalar(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
-        dc_rfl = dc.reflect(check.isinstance(rty, type))
-        v_rty = check.single(dc_rfl.fields_inspection.generic_replaced_field_annotations.values())
-        v_m = ctx.make(v_rty)
-        return msh.WrappedMarshaler(lambda _, o: o.v, v_m)
+class TypedValueMarshalerFactory(msh.MarshalerFactoryMethodClass):
+    @msh.MarshalerFactoryMethodClass.make_marshaler.register
+    def _make_scalar(self, ctx: msh.MarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
+        if not (
+            isinstance(rty, type) and
+            issubclass(rty, ScalarTypedValue) and
+            not lang.is_abstract_class(rty)
+        ):
+            return None
 
-    @mfs.simple(lambda _, ctx, rty: (
-        isinstance(rty, type) and
-        issubclass(rty, TypedValue) and
-        lang.is_abstract_class(rty)
-    ))
-    def _build_abstract(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
-        return msh.make_polymorphism_marshaler(
+        def inner() -> msh.Marshaler:
+            dc_rfl = dc.reflect(check.isinstance(rty, type))
+            v_rty = check.single(dc_rfl.fields_inspection.generic_replaced_field_annotations.values())
+            v_m = ctx.make(v_rty)
+            return msh.WrappedMarshaler(lambda _, o: o.v, v_m)
+
+        return inner
+
+    @msh.MarshalerFactoryMethodClass.make_marshaler.register
+    def _make_abstract(self, ctx: msh.MarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
+        if not (
+            isinstance(rty, type) and
+            issubclass(rty, TypedValue) and
+            lang.is_abstract_class(rty)
+        ):
+            return None
+
+        return lambda: msh.make_polymorphism_marshaler(
             _build_typed_value_poly(rty).impls,
             msh.WrapperTypeTagging(),
             ctx,
         )
 
 
-class TypedValueUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
-    @mfs.simple(lambda _, ctx, rty: (
-        isinstance(rty, type) and
-        issubclass(rty, ScalarTypedValue) and
-        not lang.is_abstract_class(rty)
-    ))
-    def _build_scalar(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
-        rty = check.isinstance(rty, type)
-        dc_rfl = dc.reflect(rty)
-        v_rty = check.single(dc_rfl.fields_inspection.generic_replaced_field_annotations.values())
-        v_u = ctx.make(v_rty)
-        return msh.WrappedUnmarshaler(lambda _, v: rty(v), v_u)
+class TypedValueUnmarshalerFactory(msh.UnmarshalerFactoryMethodClass):
+    @msh.UnmarshalerFactoryMethodClass.make_unmarshaler.register
+    def _make_scalar(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:
+        if not (
+            isinstance(rty, type) and
+            issubclass(rty, ScalarTypedValue) and
+            not lang.is_abstract_class(rty)
+        ):
+            return None
 
-    @mfs.simple(lambda _, ctx, rty: (
-        isinstance(rty, type) and
-        issubclass(rty, TypedValue) and
-        lang.is_abstract_class(rty)
-    ))
-    def _build_abstract(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
-        return msh.make_polymorphism_unmarshaler(
+        def inner() -> msh.Unmarshaler:
+            dc_rfl = dc.reflect(rty)
+            v_rty = check.single(dc_rfl.fields_inspection.generic_replaced_field_annotations.values())
+            v_u = ctx.make(v_rty)
+            return msh.WrappedUnmarshaler(lambda _, v: rty(v), v_u)
+
+        return inner
+
+    @msh.UnmarshalerFactoryMethodClass.make_unmarshaler.register
+    def _make_abstract(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:
+        if not (
+            isinstance(rty, type) and
+            issubclass(rty, TypedValue) and
+            lang.is_abstract_class(rty)
+        ):
+            return None
+
+        return lambda: msh.make_polymorphism_unmarshaler(
             _build_typed_value_poly(rty).impls,
             msh.WrapperTypeTagging(),
             ctx,
@@ -108,14 +126,18 @@ def build_typed_values_marshaler(ctx: msh.MarshalContext, rty: rfl.Type) -> msh.
     return msh.IterableMarshaler(tv_m)
 
 
-class TypedValuesMarshalerFactory(msh.MarshalerFactoryMatchClass):
-    @mfs.simple(lambda _, ctx, rty: isinstance(rty, rfl.Generic) and rty.cls is TypedValues)
-    def _build(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
-        return build_typed_values_marshaler(ctx, rty)
+class TypedValuesMarshalerFactory(msh.MarshalerFactoryMethodClass):
+    @msh.MarshalerFactoryMethodClass.make_marshaler.register
+    def _make_generic(self, ctx: msh.MarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
+        if not (isinstance(rty, rfl.Generic) and rty.cls is TypedValues):
+            return None
+        return lambda: build_typed_values_marshaler(ctx, rty)
 
-    @mfs.simple(lambda _, ctx, rty: rty is TypedValues)
-    def _build_concrete(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
-        raise NotImplementedError
+    @msh.MarshalerFactoryMethodClass.make_marshaler.register
+    def _make_concrete(self, ctx: msh.MarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
+        if rty is not TypedValues:
+            return None
+        return lambda: lang.raise_(NotImplementedError())
 
 
 #
@@ -130,14 +152,18 @@ def build_typed_values_unmarshaler(ctx: msh.UnmarshalContext, rty: rfl.Type) -> 
     return msh.IterableUnmarshaler(lambda it: TypedValues(*it), tv_u)  # noqa
 
 
-class TypedValuesUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
-    @mfs.simple(lambda _, ctx, rty: isinstance(rty, rfl.Generic) and rty.cls is TypedValues)
-    def _build(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
-        return build_typed_values_unmarshaler(ctx, rty)
+class TypedValuesUnmarshalerFactory(msh.UnmarshalerFactoryMethodClass):
+    @msh.UnmarshalerFactoryMethodClass.make_unmarshaler.register
+    def _build(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:
+        if not (isinstance(rty, rfl.Generic) and rty.cls is TypedValues):
+            return None
+        return lambda: build_typed_values_unmarshaler(ctx, rty)
 
-    @mfs.simple(lambda _, ctx, rty: rty is TypedValues)
-    def _build_concrete(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
-        raise NotImplementedError
+    @msh.UnmarshalerFactoryMethodClass.make_unmarshaler.register
+    def _build_concrete(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:
+        if rty is not TypedValues:
+            return None
+        return lambda: lang.raise_(NotImplementedError())
 
 
 ##

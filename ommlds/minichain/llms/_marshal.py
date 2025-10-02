@@ -21,12 +21,13 @@ class TokensMarshalerFactory(msh.MarshalerFactory):
         if rty is not Tokens:
             return None
 
+        dc_rfl = dc.reflect(Tokens)
+        dc_f = check.single(dc_rfl.fields.values())
+        v_rty = rfl.type_(dc_f.type)
+        v_m = ctx.make(v_rty)
+        f_n = dc_f.name
+
         def inner() -> msh.Marshaler:
-            dc_rfl = dc.reflect(rty)
-            dc_f = check.single(dc_rfl.fields.values())
-            v_rty = rfl.type_(dc_f.type)
-            v_m = ctx.make(v_rty)
-            f_n = dc_f.name
             return msh.WrappedMarshaler(lambda _, o: getattr(o, f_n), v_m)
 
         return inner
@@ -37,12 +38,13 @@ class TokensUnmarshalerFactory(msh.UnmarshalerFactory):
         if rty is not Tokens:
             return None
 
+        dc_rfl = dc.reflect(Tokens)
+        dc_f = check.single(dc_rfl.fields.values())
+        v_rty = rfl.type_(dc_f.type)
+        v_u = ctx.make(v_rty)
+
         def inner() -> msh.Unmarshaler:
-            dc_rfl = dc.reflect(rty)
-            dc_f = check.single(dc_rfl.fields.values())
-            v_rty = rfl.type_(dc_f.type)
-            v_u = ctx.make(v_rty)
-            return msh.WrappedUnmarshaler(lambda _, v: rty(v), v_u)
+            return msh.WrappedUnmarshaler(lambda _, v: Tokens(v), v_u)
 
         return inner
 

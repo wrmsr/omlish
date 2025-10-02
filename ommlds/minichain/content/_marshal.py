@@ -6,7 +6,6 @@ from omlish import check
 from omlish import lang
 from omlish import marshal as msh
 from omlish import reflect as rfl
-from omlish.funcs import match as mfs
 
 from .images import ImageContent  # noqa
 from .json import JsonContent  # noqa
@@ -53,10 +52,11 @@ class _ContentMarshaler(msh.Marshaler):
             raise TypeError(o)
 
 
-class _ContentMarshalerFactory(msh.MarshalerFactoryMatchClass):
-    @mfs.simple(lambda _, ctx, rty: rty is MarshalContent or rty == _MARSHAL_CONTENT_UNION_RTY)
-    def _build(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
-        return _ContentMarshaler(ctx.make(ExtendedContent))
+class _ContentMarshalerFactory(msh.MarshalerFactory):
+    def make_marshaler(self, ctx: msh.MarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
+        if not (rty is MarshalContent or rty == _MARSHAL_CONTENT_UNION_RTY):
+            return None
+        return lambda: _ContentMarshaler(ctx.make(ExtendedContent))
 
 
 @dc.dataclass(frozen=True)
@@ -74,10 +74,11 @@ class _ContentUnmarshaler(msh.Unmarshaler):
             raise TypeError(v)
 
 
-class _ContentUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
-    @mfs.simple(lambda _, ctx, rty: rty is MarshalContent or rty == _MARSHAL_CONTENT_UNION_RTY)
-    def _build(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
-        return _ContentUnmarshaler(ctx.make(ExtendedContent))
+class _ContentUnmarshalerFactory(msh.UnmarshalerFactory):
+    def make_unmarshaler(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:
+        if not (rty is MarshalContent or rty == _MARSHAL_CONTENT_UNION_RTY):
+            return None
+        return lambda: _ContentUnmarshaler(ctx.make(ExtendedContent))
 
 
 ##
@@ -104,10 +105,11 @@ class _CanContentMarshaler(msh.Marshaler):
         return self.c.marshal(ctx, check.isinstance(o, CONTENT_RUNTIME_TYPES))
 
 
-class _CanContentMarshalerFactory(msh.MarshalerFactoryMatchClass):
-    @mfs.simple(lambda _, ctx, rty: rty is MarshalCanContent or rty == _MARSHAL_CAN_CONTENT_UNION_RTY)
-    def _build(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
-        return _CanContentMarshaler(ctx.make(Content))
+class _CanContentMarshalerFactory(msh.MarshalerFactory):
+    def make_marshaler(self, ctx: msh.MarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
+        if not (rty is MarshalCanContent or rty == _MARSHAL_CAN_CONTENT_UNION_RTY):
+            return None
+        return lambda: _CanContentMarshaler(ctx.make(Content))
 
 
 @dc.dataclass(frozen=True)
@@ -118,10 +120,11 @@ class _CanContentUnmarshaler(msh.Unmarshaler):
         return self.c.unmarshal(ctx, v)
 
 
-class _CanContentUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
-    @mfs.simple(lambda _, ctx, rty: rty is MarshalCanContent or rty == _MARSHAL_CAN_CONTENT_UNION_RTY)
-    def _build(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
-        return _CanContentUnmarshaler(ctx.make(Content))
+class _CanContentUnmarshalerFactory(msh.UnmarshalerFactory):
+    def make_unmarshaler(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:
+        if not (rty is MarshalCanContent or rty == _MARSHAL_CAN_CONTENT_UNION_RTY):
+            return None
+        return lambda: _CanContentUnmarshaler(ctx.make(Content))
 
 
 ##

@@ -36,10 +36,11 @@ class _ReferenceUnionMarshaler(msh.Marshaler):
             return self.m.marshal(ctx, o)
 
 
-class _ReferenceUnionMarshalerFactory(msh.MarshalerFactoryMatchClass):
-    @mfs.simple(lambda _, ctx, rty: _reference_union_arg(rty) is not None)
-    def _build(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
-        return _ReferenceUnionMarshaler(ctx.make(check.not_none(_reference_union_arg(rty))), ctx.make(Reference))
+class _ReferenceUnionMarshalerFactory(msh.MarshalerFactory):
+    def make_marshaler(self, ctx: msh.MarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
+        if (rua := _reference_union_arg(rty)) is None:
+            return None
+        return lambda: _ReferenceUnionMarshaler(ctx.make(check.not_none(rua)), ctx.make(Reference))
 
 
 #
@@ -59,10 +60,11 @@ class _ReferenceUnionUnmarshaler(msh.Unmarshaler):
             return self.u.unmarshal(ctx, v)  # noqa
 
 
-class _ReferenceUnionUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
-    @mfs.simple(lambda _, ctx, rty: _reference_union_arg(rty) is not None)
-    def _build(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
-        return _ReferenceUnionUnmarshaler(ctx.make(check.not_none(_reference_union_arg(rty))), ctx.make(Reference))
+class _ReferenceUnionUnmarshalerFactory(msh.UnmarshalerFactory):
+    def make_unmarshaler(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:
+        if (rua := _reference_union_arg(rty)) is None:
+            return None
+        return lambda: _ReferenceUnionUnmarshaler(ctx.make(check.not_none(rua)), ctx.make(Reference))
 
 
 ##
@@ -86,10 +88,11 @@ class _SchemaMarshaler(msh.Marshaler):
         return dct
 
 
-class _SchemaMarshalerFactory(msh.MarshalerFactoryMatchClass):
-    @mfs.simple(lambda _, ctx, rty: rty is Schema)
-    def _build(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
-        return _SchemaMarshaler(
+class _SchemaMarshalerFactory(msh.MarshalerFactory):
+    def make_marshaler(self, ctx: msh.MarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
+        if rty is not Schema:
+            return None
+        return lambda: _SchemaMarshaler(
             {
                 f: (msh.translate_name(f, msh.Naming.LOW_CAMEL), ctx.make(rfl.type_(a)))
                 for f, a in dc.reflect(Schema).field_annotations.items()
@@ -121,10 +124,11 @@ class _SchemaUnmarshaler(msh.Unmarshaler):
         return Schema(**kw)
 
 
-class _SchemaUnmarshalerFactory(msh.UnmarshalerFactoryMatchClass):
-    @mfs.simple(lambda _, ctx, rty: rty is Schema)
-    def _build(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> msh.Unmarshaler:
-        return _SchemaUnmarshaler(
+class _SchemaUnmarshalerFactory(msh.UnmarshalerFactory):
+    def make_unmarshaler(self, ctx: msh.UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:
+        if rty is not Schema:
+            return None
+        return lambda: _SchemaUnmarshaler(
             {
                 msh.translate_name(f, msh.Naming.LOW_CAMEL): (f, ctx.make(rfl.type_(a)))
                 for f, a in dc.reflect(Schema).field_annotations.items()

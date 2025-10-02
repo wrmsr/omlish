@@ -8,7 +8,6 @@ import typing as ta
 from omlish import lang
 from omlish import marshal as msh
 from omlish import reflect as rfl
-from omlish.funcs import match as mfs
 
 from .requires import RequiresMarkerItem
 from .requires import RequiresMarkerList
@@ -43,10 +42,11 @@ class RequiresMarkerListMarshaler(msh.Marshaler):
         return [inner(e) for e in o]
 
 
-class RequiresMarkerListMarshalerFactory(msh.MarshalerFactoryMatchClass):
-    @mfs.simple(lambda _, ctx, rty: rty is MarshalRequiresMarkerList)
-    def _build(self, ctx: msh.MarshalContext, rty: rfl.Type) -> msh.Marshaler:
-        return RequiresMarkerListMarshaler(
+class RequiresMarkerListMarshalerFactory(msh.MarshalerFactory):
+    def make_marshaler(self, ctx: msh.MarshalContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
+        if rty is not MarshalRequiresMarkerList:
+            return None
+        return lambda: RequiresMarkerListMarshaler(
             ctx.make(RequiresMarkerItem),
             ctx.make(RequiresNode),
         )

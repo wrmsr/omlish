@@ -74,11 +74,11 @@ def _tv_field_metadata(
             options=msh.FieldOptions(
                 omit_if=operator.not_,
             ),
-            marshaler_factory=msh.FuncMarshalerFactory(gfs.dumb(
-                lambda ctx, rty: _marshal._TypedValuesFieldMarshalerFactory(tvs_rty)(ctx, rty),  # noqa
-            )),
-            unmarshaler_factory=msh.FuncUnmarshalerFactory(gfs.dumb(
-                lambda ctx, rty: _marshal._TypedValuesFieldUnmarshalerFactory(tvs_rty)(ctx, rty),  # noqa
-            )),
+            marshaler_factory=msh.FuncMarshalerFactory(
+                lambda ctx, rty: _marshal._TypedValuesFieldMarshalerFactory(tvs_rty).make_marshaler(ctx, rty),  # noqa
+            ),
+            unmarshaler_factory=msh.FuncUnmarshalerFactory(
+                lambda ctx, rty: _marshal._TypedValuesFieldUnmarshalerFactory(tvs_rty).make_unmarshaler(ctx, rty),  # noqa
+            ),
         ),
     }

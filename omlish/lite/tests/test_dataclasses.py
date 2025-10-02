@@ -152,7 +152,7 @@ def test_dc_desc():
         __get__ = dataclass_descriptor_method('fn')
 
         i: int
-        fn: ta.Callable[[int], int]
+        fn: ta.Callable
 
         def __call__(self, i: int) -> int:
             return self.fn(i + self.i)
@@ -165,4 +165,4 @@ def test_dc_desc():
 
         fn = Foo(1, _fn)
 
-    assert Bar().fn(1) == 3
+    assert Bar().fn(1) == 3  # type: ignore  # FIXME
