@@ -6,9 +6,9 @@ from .. import lang as _lang
 with _lang.auto_proxy_init(globals()):
     ##
 
-    from .attrregistry import (
+    from .attrregistry import (  # noqa
         AttrRegistry,
-        AttrRegistryCache
+        AttrRegistryCache,
     )
 
     from .bimap import (  # noqa

@@ -4,13 +4,11 @@ TODO:
  - ALT: A.f(super(), ... ? :/
  - classmethod/staticmethod
 """
-import contextlib
 import functools
 import typing as ta
-import weakref
 
 from .. import check
-from .. import lang
+from .. import collections as col
 from .dispatch import Dispatcher
 from .impls import get_impl_func_cls_set
 
@@ -52,9 +50,15 @@ class Method(ta.Generic[P, R]):
 
         self._func = func
         self._installable = installable
-        self._requires_override = requires_override
 
-        self._impls: ta.MutableMapping[ta.Callable, frozenset[type] | None] = weakref.WeakKeyDictionary()
+        self._registry: col.AttrRegistry[ta.Callable, Method._Entry] = col.AttrRegistry(
+            requires_override=requires_override,
+        )
+
+        self._cache: col.AttrRegistryCache[ta.Callable, Method._Entry, ta.Callable] = col.AttrRegistryCache(
+            self._registry,
+            self._prepare,
+        )
 
         # bpo-45678: special-casing for classmethod/staticmethod in Python <=3.9, as functools.update_wrapper doesn't
         # work properly in singledispatchmethod.__get__ if it is applied to an unbound classmethod/staticmethod
@@ -67,18 +71,11 @@ class Method(ta.Generic[P, R]):
         self._is_abstractmethod = getattr(func, '__isabstractmethod__', False)  # noqa
         self.update_wrapper(self)
 
-        self._dispatch_func_cache: dict[ta.Any, ta.Callable] = {}
-
-        def dispatch_func_cache_remove(k, self_ref=weakref.ref(self)):
-            if (ref_self := self_ref()) is not None:
-                cache = ref_self._dispatch_func_cache  # noqa
-                with contextlib.suppress(KeyError):
-                    del cache[k]
-
-        self._dispatch_func_cache_remove = dispatch_func_cache_remove
-
         self._owner: type | None = None
         self._name: str | None = None
+
+    class _Entry:
+        cls_set: frozenset[type]
 
     def __set_name__(self, owner, name):
         if self._owner is None:
@@ -101,83 +98,29 @@ class Method(ta.Generic[P, R]):
 
     def register(self, impl: T, cls_set: frozenset[type] | None = None) -> T:
         check.callable(impl)
-        if impl not in self._impls:
-            self._impls[impl] = cls_set  # type: ignore
-            self._dispatch_func_cache.clear()
+
+        entry = Method._Entry()
+        if cls_set is not None:
+            entry.cls_set = cls_set
+
+        self._registry.register(ta.cast(ta.Callable, impl), entry)
 
         return impl
 
-    def _is_impl(self, obj: ta.Any) -> bool:
-        try:
-            hash(obj)
-        except TypeError:
-            return False
-
-        return obj in self._impls
-
-    def build_attr_dispatcher(self, instance_cls: type, owner_cls: type | None = None) -> Dispatcher[str]:
-        if owner_cls is None:
-            owner_cls = instance_cls
-
-        mro = instance_cls.__mro__[-2::-1]
-        try:
-            mro_pos = mro.index(owner_cls)
-        except ValueError:
-            raise TypeError(f'Owner class {owner_cls} not in mro of instance class {instance_cls}') from None
-
-        mro_dct: dict[str, list[tuple[type, ta.Any]]] = {}
-        for cur_cls in mro[:mro_pos + 1]:
-            for att, obj in cur_cls.__dict__.items():
-                if att not in mro_dct:
-                    if not self._is_impl(obj):
-                        continue
-
-                try:
-                    lst = mro_dct[att]
-                except KeyError:
-                    lst = mro_dct[att] = []
-                lst.append((cur_cls, obj))
-
-        #
-
+    def _build_dispatcher(self, collected: ta.Mapping[str, tuple[ta.Callable, _Entry]]) -> Dispatcher[str]:
         disp: Dispatcher[str] = Dispatcher()
 
-        seen: dict[ta.Any, str] = {}
-        for att, lst in mro_dct.items():
-            if not lst:
-                raise RuntimeError
-            _, obj = lst[-1]
-
-            if len(lst) > 1:
-                if self._requires_override and not lang.is_override(obj):
-                    raise lang.RequiresOverrideError(
-                        att,
-                        instance_cls,
-                        lst[-1][0],
-                        lst[0][0],
-                    )
-
-            if not self._is_impl(obj):
-                continue
-
-            cls_set = self._impls[obj]
-            if cls_set is None:
-                cls_set = get_impl_func_cls_set(obj, arg_offset=1)
-                self._impls[obj] = cls_set
-
+        for a, (f, e) in collected.items():
             try:
-                ex_att = seen[obj]
-            except KeyError:
-                pass
-            else:
-                raise TypeError(f'Duplicate impl: {owner_cls} {instance_cls} {att} {ex_att}')
-            seen[obj] = att
+                cls_set = e.cls_set
+            except AttributeError:
+                cls_set = e.cls_set = get_impl_func_cls_set(f, arg_offset=1)
 
-            disp.register(att, cls_set)
+            disp.register(a, cls_set)
 
         return disp
 
-    def build_dispatch_func(self, disp: Dispatcher[str]) -> ta.Callable:
+    def _build_dispatch_func(self, disp: Dispatcher[str]) -> ta.Callable:
         dispatch = disp.dispatch
         type_ = type
         getattr_ = getattr
@@ -197,17 +140,9 @@ class Method(ta.Generic[P, R]):
         self.update_wrapper(__call__)
         return __call__
 
-    def get_dispatch_func(self, instance_cls: type) -> ta.Callable:
-        cls_ref = weakref.ref(instance_cls)
-        try:
-            return self._dispatch_func_cache[cls_ref]
-        except KeyError:
-            pass
-        del cls_ref
-
-        att_disp = self.build_attr_dispatcher(instance_cls)
-        func = self.build_dispatch_func(att_disp)
-        self._dispatch_func_cache[weakref.ref(instance_cls, self._dispatch_func_cache_remove)] = func
+    def _prepare(self, collected: ta.Mapping[str, tuple[ta.Callable, _Entry]]) -> ta.Callable:
+        disp = self._build_dispatcher(collected)
+        func = self._build_dispatch_func(disp)
         return func
 
     def __get__(self, instance, owner=None):
@@ -216,10 +151,7 @@ class Method(ta.Generic[P, R]):
             return self
 
         instance_cls = type(instance)
-        try:
-            func = self._dispatch_func_cache[weakref.ref(instance_cls)]
-        except KeyError:
-            func = self.get_dispatch_func(instance_cls)
+        func = self._cache.get(instance_cls)
         return func.__get__(instance, owner)  # noqa
 
     def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R:
@@ -232,10 +164,7 @@ class Method(ta.Generic[P, R]):
         #     func = self.build_dispatch_func(att_disp)
         #     return func.__get__(instance, instance.__thisclass__)(*rest, **kwargs)
 
-        try:
-            func = self._dispatch_func_cache[weakref.ref(instance_cls)]
-        except KeyError:
-            func = self.get_dispatch_func(instance_cls)
+        func = self._cache.get(instance_cls)
         return func.__get__(instance)(*rest, **kwargs)  # noqa
 
 
