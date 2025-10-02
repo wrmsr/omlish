@@ -1,15 +1,15 @@
 import collections.abc
+import typing as ta
 
 from ... import check
 from ... import lang
 from ... import reflect as rfl
-from ...funcs import match as mfs
 from ..base.contexts import MarshalContext
 from ..base.contexts import UnmarshalContext
 from ..base.types import Marshaler
+from ..base.types import MarshalerFactory
 from ..base.types import Unmarshaler
-from ..factories.match import MarshalerFactoryMatchClass
-from ..factories.match import UnmarshalerFactoryMatchClass
+from ..base.types import UnmarshalerFactory
 from .iterables import DEFAULT_ITERABLE_CONCRETE_TYPES
 from .iterables import IterableMarshaler
 from .iterables import IterableUnmarshaler
@@ -18,16 +18,16 @@ from .iterables import IterableUnmarshaler
 ##
 
 
-class SequenceNotStrMarshalerFactory(MarshalerFactoryMatchClass):
-    @mfs.simple(lambda _, ctx, rty: isinstance(rty, rfl.Protocol) and rty.cls is lang.SequenceNotStr)
-    def _build_generic(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
-        gty = check.isinstance(rty, rfl.Protocol)
-        return IterableMarshaler(ctx.make(check.single(gty.args)))
+class SequenceNotStrMarshalerFactory(MarshalerFactory):
+    def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+        if not (isinstance(rty, rfl.Protocol) and rty.cls is lang.SequenceNotStr):
+            return None
+        return lambda: IterableMarshaler(ctx.make(check.single(rty.args)))
 
 
-class SequenceNotStrUnmarshalerFactory(UnmarshalerFactoryMatchClass):
-    @mfs.simple(lambda _, ctx, rty: isinstance(rty, rfl.Protocol) and rty.cls is lang.SequenceNotStr)
-    def _build_generic(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
-        gty = check.isinstance(rty, rfl.Protocol)
+class SequenceNotStrUnmarshalerFactory(UnmarshalerFactory):
+    def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+        if not (isinstance(rty, rfl.Protocol) and rty.cls is lang.SequenceNotStr):
+            return None
         cty = DEFAULT_ITERABLE_CONCRETE_TYPES[collections.abc.Sequence]  # type: ignore[type-abstract]
-        return IterableUnmarshaler(cty, ctx.make(check.single(gty.args)))
+        return lambda: IterableUnmarshaler(cty, ctx.make(check.single(rty.args)))

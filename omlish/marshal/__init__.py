@@ -114,9 +114,6 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .composite.unions import (  # noqa
-        MatchUnionMarshaler,
-        MatchUnionUnmarshaler,
-
         PRIMITIVE_UNION_TYPES,
         PrimitiveUnionMarshaler,
         PrimitiveUnionMarshalerFactory,

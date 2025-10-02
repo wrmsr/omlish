@@ -15,12 +15,14 @@ from ..base.types import UnmarshalerFactory
 
 
 class MarshalerFactoryMethodClass(MarshalerFactory, lang.Abstract):
-    @gfs.method()
+    @ta.final
+    @gfs.method(instance_cache=True)
     def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         raise NotImplementedError
 
 
 class UnmarshalerFactoryMethodClass(UnmarshalerFactory, lang.Abstract):
-    @gfs.method()
+    @ta.final
+    @gfs.method(instance_cache=True)
     def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         raise NotImplementedError

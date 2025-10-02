@@ -4,14 +4,13 @@ import typing as ta
 
 from ... import check
 from ... import reflect as rfl
-from ...funcs import match as mfs
 from ..base.contexts import MarshalContext
 from ..base.contexts import UnmarshalContext
 from ..base.types import Marshaler
 from ..base.types import Unmarshaler
 from ..base.values import Value
-from ..factories.match import MarshalerFactoryMatchClass
-from ..factories.match import UnmarshalerFactoryMatchClass
+from ..factories.method import MarshalerFactoryMethodClass
+from ..factories.method import UnmarshalerFactoryMethodClass
 
 
 ##
@@ -21,6 +20,9 @@ DEFAULT_MAPPING_CONCRETE_TYPES: dict[type[collections.abc.Mapping], type[collect
     collections.abc.Mapping: dict,  # type: ignore
     collections.abc.MutableMapping: dict,  # type: ignore
 }
+
+
+#
 
 
 @dc.dataclass(frozen=True)
@@ -35,16 +37,22 @@ class MappingMarshaler(Marshaler):
         }
 
 
-class MappingMarshalerFactory(MarshalerFactoryMatchClass):
-    @mfs.simple(lambda _, ctx, rty: isinstance(rty, rfl.Generic) and issubclass(rty.cls, collections.abc.Mapping))
-    def _build_generic(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
-        gty = check.isinstance(rty, rfl.Generic)
-        kt, vt = gty.args
-        return MappingMarshaler(ctx.make(kt), ctx.make(vt))
+class MappingMarshalerFactory(MarshalerFactoryMethodClass):
+    @MarshalerFactoryMethodClass.make_marshaler.register
+    def _build_generic(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+        if not (isinstance(rty, rfl.Generic) and issubclass(rty.cls, collections.abc.Mapping)):
+            return None
+        kt, vt = rty.args
+        return lambda: MappingMarshaler(ctx.make(kt), ctx.make(vt))
 
-    @mfs.simple(lambda _, ctx, rty: isinstance(rty, type) and issubclass(rty, collections.abc.Mapping))
-    def _build_concrete(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
-        return MappingMarshaler(a := ctx.make(ta.Any), a)
+    @MarshalerFactoryMethodClass.make_marshaler.register
+    def _build_concrete(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+        if not (isinstance(rty, type) and issubclass(rty, collections.abc.Mapping)):
+            return None
+        return lambda: MappingMarshaler(a := ctx.make(ta.Any), a)
+
+
+#
 
 
 @dc.dataclass(frozen=True)
@@ -60,14 +68,17 @@ class MappingUnmarshaler(Unmarshaler):
         return self.ctor(dct)
 
 
-class MappingUnmarshalerFactory(UnmarshalerFactoryMatchClass):
-    @mfs.simple(lambda _, ctx, rty: isinstance(rty, rfl.Generic) and issubclass(rty.cls, collections.abc.Mapping))
-    def _build_generic(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
-        gty = check.isinstance(rty, rfl.Generic)
-        cty = DEFAULT_MAPPING_CONCRETE_TYPES.get(gty.cls, gty.cls)  # noqa
-        kt, vt = gty.args
-        return MappingUnmarshaler(cty, ctx.make(kt), ctx.make(vt))
+class MappingUnmarshalerFactory(UnmarshalerFactoryMethodClass):
+    @UnmarshalerFactoryMethodClass.make_unmarshaler.register
+    def _build_generic(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+        if not (isinstance(rty, rfl.Generic) and issubclass(rty.cls, collections.abc.Mapping)):
+            return None
+        cty = DEFAULT_MAPPING_CONCRETE_TYPES.get(rty.cls, rty.cls)  # noqa
+        kt, vt = rty.args
+        return lambda: MappingUnmarshaler(cty, ctx.make(kt), ctx.make(vt))
 
-    @mfs.simple(lambda _, ctx, rty: isinstance(rty, type) and issubclass(rty, collections.abc.Mapping))
-    def _build_concrete(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
-        return MappingUnmarshaler(check.isinstance(rty, type), a := ctx.make(ta.Any), a)
+    @UnmarshalerFactoryMethodClass.make_unmarshaler.register
+    def _build_concrete(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+        if not (isinstance(rty, type) and issubclass(rty, collections.abc.Mapping)):
+            return None
+        return lambda: MappingUnmarshaler(check.isinstance(rty, type), a := ctx.make(ta.Any), a)

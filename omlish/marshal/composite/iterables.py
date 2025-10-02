@@ -14,8 +14,8 @@ from ..base.contexts import UnmarshalContext
 from ..base.types import Marshaler
 from ..base.types import Unmarshaler
 from ..base.values import Value
-from ..factories.match import MarshalerFactoryMatchClass
-from ..factories.match import UnmarshalerFactoryMatchClass
+from ..factories.method import MarshalerFactoryMethodClass
+from ..factories.method import UnmarshalerFactoryMethodClass
 
 
 ##
@@ -28,6 +28,9 @@ DEFAULT_ITERABLE_CONCRETE_TYPES: dict[type[collections.abc.Iterable], type[colle
 }
 
 
+#
+
+
 @dc.dataclass(frozen=True)
 class IterableMarshaler(Marshaler):
     e: Marshaler
@@ -36,15 +39,21 @@ class IterableMarshaler(Marshaler):
         return list(map(functools.partial(self.e.marshal, ctx), o))
 
 
-class IterableMarshalerFactory(MarshalerFactoryMatchClass):
-    @mfs.simple(lambda _, ctx, rty: isinstance(rty, rfl.Generic) and issubclass(rty.cls, collections.abc.Iterable))
-    def _build_generic(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
-        gty = check.isinstance(rty, rfl.Generic)
-        return IterableMarshaler(ctx.make(check.single(gty.args)))
+class IterableMarshalerFactory(MarshalerFactoryMethodClass):
+    @MarshalerFactoryMethodClass.make_marshaler.register
+    def _make_generic(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+        if not (isinstance(rty, rfl.Generic) and issubclass(rty.cls, collections.abc.Iterable)):
+            return None
+        return lambda: IterableMarshaler(ctx.make(check.single(rty.args)))
 
-    @mfs.simple(lambda _, ctx, rty: isinstance(rty, type) and issubclass(rty, collections.abc.Iterable))
-    def _build_concrete(self, ctx: MarshalContext, rty: rfl.Type) -> Marshaler:
-        return IterableMarshaler(ctx.make(ta.Any))
+    @MarshalerFactoryMethodClass.make_marshaler.register
+    def _make_concrete(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+        if not (isinstance(rty, type) and issubclass(rty, collections.abc.Iterable)):
+            return None
+        return lambda: IterableMarshaler(ctx.make(ta.Any))
+
+
+#
 
 
 @dc.dataclass(frozen=True)
@@ -56,13 +65,16 @@ class IterableUnmarshaler(Unmarshaler):
         return self.ctor(map(functools.partial(self.e.unmarshal, ctx), check.isinstance(v, collections.abc.Iterable)))
 
 
-class IterableUnmarshalerFactory(UnmarshalerFactoryMatchClass):
-    @mfs.simple(lambda _, ctx, rty: isinstance(rty, rfl.Generic) and issubclass(rty.cls, collections.abc.Iterable))
-    def _build_generic(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
-        gty = check.isinstance(rty, rfl.Generic)
-        cty = DEFAULT_ITERABLE_CONCRETE_TYPES.get(gty.cls, gty.cls)  # noqa
-        return IterableUnmarshaler(cty, ctx.make(check.single(gty.args)))
+class IterableUnmarshalerFactory(UnmarshalerFactoryMethodClass):
+    @UnmarshalerFactoryMethodClass.make_unmarshaler.register
+    def _make_generic(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+        if not (isinstance(rty, rfl.Generic) and issubclass(rty.cls, collections.abc.Iterable)):
+            return None
+        cty = DEFAULT_ITERABLE_CONCRETE_TYPES.get(rty.cls, rty.cls)  # noqa
+        return lambda: IterableUnmarshaler(cty, ctx.make(check.single(rty.args)))  # noqa
 
-    @mfs.simple(lambda _, ctx, rty: isinstance(rty, type) and issubclass(rty, collections.abc.Iterable))
-    def _build_concrete(self, ctx: UnmarshalContext, rty: rfl.Type) -> Unmarshaler:
-        return IterableUnmarshaler(check.isinstance(rty, type), ctx.make(ta.Any))
+    @UnmarshalerFactoryMethodClass.make_unmarshaler.register
+    def _make_concrete(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+        if not (isinstance(rty, type) and issubclass(rty, collections.abc.Iterable)):
+            return None
+        return lambda: IterableUnmarshaler(check.isinstance(rty, type), ctx.make(ta.Any))

@@ -41,7 +41,7 @@ class MaybeMarshalerFactory(MarshalerFactoryMethodClass):
 
     @MarshalerFactoryMethodClass.make_marshaler.register
     def _make_concrete(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
-        if not isinstance(rty, type) and issubclass(rty, lang.Maybe):
+        if not (isinstance(rty, type) and issubclass(rty, lang.Maybe)):
             return None
         return lambda: MaybeMarshaler(ctx.make(ta.Any))
 
