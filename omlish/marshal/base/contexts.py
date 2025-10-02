@@ -44,7 +44,7 @@ class BaseContext(lang.Abstract, lang.Sealed):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class MarshalerFactoryContext(BaseContext, lang.Final):
+class MarshalFactoryContext(BaseContext, lang.Final):
     marshaler_factory: ta.Optional['MarshalerFactory'] = None
 
     def make_marshaler(self, o: ta.Any) -> 'Marshaler':
@@ -56,7 +56,7 @@ class MarshalerFactoryContext(BaseContext, lang.Final):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class UnmarshalerFactoryContext(BaseContext, lang.Final):
+class UnmarshalFactoryContext(BaseContext, lang.Final):
     unmarshaler_factory: ta.Optional['UnmarshalerFactory'] = None
 
     def make_unmarshaler(self, o: ta.Any) -> 'Unmarshaler':
@@ -71,16 +71,16 @@ class UnmarshalerFactoryContext(BaseContext, lang.Final):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class MarshalContext(BaseContext):
-    marshaler_factory_context: MarshalerFactoryContext
+class MarshalContext(BaseContext, lang.Final):
+    marshal_factory_context: MarshalFactoryContext
 
     def marshal(self, obj: ta.Any, ty: ta.Any | None = None) -> 'Value':
-        return self.marshaler_factory_context.make_marshaler(ty if ty is not None else type(obj)).marshal(self, obj)
+        return self.marshal_factory_context.make_marshaler(ty if ty is not None else type(obj)).marshal(self, obj)
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class UnmarshalContext(BaseContext):
-    unmarshaler_factory_context: UnmarshalerFactoryContext
+class UnmarshalContext(BaseContext, lang.Final):
+    unmarshal_factory_context: UnmarshalFactoryContext
 
     @ta.overload
     def unmarshal(self, v: 'Value', ty: type[T]) -> T:
@@ -91,4 +91,4 @@ class UnmarshalContext(BaseContext):
         ...
 
     def unmarshal(self, v, ty):
-        return self.unmarshaler_factory_context.make_unmarshaler(ty).unmarshal(self, v)
+        return self.unmarshal_factory_context.make_unmarshaler(ty).unmarshal(self, v)

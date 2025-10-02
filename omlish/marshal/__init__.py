@@ -55,8 +55,8 @@ with _lang.auto_proxy_init(globals()):
     from .base.contexts import (  # noqa
         BaseContext,
 
-        MarshalerFactoryContext,
-        UnmarshalerFactoryContext,
+        MarshalFactoryContext,
+        UnmarshalFactoryContext,
 
         MarshalContext,
         UnmarshalContext,

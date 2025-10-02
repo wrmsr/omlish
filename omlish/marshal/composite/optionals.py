@@ -4,7 +4,9 @@ import typing as ta
 from ... import check
 from ... import reflect as rfl
 from ..base.contexts import MarshalContext
+from ..base.contexts import MarshalFactoryContext
 from ..base.contexts import UnmarshalContext
+from ..base.contexts import UnmarshalFactoryContext
 from ..base.types import Marshaler
 from ..base.types import MarshalerFactory
 from ..base.types import Unmarshaler
@@ -26,7 +28,7 @@ class OptionalMarshaler(Marshaler):
 
 
 class OptionalMarshalerFactory(MarshalerFactory):
-    def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+    def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         if not (isinstance(rty, rfl.Union) and rty.is_optional):
             return None
         return lambda: OptionalMarshaler(ctx.make_marshaler(check.isinstance(rty, rfl.Union).without_none()))
@@ -43,7 +45,7 @@ class OptionalUnmarshaler(Unmarshaler):
 
 
 class OptionalUnmarshalerFactory(UnmarshalerFactory):
-    def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+    def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         if not (isinstance(rty, rfl.Union) and rty.is_optional):
             return None
         return lambda: OptionalUnmarshaler(ctx.make_unmarshaler(check.isinstance(rty, rfl.Union).without_none()))

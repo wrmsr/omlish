@@ -12,8 +12,8 @@ import typing as ta
 
 from .... import reflect as rfl
 from ...base.contexts import BaseContext
-from ...base.contexts import MarshalContext
-from ...base.contexts import UnmarshalContext
+from ...base.contexts import MarshalFactoryContext
+from ...base.contexts import UnmarshalFactoryContext
 from ...base.types import Marshaler
 from ...base.types import MarshalerFactory
 from ...base.types import Unmarshaler
@@ -60,12 +60,12 @@ class _ModuleImportingFactory(ta.Generic[FactoryT]):
 
 
 class ModuleImportingMarshalerFactory(_ModuleImportingFactory[MarshalerFactory], MarshalerFactory):
-    def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+    def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         self._import_if_necessary(ctx)
         return self._fac.make_marshaler(ctx, rty)
 
 
 class ModuleImportingUnmarshalerFactory(_ModuleImportingFactory[UnmarshalerFactory], UnmarshalerFactory):
-    def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+    def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         self._import_if_necessary(ctx)
         return self._fac.make_unmarshaler(ctx, rty)

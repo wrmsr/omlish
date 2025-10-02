@@ -6,7 +6,9 @@ from .... import dataclasses as dc
 from .... import lang
 from .... import reflect as rfl
 from ...base.contexts import MarshalContext
+from ...base.contexts import MarshalFactoryContext
 from ...base.contexts import UnmarshalContext
+from ...base.contexts import UnmarshalFactoryContext
 from ...base.types import Marshaler
 from ...base.types import MarshalerFactory
 from ...base.types import Unmarshaler
@@ -62,7 +64,7 @@ class LiteralUnionMarshaler(Marshaler):
 
 
 class LiteralUnionMarshalerFactory(MarshalerFactory):
-    def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+    def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         if (ds := _destructure_literal_union_type(rty)) is None:
             return None
         return lambda: LiteralUnionMarshaler(ds.v_ty, ctx.make_marshaler(ds.lit), ctx.make_marshaler(ds.non_lit))
@@ -85,7 +87,7 @@ class LiteralUnionUnmarshaler(Unmarshaler):
 
 
 class LiteralUnionUnmarshalerFactory(UnmarshalerFactory):
-    def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+    def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         if (ds := _destructure_literal_union_type(rty)) is None:
             return None
         return lambda: LiteralUnionUnmarshaler(ds.v_ty, ctx.make_unmarshaler(ds.lit), ctx.make_unmarshaler(ds.non_lit))

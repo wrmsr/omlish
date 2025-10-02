@@ -5,7 +5,9 @@ from ... import check
 from ... import lang
 from ... import reflect as rfl
 from ..base.contexts import MarshalContext
+from ..base.contexts import MarshalFactoryContext
 from ..base.contexts import UnmarshalContext
+from ..base.contexts import UnmarshalFactoryContext
 from ..base.types import Marshaler
 from ..base.types import MarshalerFactory
 from ..base.types import Unmarshaler
@@ -19,14 +21,14 @@ from .iterables import IterableUnmarshaler
 
 
 class SequenceNotStrMarshalerFactory(MarshalerFactory):
-    def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+    def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         if not (isinstance(rty, rfl.Protocol) and rty.cls is lang.SequenceNotStr):
             return None
         return lambda: IterableMarshaler(ctx.make_marshaler(check.single(rty.args)))
 
 
 class SequenceNotStrUnmarshalerFactory(UnmarshalerFactory):
-    def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+    def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         if not (isinstance(rty, rfl.Protocol) and rty.cls is lang.SequenceNotStr):
             return None
         cty = DEFAULT_ITERABLE_CONCRETE_TYPES[collections.abc.Sequence]  # type: ignore[type-abstract]

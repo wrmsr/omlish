@@ -3,8 +3,8 @@ import typing as ta
 from ... import check
 from ... import dataclasses as dc
 from ... import reflect as rfl
-from ..base.contexts import MarshalContext
-from ..base.contexts import UnmarshalContext
+from ..base.contexts import MarshalFactoryContext
+from ..base.contexts import UnmarshalFactoryContext
 from ..base.types import Marshaler
 from ..base.types import MarshalerFactory
 from ..base.types import Unmarshaler
@@ -24,7 +24,7 @@ class TypeMapMarshalerFactory(MarshalerFactory):
         },
     )
 
-    def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+    def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         check.isinstance(rty, rfl.TYPES)
         try:
             m = self.m[rty]
@@ -49,7 +49,7 @@ class TypeMapUnmarshalerFactory(UnmarshalerFactory):
         },
     )
 
-    def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+    def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         check.isinstance(rty, rfl.TYPES)
         try:
             u = self.u[rty]

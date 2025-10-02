@@ -5,6 +5,7 @@ from ... import check
 from ... import dataclasses as dc
 from ... import reflect as rfl
 from ..base.contexts import UnmarshalContext
+from ..base.contexts import UnmarshalFactoryContext
 from ..base.types import Unmarshaler
 from ..base.types import UnmarshalerFactory
 from ..base.values import Value
@@ -35,7 +36,7 @@ class ObjectUnmarshaler(Unmarshaler):
     @classmethod
     def make(
             cls,
-            ctx: UnmarshalContext,
+            ctx: UnmarshalFactoryContext,
             factory: ta.Callable,
             fis: FieldInfos,
             **kwargs: ta.Any,
@@ -125,7 +126,7 @@ class SimpleObjectUnmarshalerFactory(UnmarshalerFactory):
 
     specials: ObjectSpecials = ObjectSpecials()
 
-    def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+    def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         if not (isinstance(rty, type) and rty in self.dct):
             return None
 

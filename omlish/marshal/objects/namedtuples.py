@@ -5,8 +5,8 @@ from ... import check
 from ... import collections as col
 from ... import lang
 from ... import reflect as rfl
-from ..base.contexts import MarshalContext
-from ..base.contexts import UnmarshalContext
+from ..base.contexts import MarshalFactoryContext
+from ..base.contexts import UnmarshalFactoryContext
 from ..base.options import Option
 from ..base.types import Marshaler
 from ..base.types import MarshalerFactory
@@ -56,7 +56,7 @@ def get_namedtuple_field_infos(
 
 
 class NamedtupleMarshalerFactory(MarshalerFactory):
-    def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+    def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         if not _is_namedtuple(rty):
             return None
 
@@ -83,7 +83,7 @@ class NamedtupleMarshalerFactory(MarshalerFactory):
 
 
 class NamedtupleUnmarshalerFactory(UnmarshalerFactory):
-    def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+    def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         if not _is_namedtuple(rty):
             return None
 

@@ -11,8 +11,8 @@ from ... import dataclasses as dc
 from ... import lang
 from ... import reflect as rfl
 from ...lite import marshal as lm
-from ..base.contexts import MarshalContext
-from ..base.contexts import UnmarshalContext
+from ..base.contexts import MarshalFactoryContext
+from ..base.contexts import UnmarshalFactoryContext
 from ..base.errors import UnhandledTypeError
 from ..base.options import Option
 from ..base.types import Marshaler
@@ -160,23 +160,37 @@ def get_dataclass_field_infos(
     return FieldInfos(ret)
 
 
-# FIXME: really
-def _make_field_obj(
-        ctx,
-        ctx_attr,
-        ty,
-        obj,
-        fac,
-        fac_attr,
+##
+
+
+def _make_field_marshal_obj(
+        ctx: MarshalFactoryContext,
+        ty: ta.Any,
+        obj: Marshaler | None,
+        fac: MarshalerFactory | None,
 ):
     if obj is not None:
         return obj
     if fac is not None:
-        if (m := getattr(fac, fac_attr)(ctx, ty)) is None:
+        if (m := fac.make_marshaler(ctx, ty)) is None:
             raise UnhandledTypeError(ty)
         return m()
-    return getattr(ctx, ctx_attr)(ty)
+    return ctx.make_marshaler(ty)
 
+
+def _make_field_unmarshal_obj(
+        ctx: UnmarshalFactoryContext,
+        ty: ta.Any,
+        obj: Unmarshaler | None,
+        fac: UnmarshalerFactory | None,
+):
+    if obj is not None:
+        return obj
+    if fac is not None:
+        if (m := fac.make_unmarshaler(ctx, ty)) is None:
+            raise UnhandledTypeError(ty)
+        return m()
+    return ctx.make_unmarshaler(ty)
 
 ##
 
@@ -206,7 +220,7 @@ def _type_or_generic_base(rty: rfl.Type) -> type | None:
 
 
 class DataclassMarshalerFactory(AbstractDataclassFactory, MarshalerFactory):
-    def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+    def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         if not (
             (ty := _type_or_generic_base(rty)) is not None and
             dc.is_dataclass(ty) and
@@ -225,13 +239,11 @@ class DataclassMarshalerFactory(AbstractDataclassFactory, MarshalerFactory):
             fields = [
                 (
                     fi,
-                    _make_field_obj(
+                    _make_field_marshal_obj(
                         ctx,
-                        'make_marshaler',
                         fi.type,
                         fi.metadata.marshaler,
                         fi.metadata.marshaler_factory,
-                        'make_marshaler',
                     ),
                 )
                 for fi in fis
@@ -250,7 +262,7 @@ class DataclassMarshalerFactory(AbstractDataclassFactory, MarshalerFactory):
 
 
 class DataclassUnmarshalerFactory(AbstractDataclassFactory, UnmarshalerFactory):
-    def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+    def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         if not (
             (ty := _type_or_generic_base(rty)) is not None and
             dc.is_dataclass(ty) and
@@ -290,13 +302,11 @@ class DataclassUnmarshalerFactory(AbstractDataclassFactory, UnmarshalerFactory):
                 else:
                     tup = (
                         fi,
-                        _make_field_obj(
+                        _make_field_unmarshal_obj(
                             ctx,
-                            'make_unmarshaler',
                             fi.type,
                             fi.metadata.unmarshaler,
                             fi.metadata.unmarshaler_factory,
-                            'make_unmarshaler',
                         ),
                     )
 

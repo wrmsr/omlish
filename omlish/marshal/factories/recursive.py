@@ -2,7 +2,9 @@ import typing as ta
 
 from ... import reflect as rfl
 from ..base.contexts import MarshalContext
+from ..base.contexts import MarshalFactoryContext
 from ..base.contexts import UnmarshalContext
+from ..base.contexts import UnmarshalFactoryContext
 from ..base.types import Marshaler
 from ..base.types import MarshalerFactory
 from ..base.types import Unmarshaler
@@ -80,7 +82,7 @@ class RecursiveMarshalerFactory(_RecursiveFactory[MarshalerFactory], MarshalerFa
     def __init__(self, fac: MarshalerFactory) -> None:
         super().__init__(fac, _ProxyMarshaler._new)  # noqa
 
-    def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+    def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         if (m := self._fac.make_marshaler(ctx, rty)) is None:
             return None
         return self._wrap(m, rty)
@@ -98,7 +100,7 @@ class RecursiveUnmarshalerFactory(_RecursiveFactory[UnmarshalerFactory], Unmarsh
     def __init__(self, fac: UnmarshalerFactory) -> None:
         super().__init__(fac, _ProxyUnmarshaler._new)  # noqa
 
-    def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+    def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         if (m := self._fac.make_unmarshaler(ctx, rty)) is None:
             return None
         return self._wrap(m, rty)

@@ -10,7 +10,9 @@ import typing as ta
 from ... import check
 from ... import reflect as rfl
 from ..base.contexts import MarshalContext
+from ..base.contexts import MarshalFactoryContext
 from ..base.contexts import UnmarshalContext
+from ..base.contexts import UnmarshalFactoryContext
 from ..base.types import Marshaler
 from ..base.types import Unmarshaler
 from ..base.values import Value
@@ -41,13 +43,13 @@ class IterableMarshaler(Marshaler):
 
 class IterableMarshalerFactory(MarshalerFactoryMethodClass):
     @MarshalerFactoryMethodClass.make_marshaler.register
-    def _make_generic(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+    def _make_generic(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         if not (isinstance(rty, rfl.Generic) and issubclass(rty.cls, collections.abc.Iterable)):
             return None
         return lambda: IterableMarshaler(ctx.make_marshaler(check.single(rty.args)))
 
     @MarshalerFactoryMethodClass.make_marshaler.register
-    def _make_concrete(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+    def _make_concrete(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         if not (isinstance(rty, type) and issubclass(rty, collections.abc.Iterable)):
             return None
         return lambda: IterableMarshaler(ctx.make_marshaler(ta.Any))
@@ -67,14 +69,14 @@ class IterableUnmarshaler(Unmarshaler):
 
 class IterableUnmarshalerFactory(UnmarshalerFactoryMethodClass):
     @UnmarshalerFactoryMethodClass.make_unmarshaler.register
-    def _make_generic(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+    def _make_generic(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         if not (isinstance(rty, rfl.Generic) and issubclass(rty.cls, collections.abc.Iterable)):
             return None
         cty = DEFAULT_ITERABLE_CONCRETE_TYPES.get(rty.cls, rty.cls)  # noqa
         return lambda: IterableUnmarshaler(cty, ctx.make_unmarshaler(check.single(rty.args)))  # noqa
 
     @UnmarshalerFactoryMethodClass.make_unmarshaler.register
-    def _make_concrete(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+    def _make_concrete(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         if not (isinstance(rty, type) and issubclass(rty, collections.abc.Iterable)):
             return None
         return lambda: IterableUnmarshaler(check.isinstance(rty, type), ctx.make_unmarshaler(ta.Any))

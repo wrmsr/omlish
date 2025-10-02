@@ -5,6 +5,7 @@ import typing as ta
 from ... import lang
 from ... import reflect as rfl
 from ..base.contexts import MarshalContext
+from ..base.contexts import MarshalFactoryContext
 from ..base.types import Marshaler
 from ..base.types import MarshalerFactory
 from ..base.values import Value
@@ -52,7 +53,7 @@ class FieldPolymorphismMarshaler(PolymorphismMarshaler):
 def make_polymorphism_marshaler(
         impls: Impls,
         tt: TypeTagging,
-        ctx: MarshalContext,
+        ctx: MarshalFactoryContext,
 ) -> Marshaler:
     m = {
         i.ty: (i.tag, ctx.make_marshaler(i.ty))
@@ -71,7 +72,7 @@ class PolymorphismMarshalerFactory(MarshalerFactory):
     p: Polymorphism
     tt: TypeTagging = WrapperTypeTagging()
 
-    def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+    def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         if rty is not self.p.ty:
             return None
         return lambda: make_polymorphism_marshaler(self.p.impls, self.tt, ctx)

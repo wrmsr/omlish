@@ -5,7 +5,9 @@ import typing as ta
 from ... import check
 from ... import reflect as rfl
 from ..base.contexts import MarshalContext
+from ..base.contexts import MarshalFactoryContext
 from ..base.contexts import UnmarshalContext
+from ..base.contexts import UnmarshalFactoryContext
 from ..base.types import Marshaler
 from ..base.types import Unmarshaler
 from ..base.values import Value
@@ -39,14 +41,14 @@ class MappingMarshaler(Marshaler):
 
 class MappingMarshalerFactory(MarshalerFactoryMethodClass):
     @MarshalerFactoryMethodClass.make_marshaler.register
-    def _build_generic(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+    def _make_generic(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         if not (isinstance(rty, rfl.Generic) and issubclass(rty.cls, collections.abc.Mapping)):
             return None
         kt, vt = rty.args
         return lambda: MappingMarshaler(ctx.make_marshaler(kt), ctx.make_marshaler(vt))
 
     @MarshalerFactoryMethodClass.make_marshaler.register
-    def _build_concrete(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+    def _make_concrete(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         if not (isinstance(rty, type) and issubclass(rty, collections.abc.Mapping)):
             return None
         return lambda: MappingMarshaler(a := ctx.make_marshaler(ta.Any), a)
@@ -70,7 +72,7 @@ class MappingUnmarshaler(Unmarshaler):
 
 class MappingUnmarshalerFactory(UnmarshalerFactoryMethodClass):
     @UnmarshalerFactoryMethodClass.make_unmarshaler.register
-    def _build_generic(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+    def _make_generic(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         if not (isinstance(rty, rfl.Generic) and issubclass(rty.cls, collections.abc.Mapping)):
             return None
         cty = DEFAULT_MAPPING_CONCRETE_TYPES.get(rty.cls, rty.cls)  # noqa
@@ -78,7 +80,7 @@ class MappingUnmarshalerFactory(UnmarshalerFactoryMethodClass):
         return lambda: MappingUnmarshaler(cty, ctx.make_unmarshaler(kt), ctx.make_unmarshaler(vt))
 
     @UnmarshalerFactoryMethodClass.make_unmarshaler.register
-    def _build_concrete(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+    def _make_concrete(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         if not (isinstance(rty, type) and issubclass(rty, collections.abc.Mapping)):
             return None
         return lambda: MappingUnmarshaler(check.isinstance(rty, type), a := ctx.make_unmarshaler(ta.Any), a)

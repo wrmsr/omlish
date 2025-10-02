@@ -3,9 +3,10 @@ import typing as ta
 
 from ... import lang
 from ... import reflect as rfl
-from ...funcs import guard as gfs
 from .contexts import MarshalContext
+from .contexts import MarshalFactoryContext
 from .contexts import UnmarshalContext
+from .contexts import UnmarshalFactoryContext
 from .types import Marshaler
 from .types import MarshalerFactory
 from .types import MarshalerMaker
@@ -41,7 +42,7 @@ class FuncUnmarshaler(Unmarshaler, lang.Final):
 class FuncMarshalerFactory(MarshalerFactory):  # noqa
     gf: MarshalerMaker
 
-    def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+    def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         return self.gf(ctx, rty)
 
 
@@ -49,14 +50,5 @@ class FuncMarshalerFactory(MarshalerFactory):  # noqa
 class FuncUnmarshalerFactory(UnmarshalerFactory):  # noqa
     gf: UnmarshalerMaker
 
-    def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+    def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         return self.gf(ctx, rty)
-
-
-##
-
-
-class GuardMethodMarshalerFactory(MarshalerFactory):
-    @gfs.method(instance_cache=True)
-    def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
-        raise NotImplementedError

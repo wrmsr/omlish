@@ -5,7 +5,9 @@ from .... import collections as col
 from .... import dataclasses as dc
 from .... import reflect as rfl
 from ...base.contexts import MarshalContext
+from ...base.contexts import MarshalFactoryContext
 from ...base.contexts import UnmarshalContext
+from ...base.contexts import UnmarshalFactoryContext
 from ...base.types import Marshaler
 from ...base.types import MarshalerFactory
 from ...base.types import Unmarshaler
@@ -63,7 +65,7 @@ class PrimitiveUnionMarshaler(Marshaler):
 class PrimitiveUnionMarshalerFactory(MarshalerFactory):
     tys: ta.Sequence[type] = PRIMITIVE_UNION_TYPES
 
-    def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+    def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         if (ds := _destructure_primitive_union_type(rty, self.tys)) is None:
             return None
         return lambda: PrimitiveUnionMarshaler(
@@ -92,7 +94,7 @@ class PrimitiveUnionUnmarshaler(Unmarshaler):
 class PrimitiveUnionUnmarshalerFactory(UnmarshalerFactory):
     tys: ta.Sequence[type] = PRIMITIVE_UNION_TYPES
 
-    def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+    def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         if (ds := _destructure_primitive_union_type(rty, self.tys)) is None:
             return None
         return lambda: PrimitiveUnionUnmarshaler(

@@ -5,6 +5,7 @@ from ... import check
 from ... import dataclasses as dc
 from ... import reflect as rfl
 from ..base.contexts import MarshalContext
+from ..base.contexts import MarshalFactoryContext
 from ..base.types import Marshaler
 from ..base.types import MarshalerFactory
 from ..base.values import Value
@@ -29,7 +30,7 @@ class ObjectMarshaler(Marshaler):
     @classmethod
     def make(
             cls,
-            ctx: MarshalContext,
+            ctx: MarshalFactoryContext,
             fis: FieldInfos,
             **kwargs: ta.Any,
     ) -> Marshaler:
@@ -93,7 +94,7 @@ class SimpleObjectMarshalerFactory(MarshalerFactory):
 
     specials: ObjectSpecials = ObjectSpecials()
 
-    def make_marshaler(self, ctx: MarshalContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
+    def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
         if not (isinstance(rty, type) and rty in self.dct):
             return None
 

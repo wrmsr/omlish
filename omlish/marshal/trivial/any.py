@@ -15,7 +15,7 @@ from ..factories.typemap import TypeMapUnmarshalerFactory
 
 class AnyMarshalerUnmarshaler(Marshaler, Unmarshaler):
     def marshal(self, ctx: MarshalContext, o: ta.Any) -> Value:
-        return ctx.make_marshaler(type(o)).marshal(ctx, o)
+        return ctx.marshal_factory_context.make_marshaler(type(o)).marshal(ctx, o)
 
     def unmarshal(self, ctx: UnmarshalContext, v: Value) -> ta.Any:
         return v

@@ -2,7 +2,9 @@ import dataclasses as dc
 
 from ...base.configs import ConfigRegistry
 from ...base.contexts import MarshalContext
+from ...base.contexts import MarshalFactoryContext
 from ...base.contexts import UnmarshalContext
+from ...base.contexts import UnmarshalFactoryContext
 from ...base.types import MarshalerFactory
 from ...base.types import UnmarshalerFactory
 from ...factories.multi import MultiMarshalerFactory
@@ -78,12 +80,14 @@ def _test_polymorphism(tt):
 
     reg = ConfigRegistry()
 
-    mc = MarshalContext(config_registry=reg, marshaler_factory=mf)
-    v = mc.make_marshaler(PB).marshal(mc, o)
+    mfc = MarshalFactoryContext(config_registry=reg, marshaler_factory=mf)
+    mc = MarshalContext(config_registry=reg, marshal_factory_context=mfc)
+    v = mfc.make_marshaler(PB).marshal(mc, o)
     print(v)
 
-    uc = UnmarshalContext(config_registry=reg, unmarshaler_factory=uf)
-    o2 = uc.make_unmarshaler(PB).unmarshal(uc, v)
+    ufc = UnmarshalFactoryContext(config_registry=reg, unmarshaler_factory=uf)
+    uc = UnmarshalContext(config_registry=reg, unmarshal_factory_context=ufc)
+    o2 = ufc.make_unmarshaler(PB).unmarshal(uc, v)
     print(o2)
 
 

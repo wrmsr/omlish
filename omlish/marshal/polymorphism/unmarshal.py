@@ -7,6 +7,7 @@ from ... import check
 from ... import lang
 from ... import reflect as rfl
 from ..base.contexts import UnmarshalContext
+from ..base.contexts import UnmarshalFactoryContext
 from ..base.types import Unmarshaler
 from ..base.types import UnmarshalerFactory
 from ..base.values import Value
@@ -58,7 +59,7 @@ class FieldPolymorphismUnmarshaler(PolymorphismUnmarshaler):
 def make_polymorphism_unmarshaler(
         impls: Impls,
         tt: TypeTagging,
-        ctx: UnmarshalContext,
+        ctx: UnmarshalFactoryContext,
 ) -> Unmarshaler:
     m = {
         t: u
@@ -79,7 +80,7 @@ class PolymorphismUnmarshalerFactory(UnmarshalerFactory):
     p: Polymorphism
     tt: TypeTagging = WrapperTypeTagging()
 
-    def make_unmarshaler(self, ctx: UnmarshalContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
+    def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
         if rty is not self.p.ty:
             return None
         return lambda: make_polymorphism_unmarshaler(self.p.impls, self.tt, ctx)
