@@ -40,7 +40,7 @@ def test_attr_registry():
     class BC2(B2, BC):
         pass
 
-    foo_cache = AttrRegistryCache[ta.Callable, None, ta.Any](A.foo, lambda c: c)
+    foo_cache = AttrRegistryCache[ta.Callable, None, ta.Any](A.foo, lambda _, c: c)
 
     for cls in [B, C, BC, CB, B2, BC2]:
         for _ in range(2):

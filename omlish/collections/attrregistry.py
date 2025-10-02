@@ -52,7 +52,9 @@ class AttrRegistry(ta.Generic[K, V]):
 
     def register(self, obj: K, val: V) -> None:
         check.not_in(obj, self._objs)
+
         self._objs[obj] = val
+
         for iv in self._invalidate_callbacks:
             iv()
 
@@ -145,7 +147,7 @@ class AttrRegistryCache(ta.Generic[K, V, T]):
     def __init__(
             self,
             registry: AttrRegistry[K, V],
-            prepare: ta.Callable[[dict[str, tuple[K, V]]], T],
+            prepare: ta.Callable[[type, dict[str, tuple[K, V]]], T],
     ) -> None:
         super().__init__()
 
@@ -175,6 +177,6 @@ class AttrRegistryCache(ta.Generic[K, V, T]):
         del cls_ref
 
         collected = self._registry.collect(instance_cls)
-        out = self._prepare(collected)
+        out = self._prepare(instance_cls, collected)
         self._cache[weakref.ref(instance_cls, self._cache_remove)] = out
         return out

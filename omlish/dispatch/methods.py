@@ -139,7 +139,7 @@ class Method(ta.Generic[P, R]):
         self.update_wrapper(__call__)
         return __call__
 
-    def _prepare(self, collected: ta.Mapping[str, tuple[ta.Callable, _Entry]]) -> ta.Callable:
+    def _prepare(self, instance_cls: type, collected: ta.Mapping[str, tuple[ta.Callable, _Entry]]) -> ta.Callable:
         disp = self._build_dispatcher(collected)
         func = self._build_dispatch_func(disp)
         return func
