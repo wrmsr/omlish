@@ -132,8 +132,7 @@ class Method(ta.Generic[P, R]):
                 raise TypeError(f'{func_name} requires at least 1 positional argument')
 
             if (impl_att := dispatch(type_(args[0]))) is not None:
-                fn = getattr_(self, impl_att)
-                return fn(*args, **kwargs)
+                return getattr_(self, impl_att)(*args, **kwargs)
 
             return base_func.__get__(self)(*args, **kwargs)  # noqa
 
@@ -150,13 +149,11 @@ class Method(ta.Generic[P, R]):
             # FIXME: classmethod/staticmethod
             return self
 
-        instance_cls = type(instance)
-        func = self._cache.get(instance_cls)
+        func = self._cache.get(type(instance))
         return func.__get__(instance, owner)  # noqa
 
     def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R:
         instance, *rest = args
-        instance_cls = type(instance)
 
         # if instance_cls is super:
         #     owner = instance.__self_class__.__mro__[instance.__self_class__.__mro__.index(instance.__thisclass__) + 1]
@@ -164,7 +161,7 @@ class Method(ta.Generic[P, R]):
         #     func = self.build_dispatch_func(att_disp)
         #     return func.__get__(instance, instance.__thisclass__)(*rest, **kwargs)
 
-        func = self._cache.get(instance_cls)
+        func = self._cache.get(type(instance))
         return func.__get__(instance)(*rest, **kwargs)  # noqa
 
 
