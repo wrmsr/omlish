@@ -18,7 +18,7 @@ def test_marshal():
         (ChatCompletionRequest, ChatCompletionRequest(messages=(), model='no', tool_choice='auto')),
         (ChatCompletionRequest, ChatCompletionRequest(messages=(), model='no', tool_choice=ChatCompletionRequestNamedToolChoice(ChatCompletionRequestNamedToolChoice.Function('barf')))),  # noqa
     ]:
-        for _ in range(2):
+        for _ in range(10):
             mv = msh.marshal(obj, cls)
         mj = json.dumps(mv)
         print(mj)

@@ -40,7 +40,19 @@ class _TypeCacheFactory(ta.Generic[FactoryT]):
             except KeyError:
                 pass
 
-            m = self._dct[rty] = dfl()
+            if (m := dfl()) is None:
+                self._dct[rty] = None
+                return None
+
+            x = None
+
+            def inner():
+                nonlocal x
+                if x is None:
+                    x = m()
+                return x
+
+            self._dct[rty] = inner
             return m
 
 
