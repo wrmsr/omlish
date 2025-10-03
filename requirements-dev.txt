@@ -100,7 +100,8 @@ asttokens==3.0.0
 
 numpy>=1.24
 
-prompt-toolkit==3.0.52
+rich==14.1.0
+textual==6.2.1
 
 snowflake-connector-python[secure-local-storage]==3.17.4  # @omlish-venv !13t !13dt !14t
 snowflake-sqlalchemy==1.7.7  # @omlish-venv !13t !13dt !14t
