@@ -9,8 +9,8 @@ from .... import minichain as mc
 
 
 with lang.auto_proxy_import(globals()):
-    from omdev import ptk
-    from omdev.ptk import markdown as ptk_md
+    from rich import console as rich_console
+    from rich import markdown as rich_markdown
 
 
 ##
@@ -91,7 +91,4 @@ class MarkdownStringChatSessionPrinter(StringChatSessionPrinter):
         if not s:
             return
 
-        ptk.print_formatted_text(
-            ptk_md.Markdown(s),
-            style=ptk.Style(list(ptk_md.MARKDOWN_STYLE)),
-        )
+        rich_console.Console().print(rich_markdown.Markdown(s))

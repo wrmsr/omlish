@@ -114,7 +114,7 @@ hf-xet==1.1.10  # @omlish-venv !13t !13dt !14t
 
 datasets==4.1.1; python_version < "3.14"  # !! includes arrow and pandas and shit
 
-transformers==4.56.2; python_version < "3.14"  # @omlish-venv !14t
+transformers==4.57.0; python_version < "3.14"  # @omlish-venv !14t
 sentence-transformers==5.1.1; python_version < "3.14"  # @omlish-venv !14t
 
 sentencepiece==0.2.0; python_version < "3.13"  # FIXME: https://github.com/google/sentencepiece/issues/1121
@@ -126,7 +126,7 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.40.44
+boto3>=1.40.45
 
 antlr4-python3-runtime==4.13.2
 

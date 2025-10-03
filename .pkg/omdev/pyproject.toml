@@ -40,6 +40,8 @@ all = [
     'gprof2dot ~= 2025.4',
     'prompt-toolkit ~= 3.0',
     'segno ~= 1.6',
+    'rich ~= 14.1',
+    'textual ~= 6.2',
 ]
 black = [
     'black ~= 25.9',
@@ -65,6 +67,10 @@ ptk = [
 ]
 qr = [
     'segno ~= 1.6',
+]
+tui = [
+    'rich ~= 14.1',
+    'textual ~= 6.2',
 ]
 
 [project.entry-points]

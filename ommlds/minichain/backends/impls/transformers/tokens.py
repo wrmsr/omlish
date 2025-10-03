@@ -72,7 +72,7 @@ class TransformersTokenizer(tks.BaseTokenizer):
             self,
             tokens: ta.Iterable[tks.Token],
     ) -> str:
-        return self._tfm_tokenizer.decode(tokens)
+        return self._tfm_tokenizer.decode(tokens)  # type: ignore[arg-type]
 
 
 ##

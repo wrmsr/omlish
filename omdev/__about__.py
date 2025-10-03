@@ -45,6 +45,11 @@ class Project(ProjectBase):
         'qr': [
             'segno ~= 1.6',
         ],
+
+        'tui': [
+            'rich ~= 14.1',
+            'textual ~= 6.2',
+        ],
     }
 
     entry_points = {
