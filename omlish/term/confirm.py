@@ -15,7 +15,7 @@ def confirm_action(
         stdin = sys.stdin
     if not stdin.isatty():
         raise OSError(f'stdin {stdin!r} is not a tty')
-    # FIXME: we want to make sure we only run on a tty, but we als want input()'s readline goodies..
+    # FIXME: we want to make sure we only run on a tty, but we also want input()'s readline goodies..
     if stdin is not sys.stdin:
         raise RuntimeError('Unsupported stdin')
 
@@ -24,15 +24,15 @@ def confirm_action(
     if not stdout.isatty():
         raise OSError(f'stdout {stdout!r} is not a tty')
 
-    while True:
-        if message and not message[-1].isspace():
-            if '\n' in message:
-                prefix = message + '\n\n'
-            else:
-                prefix = message + ' '
+    if message:
+        if '\n' in message:
+            prefix = message + '\n\n'
         else:
-            prefix = ''
+            prefix = message + ' '
+    else:
+        prefix = ''
 
+    while True:
         c = input(f'{prefix}(y/n): ').lower().strip()
 
         if c == 'y':

@@ -16,10 +16,6 @@ from .state import ChatStateManager
 from .tools import ToolUseExecutor
 
 
-with lang.auto_proxy_import(globals()):
-    from omdev import ptk
-
-
 ##
 
 
@@ -90,7 +86,7 @@ class CodeChatSession(ChatSession['CodeChatSession.Config']):
                     req_msg = mc.UserMessage(self._config.initial_message)
                 else:
                     try:
-                        prompt = await ptk.prompt('> ')
+                        prompt = input('> ')  # FIXME: async lol
                     except EOFError:
                         break
                     req_msg = mc.UserMessage(prompt)

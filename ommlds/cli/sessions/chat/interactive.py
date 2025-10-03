@@ -10,10 +10,6 @@ from .printing import ChatSessionPrinter
 from .state import ChatStateManager
 
 
-with lang.auto_proxy_import(globals()):
-    from omdev import ptk
-
-
 ##
 
 
@@ -58,7 +54,10 @@ class InteractiveChatSession(ChatSession['InteractiveChatSession.Config']):
                 *([mc.ModelName(mn)] if (mn := self._config.model_name) is not None else []),
         )) as mdl:
             while True:
-                prompt = await ptk.prompt('> ')
+                try:
+                    prompt = input('> ')  # FIXME: async lol
+                except EOFError:
+                    break
 
                 req_msg = mc.UserMessage(prompt)
 

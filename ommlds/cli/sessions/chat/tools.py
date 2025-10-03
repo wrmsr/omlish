@@ -4,12 +4,9 @@ import typing as ta
 from omlish import check
 from omlish import lang
 from omlish.formats import json
+from omlish.term.confirm import confirm_action
 
 from .... import minichain as mc
-
-
-with lang.auto_proxy_import(globals()):
-    from omdev import ptk
 
 
 ##
@@ -50,7 +47,7 @@ class AskingToolExecutionConfirmation(ToolExecutionConfirmation):
             args=tr.args,
             # spec=msh.marshal(tce.spec),
         )
-        cr = await ptk.strict_confirm(f'Execute requested tool?\n\n{json.dumps_pretty(tr_dct)}\n\n')
+        cr = confirm_action(f'Execute requested tool?\n\n{json.dumps_pretty(tr_dct)}')  # FIXME: async lol
 
         if not cr:
             raise ToolExecutionRequestDeniedError
