@@ -38,10 +38,6 @@ class Project(ProjectBase):
             'gprof2dot ~= 2025.4',
         ],
 
-        'ptk': [
-            'prompt-toolkit ~= 3.0',
-        ],
-
         'qr': [
             'segno ~= 1.6',
         ],

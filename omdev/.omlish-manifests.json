@@ -158,33 +158,6 @@
     }
   },
   {
-    "module": ".ptk.apps.ncdu",
-    "attr": "_CLI_MODULE",
-    "file": "omdev/ptk/apps/ncdu.py",
-    "line": 162,
-    "value": {
-      "!.cli.types.CliModule": {
-        "name": "ptk/ncdu",
-        "module": "omdev.ptk.apps.ncdu"
-      }
-    }
-  },
-  {
-    "module": ".ptk.markdown.__main__",
-    "attr": "_CLI_MODULE",
-    "file": "omdev/ptk/markdown/__main__.py",
-    "line": 4,
-    "value": {
-      "!.cli.types.CliModule": {
-        "name": [
-          "ptk/markdown",
-          "ptk/md"
-        ],
-        "module": "omdev.ptk.markdown.__main__"
-      }
-    }
-  },
-  {
     "module": ".py.attrdocs",
     "attr": "_CLI_MODULE",
     "file": "omdev/py/attrdocs.py",

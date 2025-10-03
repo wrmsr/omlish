@@ -38,7 +38,6 @@ all = [
     'pygments ~= 2.19',
     'mypy ~= 1.18',
     'gprof2dot ~= 2025.4',
-    'prompt-toolkit ~= 3.0',
     'segno ~= 1.6',
     'rich ~= 14.1',
     'textual ~= 6.2',
@@ -61,9 +60,6 @@ mypy = [
 ]
 prof = [
     'gprof2dot ~= 2025.4',
-]
-ptk = [
-    'prompt-toolkit ~= 3.0',
 ]
 qr = [
     'segno ~= 1.6',
