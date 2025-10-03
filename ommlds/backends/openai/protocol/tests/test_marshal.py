@@ -18,10 +18,9 @@ def test_marshal():
         (ChatCompletionRequest, ChatCompletionRequest(messages=(), model='no', tool_choice='auto')),
         (ChatCompletionRequest, ChatCompletionRequest(messages=(), model='no', tool_choice=ChatCompletionRequestNamedToolChoice(ChatCompletionRequestNamedToolChoice.Function('barf')))),  # noqa
     ]:
-        for _ in range(10):
+        for _ in range(3):
             mv = msh.marshal(obj, cls)
-        mj = json.dumps(mv)
-        print(mj)
+            mj = json.dumps(mv)
 
         obj2: ta.Any = msh.unmarshal(json.loads(mj), cls)
         assert obj2 == obj

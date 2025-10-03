@@ -53,7 +53,7 @@ class _TypeCacheFactory(ta.Generic[FactoryT]):
                 return x
 
             self._dct[rty] = inner
-            return m
+            return inner
 
 
 class TypeCacheMarshalerFactory(_TypeCacheFactory[MarshalerFactory], MarshalerFactory):

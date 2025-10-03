@@ -50,9 +50,9 @@ class MarshalFactoryContext(BaseContext, lang.Final):
     def make_marshaler(self, o: ta.Any) -> 'Marshaler':
         rty = self._reflect(o)
         fac = check.not_none(self.marshaler_factory)
-        if (mfn := fac.make_marshaler(self, rty)) is None:
+        if (m := fac.make_marshaler(self, rty)) is None:
             raise UnhandledTypeError(rty)  # noqa
-        return mfn()
+        return m()
 
 
 @dc.dataclass(frozen=True, kw_only=True)
@@ -62,9 +62,9 @@ class UnmarshalFactoryContext(BaseContext, lang.Final):
     def make_unmarshaler(self, o: ta.Any) -> 'Unmarshaler':
         rty = self._reflect(o)
         fac = check.not_none(self.unmarshaler_factory)
-        if (mfn := fac.make_unmarshaler(self, rty)) is None:
+        if (m := fac.make_unmarshaler(self, rty)) is None:
             raise UnhandledTypeError(rty)  # noqa
-        return mfn()
+        return m()
 
 
 #
