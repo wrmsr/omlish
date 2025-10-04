@@ -63,9 +63,10 @@ class AnthropicSseMessageAssembler(
         while True:
             ae: ta.Any = check.not_none((yield from self._next_event()))
             if isinstance(ae, AnthropicSseDecoderEvents.ContentBlockStart):
-                check.equal(ae.index, len(content))
+                # check.equal(ae.index, len(content))
                 c = yield from self._do_content_block(ae)
-                content.append(check.isinstance(c, Content))
+                if c is not None:
+                    content.append(check.isinstance(c, Content))
             elif isinstance(ae, AnthropicSseDecoderEvents.MessageDelta):
                 for k in ('stop_reason', 'stop_sequence'):
                     if (v := getattr(ae.delta, k)) is not None:
@@ -92,6 +93,8 @@ class AnthropicSseMessageAssembler(
             return (yield from self._do_text_content_block(cbs))
         elif isinstance(cbs.content_block, AnthropicSseDecoderEvents.ContentBlockStart.ToolUse):
             return (yield from self._do_tool_use_content_block(cbs))
+        elif isinstance(cbs.content_block, AnthropicSseDecoderEvents.ContentBlockStart.Thinking):
+            return (yield from self._do_thinking_content_block(cbs))
         else:
             raise TypeError(cbs.content_block)
 
@@ -101,11 +104,11 @@ class AnthropicSseMessageAssembler(
         while True:
             ae: ta.Any = check.not_none((yield from self._next_event()))
             if isinstance(ae, AnthropicSseDecoderEvents.ContentBlockDelta):
-                check.equal(ae.index, cbs.index)
+                # check.equal(ae.index, cbs.index)
                 cdc = check.isinstance(ae.delta, AnthropicSseDecoderEvents.ContentBlockDelta.TextDelta)
                 parts.append(cdc.text)
             elif isinstance(ae, AnthropicSseDecoderEvents.ContentBlockStop):
-                check.equal(ae.index, cbs.index)
+                # check.equal(ae.index, cbs.index)
                 return Text(''.join(parts))
             else:
                 raise TypeError(ae)
@@ -119,11 +122,11 @@ class AnthropicSseMessageAssembler(
         while True:
             ae: ta.Any = check.not_none((yield from self._next_event()))
             if isinstance(ae, AnthropicSseDecoderEvents.ContentBlockDelta):
-                check.equal(ae.index, cbs.index)
+                # check.equal(ae.index, cbs.index)
                 cdc = check.isinstance(ae.delta, AnthropicSseDecoderEvents.ContentBlockDelta.InputJsonDelta)
                 json_parts.append(cdc.partial_json)
             elif isinstance(ae, AnthropicSseDecoderEvents.ContentBlockStop):
-                check.equal(ae.index, cbs.index)
+                # check.equal(ae.index, cbs.index)
                 dj = ''.join(json_parts).strip()
                 if dj:
                     dd = check.isinstance(json.loads(dj), ta.Mapping)
@@ -138,3 +141,16 @@ class AnthropicSseMessageAssembler(
                 )
             else:
                 raise TypeError(ae)
+
+    def _do_thinking_content_block(self, cbs: AnthropicSseDecoderEvents.ContentBlockStart) -> ta.Any:
+        # csc = check.isinstance(cbs.content_block, AnthropicSseDecoderEvents.ContentBlockStart.Thinking)
+        while True:
+            ae: ta.Any = check.not_none((yield from self._next_event()))
+            if isinstance(ae, AnthropicSseDecoderEvents.ContentBlockDelta):
+                pass
+            elif isinstance(ae, AnthropicSseDecoderEvents.ContentBlockStop):
+                return None
+            else:
+                raise TypeError(ae)
+        return  # type: ignore  # noqa
+        yield  # noqa

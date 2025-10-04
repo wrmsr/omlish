@@ -80,6 +80,11 @@ class AnthropicSseDecoderEvents(lang.Namespace):
             name: str
             input: ta.Any
 
+        @dc.dataclass(frozen=True)
+        class Thinking(ContentBlock):
+            signature: str
+            thinking: str
+
         content_block: ContentBlock
         index: int
 
@@ -95,6 +100,14 @@ class AnthropicSseDecoderEvents(lang.Namespace):
         @dc.dataclass(frozen=True)
         class InputJsonDelta(Delta):
             partial_json: str
+
+        @dc.dataclass(frozen=True)
+        class ThinkingDelta(Delta):
+            thinking: str
+
+        @dc.dataclass(frozen=True)
+        class SignatureDelta(Delta):
+            signature: str
 
         delta: Delta
         index: int
