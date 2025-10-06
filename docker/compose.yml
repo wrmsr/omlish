@@ -33,7 +33,7 @@ services:
 
   omlish-dev-amd64:
     <<: *dev
-    platform: 'linux/x86_64'
+    platform: 'linux/amd64'
     expose:
       - '22'
       - '8000'
@@ -46,7 +46,7 @@ services:
   omlish-ci:
     build: '.'
     image: 'wrmsr/omlish-ci:latest'
-    platform: 'linux/x86_64'
+    platform: 'linux/amd64'
     restart: 'no'
     depends_on:
       - 'omlish-mysql'
