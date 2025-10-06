@@ -103,7 +103,7 @@ services:
       - '35228:9200'
 
   omlish-neo4j:
-    image: 'neo4j:5.26.12-community'
+    image: 'neo4j:5.26.13-community'
     restart: 'unless-stopped'
     environment:
       NEO4J_AUTH: 'none'
@@ -126,7 +126,7 @@ services:
       - '35231:5432'
 
   omlish-redis:
-    image: 'redis:7.4.5'
+    image: 'redis:7.4.6'
     restart: 'unless-stopped'
     expose:
       - '6379'

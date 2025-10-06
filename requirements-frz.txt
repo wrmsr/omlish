@@ -1,6 +1,6 @@
 accelerate==1.10.1
 aiohappyeyeballs==2.6.1
-aiohttp==3.12.15
+aiohttp==3.13.0
 aiomysql==0.2.0
 aiosignal==1.4.0
 aiosqlite==0.21.0
@@ -17,7 +17,7 @@ asttokens==3.0.0
 async-lru==2.0.5
 asyncpg==0.30.0
 asyncssh==2.21.1
-attrs==25.3.0
+attrs==25.4.0
 babel==2.17.0
 basedpyright==1.31.6
 bcrypt==5.0.0
@@ -26,14 +26,14 @@ bitsandbytes==0.42.0
 black==25.9.0
 bleach==6.2.0
 blobfile==3.0.0
-boto3==1.40.45
-botocore==1.40.45
+boto3==1.40.46
+botocore==1.40.46
 Brotli==1.1.0
 build==1.3.0
 cachetools==6.2.0
 cattrs==25.2.0
 cbor2==5.7.0
-certifi==2025.8.3
+certifi==2025.10.5
 cffi==1.17.1
 charset-normalizer==3.4.3
 cli_helpers==2.7.0
@@ -68,7 +68,7 @@ Flake8-pyproject==1.2.3
 flatbuffers==25.9.23
 fonttools==4.60.1
 fqdn==1.5.1
-frozenlist==1.7.0
+frozenlist==1.8.0
 fsspec==2025.9.0
 gguf==0.17.1
 google-api-core==2.25.2
@@ -150,7 +150,7 @@ mlx-lm==0.28.2
 mlx-metal==0.29.2
 more-itertools==10.8.0
 mpmath==1.3.0
-multidict==6.6.4
+multidict==6.7.0
 multiprocess==0.70.16
 mwparserfromhell==0.7.2
 mycli==1.29.2
@@ -194,7 +194,7 @@ primp==0.15.0
 priority==2.0.0
 prometheus_client==0.23.1
 prompt_toolkit==3.0.52
-propcache==0.3.2
+propcache==0.4.0
 proto-plus==1.26.1
 protobuf==6.32.1
 psutil==7.1.0
@@ -233,7 +233,7 @@ pytest-stress==1.0.1
 pytest-timeout==2.4.0
 pytest-xdist==3.8.0
 python-dateutil==2.9.0.post0
-python-json-logger==3.3.0
+python-json-logger==4.0.0
 python-snappy==0.7.3
 pytokens==0.1.10
 pytz==2025.2
@@ -268,7 +268,7 @@ setuptools==80.9.0
 shapely==2.1.2
 six==1.17.0
 sniffio==1.3.1
-snowflake-connector-python==3.17.4
+snowflake-connector-python==3.18.0
 snowflake-sqlalchemy==1.7.7
 socksio==1.0.0
 sortedcontainers==2.4.0
@@ -285,8 +285,8 @@ tavily-python==0.7.12
 terminado==0.18.1
 textual==6.2.1
 threadpoolctl==3.6.0
-tifffile==2025.9.30
-tiktoken==0.11.0
+tifffile==2025.10.4
+tiktoken==0.12.0
 tinycss2==1.4.0
 tokenizers==0.22.1
 tomlkit==0.13.3
@@ -316,7 +316,7 @@ uritemplate==4.2.0
 urllib3==2.5.0
 urwid==3.0.3
 urwid_readline==0.15.1
-uv==0.8.22
+uv==0.8.23
 watchdog==6.0.0
 wcwidth==0.2.14
 webcolors==24.11.1
@@ -329,6 +329,6 @@ wrapt==1.17.3
 wsproto==1.2.0
 xxhash==3.6.0
 yappi==1.6.10
-yarl==1.20.1
+yarl==1.22.0
 zipp==3.23.0
 zstandard==0.25.0
