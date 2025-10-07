@@ -5,6 +5,9 @@
 #define Py_BUILD_CORE 1
 #include "Python.h"
 #include "internal/pycore_frame.h"
+#if PY_VERSION_HEX >= 0x030E0000
+#include "internal/pycore_interpframe.h"
+#endif
 #undef Py_BUILD_CORE
 
 #if PY_VERSION_HEX < 0x030D0000
