@@ -15,7 +15,7 @@ pytest-xdist==3.8.0
 
 flake8==7.3.0
 flake8-pyproject==1.2.3
-ruff==0.13.3
+ruff==0.14.0
 
 docutils-stubs==0.0.22
 types-paramiko==4.0.0.20250822  # @omlish-venv !13t !13dt !14t
@@ -75,7 +75,7 @@ redis==6.4.0
 sqlean.py==3.50.4.3; python_version < "3.14"  # @omlish-venv !13t !13dt !14t
 # git+https://github.com/wrmsr/sqlean.py.git
 
-duckdb==1.4.0  # @omlish-venv !13t !13dt !14t
+duckdb==1.4.1  # @omlish-venv !13t !13dt !14t
 
 
 pycparser==2.23

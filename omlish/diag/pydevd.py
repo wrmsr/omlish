@@ -6,7 +6,7 @@ an already-debugging PyCharm instance to debug PySpark jobs.
 TODO:
  - https://www.jetbrains.com/help/pycharm/remote-debugging-with-product.html#
 
-==
+====
 
 https://www.jetbrains.com/help/pycharm/remote-debugging-with-product.html#remote-debug-config ->
 
@@ -25,6 +25,28 @@ buf = textwrap.dedent(f'''
            stderrToServer=True,
        )
 ''') + '\n' * 2 + buf
+
+====
+
+TODO: monkeypatch:
+
+/Applications/PyCharm.app/Contents/plugins/python-ce/helpers/pydev/_pydev_bundle/pydev_monkey.py ::
+
+def starts_with_python_shebang(path):
+    try:
+        with open(path) as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    for name in PYTHON_NAMES:
+                        if line.startswith('#!/usr/bin/env %s' % name):
+                            return True
+                    return False
+    except (UnicodeDecodeError, IsADirectoryError):  # <-- Add catch for `IsADirectoryError`
+        return False
+    except:
+        traceback.print_exc()
+        return False
 """
 import json
 import os
