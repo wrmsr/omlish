@@ -25,7 +25,7 @@ def _translate_old_style_import_capture(
             if ci.attrs:
                 raise NotImplementedError
 
-            for a in ci.as_:
+            for a in ci.as_ or []:
                 dct.setdefault(p.name, []).append(
                     (ci.module.base_name, a),
                 )
@@ -34,12 +34,12 @@ def _translate_old_style_import_capture(
             if ci.module.children:
                 raise NotImplementedError
 
-            for a in ci.as_:
+            for a in ci.as_ or []:
                 dct.setdefault(ci.module.name, []).append(
                     (None, a),
                 )
 
-            for sa, da in ci.attrs:
+            for sa, da in ci.attrs or []:
                 dct.setdefault(ci.module.name, []).append(
                     (sa, da),
                 )

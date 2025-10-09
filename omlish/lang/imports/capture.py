@@ -391,8 +391,8 @@ class _ImportCaptureHook:
         for m, ts in sorted(dct.items(), key=lambda t: t[0].name):
             imps.append(ImportCapture.Import(
                 mods[m.name],
-                [r for l, r in ts if l is None],
-                [(l, r) for l, r in ts if l is not None],
+                [r for l, r in ts if l is None] or None,
+                [(l, r) for l, r in ts if l is not None] or None,
             ))
 
         #
@@ -709,8 +709,8 @@ class ImportCapture:
         def __init__(
                 self,
                 module: 'ImportCapture.Module',
-                as_: ta.Sequence[str],
-                attrs: ta.Sequence[tuple[str, str]],  # ('foo', 'bar') -> `import foo as bar` - explicitly not a dict
+                as_: ta.Sequence[str] | None,
+                attrs: ta.Sequence[tuple[str, str]] | None,  # ('foo', 'bar') -> `import foo as bar` - explicitly not a dict  # noqa
         ) -> None:
             self.module = module
             self.as_ = as_
@@ -747,9 +747,11 @@ class ImportCapture:
         @property
         def attrs(self) -> ta.Iterator[str]:
             for pi in self.imports.values():
-                yield from pi.as_
-                for _, a in pi.attrs:
-                    yield a
+                if pi.as_:
+                    yield from pi.as_
+                if pi.attrs:
+                    for _, a in pi.attrs:
+                        yield a
 
     EMPTY_CAPTURED: ta.ClassVar[Captured] = Captured(
         {},
