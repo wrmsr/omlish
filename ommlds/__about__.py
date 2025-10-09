@@ -38,7 +38,7 @@ class Project(ProjectBase):
 
         'huggingface': [
             'huggingface-hub ~= 0.35',
-            'datasets ~= 4.1',
+            'datasets ~= 4.2',
         ],
 
         'numpy': [

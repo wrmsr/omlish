@@ -39,7 +39,7 @@ all = [
     'mypy ~= 1.18',
     'gprof2dot ~= 2025.4',
     'segno ~= 1.6',
-    'rich ~= 14.1',
+    'rich ~= 14.2',
     'textual ~= 6.2',
 ]
 black = [
@@ -65,7 +65,7 @@ qr = [
     'segno ~= 1.6',
 ]
 tui = [
-    'rich ~= 14.1',
+    'rich ~= 14.2',
     'textual ~= 6.2',
 ]
 

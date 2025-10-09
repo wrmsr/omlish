@@ -9,13 +9,13 @@
 # infra
 
 google-api-python-client==2.184.0
-google-cloud-compute==1.38.0
+google-cloud-compute==1.39.0
 
 
 ##
 # ml
 
-matplotlib==3.10.6
+matplotlib==3.10.7
 
 torch==2.8.0
 torchvision==0.23.0
