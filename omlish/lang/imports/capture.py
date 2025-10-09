@@ -120,9 +120,12 @@ class _ImportCaptureHook:
 
             if name.startswith('.'):
                 raise ImportCaptureError
+
             self.name = name
-            self.base_name = name.rpartition('.')[2]
             self.parent = parent
+
+            self.base_name = name.rpartition('.')[2]
+            self.root: _ImportCaptureHook._Module = parent.root if parent is not None else self  # noqa
 
             self.module_obj = types.ModuleType(f'<{self.__class__.__qualname__}: {name}>')
             self.module_obj.__file__ = None
@@ -136,13 +139,6 @@ class _ImportCaptureHook:
 
         def __repr__(self) -> str:
             return f'{self.__class__.__name__}<{self.name}{"!" if self.immediate else "+" if self.explicit else ""}>'
-
-        @property
-        def root(self) -> '_ImportCaptureHook._Module':
-            out = self
-            while out.parent is not None:
-                out = out.parent
-            return out
 
         def set_explicit(self) -> None:
             cur: _ImportCaptureHook._Module | None = self
@@ -693,12 +689,20 @@ class ImportCapture:
                 ')',
             ])
 
+        _root: 'ImportCapture.Module'
+
         @property
         def root(self) -> 'ImportCapture.Module':
-            out = self
-            while out.parent is not None:
-                out = out.parent
-            return out
+            try:
+                return self._root
+            except AttributeError:
+                pass
+
+            root = self
+            while root.parent is not None:
+                root = root.parent
+            self._root = root
+            return root
 
     @ta.final
     class Import:
