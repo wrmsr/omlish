@@ -583,6 +583,7 @@ class GenerateContentResponse(lang.Final):
     class Candidate(lang.Final):
         content: Content | None = None
         finish_reason: FinishReason | None = None
+        finish_message: str | None = None
         # safety_ratings: ta.Sequence[SafetyRating] | None = None
         # citation_metadata: CitationMetadata | None = None
         token_count: int | None = None
