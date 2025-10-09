@@ -1,7 +1,3 @@
-"""
-TODO:
- - if already imported just return?
-"""
 import contextlib
 import functools
 import importlib.util
@@ -23,18 +19,29 @@ def _translate_old_style_import_capture(
 
     for ci in cap.imports.values():
         if ci.module.kind == 'leaf':
-            if (p := ci.module.parent) is None or p.kind != 'terminal':
+            if (p := ci.module.parent) is None:
                 raise NotImplementedError
 
             if ci.attrs:
                 raise NotImplementedError
 
             for a in ci.as_:
-                # dct.setdefault(p.name, []).append(
-                #     (ci.module.base_name, a),
-                # )
                 dct.setdefault(p.name, []).append(
                     (ci.module.base_name, a),
+                )
+
+        elif ci.module.kind == 'terminal':
+            if ci.module.children:
+                raise NotImplementedError
+
+            for a in ci.as_:
+                dct.setdefault(ci.module.name, []).append(
+                    (None, a),
+                )
+
+            for sa, da in ci.attrs:
+                dct.setdefault(ci.module.name, []).append(
+                    (sa, da),
                 )
 
         else:
@@ -116,7 +123,7 @@ class _ProxyInit:
         package: str
 
     class _Import(ta.NamedTuple):
-        spec: str
+        name: str
         attr: str | None
 
     def __init__(
@@ -130,7 +137,6 @@ class _ProxyInit:
         self._name_package = name_package
 
         self._imps_by_attr: dict[str, _ProxyInit._Import] = {}
-        self._mods_by_spec: dict[str, ta.Any] = {}
 
     @property
     def name_package(self) -> NamePackage:
@@ -138,20 +144,17 @@ class _ProxyInit:
 
     def add(
             self,
-            package: str,
+            name: str,
             attrs: ta.Iterable[tuple[str | None, str]],
     ) -> None:
         for imp_attr, as_attr in attrs:
             if imp_attr is None:
-                self._imps_by_attr[as_attr] = self._Import(package, None)
+                self._imps_by_attr[as_attr] = self._Import(name, None)
                 self._lazy_globals.set_fn(as_attr, functools.partial(self.get, as_attr))
 
             else:
-                self._imps_by_attr[as_attr] = self._Import(package, imp_attr)
+                self._imps_by_attr[as_attr] = self._Import(name, imp_attr)
                 self._lazy_globals.set_fn(as_attr, functools.partial(self.get, as_attr))
-
-    def _import_module(self, name: str) -> ta.Any:
-        return importlib.import_module(name, package=self._name_package.package)
 
     def get(self, attr: str) -> ta.Any:
         try:
@@ -162,14 +165,19 @@ class _ProxyInit:
         val: ta.Any
 
         if imp.attr is None:
-            val = self._import_module(imp.spec)
+            val = importlib.import_module(imp.name)
+
+        elif imp.name == self._name_package.name:
+            val = importlib.import_module(f'{imp.name}.{imp.attr}')
 
         else:
-            try:
-                mod = self._mods_by_spec[imp.spec]
-            except KeyError:
-                mod = self._import_module(imp.spec)
-                self._mods_by_spec[imp.spec] = mod
+            mod = __import__(
+                imp.name,
+                self._lazy_globals._globals,  # noqa
+                {},
+                [imp.attr],
+                0,
+            )
 
             val = getattr(mod, imp.attr)
 
@@ -181,6 +189,13 @@ def proxy_init(
         spec: str,
         attrs: ta.Iterable[str | tuple[str | None, str | None] | None] | None = None,
 ) -> None:
+    name = importlib.util.resolve_name(
+        spec,
+        package=init_globals['__package__'] if spec.startswith('.') else None,
+    )
+
+    #
+
     if isinstance(attrs, str):
         raise TypeError(attrs)
 
@@ -230,7 +245,7 @@ def proxy_init(
         if pi.name_package != init_name_package:
             raise Exception(f'Wrong init name: {pi.name_package=} != {init_name_package=}')
 
-    pi.add(spec, al)
+    pi.add(name, al)
 
 
 #

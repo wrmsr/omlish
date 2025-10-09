@@ -37,6 +37,4 @@ def test_auto_proxy_init():
     assert foo2.karf == 520
     assert foo2.pi is math.pi
 
-    assert getattr(foo2, '_auto_proxy_init_unreferenced') == {
-        '.bar.baz': ['delete_me'],
-    }
+    assert getattr(foo2, '_auto_proxy_init_unreferenced') == [foo2.__name__ + '.bar.baz.delete_me']
