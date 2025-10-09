@@ -145,7 +145,7 @@ class _ImportCaptureHook:
             return out
 
         def set_explicit(self) -> None:
-            cur: ta.Optional['_ImportCaptureHook._Module'] = self
+            cur: _ImportCaptureHook._Module | None = self
             while cur is not None and not cur.explicit:
                 cur.explicit = True
                 cur = cur.parent
@@ -746,7 +746,6 @@ class ImportCapture:
                 yield from pi.as_
                 for _, a in pi.attrs:
                     yield a
-
 
     EMPTY_CAPTURED: ta.ClassVar[Captured] = Captured(
         {},

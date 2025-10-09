@@ -53,14 +53,12 @@ _set_frame_builtins(PyObject *self, PyObject *args)
 
     std::atomic_ref<PyObject*> builtins_ref(iframe->f_builtins);
     PyObject* expected = old_builtins;
-    bool success = builtins_ref.compare_exchange_strong(
+    if (builtins_ref.compare_exchange_strong(
         expected,
         new_builtins,
         std::memory_order_acq_rel,
         std::memory_order_acquire
-    );
-
-    if (success) {
+    )) {
         Py_RETURN_TRUE;
     } else {
         Py_RETURN_FALSE;

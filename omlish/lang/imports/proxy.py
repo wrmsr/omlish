@@ -16,6 +16,36 @@ from .capture import _new_import_capture_hook
 ##
 
 
+def _translate_old_style_import_capture(
+        cap: ImportCapture.Captured,
+) -> ta.Mapping[str, ta.Sequence[tuple[str | None, str]]]:
+    dct: dict[str, list[tuple[str | None, str]]] = {}
+
+    for ci in cap.imports.values():
+        if ci.module.kind == 'leaf':
+            if (p := ci.module.parent) is None or p.kind != 'terminal':
+                raise NotImplementedError
+
+            if ci.attrs:
+                raise NotImplementedError
+
+            for a in ci.as_:
+                # dct.setdefault(p.name, []).append(
+                #     (ci.module.base_name, a),
+                # )
+                dct.setdefault(p.name, []).append(
+                    (ci.module.base_name, a),
+                )
+
+        else:
+            raise NotImplementedError
+
+    return dct
+
+
+##
+
+
 def proxy_import(
         spec: str,
         package: str | None = None,
@@ -48,7 +78,7 @@ def auto_proxy_import(
         *,
         disable: bool = False,
 
-        unreferenced_callback: ta.Callable[[ta.Mapping[str, ta.Sequence[str | None]]], None] | None = None,
+        unreferenced_callback: ta.Callable[[ta.Sequence[str]], None] | None = None,
         raise_unreferenced: bool = False,
 
         _stack_offset: int = 0,
@@ -70,10 +100,9 @@ def auto_proxy_import(
         ):
             yield inst
 
-        pkg = mod_globals.get('__package__')
-        for pi in inst.captured.imports:
-            for sa, ma in pi.attrs:
-                mod_globals[ma] = proxy_import(pi.spec + (('.' + sa) if sa is not None else ''), pkg)
+        for spec, attrs in _translate_old_style_import_capture(inst.captured).items():
+            for sa, ma in attrs:
+                mod_globals[ma] = proxy_import(spec + (('.' + sa) if sa is not None else ''))
 
     return inner()
 
@@ -213,7 +242,7 @@ def auto_proxy_init(
         disable: bool = False,
         eager: bool = False,
 
-        unreferenced_callback: ta.Callable[[ta.Mapping[str, ta.Sequence[str | None]]], None] | None = None,
+        unreferenced_callback: ta.Callable[[ta.Sequence[str]], None] | None = None,
         raise_unreferenced: bool = False,
 
         update_exports: bool = False,
@@ -237,12 +266,11 @@ def auto_proxy_init(
         ):
             yield inst
 
-        dct = {}
-        for pi in inst.captured.imports:
+        for spec, attrs in _translate_old_style_import_capture(inst.captured).items():
             proxy_init(
                 init_globals,
-                pi.spec,
-                pi.attrs,
+                spec,
+                attrs,
             )
 
         if eager:
