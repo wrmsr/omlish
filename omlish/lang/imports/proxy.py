@@ -237,6 +237,7 @@ def auto_proxy_init(
         ):
             yield inst
 
+        dct = {}
         for pi in inst.captured.imports:
             proxy_init(
                 init_globals,
