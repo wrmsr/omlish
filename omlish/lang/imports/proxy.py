@@ -69,7 +69,7 @@ class _ProxyImporter:
 
             self.proxy_obj = types.ModuleType(f'<{self.__class__.__qualname__}: {name}>')
             self.proxy_obj.__file__ = None
-            self.proxy_obj.__getattr__ = functools.partial(getattr_handler, self)  # type: ignore[method-assign]  # noqa
+            self.proxy_obj.__getattr__ = functools.partial(getattr_handler, self)  # type: ignore[method-assign]
 
             self.pending_children: set[str] = set()
             self.pending_attrs: set[str] = set()
@@ -132,7 +132,7 @@ class _ProxyImporter:
             module.pending_children.add(c)
 
         for a in attrs or []:
-            if module.real_obj is not None and c in module.real_obj.__dict__:
+            if module.real_obj is not None and a in module.real_obj.__dict__:
                 raise Exception(f'Already imported: {module.name}')
 
             module.pending_attrs.add(a)
