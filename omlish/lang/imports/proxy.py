@@ -147,6 +147,12 @@ class _ProxyImporter:
             module.pending_attrs.update(attrs)
 
     def _retrieve_from_module_locked(self, module: _Module, attr: str) -> ta.Any:
+        if attr in module.proxy_obj.__dict__:
+            val = module.proxy_obj.__dict__[attr]
+            return val
+
+        val = not_set = object()
+
         if attr in module.pending_children:
             if module.name == self._owner_name:
                 val = importlib.import_module(f'{module.name}.{attr}')
@@ -163,31 +169,32 @@ class _ProxyImporter:
                 # TODO: check if real_mod, or do something with real_mod ...
                 val = getattr(mod, attr)
 
-            return val
+        if val is not_set:
+            try:
+                val = module.children[attr]
+            except KeyError:
+                pass
 
-        try:
-            child = module.children[attr]
-        except KeyError:
-            pass
-        else:
-            return child.proxy_obj
+        if val is not_set:
+            if module.name == self._owner_name:
+                raise NotImplementedError
 
-        if module.name == self._owner_name:
+            if (ro := module.real_obj) is None:
+                ro = module.real_obj = importlib.import_module(module.name)
+
+            val = getattr(ro, attr)
+
+        if val is not_set:
             raise NotImplementedError
 
-        if (ro := module.real_obj) is None:
-            ro = module.real_obj = importlib.import_module(module.name)
-
-        return getattr(ro, attr)
+        setattr(module.proxy_obj, attr, val)
+        return val
 
     #
 
     def _handle_module_getattr(self, module: _Module, attr: str) -> ta.Any:
         with self._lock:
-            val = self._retrieve_from_module_locked(module, attr)
-
-        setattr(module.proxy_obj, attr, val)
-        return val
+            return self._retrieve_from_module_locked(module, attr)
 
     def add(
             self,
@@ -199,6 +206,7 @@ class _ProxyImporter:
         if isinstance(children, str):
             raise TypeError(children)
 
+        # Leaf children get collapsed into pending_children
         if not children and not attrs and '.' in module:
             module, _, child = module.rpartition('.')
             children = [child]
