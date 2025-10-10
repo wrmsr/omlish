@@ -592,7 +592,7 @@
     "module": ".tools.git",
     "attr": null,
     "file": "ommlds/tools/git.py",
-    "line": 188,
+    "line": 186,
     "value": {
       "!omdev.tools.git.messages.GitMessageGeneratorManifest": {
         "module": "ommlds.tools.git",
@@ -606,7 +606,7 @@
     "module": ".tools.ocr",
     "attr": "_CLI_MODULE",
     "file": "ommlds/tools/ocr.py",
-    "line": 89,
+    "line": 82,
     "value": {
       "!omdev.cli.types.CliModule": {
         "name": "ocr",

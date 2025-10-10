@@ -23,10 +23,8 @@ from ..minichain.backends.impls.openai.chat import OpenaiChatChoicesService
 from ..server.client import McServerClient
 
 
-if ta.TYPE_CHECKING:
+with lang.auto_proxy_import(globals()):
     from ..minichain.backends.impls.mlx import chat as mc_mlx_chat
-else:
-    mc_mlx_chat = lang.proxy_import('..minichain.backends.impls.mlx.chat', __package__)
 
 
 GitAiBackendConfigT = ta.TypeVar('GitAiBackendConfigT', bound='GitAiBackend.Config')

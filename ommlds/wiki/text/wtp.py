@@ -26,10 +26,8 @@ from omlish import cached
 from omlish import lang
 
 
-if ta.TYPE_CHECKING:
+with lang.auto_proxy_import(globals()):
     import wikitextparser as wtp
-else:
-    wtp = lang.proxy_import('wikitextparser')
 
 
 WikiText: ta.TypeAlias = 'wtp.WikiText'

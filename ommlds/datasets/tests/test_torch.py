@@ -1,20 +1,15 @@
 """
 https://pytorch.org/tutorials/beginner/basics/data_tutorial.html
 """
-import typing as ta
-
 from omdev.cache import data as dcache
 from omlish import lang
 from omlish.testing import pytest as ptu
 
 
-if ta.TYPE_CHECKING:
+with lang.auto_proxy_import(globals()):
     import torchvision as tv  # noqa
     import torchvision.datasets  # noqa
     import torchvision.transforms  # noqa
-
-else:
-    tv = lang.proxy_import('torchvision', extras=['datasets', 'transforms'])  # noqa
 
 
 FASHION_MNIST_SPECS = {
@@ -32,6 +27,9 @@ FASHION_MNIST_SPECS = {
 
 @ptu.skip.if_cant_import('torchvision')
 def test_torch():
+    assert tv.datasets.MNIST
+    assert tv.transforms.Compose
+
     for spec in FASHION_MNIST_SPECS.values():
         print(dcache.default().get(spec))
 

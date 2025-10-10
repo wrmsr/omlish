@@ -89,6 +89,9 @@ class _ProxyImporter:
 
         real_obj: types.ModuleType | None = None
 
+        def __repr__(self) -> str:
+            return f'{self.__class__.__name__}<{self.name}{"!" if self.real_obj is not None else ""}>'
+
         def find_attr(self, attr: str) -> _ProxyImporterModuleAttr | None:
             is_child = attr in self.children
             is_proxy_attr = attr in self.proxy_obj.__dict__
@@ -322,6 +325,9 @@ def _get_module_proxy_importer(mod_globals: ta.MutableMapping[str, ta.Any]) -> _
         mod_globals[_MODULE_PROXY_IMPORTER_GLOBAL_NAME] = pi
 
     else:
+        if pi.__class__ is not _ProxyImporter:
+            raise TypeError(pi)
+
         if pi._owner_globals is not mod_globals:  # noqa
             raise RuntimeError
 

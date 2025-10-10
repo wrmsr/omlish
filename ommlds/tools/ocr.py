@@ -13,19 +13,12 @@ from omlish import check
 from omlish import lang
 
 
-if ta.TYPE_CHECKING:
+with lang.auto_proxy_import(globals()):
     import pytesseract
     import rapidocr_onnxruntime as rapidocr
     from PIL import Image
 
     from omdev.clipboard import darwin_cf as darwin_clipboard
-
-else:
-    pytesseract = lang.proxy_import('pytesseract')
-    rapidocr = lang.proxy_import('rapidocr_onnxruntime')
-    Image = lang.proxy_import('PIL.Image')
-
-    darwin_clipboard = lang.proxy_import('omdev.clipboard.darwin_cf')
 
 
 ##

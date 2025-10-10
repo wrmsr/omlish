@@ -13,13 +13,9 @@ from omlish import lang
 from omlish import marshal as msh
 
 
-if ta.TYPE_CHECKING:
+with lang.auto_proxy_import(globals()):
     import mwparserfromhell as mfh
     import mwparserfromhell.nodes as mfn
-
-else:
-    mfh = lang.proxy_import('mwparserfromhell')
-    mfn = lang.proxy_import('mwparserfromhell.nodes')
 
 
 Wikicode: ta.TypeAlias = 'mfh.wikicode.Wikicode'

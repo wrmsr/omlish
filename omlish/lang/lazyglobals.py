@@ -19,6 +19,7 @@ class AmbiguousLazyGlobalsFallbackError(Exception):
 _LAZY_GLOBALS_LOCK = threading.RLock()
 
 
+@ta.final
 class LazyGlobals:
     def __init__(
             self,
@@ -26,8 +27,6 @@ class LazyGlobals:
             globals: ta.MutableMapping[str, ta.Any] | None = None,  # noqa
             update_globals: bool = False,
     ) -> None:
-        super().__init__()
-
         self._globals = globals
         self._update_globals = update_globals
 
@@ -41,7 +40,7 @@ class LazyGlobals:
         except KeyError:
             pass
         else:
-            if not isinstance(xga, cls):
+            if xga.__class__ is not cls:
                 raise RuntimeError(f'Module already has __getattr__ hook: {xga}')  # noqa
             return xga
 
@@ -51,7 +50,7 @@ class LazyGlobals:
             except KeyError:
                 pass
             else:
-                if not isinstance(xga, cls):
+                if xga.__class__ is not cls:
                     raise RuntimeError(f'Module already has __getattr__ hook: {xga}')  # noqa
                 return xga
 
