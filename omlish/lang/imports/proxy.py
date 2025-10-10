@@ -31,6 +31,14 @@ from .capture import ImportCapture
 from .capture import _new_import_capture_hook
 
 
+_ProxyImporterModuleAttr: ta.TypeAlias = ta.Literal[
+    'child',  # 'outranks' proxy_attr - all child attrs must be proxy_attrs but not vice versa
+    'proxy_attr',
+    'pending_child',
+    'pending_attr',
+]
+
+
 ##
 
 
@@ -82,6 +90,50 @@ class _ProxyImporter:
 
         real_obj: types.ModuleType | None = None
 
+        def find_attr(self, attr: str) -> _ProxyImporterModuleAttr | None:
+            is_child = attr in self.children
+            is_proxy_attr = attr in self.proxy_obj.__dict__
+            is_pending_child = attr in self.pending_children
+            is_pending_attr = attr in self.pending_attrs
+
+            if is_child:
+                if (
+                        not is_proxy_attr or
+                        is_pending_child or
+                        is_pending_attr
+                ):
+                    raise RuntimeError
+                return 'child'
+
+            elif is_proxy_attr:
+                if (
+                        is_pending_child or
+                        is_pending_attr
+                ):
+                    raise RuntimeError
+                return 'proxy_attr'
+
+            elif is_pending_child:
+                if (
+                        is_child or
+                        is_proxy_attr or
+                        is_pending_attr
+                ):
+                    raise RuntimeError
+                return 'pending_child'
+
+            elif is_pending_attr:
+                if (
+                        is_child or
+                        is_proxy_attr or
+                        is_pending_child
+                ):
+                    raise RuntimeError
+                return 'pending_attr'
+
+            else:
+                return None
+
     #
 
     def _get_or_make_module_locked(self, name: str) -> _Module:
@@ -94,6 +146,8 @@ class _ProxyImporter:
         if '.' in name:
             rest, _, attr = name.rpartition('.')
             parent = self._get_or_make_module_locked(rest)
+
+            parent.find_attr(attr)
 
             if attr in parent.proxy_obj.__dict__:
                 raise NotImplementedError
@@ -128,6 +182,8 @@ class _ProxyImporter:
     ) -> None:
         for l in (children, attrs):
             for n in l or []:
+                module.find_attr(n)
+
                 if n in module.proxy_obj.__dict__:
                     raise NotImplementedError
                 if (ro := module.real_obj) is not None and n in ro.__dict__:
@@ -147,6 +203,8 @@ class _ProxyImporter:
             module.pending_attrs.update(attrs)
 
     def _retrieve_from_module_locked(self, module: _Module, attr: str) -> ta.Any:
+        module.find_attr(attr)
+
         if attr in module.proxy_obj.__dict__:
             val = module.proxy_obj.__dict__[attr]
             return val
