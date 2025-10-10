@@ -199,7 +199,7 @@ proto-plus==1.26.1
 protobuf==6.32.1
 psutil==7.1.0
 psycopg==3.2.10
-psycopg2==2.9.10
+psycopg2==2.9.11
 ptyprocess==0.7.0
 pudb==2025.1.1
 pure_eval==0.2.3
@@ -273,7 +273,7 @@ snowflake-sqlalchemy==1.7.7
 socksio==1.0.0
 sortedcontainers==2.4.0
 soupsieve==2.8
-SQLAlchemy==2.0.43
+SQLAlchemy==2.0.44
 sqlean.py==3.50.4.3
 sqlglot==27.25.2
 sqlite-vec==0.1.6

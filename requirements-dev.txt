@@ -59,7 +59,7 @@ json5==0.12.1
 ##
 
 # c/libpq
-psycopg2==2.9.10
+psycopg2==2.9.11
 # py/cy
 psycopg==3.2.10
 
