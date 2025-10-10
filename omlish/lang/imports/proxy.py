@@ -8,9 +8,15 @@ TODO:
  - audit for deadlock risk - does importlib._bootstrap do it for us? do we need a global _ProxyImporter lock? would only
    happen on reification
  - ProxyImportError
+ - _Module.find_attr
 
 See:
  - https://peps.python.org/pep-0810/
+  - https://github.com/LazyImportsCabal/cpython/tree/lazy
+  - https://developers.facebook.com/blog/post/2022/06/15/python-lazy-imports-with-cinder/
+  - https://engineering.fb.com/2024/01/18/developer-tools/lazy-imports-cinder-machine-learning-meta/
+  - https://www.hudsonrivertrading.com/hrtbeat/inside-hrts-python-fork/
+  - https://bugreports.qt.io/browse/PYSIDE-2404
  - https://scientific-python.org/specs/spec-0001/
  - https://github.com/scientific-python/lazy-loader
 """
@@ -89,11 +95,13 @@ class _ProxyImporter:
             rest, _, attr = name.rpartition('.')
             parent = self._get_or_make_module_locked(rest)
 
-            if (
-                    attr in parent.children or
-                    attr in parent.pending_attrs or
-                    ((ro := parent.real_obj) is not None and attr not in ro.__dict__)
-            ):
+            if attr in parent.proxy_obj.__dict__:
+                raise NotImplementedError
+            if attr in parent.children:
+                raise NotImplementedError
+            if attr in parent.pending_attrs:
+                raise NotImplementedError
+            if (ro := parent.real_obj) is not None and attr not in ro.__dict__:
                 raise NotImplementedError
 
         module = self._modules_by_name[name] = _ProxyImporter._Module(
@@ -111,13 +119,6 @@ class _ProxyImporter:
 
         return module
 
-    def _handle_module_getattr(self, module: _Module, attr: str) -> ta.Any:
-        with self._lock:
-            val = self._retrieve_from_module_locked(module, attr)
-
-        setattr(module.proxy_obj, attr, val)
-        return val
-
     def _extend_module_locked(
             self,
             module: _Module,
@@ -125,17 +126,25 @@ class _ProxyImporter:
             children: ta.Iterable[str] | None = None,
             attrs: ta.Iterable[str] | None = None,
     ) -> None:
-        for c in children or []:
-            if module.real_obj is not None and c in module.real_obj.__dict__:
-                raise Exception(f'Already imported: {module.name}')
+        for l in (children, attrs):
+            for n in l or []:
+                if n in module.proxy_obj.__dict__:
+                    raise NotImplementedError
+                if (ro := module.real_obj) is not None and n in ro.__dict__:
+                    raise NotImplementedError
+                if l is not children:
+                    if n in module.pending_children:
+                        raise NotImplementedError
+                    if n in module.children:
+                        raise NotImplementedError
+                if l is not attrs:
+                    if n in module.pending_attrs:
+                        raise NotImplementedError
 
-            module.pending_children.add(c)
-
-        for a in attrs or []:
-            if module.real_obj is not None and a in module.real_obj.__dict__:
-                raise Exception(f'Already imported: {module.name}')
-
-            module.pending_attrs.add(a)
+        if children:
+            module.pending_children.update(n for n in children if n not in module.children)
+        if attrs:
+            module.pending_attrs.update(attrs)
 
     def _retrieve_from_module_locked(self, module: _Module, attr: str) -> ta.Any:
         if attr in module.pending_children:
@@ -172,6 +181,13 @@ class _ProxyImporter:
         return getattr(ro, attr)
 
     #
+
+    def _handle_module_getattr(self, module: _Module, attr: str) -> ta.Any:
+        with self._lock:
+            val = self._retrieve_from_module_locked(module, attr)
+
+        setattr(module.proxy_obj, attr, val)
+        return val
 
     def add(
             self,
