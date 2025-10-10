@@ -8,7 +8,6 @@ TODO:
  - audit for deadlock risk - does importlib._bootstrap do it for us? do we need a global _ProxyImporter lock? would only
    happen on reification
  - ProxyImportError
- - _Module.find_attr
 
 See:
  - https://peps.python.org/pep-0810/
@@ -147,14 +146,10 @@ class _ProxyImporter:
             rest, _, attr = name.rpartition('.')
             parent = self._get_or_make_module_locked(rest)
 
-            parent.find_attr(attr)
+            fa = parent.find_attr(attr)
+            if not (fa == 'pending_child' or fa is None):
+                raise RuntimeError
 
-            if attr in parent.proxy_obj.__dict__:
-                raise NotImplementedError
-            if attr in parent.children:
-                raise NotImplementedError
-            if attr in parent.pending_attrs:
-                raise NotImplementedError
             if (ro := parent.real_obj) is not None and attr not in ro.__dict__:
                 raise NotImplementedError
 
@@ -182,21 +177,24 @@ class _ProxyImporter:
             attrs: ta.Iterable[str] | None = None,
     ) -> None:
         for l in (children, attrs):
-            for n in l or []:
-                module.find_attr(n)
-
+            for n in l or ():
                 if n in module.proxy_obj.__dict__:
                     raise NotImplementedError
+
                 if (ro := module.real_obj) is not None and n in ro.__dict__:
                     raise NotImplementedError
-                if l is not children:
-                    if n in module.pending_children:
-                        raise NotImplementedError
-                    if n in module.children:
-                        raise NotImplementedError
-                if l is not attrs:
-                    if n in module.pending_attrs:
-                        raise NotImplementedError
+
+        for n in children or ():
+            fa = module.find_attr(n)
+            if not (fa == 'pending_child' or fa is None):
+                raise RuntimeError
+
+        for n in attrs or ():
+            fa = module.find_attr(n)
+            if not (fa == 'pending_attr' or fa is None):
+                raise RuntimeError
+
+        #
 
         if children:
             module.pending_children.update(n for n in children if n not in module.children)
@@ -204,15 +202,14 @@ class _ProxyImporter:
             module.pending_attrs.update(attrs)
 
     def _retrieve_from_module_locked(self, module: _Module, attr: str) -> ta.Any:
-        module.find_attr(attr)
+        fa = module.find_attr(attr)
 
-        if attr in module.proxy_obj.__dict__:
-            val = module.proxy_obj.__dict__[attr]
-            return val
+        if fa == 'child' or fa == 'proxy_attr':
+            return module.proxy_obj.__dict__[attr]
 
-        val = not_set = object()
+        val: ta.Any
 
-        if attr in module.pending_children:
+        if fa == 'pending_child':
             if module.name == self._owner_name:
                 val = importlib.import_module(f'{module.name}.{attr}')
 
@@ -225,16 +222,11 @@ class _ProxyImporter:
                     0,
                 )
 
-                # TODO: check if real_mod, or do something with real_mod ...
                 val = getattr(mod, attr)
 
-        if val is not_set:
-            try:
-                val = module.children[attr]
-            except KeyError:
-                pass
+            module.pending_children.remove(attr)
 
-        if val is not_set:
+        elif fa == 'pending_attr' or fa is None:
             if module.name == self._owner_name:
                 raise NotImplementedError
 
@@ -243,8 +235,11 @@ class _ProxyImporter:
 
             val = getattr(ro, attr)
 
-        if val is not_set:
-            raise NotImplementedError
+            if fa == 'pending_attr':
+                module.pending_attrs.remove(attr)
+
+        else:
+            raise TypeError(fa)
 
         setattr(module.proxy_obj, attr, val)
         return val
@@ -504,7 +499,7 @@ class _AutoProxyImport(_AutoProxy):
 
         for ci in cap.imports.values():
             pm = pi.get_module(ci.module.name)
-            for a in ci.as_ or []:
+            for a in ci.as_ or ():
                 self._mod_globals[a] = pm
 
         if self._eager:
@@ -531,9 +526,9 @@ class _AutoProxyInit(_AutoProxy):
             )
 
         for ci in cap.imports.values():
-            for a in ci.as_ or []:
+            for a in ci.as_ or ():
                 lg.set_fn(a, functools.partial(pi.lookup, ci.module.name))
-            for sa, da in ci.attrs or []:
+            for sa, da in ci.attrs or ():
                 lg.set_fn(da, functools.partial(pi.lookup, f'{ci.module.name}.{sa}'))
 
         if self._eager:
