@@ -418,6 +418,14 @@ class _ImportCaptureHook:
 
 
 class _AbstractBuiltinsImportCaptureHook(_ImportCaptureHook):
+    def __init__(
+            self,
+            *,
+            _frame: types.FrameType | None = None,
+            **kwargs: ta.Any,
+    ) -> None:
+        super().__init__(**kwargs)
+
     def _new_import(
             self,
             old_import,
@@ -627,23 +635,37 @@ class _FrameBuiltinsImportCaptureHook(_AbstractBuiltinsImportCaptureHook):
 
 #
 
+_CAPTURE_IMPLS: ta.Mapping[str, type[_AbstractBuiltinsImportCaptureHook]] = {
+    'cext': _FrameBuiltinsImportCaptureHook,
+    'somewhat_safe': _SomewhatThreadSafeGlobalBuiltinsImportCaptureHook,
+    'unsafe': _UnsafeGlobalBuiltinsImportCaptureHook,
+}
+
 
 def _new_import_capture_hook(
         mod_globals: ta.MutableMapping[str, ta.Any],  # noqa
         *,
         stack_offset: int = 0,
+        capture_impl: str | None = None,
         **kwargs: ta.Any,
 ) -> '_ImportCaptureHook':
-    frame: types.FrameType | None = sys._getframe(1 + stack_offset)  # noqa
-    if frame is None or frame.f_globals is not mod_globals:
-        raise ImportCaptureError("Can't find importing frame")
+    if '_frame' not in kwargs:
+        frame: types.FrameType | None = sys._getframe(1 + stack_offset)  # noqa
+        if frame is None or frame.f_globals is not mod_globals:
+            raise ImportCaptureError("Can't find importing frame")
+        kwargs['_frame'] = frame
 
     kwargs.setdefault('package', mod_globals.get('__package__'))
 
-    if _capture is not None:
-        return _FrameBuiltinsImportCaptureHook(_frame=frame, **kwargs)
+    cls: type[_AbstractBuiltinsImportCaptureHook]
+    if capture_impl is not None:
+        cls = _CAPTURE_IMPLS[capture_impl]
+    elif _capture is not None:
+        cls = _FrameBuiltinsImportCaptureHook
+    else:
+        cls = _SomewhatThreadSafeGlobalBuiltinsImportCaptureHook
 
-    return _SomewhatThreadSafeGlobalBuiltinsImportCaptureHook(**kwargs)
+    return cls(**kwargs)
 
 
 ##

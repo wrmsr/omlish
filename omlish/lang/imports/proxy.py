@@ -190,45 +190,30 @@ class _ProxyImporter:
         return getattr(module.proxy_obj, attr)
 
 
-##
+#
 
 
-def _translate_old_style_import_capture(
-        cap: ImportCapture.Captured,
-) -> ta.Mapping[str, ta.Sequence[tuple[str | None, str]]]:
-    dct: dict[str, list[tuple[str | None, str]]] = {}
+_MODULE_PROXY_IMPORTER_GLOBAL_NAME = '__proxy_importer__'
 
-    for ci in cap.imports.values():
-        if ci.module.kind == 'leaf':
-            if (p := ci.module.parent) is None:
-                raise NotImplementedError
 
-            if ci.attrs:
-                raise NotImplementedError
+def _get_module_proxy_importer(mod_globals: ta.MutableMapping[str, ta.Any]) -> _ProxyImporter:
+    """Assumed to only be called in a module body - no locking is done."""
 
-            for a in ci.as_ or []:
-                dct.setdefault(p.name, []).append(
-                    (ci.module.base_name, a),
-                )
+    pi: _ProxyImporter
+    try:
+        pi = mod_globals[_MODULE_PROXY_IMPORTER_GLOBAL_NAME]
 
-        elif ci.module.kind == 'terminal':
-            if ci.module.children:
-                raise NotImplementedError
+    except KeyError:
+        pi = _ProxyImporter(
+            owner_globals=mod_globals,
+        )
+        mod_globals[_MODULE_PROXY_IMPORTER_GLOBAL_NAME] = pi
 
-            for a in ci.as_ or []:
-                dct.setdefault(ci.module.name, []).append(
-                    (None, a),
-                )
+    else:
+        if pi._owner_globals is not mod_globals:  # noqa
+            raise RuntimeError
 
-            for sa, da in ci.attrs or []:
-                dct.setdefault(ci.module.name, []).append(
-                    (sa, da),
-                )
-
-        else:
-            raise NotImplementedError
-
-    return dct
+    return pi
 
 
 ##
@@ -270,12 +255,14 @@ def auto_proxy_import(
         raise_unreferenced: bool = False,
 
         _stack_offset: int = 0,
+        _capture_impl: str | None = None,
 ) -> ta.ContextManager[ImportCapture]:
     inst = ImportCapture(
         mod_globals,
         _hook=_new_import_capture_hook(
             mod_globals,
             stack_offset=_stack_offset + 1,
+            capture_impl=_capture_impl,
         ),
         disable=disable,
     )
@@ -288,81 +275,48 @@ def auto_proxy_import(
         ):
             yield inst
 
-        for spec, attrs in _translate_old_style_import_capture(inst.captured).items():
-            for sa, ma in attrs:
-                mod_globals[ma] = proxy_import(spec + (('.' + sa) if sa is not None else ''))
+        dct: dict[str, list[tuple[str | None, str]]] = {}
+
+        for ci in inst.captured.imports.values():
+            if ci.module.kind == 'leaf':
+                if (p := ci.module.parent) is None:
+                    raise NotImplementedError
+
+                if ci.attrs:
+                    raise NotImplementedError
+
+                for a in ci.as_ or []:
+                    dct.setdefault(p.name, []).append(
+                        (ci.module.base_name, a),
+                    )
+
+            elif ci.module.kind == 'terminal':
+                if ci.module.children:
+                    raise NotImplementedError
+
+                for a in ci.as_ or []:
+                    dct.setdefault(ci.module.name, []).append(
+                        (None, a),
+                    )
+
+                for sa, da in ci.attrs or []:
+                    dct.setdefault(ci.module.name, []).append(
+                        (sa, da),
+                    )
+
+            else:
+                raise NotImplementedError
+
+        # pi = _get_module_proxy_importer(mod_globals)
+
+        for spec, attrs in dct.items():
+            for dsa, ma in attrs:
+                mod_globals[ma] = proxy_import(spec + (('.' + dsa) if dsa is not None else ''))
 
     return inner()
 
 
 ##
-
-
-class _ProxyInit:
-    class NamePackage(ta.NamedTuple):
-        name: str
-        package: str
-
-    class _Import(ta.NamedTuple):
-        name: str
-        attr: str | None
-
-    def __init__(
-            self,
-            lazy_globals: LazyGlobals,
-            name_package: NamePackage,
-    ) -> None:
-        super().__init__()
-
-        self._lazy_globals = lazy_globals
-        self._name_package = name_package
-
-        self._imps_by_attr: dict[str, _ProxyInit._Import] = {}
-
-    @property
-    def name_package(self) -> NamePackage:
-        return self._name_package
-
-    def add(
-            self,
-            name: str,
-            attrs: ta.Iterable[tuple[str | None, str]],
-    ) -> None:
-        for imp_attr, as_attr in attrs:
-            if imp_attr is None:
-                self._imps_by_attr[as_attr] = self._Import(name, None)
-                self._lazy_globals.set_fn(as_attr, functools.partial(self.get, as_attr))
-
-            else:
-                self._imps_by_attr[as_attr] = self._Import(name, imp_attr)
-                self._lazy_globals.set_fn(as_attr, functools.partial(self.get, as_attr))
-
-    def get(self, attr: str) -> ta.Any:
-        try:
-            imp = self._imps_by_attr[attr]
-        except KeyError:
-            raise AttributeError(attr)  # noqa
-
-        val: ta.Any
-
-        if imp.attr is None:
-            val = importlib.import_module(imp.name)
-
-        elif imp.name == self._name_package.name:
-            val = importlib.import_module(f'{imp.name}.{imp.attr}')
-
-        else:
-            mod = __import__(
-                imp.name,
-                self._lazy_globals._globals,  # noqa
-                {},
-                [imp.attr],
-                0,
-            )
-
-            val = getattr(mod, imp.attr)
-
-        return val
 
 
 def proxy_init(
@@ -406,27 +360,16 @@ def proxy_init(
 
     #
 
-    init_name_package = _ProxyInit.NamePackage(
-        init_globals['__name__'],
-        init_globals['__package__'],
+    pi = _get_module_proxy_importer(init_globals)
+    lg = LazyGlobals.install(init_globals)
+
+    pi.add_module(
+        name,
+        children=[r for l, r in al if r is not None],
     )
 
-    pi: _ProxyInit
-    try:
-        pi = init_globals['__proxy_init__']
-
-    except KeyError:
-        pi = _ProxyInit(
-            LazyGlobals.install(init_globals),
-            init_name_package,
-        )
-        init_globals['__proxy_init__'] = pi
-
-    else:
-        if pi.name_package != init_name_package:
-            raise Exception(f'Wrong init name: {pi.name_package=} != {init_name_package=}')
-
-    pi.add(name, al)
+    for imp_attr, as_attr in al:
+        lg.set_fn(as_attr, functools.partial(pi.retrieve, name if imp_attr is None else f'{name}.{imp_attr}'))
 
 
 #
@@ -444,12 +387,14 @@ def auto_proxy_init(
         update_exports: bool = False,
 
         _stack_offset: int = 0,
+        _capture_impl: str | None = None,
 ) -> ta.ContextManager[ImportCapture]:
     inst = ImportCapture(
         init_globals,
         _hook=_new_import_capture_hook(
             init_globals,
             stack_offset=_stack_offset + 1,
+            capture_impl=_capture_impl,
         ),
         disable=disable,
     )
@@ -462,20 +407,7 @@ def auto_proxy_init(
         ):
             yield inst
 
-        pi: _ProxyImporter
-        try:
-            pi = init_globals['__proxy_importer__']
-
-        except KeyError:
-            pi = _ProxyImporter(
-                owner_globals=init_globals,
-            )
-            init_globals['__proxy_init__'] = pi
-
-        else:
-            if pi._owner_globals is not init_globals:  # noqa
-                raise Exception
-
+        pi = _get_module_proxy_importer(init_globals)
         lg = LazyGlobals.install(init_globals)
 
         for cm in inst.captured.modules.values():
