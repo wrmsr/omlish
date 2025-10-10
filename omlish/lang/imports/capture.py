@@ -581,11 +581,24 @@ class _SomewhatThreadSafeGlobalBuiltinsImportCaptureHook(_AbstractBuiltinsImport
 #
 
 
-_capture: ta.Any = None
-try:
-    from . import _capture  # type: ignore
-except ImportError:
-    pass
+_cext_: ta.Any
+
+
+def _cext() -> ta.Any:
+    global _cext_
+    try:
+        return _cext_
+    except NameError:
+        pass
+
+    cext: ta.Any
+    try:
+        from . import _capture as cext  # type: ignore
+    except ImportError:
+        cext = None
+
+    _cext_ = cext
+    return cext
 
 
 class _FrameBuiltinsImportCaptureHook(_AbstractBuiltinsImportCaptureHook):
@@ -605,7 +618,7 @@ class _FrameBuiltinsImportCaptureHook(_AbstractBuiltinsImportCaptureHook):
             frame: types.FrameType,
             new_builtins: dict[str, ta.Any],
     ) -> bool:
-        return _capture._set_frame_builtins(frame, frame.f_builtins, new_builtins)  # noqa
+        return _cext()._set_frame_builtins(frame, frame.f_builtins, new_builtins)  # noqa
 
     @contextlib.contextmanager
     def _hook_context(
@@ -660,7 +673,7 @@ def _new_import_capture_hook(
     cls: type[_AbstractBuiltinsImportCaptureHook]
     if capture_impl is not None:
         cls = _CAPTURE_IMPLS[capture_impl]
-    elif _capture is not None:
+    elif _cext() is not None:
         cls = _FrameBuiltinsImportCaptureHook
     else:
         cls = _SomewhatThreadSafeGlobalBuiltinsImportCaptureHook
