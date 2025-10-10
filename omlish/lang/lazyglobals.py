@@ -1,3 +1,4 @@
+import threading
 import typing as ta
 
 
@@ -13,6 +14,9 @@ class AmbiguousLazyGlobalsFallbackError(Exception):
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self.attr!r}, {self.fallbacks!r})'
+
+
+_LAZY_GLOBALS_LOCK = threading.RLock()
 
 
 class LazyGlobals:
@@ -41,14 +45,24 @@ class LazyGlobals:
                 raise RuntimeError(f'Module already has __getattr__ hook: {xga}')  # noqa
             return xga
 
-        lm = cls(
-            globals=globals,
-            update_globals=True,
-        )
+        with _LAZY_GLOBALS_LOCK:
+            try:
+                xga = globals['__getattr__']
+            except KeyError:
+                pass
+            else:
+                if not isinstance(xga, cls):
+                    raise RuntimeError(f'Module already has __getattr__ hook: {xga}')  # noqa
+                return xga
 
-        globals['__getattr__'] = lm
+            lm = cls(
+                globals=globals,
+                update_globals=True,
+            )
 
-        return lm
+            globals['__getattr__'] = lm
+
+            return lm
 
     def set_fn(self, attr: str, fn: ta.Callable[[], ta.Any]) -> 'LazyGlobals':
         self._attr_fns[attr] = fn

@@ -127,13 +127,14 @@ class _ImportCaptureHook:
             self.base_name = name.rpartition('.')[2]
             self.root: _ImportCaptureHook._Module = parent.root if parent is not None else self  # noqa
 
+            self.children: dict[str, _ImportCaptureHook._Module] = {}
+            self.descendants: set[_ImportCaptureHook._Module] = set()
+
             self.module_obj = types.ModuleType(f'<{self.__class__.__qualname__}: {name}>')
             self.module_obj.__file__ = None
             self.module_obj.__getattr__ = functools.partial(getattr_handler, self)  # type: ignore[method-assign]  # noqa
             self.initial_module_dict = dict(self.module_obj.__dict__)
 
-            self.children: dict[str, _ImportCaptureHook._Module] = {}
-            self.descendants: set[_ImportCaptureHook._Module] = set()
             self.explicit = False
             self.immediate = False
 
@@ -153,35 +154,32 @@ class _ImportCaptureHook:
         return sorted(self._modules_by_name.values(), key=lambda m: m.name)
 
     def _get_or_make_module(self, name: str) -> _Module:
-        def rec(name: str) -> _ImportCaptureHook._Module:  # noqa
-            try:
-                return self._modules_by_name[name]
-            except KeyError:
-                pass
+        try:
+            return self._modules_by_name[name]
+        except KeyError:
+            pass
 
-            parent: _ImportCaptureHook._Module | None = None
-            if '.' in name:
-                rest, _, attr = name.rpartition('.')
-                parent = rec(rest)
-                if attr in parent.children:
-                    raise ImportCaptureErrors.AttrError(rest, attr)
+        parent: _ImportCaptureHook._Module | None = None
+        if '.' in name:
+            rest, _, attr = name.rpartition('.')
+            parent = self._get_or_make_module(rest)
+            if attr in parent.children:
+                raise ImportCaptureErrors.AttrError(rest, attr)
 
-            module = self._Module(
-                name,
-                self._handle_module_getattr,
-                parent=parent,
-            )
-            self._modules_by_name[name] = module
-            self._modules_by_module_obj[module.module_obj] = module
+        module = _ImportCaptureHook._Module(
+            name,
+            self._handle_module_getattr,
+            parent=parent,
+        )
+        self._modules_by_name[name] = module
+        self._modules_by_module_obj[module.module_obj] = module
 
-            if parent is not None:
-                parent.children[attr] = module  # noqa
-                setattr(parent.module_obj, attr, module.module_obj)
-                parent.root.descendants.add(module)
+        if parent is not None:
+            parent.children[module.base_name] = module
+            setattr(parent.module_obj, module.base_name, module.module_obj)
+            parent.root.descendants.add(module)
 
-            return module
-
-        return rec(name)
+        return module
 
     def _make_child_module(self, module: _Module, attr: str) -> _Module:
         if attr in module.children:
