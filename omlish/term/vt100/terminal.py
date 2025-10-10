@@ -5,9 +5,6 @@ import typing as ta
 from ...lite.check import check
 
 
-T = ta.TypeVar('T')
-
-
 ##
 
 

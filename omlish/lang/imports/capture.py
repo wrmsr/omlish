@@ -318,7 +318,12 @@ class _ImportCaptureHook:
     ) -> 'ImportCapture.Captured':
         rem_explicit_mods: set[_ImportCaptureHook._Module] = set()
         if collect_unreferenced:
-            rem_explicit_mods.update([m for m in self._modules_by_name.values() if m.immediate])
+            rem_explicit_mods.update(
+                m for m in self._modules_by_name.values()
+                if m.immediate
+                # No good way to tell if user did `import a.b.c` or `import a.b.c as c`
+                and m.parent is not None
+            )
 
         #
 
