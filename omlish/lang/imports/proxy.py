@@ -5,6 +5,9 @@ TODO:
   - no, need sub-imports..
  - seal on first use? or just per module? can't seal roots and still be usable
   - only if not hasattr?
+ - audit for deadlock risk - does importlib._bootstrap do it for us? do we need a global _ProxyImporter lock? would only
+   happen on reification
+ - ProxyImportError
 
 See:
  - https://peps.python.org/pep-0810/
@@ -73,6 +76,8 @@ class _ProxyImporter:
 
         real_obj: types.ModuleType | None = None
 
+    #
+
     def _get_or_make_module_locked(self, name: str) -> _Module:
         try:
             return self._modules_by_name[name]
@@ -106,40 +111,33 @@ class _ProxyImporter:
 
         return module
 
-    def add_module(
+    def _handle_module_getattr(self, module: _Module, attr: str) -> ta.Any:
+        with self._lock:
+            val = self._retrieve_from_module_locked(module, attr)
+
+        setattr(module.proxy_obj, attr, val)
+        return val
+
+    def _extend_module_locked(
             self,
-            module: str,
+            module: _Module,
             *,
             children: ta.Iterable[str] | None = None,
             attrs: ta.Iterable[str] | None = None,
-    ) -> types.ModuleType:
-        if isinstance(children, str):
-            raise TypeError(children)
+    ) -> None:
+        for c in children or []:
+            if module.real_obj is not None and c in module.real_obj.__dict__:
+                raise Exception(f'Already imported: {module.name}')
 
-        with self._lock:
-            if not children and not attrs and '.' in module:
-                module, _, child = module.rpartition('.')
-                children = [child]
+            module.pending_children.add(c)
 
-            m = self._get_or_make_module_locked(module)
+        for a in attrs or []:
+            if module.real_obj is not None and c in module.real_obj.__dict__:
+                raise Exception(f'Already imported: {module.name}')
 
-            for c in children or []:
-                if m.real_obj is not None and c in m.real_obj.__dict__:
-                    raise Exception(f'Already imported: {module}')
+            module.pending_attrs.add(a)
 
-                m.pending_children.add(c)
-
-            for a in attrs or []:
-                if m.real_obj is not None and c in m.real_obj.__dict__:
-                    raise Exception(f'Already imported: {module}')
-
-                m.pending_attrs.add(a)
-
-        return m.proxy_obj
-
-    def _retrieve_from_module(self, module: _Module, attr: str) -> ta.Any:
-        # FIXME: lock lol
-
+    def _retrieve_from_module_locked(self, module: _Module, attr: str) -> ta.Any:
         if attr in module.pending_children:
             if module.name == self._owner_name:
                 val = importlib.import_module(f'{module.name}.{attr}')
@@ -173,10 +171,33 @@ class _ProxyImporter:
 
         return getattr(ro, attr)
 
-    def _handle_module_getattr(self, module: _Module, attr: str) -> ta.Any:
-        val = self._retrieve_from_module(module, attr)
-        setattr(module.proxy_obj, attr, val)
-        return val
+    #
+
+    def add(
+            self,
+            module: str,
+            *,
+            children: ta.Iterable[str] | None = None,
+            attrs: ta.Iterable[str] | None = None,
+    ) -> types.ModuleType:
+        if isinstance(children, str):
+            raise TypeError(children)
+
+        if not children and not attrs and '.' in module:
+            module, _, child = module.rpartition('.')
+            children = [child]
+
+        with self._lock:
+            m = self._get_or_make_module_locked(module)
+
+            if children or attrs:
+                self._extend_module_locked(
+                    m,
+                    children=children,
+                    attrs=attrs,
+                )
+
+        return m.proxy_obj
 
     def get_module(self, name: str) -> types.ModuleType:
         try:
@@ -187,7 +208,7 @@ class _ProxyImporter:
         with self._lock:
             return self._get_or_make_module_locked(name).proxy_obj
 
-    def retrieve(self, spec: str) -> ta.Any:
+    def lookup(self, spec: str) -> ta.Any:
         if '.' not in spec:
             return self._modules_by_name[spec].proxy_obj
 
@@ -305,13 +326,13 @@ def proxy_init(
     pi = _get_module_proxy_importer(init_globals)
     lg = LazyGlobals.install(init_globals)
 
-    pi.add_module(
+    pi.add(
         name,
         children=[r for l, r in al if r is not None],
     )
 
     for imp_attr, as_attr in al:
-        lg.set_fn(as_attr, functools.partial(pi.retrieve, name if imp_attr is None else f'{name}.{imp_attr}'))
+        lg.set_fn(as_attr, functools.partial(pi.lookup, name if imp_attr is None else f'{name}.{imp_attr}'))
 
 
 ##
@@ -393,7 +414,7 @@ class _AutoProxyImport(_AutoProxy):
         pi = _get_module_proxy_importer(self._mod_globals)
 
         for cm in cap.modules.values():
-            pi.add_module(
+            pi.add(
                 cm.name,
                 children=cm.children,
             )
@@ -405,7 +426,7 @@ class _AutoProxyImport(_AutoProxy):
 
         if self._eager:
             for ci in cap.imports.values():
-                pi.retrieve(ci.module.name)
+                pi.lookup(ci.module.name)
 
         if self._update_exports:
             self._ic.update_exports()
@@ -420,7 +441,7 @@ class _AutoProxyInit(_AutoProxy):
         lg = LazyGlobals.install(self._mod_globals)
 
         for cm in cap.modules.values():
-            pi.add_module(
+            pi.add(
                 cm.name,
                 children=cm.children,
                 attrs=cm.attrs,
@@ -428,9 +449,9 @@ class _AutoProxyInit(_AutoProxy):
 
         for ci in cap.imports.values():
             for a in ci.as_ or []:
-                lg.set_fn(a, functools.partial(pi.retrieve, ci.module.name))
+                lg.set_fn(a, functools.partial(pi.lookup, ci.module.name))
             for sa, da in ci.attrs or []:
-                lg.set_fn(da, functools.partial(pi.retrieve, f'{ci.module.name}.{sa}'))
+                lg.set_fn(da, functools.partial(pi.lookup, f'{ci.module.name}.{sa}'))
 
         if self._eager:
             for a in cap.attrs:
