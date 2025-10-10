@@ -206,7 +206,7 @@ class _ProxyImporter:
         if isinstance(children, str):
             raise TypeError(children)
 
-        # Leaf children get collapsed into pending_children
+        # Leaf modules get collapsed into parents' pending_children
         if not children and not attrs and '.' in module:
             module, _, child = module.rpartition('.')
             children = [child]
