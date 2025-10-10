@@ -1,12 +1,193 @@
+"""
+TODO:
+ - _ProxyImports
+ - if already imported just return?
+  - no, need sub-imports..
+ - seal on first use? or just per module? can't seal roots and still be usable
+  - only if not hasattr?
+
+See:
+ - https://peps.python.org/pep-0810/
+ - https://scientific-python.org/specs/spec-0001/
+ - https://github.com/scientific-python/lazy-loader
+"""
 import contextlib
 import functools
 import importlib.util
+import threading
 import types
 import typing as ta
 
 from ..lazyglobals import LazyGlobals
 from .capture import ImportCapture
 from .capture import _new_import_capture_hook
+
+
+##
+
+
+class _ProxyImporter:
+    def __init__(
+            self,
+            *,
+            owner_globals: ta.MutableMapping[str, ta.Any] | None = None,
+    ) -> None:
+        super().__init__()
+
+        self._owner_globals = owner_globals
+
+        self._owner_name: str | None = owner_globals.get('__name__') if owner_globals else None
+
+        # NOTE: Import machinery may be reentrant for things like gc ops and signal handling:
+        # TODO: audit for reentrancy this lol
+        # https://github.com/python/cpython/blob/72f25a8d9a5673d39c107cf522465a566b979ed5/Lib/importlib/_bootstrap.py#L233-L237  # noqa
+        self._lock = threading.RLock()
+
+        self._modules_by_name: dict[str, _ProxyImporter._Module] = {}
+        self._modules_by_proxy_obj: dict[types.ModuleType, _ProxyImporter._Module] = {}
+
+    class _Module:
+        def __init__(
+                self,
+                name: str,
+                getattr_handler: ta.Callable[['_ProxyImporter._Module', str], ta.Any],
+                *,
+                parent: ta.Optional['_ProxyImporter._Module'] = None,
+        ) -> None:
+            super().__init__()
+
+            self.name = name
+            self.parent = parent
+
+            self.base_name = name.rpartition('.')[2]
+            self.root: _ProxyImporter._Module = parent.root if parent is not None else self  # noqa
+
+            self.children: dict[str, _ProxyImporter._Module] = {}
+            self.descendants: set[_ProxyImporter._Module] = set()
+
+            self.proxy_obj = types.ModuleType(f'<{self.__class__.__qualname__}: {name}>')
+            self.proxy_obj.__file__ = None
+            self.proxy_obj.__getattr__ = functools.partial(getattr_handler, self)  # type: ignore[method-assign]  # noqa
+
+            self.pending_children: set[str] = set()
+            self.pending_attrs: set[str] = set()
+
+        real_obj: types.ModuleType | None = None
+
+    def _get_or_make_module_locked(self, name: str) -> _Module:
+        try:
+            return self._modules_by_name[name]
+        except KeyError:
+            pass
+
+        parent: _ProxyImporter._Module | None = None
+        if '.' in name:
+            rest, _, attr = name.rpartition('.')
+            parent = self._get_or_make_module_locked(rest)
+
+            if (
+                    attr in parent.children or
+                    attr in parent.pending_attrs or
+                    ((ro := parent.real_obj) is not None and attr not in ro.__dict__)
+            ):
+                raise NotImplementedError
+
+        module = self._modules_by_name[name] = _ProxyImporter._Module(
+            name,
+            self._handle_module_getattr,
+        )
+
+        self._modules_by_name[name] = module
+        self._modules_by_proxy_obj[module.proxy_obj] = module
+
+        if parent is not None:
+            parent.pending_children.discard(module.base_name)
+            parent.children[module.base_name] = module
+            parent.root.descendants.add(module)
+
+        return module
+
+    def add_module(
+            self,
+            module: str,
+            *,
+            children: ta.Iterable[str] | None = None,
+            attrs: ta.Iterable[str] | None = None,
+    ) -> types.ModuleType:
+        if isinstance(children, str):
+            raise TypeError(children)
+
+        with self._lock:
+            if not children and not attrs and '.' in module:
+                module, _, child = module.rpartition('.')
+                children = [child]
+
+            m = self._get_or_make_module_locked(module)
+
+            for c in children or []:
+                if m.real_obj is not None and c in m.real_obj.__dict__:
+                    raise Exception(f'Already imported: {module}')
+
+                m.pending_children.add(c)
+
+            for a in attrs or []:
+                if m.real_obj is not None and c in m.real_obj.__dict__:
+                    raise Exception(f'Already imported: {module}')
+
+                m.pending_attrs.add(a)
+
+        return m.proxy_obj
+
+    def _handle_module_getattr(self, module: _Module, attr: str) -> ta.Any:
+        # FIXME: lock lol
+
+        if attr in module.pending_children:
+            if module.name == self._owner_name:
+                val = importlib.import_module(f'{module.name}.{attr}')
+
+            else:
+                mod = __import__(
+                    module.name,
+                    self._owner_globals or {},
+                    {},
+                    [attr],
+                    0,
+                )
+
+                # TODO: check if real_mod, or do something with real_mod ...
+                val = getattr(mod, attr)
+
+            return val
+
+        if attr in module.pending_attrs:
+            if (ro := module.real_obj) is None:
+                ro = module.real_obj = importlib.import_module(module.name)
+
+            return getattr(ro, attr)
+
+        try:
+            child = module.children[attr]
+        except KeyError:
+            pass
+        else:
+            return child.proxy_obj
+
+        raise NotImplementedError
+
+    def retrieve(self, spec: str) -> ta.Any:
+        if '.' not in spec:
+            return self._modules_by_name[spec].proxy_obj
+
+        try:
+            module = self._modules_by_name[spec]
+        except KeyError:
+            pass
+        else:
+            return module.proxy_obj
+
+        rest, _, attr = spec.rpartition('.')
+        module = self._modules_by_name[rest]
+        return getattr(module.proxy_obj, attr)
 
 
 ##
@@ -281,16 +462,36 @@ def auto_proxy_init(
         ):
             yield inst
 
-        for spec, attrs in _translate_old_style_import_capture(inst.captured).items():
-            proxy_init(
-                init_globals,
-                spec,
-                attrs,
+        pi: _ProxyImporter
+        try:
+            pi = init_globals['__proxy_importer__']
+
+        except KeyError:
+            pi = _ProxyImporter(
+                owner_globals=init_globals,
+            )
+            init_globals['__proxy_init__'] = pi
+
+        else:
+            if pi._owner_globals is not init_globals:  # noqa
+                raise Exception
+
+        lg = LazyGlobals.install(init_globals)
+
+        for cm in inst.captured.modules.values():
+            pi.add_module(
+                cm.name,
+                children=cm.children,
+                attrs=cm.attrs,
             )
 
-        if eager:
-            lg = LazyGlobals.install(init_globals)
+        for ci in inst.captured.imports.values():
+            for a in ci.as_ or []:
+                lg.set_fn(a, functools.partial(pi.retrieve, ci.module.name))
+            for sa, da in ci.attrs or []:
+                lg.set_fn(da, functools.partial(pi.retrieve, f'{ci.module.name}.{sa}'))
 
+        if eager:
             for a in inst.captured.attrs:
                 lg.get(a)
 
