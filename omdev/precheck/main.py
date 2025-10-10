@@ -134,12 +134,12 @@ def _check_cmd(args) -> None:
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
+    parser.add_argument('-v', '--verbose', action='store_true')
 
     subparsers = parser.add_subparsers()
 
     parser_check = subparsers.add_parser('check')
     parser_check.add_argument('roots', nargs='+')
-    parser_check.add_argument('-v', '--verbose', action='store_true')
     parser_check.set_defaults(func=_check_cmd)
 
     return parser

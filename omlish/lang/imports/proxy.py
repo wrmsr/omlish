@@ -169,6 +169,7 @@ class _ProxyImporter:
         if parent is not None:
             parent.pending_children.discard(module.base_name)
             parent.children[module.base_name] = module
+            setattr(parent.proxy_obj, module.base_name, module.proxy_obj)
             parent.root.descendants.add(module)
 
         return module

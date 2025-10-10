@@ -3,6 +3,8 @@ import dataclasses as dc
 import os.path
 import typing as ta
 
+from omlish.text.filecache import TextFileCache
+
 from .base import Precheck
 from .base import PrecheckContext
 from .caches import AstCache
@@ -26,6 +28,7 @@ class RootRelativeImportPrecheck(Precheck['RootRelativeImportPrecheck.Config']):
             dir_walk_cache: DirWalkCache,
             headers_cache: HeadersCache,
             ast_cache: AstCache,
+            text_file_cache: TextFileCache,
     ) -> None:
         super().__init__(config)
 
@@ -34,6 +37,7 @@ class RootRelativeImportPrecheck(Precheck['RootRelativeImportPrecheck.Config']):
         self._dir_walk_cache = dir_walk_cache
         self._headers_cache = headers_cache
         self._ast_cache = ast_cache
+        self._text_file_cache = text_file_cache
 
     async def _run_py_file(self, py_file: str, src_root: str) -> ta.AsyncGenerator[Precheck.Violation]:
         if isinstance(header_lines := self._headers_cache.get_file_headers(py_file), Exception):
@@ -41,11 +45,20 @@ class RootRelativeImportPrecheck(Precheck['RootRelativeImportPrecheck.Config']):
         if any(hl.src.strip() == '# ruff: noqa' for hl in header_lines):
             return
 
+        py_file_lines = self._text_file_cache.get_entry(py_file).lines()
+
         py_file_ast = self._ast_cache.get_file_ast(py_file)
         if not isinstance(py_file_ast, ast.Module):
             return
 
-        for cur_node in py_file_ast.body:
+        for cur_node in ast.walk(py_file_ast):
+            if not isinstance(cur_node, (ast.Import, ast.ImportFrom)):
+                continue
+
+            # FIXME: lame lol
+            if py_file_lines[cur_node.lineno - 1].strip().endswith('# noqa'):
+                continue
+
             if isinstance(cur_node, ast.Import):
                 imp_alias: ast.alias
                 for imp_alias in cur_node.names:
