@@ -319,8 +319,7 @@ class _ImportCaptureHook:
             rem_explicit_mods.update(
                 m for m in self._modules_by_name.values()
                 if m.immediate
-                # No good way to tell if user did `import a.b.c` or `import a.b.c as c`
-                and m.parent is not None
+                and m.parent is not None  # No good way to tell if user did `import a.b.c` or `import a.b.c as c`
             )
 
         #
@@ -634,6 +633,7 @@ class _FrameBuiltinsImportCaptureHook(_AbstractBuiltinsImportCaptureHook):
 
 
 #
+
 
 _CAPTURE_IMPLS: ta.Mapping[str, type[_AbstractBuiltinsImportCaptureHook]] = {
     'cext': _FrameBuiltinsImportCaptureHook,

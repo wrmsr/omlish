@@ -11,7 +11,6 @@ See:
  - https://scientific-python.org/specs/spec-0001/
  - https://github.com/scientific-python/lazy-loader
 """
-import contextlib
 import functools
 import importlib.util
 import threading
@@ -138,7 +137,7 @@ class _ProxyImporter:
 
         return m.proxy_obj
 
-    def _handle_module_getattr(self, module: _Module, attr: str) -> ta.Any:
+    def _retrieve_from_module(self, module: _Module, attr: str) -> ta.Any:
         # FIXME: lock lol
 
         if attr in module.pending_children:
@@ -159,12 +158,6 @@ class _ProxyImporter:
 
             return val
 
-        if attr in module.pending_attrs:
-            if (ro := module.real_obj) is None:
-                ro = module.real_obj = importlib.import_module(module.name)
-
-            return getattr(ro, attr)
-
         try:
             child = module.children[attr]
         except KeyError:
@@ -172,7 +165,27 @@ class _ProxyImporter:
         else:
             return child.proxy_obj
 
-        raise NotImplementedError
+        if module.name == self._owner_name:
+            raise NotImplementedError
+
+        if (ro := module.real_obj) is None:
+            ro = module.real_obj = importlib.import_module(module.name)
+
+        return getattr(ro, attr)
+
+    def _handle_module_getattr(self, module: _Module, attr: str) -> ta.Any:
+        val = self._retrieve_from_module(module, attr)
+        setattr(module.proxy_obj, attr, val)
+        return val
+
+    def get_module(self, name: str) -> types.ModuleType:
+        try:
+            return self._modules_by_name[name].proxy_obj
+        except KeyError:
+            pass
+
+        with self._lock:
+            return self._get_or_make_module_locked(name).proxy_obj
 
     def retrieve(self, spec: str) -> ta.Any:
         if '.' not in spec:
@@ -224,6 +237,8 @@ def proxy_import(
         package: str | None = None,
         extras: ta.Iterable[str] | None = None,
 ) -> types.ModuleType:
+    """'Legacy' proxy import mechanism."""
+
     if isinstance(extras, str):
         raise TypeError(extras)
 
@@ -244,79 +259,6 @@ def proxy_import(
 
 
 #
-
-
-def auto_proxy_import(
-        mod_globals: ta.MutableMapping[str, ta.Any],
-        *,
-        disable: bool = False,
-
-        unreferenced_callback: ta.Callable[[ta.Sequence[str]], None] | None = None,
-        raise_unreferenced: bool = False,
-
-        _stack_offset: int = 0,
-        _capture_impl: str | None = None,
-) -> ta.ContextManager[ImportCapture]:
-    inst = ImportCapture(
-        mod_globals,
-        _hook=_new_import_capture_hook(
-            mod_globals,
-            stack_offset=_stack_offset + 1,
-            capture_impl=_capture_impl,
-        ),
-        disable=disable,
-    )
-
-    @contextlib.contextmanager
-    def inner() -> ta.Iterator[ImportCapture]:
-        with inst.capture(
-                unreferenced_callback=unreferenced_callback,
-                raise_unreferenced=raise_unreferenced,
-        ):
-            yield inst
-
-        dct: dict[str, list[tuple[str | None, str]]] = {}
-
-        for ci in inst.captured.imports.values():
-            if ci.module.kind == 'leaf':
-                if (p := ci.module.parent) is None:
-                    raise NotImplementedError
-
-                if ci.attrs:
-                    raise NotImplementedError
-
-                for a in ci.as_ or []:
-                    dct.setdefault(p.name, []).append(
-                        (ci.module.base_name, a),
-                    )
-
-            elif ci.module.kind == 'terminal':
-                if ci.module.children:
-                    raise NotImplementedError
-
-                for a in ci.as_ or []:
-                    dct.setdefault(ci.module.name, []).append(
-                        (None, a),
-                    )
-
-                for sa, da in ci.attrs or []:
-                    dct.setdefault(ci.module.name, []).append(
-                        (sa, da),
-                    )
-
-            else:
-                raise NotImplementedError
-
-        # pi = _get_module_proxy_importer(mod_globals)
-
-        for spec, attrs in dct.items():
-            for dsa, ma in attrs:
-                mod_globals[ma] = proxy_import(spec + (('.' + dsa) if dsa is not None else ''))
-
-    return inner()
-
-
-##
 
 
 def proxy_init(
@@ -372,62 +314,131 @@ def proxy_init(
         lg.set_fn(as_attr, functools.partial(pi.retrieve, name if imp_attr is None else f'{name}.{imp_attr}'))
 
 
-#
+##
 
 
-def auto_proxy_init(
-        init_globals: ta.MutableMapping[str, ta.Any],
-        *,
-        disable: bool = False,
-        eager: bool = False,
+class _AutoProxy:
+    def __init__(
+            self,
+            mod_globals: ta.MutableMapping[str, ta.Any],
+            *,
+            disable: bool = False,
+            eager: bool = False,
 
-        unreferenced_callback: ta.Callable[[ta.Sequence[str]], None] | None = None,
-        raise_unreferenced: bool = False,
+            unreferenced_callback: ta.Callable[[ta.Sequence[str]], None] | None = None,
+            raise_unreferenced: bool = False,
 
-        update_exports: bool = False,
+            update_exports: bool = False,
 
-        _stack_offset: int = 0,
-        _capture_impl: str | None = None,
-) -> ta.ContextManager[ImportCapture]:
-    inst = ImportCapture(
-        init_globals,
-        _hook=_new_import_capture_hook(
-            init_globals,
-            stack_offset=_stack_offset + 1,
-            capture_impl=_capture_impl,
-        ),
-        disable=disable,
-    )
+            _stack_offset: int = 0,
+            _capture_impl: str | None = None,
+    ) -> None:
+        super().__init__()
 
-    @contextlib.contextmanager
-    def inner() -> ta.Iterator[ImportCapture]:
-        with inst.capture(
-                unreferenced_callback=unreferenced_callback,
-                raise_unreferenced=raise_unreferenced,
-        ):
-            yield inst
+        self._mod_globals = mod_globals
 
-        pi = _get_module_proxy_importer(init_globals)
-        lg = LazyGlobals.install(init_globals)
+        self._disabled = disable
+        self._eager = eager
 
-        for cm in inst.captured.modules.values():
+        self._unreferenced_callback = unreferenced_callback
+        self._raise_unreferenced = raise_unreferenced
+
+        self._update_exports = update_exports
+
+        self._ic = ImportCapture(
+            mod_globals,
+            _hook=_new_import_capture_hook(
+                mod_globals,
+                stack_offset=_stack_offset + 1,
+                capture_impl=_capture_impl,
+            ),
+            disable=disable,
+        )
+        self._icc: ta.Any = None
+
+    def __enter__(self) -> ImportCapture:
+        if self._icc is not None:
+            raise RuntimeError
+
+        self._icc = self._ic.capture(
+            unreferenced_callback=self._unreferenced_callback,
+            raise_unreferenced=self._raise_unreferenced,
+        )
+
+        return self._icc.__enter__()  # noqa
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self._icc is None:
+            raise RuntimeError
+
+        self._icc.__exit__(exc_type, exc_val, exc_tb)
+
+        if not self._disabled and exc_type is None:
+            self._install()
+
+    # @abc.abstractmethod
+    def _install(self) -> None:
+        raise NotImplementedError
+
+
+@ta.final
+class _AutoProxyImport(_AutoProxy):
+    def _install(self) -> None:
+        cap = self._ic.captured
+
+        for cm in cap.modules.values():
+            if cm.attrs:
+                raise RuntimeError
+
+        pi = _get_module_proxy_importer(self._mod_globals)
+
+        for cm in cap.modules.values():
+            pi.add_module(
+                cm.name,
+                children=cm.children,
+            )
+
+        for ci in cap.imports.values():
+            pm = pi.get_module(ci.module.name)
+            for a in ci.as_ or []:
+                self._mod_globals[a] = pm
+
+        if self._eager:
+            for ci in cap.imports.values():
+                pi.retrieve(ci.module.name)
+
+        if self._update_exports:
+            self._ic.update_exports()
+
+
+@ta.final
+class _AutoProxyInit(_AutoProxy):
+    def _install(self) -> None:
+        cap = self._ic.captured
+
+        pi = _get_module_proxy_importer(self._mod_globals)
+        lg = LazyGlobals.install(self._mod_globals)
+
+        for cm in cap.modules.values():
             pi.add_module(
                 cm.name,
                 children=cm.children,
                 attrs=cm.attrs,
             )
 
-        for ci in inst.captured.imports.values():
+        for ci in cap.imports.values():
             for a in ci.as_ or []:
                 lg.set_fn(a, functools.partial(pi.retrieve, ci.module.name))
             for sa, da in ci.attrs or []:
                 lg.set_fn(da, functools.partial(pi.retrieve, f'{ci.module.name}.{sa}'))
 
-        if eager:
-            for a in inst.captured.attrs:
+        if self._eager:
+            for a in cap.attrs:
                 lg.get(a)
 
-        if update_exports:
-            inst.update_exports()
+        if self._update_exports:
+            self._ic.update_exports()
 
-    return inner()
+
+auto_proxy_import = _AutoProxyImport
+auto_proxy_init = _AutoProxyInit
