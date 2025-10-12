@@ -72,7 +72,7 @@ markupsafe==3.0.3
 
 redis==6.4.0
 
-sqlean.py==3.50.4.3; python_version < "3.14"  # @omlish-venv !13t !13dt !14t
+sqlean.py==3.50.4.4; python_version < "3.14"  # @omlish-venv !13t !13dt !14t
 # git+https://github.com/wrmsr/sqlean.py.git
 
 duckdb==1.4.1  # @omlish-venv !13t !13dt !14t
@@ -99,7 +99,7 @@ asttokens==3.0.0
 numpy>=1.24
 
 rich==14.2.0
-textual==6.2.1
+textual==6.3.0
 
 snowflake-connector-python[secure-local-storage]==4.0.0  # @omlish-venv !13t !13dt !14t
 # snowflake-sqlalchemy==1.7.7  # @omlish-venv !13t !13dt !14t
@@ -125,7 +125,7 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.40.49
+boto3>=1.40.50
 
 antlr4-python3-runtime==4.13.2
 

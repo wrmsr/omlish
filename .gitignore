@@ -22,6 +22,7 @@
 /*.egg-info/
 /.cache/
 /.data/
+/.git-bare/
 /.hypothesis/
 /.ipynb_checkpoints/
 /.mypy_cache/
