@@ -9,8 +9,8 @@ from .... import minichain as mc
 
 
 with lang.auto_proxy_import(globals()):
-    from rich import console as rich_console
-    from rich import markdown as rich_markdown
+    import rich.console
+    import rich.markdown
 
 
 ##
@@ -91,4 +91,4 @@ class MarkdownStringChatSessionPrinter(StringChatSessionPrinter):
         if not s:
             return
 
-        rich_console.Console().print(rich_markdown.Markdown(s))
+        rich.console.Console().print(rich.markdown.Markdown(s))
