@@ -19,6 +19,7 @@ matplotlib==3.10.7
 
 torch==2.8.0
 torchvision==0.23.0
+# torchcodec==0.7.0
 
 diffusers==0.35.1
 
