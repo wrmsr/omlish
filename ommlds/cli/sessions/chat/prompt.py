@@ -9,6 +9,9 @@ from .base import DEFAULT_CHAT_MODEL_BACKEND
 from .base import ChatOptions
 from .base import ChatSession
 from .printing import ChatSessionPrinter
+from .printing import IncrementalMarkdownStreamPrinter
+from .printing import SimpleStreamPrinter
+from .printing import StreamPrinter
 from .state import ChatStateManager
 from .tools import ToolUseExecutor
 
@@ -81,13 +84,20 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
                     (self._chat_options or []),
             ))).v as st_resp:
                 lst: list[str] = []
-                async for o in st_resp:
-                    if o:
-                        c = check.isinstance(check.single(check.single(o.choices).deltas), mc.ContentAiChoiceDelta).c
-                        if c is not None:
-                            print(check.isinstance(c, str), end='', flush=True)
-                            lst.append(check.isinstance(c, str))
-                print()
+
+                sp_cls: type[StreamPrinter]
+                if self._config.markdown:
+                    sp_cls = IncrementalMarkdownStreamPrinter
+                else:
+                    sp_cls = SimpleStreamPrinter
+                with sp_cls() as sp:
+                    async for o in st_resp:
+                        if o:
+                            c = check.isinstance(check.single(check.single(o.choices).deltas), mc.ContentAiChoiceDelta).c  # noqa
+                            if c is not None:
+                                s = check.isinstance(c, str)
+                                sp.feed(s)
+                                lst.append(s)
 
             resp_m = mc.AiMessage(''.join(lst))
             new_chat.append(resp_m)

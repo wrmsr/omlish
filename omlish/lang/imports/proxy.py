@@ -1,6 +1,5 @@
 """
 TODO:
- - _ProxyImports
  - if already imported just return?
   - no, need sub-imports..
  - seal on first use? or just per module? can't seal roots and still be usable
@@ -8,6 +7,8 @@ TODO:
  - audit for deadlock risk - does importlib._bootstrap do it for us? do we need a global _ProxyImporter lock? would only
    happen on reification
  - ProxyImportError
+ - detect import reification in own module body - user is failing to properly 'hands-off' lazy import
+  - bonus points detect when done specifically for a type annotation
 
 See:
  - https://peps.python.org/pep-0810/

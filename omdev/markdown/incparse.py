@@ -1,7 +1,12 @@
 import dataclasses as dc
+import typing as ta
 
-from markdown_it import MarkdownIt
-from markdown_it.token import Token
+from omlish import lang
+
+
+with lang.auto_proxy_import(globals()):
+    import markdown_it as md
+    import markdown_it.token  # noqa
 
 
 ##
@@ -10,19 +15,19 @@ from markdown_it.token import Token
 class IncrementalMarkdownParser:
     def __init__(
             self,
-            parser: MarkdownIt | None = None,
+            parser: ta.Optional['md.MarkdownIt'] = None,
     ) -> None:
         super().__init__()
 
         if parser is None:
-            parser = MarkdownIt()
+            parser = md.MarkdownIt()
         self._parser = parser
 
-        self._stable_tokens: list[Token] = []
+        self._stable_tokens: list[md.token.Token] = []
         self._buffer = ''
         self._num_stable_lines = 0  # Number of lines in stable tokens
 
-    def feed(self, chunk: str) -> list[Token]:
+    def feed(self, chunk: str) -> list[md.token.Token]:
         self._buffer += chunk
 
         # Parse the current buffer
@@ -59,7 +64,7 @@ class IncrementalMarkdownParser:
         # Return all tokens (stable + remaining unstable)
         return [*self._stable_tokens, *adjusted_tokens[stable_count:]]
 
-    def _find_stable_token_count(self, tokens: list[Token]) -> int:
+    def _find_stable_token_count(self, tokens: list['md.token.Token']) -> int:
         if not tokens:
             return 0
 
@@ -76,7 +81,11 @@ class IncrementalMarkdownParser:
         # The last parent and everything after it is unstable. Everything before the second-to-last parent is stable.
         return parent_indices[-2]
 
-    def _adjust_token_line_numbers(self, tokens: list[Token], line_offset: int) -> list[Token]:
+    def _adjust_token_line_numbers(
+            self,
+            tokens: list['md.token.Token'],
+            line_offset: int,
+    ) -> list['md.token.Token']:
         adjusted = []
         for token in tokens:
             if token.map:

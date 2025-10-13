@@ -12,6 +12,9 @@ with lang.auto_proxy_import(globals()):
     import rich.console
     import rich.markdown
 
+    from omdev.markdown import incparse as md_ip
+    from omdev.tui import markdown as tui_md
+
 
 ##
 
@@ -22,7 +25,7 @@ class ChatSessionPrinter(lang.Abstract):
         raise NotImplementedError
 
 
-##
+#
 
 
 class StringChatSessionPrinter(ChatSessionPrinter, lang.Abstract):
@@ -59,7 +62,7 @@ class StringChatSessionPrinter(ChatSessionPrinter, lang.Abstract):
             raise TypeError(obj)
 
 
-##
+#
 
 
 class SimpleStringChatSessionPrinter(StringChatSessionPrinter):
@@ -82,7 +85,7 @@ class SimpleStringChatSessionPrinter(StringChatSessionPrinter):
         self._str_printer(s)
 
 
-##
+#
 
 
 class MarkdownStringChatSessionPrinter(StringChatSessionPrinter):
@@ -92,3 +95,43 @@ class MarkdownStringChatSessionPrinter(StringChatSessionPrinter):
             return
 
         rich.console.Console().print(rich.markdown.Markdown(s))
+
+
+##
+
+
+class StreamPrinter(lang.ExitStacked, lang.Abstract):
+    @abc.abstractmethod
+    def feed(self, s: str) -> None:
+        raise NotImplementedError
+
+
+#
+
+
+class SimpleStreamPrinter(StreamPrinter):
+    def feed(self, s: str) -> None:
+        print(s, end='', flush=True)
+
+    def _exit_contexts(self) -> None:
+        super()._exit_contexts()
+        print(flush=True)
+
+
+#
+
+
+class IncrementalMarkdownStreamPrinter(StreamPrinter):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._ip = md_ip.IncrementalMarkdownParser()
+
+    _ir: 'tui_md.IncrementalMarkdownRenderer'
+
+    def _enter_contexts(self) -> None:
+        super()._enter_contexts()
+        self._ir = self._enter_context(tui_md.IncrementalMarkdownRenderer())
+
+    def feed(self, s: str) -> None:
+        self._ir.feed(s)
