@@ -105,7 +105,9 @@
     `def add_two_floats(x: float, y: float) -> float:` does not need a docstring or comments.
   - Do not repeat typing information in function docstrings. In general function and parameter names and types should be 
     clear enough to not require explicitly listing them in docstrings. Do not use google-style or equivalent docstrings.
-  - Both opening and closing docstring triple-quotes should be alone on their own dedicated line.
+  - Both opening and closing docstring triple-quotes should be alone on their own dedicated line *unless* the entire
+    docstring (including triple-quotes and indentation) fits on a single 120-column wide line.
+  - All docstrings should be followed by a blank line.
   - Reserve inline comments for 'surprising' or dangerous things, such as invariants which must be maintained. A comment
     like `self._ensure_user_exists()  # ensure user exists` is worthless, but a comment like
     `self._ensure_user_exists()  # safe because we already hold the user lock` is valuable.
