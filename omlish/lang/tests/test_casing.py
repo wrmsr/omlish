@@ -4,7 +4,9 @@ from ..casing import SNAKE_CASE
 from ..casing import STRING_CASINGS
 from ..casing import UP_SNAKE_CASE
 from ..casing import camel_case
+from ..casing import camel_to_snake
 from ..casing import snake_case
+from ..casing import snake_to_camel
 
 
 def test_casing():
@@ -41,3 +43,8 @@ def test_snake_case():
     assert snake_case('abc', 'def', 'g') == 'abc_def_g'
     assert snake_case('abc', 'def', 'g', 'h') == 'abc_def_g_h'
     assert snake_case('') == ''
+
+
+def test_conversions():
+    assert camel_to_snake('SomeClass') == 'some_class'
+    assert snake_to_camel('some_class') == 'SomeClass'

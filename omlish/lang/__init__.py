@@ -63,6 +63,9 @@ with _auto_proxy_init(globals(), update_exports=True):
         snake_case,
         up_snake_case,
 
+        camel_to_snake,
+        snake_to_camel,
+
         get_string_casing,
         split_string_casing,
     )

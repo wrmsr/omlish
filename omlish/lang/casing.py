@@ -50,6 +50,13 @@ class StringCasing(Abstract):
 
         raise NotImplementedError
 
+    #
+
+    def to(self, other: 'StringCasing') -> ta.Callable[[str], str]:
+        def inner(s: str) -> str:
+            return other.join(*self.split(s))
+        return inner
+
 
 #
 
@@ -165,6 +172,10 @@ camel_case = CAMEL_CASE.join
 low_camel_case = LOW_CAMEL_CASE.join
 snake_case = SNAKE_CASE.join
 up_snake_case = UP_SNAKE_CASE.join
+
+
+camel_to_snake = CAMEL_CASE.to(SNAKE_CASE)
+snake_to_camel = SNAKE_CASE.to(CAMEL_CASE)
 
 
 ##
