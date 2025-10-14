@@ -1,19 +1,12 @@
 import abc
 import typing as ta
 
+from omdev.tui import rich
 from omlish import check
 from omlish import lang
 from omlish.formats import json
 
 from .... import minichain as mc
-
-
-with lang.auto_proxy_import(globals()):
-    import rich.console
-    import rich.markdown
-
-    from omdev.markdown import incparse as md_ip
-    from omdev.tui import markdown as tui_md
 
 
 ##
@@ -94,7 +87,7 @@ class MarkdownStringChatSessionPrinter(StringChatSessionPrinter):
         if not s:
             return
 
-        rich.console.Console().print(rich.markdown.Markdown(s))
+        rich.Console().print(rich.Markdown(s))
 
 
 ##
@@ -125,13 +118,9 @@ class IncrementalMarkdownStreamPrinter(StreamPrinter):
     def __init__(self) -> None:
         super().__init__()
 
-        self._ip = md_ip.IncrementalMarkdownParser()
-
-    _ir: 'tui_md.IncrementalMarkdownRenderer'
-
     def _enter_contexts(self) -> None:
         super()._enter_contexts()
-        self._ir = self._enter_context(tui_md.IncrementalMarkdownRenderer())
+        self._ir: rich.IncrementalMarkdownRenderer = self._enter_context(rich.IncrementalMarkdownRenderer())
 
     def feed(self, s: str) -> None:
         self._ir.feed(s)

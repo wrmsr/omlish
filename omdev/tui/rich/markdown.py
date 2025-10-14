@@ -3,8 +3,12 @@ import typing as ta
 
 from omlish import lang
 
+from ...markdown.incparse import IncrementalMarkdownParser
+
 
 with lang.auto_proxy_import(globals()):
+    import markdown_it as md  # noqa
+    import markdown_it.token  # noqa
     import rich.console
     import rich.live
     import rich.markdown
@@ -14,10 +18,22 @@ with lang.auto_proxy_import(globals()):
 ##
 
 
+def configure_markdown_parser(parser: 'md.MarkdownIt') -> 'md.MarkdownIt':
+    return (
+        parser
+        .enable('strikethrough')
+        .enable('table')
+    )
+
+
+##
+
+
 class IncrementalMarkdownRenderer(lang.ExitStacked):
     def __init__(
             self,
             *,
+            parser: ta.Optional['md.MarkdownIt'] = None,
             console: ta.Optional['rich.console.Console'] = None,
     ) -> None:
         super().__init__()
@@ -25,6 +41,8 @@ class IncrementalMarkdownRenderer(lang.ExitStacked):
         if console is None:
             console = rich.console.Console()
         self._console = console
+
+        self._inc_parser = IncrementalMarkdownParser(parser=parser)
 
         self._accumulated = ''
         self._lines_printed_to_scrollback = 0

@@ -1,8 +1,7 @@
 import argparse
 import sys
 
-import rich.console
-import rich.markdown
+from ... import rich
 
 
 ##
@@ -19,8 +18,8 @@ def _main() -> None:
     else:
         src = sys.stdin.read()
 
-    console = rich.console.Console()
-    markdown = rich.markdown.Markdown(src)
+    console = rich.Console()
+    markdown = rich.Markdown(src)
     console.print(markdown)
     print()
 

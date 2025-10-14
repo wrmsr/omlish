@@ -15,6 +15,7 @@ with lang.auto_proxy_import(globals()):
 class IncrementalMarkdownParser:
     def __init__(
             self,
+            *,
             parser: ta.Optional['md.MarkdownIt'] = None,
     ) -> None:
         super().__init__()
@@ -27,7 +28,11 @@ class IncrementalMarkdownParser:
         self._buffer = ''
         self._num_stable_lines = 0  # Number of lines in stable tokens
 
-    def feed(self, chunk: str) -> list[md.token.Token]:
+    class FeedOutput(ta.NamedTuple):
+        stable: ta.Sequence['md.token.Token']
+        unstable: ta.Sequence['md.token.Token']
+
+    def feed2(self, chunk: str) -> FeedOutput:
         self._buffer += chunk
 
         # Parse the current buffer
@@ -61,8 +66,11 @@ class IncrementalMarkdownParser:
                 self._stable_tokens.extend(newly_stable)
                 self._num_stable_lines = max_line
 
-        # Return all tokens (stable + remaining unstable)
-        return [*self._stable_tokens, *adjusted_tokens[stable_count:]]
+        return IncrementalMarkdownParser.FeedOutput(self._stable_tokens, adjusted_tokens[stable_count:])
+
+    def feed(self, chunk: str) -> list['md.token.Token']:
+        out = self.feed2(chunk)
+        return [*out.stable, *out.unstable]
 
     def _find_stable_token_count(self, tokens: list['md.token.Token']) -> int:
         if not tokens:
