@@ -27,5 +27,7 @@ with _lang.auto_proxy_init(globals()):
         flatten_tokens_filter,
         flatten_tokens,
 
-        IncrementalMarkdownRenderer,
+        MarkdownLiveStream,
+        NaiveMarkdownLiveStream,
+        IncrementalMarkdownLiveStream,
     )

@@ -9,7 +9,7 @@ from .base import DEFAULT_CHAT_MODEL_BACKEND
 from .base import ChatOptions
 from .base import ChatSession
 from .printing import ChatSessionPrinter
-from .printing import IncrementalMarkdownStreamPrinter
+from .printing import MarkdownStreamPrinter
 from .printing import SimpleStreamPrinter
 from .printing import StreamPrinter
 from .state import ChatStateManager
@@ -87,7 +87,7 @@ class PromptChatSession(ChatSession['PromptChatSession.Config']):
 
                 sp_cls: type[StreamPrinter]
                 if self._config.markdown:
-                    sp_cls = IncrementalMarkdownStreamPrinter
+                    sp_cls = MarkdownStreamPrinter
                 else:
                     sp_cls = SimpleStreamPrinter
                 with sp_cls() as sp:

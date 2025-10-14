@@ -114,13 +114,13 @@ class SimpleStreamPrinter(StreamPrinter):
 #
 
 
-class IncrementalMarkdownStreamPrinter(StreamPrinter):
+class MarkdownStreamPrinter(StreamPrinter):
     def __init__(self) -> None:
         super().__init__()
 
     def _enter_contexts(self) -> None:
         super()._enter_contexts()
-        self._ir: rich.IncrementalMarkdownRenderer = self._enter_context(rich.IncrementalMarkdownRenderer())
+        self._ir: rich.MarkdownLiveStream = self._enter_context(rich.IncrementalMarkdownLiveStream())
 
     def feed(self, s: str) -> None:
         self._ir.feed(s)

@@ -1,3 +1,4 @@
+import abc
 import typing as ta
 
 from omlish import lang
@@ -16,7 +17,6 @@ with lang.auto_proxy_import(globals()):
     import rich.text
 
 
-
 ##
 
 
@@ -33,7 +33,7 @@ def configure_markdown_parser(parser: ta.Optional['md.MarkdownIt'] = None) -> 'm
 
 def markdown_from_tokens(tokens: ta.Sequence['md.token.Token']) -> 'rich.markdown.Markdown':
     rmd = rich.markdown.Markdown('')
-    rmd.parsed = tokens
+    rmd.parsed = tokens  # type: ignore[assignment]
     return rmd
 
 
@@ -51,7 +51,7 @@ def flatten_tokens(tokens: ta.Iterable['md.token.Token']) -> ta.Iterable['md.tok
 ##
 
 
-class IncrementalMarkdownRenderer(lang.ExitStacked):
+class MarkdownLiveStream(lang.ExitStacked, lang.Abstract):
     def __init__(
             self,
             *,
@@ -66,31 +66,42 @@ class IncrementalMarkdownRenderer(lang.ExitStacked):
 
         if parser is None:
             parser = configure_markdown_parser()
-        self._inc_parser = IncrementalMarkdownParser(parser=parser)
+        self._parser = parser
 
-        self._accumulated = ''
         self._lines_printed_to_scrollback = 0
 
     _live: 'rich.live.Live'  # noqa
 
     def _enter_contexts(self) -> None:
         super()._enter_contexts()
+
         self._live = self._enter_context(rich.live.Live(
             rich.text.Text(''),
             console=self._console,
             refresh_per_second=10,
         ))
 
-    def _get_rendered_lines(self, obj: ta.Any) -> list[str]:
+    def _console_render(self, obj: ta.Any) -> list[str]:
         return console_render(
             obj,
             force_terminal=True,
             width=self._console.width,
         ).splitlines()
 
-    def feed_old(self, s: str) -> None:
+    def _console_render_markdown(self, src: str) -> list[str]:
+        return self._console_render(markdown_from_tokens(self._parser.parse(src)))
+
+    @abc.abstractmethod
+    def feed(self, s: str) -> None:
+        raise NotImplementedError
+
+
+class NaiveMarkdownLiveStream(MarkdownLiveStream):
+    _accumulated = ''
+
+    def feed(self, s: str) -> None:
         self._accumulated += s
-        all_lines = self._get_rendered_lines(rich.markdown.Markdown(self._accumulated))
+        all_lines = self._console_render_markdown(self._accumulated)
 
         # Calculate how many lines fit in the live window
         available_height = self._console.height - 2
@@ -117,24 +128,38 @@ class IncrementalMarkdownRenderer(lang.ExitStacked):
         # Update the live display
         self._live.update(rich.text.Text.from_ansi('\n'.join(visible_lines)))
 
-    def feed_new(self, s: str) -> None:
-        self._accumulated += s
 
+class IncrementalMarkdownLiveStream(MarkdownLiveStream):
+    def __init__(
+            self,
+            *,
+            parser: ta.Optional['md.MarkdownIt'] = None,
+            console: ta.Optional['rich.console.Console'] = None,
+    ) -> None:
+        super().__init__(
+            parser=parser,
+            console=console,
+        )
+
+        self._inc_parser = IncrementalMarkdownParser(parser=self._parser)
+
+    def feed(self, s: str) -> None:
         ip_out = self._inc_parser.feed2(s)
 
         if ip_out.new_stable:
-            try:
-                srs = self._srs
-            except AttributeError:
-                srs = self._srs = []
-            from ...markdown.tokens import token_repr, flatten_tokens
-            srs.extend(map(token_repr, flatten_tokens(ip_out.new_stable)))
+            # try:
+            #     srs = getattr(self, '_srs')
+            # except AttributeError:
+            #     setattr(self, '_srs', srs := [])
+            # from ...markdown.tokens import token_repr, flatten_tokens
+            # srs.extend(map(token_repr, flatten_tokens(ip_out.new_stable)))
 
-            stable_lines = self._get_rendered_lines(markdown_from_tokens(ip_out.new_stable))
-            self._live.console.print(rich.text.Text.from_ansi('\n'.join(stable_lines)))
+            stable_lines = self._console_render(markdown_from_tokens(ip_out.new_stable))
+            stable_lines.append(' ')  # FIXME: lame hack
+            self._live.console.print(rich.text.Text.from_ansi('\n'.join(stable_lines), no_wrap=True))
             self._lines_printed_to_scrollback = max(0, self._lines_printed_to_scrollback - len(stable_lines))
 
-        unstable_lines = self._get_rendered_lines(markdown_from_tokens(ip_out.unstable))
+        unstable_lines = self._console_render(markdown_from_tokens(ip_out.unstable))
 
         # Calculate how many lines fit in the live window
         available_height = self._console.height - 2
@@ -159,6 +184,3 @@ class IncrementalMarkdownRenderer(lang.ExitStacked):
 
         # Update the live display
         self._live.update(rich.text.Text.from_ansi('\n'.join(visible_lines)))
-
-    feed = feed_new
-    # feed = feed_old
