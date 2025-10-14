@@ -27,7 +27,7 @@
     "module": ".cexts.cmake",
     "attr": "_CLI_MODULE",
     "file": "omdev/cexts/cmake.py",
-    "line": 332,
+    "line": 335,
     "value": {
       "!.cli.types.CliModule": {
         "name": "cmake",

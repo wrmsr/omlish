@@ -1,4 +1,4 @@
-// @omlish-cext
+// !@omlish-cext
 // dispatch_module.cpp - C extension for dispatch functionality
 /*
 I'll create a C++ extension that implements the Python dispatch system as a native module. I'll focus on optimizing the

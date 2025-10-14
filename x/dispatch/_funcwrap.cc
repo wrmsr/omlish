@@ -1,4 +1,4 @@
-// @omlish-cext
+// !@omlish-cext
 /*
 TODO:
  - error handle no arg / no dispatched type (NULL / None)

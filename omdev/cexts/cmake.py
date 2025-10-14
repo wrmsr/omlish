@@ -266,7 +266,10 @@ class CmakeProjectGen:
                         '-g',
                         '-c',
                     ],
-                    ['-std=c++20'],
+                    [
+                        '$<$<COMPILE_LANGUAGE:C>:-std=c11>',
+                        '$<$<COMPILE_LANGUAGE:CXX>:-std=c++20>',
+                    ],
                 ),
             ))
 

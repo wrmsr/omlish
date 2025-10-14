@@ -1,4 +1,4 @@
-// @omlish-cext
+// !@omlish-cext
 /*
 Below is a single-file C++-based CPython 3.12+ extension that implements the same functionality as your Python
 Dispatcher class, using a native PyDict for storage and carefully handling weak references. It adheres as closely as

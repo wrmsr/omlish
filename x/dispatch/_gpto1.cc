@@ -1,4 +1,4 @@
-// @omlish-cext
+// !@omlish-cext
 // dispatch_module.cpp
 /*
 Below is a single-file example of a C++20 extension for CPython 3.12+ that provides native implementations of the two
