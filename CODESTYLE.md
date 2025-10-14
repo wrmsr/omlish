@@ -46,7 +46,9 @@
 
 - Classes
   - Ensure constructors call `super().__init__()`, even if they don't appear to inherit from anything at their
-    definition - *except* if the class is `@ta.Final` and there is explicit reason to not.
+    definition - *except* if the class is `@ta.Final` and there is explicit reason to not. Additionally, a blank line
+    should follow the super call if it is the first statement of the method (which it usually is) and there are more
+    statements in the method.
   - Prefer to use dataclasses for even moderately complex usecases - if there are, say, more than a 2-element tuple, a
     dataclass should probably be used.
   - `ta.NamedTuple` still has usecases, such as replacing a function's return type from an anonymous tuple to a named
@@ -61,6 +63,7 @@
   - For situations in which different behaviors are necessary, prefer to define an `abc.ABC` interface with
     `@abc.abstractmethod` members, and write multiple implementations of them as warranted. Prefer to refer to the
     interface in type annotations unless it must specifically refer to a given implementation.
+  - Abstract methods should always do nothing but `raise NotImplementedError`.
   - Properties should be free of side-effects. Many utilities eagerly inspect properties at runtime, even private
     (underscore-prefixed) ones, so they cannot alter state.
 
@@ -85,6 +88,10 @@
     annotation feasible.
     - Lack of type annotation is an explicit choice communicating that that particular code cannot or should not be
       statically typed (usually because it is particularly dynamic).
+    - Almost always, if one class field or function parameter is annotated, all fields / parameters / return values
+      should be.
+    - Return value annotations should be included on most magic methods like `__init__` and `__hash__`, but trickier
+      ones like `__exit__` and `__eq__` may be omitted.
     - An exception to this is test code - in general don't bother type annotating test code, and in fact avoid test
       function parameter annotations due to the dynamic nature of pytest fixtures.
   - Use PEP-585 style annotations for builtin types - use `list[int]` instead of `ta.List[int]`, and `int | None`
@@ -98,6 +105,8 @@
     integers should probably return a `ta.AbstractSet[int]` rather than a `set[int]`.
   - Don't avoid `ta.Generic` and type parameters where it makes sense, but usually annotating something as a superclass
     will suffice. When present in a class definition, `ta.Generic` should be the last class in the base class list.
+  - Do not use PEP-695 style type parameter syntax yet - continue to declare `ta.TypeVar`'s explicitly at the top of the
+    module.
 
 - Comments
   - Avoid unnecessary and frivolous comments. Most semantic meaning should be able to be inferred from package / module
