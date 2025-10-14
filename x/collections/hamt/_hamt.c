@@ -39,20 +39,72 @@
 // https://github.com/python/cpython/commit/aa18fd55d575a04e3aa782fedcd08dced26676e0
 //
 #define PY_SSIZE_T_CLEAN
-#define Py_BUILD_CORE 1
 
 #include "Python.h"
-#include "internal/pycore_bitutils.h"      // _Py_popcount32()
-#include "internal/pycore_long.h"          // _PyLong_Format()
-#include "internal/pycore_object.h"        // _PyObject_GC_TRACK()
 
 #include <stddef.h>               // offsetof()
-
-#undef Py_BUILD_CORE
 
 #if PY_VERSION_HEX < 0x030D0000
 #  error "This extension requires CPython 3.13+"
 #endif
+
+////
+
+// Population count: count the number of 1's in 'x'
+// (number of bits set to 1), also known as the hamming weight.
+//
+// Implementation note. CPUID is not used, to test if x86 POPCNT instruction
+// can be used, to keep the implementation simple. For example, Visual Studio
+// __popcnt() is not used this reason. The clang and GCC builtin function can
+// use the x86 POPCNT instruction if the target architecture has SSE4a or
+// newer.
+static inline int
+_popcount32(uint32_t x)
+{
+#if (defined(__clang__) || defined(__GNUC__))
+
+#if SIZEOF_INT >= 4
+    Py_BUILD_ASSERT(sizeof(x) <= sizeof(unsigned int));
+    return __builtin_popcount(x);
+#else
+    // The C standard guarantees that unsigned long will always be big enough
+    // to hold a uint32_t value without losing information.
+    Py_BUILD_ASSERT(sizeof(x) <= sizeof(unsigned long));
+    return __builtin_popcountl(x);
+#endif
+
+#else
+    // 32-bit SWAR (SIMD Within A Register) popcount
+
+    // Binary: 0 1 0 1 ...
+    const uint32_t M1 = 0x55555555;
+    // Binary: 00 11 00 11. ..
+    const uint32_t M2 = 0x33333333;
+    // Binary: 0000 1111 0000 1111 ...
+    const uint32_t M4 = 0x0F0F0F0F;
+
+    // Put count of each 2 bits into those 2 bits
+    x = x - ((x >> 1) & M1);
+    // Put count of each 4 bits into those 4 bits
+    x = (x & M2) + ((x >> 2) & M2);
+    // Put count of each 8 bits into those 8 bits
+    x = (x + (x >> 4)) & M4;
+    // Sum of the 4 byte counts.
+    // Take care when considering changes to the next line. Portability and
+    // correctness are delicate here, thanks to C's "integer promotions" (C99
+    // §6.3.1.1p2). On machines where the `int` type has width greater than 32
+    // bits, `x` will be promoted to an `int`, and following C's "usual
+    // arithmetic conversions" (C99 §6.3.1.8), the multiplication will be
+    // performed as a multiplication of two `unsigned int` operands. In this
+    // case it's critical that we cast back to `uint32_t` in order to keep only
+    // the least significant 32 bits. On machines where the `int` type has
+    // width no greater than 32, the multiplication is of two 32-bit unsigned
+    // integer types, and the (uint32_t) cast is a no-op. In both cases, we
+    // avoid the risk of undefined behaviour due to overflow of a
+    // multiplication of signed integer types.
+    return (uint32_t)(x * 0x01010101U) >> 24;
+#endif
+}
 
 ////
 
@@ -612,7 +664,7 @@ hamt_bitpos(int32_t hash, uint32_t shift)
 static inline uint32_t
 hamt_bitindex(uint32_t bitmap, uint32_t bit)
 {
-    return (uint32_t)_Py_popcount32(bitmap & (bit - 1));
+    return (uint32_t)_popcount32(bitmap & (bit - 1));
 }
 
 
@@ -712,7 +764,7 @@ hamt_node_bitmap_new(Py_ssize_t size)
 
     node->b_bitmap = 0;
 
-    _PyObject_GC_TRACK(node);
+    PyObject_GC_Track(node);
 
     return (HamtNode *)node;
 }
@@ -956,7 +1008,7 @@ hamt_node_bitmap_assoc(HamtNode_Bitmap *self,
     else {
         /* There was no key before with the same (shift,hash). */
 
-        uint32_t n = (uint32_t)_Py_popcount32(self->b_bitmap);
+        uint32_t n = (uint32_t)_popcount32(self->b_bitmap);
 
         if (n >= 16) {
             /* When we have a situation where we want to store more
@@ -1352,7 +1404,14 @@ hamt_node_bitmap_dump(HamtNode_Bitmap *node,
     if (tmp1 == NULL) {
         goto error;
     }
-    tmp2 = _PyLong_Format(tmp1, 2);
+    // Format as binary using format spec 'b' (like f"{num:b}" in Python)
+    PyObject *format_spec = PyUnicode_FromString("b");
+    if (format_spec == NULL) {
+        Py_DECREF(tmp1);
+        goto error;
+    }
+    tmp2 = PyObject_Format(tmp1, format_spec);
+    Py_DECREF(format_spec);
     Py_DECREF(tmp1);
     if (tmp2 == NULL) {
         goto error;
@@ -1429,7 +1488,7 @@ hamt_node_collision_new(int32_t hash, Py_ssize_t size)
     Py_SET_SIZE(node, size);
     node->c_hash = hash;
 
-    _PyObject_GC_TRACK(node);
+    PyObject_GC_Track(node);
 
     return (HamtNode *)node;
 }
@@ -1780,7 +1839,7 @@ hamt_node_array_new(Py_ssize_t count)
 
     node->a_count = count;
 
-    _PyObject_GC_TRACK(node);
+    PyObject_GC_Track(node);
     return (HamtNode *)node;
 }
 
