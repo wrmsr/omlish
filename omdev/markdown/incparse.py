@@ -1,3 +1,7 @@
+"""
+TODO:
+ - n root non-parents also considered stable
+"""
 import dataclasses as dc
 import typing as ta
 

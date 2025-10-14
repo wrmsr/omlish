@@ -9,6 +9,7 @@ Here are some features being streamed:
 - **Bold text** rendering
 - *Italic text* support
 - `inline code` blocks
+- ~~strikethrough~~
 - And much more!
 
 ### Code Example
@@ -27,6 +28,13 @@ def hello_world():
 
 > This is a blockquote that demonstrates
 > how multiple lines work in streaming mode.
+
+## Tables
+
+| **Table**    | Header | Row      |
+|:-------------|:------:|---------:|
+| Left         | Centre | Right    |
+| *Formatting* | **in** | `tables` |
 
 ### Final Thoughts
 

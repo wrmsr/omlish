@@ -24,6 +24,8 @@ with _lang.auto_proxy_init(globals()):
     from .markdown2 import (  # noqa
         configure_markdown_parser,
         markdown_from_tokens,
+        flatten_tokens_filter,
+        flatten_tokens,
 
         IncrementalMarkdownRenderer,
     )
