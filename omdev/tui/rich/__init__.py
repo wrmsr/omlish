@@ -17,7 +17,13 @@ with _lang.auto_proxy_init(globals()):
 
     ##
 
-    from .markdown import (  # noqa
+    from .console2 import (  # noqa
+        console_render,
+    )
+
+    from .markdown2 import (  # noqa
         configure_markdown_parser,
+        markdown_from_tokens,
+
         IncrementalMarkdownRenderer,
     )

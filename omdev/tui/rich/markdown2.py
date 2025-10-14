@@ -1,9 +1,9 @@
-import io
 import typing as ta
 
 from omlish import lang
 
 from ...markdown.incparse import IncrementalMarkdownParser
+from .console2 import console_render
 
 
 with lang.auto_proxy_import(globals()):
@@ -24,6 +24,12 @@ def configure_markdown_parser(parser: 'md.MarkdownIt') -> 'md.MarkdownIt':
         .enable('strikethrough')
         .enable('table')
     )
+
+
+def markdown_from_tokens(tokens: ta.Sequence['md.token.Token']) -> 'rich.markdown.Markdown':
+    rmd = rich.markdown.Markdown('')
+    rmd.parsed = tokens
+    return rmd
 
 
 ##
@@ -57,19 +63,24 @@ class IncrementalMarkdownRenderer(lang.ExitStacked):
             refresh_per_second=10,
         ))
 
-    def _get_rendered_lines(self, md_text: str) -> list[str]:
-        temp_console = rich.console.Console(
-            file=(out := io.StringIO()),
+    def _get_rendered_lines(self, obj: ta.Any) -> list[str]:
+        return console_render(
+            obj,
             force_terminal=True,
             width=self._console.width,
-        )
-        temp_console.print(rich.markdown.Markdown(md_text))
-        output = out.getvalue()
-        return output.splitlines()
+        ).splitlines()
 
     def feed(self, s: str) -> None:
         self._accumulated += s
-        all_lines = self._get_rendered_lines(self._accumulated)
+
+        ip_out = self._inc_parser.feed2(s)
+
+        if ip_out.new_stable:
+            rmd = rich.markdown.Markdown('')
+            rmd.parsed = ip_out.new_stable
+            stable_lines = self._get_rendered_lines(rmd)
+
+        all_lines = self._get_rendered_lines(rich.markdown.Markdown(self._accumulated))
 
         # Calculate how many lines fit in the live window
         available_height = self._console.height - 2

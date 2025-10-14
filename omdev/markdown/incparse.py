@@ -30,6 +30,7 @@ class IncrementalMarkdownParser:
 
     class FeedOutput(ta.NamedTuple):
         stable: ta.Sequence['md.token.Token']
+        new_stable: ta.Sequence['md.token.Token']
         unstable: ta.Sequence['md.token.Token']
 
     def feed2(self, chunk: str) -> FeedOutput:
@@ -45,6 +46,7 @@ class IncrementalMarkdownParser:
         # Find stable tokens (all but the last parent and its children)
         stable_count = self._find_stable_token_count(adjusted_tokens)
 
+        newly_stable: ta.Sequence[md.token.Token]
         if stable_count > 0:
             # Extract newly stable tokens (already have adjusted line numbers)
             newly_stable = adjusted_tokens[:stable_count]
@@ -66,7 +68,14 @@ class IncrementalMarkdownParser:
                 self._stable_tokens.extend(newly_stable)
                 self._num_stable_lines = max_line
 
-        return IncrementalMarkdownParser.FeedOutput(self._stable_tokens, adjusted_tokens[stable_count:])
+        else:
+            newly_stable = ()
+
+        return IncrementalMarkdownParser.FeedOutput(
+            stable=self._stable_tokens,
+            new_stable=newly_stable,
+            unstable=adjusted_tokens[stable_count:],
+        )
 
     def feed(self, chunk: str) -> list['md.token.Token']:
         out = self.feed2(chunk)
