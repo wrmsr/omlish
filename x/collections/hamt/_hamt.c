@@ -50,64 +50,6 @@
 
 ////
 
-// Population count: count the number of 1's in 'x'
-// (number of bits set to 1), also known as the hamming weight.
-//
-// Implementation note. CPUID is not used, to test if x86 POPCNT instruction
-// can be used, to keep the implementation simple. For example, Visual Studio
-// __popcnt() is not used this reason. The clang and GCC builtin function can
-// use the x86 POPCNT instruction if the target architecture has SSE4a or
-// newer.
-static inline int
-_popcount32(uint32_t x)
-{
-#if (defined(__clang__) || defined(__GNUC__))
-
-#if SIZEOF_INT >= 4
-    Py_BUILD_ASSERT(sizeof(x) <= sizeof(unsigned int));
-    return __builtin_popcount(x);
-#else
-    // The C standard guarantees that unsigned long will always be big enough
-    // to hold a uint32_t value without losing information.
-    Py_BUILD_ASSERT(sizeof(x) <= sizeof(unsigned long));
-    return __builtin_popcountl(x);
-#endif
-
-#else
-    // 32-bit SWAR (SIMD Within A Register) popcount
-
-    // Binary: 0 1 0 1 ...
-    const uint32_t M1 = 0x55555555;
-    // Binary: 00 11 00 11. ..
-    const uint32_t M2 = 0x33333333;
-    // Binary: 0000 1111 0000 1111 ...
-    const uint32_t M4 = 0x0F0F0F0F;
-
-    // Put count of each 2 bits into those 2 bits
-    x = x - ((x >> 1) & M1);
-    // Put count of each 4 bits into those 4 bits
-    x = (x & M2) + ((x >> 2) & M2);
-    // Put count of each 8 bits into those 8 bits
-    x = (x + (x >> 4)) & M4;
-    // Sum of the 4 byte counts.
-    // Take care when considering changes to the next line. Portability and
-    // correctness are delicate here, thanks to C's "integer promotions" (C99
-    // §6.3.1.1p2). On machines where the `int` type has width greater than 32
-    // bits, `x` will be promoted to an `int`, and following C's "usual
-    // arithmetic conversions" (C99 §6.3.1.8), the multiplication will be
-    // performed as a multiplication of two `unsigned int` operands. In this
-    // case it's critical that we cast back to `uint32_t` in order to keep only
-    // the least significant 32 bits. On machines where the `int` type has
-    // width no greater than 32, the multiplication is of two 32-bit unsigned
-    // integer types, and the (uint32_t) cast is a no-op. In both cases, we
-    // avoid the risk of undefined behaviour due to overflow of a
-    // multiplication of signed integer types.
-    return (uint32_t)(x * 0x01010101U) >> 24;
-#endif
-}
-
-////
-
 /*
 HAMT tree is shaped by hashes of keys. Every group of 5 bits of a hash denotes
 the exact position of the key in one level of the tree. Since we're using
@@ -120,25 +62,6 @@ layout of the HAMT tree in `hamt.c`.
 This constant is used to define a datastucture for storing iteration state.
 */
 #define _Py_HAMT_MAX_TREE_DEPTH 8
-
-
-/* Forward declaration of module state getter */
-static inline hamt_module_state * get_hamt_state_from_obj(PyObject *obj);
-
-/* Type check helper - checks if object is a HAMT by comparing against module state type */
-static inline int
-Hamt_Check(PyObject *o)
-{
-    PyTypeObject *type = Py_TYPE(o);
-    PyObject *mod = PyType_GetModule(type);
-    if (mod == NULL) {
-        // Not a heap type or not from a module, definitely not our HAMT
-        PyErr_Clear();
-        return 0;
-    }
-    hamt_module_state *state = get_hamt_module_state(mod);
-    return Py_IS_TYPE(o, state->Hamt_Type);
-}
 
 
 /* Abstract tree node. */
@@ -198,8 +121,111 @@ typedef struct {
 } HamtIterator;
 
 
+////
+
+#define _MODULE_NAME "_hamt"
+#define _PACKAGE_NAME "x.collections.hamt"
+#define _MODULE_FULL_NAME _PACKAGE_NAME "." _MODULE_NAME
+
+//
+
+typedef struct hamt_module_state {
+    /* Type objects */
+    PyTypeObject *Hamt_Type;
+    PyTypeObject *HamtItems_Type;
+    PyTypeObject *HamtKeys_Type;
+    PyTypeObject *HamtValues_Type;
+    PyTypeObject *Hamt_ArrayNode_Type;
+    PyTypeObject *Hamt_BitmapNode_Type;
+    PyTypeObject *Hamt_CollisionNode_Type;
+
+    /* Singleton objects */
+    HamtObject *empty_hamt;
+    HamtNode_Bitmap *empty_bitmap_node;
+} hamt_module_state;
+
+static inline hamt_module_state * get_hamt_module_state(PyObject *module)
+{
+    void *state = PyModule_GetState(module);
+    assert(state != NULL);
+    return (hamt_module_state *)state;
+}
+
+static inline hamt_module_state * get_hamt_state_from_type(PyTypeObject *type)
+{
+    PyObject *module = PyType_GetModule(type);
+    assert(module != NULL);
+    return get_hamt_module_state(module);
+}
+
+static inline hamt_module_state * get_hamt_state_from_obj(PyObject *obj)
+{
+    PyTypeObject *type = Py_TYPE(obj);
+    return get_hamt_state_from_type(type);
+}
+
+////
+
+// Population count: count the number of 1's in 'x'
+// (number of bits set to 1), also known as the hamming weight.
+//
+// Implementation note. CPUID is not used, to test if x86 POPCNT instruction
+// can be used, to keep the implementation simple. For example, Visual Studio
+// __popcnt() is not used this reason. The clang and GCC builtin function can
+// use the x86 POPCNT instruction if the target architecture has SSE4a or
+// newer.
+static inline int
+_popcount32(uint32_t x)
+{
+#if (defined(__clang__) || defined(__GNUC__))
+
+#if SIZEOF_INT >= 4
+    Py_BUILD_ASSERT(sizeof(x) <= sizeof(unsigned int));
+    return __builtin_popcount(x);
+#else
+    // The C standard guarantees that unsigned long will always be big enough
+    // to hold a uint32_t value without losing information.
+    Py_BUILD_ASSERT(sizeof(x) <= sizeof(unsigned long));
+    return __builtin_popcountl(x);
+#endif
+
+#else
+    // 32-bit SWAR (SIMD Within A Register) popcount
+
+    // Binary: 0 1 0 1 ...
+    const uint32_t M1 = 0x55555555;
+    // Binary: 00 11 00 11. ..
+    const uint32_t M2 = 0x33333333;
+    // Binary: 0000 1111 0000 1111 ...
+    const uint32_t M4 = 0x0F0F0F0F;
+
+    // Put count of each 2 bits into those 2 bits
+    x = x - ((x >> 1) & M1);
+    // Put count of each 4 bits into those 4 bits
+    x = (x & M2) + ((x >> 2) & M2);
+    // Put count of each 8 bits into those 8 bits
+    x = (x + (x >> 4)) & M4;
+    // Sum of the 4 byte counts.
+    // Take care when considering changes to the next line. Portability and
+    // correctness are delicate here, thanks to C's "integer promotions" (C99
+    // §6.3.1.1p2). On machines where the `int` type has width greater than 32
+    // bits, `x` will be promoted to an `int`, and following C's "usual
+    // arithmetic conversions" (C99 §6.3.1.8), the multiplication will be
+    // performed as a multiplication of two `unsigned int` operands. In this
+    // case it's critical that we cast back to `uint32_t` in order to keep only
+    // the least significant 32 bits. On machines where the `int` type has
+    // width no greater than 32, the multiplication is of two 32-bit unsigned
+    // integer types, and the (uint32_t) cast is a no-op. In both cases, we
+    // avoid the risk of undefined behaviour due to overflow of a
+    // multiplication of signed integer types.
+    return (uint32_t)(x * 0x01010101U) >> 24;
+#endif
+}
+
+////
+
 /* Create a new HAMT immutable mapping. */
-HamtObject * _Hamt_New(void);
+HamtObject * _Hamt_New(hamt_module_state *state);
 
 /* Return a new collection based on "o", but with an additional
    key/val pair. */
@@ -238,7 +264,23 @@ PyObject * _Hamt_NewIterValues(HamtObject *o);
 /* Return a Items iterator over "o". */
 PyObject * _Hamt_NewIterItems(HamtObject *o);
 
-//
+////
+
+/* Type check helper - checks if object is a HAMT by comparing against module state type */
+static inline int
+Hamt_Check(PyObject *o)
+{
+    PyTypeObject *type = Py_TYPE(o);
+    PyObject *mod = PyType_GetModule(type);
+    if (mod == NULL) {
+        // Not a heap type or not from a module, definitely not our HAMT
+        PyErr_Clear();
+        return 0;
+    }
+    hamt_module_state *state = get_hamt_module_state(mod);
+    return Py_IS_TYPE(o, state->Hamt_Type);
+}
+
 
 /*
 This file provides an implementation of an immutable mapping using the
@@ -1566,6 +1608,7 @@ hamt_node_collision_assoc(HamtNode_Collision *self,
         hamt_find_t found;
         HamtNode_Collision *new_node;
         Py_ssize_t i;
+        hamt_module_state *state;
 
         /* Let's try to lookup the new 'key', maybe we already have it. */
         found = hamt_node_collision_find_index(self, key, &key_idx);
@@ -1578,7 +1621,7 @@ hamt_node_collision_assoc(HamtNode_Collision *self,
                 /* This is a totally new key.  Clone the current node,
                    add a new key/value to the cloned node. */
 
-                hamt_module_state *state = get_hamt_state_from_obj((PyObject*)self);
+                state = get_hamt_state_from_obj((PyObject*)self);
                 new_node = (HamtNode_Collision *)hamt_node_collision_new(
                     state, self->c_hash, Py_SIZE(self) + 2);
                 if (new_node == NULL) {
@@ -2789,10 +2832,6 @@ hamt_baseiter_tp_len(HamtIterator *it)
     return it->hi_obj->h_count;
 }
 
-static PyMappingMethods HamtIterator_as_mapping = {
-    (lenfunc)hamt_baseiter_tp_len,
-};
-
 static PyObject *
 hamt_baseiter_new(PyTypeObject *type, binaryfunc yield, HamtObject *o)
 {
@@ -3133,24 +3172,6 @@ static PyMethodDef Hamt_methods[] = {
     {NULL, NULL}
 };
 
-static PySequenceMethods Hamt_as_sequence = {
-    0,                                /* sq_length */
-    0,                                /* sq_concat */
-    0,                                /* sq_repeat */
-    0,                                /* sq_item */
-    0,                                /* sq_slice */
-    0,                                /* sq_ass_item */
-    0,                                /* sq_ass_slice */
-    (objobjproc)hamt_tp_contains,     /* sq_contains */
-    0,                                /* sq_inplace_concat */
-    0,                                /* sq_inplace_repeat */
-};
-
-static PyMappingMethods Hamt_as_mapping = {
-    (lenfunc)hamt_tp_len,             /* mp_length */
-    (binaryfunc)hamt_tp_subscript,    /* mp_subscript */
-};
-
 static PyType_Slot Hamt_Type_slots[] = {
     {Py_tp_dealloc, hamt_tp_dealloc},
     {Py_tp_getattro, PyObject_GenericGetAttr},
@@ -3231,49 +3252,6 @@ static PyType_Spec Hamt_CollisionNode_Type_spec = {
 };
 
 ////
-
-#define _MODULE_NAME "_hamt"
-#define _PACKAGE_NAME "x.collections.hamt"
-#define _MODULE_FULL_NAME _PACKAGE_NAME "." _MODULE_NAME
-
-//
-
-typedef struct hamt_module_state {
-    /* Type objects */
-    PyTypeObject *Hamt_Type;
-    PyTypeObject *HamtItems_Type;
-    PyTypeObject *HamtKeys_Type;
-    PyTypeObject *HamtValues_Type;
-    PyTypeObject *Hamt_ArrayNode_Type;
-    PyTypeObject *Hamt_BitmapNode_Type;
-    PyTypeObject *Hamt_CollisionNode_Type;
-
-    /* Singleton objects */
-    HamtObject *empty_hamt;
-    HamtNode_Bitmap *empty_bitmap_node;
-} hamt_module_state;
-
-static inline hamt_module_state * get_hamt_module_state(PyObject *module)
-{
-    void *state = PyModule_GetState(module);
-    assert(state != NULL);
-    return (hamt_module_state *)state;
-}
-
-static inline hamt_module_state * get_hamt_state_from_type(PyTypeObject *type)
-{
-    PyObject *module = PyType_GetModule(type);
-    assert(module != NULL);
-    return get_hamt_module_state(module);
-}
-
-static inline hamt_module_state * get_hamt_state_from_obj(PyObject *obj)
-{
-    PyTypeObject *type = Py_TYPE(obj);
-    return get_hamt_state_from_type(type);
-}
-
-//
 
 static PyObject *
 py_hamt_new(PyObject *self, PyObject *args)
