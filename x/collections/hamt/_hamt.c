@@ -893,10 +893,12 @@ hamt_node_bitmap_clone_without(HamtNode_Bitmap *o, uint32_t bit)
 }
 
 static HamtNode *
-hamt_node_new_bitmap_or_collision(uint32_t shift,
-                                  PyObject *key1, PyObject *val1,
-                                  int32_t key2_hash,
-                                  PyObject *key2, PyObject *val2)
+hamt_node_new_bitmap_or_collision(
+    hamt_module_state *state,
+    uint32_t shift,
+    PyObject *key1, PyObject *val1,
+    int32_t key2_hash,
+    PyObject *key2, PyObject *val2)
 {
     /* Helper method.  Creates a new node for key1/val and key2/val2
        pairs.
@@ -912,7 +914,6 @@ hamt_node_new_bitmap_or_collision(uint32_t shift,
     }
 
     if (key1_hash == key2_hash) {
-        hamt_module_state *state = get_hamt_state_from_obj(key1);
         HamtNode_Collision *n;
         n = (HamtNode_Collision *)hamt_node_collision_new(state, key1_hash, 4);
         if (n == NULL) {
@@ -929,7 +930,6 @@ hamt_node_new_bitmap_or_collision(uint32_t shift,
     }
     else {
         int added_leaf = 0;
-        hamt_module_state *state = get_hamt_state_from_obj(key1);
         HamtNode *n = hamt_node_bitmap_new(state, 0);
         if (n == NULL) {
             return NULL;
@@ -1053,6 +1053,7 @@ hamt_node_bitmap_assoc(HamtNode_Bitmap *self,
            a new Bitmap node.
         */
         HamtNode *sub_node = hamt_node_new_bitmap_or_collision(
+            get_hamt_state_from_obj((PyObject*)self),
             shift + 5,
             key_or_null, val_or_node,  /* existing key/val */
             hash,
