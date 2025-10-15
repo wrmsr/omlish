@@ -8,7 +8,11 @@ with _lang.auto_proxy_init(globals()):
 
     from textual import app  # noqa
     from textual import binding  # noqa
+    from textual import containers  # noqa
     from textual import events  # noqa
+    from textual import events  # noqa
+    from textual import message  # noqa
+    from textual import reactive  # noqa
     from textual import widgets  # noqa
     from textual.app import ActionError  # noqa
     from textual.app import ActiveModeError  # noqa
@@ -41,6 +45,20 @@ with _lang.auto_proxy_init(globals()):
     from textual.binding import Keymap  # noqa
     from textual.binding import KeymapApplyResult  # noqa
     from textual.binding import NoBinding  # noqa
+    from textual.containers import Center  # noqa
+    from textual.containers import CenterMiddle  # noqa
+    from textual.containers import Container  # noqa
+    from textual.containers import Grid  # noqa
+    from textual.containers import Horizontal  # noqa
+    from textual.containers import HorizontalGroup  # noqa
+    from textual.containers import HorizontalScroll  # noqa
+    from textual.containers import ItemGrid  # noqa
+    from textual.containers import Middle  # noqa
+    from textual.containers import Right  # noqa
+    from textual.containers import ScrollableContainer  # noqa
+    from textual.containers import Vertical  # noqa
+    from textual.containers import VerticalGroup  # noqa
+    from textual.containers import VerticalScroll  # noqa
     from textual.events import Action  # noqa
     from textual.events import AppBlur  # noqa
     from textual.events import AppFocus  # noqa
@@ -82,6 +100,8 @@ with _lang.auto_proxy_init(globals()):
     from textual.events import Show  # noqa
     from textual.events import Timer  # noqa
     from textual.events import Unmount  # noqa
+    from textual.message import Message  # noqa
+    from textual.reactive import Reactive  # noqa
     from textual.widget import Widget  # noqa
     from textual.widgets import Button  # noqa
     from textual.widgets import Checkbox  # noqa

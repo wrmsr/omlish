@@ -30,7 +30,7 @@ class Project(ProjectBase):
 
             'tokenizers ~= 0.22',
 
-            'torch ~= 2.8',
+            'torch ~= 2.9',
 
             'transformers ~= 4.57',
             'sentence-transformers ~= 5.1',

@@ -52,7 +52,7 @@ ddgs==9.6.1
 debugpy==1.8.17
 decorator==5.2.1
 defusedxml==0.7.1
-diffusers==0.35.1
+diffusers==0.35.2
 dill==0.4.0
 diskcache==5.6.3
 docstring-to-markdown==0.17
@@ -168,7 +168,7 @@ nodeenv==1.9.1
 nodejs-wheel-binaries==22.20.0
 notebook==7.4.7
 notebook_shim==0.2.4
-numpy==2.3.3
+numpy==2.3.4
 objgraph==3.6.2
 onnxruntime==1.23.1
 opencv-python==4.11.0.86
@@ -235,7 +235,7 @@ pytest-xdist==3.8.0
 python-dateutil==2.9.0.post0
 python-json-logger==4.0.0
 python-snappy==0.7.3
-pytokens==0.1.10
+pytokens==0.2.0
 pytz==2025.2
 PyYAML==6.0.3
 pyzmq==27.1.0
@@ -289,8 +289,8 @@ tiktoken==0.12.0
 tinycss2==1.4.0
 tokenizers==0.22.1
 tomlkit==0.13.3
-torch==2.8.0
-torchvision==0.23.0
+torch==2.9.0
+torchvision==0.24.0
 tornado==6.5.2
 tqdm==4.67.1
 traitlets==5.14.3
@@ -315,7 +315,7 @@ uritemplate==4.2.0
 urllib3==2.5.0
 urwid==3.0.3
 urwid_readline==0.15.1
-uv==0.9.2
+uv==0.9.3
 watchdog==6.0.0
 wcwidth==0.2.14
 webcolors==24.11.1
