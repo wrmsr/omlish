@@ -122,18 +122,23 @@ This constant is used to define a datastucture for storing iteration state.
 #define _Py_HAMT_MAX_TREE_DEPTH 8
 
 
-extern PyTypeObject _Hamt_Type;
-extern PyTypeObject _Hamt_ArrayNode_Type;
-extern PyTypeObject _Hamt_BitmapNode_Type;
-extern PyTypeObject _Hamt_CollisionNode_Type;
-extern PyTypeObject _HamtKeys_Type;
-extern PyTypeObject _HamtValues_Type;
-extern PyTypeObject _HamtItems_Type;
+/* Forward declaration of module state getter */
+static inline hamt_module_state * get_hamt_state_from_obj(PyObject *obj);
 
-
-/* other API */
-
-#define Hamt_Check(o) Py_IS_TYPE((o), &_Hamt_Type)
+/* Type check helper - checks if object is a HAMT by comparing against module state type */
+static inline int
+Hamt_Check(PyObject *o)
+{
+    PyTypeObject *type = Py_TYPE(o);
+    PyObject *mod = PyType_GetModule(type);
+    if (mod == NULL) {
+        // Not a heap type or not from a module, definitely not our HAMT
+        PyErr_Clear();
+        return 0;
+    }
+    hamt_module_state *state = get_hamt_module_state(mod);
+    return Py_IS_TYPE(o, state->Hamt_Type);
+}
 
 
 /* Abstract tree node. */
@@ -504,9 +509,26 @@ to introspect the tree:
 */
 
 
-#define IS_ARRAY_NODE(node)     Py_IS_TYPE(node, &_Hamt_ArrayNode_Type)
-#define IS_BITMAP_NODE(node)    Py_IS_TYPE(node, &_Hamt_BitmapNode_Type)
-#define IS_COLLISION_NODE(node) Py_IS_TYPE(node, &_Hamt_CollisionNode_Type)
+static inline int
+IS_ARRAY_NODE(HamtNode *node)
+{
+    hamt_module_state *state = get_hamt_state_from_obj((PyObject*)node);
+    return Py_IS_TYPE(node, state->Hamt_ArrayNode_Type);
+}
+
+static inline int
+IS_BITMAP_NODE(HamtNode *node)
+{
+    hamt_module_state *state = get_hamt_state_from_obj((PyObject*)node);
+    return Py_IS_TYPE(node, state->Hamt_BitmapNode_Type);
+}
+
+static inline int
+IS_COLLISION_NODE(HamtNode *node)
+{
+    hamt_module_state *state = get_hamt_state_from_obj((PyObject*)node);
+    return Py_IS_TYPE(node, state->Hamt_CollisionNode_Type);
+}
 
 
 /* Return type for 'find' (lookup a key) functions.
@@ -556,7 +578,7 @@ typedef struct {
 
 
 static HamtObject *
-hamt_alloc(void);
+hamt_alloc(hamt_module_state *state);
 
 static HamtNode *
 hamt_node_assoc(HamtNode *node,
@@ -581,10 +603,10 @@ hamt_node_dump(HamtNode *node,
 #endif
 
 static HamtNode *
-hamt_node_array_new(Py_ssize_t);
+hamt_node_array_new(hamt_module_state *state, Py_ssize_t);
 
 static HamtNode *
-hamt_node_collision_new(int32_t hash, Py_ssize_t size);
+hamt_node_collision_new(hamt_module_state *state, int32_t hash, Py_ssize_t size);
 
 static inline Py_ssize_t
 hamt_node_collision_count(HamtNode_Collision *node);
@@ -732,7 +754,7 @@ _hamt_dump_format(_PyUnicodeWriter *writer, const char *format, ...)
 
 
 static HamtNode *
-hamt_node_bitmap_new(Py_ssize_t size)
+hamt_node_bitmap_new(hamt_module_state *state, Py_ssize_t size)
 {
     /* Create a new bitmap node of size 'size' */
 
@@ -743,7 +765,7 @@ hamt_node_bitmap_new(Py_ssize_t size)
         /* Since bitmap nodes are immutable, we can cache the instance
            for size=0 and reuse it whenever we need an empty bitmap node.
         */
-        return (HamtNode *)&_Py_SINGLETON(hamt_bitmap_node_empty);
+        return (HamtNode *)Py_NewRef(state->empty_bitmap_node);
     }
 
     assert(size >= 0);
@@ -751,7 +773,7 @@ hamt_node_bitmap_new(Py_ssize_t size)
 
     /* No freelist; allocate a new bitmap node */
     node = PyObject_GC_NewVar(
-        HamtNode_Bitmap, &_Hamt_BitmapNode_Type, size);
+        HamtNode_Bitmap, state->Hamt_BitmapNode_Type, size);
     if (node == NULL) {
         return NULL;
     }
@@ -783,7 +805,8 @@ hamt_node_bitmap_clone(HamtNode_Bitmap *node)
     HamtNode_Bitmap *clone;
     Py_ssize_t i;
 
-    clone = (HamtNode_Bitmap *)hamt_node_bitmap_new(Py_SIZE(node));
+    hamt_module_state *state = get_hamt_state_from_obj((PyObject*)node);
+    clone = (HamtNode_Bitmap *)hamt_node_bitmap_new(state, Py_SIZE(node));
     if (clone == NULL) {
         return NULL;
     }
@@ -802,8 +825,9 @@ hamt_node_bitmap_clone_without(HamtNode_Bitmap *o, uint32_t bit)
     assert(bit & o->b_bitmap);
     assert(hamt_node_bitmap_count(o) > 1);
 
+    hamt_module_state *state = get_hamt_state_from_obj((PyObject*)o);
     HamtNode_Bitmap *new = (HamtNode_Bitmap *)hamt_node_bitmap_new(
-        Py_SIZE(o) - 2);
+        state, Py_SIZE(o) - 2);
     if (new == NULL) {
         return NULL;
     }
@@ -846,8 +870,9 @@ hamt_node_new_bitmap_or_collision(uint32_t shift,
     }
 
     if (key1_hash == key2_hash) {
+        hamt_module_state *state = get_hamt_state_from_obj(key1);
         HamtNode_Collision *n;
-        n = (HamtNode_Collision *)hamt_node_collision_new(key1_hash, 4);
+        n = (HamtNode_Collision *)hamt_node_collision_new(state, key1_hash, 4);
         if (n == NULL) {
             return NULL;
         }
@@ -862,7 +887,8 @@ hamt_node_new_bitmap_or_collision(uint32_t shift,
     }
     else {
         int added_leaf = 0;
-        HamtNode *n = hamt_node_bitmap_new(0);
+        hamt_module_state *state = get_hamt_state_from_obj(key1);
+        HamtNode *n = hamt_node_bitmap_new(state, 0);
         if (n == NULL) {
             return NULL;
         }
@@ -1034,15 +1060,17 @@ hamt_node_bitmap_assoc(HamtNode_Bitmap *self,
             HamtNode_Array *new_node = NULL;
             HamtNode *res = NULL;
 
+            hamt_module_state *state = get_hamt_state_from_obj((PyObject*)self);
+
             /* Create a new Array node. */
-            new_node = (HamtNode_Array *)hamt_node_array_new(n + 1);
+            new_node = (HamtNode_Array *)hamt_node_array_new(state, n + 1);
             if (new_node == NULL) {
                 goto fin;
             }
 
             /* Create an empty bitmap node for the next
                hamt_node_assoc call. */
-            empty = hamt_node_bitmap_new(0);
+            empty = hamt_node_bitmap_new(state, 0);
             if (empty == NULL) {
                 goto fin;
             }
@@ -1115,8 +1143,9 @@ hamt_node_bitmap_assoc(HamtNode_Bitmap *self,
 
             /* Allocate new Bitmap node which can have one more key/val
                pair in addition to what we have already. */
+            hamt_module_state *state = get_hamt_state_from_obj((PyObject*)self);
             HamtNode_Bitmap *new_node =
-                (HamtNode_Bitmap *)hamt_node_bitmap_new(2 * (n + 1));
+                (HamtNode_Bitmap *)hamt_node_bitmap_new(state, 2 * (n + 1));
             if (new_node == NULL) {
                 return NULL;
             }
@@ -1356,8 +1385,9 @@ hamt_node_bitmap_dealloc(HamtNode_Bitmap *self)
     Py_ssize_t i;
 
     if (Py_SIZE(self) == 0) {
-        /* The empty node is statically allocated. */
-        assert(self == &_Py_SINGLETON(hamt_bitmap_node_empty));
+        /* The empty node is managed by the module state. */
+        hamt_module_state *state = get_hamt_state_from_obj((PyObject*)self);
+        assert(self == state->empty_bitmap_node);
 #ifdef Py_DEBUG
         _Py_FatalRefcountError("deallocating the empty hamt node bitmap singleton");
 #else
@@ -1465,7 +1495,7 @@ error:
 
 
 static HamtNode *
-hamt_node_collision_new(int32_t hash, Py_ssize_t size)
+hamt_node_collision_new(hamt_module_state *state, int32_t hash, Py_ssize_t size)
 {
     /* Create a new Collision node. */
 
@@ -1476,7 +1506,7 @@ hamt_node_collision_new(int32_t hash, Py_ssize_t size)
     assert(size % 2 == 0);
 
     node = PyObject_GC_NewVar(
-        HamtNode_Collision, &_Hamt_CollisionNode_Type, size);
+        HamtNode_Collision, state->Hamt_CollisionNode_Type, size);
     if (node == NULL) {
         return NULL;
     }
@@ -1548,8 +1578,9 @@ hamt_node_collision_assoc(HamtNode_Collision *self,
                 /* This is a totally new key.  Clone the current node,
                    add a new key/value to the cloned node. */
 
+                hamt_module_state *state = get_hamt_state_from_obj((PyObject*)self);
                 new_node = (HamtNode_Collision *)hamt_node_collision_new(
-                    self->c_hash, Py_SIZE(self) + 2);
+                    state, self->c_hash, Py_SIZE(self) + 2);
                 if (new_node == NULL) {
                     return NULL;
                 }
@@ -1578,8 +1609,9 @@ hamt_node_collision_assoc(HamtNode_Collision *self,
 
                 /* We need to replace old value for the key
                    with a new value.  Create a new Collision node.*/
+                hamt_module_state *state2 = get_hamt_state_from_obj((PyObject*)self);
                 new_node = (HamtNode_Collision *)hamt_node_collision_new(
-                    self->c_hash, Py_SIZE(self));
+                    state2, self->c_hash, Py_SIZE(self));
                 if (new_node == NULL) {
                     return NULL;
                 }
@@ -1610,7 +1642,8 @@ hamt_node_collision_assoc(HamtNode_Collision *self,
         HamtNode_Bitmap *new_node;
         HamtNode *assoc_res;
 
-        new_node = (HamtNode_Bitmap *)hamt_node_bitmap_new(2);
+        hamt_module_state *state = get_hamt_state_from_obj((PyObject*)self);
+        new_node = (HamtNode_Bitmap *)hamt_node_bitmap_new(state, 2);
         if (new_node == NULL) {
             return NULL;
         }
@@ -1670,8 +1703,9 @@ hamt_node_collision_without(HamtNode_Collision *self,
                    with one key shouldn't exist, so convert it to a
                    Bitmap node.
                 */
+                hamt_module_state *state = get_hamt_state_from_obj((PyObject*)self);
                 HamtNode_Bitmap *node = (HamtNode_Bitmap *)
-                    hamt_node_bitmap_new(2);
+                    hamt_node_bitmap_new(state, 2);
                 if (node == NULL) {
                     return W_ERROR;
                 }
@@ -1694,9 +1728,10 @@ hamt_node_collision_without(HamtNode_Collision *self,
 
             /* Allocate a new Collision node with capacity for one
                less key/value pair */
+            hamt_module_state *state3 = get_hamt_state_from_obj((PyObject*)self);
             HamtNode_Collision *new = (HamtNode_Collision *)
                 hamt_node_collision_new(
-                    self->c_hash, Py_SIZE(self) - 2);
+                    state3, self->c_hash, Py_SIZE(self) - 2);
             if (new == NULL) {
                 return W_ERROR;
             }
@@ -1823,12 +1858,12 @@ error:
 
 
 static HamtNode *
-hamt_node_array_new(Py_ssize_t count)
+hamt_node_array_new(hamt_module_state *state, Py_ssize_t count)
 {
     Py_ssize_t i;
 
     HamtNode_Array *node = PyObject_GC_New(
-        HamtNode_Array, &_Hamt_ArrayNode_Type);
+        HamtNode_Array, state->Hamt_ArrayNode_Type);
     if (node == NULL) {
         return NULL;
     }
@@ -1851,8 +1886,10 @@ hamt_node_array_clone(HamtNode_Array *node)
 
     VALIDATE_ARRAY_NODE(node)
 
+    hamt_module_state *state = get_hamt_state_from_obj((PyObject*)node);
+
     /* Create a new Array node. */
-    clone = (HamtNode_Array *)hamt_node_array_new(node->a_count);
+    clone = (HamtNode_Array *)hamt_node_array_new(state, node->a_count);
     if (clone == NULL) {
         return NULL;
     }
@@ -1891,7 +1928,8 @@ hamt_node_array_assoc(HamtNode_Array *self,
         HamtNode_Bitmap *empty = NULL;
 
         /* Get an empty Bitmap node to work with. */
-        empty = (HamtNode_Bitmap *)hamt_node_bitmap_new(0);
+        hamt_module_state *state = get_hamt_state_from_obj((PyObject*)self);
+        empty = (HamtNode_Bitmap *)hamt_node_bitmap_new(state, 0);
         if (empty == NULL) {
             return NULL;
         }
@@ -1907,7 +1945,7 @@ hamt_node_array_assoc(HamtNode_Array *self,
         }
 
         /* Create a new Array node. */
-        new_node = (HamtNode_Array *)hamt_node_array_new(self->a_count + 1);
+        new_node = (HamtNode_Array *)hamt_node_array_new(state, self->a_count + 1);
         if (new_node == NULL) {
             Py_DECREF(child_node);
             return NULL;
@@ -2026,8 +2064,9 @@ hamt_node_array_without(HamtNode_Array *self,
             Py_ssize_t bitmap_size = new_count * 2;
             uint32_t bitmap = 0;
 
+            hamt_module_state *state = get_hamt_state_from_obj((PyObject*)self);
             HamtNode_Bitmap *new = (HamtNode_Bitmap *)
-                hamt_node_bitmap_new(bitmap_size);
+                hamt_node_bitmap_new(state, bitmap_size);
             if (new == NULL) {
                 return W_ERROR;
             }
@@ -2506,7 +2545,8 @@ _Hamt_Assoc(HamtObject *o, PyObject *key, PyObject *val)
         return (HamtObject*)Py_NewRef(o);
     }
 
-    new_o = hamt_alloc();
+    hamt_module_state *state = get_hamt_state_from_obj((PyObject*)o);
+    new_o = hamt_alloc(state);
     if (new_o == NULL) {
         Py_DECREF(new_root);
         return NULL;
@@ -2533,17 +2573,20 @@ _Hamt_Without(HamtObject *o, PyObject *key)
         0, key_hash, key,
         &new_root);
 
+    hamt_module_state *state = get_hamt_state_from_obj((PyObject*)o);
+
     switch (res) {
         case W_ERROR:
             return NULL;
-        case W_EMPTY:
-            return _Hamt_New();
+        case W_EMPTY: {
+            return _Hamt_New(state);
+        }
         case W_NOT_FOUND:
             return (HamtObject*)Py_NewRef(o);
         case W_NEWNODE: {
             assert(new_root != NULL);
 
-            HamtObject *new_o = hamt_alloc();
+            HamtObject *new_o = hamt_alloc(state);
             if (new_o == NULL) {
                 Py_DECREF(new_root);
                 return NULL;
@@ -2646,10 +2689,10 @@ _Hamt_Len(HamtObject *o)
 }
 
 static HamtObject *
-hamt_alloc(void)
+hamt_alloc(hamt_module_state *state)
 {
     HamtObject *o;
-    o = PyObject_GC_New(HamtObject, &_Hamt_Type);
+    o = PyObject_GC_New(HamtObject, state->Hamt_Type);
     if (o == NULL) {
         return NULL;
     }
@@ -2660,15 +2703,12 @@ hamt_alloc(void)
     return o;
 }
 
-#define _empty_hamt \
-    (&_Py_INTERP_SINGLETON(_PyInterpreterState_GET(), hamt_empty))
-
 HamtObject *
-_Hamt_New(void)
+_Hamt_New(hamt_module_state *state)
 {
     /* HAMT is an immutable object so we can easily cache an
        empty instance. */
-    return (HamtObject*)Py_NewRef(_empty_hamt);
+    return (HamtObject*)Py_NewRef(state->empty_hamt);
 }
 
 #ifdef Py_DEBUG
@@ -2785,10 +2825,23 @@ hamt_baseiter_new(PyTypeObject *type, binaryfunc yield, HamtObject *o)
 /////////////////////////////////// _HamtItems_Type
 
 
-PyTypeObject _HamtItems_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    "items",
-    ITERATOR_TYPE_SHARED_SLOTS
+static PyType_Slot HamtItems_Type_slots[] = {
+    {Py_tp_dealloc, hamt_baseiter_tp_dealloc},
+    {Py_tp_getattro, PyObject_GenericGetAttr},
+    {Py_tp_traverse, hamt_baseiter_tp_traverse},
+    {Py_tp_clear, hamt_baseiter_tp_clear},
+    {Py_tp_iter, PyObject_SelfIter},
+    {Py_tp_iternext, hamt_baseiter_tp_iternext},
+    {Py_mp_length, hamt_baseiter_tp_len},
+    {0, NULL},
+};
+
+static PyType_Spec HamtItems_Type_spec = {
+    .name = "hamt.items",
+    .basicsize = sizeof(HamtIterator),
+    .itemsize = 0,
+    .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
+    .slots = HamtItems_Type_slots,
 };
 
 static PyObject *
@@ -2800,18 +2853,32 @@ hamt_iter_yield_items(PyObject *key, PyObject *val)
 PyObject *
 _Hamt_NewIterItems(HamtObject *o)
 {
+    hamt_module_state *state = get_hamt_state_from_obj((PyObject*)o);
     return hamt_baseiter_new(
-        &_HamtItems_Type, hamt_iter_yield_items, o);
+        state->HamtItems_Type, hamt_iter_yield_items, o);
 }
 
 
 /////////////////////////////////// _HamtKeys_Type
 
 
-PyTypeObject _HamtKeys_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    "keys",
-    ITERATOR_TYPE_SHARED_SLOTS
+static PyType_Slot HamtKeys_Type_slots[] = {
+    {Py_tp_dealloc, hamt_baseiter_tp_dealloc},
+    {Py_tp_getattro, PyObject_GenericGetAttr},
+    {Py_tp_traverse, hamt_baseiter_tp_traverse},
+    {Py_tp_clear, hamt_baseiter_tp_clear},
+    {Py_tp_iter, PyObject_SelfIter},
+    {Py_tp_iternext, hamt_baseiter_tp_iternext},
+    {Py_mp_length, hamt_baseiter_tp_len},
+    {0, NULL},
+};
+
+static PyType_Spec HamtKeys_Type_spec = {
+    .name = "hamt.keys",
+    .basicsize = sizeof(HamtIterator),
+    .itemsize = 0,
+    .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
+    .slots = HamtKeys_Type_slots,
 };
 
 static PyObject *
@@ -2823,18 +2890,32 @@ hamt_iter_yield_keys(PyObject *key, PyObject *val)
 PyObject *
 _Hamt_NewIterKeys(HamtObject *o)
 {
+    hamt_module_state *state = get_hamt_state_from_obj((PyObject*)o);
     return hamt_baseiter_new(
-        &_HamtKeys_Type, hamt_iter_yield_keys, o);
+        state->HamtKeys_Type, hamt_iter_yield_keys, o);
 }
 
 
 /////////////////////////////////// _HamtValues_Type
 
 
-PyTypeObject _HamtValues_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    "values",
-    ITERATOR_TYPE_SHARED_SLOTS
+static PyType_Slot HamtValues_Type_slots[] = {
+    {Py_tp_dealloc, hamt_baseiter_tp_dealloc},
+    {Py_tp_getattro, PyObject_GenericGetAttr},
+    {Py_tp_traverse, hamt_baseiter_tp_traverse},
+    {Py_tp_clear, hamt_baseiter_tp_clear},
+    {Py_tp_iter, PyObject_SelfIter},
+    {Py_tp_iternext, hamt_baseiter_tp_iternext},
+    {Py_mp_length, hamt_baseiter_tp_len},
+    {0, NULL},
+};
+
+static PyType_Spec HamtValues_Type_spec = {
+    .name = "hamt.values",
+    .basicsize = sizeof(HamtIterator),
+    .itemsize = 0,
+    .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
+    .slots = HamtValues_Type_slots,
 };
 
 static PyObject *
@@ -2846,8 +2927,9 @@ hamt_iter_yield_values(PyObject *key, PyObject *val)
 PyObject *
 _Hamt_NewIterValues(HamtObject *o)
 {
+    hamt_module_state *state = get_hamt_state_from_obj((PyObject*)o);
     return hamt_baseiter_new(
-        &_HamtValues_Type, hamt_iter_yield_values, o);
+        state->HamtValues_Type, hamt_iter_yield_values, o);
 }
 
 
@@ -2863,7 +2945,8 @@ hamt_dump(HamtObject *self);
 static PyObject *
 hamt_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-    return (PyObject*)_Hamt_New();
+    hamt_module_state *state = get_hamt_state_from_type(type);
+    return (PyObject*)_Hamt_New(state);
 }
 
 static int
@@ -2884,8 +2967,9 @@ hamt_tp_traverse(HamtObject *self, visitproc visit, void *arg)
 static void
 hamt_tp_dealloc(HamtObject *self)
 {
-    if (self == _empty_hamt) {
-        /* The empty one is statically allocated. */
+    hamt_module_state *state = get_hamt_state_from_obj((PyObject*)self);
+    if (self == state->empty_hamt) {
+        /* The empty one is managed by the module state. */
 #ifdef Py_DEBUG
         _Py_FatalRefcountError("deallocating the empty hamt singleton");
 #else
@@ -3067,66 +3151,83 @@ static PyMappingMethods Hamt_as_mapping = {
     (binaryfunc)hamt_tp_subscript,    /* mp_subscript */
 };
 
-PyTypeObject _Hamt_Type = {
-    PyVarObject_HEAD_INIT(&PyType_Type, 0)
-    "hamt",
-    sizeof(HamtObject),
-    .tp_methods = Hamt_methods,
-    .tp_as_mapping = &Hamt_as_mapping,
-    .tp_as_sequence = &Hamt_as_sequence,
-    .tp_iter = (getiterfunc)hamt_tp_iter,
-    .tp_dealloc = (destructor)hamt_tp_dealloc,
-    .tp_getattro = PyObject_GenericGetAttr,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
-    .tp_richcompare = hamt_tp_richcompare,
-    .tp_traverse = (traverseproc)hamt_tp_traverse,
-    .tp_clear = (inquiry)hamt_tp_clear,
-    .tp_new = hamt_tp_new,
-    .tp_weaklistoffset = offsetof(HamtObject, h_weakreflist),
-    .tp_hash = PyObject_HashNotImplemented,
+static PyType_Slot Hamt_Type_slots[] = {
+    {Py_tp_dealloc, hamt_tp_dealloc},
+    {Py_tp_getattro, PyObject_GenericGetAttr},
+    {Py_tp_traverse, hamt_tp_traverse},
+    {Py_tp_clear, hamt_tp_clear},
+    {Py_tp_new, hamt_tp_new},
+    {Py_tp_iter, hamt_tp_iter},
+    {Py_tp_richcompare, hamt_tp_richcompare},
+    {Py_tp_hash, PyObject_HashNotImplemented},
+    {Py_tp_methods, Hamt_methods},
+    {Py_mp_length, hamt_tp_len},
+    {Py_mp_subscript, hamt_tp_subscript},
+    {Py_sq_contains, hamt_tp_contains},
+    {0, NULL},
+};
+
+static PyType_Spec Hamt_Type_spec = {
+    .name = "hamt.hamt",
+    .basicsize = sizeof(HamtObject),
+    .itemsize = 0,
+    .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
+    .slots = Hamt_Type_slots,
 };
 
 
 /////////////////////////////////// Tree Node Types
 
 
-PyTypeObject _Hamt_ArrayNode_Type = {
-    PyVarObject_HEAD_INIT(&PyType_Type, 0)
-    "hamt_array_node",
-    sizeof(HamtNode_Array),
-    0,
-    .tp_dealloc = (destructor)hamt_node_array_dealloc,
-    .tp_getattro = PyObject_GenericGetAttr,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
-    .tp_traverse = (traverseproc)hamt_node_array_traverse,
-    .tp_free = PyObject_GC_Del,
-    .tp_hash = PyObject_HashNotImplemented,
+static PyType_Slot Hamt_ArrayNode_Type_slots[] = {
+    {Py_tp_dealloc, hamt_node_array_dealloc},
+    {Py_tp_getattro, PyObject_GenericGetAttr},
+    {Py_tp_traverse, hamt_node_array_traverse},
+    {Py_tp_free, PyObject_GC_Del},
+    {Py_tp_hash, PyObject_HashNotImplemented},
+    {0, NULL},
 };
 
-PyTypeObject _Hamt_BitmapNode_Type = {
-    PyVarObject_HEAD_INIT(&PyType_Type, 0)
-    "hamt_bitmap_node",
-    sizeof(HamtNode_Bitmap) - sizeof(PyObject *),
-    sizeof(PyObject *),
-    .tp_dealloc = (destructor)hamt_node_bitmap_dealloc,
-    .tp_getattro = PyObject_GenericGetAttr,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
-    .tp_traverse = (traverseproc)hamt_node_bitmap_traverse,
-    .tp_free = PyObject_GC_Del,
-    .tp_hash = PyObject_HashNotImplemented,
+static PyType_Spec Hamt_ArrayNode_Type_spec = {
+    .name = "hamt.hamt_array_node",
+    .basicsize = sizeof(HamtNode_Array),
+    .itemsize = 0,
+    .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
+    .slots = Hamt_ArrayNode_Type_slots,
 };
 
-PyTypeObject _Hamt_CollisionNode_Type = {
-    PyVarObject_HEAD_INIT(&PyType_Type, 0)
-    "hamt_collision_node",
-    sizeof(HamtNode_Collision) - sizeof(PyObject *),
-    sizeof(PyObject *),
-    .tp_dealloc = (destructor)hamt_node_collision_dealloc,
-    .tp_getattro = PyObject_GenericGetAttr,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
-    .tp_traverse = (traverseproc)hamt_node_collision_traverse,
-    .tp_free = PyObject_GC_Del,
-    .tp_hash = PyObject_HashNotImplemented,
+static PyType_Slot Hamt_BitmapNode_Type_slots[] = {
+    {Py_tp_dealloc, hamt_node_bitmap_dealloc},
+    {Py_tp_getattro, PyObject_GenericGetAttr},
+    {Py_tp_traverse, hamt_node_bitmap_traverse},
+    {Py_tp_free, PyObject_GC_Del},
+    {Py_tp_hash, PyObject_HashNotImplemented},
+    {0, NULL},
+};
+
+static PyType_Spec Hamt_BitmapNode_Type_spec = {
+    .name = "hamt.hamt_bitmap_node",
+    .basicsize = sizeof(HamtNode_Bitmap) - sizeof(PyObject *),
+    .itemsize = sizeof(PyObject *),
+    .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
+    .slots = Hamt_BitmapNode_Type_slots,
+};
+
+static PyType_Slot Hamt_CollisionNode_Type_slots[] = {
+    {Py_tp_dealloc, hamt_node_collision_dealloc},
+    {Py_tp_getattro, PyObject_GenericGetAttr},
+    {Py_tp_traverse, hamt_node_collision_traverse},
+    {Py_tp_free, PyObject_GC_Del},
+    {Py_tp_hash, PyObject_HashNotImplemented},
+    {0, NULL},
+};
+
+static PyType_Spec Hamt_CollisionNode_Type_spec = {
+    .name = "hamt.hamt_collision_node",
+    .basicsize = sizeof(HamtNode_Collision) - sizeof(PyObject *),
+    .itemsize = sizeof(PyObject *),
+    .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
+    .slots = Hamt_CollisionNode_Type_slots,
 };
 
 ////
@@ -3137,6 +3238,43 @@ PyTypeObject _Hamt_CollisionNode_Type = {
 
 //
 
+typedef struct hamt_module_state {
+    /* Type objects */
+    PyTypeObject *Hamt_Type;
+    PyTypeObject *HamtItems_Type;
+    PyTypeObject *HamtKeys_Type;
+    PyTypeObject *HamtValues_Type;
+    PyTypeObject *Hamt_ArrayNode_Type;
+    PyTypeObject *Hamt_BitmapNode_Type;
+    PyTypeObject *Hamt_CollisionNode_Type;
+
+    /* Singleton objects */
+    HamtObject *empty_hamt;
+    HamtNode_Bitmap *empty_bitmap_node;
+} hamt_module_state;
+
+static inline hamt_module_state * get_hamt_module_state(PyObject *module)
+{
+    void *state = PyModule_GetState(module);
+    assert(state != NULL);
+    return (hamt_module_state *)state;
+}
+
+static inline hamt_module_state * get_hamt_state_from_type(PyTypeObject *type)
+{
+    PyObject *module = PyType_GetModule(type);
+    assert(module != NULL);
+    return get_hamt_module_state(module);
+}
+
+static inline hamt_module_state * get_hamt_state_from_obj(PyObject *obj)
+{
+    PyTypeObject *type = Py_TYPE(obj);
+    return get_hamt_state_from_type(type);
+}
+
+//
+
 static PyObject *
 py_hamt_new(PyObject *self, PyObject *args)
 {
@@ -3144,7 +3282,8 @@ py_hamt_new(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    HamtObject *hamt = _Hamt_New();
+    hamt_module_state *state = get_hamt_module_state(self);
+    HamtObject *hamt = _Hamt_New(state);
     if (!hamt) {
         return NULL;
     }
@@ -3349,6 +3488,120 @@ py_hamt_iter_items(PyObject *self, PyObject *args)
 
 //
 
+static int _hamt_module_exec(PyObject *module)
+{
+    hamt_module_state *state = get_hamt_module_state(module);
+
+    /* Initialize type objects */
+    state->Hamt_Type = (PyTypeObject *)PyType_FromModuleAndSpec(module, &Hamt_Type_spec, NULL);
+    if (state->Hamt_Type == NULL) {
+        return -1;
+    }
+    if (PyModule_AddType(module, state->Hamt_Type) < 0) {
+        return -1;
+    }
+
+    state->HamtItems_Type = (PyTypeObject *)PyType_FromModuleAndSpec(module, &HamtItems_Type_spec, NULL);
+    if (state->HamtItems_Type == NULL) {
+        return -1;
+    }
+
+    state->HamtKeys_Type = (PyTypeObject *)PyType_FromModuleAndSpec(module, &HamtKeys_Type_spec, NULL);
+    if (state->HamtKeys_Type == NULL) {
+        return -1;
+    }
+
+    state->HamtValues_Type = (PyTypeObject *)PyType_FromModuleAndSpec(module, &HamtValues_Type_spec, NULL);
+    if (state->HamtValues_Type == NULL) {
+        return -1;
+    }
+
+    state->Hamt_ArrayNode_Type = (PyTypeObject *)PyType_FromModuleAndSpec(module, &Hamt_ArrayNode_Type_spec, NULL);
+    if (state->Hamt_ArrayNode_Type == NULL) {
+        return -1;
+    }
+
+    state->Hamt_BitmapNode_Type = (PyTypeObject *)PyType_FromModuleAndSpec(module, &Hamt_BitmapNode_Type_spec, NULL);
+    if (state->Hamt_BitmapNode_Type == NULL) {
+        return -1;
+    }
+
+    state->Hamt_CollisionNode_Type = (PyTypeObject *)PyType_FromModuleAndSpec(module, &Hamt_CollisionNode_Type_spec, NULL);
+    if (state->Hamt_CollisionNode_Type == NULL) {
+        return -1;
+    }
+
+    /* Initialize singleton objects */
+
+    /* Create empty bitmap node */
+    state->empty_bitmap_node = PyObject_GC_New(HamtNode_Bitmap, state->Hamt_BitmapNode_Type);
+    if (state->empty_bitmap_node == NULL) {
+        return -1;
+    }
+    Py_SET_SIZE(state->empty_bitmap_node, 0);
+    state->empty_bitmap_node->b_bitmap = 0;
+    PyObject_GC_Track(state->empty_bitmap_node);
+
+    /* Create empty HAMT object */
+    state->empty_hamt = PyObject_GC_New(HamtObject, state->Hamt_Type);
+    if (state->empty_hamt == NULL) {
+        return -1;
+    }
+    state->empty_hamt->h_root = (HamtNode *)Py_NewRef(state->empty_bitmap_node);
+    state->empty_hamt->h_weakreflist = NULL;
+    state->empty_hamt->h_count = 0;
+    PyObject_GC_Track(state->empty_hamt);
+
+    return 0;
+}
+
+static int _hamt_module_traverse(PyObject *module, visitproc visit, void *arg)
+{
+    hamt_module_state *state = get_hamt_module_state(module);
+
+    /* Visit type objects */
+    Py_VISIT(state->Hamt_Type);
+    Py_VISIT(state->HamtItems_Type);
+    Py_VISIT(state->HamtKeys_Type);
+    Py_VISIT(state->HamtValues_Type);
+    Py_VISIT(state->Hamt_ArrayNode_Type);
+    Py_VISIT(state->Hamt_BitmapNode_Type);
+    Py_VISIT(state->Hamt_CollisionNode_Type);
+
+    /* Visit singleton objects */
+    Py_VISIT(state->empty_hamt);
+    Py_VISIT(state->empty_bitmap_node);
+
+    return 0;
+}
+
+static int _hamt_module_clear(PyObject *module)
+{
+    hamt_module_state *state = get_hamt_module_state(module);
+
+    /* Clear type objects */
+    Py_CLEAR(state->Hamt_Type);
+    Py_CLEAR(state->HamtItems_Type);
+    Py_CLEAR(state->HamtKeys_Type);
+    Py_CLEAR(state->HamtValues_Type);
+    Py_CLEAR(state->Hamt_ArrayNode_Type);
+    Py_CLEAR(state->Hamt_BitmapNode_Type);
+    Py_CLEAR(state->Hamt_CollisionNode_Type);
+
+    /* Clear singleton objects */
+    Py_CLEAR(state->empty_hamt);
+    Py_CLEAR(state->empty_bitmap_node);
+
+    return 0;
+}
+
+static void _hamt_module_free(void *module)
+{
+    _hamt_module_clear((PyObject *)module);
+}
+
+//
+
 PyDoc_STRVAR(hamt_doc, _MODULE_NAME);
 
 static PyMethodDef hamt_methods[] = {
@@ -3365,6 +3618,7 @@ static PyMethodDef hamt_methods[] = {
 };
 
 static struct PyModuleDef_Slot hamt_slots[] = {
+    {Py_mod_exec, (void *) _hamt_module_exec},
     {Py_mod_gil, Py_MOD_GIL_NOT_USED},
     {Py_mod_multiple_interpreters, Py_MOD_PER_INTERPRETER_GIL_SUPPORTED},
     {0, NULL}
@@ -3374,12 +3628,12 @@ static struct PyModuleDef hamt_module = {
     .m_base = PyModuleDef_HEAD_INIT,
     .m_name = _MODULE_NAME,
     .m_doc = hamt_doc,
-    .m_size = 0,
+    .m_size = sizeof(hamt_module_state),
     .m_methods = hamt_methods,
     .m_slots = hamt_slots,
-    .m_traverse = NULL,
-    .m_clear = NULL,
-    .m_free = NULL,
+    .m_traverse = _hamt_module_traverse,
+    .m_clear = _hamt_module_clear,
+    .m_free = _hamt_module_free,
 };
 
 PyMODINIT_FUNC PyInit__hamt(void)
