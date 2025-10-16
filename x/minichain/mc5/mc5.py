@@ -91,7 +91,8 @@ class ImmediateRendering(lang.Abstract):
 
 
 class RawImmediateRendering(ImmediateRendering):
-    pass
+    async def render_content(self, content: mc.Content) -> None:
+        pass
 
 
 class MarkdownImmediateRendering(ImmediateRendering):
