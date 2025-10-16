@@ -9,6 +9,7 @@ give it some guiding North Star to make all of its decisions for it, and to add 
 meet, join, solve, ...), but it's quite a bit of work and not a priority at the moment.
 
 TODO:
+ - !!! refactor like a GuardFn - no check_only, return a closure to continue computation !!!
  - !! cache this shit !!
   - especially generic_mro shit
 """

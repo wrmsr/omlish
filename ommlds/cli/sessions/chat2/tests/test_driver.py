@@ -45,6 +45,7 @@ def make_driver(
 def test_inject():
     assert make_driver(
         state='new',
+        initial_content='Hi!',
     )
 
 
