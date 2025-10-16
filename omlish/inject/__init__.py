@@ -49,8 +49,8 @@ with _lang.auto_proxy_init(globals()):
 
     from .elements import (  # noqa
         Element,
-        Elemental,
         Elements,
+        Elemental,
         as_elements,
     )
 

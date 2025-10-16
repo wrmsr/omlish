@@ -76,6 +76,9 @@ def build_kwargs_target(
         skip_kwargs: ta.Iterable[str] | None = None,
         raw_optional: bool = False,
 ) -> KwargsTarget:
+    if isinstance(obj, KwargsTarget):
+        return obj
+
     sig = signature(obj)
     tags = _TAGS.get(obj)
 

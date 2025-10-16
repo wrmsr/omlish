@@ -78,6 +78,7 @@ def bind(
         *,
         tag: ta.Any = None,
 
+        to_provider: Provider | None = None,
         to_async_fn: ta.Any = None,
         to_fn: ta.Any = None,
         to_ctor: ta.Any = None,
@@ -98,6 +99,7 @@ def bind(
     ##
 
     has_to = (
+        to_provider is not None or
         to_async_fn is not None or
         to_fn is not None or
         to_ctor is not None or
@@ -134,6 +136,8 @@ def bind(
     ##
 
     providers: list[Provider] = []
+    if to_provider is not None:
+        providers.append(to_provider)
     if to_async_fn is not None:
         providers.append(AsyncFnProvider(to_async_fn))
     if to_fn is not None:

@@ -68,3 +68,37 @@ def test_bind_map_entry_const():
         inj.bind_map_entry_const(ta.Mapping[str, Foo], 'ghi', Foo('jkl')),
     )
     assert dict(injector[ta.Mapping[str, Foo]]) == {'abc': Foo('def'), 'ghi': Foo('jkl')}
+
+
+def test_items_binder_helper():
+    @dc.dataclass(frozen=True, eq=False)
+    class Foo:
+        s: str
+
+    Foos = ta.NewType('Foos', ta.Sequence[Foo])  # noqa
+
+    @dc.dataclass(frozen=True, eq=False)
+    class Bar:
+        s: str
+
+    Bars = ta.NewType('Bars', ta.Sequence[Bar])  # noqa
+
+    foos_binder_helper = inj.ItemsBinderHelper[Foo](Foos)
+    bars_binder_helper = inj.ItemsBinderHelper[Bar](Bars)
+
+    injector = inj.create_injector(
+        foos_binder_helper.bind_items_provider(),
+        foos_binder_helper.bind_items(
+            foo0 := Foo('abc'),
+            foo1 := Foo('def'),
+        ),
+        bars_binder_helper.bind_items_provider(),
+        bars_binder_helper.bind_items(
+            bar0 := Bar('ghi'),
+        ),
+        bars_binder_helper.bind_items(
+            bar1 := Bar('jkl'),
+        ),
+    )
+    assert set(injector[Foos]) == {foo0, foo1}
+    assert set(injector[Bars]) == {bar0, bar1}
