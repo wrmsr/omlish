@@ -1,8 +1,9 @@
-import dataclasses as dc
 import enum
 import typing as ta
 
+from omlish import check
 from omlish import collections as col
+from omlish import dataclasses as dc
 
 
 ##
@@ -23,7 +24,7 @@ class ChatPhase(enum.Enum):
 
 @dc.dataclass(frozen=True)
 class ChatPhaseCallback:
-    phase: ChatPhase
+    phase: ChatPhase = dc.xfield(validate=lambda v: v != ChatPhase.NEW)
     fn: ta.Callable[[], ta.Awaitable[None]]
 
 
@@ -39,6 +40,8 @@ class ChatPhaseManager:
 
         self._callbacks = callbacks
         self._callbacks_by_phase = col.multi_map_by(lambda cb: cb.phase, callbacks)
+
+        check.state(not self._callbacks_by_phase.get(ChatPhase.NEW))
 
         self._phase = ChatPhase.NEW
 

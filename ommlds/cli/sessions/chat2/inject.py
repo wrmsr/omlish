@@ -39,10 +39,18 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
 
     #
 
-    els.extend([
-        inj.bind(_inj.StateStorageChatStateManager, singleton=True),
-        inj.bind(_inj.ChatStateManager, to_key=_inj.StateStorageChatStateManager),
-    ])
+    if cfg.state in ('continue', 'new'):
+        els.extend([
+            inj.bind(_inj.StateStorageChatStateManager, singleton=True),
+            inj.bind(_inj.ChatStateManager, to_key=_inj.StateStorageChatStateManager),
+        ])
+
+        if cfg.state == 'new':
+            els.append(inj.bind(_inj.ChatPhaseCallback(
+                _inj.ChatPhase.STARTED,
+
+            )))
+            state = self._state_manager.clear_state()
 
     #
 

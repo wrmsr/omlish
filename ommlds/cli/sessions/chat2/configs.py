@@ -1,4 +1,5 @@
 import dataclasses as dc
+import typing as ta
 
 from .... import minichain as mc
 
@@ -19,7 +20,7 @@ class ChatConfig:
     backend: str | None = None
     model_name: str | None = None
 
-    new: bool = False
+    state: ta.Literal['new', 'continue', 'ephemeral'] = 'continue'
 
     initial_content: mc.Content | None = None
 

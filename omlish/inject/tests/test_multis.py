@@ -71,13 +71,13 @@ def test_bind_map_entry_const():
 
 
 def test_items_binder_helper():
-    @dc.dataclass(frozen=True, eq=False)
+    @dc.dataclass(frozen=True)
     class Foo:
         s: str
 
     Foos = ta.NewType('Foos', ta.Sequence[Foo])  # noqa
 
-    @dc.dataclass(frozen=True, eq=False)
+    @dc.dataclass(frozen=True)
     class Bar:
         s: str
 
@@ -88,17 +88,21 @@ def test_items_binder_helper():
 
     injector = inj.create_injector(
         foos_binder_helper.bind_items_provider(),
-        foos_binder_helper.bind_items(
+        foos_binder_helper.bind_item_consts(
             foo0 := Foo('abc'),
             foo1 := Foo('def'),
         ),
         bars_binder_helper.bind_items_provider(),
-        bars_binder_helper.bind_items(
+        bars_binder_helper.bind_item_consts(
             bar0 := Bar('ghi'),
         ),
-        bars_binder_helper.bind_items(
+        bars_binder_helper.bind_item_consts(
             bar1 := Bar('jkl'),
         ),
+        bars_binder_helper.bind_item(to_provider=inj.FnProvider(inj.KwargsTarget.of(
+            lambda foos: Bar(''.join(sorted(f.s for f in foos))),
+            foos=Foos,
+        ))),
     )
     assert set(injector[Foos]) == {foo0, foo1}
-    assert set(injector[Bars]) == {bar0, bar1}
+    assert set(injector[Bars]) == {bar0, bar1, Bar('abcdef')}

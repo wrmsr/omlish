@@ -8,7 +8,6 @@ from ... import reflect as rfl
 from ..binder import bind
 from ..elements import Elements
 from ..elements import as_elements
-from ..inspect import Kwarg
 from ..inspect import KwargsTarget
 from ..keys import Key
 from ..keys import as_key
@@ -101,9 +100,30 @@ class ItemsBinderHelper(ta.Generic[ItemT]):
     def _set_key(self) -> Key:
         return as_key(ta.AbstractSet[self._item_rty])  # type: ignore
 
-    def bind_items(self, *items: ItemT) -> Elements:
+    def bind_item_consts(self, *items: ItemT) -> Elements:
         return as_elements(
             bind_set_entry_const(self._set_key, self._items_box(items)),
+        )
+
+    @dc.dataclass(frozen=True, eq=False)
+    @dc.extra_class_params(repr_id=True)
+    class _ItemTag:
+        pass
+
+    def bind_item(self, **kwargs: ta.Any) -> Elements:
+        tag = ItemsBinderHelper._ItemTag()
+        item_key = Key(ta.Any, tag=tag)
+        items_box_key = Key(self._items_box, tag=tag)
+        return as_elements(
+            bind(item_key, **kwargs),
+            bind(
+                items_box_key,
+                to_provider=FnProvider(KwargsTarget.of(
+                    lambda v: self._items_box([v]),
+                    v=item_key,
+                )),
+            ),
+            SetBinding(self._set_key, items_box_key),
         )
 
     def bind_items_provider(self, **kwargs: ta.Any) -> Elements:
@@ -111,9 +131,9 @@ class ItemsBinderHelper(ta.Generic[ItemT]):
             SetBinder[self._item_rty](),  # type: ignore
             bind(
                 self._items_cls,
-                to_provider=FnProvider(KwargsTarget(
+                to_provider=FnProvider(KwargsTarget.of(
                     lambda s: self._items_cls([v for i in s for v in i.vs]),
-                    [Kwarg('s', self._set_key, False)],
+                    s=self._set_key,
                 )),
                 **kwargs,
             ),
