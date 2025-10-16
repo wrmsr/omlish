@@ -45,6 +45,7 @@ with lang.auto_proxy_init(globals()):
     )
 
     from .chat.user.oneshot import (  # noqa
+        OneshotUserChatInputInitialChat,
         OneshotUserChatInput,
     )
 

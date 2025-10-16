@@ -1,3 +1,5 @@
+import typing as ta
+
 from ...... import minichain as mc
 from .types import UserChatInput
 
@@ -5,10 +7,13 @@ from .types import UserChatInput
 ##
 
 
+OneshotUserChatInputInitialChat = ta.NewType('OneshotUserChatInputInitialChat', mc.UserChat)
+
+
 class OneshotUserChatInput(UserChatInput):
     def __init__(
             self,
-            initial_chat: mc.UserChat | None = None,
+            initial_chat: OneshotUserChatInputInitialChat,
     ) -> None:
         super().__init__()
 

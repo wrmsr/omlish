@@ -15,7 +15,7 @@ from ..inject import bind_chat
 
 class DummyAiChatGenerator(AiChatGenerator):
     async def get_next_ai_messages(self, chat: mc.Chat) -> mc.AiChat:
-        raise NotImplementedError
+        return [mc.AiMessage(f'Ai Message #{len(chat) + 1}')]
 
 
 def make_driver(

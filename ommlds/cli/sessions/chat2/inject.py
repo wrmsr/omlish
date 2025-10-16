@@ -57,17 +57,17 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
 
     #
 
-    if cfg.initial_content is not None:
-        async def add_initial_content(cm: '_inj.ChatStateManager') -> None:
-            await cm.extend_chat([mc.UserMessage(cfg.initial_content)])
-
-        els.append(PHASE_CALLBACKS.bind_item(to_fn=lang.typed_lambda(cm=_inj.ChatStateManager)(
-            lambda cm: _inj.ChatPhaseCallback(_inj.ChatPhase.STARTED, lambda: add_initial_content(cm)),
-        )))
-
-    #
-
     if cfg.interactive:
+        if cfg.initial_content is not None:
+            async def add_initial_content(cm: '_inj.ChatStateManager') -> None:
+                await cm.extend_chat([mc.UserMessage(cfg.initial_content)])
+
+            els.append(PHASE_CALLBACKS.bind_item(to_fn=lang.typed_lambda(cm=_inj.ChatStateManager)(
+                lambda cm: _inj.ChatPhaseCallback(_inj.ChatPhase.STARTED, lambda: add_initial_content(cm)),
+            )))
+
+            raise NotImplementedError
+
         els.extend([
             inj.bind(_inj.InteractiveUserChatInput, singleton=True),
             inj.bind(_inj.UserChatInput, to_key=_inj.InteractiveUserChatInput),
@@ -78,6 +78,7 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
             raise ValueError('Initial content is required for non-interactive chat')
 
         els.extend([
+            inj.bind(_inj.OneshotUserChatInputInitialChat, to_const=[mc.UserMessage(cfg.initial_content)]),
             inj.bind(_inj.OneshotUserChatInput, singleton=True),
             inj.bind(_inj.UserChatInput, to_key=_inj.OneshotUserChatInput),
         ])
