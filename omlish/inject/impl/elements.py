@@ -63,6 +63,23 @@ ElementT = ta.TypeVar('ElementT', bound=Element)
 ##
 
 
+_SIMPLE_KEYED_ELEMENT_TYPES: tuple[type[Element], ...] = (
+    Binding,
+    Eager,
+    Expose,
+)
+
+_SIMPLE_NON_KEYED_ELEMENT_TYPES: tuple[type[Element], ...] = (
+    ProvisionListenerBinding,
+)
+
+_NON_BINDING_ELEMENT_TYPES: tuple[type[Element], ...] = (
+    Eager,
+    Expose,
+    ProvisionListenerBinding,
+)
+
+
 class ElementCollection(lang.Final):
     def __init__(self, es: Elements) -> None:
         super().__init__()
@@ -96,24 +113,24 @@ class ElementCollection(lang.Final):
             out.setdefault(k, []).extend(e)
 
         for e in es:
-            if isinstance(e, ScopeBinding):
+            if isinstance(e, _SIMPLE_KEYED_ELEMENT_TYPES):
+                add(e.key, e)  # type: ignore[attr-defined]  # noqa
+
+            elif isinstance(e, _SIMPLE_NON_KEYED_ELEMENT_TYPES):
+                add(None, e)
+
+            elif isinstance(e, (SetBinding, MapBinding)):
+                add(e.multi_key, e)
+
+            elif isinstance(e, ScopeBinding):
                 add(None, e)
                 sci = make_scope_impl(e.scope)
                 if (sae := sci.auto_elements()) is not None:
                     self._build_raw_element_multimap(sae, out)
 
-            elif isinstance(e, (Binding, Eager, Expose)):
-                add(e.key, e)
-
             elif isinstance(e, Private):
                 pi = self._get_private_info(e)
                 self._build_raw_element_multimap(pi.owner_elements(), out)
-
-            elif isinstance(e, (SetBinding, MapBinding)):
-                add(e.multi_key, e)
-
-            elif isinstance(e, ProvisionListenerBinding):
-                add(None, e)
 
             elif isinstance(e, Overrides):
                 src = self._build_raw_element_multimap(e.src)
@@ -166,9 +183,8 @@ class ElementCollection(lang.Final):
 
             es_by_ty = col.multi_map_by(type, es)
 
-            es_by_ty.pop(Eager, None)
-            es_by_ty.pop(Expose, None)
-            es_by_ty.pop(ProvisionListenerBinding, None)
+            for nb_ty in _NON_BINDING_ELEMENT_TYPES:
+                es_by_ty.pop(nb_ty, None)
 
             if (bs := es_by_ty.pop(Binding, None)):
                 b = self._get_single_binding(k, bs)  # type: ignore
@@ -176,7 +192,6 @@ class ElementCollection(lang.Final):
                 p: ProviderImpl
                 if isinstance(b.provider, (SetProvider, MapProvider)):
                     p = make_multi_provider_impl(b.provider, es_by_ty)
-
                 else:
                     p = make_provider_impl(b.provider)
 

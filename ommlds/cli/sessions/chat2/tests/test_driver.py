@@ -7,10 +7,10 @@ from omlish import inject as inj
 from ..... import minichain as mc
 from ....state import InMemoryStateStorage
 from ....state import StateStorage
+from ..chat.ai.types import AiChatGenerator
 from ..configs import ChatConfig
 from ..driver import ChatDriver
 from ..inject import bind_chat
-from ..chat.ai.types import AiChatGenerator
 
 
 class DummyAiChatGenerator(AiChatGenerator):

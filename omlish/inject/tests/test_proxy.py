@@ -24,7 +24,7 @@ def test_cyclic_exc():
         inj.bind(CycA, singleton=True),
         inj.bind(CycB, singleton=True),
     )
-    with pytest.raises(inj.CyclicDependencyError):
+    with pytest.raises(inj.CyclicDependencyError):  # noqa
         a = injector[CycA]  # noqa
         b = injector[CycB]  # noqa
 
