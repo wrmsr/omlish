@@ -1,4 +1,5 @@
 import abc
+import typing as ta
 
 from omlish import lang
 from omlish.formats import json
@@ -24,3 +25,17 @@ class ContentStringifierImpl(ContentStringifier):
 
         else:
             raise TypeError(content)
+
+
+class HasContentStringifier(lang.Abstract):
+    def __init__(
+            self,
+            *args: ta.Any,
+            content_stringifier: ContentStringifier | None = None,
+            **kwargs: ta.Any,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+
+        if content_stringifier is None:
+            content_stringifier = ContentStringifierImpl()
+        self._content_stringifier = content_stringifier
