@@ -67,6 +67,30 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
 
     #
 
+    if cfg.interactive:
+        els.extend([
+            inj.bind(_inj.InteractiveUserChatInput, singleton=True),
+            inj.bind(_inj.UserChatInput, to_key=_inj.InteractiveUserChatInput),
+        ])
+
+    else:
+        if cfg.initial_content is None:
+            raise ValueError('Initial content is required for non-interactive chat')
+
+        els.extend([
+            inj.bind(_inj.OneshotUserChatInput, singleton=True),
+            inj.bind(_inj.UserChatInput, to_key=_inj.InteractiveUserChatInput),
+        ])
+
+    #
+
+    els.extend([
+        inj.bind(_inj.ChatChoicesServiceAiChatGenerator, singleton=True),
+        inj.bind(_inj.AiChatGenerator, to_key=_inj.ChatChoicesServiceAiChatGenerator),
+    ])
+
+    #
+
     els.extend([
         inj.bind(_inj.ToolUseExecutorImpl, singleton=True),
         inj.bind(_inj.ToolUseExecutor, to_key=_inj.ToolUseExecutorImpl),

@@ -8,7 +8,7 @@ from .types import UserChatInput
 class OneshotUserChatInput(UserChatInput):
     def __init__(
             self,
-            initial_chat: mc.UserChat,
+            initial_chat: mc.UserChat | None = None,
     ) -> None:
         super().__init__()
 

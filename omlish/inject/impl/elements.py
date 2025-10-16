@@ -116,8 +116,8 @@ class ElementCollection(lang.Final):
                 add(None, e)
 
             elif isinstance(e, Overrides):
-                ovr = self._build_raw_element_multimap(e.ovr)
                 src = self._build_raw_element_multimap(e.src)
+                ovr = self._build_raw_element_multimap(e.ovr)
                 for k, b in src.items():  # FIXME: merge None keys?
                     try:
                         bs = ovr[k]

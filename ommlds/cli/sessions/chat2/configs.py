@@ -23,6 +23,7 @@ class ChatConfig:
     state: ta.Literal['new', 'continue', 'ephemeral'] = 'continue'
 
     initial_content: mc.Content | None = None
+    interactive: bool = False
 
     markdown: bool = False
     stream: bool = False
