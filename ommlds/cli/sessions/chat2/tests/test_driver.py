@@ -40,4 +40,5 @@ def test_inject():
 async def test_driver():
     await make_driver(
         state='new',
+        initial_content='Hi!',
     ).run()
