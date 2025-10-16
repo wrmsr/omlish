@@ -2,8 +2,8 @@ import typing as ta
 
 from omlish import inject as inj
 
-from . import _inject as _inj
 from .... import minichain as mc
+from . import _inject as _inj
 from .configs import ChatConfig
 
 
@@ -49,6 +49,12 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
     els.extend([
         inj.bind(_inj.ToolUseExecutorImpl, singleton=True),
         inj.bind(_inj.ToolUseExecutor, to_key=_inj.ToolUseExecutorImpl),
+    ])
+
+    #
+
+    els.extend([
+        inj.bind(_inj.ChatPhaseManager, singleton=True),
     ])
 
     #

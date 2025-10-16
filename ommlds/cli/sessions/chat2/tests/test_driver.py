@@ -1,6 +1,6 @@
-from omlish import inject as inj
-
 import pytest
+
+from omlish import inject as inj
 
 from ..configs import ChatConfig
 from ..driver import ChatDriver

@@ -83,8 +83,8 @@ def test_items_binder_helper():
 
     Bars = ta.NewType('Bars', ta.Sequence[Bar])  # noqa
 
-    foos_binder_helper = inj.ItemsBinderHelper[Foo](Foos)
-    bars_binder_helper = inj.ItemsBinderHelper[Bar](Bars)
+    foos_binder_helper = inj.items_binder_helper[Foo](Foos)
+    bars_binder_helper = inj.items_binder_helper[Bar](Bars)
 
     injector = inj.create_injector(
         foos_binder_helper.bind_items_provider(),
