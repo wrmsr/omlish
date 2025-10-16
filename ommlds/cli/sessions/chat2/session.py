@@ -1,7 +1,7 @@
 import dataclasses as dc
 
 from ..base import Session
-from .configs import ChatSessionConfig
+from .configs import ChatConfig
 from .driver import ChatDriver
 
 
@@ -10,7 +10,7 @@ from .driver import ChatDriver
 
 class Chat2Session(Session['Chat2Session.Config']):
     @dc.dataclass(frozen=True)
-    class Config(Session.Config, ChatSessionConfig):
+    class Config(Session.Config, ChatConfig):
         pass
 
     def __init__(

@@ -17,6 +17,7 @@ with lang.auto_proxy_init(globals()):
     )
 
     from .chat.ai.services import (  # noqa
+        ChatChoicesServiceOptions,
         ChatChoicesServiceAiChatGenerator,
         ChatChoicesStreamServiceAiChatGenerator,
     )

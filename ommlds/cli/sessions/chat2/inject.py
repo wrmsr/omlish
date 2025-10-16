@@ -1,27 +1,61 @@
-# import typing as ta
-#
-# from omlish import dataclasses as dc
-# from omlish import inject as inj
-# from omlish import lang
-#
-# from . import _inject
-# from .configs import ChatSessionConfig
-# from .types import ChatOption
-# from .types import ChatOptions
-#
-#
-# ##
-#
-#
-# @dc.dataclass(frozen=True, eq=False)
-# class _InjectedChatOptions:
-#     v: ChatOptions
-#
-#
-# def bind_chat_options(*cos: ChatOption) -> inj.Elements:
-#     return inj.bind_set_entry_const(ta.AbstractSet[_InjectedChatOptions], _InjectedChatOptions(ChatOptions(cos)))
-#
-#
+import typing as ta
+
+from omlish import dataclasses as dc
+from omlish import inject as inj
+from omlish import lang
+
+from .... import minichain as mc
+from . import _inject
+
+
+##
+
+
+@dc.dataclass(frozen=True, eq=False)
+class _InjectedChatOptions:
+    vs: ta.Sequence['mc.ChatChoicesOption']
+
+
+def bind_chat_options(*vs: 'mc.ChatChoicesOption') -> inj.Elements:
+    return inj.bind_set_entry_const(ta.AbstractSet[_InjectedChatOptions], _InjectedChatOptions(vs))
+
+
+def _bind_chat_options_provider() -> inj.Elements:
+    return inj.as_elements(
+        inj.set_binder[_InjectedChatOptions](),
+        inj.bind(
+            lang.typed_lambda(_inject.ChatChoicesServiceOptions, s=ta.AbstractSet[_InjectedChatOptions])(
+                lambda s: _inject.ChatChoicesServiceOptions([v for i in s for v in i.vs]),
+            ),
+            singleton=True,
+        ),
+    )
+
+
+##
+
+
+@dc.dataclass(frozen=True, eq=False)
+class _InjectedBackendConfigs:
+    cfgs: ta.Sequence['mc.Config']
+
+
+def bind_backend_config(*vs: 'mc.Config') -> inj.Elements:
+    return inj.bind_set_entry_const(ta.AbstractSet[_InjectedBackendConfigs], _InjectedBackendConfigs(vs))
+
+
+def _bind_backend_configs_provider() -> inj.Elements:
+    return inj.as_elements(
+        inj.set_binder[_InjectedBackendConfigs](),
+        inj.bind(
+            lang.typed_lambda(_inject.BackendConfigs, s=ta.AbstractSet[_InjectedBackendConfigs])(
+                lambda s: _inject.BackendConfigs([v for i in s for v in i.vs]),
+            ),
+            singleton=True,
+        ),
+    )
+
+
 # ##
 #
 #
@@ -34,11 +68,7 @@
 #         inj.set_binder[_InjectedChatOptions](),
 #         inj.bind(
 #             lang.typed_lambda(ChatOptions, s=ta.AbstractSet[_InjectedChatOptions])(
-#                 lambda s: ChatOptions([
-#                     co
-#                     for ico in s
-#                     for co in ico.v
-#                 ]),
+#                 lambda s: ChatOptions([co for ico in s for co in ico.v]),
 #             ),
 #             singleton=True,
 #         ),

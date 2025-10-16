@@ -13,7 +13,7 @@ DEFAULT_CHAT_MODEL_BACKEND = 'openai'
 
 
 @dc.dataclass(frozen=True)
-class ChatSessionConfig:
+class ChatConfig:
     _: dc.KW_ONLY
 
     backend: str | None = None
