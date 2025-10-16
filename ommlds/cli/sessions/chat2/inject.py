@@ -29,9 +29,26 @@ class SetConstBinderHelper(ta.Generic[T]):
         check.is_(rty.cls, self.__class__)
         return check.single(rty.args)
 
+    @dc.dataclass(frozen=True, eq=False)
+    class _ItemsBox:
+        vs: ta.Sequence
+
+    @cached.property
+    def _items_box(self) -> type[_ItemsBox]:
+        if isinstance(item_rty := self._item_rty, type):
+            sfx = item_rty.__qualname__
+        else:
+            sfx = str(item_rty).replace("'", '')
+
+        return lang.new_type(  # noqa
+            f'{SetConstBinderHelper._ItemsBox.__qualname__}${sfx}@{id(self):x}',
+            (SetConstBinderHelper._ItemsBox,),
+            {},
+        )
+
     @cached.property
     def item_binder(self) -> SetConstBinderHelperItemsBinder[T]:
-        self._item_rty
+        print(self._items_box)
         raise NotImplementedError
 
 
