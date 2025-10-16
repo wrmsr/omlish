@@ -4,9 +4,9 @@ import typing as ta
 from omlish import lang
 
 from ..... import minichain as mc
+from .types import BackendConfigs
 from .types import BackendName
 from .types import BackendProvider
-from .types import BackendConfigs
 from .types import ChatChoicesServiceBackendProvider
 from .types import ChatChoicesStreamServiceBackendProvider
 from .types import ServiceT

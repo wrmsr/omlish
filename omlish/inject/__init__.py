@@ -19,11 +19,24 @@ from .. import lang as _lang  # noqa
 with _lang.auto_proxy_init(globals()):
     ##
 
+    from .helpers.constfn import (  # noqa
+        ConstFn,
+    )
+
+    from .helpers.id import (  # noqa
+        Id,
+    )
+
+    from .helpers.multis import (  # noqa
+        bind_map_entry_const,
+        bind_set_entry_const,
+
+        ItemsBinderHelper,
+    )
+
     from .binder import (  # noqa
         bind,
         bind_as_fn,
-        bind_map_entry_const,
-        bind_set_entry_const,
     )
 
     from .bindings import (  # noqa
@@ -153,16 +166,8 @@ with _lang.auto_proxy_init(globals()):
         create_injector,
     )
 
-    from .tags import (  # noqa
-        Id,
-    )
-
     from .types import (  # noqa
         Scope,
         Tag,
         Unscoped,
-    )
-
-    from .utils import (  # noqa
-        ConstFn,
     )

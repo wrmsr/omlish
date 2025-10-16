@@ -1,8 +1,8 @@
 import typing as ta
 
-from .. import dataclasses as dc
-from .. import lang
-from .impl.origins import HasOriginsImpl
+from ... import dataclasses as dc
+from ... import lang
+from ..impl.origins import HasOriginsImpl
 
 
 T = ta.TypeVar('T')

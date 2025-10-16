@@ -73,68 +73,68 @@ bind_chat_options = CHAT_OPTIONS_BINDER_HELPER.bind_items
 BACKEND_CONFIGS_BINDER_HELPER = ItemsBinderHelper[mc.Config](_inject.BackendConfigs)
 bind_backend_configs = BACKEND_CONFIGS_BINDER_HELPER.bind_items
 
+PHASE_CALLBACKS_BINDER_HELPER = ItemsBinderHelper[_inject.ChatPhaseCallback](_inject.ChatPhaseCallbacks)
+bind_chat_phase_callbacks = PHASE_CALLBACKS_BINDER_HELPER.bind_items
+
 
 ##
 
 
-# ##
-#
-#
-# def bind_chat_session(cfg: ChatSession.Config) -> inj.Elements:
-#     els: list[inj.Elemental] = []
-#
-#     #
-#
-#     els.extend([
-#         inj.set_binder[_InjectedChatOptions](),
-#         inj.bind(
-#             lang.typed_lambda(ChatOptions, s=ta.AbstractSet[_InjectedChatOptions])(
-#                 lambda s: ChatOptions([co for ico in s for co in ico.v]),
-#             ),
-#             singleton=True,
-#         ),
-#     ])
-#
-#     #
-#
-#     els.extend([
-#         inj.bind(StateStorageChatStateManager, singleton=True),
-#         inj.bind(ChatStateManager, to_key=StateStorageChatStateManager),
-#     ])
-#
-#     #
-#
-#     if cfg.markdown:
-#         els.extend([
-#             inj.bind(MarkdownStringChatSessionPrinter, singleton=True),
-#             inj.bind(ChatSessionPrinter, to_key=MarkdownStringChatSessionPrinter),
-#         ])
-#     else:
-#         els.extend([
-#             inj.bind(SimpleStringChatSessionPrinter, singleton=True),
-#             inj.bind(ChatSessionPrinter, to_key=SimpleStringChatSessionPrinter),
-#         ])
-#
-#     #
-#
-#     if cfg.dangerous_no_tool_confirmation:
-#         els.extend([
-#             inj.bind(NopToolExecutionConfirmation, singleton=True),
-#             inj.bind(ToolExecutionConfirmation, to_key=NopToolExecutionConfirmation),
-#         ])
-#     else:
-#         els.extend([
-#             inj.bind(AskingToolExecutionConfirmation, singleton=True),
-#             inj.bind(ToolExecutionConfirmation, to_key=AskingToolExecutionConfirmation),
-#         ])
-#
-#     #
-#
-#     els.extend([
-#         inj.bind(ToolUseExecutorImpl, singleton=True),
-#         inj.bind(ToolUseExecutor, to_key=ToolUseExecutorImpl),
-#     ])
-#
-#     #
-#
-#     return inj.as_elements(*els)
+def bind_chat2_session(cfg: Chat2Session.Config) -> inj.Elements:
+    els: list[inj.Elemental] = []
+
+    #
+
+    els.extend([
+        inj.set_binder[_InjectedChatOptions](),
+        inj.bind(
+            lang.typed_lambda(ChatOptions, s=ta.AbstractSet[_InjectedChatOptions])(
+                lambda s: ChatOptions([co for ico in s for co in ico.v]),
+            ),
+            singleton=True,
+        ),
+    ])
+
+    #
+
+    els.extend([
+        inj.bind(StateStorageChatStateManager, singleton=True),
+        inj.bind(ChatStateManager, to_key=StateStorageChatStateManager),
+    ])
+
+    #
+
+    if cfg.markdown:
+        els.extend([
+            inj.bind(MarkdownStringChatSessionPrinter, singleton=True),
+            inj.bind(ChatSessionPrinter, to_key=MarkdownStringChatSessionPrinter),
+        ])
+    else:
+        els.extend([
+            inj.bind(SimpleStringChatSessionPrinter, singleton=True),
+            inj.bind(ChatSessionPrinter, to_key=SimpleStringChatSessionPrinter),
+        ])
+
+    #
+
+    if cfg.dangerous_no_tool_confirmation:
+        els.extend([
+            inj.bind(NopToolExecutionConfirmation, singleton=True),
+            inj.bind(ToolExecutionConfirmation, to_key=NopToolExecutionConfirmation),
+        ])
+    else:
+        els.extend([
+            inj.bind(AskingToolExecutionConfirmation, singleton=True),
+            inj.bind(ToolExecutionConfirmation, to_key=AskingToolExecutionConfirmation),
+        ])
+
+    #
+
+    els.extend([
+        inj.bind(ToolUseExecutorImpl, singleton=True),
+        inj.bind(ToolUseExecutor, to_key=ToolUseExecutorImpl),
+    ])
+
+    #
+
+    return inj.as_elements(*els)

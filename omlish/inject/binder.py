@@ -11,13 +11,8 @@ from .bindings import Binding
 from .eagers import Eager
 from .elements import Element
 from .elements import Elements
-from .elements import as_elements
 from .keys import Key
 from .keys import as_key
-from .multis import MapBinding
-from .multis import SetBinding
-from .multis import is_map_multi_key
-from .multis import is_set_multi_key
 from .privates import Expose
 from .providers import AsyncFnProvider
 from .providers import ConstProvider
@@ -27,7 +22,6 @@ from .providers import LinkProvider
 from .providers import Provider
 from .scopes import SCOPE_ALIASES
 from .scopes import Singleton
-from .tags import Id
 from .types import Scope
 from .types import Unscoped
 
@@ -191,45 +185,3 @@ def bind(
         return elements[0]
     else:
         return Elements(frozenset(elements))
-
-
-##
-
-
-def bind_set_entry_const(
-        multi_key: ta.Any,
-        obj: ta.Any,
-        *,
-        tag: ta.Any | None = None,
-) -> Elements:
-    multi_key = as_key(multi_key)
-    check.arg(is_set_multi_key(multi_key))
-
-    if tag is None:
-        tag = Id(id(obj), tag=multi_key.tag)
-    obj_key: Key = Key(type(obj), tag=tag)
-
-    return as_elements(
-        bind(obj_key, to_const=obj),
-        SetBinding(multi_key, obj_key),
-    )
-
-
-def bind_map_entry_const(
-        multi_key: ta.Any,
-        map_key: ta.Any,
-        obj: ta.Any,
-        *,
-        tag: ta.Any | None = None,
-) -> Elements:
-    multi_key = as_key(multi_key)
-    check.arg(is_map_multi_key(multi_key))
-
-    if tag is None:
-        tag = Id(id(obj), tag=multi_key.tag)
-    obj_key: Key = Key(type(obj), tag=tag)
-
-    return as_elements(
-        bind(obj_key, to_const=obj),
-        MapBinding(multi_key, map_key, obj_key),
-    )

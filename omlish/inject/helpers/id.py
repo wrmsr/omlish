@@ -1,7 +1,7 @@
 import typing as ta
 
-from .. import dataclasses as dc
-from .types import Tag
+from ... import dataclasses as dc
+from ..types import Tag
 
 
 ##
