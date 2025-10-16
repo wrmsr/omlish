@@ -1,9 +1,8 @@
-import typing as ta
-
 from omlish import check
 from ommlds import minichain as mc
 
 from .types import AiChatGenerator
+from .types import AiChoiceDeltaCallback
 
 
 ##
@@ -26,7 +25,7 @@ class ChatChoicesStreamServiceAiChatGenerator(AiChatGenerator):
             self,
             service: mc.ChatChoicesStreamService,
             *,
-            on_delta: ta.Callable[[mc.AiChoiceDelta], ta.Awaitable[None]] | None = None,
+            on_delta: AiChoiceDeltaCallback | None = None,
     ) -> None:
         super().__init__()
 
