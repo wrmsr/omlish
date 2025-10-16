@@ -11,18 +11,17 @@ from .... import minichain as mc
 from . import _inject
 
 
-T = ta.TypeVar('T')
+ItemT = ta.TypeVar('ItemT')
 
 
 ##
 
 
-class SetConstBinderHelperItemsBinder(ta.Protocol[T]):
-    def __call__(self, *items: T) -> inj.Elements: ...
-
-
 @ta.final
-class SetConstBinderHelper(ta.Generic[T]):
+class ItemsBinderHelper(ta.Generic[ItemT]):
+    def __init__(self, items_cls: ta.Any) -> None:
+        self._items_cls = items_cls
+
     @cached.property
     def _item_rty(self) -> rfl.Type:
         rty = check.isinstance(rfl.type_(rfl.get_orig_class(self)), rfl.Generic)
@@ -41,69 +40,41 @@ class SetConstBinderHelper(ta.Generic[T]):
             sfx = str(item_rty).replace("'", '')
 
         return lang.new_type(  # noqa
-            f'{SetConstBinderHelper._ItemsBox.__qualname__}${sfx}@{id(self):x}',
-            (SetConstBinderHelper._ItemsBox,),
+            f'{ItemsBinderHelper._ItemsBox.__qualname__}${sfx}@{id(self):x}',
+            (ItemsBinderHelper._ItemsBox,),
             {},
         )
 
     @cached.property
-    def item_binder(self) -> SetConstBinderHelperItemsBinder[T]:
-        print(self._items_box)
-        raise NotImplementedError
+    def _set_key(self) -> inj.Key:
+        return inj.as_key(ta.AbstractSet[self._item_rty])  # type: ignore
 
+    def bind_items(self, *items: ItemT) -> inj.Elemental:
+        return inj.bind_set_entry_const(self._set_key, self._items_box(items))
 
-CHAT_OPTIONS_BINDER_HELPER = SetConstBinderHelper[mc.ChatChoicesOption]()
-BACKEND_CONFIGS_BINDER_HELPER = SetConstBinderHelper[mc.Config]()
-
-bind_chat_options = CHAT_OPTIONS_BINDER_HELPER.item_binder
+    def bind_items_provider(self) -> inj.Elements:
+        return inj.as_elements(
+            inj.set_binder[self._item_rty](),  # type: ignore
+            inj.bind(
+                lang.typed_lambda(self._items_cls, s=self._set_key)(
+                    lambda s: self._items_cls([v for i in s for v in i.vs]),
+                ),
+                singleton=True,
+            ),
+        )
 
 
 ##
 
 
-@dc.dataclass(frozen=True, eq=False)
-class _InjectedChatOptions:
-    vs: ta.Sequence['mc.ChatChoicesOption']
+CHAT_OPTIONS_BINDER_HELPER = ItemsBinderHelper[mc.ChatChoicesOption](_inject.ChatChoicesServiceOptions)
+bind_chat_options = CHAT_OPTIONS_BINDER_HELPER.bind_items
 
-
-def bind_chat_options(*vs: 'mc.ChatChoicesOption') -> inj.Elements:
-    return inj.bind_set_entry_const(ta.AbstractSet[_InjectedChatOptions], _InjectedChatOptions(vs))
-
-
-def _bind_chat_options_provider() -> inj.Elements:
-    return inj.as_elements(
-        inj.set_binder[_InjectedChatOptions](),
-        inj.bind(
-            lang.typed_lambda(_inject.ChatChoicesServiceOptions, s=ta.AbstractSet[_InjectedChatOptions])(
-                lambda s: _inject.ChatChoicesServiceOptions([v for i in s for v in i.vs]),
-            ),
-            singleton=True,
-        ),
-    )
+BACKEND_CONFIGS_BINDER_HELPER = ItemsBinderHelper[mc.Config](_inject.BackendConfigs)
+bind_backend_configs = BACKEND_CONFIGS_BINDER_HELPER.bind_items
 
 
 ##
-
-
-@dc.dataclass(frozen=True, eq=False)
-class _InjectedBackendConfigs:
-    vs: ta.Sequence['mc.Config']
-
-
-def bind_backend_config(*vs: 'mc.Config') -> inj.Elements:
-    return inj.bind_set_entry_const(ta.AbstractSet[_InjectedBackendConfigs], _InjectedBackendConfigs(vs))
-
-
-def _bind_backend_configs_provider() -> inj.Elements:
-    return inj.as_elements(
-        inj.set_binder[_InjectedBackendConfigs](),
-        inj.bind(
-            lang.typed_lambda(_inject.BackendConfigs, s=ta.AbstractSet[_InjectedBackendConfigs])(
-                lambda s: _inject.BackendConfigs([v for i in s for v in i.vs]),
-            ),
-            singleton=True,
-        ),
-    )
 
 
 # ##
