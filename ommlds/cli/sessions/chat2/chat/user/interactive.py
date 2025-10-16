@@ -1,9 +1,9 @@
 import functools
 import typing as ta
 
-from ommlds import minichain as mc
 from omlish import lang
 
+from ...... import minichain as mc
 from .types import UserChatInput
 
 

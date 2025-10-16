@@ -1,6 +1,6 @@
 from omlish import check
-from ommlds import minichain as mc
 
+from ...... import minichain as mc
 from .types import AiChatGenerator
 from .types import AiChoiceDeltaCallback
 

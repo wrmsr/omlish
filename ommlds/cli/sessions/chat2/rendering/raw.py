@@ -1,12 +1,12 @@
 import typing as ta
 
 from omlish import lang
-from ommlds import minichain as mc
 
-from .types import ContentRendering
-from .types import StreamContentRendering
+from ..... import minichain as mc
 from ..content.strings import ContentStringifier
 from ..content.strings import HasContentStringifier
+from .types import ContentRendering
+from .types import StreamContentRendering
 
 
 ##
@@ -63,11 +63,11 @@ class RawContentStreamRendering(StreamContentRendering, HasContentStringifier):
             return self
 
         async def __aexit__(self, *exc_info) -> None:
-            await self._owner._output.flush()
+            await self._owner._output.flush()  # noqa: SLF001
 
         async def render_content(self, content: mc.Content) -> None:
-            if (s := self._owner._content_stringifier.stringify_content(content)) is not None:
-                await self._owner._output.write(s)
+            if (s := self._owner._content_stringifier.stringify_content(content)) is not None:  # noqa: SLF001
+                await self._owner._output.write(s)  # noqa: SLF001
 
     def create_context(self) -> ta.AsyncContextManager[ContentRendering]:
         return RawContentStreamRendering._ContextInstance(self)

@@ -4,7 +4,8 @@ import typing as ta
 from omlish import lang
 from omlish.formats import json
 from omlish.term.confirm import confirm_action
-from ommlds import minichain as mc
+
+from ..... import minichain as mc
 
 
 ##

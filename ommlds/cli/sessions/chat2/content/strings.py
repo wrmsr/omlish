@@ -3,7 +3,8 @@ import typing as ta
 
 from omlish import lang
 from omlish.formats import json
-from ommlds import minichain as mc
+
+from ..... import minichain as mc
 
 
 ##

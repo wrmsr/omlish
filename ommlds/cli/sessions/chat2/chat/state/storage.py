@@ -2,9 +2,9 @@ import dataclasses as dc
 
 from omlish import check
 from omlish import lang
-from ommlds import minichain as mc
-from ommlds.cli.state import StateStorage
 
+from ...... import minichain as mc
+from .....state import StateStorage
 from .types import ChatState
 from .types import ChatStateManager
 

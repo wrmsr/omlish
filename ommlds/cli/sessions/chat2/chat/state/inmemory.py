@@ -1,8 +1,8 @@
 import dataclasses as dc
 
 from omlish import lang
-from ommlds import minichain as mc
 
+from ...... import minichain as mc
 from .types import ChatState
 from .types import ChatStateManager
 

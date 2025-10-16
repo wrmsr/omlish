@@ -2972,6 +2972,12 @@ def format_num_bytes(num_bytes: int) -> str:
 
 ##
 # A workaround for typing deficiencies (like `Argument 2 to NewType(...) must be subclassable`).
+#
+# Note that this problem doesn't happen at runtime - it happens in mypy:
+#
+#   mypy <(echo "import typing as ta; MyCallback = ta.NewType('MyCallback', ta.Callable[[], None])")
+#   /dev/fd/11:1:22: error: Argument 2 to NewType(...) must be subclassable (got "Callable[[], None]")  [valid-newtype]
+#
 
 
 @dc.dataclass(frozen=True)

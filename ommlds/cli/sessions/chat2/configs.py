@@ -1,6 +1,6 @@
 import dataclasses as dc
 
-from ommlds import minichain as mc
+from .... import minichain as mc
 
 
 ##
