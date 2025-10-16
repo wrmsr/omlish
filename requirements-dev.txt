@@ -40,7 +40,7 @@ pgcli==4.3.0  # @omlish-venv !13t !13dt !14t
 
 # pydevd-pycharm==241.18034.82
 
-pudb==2025.1.1
+pudb==2025.1.2
 
 
 ##
