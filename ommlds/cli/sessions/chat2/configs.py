@@ -6,8 +6,14 @@ from .... import minichain as mc
 ##
 
 
+DEFAULT_CHAT_MODEL_BACKEND = 'openai'
+
+
+##
+
+
 @dc.dataclass(frozen=True)
-class ChatConfig:
+class ChatSessionConfig:
     _: dc.KW_ONLY
 
     backend: str | None = None
