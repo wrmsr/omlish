@@ -106,7 +106,7 @@ class ItemsBinderHelper(ta.Generic[ItemT]):
             bind_set_entry_const(self._set_key, self._items_box(items)),
         )
 
-    def bind_items_provider(self) -> Elements:
+    def bind_items_provider(self, **kwargs: ta.Any) -> Elements:
         return as_elements(
             SetBinder[self._item_rty](),  # type: ignore
             bind(
@@ -115,6 +115,6 @@ class ItemsBinderHelper(ta.Generic[ItemT]):
                     lambda s: self._items_cls([v for i in s for v in i.vs]),
                     [Kwarg('s', self._set_key, False)],
                 )),
-                singleton=True,
+                **kwargs,
             ),
         )

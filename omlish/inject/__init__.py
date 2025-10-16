@@ -31,7 +31,7 @@ with _lang.auto_proxy_init(globals()):
         bind_map_entry_const,
         bind_set_entry_const,
 
-        ItemsBinderHelper,
+        ItemsBinderHelper as items_binder_helper,  # noqa
     )
 
     from .binder import (  # noqa
