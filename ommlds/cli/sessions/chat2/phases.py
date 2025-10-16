@@ -25,7 +25,7 @@ class ChatPhase(enum.Enum):
 @dc.dataclass(frozen=True)
 class ChatPhaseCallback:
     phase: ChatPhase = dc.xfield(validate=lambda v: v != ChatPhase.NEW)
-    fn: ta.Callable[[], ta.Awaitable[None]]
+    fn: ta.Callable[[], ta.Awaitable[None]] = dc.xfield()
 
 
 ChatPhaseCallbacks = ta.NewType('ChatPhaseCallbacks', ta.Sequence[ChatPhaseCallback])

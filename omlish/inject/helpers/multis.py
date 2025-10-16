@@ -112,8 +112,8 @@ class ItemsBinderHelper(ta.Generic[ItemT]):
 
     def bind_item(self, **kwargs: ta.Any) -> Elements:
         tag = ItemsBinderHelper._ItemTag()
-        item_key = Key(ta.Any, tag=tag)
-        items_box_key = Key(self._items_box, tag=tag)
+        item_key: Key = Key(ta.Any, tag=tag)
+        items_box_key: Key = Key(self._items_box, tag=tag)
         return as_elements(
             bind(item_key, **kwargs),
             bind(

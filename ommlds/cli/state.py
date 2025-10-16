@@ -14,6 +14,38 @@ T = ta.TypeVar('T')
 ##
 
 
+class StateStorage(lang.Abstract):
+    @abc.abstractmethod
+    def load_state(self, key: str, ty: type[T] | None) -> ta.Awaitable[T | None]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def save_state(self, key: str, obj: ta.Any | None, ty: type[T] | None) -> ta.Awaitable[None]:
+        raise NotImplementedError
+
+
+##
+
+
+class InMemoryStateStorage(StateStorage):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._dct: dict[str, ta.Any] = {}
+
+    async def load_state(self, key: str, ty: type[T] | None) -> T | None:
+        return self._dct.get(key)
+
+    async def save_state(self, key: str, obj: ta.Any | None, ty: type[T] | None) -> None:
+        if obj is None:
+            self._dct.pop(key, None)
+        else:
+            self._dct[key] = obj
+
+
+##
+
+
 STATE_VERSION = 0
 
 
@@ -23,10 +55,7 @@ class MarshaledState:
     payload: ta.Any
 
 
-#
-
-
-class StateStorage(lang.Abstract):
+class MarshalStateStorage(StateStorage, lang.Abstract):
     def __init__(
             self,
             *,
@@ -36,36 +65,24 @@ class StateStorage(lang.Abstract):
 
         self._version = version
 
-    #
-
-    def unmarshal_state(self, obj: ta.Any, ty: type[T] | None = None) -> T | None:
+    def _unmarshal_state(self, obj: ta.Any, ty: type[T] | None = None) -> T | None:
         ms = msh.unmarshal(obj, MarshaledState)
         if ms.version < self._version:
             return None
         return msh.unmarshal(ms.payload, ty)
 
-    def marshal_state(self, obj: ta.Any, ty: type | None = None) -> ta.Any:
+    def _marshal_state(self, obj: ta.Any, ty: type | None = None) -> ta.Any:
         ms = MarshaledState(
             version=self._version,
             payload=msh.marshal(obj, ty),
         )
         return msh.marshal(ms)
 
-    #
-
-    @abc.abstractmethod
-    def load_state(self, key: str, ty: type[T] | None) -> T | None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def save_state(self, key: str, obj: ta.Any | None, ty: type[T] | None) -> None:
-        raise NotImplementedError
-
 
 #
 
 
-class JsonFileStateStorage(StateStorage):
+class JsonFileStateStorage(MarshalStateStorage):
     def __init__(
             self,
             file: str,
@@ -91,19 +108,19 @@ class JsonFileStateStorage(StateStorage):
 
     #
 
-    def load_state(self, key: str, ty: type[T] | None) -> T | None:
+    async def load_state(self, key: str, ty: type[T] | None) -> T | None:
         if not (data := self._load_file_data()):
             return None
         if (dct := data.get(key)) is None:
             return None
-        return self.unmarshal_state(dct, ty)
+        return self._unmarshal_state(dct, ty)
 
-    def save_state(self, key: str, obj: ta.Any | None, ty: type[T] | None) -> None:
+    async def save_state(self, key: str, obj: ta.Any | None, ty: type[T] | None) -> None:
         if (data := self._load_file_data()) is None:
             data = {}
         if obj is None:
             data.pop(key, None)
         else:
-            dct = self.marshal_state(obj, ty)
+            dct = self._marshal_state(obj, ty)
             data[key] = dct
         self._save_file_data(data)

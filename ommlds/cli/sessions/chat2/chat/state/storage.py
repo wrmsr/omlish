@@ -29,7 +29,7 @@ class StateStorageChatStateManager(ChatStateManager):
     async def get_state(self) -> ChatState:
         if self._state is not None:
             return self._state
-        state: ChatState | None = self._storage.load_state(self._key, ChatState)
+        state: ChatState | None = await self._storage.load_state(self._key, ChatState)
         if state is None:
             state = ChatState()
         self._state = state
@@ -37,7 +37,7 @@ class StateStorageChatStateManager(ChatStateManager):
 
     async def clear_state(self) -> ChatState:
         state = ChatState()
-        self._storage.save_state(self._key, state, ChatState)
+        await self._storage.save_state(self._key, state, ChatState)
         self._state = state
         return state
 
@@ -48,6 +48,6 @@ class StateStorageChatStateManager(ChatStateManager):
             chat=[*state.chat, *chat_additions],
             updated_at=lang.utcnow(),
         )
-        self._storage.save_state(self._key, state, ChatState)
+        await self._storage.save_state(self._key, state, ChatState)
         self._state = state
         return state

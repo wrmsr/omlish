@@ -1,6 +1,7 @@
 import typing as ta
 
 from omlish import inject as inj
+from omlish import lang
 
 from .... import minichain as mc
 from . import _inject as _inj
@@ -13,14 +14,9 @@ ItemT = ta.TypeVar('ItemT')
 ##
 
 
-CHAT_OPTIONS_BINDER_HELPER = inj.items_binder_helper[mc.ChatChoicesOption](_inj.ChatChoicesServiceOptions)
-bind_chat_options = CHAT_OPTIONS_BINDER_HELPER.bind_items
-
-BACKEND_CONFIGS_BINDER_HELPER = inj.items_binder_helper[mc.Config](_inj.BackendConfigs)
-bind_backend_configs = BACKEND_CONFIGS_BINDER_HELPER.bind_items
-
-PHASE_CALLBACKS_BINDER_HELPER = inj.items_binder_helper[_inj.ChatPhaseCallback](_inj.ChatPhaseCallbacks)
-bind_chat_phase_callbacks = PHASE_CALLBACKS_BINDER_HELPER.bind_items
+CHAT_OPTIONS = inj.items_binder_helper[mc.ChatChoicesOption](_inj.ChatChoicesServiceOptions)
+BACKEND_CONFIGS = inj.items_binder_helper[mc.Config](_inj.BackendConfigs)
+PHASE_CALLBACKS = inj.items_binder_helper[_inj.ChatPhaseCallback](_inj.ChatPhaseCallbacks)
 
 
 ##
@@ -32,9 +28,9 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
     #
 
     els.extend([
-        CHAT_OPTIONS_BINDER_HELPER.bind_items_provider(singleton=True),
-        BACKEND_CONFIGS_BINDER_HELPER.bind_items_provider(singleton=True),
-        PHASE_CALLBACKS_BINDER_HELPER.bind_items_provider(singleton=True),
+        CHAT_OPTIONS.bind_items_provider(singleton=True),
+        BACKEND_CONFIGS.bind_items_provider(singleton=True),
+        PHASE_CALLBACKS.bind_items_provider(singleton=True),
     ])
 
     #
@@ -46,11 +42,18 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
         ])
 
         if cfg.state == 'new':
-            els.append(inj.bind(_inj.ChatPhaseCallback(
-                _inj.ChatPhase.STARTED,
-
+            els.append(PHASE_CALLBACKS.bind_item(to_fn=lang.typed_lambda(cm=_inj.ChatStateManager)(
+                lambda cm: _inj.ChatPhaseCallback(_inj.ChatPhase.STARTING, cm.clear_state),
             )))
-            state = self._state_manager.clear_state()
+
+    elif cfg.state == 'ephemeral':
+        els.extend([
+            inj.bind(_inj.InMemoryChatStateManager, singleton=True),
+            inj.bind(_inj.ChatStateManager, to_key=_inj.InMemoryChatStateManager),
+        ])
+
+    else:
+        raise TypeError(cfg.state)
 
     #
 

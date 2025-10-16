@@ -13,7 +13,6 @@ P = ta.ParamSpec('P')
 
 
 _LOCK = threading.RLock()
-
 _LOCAL: threading.local
 
 
