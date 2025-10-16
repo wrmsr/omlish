@@ -2,6 +2,7 @@ import typing as ta
 
 from ...... import minichain as mc
 from ...content.messages import MessageContentExtractor
+from ...content.messages import MessageContentExtractorImpl
 from ...rendering.types import ContentRendering
 from .types import AiChatGenerator
 from .types import StreamAiChatGenerator
@@ -15,12 +16,14 @@ class RenderingAiChatGenerator(AiChatGenerator):
             self,
             *,
             wrapped: AiChatGenerator,
-            extractor: MessageContentExtractor,
+            extractor: MessageContentExtractor | None = None,
             renderer: ContentRendering,
     ) -> None:
         super().__init__()
 
         self._wrapped = wrapped
+        if extractor is None:
+            extractor = MessageContentExtractorImpl()
         self._extractor = extractor
         self._renderer = renderer
 
@@ -37,12 +40,14 @@ class RenderingStreamAiChatGenerator(StreamAiChatGenerator):
             self,
             *,
             wrapped: StreamAiChatGenerator,
-            extractor: MessageContentExtractor,
+            extractor: MessageContentExtractor | None = None,
             renderer: ContentRendering,
     ) -> None:
         super().__init__()
 
         self._wrapped = wrapped
+        if extractor is None:
+            extractor = MessageContentExtractorImpl()
         self._extractor = extractor
         self._renderer = renderer
 
