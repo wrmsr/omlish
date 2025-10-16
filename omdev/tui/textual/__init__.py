@@ -9,14 +9,24 @@ with _lang.auto_proxy_init(globals()):
     from textual import app  # noqa
     from textual import binding  # noqa
     from textual import containers  # noqa
+    from textual import content  # noqa
+    from textual import driver  # noqa
     from textual import events  # noqa
-    from textual import events  # noqa
+    from textual import markup  # noqa
     from textual import message  # noqa
+    from textual import messages  # noqa
+    from textual import pad  # noqa
     from textual import reactive  # noqa
+    from textual import screen  # noqa
+    from textual import style  # noqa
+    from textual import suggester  # noqa
+    from textual import suggestions  # noqa
+    from textual import timer  # noqa
+    from textual import widget  # noqa
     from textual import widgets  # noqa
     from textual.app import ActionError  # noqa
     from textual.app import ActiveModeError  # noqa
-    from textual.app import App  # noqa
+    from textual.app import App as App_  # noqa
     from textual.app import AppError  # noqa
     from textual.app import AutopilotCallbackType  # noqa
     from textual.app import CallThreadReturnType  # noqa
@@ -59,6 +69,11 @@ with _lang.auto_proxy_init(globals()):
     from textual.containers import Vertical  # noqa
     from textual.containers import VerticalGroup  # noqa
     from textual.containers import VerticalScroll  # noqa
+    from textual.content import Content  # noqa
+    from textual.content import ContentText  # noqa
+    from textual.content import ContentType  # noqa
+    from textual.content import EMPTY_CONTENT  # noqa
+    from textual.content import Span  # noqa
     from textual.driver import Driver  # noqa
     from textual.events import Action  # noqa
     from textual.events import AppBlur  # noqa
@@ -99,10 +114,45 @@ with _lang.auto_proxy_init(globals()):
     from textual.events import ScreenResume  # noqa
     from textual.events import ScreenSuspend  # noqa
     from textual.events import Show  # noqa
-    from textual.events import Timer  # noqa
+    from textual.events import Timer as TimerEvent  # noqa
     from textual.events import Unmount  # noqa
+    from textual.markup import MarkupError  # noqa
+    from textual.markup import MarkupTokenizer  # noqa
+    from textual.markup import StyleTokenizer  # noqa
+    from textual.markup import escape  # noqa
+    from textual.markup import parse_style  # noqa
+    from textual.markup import to_content  # noqa
     from textual.message import Message  # noqa
+    from textual.messages import CloseMessages  # noqa
+    from textual.messages import ExitApp  # noqa
+    from textual.messages import InBandWindowResize  # noqa
+    from textual.messages import InvokeLater  # noqa
+    from textual.messages import Layout  # noqa
+    from textual.messages import Prompt  # noqa
+    from textual.messages import Prune  # noqa
+    from textual.messages import ScrollToRegion  # noqa
+    from textual.messages import TerminalSupportsSynchronizedOutput  # noqa
+    from textual.messages import Update  # noqa
+    from textual.messages import UpdateScroll  # noqa
+    from textual.pad import HorizontalPad  # noqa
+    from textual.reactive import Initialize  # noqa
     from textual.reactive import Reactive  # noqa
+    from textual.reactive import ReactiveError  # noqa
+    from textual.reactive import await_watcher  # noqa
+    from textual.reactive import invoke_watcher  # noqa
+    from textual.reactive import reactive as reactive_  # noqa
+    from textual.reactive import var  # noqa
+    from textual.screen import ModalScreen  # noqa
+    from textual.screen import Screen  # noqa
+    from textual.screen import SystemModalScreen  # noqa
+    from textual.style import Style  # noqa
+    from textual.suggester import SuggestFromList  # noqa
+    from textual.suggester import Suggester  # noqa
+    from textual.suggester import SuggestionReady  # noqa
+    from textual.suggestions import get_suggestion  # noqa
+    from textual.suggestions import get_suggestions  # noqa
+    from textual.timer import Timer  # noqa
+    from textual.timer import TimerCallback  # noqa
     from textual.widget import Widget  # noqa
     from textual.widgets import Button  # noqa
     from textual.widgets import Checkbox  # noqa
@@ -149,6 +199,10 @@ with _lang.auto_proxy_init(globals()):
     from textual.widgets import Welcome  # noqa
 
     ##
+
+    from .app2 import (  # noqa
+        App,
+    )
 
     from .drivers2 import (  # noqa
         PendingWritesDriverMixin,
