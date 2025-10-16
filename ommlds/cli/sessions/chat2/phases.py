@@ -8,7 +8,7 @@ from omlish import collections as col
 ##
 
 
-class ChatSessionPhase(enum.Enum):
+class ChatPhase(enum.Enum):
     NEW = enum.auto()
 
     STARTING = enum.auto()
@@ -23,7 +23,7 @@ class ChatSessionPhase(enum.Enum):
 
 @dc.dataclass(frozen=True)
 class ChatPhaseCallback:
-    phase: ChatSessionPhase
+    phase: ChatPhase
     fn: ta.Callable[[], ta.Awaitable[None]]
 
 
@@ -40,13 +40,13 @@ class ChatPhaseManager:
         self._callbacks = callbacks
         self._callbacks_by_phase = col.multi_map_by(lambda cb: cb.phase, callbacks)
 
-        self._phase = ChatSessionPhase.NEW
+        self._phase = ChatPhase.NEW
 
     @property
-    def phase(self) -> ChatSessionPhase:
+    def phase(self) -> ChatPhase:
         return self._phase
 
-    async def set_phase(self, phase: ChatSessionPhase) -> None:
+    async def set_phase(self, phase: ChatPhase) -> None:
         self._phase = phase
         for cb in self._callbacks_by_phase.get(phase, ()):
             await cb.fn()

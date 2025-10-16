@@ -86,3 +86,14 @@ with lang.auto_proxy_init(globals()):
         ToolUseExecutor,
         ToolUseExecutorImpl,
     )
+
+    from .driver import (  # noqa
+        ChatDriver,
+    )
+
+    from .phases import (  # noqa
+        ChatPhase,
+        ChatPhaseCallback,
+        ChatPhaseCallbacks,
+        ChatPhaseManager,
+    )

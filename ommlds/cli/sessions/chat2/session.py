@@ -2,6 +2,7 @@ import dataclasses as dc
 
 from ..base import Session
 from .configs import ChatSessionConfig
+from .driver import ChatDriver
 
 
 ##
@@ -15,13 +16,12 @@ class Chat2Session(Session['Chat2Session.Config']):
     def __init__(
             self,
             config: Config,
+            *,
+            driver: ChatDriver,
     ) -> None:
         super().__init__(config)
 
-    async def run(self) -> None:
-        # if self._config.new:
-        #     state = self._state_manager.clear_state()
-        # else:
-        #     state = self._state_manager.get_state()
+        self._driver = driver
 
-        raise NotImplementedError
+    async def run(self) -> None:
+        await self._driver.run()
