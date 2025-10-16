@@ -1,6 +1,6 @@
 from .chat.ai.types import AiChatGenerator
-from .chat.user.types import UserChatInput
 from .chat.state.types import ChatStateManager
+from .chat.user.types import UserChatInput
 from .phases import ChatPhase
 from .phases import ChatPhaseManager
 

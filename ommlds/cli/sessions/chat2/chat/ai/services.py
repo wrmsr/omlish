@@ -4,7 +4,7 @@ from omlish import check
 
 from ...... import minichain as mc
 from .types import AiChatGenerator
-from .types import AiChoiceDeltaCallback
+from .types import StreamAiChatGenerator
 
 
 ##
@@ -34,21 +34,23 @@ class ChatChoicesServiceAiChatGenerator(AiChatGenerator):
         return check.single(resp.v).ms
 
 
-class ChatChoicesStreamServiceAiChatGenerator(AiChatGenerator):
+class ChatChoicesStreamServiceStreamAiChatGenerator(StreamAiChatGenerator):
     def __init__(
             self,
             service: mc.ChatChoicesStreamService,
             *,
             options: ChatChoicesServiceOptions | None = None,
-            on_delta: AiChoiceDeltaCallback | None = None,
     ) -> None:
         super().__init__()
 
         self._service = service
         self._options = options
-        self._on_delta = on_delta
 
-    async def get_next_ai_messages(self, chat: mc.Chat) -> mc.AiChat:
+    async def get_next_ai_messages_streamed(
+            self,
+            chat: mc.Chat,
+            delta_callback: ta.Callable[[mc.AiChoiceDelta], ta.Awaitable[None]] | None = None,
+    ) -> mc.AiChat:
         lst: list[str] = []
 
         async with (await self._service.invoke(mc.ChatChoicesStreamRequest(chat, self._options or []))).v as st_resp:
@@ -56,8 +58,8 @@ class ChatChoicesStreamServiceAiChatGenerator(AiChatGenerator):
                 choice = check.single(o.choices)
 
                 for delta in choice.deltas:
-                    if self._on_delta is not None:
-                        await self._on_delta(delta)
+                    if delta_callback is not None:
+                        await delta_callback(delta)
 
                 c = check.isinstance(delta, mc.ContentAiChoiceDelta).c  # noqa
                 if c is not None:

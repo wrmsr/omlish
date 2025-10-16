@@ -19,12 +19,12 @@ with lang.auto_proxy_init(globals()):
     from .chat.ai.services import (  # noqa
         ChatChoicesServiceOptions,
         ChatChoicesServiceAiChatGenerator,
-        ChatChoicesStreamServiceAiChatGenerator,
+        ChatChoicesStreamServiceStreamAiChatGenerator,
     )
 
     from .chat.ai.types import (  # noqa
-        AiChoiceDeltaCallback,
         AiChatGenerator,
+        StreamAiChatGenerator,
     )
 
     from .chat.state.inmemory import (  # noqa
