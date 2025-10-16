@@ -64,3 +64,13 @@ def as_elements(*args: Elemental) -> Elements:
         es if es else None,
         cs if cs else None,
     )
+
+
+def iter_elements(*args: Elemental) -> ta.Iterator[Element]:
+    for a in args:
+        if isinstance(a, Element):
+            yield a
+        elif isinstance(a, (Elements, ElementGenerator)):
+            yield from a
+        else:
+            raise TypeError(a)

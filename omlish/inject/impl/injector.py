@@ -57,6 +57,7 @@ DEFAULT_SCOPES: list[Scope] = [
 ]
 
 
+@ta.final
 class AsyncInjectorImpl(AsyncInjector, lang.Final):
     def __init__(
             self,

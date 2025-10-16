@@ -52,6 +52,7 @@ with _lang.auto_proxy_init(globals()):
         Elements,
         Elemental,
         as_elements,
+        iter_elements,
     )
 
     from .errors import (  # noqa

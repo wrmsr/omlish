@@ -2,6 +2,8 @@ import abc
 import functools
 import typing as ta
 
+from ... import cached
+from ... import dataclasses as dc
 from ... import inject as inj
 from ... import lang
 
@@ -77,7 +79,7 @@ def test_wrappers_injection():
             inj.bind(ThingDoer, tag=3, to_fn=functools.partial(ItemAppendingThingDoer, item='foo'), expose=True),
         ),
 
-        inj.bind(ThingDoer, to_key=inj.Key(ThingDoer, tag=3), expose=True),
+        inj.bind(ThingDoer, to_key=inj.Key(ThingDoer, tag=3)),
     )
 
     assert list(injector.provide(inj.Key(ThingDoer, tag=0)).do_thing()) == ['2', '1', '3']
@@ -85,3 +87,60 @@ def test_wrappers_injection():
     assert list(injector.provide(inj.Key(ThingDoer, tag=2)).do_thing()) == ['3', '2', '1']
     assert list(injector.provide(inj.Key(ThingDoer, tag=3)).do_thing()) == ['3', '2', '1', 'foo']
     assert list(injector[ThingDoer].do_thing()) == ['3', '2', '1', 'foo']
+
+    assert injector[ThingDoer] is not injector[ThingDoer]
+
+
+@ta.final
+class WrapperBinderHelper:
+    def __init__(self, key: ta.Any) -> None:
+        self._key = inj.as_key(key)
+        self._root = WrapperBinderHelper._Root()
+        self._top = WrapperBinderHelper._Level(self._root, 0)
+
+    @dc.dataclass(frozen=True, eq=False)
+    @dc.extra_class_params(repr_id=True)
+    class _Root:
+        pass
+
+    @dc.dataclass(frozen=True)
+    class _Level:
+        root: 'WrapperBinderHelper._Root'
+        level: int
+
+        def next(self) -> 'WrapperBinderHelper._Level':
+            return WrapperBinderHelper._Level(self.root, self.level + 1)
+
+        @cached.property
+        def key(self) -> inj.Key:
+            return inj.Key(ta.Any, tag=self)
+
+    @property
+    def top(self) -> inj.Key:
+        return self._top.key
+
+    def push_bind(self, **kwargs: ta.Any) -> inj.Elemental:
+        prv = self._top
+        nxt = prv.next()
+        out = inj.private(
+            *([inj.bind(self._key, to_key=prv.key)] if prv.level else []),
+            inj.bind(nxt.key, **kwargs, expose=True),
+        )
+        self._top = nxt
+        return out
+
+
+def test_wrapper_helper():
+    wbh = WrapperBinderHelper(ThingDoer)
+    injector = inj.create_injector(
+        wbh.push_bind(to_const=ConstThingDoer('2', '1', '3')),
+        wbh.push_bind(to_ctor=SortingThingDoer),
+        wbh.push_bind(to_ctor=SortingThingDoer),
+        wbh.push_bind(to_ctor=ReversingThingDoer),
+        wbh.push_bind(to_fn=functools.partial(ItemAppendingThingDoer, item='foo')),
+        inj.bind(ThingDoer, to_key=wbh.top),
+    )
+
+    assert list(injector[ThingDoer].do_thing()) == ['3', '2', '1', 'foo']
+
+    assert injector[ThingDoer] is not injector[ThingDoer]
