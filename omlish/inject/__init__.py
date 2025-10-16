@@ -34,6 +34,10 @@ with _lang.auto_proxy_init(globals()):
         ItemsBinderHelper as items_binder_helper,  # noqa
     )
 
+    from .helpers.wrappers import (  # noqa
+        WrapperBinderHelper as wrapper_binder_helper,  # noqa
+    )
+
     from .binder import (  # noqa
         bind,
         bind_as_fn,
