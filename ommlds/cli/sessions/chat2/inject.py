@@ -79,7 +79,7 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
 
         els.extend([
             inj.bind(_inj.OneshotUserChatInput, singleton=True),
-            inj.bind(_inj.UserChatInput, to_key=_inj.InteractiveUserChatInput),
+            inj.bind(_inj.UserChatInput, to_key=_inj.OneshotUserChatInput),
         ])
 
     #

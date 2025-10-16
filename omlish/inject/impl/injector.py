@@ -12,6 +12,8 @@ TODO:
  - injection listeners
  - unions - raise on ambiguous - usecase: sql.AsyncEngineLike
  - multiple live request scopes on single injector - use private injectors?
+ - more listeners - UnboundKeyListener
+  - lazy parent listener chain cache thing
 """
 import contextlib
 import functools
@@ -83,7 +85,7 @@ class AsyncInjectorImpl(AsyncInjector, lang.Final):
             )
         )
 
-        self._cs: weakref.WeakSet[AsyncInjectorImpl] | None = None
+        self._cs: weakref.WeakSet[AsyncInjectorImpl] | None = None  # noqa
         self._root: AsyncInjectorImpl = p._root if p is not None else self  # noqa
 
         self.__cur_req: AsyncInjectorImpl._Request | None = None
