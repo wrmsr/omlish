@@ -1704,6 +1704,7 @@ class ResourceType(_enum.Enum):
     IPAM_EXTERNAL_RESOURCE_VERIFICATION_TOKEN = 'ipam-external-resource-verification-token'
     CAPACITY_BLOCK = 'capacity-block'
     MAC_MODIFICATION_TASK = 'mac-modification-task'
+    CAPACITY_MANAGER_DATA_EXPORT = 'capacity-manager-data-export'
 
 
 class RootDeviceType(_enum.Enum):

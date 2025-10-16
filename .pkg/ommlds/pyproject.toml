@@ -44,7 +44,7 @@ all = [
     'numpy >= 1.26',
     'pytesseract ~= 0.3',
     'rapidocr-onnxruntime ~= 1.4',
-    'pillow ~= 11.3',
+    'pillow ~= 12.0',
     'ddgs ~= 9.6',
     'mwparserfromhell ~= 0.7',
     'wikitextparser ~= 0.56',
@@ -73,7 +73,7 @@ ocr = [
     'rapidocr-onnxruntime ~= 1.4',
 ]
 pillow = [
-    'pillow ~= 11.3',
+    'pillow ~= 12.0',
 ]
 search = [
     'ddgs ~= 9.6',
