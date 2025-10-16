@@ -47,6 +47,7 @@
 /wmt32k_data/
 __pycache__/
 cmake-build-*/
+node_modules/
 test-*.xml
 
 /secrets.yml

@@ -59,6 +59,7 @@ with _lang.auto_proxy_init(globals()):
     from textual.containers import Vertical  # noqa
     from textual.containers import VerticalGroup  # noqa
     from textual.containers import VerticalScroll  # noqa
+    from textual.driver import Driver  # noqa
     from textual.events import Action  # noqa
     from textual.events import AppBlur  # noqa
     from textual.events import AppFocus  # noqa
@@ -146,3 +147,10 @@ with _lang.auto_proxy_init(globals()):
     from textual.widgets import Tooltip  # noqa
     from textual.widgets import Tree  # noqa
     from textual.widgets import Welcome  # noqa
+
+    ##
+
+    from .drivers2 import (  # noqa
+        PendingWritesDriverMixin,
+        get_pending_writes_driver_class,
+    )

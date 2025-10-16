@@ -33,7 +33,7 @@
     "module": ".minichain.backends.impls.anthropic.names",
     "attr": "_BACKEND_STRINGS_MANIFEST",
     "file": "ommlds/minichain/backends/impls/anthropic/names.py",
-    "line": 35,
+    "line": 34,
     "value": {
       "!.minichain.backends.strings.manifests.BackendStringsManifest": {
         "service_cls_names": [
@@ -50,10 +50,9 @@
             "claude-sonnet-4-5-20250929": null,
             "claude-sonnet-4-5": "claude-sonnet-4-5-20250929",
             "claude-sonnet": "claude-sonnet-4-5",
-            "claude-3-5-haiku-latest": null,
-            "claude-haiku-3-5-latest": "claude-3-5-haiku-latest",
-            "claude-haiku-3-5": "claude-haiku-3-5-latest",
-            "claude-haiku": "claude-haiku-3-5",
+            "claude-haiku-4-5-20251001": null,
+            "claude-haiku-4-5": "claude-haiku-4-5-20251001",
+            "claude-haiku": "claude-haiku-4-5",
             "claude": "claude-haiku"
           }
         }

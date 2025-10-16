@@ -22,10 +22,9 @@ MODEL_NAMES = ModelNameCollection(
         'claude-sonnet-4-5': 'claude-sonnet-4-5-20250929',
         'claude-sonnet': 'claude-sonnet-4-5',
 
-        'claude-3-5-haiku-latest': None,
-        'claude-haiku-3-5-latest': 'claude-3-5-haiku-latest',
-        'claude-haiku-3-5': 'claude-haiku-3-5-latest',
-        'claude-haiku': 'claude-haiku-3-5',
+        'claude-haiku-4-5-20251001': None,
+        'claude-haiku-4-5': 'claude-haiku-4-5-20251001',
+        'claude-haiku': 'claude-haiku-4-5',
 
         'claude': 'claude-haiku',
     },
