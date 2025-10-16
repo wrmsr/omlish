@@ -1,11 +1,44 @@
 import typing as ta
 
+from omlish import cached
+from omlish import check
 from omlish import dataclasses as dc
 from omlish import inject as inj
 from omlish import lang
+from omlish import reflect as rfl
 
 from .... import minichain as mc
 from . import _inject
+
+
+T = ta.TypeVar('T')
+
+
+##
+
+
+class SetConstBinderHelperItemsBinder(ta.Protocol[T]):
+    def __call__(self, *items: T) -> inj.Elements: ...
+
+
+@ta.final
+class SetConstBinderHelper(ta.Generic[T]):
+    @cached.property
+    def _item_rty(self) -> rfl.Type:
+        rty = check.isinstance(rfl.type_(rfl.get_orig_class(self)), rfl.Generic)
+        check.is_(rty.cls, self.__class__)
+        return check.single(rty.args)
+
+    @cached.property
+    def item_binder(self) -> SetConstBinderHelperItemsBinder[T]:
+        self._item_rty
+        raise NotImplementedError
+
+
+CHAT_OPTIONS_BINDER_HELPER = SetConstBinderHelper[mc.ChatChoicesOption]()
+BACKEND_CONFIGS_BINDER_HELPER = SetConstBinderHelper[mc.Config]()
+
+bind_chat_options = CHAT_OPTIONS_BINDER_HELPER.item_binder
 
 
 ##
@@ -37,7 +70,7 @@ def _bind_chat_options_provider() -> inj.Elements:
 
 @dc.dataclass(frozen=True, eq=False)
 class _InjectedBackendConfigs:
-    cfgs: ta.Sequence['mc.Config']
+    vs: ta.Sequence['mc.Config']
 
 
 def bind_backend_config(*vs: 'mc.Config') -> inj.Elements:
