@@ -8,9 +8,7 @@ prompt: yes/no
 import abc
 import typing as ta
 
-from omlish import check
 from omlish import lang
-
 from ommlds import minichain as mc
 
 
@@ -45,73 +43,6 @@ class InteractiveUserChatInput(UserChatInput):
         except EOFError:
             return []
         return [mc.UserMessage(prompt)]
-
-
-##
-
-
-class AiChatGenerator(lang.Abstract):
-    @abc.abstractmethod
-    def get_next_ai_messages(self, chat: mc.Chat) -> ta.Awaitable[mc.AiChat]:
-        raise NotImplementedError
-
-
-class ImmediateAiChatGenerator(AiChatGenerator, lang.Abstract):
-    pass
-
-
-class ChatChoicesServiceImmediateAiChatGenerator(ImmediateAiChatGenerator):
-    def __init__(self, service: mc.ChatChoicesService) -> None:
-        super().__init__()
-
-        self._service = service
-
-    async def get_next_ai_messages(self, chat: mc.Chat) -> mc.AiChat:
-        resp = await self._service.invoke(mc.ChatChoicesRequest(chat))
-
-        return check.single(resp.v).ms
-
-
-class StreamAiChatGenerator(AiChatGenerator, lang.Abstract):
-    pass
-
-
-class ChatChoicesStreamServiceStreamAiChatGenerator(StreamAiChatGenerator):
-    async def get_next_ai_messages(self, chat: mc.Chat) -> mc.AiChat:
-        raise NotImplementedError
-
-
-##
-
-
-class ImmediateRendering(lang.Abstract):
-    @abc.abstractmethod
-    def render_content(self, content: mc.Content) -> ta.Awaitable[None]:
-        raise NotImplementedError
-
-
-class RawImmediateRendering(ImmediateRendering):
-    async def render_content(self, content: mc.Content) -> None:
-        pass
-
-
-class MarkdownImmediateRendering(ImmediateRendering):
-    pass
-
-
-##
-
-
-class StreamRendering(lang.Abstract):
-    pass
-
-
-class RawStreamRendering(StreamRendering):
-    pass
-
-
-class MarkdownStreamRendering(StreamRendering):
-    pass
 
 
 ##
