@@ -85,10 +85,18 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
 
     #
 
+    ai_stack = inj.wrapper_binder_helper(_inj.AiChatGenerator)
+
+    els.append(ai_stack.push_bind(to_ctor=_inj.ChatChoicesServiceAiChatGenerator, singleton=True))
+
     els.extend([
-        inj.bind(_inj.ChatChoicesServiceAiChatGenerator, singleton=True),
-        inj.bind(_inj.AiChatGenerator, to_key=_inj.ChatChoicesServiceAiChatGenerator),
+        inj.bind(_inj.RawContentRendering, singleton=True),
+        inj.bind(_inj.ContentRendering, to_key=_inj.RawContentRendering),
+
+        ai_stack.push_bind(to_ctor=_inj.RenderingAiChatGenerator, singleton=True),
     ])
+
+    els.append(inj.bind(_inj.AiChatGenerator, to_key=ai_stack.top))
 
     #
 

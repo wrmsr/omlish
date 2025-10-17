@@ -16,6 +16,11 @@ with lang.auto_proxy_init(globals()):
         ChatChoicesStreamServiceBackendProvider,
     )
 
+    from .chat.ai.rendering import (  # noqa
+        RenderingAiChatGenerator,
+        RenderingStreamAiChatGenerator,
+    )
+
     from .chat.ai.services import (  # noqa
         ChatChoicesServiceOptions,
         ChatChoicesServiceAiChatGenerator,
