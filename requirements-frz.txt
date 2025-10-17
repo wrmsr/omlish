@@ -1,6 +1,6 @@
 accelerate==1.10.1
 aiohappyeyeballs==2.6.1
-aiohttp==3.13.0
+aiohttp==3.13.1
 aiomysql==0.2.0
 aiosignal==1.4.0
 aiosqlite==0.21.0
@@ -72,10 +72,10 @@ frozenlist==1.8.0
 fsspec==2025.9.0
 gguf==0.17.1
 google-api-core==2.26.0
-google-api-python-client==2.184.0
+google-api-python-client==2.185.0
 google-auth==2.41.1
 google-auth-httplib2==0.2.0
-google-cloud-compute==1.39.0
+google-cloud-compute==1.40.0
 googleapis-common-protos==1.70.0
 gprof2dot==2025.4.14
 greenlet==3.2.4
@@ -284,7 +284,7 @@ tavily-python==0.7.12
 terminado==0.18.1
 textual==6.3.0
 threadpoolctl==3.6.0
-tifffile==2025.10.4
+tifffile==2025.10.16
 tiktoken==0.12.0
 tinycss2==1.4.0
 tokenizers==0.22.1
