@@ -25,7 +25,9 @@ class ChatConfig:
     initial_content: mc.Content | None = None
     interactive: bool = False
 
+    silent: bool = False
     markdown: bool = False
+
     stream: bool = False
 
     dangerous_no_tool_confirmation: bool = False

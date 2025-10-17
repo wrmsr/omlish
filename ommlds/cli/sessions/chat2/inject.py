@@ -85,18 +85,29 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
 
     #
 
-    ai_stack = inj.wrapper_binder_helper(_inj.AiChatGenerator)
+    if cfg.stream:
+        raise NotImplementedError
 
-    els.append(ai_stack.push_bind(to_ctor=_inj.ChatChoicesServiceAiChatGenerator, singleton=True))
+    else:
+        ai_stack = inj.wrapper_binder_helper(_inj.AiChatGenerator)
 
-    els.extend([
-        inj.bind(_inj.RawContentRendering, singleton=True),
-        inj.bind(_inj.ContentRendering, to_key=_inj.RawContentRendering),
+        els.append(ai_stack.push_bind(to_ctor=_inj.ChatChoicesServiceAiChatGenerator, singleton=True))
 
-        ai_stack.push_bind(to_ctor=_inj.RenderingAiChatGenerator, singleton=True),
-    ])
+        if not cfg.silent:
+            if cfg.markdown:
+                els.extend([
+                    inj.bind(_inj.MarkdownContentRendering, singleton=True),
+                    inj.bind(_inj.ContentRendering, to_key=_inj.MarkdownContentRendering),
+                ])
+            else:
+                els.extend([
+                    inj.bind(_inj.RawContentRendering, singleton=True),
+                    inj.bind(_inj.ContentRendering, to_key=_inj.RawContentRendering),
+                ])
 
-    els.append(inj.bind(_inj.AiChatGenerator, to_key=ai_stack.top))
+            els.append(ai_stack.push_bind(to_ctor=_inj.RenderingAiChatGenerator, singleton=True))
+
+        els.append(inj.bind(_inj.AiChatGenerator, to_key=ai_stack.top))
 
     #
 
