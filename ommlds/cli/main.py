@@ -27,6 +27,7 @@ from .sessions.base import Session
 from .sessions.chat.code import CodeChatSession
 from .sessions.chat.interactive import InteractiveChatSession
 from .sessions.chat.prompt import PromptChatSession
+from .sessions.chat2.session import Chat2Session
 from .sessions.completion.completion import CompletionSession
 from .sessions.embedding.embedding import EmbeddingSession
 from .tools.config import ToolsConfig
@@ -65,6 +66,8 @@ async def _a_main(args: ta.Any = None) -> None:
 
     parser.add_argument('-E', '--embed', action='store_true')
     parser.add_argument('-j', '--image', action='store_true')
+
+    parser.add_argument('-2', '--two', action='store_true')
 
     parser.add_argument('--enable-fs-tools', action='store_true')
     parser.add_argument('--enable-todo-tools', action='store_true')
@@ -128,7 +131,16 @@ async def _a_main(args: ta.Any = None) -> None:
 
     session_cfg: Session.Config
 
-    if args.interactive:
+    if args.two:
+        session_cfg = Chat2Session.Config(
+            backend=args.backend,
+            model_name=args.model_name,
+            state='ephemeral',
+            initial_content=content,  # noqa
+            # dangerous_no_tool_confirmation=bool(args.dangerous_no_tool_confirmation),
+        )
+
+    elif args.interactive:
         session_cfg = InteractiveChatSession.Config(
             backend=args.backend,
             model_name=args.model_name,
