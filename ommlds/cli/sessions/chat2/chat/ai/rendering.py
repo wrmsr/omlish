@@ -30,7 +30,9 @@ class RenderingAiChatGenerator(AiChatGenerator):
     async def get_next_ai_messages(self, chat: mc.Chat) -> mc.AiChat:
         out = await self._wrapped.get_next_ai_messages(chat)
 
-        # FIXME: render lol
+        for msg in out:
+            if (c := self._extractor.extract_message_content(msg)) is not None:
+                await self._renderer.render_content(c)
 
         return out
 
