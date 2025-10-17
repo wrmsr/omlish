@@ -12,7 +12,7 @@ ServiceT = ta.TypeVar('ServiceT', bound=mc.Service)
 ##
 
 
-BackendName = ta.TypeVar('BackendName', bound=str)
+BackendName = ta.NewType('BackendName', str)
 BackendConfigs = ta.NewType('BackendConfigs', ta.Sequence[mc.Config])
 
 

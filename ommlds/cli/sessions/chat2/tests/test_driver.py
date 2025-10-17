@@ -2,8 +2,8 @@ import typing as ta
 
 import pytest  # noqa
 
-from omlish import lang
 from omlish import inject as inj
+from omlish import lang
 
 from ..... import minichain as mc
 from ....state import InMemoryStateStorage

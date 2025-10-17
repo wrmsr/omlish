@@ -111,6 +111,8 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
 
     #
 
+    els.append(inj.bind(_inj.BackendName, to_const=cfg.backend))
+
     els.extend([
         inj.bind(_inj.CatalogChatChoicesServiceBackendProvider),
         inj.bind(_inj.ChatChoicesServiceBackendProvider, to_key=_inj.CatalogChatChoicesServiceBackendProvider),
