@@ -112,6 +112,13 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
     #
 
     els.extend([
+        inj.bind(_inj.CatalogChatChoicesServiceBackendProvider),
+        inj.bind(_inj.ChatChoicesServiceBackendProvider, to_key=_inj.CatalogChatChoicesServiceBackendProvider),
+    ])
+
+    #
+
+    els.extend([
         inj.bind(_inj.ToolUseExecutorImpl, singleton=True),
         inj.bind(_inj.ToolUseExecutor, to_key=_inj.ToolUseExecutorImpl),
     ])

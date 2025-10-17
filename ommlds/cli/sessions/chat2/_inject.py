@@ -4,8 +4,8 @@ from omlish import lang
 with lang.auto_proxy_init(globals()):
     from .backends.catalog import (  # noqa
         CatalogBackendProvider,
-        ChatChoicesServiceBackendProvider,
-        ChatChoicesStreamServiceBackendProvider,
+        CatalogChatChoicesServiceBackendProvider,
+        CatalogChatChoicesStreamServiceBackendProvider,
     )
 
     from .backends.types import (  # noqa

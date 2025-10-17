@@ -15,7 +15,7 @@ from .types import ServiceT
 ##
 
 
-class CatalogBackendProvider(BackendProvider[ServiceT], lang.Abstract):
+class _CatalogBackendProvider(BackendProvider[ServiceT], lang.Abstract):
     def __init__(
             self,
             *,
@@ -41,7 +41,7 @@ class CatalogBackendProvider(BackendProvider[ServiceT], lang.Abstract):
 
 
 class CatalogChatChoicesServiceBackendProvider(
-    CatalogBackendProvider[mc.ChatChoicesService],
+    _CatalogBackendProvider[mc.ChatChoicesService],
     ChatChoicesServiceBackendProvider,
 ):
     def provide_backend(self) -> ta.AsyncContextManager[mc.ChatChoicesService]:
@@ -49,7 +49,7 @@ class CatalogChatChoicesServiceBackendProvider(
 
 
 class CatalogChatChoicesStreamServiceBackendProvider(
-    CatalogBackendProvider[mc.ChatChoicesStreamService],
+    _CatalogBackendProvider[mc.ChatChoicesStreamService],
     ChatChoicesStreamServiceBackendProvider,
 ):
     def provide_backend(self) -> ta.AsyncContextManager[mc.ChatChoicesStreamService]:
