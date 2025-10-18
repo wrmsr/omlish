@@ -5,8 +5,8 @@ from omlish import lang
 
 from .... import minichain as mc
 from . import _inject as _inj
-from .configs import ChatConfig
 from .configs import DEFAULT_CHAT_MODEL_BACKEND
+from .configs import ChatConfig
 
 
 ItemT = ta.TypeVar('ItemT')
