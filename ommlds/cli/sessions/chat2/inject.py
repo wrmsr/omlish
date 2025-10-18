@@ -6,6 +6,7 @@ from omlish import lang
 from .... import minichain as mc
 from . import _inject as _inj
 from .configs import ChatConfig
+from .configs import DEFAULT_CHAT_MODEL_BACKEND
 
 
 ItemT = ta.TypeVar('ItemT')
@@ -111,7 +112,7 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
 
     #
 
-    els.append(inj.bind(_inj.BackendName, to_const=cfg.backend))
+    els.append(inj.bind(_inj.BackendName, to_const=cfg.backend or DEFAULT_CHAT_MODEL_BACKEND))
 
     els.extend([
         inj.bind(_inj.CatalogChatChoicesServiceBackendProvider),

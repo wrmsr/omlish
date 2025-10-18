@@ -288,7 +288,7 @@ def test_dump_chat_templates():
     ]:
         model: mlx.nn.Module
         tokenizer: mlx_lm.utils.TokenizerWrapper
-        model, tokenizer = mlx_lm.load(path_or_hf_repo=checkpoint)
+        model, tokenizer = mlx_lm.load(path_or_hf_repo=checkpoint)  # type: ignore[misc]
 
         prompt = tokenizer.apply_chat_template(
             messages,
@@ -328,7 +328,7 @@ def test_mlx():
 
     model: mlx.nn.Module
     tokenizer: mlx_lm.utils.TokenizerWrapper
-    model, tokenizer = mlx_lm.load(path_or_hf_repo=checkpoint)
+    model, tokenizer = mlx_lm.load(path_or_hf_repo=checkpoint)  # type: ignore[misc]
 
     prompt = tokenizer.apply_chat_template(
         messages,

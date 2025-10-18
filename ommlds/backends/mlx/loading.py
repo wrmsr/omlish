@@ -15,6 +15,63 @@ from .tokenization import load_tokenization
 ##
 
 
+def get_model_path(
+        path_or_hf_repo: str,
+        revision: str | None = None,
+) -> tuple[pathlib.Path, str | None]:
+    """
+    Ensures the model is available locally. If the path does not exist locally,
+    it is downloaded from the Hugging Face Hub.
+
+    Args:
+        path_or_hf_repo (str): The local path or Hugging Face repository ID of the model.
+        revision (str, optional): A revision id which can be a branch name, a tag, or a commit hash.
+
+    Returns:
+        Tuple[Path, str]: A tuple containing the local file path and the Hugging Face repo ID.
+    """
+
+    model_path = pathlib.Path(path_or_hf_repo)
+
+    if not model_path.exists():
+        from huggingface_hub import snapshot_download
+        hf_path = path_or_hf_repo
+        model_path = pathlib.Path(
+            snapshot_download(
+                path_or_hf_repo,
+                revision=revision,
+                allow_patterns=[
+                    '*.jinja',
+                    '*.json',
+                    '*.jsonl',
+                    '*.py',
+                    '*.txt',
+
+                    'model*.safetensors',
+
+                    '*.tiktoken',
+                    'tiktoken.model',
+                    'tokenizer.model',
+                ],
+            ),
+        )
+
+    else:
+        from huggingface_hub import ModelCard
+
+        card_path = model_path / 'README.md'
+        if card_path.is_file():
+            card = ModelCard.load(card_path)
+            hf_path = card.data.base_model
+        else:
+            hf_path = None
+
+    return model_path, hf_path
+
+
+##
+
+
 @dc.dataclass(frozen=True, kw_only=True)
 class LoadedModel:
     path: pathlib.Path
@@ -46,7 +103,7 @@ def load_model(
 ) -> LoadedModel:
     # FIXME: get_model_path return annotation is wrong:
     #   https://github.com/ml-explore/mlx-lm/blob/9ee2b7358f5e258af7b31a8561acfbbe56ad5085/mlx_lm/utils.py#L82
-    model_path_res = ta.cast(ta.Any, mlx_lm.utils.get_model_path(path_or_hf_repo))
+    model_path_res = ta.cast(ta.Any, get_model_path(path_or_hf_repo))
     if isinstance(model_path_res, tuple):
         model_path = check.isinstance(model_path_res[0], pathlib.Path)
     else:
