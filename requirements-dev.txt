@@ -4,7 +4,7 @@ build>=1.2.2
 twine>=6.2.0  # @omlish-venv !14t
 wheel>=0.45.1
 
-uv>=0.9.3
+uv>=0.9.4
 
 pytest==8.4.2
 pytest-benchmark==5.1.0
@@ -61,7 +61,7 @@ json5==0.12.1
 # c/libpq
 psycopg2==2.9.11
 # py/cy
-psycopg==3.2.10
+psycopg==3.2.11
 
 mysql-connector-python==9.4.0
 mysqlclient==2.2.7; sys_platform == "darwin"  # brew install mysql pkg-config  # PKG_CONFIG_PATH="/opt/homebrew/opt/mysql-client/lib/pkgconfig" pip install ...
