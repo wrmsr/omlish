@@ -134,10 +134,13 @@ async def _a_main(args: ta.Any = None) -> None:
     session_cfg: Session.Config
 
     if args.two:
+        from ..minichain.lib.code.prompts import CODE_AGENT_SYSTEM_PROMPT
+
         session_cfg = Chat2Session.Config(
             backend=args.backend,
             model_name=args.model_name,
             state='ephemeral' if args.ephemeral else 'new' if args.new else 'continue',
+            initial_system_content=CODE_AGENT_SYSTEM_PROMPT if args.new and args.code else None,
             initial_user_content=content,  # noqa
             interactive=args.interactive,
             markdown=bool(args.markdown),

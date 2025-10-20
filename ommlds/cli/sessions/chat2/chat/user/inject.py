@@ -21,10 +21,20 @@ with lang.auto_proxy_import(globals()):
 
 def bind_user(
         *,
+        initial_system_content: ta.Optional['mc.Content'] = None,
         initial_user_content: ta.Optional['mc.Content'] = None,
         interactive: bool = False,
 ) -> inj.Elements:
     els: list[inj.Elemental] = []
+
+    # FIXME: barf
+    if initial_system_content is not None:
+        async def add_initial_system_content(cm: '_state.ChatStateManager') -> None:
+            await cm.extend_chat([mc.SystemMessage(initial_system_content)])
+
+        els.append(phase_callbacks().bind_item(to_fn=lang.typed_lambda(cm=_state.ChatStateManager)(
+            lambda cm: ChatPhaseCallback(ChatPhase.STARTED, lambda: add_initial_system_content(cm)),
+        )))
 
     if interactive:
         if initial_user_content is not None:

@@ -22,6 +22,7 @@ class ChatConfig:
 
     state: ta.Literal['new', 'continue', 'ephemeral'] = 'continue'
 
+    initial_system_content: ta.Optional['mc.Content'] = None
     initial_user_content: ta.Optional['mc.Content'] = None
     interactive: bool = False
 
