@@ -41,6 +41,7 @@ def LRU(cache: 'Cache') -> None:  # noqa
     cache._kill(cache._root.lru_next)  # type: ignore  # noqa
 
 
+# aka FIFO
 def LRI(cache: 'Cache') -> None:  # noqa
     cache._kill(cache._root.ins_next)  # type: ignore  # noqa
 

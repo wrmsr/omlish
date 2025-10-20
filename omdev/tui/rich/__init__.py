@@ -9,6 +9,7 @@ with _lang.auto_proxy_init(globals()):
     from rich import console  # noqa
     from rich import live  # noqa
     from rich import markdown  # noqa
+    from rich import repr  # noqa
     from rich import text  # noqa
     from rich.console import Console  # noqa
     from rich.live import Live  # noqa

@@ -8,13 +8,16 @@ with _lang.auto_proxy_init(globals()):
 
     from textual import app  # noqa
     from textual import binding  # noqa
+    from textual import constants  # noqa
     from textual import containers  # noqa
     from textual import content  # noqa
     from textual import driver  # noqa
     from textual import events  # noqa
+    from textual import geometry  # noqa
     from textual import markup  # noqa
     from textual import message  # noqa
     from textual import messages  # noqa
+    from textual import on  # noqa
     from textual import pad  # noqa
     from textual import reactive  # noqa
     from textual import screen  # noqa
@@ -116,6 +119,16 @@ with _lang.auto_proxy_init(globals()):
     from textual.events import Show  # noqa
     from textual.events import Timer as TimerEvent  # noqa
     from textual.events import Unmount  # noqa
+    from textual.geometry import NULL_OFFSET  # noqa
+    from textual.geometry import NULL_REGION  # noqa
+    from textual.geometry import NULL_SIZE  # noqa
+    from textual.geometry import NULL_SPACING  # noqa
+    from textual.geometry import Offset  # noqa
+    from textual.geometry import Region  # noqa
+    from textual.geometry import Size  # noqa
+    from textual.geometry import Spacing  # noqa
+    from textual.geometry import SpacingDimensions  # noqa
+    from textual.geometry import clamp  # noqa
     from textual.markup import MarkupError  # noqa
     from textual.markup import MarkupTokenizer  # noqa
     from textual.markup import StyleTokenizer  # noqa
@@ -197,6 +210,9 @@ with _lang.auto_proxy_init(globals()):
     from textual.widgets import Tooltip  # noqa
     from textual.widgets import Tree  # noqa
     from textual.widgets import Welcome  # noqa
+    from textual.widgets.option_list import OptionDoesNotExist  # noqa
+    from textual.widgets.option_list import Option  # noqa
+    from textual.widgets.option_list import DuplicateID  # noqa
 
     ##
 
