@@ -87,7 +87,22 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
     #
 
     if cfg.stream:
-        raise NotImplementedError
+        ai_stack = inj.wrapper_binder_helper(_inj.StreamAiChatGenerator)
+
+        els.append(ai_stack.push_bind(to_ctor=_inj.ChatChoicesStreamServiceStreamAiChatGenerator, singleton=True))
+
+        if not cfg.silent:
+            els.extend([
+                inj.bind(_inj.RawContentRendering, singleton=True),
+                inj.bind(_inj.ContentRendering, to_key=_inj.RawContentRendering),
+            ])
+
+            els.append(ai_stack.push_bind(to_ctor=_inj.RenderingStreamAiChatGenerator, singleton=True))
+
+        els.extend([
+            inj.bind(_inj.StreamAiChatGenerator, to_key=ai_stack.top),
+            inj.bind(_inj.AiChatGenerator, to_key=_inj.StreamAiChatGenerator),
+        ])
 
     else:
         ai_stack = inj.wrapper_binder_helper(_inj.AiChatGenerator)
@@ -114,10 +129,17 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
 
     els.append(inj.bind(_inj.BackendName, to_const=cfg.backend or DEFAULT_CHAT_MODEL_BACKEND))
 
-    els.extend([
-        inj.bind(_inj.CatalogChatChoicesServiceBackendProvider),
-        inj.bind(_inj.ChatChoicesServiceBackendProvider, to_key=_inj.CatalogChatChoicesServiceBackendProvider),
-    ])
+    if cfg.stream:
+        els.extend([
+            inj.bind(_inj.CatalogChatChoicesStreamServiceBackendProvider),
+            inj.bind(_inj.ChatChoicesStreamServiceBackendProvider, to_key=_inj.CatalogChatChoicesStreamServiceBackendProvider),  # noqa
+        ])
+
+    else:
+        els.extend([
+            inj.bind(_inj.CatalogChatChoicesServiceBackendProvider),
+            inj.bind(_inj.ChatChoicesServiceBackendProvider, to_key=_inj.CatalogChatChoicesServiceBackendProvider),
+        ])
 
     #
 

@@ -4,6 +4,7 @@ from omlish import check
 
 from ...... import minichain as mc
 from ...backends.types import ChatChoicesServiceBackendProvider
+from ...backends.types import ChatChoicesStreamServiceBackendProvider
 from .types import AiChatGenerator
 from .types import StreamAiChatGenerator
 
@@ -39,13 +40,13 @@ class ChatChoicesServiceAiChatGenerator(AiChatGenerator):
 class ChatChoicesStreamServiceStreamAiChatGenerator(StreamAiChatGenerator):
     def __init__(
             self,
-            service: mc.ChatChoicesStreamService,
+            service_provider: ChatChoicesStreamServiceBackendProvider,
             *,
             options: ChatChoicesServiceOptions | None = None,
     ) -> None:
         super().__init__()
 
-        self._service = service
+        self._service_provider = service_provider
         self._options = options
 
     async def get_next_ai_messages_streamed(
@@ -55,16 +56,17 @@ class ChatChoicesStreamServiceStreamAiChatGenerator(StreamAiChatGenerator):
     ) -> mc.AiChat:
         lst: list[str] = []
 
-        async with (await self._service.invoke(mc.ChatChoicesStreamRequest(chat, self._options or []))).v as st_resp:
-            async for o in st_resp:
-                choice = check.single(o.choices)
+        async with self._service_provider.provide_backend() as service:
+            async with (await service.invoke(mc.ChatChoicesStreamRequest(chat, self._options or []))).v as st_resp:
+                async for o in st_resp:
+                    choice = check.single(o.choices)
 
-                for delta in choice.deltas:
-                    if delta_callback is not None:
-                        await delta_callback(delta)
+                    for delta in choice.deltas:
+                        if delta_callback is not None:
+                            await delta_callback(delta)
 
-                c = check.isinstance(delta, mc.ContentAiChoiceDelta).c  # noqa
-                if c is not None:
-                    lst.append(check.isinstance(c, str))
+                    c = check.isinstance(delta, mc.ContentAiChoiceDelta).c  # noqa
+                    if c is not None:
+                        lst.append(check.isinstance(c, str))
 
         return [mc.AiMessage(''.join(lst))]

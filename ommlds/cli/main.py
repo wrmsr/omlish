@@ -137,6 +137,8 @@ async def _a_main(args: ta.Any = None) -> None:
             model_name=args.model_name,
             state='ephemeral',
             initial_content=content,  # noqa
+            markdown=bool(args.markdown),
+            stream=bool(args.stream),
             # dangerous_no_tool_confirmation=bool(args.dangerous_no_tool_confirmation),
         )
 
