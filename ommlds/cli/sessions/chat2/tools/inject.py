@@ -3,6 +3,7 @@ from omlish import inject as inj
 from omlish import lang
 
 from ..... import minichain as mc
+from .injection import bind_tool_context_provider_to_key
 from .injection import tool_catalog_entries
 from .injection import tool_context_providers
 
@@ -42,7 +43,6 @@ def bind_tools(
     if enable_todo_tools:
         from .....minichain.lib.todo.tools.read import todo_read_tool
         from .....minichain.lib.todo.tools.write import todo_write_tool
-
         els.append(tool_catalog_entries().bind_item_consts(
             todo_read_tool(),
             todo_write_tool(),
@@ -51,9 +51,7 @@ def bind_tools(
         from .....minichain.lib.todo.context import TodoContext
         els.extend([
             inj.bind(TodoContext()),
-            tool_context_providers().bind_item(to_fn=lang.typed_lambda(tdc=TodoContext)(
-                lambda tdc: _execution.ToolContextProvider(lambda: [tdc]),
-            ), singleton=True),
+            bind_tool_context_provider_to_key(TodoContext),
         ])
 
     #
