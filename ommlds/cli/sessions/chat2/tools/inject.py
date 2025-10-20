@@ -2,6 +2,9 @@ from omlish import check
 from omlish import inject as inj
 from omlish import lang
 
+from ..... import minichain as mc
+from .injection import tool_catalog_entries
+
 
 with lang.auto_proxy_import(globals()):
     from . import confirmation as _confirmation  # noqa
@@ -17,6 +20,17 @@ def bind_tools(
         dangerous_no_confirmation: bool = False,
 ) -> inj.Elements:
     els: list[inj.Elemental] = []
+
+    #
+
+    els.append(inj.bind(mc.ToolCatalog, singleton=True))
+
+    #
+
+    els.append(tool_catalog_entries().bind_items_provider(singleton=True))
+
+    from ....tools.weather import WEATHER_TOOL
+    els.append(tool_catalog_entries().bind_item_consts(WEATHER_TOOL))
 
     #
 

@@ -32,6 +32,7 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
         _chat_ai.bind_ai(
             stream=cfg.stream,
             silent=cfg.silent,
+            enable_tools=cfg.enable_tools,
         ),
 
         _chat_user.bind_user(

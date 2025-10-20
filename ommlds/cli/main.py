@@ -142,6 +142,13 @@ async def _a_main(args: ta.Any = None) -> None:
             interactive=args.interactive,
             markdown=bool(args.markdown),
             stream=bool(args.stream),
+            enable_tools=(
+                args.enable_fs_tools or
+                args.enable_todo_tools or
+                args.enable_unsafe_tools_do_not_use_lol or
+                args.enable_test_weather_tool or
+                args.code
+            ),
             dangerous_no_tool_confirmation=bool(args.dangerous_no_tool_confirmation),
         )
 
@@ -188,12 +195,14 @@ async def _a_main(args: ta.Any = None) -> None:
 
     #
 
-    tools_config = ToolsConfig(
-        enable_fs_tools=args.enable_fs_tools or args.code,
-        enable_todo_tools=args.enable_todo_tools or args.code,
-        enable_unsafe_tools_do_not_use_lol=args.enable_unsafe_tools_do_not_use_lol,
-        enable_test_weather_tool=args.enable_test_weather_tool,
-    )
+    tools_config: ToolsConfig | None = None
+    if not args.two:
+        tools_config = ToolsConfig(
+            enable_fs_tools=args.enable_fs_tools or args.code,
+            enable_todo_tools=args.enable_todo_tools or args.code,
+            enable_unsafe_tools_do_not_use_lol=args.enable_unsafe_tools_do_not_use_lol,
+            enable_test_weather_tool=args.enable_test_weather_tool,
+        )
 
     #
 

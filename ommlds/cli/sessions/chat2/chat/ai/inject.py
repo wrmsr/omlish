@@ -1,6 +1,7 @@
 from omlish import inject as inj
 from omlish import lang
 
+from ...... import minichain as mc
 from .injection import chat_options
 
 
@@ -56,6 +57,15 @@ def bind_ai(
             els.append(ai_stack.push_bind(to_ctor=_rendering.RenderingAiChatGenerator, singleton=True))
 
         els.append(inj.bind(_types.AiChatGenerator, to_key=ai_stack.top))
+
+    #
+
+    if enable_tools:
+        def _provide_tools_chat_choices_option(tc: mc.ToolCatalog) -> mc.ChatChoicesOption:
+            # mc.Tool(tce.spec)
+            raise NotImplementedError
+
+        els.append(chat_options().bind_item(to_fn=_provide_tools_chat_choices_option, singleton=True))
 
     #
 
