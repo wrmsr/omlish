@@ -37,10 +37,7 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
     #
 
     if cfg.state in ('continue', 'new'):
-        els.extend([
-            inj.bind(_inj.StateStorageChatStateManager, singleton=True),
-            inj.bind(_inj.ChatStateManager, to_key=_inj.StateStorageChatStateManager),
-        ])
+        els.append(inj.bind(_inj.ChatStateManager, to_ctor=_inj.StateStorageChatStateManager, singleton=True))
 
         if cfg.state == 'new':
             els.append(PHASE_CALLBACKS.bind_item(to_fn=lang.typed_lambda(cm=_inj.ChatStateManager)(
@@ -48,10 +45,7 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
             )))
 
     elif cfg.state == 'ephemeral':
-        els.extend([
-            inj.bind(_inj.InMemoryChatStateManager, singleton=True),
-            inj.bind(_inj.ChatStateManager, to_key=_inj.InMemoryChatStateManager),
-        ])
+        els.append(inj.bind(_inj.ChatStateManager, to_ctor=_inj.InMemoryChatStateManager, singleton=True))
 
     else:
         raise TypeError(cfg.state)
@@ -69,10 +63,7 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
 
             raise NotImplementedError
 
-        els.extend([
-            inj.bind(_inj.InteractiveUserChatInput, singleton=True),
-            inj.bind(_inj.UserChatInput, to_key=_inj.InteractiveUserChatInput),
-        ])
+        els.append(inj.bind(_inj.UserChatInput, to_ctor=_inj.InteractiveUserChatInput, singleton=True))
 
     else:
         if cfg.initial_content is None:
@@ -80,8 +71,7 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
 
         els.extend([
             inj.bind(_inj.OneshotUserChatInputInitialChat, to_const=[mc.UserMessage(cfg.initial_content)]),
-            inj.bind(_inj.OneshotUserChatInput, singleton=True),
-            inj.bind(_inj.UserChatInput, to_key=_inj.OneshotUserChatInput),
+            inj.bind(_inj.UserChatInput, to_ctor=_inj.OneshotUserChatInput, singleton=True),
         ])
 
     #
@@ -92,10 +82,11 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
         els.append(ai_stack.push_bind(to_ctor=_inj.ChatChoicesStreamServiceStreamAiChatGenerator, singleton=True))
 
         if not cfg.silent:
-            els.extend([
-                inj.bind(_inj.RawStreamContentRendering, singleton=True),
-                inj.bind(_inj.StreamContentRendering, to_key=_inj.RawStreamContentRendering),
-            ])
+            if cfg.markdown:
+                els.append(inj.bind(_inj.StreamContentRendering, to_ctor=_inj.MarkdownStreamContentRendering, singleton=True))  # noqa
+
+            else:
+                els.append(inj.bind(_inj.StreamContentRendering, to_ctor=_inj.RawStreamContentRendering, singleton=True))  # noqa
 
             els.append(ai_stack.push_bind(to_ctor=_inj.RenderingStreamAiChatGenerator, singleton=True))
 
@@ -111,15 +102,10 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
 
         if not cfg.silent:
             if cfg.markdown:
-                els.extend([
-                    inj.bind(_inj.MarkdownContentRendering, singleton=True),
-                    inj.bind(_inj.ContentRendering, to_key=_inj.MarkdownContentRendering),
-                ])
+                els.append(inj.bind(_inj.ContentRendering, to_ctor=_inj.MarkdownContentRendering, singleton=True))
+
             else:
-                els.extend([
-                    inj.bind(_inj.RawContentRendering, singleton=True),
-                    inj.bind(_inj.ContentRendering, to_key=_inj.RawContentRendering),
-                ])
+                els.append(inj.bind(_inj.ContentRendering, to_ctor=_inj.RawContentRendering, singleton=True))
 
             els.append(ai_stack.push_bind(to_ctor=_inj.RenderingAiChatGenerator, singleton=True))
 
@@ -130,23 +116,14 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
     els.append(inj.bind(_inj.BackendName, to_const=cfg.backend or DEFAULT_CHAT_MODEL_BACKEND))
 
     if cfg.stream:
-        els.extend([
-            inj.bind(_inj.CatalogChatChoicesStreamServiceBackendProvider),
-            inj.bind(_inj.ChatChoicesStreamServiceBackendProvider, to_key=_inj.CatalogChatChoicesStreamServiceBackendProvider),  # noqa
-        ])
+        els.append(inj.bind(_inj.ChatChoicesStreamServiceBackendProvider, to_ctor=_inj.CatalogChatChoicesStreamServiceBackendProvider, singleton=True))  # noqa
 
     else:
-        els.extend([
-            inj.bind(_inj.CatalogChatChoicesServiceBackendProvider),
-            inj.bind(_inj.ChatChoicesServiceBackendProvider, to_key=_inj.CatalogChatChoicesServiceBackendProvider),
-        ])
+        els.append(inj.bind(_inj.ChatChoicesServiceBackendProvider, to_ctor=_inj.CatalogChatChoicesServiceBackendProvider, singleton=True))  # noqa
 
     #
 
-    els.extend([
-        inj.bind(_inj.ToolUseExecutorImpl, singleton=True),
-        inj.bind(_inj.ToolUseExecutor, to_key=_inj.ToolUseExecutorImpl),
-    ])
+    els.append(inj.bind(_inj.ToolUseExecutor, to_ctor=_inj.ToolUseExecutorImpl, singleton=True))
 
     #
 
