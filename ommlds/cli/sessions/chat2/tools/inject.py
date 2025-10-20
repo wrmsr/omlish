@@ -21,6 +21,9 @@ def bind_tools(
         silent: bool = False,
         interactive: bool = False,
         dangerous_no_confirmation: bool = False,
+
+        enable_weather_tools: bool = True,
+        enable_todo_tools: bool = True,
 ) -> inj.Elements:
     els: list[inj.Elemental] = []
 
@@ -32,8 +35,26 @@ def bind_tools(
 
     els.append(tool_catalog_entries().bind_items_provider(singleton=True))
 
-    from ....tools.weather import WEATHER_TOOL
-    els.append(tool_catalog_entries().bind_item_consts(WEATHER_TOOL))
+    if enable_weather_tools:
+        from ....tools.weather import WEATHER_TOOL
+        els.append(tool_catalog_entries().bind_item_consts(WEATHER_TOOL))
+
+    if enable_todo_tools:
+        from .....minichain.lib.todo.tools.read import todo_read_tool
+        from .....minichain.lib.todo.tools.write import todo_write_tool
+
+        els.append(tool_catalog_entries().bind_item_consts(
+            todo_read_tool(),
+            todo_write_tool(),
+        ))
+
+        from .....minichain.lib.todo.context import TodoContext
+        els.extend([
+            inj.bind(TodoContext()),
+            tool_context_providers().bind_item(to_fn=lang.typed_lambda(tdc=TodoContext)(
+                lambda tdc: _execution.ToolContextProvider(lambda: [tdc]),
+            ), singleton=True),
+        ])
 
     #
 
