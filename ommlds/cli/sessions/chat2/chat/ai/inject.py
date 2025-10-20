@@ -2,7 +2,7 @@ from omlish import inject as inj
 from omlish import lang
 
 from ...... import minichain as mc
-from .injection import chat_options
+from .injection import chat_options_providers
 
 
 with lang.auto_proxy_import(globals()):
@@ -25,7 +25,12 @@ def bind_ai(
 
     #
 
-    els.append(chat_options().bind_items_provider(singleton=True))
+    els.append(chat_options_providers().bind_items_provider(singleton=True))
+
+    def _provide_chat_choices_options_provider(ps: _services.ChatChoicesServiceOptionsProviders) -> _services.ChatChoicesServiceOptionsProvider:  # noqa
+        return _services.ChatChoicesServiceOptionsProvider(lambda: [o for p in ps for o in p()])
+
+    els.append(inj.bind(_provide_chat_choices_options_provider, singleton=True))
 
     #
 
@@ -61,11 +66,13 @@ def bind_ai(
     #
 
     if enable_tools:
-        def _provide_tools_chat_choices_option(tc: mc.ToolCatalog) -> mc.ChatChoicesOption:
-            # mc.Tool(tce.spec)
-            raise NotImplementedError
+        def _provide_tools_chat_choices_options_provider(tc: mc.ToolCatalog) -> _services.ChatChoicesServiceOptionsProvider:  # noqa
+            return _services.ChatChoicesServiceOptionsProvider(lambda: [
+                mc.Tool(tce.spec)
+                for tce in tc.by_name.values()
+            ])
 
-        els.append(chat_options().bind_item(to_fn=_provide_tools_chat_choices_option, singleton=True))
+        els.append(chat_options_providers().bind_item(to_fn=_provide_tools_chat_choices_options_provider, singleton=True))  # noqa
 
     #
 

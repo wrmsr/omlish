@@ -1,5 +1,6 @@
 import typing as ta
 
+from ... import check
 from ... import dataclasses as dc
 from ... import lang
 from ..elements import Element
@@ -58,6 +59,7 @@ class MapProviderImpl(ProviderImpl, lang.Final):
 def make_multi_provider_impl(p: Provider, es_by_ty: ta.MutableMapping[type, list[Element]]) -> ProviderImpl:
     if isinstance(p, SetProvider):
         sbs: ta.Iterable[SetBinding] = es_by_ty.pop(SetBinding, ())  # type: ignore
+        check.empty(es_by_ty)
         return SetProviderImpl([
             LinkProviderImpl(LinkProvider(sb.dst))
             for sb in sbs
@@ -65,6 +67,7 @@ def make_multi_provider_impl(p: Provider, es_by_ty: ta.MutableMapping[type, list
 
     elif isinstance(p, MapProvider):
         mbs: ta.Iterable[MapBinding] = es_by_ty.pop(MapBinding, ())  # type: ignore
+        check.empty(es_by_ty)
         return MapProviderImpl([
             MapProviderImpl.Entry(
                 mb.map_key,

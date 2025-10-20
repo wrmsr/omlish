@@ -1,6 +1,7 @@
 import typing as ta
 
 from omlish import check
+from omlish import lang
 
 from ...... import minichain as mc
 from ...backends.types import ChatChoicesServiceBackendProvider
@@ -12,7 +13,11 @@ from .types import StreamAiChatGenerator
 ##
 
 
-ChatChoicesServiceOptions = ta.NewType('ChatChoicesServiceOptions', ta.Sequence['mc.ChatChoicesOptions'])
+class ChatChoicesServiceOptionsProvider(lang.Func0[ta.Sequence['mc.ChatChoicesOptions']]):
+    pass
+
+
+ChatChoicesServiceOptionsProviders = ta.NewType('ChatChoicesServiceOptionsProviders', ta.Sequence[ChatChoicesServiceOptionsProvider])  # noqa
 
 
 ##
@@ -23,7 +28,7 @@ class ChatChoicesServiceAiChatGenerator(AiChatGenerator):
             self,
             service_provider: ChatChoicesServiceBackendProvider,
             *,
-            options: ChatChoicesServiceOptions | None = None,
+            options: ChatChoicesServiceOptionsProvider | None = None,
     ) -> None:
         super().__init__()
 
@@ -31,8 +36,10 @@ class ChatChoicesServiceAiChatGenerator(AiChatGenerator):
         self._options = options
 
     async def get_next_ai_messages(self, chat: 'mc.Chat') -> 'mc.AiChat':
+        opts = self._options() if self._options is not None else []
+
         async with self._service_provider.provide_backend() as service:
-            resp = await service.invoke(mc.ChatChoicesRequest(chat, self._options or []))
+            resp = await service.invoke(mc.ChatChoicesRequest(chat, opts))
 
         return check.single(resp.v).ms
 
@@ -42,7 +49,7 @@ class ChatChoicesStreamServiceStreamAiChatGenerator(StreamAiChatGenerator):
             self,
             service_provider: ChatChoicesStreamServiceBackendProvider,
             *,
-            options: ChatChoicesServiceOptions | None = None,
+            options: ChatChoicesServiceOptionsProvider | None = None,
     ) -> None:
         super().__init__()
 
@@ -54,10 +61,12 @@ class ChatChoicesStreamServiceStreamAiChatGenerator(StreamAiChatGenerator):
             chat: 'mc.Chat',
             delta_callback: ta.Callable[['mc.AiChoiceDelta'], ta.Awaitable[None]] | None = None,
     ) -> mc.AiChat:
+        opts = self._options() if self._options is not None else []
+
         lst: list[str] = []
 
         async with self._service_provider.provide_backend() as service:
-            async with (await service.invoke(mc.ChatChoicesStreamRequest(chat, self._options or []))).v as st_resp:
+            async with (await service.invoke(mc.ChatChoicesStreamRequest(chat, opts))).v as st_resp:
                 async for o in st_resp:
                     choice = check.single(o.choices)
 
