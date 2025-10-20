@@ -36,7 +36,7 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
         ),
 
         _chat_user.bind_user(
-            initial_content=cfg.initial_content,
+            initial_user_content=cfg.initial_user_content,
             interactive=cfg.interactive,
         ),
 

@@ -1,3 +1,4 @@
+import os
 import typing as ta
 
 from omlish import check
@@ -71,7 +72,9 @@ def _bind_fs_tools() -> inj.Elements:
             read_tool(),
         ),
 
-        inj.bind(FsContext()),
+        inj.bind(FsContext(
+            root_dir=os.getcwd(),
+        )),
         bind_tool_context_provider_to_key(FsContext),
     )
 
