@@ -11,6 +11,16 @@ from .confirmation import ToolExecutionConfirmation
 ##
 
 
+class ToolContextProvider(lang.Func0[ta.Sequence[ta.Any]]):
+    pass
+
+
+ToolContextProviders = ta.NewType('ToolContextProviders', ta.Sequence[ToolContextProvider])
+
+
+##
+
+
 class ToolUseExecutor(lang.Abstract):
     @abc.abstractmethod
     def execute_tool_use(
@@ -26,11 +36,13 @@ class ToolUseExecutorImpl(ToolUseExecutor):
             self,
             *,
             catalog: 'mc.ToolCatalog',
+            ctx_provider: ToolContextProvider,
             confirmation: ToolExecutionConfirmation | None = None,
     ) -> None:
         super().__init__()
 
         self._catalog = catalog
+        self._ctx_provider = ctx_provider
         self._confirmation = confirmation
 
     async def execute_tool_use(
@@ -46,6 +58,7 @@ class ToolUseExecutorImpl(ToolUseExecutor):
         return await mc.execute_tool_use(
             mc.ToolContext(
                 use,
+                *self._ctx_provider(),
                 *ctx_items,
             ),
             tce.executor(),

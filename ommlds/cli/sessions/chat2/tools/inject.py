@@ -4,6 +4,7 @@ from omlish import lang
 
 from ..... import minichain as mc
 from .injection import tool_catalog_entries
+from .injection import tool_context_providers
 
 
 with lang.auto_proxy_import(globals()):
@@ -55,6 +56,16 @@ def bind_tools(
     if not dangerous_no_confirmation:
         check.state(interactive, 'Interactive is required for tool confirmation')
         els.append(inj.bind(_confirmation.ToolExecutionConfirmation, to_ctor=_confirmation.InteractiveToolExecutionConfirmation, singleton=True))  # noqa
+
+    #
+
+    els.extend([
+        tool_context_providers().bind_items_provider(singleton=True),
+
+        inj.bind(_execution.ToolContextProvider, to_fn=lang.typed_lambda(tcps=_execution.ToolContextProviders)(
+            lambda tcps: _execution.ToolContextProvider(lambda: [tc for tcp in tcps for tc in tcp()]),
+        ), singleton=True),
+    ])
 
     #
 
