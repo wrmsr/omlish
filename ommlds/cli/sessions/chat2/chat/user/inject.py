@@ -8,10 +8,10 @@ from ...phases.types import ChatPhaseCallback
 
 
 with lang.auto_proxy_import(globals()):
+    from ..state import types as _state
     from . import interactive as _interactive
     from . import oneshot as _oneshot
     from . import types as _types
-    from ..state import types as _state
 
 
 ##
