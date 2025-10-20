@@ -31,11 +31,13 @@ with _lang.auto_proxy_init(globals()):
         bind_map_entry_const,
         bind_set_entry_const,
 
-        ItemsBinderHelper as items_binder_helper,  # noqa
+        ItemsBinderHelper,
+        items_binder_helper,
     )
 
     from .helpers.wrappers import (  # noqa
-        WrapperBinderHelper as wrapper_binder_helper,  # noqa
+        WrapperBinderHelper,
+        wrapper_binder_helper,
     )
 
     from .binder import (  # noqa
@@ -109,15 +111,19 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .multis import (  # noqa
-        MapBinding,
-        MapProvider,
+        is_set_multi_key,
         SetBinding,
         SetProvider,
-        MapBinder,
-        SetBinder,
 
-        MapBinder as map_binder,  # noqa
-        SetBinder as set_binder,  # noqa
+        is_map_multi_key,
+        MapBinding,
+        MapProvider,
+
+        SetBinder,
+        set_binder,
+
+        MapBinder,
+        map_binder,
     )
 
 
@@ -134,10 +140,10 @@ with _lang.auto_proxy_init(globals()):
 
     from .privates import (  # noqa
         Expose,
+        expose,
+
         Private,
         private,
-
-        Expose as expose,  # noqa
     )
 
     from .providers import (  # noqa

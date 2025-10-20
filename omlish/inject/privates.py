@@ -18,6 +18,12 @@ class Expose(Element, lang.Final):
     key: Key = dc.xfield(coerce=as_key)
 
 
+expose = Expose
+
+
+#
+
+
 @dc.dataclass(frozen=True)
 @dc.extra_class_params(cache_hash=True)
 class Private(Element, lang.Final):

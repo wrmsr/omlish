@@ -138,3 +138,6 @@ class ItemsBinderHelper(ta.Generic[ItemT]):
                 **kwargs,
             ),
         )
+
+
+items_binder_helper = ItemsBinderHelper

@@ -94,6 +94,9 @@ class SetBinder(ElementGenerator, ta.Generic[T]):
         yield from self._sbs
 
 
+set_binder = SetBinder
+
+
 #
 
 
@@ -123,3 +126,6 @@ class MapBinder(ElementGenerator, ta.Generic[K, V]):
     def __iter__(self) -> ta.Iterator[Element]:
         yield self._map_provider_binding
         yield from self._mbs
+
+
+map_binder = MapBinder

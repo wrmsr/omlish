@@ -7,13 +7,12 @@ from .... import minichain as mc
 from . import _inject as _inj
 from .configs import DEFAULT_CHAT_MODEL_BACKEND
 from .configs import ChatConfig
+from .phases.injection import phase_callbacks
 
 
 with lang.auto_proxy_import(globals()):
+    from .phases import inject as _phases
     from .rendering import inject as _rendering
-
-
-ItemT = ta.TypeVar('ItemT')
 
 
 ##
@@ -35,12 +34,13 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
     els.extend([
         CHAT_OPTIONS.bind_items_provider(singleton=True),
         BACKEND_CONFIGS.bind_items_provider(singleton=True),
-        PHASE_CALLBACKS.bind_items_provider(singleton=True),
     ])
 
     #
 
     els.extend([
+        _phases.bind_phases(),
+
         _rendering.bind_rendering(
             markdown=cfg.markdown,
         ),
@@ -52,7 +52,7 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
         els.append(inj.bind(_inj.ChatStateManager, to_ctor=_inj.StateStorageChatStateManager, singleton=True))
 
         if cfg.state == 'new':
-            els.append(PHASE_CALLBACKS.bind_item(to_fn=lang.typed_lambda(cm=_inj.ChatStateManager)(
+            els.append(phase_callbacks().bind_item(to_fn=lang.typed_lambda(cm=_inj.ChatStateManager)(
                 lambda cm: _inj.ChatPhaseCallback(_inj.ChatPhase.STARTING, cm.clear_state),
             )))
 
@@ -69,7 +69,7 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
             async def add_initial_content(cm: '_inj.ChatStateManager') -> None:
                 await cm.extend_chat([mc.UserMessage(cfg.initial_content)])
 
-            els.append(PHASE_CALLBACKS.bind_item(to_fn=lang.typed_lambda(cm=_inj.ChatStateManager)(
+            els.append(phase_callbacks().bind_item(to_fn=lang.typed_lambda(cm=_inj.ChatStateManager)(
                 lambda cm: _inj.ChatPhaseCallback(_inj.ChatPhase.STARTED, lambda: add_initial_content(cm)),
             )))
 

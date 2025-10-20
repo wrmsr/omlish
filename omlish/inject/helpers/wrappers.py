@@ -49,3 +49,6 @@ class WrapperBinderHelper:
         )
         self._top = nxt
         return out
+
+
+wrapper_binder_helper = WrapperBinderHelper

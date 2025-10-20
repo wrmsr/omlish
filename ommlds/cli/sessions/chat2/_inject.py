@@ -97,9 +97,12 @@ with lang.auto_proxy_init(globals()):
         ChatDriver,
     )
 
-    from .phases import (  # noqa
+    from .phases.manager import (  # noqa
+        ChatPhaseManager,
+    )
+
+    from .phases.types import (  # noqa
         ChatPhase,
         ChatPhaseCallback,
         ChatPhaseCallbacks,
-        ChatPhaseManager,
     )

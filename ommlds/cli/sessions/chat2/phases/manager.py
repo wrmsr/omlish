@@ -1,34 +1,8 @@
-import enum
-import typing as ta
-
 from omlish import check
 from omlish import collections as col
-from omlish import dataclasses as dc
 
-
-##
-
-
-class ChatPhase(enum.Enum):
-    NEW = enum.auto()
-
-    STARTING = enum.auto()
-    STARTED = enum.auto()
-
-    STOPPING = enum.auto()
-    STOPPED = enum.auto()
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class ChatPhaseCallback:
-    phase: ChatPhase = dc.xfield(validate=lambda v: v != ChatPhase.NEW)
-    fn: ta.Callable[[], ta.Awaitable[None]] = dc.xfield()
-
-
-ChatPhaseCallbacks = ta.NewType('ChatPhaseCallbacks', ta.Sequence[ChatPhaseCallback])
+from .types import ChatPhase
+from .types import ChatPhaseCallbacks
 
 
 ##

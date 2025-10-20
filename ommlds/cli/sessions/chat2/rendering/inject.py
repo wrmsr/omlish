@@ -1,5 +1,3 @@
-import typing as ta
-
 from omlish import inject as inj
 from omlish import lang
 
@@ -8,9 +6,6 @@ with lang.auto_proxy_import(globals()):
     from . import markdown as _markdown
     from . import raw as _raw
     from . import types as _types
-
-
-ItemT = ta.TypeVar('ItemT')
 
 
 ##
