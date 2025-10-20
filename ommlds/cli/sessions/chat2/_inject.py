@@ -74,7 +74,7 @@ with lang.auto_proxy_init(globals()):
 
     from .rendering.raw import (  # noqa
         RawContentRendering,
-        RawContentStreamRendering,
+        RawStreamContentRendering,
     )
 
     from .rendering.types import (  # noqa

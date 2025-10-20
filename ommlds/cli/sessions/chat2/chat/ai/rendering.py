@@ -4,6 +4,7 @@ from ...... import minichain as mc
 from ...content.messages import MessageContentExtractor
 from ...content.messages import MessageContentExtractorImpl
 from ...rendering.types import ContentRendering
+from ...rendering.types import StreamContentRendering
 from .types import AiChatGenerator
 from .types import StreamAiChatGenerator
 
@@ -43,7 +44,7 @@ class RenderingStreamAiChatGenerator(StreamAiChatGenerator):
             *,
             wrapped: StreamAiChatGenerator,
             extractor: MessageContentExtractor | None = None,
-            renderer: ContentRendering,
+            renderer: StreamContentRendering,
     ) -> None:
         super().__init__()
 
@@ -58,10 +59,12 @@ class RenderingStreamAiChatGenerator(StreamAiChatGenerator):
             chat: mc.Chat,
             delta_callback: ta.Callable[[mc.AiChoiceDelta], ta.Awaitable[None]] | None = None,
     ) -> mc.AiChat:
-        async def inner(delta: mc.AiChoiceDelta) -> None:
-            # FIXME: render lol
+        async with self._renderer.create_context() as renderer:
+            async def inner(delta: mc.AiChoiceDelta) -> None:
+                if isinstance(delta, mc.ContentAiChoiceDelta):
+                    await renderer.render_content(delta.c)
 
-            if delta_callback is not None:
-                await delta_callback(delta)
+                if delta_callback is not None:
+                    await delta_callback(delta)
 
-        return await self._wrapped.get_next_ai_messages_streamed(chat, delta_callback=inner)
+            return await self._wrapped.get_next_ai_messages_streamed(chat, delta_callback=inner)

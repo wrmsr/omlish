@@ -93,8 +93,8 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
 
         if not cfg.silent:
             els.extend([
-                inj.bind(_inj.RawContentRendering, singleton=True),
-                inj.bind(_inj.ContentRendering, to_key=_inj.RawContentRendering),
+                inj.bind(_inj.RawStreamContentRendering, singleton=True),
+                inj.bind(_inj.StreamContentRendering, to_key=_inj.RawStreamContentRendering),
             ])
 
             els.append(ai_stack.push_bind(to_ctor=_inj.RenderingStreamAiChatGenerator, singleton=True))

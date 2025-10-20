@@ -30,7 +30,7 @@ class RawContentRendering(ContentRendering, HasContentStringifier):
             await self._printer(s)
 
 
-class RawContentStreamRendering(StreamContentRendering, HasContentStringifier):
+class RawStreamContentRendering(StreamContentRendering, HasContentStringifier):
     class Output(ta.Protocol):
         def write(self, s: str) -> ta.Awaitable[None]: ...
         def flush(self) -> ta.Awaitable[None]: ...
@@ -51,12 +51,12 @@ class RawContentStreamRendering(StreamContentRendering, HasContentStringifier):
         super().__init__(content_stringifier=content_stringifier)
 
         if output is None:
-            output = RawContentStreamRendering.PrintOutput()
+            output = RawStreamContentRendering.PrintOutput()
         self._output = output
 
     @ta.final
     class _ContextInstance(ContentRendering, ta.AsyncContextManager):
-        def __init__(self, owner: 'RawContentStreamRendering') -> None:
+        def __init__(self, owner: 'RawStreamContentRendering') -> None:
             self._owner = owner
 
         async def __aenter__(self) -> ta.Self:
@@ -70,4 +70,4 @@ class RawContentStreamRendering(StreamContentRendering, HasContentStringifier):
                 await self._owner._output.write(s)  # noqa: SLF001
 
     def create_context(self) -> ta.AsyncContextManager[ContentRendering]:
-        return RawContentStreamRendering._ContextInstance(self)
+        return RawStreamContentRendering._ContextInstance(self)
