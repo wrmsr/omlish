@@ -27,7 +27,9 @@ def bind_ai(
 
     els.append(chat_options_providers().bind_items_provider(singleton=True))
 
-    def _provide_chat_choices_options_provider(ps: _services.ChatChoicesServiceOptionsProviders) -> _services.ChatChoicesServiceOptionsProvider:  # noqa
+    def _provide_chat_choices_options_provider(
+            ps: _services.ChatChoicesServiceOptionsProviders,
+    ) -> _services.ChatChoicesServiceOptionsProvider:
         return _services.ChatChoicesServiceOptionsProvider(lambda: [o for p in ps for o in p()])
 
     els.append(inj.bind(_provide_chat_choices_options_provider, singleton=True))
@@ -39,11 +41,11 @@ def bind_ai(
 
         els.append(ai_stack.push_bind(to_ctor=_services.ChatChoicesStreamServiceStreamAiChatGenerator, singleton=True))
 
-        if enable_tools:
-            raise NotImplementedError
-
         if not silent:
             els.append(ai_stack.push_bind(to_ctor=_rendering.RenderingStreamAiChatGenerator, singleton=True))
+
+        if enable_tools:
+            raise NotImplementedError
 
         els.extend([
             inj.bind(_types.StreamAiChatGenerator, to_key=ai_stack.top),
@@ -55,11 +57,11 @@ def bind_ai(
 
         els.append(ai_stack.push_bind(to_ctor=_services.ChatChoicesServiceAiChatGenerator, singleton=True))
 
-        if enable_tools:
-            els.append(ai_stack.push_bind(to_ctor=_tools.ToolExecutingAiChatGenerator, singleton=True))
-
         if not silent:
             els.append(ai_stack.push_bind(to_ctor=_rendering.RenderingAiChatGenerator, singleton=True))
+
+        if enable_tools:
+            els.append(ai_stack.push_bind(to_ctor=_tools.ToolExecutingAiChatGenerator, singleton=True))
 
         els.append(inj.bind(_types.AiChatGenerator, to_key=ai_stack.top))
 

@@ -28,7 +28,7 @@ class RenderingAiChatGenerator(AiChatGenerator):
         self._extractor = extractor
         self._renderer = renderer
 
-    async def get_next_ai_messages(self, chat: 'mc.Chat') -> 'mc.AiChat':
+    async def get_next_ai_messages(self, chat: 'mc.Chat') -> 'mc.Chat':
         out = await self._wrapped.get_next_ai_messages(chat)
 
         for msg in out:
@@ -58,7 +58,7 @@ class RenderingStreamAiChatGenerator(StreamAiChatGenerator):
             self,
             chat: 'mc.Chat',
             delta_callback: ta.Callable[['mc.AiChoiceDelta'], ta.Awaitable[None]] | None = None,
-    ) -> mc.AiChat:
+    ) -> mc.Chat:
         async with self._renderer.create_context() as renderer:
             async def inner(delta: mc.AiChoiceDelta) -> None:
                 if isinstance(delta, mc.ContentAiChoiceDelta):

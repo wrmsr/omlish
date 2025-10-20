@@ -24,6 +24,9 @@ class MessageContentExtractorImpl(MessageContentExtractor):
             else:
                 return None
 
+        elif isinstance(message, mc.ToolUseMessage):
+            return None
+
         elif isinstance(message, mc.ToolUseResultMessage):
             return check.isinstance(message.tur.c, str)
 
