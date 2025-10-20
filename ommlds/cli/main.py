@@ -150,7 +150,9 @@ async def _a_main(args: ta.Any = None) -> None:
                 args.code
             ),
             enabled_tools={
-                'weather',
+                *(['fs'] if args.enable_fs_tools else []),
+                *(['todo'] if args.enable_todo_tools else []),
+                *(['weather'] if args.enable_test_weather_tool else []),
             },
             dangerous_no_tool_confirmation=bool(args.dangerous_no_tool_confirmation),
         )

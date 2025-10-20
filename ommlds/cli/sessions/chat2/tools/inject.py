@@ -59,13 +59,23 @@ def _bind_todo_tools() -> inj.Elements:
     )
 
 
-# if tools_config.enable_fs_tools:
-#     from ...minichain.lib.fs.tools.ls import ls_tool
-#     els.append(bind_tool(ls_tool()))
-#
-#     from ...minichain.lib.fs.tools.read import read_tool
-#     els.append(bind_tool(read_tool()))
-#
+@_tool_binder('fs')
+def _bind_fs_tools() -> inj.Elements:
+    from .....minichain.lib.fs.context import FsContext
+    from .....minichain.lib.fs.tools.ls import ls_tool
+    from .....minichain.lib.fs.tools.read import read_tool
+
+    return inj.as_elements(
+        tool_catalog_entries().bind_item_consts(
+            ls_tool(),
+            read_tool(),
+        ),
+
+        inj.bind(FsContext()),
+        bind_tool_context_provider_to_key(FsContext),
+    )
+
+
 # if tools_config.enable_unsafe_tools_do_not_use_lol:
 #     from ...minichain.lib.bash import bash_tool
 #     els.append(bind_tool(bash_tool()))
@@ -80,7 +90,6 @@ def _bind_todo_tools() -> inj.Elements:
 def bind_tools(
         *,
         silent: bool = False,
-        interactive: bool = False,
         dangerous_no_confirmation: bool = False,
         enabled_tools: ta.Iterable[str] | None = None,
 ) -> inj.Elements:
@@ -116,7 +125,6 @@ def bind_tools(
     #
 
     if not dangerous_no_confirmation:
-        check.state(interactive, 'Interactive is required for tool confirmation')
         els.append(inj.bind(_confirmation.ToolExecutionConfirmation, to_ctor=_confirmation.InteractiveToolExecutionConfirmation, singleton=True))  # noqa
 
     #
