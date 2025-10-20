@@ -58,6 +58,7 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
             silent=cfg.silent,
             interactive=cfg.interactive,
             dangerous_no_confirmation=cfg.dangerous_no_tool_confirmation,
+            enabled_tools=cfg.enabled_tools,
         ))
 
     #

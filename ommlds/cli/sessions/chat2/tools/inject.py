@@ -1,3 +1,5 @@
+import typing as ta
+
 from omlish import check
 from omlish import inject as inj
 from omlish import lang
@@ -17,14 +19,70 @@ with lang.auto_proxy_import(globals()):
 ##
 
 
+_TOOL_BINDERS: dict[str, ta.Callable[[], inj.Elements]] = {}
+
+
+def _tool_binder(name: str) -> ta.Callable[[ta.Callable[[], inj.Elements]], ta.Callable[[], inj.Elements]]:
+    def inner(fn):
+        check.not_in(name, _TOOL_BINDERS)
+        _TOOL_BINDERS[name] = fn
+        return fn
+    return inner
+
+
+#
+
+
+@_tool_binder('weather')
+def _bind_weather_tool() -> inj.Elements:
+    from ....tools.weather import WEATHER_TOOL
+
+    return inj.as_elements(
+        tool_catalog_entries().bind_item_consts(WEATHER_TOOL),
+    )
+
+
+@_tool_binder('todo')
+def _bind_todo_tools() -> inj.Elements:
+    from .....minichain.lib.todo.context import TodoContext
+    from .....minichain.lib.todo.tools.read import todo_read_tool
+    from .....minichain.lib.todo.tools.write import todo_write_tool
+
+    return inj.as_elements(
+        tool_catalog_entries().bind_item_consts(
+            todo_read_tool(),
+            todo_write_tool(),
+        ),
+
+        inj.bind(TodoContext()),
+        bind_tool_context_provider_to_key(TodoContext),
+    )
+
+
+# if tools_config.enable_fs_tools:
+#     from ...minichain.lib.fs.tools.ls import ls_tool
+#     els.append(bind_tool(ls_tool()))
+#
+#     from ...minichain.lib.fs.tools.read import read_tool
+#     els.append(bind_tool(read_tool()))
+#
+# if tools_config.enable_unsafe_tools_do_not_use_lol:
+#     from ...minichain.lib.bash import bash_tool
+#     els.append(bind_tool(bash_tool()))
+#
+#     from ...minichain.lib.fs.tools.edit import edit_tool
+#     els.append(bind_tool(edit_tool()))
+
+
+##
+
+
 def bind_tools(
         *,
         silent: bool = False,
         interactive: bool = False,
         dangerous_no_confirmation: bool = False,
-
-        enable_weather_tools: bool = True,
-        enable_todo_tools: bool = True,
+        enabled_tools: ta.Iterable[str] | None = None,
 ) -> inj.Elements:
     els: list[inj.Elemental] = []
 
@@ -36,23 +94,8 @@ def bind_tools(
 
     els.append(tool_catalog_entries().bind_items_provider(singleton=True))
 
-    if enable_weather_tools:
-        from ....tools.weather import WEATHER_TOOL
-        els.append(tool_catalog_entries().bind_item_consts(WEATHER_TOOL))
-
-    if enable_todo_tools:
-        from .....minichain.lib.todo.tools.read import todo_read_tool
-        from .....minichain.lib.todo.tools.write import todo_write_tool
-        els.append(tool_catalog_entries().bind_item_consts(
-            todo_read_tool(),
-            todo_write_tool(),
-        ))
-
-        from .....minichain.lib.todo.context import TodoContext
-        els.extend([
-            inj.bind(TodoContext()),
-            bind_tool_context_provider_to_key(TodoContext),
-        ])
+    for etn in check.not_isinstance(enabled_tools or [], str):
+        els.append(_TOOL_BINDERS[etn]())
 
     #
 

@@ -149,6 +149,9 @@ async def _a_main(args: ta.Any = None) -> None:
                 args.enable_test_weather_tool or
                 args.code
             ),
+            enabled_tools={
+                'weather',
+            },
             dangerous_no_tool_confirmation=bool(args.dangerous_no_tool_confirmation),
         )
 

@@ -31,4 +31,5 @@ class ChatConfig:
     stream: bool = False
 
     enable_tools: bool = False
+    enabled_tools: ta.AbstractSet[str] | None = None
     dangerous_no_tool_confirmation: bool = False
