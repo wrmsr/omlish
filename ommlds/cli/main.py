@@ -93,6 +93,7 @@ async def _a_main(args: ta.Any = None) -> None:
     elif args.interactive:
         if args.prompt:
             raise ValueError('Must not provide prompt')
+        content = None
 
     elif args.code:
         if args.prompt:
@@ -137,6 +138,7 @@ async def _a_main(args: ta.Any = None) -> None:
             model_name=args.model_name,
             state='ephemeral',
             initial_content=content,  # noqa
+            interactive=args.interactive,
             markdown=bool(args.markdown),
             stream=bool(args.stream),
             # dangerous_no_tool_confirmation=bool(args.dangerous_no_tool_confirmation),

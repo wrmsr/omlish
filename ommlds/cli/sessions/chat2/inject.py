@@ -9,6 +9,10 @@ from .configs import DEFAULT_CHAT_MODEL_BACKEND
 from .configs import ChatConfig
 
 
+with lang.auto_proxy_import(globals()):
+    from .rendering import inject as _rendering
+
+
 ItemT = ta.TypeVar('ItemT')
 
 
@@ -32,6 +36,14 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
         CHAT_OPTIONS.bind_items_provider(singleton=True),
         BACKEND_CONFIGS.bind_items_provider(singleton=True),
         PHASE_CALLBACKS.bind_items_provider(singleton=True),
+    ])
+
+    #
+
+    els.extend([
+        _rendering.bind_rendering(
+            markdown=cfg.markdown,
+        ),
     ])
 
     #
@@ -82,12 +94,6 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
         els.append(ai_stack.push_bind(to_ctor=_inj.ChatChoicesStreamServiceStreamAiChatGenerator, singleton=True))
 
         if not cfg.silent:
-            if cfg.markdown:
-                els.append(inj.bind(_inj.StreamContentRendering, to_ctor=_inj.MarkdownStreamContentRendering, singleton=True))  # noqa
-
-            else:
-                els.append(inj.bind(_inj.StreamContentRendering, to_ctor=_inj.RawStreamContentRendering, singleton=True))  # noqa
-
             els.append(ai_stack.push_bind(to_ctor=_inj.RenderingStreamAiChatGenerator, singleton=True))
 
         els.extend([
@@ -101,12 +107,6 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
         els.append(ai_stack.push_bind(to_ctor=_inj.ChatChoicesServiceAiChatGenerator, singleton=True))
 
         if not cfg.silent:
-            if cfg.markdown:
-                els.append(inj.bind(_inj.ContentRendering, to_ctor=_inj.MarkdownContentRendering, singleton=True))
-
-            else:
-                els.append(inj.bind(_inj.ContentRendering, to_ctor=_inj.RawContentRendering, singleton=True))
-
             els.append(ai_stack.push_bind(to_ctor=_inj.RenderingAiChatGenerator, singleton=True))
 
         els.append(inj.bind(_inj.AiChatGenerator, to_key=ai_stack.top))
@@ -117,7 +117,6 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
 
     if cfg.stream:
         els.append(inj.bind(_inj.ChatChoicesStreamServiceBackendProvider, to_ctor=_inj.CatalogChatChoicesStreamServiceBackendProvider, singleton=True))  # noqa
-
     else:
         els.append(inj.bind(_inj.ChatChoicesServiceBackendProvider, to_ctor=_inj.CatalogChatChoicesServiceBackendProvider, singleton=True))  # noqa
 
