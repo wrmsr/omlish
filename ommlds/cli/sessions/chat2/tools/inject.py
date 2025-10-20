@@ -43,6 +43,9 @@ def bind_tools(
     if not silent:
         els.append(exec_stack.push_bind(to_ctor=_rendering.ResultRenderingToolUseExecutor, singleton=True))
 
+        if dangerous_no_confirmation:
+            els.append(exec_stack.push_bind(to_ctor=_rendering.ArgsRenderingToolUseExecutor, singleton=True))
+
     els.extend([
         inj.bind(_execution.ToolUseExecutor, to_key=exec_stack.top),
     ])
