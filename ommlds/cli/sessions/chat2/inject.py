@@ -11,6 +11,8 @@ from .phases.injection import phase_callbacks
 
 
 with lang.auto_proxy_import(globals()):
+    from .chat.user import inject as _chat_user
+    from .chat.state import inject as _chat_state
     from .phases import inject as _phases
     from .rendering import inject as _rendering
 
@@ -39,52 +41,21 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
     #
 
     els.extend([
+        _chat_user.bind_user(
+            initial_content=cfg.initial_content,
+            interactive=cfg.interactive,
+        ),
+
+        _chat_state.bind_state(
+            state=cfg.state,
+        ),
+
         _phases.bind_phases(),
 
         _rendering.bind_rendering(
             markdown=cfg.markdown,
         ),
     ])
-
-    #
-
-    if cfg.state in ('continue', 'new'):
-        els.append(inj.bind(_inj.ChatStateManager, to_ctor=_inj.StateStorageChatStateManager, singleton=True))
-
-        if cfg.state == 'new':
-            els.append(phase_callbacks().bind_item(to_fn=lang.typed_lambda(cm=_inj.ChatStateManager)(
-                lambda cm: _inj.ChatPhaseCallback(_inj.ChatPhase.STARTING, cm.clear_state),
-            )))
-
-    elif cfg.state == 'ephemeral':
-        els.append(inj.bind(_inj.ChatStateManager, to_ctor=_inj.InMemoryChatStateManager, singleton=True))
-
-    else:
-        raise TypeError(cfg.state)
-
-    #
-
-    if cfg.interactive:
-        if cfg.initial_content is not None:
-            async def add_initial_content(cm: '_inj.ChatStateManager') -> None:
-                await cm.extend_chat([mc.UserMessage(cfg.initial_content)])
-
-            els.append(phase_callbacks().bind_item(to_fn=lang.typed_lambda(cm=_inj.ChatStateManager)(
-                lambda cm: _inj.ChatPhaseCallback(_inj.ChatPhase.STARTED, lambda: add_initial_content(cm)),
-            )))
-
-            raise NotImplementedError
-
-        els.append(inj.bind(_inj.UserChatInput, to_ctor=_inj.InteractiveUserChatInput, singleton=True))
-
-    else:
-        if cfg.initial_content is None:
-            raise ValueError('Initial content is required for non-interactive chat')
-
-        els.extend([
-            inj.bind(_inj.OneshotUserChatInputInitialChat, to_const=[mc.UserMessage(cfg.initial_content)]),
-            inj.bind(_inj.UserChatInput, to_ctor=_inj.OneshotUserChatInput, singleton=True),
-        ])
 
     #
 

@@ -16,8 +16,3 @@ def chat_options() -> 'inj.ItemsBinderHelper[mc.ChatChoicesOption]':
 @lang.cached_function
 def backend_configs() -> 'inj.ItemsBinderHelper[mc.Config]':
     return inj.items_binder_helper[mc.Config](_inj.BackendConfigs)
-
-
-@lang.cached_function
-def phase_callbacks() -> 'inj.ItemsBinderHelper[_inj.ChatPhaseCallback]':
-    return inj.items_binder_helper[_inj.ChatPhaseCallback](_inj.ChatPhaseCallbacks)

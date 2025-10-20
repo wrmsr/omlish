@@ -2,18 +2,22 @@ from omlish import inject as inj
 from omlish import lang
 
 from ...... import minichain as mc
+from ...phases.injection import phase_callbacks
+from ...phases.types import ChatPhase
+from ...phases.types import ChatPhaseCallback
 
 
 with lang.auto_proxy_import(globals()):
     from . import interactive as _interactive
     from . import oneshot as _oneshot
     from . import types as _types
+    from ..state import types as _state
 
 
 ##
 
 
-def bind_rendering(
+def bind_user(
         *,
         initial_content: mc.Content | None = None,
         interactive: bool = False,
@@ -22,11 +26,11 @@ def bind_rendering(
 
     if interactive:
         if initial_content is not None:
-            async def add_initial_content(cm: '_inj.ChatStateManager') -> None:
+            async def add_initial_content(cm: '_state.ChatStateManager') -> None:
                 await cm.extend_chat([mc.UserMessage(initial_content)])
 
-            els.append(PHASE_CALLBACKS.bind_item(to_fn=lang.typed_lambda(cm=_inj.ChatStateManager)(
-                lambda cm: _inj.ChatPhaseCallback(_inj.ChatPhase.STARTED, lambda: add_initial_content(cm)),
+            els.append(phase_callbacks().bind_item(to_fn=lang.typed_lambda(cm=_state.ChatStateManager)(
+                lambda cm: ChatPhaseCallback(ChatPhase.STARTED, lambda: add_initial_content(cm)),
             )))
 
             raise NotImplementedError
