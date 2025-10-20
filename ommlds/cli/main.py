@@ -57,6 +57,7 @@ async def _a_main(args: ta.Any = None) -> None:
     parser.add_argument('-C', '--completion', action='store_true')
 
     parser.add_argument('-n', '--new', action='store_true')
+    parser.add_argument('--ephemeral', action='store_true')
 
     parser.add_argument('-e', '--editor', action='store_true')
     parser.add_argument('-i', '--interactive', action='store_true')
@@ -136,7 +137,7 @@ async def _a_main(args: ta.Any = None) -> None:
         session_cfg = Chat2Session.Config(
             backend=args.backend,
             model_name=args.model_name,
-            state='ephemeral',
+            state='ephemeral' if args.ephemeral else 'new' if args.new else 'continue',
             initial_content=content,  # noqa
             interactive=args.interactive,
             markdown=bool(args.markdown),
