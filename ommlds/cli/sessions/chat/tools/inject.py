@@ -36,7 +36,7 @@ def _tool_binder(name: str) -> ta.Callable[[ta.Callable[[], inj.Elements]], ta.C
 
 @_tool_binder('weather')
 def _bind_weather_tool() -> inj.Elements:
-    from ....tools.weather import WEATHER_TOOL
+    from .weather import WEATHER_TOOL
 
     return inj.as_elements(
         tool_catalog_entries().bind_item_consts(WEATHER_TOOL),

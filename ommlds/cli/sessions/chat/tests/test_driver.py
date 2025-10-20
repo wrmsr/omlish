@@ -46,7 +46,7 @@ def make_driver(
 def test_inject():
     assert make_driver(
         state='new',
-        initial_content='Hi!',
+        initial_user_content='Hi!',
     )
 
 
@@ -54,6 +54,6 @@ def test_inject():
 def test_driver():
     lang.sync_await(make_driver(
         state='new',
-        initial_content='Hi!',
+        initial_user_content='Hi!',
         markdown=True,
     ).run())

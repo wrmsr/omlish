@@ -1,5 +1,4 @@
 import os.path
-import typing as ta
 
 from omdev.home.paths import get_home_paths
 from omlish import inject as inj
@@ -11,8 +10,6 @@ with lang.auto_proxy_import(globals()):
     from .backends import inject as backends_inj
     from .sessions import base as sessions_base
     from .sessions import inject as sessions_inj
-    from .tools import config as tools_cfg
-    from .tools import inject as tools_inj
 
 
 ##
@@ -34,7 +31,6 @@ def _provide_state_storage() -> 'state.StateStorage':
 def bind_main(
         *,
         session_cfg: 'sessions_base.Session.Config',
-        tools_config: ta.Optional['tools_cfg.ToolsConfig'] = None,
         enable_backend_strings: bool = False,
 ) -> inj.Elements:
     els: list[inj.Elemental] = [
@@ -44,11 +40,6 @@ def bind_main(
 
         sessions_inj.bind_sessions(session_cfg),
     ]
-
-    #
-
-    if tools_config is not None:
-        els.append(tools_inj.bind_tools(tools_config))
 
     #
 

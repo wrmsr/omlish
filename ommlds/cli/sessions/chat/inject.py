@@ -1,96 +1,70 @@
-import typing as ta
-
-from omlish import dataclasses as dc
 from omlish import inject as inj
 from omlish import lang
 
-from .base import ChatOption
-from .base import ChatOptions
-from .base import ChatSession
-from .printing import ChatSessionPrinter
-from .printing import MarkdownStringChatSessionPrinter
-from .printing import SimpleStringChatSessionPrinter
-from .state import ChatStateManager
-from .state import StateStorageChatStateManager
-from .tools import AskingToolExecutionConfirmation
-from .tools import NopToolExecutionConfirmation
-from .tools import ToolExecutionConfirmation
-from .tools import ToolUseExecutor
-from .tools import ToolUseExecutorImpl
+from .configs import DEFAULT_CHAT_MODEL_BACKEND
+from .configs import ChatConfig
+
+
+with lang.auto_proxy_import(globals()):
+    from . import driver as _driver
+    from .backends import inject as _backends
+    from .chat.ai import inject as _chat_ai
+    from .chat.state import inject as _chat_state
+    from .chat.user import inject as _chat_user
+    from .phases import inject as _phases
+    from .rendering import inject as _rendering
+    from .tools import inject as _tools
 
 
 ##
 
 
-@dc.dataclass(frozen=True, eq=False)
-class _InjectedChatOptions:
-    v: ChatOptions
-
-
-def bind_chat_options(*cos: ChatOption) -> inj.Elements:
-    return inj.bind_set_entry_const(ta.AbstractSet[_InjectedChatOptions], _InjectedChatOptions(ChatOptions(cos)))
-
-
-##
-
-
-def bind_chat_session(cfg: ChatSession.Config) -> inj.Elements:
+def bind_chat(cfg: ChatConfig) -> inj.Elements:
     els: list[inj.Elemental] = []
 
     #
 
     els.extend([
-        inj.set_binder[_InjectedChatOptions](),
-        inj.bind(
-            lang.typed_lambda(ChatOptions, s=ta.AbstractSet[_InjectedChatOptions])(
-                lambda s: ChatOptions([
-                    co
-                    for ico in s
-                    for co in ico.v
-                ]),
-            ),
-            singleton=True,
+        _backends.bind_backends(
+            backend=cfg.backend or DEFAULT_CHAT_MODEL_BACKEND,
+        ),
+
+        _chat_ai.bind_ai(
+            stream=cfg.stream,
+            silent=cfg.silent,
+            enable_tools=cfg.enable_tools,
+        ),
+
+        _chat_user.bind_user(
+            initial_system_content=cfg.initial_system_content,
+            initial_user_content=cfg.initial_user_content,
+            interactive=cfg.interactive,
+        ),
+
+        _chat_state.bind_state(
+            state=cfg.state,
+        ),
+
+        _phases.bind_phases(),
+
+        _rendering.bind_rendering(
+            markdown=cfg.markdown,
         ),
     ])
 
     #
 
-    els.extend([
-        inj.bind(StateStorageChatStateManager, singleton=True),
-        inj.bind(ChatStateManager, to_key=StateStorageChatStateManager),
-    ])
-
-    #
-
-    if cfg.markdown:
-        els.extend([
-            inj.bind(MarkdownStringChatSessionPrinter, singleton=True),
-            inj.bind(ChatSessionPrinter, to_key=MarkdownStringChatSessionPrinter),
-        ])
-    else:
-        els.extend([
-            inj.bind(SimpleStringChatSessionPrinter, singleton=True),
-            inj.bind(ChatSessionPrinter, to_key=SimpleStringChatSessionPrinter),
-        ])
-
-    #
-
-    if cfg.dangerous_no_tool_confirmation:
-        els.extend([
-            inj.bind(NopToolExecutionConfirmation, singleton=True),
-            inj.bind(ToolExecutionConfirmation, to_key=NopToolExecutionConfirmation),
-        ])
-    else:
-        els.extend([
-            inj.bind(AskingToolExecutionConfirmation, singleton=True),
-            inj.bind(ToolExecutionConfirmation, to_key=AskingToolExecutionConfirmation),
-        ])
+    if cfg.enable_tools:
+        els.append(_tools.bind_tools(
+            silent=cfg.silent,
+            dangerous_no_confirmation=cfg.dangerous_no_tool_confirmation,
+            enabled_tools=cfg.enabled_tools,
+        ))
 
     #
 
     els.extend([
-        inj.bind(ToolUseExecutorImpl, singleton=True),
-        inj.bind(ToolUseExecutor, to_key=ToolUseExecutorImpl),
+        inj.bind(_driver.ChatDriver, singleton=True),
     ])
 
     #

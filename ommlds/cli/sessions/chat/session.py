@@ -8,7 +8,7 @@ from .driver import ChatDriver
 ##
 
 
-class Chat2Session(Session['Chat2Session.Config']):
+class ChatSession(Session['ChatSession.Config']):
     @dc.dataclass(frozen=True)
     class Config(Session.Config, ChatConfig):
         pass

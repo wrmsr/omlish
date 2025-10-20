@@ -24,13 +24,9 @@ from omlish.subprocesses.sync import subprocesses
 from .. import minichain as mc
 from .inject import bind_main
 from .sessions.base import Session
-from .sessions.chat.code import CodeChatSession
-from .sessions.chat.interactive import InteractiveChatSession
-from .sessions.chat.prompt import PromptChatSession
-from .sessions.chat2.session import Chat2Session
+from .sessions.chat.session import ChatSession
 from .sessions.completion.completion import CompletionSession
 from .sessions.embedding.embedding import EmbeddingSession
-from .tools.config import ToolsConfig
 
 
 if ta.TYPE_CHECKING:
@@ -67,8 +63,6 @@ async def _a_main(args: ta.Any = None) -> None:
 
     parser.add_argument('-E', '--embed', action='store_true')
     parser.add_argument('-j', '--image', action='store_true')
-
-    parser.add_argument('-2', '--two', action='store_true')
 
     parser.add_argument('--enable-fs-tools', action='store_true')
     parser.add_argument('--enable-todo-tools', action='store_true')
@@ -133,10 +127,22 @@ async def _a_main(args: ta.Any = None) -> None:
 
     session_cfg: Session.Config
 
-    if args.two:
+    if args.embed:
+        session_cfg = EmbeddingSession.Config(
+            check.not_none(content),  # noqa
+            backend=args.backend,
+        )
+
+    elif args.completion:
+        session_cfg = CompletionSession.Config(
+            check.not_none(content),  # noqa
+            backend=args.backend,
+        )
+
+    else:
         from ..minichain.lib.code.prompts import CODE_AGENT_SYSTEM_PROMPT
 
-        session_cfg = Chat2Session.Config(
+        session_cfg = ChatSession.Config(
             backend=args.backend,
             model_name=args.model_name,
             state='ephemeral' if args.ephemeral else 'new' if args.new else 'continue',
@@ -156,72 +162,16 @@ async def _a_main(args: ta.Any = None) -> None:
                 *(['fs'] if args.enable_fs_tools else []),
                 *(['todo'] if args.enable_todo_tools else []),
                 *(['weather'] if args.enable_test_weather_tool else []),
+                # FIXME: enable_unsafe_tools_do_not_use_lol
             },
             dangerous_no_tool_confirmation=bool(args.dangerous_no_tool_confirmation),
-        )
-
-    elif args.interactive:
-        session_cfg = InteractiveChatSession.Config(
-            backend=args.backend,
-            model_name=args.model_name,
-            new=bool(args.new),
-            dangerous_no_tool_confirmation=bool(args.dangerous_no_tool_confirmation),
-        )
-
-    elif args.code:
-        session_cfg = CodeChatSession.Config(
-            backend=args.backend,
-            model_name=args.model_name,
-            new=bool(args.new),
-            dangerous_no_tool_confirmation=bool(args.dangerous_no_tool_confirmation),
-            initial_message=content,  # noqa
-            markdown=bool(args.markdown),
-        )
-
-    elif args.embed:
-        session_cfg = EmbeddingSession.Config(
-            check.not_none(content),  # noqa
-            backend=args.backend,
-        )
-
-    elif args.completion:
-        session_cfg = CompletionSession.Config(
-            check.not_none(content),  # noqa
-            backend=args.backend,
-        )
-
-    else:
-        session_cfg = PromptChatSession.Config(
-            check.not_none(content),  # noqa
-            backend=args.backend,
-            model_name=args.model_name,
-            new=bool(args.new),
-            stream=bool(args.stream),
-            markdown=bool(args.markdown),
-            dangerous_no_tool_confirmation=bool(args.dangerous_no_tool_confirmation),
-        )
-
-    #
-
-    tools_config: ToolsConfig | None = None
-    if not args.two:
-        tools_config = ToolsConfig(
-            enable_fs_tools=args.enable_fs_tools or args.code,
-            enable_todo_tools=args.enable_todo_tools or args.code,
-            enable_unsafe_tools_do_not_use_lol=args.enable_unsafe_tools_do_not_use_lol,
-            enable_test_weather_tool=args.enable_test_weather_tool,
         )
 
     #
 
     with inj.create_managed_injector(bind_main(
             session_cfg=session_cfg,
-            tools_config=tools_config,
-            enable_backend_strings=isinstance(session_cfg, (
-                Chat2Session.Config,
-                CodeChatSession.Config,
-                PromptChatSession.Config,
-            )),
+            enable_backend_strings=isinstance(session_cfg, ChatSession.Config),
     )) as injector:
         await injector[Session].run()
 
