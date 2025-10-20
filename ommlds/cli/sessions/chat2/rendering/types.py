@@ -11,7 +11,7 @@ from ..... import minichain as mc
 
 class ContentRendering(lang.Abstract):
     @abc.abstractmethod
-    def render_content(self, content: mc.Content) -> ta.Awaitable[None]:
+    def render_content(self, content: 'mc.Content') -> ta.Awaitable[None]:
         raise NotImplementedError
 
 

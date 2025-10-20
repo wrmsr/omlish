@@ -22,7 +22,7 @@ class ChatConfig:
 
     state: ta.Literal['new', 'continue', 'ephemeral'] = 'continue'
 
-    initial_content: mc.Content | None = None
+    initial_content: ta.Optional['mc.Content'] = None
     interactive: bool = False
 
     silent: bool = False

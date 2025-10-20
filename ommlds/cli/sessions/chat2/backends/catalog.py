@@ -20,7 +20,7 @@ class _CatalogBackendProvider(BackendProvider[ServiceT], lang.Abstract):
             self,
             *,
             name: BackendName,
-            catalog: mc.BackendCatalog,
+            catalog: 'mc.BackendCatalog',
             configs: BackendConfigs | None = None,
     ) -> None:
         super().__init__()

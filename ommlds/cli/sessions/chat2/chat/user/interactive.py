@@ -21,7 +21,7 @@ class InteractiveUserChatInput(UserChatInput):
             string_input = lang.as_async(functools.partial(input, '> '))
         self._string_input = string_input
 
-    async def get_next_user_messages(self) -> mc.UserChat:
+    async def get_next_user_messages(self) -> 'mc.UserChat':
         try:
             s = await self._string_input()
         except EOFError:

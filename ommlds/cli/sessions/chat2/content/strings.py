@@ -12,12 +12,12 @@ from ..... import minichain as mc
 
 class ContentStringifier(lang.Abstract):
     @abc.abstractmethod
-    def stringify_content(self, content: mc.Content) -> str | None:
+    def stringify_content(self, content: 'mc.Content') -> str | None:
         raise NotImplementedError
 
 
 class ContentStringifierImpl(ContentStringifier):
-    def stringify_content(self, content: mc.Content) -> str | None:
+    def stringify_content(self, content: 'mc.Content') -> str | None:
         if isinstance(content, str):
             return content
 

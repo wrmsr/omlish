@@ -19,7 +19,7 @@ class OneshotUserChatInput(UserChatInput):
 
         self._pending_chat: mc.UserChat | None = initial_chat
 
-    async def get_next_user_messages(self) -> mc.UserChat:
+    async def get_next_user_messages(self) -> 'mc.UserChat':
         ret = self._pending_chat
         self._pending_chat = None
         return ret or []

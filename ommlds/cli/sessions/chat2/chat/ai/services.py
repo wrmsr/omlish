@@ -30,7 +30,7 @@ class ChatChoicesServiceAiChatGenerator(AiChatGenerator):
         self._service_provider = service_provider
         self._options = options
 
-    async def get_next_ai_messages(self, chat: mc.Chat) -> mc.AiChat:
+    async def get_next_ai_messages(self, chat: mc.Chat) -> 'mc.AiChat':
         async with self._service_provider.provide_backend() as service:
             resp = await service.invoke(mc.ChatChoicesRequest(chat, self._options or []))
 

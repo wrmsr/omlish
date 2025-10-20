@@ -1,3 +1,5 @@
+import typing as ta
+
 from omlish import inject as inj
 from omlish import lang
 
@@ -19,7 +21,7 @@ with lang.auto_proxy_import(globals()):
 
 def bind_user(
         *,
-        initial_content: mc.Content | None = None,
+        initial_content: ta.Optional['mc.Content'] = None,
         interactive: bool = False,
 ) -> inj.Elements:
     els: list[inj.Elemental] = []

@@ -16,7 +16,7 @@ from ..inject import bind_chat
 
 @mc.static_check_is_chat_choices_service
 class DummyChatChoicesService:
-    async def invoke(self, request: mc.ChatChoicesRequest) -> mc.ChatChoicesResponse:
+    async def invoke(self, request: mc.ChatChoicesRequest) -> 'mc.ChatChoicesResponse':
         return mc.ChatChoicesResponse([mc.AiChoice([mc.AiMessage(f'*Ai Message {len(request.v) + 1}*')])])
 
 

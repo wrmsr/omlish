@@ -21,7 +21,7 @@ class MarkdownContentRendering(ContentRendering, HasContentStringifier):
     ) -> None:
         super().__init__(content_stringifier=content_stringifier)
 
-    async def render_content(self, content: mc.Content) -> None:
+    async def render_content(self, content: 'mc.Content') -> None:
         if (s := self._content_stringifier.stringify_content(content)) is not None and (s := s.strip()):
             rich.Console().print(rich.Markdown(s))
 
@@ -44,7 +44,7 @@ class MarkdownStreamContentRendering(StreamContentRendering, HasContentStringifi
         async def _async_enter_contexts(self) -> None:
             self._ir = self._enter_context(rich.IncrementalMarkdownLiveStream())
 
-        async def render_content(self, content: mc.Content) -> None:
+        async def render_content(self, content: 'mc.Content') -> None:
             if (s := self._owner._content_stringifier.stringify_content(content)) is not None:  # noqa: SLF001
                 self._ir.feed(s)
 

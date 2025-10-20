@@ -28,7 +28,7 @@ class RenderingAiChatGenerator(AiChatGenerator):
         self._extractor = extractor
         self._renderer = renderer
 
-    async def get_next_ai_messages(self, chat: mc.Chat) -> mc.AiChat:
+    async def get_next_ai_messages(self, chat: mc.Chat) -> 'mc.AiChat':
         out = await self._wrapped.get_next_ai_messages(chat)
 
         for msg in out:

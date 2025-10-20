@@ -25,7 +25,7 @@ class RawContentRendering(ContentRendering, HasContentStringifier):
             printer = lang.as_async(print)
         self._printer = printer
 
-    async def render_content(self, content: mc.Content) -> None:
+    async def render_content(self, content: 'mc.Content') -> None:
         if (s := self._content_stringifier.stringify_content(content)) is not None:
             await self._printer(s)
 
@@ -65,7 +65,7 @@ class RawStreamContentRendering(StreamContentRendering, HasContentStringifier):
         async def __aexit__(self, *exc_info) -> None:
             await self._owner._output.flush()  # noqa: SLF001
 
-        async def render_content(self, content: mc.Content) -> None:
+        async def render_content(self, content: 'mc.Content') -> None:
             if (s := self._owner._content_stringifier.stringify_content(content)) is not None:  # noqa: SLF001
                 await self._owner._output.write(s)  # noqa: SLF001
 

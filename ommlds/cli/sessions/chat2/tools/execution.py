@@ -37,7 +37,7 @@ class ToolUseExecutorImpl(ToolUseExecutor):
             self,
             use: mc.ToolUse,
             *ctx_items: ta.Any,
-    ) -> mc.ToolUseResultMessage:
+    ) -> 'mc.ToolUseResultMessage':
         tce = self._catalog.by_name[check.non_empty_str(use.name)]
 
         if self._confirmation is not None:
