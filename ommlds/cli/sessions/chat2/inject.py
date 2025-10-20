@@ -55,6 +55,7 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
 
     if cfg.enable_tools:
         els.append(_tools.bind_tools(
+            silent=cfg.silent,
             interactive=cfg.interactive,
             dangerous_no_confirmation=cfg.dangerous_no_tool_confirmation,
         ))

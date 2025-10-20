@@ -7,8 +7,9 @@ from .injection import tool_catalog_entries
 
 
 with lang.auto_proxy_import(globals()):
-    from . import confirmation as _confirmation  # noqa
+    from . import confirmation as _confirmation
     from . import execution as _execution
+    from . import rendering as _rendering
 
 
 ##
@@ -16,6 +17,7 @@ with lang.auto_proxy_import(globals()):
 
 def bind_tools(
         *,
+        silent: bool = False,
         interactive: bool = False,
         dangerous_no_confirmation: bool = False,
 ) -> inj.Elements:
@@ -34,7 +36,16 @@ def bind_tools(
 
     #
 
-    els.append(inj.bind(_execution.ToolUseExecutor, to_ctor=_execution.ToolUseExecutorImpl, singleton=True))
+    exec_stack = inj.wrapper_binder_helper(_execution.ToolUseExecutor)
+
+    els.append(exec_stack.push_bind(to_ctor=_execution.ToolUseExecutorImpl, singleton=True))
+
+    if not silent:
+        els.append(exec_stack.push_bind(to_ctor=_rendering.ResultRenderingToolUseExecutor, singleton=True))
+
+    els.extend([
+        inj.bind(_execution.ToolUseExecutor, to_key=exec_stack.top),
+    ])
 
     #
 
