@@ -142,7 +142,7 @@ async def _a_main(args: ta.Any = None) -> None:
             interactive=args.interactive,
             markdown=bool(args.markdown),
             stream=bool(args.stream),
-            # dangerous_no_tool_confirmation=bool(args.dangerous_no_tool_confirmation),
+            dangerous_no_tool_confirmation=bool(args.dangerous_no_tool_confirmation),
         )
 
     elif args.interactive:

@@ -11,18 +11,18 @@ from ...... import minichain as mc
 
 class AiChatGenerator(lang.Abstract):
     @abc.abstractmethod
-    def get_next_ai_messages(self, chat: mc.Chat) -> ta.Awaitable[mc.AiChat]:
+    def get_next_ai_messages(self, chat: 'mc.Chat') -> ta.Awaitable['mc.AiChat']:
         raise NotImplementedError
 
 
 class StreamAiChatGenerator(AiChatGenerator, lang.Abstract):
-    def get_next_ai_messages(self, chat: mc.Chat) -> ta.Awaitable[mc.AiChat]:
+    def get_next_ai_messages(self, chat: 'mc.Chat') -> ta.Awaitable['mc.AiChat']:
         return self.get_next_ai_messages_streamed(chat)
 
     @abc.abstractmethod
     def get_next_ai_messages_streamed(
             self,
-            chat: mc.Chat,
-            delta_callback: ta.Callable[[mc.AiChoiceDelta], ta.Awaitable[None]] | None = None,
-    ) -> ta.Awaitable[mc.AiChat]:
+            chat: 'mc.Chat',
+            delta_callback: ta.Callable[['mc.AiChoiceDelta'], ta.Awaitable[None]] | None = None,
+    ) -> ta.Awaitable['mc.AiChat']:
         raise NotImplementedError

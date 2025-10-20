@@ -1,3 +1,4 @@
+from omlish import check
 from omlish import inject as inj
 from omlish import lang
 
@@ -10,12 +11,22 @@ with lang.auto_proxy_import(globals()):
 ##
 
 
-def bind_tools() -> inj.Elements:
+def bind_tools(
+        *,
+        interactive: bool = False,
+        dangerous_no_confirmation: bool = False,
+) -> inj.Elements:
     els: list[inj.Elemental] = []
 
     #
 
     els.append(inj.bind(_execution.ToolUseExecutor, to_ctor=_execution.ToolUseExecutorImpl, singleton=True))
+
+    #
+
+    if not dangerous_no_confirmation:
+        check.state(interactive, 'Interactive is required for tool confirmation')
+        els.append(inj.bind(_confirmation.ToolExecutionConfirmation, to_ctor=_confirmation.InteractiveToolExecutionConfirmation, singleton=True))  # noqa
 
     #
 

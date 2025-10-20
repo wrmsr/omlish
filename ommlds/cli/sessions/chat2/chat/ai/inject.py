@@ -7,6 +7,7 @@ from .injection import chat_options
 with lang.auto_proxy_import(globals()):
     from . import rendering as _rendering
     from . import services as _services
+    from . import tools as _tools
     from . import types as _types
 
 
@@ -17,6 +18,7 @@ def bind_ai(
         *,
         stream: bool = False,
         silent: bool = False,
+        enable_tools: bool = False,
 ) -> inj.Elements:
     els: list[inj.Elemental] = []
 
@@ -31,6 +33,9 @@ def bind_ai(
 
         els.append(ai_stack.push_bind(to_ctor=_services.ChatChoicesStreamServiceStreamAiChatGenerator, singleton=True))
 
+        if enable_tools:
+            raise NotImplementedError
+
         if not silent:
             els.append(ai_stack.push_bind(to_ctor=_rendering.RenderingStreamAiChatGenerator, singleton=True))
 
@@ -43,6 +48,9 @@ def bind_ai(
         ai_stack = inj.wrapper_binder_helper(_types.AiChatGenerator)
 
         els.append(ai_stack.push_bind(to_ctor=_services.ChatChoicesServiceAiChatGenerator, singleton=True))
+
+        if enable_tools:
+            els.append(ai_stack.push_bind(to_ctor=_tools.ToolExecutingAiChatGenerator, singleton=True))
 
         if not silent:
             els.append(ai_stack.push_bind(to_ctor=_rendering.RenderingAiChatGenerator, singleton=True))

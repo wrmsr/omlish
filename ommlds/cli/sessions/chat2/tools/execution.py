@@ -15,9 +15,9 @@ class ToolUseExecutor(lang.Abstract):
     @abc.abstractmethod
     def execute_tool_use(
             self,
-            use: mc.ToolUse,
+            use: 'mc.ToolUse',
             *ctx_items: ta.Any,
-    ) -> ta.Awaitable[mc.ToolUseResultMessage]:
+    ) -> ta.Awaitable['mc.ToolUseResultMessage']:
         raise NotImplementedError
 
 
@@ -25,7 +25,7 @@ class ToolUseExecutorImpl(ToolUseExecutor):
     def __init__(
             self,
             *,
-            catalog: mc.ToolCatalog,
+            catalog: 'mc.ToolCatalog',
             confirmation: ToolExecutionConfirmation | None = None,
     ) -> None:
         super().__init__()
@@ -35,7 +35,7 @@ class ToolUseExecutorImpl(ToolUseExecutor):
 
     async def execute_tool_use(
             self,
-            use: mc.ToolUse,
+            use: 'mc.ToolUse',
             *ctx_items: ta.Any,
     ) -> 'mc.ToolUseResultMessage':
         tce = self._catalog.by_name[check.non_empty_str(use.name)]

@@ -12,7 +12,7 @@ from .types import StreamAiChatGenerator
 ##
 
 
-ChatChoicesServiceOptions = ta.NewType('ChatChoicesServiceOptions', ta.Sequence[mc.ChatChoicesOptions])
+ChatChoicesServiceOptions = ta.NewType('ChatChoicesServiceOptions', ta.Sequence['mc.ChatChoicesOptions'])
 
 
 ##
@@ -30,7 +30,7 @@ class ChatChoicesServiceAiChatGenerator(AiChatGenerator):
         self._service_provider = service_provider
         self._options = options
 
-    async def get_next_ai_messages(self, chat: mc.Chat) -> 'mc.AiChat':
+    async def get_next_ai_messages(self, chat: 'mc.Chat') -> 'mc.AiChat':
         async with self._service_provider.provide_backend() as service:
             resp = await service.invoke(mc.ChatChoicesRequest(chat, self._options or []))
 
@@ -51,8 +51,8 @@ class ChatChoicesStreamServiceStreamAiChatGenerator(StreamAiChatGenerator):
 
     async def get_next_ai_messages_streamed(
             self,
-            chat: mc.Chat,
-            delta_callback: ta.Callable[[mc.AiChoiceDelta], ta.Awaitable[None]] | None = None,
+            chat: 'mc.Chat',
+            delta_callback: ta.Callable[['mc.AiChoiceDelta'], ta.Awaitable[None]] | None = None,
     ) -> mc.AiChat:
         lst: list[str] = []
 

@@ -34,5 +34,5 @@ class ChatStateManager(lang.Abstract):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def extend_chat(self, chat_additions: mc.Chat) -> ta.Awaitable[ChatState]:
+    def extend_chat(self, chat_additions: 'mc.Chat') -> ta.Awaitable[ChatState]:
         raise NotImplementedError

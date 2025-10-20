@@ -41,7 +41,7 @@ class StateStorageChatStateManager(ChatStateManager):
         self._state = state
         return state
 
-    async def extend_chat(self, chat_additions: mc.Chat) -> ChatState:
+    async def extend_chat(self, chat_additions: 'mc.Chat') -> ChatState:
         state = await self.get_state()
         state = dc.replace(
             state,

@@ -41,16 +41,16 @@ class _CatalogBackendProvider(BackendProvider[ServiceT], lang.Abstract):
 
 
 class CatalogChatChoicesServiceBackendProvider(
-    _CatalogBackendProvider[mc.ChatChoicesService],
+    _CatalogBackendProvider['mc.ChatChoicesService'],
     ChatChoicesServiceBackendProvider,
 ):
-    def provide_backend(self) -> ta.AsyncContextManager[mc.ChatChoicesService]:
+    def provide_backend(self) -> ta.AsyncContextManager['mc.ChatChoicesService']:
         return self._provide_backend(mc.ChatChoicesService)  # type: ignore[type-abstract]
 
 
 class CatalogChatChoicesStreamServiceBackendProvider(
-    _CatalogBackendProvider[mc.ChatChoicesStreamService],
+    _CatalogBackendProvider['mc.ChatChoicesStreamService'],
     ChatChoicesStreamServiceBackendProvider,
 ):
-    def provide_backend(self) -> ta.AsyncContextManager[mc.ChatChoicesStreamService]:
+    def provide_backend(self) -> ta.AsyncContextManager['mc.ChatChoicesStreamService']:
         return self._provide_backend(mc.ChatChoicesStreamService)  # type: ignore[type-abstract]

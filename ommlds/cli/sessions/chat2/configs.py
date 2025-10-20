@@ -30,4 +30,5 @@ class ChatConfig:
 
     stream: bool = False
 
+    enable_tools: bool = False
     dangerous_no_tool_confirmation: bool = False

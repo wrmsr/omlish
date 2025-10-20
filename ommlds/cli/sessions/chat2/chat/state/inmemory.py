@@ -25,7 +25,7 @@ class InMemoryChatStateManager(ChatStateManager):
         self._state = ChatState()
         return self._state
 
-    async def extend_chat(self, chat_additions: mc.Chat) -> ChatState:
+    async def extend_chat(self, chat_additions: 'mc.Chat') -> ChatState:
         self._state = dc.replace(
             self._state,
             chat=[*self._state.chat, *chat_additions],

@@ -13,7 +13,7 @@ ServiceT = ta.TypeVar('ServiceT', bound=mc.Service)
 
 
 BackendName = ta.NewType('BackendName', str)
-BackendConfigs = ta.NewType('BackendConfigs', ta.Sequence[mc.Config])
+BackendConfigs = ta.NewType('BackendConfigs', ta.Sequence['mc.Config'])
 
 
 ##
@@ -28,9 +28,9 @@ class BackendProvider(lang.Abstract, ta.Generic[ServiceT]):
 ##
 
 
-class ChatChoicesServiceBackendProvider(BackendProvider[mc.ChatChoicesService], lang.Abstract):
+class ChatChoicesServiceBackendProvider(BackendProvider['mc.ChatChoicesService'], lang.Abstract):
     pass
 
 
-class ChatChoicesStreamServiceBackendProvider(BackendProvider[mc.ChatChoicesStreamService], lang.Abstract):
+class ChatChoicesStreamServiceBackendProvider(BackendProvider['mc.ChatChoicesStreamService'], lang.Abstract):
     pass

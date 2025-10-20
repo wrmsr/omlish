@@ -19,8 +19,8 @@ class ToolExecutionConfirmation(lang.Abstract):
     @abc.abstractmethod
     def confirm_tool_execution_or_raise(
             self,
-            use: mc.ToolUse,
-            entry: mc.ToolCatalogEntry,
+            use: 'mc.ToolUse',
+            entry: 'mc.ToolCatalogEntry',
     ) -> ta.Awaitable[None]:
         raise NotImplementedError
 
@@ -31,8 +31,8 @@ class ToolExecutionConfirmation(lang.Abstract):
 class InteractiveToolExecutionConfirmation(ToolExecutionConfirmation):
     async def confirm_tool_execution_or_raise(
             self,
-            use: mc.ToolUse,
-            entry: mc.ToolCatalogEntry,
+            use: 'mc.ToolUse',
+            entry: 'mc.ToolCatalogEntry',
     ) -> None:
         tr_dct = dict(
             id=use.id,
