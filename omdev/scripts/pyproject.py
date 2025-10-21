@@ -11071,7 +11071,11 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
         st = dict(specs.setuptools)
         pyp_dct['tool.setuptools'] = st
 
-        st.pop('cext', None)
+        for k in [
+            'cext',
+            'rs',
+        ]:
+            st.pop(k, None)
 
         #
 
@@ -11151,6 +11155,13 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
                 pkg_suffix='-cext',
             ))
 
+        if self.build_specs().setuptools.get('rs'):
+            out.append(_PyprojectRsPackageGenerator(
+                self._dir_name,
+                self._pkgs_root,
+                pkg_suffix='-rs',
+            ))
+
         if self.build_specs().pyproject.get('cli_scripts'):
             out.append(_PyprojectCliPackageGenerator(
                 self._dir_name,
@@ -11161,10 +11172,67 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
         return out
 
 
-#
+##
 
 
-class _PyprojectCextPackageGenerator(BasePyprojectPackageGenerator):
+class _PyprojectExtensionPackageGenerator(BasePyprojectPackageGenerator, Abstract):
+    #
+
+    def _build_project_dict(self) -> ta.Dict[str, ta.Any]:
+        prj = dict(self.build_specs().pyproject)
+
+        prj['dependencies'] = [f'{prj["name"]} == {prj["version"]}']
+        prj['name'] += self._pkg_suffix
+
+        for k in [
+            'optional_dependencies',
+            'entry_points',
+            'scripts',
+            'cli_scripts',
+        ]:
+            prj.pop(k, None)
+
+        return prj
+
+    def _build_setuptools_dict(self) -> ta.Dict[str, ta.Any]:
+        st = dict(self.build_specs().setuptools)
+
+        for k in [
+            'cext',
+            'rs',
+
+            'find_packages',
+            'package_data',
+            'manifest_in',
+        ]:
+            st.pop(k, None)
+
+        return st
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class FileContents:
+        pyproject_dct: ta.Mapping[str, ta.Any]
+        setup_py: str
+
+    @abc.abstractmethod
+    def file_contents(self) -> FileContents:
+        raise NotImplementedError
+
+    #
+
+    def _write_file_contents(self) -> None:
+        fc = self.file_contents()
+
+        with open(os.path.join(self._pkg_dir(), 'pyproject.toml'), 'w') as f:
+            TomlWriter(f).write_root(fc.pyproject_dct)
+
+        with open(os.path.join(self._pkg_dir(), 'setup.py'), 'w') as f:
+            f.write(fc.setup_py)
+
+
+class _PyprojectCextPackageGenerator(_PyprojectExtensionPackageGenerator):
     @cached_nullary
     def find_cext_srcs(self) -> ta.Sequence[str]:
         return sorted(find_magic_files(
@@ -11175,14 +11243,10 @@ class _PyprojectCextPackageGenerator(BasePyprojectPackageGenerator):
 
     #
 
-    @dc.dataclass(frozen=True)
-    class FileContents:
-        pyproject_dct: ta.Mapping[str, ta.Any]
-        setup_py: str
-
     @cached_nullary
-    def file_contents(self) -> FileContents:
-        specs = self.build_specs()
+    def file_contents(self) -> _PyprojectExtensionPackageGenerator.FileContents:
+        prj = self._build_project_dict()
+        st = self._build_setuptools_dict()
 
         #
 
@@ -11193,32 +11257,8 @@ class _PyprojectCextPackageGenerator(BasePyprojectPackageGenerator):
             'build-backend': 'setuptools.build_meta',
         }
 
-        prj = specs.pyproject
-        prj['dependencies'] = [f'{prj["name"]} == {prj["version"]}']
-        prj['name'] += self._pkg_suffix
-        for k in [
-            'optional_dependencies',
-            'entry_points',
-            'scripts',
-            'cli_scripts',
-        ]:
-            prj.pop(k, None)
-
         pyp_dct['project'] = prj
-
-        #
-
-        st = dict(specs.setuptools)
         pyp_dct['tool.setuptools'] = st
-
-        for k in [
-            'cext',
-
-            'find_packages',
-            'package_data',
-            'manifest_in',
-        ]:
-            st.pop(k, None)
 
         pyp_dct['tool.setuptools.packages.find'] = {
             'include': [],
@@ -11257,14 +11297,73 @@ class _PyprojectCextPackageGenerator(BasePyprojectPackageGenerator):
             src,
         )
 
-    def _write_file_contents(self) -> None:
-        fc = self.file_contents()
 
-        with open(os.path.join(self._pkg_dir(), 'pyproject.toml'), 'w') as f:
-            TomlWriter(f).write_root(fc.pyproject_dct)
+class _PyprojectRsPackageGenerator(_PyprojectExtensionPackageGenerator):
+    @cached_nullary
+    def find_rs_dirs(self) -> ta.Sequence[str]:
+        return sorted(
+            dp
+            for dp, dns, fns in os.walk(self._dir_name)
+            for fn in fns
+            if fn == '.omlish-rs-ext'
+        )
 
-        with open(os.path.join(self._pkg_dir(), 'setup.py'), 'w') as f:
-            f.write(fc.setup_py)
+    #
+
+    @cached_nullary
+    def file_contents(self) -> _PyprojectExtensionPackageGenerator.FileContents:
+        prj = self._build_project_dict()
+        st = self._build_setuptools_dict()
+
+        #
+
+        pyp_dct = {}
+
+        pyp_dct['build-system'] = {
+            'requires': ['setuptools'],
+            'build-backend': 'setuptools.build_meta',
+        }
+
+        pyp_dct['project'] = prj
+        pyp_dct['tool.setuptools'] = st
+
+        pyp_dct['tool.setuptools.packages.find'] = {
+            'include': [],
+        }
+
+        #
+
+        ext_lines: list = []
+
+        for ext_dir in self.find_rs_dirs():  # noqa
+            # ext_name = ext_src.rpartition('.')[0].replace(os.sep, '.')
+            # ext_lines.extend([
+            #     'st.Extension(',
+            #     f"    name='{ext_name}',",
+            #     f"    sources=['{ext_src}'],",
+            #     "    extra_compile_args=['-std=c++20'],",
+            #     '),',
+            # ])
+            raise NotImplementedError
+
+        src = '\n'.join([
+            'import setuptools as st',
+            '',
+            '',
+            'st.setup(',
+            '    ext_modules=[',
+            *['        ' + l for l in ext_lines],
+            '    ],',
+            ')',
+            '',
+        ])
+
+        #
+
+        return self.FileContents(
+            pyp_dct,
+            src,
+        )
 
 
 ##
