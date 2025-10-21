@@ -74,8 +74,8 @@ class ChatChoicesStreamServiceStreamAiChatGenerator(StreamAiChatGenerator):
                         if delta_callback is not None:
                             await delta_callback(delta)
 
-                    c = check.isinstance(delta, mc.ContentAiChoiceDelta).c  # noqa
-                    if c is not None:
-                        lst.append(check.isinstance(c, str))
+                    if isinstance(delta, mc.ContentAiChoiceDelta):
+                        if delta.c is not None:
+                            lst.append(check.isinstance(delta.c, str))
 
         return [mc.AiMessage(''.join(lst))]

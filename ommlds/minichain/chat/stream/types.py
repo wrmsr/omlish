@@ -6,7 +6,6 @@ from omlish import marshal as msh
 
 from ...content.types import Content
 from ...stream.services import StreamOptions
-from ...tools.types import ToolUse
 from ...types import Option
 from ...types import Output
 from ..choices.types import ChatChoicesOptions
@@ -48,9 +47,11 @@ class ContentAiChoiceDelta(AiChoiceDelta, lang.Final):
     c: Content
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, kw_only=True)
 class ToolUseAiChoiceDelta(AiChoiceDelta, lang.Final):
-    tu: ToolUse
+    id: str | None = None
+    name: str | None = None
+    raw_args: ta.Any | None = None
 
 
 #

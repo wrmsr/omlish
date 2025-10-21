@@ -92,6 +92,10 @@ with _lang.auto_proxy_init(
         ChatChoicesStreamServiceChatChoicesService,
     )
 
+    from .chat.stream.joining import (  # noqa
+        AiChoiceDeltaJoiner,
+    )
+
     from .chat.stream.services import (  # noqa
         ChatChoicesStreamRequest,
         ChatChoicesStreamResponse,

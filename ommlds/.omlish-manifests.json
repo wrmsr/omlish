@@ -63,7 +63,7 @@
     "module": ".minichain.backends.impls.anthropic.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/anthropic/stream.py",
-    "line": 35,
+    "line": 36,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.anthropic.stream",

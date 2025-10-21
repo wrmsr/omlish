@@ -213,8 +213,11 @@ class OpenaiChatRequestHandler:
         )
 
     def build_ai_choice_delta(self, delta: ta.Mapping[str, ta.Any]) -> ContentAiChoiceDelta:
-        return ContentAiChoiceDelta(
-            check.not_none(delta.get('content')),
+        if (c := delta.get('content')) is not None:
+            check.state(not delta.get('tool_calls'))
+            return ContentAiChoiceDelta(c)
+
+        elif (tcs := delta.get('tool_calls')) is not None:  # noqa
             # FIXME:
             # tool_exec_requests=[
             #     ToolUse(
@@ -225,4 +228,7 @@ class OpenaiChatRequestHandler:
             #     )
             #     for tc in message_or_delta.get('tool_calls', [])
             # ] or None,
-        )
+            raise NotImplementedError
+
+        else:
+            raise ValueError(delta)
