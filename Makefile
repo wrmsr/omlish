@@ -57,11 +57,11 @@ venv:
 	@${PYTHON} --version
 
 	@if [ "${VENV}" == "default" ] ; then \
-		${MAKE} _default_venv ; \
+		${MAKE} _default-venv ; \
 	fi
 
-.PHONY: _default_venv
-_default_venv:
+.PHONY: _default-venv
+_default-venv:
 	@if [ ! -d .venv ] ; then \
 		ln -s .venvs/default .venv ; \
 	fi
@@ -525,6 +525,10 @@ publish: package test-install
 
 	${PYTHON} -m twine upload dist/*
 
+	${MAKE} _post-publish
+
+.PHONY: _post-publish
+_post-publish:
 	# FIXME: enable *after* nuking big files from history
 	# git tag -a "v${LOCAL_VERSION}" -m "v${LOCAL_VERSION}"
 
