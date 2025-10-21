@@ -11017,6 +11017,7 @@ class BasePyprojectPackageGenerator(Abstract):
                 )
 
         if output_dir is not None:
+            log.info(lambda: f'Copying {dist_dir} to {output_dir}')
             for fn in os.listdir(dist_dir):
                 shutil.copyfile(os.path.join(dist_dir, fn), os.path.join(output_dir, fn))
 
@@ -11444,6 +11445,7 @@ class _PyprojectCliPackageGenerator(BasePyprojectPackageGenerator):
 
         for k in [
             'cext',
+            'rs',
 
             'find_packages',
             'package_data',

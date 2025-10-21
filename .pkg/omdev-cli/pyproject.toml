@@ -31,7 +31,6 @@ dependencies = [
 om = 'omdev.cli.main:_main'
 
 [tool.setuptools]
-rs = true
 
 [tool.setuptools.packages.find]
 include = []
