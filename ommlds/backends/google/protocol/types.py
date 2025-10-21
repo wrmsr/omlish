@@ -148,11 +148,14 @@ class Part(lang.Final):
     video_metadata: VideoMetadata | None = None
 
 
+ContentRole: ta.TypeAlias = ta.Literal['user', 'model']
+
+
 @dc.dataclass(frozen=True, kw_only=True)
 @_set_class_marshal_options
 class Content(lang.Final):
     parts: ta.Sequence[Part] | None = None
-    role: ta.Literal['user', 'model'] | None = None
+    role: ContentRole | None = None
 
 
 ##

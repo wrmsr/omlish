@@ -11,6 +11,7 @@ from omlish.http import all as http
 from omlish.io.buffers import DelimitingBuffer
 
 from .....backends.google.protocol import types as pt
+from ....content.types import Content
 from ....chat.choices.types import ChatChoicesOutputs
 from ....chat.messages import AiMessage
 from ....chat.messages import Message
@@ -58,12 +59,27 @@ class GoogleChatChoicesStreamService:
         else:
             raise TypeError(m)
 
+    def _make_pt_content(
+            self,
+            s: str | None,
+            *,
+            role: pt.ContentRole | None = None
+    ) -> pt.Content | None:
+        if s is None:
+            return None
+
+        return pt.Content(
+            parts=[pt.Part(
+                text=check.not_none(s),
+            )],
+            role=role,
+        )
+
     BASE_URL: ta.ClassVar[str] = 'https://generativelanguage.googleapis.com/v1beta/models'
 
-    ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
-        SystemMessage: 'system',
+    ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], pt.ContentRole]] = {  # noqa
         UserMessage: 'user',
-        AiMessage: 'assistant',
+        AiMessage: 'model',
     }
 
     READ_CHUNK_SIZE = 64 * 1024
@@ -74,16 +90,22 @@ class GoogleChatChoicesStreamService:
     ) -> ChatChoicesStreamResponse:
         key = check.not_none(self._api_key).reveal()
 
+        msgs = list(request.v)
+
+        system_inst: pt.Content | None = None
+        if msgs and isinstance(m0 := msgs[0], SystemMessage):
+            system_inst = self._make_pt_content(self._get_msg_content(m0))
+            msgs.pop(0)
+
         g_req = pt.GenerateContentRequest(
             contents=[
-                pt.Content(
-                    parts=[pt.Part(
-                        text=check.not_none(self._get_msg_content(m)),
-                    )],
-                    role=self.ROLES_MAP[type(m)],  # type: ignore[arg-type]
-                )
-                for m in request.v
+                check.not_none(self._make_pt_content(
+                    self._get_msg_content(m),
+                    role=self.ROLES_MAP[type(m)],
+                ))
+                for m in msgs
             ],
+            system_instruction=system_inst,
         )
 
         req_dct = msh.marshal(g_req)
