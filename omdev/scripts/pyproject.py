@@ -11314,6 +11314,8 @@ class _PyprojectRsPackageGenerator(_PyprojectExtensionPackageGenerator):
     @staticmethod
     def _sdist_patch_body() -> None:
         def _sdist_add_defaults(old, self):
+            import os.path
+
             old(self)
 
             if self.distribution.rust_extensions and len(self.distribution.rust_extensions) > 0:
@@ -11327,7 +11329,7 @@ class _PyprojectRsPackageGenerator(_PyprojectExtensionPackageGenerator):
                         if os.path.isfile(p):
                             self.filelist.append(p)
                         elif os.path.isdir(p):
-                            self.filelist.extend(os.path.join(n, dp, f) for dp, dn, fn in os.walk(p) for f in fn)
+                            self.filelist.extend(os.path.join(dp, f) for dp, dn, fn in os.walk(p) for f in fn)
 
         # Sadly, we can't just subclass sdist and override it via cmdclass because manifest_maker calls
         # `sdist.add_defaults` as an unbound function, not a bound method:

@@ -9,4 +9,5 @@ pyo3 = "0.27"
 [lib]
 # https://doc.rust-lang.org/cargo/reference/cargo-targets.html#library
 name = "_boilerplate"
+path = "src/lib.rs"
 crate-type = ["cdylib"]
