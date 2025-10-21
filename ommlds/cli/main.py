@@ -140,15 +140,18 @@ async def _a_main(args: ta.Any = None) -> None:
         )
 
     else:
-        from ..minichain.lib.code.prompts import CODE_AGENT_SYSTEM_PROMPT
+        system_content: mc.Content | None = None
+        if (args.new or args.ephemeral) and args.code:
+            from ..minichain.lib.code.prompts import CODE_AGENT_SYSTEM_PROMPT
+            system_content = CODE_AGENT_SYSTEM_PROMPT
 
         session_cfg = ChatConfig(
             backend=args.backend,
             model_name=args.model_name,
             state='ephemeral' if args.ephemeral else 'new' if args.new else 'continue',
-            initial_system_content=CODE_AGENT_SYSTEM_PROMPT if args.new and args.code else None,
+            initial_system_content=system_content,
             initial_user_content=content,  # noqa
-            interactive=args.interactive,
+            interactive=bool(args.interactive),
             markdown=bool(args.markdown),
             stream=bool(args.stream),
             enable_tools=(
