@@ -11,7 +11,7 @@ from omlish.http import all as http
 from omlish.http import sse
 from omlish.io.buffers import DelimitingBuffer
 
-from .....backends.openai.protocol.chatcompletion.chunk import ChatCompletionChunk
+from .....backends.openai import protocol as pt
 from ....chat.choices.services import ChatChoicesOutputs
 from ....chat.stream.services import ChatChoicesStreamRequest
 from ....chat.stream.services import ChatChoicesStreamResponse
@@ -27,7 +27,8 @@ from ....stream.services import StreamOption
 from ....stream.services import StreamResponseSink
 from ....stream.services import new_stream_response
 from .chat import OpenaiChatChoicesService
-from .format import OpenaiChatRequestHandler
+from .format2 import OpenaiChatRequestHandler
+from .format2 import build_mc_ai_choice_delta
 from .names import MODEL_NAMES
 
 
@@ -62,13 +63,13 @@ class OpenaiChatChoicesStreamService:
             model=MODEL_NAMES.resolve(self._model_name.v),
             mandatory_kwargs=dict(
                 stream=True,
-                stream_options=dict(
+                stream_options=pt.ChatCompletionRequest.StreamOptions(
                     include_usage=True,
                 ),
             ),
         )
 
-        raw_request = rh.raw_request()
+        raw_request = msh.marshal(rh.oai_request())
 
         http_request = http.HttpRequest(
             'https://api.openai.com/v1/chat/completions',
@@ -105,20 +106,20 @@ class OpenaiChatChoicesStreamService:
 
                                 check.state(sj['object'] == 'chat.completion.chunk')
 
-                                ccc = msh.unmarshal(sj, ChatCompletionChunk)  # noqa
-                                # print(ccc)
+                                ccc = msh.unmarshal(sj, pt.ChatCompletionChunk)
 
                                 # FIXME: stop reason
-                                if not sj['choices']:
+                                if not ccc.choices:
                                     continue
 
-                                if any(choice['delta'] for choice in sj['choices']):
-                                    await sink.emit(AiChoicesDeltas([
-                                        AiChoiceDeltas(
-                                            [rh.build_ai_choice_delta(choice['delta'])] if choice['delta'] else [],
-                                        )
-                                        for choice in sj['choices']
-                                    ]))
+                                if any(choice.finish_reason for choice in ccc.choices):
+                                    check.state(all(choice.finish_reason for choice in ccc.choices))
+                                    break
+
+                                await sink.emit(AiChoicesDeltas([
+                                    AiChoiceDeltas([build_mc_ai_choice_delta(choice.delta)])
+                                    for choice in ccc.choices
+                                ]))
 
                     if not b:
                         return []

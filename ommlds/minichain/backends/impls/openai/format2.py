@@ -17,6 +17,9 @@ from ....chat.messages import SystemMessage
 from ....chat.messages import ToolUseMessage
 from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
+from ....chat.stream.types import AiChoiceDelta
+from ....chat.stream.types import ContentAiChoiceDelta
+from ....chat.stream.types import PartialToolUseAiChoiceDelta
 from ....chat.tools.types import Tool
 from ....content.json import JsonContent
 from ....content.prepare import prepare_content_str
@@ -123,6 +126,25 @@ def build_mc_choices_response(oai_resp: pt.ChatCompletionResponse) -> ChatChoice
             ))] if (tu := oai_resp.usage) is not None else []),
         ),
     )
+
+
+def build_mc_ai_choice_delta(delta: pt.ChatCompletionChunkChoiceDelta) -> AiChoiceDelta:
+    if delta.content is not None:
+        check.state(not delta.tool_calls)
+        return ContentAiChoiceDelta(delta.content)
+
+    elif delta.tool_calls is not None:
+        check.state(delta.content is None)
+        tc = check.single(delta.tool_calls)
+        tc_fn = check.not_none(tc.function)
+        return PartialToolUseAiChoiceDelta(
+            id=tc.id,
+            name=tc_fn.name,
+            raw_args=tc_fn.arguments,
+        )
+
+    else:
+        raise ValueError(delta)
 
 
 ##
