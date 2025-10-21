@@ -315,7 +315,7 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
         st = dict(specs.setuptools)
         pyp_dct['tool.setuptools'] = st
 
-        st.pop('cexts', None)
+        st.pop('cext', None)
 
         #
 
@@ -388,7 +388,7 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
     def children(self) -> ta.Sequence[BasePyprojectPackageGenerator]:
         out: ta.List[BasePyprojectPackageGenerator] = []
 
-        if self.build_specs().setuptools.get('cexts'):
+        if self.build_specs().setuptools.get('cext'):
             out.append(_PyprojectCextPackageGenerator(
                 self._dir_name,
                 self._pkgs_root,
@@ -456,7 +456,7 @@ class _PyprojectCextPackageGenerator(BasePyprojectPackageGenerator):
         pyp_dct['tool.setuptools'] = st
 
         for k in [
-            'cexts',
+            'cext',
 
             'find_packages',
             'package_data',
@@ -553,7 +553,7 @@ class _PyprojectCliPackageGenerator(BasePyprojectPackageGenerator):
         pyp_dct['tool.setuptools'] = st
 
         for k in [
-            'cexts',
+            'cext',
 
             'find_packages',
             'package_data',

@@ -6,6 +6,7 @@ TODO:
  - winch down relay tasks?
  - logging i guess
  - shutting down flag, dont submit more work
+ - AbstractEventLoop impl, ioproxy-esque, opaque-ish forwarding
 """
 import asyncio
 import dataclasses as dc
