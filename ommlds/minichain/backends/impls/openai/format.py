@@ -18,7 +18,9 @@ from ....chat.messages import SystemMessage
 from ....chat.messages import ToolUseMessage
 from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
+from ....chat.stream.types import AiChoiceDelta
 from ....chat.stream.types import ContentAiChoiceDelta
+from ....chat.stream.types import ToolUseAiChoiceDelta
 from ....chat.tools.types import Tool
 from ....content.json import JsonContent
 from ....content.prepare import prepare_content_str
@@ -212,23 +214,20 @@ class OpenaiChatRequestHandler:
             ),
         )
 
-    def build_ai_choice_delta(self, delta: ta.Mapping[str, ta.Any]) -> ContentAiChoiceDelta:
+    def build_ai_choice_delta(self, delta: ta.Mapping[str, ta.Any]) -> AiChoiceDelta:
         if (c := delta.get('content')) is not None:
             check.state(not delta.get('tool_calls'))
             return ContentAiChoiceDelta(c)
 
         elif (tcs := delta.get('tool_calls')) is not None:  # noqa
-            # FIXME:
-            # tool_exec_requests=[
-            #     ToolUse(
-            #         id=tc['id'],
-            #         spec=self._process_options().tools_by_name[tc['function']['name']],
-            #         args=json.loads(tc['function']['arguments'] or '{}'),
-            #         raw_args=tc['function']['arguments'],
-            #     )
-            #     for tc in message_or_delta.get('tool_calls', [])
-            # ] or None,
-            raise NotImplementedError
+            check.state(delta.get('content') is None)
+            tc = check.single(tcs)
+            tc_fn = tc['function']
+            return ToolUseAiChoiceDelta(
+                id=tc.get('id'),
+                name=tc_fn.get('name'),
+                raw_args=tc_fn.get('arguments'),
+            )
 
         else:
             raise ValueError(delta)
