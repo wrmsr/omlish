@@ -354,6 +354,13 @@ def thread_await(fn: ta.Callable[[], ta.Awaitable]) -> ta.Awaitable[ta.Any]:
     return ThreadTasks._Future(fn)  # noqa
 
 
+def maybe_thread_await(fn: ta.Callable[[], ta.Awaitable]) -> ta.Awaitable[ta.Any]:
+    if isinstance(threading.current_thread(), ThreadTasks._Worker._Thread):  # noqa: SLF001
+        return thread_await(fn)
+    else:
+        return fn().__await__()
+
+
 ##
 
 
@@ -421,7 +428,9 @@ async def _a_main() -> None:
         for i in range(4):
             st = sleep_time()
             say(idx, f'asleep {i} : start {st:.2}')
-            await thread_await(lambda: asyncio.sleep(st))  # noqa: B023
+            # await thread_await(lambda: asyncio.sleep(st))  # noqa: B023
+            await maybe_thread_await(lambda: asyncio.sleep(st))  # noqa: B023
+            # await asyncio.sleep(st)  # noqa: B023
             say(idx, f'asleep {i} : end   {st:.2}')
 
             st = sleep_time()
