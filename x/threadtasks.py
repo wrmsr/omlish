@@ -358,7 +358,7 @@ def maybe_thread_await(fn: ta.Callable[[], ta.Awaitable]) -> ta.Awaitable[ta.Any
     if isinstance(threading.current_thread(), ThreadTasks._Worker._Thread):  # noqa: SLF001
         return thread_await(fn)
     else:
-        return fn().__await__()
+        return fn()
 
 
 ##
