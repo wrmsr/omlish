@@ -59,6 +59,7 @@ class Project(ProjectBase):
 
 class Setuptools(SetuptoolsBase):
     cext = True
+    rs = True
 
     find_packages = {
         'include': [Project.name, f'{Project.name}.*'],

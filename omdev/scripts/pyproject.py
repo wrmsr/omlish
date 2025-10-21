@@ -11320,7 +11320,7 @@ class _PyprojectRsPackageGenerator(_PyprojectExtensionPackageGenerator):
         pyp_dct = {}
 
         pyp_dct['build-system'] = {
-            'requires': ['setuptools'],
+            'requires': ['setuptools', 'setuptools-rust'],
             'build-backend': 'setuptools.build_meta',
         }
 
@@ -11336,22 +11336,21 @@ class _PyprojectRsPackageGenerator(_PyprojectExtensionPackageGenerator):
         ext_lines: list = []
 
         for ext_dir in self.find_rs_dirs():  # noqa
-            # ext_name = ext_src.rpartition('.')[0].replace(os.sep, '.')
-            # ext_lines.extend([
-            #     'st.Extension(',
-            #     f"    name='{ext_name}',",
-            #     f"    sources=['{ext_src}'],",
-            #     "    extra_compile_args=['-std=c++20'],",
-            #     '),',
-            # ])
-            raise NotImplementedError
+            ext_name = ext_dir.rpartition('.')[0].replace(os.sep, '.')
+            ext_lines.extend([
+                'st.Extension(',
+                f"    '{ext_name}',",
+                f"    path=['{os.path.join(ext_dir, "Cargo.toml")}'],",
+                '),',
+            ])
 
         src = '\n'.join([
             'import setuptools as st',
+            'import setuptools_rust as st_rs',
             '',
             '',
             'st.setup(',
-            '    ext_modules=[',
+            '    rust_extensions==[',
             *['        ' + l for l in ext_lines],
             '    ],',
             ')',

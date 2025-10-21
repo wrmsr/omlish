@@ -1,11 +1,12 @@
 [build-system]
 requires = [
     'setuptools',
+    'setuptools-rust',
 ]
 build-backend = 'setuptools.build_meta'
 
 [project]
-name = 'omdev-cli'
+name = 'omdev-rs'
 authors = [
     {name = 'wrmsr'},
 ]
@@ -27,11 +28,7 @@ dependencies = [
     'omdev == 0.0.0.dev465',
 ]
 
-[project.scripts]
-om = 'omdev.cli.main:_main'
-
 [tool.setuptools]
-rs = true
 
 [tool.setuptools.packages.find]
 include = []
