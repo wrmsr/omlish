@@ -4,7 +4,7 @@ build>=1.2.2
 twine>=6.2.0  # @omlish-venv !14t
 wheel>=0.45.1
 
-uv>=0.9.4
+uv>=0.9.5
 
 pytest==8.4.2
 pytest-benchmark==5.1.0
@@ -40,7 +40,7 @@ pgcli==4.3.0  # @omlish-venv !13t !13dt !14t
 
 # pydevd-pycharm==241.18034.82
 
-pudb==2025.1.2
+pudb==2025.1.3
 
 
 ##
