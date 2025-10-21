@@ -11,7 +11,6 @@ from omlish.http import all as http
 from omlish.io.buffers import DelimitingBuffer
 
 from .....backends.google.protocol import types as pt
-from ....content.types import Content
 from ....chat.choices.types import ChatChoicesOutputs
 from ....chat.messages import AiMessage
 from ....chat.messages import Message
@@ -23,12 +22,14 @@ from ....chat.stream.services import static_check_is_chat_choices_stream_service
 from ....chat.stream.types import AiChoiceDeltas
 from ....chat.stream.types import AiChoicesDeltas
 from ....chat.stream.types import ContentAiChoiceDelta
+from ....chat.tools.types import Tool
 from ....models.configs import ModelName
 from ....resources import UseResources
 from ....standard import ApiKey
 from ....stream.services import StreamResponseSink
 from ....stream.services import new_stream_response
 from .names import MODEL_NAMES
+from .tools import build_tool_spec_schema
 
 
 ##
@@ -97,6 +98,14 @@ class GoogleChatChoicesStreamService:
             system_inst = self._make_pt_content(self._get_msg_content(m0))
             msgs.pop(0)
 
+        g_tools: list[pt.Tool] = []
+        with tv.TypedValues(*request.options).consume() as oc:
+            t: Tool
+            for t in oc.pop(Tool, []):
+                g_tools.append(pt.Tool(
+                    function_declarations=[build_tool_spec_schema(t.spec)],
+                ))
+
         g_req = pt.GenerateContentRequest(
             contents=[
                 check.not_none(self._make_pt_content(
@@ -105,6 +114,7 @@ class GoogleChatChoicesStreamService:
                 ))
                 for m in msgs
             ],
+            tools=g_tools or None,
             system_instruction=system_inst,
         )
 
