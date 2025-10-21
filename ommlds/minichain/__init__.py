@@ -113,7 +113,9 @@ with _lang.auto_proxy_init(
 
         AiChoiceDelta,
         ContentAiChoiceDelta,
+        AnyToolUseAiChoiceDelta,
         ToolUseAiChoiceDelta,
+        PartialToolUseAiChoiceDelta,
 
         AiChoiceDeltas,
         AiChoicesDeltas,

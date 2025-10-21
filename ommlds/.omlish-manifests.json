@@ -137,7 +137,7 @@
     "module": ".minichain.backends.impls.google.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/google/stream.py",
-    "line": 36,
+    "line": 39,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.google.stream",

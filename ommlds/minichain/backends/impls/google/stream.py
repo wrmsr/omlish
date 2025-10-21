@@ -22,6 +22,7 @@ from ....chat.stream.services import static_check_is_chat_choices_stream_service
 from ....chat.stream.types import AiChoiceDeltas
 from ....chat.stream.types import AiChoicesDeltas
 from ....chat.stream.types import ContentAiChoiceDelta
+from ....chat.stream.types import ToolUseAiChoiceDelta
 from ....chat.tools.types import Tool
 from ....models.configs import ModelName
 from ....resources import UseResources
@@ -64,7 +65,7 @@ class GoogleChatChoicesStreamService:
             self,
             s: str | None,
             *,
-            role: pt.ContentRole | None = None
+            role: pt.ContentRole | None = None,
     ) -> pt.Content | None:
         if s is None:
             return None
@@ -142,18 +143,38 @@ class GoogleChatChoicesStreamService:
                         if isinstance(bl, DelimitingBuffer.Incomplete):
                             # FIXME: handle
                             return []
+
                         l = bl.decode('utf-8')
                         if not l:
                             continue
+
                         if l.startswith('data: '):
                             gcr = msh.unmarshal(json.loads(l[6:]), pt.GenerateContentResponse)  # noqa
                             cnd = check.single(check.not_none(gcr.candidates))
+
                             for p in check.not_none(cnd.content).parts or []:
-                                await sink.emit(AiChoicesDeltas([
-                                    AiChoiceDeltas([
-                                        ContentAiChoiceDelta(check.not_none(p.text)),
-                                    ]),
-                                ]))
+                                if (txt := p.text) is not None:
+                                    check.none(p.function_call)
+                                    await sink.emit(AiChoicesDeltas([
+                                        AiChoiceDeltas([
+                                            ContentAiChoiceDelta(check.not_none(txt)),
+                                        ]),
+                                    ]))
+
+                                elif (fc := p.function_call) is not None:
+                                    check.none(p.text)
+                                    await sink.emit(AiChoicesDeltas([
+                                        AiChoiceDeltas([
+                                            ToolUseAiChoiceDelta(
+                                                id=fc.id,
+                                                name=fc.name,
+                                                args=fc.args,
+                                            ),
+                                        ]),
+                                    ]))
+
+                                else:
+                                    raise ValueError(p)
 
                     if not b:
                         return []

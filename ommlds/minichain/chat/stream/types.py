@@ -47,10 +47,22 @@ class ContentAiChoiceDelta(AiChoiceDelta, lang.Final):
     c: Content
 
 
+#
+
+
 @dc.dataclass(frozen=True, kw_only=True)
-class ToolUseAiChoiceDelta(AiChoiceDelta, lang.Final):
+class AnyToolUseAiChoiceDelta(AiChoiceDelta, lang.Abstract):
     id: str | None = None
     name: str | None = None
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class ToolUseAiChoiceDelta(AnyToolUseAiChoiceDelta, lang.Final):
+    args: ta.Mapping[str, ta.Any] | None = None
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class PartialToolUseAiChoiceDelta(AnyToolUseAiChoiceDelta, lang.Final):
     raw_args: ta.Any | None = None
 
 

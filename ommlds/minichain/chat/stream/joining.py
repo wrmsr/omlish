@@ -11,6 +11,7 @@ from ..messages import ToolUseMessage
 from .types import AiChoiceDelta
 from .types import AiChoiceDeltas
 from .types import ContentAiChoiceDelta
+from .types import PartialToolUseAiChoiceDelta
 from .types import ToolUseAiChoiceDelta
 
 
@@ -36,11 +37,16 @@ class AiChoiceDeltaJoiner:
             return AiMessage(''.join(check.isinstance(cd.c, str) for cd in cds))
 
         elif dty is ToolUseAiChoiceDelta:
-            tds = ta.cast(ta.Sequence[ToolUseAiChoiceDelta], deltas)
-            for td in ta.cast(ta.Sequence[ToolUseAiChoiceDelta], deltas)[1:]:
+            raise TypeError(dty)
+
+        elif dty is PartialToolUseAiChoiceDelta:
+            tds = ta.cast(ta.Sequence[PartialToolUseAiChoiceDelta], deltas)
+            for td in ta.cast(ta.Sequence[PartialToolUseAiChoiceDelta], deltas)[1:]:
                 check.none(td.id)
                 check.none(td.name)
+
             ra = ''.join(filter(None, (td.raw_args for td in tds)))
+
             return ToolUseMessage(ToolUse(
                 id=tds[0].id,
                 name=check.non_empty_str(tds[0].name),
@@ -62,7 +68,15 @@ class AiChoiceDeltaJoiner:
         if chan.deltas and type(chan.deltas[0]) is not type(d):
             self._join_one(chan)
 
-        chan.deltas.append(d)
+        if isinstance(d, ToolUseAiChoiceDelta):
+            chan.messages.append(ToolUseMessage(ToolUse(
+                id=d.id,
+                name=check.not_none(d.name),
+                args=d.args or {},
+            )))
+
+        else:
+            chan.deltas.append(d)
 
     def add(self, choices: ta.Sequence[AiChoiceDeltas]) -> None:
         if not self._seq:

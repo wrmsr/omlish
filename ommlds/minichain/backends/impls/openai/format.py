@@ -20,7 +20,7 @@ from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
 from ....chat.stream.types import AiChoiceDelta
 from ....chat.stream.types import ContentAiChoiceDelta
-from ....chat.stream.types import ToolUseAiChoiceDelta
+from ....chat.stream.types import PartialToolUseAiChoiceDelta
 from ....chat.tools.types import Tool
 from ....content.json import JsonContent
 from ....content.prepare import prepare_content_str
@@ -223,7 +223,7 @@ class OpenaiChatRequestHandler:
             check.state(delta.get('content') is None)
             tc = check.single(tcs)
             tc_fn = tc['function']
-            return ToolUseAiChoiceDelta(
+            return PartialToolUseAiChoiceDelta(
                 id=tc.get('id'),
                 name=tc_fn.get('name'),
                 raw_args=tc_fn.get('arguments'),

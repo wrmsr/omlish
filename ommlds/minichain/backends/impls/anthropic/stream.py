@@ -17,7 +17,7 @@ from ....chat.stream.services import static_check_is_chat_choices_stream_service
 from ....chat.stream.types import AiChoiceDeltas
 from ....chat.stream.types import AiChoicesDeltas
 from ....chat.stream.types import ContentAiChoiceDelta
-from ....chat.stream.types import ToolUseAiChoiceDelta
+from ....chat.stream.types import PartialToolUseAiChoiceDelta
 from ....chat.tools.types import Tool
 from ....configs import Config
 from ....resources import UseResources
@@ -131,7 +131,7 @@ class AnthropicChatChoicesStreamService:
                                             )])]))
 
                                         elif isinstance(ae.content_block, AnthropicSseDecoderEvents.ContentBlockStart.ToolUse):  # noqa
-                                            await sink.emit(AiChoicesDeltas([AiChoiceDeltas([ToolUseAiChoiceDelta(
+                                            await sink.emit(AiChoicesDeltas([AiChoiceDeltas([PartialToolUseAiChoiceDelta(  # noqa
                                                 id=ae.content_block.id,
                                                 name=ae.content_block.name,
                                                 raw_args=ae.content_block.input,
@@ -149,7 +149,7 @@ class AnthropicChatChoicesStreamService:
                                             )])]))
 
                                         elif isinstance(ae.delta, AnthropicSseDecoderEvents.ContentBlockDelta.InputJsonDelta):  # noqa
-                                            await sink.emit(AiChoicesDeltas([AiChoiceDeltas([ToolUseAiChoiceDelta(
+                                            await sink.emit(AiChoicesDeltas([AiChoiceDeltas([PartialToolUseAiChoiceDelta(  # noqa
                                                 raw_args=ae.delta.partial_json,
                                             )])]))
 
