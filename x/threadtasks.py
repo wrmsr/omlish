@@ -1,3 +1,5 @@
+# ruff: noqa: UP006 UP045
+# @omlish-lite
 """
 TODO:
  - errors lol - set fut.error
@@ -62,7 +64,7 @@ class ThreadTasks:
 
     @classmethod
     def _get_num_cpus(cls) -> ta.Optional[int]:
-        if sys.version_info >= (3, 13):
+        if sys.version_info >= (3, 13):  # noqa: UP036
             import os
             return os.cpu_count()
         else:
@@ -114,7 +116,7 @@ class ThreadTasks:
 
             if isinstance(f, ThreadTasks._Future):
                 try:
-                    f.task
+                    f.task  # noqa: B018
                 except AttributeError:
                     pass
                 else:
@@ -174,7 +176,7 @@ class ThreadTasks:
             self.owner = owner
             self.worker_idx = worker_idx
 
-            self.thread = ThreadTasks._Worker._Thread(
+            self.thread = ThreadTasks._Worker._Thread(  # noqa: SLF001
                 _thread_tasks_worker=self,
                 target=self._worker_main,
                 name=repr(self),
@@ -196,12 +198,12 @@ class ThreadTasks:
 
         def _worker_main(self) -> None:
             while True:
-                w_msg = self.owner._worker_queue.get()
+                w_msg = self.owner._worker_queue.get()  # noqa: SLF001
 
                 try:
                     if isinstance(w_msg, ThreadTasks._RunTask):
                         if (r_msg := w_msg.task.run()) is not None:
-                            self.owner._relay(r_msg)
+                            self.owner._relay(r_msg)  # noqa: SLF001
 
                     elif isinstance(w_msg, ThreadTasks._ShutdownWorker):
                         break
@@ -210,7 +212,7 @@ class ThreadTasks:
                         raise TypeError(w_msg)
 
                 finally:
-                    self.owner._worker_queue.task_done()
+                    self.owner._worker_queue.task_done()  # noqa: SLF001
 
     #
 
@@ -227,7 +229,7 @@ class ThreadTasks:
     class _SubmitResult(_RelayMessage):
         task: 'ThreadTasks._Task'
 
-        _: dc.KW_ONLY
+        # _: dc.KW_ONLY
 
         result: ta.Any = None
         error: ta.Optional[BaseException] = None
@@ -245,7 +247,7 @@ class ThreadTasks:
 
             self.owner = owner
 
-            self.task = owner._loop.create_task(
+            self.task = owner._loop.create_task(  # noqa: SLF001
                 self._relay_main(),
                 name=repr(self),
             )
@@ -257,33 +259,33 @@ class ThreadTasks:
 
         async def _relay_main(self) -> None:
             while True:
-                msg = await self.owner._relay_queue.get()
+                msg = await self.owner._relay_queue.get()  # noqa: SLF001
 
                 try:
                     if isinstance(msg, ThreadTasks._SubmitFuture):
                         try:
                             a = msg.fut.fn()
                             v = await a
-                        except BaseException as e:
+                        except BaseException as e:  # noqa: BLE001
                             msg.fut.error = e
                         else:
                             msg.fut.result = v
                         msg.fut.done = True
 
-                        self.owner._worker_queue.put(ThreadTasks._RunTask(msg.fut.task))
+                        self.owner._worker_queue.put(ThreadTasks._RunTask(msg.fut.task))  # noqa: SLF001
 
-                    elif isinstance(msg, ThreadTasks._SubmitResult):
+                    elif isinstance(msg, ThreadTasks._SubmitResult):  # noqa: SLF001
                         msg.task.result.set_result(msg.result)
-                        self.owner._tasks.remove(msg.task)
+                        self.owner._tasks.remove(msg.task)  # noqa: SLF001
 
-                    elif isinstance(msg, ThreadTasks._ShutdownRelay):
+                    elif isinstance(msg, ThreadTasks._ShutdownRelay):  # noqa: SLF001
                         break
 
                     else:
                         raise TypeError(msg)
 
                 finally:
-                    self.owner._relay_queue.task_done()
+                    self.owner._relay_queue.task_done()  # noqa: SLF001
 
     def _relay(self, msg: _RelayMessage) -> None:
         async def inner():
@@ -365,14 +367,14 @@ async def _a_main() -> None:
     say_st = time.time()
 
     def say(task_idx: int, msg: str) -> None:
-        worker_idx = threading.current_thread()._thread_tasks_worker.worker_idx  # noqa
+        worker_idx = threading.current_thread()._thread_tasks_worker.worker_idx  # type: ignore  # noqa
         with say_lock:
             print(
                 f'time {format(time.time() - say_st, ".2f"):>6} : '
                 f'worker {worker_idx} : '
                 f'task {task_idx} : '
                 f'{msg}',
-                flush=True
+                flush=True,
             )
 
     #
@@ -386,8 +388,8 @@ async def _a_main() -> None:
 
     def _spin() -> None:
         c = 0
-        for i in range(spin_its):
-            c += 1
+        for _ in range(spin_its):
+            c += 1  # noqa: SIM113
 
     def calc_spin_rate() -> int:
         et = time.time() + 1
@@ -419,7 +421,7 @@ async def _a_main() -> None:
         for i in range(4):
             st = sleep_time()
             say(idx, f'asleep {i} : start {st:.2}')
-            await thread_await(lambda: asyncio.sleep(st))
+            await thread_await(lambda: asyncio.sleep(st))  # noqa: B023
             say(idx, f'asleep {i} : end   {st:.2}')
 
             st = sleep_time()
@@ -436,7 +438,7 @@ async def _a_main() -> None:
     await tts.start()
 
     run_st = time.time()
-    futs = [await tts.spawn(lambda: work(i)) for i in range(4)]
+    futs = [await (lambda i: tts.spawn(lambda: work(i)))(i) for i in range(4)]  # noqa: PLC3002
     for fut in futs:
         print(await fut)
     run_et = time.time() - run_st
