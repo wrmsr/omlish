@@ -4,7 +4,7 @@ from omlish import check
 from omlish import lang
 
 from ...... import minichain as mc
-from .....state import StateStorage
+from .....state.storage import StateStorage
 from .types import ChatState
 from .types import ChatStateManager
 

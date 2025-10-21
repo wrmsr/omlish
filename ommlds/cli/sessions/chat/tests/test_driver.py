@@ -7,8 +7,8 @@ from omlish import lang
 
 from ..... import minichain as mc
 from ....backends.inject import bind_backends
-from ....state import InMemoryStateStorage
-from ....state import StateStorage
+from ....state.storage import InMemoryStateStorage
+from ....state.storage import StateStorage
 from ..configs import ChatConfig
 from ..driver import ChatDriver
 from ..inject import bind_chat
