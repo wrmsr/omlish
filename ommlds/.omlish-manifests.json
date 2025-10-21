@@ -18,7 +18,7 @@
     "module": ".minichain.backends.impls.anthropic.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/anthropic/chat.py",
-    "line": 39,
+    "line": 38,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.anthropic.chat",
@@ -63,7 +63,7 @@
     "module": ".minichain.backends.impls.anthropic.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/anthropic/stream.py",
-    "line": 33,
+    "line": 35,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.anthropic.stream",

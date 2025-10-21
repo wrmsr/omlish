@@ -1,7 +1,6 @@
 import typing as ta
 
 from omlish import check
-from omlish import lang
 from omlish import marshal as msh
 from omlish import typedvalues as tv
 from omlish.formats import json
@@ -9,15 +8,16 @@ from omlish.http import all as http
 from omlish.http import sse
 from omlish.io.buffers import DelimitingBuffer
 
+from .....backends.anthropic.protocol import types as pt
 from .....backends.anthropic.protocol.sse.events import AnthropicSseDecoderEvents
 from ....chat.choices.services import ChatChoicesOutputs
-from ....chat.messages import SystemMessage
 from ....chat.stream.services import ChatChoicesStreamRequest
 from ....chat.stream.services import ChatChoicesStreamResponse
 from ....chat.stream.services import static_check_is_chat_choices_stream_service
 from ....chat.stream.types import AiChoiceDeltas
 from ....chat.stream.types import AiChoicesDeltas
 from ....chat.stream.types import ContentAiChoiceDelta
+from ....chat.tools.types import Tool
 from ....configs import Config
 from ....resources import UseResources
 from ....standard import ApiKey
@@ -25,6 +25,8 @@ from ....stream.services import StreamResponseSink
 from ....stream.services import new_stream_response
 from .chat import AnthropicChatChoicesService
 from .names import MODEL_NAMES
+from .protocol import build_protocol_chat_messages
+from .protocol import build_protocol_tool
 
 
 ##
@@ -51,26 +53,24 @@ class AnthropicChatChoicesStreamService:
             *,
             max_tokens: int = 4096,  # FIXME: ChatOption
     ) -> ChatChoicesStreamResponse:
-        messages = []
-        system: str | None = None
-        for i, m in enumerate(request.v):
-            if isinstance(m, SystemMessage):
-                if i != 0 or system is not None:
-                    raise Exception('Only supports one system message and must be first')
-                system = AnthropicChatChoicesService._get_msg_content(m)  # noqa
-            else:
-                messages.append(dict(
-                    role=AnthropicChatChoicesService.ROLES_MAP[type(m)],  # noqa
-                    content=check.isinstance(AnthropicChatChoicesService._get_msg_content(m), str),  # noqa
-                ))
+        messages, system = build_protocol_chat_messages(request.v)
 
-        raw_request = dict(
+        tools: list[pt.ToolSpec] = []
+        with tv.TypedValues(*request.options).consume() as oc:
+            t: Tool
+            for t in oc.pop(Tool, []):
+                tools.append(build_protocol_tool(t))
+
+        a_req = pt.MessagesRequest(
             model=MODEL_NAMES.resolve(self._model_name.v),
-            **lang.opt_kw(system=system),
+            system=system,
             messages=messages,
+            tools=tools or None,
             max_tokens=max_tokens,
             stream=True,
         )
+
+        raw_request = msh.marshal(a_req)
 
         http_request = http.HttpRequest(
             'https://api.anthropic.com/v1/messages',

@@ -22,15 +22,14 @@ from ....chat.messages import AnyAiMessage
 from ....chat.messages import Message
 from ....chat.messages import SystemMessage
 from ....chat.messages import ToolUseMessage
-from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
 from ....chat.tools.types import Tool
-from ....content.prepare import prepare_content_str
 from ....models.configs import ModelName
 from ....standard import ApiKey
-from ....tools.jsonschema import build_tool_spec_params_json_schema
 from ....tools.types import ToolUse
 from .names import MODEL_NAMES
+from .protocol import build_protocol_chat_messages
+from .protocol import build_protocol_tool
 
 
 ##
@@ -43,13 +42,6 @@ from .names import MODEL_NAMES
 @static_check_is_chat_choices_service
 class AnthropicChatChoicesService:
     DEFAULT_MODEL_NAME: ta.ClassVar[ModelName] = ModelName(check.not_none(MODEL_NAMES.default))
-
-    ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
-        SystemMessage: 'system',
-        UserMessage: 'user',
-        AiMessage: 'assistant',
-        ToolUseMessage: 'assistant',
-    }
 
     def __init__(
             self,
@@ -78,62 +70,13 @@ class AnthropicChatChoicesService:
             *,
             max_tokens: int = 4096,  # FIXME: ChatOption
     ) -> ChatChoicesResponse:
-        messages: list[pt.Message] = []
-        system: list[pt.Content] | None = None
-        for i, m in enumerate(request.v):
-            if isinstance(m, SystemMessage):
-                if i != 0 or system is not None:
-                    raise Exception('Only supports one system message and must be first')
-                system = [pt.Text(check.not_none(self._get_msg_content(m)))]
-
-            elif isinstance(m, ToolUseResultMessage):
-                messages.append(pt.Message(
-                    role='user',
-                    content=[pt.ToolResult(
-                        tool_use_id=check.not_none(m.tur.id),
-                        content=json.dumps_compact(msh.marshal(m.tur.c)) if not isinstance(m.tur.c, str) else m.tur.c,
-                    )],
-                ))
-
-            elif isinstance(m, AiMessage):
-                # messages.append(pt.Message(
-                #     role=self.ROLES_MAP[type(m)],  # noqa
-                #     content=[pt.Text(check.isinstance(self._get_msg_content(m), str))],
-                # ))
-                messages.append(pt.Message(
-                    role='assistant',
-                    content=[
-                        *([pt.Text(check.isinstance(m.c, str))] if m.c is not None else []),
-                    ],
-                ))
-
-            elif isinstance(m, ToolUseMessage):
-                messages.append(pt.Message(
-                    role='assistant',
-                    content=[
-                        pt.ToolUse(
-                            id=check.not_none(m.tu.id),
-                            name=check.not_none(m.tu.name),
-                            input=m.tu.args,
-                        ),
-                    ],
-                ))
-
-            else:
-                messages.append(pt.Message(
-                    role=self.ROLES_MAP[type(m)],  # type: ignore[arg-type]
-                    content=[pt.Text(check.isinstance(self._get_msg_content(m), str))],
-                ))
+        messages, system = build_protocol_chat_messages(request.v)
 
         tools: list[pt.ToolSpec] = []
         with tv.TypedValues(*request.options).consume() as oc:
             t: Tool
             for t in oc.pop(Tool, []):
-                tools.append(pt.ToolSpec(
-                    name=check.not_none(t.spec.name),
-                    description=prepare_content_str(t.spec.desc),
-                    input_schema=build_tool_spec_params_json_schema(t.spec),
-                ))
+                tools.append(build_protocol_tool(t))
 
         a_req = pt.MessagesRequest(
             model=MODEL_NAMES.resolve(self._model_name.v),

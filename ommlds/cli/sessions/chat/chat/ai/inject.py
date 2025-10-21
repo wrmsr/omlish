@@ -36,34 +36,31 @@ def bind_ai(
 
     #
 
-    if stream:
-        ai_stack = inj.wrapper_binder_helper(_types.StreamAiChatGenerator)
+    ai_stack = inj.wrapper_binder_helper(_types.AiChatGenerator)
 
-        els.append(ai_stack.push_bind(to_ctor=_services.ChatChoicesStreamServiceStreamAiChatGenerator, singleton=True))
+    if stream:
+        stream_ai_stack = inj.wrapper_binder_helper(_types.StreamAiChatGenerator)
+
+        els.append(stream_ai_stack.push_bind(to_ctor=_services.ChatChoicesStreamServiceStreamAiChatGenerator, singleton=True))  # noqa
 
         if not silent:
-            els.append(ai_stack.push_bind(to_ctor=_rendering.RenderingStreamAiChatGenerator, singleton=True))
-
-        if enable_tools:
-            raise NotImplementedError
+            els.append(stream_ai_stack.push_bind(to_ctor=_rendering.RenderingStreamAiChatGenerator, singleton=True))
 
         els.extend([
-            inj.bind(_types.StreamAiChatGenerator, to_key=ai_stack.top),
-            inj.bind(_types.AiChatGenerator, to_key=_types.StreamAiChatGenerator),
+            inj.bind(_types.StreamAiChatGenerator, to_key=stream_ai_stack.top),
+            ai_stack.push_bind(to_key=_types.StreamAiChatGenerator),
         ])
 
     else:
-        ai_stack = inj.wrapper_binder_helper(_types.AiChatGenerator)
-
         els.append(ai_stack.push_bind(to_ctor=_services.ChatChoicesServiceAiChatGenerator, singleton=True))
 
         if not silent:
             els.append(ai_stack.push_bind(to_ctor=_rendering.RenderingAiChatGenerator, singleton=True))
 
-        if enable_tools:
-            els.append(ai_stack.push_bind(to_ctor=_tools.ToolExecutingAiChatGenerator, singleton=True))
+    if enable_tools:
+        els.append(ai_stack.push_bind(to_ctor=_tools.ToolExecutingAiChatGenerator, singleton=True))
 
-        els.append(inj.bind(_types.AiChatGenerator, to_key=ai_stack.top))
+    els.append(inj.bind(_types.AiChatGenerator, to_key=ai_stack.top))
 
     #
 
