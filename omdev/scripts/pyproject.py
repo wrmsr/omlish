@@ -11314,29 +11314,32 @@ class _PyprojectRsPackageGenerator(_PyprojectExtensionPackageGenerator):
 
     @staticmethod
     def _sdist_patch_body() -> None:
-        def _sdist_add_defaults(old, self):
-            import os.path
+        def _patch_sdist():
+            def _sdist_add_defaults(old, self):
+                import os.path
 
-            old(self)
+                old(self)
 
-            if self.distribution.rust_extensions and len(self.distribution.rust_extensions) > 0:
-                build_rust = self.get_finalized_command('build_rust')  # noqa
-                for ext in build_rust.extensions:
-                    ext_dir = os.path.dirname(ext.path)
-                    for n in os.listdir(ext_dir):
-                        if n.startswith('.') or n == 'target':
-                            continue
-                        p = os.path.join(ext_dir, n)
-                        if os.path.isfile(p):
-                            self.filelist.append(p)
-                        elif os.path.isdir(p):
-                            self.filelist.extend(os.path.join(dp, f) for dp, dn, fn in os.walk(p) for f in fn)
+                if self.distribution.rust_extensions and len(self.distribution.rust_extensions) > 0:
+                    build_rust = self.get_finalized_command('build_rust')  # noqa
+                    for ext in build_rust.extensions:
+                        ext_dir = os.path.dirname(ext.path)
+                        for n in os.listdir(ext_dir):
+                            if n.startswith('.') or n == 'target':
+                                continue
+                            p = os.path.join(ext_dir, n)
+                            if os.path.isfile(p):
+                                self.filelist.append(p)
+                            elif os.path.isdir(p):
+                                self.filelist.extend(os.path.join(dp, f) for dp, dn, fn in os.walk(p) for f in fn)
 
-        # Sadly, we can't just subclass sdist and override it via cmdclass because manifest_maker calls
-        # `sdist.add_defaults` as an unbound function, not a bound method:
-        # https://github.com/pypa/setuptools/blob/9c4d383631d3951fcae0afd73b5d08ff5a262976/setuptools/command/egg_info.py#L581
-        from setuptools.command.sdist import sdist  # noqa
-        sdist.add_defaults = (lambda old: lambda sdist: _sdist_add_defaults(old, sdist))(sdist.add_defaults)  # noqa
+            # Sadly, we can't just subclass sdist and override it via cmdclass because manifest_maker calls
+            # `sdist.add_defaults` as an unbound function, not a bound method:
+            # https://github.com/pypa/setuptools/blob/9c4d383631d3951fcae0afd73b5d08ff5a262976/setuptools/command/egg_info.py#L581
+            from setuptools.command.sdist import sdist  # noqa
+            sdist.add_defaults = (lambda old: lambda sdist: _sdist_add_defaults(old, sdist))(sdist.add_defaults)  # noqa
+
+        _patch_sdist()
 
     @cached_nullary
     def sdist_patch_code(self) -> str:
@@ -11370,7 +11373,7 @@ class _PyprojectRsPackageGenerator(_PyprojectExtensionPackageGenerator):
         ext_lines: list = []
 
         for ext_dir in self.find_rs_dirs():  # noqa
-            ext_name = os.path.split(ext_dir)[1]
+            ext_name = ext_dir.replace(os.sep, '.')
             ext_lines.extend([
                 'st_rs.RustExtension(',
                 f"    '{ext_name}',",
