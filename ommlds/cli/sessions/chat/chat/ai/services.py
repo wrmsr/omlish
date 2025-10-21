@@ -66,16 +66,16 @@ class ChatChoicesStreamServiceStreamAiChatGenerator(StreamAiChatGenerator):
         lst: list[str] = []
 
         async with self._service_provider.provide_backend() as service:
+            joiner = mc.AiChoiceDeltaJoiner()
+
             async with (await service.invoke(mc.ChatChoicesStreamRequest(chat, opts))).v as st_resp:
                 async for o in st_resp:
+                    joiner.add(o.choices)
+
                     choice = check.single(o.choices)
 
                     for delta in choice.deltas:
                         if delta_callback is not None:
                             await delta_callback(delta)
 
-                    if isinstance(delta, mc.ContentAiChoiceDelta):
-                        if delta.c is not None:
-                            lst.append(check.isinstance(delta.c, str))
-
-        return [mc.AiMessage(''.join(lst))]
+        return check.single(joiner.build())

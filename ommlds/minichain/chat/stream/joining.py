@@ -5,6 +5,7 @@ from omlish import check
 from ...tools.types import ToolUse
 from ..choices.types import AiChoice
 from ..messages import AiMessage
+from ..messages import AiChat
 from ..messages import AnyAiMessage
 from ..messages import ToolUseMessage
 from .types import AiChoiceDelta
@@ -20,54 +21,50 @@ class AiChoiceDeltaJoiner:
     def __init__(self) -> None:
         super().__init__()
 
-        self._choice_lsts: list[list[list[str] | ToolUse]] = []
-        self._i = 0
+        self._seq = 0
+        self._channels: list[AiChoiceDeltaJoiner._Channel] = []
 
-    def _add_to(self, l: list[list[str] | ToolUse], d: AiChoiceDelta) -> None:
-        if isinstance(d, ContentAiChoiceDelta):
-            s = check.isinstance(d.c, str)
-            if l and isinstance(l[-1], list):
-                l[-1].append(s)
-            else:
-                l.append([s])
+    class _Channel(ta.NamedTuple):
+        deltas: list[AiChoiceDelta]
+        messages: list[AnyAiMessage]
 
-        elif isinstance(d, ToolUseAiChoiceDelta):
-            # l.append(d.tu)
-            raise NotImplementedError
+    def _build_joined(self, deltas: ta.Sequence[AiChoiceDelta]) -> AnyAiMessage:
+        dty = check.single(set(map(type, deltas)))
+
+        if dty is ContentAiChoiceDelta:
+            return AiMessage(''.join(check.isinstance(ta.cast(ContentAiChoiceDelta, d).c, str) for d in deltas))
 
         else:
-            raise TypeError(d)
+            raise TypeError(dty)
+
+    def _join_one(self, chan: _Channel) -> None:
+        if not chan.deltas:
+            return
+
+        chan.messages.append(self._build_joined(chan.deltas))
+        chan.deltas.clear()
+
+    def _add_to(self, chan: _Channel, d: AiChoiceDelta) -> None:
+        if chan.deltas and type(chan.deltas[0]) is not type(d):
+            self._join_one(chan)
+
+        chan.deltas.append(d)
 
     def add(self, choices: ta.Sequence[AiChoiceDeltas]) -> None:
         l: list[list[str] | ToolUse]
 
-        if self._i == 1:
-            for c in choices:
-                self._choice_lsts.append(l := [])
-                for d in c.deltas:
-                    self._add_to(l, d)
+        if not self._seq:
+            check.empty(self._channels)
+            self._channels.extend(self._Channel([], []) for _ in range(len(choices)))
 
-        else:
-            for l, c in zip(self._choice_lsts, choices, strict=True):
-                for d in c.deltas:
-                    self._add_to(l, d)
+        for chan, c in zip(self._channels, choices, strict=True):
+            for d in c.deltas:
+                self._add_to(chan, d)
 
-    def build(self) -> list[AiChoice]:
-        ret: list[AiChoice] = []
+        self._seq += 1
 
-        for cl in self._choice_lsts:
-            cc: list[AnyAiMessage] = []
+    def build(self) -> list[AiChat]:
+        for chan in self._channels:
+            self._join_one(chan)
 
-            for e in cl:
-                if isinstance(e, list):
-                    cc.append(AiMessage(''.join(e)))
-
-                elif isinstance(e, ToolUse):
-                    cc.append(ToolUseMessage(e))
-
-                else:
-                    raise TypeError(e)
-
-            ret.append(AiChoice(cc))
-
-        return ret
+        return [list(chan.messages) for chan in self._channels]
