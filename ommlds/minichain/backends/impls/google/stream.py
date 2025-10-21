@@ -15,6 +15,7 @@ from ....chat.choices.types import ChatChoicesOutputs
 from ....chat.messages import AiMessage
 from ....chat.messages import Message
 from ....chat.messages import SystemMessage
+from ....chat.messages import ToolUseMessage
 from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
 from ....chat.stream.services import ChatChoicesStreamRequest
@@ -70,10 +71,10 @@ class GoogleChatChoicesStreamService:
 
     def _make_msg_content(self, m: Message) -> pt.Content:
         if isinstance(m, (AiMessage, SystemMessage, UserMessage)):
-            return self._make_str_content(
+            return check.not_none(self._make_str_content(
                 check.isinstance(m.c, str),
                 role=self.ROLES_MAP[type(m)],
-            )
+            ))
 
         elif isinstance(m, ToolUseResultMessage):
             tr_resp_val: pt.Value
@@ -93,6 +94,18 @@ class GoogleChatChoicesStreamService:
                         },
                     ),
                 )],
+            )
+
+        elif isinstance(m, ToolUseMessage):
+            return pt.Content(
+                parts=[pt.Part(
+                    function_call=pt.FunctionCall(
+                        id=m.tu.id,
+                        name=m.tu.name,
+                        args=m.tu.args,
+                    ),
+                )],
+                role='model',
             )
 
         else:
