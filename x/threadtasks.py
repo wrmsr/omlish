@@ -362,7 +362,6 @@ async def _a_main() -> None:
     #
 
     say_lock = threading.Lock()
-
     say_st = time.time()
 
     def say(task_idx: int, msg: str) -> None:
@@ -400,9 +399,17 @@ async def _a_main() -> None:
 
     spin_rate = calc_spin_rate()
 
+    spin_lock = threading.Lock()
+    spin_time = 0.
+
     def spin_for(st: float) -> None:
+        bt = time.time()
         for _ in range(int(st * spin_rate)):
             _spin()
+        et = time.time() - bt
+        with spin_lock:
+            nonlocal spin_time
+            spin_time += et
 
     #
 
@@ -428,9 +435,14 @@ async def _a_main() -> None:
     tts = ThreadTasks(num_workers=2)
     await tts.start()
 
+    run_st = time.time()
     futs = [await tts.spawn(lambda: work(i)) for i in range(4)]
     for fut in futs:
         print(await fut)
+    run_et = time.time() - run_st
+
+    print(f'run time: {run_et:.2f}')
+    print(f'spin time: {spin_time:.2f}')
 
     await tts.shutdown()
 
