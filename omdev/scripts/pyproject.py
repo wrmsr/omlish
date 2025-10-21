@@ -11340,7 +11340,7 @@ class _PyprojectRsPackageGenerator(_PyprojectExtensionPackageGenerator):
             ext_lines.extend([
                 'st.Extension(',
                 f"    '{ext_name}',",
-                f"    path=['{os.path.join(ext_dir, "Cargo.toml")}'],",
+                f"    path=['{ext_dir}/Cargo.toml'],",
                 '),',
             ])
 
