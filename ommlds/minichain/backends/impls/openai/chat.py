@@ -26,8 +26,8 @@ from ....chat.choices.services import static_check_is_chat_choices_service
 from ....models.configs import ModelName
 from ....standard import ApiKey
 from ....standard import DefaultOptions
-from .format2 import OpenaiChatRequestHandler
-from .format2 import build_mc_choices_response
+from .format import OpenaiChatRequestHandler
+from .format import build_mc_choices_response
 from .names import MODEL_NAMES
 
 

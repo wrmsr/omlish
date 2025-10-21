@@ -27,8 +27,8 @@ from ....stream.services import StreamOption
 from ....stream.services import StreamResponseSink
 from ....stream.services import new_stream_response
 from .chat import OpenaiChatChoicesService
-from .format2 import OpenaiChatRequestHandler
-from .format2 import build_mc_ai_choice_delta
+from .format import OpenaiChatRequestHandler
+from .format import build_mc_ai_choice_delta
 from .names import MODEL_NAMES
 
 
