@@ -15,6 +15,7 @@ from ....chat.choices.types import ChatChoicesOutputs
 from ....chat.messages import AiMessage
 from ....chat.messages import Message
 from ....chat.messages import SystemMessage
+from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
 from ....chat.stream.services import ChatChoicesStreamRequest
 from ....chat.stream.services import ChatChoicesStreamResponse
@@ -51,17 +52,7 @@ class GoogleChatChoicesStreamService:
             self._model_name = cc.pop(self.DEFAULT_MODEL_NAME)
             self._api_key = ApiKey.pop_secret(cc, env='GEMINI_API_KEY')
 
-    def _get_msg_content(self, m: Message) -> str | None:
-        if isinstance(m, AiMessage):
-            return check.isinstance(m.c, str)
-
-        elif isinstance(m, (SystemMessage, UserMessage)):
-            return check.isinstance(m.c, str)
-
-        else:
-            raise TypeError(m)
-
-    def _make_pt_content(
+    def _make_str_content(
             self,
             s: str | None,
             *,
@@ -77,9 +68,40 @@ class GoogleChatChoicesStreamService:
             role=role,
         )
 
+    def _make_msg_content(self, m: Message) -> pt.Content:
+        if isinstance(m, (AiMessage, SystemMessage, UserMessage)):
+            return self._make_str_content(
+                check.isinstance(m.c, str),
+                role=self.ROLES_MAP[type(m)],
+            )
+
+        elif isinstance(m, ToolUseResultMessage):
+            tr_resp_val: pt.Value
+            if m.tur.c is None:
+                tr_resp_val = pt.NullValue()  # type: ignore[unreachable]
+            elif isinstance(m.tur.c, str):
+                tr_resp_val = pt.StringValue(m.tur.c)
+            else:
+                raise TypeError(m.tur.c)
+            return pt.Content(
+                parts=[pt.Part(
+                    function_response=pt.FunctionResponse(
+                        id=m.tur.id,
+                        name=m.tur.name,
+                        response={
+                            'value': tr_resp_val,
+                        },
+                    ),
+                )],
+            )
+
+        else:
+            raise TypeError(m)
+
     BASE_URL: ta.ClassVar[str] = 'https://generativelanguage.googleapis.com/v1beta/models'
 
-    ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], pt.ContentRole]] = {  # noqa
+    ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], pt.ContentRole | None]] = {  # noqa
+        SystemMessage: None,
         UserMessage: 'user',
         AiMessage: 'model',
     }
@@ -96,7 +118,7 @@ class GoogleChatChoicesStreamService:
 
         system_inst: pt.Content | None = None
         if msgs and isinstance(m0 := msgs[0], SystemMessage):
-            system_inst = self._make_pt_content(self._get_msg_content(m0))
+            system_inst = self._make_msg_content(m0)
             msgs.pop(0)
 
         g_tools: list[pt.Tool] = []
@@ -109,10 +131,7 @@ class GoogleChatChoicesStreamService:
 
         g_req = pt.GenerateContentRequest(
             contents=[
-                check.not_none(self._make_pt_content(
-                    self._get_msg_content(m),
-                    role=self.ROLES_MAP[type(m)],
-                ))
+                self._make_msg_content(m)
                 for m in msgs
             ],
             tools=g_tools or None,
