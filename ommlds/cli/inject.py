@@ -1,4 +1,5 @@
 import os.path
+import typing as ta
 
 from omdev.home.paths import get_home_paths
 from omlish import inject as inj
@@ -7,9 +8,8 @@ from omlish import lang
 
 with lang.auto_proxy_import(globals()):
     from . import state
-    from .backends import inject as backends_inj
-    from .sessions import base as sessions_base
-    from .sessions import inject as sessions_inj
+    from .backends import inject as _backends
+    from .sessions import inject as _sessions
 
 
 ##
@@ -30,15 +30,15 @@ def _provide_state_storage() -> 'state.StateStorage':
 
 def bind_main(
         *,
-        session_cfg: 'sessions_base.Session.Config',
+        session_cfg: ta.Any,
         enable_backend_strings: bool = False,
 ) -> inj.Elements:
     els: list[inj.Elemental] = [
-        backends_inj.bind_backends(
+        _backends.bind_backends(
             enable_backend_strings=enable_backend_strings,
         ),
 
-        sessions_inj.bind_sessions(session_cfg),
+        _sessions.bind_sessions(session_cfg),
     ]
 
     #

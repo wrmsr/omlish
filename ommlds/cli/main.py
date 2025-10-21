@@ -24,9 +24,9 @@ from omlish.subprocesses.sync import subprocesses
 from .. import minichain as mc
 from .inject import bind_main
 from .sessions.base import Session
-from .sessions.chat.session import ChatSession
-from .sessions.completion.completion import CompletionSession
-from .sessions.embedding.embedding import EmbeddingSession
+from .sessions.chat.configs import ChatConfig
+from .sessions.completion.configs import CompletionConfig
+from .sessions.embedding.configs import EmbeddingConfig
 
 
 if ta.TYPE_CHECKING:
@@ -125,16 +125,16 @@ async def _a_main(args: ta.Any = None) -> None:
 
     #
 
-    session_cfg: Session.Config
+    session_cfg: ta.Any
 
     if args.embed:
-        session_cfg = EmbeddingSession.Config(
+        session_cfg = EmbeddingConfig(
             check.not_none(content),  # noqa
             backend=args.backend,
         )
 
     elif args.completion:
-        session_cfg = CompletionSession.Config(
+        session_cfg = CompletionConfig(
             check.not_none(content),  # noqa
             backend=args.backend,
         )
@@ -142,7 +142,7 @@ async def _a_main(args: ta.Any = None) -> None:
     else:
         from ..minichain.lib.code.prompts import CODE_AGENT_SYSTEM_PROMPT
 
-        session_cfg = ChatSession.Config(
+        session_cfg = ChatConfig(
             backend=args.backend,
             model_name=args.model_name,
             state='ephemeral' if args.ephemeral else 'new' if args.new else 'continue',
@@ -171,7 +171,7 @@ async def _a_main(args: ta.Any = None) -> None:
 
     with inj.create_managed_injector(bind_main(
             session_cfg=session_cfg,
-            enable_backend_strings=isinstance(session_cfg, ChatSession.Config),
+            enable_backend_strings=isinstance(session_cfg, ChatConfig),
     )) as injector:
         await injector[Session].run()
 

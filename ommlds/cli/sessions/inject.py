@@ -1,21 +1,38 @@
-from omlish import inject as inj
+import typing as ta
 
-from .base import Session
-from .chat.session import ChatSession
+from omlish import inject as inj
+from omlish import lang
+
+
+with lang.auto_proxy_import(globals()):
+    from .chat import configs as _chat_cfgs
+    from .chat import inject as _chat_inj
+    from .completion import configs as _completion_cfgs
+    from .completion import inject as _completion_inj
+    from .embedding import configs as _embedding_cfgs
+    from .embedding import inject as _embedding_inj
 
 
 ##
 
 
-def bind_sessions(session_cfg: Session.Config) -> inj.Elements:
-    els: list[inj.Elemental] = [
-        inj.bind(session_cfg),
-        inj.bind(session_cfg.configurable_cls, singleton=True),
-        inj.bind(Session, to_key=session_cfg.configurable_cls),
-    ]
+def bind_sessions(cfg: ta.Any) -> inj.Elements:
+    els: list[inj.Elemental] = []
 
-    if isinstance(session_cfg, ChatSession.Config):
-        from .chat.inject import bind_chat
-        els.append(bind_chat(session_cfg))  # noqa
+    #
+
+    if isinstance(cfg, _chat_cfgs.ChatConfig):
+        els.append(_chat_inj.bind_chat(cfg))
+
+    elif isinstance(cfg, _completion_cfgs.CompletionConfig):
+        els.append(_completion_inj.bind_completion(cfg))
+
+    elif isinstance(cfg, _embedding_cfgs.EmbeddingConfig):
+        els.append(_embedding_inj.bind_embedding(cfg))
+
+    else:
+        raise TypeError(cfg)
+
+    #
 
     return inj.as_elements(*els)

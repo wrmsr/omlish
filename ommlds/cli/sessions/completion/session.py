@@ -5,22 +5,17 @@ from omlish import lang
 
 from .... import minichain as mc
 from ..base import Session
+from .configs import DEFAULT_COMPLETION_MODEL_BACKEND
+from .configs import CompletionConfig
 
 
 ##
 
 
-DEFAULT_COMPLETION_MODEL_BACKEND = 'openai'
-
-
 class CompletionSession(Session['CompletionSession.Config']):
     @dc.dataclass(frozen=True)
-    class Config(Session.Config):
-        content: mc.Content
-
-        _: dc.KW_ONLY
-
-        backend: str | None = None
+    class Config(Session.Config, CompletionConfig):
+        pass
 
     def __init__(
             self,

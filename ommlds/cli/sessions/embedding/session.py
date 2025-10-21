@@ -5,22 +5,17 @@ from omlish.formats import json
 
 from .... import minichain as mc
 from ..base import Session
+from .configs import DEFAULT_EMBEDDING_MODEL_BACKEND
+from .configs import EmbeddingConfig
 
 
 ##
 
 
-DEFAULT_EMBEDDING_MODEL_BACKEND = 'openai'
-
-
 class EmbeddingSession(Session['EmbeddingSession.Config']):
     @dc.dataclass(frozen=True)
-    class Config(Session.Config):
-        content: mc.Content
-
-        _: dc.KW_ONLY
-
-        backend: str | None = None
+    class Config(Session.Config, EmbeddingConfig):
+        pass
 
     def __init__(
             self,
