@@ -14,8 +14,10 @@ import os
 import socketserver
 import sys
 import threading
+import typing as ta
 import webbrowser
 
+from omlish import check
 from omlish import lang
 
 
@@ -69,7 +71,15 @@ HTML_TEMPLATE = """
 """
 
 
-def view_json(filepath: str, port: int) -> None:
+def view_json(
+        filepath: str,
+        port: int,
+        *,
+        mode: ta.Literal['jsonl', 'json5', 'json', None] = None,
+) -> None:
+    if filepath == '-':
+        filepath = '/dev/stdin'
+
     if not os.path.exists(filepath):
         print(f"Error: File not found at '{filepath}'", file=sys.stderr)
         return
@@ -81,13 +91,21 @@ def view_json(filepath: str, port: int) -> None:
         print(f'Error: Invalid JSON file. {e}', file=sys.stderr)
         return
 
-    if filepath.endswith('.jsonl'):
+    if mode is None:
+        if filepath.endswith('.jsonl'):
+            mode = 'json'
+        elif filepath.endswith('.json5'):
+            mode = 'json5'
+
+    if mode == 'jsonl':
         json_content = [json.loads(sl) for l in raw_content.splitlines() if (sl := l.strip())]
-    elif filepath.endswith('.json5'):
+    elif mode == 'json5':
         from omlish.formats import json5
         json_content = json5.loads(raw_content)
-    else:
+    elif mode in ('json', None):
         json_content = json.loads(raw_content)
+    else:
+        raise ValueError(mode)
 
     # Use compact dumps for embedding in JS, it's more efficient
     json_string = json.dumps(json_content)
@@ -142,9 +160,17 @@ def _main() -> None:
         default=(default_port := 8999),
         help=f'The port to run the web server on. Defaults to {default_port}.',
     )
+    parser.add_argument('-l', '--lines', action='store_true')
+    parser.add_argument('-5', '--five', action='store_true')
     args = parser.parse_args()
 
-    view_json(args.filepath, args.port)
+    check.state(not (args.lines and args.five))
+
+    view_json(
+        args.filepath,
+        args.port,
+        mode='jsonl' if args.lines else 'json5' if args.five else None,
+    )
 
 
 if __name__ == '__main__':
