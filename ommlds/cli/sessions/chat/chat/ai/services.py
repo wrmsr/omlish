@@ -63,8 +63,6 @@ class ChatChoicesStreamServiceStreamAiChatGenerator(StreamAiChatGenerator):
     ) -> mc.AiChat:
         opts = self._options() if self._options is not None else []
 
-        lst: list[str] = []
-
         async with self._service_provider.provide_backend() as service:
             joiner = mc.AiChoiceDeltaJoiner()
 

@@ -1,11 +1,11 @@
 import typing as ta
 
 from omlish import check
+from omlish.formats import json
 
 from ...tools.types import ToolUse
-from ..choices.types import AiChoice
-from ..messages import AiMessage
 from ..messages import AiChat
+from ..messages import AiMessage
 from ..messages import AnyAiMessage
 from ..messages import ToolUseMessage
 from .types import AiChoiceDelta
@@ -29,10 +29,24 @@ class AiChoiceDeltaJoiner:
         messages: list[AnyAiMessage]
 
     def _build_joined(self, deltas: ta.Sequence[AiChoiceDelta]) -> AnyAiMessage:
-        dty = check.single(set(map(type, deltas)))
+        dty = check.single(set(map(type, check.not_empty(deltas))))
 
         if dty is ContentAiChoiceDelta:
-            return AiMessage(''.join(check.isinstance(ta.cast(ContentAiChoiceDelta, d).c, str) for d in deltas))
+            cds = ta.cast(ta.Sequence[ContentAiChoiceDelta], deltas)
+            return AiMessage(''.join(check.isinstance(cd.c, str) for cd in cds))
+
+        elif dty is ToolUseAiChoiceDelta:
+            tds = ta.cast(ta.Sequence[ToolUseAiChoiceDelta], deltas)
+            for td in ta.cast(ta.Sequence[ToolUseAiChoiceDelta], deltas)[1:]:
+                check.none(td.id)
+                check.none(td.name)
+            ra = ''.join(filter(None, (td.raw_args for td in tds)))
+            return ToolUseMessage(ToolUse(
+                id=tds[0].id,
+                name=check.non_empty_str(tds[0].name),
+                args=json.loads(ra),
+                raw_args=ra,
+            ))
 
         else:
             raise TypeError(dty)
@@ -51,8 +65,6 @@ class AiChoiceDeltaJoiner:
         chan.deltas.append(d)
 
     def add(self, choices: ta.Sequence[AiChoiceDeltas]) -> None:
-        l: list[list[str] | ToolUse]
-
         if not self._seq:
             check.empty(self._channels)
             self._channels.extend(self._Channel([], []) for _ in range(len(choices)))

@@ -3,6 +3,7 @@ from omlish import dataclasses as dc
 from ...services import Response
 from ..choices.services import ChatChoicesRequest
 from ..choices.services import static_check_is_chat_choices_service
+from ..choices.types import AiChoice
 from ..choices.types import AiChoices
 from .joining import AiChoiceDeltaJoiner
 from .services import ChatChoicesOutputs
@@ -31,4 +32,4 @@ class ChatChoicesStreamServiceChatChoicesService:
         # check.state(resp_v.is_done)
 
         # FIXME: outputs lol
-        return Response(joiner.build())
+        return Response([AiChoice(ms) for ms in joiner.build()])
