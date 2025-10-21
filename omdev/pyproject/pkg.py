@@ -580,11 +580,11 @@ class _PyprojectRsPackageGenerator(_PyprojectExtensionPackageGenerator):
         ext_lines: list = []
 
         for ext_dir in self.find_rs_dirs():  # noqa
-            ext_name = ext_dir.rpartition('.')[0].replace(os.sep, '.')
+            ext_name = os.path.split(ext_dir)[1]
             ext_lines.extend([
-                'st.Extension(',
+                'st_rs.RustExtension(',
                 f"    '{ext_name}',",
-                f"    path=['{ext_dir}/Cargo.toml'],",
+                f"    path='{ext_dir}/Cargo.toml',",
                 '),',
             ])
 
@@ -594,7 +594,7 @@ class _PyprojectRsPackageGenerator(_PyprojectExtensionPackageGenerator):
             '',
             '',
             'st.setup(',
-            '    rust_extensions==[',
+            '    rust_extensions=[',
             *['        ' + l for l in ext_lines],
             '    ],',
             ')',
