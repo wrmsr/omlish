@@ -171,6 +171,21 @@
     "file": "ommlds/minichain/backends/impls/llamacpp/chat.py",
     "line": 33,
     "value": {
+      "!.minichain.backends.strings.manifests.BackendStringsManifest": {
+        "service_cls_names": [
+          "ChatChoicesService"
+        ],
+        "backend_name": "llamacpp",
+        "model_names": null
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.impls.llamacpp.chat",
+    "attr": null,
+    "file": "ommlds/minichain/backends/impls/llamacpp/chat.py",
+    "line": 42,
+    "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.llamacpp.chat",
         "attr": "LlamacppChatChoicesService",
@@ -200,6 +215,21 @@
     "attr": null,
     "file": "ommlds/minichain/backends/impls/llamacpp/stream.py",
     "line": 32,
+    "value": {
+      "!.minichain.backends.strings.manifests.BackendStringsManifest": {
+        "service_cls_names": [
+          "ChatChoicesStreamService"
+        ],
+        "backend_name": "llamacpp",
+        "model_names": null
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.impls.llamacpp.stream",
+    "attr": null,
+    "file": "ommlds/minichain/backends/impls/llamacpp/stream.py",
+    "line": 41,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.llamacpp.stream",
@@ -450,7 +480,22 @@
     "module": ".minichain.backends.impls.transformers.transformers",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/transformers/transformers.py",
-    "line": 43,
+    "line": 36,
+    "value": {
+      "!.minichain.backends.strings.manifests.BackendStringsManifest": {
+        "service_cls_names": [
+          "ChatChoicesService"
+        ],
+        "backend_name": "transformers",
+        "model_names": null
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.impls.transformers.transformers",
+    "attr": null,
+    "file": "ommlds/minichain/backends/impls/transformers/transformers.py",
+    "line": 52,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.transformers.transformers",
@@ -467,7 +512,7 @@
     "module": ".minichain.backends.impls.transformers.transformers",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/transformers/transformers.py",
-    "line": 131,
+    "line": 140,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.transformers.transformers",

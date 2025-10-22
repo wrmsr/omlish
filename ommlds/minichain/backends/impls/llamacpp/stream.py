@@ -29,6 +29,15 @@ from .format import get_msg_content
 ##
 
 
+# @omlish-manifest $.minichain.backends.strings.manifests.BackendStringsManifest(
+#     ['ChatChoicesStreamService'],
+#     'llamacpp',
+# )
+
+
+##
+
+
 # @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
 #     name='llamacpp',
 #     type='ChatChoicesStreamService',
@@ -76,18 +85,25 @@ class LlamacppChatChoicesStreamService(lang.ExitStacked):
             rs.enter_context(lang.defer(close_output))
 
             async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ta.Sequence[ChatChoicesOutputs] | None:
+                last_role: ta.Any = None
+
                 for chunk in output:
                     check.state(chunk['object'] == 'chat.completion.chunk')
-                    l: list[AiChoiceDeltas] = []
-                    for choice in chunk['choices']:
-                        # FIXME: check role is assistant
-                        # FIXME: stop reason
-                        if not (delta := choice.get('delta', {})):
-                            continue
-                        if not (content := delta.get('content', '')):
-                            continue
-                        l.append(AiChoiceDeltas([ContentAiChoiceDelta(content)]))
-                    await sink.emit(AiChoicesDeltas(l))
+
+                    choice = check.single(chunk['choices'])
+
+                    if not (delta := choice.get('delta', {})):
+                        continue
+
+                    # FIXME: check role is assistant
+                    if (role := delta.get('role')) != last_role:
+                        last_role = role
+
+                    # FIXME: stop reason
+
+                    if (content := delta.get('content', '')):
+                        await sink.emit(AiChoicesDeltas([AiChoiceDeltas([ContentAiChoiceDelta(content)])]))
+
                 return None
 
             return await new_stream_response(rs, inner)

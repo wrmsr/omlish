@@ -30,6 +30,15 @@ from .format import get_msg_content
 ##
 
 
+# @omlish-manifest $.minichain.backends.strings.manifests.BackendStringsManifest(
+#     ['ChatChoicesService'],
+#     'llamacpp',
+# )
+
+
+##
+
+
 # @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
 #     name='llamacpp',
 #     type='ChatChoicesService',

@@ -33,6 +33,15 @@ from ...impls.huggingface.configs import HuggingfaceHubToken
 ##
 
 
+# @omlish-manifest $.minichain.backends.strings.manifests.BackendStringsManifest(
+#     ['ChatChoicesService'],
+#     'transformers',
+# )
+
+
+##
+
+
 class TransformersPipelineKwargs(Config, tv.ScalarTypedValue[ta.Mapping[str, ta.Any]]):
     pass
 
@@ -171,11 +180,16 @@ class TransformersChatChoicesService(lang.ExitStacked):
 
         pipeline = self._load_pipeline()
 
-        output = pipeline(
-            [
-                build_chat_message(m)
-                for m in request.v
-            ],
-        )
+        inputs = [
+            build_chat_message(m)
+            for m in request.v
+        ]
 
-        return ChatChoicesResponse([AiChoice([output])])
+        outputs = pipeline(inputs)
+
+        gts = check.single(outputs)['generated_text']
+        ugt, agt = gts
+        check.state(ugt['role'] == 'user')
+        check.state(agt['role'] == 'assistant')
+
+        return ChatChoicesResponse([AiChoice([AiMessage(agt['content'])])])
