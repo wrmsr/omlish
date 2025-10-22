@@ -21,7 +21,7 @@ torch==2.9.0
 torchvision==0.24.0
 # torchcodec==0.7.0
 
-diffusers==0.35.2
+diffusers==0.35.2  # @omlish-venv !14t !14dt
 
 scipy==1.16.2
 scikit-learn==1.7.2
@@ -35,7 +35,7 @@ sqlite-vec==0.1.6
 
 pytesseract==0.3.13
 
-ddgs==9.6.1  # @omlish-venv !13t !13dt
+ddgs==9.6.1
 
 gguf==0.17.1
 
@@ -60,7 +60,7 @@ blobfile==3.0.0
 ##
 # diag
 
-yappi==1.6.10
+yappi==1.6.10  # @omlish-venv !14
 pyinstrument==5.1.1
 
 

@@ -229,11 +229,12 @@
     "module": ".minichain.backends.impls.mlx.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/mlx/chat.py",
-    "line": 28,
+    "line": 39,
     "value": {
       "!.minichain.backends.strings.manifests.BackendStringsManifest": {
         "service_cls_names": [
-          "ChatChoicesService"
+          "ChatChoicesService",
+          "ChatChoicesStreamService"
         ],
         "backend_name": "mlx",
         "model_names": null
@@ -244,7 +245,7 @@
     "module": ".minichain.backends.impls.mlx.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/mlx/chat.py",
-    "line": 37,
+    "line": 133,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.mlx.chat",
@@ -256,28 +257,13 @@
     }
   },
   {
-    "module": ".minichain.backends.impls.mlx.stream",
+    "module": ".minichain.backends.impls.mlx.chat",
     "attr": null,
-    "file": "ommlds/minichain/backends/impls/mlx/stream.py",
-    "line": 14,
-    "value": {
-      "!.minichain.backends.strings.manifests.BackendStringsManifest": {
-        "service_cls_names": [
-          "ChatChoicesStreamService"
-        ],
-        "backend_name": "mlx",
-        "model_names": null
-      }
-    }
-  },
-  {
-    "module": ".minichain.backends.impls.mlx.stream",
-    "attr": null,
-    "file": "ommlds/minichain/backends/impls/mlx/stream.py",
-    "line": 23,
+    "file": "ommlds/minichain/backends/impls/mlx/chat.py",
+    "line": 164,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
-        "module": "ommlds.minichain.backends.impls.mlx.stream",
+        "module": "ommlds.minichain.backends.impls.mlx.chat",
         "attr": "MlxChatChoicesStreamService",
         "name": "mlx",
         "aliases": null,

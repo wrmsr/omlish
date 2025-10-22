@@ -42,6 +42,9 @@ class AiChoiceDelta(lang.Sealed, lang.Abstract):
     pass
 
 
+#
+
+
 @dc.dataclass(frozen=True)
 class ContentAiChoiceDelta(AiChoiceDelta, lang.Final):
     c: Content
