@@ -6750,6 +6750,12 @@ class NetworkInterface(
         shape_name='AssociatedSubnetList',
     ))
 
+    availability_zone_id: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='AvailabilityZoneId',
+        serialization_name='availabilityZoneId',
+        shape_name='String',
+    ))
+
 
 @_dc.dataclass(frozen=True, kw_only=True)
 class NeuronInfo(
