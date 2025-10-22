@@ -52,7 +52,7 @@ tree-sitter-python==0.25.0
 watchdog==6.0.0
 
 pyright[nodejs]==1.1.406
-basedpyright==1.31.7
+basedpyright==1.32.0
 
 blobfile==3.0.0
 
@@ -68,5 +68,5 @@ pyinstrument==5.1.1
 # jupyter
 
 jupyter==1.1.1
-jupyterlab==4.4.9
+jupyterlab==4.4.10
 notebook==7.4.7

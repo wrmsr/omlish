@@ -79,7 +79,7 @@ class Project(ProjectBase):
         ],
 
         'misc': [
-            'wrapt ~= 1.17',
+            'wrapt ~= 2.0',
         ],
 
         'secrets': [
@@ -96,7 +96,7 @@ class Project(ProjectBase):
             # 'psycopg ~= 3.2',
 
             'pymysql ~= 1.1',
-            # 'mysql-connector-python ~= 9.3',
+            # 'mysql-connector-python ~= 9.5',
             # 'mysqlclient ~= 2.2',
 
             'aiomysql ~= 0.3',
