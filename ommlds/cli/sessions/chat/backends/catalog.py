@@ -32,7 +32,7 @@ class _CatalogBackendProvider(BackendProvider[ServiceT], lang.Abstract):
     @contextlib.asynccontextmanager
     async def _provide_backend(self, cls: type[ServiceT]) -> ta.AsyncIterator[ServiceT]:
         service: ServiceT
-        async with lang.async_maybe_managing(self._catalog.get_backend(
+        async with lang.async_or_sync_maybe_managing(self._catalog.get_backend(
                 cls,
                 self._name,
                 *(self._configs or []),

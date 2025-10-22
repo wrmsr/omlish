@@ -1,4 +1,16 @@
 import argparse
+import typing as ta
+
+from omlish import dataclasses as dc
+
+
+##
+
+
+class ToolPack:
+    # bind() -> inj.Elements
+
+    pass
 
 
 ##

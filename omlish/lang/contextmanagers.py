@@ -176,6 +176,18 @@ async def async_maybe_managing(obj: T) -> ta.AsyncGenerator[T]:
         yield obj
 
 
+@contextlib.asynccontextmanager
+async def async_or_sync_maybe_managing(obj: T) -> ta.AsyncGenerator[T]:
+    if isinstance(obj, ta.AsyncContextManager):
+        async with obj:
+            yield obj
+    elif isinstance(obj, ta.ContextManager):
+        with obj:
+            yield obj
+    else:
+        yield obj
+
+
 ##
 
 

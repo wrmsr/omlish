@@ -174,6 +174,7 @@ with _auto_proxy_init(globals(), update_exports=True):
 
         maybe_managing,
         async_maybe_managing,
+        async_or_sync_maybe_managing,
 
         disposing,
         breakpoint_on_exception,
