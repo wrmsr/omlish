@@ -52,8 +52,8 @@ class MlxChatChoicesService(lang.ExitStacked):
         # 'mlx-community/Qwen2.5-0.5B-4bit'
         # 'mlx-community/Qwen2.5-32B-Instruct-8bit'
         # 'mlx-community/Qwen2.5-Coder-32B-Instruct-8bit'
-        # 'mlx-community/mamba-2.8b-hf-f16'
         # 'mlx-community/Qwen3-30B-A3B-6bit'
+        # 'mlx-community/mamba-2.8b-hf-f16'
     )
 
     def __init__(self, *configs: Config) -> None:
@@ -70,10 +70,7 @@ class MlxChatChoicesService(lang.ExitStacked):
     }
 
     def _get_msg_content(self, m: Message) -> str | None:
-        if isinstance(m, AiMessage):
-            return check.isinstance(m.c, str)
-
-        elif isinstance(m, (SystemMessage, UserMessage)):
+        if isinstance(m, (AiMessage, SystemMessage, UserMessage)):
             return check.isinstance(m.c, str)
 
         else:

@@ -256,6 +256,36 @@
     }
   },
   {
+    "module": ".minichain.backends.impls.mlx.stream",
+    "attr": null,
+    "file": "ommlds/minichain/backends/impls/mlx/stream.py",
+    "line": 14,
+    "value": {
+      "!.minichain.backends.strings.manifests.BackendStringsManifest": {
+        "service_cls_names": [
+          "ChatChoicesStreamService"
+        ],
+        "backend_name": "mlx",
+        "model_names": null
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.impls.mlx.stream",
+    "attr": null,
+    "file": "ommlds/minichain/backends/impls/mlx/stream.py",
+    "line": 23,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "ommlds.minichain.backends.impls.mlx.stream",
+        "attr": "MlxChatChoicesStreamService",
+        "name": "mlx",
+        "aliases": null,
+        "type": "ChatChoicesStreamService"
+      }
+    }
+  },
+  {
     "module": ".minichain.backends.impls.openai.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/openai/chat.py",
