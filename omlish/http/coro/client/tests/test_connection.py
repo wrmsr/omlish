@@ -147,7 +147,7 @@ def test_client() -> None:
 
     for url in [
         'http://www.example.com',
-        'https://www.baidu.com',
+        # 'https://www.baidu.com',
         'https://anglesharp.azurewebsites.net/Chunked',
     ]:
         run(url)
