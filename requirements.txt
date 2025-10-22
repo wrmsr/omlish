@@ -79,7 +79,7 @@ httpx[http2]==0.28.1  # FIXME: ,zstd,cli (dev only)
 trio==0.31.0
 trio-asyncio==0.15.0; python_version < "3.14"
 
-aiomysql==0.2.0
+aiomysql==0.3.2
 aiosqlite==0.21.0
 asyncpg==0.30.0  # @omlish-venv !13t !13dt !14t  # won't build
 

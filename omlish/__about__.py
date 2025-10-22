@@ -99,7 +99,7 @@ class Project(ProjectBase):
             # 'mysql-connector-python ~= 9.3',
             # 'mysqlclient ~= 2.2',
 
-            'aiomysql ~= 0.2',
+            'aiomysql ~= 0.3',
             'aiosqlite ~= 0.21',
             'asyncpg ~= 0.30',
 
