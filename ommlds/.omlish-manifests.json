@@ -480,11 +480,12 @@
     "module": ".minichain.backends.impls.transformers.transformers",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/transformers/transformers.py",
-    "line": 36,
+    "line": 39,
     "value": {
       "!.minichain.backends.strings.manifests.BackendStringsManifest": {
         "service_cls_names": [
-          "ChatChoicesService"
+          "ChatChoicesService",
+          "ChatChoicesStreamService"
         ],
         "backend_name": "transformers",
         "model_names": null
@@ -495,7 +496,7 @@
     "module": ".minichain.backends.impls.transformers.transformers",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/transformers/transformers.py",
-    "line": 52,
+    "line": 55,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.transformers.transformers",
@@ -512,7 +513,7 @@
     "module": ".minichain.backends.impls.transformers.transformers",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/transformers/transformers.py",
-    "line": 140,
+    "line": 182,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.transformers.transformers",
@@ -522,6 +523,21 @@
           "tfm"
         ],
         "type": "ChatChoicesService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.impls.transformers.transformers",
+    "attr": null,
+    "file": "ommlds/minichain/backends/impls/transformers/transformers.py",
+    "line": 212,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "ommlds.minichain.backends.impls.transformers.transformers",
+        "attr": "TransformersChatChoicesStreamService",
+        "name": "transformers",
+        "aliases": null,
+        "type": "ChatChoicesStreamService"
       }
     }
   },

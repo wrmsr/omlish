@@ -22,6 +22,9 @@ from ....chat.messages import SystemMessage
 from ....chat.messages import ToolUseMessage
 from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
+from ....chat.stream.services import ChatChoicesStreamRequest
+from ....chat.stream.services import ChatChoicesStreamResponse
+from ....chat.stream.services import static_check_is_chat_choices_stream_service
 from ....completion import CompletionRequest
 from ....completion import CompletionResponse
 from ....completion import static_check_is_completion_service
@@ -34,7 +37,7 @@ from ...impls.huggingface.configs import HuggingfaceHubToken
 
 
 # @omlish-manifest $.minichain.backends.strings.manifests.BackendStringsManifest(
-#     ['ChatChoicesService'],
+#     ['ChatChoicesService', 'ChatChoicesStreamService'],
 #     'transformers',
 # )
 
@@ -137,13 +140,10 @@ def build_chat_message(m: Message) -> ta.Mapping[str, ta.Any]:
         raise TypeError(m)
 
 
-# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
-#     name='transformers',
-#     aliases=['tfm'],
-#     type='ChatChoicesService',
-# )
-@static_check_is_chat_choices_service
-class TransformersChatChoicesService(lang.ExitStacked):
+##
+
+
+class BaseTransformersChatChoicesService(lang.ExitStacked):
     DEFAULT_MODEL: ta.ClassVar[str] = (
         'meta-llama/Llama-3.2-1B-Instruct'
     )
@@ -175,6 +175,17 @@ class TransformersChatChoicesService(lang.ExitStacked):
             **pkw,
         )
 
+
+##
+
+
+# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
+#     name='transformers',
+#     aliases=['tfm'],
+#     type='ChatChoicesService',
+# )
+@static_check_is_chat_choices_service
+class TransformersChatChoicesService(BaseTransformersChatChoicesService):
     async def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
         check.empty(request.options)
 
@@ -193,3 +204,50 @@ class TransformersChatChoicesService(lang.ExitStacked):
         check.state(agt['role'] == 'assistant')
 
         return ChatChoicesResponse([AiChoice([AiMessage(agt['content'])])])
+
+
+##
+
+
+# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
+#     name='transformers',
+#     type='ChatChoicesStreamService',
+# )
+@static_check_is_chat_choices_stream_service
+class TransformersChatChoicesStreamService(BaseTransformersChatChoicesService):
+    async def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
+        check.empty(request.options)
+
+        pipeline = self._load_pipeline()  # noqa
+
+        inputs = [  # noqa
+            build_chat_message(m)
+            for m in request.v
+        ]
+
+        # async with UseResources.or_new(request.options) as rs:
+        #     async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ta.Sequence[ChatChoicesOutputs] | None:
+        #         last_role: ta.Any = None
+        #
+        #         for chunk in output:
+        #             check.state(chunk['object'] == 'chat.completion.chunk')
+        #
+        #             choice = check.single(chunk['choices'])
+        #
+        #             if not (delta := choice.get('delta', {})):
+        #                 continue
+        #
+        #             # FIXME: check role is assistant
+        #             if (role := delta.get('role')) != last_role:
+        #                 last_role = role
+        #
+        #             # FIXME: stop reason
+        #
+        #             if (content := delta.get('content', '')):
+        #                 await sink.emit(AiChoicesDeltas([AiChoiceDeltas([ContentAiChoiceDelta(content)])]))
+        #
+        #         return None
+        #
+        #     return await new_stream_response(rs, inner)
+
+        raise NotImplementedError
