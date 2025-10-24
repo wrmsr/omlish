@@ -50,7 +50,7 @@ def _main() -> None:
         **model_inputs,
     }
 
-    # Start a separate thread for model generation to allow streaming output
+    # Start a separate thread for model generation to allow streaming output1.10
     thread = threading.Thread(
         target=model.generate,
         kwargs=generation_args,
