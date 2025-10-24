@@ -21,7 +21,7 @@ class CancellableTextStreamer(tfm.TextStreamer):
             callback: Callback,
             *,
             skip_prompt: bool = False,
-            **decode_kwargs: ta.Any
+            **decode_kwargs: ta.Any,
     ) -> None:
         super().__init__(
             tokenizer,
