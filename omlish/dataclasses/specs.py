@@ -216,6 +216,7 @@ class ClassSpec(_SpecBase, lang.Final):
 
     repr_id: bool = False
     terse_repr: bool = False
+    default_repr_fn: ReprFn | None = None
 
     allow_redundant_decorator: bool = False
 

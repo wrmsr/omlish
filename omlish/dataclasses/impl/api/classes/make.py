@@ -4,6 +4,7 @@ import sys
 import types
 import typing as ta
 
+from ....specs import ReprFn
 from .decorator import dataclass
 
 
@@ -53,6 +54,7 @@ def make_dataclass(  # noqa
 
         repr_id: bool | None = None,
         terse_repr: bool | None = None,
+        default_repr_fn: ReprFn | None = None,
 
         allow_redundant_decorator: bool | None = None,
 
@@ -174,6 +176,7 @@ def make_dataclass(  # noqa
 
         repr_id=repr_id,
         terse_repr=terse_repr,
+        default_repr_fn=default_repr_fn,
 
         allow_redundant_decorator=allow_redundant_decorator,
     )

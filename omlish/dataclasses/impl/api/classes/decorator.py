@@ -10,6 +10,7 @@ from ..... import lang
 from ...._internals import STD_FIELDS_ATTR
 from ...._internals import STD_PARAMS_ATTR
 from ....specs import ClassSpec
+from ....specs import ReprFn
 from ...processing.driving import drive_cls_processing
 from ...utils import class_decorator
 from ..fields.building import build_cls_std_fields
@@ -53,6 +54,7 @@ def dataclass(
 
         repr_id: bool | None = None,
         terse_repr: bool | None = None,
+        default_repr_fn: ReprFn | None = None,
 
         allow_redundant_decorator: bool | None = None,
 
@@ -158,6 +160,7 @@ def dataclass(
 
                 repr_id=repr_id,
                 terse_repr=terse_repr,
+                default_repr_fn=default_repr_fn,
 
                 allow_redundant_decorator=allow_redundant_decorator,
             ),

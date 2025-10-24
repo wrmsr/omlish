@@ -16,6 +16,7 @@ from ....chat.choices.services import ChatChoicesRequest
 from ....chat.choices.services import ChatChoicesResponse
 from ....chat.choices.services import static_check_is_chat_choices_service
 from ....chat.choices.types import AiChoice
+from ....chat.choices.types import ChatChoicesOutputs
 from ....chat.messages import AiMessage
 from ....chat.messages import Message
 from ....chat.messages import SystemMessage
@@ -25,11 +26,17 @@ from ....chat.messages import UserMessage
 from ....chat.stream.services import ChatChoicesStreamRequest
 from ....chat.stream.services import ChatChoicesStreamResponse
 from ....chat.stream.services import static_check_is_chat_choices_stream_service
+from ....chat.stream.types import AiChoiceDeltas  # noqa
+from ....chat.stream.types import AiChoicesDeltas  # noqa
+from ....chat.stream.types import ContentAiChoiceDelta  # noqa
 from ....completion import CompletionRequest
 from ....completion import CompletionResponse
 from ....completion import static_check_is_completion_service
 from ....configs import Config
 from ....models.configs import ModelPath
+from ....resources import UseResources
+from ....stream.services import StreamResponseSink
+from ....stream.services import new_stream_response
 from ...impls.huggingface.configs import HuggingfaceHubToken
 
 
@@ -225,29 +232,29 @@ class TransformersChatChoicesStreamService(BaseTransformersChatChoicesService):
             for m in request.v
         ]
 
-        # async with UseResources.or_new(request.options) as rs:
-        #     async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ta.Sequence[ChatChoicesOutputs] | None:
-        #         last_role: ta.Any = None
-        #
-        #         for chunk in output:
-        #             check.state(chunk['object'] == 'chat.completion.chunk')
-        #
-        #             choice = check.single(chunk['choices'])
-        #
-        #             if not (delta := choice.get('delta', {})):
-        #                 continue
-        #
-        #             # FIXME: check role is assistant
-        #             if (role := delta.get('role')) != last_role:
-        #                 last_role = role
-        #
-        #             # FIXME: stop reason
-        #
-        #             if (content := delta.get('content', '')):
-        #                 await sink.emit(AiChoicesDeltas([AiChoiceDeltas([ContentAiChoiceDelta(content)])]))
-        #
-        #         return None
-        #
-        #     return await new_stream_response(rs, inner)
+        async with UseResources.or_new(request.options) as rs:
+            async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ta.Sequence[ChatChoicesOutputs] | None:
+                # last_role: ta.Any = None
+                #
+                # for chunk in output:
+                #     check.state(chunk['object'] == 'chat.completion.chunk')
+                #
+                #     choice = check.single(chunk['choices'])
+                #
+                #     if not (delta := choice.get('delta', {})):
+                #         continue
+                #
+                #     # FIXME: check role is assistant
+                #     if (role := delta.get('role')) != last_role:
+                #         last_role = role
+                #
+                #     # FIXME: stop reason
+                #
+                #     if (content := delta.get('content', '')):
+                #         await sink.emit(AiChoicesDeltas([AiChoiceDeltas([ContentAiChoiceDelta(content)])]))
+                #
+                # return None
 
-        raise NotImplementedError
+                raise NotImplementedError
+
+            return await new_stream_response(rs, inner)

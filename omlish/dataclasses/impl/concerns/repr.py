@@ -32,6 +32,7 @@ class ReprPlan(Plan):
 
     id: bool = False
     terse: bool = False
+    default_fn: OpRef[ReprFn] | None = None
 
 
 @register_generator_type(ReprPlan)
@@ -66,11 +67,17 @@ class ReprGenerator(Generator[ReprPlan]):
                 fn=fnr,
             ))
 
+        drf: OpRef | None = None
+        if ctx.cs.default_repr_fn is not None:
+            drf = OpRef(f'repr.default_fn')
+            orm[drf] = ctx.cs.default_repr_fn
+
         return PlanResult(
             ReprPlan(
                 fields=tuple(rfs),
                 id=ctx.cs.repr_id,
                 terse=ctx.cs.terse_repr,
+                default_fn=drf,
             ),
             orm,
         )
@@ -85,10 +92,16 @@ class ReprGenerator(Generator[ReprPlan]):
             if not (pl.terse and not f.kw_only):
                 pfx = f'{f.name}='
 
+            fn: OpRef[ReprFn] | None = None
             if f.fn is not None:
-                ors.add(f.fn)
+                fn = f.fn
+            elif pl.default_fn is not None:
+                fn = pl.default_fn
+
+            if fn is not None:
+                ors.add(fn)
                 part_lines.extend([
-                    f'    if (s := {f.fn.ident()}(self.{f.name})) is not None:',
+                    f'    if (s := {fn.ident()}(self.{f.name})) is not None:',
                     f'        parts.append(f"{pfx}{{s}}")',
                 ])
             else:
