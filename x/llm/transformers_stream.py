@@ -8,6 +8,48 @@ import transformers as tfm
 from .stream.streamers import CancellableTextStreamer
 
 
+T = ta.TypeVar('T')
+
+
+##
+
+
+class ThreadBufferRelay(ta.Generic[T]):
+    def __init__(
+            self,
+            *,
+            wake_fn: ta.Callable[[], None],
+    ) -> None:
+        super().__init__()
+
+        self._wake_fn = wake_fn
+
+        self._lock = threading.Lock()
+        self._buffer: ThreadBufferRelay._Buffer = ThreadBufferRelay._Buffer()
+
+    class _Buffer:
+        def __init__(self) -> None:
+            self.lst: list = []
+            self.age = 0
+
+        def __repr__(self) -> str:
+            return f'{self.__class__.__qualname__}({self.lst!r}, age={self.age!r})'
+
+    def push(self, *vs: T) -> None:
+        with self._lock:
+            buf = self._buffer
+            needs_wake = not buf.age
+            buf.lst.extend(vs)
+            buf.age += 1
+        if needs_wake:
+            self._wake_fn()
+
+    def swap(self) -> ta.Sequence[T]:
+        with self._lock:
+            buf, self._buffer = self._buffer, ThreadBufferRelay._Buffer()
+        return buf.lst
+
+
 ##
 
 
@@ -41,22 +83,23 @@ async def _a_main() -> None:
         add_generation_prompt=True,
     )
 
-    lock = threading.Lock()
     event = asyncio.Event()
-    buffer: list[str | None] = []
     loop = asyncio.get_running_loop()
+    relay = ThreadBufferRelay(
+        wake_fn=lambda: loop.call_soon_threadsafe(event.set),  # noqa
+    )
 
     def streamer_callback(text: str, *, stream_end: bool) -> None:
-        with lock:
-            needs_wake = bool(buffer)
-            buffer.append(text)
-            if stream_end:
-                buffer.append(None)
-        if needs_wake:
-            loop.call_soon_threadsafe(event.set)
+        if text or stream_end:
+            relay.push(text, *([None] if stream_end else []))
 
     # Set up the streamer for token generation
-    streamer = CancellableTextStreamer(tokenizer, streamer_callback, skip_prompt=True, skip_special_tokens=True)
+    streamer = CancellableTextStreamer(
+        tokenizer,
+        streamer_callback,  # noqa
+        skip_prompt=True,
+        skip_special_tokens=True,
+    )
 
     # Prepare model inputs by tokenizing the text and moving it to the model's device
     model_inputs = tokenizer([prompt], return_tensors='pt').to(model.device)
@@ -77,10 +120,8 @@ async def _a_main() -> None:
 
     while True:
         await event.wait()
-
-        with lock:
-            got, buffer = buffer, []
-            event.clear()
+        event.clear()
+        got = relay.swap()
 
         if not got:
             raise RuntimeError
