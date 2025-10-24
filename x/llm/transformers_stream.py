@@ -1,6 +1,5 @@
 import asyncio
 import threading
-import time
 import typing as ta
 
 import transformers as tfm
@@ -59,7 +58,7 @@ async def _a_main() -> None:
     # Load the pre-trained model with automatic data type and device mapping
     model = tfm.AutoModelForCausalLM.from_pretrained(
         model_name,
-        torch_dtype='auto',
+        dtype='auto',
         device_map='auto',
     )
 
@@ -134,6 +133,12 @@ async def _a_main() -> None:
             end = False
 
         print(out)
+
+        if 'Alibaba' in out:
+            print('Canceling!')
+            streamer.cancel()
+            break
+
         if end:
             break
 
