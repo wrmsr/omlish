@@ -302,6 +302,52 @@
     }
   },
   {
+    "module": ".minichain.backends.impls.ollama.chat",
+    "attr": null,
+    "file": "ommlds/minichain/backends/impls/ollama/chat.py",
+    "line": 38,
+    "value": {
+      "!.minichain.backends.strings.manifests.BackendStringsManifest": {
+        "service_cls_names": [
+          "ChatChoicesService",
+          "ChatChoicesStreamService"
+        ],
+        "backend_name": "ollama",
+        "model_names": null
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.impls.ollama.chat",
+    "attr": null,
+    "file": "ommlds/minichain/backends/impls/ollama/chat.py",
+    "line": 93,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "ommlds.minichain.backends.impls.ollama.chat",
+        "attr": "OllamaChatChoicesService",
+        "name": "ollama",
+        "aliases": null,
+        "type": "ChatChoicesService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.impls.ollama.chat",
+    "attr": null,
+    "file": "ommlds/minichain/backends/impls/ollama/chat.py",
+    "line": 142,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "ommlds.minichain.backends.impls.ollama.chat",
+        "attr": "OllamaChatChoicesStreamService",
+        "name": "ollama",
+        "aliases": null,
+        "type": "ChatChoicesStreamService"
+      }
+    }
+  },
+  {
     "module": ".minichain.backends.impls.openai.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/openai/chat.py",

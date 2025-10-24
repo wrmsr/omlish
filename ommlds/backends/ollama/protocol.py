@@ -66,7 +66,7 @@ class BaseStreamableRequest(BaseRequest, lang.Abstract):
 
 @dc.dataclass(frozen=True, kw_only=True)
 class BaseGenerateRequest(BaseStreamableRequest, lang.Abstract):
-    options: ta.Mapping[str, ta.Any] | Options | None = None
+    options: Options | None = None
     format: ta.Literal['', 'json'] | None = None  # TODO: jsonschema
     keep_alive: float | str | None = None
 
@@ -158,13 +158,13 @@ class Tool:
 
 @dc.dataclass(frozen=True, kw_only=True)
 @dc.extra_class_params(default_repr_fn=dc.opt_repr)
-class ChatRequest:
-    messages: ta.Sequence[ta.Mapping[str, ta.Any] | Message] | None = None
+class ChatRequest(BaseGenerateRequest):
+    messages: ta.Sequence[Message] | None = None
     tools: ta.Sequence[Tool] | None = None
     think: bool | ta.Literal['low', 'medium', 'high'] | None = None
 
 
 @dc.dataclass(frozen=True, kw_only=True)
 @dc.extra_class_params(default_repr_fn=dc.opt_repr)
-class ChatResponse:
+class ChatResponse(BaseGenerateResponse):
     message: Message

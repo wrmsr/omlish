@@ -107,7 +107,7 @@ snowflake-connector-python[secure-local-storage]==4.0.0  # @omlish-venv !13t !13
 trino==0.336.0
 
 huggingface-hub==0.36.0  # @omlish-venv !14t !14dt
-hf-xet==1.1.10  # @omlish-venv !14t !14dt
+hf-xet==1.2.0  # @omlish-venv !14t !14dt
 
 ## NOTE: the following add a full minute to CI just setting up the deps..
 
@@ -125,7 +125,7 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.40.58
+boto3>=1.40.59
 
 antlr4-python3-runtime==4.13.2
 

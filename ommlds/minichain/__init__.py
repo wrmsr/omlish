@@ -558,6 +558,10 @@ with _lang.auto_proxy_init(
     )
 
     from .standard import (  # noqa
+        Device,
+
+        ApiUrl,
+
         ApiKey,
 
         DefaultOptions,
