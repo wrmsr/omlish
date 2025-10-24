@@ -60,7 +60,7 @@ blobfile==3.0.0
 ##
 # diag
 
-yappi==1.6.10  # @omlish-venv !14
+yappi==1.7.3  # @omlish-venv !14
 pyinstrument==5.1.1
 
 
