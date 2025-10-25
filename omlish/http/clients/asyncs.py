@@ -55,7 +55,7 @@ class AsyncStreamHttpResponse(BaseHttpResponse):
 
     async def close(self) -> None:
         if (c := self._closer) is not None:
-            c()
+            await c()
 
 
 #

@@ -39,10 +39,6 @@ else:
 
 
 async def _a_main(args: ta.Any = None) -> None:
-    logs.configure_standard_logging('INFO')
-
-    #
-
     parser = argparse.ArgumentParser()
     parser.add_argument('prompt', nargs='*')
 
@@ -64,6 +60,8 @@ async def _a_main(args: ta.Any = None) -> None:
     parser.add_argument('-E', '--embed', action='store_true')
     parser.add_argument('-j', '--image', action='store_true')
 
+    parser.add_argument('-v', '--verbose', action='store_true')
+
     parser.add_argument('--enable-fs-tools', action='store_true')
     parser.add_argument('--enable-todo-tools', action='store_true')
     parser.add_argument('--enable-unsafe-tools-do-not-use-lol', action='store_true')
@@ -71,6 +69,14 @@ async def _a_main(args: ta.Any = None) -> None:
     parser.add_argument('--dangerous-no-tool-confirmation', action='store_true')
 
     args = parser.parse_args(args)
+
+    #
+
+    if args.verbose:
+        logs.configure_standard_logging('DEBUG')
+    else:
+        logs.configure_standard_logging('INFO')
+        logs.silence_noisy_loggers()
 
     #
 
