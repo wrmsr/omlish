@@ -1,17 +1,18 @@
+# @omlish-lite
 # ruff: noqa: UP045
 import errno
 import socket
 import typing as ta
 import urllib.parse
 
-from .....lite.check import check
-from ....clients.base import HttpRequest
-from ....clients.sync import HttpClient
-from ....clients.sync import StreamHttpResponse
-from ....headers import HttpHeaders
-from ...io import CoroHttpIo
-from ..connection import CoroHttpClientConnection
-from ..response import CoroHttpClientResponse
+from ....lite.check import check
+from ...coro.client.connection import CoroHttpClientConnection
+from ...coro.client.response import CoroHttpClientResponse
+from ...coro.io import CoroHttpIo
+from ...headers import HttpHeaders
+from ..base import HttpRequest
+from ..sync import HttpClient
+from ..sync import StreamHttpResponse
 
 
 T = ta.TypeVar('T')

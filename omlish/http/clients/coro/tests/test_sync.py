@@ -1,7 +1,7 @@
 import pytest
 
-from ....clients.base import HttpRequest
-from .client import CoroHttpClient
+from ...base import HttpRequest
+from ..sync import CoroHttpClient
 
 
 # @pytest.skip('FIXME')

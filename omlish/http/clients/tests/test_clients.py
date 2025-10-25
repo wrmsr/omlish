@@ -4,11 +4,16 @@ from .. import default
 from ..base import HttpClientError
 from ..base import HttpRequest
 from ..base import HttpStatusError
+from ..coro.sync import CoroHttpClient  # noqa
 from ..httpx import HttpxHttpClient
 from ..urllib import UrllibHttpClient
 
 
-CLIENTS: list = [UrllibHttpClient, HttpxHttpClient]
+CLIENTS: list = [
+    UrllibHttpClient,
+    HttpxHttpClient,
+    # CoroHttpClient,  # FIXME: 302's
+]
 
 
 @pytest.mark.online
