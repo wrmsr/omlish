@@ -3,19 +3,19 @@ import pytest
 from ..base import HttpClientError
 from ..base import HttpRequest
 from ..base import HttpStatusError
-from ..httpx import HttpxHttpClient
-from ..urllib import UrllibHttpClient
+from ..httpx import HttpxAsyncHttpClient
 
 
-CLIENTS: list = [UrllibHttpClient, HttpxHttpClient]
+CLIENTS: list = [HttpxAsyncHttpClient]
 
 
+@pytest.mark.asyncs('asyncio')
 @pytest.mark.online
 @pytest.mark.parametrize('cls', CLIENTS)
 @pytest.mark.parametrize('data', [None, '{}', b'{}'])
-def test_clients(cls, data):
-    with cls() as cli:
-        resp = cli.request(HttpRequest(
+async def test_clients(cls, data):
+    async with cls() as cli:
+        resp = await cli.request(HttpRequest(
             'https://httpbun.org/',
             'POST' if data is not None else 'GET',
             headers={'User-Agent': 'omlish'},
@@ -25,38 +25,40 @@ def test_clients(cls, data):
         assert resp.status == 200
 
 
+@pytest.mark.asyncs('asyncio')
 @pytest.mark.online
 @pytest.mark.parametrize('cls', CLIENTS)
 @pytest.mark.parametrize('data', [None, '{}', b'{}'])
 @pytest.mark.parametrize('read_all', [False, True])
-def test_clients_stream(cls, data, read_all):
-    with cls() as cli:
-        with cli.stream_request(HttpRequest(
-            'https://httpbun.org/drip?duration=1&numbytes=10&code=200&delay=1',
-            'POST' if data is not None else 'GET',
-            headers={'User-Agent': 'omlish'},
-            data=data,
-        )) as resp:
+async def test_clients_stream(cls, data, read_all):
+    async with cls() as cli:
+        async with (await cli.stream_request(HttpRequest(
+                'https://httpbun.org/drip?duration=1&numbytes=10&code=200&delay=1',
+                'POST' if data is not None else 'GET',
+                headers={'User-Agent': 'omlish'},
+                data=data,
+        ))) as resp:
             print(resp)
             assert resp.status == 200
 
             if read_all:
-                data = resp.stream.read()
+                data = await resp.stream.read()
             else:
                 l = []
-                while (b := resp.stream.read(1)):
+                while (b := await resp.stream.read(1)):
                     l.append(b)
                 data = b''.join(l)
 
             assert data == b'**********'
 
 
+@pytest.mark.asyncs('asyncio')
 @pytest.mark.online
 @pytest.mark.parametrize('cls', CLIENTS)
-def test_clients_error(cls):
+async def test_clients_error(cls):
     data = None
-    with cls() as cli:
-        resp = cli.request(HttpRequest(
+    async with cls() as cli:
+        resp = await cli.request(HttpRequest(
             'https://httpbun.org/basic-auth/foo/bar',
             'POST' if data is not None else 'GET',
             headers={'User-Agent': 'omlish'},
@@ -66,13 +68,14 @@ def test_clients_error(cls):
         assert resp.status == 401
 
 
+@pytest.mark.asyncs('asyncio')
 @pytest.mark.online
 @pytest.mark.parametrize('cls', CLIENTS)
-def test_clients_error_check(cls):
+async def test_clients_error_check(cls):
     data = None
-    with cls() as cli:
+    async with cls() as cli:
         with pytest.raises(HttpStatusError) as ex:
-            cli.request(
+            await cli.request(
                 HttpRequest(
                     'https://httpbun.org/basic-auth/foo/bar',
                     'POST' if data is not None else 'GET',
@@ -84,13 +87,14 @@ def test_clients_error_check(cls):
         assert ex.value.response.status == 401
 
 
+@pytest.mark.asyncs('asyncio')
 @pytest.mark.online
 @pytest.mark.parametrize('cls', CLIENTS)
-def test_clients_error_url(cls):
+async def test_clients_error_url(cls):
     data = None
-    with cls() as cli:
+    async with cls() as cli:
         with pytest.raises(HttpClientError):
-            cli.request(HttpRequest(
+            await cli.request(HttpRequest(
                 'https://foo.notarealtld/',
                 'POST' if data is not None else 'GET',
                 headers={'User-Agent': 'omlish'},

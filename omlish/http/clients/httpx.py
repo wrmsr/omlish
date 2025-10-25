@@ -95,7 +95,7 @@ class HttpxAsyncHttpClient(AsyncHttpClient):
             else:
                 try:
                     return await anext(self.it)
-                except StopIteration:
+                except StopAsyncIteration:
                     return b''
 
     async def _stream_request(self, req: HttpRequest) -> AsyncStreamHttpResponse:
