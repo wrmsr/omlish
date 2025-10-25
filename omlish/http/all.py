@@ -30,9 +30,13 @@ with _lang.auto_proxy_init(globals()):
 
     from .clients.default import (  # noqa
         client,
+        client_context,
+
         request,
 
         async_client,
+        async_client_context,
+
         async_request,
     )
 

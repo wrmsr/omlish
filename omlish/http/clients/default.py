@@ -1,4 +1,5 @@
 import abc
+import contextlib
 import typing as ta
 
 from ... import lang
@@ -77,10 +78,20 @@ def client() -> HttpClient:
     return _default_client()
 
 
+@contextlib.contextmanager
+def client_context(client: HttpClient | None) -> ta.Generator[HttpClient]:  # noqa
+    if client is not None:
+        yield client
+
+    else:
+        with _default_client() as client:  # noqa
+            yield client
+
+
 #
 
 
-class _BaseSyncDefaultRequester(_DefaultRequester[HttpClient, R], ta.Generic[R]):
+class _BaseSyncDefaultRequester(_DefaultRequester[HttpClient, R], lang.Abstract, ta.Generic[R]):
     def _do(
             self,
             request: HttpRequest,  # noqa
@@ -142,29 +153,65 @@ def async_client() -> AsyncHttpClient:
     return _default_async_client()
 
 
+@contextlib.asynccontextmanager
+async def async_client_context(client: AsyncHttpClient | None) -> ta.AsyncGenerator[AsyncHttpClient]:  # noqa
+    if client is not None:
+        yield client
+
+    else:
+        async with _default_async_client() as client:  # noqa
+            yield client
+
+
 #
 
 
-class _AsyncDefaultRequester(_DefaultRequester[AsyncHttpClient, ta.Awaitable[HttpResponse]]):
+class _BaseAsyncDefaultRequester(_DefaultRequester[AsyncHttpClient, ta.Awaitable[R]], lang.Abstract, ta.Generic[R]):
     async def _do(
             self,
             request: HttpRequest,  # noqa
             *,
             check: bool = False,
             client: AsyncHttpClient | None = None,  # noqa
-    ) -> HttpResponse:
-        async def do(client: AsyncHttpClient) -> HttpResponse:  # noqa
-            return await client.request(
+    ) -> R:
+        if client is not None:
+            return await self._do_(
+                client,
                 request,
                 check=check,
             )
 
-        if client is not None:
-            return await do(client)
-
         else:
-            async with _default_async_client() as cli:
-                return await do(cli)
+            async with _default_async_client() as client:  # noqa
+                return await self._do_(
+                    client,
+                    request,
+                    check=check,
+                )
+
+    @abc.abstractmethod
+    def _do_(
+            self,
+            client: AsyncHttpClient,  # noqa
+            request: HttpRequest,  # noqa
+            *,
+            check: bool = False,  # noqa
+    ) -> ta.Awaitable[R]:
+        raise NotImplementedError
+
+
+class _AsyncDefaultRequester(_BaseAsyncDefaultRequester[HttpResponse]):
+    async def _do_(
+            self,
+            client: AsyncHttpClient,  # noqa
+            request: HttpRequest,  # noqa
+            *,
+            check: bool = False,
+    ) -> HttpResponse:  # noqa
+        return await client.request(
+            request,
+            check=check,
+        )
 
 
 async_request = _AsyncDefaultRequester()

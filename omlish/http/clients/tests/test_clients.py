@@ -1,5 +1,6 @@
 import pytest
 
+from .. import default
 from ..base import HttpClientError
 from ..base import HttpRequest
 from ..base import HttpStatusError
@@ -96,3 +97,19 @@ def test_clients_error_url(cls):
                 headers={'User-Agent': 'omlish'},
                 data=data,
             ))
+
+
+@pytest.mark.online
+@pytest.mark.parametrize('cls', CLIENTS)
+@pytest.mark.parametrize('data', [None, '{}', b'{}'])
+def test_default(cls, data):
+    with cls() as cli:
+        resp = default.request(
+            'https://httpbun.org/',
+            'POST' if data is not None else 'GET',
+            headers={'User-Agent': 'omlish'},
+            data=data,
+            client=cli,
+        )
+        print(resp)
+        assert resp.status == 200
