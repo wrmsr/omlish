@@ -4,6 +4,16 @@ from .. import lang as _lang
 with _lang.auto_proxy_init(globals()):
     ##
 
+    from .clients.asyncs import (  # noqa
+        AsyncStreamHttpResponse,
+
+        async_close_response,
+        async_closing_response,
+        async_read_response,
+
+        AsyncHttpClient,
+    )
+
     from .clients.base import (  # noqa
         DEFAULT_ENCODING,
 
@@ -20,8 +30,10 @@ with _lang.auto_proxy_init(globals()):
 
     from .clients.default import (  # noqa
         client,
-
         request,
+
+        async_client,
+        async_request,
     )
 
     from .clients.httpx import (  # noqa

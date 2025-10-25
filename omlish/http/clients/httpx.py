@@ -2,12 +2,16 @@
 TODO:
  - standardize following redirects
 """
+import contextlib
 import functools
+import io
 import typing as ta
 
 from ... import dataclasses as dc
 from ... import lang
 from ..headers import HttpHeaders
+from .asyncs import AsyncHttpClient
+from .asyncs import AsyncStreamHttpResponse
 from .base import HttpClientError
 from .base import HttpRequest
 from .sync import HttpClient
@@ -29,6 +33,7 @@ class HttpxHttpClient(HttpClient):
         it: ta.Iterator[bytes]
 
         def read(self, /, n: int = -1) -> bytes:
+            # FIXME: lol n
             if n < 0:
                 return b''.join(self.it)
             else:
@@ -69,4 +74,57 @@ class HttpxHttpClient(HttpClient):
 
         except Exception:
             resp_close()
+            raise
+
+
+##
+
+
+class HttpxAsyncHttpClient(AsyncHttpClient):
+    @dc.dataclass(frozen=True)
+    class _StreamAdapter:
+        it: ta.AsyncIterator[bytes]
+
+        async def read(self, /, n: int = -1) -> bytes:
+            # FIXME: lol n
+            if n < 0:
+                buf = io.BytesIO()
+                async for chunk in self.it:
+                    buf.write(chunk)
+                return buf.getvalue()
+            else:
+                try:
+                    return await anext(self.it)
+                except StopIteration:
+                    return b''
+
+    async def _stream_request(self, req: HttpRequest) -> AsyncStreamHttpResponse:
+        es = contextlib.AsyncExitStack()
+
+        try:
+            client = await es.enter_async_context(httpx.AsyncClient())
+
+            resp = await es.enter_async_context(client.stream(
+                method=req.method_or_default,
+                url=req.url,
+                headers=req.headers_ or None,  # type: ignore
+                content=req.data,
+                timeout=req.timeout_s,
+            ))
+
+            return AsyncStreamHttpResponse(
+                status=resp.status_code,
+                headers=HttpHeaders(resp.headers.raw),
+                request=req,
+                underlying=resp,
+                stream=self._StreamAdapter(resp.aiter_bytes()),
+                _closer=es.aclose,
+            )
+
+        except httpx.HTTPError as e:
+            await es.aclose()
+            raise HttpClientError from e
+
+        except Exception:
+            await es.aclose()
             raise

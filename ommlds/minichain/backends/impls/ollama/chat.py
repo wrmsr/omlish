@@ -99,8 +99,6 @@ class OllamaChatChoicesService(BaseOllamaChatChoicesService):
     async def invoke(
             self,
             request: ChatChoicesRequest,
-            *,
-            max_tokens: int = 4096,  # FIXME: ChatOption
     ) -> ChatChoicesResponse:
         messages = self._build_request_messages(request.v)
 
@@ -108,7 +106,6 @@ class OllamaChatChoicesService(BaseOllamaChatChoicesService):
             model=self._model_name.v,
             messages=messages,
             # tools=tools or None,
-            # max_tokens=max_tokens,  # TODO: options.num_ctx
             stream=False,
         )
 
@@ -150,8 +147,6 @@ class OllamaChatChoicesStreamService(BaseOllamaChatChoicesService):
     async def invoke(
             self,
             request: ChatChoicesStreamRequest,
-            *,
-            max_tokens: int = 4096,  # FIXME: ChatOption
     ) -> ChatChoicesStreamResponse:
         messages = self._build_request_messages(request.v)
 
@@ -159,7 +154,6 @@ class OllamaChatChoicesStreamService(BaseOllamaChatChoicesService):
             model=self._model_name.v,
             messages=messages,
             # tools=tools or None,
-            # max_tokens=max_tokens,  # TODO: options.num_ctx
             stream=True,
         )
 
