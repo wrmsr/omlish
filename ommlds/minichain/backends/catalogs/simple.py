@@ -40,9 +40,9 @@ class SimpleBackendCatalog(BackendCatalog):
             sc_dct[e.name] = e
         self._dct = dct
 
-    def get_backend(self, service_cls: ta.Any, name: str, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
+    def get_backend(self, service_cls: ta.Any, name: str, *args: ta.Any, **kwargs: ta.Any) -> BackendCatalog.Backend:
         e = self._dct[service_cls][name]
-        return e.factory_fn(*args, **kwargs)
+        return BackendCatalog.Backend(e.factory_fn, None)
 
 
 ##

@@ -14,7 +14,7 @@ T = ta.TypeVar('T')
 
 class BackendCatalog(lang.Abstract):
     class Backend(ta.NamedTuple):
-        cls: type
+        factory: ta.Callable[..., ta.Any]
         configs: ta.Sequence[Config] | None
 
     @abc.abstractmethod
@@ -23,7 +23,7 @@ class BackendCatalog(lang.Abstract):
 
     def new_backend(self, service_cls: ta.Any, name: str, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
         be = self.get_backend(service_cls, name)
-        return be.cls(*be.configs or [], *args, **kwargs)
+        return be.factory(*be.configs or [], *args, **kwargs)
 
     # #
     #
