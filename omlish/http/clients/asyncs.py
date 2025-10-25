@@ -3,10 +3,10 @@
 import abc
 import contextlib
 import dataclasses as dc
+import io
 import typing as ta
 
 from ...lite.abstract import Abstract
-from ...lite.dataclasses import dataclass_maybe_post_init
 from ...lite.dataclasses import dataclass_shallow_asdict
 from .base import BaseHttpResponse
 from .base import BaseHttpResponseT
@@ -26,21 +26,26 @@ AsyncHttpClientT = ta.TypeVar('AsyncHttpClientT', bound='AsyncHttpClient')
 @dc.dataclass(frozen=True)  # kw_only=True
 class AsyncStreamHttpResponse(BaseHttpResponse):
     class Stream(ta.Protocol):
-        def read(self, /, n: int = -1) -> ta.Awaitable[bytes]: ...
+        def read1(self, /, n: int = -1) -> ta.Awaitable[bytes]: ...
 
     @ta.final
     class _NullStream:
-        def read(self, /, n: int = -1) -> ta.Awaitable[bytes]:
+        def read1(self, /, n: int = -1) -> ta.Awaitable[bytes]:
             raise TypeError
 
     stream: Stream = _NullStream()
 
-    _closer: ta.Optional[ta.Callable[[], ta.Awaitable[None]]] = None
+    @property
+    def has_data(self) -> bool:
+        return not isinstance(self.stream, AsyncStreamHttpResponse._NullStream)
 
-    def __post_init__(self) -> None:
-        dataclass_maybe_post_init(super())
-        if isinstance(self.stream, AsyncStreamHttpResponse._NullStream):
-            raise TypeError(self.stream)
+    async def read_all(self) -> bytes:
+        buf = io.BytesIO()
+        while (b := await self.stream.read1()):
+            buf.write(b)
+        return buf.getvalue()
+
+    _closer: ta.Optional[ta.Callable[[], ta.Awaitable[None]]] = None
 
     async def __aenter__(self: AsyncStreamHttpResponseT) -> AsyncStreamHttpResponseT:
         return self
@@ -88,10 +93,9 @@ async def async_read_response(resp: BaseHttpResponse) -> HttpResponse:
         return resp
 
     elif isinstance(resp, AsyncStreamHttpResponse):
-        data = await resp.stream.read()
         return HttpResponse(**{
             **{k: v for k, v in dataclass_shallow_asdict(resp).items() if k not in ('stream', '_closer')},
-            'data': data,
+            **({'data': await resp.read_all()} if resp.has_data else {}),
         })
 
     else:

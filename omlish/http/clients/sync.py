@@ -3,10 +3,10 @@
 import abc
 import contextlib
 import dataclasses as dc
+import io
 import typing as ta
 
 from ...lite.abstract import Abstract
-from ...lite.dataclasses import dataclass_maybe_post_init
 from ...lite.dataclasses import dataclass_shallow_asdict
 from .base import BaseHttpResponse
 from .base import BaseHttpResponseT
@@ -26,21 +26,26 @@ HttpClientT = ta.TypeVar('HttpClientT', bound='HttpClient')
 @dc.dataclass(frozen=True)  # kw_only=True
 class StreamHttpResponse(BaseHttpResponse):
     class Stream(ta.Protocol):
-        def read(self, /, n: int = -1) -> bytes: ...
+        def read1(self, /, n: int = -1) -> bytes: ...
 
     @ta.final
     class _NullStream:
-        def read(self, /, n: int = -1) -> bytes:
+        def read1(self, /, n: int = -1) -> bytes:
             raise TypeError
 
     stream: Stream = _NullStream()
 
-    _closer: ta.Optional[ta.Callable[[], None]] = None
+    @property
+    def has_data(self) -> bool:
+        return not isinstance(self.stream, StreamHttpResponse._NullStream)
 
-    def __post_init__(self) -> None:
-        dataclass_maybe_post_init(super())
-        if isinstance(self.stream, StreamHttpResponse._NullStream):
-            raise TypeError(self.stream)
+    def read_all(self) -> bytes:
+        buf = io.BytesIO()
+        while (b := self.stream.read1()):
+            buf.write(b)
+        return buf.getvalue()
+
+    _closer: ta.Optional[ta.Callable[[], None]] = None
 
     def __enter__(self: StreamHttpResponseT) -> StreamHttpResponseT:
         return self
@@ -86,10 +91,9 @@ def read_response(resp: BaseHttpResponse) -> HttpResponse:
         return resp
 
     elif isinstance(resp, StreamHttpResponse):
-        data = resp.stream.read()
         return HttpResponse(**{
             **{k: v for k, v in dataclass_shallow_asdict(resp).items() if k not in ('stream', '_closer')},
-            'data': data,
+            **({'data': resp.read_all()} if resp.has_data else {}),
         })
 
     else:

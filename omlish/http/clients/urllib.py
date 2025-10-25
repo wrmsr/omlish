@@ -53,7 +53,6 @@ class UrllibHttpClient(HttpClient):
                     headers=HttpHeaders(e.headers.items()),
                     request=req,
                     underlying=e,
-                    stream=e,  # noqa
                     _closer=e.close,
                 )
 

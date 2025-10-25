@@ -88,8 +88,7 @@ class OpenaiChatChoicesStreamService:
                 db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
                 sd = sse.SseDecoder()
                 while True:
-                    # FIXME: read1 not on response stream protocol
-                    b = http_response.stream.read1(self.READ_CHUNK_SIZE)  # type: ignore[attr-defined]
+                    b = http_response.stream.read1(self.READ_CHUNK_SIZE)
                     for l in db.feed(b):
                         if isinstance(l, DelimitingBuffer.Incomplete):
                             # FIXME: handle

@@ -3,6 +3,7 @@
 import unittest
 
 from ..buffers import DelimitingBuffer as Db
+from ..buffers import ReadableListBuffer as Rlb
 
 
 class TestDelimitingBuffer(unittest.TestCase):
@@ -44,3 +45,16 @@ class TestDelimitingBuffer(unittest.TestCase):
 
         # FIXME:
         # assert run(b'line1\nline2\r\nline3\n\r', b'', delimiters=[b'\r', b'\r\n']) == [[b'line1', b'line2', b'line3'], [Db.Incomplete(b'\r')]]  # noqa
+
+    def test_readable_list_buffer(self):
+        buf = Rlb()
+        buf.feed(b'abcd')
+        assert buf.read() == b'abcd'
+        assert buf.read() == b''
+
+        buf = Rlb()
+        buf.feed(b'abcd')
+        assert buf.read(3) == b'abc'
+        assert buf.read(3) is None
+        assert buf.read() == b'd'
+        assert buf.read() == b''

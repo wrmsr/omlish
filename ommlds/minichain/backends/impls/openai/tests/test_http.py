@@ -123,7 +123,7 @@ def test_openai_http_stream(harness, cli_cls):
             db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
             sd = sse.SseDecoder()
             while True:
-                b = resp.stream.read()
+                b = resp.stream.read1()
                 for l in db.feed(b):
                     if isinstance(l, DelimitingBuffer.Incomplete):
                         break

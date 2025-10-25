@@ -114,11 +114,11 @@ class OllamaChatChoicesService(BaseOllamaChatChoicesService):
 
         raw_request = msh.marshal(a_req)
 
-        raw_response = await http.async_request(
-            self._api_url.v.removesuffix('/') + '/chat',
-            data=json.dumps(raw_request).encode('utf-8'),
-            client=self._http_client,
-        )
+        async with http.async_client_context(self._http_client) as http_client:
+            raw_response = await http_client.request(http.HttpRequest(
+                self._api_url.v.removesuffix('/') + '/chat',
+                data=json.dumps(raw_request).encode('utf-8'),
+            ))
 
         json_response = json.loads(check.not_none(raw_response.data).decode('utf-8'))
 
@@ -169,14 +169,13 @@ class OllamaChatChoicesStreamService(BaseOllamaChatChoicesService):
         )
 
         async with UseResources.or_new(request.options) as rs:
-            http_client = rs.enter_context(http.client())
-            http_response = rs.enter_context(http_client.stream_request(http_request))
+            http_client = await rs.enter_async_context(http.async_client_context(self._http_client))
+            http_response = await rs.enter_async_context(await http_client.stream_request(http_request))
 
             async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ta.Sequence[ChatChoicesOutputs] | None:
                 db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
                 while True:
-                    # FIXME: read1 not on response stream protocol
-                    b = http_response.stream.read1(self.READ_CHUNK_SIZE)  # type: ignore[attr-defined]
+                    b = await http_response.stream.read1(self.READ_CHUNK_SIZE)
                     for l in db.feed(b):
                         if isinstance(l, DelimitingBuffer.Incomplete):
                             # FIXME: handle

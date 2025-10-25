@@ -4,11 +4,11 @@ TODO:
 """
 import contextlib
 import functools
-import io
 import typing as ta
 
 from ... import dataclasses as dc
 from ... import lang
+from ...io.buffers import ReadableListBuffer
 from ..headers import HttpHeaders
 from .asyncs import AsyncHttpClient
 from .asyncs import AsyncStreamHttpResponse
@@ -31,16 +31,27 @@ class HttpxHttpClient(HttpClient):
     @dc.dataclass(frozen=True)
     class _StreamAdapter:
         it: ta.Iterator[bytes]
+        buf: ReadableListBuffer = dc.field(default_factory=ReadableListBuffer)
 
-        def read(self, /, n: int = -1) -> bytes:
-            # FIXME: lol n
+        def read1(self, /, n: int = -1) -> bytes:
             if n < 0:
-                return b''.join(self.it)
-            else:
+                if (b := self.buf.read(n)) is not None:
+                    return b
                 try:
                     return next(self.it)
                 except StopIteration:
                     return b''
+
+            else:
+                while len(self.buf) < n:
+                    try:
+                        b = next(self.it)
+                    except StopIteration:
+                        b = b''
+                    if not b:
+                        return self.buf.read() or b''
+                    self.buf.feed(b)
+                return self.buf.read(n) or b''
 
     def _stream_request(self, req: HttpRequest) -> StreamHttpResponse:
         try:
@@ -84,19 +95,27 @@ class HttpxAsyncHttpClient(AsyncHttpClient):
     @dc.dataclass(frozen=True)
     class _StreamAdapter:
         it: ta.AsyncIterator[bytes]
+        buf: ReadableListBuffer = dc.field(default_factory=ReadableListBuffer)
 
-        async def read(self, /, n: int = -1) -> bytes:
-            # FIXME: lol n
+        async def read1(self, /, n: int = -1) -> bytes:
             if n < 0:
-                buf = io.BytesIO()
-                async for chunk in self.it:
-                    buf.write(chunk)
-                return buf.getvalue()
-            else:
+                if (b := self.buf.read(n)) is not None:
+                    return b
                 try:
                     return await anext(self.it)
                 except StopAsyncIteration:
                     return b''
+
+            else:
+                while len(self.buf) < n:
+                    try:
+                        b = await anext(self.it)
+                    except StopAsyncIteration:
+                        b = b''
+                    if not b:
+                        return self.buf.read() or b''
+                    self.buf.feed(b)
+                return self.buf.read(n) or b''
 
     async def _stream_request(self, req: HttpRequest) -> AsyncStreamHttpResponse:
         es = contextlib.AsyncExitStack()

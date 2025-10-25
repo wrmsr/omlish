@@ -4084,6 +4084,9 @@ class ReadableListBuffer:
 
     def read(self, n: ta.Optional[int] = None) -> ta.Optional[bytes]:
         if n is None:
+            if not self._lst:
+                return b''
+
             o = b''.join(self._lst)
             self._lst = []
             return o

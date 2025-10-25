@@ -20,10 +20,10 @@ def test_clients_stream(data, read_all):
             assert resp.status == 200
 
             if read_all:
-                data = resp.stream.read()
+                data = resp.read_all()
             else:
                 l = []
-                while (b := resp.stream.read(1)):
+                while (b := resp.stream.read1(1)):
                     l.append(b)
                 data = b''.join(l)
 

@@ -169,8 +169,7 @@ class GoogleChatChoicesStreamService:
             async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ta.Sequence[ChatChoicesOutputs] | None:
                 db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
                 while True:
-                    # FIXME: read1 not on response stream protocol
-                    b = http_response.stream.read1(self.READ_CHUNK_SIZE)  # type: ignore[attr-defined]
+                    b = http_response.stream.read1(self.READ_CHUNK_SIZE)
                     for bl in db.feed(b):
                         if isinstance(bl, DelimitingBuffer.Incomplete):
                             # FIXME: handle
