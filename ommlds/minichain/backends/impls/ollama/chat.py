@@ -54,8 +54,11 @@ class BaseOllamaChatChoicesService(lang.Abstract):
     def __init__(
             self,
             *configs: ApiUrl | ModelName,
+            http_client: http.AsyncHttpClient | None = None,
     ) -> None:
         super().__init__()
+
+        self._http_client = http_client
 
         with tv.consume(*configs) as cc:
             self._api_url = cc.pop(self.DEFAULT_API_URL)
@@ -111,9 +114,10 @@ class OllamaChatChoicesService(BaseOllamaChatChoicesService):
 
         raw_request = msh.marshal(a_req)
 
-        raw_response = http.request(
+        raw_response = await http.async_request(
             self._api_url.v.removesuffix('/') + '/chat',
             data=json.dumps(raw_request).encode('utf-8'),
+            client=self._http_client,
         )
 
         json_response = json.loads(check.not_none(raw_response.data).decode('utf-8'))

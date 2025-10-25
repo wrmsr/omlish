@@ -321,7 +321,7 @@
     "module": ".minichain.backends.impls.ollama.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/ollama/chat.py",
-    "line": 93,
+    "line": 96,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.ollama.chat",
@@ -336,7 +336,7 @@
     "module": ".minichain.backends.impls.ollama.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/ollama/chat.py",
-    "line": 139,
+    "line": 143,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.ollama.chat",

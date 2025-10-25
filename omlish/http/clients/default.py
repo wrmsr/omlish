@@ -37,7 +37,7 @@ class _DefaultRequester(lang.Abstract, ta.Generic[C, R]):
 
             **kwargs: ta.Any,
     ) -> R:
-        req = HttpRequest(
+        request = HttpRequest(  # noqa
             url,
             method=method,
 
@@ -50,7 +50,7 @@ class _DefaultRequester(lang.Abstract, ta.Generic[C, R]):
         )
 
         return self._do(
-            req,
+            request,
             check=check,
             client=client,
         )
@@ -58,7 +58,7 @@ class _DefaultRequester(lang.Abstract, ta.Generic[C, R]):
     @abc.abstractmethod
     def _do(
             self,
-            req: HttpRequest,
+            request: HttpRequest,  # noqa
             *,
             check: bool = False,
             client: C | None = None,  # noqa
@@ -80,27 +80,52 @@ def client() -> HttpClient:
 #
 
 
-class _SyncDefaultRequester(_DefaultRequester[HttpClient, HttpResponse]):
+class _BaseSyncDefaultRequester(_DefaultRequester[HttpClient, R], ta.Generic[R]):
     def _do(
             self,
-            req: HttpRequest,
+            request: HttpRequest,  # noqa
             *,
             check: bool = False,
             client: HttpClient | None = None,  # noqa
-    ) -> HttpResponse:
-        def do(cli: HttpClient) -> HttpResponse:  # noqa
-            return cli.request(
-                req,
-
+    ) -> R:
+        if client is not None:
+            return self._do_(
+                client,
+                request,
                 check=check,
             )
 
-        if client is not None:
-            return do(client)
-
         else:
-            with _default_client() as cli:
-                return do(cli)
+            with _default_client() as client:  # noqa
+                return self._do_(
+                    client,
+                    request,
+                    check=check,
+                )
+
+    @abc.abstractmethod
+    def _do_(
+            self,
+            client: HttpClient,  # noqa
+            request: HttpRequest,  # noqa
+            *,
+            check: bool = False,  # noqa
+    ) -> R:
+        raise NotImplementedError
+
+
+class _SyncDefaultRequester(_BaseSyncDefaultRequester[HttpResponse]):
+    def _do_(
+            self,
+            client: HttpClient,  # noqa
+            request: HttpRequest,  # noqa
+            *,
+            check: bool = False,  # noqa
+    ) -> HttpResponse:
+        return client.request(
+            request,
+            check=check,
+        )
 
 
 request = _SyncDefaultRequester()
@@ -123,15 +148,14 @@ def async_client() -> AsyncHttpClient:
 class _AsyncDefaultRequester(_DefaultRequester[AsyncHttpClient, ta.Awaitable[HttpResponse]]):
     async def _do(
             self,
-            req: HttpRequest,
+            request: HttpRequest,  # noqa
             *,
             check: bool = False,
             client: AsyncHttpClient | None = None,  # noqa
     ) -> HttpResponse:
-        async def do(cli: AsyncHttpClient) -> HttpResponse:  # noqa
-            return await cli.request(
-                req,
-
+        async def do(client: AsyncHttpClient) -> HttpResponse:  # noqa
+            return await client.request(
+                request,
                 check=check,
             )
 
