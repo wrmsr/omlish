@@ -98,6 +98,23 @@ def register_type(
 
 
 @ta.overload
+def get_registry_cls(cls: type[T], name: str) -> type[T]:
+    ...
+
+
+@ta.overload
+def get_registry_cls(cls: ta.Any, name: str) -> ta.Any:
+    ...
+
+
+def get_registry_cls(cls, name, *args, **kwargs):
+    be_cls = _GlobalRegistry.instance().get_registry_cls(cls, name)
+    if isinstance(cls, type):
+        be_cls = check.issubclass(be_cls, cls)  # noqa
+    return be_cls
+
+
+@ta.overload
 def registry_new(cls: type[T], name: str, *args: ta.Any, **kwargs: ta.Any) -> T:
     ...
 
@@ -108,10 +125,7 @@ def registry_new(cls: ta.Any, name: str, *args: ta.Any, **kwargs: ta.Any) -> ta.
 
 
 def registry_new(cls, name, *args, **kwargs):
-    be_cls = _GlobalRegistry.instance().get_registry_cls(cls, name)
-    if isinstance(cls, type):
-        be_cls = check.issubclass(be_cls, cls)  # noqa
-    return be_cls(*args, **kwargs)
+    return get_registry_cls(cls, name)(*args, **kwargs)
 
 
 #

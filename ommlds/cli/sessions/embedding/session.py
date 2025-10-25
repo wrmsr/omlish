@@ -29,7 +29,7 @@ class EmbeddingSession(Session['EmbeddingSession.Config']):
 
     async def run(self) -> None:
         mdl: mc.EmbeddingService
-        async with lang.async_maybe_managing(self._backend_catalog.get_backend(
+        async with lang.async_maybe_managing(self._backend_catalog.new_backend(
             mc.EmbeddingService,
             self._config.backend or DEFAULT_EMBEDDING_MODEL_BACKEND,
         )) as mdl:

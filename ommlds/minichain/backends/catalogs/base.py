@@ -3,14 +3,27 @@ import typing as ta
 
 from omlish import lang
 
+from ...configs import Config
+
+
+T = ta.TypeVar('T')
+
 
 ##
 
 
 class BackendCatalog(lang.Abstract):
+    class Backend(ta.NamedTuple):
+        cls: type
+        configs: ta.Sequence[Config] | None
+
     @abc.abstractmethod
-    def get_backend(self, service_cls: ta.Any, name: str, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
+    def get_backend(self, service_cls: type[T], name: str) -> Backend:
         raise NotImplementedError
+
+    def new_backend(self, service_cls: ta.Any, name: str, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
+        be = self.get_backend(service_cls, name)
+        return be.cls(*be.configs or [], *args, **kwargs)
 
     # #
     #
