@@ -250,16 +250,17 @@ def new_function(
         # a tuple that supplies the bindings for free variables
         closure: tuple | None = None,
 
-        # # a dictionary that specifies the default keyword argument values
-        # kwdefaults: dict | None = None,
+        # a dictionary that specifies the default keyword argument values
+        kwdefaults: dict | None = None,
 ) -> types.FunctionType:
+    # https://github.com/python/cpython/blob/9c8eade20c6c6cc6f31dffb5e42472391d63bbf4/Objects/funcobject.c#L909
     return types.FunctionType(
         code=code,
         globals=globals,
         name=name,
         argdefs=argdefs,
         closure=closure,
-        # kwdefaults=kwdefaults,
+        kwdefaults=kwdefaults,
     )
 
 
@@ -270,5 +271,5 @@ def new_function_kwargs(f: types.FunctionType) -> dict[str, ta.Any]:
         name=f.__name__,
         argdefs=f.__defaults__,
         closure=f.__closure__,
-        # kwdefaults=f.__kwdefaults__,
+        kwdefaults=f.__kwdefaults__,
     )

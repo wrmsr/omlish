@@ -1,6 +1,7 @@
 """
 TODO:
  - check validity
+ - signature vs getfullargspec - diff unwrapping + 'self' handling
 """
 import dataclasses as dc
 import enum
