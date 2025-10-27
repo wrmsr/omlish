@@ -51,6 +51,7 @@ def create_function(
         *,
         globals: ta.Mapping[str, ta.Any] | None = None,  # noqa
         locals: ta.Mapping[str, ta.Any] | None = None,  # noqa
+        indent: str = '    ',
 ) -> types.FunctionType:
     params = lang.ParamSpec.of(params)
     check.isinstance(body, str)
@@ -62,10 +63,16 @@ def create_function(
         check.not_in(k, locals)
         locals[k] = v
 
-    body = textwrap.indent(textwrap.dedent(body.strip()), '  ')
-    txt = f'def {name}{sig}:\n{body}'
-    local_vars = ', '.join(locals.keys())
-    exec_txt = f'def __create_fn__({local_vars}):\n{textwrap.indent(txt, "  ")}\n  return {name}'
+    body_txt = '\n'.join([
+        f'def {name}{sig}:',
+        textwrap.indent(textwrap.dedent(body.strip()), indent),
+    ])
+
+    exec_txt = '\n'.join([
+        f'def __create_fn__({", ".join(locals.keys())}):',
+        textwrap.indent(body_txt, indent),
+        f'{indent}return {name}',
+    ])
 
     ns: dict = {}
     filename = reserve_linecache_filename(name)
@@ -73,7 +80,7 @@ def create_function(
     eval(bytecode, globals or {}, ns)  # type: ignore  # noqa
 
     fn = ns['__create_fn__'](**locals)
-    fn.__source__ = txt
+    fn.__source__ = body_txt
     linecache.cache[filename] = (len(exec_txt), None, exec_txt.splitlines(True), filename)
     return fn
 

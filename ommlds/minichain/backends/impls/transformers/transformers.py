@@ -4,6 +4,7 @@ TODO:
  - https://huggingface.co/blog/aifeifei798/transformers-streaming-output
 """
 import sys
+import threading
 import typing as ta
 
 import transformers as tfm
@@ -11,8 +12,10 @@ import transformers as tfm
 from omlish import check
 from omlish import lang
 from omlish import typedvalues as tv
+from omlish.asyncs.asyncio.sync import AsyncioBufferRelay
 
 from .....backends.transformers.filecache import file_cache_patch_context
+from .....backends.transformers.streamers import CancellableTextStreamer
 from ....chat.choices.services import ChatChoicesRequest
 from ....chat.choices.services import ChatChoicesResponse
 from ....chat.choices.services import static_check_is_chat_choices_service
@@ -237,29 +240,59 @@ class TransformersChatChoicesStreamService(BaseTransformersChatChoicesService):
             for m in request.v
         ]
 
-        async with UseResources.or_new(request.options) as rs:
-            async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ta.Sequence[ChatChoicesOutputs] | None:
-                # last_role: ta.Any = None
-                #
-                # for chunk in output:
-                #     check.state(chunk['object'] == 'chat.completion.chunk')
-                #
-                #     choice = check.single(chunk['choices'])
-                #
-                #     if not (delta := choice.get('delta', {})):
-                #         continue
-                #
-                #     # FIXME: check role is assistant
-                #     if (role := delta.get('role')) != last_role:
-                #         last_role = role
-                #
-                #     # FIXME: stop reason
-                #
-                #     if (content := delta.get('content', '')):
-                #         await sink.emit(AiChoicesDeltas([AiChoiceDeltas([ContentAiChoiceDelta(content)])]))
-                #
-                # return None
+        relay: AsyncioBufferRelay = AsyncioBufferRelay()
 
-                raise NotImplementedError
+        def streamer_callback(text: str, *, stream_end: bool) -> None:
+            if text or stream_end:
+                relay.push(text, *([None] if stream_end else []))
+
+        streamer = CancellableTextStreamer(
+            check.not_none(pipeline.tokenizer),  # type: ignore[arg-type]
+            streamer_callback,  # noqa
+            skip_prompt=True,
+            skip_special_tokens=True,
+        )
+
+        async with UseResources.or_new(request.options) as rs:
+            thread = threading.Thread(
+                target=CancellableTextStreamer.ignoring_cancelled(pipeline),
+                args=(
+                    inputs,
+                ),
+                kwargs=dict(
+                    streamer=streamer,
+                ),
+            )
+
+            def stop_thread() -> None:
+                streamer.cancel()
+                # thread.join()
+
+            rs.enter_context(lang.defer(stop_thread))
+
+            thread.start()
+
+            async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ta.Sequence[ChatChoicesOutputs] | None:
+                while True:
+                    await relay.wait()
+                    got = relay.swap()
+
+                    if not got:
+                        raise RuntimeError
+
+                    if got[-1] is None:
+                        out = ''.join(got[:-1])
+                        end = True
+                    else:
+                        out = ''.join(got)
+                        end = False
+
+                    if out:
+                        await sink.emit(AiChoicesDeltas([AiChoiceDeltas([ContentAiChoiceDelta(out)])]))
+
+                    if end:
+                        break
+
+                return []
 
             return await new_stream_response(rs, inner)

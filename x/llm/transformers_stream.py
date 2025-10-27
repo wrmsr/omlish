@@ -44,9 +44,7 @@ async def _a_main() -> None:
         add_generation_prompt=True,
     )
 
-    relay = AsyncioBufferRelay(
-        wake_fn=lambda: loop.call_soon_threadsafe(event.set),  # noqa
-    )
+    relay = AsyncioBufferRelay()
 
     def streamer_callback(text: str, *, stream_end: bool) -> None:
         if text or stream_end:
