@@ -123,11 +123,11 @@ def test_openai_http_stream(harness, cli_cls):
             db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
             sd = sse.SseDecoder()
             while True:
+                done = False
                 b = resp.stream.read1()
                 for l in db.feed(b):
                     if isinstance(l, DelimitingBuffer.Incomplete):
                         break
-                    done = False
                     for so in sd.process_line(l):
                         if isinstance(so, sse.SseEvent) and so.type == b'message':
                             ss = so.data.decode('utf-8')

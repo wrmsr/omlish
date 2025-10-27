@@ -4,7 +4,7 @@ import typing as ta
 
 import transformers as tfm
 
-from omlish.sync import SyncBufferRelay
+from omlish.asyncs.asyncio.sync import AsyncioBufferRelay
 from ommlds.backends.transformers.streamers import CancellableTextStreamer
 
 
@@ -44,9 +44,7 @@ async def _a_main() -> None:
         add_generation_prompt=True,
     )
 
-    event = asyncio.Event()
-    loop = asyncio.get_running_loop()
-    relay = ThreadBufferRelay(
+    relay = AsyncioBufferRelay(
         wake_fn=lambda: loop.call_soon_threadsafe(event.set),  # noqa
     )
 
@@ -80,8 +78,7 @@ async def _a_main() -> None:
     thread.start()
 
     while True:
-        await event.wait()
-        event.clear()
+        await relay.wait()
         got = relay.swap()
 
         if not got:
