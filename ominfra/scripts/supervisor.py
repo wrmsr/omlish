@@ -4290,6 +4290,8 @@ class CoroHttpIo:
         args: ta.Tuple[ta.Any, ...]
         kwargs: ta.Optional[ta.Dict[str, ta.Any]] = None
 
+        server_hostname: ta.Optional[str] = None
+
     #
 
     class CloseIo(Io):

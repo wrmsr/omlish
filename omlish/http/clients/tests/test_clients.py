@@ -1,4 +1,5 @@
 import contextlib
+import urllib.parse
 
 import pytest
 
@@ -118,6 +119,24 @@ def test_clients_error_url(cls):
                 headers={'User-Agent': 'omlish'},
                 data=data,
             ))
+
+
+@pytest.mark.online
+@pytest.mark.parametrize('cls', [c for c in CLIENTS if c is not HttpxHttpClient])
+@pytest.mark.parametrize('abs', [False, True])
+def test_clients_redirect(cls, abs):  # noqa
+    with cls() as cli:
+        resp = cli.request(
+            HttpRequest(
+                f'https://httpbun.org/redirect-to?{urllib.parse.urlencode({"url": "https://httpbun.org/html"})}' if abs else  # noqa
+                'https://httpbun.org/redirect?url=html',
+                headers={'User-Agent': 'omlish'},
+            ),
+            check=True,
+        )
+        assert resp.status == 200
+        assert resp.headers.single_str_dct['content-type'].split(';')[0] == 'text/html'
+        assert resp.data
 
 
 @pytest.mark.online

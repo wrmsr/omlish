@@ -116,10 +116,10 @@ class CoroHttpClientConnection:
     _http_version = 11
     _http_version_str = 'HTTP/1.1'
 
-    http_port: ta.ClassVar[int] = 80
-    https_port: ta.ClassVar[int] = 443
+    HTTP_PORT: ta.ClassVar[int] = 80
+    HTTPS_PORT: ta.ClassVar[int] = 443
 
-    default_port = http_port
+    DEFAULT_PORT: ta.ClassVar[int] = HTTP_PORT
 
     class _NOT_SET:  # noqa
         def __new__(cls, *args, **kwargs):  # noqa
@@ -139,6 +139,7 @@ class CoroHttpClientConnection:
             source_address: ta.Optional[str] = None,
             block_size: int = 8192,
             auto_open: bool = True,
+            default_port: ta.Optional[int] = None,
     ) -> None:
         super().__init__()
 
@@ -146,6 +147,9 @@ class CoroHttpClientConnection:
         self._source_address = source_address
         self._block_size = block_size
         self._auto_open = auto_open
+        if default_port is None:
+            default_port = self.DEFAULT_PORT
+        self._default_port = default_port
 
         self._connected = False
         self._buffer: ta.List[bytes] = []
@@ -162,6 +166,10 @@ class CoroHttpClientConnection:
 
         CoroHttpClientValidation.validate_host(self._host)
 
+    @property
+    def http_version(self) -> int:
+        return self._http_version
+
     #
 
     def _get_hostport(self, host: str, port: ta.Optional[int]) -> ta.Tuple[str, int]:
@@ -173,12 +181,12 @@ class CoroHttpClientConnection:
                     port = int(host[i + 1:])
                 except ValueError:
                     if host[i + 1:] == '':  # http://foo.com:/ == http://foo.com/
-                        port = self.default_port
+                        port = self._default_port
                     else:
                         raise CoroHttpClientErrors.InvalidUrlError(f"non-numeric port: '{host[i + 1:]}'") from None
                 host = host[:i]
             else:
-                port = self.default_port
+                port = self._default_port
 
         if host and host[0] == '[' and host[-1] == ']':
             host = host[1:-1]
@@ -286,6 +294,7 @@ class CoroHttpClientConnection:
                 source_address=self._source_address,
                 **(dict(timeout=self._timeout) if self._timeout is not self._NOT_SET else {}),
             ),
+            server_hostname=self._tunnel_host if self._tunnel_host else self._host,
         )))
 
         self._connected = True
@@ -526,7 +535,7 @@ class CoroHttpClientConnection:
                     if ':' in host:
                         host_enc = self._strip_ipv6_iface(host_enc)
 
-                    if port == self.default_port:
+                    if port == self._default_port:
                         self.put_header('Host', host_enc)
                     else:
                         self.put_header('Host', f"{host_enc.decode('ascii')}:{port}")

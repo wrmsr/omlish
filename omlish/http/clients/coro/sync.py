@@ -10,7 +10,9 @@ from ...coro.client.connection import CoroHttpClientConnection
 from ...coro.client.response import CoroHttpClientResponse
 from ...coro.io import CoroHttpIo
 from ...headers import HttpHeaders
+from ...urls import unparse_url_request_path
 from ..base import HttpClientContext
+from ..base import HttpClientError
 from ..base import HttpRequest
 from ..sync import HttpClient
 from ..sync import StreamHttpResponse
@@ -30,23 +32,55 @@ class CoroHttpClient(HttpClient):
             self._req = req
             self._ups = urllib.parse.urlparse(req.url)
 
+            self._ssl = self._ups.scheme == 'https'
+
         _cc: ta.Optional[CoroHttpClientConnection] = None
         _resp: ta.Optional[CoroHttpClientResponse] = None
 
         _sock: ta.Optional[socket.socket] = None
         _sock_file: ta.Optional[ta.BinaryIO] = None
 
+        _ssl_context: ta.Any = None
+
+        #
+
+        def _create_https_context(self, http_version: int) -> ta.Any:
+            # https://github.com/python/cpython/blob/a7160912274003672dc116d918260c0a81551c21/Lib/http/client.py#L809
+            import ssl
+
+            # Function also used by urllib.request to be able to set the check_hostname attribute on a context object.
+            context = ssl.create_default_context()
+
+            # Send ALPN extension to indicate HTTP/1.1 protocol.
+            if http_version == 11:
+                context.set_alpn_protocols(['http/1.1'])
+
+            # Enable PHA for TLS 1.3 connections if available.
+            if context.post_handshake_auth is not None:
+                context.post_handshake_auth = True
+
+            return context
+
+        #
+
         def setup(self) -> StreamHttpResponse:
             check.none(self._sock)
+            check.none(self._ssl_context)
 
-            self._cc = cc = CoroHttpClientConnection(check.not_none(self._ups.hostname))
+            self._cc = cc = CoroHttpClientConnection(
+                check.not_none(self._ups.hostname),
+                default_port=CoroHttpClientConnection.HTTPS_PORT if self._ssl else CoroHttpClientConnection.HTTP_PORT,
+            )
+
+            if self._ssl:
+                self._ssl_context = self._create_https_context(self._cc.http_version)
 
             try:
                 self._run_coro(cc.connect())
 
                 self._run_coro(cc.request(
                     self._req.method or 'GET',
-                    self._ups.path or '/',
+                    unparse_url_request_path(self._ups) or '/',
                     self._req.data,
                     hh.single_str_dct if (hh := self._req.headers_) is not None else {},
                 ))
@@ -68,17 +102,28 @@ class CoroHttpClient(HttpClient):
 
         def _run_coro(self, g: ta.Generator[ta.Any, ta.Any, T]) -> T:
             i = None
+
             while True:
                 try:
                     o = g.send(i)
                 except StopIteration as e:
                     return e.value
-                i = self._handle_io(o)
+
+                try:
+                    i = self._handle_io(o)
+                except OSError as e:
+                    raise HttpClientError from e
 
         def _handle_io(self, o: CoroHttpIo.Io) -> ta.Any:
             if isinstance(o, CoroHttpIo.ConnectIo):
                 check.none(self._sock)
                 self._sock = socket.create_connection(*o.args, **(o.kwargs or {}))
+
+                if self._ssl_context is not None:
+                    self._sock = self._ssl_context.wrap_socket(
+                        self._sock,
+                        server_hostname=check.not_none(o.server_hostname),
+                    )
 
                 # Might fail in OSs that don't implement TCP_NODELAY
                 try:

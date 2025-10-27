@@ -134,7 +134,7 @@ class HttpClientError(Exception):
         return self.__cause__
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass()
 class HttpStatusError(HttpClientError):
     response: HttpResponse
 
@@ -143,8 +143,4 @@ class HttpStatusError(HttpClientError):
 
 
 class BaseHttpClient(Abstract):
-    def _get_context_item(self, ctx: HttpClientContext, key: ta.Any) -> ta.Any:
-        return ctx._dct[key]  # noqa
-
-    def _set_context_item(self, ctx: HttpClientContext, key: ta.Any, value: ta.Any) -> None:
-        ctx._dct[key] = value  # noqa
+    pass
