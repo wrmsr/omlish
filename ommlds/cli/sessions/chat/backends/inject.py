@@ -1,6 +1,9 @@
+import typing as ta
+
 from omlish import inject as inj
 from omlish import lang
 
+from ..... import minichain as mc
 from .injection import backend_configs
 
 
@@ -31,6 +34,16 @@ def bind_backends(
         inj.bind(_types.ChatChoicesServiceBackendProvider, to_ctor=_catalog.CatalogChatChoicesServiceBackendProvider, singleton=True),  # noqa
         inj.bind(_types.ChatChoicesStreamServiceBackendProvider, to_ctor=_catalog.CatalogChatChoicesStreamServiceBackendProvider, singleton=True),  # noqa
     ])
+
+    #
+
+    async def catalog_backend_instantiator_provider(injector: inj.AsyncInjector) -> _catalog.CatalogBackendProvider.Instantiator:  # noqa
+        async def inner(be: 'mc.BackendCatalog.Backend', cfgs: _types.BackendConfigs | None) -> ta.Any:
+            raise NotImplementedError
+
+        return _catalog.CatalogBackendProvider.Instantiator(inner)
+
+    els.append(inj.bind(_catalog.CatalogBackendProvider.Instantiator, to_async_fn=catalog_backend_instantiator_provider))  # noqa
 
     #
 
