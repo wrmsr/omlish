@@ -283,6 +283,7 @@ with _auto_proxy_init(globals(), update_exports=True):
 
         new_function,
         new_function_kwargs,
+        copy_function,
     )
 
     from .generators import (  # noqa
@@ -420,6 +421,8 @@ with _auto_proxy_init(globals(), update_exports=True):
     )
 
     from .params import (  # noqa
+        CanParamSpec,
+
         Param,
 
         VarParam,

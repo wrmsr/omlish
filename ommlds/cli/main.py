@@ -167,7 +167,7 @@ async def _a_main(args: ta.Any = None) -> None:
                 args.enable_test_weather_tool or
                 args.code
             ),
-            enabled_tools={
+            enabled_tools={  # noqa
                 *(['fs'] if args.enable_fs_tools else []),
                 *(['todo'] if args.enable_todo_tools else []),
                 *(['weather'] if args.enable_test_weather_tool else []),

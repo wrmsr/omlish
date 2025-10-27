@@ -8,24 +8,43 @@ from .names import NamespaceBuilder
 ##
 
 
-def render_param_spec_call(params: lang.ParamSpec) -> str:
-    args = []
-    for p in params:
-        if isinstance(p, lang.ArgsParam):
-            args.append(f'*{p.name}')
-        elif isinstance(p, lang.KwargsParam):
-            args.append(f'**{p.name}')
-        elif isinstance(p, lang.PosOnlyParam):
-            args.append(p.name)
-        elif isinstance(p, lang.KwOnlyParam):
-            args.append(f'{p.name}={p.name}')
-        elif isinstance(p, lang.ValParam):
-            args.append(p.name)
-        elif isinstance(p, lang.ParamSeparator):
-            pass
+def render_param_spec_call(
+        params: lang.ParamSpec,
+        *,
+        as_kwargs: bool = False,
+) -> str:
+    src = ['(']
+
+    for i, p in enumerate(params):
+        if isinstance(p, lang.ParamSeparator):
+            continue
+
+        if i:
+            src.append(', ')
+
+        if as_kwargs:
+            if isinstance(p, lang.Param):
+                src.append(f'{p.name}={p.name}')
+            else:
+                raise TypeError(p)
+
         else:
-            raise TypeError(p)
-    return f"({', '.join(args)})"
+            if isinstance(p, lang.ArgsParam):
+                src.append(f'*{p.name}')
+            elif isinstance(p, lang.KwargsParam):
+                src.append(f'**{p.name}')
+            elif isinstance(p, lang.PosOnlyParam):
+                src.append(p.name)
+            elif isinstance(p, lang.KwOnlyParam):
+                src.append(f'{p.name}={p.name}')
+            elif isinstance(p, lang.ValParam):
+                src.append(p.name)
+            else:
+                raise TypeError(p)
+
+    src.append(')')
+
+    return ''.join(src)
 
 
 def render_param_spec_def(

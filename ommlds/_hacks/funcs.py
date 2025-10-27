@@ -31,6 +31,7 @@ def reserve_linecache_filename(prefix: str) -> str:
         e = _RESERVED_FILENAME_UUID_TLS.unique_id
     except AttributeError:
         e = _RESERVED_FILENAME_UUID_TLS.unique_id = _ReservedFilenameEntry(str(uuid.uuid4()))
+
     while True:
         unique_filename = f'<generated:{prefix}:{e.seq}>'
         cache_line = (1, None, (e.unique_id,), unique_filename)
@@ -44,12 +45,13 @@ def reserve_linecache_filename(prefix: str) -> str:
 
 def create_function(
         name: str,
-        params: lang.ParamSpec,
+        params: lang.CanParamSpec,
         body: str,
         *,
         globals: ta.Mapping[str, ta.Any] | None = None,  # noqa
         locals: ta.Mapping[str, ta.Any] | None = None,  # noqa
 ) -> types.FunctionType:
+    params = lang.ParamSpec.of(params)
     check.isinstance(body, str)
     locals = dict(locals or {})  # noqa
 
@@ -78,10 +80,20 @@ def create_function(
 ##
 
 
-def create_detour(params: lang.ParamSpec, target: ta.Callable) -> types.CodeType:
+def create_detour(
+        params: lang.CanParamSpec,
+        target: ta.Callable,
+        *,
+        as_kwargs: bool = False,
+) -> types.CodeType:
+    params = lang.ParamSpec.of(params)
     check.callable(target)
 
-    gfn = create_function('_', params, f'return 1{render_param_spec_call(params)}')
-    check.state(gfn.__code__.co_consts == (None, 1))
+    gfn = create_function(
+        '_',
+        params,
+        f'return 1{render_param_spec_call(params, as_kwargs=as_kwargs)}',
+    )
 
-    return gfn.__code__.replace(co_consts=(None, target))
+    check.state(gfn.__code__.co_consts[:2] == (None, 1))
+    return gfn.__code__.replace(co_consts=(None, target, *gfn.__code__.co_consts[2:]))

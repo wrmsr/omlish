@@ -17,6 +17,13 @@ from .classes.restrict import Sealed
 T = ta.TypeVar('T')
 
 
+CanParamSpec: ta.TypeAlias = ta.Union[
+    'ParamSpec',
+    inspect.Signature,
+    ta.Callable,
+]
+
+
 ##
 
 
@@ -101,6 +108,15 @@ class ParamSpec(ta.Sequence[Param], Final):
         self._with_seps: tuple[Param | ParamSeparator, ...] | None = None
 
     #
+
+    @classmethod
+    def of(cls, obj: CanParamSpec) -> 'ParamSpec':
+        if isinstance(obj, ParamSpec):
+            return obj
+        elif isinstance(obj, inspect.Signature):
+            return cls.of_signature(obj)
+        else:
+            return cls.inspect(obj)
 
     @classmethod
     def of_signature(

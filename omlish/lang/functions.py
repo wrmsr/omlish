@@ -273,3 +273,7 @@ def new_function_kwargs(f: types.FunctionType) -> dict[str, ta.Any]:
         closure=f.__closure__,
         kwdefaults=f.__kwdefaults__,
     )
+
+
+def copy_function(f: types.FunctionType) -> types.FunctionType:
+    return new_function(**new_function_kwargs(f))
