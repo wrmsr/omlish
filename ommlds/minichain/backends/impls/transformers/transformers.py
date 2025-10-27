@@ -12,7 +12,7 @@ from omlish import check
 from omlish import lang
 from omlish import typedvalues as tv
 
-from .....backends.transformers.caching import patch_file_cache
+from .....backends.transformers.caching import file_cache_patch_context
 from ....chat.choices.services import ChatChoicesRequest
 from ....chat.choices.services import ChatChoicesResponse
 from ....chat.choices.services import static_check_is_chat_choices_service
@@ -178,12 +178,14 @@ class BaseTransformersChatChoicesService(lang.ExitStacked):
         for pkw_cfg in self._pipeline_kwargs:
             pkw.update(pkw_cfg.v)
 
-        patch_file_cache()
-
-        return tfm.pipeline(
-            'text-generation',
-            **pkw,
-        )
+        with file_cache_patch_context(
+                local_first=True,
+                local_config_present_is_authoritative=True,
+        ):
+            return tfm.pipeline(
+                'text-generation',
+                **pkw,
+            )
 
 
 ##

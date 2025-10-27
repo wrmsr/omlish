@@ -5,6 +5,7 @@ import threading
 import types
 import typing as ta
 import uuid
+import warnings
 
 from omlish import check
 from omlish import lang
@@ -89,11 +90,14 @@ def create_detour(
     params = lang.ParamSpec.of(params)
     check.callable(target)
 
-    gfn = create_function(
-        '_',
-        params,
-        f'return 1{render_param_spec_call(params, as_kwargs=as_kwargs)}',
-    )
+    with warnings.catch_warnings():
+        warnings.filterwarnings('ignore', category=SyntaxWarning)
+
+        gfn = create_function(
+            '_',
+            params,
+            f'return 1{render_param_spec_call(params, as_kwargs=as_kwargs)}',
+        )
 
     check.state(gfn.__code__.co_consts[:2] == (None, 1))
     return gfn.__code__.replace(co_consts=(None, target, *gfn.__code__.co_consts[2:]))

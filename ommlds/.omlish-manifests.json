@@ -559,7 +559,7 @@
     "module": ".minichain.backends.impls.transformers.transformers",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/transformers/transformers.py",
-    "line": 192,
+    "line": 194,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.transformers.transformers",
@@ -576,7 +576,7 @@
     "module": ".minichain.backends.impls.transformers.transformers",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/transformers/transformers.py",
-    "line": 222,
+    "line": 224,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.transformers.transformers",
