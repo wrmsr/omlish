@@ -119,6 +119,15 @@ class HttpResponse(BaseHttpResponse):
 ##
 
 
+@ta.final
+class HttpClientContext:
+    def __init__(self) -> None:
+        self._dct: dict = {}
+
+
+##
+
+
 class HttpClientError(Exception):
     @property
     def cause(self) -> ta.Optional[BaseException]:
@@ -128,3 +137,14 @@ class HttpClientError(Exception):
 @dc.dataclass(frozen=True)
 class HttpStatusError(HttpClientError):
     response: HttpResponse
+
+
+##
+
+
+class BaseHttpClient(Abstract):
+    def _get_context_item(self, ctx: HttpClientContext, key: ta.Any) -> ta.Any:
+        return ctx._dct[key]  # noqa
+
+    def _set_context_item(self, ctx: HttpClientContext, key: ta.Any, value: ta.Any) -> None:
+        ctx._dct[key] = value  # noqa

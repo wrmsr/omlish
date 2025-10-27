@@ -8,8 +8,10 @@ import typing as ta
 
 from ...lite.abstract import Abstract
 from ...lite.dataclasses import dataclass_shallow_asdict
+from .base import BaseHttpClient
 from .base import BaseHttpResponse
 from .base import BaseHttpResponseT
+from .base import HttpClientContext
 from .base import HttpRequest
 from .base import HttpResponse
 from .base import HttpStatusError
@@ -103,7 +105,7 @@ def read_response(resp: BaseHttpResponse) -> HttpResponse:
 ##
 
 
-class HttpClient(Abstract):
+class HttpClient(BaseHttpClient, Abstract):
     def __enter__(self: HttpClientT) -> HttpClientT:
         return self
 
@@ -114,10 +116,12 @@ class HttpClient(Abstract):
             self,
             req: HttpRequest,
             *,
+            context: ta.Optional[HttpClientContext] = None,
             check: bool = False,
     ) -> HttpResponse:
         with closing_response(self.stream_request(
                 req,
+                context=context,
                 check=check,
         )) as resp:
             return read_response(resp)
@@ -126,9 +130,13 @@ class HttpClient(Abstract):
             self,
             req: HttpRequest,
             *,
+            context: ta.Optional[HttpClientContext] = None,
             check: bool = False,
     ) -> StreamHttpResponse:
-        resp = self._stream_request(req)
+        if context is None:
+            context = HttpClientContext()
+
+        resp = self._stream_request(context, req)
 
         try:
             if check and not resp.is_success:
@@ -145,5 +153,5 @@ class HttpClient(Abstract):
         return resp
 
     @abc.abstractmethod
-    def _stream_request(self, req: HttpRequest) -> StreamHttpResponse:
+    def _stream_request(self, ctx: HttpClientContext, req: HttpRequest) -> StreamHttpResponse:
         raise NotImplementedError

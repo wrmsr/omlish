@@ -5,6 +5,7 @@ import typing as ta
 
 from .asyncs import AsyncHttpClient
 from .asyncs import AsyncStreamHttpResponse
+from .base import HttpClientContext
 from .base import HttpRequest
 from .sync import HttpClient
 from .sync import StreamHttpResponse
@@ -35,8 +36,8 @@ class ExecutorAsyncHttpClient(AsyncHttpClient):
         async def close(self) -> None:
             return await self.owner._run_in_executor(self.resp.close)  # noqa
 
-    async def _stream_request(self, req: HttpRequest) -> AsyncStreamHttpResponse:
-        resp: StreamHttpResponse = await self._run_in_executor(self._client.stream_request, req)
+    async def _stream_request(self, ctx: HttpClientContext, req: HttpRequest) -> AsyncStreamHttpResponse:
+        resp: StreamHttpResponse = await self._run_in_executor(lambda: self._client.stream_request(req, context=ctx))
         return AsyncStreamHttpResponse(
             status=resp.status,
             headers=resp.headers,

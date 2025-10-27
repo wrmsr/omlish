@@ -114,7 +114,7 @@ class OllamaChatChoicesService(BaseOllamaChatChoicesService):
 
         raw_request = msh.marshal(a_req)
 
-        async with http.async_client_context(self._http_client) as http_client:
+        async with http.manage_async_client(self._http_client) as http_client:
             raw_response = await http_client.request(http.HttpRequest(
                 self._api_url.v.removesuffix('/') + '/chat',
                 data=json.dumps(raw_request).encode('utf-8'),
@@ -169,7 +169,7 @@ class OllamaChatChoicesStreamService(BaseOllamaChatChoicesService):
         )
 
         async with UseResources.or_new(request.options) as rs:
-            http_client = await rs.enter_async_context(http.async_client_context(self._http_client))
+            http_client = await rs.enter_async_context(http.manage_async_client(self._http_client))
             http_response = await rs.enter_async_context(await http_client.stream_request(http_request))
 
             async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ta.Sequence[ChatChoicesOutputs] | None:

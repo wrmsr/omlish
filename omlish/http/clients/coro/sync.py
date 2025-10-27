@@ -10,6 +10,7 @@ from ...coro.client.connection import CoroHttpClientConnection
 from ...coro.client.response import CoroHttpClientResponse
 from ...coro.io import CoroHttpIo
 from ...headers import HttpHeaders
+from ..base import HttpClientContext
 from ..base import HttpRequest
 from ..sync import HttpClient
 from ..sync import StreamHttpResponse
@@ -119,6 +120,6 @@ class CoroHttpClient(HttpClient):
             if self._sock is not None:
                 self._sock.close()
 
-    def _stream_request(self, req: HttpRequest) -> StreamHttpResponse:
+    def _stream_request(self, ctx: HttpClientContext, req: HttpRequest) -> StreamHttpResponse:
         conn = CoroHttpClient._Connection(req)
         return conn.setup()

@@ -1,18 +1,34 @@
+import contextlib
+
 import pytest
 
 from .. import default
 from ..base import HttpClientError
 from ..base import HttpRequest
 from ..base import HttpStatusError
-from ..coro.sync import CoroHttpClient  # noqa
+from ..coro.sync import CoroHttpClient
 from ..httpx import HttpxHttpClient
+from ..middleware import MiddlewareHttpClient
+from ..middleware import RedirectHandlingHttpClientMiddleware
 from ..urllib import UrllibHttpClient
+
+
+@contextlib.contextmanager
+def middleware_coro_http_client():
+    with CoroHttpClient() as client0:
+        with MiddlewareHttpClient(
+                client0,
+                [
+                    RedirectHandlingHttpClientMiddleware(),
+                ],
+        ) as client1:
+            yield client1
 
 
 CLIENTS: list = [
     UrllibHttpClient,
     HttpxHttpClient,
-    # CoroHttpClient,  # FIXME: 302's
+    middleware_coro_http_client,
 ]
 
 

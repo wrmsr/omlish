@@ -5,6 +5,7 @@ import typing as ta
 from ... import lang
 from ..headers import CanHttpHeaders
 from .asyncs import AsyncHttpClient
+from .base import HttpClientContext
 from .base import HttpRequest
 from .base import HttpResponse
 from .sync import HttpClient
@@ -33,6 +34,7 @@ class _DefaultRequester(lang.Abstract, ta.Generic[C, R]):
 
             timeout_s: float | None = None,
 
+            context: HttpClientContext | None = None,
             check: bool = False,
             client: C | None = None,  # noqa
 
@@ -52,6 +54,7 @@ class _DefaultRequester(lang.Abstract, ta.Generic[C, R]):
 
         return self._do(
             request,
+            context=context,
             check=check,
             client=client,
         )
@@ -61,6 +64,7 @@ class _DefaultRequester(lang.Abstract, ta.Generic[C, R]):
             self,
             request: HttpRequest,  # noqa
             *,
+            context: HttpClientContext | None = None,
             check: bool = False,
             client: C | None = None,  # noqa
     ) -> R:
@@ -79,7 +83,7 @@ def client() -> HttpClient:
 
 
 @contextlib.contextmanager
-def client_context(client: HttpClient | None) -> ta.Generator[HttpClient]:  # noqa
+def manage_client(client: HttpClient | None) -> ta.Generator[HttpClient]:  # noqa
     if client is not None:
         yield client
 
@@ -96,12 +100,17 @@ class _BaseSyncDefaultRequester(_DefaultRequester[HttpClient, R], lang.Abstract,
             self,
             request: HttpRequest,  # noqa
             *,
+            context: HttpClientContext | None = None,
             check: bool = False,
             client: HttpClient | None = None,  # noqa
     ) -> R:
+        if context is None:
+            context = HttpClientContext()
+
         if client is not None:
             return self._do_(
                 client,
+                context,
                 request,
                 check=check,
             )
@@ -110,6 +119,7 @@ class _BaseSyncDefaultRequester(_DefaultRequester[HttpClient, R], lang.Abstract,
             with _default_client() as client:  # noqa
                 return self._do_(
                     client,
+                    context,
                     request,
                     check=check,
                 )
@@ -118,6 +128,7 @@ class _BaseSyncDefaultRequester(_DefaultRequester[HttpClient, R], lang.Abstract,
     def _do_(
             self,
             client: HttpClient,  # noqa
+            context: HttpClientContext,
             request: HttpRequest,  # noqa
             *,
             check: bool = False,  # noqa
@@ -129,12 +140,14 @@ class _SyncDefaultRequester(_BaseSyncDefaultRequester[HttpResponse]):
     def _do_(
             self,
             client: HttpClient,  # noqa
+            context: HttpClientContext,
             request: HttpRequest,  # noqa
             *,
             check: bool = False,  # noqa
     ) -> HttpResponse:
         return client.request(
             request,
+            context=context,
             check=check,
         )
 
@@ -154,7 +167,7 @@ def async_client() -> AsyncHttpClient:
 
 
 @contextlib.asynccontextmanager
-async def async_client_context(client: AsyncHttpClient | None) -> ta.AsyncGenerator[AsyncHttpClient]:  # noqa
+async def manage_async_client(client: AsyncHttpClient | None) -> ta.AsyncGenerator[AsyncHttpClient]:  # noqa
     if client is not None:
         yield client
 
@@ -171,12 +184,17 @@ class _BaseAsyncDefaultRequester(_DefaultRequester[AsyncHttpClient, ta.Awaitable
             self,
             request: HttpRequest,  # noqa
             *,
+            context: HttpClientContext | None = None,
             check: bool = False,
             client: AsyncHttpClient | None = None,  # noqa
     ) -> R:
+        if context is None:
+            context = HttpClientContext()
+
         if client is not None:
             return await self._do_(
                 client,
+                context,
                 request,
                 check=check,
             )
@@ -185,6 +203,7 @@ class _BaseAsyncDefaultRequester(_DefaultRequester[AsyncHttpClient, ta.Awaitable
             async with _default_async_client() as client:  # noqa
                 return await self._do_(
                     client,
+                    context,
                     request,
                     check=check,
                 )
@@ -193,6 +212,7 @@ class _BaseAsyncDefaultRequester(_DefaultRequester[AsyncHttpClient, ta.Awaitable
     def _do_(
             self,
             client: AsyncHttpClient,  # noqa
+            context: HttpClientContext,
             request: HttpRequest,  # noqa
             *,
             check: bool = False,  # noqa
@@ -204,12 +224,14 @@ class _AsyncDefaultRequester(_BaseAsyncDefaultRequester[HttpResponse]):
     async def _do_(
             self,
             client: AsyncHttpClient,  # noqa
+            context: HttpClientContext,
             request: HttpRequest,  # noqa
             *,
             check: bool = False,
     ) -> HttpResponse:  # noqa
         return await client.request(
             request,
+            context=context,
             check=check,
         )
 

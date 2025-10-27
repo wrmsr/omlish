@@ -7,6 +7,7 @@ import urllib.request
 
 from ..headers import HttpHeaders
 from .base import DEFAULT_ENCODING
+from .base import HttpClientContext
 from .base import HttpClientError
 from .base import HttpRequest
 from .sync import HttpClient
@@ -41,7 +42,7 @@ class UrllibHttpClient(HttpClient):
             data=d,
         )
 
-    def _stream_request(self, req: HttpRequest) -> StreamHttpResponse:
+    def _stream_request(self, ctx: HttpClientContext, req: HttpRequest) -> StreamHttpResponse:
         try:
             resp = urllib.request.urlopen(  # noqa
                 self._build_request(req),

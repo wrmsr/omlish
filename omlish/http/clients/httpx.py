@@ -12,6 +12,7 @@ from ...io.buffers import ReadableListBuffer
 from ..headers import HttpHeaders
 from .asyncs import AsyncHttpClient
 from .asyncs import AsyncStreamHttpResponse
+from .base import HttpClientContext
 from .base import HttpClientError
 from .base import HttpRequest
 from .sync import HttpClient
@@ -53,7 +54,7 @@ class HttpxHttpClient(HttpClient):
                     self.buf.feed(b)
                 return self.buf.read(n) or b''
 
-    def _stream_request(self, req: HttpRequest) -> StreamHttpResponse:
+    def _stream_request(self, ctx: HttpClientContext, req: HttpRequest) -> StreamHttpResponse:
         try:
             resp_cm = httpx.stream(
                 method=req.method_or_default,
@@ -117,7 +118,7 @@ class HttpxAsyncHttpClient(AsyncHttpClient):
                     self.buf.feed(b)
                 return self.buf.read(n) or b''
 
-    async def _stream_request(self, req: HttpRequest) -> AsyncStreamHttpResponse:
+    async def _stream_request(self, ctx: HttpClientContext, req: HttpRequest) -> AsyncStreamHttpResponse:
         es = contextlib.AsyncExitStack()
 
         try:
