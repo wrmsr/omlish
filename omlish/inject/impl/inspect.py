@@ -75,6 +75,7 @@ def build_kwargs_target(
         skip_args: int = 0,
         skip_kwargs: ta.Iterable[str] | None = None,
         raw_optional: bool = False,
+        non_strict: bool = False,
 ) -> KwargsTarget:
     if isinstance(obj, KwargsTarget):
         return obj
@@ -93,11 +94,15 @@ def build_kwargs_target(
             continue
 
         if p.annotation is inspect.Signature.empty:
+            if non_strict:
+                continue
             if p.default is not inspect.Parameter.empty:
                 raise KeyError(f'{obj}, {p.name}')
             continue
 
         if p.kind not in (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY):
+            if non_strict:
+                continue
             raise TypeError(sig)
 
         ann = p.annotation
@@ -122,7 +127,8 @@ def build_kwargs_target(
             k = dc.replace(k, tag=pt)
 
         if k in seen:
-            raise ConflictingKeyError(k)
+            if not non_strict:
+                raise ConflictingKeyError(k)
         seen.add(k)
 
         kws.append(Kwarg(

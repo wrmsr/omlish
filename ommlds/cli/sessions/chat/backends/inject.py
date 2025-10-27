@@ -39,7 +39,9 @@ def bind_backends(
 
     async def catalog_backend_instantiator_provider(injector: inj.AsyncInjector) -> _catalog.CatalogBackendProvider.Instantiator:  # noqa
         async def inner(be: 'mc.BackendCatalog.Backend', cfgs: _types.BackendConfigs | None) -> ta.Any:
-            raise NotImplementedError
+            kwt = inj.build_kwargs_target(be.factory, non_strict=True)
+            kw = await injector.provide_kwargs(kwt)
+            return be.factory(*cfgs or [], **kw)
 
         return _catalog.CatalogBackendProvider.Instantiator(inner)
 
