@@ -1,31 +1,49 @@
 # ruff: noqa: UP043 UP045
 # @omlish-lite
-import concurrent.futures as cf
-import queue
+import dataclasses as dc
+import typing as ta
 
 from .asyncs import AsyncHttpClient
 from .asyncs import AsyncStreamHttpResponse
 from .base import HttpRequest
 from .sync import HttpClient
+from .sync import StreamHttpResponse
 
 
 ##
 
 
 class ExecutorAsyncHttpClient(AsyncHttpClient):
-    def __init__(self, executor: cf.Executor, client: HttpClient) -> None:
+    def __init__(
+            self,
+            run_in_executor: ta.Callable[..., ta.Awaitable],
+            client: HttpClient,
+    ) -> None:
         super().__init__()
 
-        self._executor = executor
+        self._run_in_executor = run_in_executor
         self._client = client
 
+    @dc.dataclass(frozen=True)
+    class _StreamAdapter:
+        owner: 'ExecutorAsyncHttpClient'
+        resp: StreamHttpResponse
+
+        async def read1(self, /, n: int = -1) -> bytes:
+            return await self.owner._run_in_executor(self.resp.stream.read1, n)  # noqa
+
+        async def close(self) -> None:
+            return await self.owner._run_in_executor(self.resp.close)  # noqa
+
     async def _stream_request(self, req: HttpRequest) -> AsyncStreamHttpResponse:
-        q = queue.Queue()
-
-        def inner():
-            with self._client.stream_request(req) as s_resp:
-                q.put(s_resp)
-
-        fut = self._executor.submit(inner)  # noqa
-        # s_resp = queue.
-        raise NotImplementedError
+        resp: StreamHttpResponse = await self._run_in_executor(self._client.stream_request, req)
+        return AsyncStreamHttpResponse(
+            status=resp.status,
+            headers=resp.headers,
+            request=req,
+            underlying=resp,
+            **(dict(  # type: ignore
+                stream=(adapter := self._StreamAdapter(self, resp)),
+                _closer=adapter.close,
+            ) if resp.has_data else {}),
+        )

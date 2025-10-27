@@ -1,4 +1,4 @@
-# ruff: noqa: UP043 UP045
+# ruff: noqa: UP006 UP043 UP045
 # @omlish-lite
 """
 TODO:
@@ -143,7 +143,7 @@ class ConditionDeque(ta.Generic[T]):
 ##
 
 
-class BufferRelay(ta.Generic[T]):
+class SyncBufferRelay(ta.Generic[T]):
     def __init__(
             self,
             *,
@@ -154,7 +154,7 @@ class BufferRelay(ta.Generic[T]):
         self._wake_fn = wake_fn
 
         self._lock = threading.Lock()
-        self._buffer: BufferRelay._Buffer = BufferRelay._Buffer()
+        self._buffer: SyncBufferRelay._Buffer = SyncBufferRelay._Buffer()
 
     class _Buffer:
         def __init__(self) -> None:
@@ -175,7 +175,7 @@ class BufferRelay(ta.Generic[T]):
 
     def swap(self) -> ta.Sequence[T]:
         with self._lock:
-            buf, self._buffer = self._buffer, BufferRelay._Buffer()
+            buf, self._buffer = self._buffer, SyncBufferRelay._Buffer()
         return buf.lst
 
 

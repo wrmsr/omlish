@@ -1,3 +1,4 @@
+import asyncio
 import concurrent.futures as cf
 import contextlib
 
@@ -7,16 +8,20 @@ from .. import default
 from ..base import HttpClientError
 from ..base import HttpRequest
 from ..base import HttpStatusError
-from ..httpx import HttpxAsyncHttpClient
 from ..executor import ExecutorAsyncHttpClient
+from ..httpx import HttpxAsyncHttpClient
 from ..urllib import UrllibHttpClient
 
 
 @contextlib.asynccontextmanager
 async def thread_executor_urllib_async_http_client():
+    loop = asyncio.get_running_loop()
     with cf.ThreadPoolExecutor() as executor:
         with UrllibHttpClient() as client:
-            async with ExecutorAsyncHttpClient(executor, client) as acli:
+            async with ExecutorAsyncHttpClient(
+                    lambda *args: loop.run_in_executor(executor, *args),  # noqa
+                    client,
+            ) as acli:
                 yield acli
 
 
