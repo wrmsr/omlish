@@ -9,7 +9,7 @@ def test_lazy_fn():
         c += 1
         return 420
 
-    lfn = sync.LazyFn(fn)
+    lfn = sync.SyncLazyFn(fn)
 
     assert c == 0
     assert lfn.get() == 420

@@ -61,7 +61,7 @@ json5==0.12.1
 # c/libpq
 psycopg2==2.9.11
 # py/cy
-psycopg==3.2.11
+psycopg==3.2.12
 
 mysql-connector-python==9.5.0
 mysqlclient==2.2.7; sys_platform == "darwin"  # brew install mysql pkg-config  # PKG_CONFIG_PATH="/opt/homebrew/opt/mysql-client/lib/pkgconfig" pip install ...
@@ -70,9 +70,9 @@ ujson==5.11.0
 
 markupsafe==3.0.3
 
-redis==7.0.0
+redis==7.0.1
 
-sqlean.py==3.50.4.4
+sqlean.py==3.50.4.5
 # git+https://github.com/wrmsr/sqlean.py.git
 
 duckdb==1.4.1

@@ -1,3 +1,5 @@
+# ruff: noqa: UP043 UP045
+# @omlish-lite
 """
 TODO:
  - sync (lol) w/ asyncs.anyio
@@ -8,7 +10,7 @@ import collections
 import threading
 import typing as ta
 
-from . import lang
+from .lite.maybes import Maybe
 
 
 T = ta.TypeVar('T')
@@ -17,7 +19,7 @@ T = ta.TypeVar('T')
 ##
 
 
-class Once:
+class SyncOnce:
     def __init__(self) -> None:
         super().__init__()
 
@@ -40,43 +42,43 @@ class Once:
 ##
 
 
-class Lazy(ta.Generic[T]):
+class SyncLazy(ta.Generic[T]):
     def __init__(self) -> None:
         super().__init__()
 
-        self._once = Once()
-        self._v: lang.Maybe[T] = lang.empty()
+        self._once = SyncOnce()
+        self._v: Maybe[T] = Maybe.empty()
 
-    def peek(self) -> lang.Maybe[T]:
+    def peek(self) -> Maybe[T]:
         return self._v
 
     def set(self, v: T) -> None:
-        self._v = lang.just(v)
+        self._v = Maybe.just(v)
 
     def get(self, fn: ta.Callable[[], T]) -> T:
         def do():
-            self._v = lang.just(fn())
+            self._v = Maybe.just(fn())
         self._once.do(do)
         return self._v.must()
 
 
-class LazyFn(ta.Generic[T]):
+class SyncLazyFn(ta.Generic[T]):
     def __init__(self, fn: ta.Callable[[], T]) -> None:
         super().__init__()
 
         self._fn = fn
-        self._once = Once()
-        self._v: lang.Maybe[T] = lang.empty()
+        self._once = SyncOnce()
+        self._v: Maybe[T] = Maybe.empty()
 
-    def peek(self) -> lang.Maybe[T]:
+    def peek(self) -> Maybe[T]:
         return self._v
 
     def set(self, v: T) -> None:
-        self._v = lang.just(v)
+        self._v = Maybe.just(v)
 
     def get(self) -> T:
         def do():
-            self._v = lang.just(self._fn())
+            self._v = Maybe.just(self._fn())
         self._once.do(do)
         return self._v.must()
 
@@ -89,11 +91,11 @@ class ConditionDeque(ta.Generic[T]):
             self,
             *,
             cond: ta.Optional['threading.Condition'] = None,
-            deque: collections.deque[T] | None = None,
+            deque: ta.Optional[ta.Deque[T]] = None,
 
             lock: ta.Optional['threading.RLock'] = None,
-            maxlen: int | None = None,
-            init: ta.Iterable[T] | None = None,
+            maxlen: ta.Optional[int] = None,
+            init: ta.Optional[ta.Iterable[T]] = None,
     ) -> None:
         super().__init__()
 
@@ -112,7 +114,7 @@ class ConditionDeque(ta.Generic[T]):
         return self._cond
 
     @property
-    def deque(self) -> collections.deque[T]:
+    def deque(self) -> ta.Deque[T]:
         return self._deque
 
     def push(
@@ -126,9 +128,9 @@ class ConditionDeque(ta.Generic[T]):
 
     def pop(
             self,
-            timeout: float | None = None,
+            timeout: ta.Optional[float] = None,
             *,
-            if_empty: ta.Callable[[], None] | None = None,
+            if_empty: ta.Optional[ta.Callable[[], None]] = None,
     ) -> T:
         with self.cond:
             if not self.deque and if_empty is not None:
@@ -195,7 +197,7 @@ class CountDownLatch:
 
     def wait(
             self,
-            timeout: float | None = None,
+            timeout: ta.Optional[float] = None,
     ) -> bool:
         with self._cond:
             return self._cond.wait_for(

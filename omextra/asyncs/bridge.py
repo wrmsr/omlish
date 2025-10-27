@@ -82,7 +82,7 @@ _THREADLETS_IMPL = threadlets.GreenletThreadlets
 # from ..concurrent.tests.real import RealThreadlets
 # _THREADLETS_IMPL = RealThreadlets
 
-_THREADLETS = sync.LazyFn(lambda: _THREADLETS_IMPL())
+_THREADLETS = sync.SyncLazyFn(lambda: _THREADLETS_IMPL())
 
 
 def _threadlets() -> threadlets.Threadlets:

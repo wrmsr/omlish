@@ -1,3 +1,5 @@
+# ruff: noqa: UP043 UP045
+# @omlish-lite
 import http.client
 import typing as ta
 import urllib.error

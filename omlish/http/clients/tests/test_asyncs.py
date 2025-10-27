@@ -1,3 +1,6 @@
+import concurrent.futures as cf
+import contextlib
+
 import pytest
 
 from .. import default
@@ -5,9 +8,22 @@ from ..base import HttpClientError
 from ..base import HttpRequest
 from ..base import HttpStatusError
 from ..httpx import HttpxAsyncHttpClient
+from ..executor import ExecutorAsyncHttpClient
+from ..urllib import UrllibHttpClient
 
 
-CLIENTS: list = [HttpxAsyncHttpClient]
+@contextlib.asynccontextmanager
+async def thread_executor_urllib_async_http_client():
+    with cf.ThreadPoolExecutor() as executor:
+        with UrllibHttpClient() as client:
+            async with ExecutorAsyncHttpClient(executor, client) as acli:
+                yield acli
+
+
+CLIENTS: list = [
+    HttpxAsyncHttpClient,
+    thread_executor_urllib_async_http_client,
+]
 
 
 @pytest.mark.asyncs('asyncio')

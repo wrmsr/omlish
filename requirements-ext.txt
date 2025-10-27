@@ -44,7 +44,7 @@ gguf==0.17.1
 # source
 
 jedi==0.19.2
-jedi-language-server==0.45.1
+jedi-language-server==0.46.0
 
 tree-sitter==0.25.2
 tree-sitter-python==0.25.0
