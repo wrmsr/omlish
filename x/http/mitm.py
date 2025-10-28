@@ -107,7 +107,7 @@ class SimpleMitmHandler:
 
                 def stream_data():
                     try:
-                        while b := t_resp.stream.read(self._read_size):
+                        while b := t_resp.stream.read1(self._read_size):
                             if buf is not None:
                                 for o in dec(b):
                                     buf.write(o)
