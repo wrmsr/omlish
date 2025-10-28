@@ -33,7 +33,6 @@ from ..keys import Key
 from ..keys import as_key
 from ..listeners import ProvisionListener
 from ..listeners import ProvisionListenerBinding
-from ..scopes import ScopeBinding
 from ..scopes import Singleton
 from ..scopes import ThreadScope
 from ..types import Scope
@@ -77,27 +76,30 @@ class AsyncInjectorImpl(AsyncInjector, lang.Final):
         }
 
         self._bim = ec.binding_impl_map()
+
         self._ekbs = ec.eager_keys_by_scope()
+
         self._pls: tuple[ProvisionListener, ...] = tuple(
             b.listener  # type: ignore[attr-defined]
             for b in itertools.chain(
                 ec.elements_of_type(ProvisionListenerBinding),
-                (p._pls if p is not None else ()),  # noqa
+                p._pls if p is not None else (),  # noqa
             )
         )
 
-        self._cs: weakref.WeakSet[AsyncInjectorImpl] | None = None  # noqa
         self._root: AsyncInjectorImpl = p._root if p is not None else self  # noqa
 
-        self.__cur_req: AsyncInjectorImpl._Request | None = None
-
-        ss = [
-            *DEFAULT_SCOPES,
-            *[sb.scope for sb in ec.elements_of_type(ScopeBinding)],
-        ]
         self._scopes: dict[Scope, ScopeImpl] = {
-            s: make_scope_impl(s) for s in ss
+            s: make_scope_impl(s)
+            for s in itertools.chain(
+                DEFAULT_SCOPES,
+                ec.scope_binding_scopes(),
+            )
         }
+
+    _cs: weakref.WeakSet['AsyncInjectorImpl'] | None = None  # noqa
+
+    __cur_req: ta.Optional['AsyncInjectorImpl._Request'] = None
 
     #
 

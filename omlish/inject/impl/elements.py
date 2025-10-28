@@ -47,7 +47,7 @@ from .multis import make_multi_provider_impl
 from .origins import Origins
 from .origins import set_origins
 from .providers import ProviderImpl
-from .providers2 import make_provider_impl
+from .providersmap import make_provider_impl
 from .scopes import make_scope_impl
 
 
@@ -207,6 +207,10 @@ class ElementCollection(lang.Final):
         return self._build_binding_impl_map(self.element_multimap())
 
     ##
+
+    @lang.cached_function
+    def scope_binding_scopes(self) -> ta.Sequence[Scope]:
+        return [sb.scope for sb in self.elements_of_type(ScopeBinding)]
 
     @lang.cached_function
     def eager_keys_by_scope(self) -> ta.Mapping[Scope, ta.Sequence[Key]]:
