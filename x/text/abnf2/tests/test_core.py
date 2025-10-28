@@ -67,10 +67,10 @@ def test_core() -> None:
 
     @add_rule_fn('rule')
     def visit_rule_rule(m: ba.Match) -> ta.Any:
-        rn_m, _, els_m = m.children
-        rn = check.isinstance(visit_match(rn_m), RuleName)
-        els = visit_match(els_m)
-        raise NotImplementedError
+        rn_m, _, el_m = m.children
+        rn = check.isinstance(visit_match(rn_m), RuleName).s
+        el = check.isinstance(visit_match(el_m), ba.Parser)
+        return ba.Rule(rn, el)
 
     @add_rule_fn('rulename')
     def visit_rulename_rule(m: ba.Match) -> ta.Any:
