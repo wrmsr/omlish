@@ -342,6 +342,8 @@ def proxy_import(
         spec: str,
         package: str | None = None,
         extras: ta.Iterable[str] | None = None,
+        *,
+        no_cache: bool = False,
 ) -> types.ModuleType:
     """'Legacy' proxy import mechanism."""
 
@@ -352,12 +354,19 @@ def proxy_import(
 
     def __getattr__(att):  # noqa
         nonlocal omod
+
         if omod is None:
             omod = importlib.import_module(spec, package=package)
             if extras:
                 for x in extras:
                     importlib.import_module(f'{spec}.{x}', package=package)
-        return getattr(omod, att)
+
+        v = getattr(omod, att)
+
+        if not no_cache:
+            setattr(lmod, att, v)
+
+        return v
 
     lmod = types.ModuleType(spec)
     lmod.__getattr__ = __getattr__  # type: ignore[method-assign]

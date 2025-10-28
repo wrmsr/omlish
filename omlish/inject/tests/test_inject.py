@@ -68,3 +68,24 @@ def test_dupe_squashing():
                 inj.bind('four twenty'),
             ),
         )
+
+
+def test_collect_elements():
+    c = 0
+
+    def f(i: int, f: float | None = None) -> str:
+        nonlocal c
+        c += 1
+        return f'{i=} {f=} {c=}'
+
+    es = inj.as_elements(
+        inj.bind(420),
+        inj.bind(f),
+    )
+
+    ce = inj.collect_elements(es)
+
+    assert c == 0
+    for i in range(1, 4):
+        assert inj.create_injector(ce)[str] == f'i=420 f=None c={i}'
+        assert c == i
