@@ -1,14 +1,11 @@
 import asyncio
 import threading
-import typing as ta
 
 import transformers as tfm
 
 from omlish.asyncs.asyncio.sync import AsyncioBufferRelay
-from ommlds.backends.transformers.streamers import CancellableTextStreamer
 
-
-T = ta.TypeVar('T')
+from ...streamers import CancellableTextStreamer
 
 
 ##
@@ -44,7 +41,7 @@ async def _a_main() -> None:
         add_generation_prompt=True,
     )
 
-    relay = AsyncioBufferRelay()
+    relay: AsyncioBufferRelay = AsyncioBufferRelay()
 
     def streamer_callback(text: str, *, stream_end: bool) -> None:
         if text or stream_end:
