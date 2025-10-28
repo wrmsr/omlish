@@ -82,11 +82,15 @@ class CseSearchService:
             self,
             cse_id: str | None = None,
             cse_api_key: str | None = None,
+            *,
+            http_client: http.AsyncHttpClient | None = None,
     ) -> None:
         super().__init__()
 
         self._cse_id = cse_id
         self._cse_api_key = cse_api_key
+
+        self._http_client = http_client
 
     async def invoke(
             self,
@@ -97,8 +101,9 @@ class CseSearchService:
             cx=check.non_empty_str(self._cse_id),
             q=request.v,
         ))
-        resp = http.request(
+        resp = await http.async_request(
             f'https://www.googleapis.com/customsearch/v1?{qs}',
+            client=self._http_client,
         )
         out = check.not_none(resp.data)
 

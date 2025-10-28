@@ -18,7 +18,9 @@ async def test_chat():
     except http.HttpClientError:
         pytest.skip('No ollama server')
 
-    with lang.maybe_managing(OllamaChatChoicesService()) as llm:
+    with lang.maybe_managing(OllamaChatChoicesService(
+        http_client=http.SyncAsyncHttpClient(http.client()),
+    )) as llm:
         q = 'Is a bird a mammal?'
 
         resp = await llm.invoke(Request([UserMessage(q)]))
@@ -35,7 +37,9 @@ async def test_chat_stream():
     except http.HttpClientError:
         pytest.skip('No ollama server')
 
-    with lang.maybe_managing(OllamaChatChoicesStreamService()) as llm:
+    with lang.maybe_managing(OllamaChatChoicesStreamService(
+        http_client=http.SyncAsyncHttpClient(http.client()),
+    )) as llm:
         q = 'Is a bird a mammal?'
 
         async with (resp := await llm.invoke(Request([UserMessage(q)]))).v as it:  # noqa

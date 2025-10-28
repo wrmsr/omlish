@@ -21,7 +21,13 @@ class BackendCatalog(lang.Abstract):
     def get_backend(self, service_cls: type[T], name: str) -> Backend:
         raise NotImplementedError
 
-    def new_backend(self, service_cls: ta.Any, name: str, *args: ta.Any, **kwargs: ta.Any) -> ta.Any:
+    def new_backend(
+            self,
+            service_cls: ta.Any,
+            name: str,
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> ta.Any:
         be = self.get_backend(service_cls, name)
         return be.factory(*be.configs or [], *args, **kwargs)
 

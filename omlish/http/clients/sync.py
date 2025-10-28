@@ -57,13 +57,13 @@ class StreamHttpResponse(BaseHttpResponse):
 
     def close(self) -> None:
         if (c := self._closer) is not None:
-            c()
+            c()  # noqa
 
 
 #
 
 
-def close_response(resp: BaseHttpResponse) -> None:
+def close_http_client_response(resp: BaseHttpResponse) -> None:
     if isinstance(resp, HttpResponse):
         pass
 
@@ -75,7 +75,7 @@ def close_response(resp: BaseHttpResponse) -> None:
 
 
 @contextlib.contextmanager
-def closing_response(resp: BaseHttpResponseT) -> ta.Iterator[BaseHttpResponseT]:
+def closing_http_client_response(resp: BaseHttpResponseT) -> ta.Iterator[BaseHttpResponseT]:
     if isinstance(resp, HttpResponse):
         yield resp
         return
@@ -88,7 +88,7 @@ def closing_response(resp: BaseHttpResponseT) -> ta.Iterator[BaseHttpResponseT]:
         raise TypeError(resp)
 
 
-def read_response(resp: BaseHttpResponse) -> HttpResponse:
+def read_http_client_response(resp: BaseHttpResponse) -> HttpResponse:
     if isinstance(resp, HttpResponse):
         return resp
 
@@ -119,12 +119,12 @@ class HttpClient(BaseHttpClient, Abstract):
             context: ta.Optional[HttpClientContext] = None,
             check: bool = False,
     ) -> HttpResponse:
-        with closing_response(self.stream_request(
+        with closing_http_client_response(self.stream_request(
                 req,
                 context=context,
                 check=check,
         )) as resp:
-            return read_response(resp)
+            return read_http_client_response(resp)
 
     def stream_request(
             self,
@@ -144,10 +144,10 @@ class HttpClient(BaseHttpClient, Abstract):
                     cause = resp.underlying
                 else:
                     cause = None
-                raise HttpStatusError(read_response(resp)) from cause  # noqa
+                raise HttpStatusError(read_http_client_response(resp)) from cause  # noqa
 
         except Exception:
-            close_response(resp)
+            close_http_client_response(resp)
             raise
 
         return resp

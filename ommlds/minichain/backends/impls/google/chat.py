@@ -40,8 +40,14 @@ from .tools import build_tool_spec_schema
 class GoogleChatChoicesService:
     DEFAULT_MODEL_NAME: ta.ClassVar[ModelName] = ModelName(check.not_none(MODEL_NAMES.default))
 
-    def __init__(self, *configs: ApiKey | ModelName) -> None:
+    def __init__(
+            self,
+            *configs: ApiKey | ModelName,
+            http_client: http.AsyncHttpClient | None = None,
+    ) -> None:
         super().__init__()
+
+        self._http_client = http_client
 
         with tv.consume(*configs) as cc:
             self._model_name = cc.pop(self.DEFAULT_MODEL_NAME)
@@ -149,11 +155,12 @@ class GoogleChatChoicesService:
 
         model_name = MODEL_NAMES.resolve(self._model_name.v)
 
-        resp = http.request(
+        resp = await http.async_request(
             f'{self.BASE_URL.rstrip("/")}/{model_name}:generateContent?key={key}',
             headers={'Content-Type': 'application/json'},
             data=json.dumps_compact(req_dct).encode('utf-8'),
             method='POST',
+            client=self._http_client,
         )
 
         resp_dct = json.loads(check.not_none(resp.data).decode('utf-8'))

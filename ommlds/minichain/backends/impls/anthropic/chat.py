@@ -46,8 +46,11 @@ class AnthropicChatChoicesService:
     def __init__(
             self,
             *configs: ApiKey | ModelName,
+            http_client: http.AsyncHttpClient | None = None,
     ) -> None:
         super().__init__()
+
+        self._http_client = http_client
 
         with tv.consume(*configs) as cc:
             self._api_key = check.not_none(ApiKey.pop_secret(cc, env='ANTHROPIC_API_KEY'))
@@ -88,7 +91,7 @@ class AnthropicChatChoicesService:
 
         raw_request = msh.marshal(a_req)
 
-        raw_response = http.request(
+        raw_response = await http.async_request(
             'https://api.anthropic.com/v1/messages',
             headers={
                 http.consts.HEADER_CONTENT_TYPE: http.consts.CONTENT_TYPE_JSON,
@@ -96,6 +99,7 @@ class AnthropicChatChoicesService:
                 b'anthropic-version': b'2023-06-01',
             },
             data=json.dumps(raw_request).encode('utf-8'),
+            client=self._http_client,
         )
 
         response = json.loads(check.not_none(raw_response.data).decode('utf-8'))

@@ -1,4 +1,5 @@
 from omlish import lang
+from omlish.http import all as http
 from omlish.secrets.tests.harness import HarnessSecrets
 
 from .....services import Request
@@ -13,6 +14,7 @@ def test_search(harness):
     res = lang.sync_await(CseSearchService(
         cse_id=cse_id.reveal(),
         cse_api_key=cse_api_key.reveal(),
+        http_client=http.SyncAsyncHttpClient(http.client()),
     ).invoke(Request('lectures')))
 
     print(res)

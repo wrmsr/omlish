@@ -1,4 +1,5 @@
 from omlish import lang
+from omlish.http import all as http
 from omlish.secrets.tests.harness import HarnessSecrets
 
 from ....chat.messages import UserMessage
@@ -9,7 +10,10 @@ from ..mistral import TooManyRequestsMistralError
 
 def test_mistral_chat(harness):
     key = harness[HarnessSecrets].get_or_skip('mistral_api_key')
-    svc = MistralChatChoicesService(api_key=key.reveal())
+    svc = MistralChatChoicesService(
+        api_key=key.reveal(),
+        http_client=http.SyncAsyncHttpClient(http.client()),
+    )
     try:
         resp = lang.sync_await(svc.invoke(Request([UserMessage('hi')])))
     except TooManyRequestsMistralError:

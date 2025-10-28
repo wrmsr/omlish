@@ -1,5 +1,6 @@
 from omlish import lang
 from omlish import marshal as msh
+from omlish.http import all as http
 from omlish.secrets.tests.harness import HarnessSecrets
 
 from .....completion import CompletionRequest
@@ -8,7 +9,10 @@ from ..completion import OpenaiCompletionService
 
 
 def test_openai(harness):
-    llm = OpenaiCompletionService(ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()))
+    llm = OpenaiCompletionService(
+        ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
+        http_client=http.SyncAsyncHttpClient(http.client()),
+    )
 
     req: CompletionRequest = CompletionRequest(
         'Is water dry?',

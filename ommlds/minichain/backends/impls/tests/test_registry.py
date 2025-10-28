@@ -1,4 +1,5 @@
 from omlish import lang
+from omlish.http import all as http
 from omlish.secrets.tests.harness import HarnessSecrets
 
 from ....chat.choices.services import ChatChoicesRequest
@@ -15,6 +16,7 @@ def test_new_backend_openai(harness):
         ChatChoicesService,
         'openai',
         ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
+        http_client=http.SyncAsyncHttpClient(http.client()),
     )
 
     resp = lang.sync_await(llm.invoke(ChatChoicesRequest([UserMessage('what is 2 + 2?')])))
@@ -25,6 +27,7 @@ def test_new_backend_openai2(harness):
     llm = ServiceFacade(registry_of[ChatChoicesService].new(
         'openai',
         ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
+        http_client=http.SyncAsyncHttpClient(http.client()),
     ))
 
     resp = lang.sync_await(llm([UserMessage('what is 2 + 2?')]))

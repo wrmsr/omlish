@@ -1,4 +1,5 @@
 from omlish import lang
+from omlish.http import all as http
 from omlish.secrets.tests.harness import HarnessSecrets
 
 from .....chat.messages import UserMessage
@@ -10,6 +11,7 @@ from ..stream import GoogleChatChoicesStreamService
 def test_google_chat_stream_model(harness):
     llm = GoogleChatChoicesStreamService(
         ApiKey(harness[HarnessSecrets].get_or_skip('gemini_api_key').reveal()),
+        http_client=http.SyncAsyncHttpClient(http.client()),
     )
 
     foo_req: ChatChoicesStreamRequest

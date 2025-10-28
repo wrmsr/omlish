@@ -41,8 +41,14 @@ from .names import MODEL_NAMES
 # )
 @static_check_is_chat_choices_stream_service
 class OpenaiChatChoicesStreamService:
-    def __init__(self, *configs: Config) -> None:
+    def __init__(
+            self,
+            *configs: Config,
+            http_client: http.AsyncHttpClient | None = None,
+    ) -> None:
         super().__init__()
+
+        self._http_client = http_client
 
         with tv.consume(*configs) as cc:
             self._model_name = cc.pop(OpenaiChatChoicesService.DEFAULT_MODEL_NAME)
@@ -81,14 +87,14 @@ class OpenaiChatChoicesStreamService:
         )
 
         async with UseResources.or_new(request.options) as rs:
-            http_client = rs.enter_context(http.client())
-            http_response = rs.enter_context(http_client.stream_request(http_request))
+            http_client = await rs.enter_async_context(http.manage_async_client(self._http_client))
+            http_response = await rs.enter_async_context(await http_client.stream_request(http_request))
 
             async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ta.Sequence[ChatChoicesOutputs]:
                 db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
                 sd = sse.SseDecoder()
                 while True:
-                    b = http_response.stream.read1(self.READ_CHUNK_SIZE)
+                    b = await http_response.stream.read1(self.READ_CHUNK_SIZE)
                     for l in db.feed(b):
                         if isinstance(l, DelimitingBuffer.Incomplete):
                             # FIXME: handle

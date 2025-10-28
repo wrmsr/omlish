@@ -714,7 +714,7 @@
     "module": ".tools.git",
     "attr": null,
     "file": "ommlds/tools/git.py",
-    "line": 186,
+    "line": 189,
     "value": {
       "!omdev.tools.git.messages.GitMessageGeneratorManifest": {
         "module": "ommlds.tools.git",

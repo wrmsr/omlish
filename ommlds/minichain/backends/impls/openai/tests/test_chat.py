@@ -3,6 +3,7 @@ import typing as ta
 from omlish import check
 from omlish import lang
 from omlish import marshal as msh
+from omlish.http import all as http
 from omlish.secrets.tests.harness import HarnessSecrets
 
 from .....chat.choices.services import ChatChoicesRequest
@@ -26,7 +27,10 @@ from ..chat import OpenaiChatChoicesService
 
 
 def test_openai(harness):
-    llm = OpenaiChatChoicesService(ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()))
+    llm = OpenaiChatChoicesService(
+        ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
+        http_client=http.SyncAsyncHttpClient(http.client()),
+    )
 
     req = ChatChoicesRequest(
         [UserMessage('Is water dry?')],
@@ -47,7 +51,10 @@ def test_openai(harness):
 
 
 def test_openai_content(harness):
-    llm = OpenaiChatChoicesService(ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()))
+    llm = OpenaiChatChoicesService(
+        ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
+        http_client=http.SyncAsyncHttpClient(http.client()),
+    )
 
     req = ChatChoicesRequest(
         [UserMessage(['Is water ', [TextContent('dry?')]])],
@@ -68,7 +75,10 @@ def test_openai_content(harness):
 
 
 def test_openai_tools(harness):
-    llm = OpenaiChatChoicesService(ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()))
+    llm = OpenaiChatChoicesService(
+        ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
+        http_client=http.SyncAsyncHttpClient(http.client()),
+    )
 
     tool_spec = ToolSpec(
         'get_weather',
@@ -128,6 +138,7 @@ def test_openai_tools(harness):
 def test_openai_chat_promote(harness):
     llm: ChatChoicesService = ta.cast(ChatChoicesService, OpenaiChatChoicesService(
         ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
+        http_client=http.SyncAsyncHttpClient(http.client()),
     ))
 
     assert lang.sync_await(llm.invoke(ChatChoicesRequest([UserMessage('Hi!')]))).v
@@ -138,6 +149,7 @@ def test_default_options(harness):
     llm: ChatChoicesService = ta.cast(ChatChoicesService, OpenaiChatChoicesService(
         ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
         DefaultOptions([MaxTokens(100)]),
+        http_client=http.SyncAsyncHttpClient(http.client()),
     ))
 
     assert lang.sync_await(llm.invoke(ChatChoicesRequest([UserMessage('Hi!')]))).v

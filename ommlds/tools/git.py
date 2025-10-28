@@ -16,6 +16,7 @@ from omdev.tools.git.messages import GitMessageGenerator
 from omlish import check
 from omlish import lang
 from omlish.configs.classes import Configurable
+from omlish.http import all as http
 from omlish.subprocesses.sync import subprocesses
 
 from .. import minichain as mc
@@ -76,7 +77,9 @@ class OpenaiGitAiBackend(GitAiBackend['OpenaiGitAiBackend.Config']):
             if (sec := load_secrets().try_get(key.lower())) is not None:
                 os.environ[key] = sec.reveal()
 
-        llm = OpenaiChatChoicesService()
+        llm = OpenaiChatChoicesService(
+            http_client=http.SyncAsyncHttpClient(http.client()),
+        )
 
         resp = lang.sync_await(llm.invoke(mc.ChatChoicesRequest(
             [mc.UserMessage(prompt)],

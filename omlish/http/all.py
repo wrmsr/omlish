@@ -7,16 +7,15 @@ with _lang.auto_proxy_init(globals()):
     from .clients.asyncs import (  # noqa
         AsyncStreamHttpResponse,
 
-        async_close_response,
-        async_closing_response,
-        async_read_response,
+        async_close_http_client_response,
+        async_closing_http_client_response,
+        async_read_http_client_response,
 
         AsyncHttpClient,
     )
 
     from .clients.base import (  # noqa
         DEFAULT_ENCODING,
-
         is_success_status,
 
         HttpRequest,
@@ -24,8 +23,12 @@ with _lang.auto_proxy_init(globals()):
         BaseHttpResponse,
         HttpResponse,
 
+        HttpClientContext,
+
         HttpClientError,
         HttpStatusError,
+
+        BaseHttpClient,
     )
 
     from .clients.default import (  # noqa
@@ -42,16 +45,33 @@ with _lang.auto_proxy_init(globals()):
 
     from .clients.httpx import (  # noqa
         HttpxHttpClient,
+
+        HttpxAsyncHttpClient,
+    )
+
+    from .clients.middleware import (  # noqa
+        HttpClientMiddleware,
+        AbstractMiddlewareHttpClient,
+
+        MiddlewareHttpClient,
+        MiddlewareAsyncHttpClient,
+
+        TooManyRedirectsHttpClientError,
+        RedirectHandlingHttpClientMiddleware,
     )
 
     from .clients.sync import (  # noqa
         StreamHttpResponse,
 
-        close_response,
-        closing_response,
-        read_response,
+        close_http_client_response,
+        closing_http_client_response,
+        read_http_client_response,
 
         HttpClient,
+    )
+
+    from .clients.syncasync import (  # noqa
+        SyncAsyncHttpClient,
     )
 
     from .clients.urllib import (  # noqa

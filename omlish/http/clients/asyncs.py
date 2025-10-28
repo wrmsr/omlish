@@ -57,13 +57,13 @@ class AsyncStreamHttpResponse(BaseHttpResponse):
 
     async def close(self) -> None:
         if (c := self._closer) is not None:
-            await c()
+            await c()  # noqa
 
 
 #
 
 
-async def async_close_response(resp: BaseHttpResponse) -> None:
+async def async_close_http_client_response(resp: BaseHttpResponse) -> None:
     if isinstance(resp, HttpResponse):
         pass
 
@@ -75,7 +75,7 @@ async def async_close_response(resp: BaseHttpResponse) -> None:
 
 
 @contextlib.asynccontextmanager
-async def async_closing_response(resp: BaseHttpResponseT) -> ta.AsyncGenerator[BaseHttpResponseT, None]:
+async def async_closing_http_client_response(resp: BaseHttpResponseT) -> ta.AsyncGenerator[BaseHttpResponseT, None]:
     if isinstance(resp, HttpResponse):
         yield resp
         return
@@ -90,7 +90,7 @@ async def async_closing_response(resp: BaseHttpResponseT) -> ta.AsyncGenerator[B
         raise TypeError(resp)
 
 
-async def async_read_response(resp: BaseHttpResponse) -> HttpResponse:
+async def async_read_http_client_response(resp: BaseHttpResponse) -> HttpResponse:
     if isinstance(resp, HttpResponse):
         return resp
 
@@ -121,12 +121,12 @@ class AsyncHttpClient(BaseHttpClient, Abstract):
             context: ta.Optional[HttpClientContext] = None,
             check: bool = False,
     ) -> HttpResponse:
-        async with async_closing_response(await self.stream_request(
+        async with async_closing_http_client_response(await self.stream_request(
                 req,
                 context=context,
                 check=check,
         )) as resp:
-            return await async_read_response(resp)
+            return await async_read_http_client_response(resp)
 
     async def stream_request(
             self,
@@ -146,10 +146,10 @@ class AsyncHttpClient(BaseHttpClient, Abstract):
                     cause = resp.underlying
                 else:
                     cause = None
-                raise HttpStatusError(await async_read_response(resp)) from cause  # noqa
+                raise HttpStatusError(await async_read_http_client_response(resp)) from cause  # noqa
 
         except Exception:
-            await async_close_response(resp)
+            await async_close_http_client_response(resp)
             raise
 
         return resp

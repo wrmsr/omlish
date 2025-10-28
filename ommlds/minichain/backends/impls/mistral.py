@@ -40,10 +40,16 @@ class MistralChatChoicesService:
         AiMessage: 'assistant',
     }
 
-    def __init__(self, *, api_key: str | None = None) -> None:
+    def __init__(
+            self,
+            *,
+            api_key: str | None = None,
+            http_client: http.AsyncHttpClient | None = None,
+    ) -> None:
         super().__init__()
 
         self._api_key = api_key
+        self._http_client = http_client
 
     def _get_msg_content(self, m: Message) -> str | None:
         if isinstance(m, AiMessage):
@@ -73,7 +79,7 @@ class MistralChatChoicesService:
             ],
         }
 
-        resp = http.request(
+        resp = await http.async_request(
             'https://api.mistral.ai/v1/chat/completions',
             method='POST',
             data=json.dumps_compact(req_dct).encode('utf-8'),
@@ -82,6 +88,7 @@ class MistralChatChoicesService:
                 'Accept': 'application/json',
                 'Authorization': f'Bearer {key}',
             },
+            client=self._http_client,
         )
 
         if resp.status == 429:

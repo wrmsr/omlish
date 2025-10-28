@@ -22,8 +22,14 @@ from ....vectors.types import Vector
 class OpenaiEmbeddingService:
     model = 'text-embedding-3-small'
 
-    def __init__(self, *configs: Config) -> None:
+    def __init__(
+            self,
+            *configs: Config,
+            http_client: http.AsyncHttpClient | None = None,
+    ) -> None:
         super().__init__()
+
+        self._http_client = http_client
 
         with tv.consume(*configs) as cc:
             self._api_key = ApiKey.pop_secret(cc, env='OPENAI_API_KEY')
@@ -34,13 +40,14 @@ class OpenaiEmbeddingService:
             input=check.isinstance(request.v, str),
         )
 
-        raw_response = http.request(
+        raw_response = await http.async_request(
             'https://api.openai.com/v1/embeddings',
             headers={
                 http.consts.HEADER_CONTENT_TYPE: http.consts.CONTENT_TYPE_JSON,
                 http.consts.HEADER_AUTH: http.consts.format_bearer_auth_header(check.not_none(self._api_key).reveal()),
             },
             data=json.dumps(raw_request).encode('utf-8'),
+            client=self._http_client,
         )
 
         response = json.loads(check.not_none(raw_response.data).decode('utf-8'))

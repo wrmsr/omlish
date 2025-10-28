@@ -23,7 +23,7 @@ from .base import HttpClientError
 from .base import HttpRequest
 from .sync import HttpClient
 from .sync import StreamHttpResponse
-from .sync import close_response
+from .sync import close_http_client_response
 
 
 BaseHttpClientT = ta.TypeVar('BaseHttpClientT', bound=BaseHttpClient)
@@ -84,6 +84,9 @@ class AbstractMiddlewareHttpClient(Abstract, ta.Generic[BaseHttpClientT]):
         return resp
 
 
+#
+
+
 class MiddlewareHttpClient(AbstractMiddlewareHttpClient[HttpClient], HttpClient):
     def _stream_request(self, ctx: HttpClientContext, req: HttpRequest) -> StreamHttpResponse:
         while True:
@@ -95,7 +98,7 @@ class MiddlewareHttpClient(AbstractMiddlewareHttpClient[HttpClient], HttpClient)
                 out = self._process_response(ctx, req, resp)
 
                 if isinstance(out, HttpRequest):
-                    close_response(resp)
+                    close_http_client_response(resp)
                     req = out
                     continue
 
@@ -106,7 +109,7 @@ class MiddlewareHttpClient(AbstractMiddlewareHttpClient[HttpClient], HttpClient)
                     raise TypeError(out)  # noqa
 
             except Exception:
-                close_response(resp)
+                close_http_client_response(resp)
                 raise
 
         raise RuntimeError

@@ -46,8 +46,14 @@ from .tools import build_tool_spec_schema
 class GoogleChatChoicesStreamService:
     DEFAULT_MODEL_NAME: ta.ClassVar[ModelName] = ModelName(check.not_none(MODEL_NAMES.default))
 
-    def __init__(self, *configs: ApiKey | ModelName) -> None:
+    def __init__(
+            self,
+            *configs: ApiKey | ModelName,
+            http_client: http.AsyncHttpClient | None = None,
+    ) -> None:
         super().__init__()
+
+        self._http_client = http_client
 
         with tv.consume(*configs) as cc:
             self._model_name = cc.pop(self.DEFAULT_MODEL_NAME)
@@ -163,13 +169,13 @@ class GoogleChatChoicesStreamService:
         )
 
         async with UseResources.or_new(request.options) as rs:
-            http_client = rs.enter_context(http.client())
-            http_response = rs.enter_context(http_client.stream_request(http_request))
+            http_client = await rs.enter_async_context(http.manage_async_client(self._http_client))
+            http_response = await rs.enter_async_context(await http_client.stream_request(http_request))
 
             async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ta.Sequence[ChatChoicesOutputs] | None:
                 db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
                 while True:
-                    b = http_response.stream.read1(self.READ_CHUNK_SIZE)
+                    b = await http_response.stream.read1(self.READ_CHUNK_SIZE)
                     for bl in db.feed(b):
                         if isinstance(bl, DelimitingBuffer.Incomplete):
                             # FIXME: handle

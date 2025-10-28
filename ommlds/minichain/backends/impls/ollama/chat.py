@@ -66,7 +66,7 @@ class BaseOllamaChatChoicesService(lang.Abstract):
 
     #
 
-    ROLE_MAP: ta.ClassVar[ta.Mapping[type[Message], pt.Role]] = {
+    ROLE_MAP: ta.ClassVar[ta.Mapping[type[Message], pt.Role]] = {  # noqa
         SystemMessage: 'system',
         UserMessage: 'user',
         AiMessage: 'assistant',
