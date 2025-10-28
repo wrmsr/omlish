@@ -2,8 +2,7 @@ import abc
 import typing as ta
 
 from .. import lang
-from .elements import Elemental
-from .elements import as_elements
+from .injector import _InjectorCreator
 from .inspect import KwargsTarget
 from .keys import Key
 
@@ -44,5 +43,7 @@ class Injector(lang.Abstract):
         return self.provide(target)
 
 
-def create_injector(*args: Elemental) -> Injector:
-    return _sync.create_injector(as_elements(*args))
+##
+
+
+create_injector = _InjectorCreator[Injector](lambda ce: _sync.create_injector(ce))

@@ -23,7 +23,6 @@ from ... import check
 from ... import lang
 from ...logs import all as logs
 from ..elements import CollectedElements
-from ..elements import Elements
 from ..errors import CyclicDependencyError
 from ..errors import UnboundKeyError
 from ..injector import AsyncInjector
@@ -37,7 +36,6 @@ from ..scopes import ThreadScope
 from ..types import Scope
 from ..types import Unscoped
 from .elements import ElementCollection
-from .elements import collect_elements
 from .inspect import build_kwargs_target
 from .scopes import ScopeImpl
 from .scopes import make_scope_impl
@@ -60,12 +58,12 @@ DEFAULT_SCOPES: list[Scope] = [
 class AsyncInjectorImpl(AsyncInjector, lang.Final):
     def __init__(
             self,
-            ec: ElementCollection,
+            ec: CollectedElements,
             p: ta.Optional['AsyncInjectorImpl'] = None,
             *,
             internal_consts: dict[Key, ta.Any] | None = None,
     ) -> None:
-        self._ec = check.isinstance(ec, ElementCollection)
+        self._ec = (ec := check.isinstance(ec, ElementCollection))
         self._p: AsyncInjectorImpl | None = check.isinstance(p, (AsyncInjectorImpl, None))
 
         self._internal_consts: dict[Key, ta.Any] = {
@@ -259,7 +257,7 @@ class AsyncInjectorImpl(AsyncInjector, lang.Final):
         return obj(**kws)
 
 
-async def create_async_injector(es: Elements | CollectedElements) -> AsyncInjector:
-    i = AsyncInjectorImpl(collect_elements(es))
+async def create_async_injector(ce: CollectedElements) -> AsyncInjector:
+    i = AsyncInjectorImpl(ce)
     await i._init()  # noqa
     return i

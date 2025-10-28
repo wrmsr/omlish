@@ -1,8 +1,7 @@
 import typing as ta
 
 from .. import lang
-from .elements import Elemental
-from .elements import as_elements
+from .injector import _InjectorCreator
 from .sync import Injector
 
 
@@ -25,5 +24,4 @@ class MaysyncInjector(Injector, lang.Abstract):
 ##
 
 
-def create_maysync_injector(*args: Elemental) -> MaysyncInjector:
-    return _maysync.create_maysync_injector(as_elements(*args))
+create_maysync_injector = _InjectorCreator[MaysyncInjector](lambda ce: _maysync.create_maysync_injector(ce))

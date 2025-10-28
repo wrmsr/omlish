@@ -1,12 +1,11 @@
 import typing as ta
 
 from ... import lang
-from ..elements import Elements
+from ..elements import CollectedElements
 from ..injector import AsyncInjector
 from ..inspect import KwargsTarget
 from ..keys import Key
 from ..sync import Injector
-from .elements import ElementCollection
 from .injector import AsyncInjectorImpl
 
 
@@ -29,10 +28,10 @@ class InjectorImpl(Injector, lang.Final):
         return lang.sync_await(self._ai.inject(obj))
 
 
-def create_injector(es: Elements) -> Injector:
+def create_injector(ce: CollectedElements) -> Injector:
     si = InjectorImpl()
     ai = AsyncInjectorImpl(
-        ElementCollection(es),
+        ce,
         internal_consts={
             Key(Injector): si,
         },

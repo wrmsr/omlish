@@ -1,13 +1,12 @@
 import typing as ta
 
 from ... import lang
-from ..elements import Elements
+from ..elements import CollectedElements
 from ..injector import AsyncInjector
 from ..inspect import KwargsTarget
 from ..keys import Key
 from ..maysync import MaysyncInjector
 from ..sync import Injector
-from .elements import ElementCollection
 from .injector import AsyncInjectorImpl
 
 
@@ -30,10 +29,10 @@ class MaysyncInjectorImpl(MaysyncInjector, lang.Final):
         return lang.run_maysync(self._ai.inject(obj))
 
 
-def create_maysync_injector(es: Elements) -> MaysyncInjector:
+def create_maysync_injector(ce: CollectedElements) -> MaysyncInjector:
     si = MaysyncInjectorImpl()
     ai = AsyncInjectorImpl(
-        ElementCollection(es),
+        ce,
         internal_consts={
             Key(MaysyncInjector): si,
             Key(Injector): si,

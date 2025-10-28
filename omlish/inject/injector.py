@@ -1,9 +1,12 @@
 import abc
 import typing as ta
 
+from .. import check
 from .. import lang
+from .elements import CollectedElements
 from .elements import Elemental
 from .elements import as_elements
+from .elements import collect_elements
 from .inspect import KwargsTarget
 from .keys import Key
 
@@ -44,5 +47,31 @@ class AsyncInjector(lang.Abstract):
         return self.provide(target)
 
 
-def create_async_injector(*args: Elemental) -> ta.Awaitable[AsyncInjector]:
-    return _injector.create_async_injector(as_elements(*args))
+##
+
+
+@ta.final
+class _InjectorCreator(ta.Generic[T]):
+    def __init__(self, fac: ta.Callable[[CollectedElements], T]) -> None:
+        self._fac = fac
+
+    @ta.overload
+    def __call__(self, es: CollectedElements, /) -> T: ...
+
+    @ta.overload
+    def __call__(self, *es: Elemental) -> T: ...
+
+    def __call__(self, arg0, *argv):
+        ce: CollectedElements
+        if isinstance(arg0, CollectedElements):
+            check.arg(not argv)
+            ce = arg0
+        else:
+            ce = collect_elements(as_elements(arg0, *argv))
+        return self._fac(ce)
+
+
+##
+
+
+create_async_injector = _InjectorCreator[ta.Awaitable[AsyncInjector]](lambda ce: _injector.create_async_injector(ce))
