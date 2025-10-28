@@ -111,6 +111,24 @@ def test_core() -> None:
         else:
             raise NotImplementedError
 
+    @add_rule_fn('char-val')
+    def visit_char_val_rule(m: ba.Match) -> ta.Any:
+        return visit_match(check.single(m.children))
+
+    @add_rule_fn('case-insensitive-string')
+    def visit_case_insensitive_string_rule(m: ba.Match) -> ta.Any:
+        if len(m.children) == 1:
+            return visit_match(m.children[0])
+        else:
+            raise NotImplementedError
+
+    @add_rule_fn('quoted-string')
+    def visit_quoted_string_rule(m: ba.Match) -> ta.Any:
+        check.state(m.end - m.start > 2)
+        check.state(source[m.start] == '"')
+        check.state(source[m.end - 1] == '"')
+        return source[m.start + 1:m.end - 1]
+
     #
 
     def visit_match(m: ba.Match) -> ta.Any:
