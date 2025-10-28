@@ -66,7 +66,7 @@ class RangeLiteral(Literal):
         def __post_init__(self) -> None:
             check.non_empty_str(self.lo)
             check.non_empty_str(self.hi)
-            check.state(self.hi > self.lo)
+            check.state(self.hi >= self.lo)
 
     def __init__(self, value: Range) -> None:
         super().__init__()

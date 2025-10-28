@@ -66,7 +66,9 @@ def test_core() -> None:
 
     def add_rule_fn(*names):
         def inner(fn):
-            rule_fns.update({n: fn for n in names})
+            for n in names:
+                check.not_in(n, rule_fns)
+                rule_fns[n] = fn
             return fn
         return inner
 
@@ -161,6 +163,20 @@ def test_core() -> None:
     def visit_group_rule(m: ba.Match) -> ta.Any:
         return visit_match(check.single(m.children))
 
+    @add_rule_fn('num-val')
+    def visit_num_val_rule(m: ba.Match) -> ta.Any:
+        return visit_match(check.single(m.children))
+
+    @add_rule_fn('hex-val')
+    def visit_hex_val_rule(m: ba.Match) -> ta.Any:
+        s = source[m.start + 1:m.end]
+        if '-' in s:
+            lo, hi = [chr(int(p, 16)) for p in s.split('-')]
+            return pa.literal(lo, hi)
+        else:
+            c = chr(int(s, 16))
+            return pa.literal(c, c)
+
     #
 
     def visit_match(m: ba.Match) -> ta.Any:
@@ -186,12 +202,20 @@ def test_core() -> None:
     """
 
     source = co.fix_grammar_ws(textwrap.dedent(source))
+
     ggm = check.not_none(co.GRAMMAR_GRAMMAR.parse(source, 'rulelist'))
     ggm = ut.only_match_rules(ggm)
     ggm = ut.strip_insignificant_match_rules(ggm, co.GRAMMAR_GRAMMAR)
     print(ggm.render(indent=2))
-    # for rm in ggm.children:
-    print(visit_match(ggm))
+
+    rules = visit_match(ggm)
+    print(rules)
+    rfc_gram = ba.Grammar(*rules, *co.CORE_RULES)
+
+    rfc_m = rfc_gram.parse('Mon, 02 Jun 1982 00:00:00 GMT', 'HTTP-date')
+    rfc_m = ut.only_match_rules(rfc_m)
+    rfc_m = ut.strip_insignificant_match_rules(rfc_m, rfc_gram)
+    print(rfc_m.render(indent=2))
 
     # g = Grammar(
     #     CORE_RULES,
