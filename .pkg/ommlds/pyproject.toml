@@ -13,7 +13,7 @@ urls = {source = 'https://github.com/wrmsr/omlish'}
 license = 'BSD-3-Clause'
 readme = 'README.md'
 requires-python = '>=3.13'
-version = '0.0.0.dev470'
+version = '0.0.0.dev471'
 classifiers = [
     'Development Status :: 2 - Pre-Alpha',
     'Intended Audience :: Developers',
@@ -24,8 +24,8 @@ classifiers = [
 ]
 description = 'ommlds'
 dependencies = [
-    'omdev == 0.0.0.dev470',
-    'omlish == 0.0.0.dev470',
+    'omdev == 0.0.0.dev471',
+    'omlish == 0.0.0.dev471',
 ]
 
 [project.optional-dependencies]
