@@ -123,7 +123,7 @@ class Concat(Parser):
     def __init__(self, *children: Parser) -> None:
         super().__init__()
 
-        for c in children:
+        for c in check.not_empty(children):
             check.isinstance(c, Parser)
         self._children = children
 
@@ -264,7 +264,7 @@ class Either(Parser):
     def __init__(self, *children: Parser, first_match: bool = False) -> None:
         super().__init__()
 
-        for c in children:
+        for c in check.not_empty(children):
             check.isinstance(c, Parser)
         self._children = children
         self._first_match = first_match

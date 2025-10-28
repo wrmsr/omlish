@@ -69,7 +69,7 @@ def test_core() -> None:
     def visit_rule_rule(m: ba.Match) -> ta.Any:
         rn_m, _, el_m = m.children
         rn = check.isinstance(visit_match(rn_m), RuleName).s
-        el = check.isinstance(visit_match(el_m), ba.Parser)
+        el = visit_match(el_m)
         return ba.Rule(rn, el)
 
     @add_rule_fn('rulename')
@@ -85,14 +85,14 @@ def test_core() -> None:
         if len(m.children) == 1:
             return visit_match(m.children[0])
         else:
-            return pa.concat(*map(visit_match, m.children))
+            return pa.either(*map(visit_match, m.children))
 
     @add_rule_fn('concatenation')
     def visit_concatenation_rule(m: ba.Match) -> ta.Any:
         if len(m.children) == 1:
             return visit_match(m.children[0])
         else:
-            raise NotImplementedError
+            return pa.concat(*map(visit_match, m.children))
 
     @add_rule_fn('repetition')
     def visit_repetition_rule(m: ba.Match) -> ta.Any:
