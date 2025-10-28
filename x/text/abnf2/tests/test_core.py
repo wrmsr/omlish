@@ -6,6 +6,7 @@ import typing as ta
 import pytest
 
 from omlish import check
+from omlish import dataclasses as dc
 
 from .. import base as ba
 from .. import core as co
@@ -20,6 +21,11 @@ CORE_GRAMMAR = ba.Grammar(*co.CORE_RULES)
 def test_alpha(src):
     m = check.not_none(CORE_GRAMMAR.parse(src, 'ALPHA'))
     assert src[m.start:m.end] == src
+
+
+@dc.dataclass(frozen=True)
+class RuleName:
+    s: str
 
 
 @pytest.mark.parametrize('src', [
@@ -44,7 +50,6 @@ def test_core() -> None:
         # for c in m.children:
         #     visit_match(c)
         return rule_fns[p.name](m)
-        raise NotImplementedError
 
     @visit_parser.register
     def visit_repeat_parser(p: pa.Repeat, m: ba.Match) -> ta.Any:
@@ -62,15 +67,49 @@ def test_core() -> None:
 
     @add_rule_fn('rule')
     def visit_rule_rule(m: ba.Match) -> ta.Any:
-        rn_m, da_m, els_m = m.children
-        rn = visit_match(rn_m)
-        da = visit_match(da_m)
+        rn_m, _, els_m = m.children
+        rn = check.isinstance(visit_match(rn_m), RuleName)
         els = visit_match(els_m)
         raise NotImplementedError
 
     @add_rule_fn('rulename')
     def visit_rulename_rule(m: ba.Match) -> ta.Any:
-        return source[m.start:m.end]
+        return RuleName(source[m.start:m.end])
+
+    @add_rule_fn('elements')
+    def visit_elements_rule(m: ba.Match) -> ta.Any:
+        return visit_match(check.single(m.children))
+
+    @add_rule_fn('alternation')
+    def visit_alternation_rule(m: ba.Match) -> ta.Any:
+        if len(m.children) == 1:
+            return visit_match(m.children[0])
+        else:
+            return pa.concat(*map(visit_match, m.children))
+
+    @add_rule_fn('concatenation')
+    def visit_concatenation_rule(m: ba.Match) -> ta.Any:
+        if len(m.children) == 1:
+            return visit_match(m.children[0])
+        else:
+            raise NotImplementedError
+
+    @add_rule_fn('repetition')
+    def visit_repetition_rule(m: ba.Match) -> ta.Any:
+        if len(m.children) == 2:
+            raise NotImplementedError
+        elif len(m.children) == 1:
+            return visit_match(m.children[0])
+        else:
+            raise ValueError(m)
+
+    @add_rule_fn('element')
+    def visit_element_rule(m: ba.Match) -> ta.Any:
+        c = visit_match(check.single(m.children))
+        if isinstance(c, RuleName):
+            return pa.rule(c.s)
+        else:
+            raise NotImplementedError
 
     #
 

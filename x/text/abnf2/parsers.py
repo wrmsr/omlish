@@ -21,7 +21,7 @@ class StringLiteral(Literal):
     def __init__(self, value: str) -> None:
         super().__init__()
 
-        self._value = value
+        self._value = check.non_empty_str(value)
 
     @property
     def value(self) -> str:
@@ -41,7 +41,7 @@ class CaseInsensitiveStringLiteral(Literal):
     def __init__(self, value: str) -> None:
         super().__init__()
 
-        self._value = value.casefold()
+        self._value = check.non_empty_str(value).casefold()
 
     @property
     def value(self) -> str:
@@ -64,12 +64,14 @@ class RangeLiteral(Literal):
         hi: str
 
         def __post_init__(self) -> None:
+            check.non_empty_str(self.lo)
+            check.non_empty_str(self.hi)
             check.state(self.hi > self.lo)
 
     def __init__(self, value: Range) -> None:
         super().__init__()
 
-        self._value = value
+        self._value = check.isinstance(value, RangeLiteral.Range)
 
     @property
     def value(self) -> Range:
@@ -121,6 +123,8 @@ class Concat(Parser):
     def __init__(self, *children: Parser) -> None:
         super().__init__()
 
+        for c in children:
+            check.isinstance(c, Parser)
         self._children = children
 
     @property
@@ -171,7 +175,7 @@ class Repeat(Parser):
         super().__init__()
 
         self._times = times
-        self._child = child
+        self._child = check.isinstance(child, Parser)
 
     @property
     def times(self) -> Times:
@@ -260,6 +264,8 @@ class Either(Parser):
     def __init__(self, *children: Parser, first_match: bool = False) -> None:
         super().__init__()
 
+        for c in children:
+            check.isinstance(c, Parser)
         self._children = children
         self._first_match = first_match
 
@@ -298,7 +304,7 @@ class RuleRef(Parser):
     def __init__(self, name: str) -> None:
         super().__init__()
 
-        self._name = name
+        self._name = check.non_empty_str(name)
         self._name_f = name.casefold()
 
     @property
