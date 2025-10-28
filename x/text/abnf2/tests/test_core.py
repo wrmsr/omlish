@@ -149,6 +149,10 @@ def test_core() -> None:
             raise NotImplementedError
         return pa.Repeat.Times(int(s))
 
+    @add_rule_fn('group')
+    def visit_group_rule(m: ba.Match) -> ta.Any:
+        return visit_match(check.single(m.children))
+
     #
 
     def visit_match(m: ba.Match) -> ta.Any:
