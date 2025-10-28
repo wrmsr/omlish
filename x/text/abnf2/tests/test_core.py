@@ -28,6 +28,11 @@ class RuleName:
     s: str
 
 
+@dc.dataclass(frozen=True)
+class QuotedString:
+    s: str
+
+
 @pytest.mark.parametrize('src', [
     '',
     *[x*y for x, y in itertools.product([1, 2], [' ', '\t', '\r\n ', '\r\n\t'])],
@@ -106,28 +111,33 @@ def test_core() -> None:
     @add_rule_fn('element')
     def visit_element_rule(m: ba.Match) -> ta.Any:
         c = visit_match(check.single(m.children))
-        if isinstance(c, RuleName):
+        if isinstance(c, ba.Parser):
+            return c
+        elif isinstance(c, RuleName):
             return pa.rule(c.s)
         else:
-            raise NotImplementedError
+            raise TypeError(c)
 
     @add_rule_fn('char-val')
     def visit_char_val_rule(m: ba.Match) -> ta.Any:
         return visit_match(check.single(m.children))
 
+    @add_rule_fn('case-sensitive-string')
+    def visit_case_sensitive_string_rule(m: ba.Match) -> ta.Any:
+        c = visit_match(check.single(m.children))
+        return pa.literal(check.isinstance(c, QuotedString).s, case_sensitive=True)
+
     @add_rule_fn('case-insensitive-string')
     def visit_case_insensitive_string_rule(m: ba.Match) -> ta.Any:
-        if len(m.children) == 1:
-            return visit_match(m.children[0])
-        else:
-            raise NotImplementedError
+        c = visit_match(check.single(m.children))
+        return pa.literal(check.isinstance(c, QuotedString).s, case_sensitive=False)
 
     @add_rule_fn('quoted-string')
     def visit_quoted_string_rule(m: ba.Match) -> ta.Any:
         check.state(m.end - m.start > 2)
         check.state(source[m.start] == '"')
         check.state(source[m.end - 1] == '"')
-        return source[m.start + 1:m.end - 1]
+        return QuotedString(source[m.start + 1:m.end - 1])
 
     #
 
