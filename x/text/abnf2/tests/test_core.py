@@ -144,10 +144,18 @@ def test_core() -> None:
 
     @add_rule_fn('repeat')
     def visit_repeat_rule(m: ba.Match) -> ta.Any:
+        # !!! FIXME: boneheaded args, repeat(1, c) currently means 1-*, should be exactly 1-1, should explicitly pass
+        #            None for *
         s = source[m.start:m.end]
         if '*' in s:
-            raise NotImplementedError
-        return pa.Repeat.Times(int(s))
+            check.state(s.count('*') == 1)
+            if s.endswith('*'):
+                return pa.Repeat.Times(int(s[:-1]))
+            else:
+                mi, mx = s.split('*')
+                return pa.Repeat.Times(int(mi), int(mx))
+        else:
+            return pa.Repeat.Times(n := int(s), n)
 
     @add_rule_fn('group')
     def visit_group_rule(m: ba.Match) -> ta.Any:
