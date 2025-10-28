@@ -7,7 +7,7 @@ from omlish.secrets.tests.harness import HarnessSecrets
 from omlish.subprocesses.sync import subprocesses
 from omlish.testing import pytest as ptu
 
-from ... import huggingface as hfu
+from ...backends import huggingface as hfu
 from ..git import AiGitMessageGenerator
 from ..git import GitAiBackend
 from ..git import GitMessageGenerator
