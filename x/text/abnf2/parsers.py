@@ -174,7 +174,7 @@ class Repeat(Parser):
     def __init__(self, times: Times, child: Parser) -> None:
         super().__init__()
 
-        self._times = times
+        self._times = check.isinstance(times, Repeat.Times)
         self._child = check.isinstance(child, Parser)
 
     @property
@@ -227,6 +227,11 @@ def repeat(child: Parser) -> Repeat:  # noqa
 
 
 @ta.overload
+def repeat(times: Repeat.Times, child: Parser) -> Repeat:  # noqa
+    ...
+
+
+@ta.overload
 def repeat(min: int, child: Parser) -> Repeat:  # noqa
     ...
 
@@ -237,16 +242,28 @@ def repeat(min: int, max: int | None, child: Parser) -> Repeat:  # noqa
 
 
 def repeat(*args):
+    min: int  # noqa
+    max: int  # noqa
+
     if len(args) < 2:
         [child] = args
-        (min, max) = (0, None)  # noqa
+        min, max = 0, None  # noqa
+
     elif len(args) > 2:
         min, max, child = args  # noqa
+
     else:
-        min, child = args  # noqa
-        max = None  # noqa
+        ti, child = args  # noqa
+
+        if isinstance(ti, Repeat.Times):
+            min, max = ti.min, ti.max  # noqa
+
+        else:
+            min, max = ti, None  # noqa
+
     if (min, max) == (0, 1):
         return Option(check.isinstance(child, Parser))
+
     else:
         return Repeat(
             Repeat.Times(

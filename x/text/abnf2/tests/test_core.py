@@ -102,7 +102,10 @@ def test_core() -> None:
     @add_rule_fn('repetition')
     def visit_repetition_rule(m: ba.Match) -> ta.Any:
         if len(m.children) == 2:
-            raise NotImplementedError
+            ti_m, el_m = m.children
+            ti = check.isinstance(visit_match(ti_m), pa.Repeat.Times)
+            el = visit_match(el_m)
+            return pa.repeat(ti, el)
         elif len(m.children) == 1:
             return visit_match(m.children[0])
         else:
@@ -138,6 +141,13 @@ def test_core() -> None:
         check.state(source[m.start] == '"')
         check.state(source[m.end - 1] == '"')
         return QuotedString(source[m.start + 1:m.end - 1])
+
+    @add_rule_fn('repeat')
+    def visit_repeat_rule(m: ba.Match) -> ta.Any:
+        s = source[m.start:m.end]
+        if '*' in s:
+            raise NotImplementedError
+        return pa.Repeat.Times(int(s))
 
     #
 
