@@ -6,6 +6,12 @@ from .. import lang
 from .impl.origins import HasOriginsImpl
 
 
+if ta.TYPE_CHECKING:
+    from .impl import elements as _elements
+else:
+    _elements = lang.proxy_import('.impl.elements', __package__)
+
+
 ##
 
 
@@ -74,3 +80,14 @@ def iter_elements(*args: Elemental) -> ta.Iterator[Element]:
             yield from a
         else:
             raise TypeError(a)
+
+
+##
+
+
+class CollectedElements(lang.PackageSealed, lang.Abstract):
+    pass
+
+
+def collect_elements(es: Elements | CollectedElements) -> CollectedElements:
+    return _elements.collect_elements(es)

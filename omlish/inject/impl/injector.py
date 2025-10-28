@@ -2,14 +2,12 @@
 TODO:
  - ** can currently bind in a child/private scope shadowing an external parent binding **
  - better source tracking
- - cache/export ElementCollections lol
  - scope bindings, auto in root
  - injector-internal / blacklisted bindings (Injector itself, default scopes) without rebuilding ElementCollection
  - config - proxies, impl select, etc
   - config is probably shared with ElementCollection... but not 'bound', must be shared everywhere
   - InjectorRoot object?
  - ** eagers in any scope, on scope init/open
- - injection listeners
  - unions - raise on ambiguous - usecase: sql.AsyncEngineLike
  - multiple live request scopes on single injector - use private injectors?
  - more listeners - UnboundKeyListener
@@ -24,6 +22,7 @@ import weakref
 from ... import check
 from ... import lang
 from ...logs import all as logs
+from ..elements import CollectedElements
 from ..elements import Elements
 from ..errors import CyclicDependencyError
 from ..errors import UnboundKeyError
@@ -38,6 +37,7 @@ from ..scopes import ThreadScope
 from ..types import Scope
 from ..types import Unscoped
 from .elements import ElementCollection
+from .elements import collect_elements
 from .inspect import build_kwargs_target
 from .scopes import ScopeImpl
 from .scopes import make_scope_impl
@@ -65,8 +65,6 @@ class AsyncInjectorImpl(AsyncInjector, lang.Final):
             *,
             internal_consts: dict[Key, ta.Any] | None = None,
     ) -> None:
-        super().__init__()
-
         self._ec = check.isinstance(ec, ElementCollection)
         self._p: AsyncInjectorImpl | None = check.isinstance(p, (AsyncInjectorImpl, None))
 
@@ -261,7 +259,7 @@ class AsyncInjectorImpl(AsyncInjector, lang.Final):
         return obj(**kws)
 
 
-async def create_async_injector(es: Elements) -> AsyncInjector:
-    i = AsyncInjectorImpl(ElementCollection(es))
+async def create_async_injector(es: Elements | CollectedElements) -> AsyncInjector:
+    i = AsyncInjectorImpl(collect_elements(es))
     await i._init()  # noqa
     return i

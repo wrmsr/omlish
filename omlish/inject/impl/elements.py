@@ -27,6 +27,7 @@ from ... import collections as col
 from ... import lang
 from ..bindings import Binding
 from ..eagers import Eager
+from ..elements import CollectedElements
 from ..elements import Element
 from ..elements import Elements
 from ..errors import ConflictingKeyError
@@ -80,7 +81,7 @@ _NON_BINDING_ELEMENT_TYPES: tuple[type[Element], ...] = (
 )
 
 
-class ElementCollection(lang.Final):
+class ElementCollection(CollectedElements, lang.Final):
     def __init__(self, es: Elements) -> None:
         super().__init__()
 
@@ -220,3 +221,13 @@ class ElementCollection(lang.Final):
             bi = bim[e.key]
             ret.setdefault(bi.scope, []).append(e.key)
         return ret
+
+
+##
+
+
+def collect_elements(es: Elements | CollectedElements) -> ElementCollection:
+    if isinstance(es, CollectedElements):
+        return check.isinstance(es, ElementCollection)
+    else:
+        return ElementCollection(es)
