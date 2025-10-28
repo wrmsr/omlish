@@ -34,6 +34,24 @@ def test_lwsp(src):
 
 
 def test_core() -> None:
+    @functools.singledispatch
+    def visit_parser(p: ba.Parser, m: ba.Match) -> ta.Any:
+        raise TypeError(p)
+
+    @visit_parser.register
+    def visit_rule_ref_parser(p: pa.RuleRef, m: ba.Match) -> ta.Any:
+        # print(p.name)
+        # for c in m.children:
+        #     visit_match(c)
+        return rule_fns[p.name](m)
+        raise NotImplementedError
+
+    @visit_parser.register
+    def visit_repeat_parser(p: pa.Repeat, m: ba.Match) -> ta.Any:
+        return [visit_match(cm) for cm in m.children]
+
+    #
+
     rule_fns = {}
 
     def add_rule_fn(*names):
@@ -42,19 +60,22 @@ def test_core() -> None:
             return fn
         return inner
 
-    @functools.singledispatch
-    def visit_parser(p: ba.Parser, m: ba.Match) -> None:
-        for c in m.children:
-            visit_match(c)
+    @add_rule_fn('rule')
+    def visit_rule_rule(m: ba.Match) -> ta.Any:
+        rn_m, da_m, els_m = m.children
+        rn = visit_match(rn_m)
+        da = visit_match(da_m)
+        els = visit_match(els_m)
+        raise NotImplementedError
 
-    @visit_parser.register
-    def visit_parser_rule(p: pa.RuleRef, m: ba.Match) -> None:
-        print(p.name)
-        for c in m.children:
-            visit_match(c)
+    @add_rule_fn('rulename')
+    def visit_rulename_rule(m: ba.Match) -> ta.Any:
+        return source[m.start:m.end]
+
+    #
 
     def visit_match(m: ba.Match) -> ta.Any:
-        visit_parser(m.parser, m)
+        return visit_parser(m.parser, m)
 
     ##
 
@@ -80,6 +101,7 @@ def test_core() -> None:
     ggm = ut.only_match_rules(ggm)
     ggm = ut.strip_insignificant_match_rules(ggm, co.GRAMMAR_GRAMMAR)
     print(ggm.render(indent=2))
+    # for rm in ggm.children:
     print(visit_match(ggm))
 
     # g = Grammar(
