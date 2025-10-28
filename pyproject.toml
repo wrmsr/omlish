@@ -227,6 +227,7 @@ ignore = [
     'PLR0913',  # too-many-arguments
     'PLR0915',  # too-many-statements
     'PLR1714',  # repeated-equality-comparison
+    'PLR1730',  # if-stmt-min-max
     'PLR2004',  # magic-value-comparison
     'PLR2044',  # empty-comment
     'PLR5501',  # collapsible-else-if
