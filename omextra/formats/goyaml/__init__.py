@@ -5,7 +5,7 @@ A *manual*, near-direct, 'lite'-compatible translation of go-yaml (see LICENSE f
 
 The primary reasons for.. doing this.. are as follows:
 
- - Most importantly for '@omlish-lite' usage - yaml parsing is, whether or not we like it, here to stay for things like
+ - Most importantly for '@omlish-lite' usage - yaml parsing is, whether we like it or not, here to stay for things like
    docker-compose - and reading these files in amalgamated scripts like omdev.ci and omdev.pyproject is a hard
    requirement for them.
 
