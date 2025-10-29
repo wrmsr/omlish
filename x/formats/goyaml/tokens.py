@@ -250,7 +250,7 @@ RESERVED_ENC_KEYWORD_MAP: ta.Mapping[str, ta.Callable[[str, str, 'YamlPosition']
 ##
 
 
-YamlReservedTagKeyword: ta.TypeAlias = str
+YamlReservedTagKeyword: ta.TypeAlias = str  # omlish-amalg-typing-no-move
 
 
 class YamlReservedTagKeywords:

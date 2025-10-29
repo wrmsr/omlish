@@ -192,7 +192,7 @@ def normalize_path(path: str) -> str:
 
 
 # Option represents parser's option.
-Option: ta.TypeAlias = ta.Callable[['YamlParser'], None]
+Option: ta.TypeAlias = ta.Callable[['YamlParser'], None]  # omlish-amalg-typing-no-move
 
 
 # AllowDuplicateMapKey allow the use of keys with the same name in the same map, but by default, this is not permitted.
@@ -1095,7 +1095,7 @@ def set_head_comment(cm: ta.Optional[ast.CommentGroupYamlNode], value: ast.YamlN
 ##
 
 
-ParseMode: ta.TypeAlias = int
+ParseMode: ta.TypeAlias = int  # omlish-amalg-typing-no-move
 
 PARSE_COMMENTS = ParseMode(1)  # parse comments and add them to AST
 
@@ -1133,7 +1133,7 @@ def parse(
 #
 
 
-YAMLVersion: ta.TypeAlias = str
+YAMLVersion: ta.TypeAlias = str  # omlish-amalg-typing-no-move
 
 YAML10 = YAMLVersion('1.0')
 YAML11 = YAMLVersion('1.1')
