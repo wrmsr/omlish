@@ -317,5 +317,5 @@ class TestHamtLargeDataset:
 
         assert len(keys) == n
         assert keys == set(range(n))
-        assert values == set(i * 2 for i in range(n))
-        assert items == set((i, i * 2) for i in range(n))
+        assert values == {i * 2 for i in range(n)}
+        assert items == {(i, i * 2) for i in range(n)}

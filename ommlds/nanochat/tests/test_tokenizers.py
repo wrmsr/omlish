@@ -39,6 +39,14 @@ with lang.auto_proxy_import(globals()):
 rustbpe: ta.Any = lang.proxy_import('..rustbpe', __package__)
 
 
+try:
+    from .. import rustbpe as _rustbpe  # noqa
+    if not hasattr(_rustbpe, 'Tokenizer'):
+        raise ImportError  # noqa
+except ImportError:
+    pytest.skip('rustbpe module not built', allow_module_level=True)
+
+
 ##
 
 
