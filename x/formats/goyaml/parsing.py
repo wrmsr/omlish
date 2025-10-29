@@ -1639,7 +1639,7 @@ class Parser:
             # FIXME: not possible
             return err_syntax(
                 'cannot take map-key node',
-                check.not_none(scalar1).get_token(),  # type: ignore[attr-defined]
+                check.not_none(scalar1).get_token(),
             )
         key1: ast.MapKeyNode = ta.cast(ast.MapKeyNode, scalar1)
         key_text = self.map_key_text(key1)
