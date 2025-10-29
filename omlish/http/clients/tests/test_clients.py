@@ -51,8 +51,8 @@ def test_clients(cls, data):
 @pytest.mark.online
 @pytest.mark.parametrize('cls', CLIENTS)
 @pytest.mark.parametrize('data', [None, '{}', b'{}'])
-@pytest.mark.parametrize('read_all', [False, True])
-def test_clients_stream(cls, data, read_all):
+@pytest.mark.parametrize('readall', [False, True])
+def test_clients_stream(cls, data, readall):
     with cls() as cli:
         with cli.stream_request(HttpRequest(
             'https://httpbun.org/drip?duration=1&numbytes=10&code=200&delay=1',
@@ -63,8 +63,8 @@ def test_clients_stream(cls, data, read_all):
             print(resp)
             assert resp.status == 200
 
-            if read_all:
-                data = resp.read_all()
+            if readall:
+                data = resp.readall()
             else:
                 l = []
                 while (b := resp.stream.read1(1)):

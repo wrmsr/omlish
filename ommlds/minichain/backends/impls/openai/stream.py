@@ -54,7 +54,7 @@ class OpenaiChatChoicesStreamService:
             self._model_name = cc.pop(OpenaiChatChoicesService.DEFAULT_MODEL_NAME)
             self._api_key = ApiKey.pop_secret(cc, env='OPENAI_API_KEY')
 
-    READ_CHUNK_SIZE = 64
+    READ_CHUNK_SIZE: ta.ClassVar[int] = -1
 
     async def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
         # check.isinstance(request, ChatRequest)

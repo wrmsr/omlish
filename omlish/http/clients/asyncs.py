@@ -3,9 +3,9 @@
 import abc
 import contextlib
 import dataclasses as dc
-import io
 import typing as ta
 
+from ...io.readers import AsyncBufferedBytesReader
 from ...lite.abstract import Abstract
 from ...lite.dataclasses import dataclass_shallow_asdict
 from .base import BaseHttpClient
@@ -27,25 +27,19 @@ AsyncHttpClientT = ta.TypeVar('AsyncHttpClientT', bound='AsyncHttpClient')
 @ta.final
 @dc.dataclass(frozen=True)  # kw_only=True
 class AsyncStreamHttpResponse(BaseHttpResponse):
-    class Stream(ta.Protocol):
-        def read1(self, /, n: int = -1) -> ta.Awaitable[bytes]: ...
+    _stream: ta.Optional[AsyncBufferedBytesReader] = None
 
-    @ta.final
-    class _NullStream:
-        def read1(self, /, n: int = -1) -> ta.Awaitable[bytes]:
-            raise TypeError
-
-    stream: Stream = _NullStream()
+    @property
+    def stream(self) -> 'AsyncBufferedBytesReader':
+        if (st := self._stream) is None:
+            raise TypeError('No data')
+        return st
 
     @property
     def has_data(self) -> bool:
-        return not isinstance(self.stream, AsyncStreamHttpResponse._NullStream)
+        return self._stream is not None
 
-    async def read_all(self) -> bytes:
-        buf = io.BytesIO()
-        while (b := await self.stream.read1()):
-            buf.write(b)
-        return buf.getvalue()
+    #
 
     _closer: ta.Optional[ta.Callable[[], ta.Awaitable[None]]] = None
 
@@ -96,8 +90,8 @@ async def async_read_http_client_response(resp: BaseHttpResponse) -> HttpRespons
 
     elif isinstance(resp, AsyncStreamHttpResponse):
         return HttpResponse(**{
-            **{k: v for k, v in dataclass_shallow_asdict(resp).items() if k not in ('stream', '_closer')},
-            **({'data': await resp.read_all()} if resp.has_data else {}),
+            **{k: v for k, v in dataclass_shallow_asdict(resp).items() if k not in ('_stream', '_closer')},
+            **({'data': await resp.stream.readall()} if resp.has_data else {}),
         })
 
     else:

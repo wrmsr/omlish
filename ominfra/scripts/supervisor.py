@@ -5046,7 +5046,7 @@ class ReadableListBuffer:
 
     #
 
-    DEFAULT_BUFFERED_READER_CHUNK_SIZE: ta.ClassVar[int] = 0x1000
+    DEFAULT_BUFFERED_READER_CHUNK_SIZE: ta.ClassVar[int] = -1
 
     @ta.final
     class _BufferedBytesReader(BufferedBytesReader):
@@ -5062,7 +5062,11 @@ class ReadableListBuffer:
             self._chunk_size = chunk_size or ReadableListBuffer.DEFAULT_BUFFERED_READER_CHUNK_SIZE
 
         def read1(self, /, n: int = -1) -> bytes:
-            if len(self._buf):
+            if n < 0:
+                n = self._chunk_size
+            if not n:
+                return b''
+            if 0 < n <= len(self._buf):
                 return self._buf.read(n) or b''
             return self._raw.read1(n)
 
@@ -5108,7 +5112,11 @@ class ReadableListBuffer:
             self._chunk_size = chunk_size or ReadableListBuffer.DEFAULT_BUFFERED_READER_CHUNK_SIZE
 
         async def read1(self, /, n: int = -1) -> bytes:
-            if n <= len(self._buf):
+            if n < 0:
+                n = self._chunk_size
+            if not n:
+                return b''
+            if 0 < n <= len(self._buf):
                 return self._buf.read(n) or b''
             return await self._raw.read1(n)
 

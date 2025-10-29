@@ -33,6 +33,12 @@ class ExecutorAsyncHttpClient(AsyncHttpClient):
         async def read1(self, /, n: int = -1) -> bytes:
             return await self.owner._run_in_executor(self.resp.stream.read1, n)  # noqa
 
+        async def read(self, /, n: int = -1) -> bytes:
+            return await self.owner._run_in_executor(self.resp.stream.read, n)  # noqa
+
+        async def readall(self) -> bytes:
+            return await self.owner._run_in_executor(self.resp.stream.readall)  # noqa
+
         async def close(self) -> None:
             return await self.owner._run_in_executor(self.resp.close)  # noqa
 
@@ -44,7 +50,7 @@ class ExecutorAsyncHttpClient(AsyncHttpClient):
             request=req,
             underlying=resp,
             **(dict(  # type: ignore
-                stream=(adapter := self._StreamAdapter(self, resp)),
+                _stream=(adapter := self._StreamAdapter(self, resp)),
                 _closer=adapter.close,
             ) if resp.has_data else {}),
         )

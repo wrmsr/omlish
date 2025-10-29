@@ -3,9 +3,9 @@
 import abc
 import contextlib
 import dataclasses as dc
-import io
 import typing as ta
 
+from ...io.readers import BufferedBytesReader
 from ...lite.abstract import Abstract
 from ...lite.dataclasses import dataclass_shallow_asdict
 from .base import BaseHttpClient
@@ -27,25 +27,19 @@ HttpClientT = ta.TypeVar('HttpClientT', bound='HttpClient')
 @ta.final
 @dc.dataclass(frozen=True)  # kw_only=True
 class StreamHttpResponse(BaseHttpResponse):
-    class Stream(ta.Protocol):
-        def read1(self, /, n: int = -1) -> bytes: ...
+    _stream: ta.Optional[BufferedBytesReader] = None
 
-    @ta.final
-    class _NullStream:
-        def read1(self, /, n: int = -1) -> bytes:
-            raise TypeError
-
-    stream: Stream = _NullStream()
+    @property
+    def stream(self) -> 'BufferedBytesReader':
+        if (st := self._stream) is None:
+            raise TypeError('No data')
+        return st
 
     @property
     def has_data(self) -> bool:
-        return not isinstance(self.stream, StreamHttpResponse._NullStream)
+        return self._stream is not None
 
-    def read_all(self) -> bytes:
-        buf = io.BytesIO()
-        while (b := self.stream.read1()):
-            buf.write(b)
-        return buf.getvalue()
+    #
 
     _closer: ta.Optional[ta.Callable[[], None]] = None
 
@@ -94,8 +88,8 @@ def read_http_client_response(resp: BaseHttpResponse) -> HttpResponse:
 
     elif isinstance(resp, StreamHttpResponse):
         return HttpResponse(**{
-            **{k: v for k, v in dataclass_shallow_asdict(resp).items() if k not in ('stream', '_closer')},
-            **({'data': resp.read_all()} if resp.has_data else {}),
+            **{k: v for k, v in dataclass_shallow_asdict(resp).items() if k not in ('_stream', '_closer')},
+            **({'data': resp.stream.readall()} if resp.has_data else {}),
         })
 
     else:

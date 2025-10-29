@@ -7,8 +7,8 @@ from ..sync import CoroHttpClient
 # @pytest.skip('FIXME')
 @pytest.mark.online
 @pytest.mark.parametrize('data', [None, '{}', b'{}'])
-@pytest.mark.parametrize('read_all', [False, True])
-def test_clients_stream(data, read_all):
+@pytest.mark.parametrize('readall', [False, True])
+def test_clients_stream(data, readall):
     with CoroHttpClient() as cli:
         with cli.stream_request(HttpRequest(
                 'https://httpbun.org/drip?duration=1&numbytes=10&code=200&delay=1',
@@ -19,8 +19,8 @@ def test_clients_stream(data, read_all):
             print(resp)
             assert resp.status == 200
 
-            if read_all:
-                data = resp.read_all()
+            if readall:
+                data = resp.stream.readall()
             else:
                 l = []
                 while (b := resp.stream.read1(1)):

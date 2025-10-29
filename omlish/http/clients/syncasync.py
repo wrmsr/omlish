@@ -26,6 +26,12 @@ class SyncAsyncHttpClient(AsyncHttpClient):
         async def read1(self, /, n: int = -1) -> bytes:
             return self.ul.stream.read1(n)
 
+        async def read(self, /, n: int = -1) -> bytes:
+            return self.ul.stream.read(n)
+
+        async def readall(self) -> bytes:
+            return self.ul.stream.readall()
+
         async def close(self) -> None:
             self.ul.close()
 
@@ -37,7 +43,7 @@ class SyncAsyncHttpClient(AsyncHttpClient):
             request=req,
             underlying=resp,
             **(dict(  # type: ignore
-                stream=(adapter := self._StreamAdapter(resp)),
+                _stream=(adapter := self._StreamAdapter(resp)),
                 _closer=adapter.close,
             ) if resp.has_data else {}),
         )

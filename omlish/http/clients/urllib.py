@@ -5,6 +5,7 @@ import typing as ta
 import urllib.error
 import urllib.request
 
+from ...io.buffers import ReadableListBuffer
 from ..headers import HttpHeaders
 from .base import DEFAULT_ENCODING
 from .base import HttpClientContext
@@ -72,7 +73,7 @@ class UrllibHttpClient(HttpClient):
                 headers=HttpHeaders(resp.headers.items()),
                 request=req,
                 underlying=resp,
-                stream=resp,
+                _stream=ReadableListBuffer().new_buffered_reader(resp),
                 _closer=resp.close,
             )
 

@@ -125,17 +125,18 @@ class _StreamServiceResponse(StreamResponseIterator[V, OutputT]):
             return
         if self._cr.cr_running or self._cr.cr_suspended:
             cex = StreamServiceCancelledError()
-            for i in itertools.count():
+            i = None
+            for n in itertools.count():
                 try:
-                    if not i:
+                    if not n:
                         x = self._g.throw(cex)
                     else:
-                        x = self._g.send(None)
+                        x = self._g.send(i)
                 except StreamServiceCancelledError as cex2:
                     if cex2 is cex:
                         break
                     raise
-                yield x
+                i = yield x
         if self._cr.cr_running:
             raise RuntimeError(f'Coroutine {self._cr!r} not terminated')
         if self._g is not self._a:
@@ -155,9 +156,10 @@ class _StreamServiceResponse(StreamResponseIterator[V, OutputT]):
     @types.coroutine
     def _anext(self):
         check.state(self._state == 'running')
+        i = None
         while True:
             try:
-                x = self._g.send(None)
+                x = self._g.send(i)
             except StopIteration as e:
                 if e.value is not None:
                     self._outputs = tv.TypedValues(*check.isinstance(e.value, ta.Sequence))
@@ -170,7 +172,7 @@ class _StreamServiceResponse(StreamResponseIterator[V, OutputT]):
                 x.done = True
                 return x.value
 
-            yield x
+            i = yield x
 
     async def __anext__(self) -> V:
         return await self._anext()

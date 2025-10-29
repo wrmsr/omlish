@@ -5,6 +5,7 @@ import socket
 import typing as ta
 import urllib.parse
 
+from ....io.buffers import ReadableListBuffer
 from ....lite.check import check
 from ...coro.client.connection import CoroHttpClientConnection
 from ...coro.client.response import CoroHttpClientResponse
@@ -92,7 +93,7 @@ class CoroHttpClient(HttpClient):
                     headers=HttpHeaders(resp._state.headers.items()),  # noqa
                     request=self._req,
                     underlying=self,
-                    stream=self,
+                    _stream=ReadableListBuffer().new_buffered_reader(self),
                     _closer=self.close,
                 )
 

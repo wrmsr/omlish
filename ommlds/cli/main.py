@@ -191,7 +191,7 @@ def _main(args: ta.Any = None) -> None:
             _a_main,
             args,
         ),
-        backend='asyncio',
+        # backend='trio',
     )  # noqa
 
 
