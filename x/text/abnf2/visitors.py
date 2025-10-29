@@ -5,9 +5,9 @@ from omlish import dispatch
 from omlish import lang
 from omlish import collections as col
 
-from ..base import Match
-from ..base import Parser
-from ..parsers import RuleRef
+from .base import Match
+from .base import Parser
+from .parsers import RuleRef
 
 
 T = ta.TypeVar('T')

@@ -3,6 +3,7 @@ https://datatracker.ietf.org/doc/html/rfc5234
 """
 import typing as ta
 
+from .base import Grammar
 from .base import Rule
 from .parsers import concat
 from .parsers import either
@@ -135,3 +136,6 @@ CORE_RULES: ta.Sequence[Rule] = [
     ),
 
 ]
+
+
+CORE_GRAMMAR = Grammar(*CORE_RULES)
