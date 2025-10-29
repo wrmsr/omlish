@@ -543,7 +543,7 @@ def is_need_quoted(value: str) -> bool:
         if c in ('#', '\\'):
             return True
         elif c in (':', '-'):
-            if i+1 < len(value) and value[i+1] == ' ':
+            if i + 1 < len(value) and value[i + 1] == ' ':
                 return True
 
     return False

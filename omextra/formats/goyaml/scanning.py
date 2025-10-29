@@ -89,7 +89,7 @@ class YamlScanningContext:
 
     def set_folded(self, last_delim_column: int, opt: str) -> None:
         mstate = YamlMultiLineState(
-            is_folded= True,
+            is_folded=True,
             opt=opt,
         )
         indent = first_line_indent_column_by_opt(opt)
@@ -137,10 +137,10 @@ class YamlScanningContext:
             self.buf = self.buffered_src()
 
     def is_eos(self) -> bool:
-        return len(self.src)-1 <= self.idx
+        return len(self.src) - 1 <= self.idx
 
     def is_next_eos(self) -> bool:
-        return len(self.src) <= self.idx+1
+        return len(self.src) <= self.idx + 1
 
     def next(self) -> bool:
         return self.idx < self.size
@@ -150,7 +150,7 @@ class YamlScanningContext:
 
     def previous_char(self) -> str:
         if self.idx > 0:
-            return self.src[self.idx-1]
+            return self.src[self.idx - 1]
         return ''
 
     def current_char(self) -> str:
@@ -159,8 +159,8 @@ class YamlScanningContext:
         return ''
 
     def next_char(self) -> str:
-        if self.size > self.idx+1:
-            return self.src[self.idx+1]
+        if self.size > self.idx + 1:
+            return self.src[self.idx + 1]
         return ''
 
     def repeat_num(self, r: str) -> int:
@@ -172,7 +172,7 @@ class YamlScanningContext:
                 break
         return cnt
 
-    def  progress(self, num: int) -> None:
+    def progress(self, num: int) -> None:
         self.idx += num
 
     def exists_buffer(self) -> bool:
@@ -254,7 +254,7 @@ class YamlScanningContext:
 
     def last_token(self) -> ta.Optional[YamlToken]:
         if len(self.tokens) != 0:
-            return self.tokens[len(self.tokens)-1]
+            return self.tokens[len(self.tokens) - 1]
 
         return None
 
@@ -354,9 +354,9 @@ class YamlMultiLineState:
         last_char = ''
         prev_last_char = ''
         if len(ctx.buf) != 0:
-            last_char = ctx.buf[len(ctx.buf)-1]
+            last_char = ctx.buf[len(ctx.buf) - 1]
         if len(ctx.buf) > 1:
-            prev_last_char = ctx.buf[len(ctx.buf)-2]
+            prev_last_char = ctx.buf[len(ctx.buf) - 2]
 
         if self.line_indent_column == self.prev_line_indent_column:
             # ---
@@ -375,7 +375,7 @@ class YamlMultiLineState:
             #
             #  b
             if last_char == '\n' and prev_last_char == '\n':
-                ctx.buf = ctx.buf[:len(ctx.buf)-1]
+                ctx.buf = ctx.buf[:len(ctx.buf) - 1]
                 ctx.not_space_char_pos = len(ctx.buf)
 
         self.folded_new_line = False
@@ -484,7 +484,7 @@ class YamlScanner:
         self.offset += num
         self.progress(ctx, num)
 
-    def  progress_only(self, ctx: YamlScanningContext, num: int) -> None:
+    def progress_only(self, ctx: YamlScanningContext, num: int) -> None:
         self.offset += num
         self.progress(ctx, num)
 
@@ -521,7 +521,7 @@ class YamlScanner:
                 break
             c = src[i]
             if c == '\r':
-                if i+1 < size and src[i+1] == '\n':
+                if i + 1 < size and src[i + 1] == '\n':
                     i += 1
                 cnt += 1
             elif c == '\n':
@@ -1038,8 +1038,8 @@ class YamlScanner:
             if c != ':':
                 return False
 
-            if idx+1 < size:
-                nc = src[idx+1]
+            if idx + 1 < size:
+                nc = src[idx + 1]
                 if nc == ' ' or self.is_new_line_char(nc):
                     return True
 
@@ -1118,7 +1118,7 @@ class YamlScanner:
             if ctx.previous_char() == '\\':
                 continue
 
-            value = ctx.source(ctx.idx, ctx.idx+idx)
+            value = ctx.source(ctx.idx, ctx.idx + idx)
             progress = len(value)
             ctx.add_token(YamlTokenMakers.new_comment(value, ctx.obuf, self.pos()))
             self.progress_column(ctx, progress)
@@ -1240,7 +1240,7 @@ class YamlScanner:
             self.add_buffered_token_if_exists(ctx)
 
         if ctx.exists_buffer() and self.is_first_char_at_line:
-            if ctx.buf[len(ctx.buf)-1] == ' ':
+            if ctx.buf[len(ctx.buf) - 1] == ' ':
                 ctx.buf = ctx.buf[:-1] + '\n'
             else:
                 ctx.buf += '\n'
@@ -1377,13 +1377,13 @@ class YamlScanner:
         if ctx.repeat_num('-') != 3:
             return False
 
-        if ctx.size > ctx.idx+3:
-            c = ctx.src[ctx.idx+3]
+        if ctx.size > ctx.idx + 3:
+            c = ctx.src[ctx.idx + 3]
             if c != ' ' and c != '\t' and c != '\n' and c != '\r':
                 return False
 
         self.add_buffered_token_if_exists(ctx)
-        ctx.add_token(YamlTokenMakers.new_document_header(ctx.obuf+'---', self.pos()))
+        ctx.add_token(YamlTokenMakers.new_document_header(ctx.obuf + '---', self.pos()))
         self.progress_column(ctx, 3)
         ctx.clear()
         self.clear_state()
@@ -1400,7 +1400,7 @@ class YamlScanner:
             return False
 
         self.add_buffered_token_if_exists(ctx)
-        ctx.add_token(YamlTokenMakers.new_document_end(ctx.obuf+'...', self.pos()))
+        ctx.add_token(YamlTokenMakers.new_document_end(ctx.obuf + '...', self.pos()))
         self.progress_column(ctx, 3)
         ctx.clear()
         return True
@@ -1410,7 +1410,7 @@ class YamlScanner:
             return False
 
         self.last_delim_column = self.column
-        ctx.add_token(YamlTokenMakers.new_merge_key(ctx.obuf+'<<', self.pos()))
+        ctx.add_token(YamlTokenMakers.new_merge_key(ctx.obuf + '<<', self.pos()))
         self.progress_column(ctx, 2)
         ctx.clear()
         return True
@@ -1501,7 +1501,7 @@ class YamlScanner:
             if self.is_new_line_char(c):
                 break
 
-        value = ctx.source(ctx.idx, ctx.idx+progress).rstrip(' ')
+        value = ctx.source(ctx.idx, ctx.idx + progress).rstrip(' ')
         comment_value_index = value.find('#')
         opt = value
         if comment_value_index > 0:
@@ -1524,14 +1524,14 @@ class YamlScanner:
             header_buf = header_buf[:comment_index]
 
         if header == '|':
-            ctx.add_token(YamlTokenMakers.new_literal('|'+opt, header_buf, self.pos()))
+            ctx.add_token(YamlTokenMakers.new_literal('|' + opt, header_buf, self.pos()))
             ctx.set_literal(self.last_delim_column, opt)
         elif header == '>':
-            ctx.add_token(YamlTokenMakers.new_folded('>'+opt, header_buf, self.pos()))
+            ctx.add_token(YamlTokenMakers.new_folded('>' + opt, header_buf, self.pos()))
             ctx.set_folded(self.last_delim_column, opt)
 
         if comment_index > 0:
-            comment = value[comment_value_index+1:]
+            comment = value[comment_value_index + 1:]
             self.offset += len(header_buf)
             self.column += len(header_buf)
             ctx.add_token(YamlTokenMakers.new_comment(comment, ctx.obuf[len(header_buf):], self.pos()))

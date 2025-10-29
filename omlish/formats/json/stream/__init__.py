@@ -1,3 +1,16 @@
+"""
+A generator powered, configurable, mostly fully streaming JSON parser.
+
+Regarding the 'streamyness' of the subsystems:
+ - Lexing only buffers for string and number literals.
+ - Parsing maintains only a stack that scales by nesting depth.
+ - Building values will obviously hold everything under the topmost object it's building until it's finished.
+
+It's reasonably optimized, but performance is not a primary or even secondary goal: its goal is flexibility. If speed
+matters use a native library.
+"""
+
+
 from .building import (  # noqa
     JsonValueBuilder,
 )

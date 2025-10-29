@@ -24,9 +24,9 @@ from .tokens import YamlTokenType
 ##
 
 
-ERR_INVALID_TOKEN_TYPE  = yaml_error('invalid token type')
+ERR_INVALID_TOKEN_TYPE = yaml_error('invalid token type')
 ERR_INVALID_ANCHOR_NAME = yaml_error('invalid anchor name')
-ERR_INVALID_ALIAS_NAME  = yaml_error('invalid alias name')
+ERR_INVALID_ALIAS_NAME = yaml_error('invalid alias name')
 
 
 class YamlNodeType(enum.Enum):
@@ -251,7 +251,7 @@ def read_node(p: str, node: YamlNode) -> YamlErrorOr[int]:
         return EofYamlError()
 
     size = min(remain, len(p))
-    for idx, b in enumerate(s[read_len : read_len+size]):
+    for idx, b in enumerate(s[read_len:read_len + size]):
         p[idx] = b  # type: ignore[index]  # FIXME: lol
 
     node.append_read_len(size)
@@ -292,7 +292,7 @@ def check_line_break(t: YamlToken) -> bool:
             if prev.type in (YamlTokenType.NULL, YamlTokenType.IMPLICIT_NULL):
                 return prev.origin.count(lbc) > 0
 
-            if line_diff-adjustment > 0:
+            if line_diff - adjustment > 0:
                 return True
 
     return False
@@ -599,7 +599,6 @@ class NullYamlNode(ScalarYamlNode, BaseYamlNode):
     # is_merge_key returns whether it is a MergeKey node.
     def is_merge_key(self) -> bool:
         return False
-
 
 
 ##
@@ -1111,7 +1110,6 @@ class MapYamlNode(Abstract):
 
 
 START_RANGE_INDEX = -1
-
 
 
 # MapNodeIter is an iterator for ranging over a MapNode

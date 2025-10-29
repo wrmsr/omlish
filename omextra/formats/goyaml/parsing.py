@@ -88,12 +88,12 @@ class YamlParsingContext:
     @staticmethod
     def new() -> 'YamlParsingContext':
         return YamlParsingContext(
-            path= '$',
+            path='$',
         )
 
     def go_next(self) -> None:
         ref = check.not_none(self.token_ref)
-        if ref.size <= ref.idx+1:
+        if ref.size <= ref.idx + 1:
             ref.idx = ref.size
         else:
             ref.idx += 1
@@ -134,7 +134,7 @@ class YamlParsingContext:
             return
 
         if ref.size == idx:
-            cur_token = ref.tokens[ref.size-1]
+            cur_token = ref.tokens[ref.size - 1]
             check.not_none(tk.raw_token()).next = cur_token.raw_token()
             check.not_none(cur_token.raw_token()).prev = tk.raw_token()
 
@@ -146,13 +146,13 @@ class YamlParsingContext:
         check.not_none(tk.raw_token()).next = cur_token.raw_token()
         check.not_none(cur_token.raw_token()).prev = tk.raw_token()
 
-        ref.tokens = [*ref.tokens[:idx+1], *ref.tokens[idx:]]
+        ref.tokens = [*ref.tokens[:idx + 1], *ref.tokens[idx:]]
         ref.tokens[idx] = tk
         ref.size = len(ref.tokens)
 
     def add_token(self, tk: 'YamlParseToken') -> None:
         ref = check.not_none(self.token_ref)
-        last_tk = check.not_none(ref.tokens[ref.size-1])
+        last_tk = check.not_none(ref.tokens[ref.size - 1])
         if last_tk.group is not None:
             last_tk = check.not_none(last_tk.group.last())
 
@@ -1796,8 +1796,8 @@ class YamlParser:
             YamlParseToken.column(tk) != key_col and
             YamlParseToken.line(tk) == key_line and
             (
-                    YamlParseToken.group_type(tk) == YamlParseTokenGroupType.MAP_KEY or
-                    YamlParseToken.group_type(tk) == YamlParseTokenGroupType.MAP_KEY_VALUE
+                YamlParseToken.group_type(tk) == YamlParseTokenGroupType.MAP_KEY or
+                YamlParseToken.group_type(tk) == YamlParseTokenGroupType.MAP_KEY_VALUE
             )
         ):
             # a: b:
