@@ -172,6 +172,7 @@ RESERVED_NULL_KEYWORDS = (
     '~',
 )
 
+
 RESERVED_BOOL_KEYWORDS = (
     'true',
     'True',
@@ -180,6 +181,7 @@ RESERVED_BOOL_KEYWORDS = (
     'False',
     'FALSE',
 )
+
 
 # For compatibility with other YAML 1.1 parsers.
 # Note that we use these solely for encoding the bool value with quotes. go-yaml should not treat these as reserved
@@ -203,6 +205,7 @@ RESERVED_LEGACY_BOOL_KEYWORDS = (
     'OFF',
 )
 
+
 RESERVED_INF_KEYWORDS = (
     '.inf',
     '.Inf',
@@ -211,6 +214,7 @@ RESERVED_INF_KEYWORDS = (
     '-.Inf',
     '-.INF',
 )
+
 
 RESERVED_NAN_KEYWORDS = (
     '.nan',
@@ -251,7 +255,7 @@ RESERVED_ENC_KEYWORD_MAP: ta.Mapping[str, ta.Callable[[str, str, 'YamlPosition']
 ##
 
 
-YamlReservedTagKeyword: ta.TypeAlias = str  # omlish-amalg-typing-no-move
+YamlReservedTagKeyword = str  # ta.TypeAlias  # omlish-amalg-typing-no-move
 
 
 class YamlReservedTagKeywords:
@@ -495,6 +499,7 @@ YAML_TIMESTAMP_FORMATS = (
     # Not in examples, but to preserve backward compatibility by quoting time values
     '%H:%M',
 )
+
 
 def _is_timestamp(value: str) -> bool:
     for format_str in YAML_TIMESTAMP_FORMATS:
