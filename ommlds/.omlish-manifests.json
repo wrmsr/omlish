@@ -468,7 +468,7 @@
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.tinygrad.chat",
         "attr": "TinygradLlama3ChatChoicesService",
-        "name": "tinygrad_llama3",
+        "name": "tinygrad-llama3",
         "aliases": null,
         "type": "ChatChoicesService"
       }
@@ -483,7 +483,7 @@
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.tinygrad.chat",
         "attr": "TinygradLlama3ChatChoicesStreamService",
-        "name": "tinygrad_llama3",
+        "name": "tinygrad-llama3",
         "aliases": null,
         "type": "ChatChoicesStreamService"
       }
@@ -500,7 +500,7 @@
           "ChatChoicesService",
           "ChatChoicesStreamService"
         ],
-        "backend_name": "tinygrad_llama3",
+        "backend_name": "tinygrad-llama3",
         "model_names": null
       }
     }
