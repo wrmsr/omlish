@@ -10,6 +10,7 @@ from ..base import HttpRequest
 from ..base import HttpStatusError
 from ..executor import ExecutorAsyncHttpClient
 from ..httpx import HttpxAsyncHttpClient
+from ..syncasync import SyncAsyncHttpClient
 from ..urllib import UrllibHttpClient
 
 
@@ -25,9 +26,16 @@ async def thread_executor_urllib_async_http_client():
                 yield acli
 
 
+@contextlib.asynccontextmanager
+async def sync_async_urllib_async_http_client():
+    with UrllibHttpClient() as client:
+        yield SyncAsyncHttpClient(client)
+
+
 CLIENTS: list = [
     HttpxAsyncHttpClient,
     thread_executor_urllib_async_http_client,
+    sync_async_urllib_async_http_client,
 ]
 
 

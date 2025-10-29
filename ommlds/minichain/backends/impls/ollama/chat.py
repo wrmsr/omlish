@@ -146,7 +146,7 @@ class OllamaChatChoicesService(BaseOllamaChatChoicesService):
 # )
 @static_check_is_chat_choices_stream_service
 class OllamaChatChoicesStreamService(BaseOllamaChatChoicesService):
-    READ_CHUNK_SIZE = 64
+    READ_CHUNK_SIZE: ta.ClassVar[int] = -1
 
     async def invoke(
             self,

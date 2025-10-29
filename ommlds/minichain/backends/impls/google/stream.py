@@ -125,7 +125,7 @@ class GoogleChatChoicesStreamService:
         AiMessage: 'model',
     }
 
-    READ_CHUNK_SIZE = 64
+    READ_CHUNK_SIZE: ta.ClassVar[int] = -1
 
     async def invoke(
             self,
