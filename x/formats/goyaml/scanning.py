@@ -1840,7 +1840,7 @@ class YamlScanner:
 
 
 # Tokenize split to token instances from string
-def tokenize(src: str) -> YamlTokens:
+def yaml_tokenize(src: str) -> YamlTokens:
     s = YamlScanner()
     s.init(src)
 

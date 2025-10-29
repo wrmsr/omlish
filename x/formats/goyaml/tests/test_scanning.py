@@ -11,6 +11,6 @@ def test_scanning():
 
     doc = yaml.safe_load(src)  # noqa
 
-    tks = scanning.tokenize(src)
+    tks = scanning.yaml_tokenize(src)
     for tk in tks:
         print(tk)
