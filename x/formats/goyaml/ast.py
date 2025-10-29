@@ -130,12 +130,12 @@ class YamlNode(Abstract):
 
     # set_comment set comment token to node
     @abc.abstractmethod
-    def set_comment(self, node: ta.Optional['CommentGroupNode']) -> ta.Optional[YamlError]:
+    def set_comment(self, node: ta.Optional['CommentGroupYamlNode']) -> ta.Optional[YamlError]:
         raise NotImplementedError
 
     # comment returns comment token instance
     @abc.abstractmethod
-    def get_comment(self) -> ta.Optional['CommentGroupNode']:
+    def get_comment(self) -> ta.Optional['CommentGroupYamlNode']:
         raise NotImplementedError
 
     # get_path returns YAMLPath for the current node
@@ -194,7 +194,7 @@ class ScalarNode(MapKeyYamlNode, Abstract):
 @dc.dataclass(kw_only=True)
 class BaseYamlNode(YamlNode, Abstract):
     path: str = ''
-    comment: ta.Optional['CommentGroupNode'] = None
+    comment: ta.Optional['CommentGroupYamlNode'] = None
     cur_read: int = 0
 
     def read_len(self) -> int:
@@ -221,16 +221,16 @@ class BaseYamlNode(YamlNode, Abstract):
         self.path = path
 
     # get_comment returns comment token instance
-    def get_comment(self) -> ta.Optional['CommentGroupNode']:
+    def get_comment(self) -> ta.Optional['CommentGroupYamlNode']:
         return self.comment
 
     # set_comment set comment token
-    def set_comment(self, node: ta.Optional['CommentGroupNode']) -> ta.Optional[YamlError]:
+    def set_comment(self, node: ta.Optional['CommentGroupYamlNode']) -> ta.Optional[YamlError]:
         self.comment = node
         return None
 
 
-def add_comment_string(base: str, node: 'CommentGroupNode') -> str:
+def add_comment_string(base: str, node: 'CommentGroupYamlNode') -> str:
     return f'{base} {node.string()}'
 
 
@@ -297,8 +297,8 @@ def check_line_break(t: tokens.YamlToken) -> bool:
 
 
 # Null create node for null value
-def null(tk: tokens.YamlToken) -> 'NullNode':
-    return NullNode(
+def null(tk: tokens.YamlToken) -> 'NullYamlNode':
+    return NullYamlNode(
         token=tk,
     )
 
@@ -316,46 +316,46 @@ def _parse_bool(s: str) -> bool:
 
 
 # bool_ create node for boolean value
-def bool_(tk: tokens.YamlToken) -> 'BoolNode':
+def bool_(tk: tokens.YamlToken) -> 'BoolYamlNode':
     b = _parse_bool(tk.value)
-    return BoolNode(
+    return BoolYamlNode(
         token=tk,
         value=b,
     )
 
 
 # integer create node for integer value
-def integer(tk: tokens.YamlToken) -> 'IntegerNode':
+def integer(tk: tokens.YamlToken) -> 'IntegerYamlNode':
     v: ta.Any = None
     if (num := tokens.to_number(tk.value)) is not None:
         v = num.value
 
-    return IntegerNode(
+    return IntegerYamlNode(
         token=tk,
         value=v,
     )
 
 
 # float_ create node for float value
-def float_(tk: tokens.YamlToken) -> 'FloatNode':
+def float_(tk: tokens.YamlToken) -> 'FloatYamlNode':
     v: float = 0.
     if (num := tokens.to_number(tk.value)) is not None and num.type == tokens.NumberType.FLOAT:
         if isinstance(num.value, float):
             v = num.value
 
-    return FloatNode(
+    return FloatYamlNode(
         token=tk,
         value=v,
     )
 
 
 # infinity create node for .inf or -.inf value
-def infinity(tk: tokens.YamlToken) -> 'InfinityNode':
+def infinity(tk: tokens.YamlToken) -> 'InfinityYamlNode':
     if tk.value in ('.inf', '.Inf', '.INF'):
         value = float('inf')
     elif tk.value in ('-.inf', '-.Inf', '-.INF'):
         value = float('-inf')
-    node = InfinityNode(
+    node = InfinityYamlNode(
         token=tk,
         value=value,
     )
@@ -363,47 +363,47 @@ def infinity(tk: tokens.YamlToken) -> 'InfinityNode':
 
 
 # nan create node for .nan value
-def nan(tk: tokens.YamlToken) -> 'NanNode':
-    return NanNode(
+def nan(tk: tokens.YamlToken) -> 'NanYamlNode':
+    return NanYamlNode(
         token=tk,
     )
 
 
 # string create node for string value
-def string(tk: tokens.YamlToken) -> 'StringNode':
-    return StringNode(
+def string(tk: tokens.YamlToken) -> 'StringYamlNode':
+    return StringYamlNode(
         token=tk,
         value=tk.value,
     )
 
 
 # comment create node for comment
-def comment(tk: ta.Optional[tokens.YamlToken]) -> 'CommentNode':
-    return CommentNode(
+def comment(tk: ta.Optional[tokens.YamlToken]) -> 'CommentYamlNode':
+    return CommentYamlNode(
         token=tk,
     )
 
 
-def comment_group(comments: ta.Iterable[ta.Optional[tokens.YamlToken]]) -> 'CommentGroupNode':
-    nodes: ta.List[CommentNode] = []
+def comment_group(comments: ta.Iterable[ta.Optional[tokens.YamlToken]]) -> 'CommentGroupYamlNode':
+    nodes: ta.List[CommentYamlNode] = []
     for c in comments:
         nodes.append(comment(c))
 
-    return CommentGroupNode(
+    return CommentGroupYamlNode(
         comments=nodes,
     )
 
 
 # merge_key create node for merge key ( << )
-def merge_key(tk: tokens.YamlToken) -> 'MergeKeyNode':
-    return MergeKeyNode(
+def merge_key(tk: tokens.YamlToken) -> 'MergeKeyYamlNode':
+    return MergeKeyYamlNode(
         token=tk,
     )
 
 
 # mapping create node for map
-def mapping(tk: tokens.YamlToken, is_flow_style: bool, *values: 'MappingValueNode') -> 'MappingNode':
-    node = MappingNode(
+def mapping(tk: tokens.YamlToken, is_flow_style: bool, *values: 'MappingValueYamlNode') -> 'MappingYamlNode':
+    node = MappingYamlNode(
         start=tk,
         is_flow_style=is_flow_style,
         values=[],
@@ -413,8 +413,8 @@ def mapping(tk: tokens.YamlToken, is_flow_style: bool, *values: 'MappingValueNod
 
 
 # mapping_value create node for mapping value
-def mapping_value(tk: tokens.YamlToken, key: 'MapKeyYamlNode', value: YamlNode) -> 'MappingValueNode':
-    return MappingValueNode(
+def mapping_value(tk: tokens.YamlToken, key: 'MapKeyYamlNode', value: YamlNode) -> 'MappingValueYamlNode':
+    return MappingValueYamlNode(
         start=tk,
         key=key,
         value=value,
@@ -422,54 +422,54 @@ def mapping_value(tk: tokens.YamlToken, key: 'MapKeyYamlNode', value: YamlNode) 
 
 
 # mapping_key create node for map key ( '?' ).
-def mapping_key(tk: tokens.YamlToken) -> 'MappingKeyNode':
-    return MappingKeyNode(
+def mapping_key(tk: tokens.YamlToken) -> 'MappingKeyYamlNode':
+    return MappingKeyYamlNode(
         start=tk,
     )
 
 
 # sequence create node for sequence
-def sequence(tk: tokens.YamlToken, is_flow_style: bool) -> 'SequenceNode':
-    return SequenceNode(
+def sequence(tk: tokens.YamlToken, is_flow_style: bool) -> 'SequenceYamlNode':
+    return SequenceYamlNode(
         start=tk,
         is_flow_style=is_flow_style,
         values=[],
     )
 
 
-def anchor(tk: tokens.YamlToken) -> 'AnchorNode':
-    return AnchorNode(
+def anchor(tk: tokens.YamlToken) -> 'AnchorYamlNode':
+    return AnchorYamlNode(
         start=tk,
     )
 
 
-def alias(tk: tokens.YamlToken) -> 'AliasNode':
-    return AliasNode(
+def alias(tk: tokens.YamlToken) -> 'AliasYamlNode':
+    return AliasYamlNode(
         start=tk,
     )
 
 
-def document(tk: ta.Optional[tokens.YamlToken], body: ta.Optional[YamlNode]) -> 'DocumentNode':
-    return DocumentNode(
+def document(tk: ta.Optional[tokens.YamlToken], body: ta.Optional[YamlNode]) -> 'DocumentYamlNode':
+    return DocumentYamlNode(
         start=tk,
         body=body,
     )
 
 
-def directive(tk: tokens.YamlToken) -> 'DirectiveNode':
-    return DirectiveNode(
+def directive(tk: tokens.YamlToken) -> 'DirectiveYamlNode':
+    return DirectiveYamlNode(
         start=tk,
     )
 
 
-def literal(tk: tokens.YamlToken) -> 'LiteralNode':
-    return LiteralNode(
+def literal(tk: tokens.YamlToken) -> 'LiteralYamlNode':
+    return LiteralYamlNode(
         start=tk,
     )
 
 
-def tag(tk: tokens.YamlToken) -> 'TagNode':
-    return TagNode(
+def tag(tk: tokens.YamlToken) -> 'TagYamlNode':
+    return TagYamlNode(
         start=tk,
     )
 
@@ -481,7 +481,7 @@ def tag(tk: tokens.YamlToken) -> 'TagNode':
 @dc.dataclass(kw_only=True)
 class YamlFile:
     name: str = ''
-    docs: ta.List['DocumentNode']
+    docs: ta.List['DocumentYamlNode']
 
     # read implements (io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
@@ -508,7 +508,7 @@ class YamlFile:
 
 # DocumentNode type of Document
 @dc.dataclass(kw_only=True)
-class DocumentNode(BaseYamlNode):
+class DocumentYamlNode(BaseYamlNode):
     start: ta.Optional[tokens.YamlToken]  # position of DocumentHeader ( `---` )
     end: ta.Optional[tokens.YamlToken] = None  # position of DocumentEnd ( `...` )
     body: ta.Optional[YamlNode]
@@ -551,7 +551,7 @@ class DocumentNode(BaseYamlNode):
 
 # NullNode type of null node
 @dc.dataclass(kw_only=True)
-class NullNode(ScalarNode, BaseYamlNode):
+class NullYamlNode(ScalarNode, BaseYamlNode):
     token: tokens.YamlToken
 
     # read implements(io.Reader).Read
@@ -602,7 +602,7 @@ class NullNode(ScalarNode, BaseYamlNode):
 
 # IntegerNode type of integer node
 @dc.dataclass(kw_only=True)
-class IntegerNode(ScalarNode, BaseYamlNode):
+class IntegerYamlNode(ScalarNode, BaseYamlNode):
     token: tokens.YamlToken
     value: ta.Any  # int64 or uint64 value
 
@@ -649,7 +649,7 @@ class IntegerNode(ScalarNode, BaseYamlNode):
 
 # FloatNode type of float node
 @dc.dataclass(kw_only=True)
-class FloatNode(ScalarNode, BaseYamlNode):
+class FloatYamlNode(ScalarNode, BaseYamlNode):
     token: tokens.YamlToken
     precision: int = 0
     value: float
@@ -758,7 +758,7 @@ def strconv_quote(s: str) -> str:
 
 # StringNode type of string node
 @dc.dataclass(kw_only=True)
-class StringNode(ScalarNode, BaseYamlNode):
+class StringYamlNode(ScalarNode, BaseYamlNode):
     token: tokens.YamlToken
     value: str
 
@@ -865,9 +865,9 @@ def escape_single_quote(s: str) -> str:
 
 # LiteralNode type of literal node
 @dc.dataclass(kw_only=True)
-class LiteralNode(ScalarNode, BaseYamlNode):
+class LiteralYamlNode(ScalarNode, BaseYamlNode):
     start: tokens.YamlToken
-    value: ta.Optional['StringNode'] = None
+    value: ta.Optional['StringYamlNode'] = None
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
@@ -916,7 +916,7 @@ class LiteralNode(ScalarNode, BaseYamlNode):
 
 # MergeKeyNode type of merge key node
 @dc.dataclass(kw_only=True)
-class MergeKeyNode(ScalarNode, BaseYamlNode):
+class MergeKeyYamlNode(ScalarNode, BaseYamlNode):
     token: tokens.YamlToken
 
     # read implements(io.Reader).Read
@@ -960,7 +960,7 @@ class MergeKeyNode(ScalarNode, BaseYamlNode):
 
 # BoolNode type of boolean node
 @dc.dataclass(kw_only=True)
-class BoolNode(ScalarNode, BaseYamlNode):
+class BoolYamlNode(ScalarNode, BaseYamlNode):
     token: tokens.YamlToken
     value: bool
 
@@ -1007,7 +1007,7 @@ class BoolNode(ScalarNode, BaseYamlNode):
 
 # InfinityNode type of infinity node
 @dc.dataclass(kw_only=True)
-class InfinityNode(ScalarNode, BaseYamlNode):
+class InfinityYamlNode(ScalarNode, BaseYamlNode):
     token: tokens.YamlToken
     value: float
 
@@ -1054,7 +1054,7 @@ class InfinityNode(ScalarNode, BaseYamlNode):
 
 # NanNode type of nan node
 @dc.dataclass(kw_only=True)
-class NanNode(ScalarNode, BaseYamlNode):
+class NanYamlNode(ScalarNode, BaseYamlNode):
     token: tokens.YamlToken
 
     # read implements(io.Reader).Read
@@ -1099,9 +1099,9 @@ class NanNode(ScalarNode, BaseYamlNode):
 
 
 # MapNode interface of MappingValueNode / MappingNode
-class MapNode(Abstract):
+class MapYamlNode(Abstract):
     @abc.abstractmethod
-    def map_range(self) -> 'MapNodeIter':
+    def map_range(self) -> 'MapYamlNodeIter':
         raise NotImplementedError
 
 
@@ -1111,8 +1111,8 @@ START_RANGE_INDEX = -1
 
 # MapNodeIter is an iterator for ranging over a MapNode
 @dc.dataclass(kw_only=True)
-class MapNodeIter:
-    values: ta.List['MappingValueNode']
+class MapYamlNodeIter:
+    values: ta.List['MappingValueYamlNode']
     idx: int
 
     # next advances the map iterator and reports whether there is another entry.
@@ -1131,7 +1131,7 @@ class MapNodeIter:
         return self.values[self.idx].value
 
     # key_value returns the MappingValueNode of the iterator's current map node entry.
-    def key_value(self) -> 'MappingValueNode':
+    def key_value(self) -> 'MappingValueYamlNode':
         return self.values[self.idx]
 
 
@@ -1140,12 +1140,12 @@ class MapNodeIter:
 
 # MappingNode type of mapping node
 @dc.dataclass(kw_only=True)
-class MappingNode(BaseYamlNode):
+class MappingYamlNode(BaseYamlNode):
     start: tokens.YamlToken
     end: ta.Optional[tokens.YamlToken] = None
     is_flow_style: bool
-    values: ta.List['MappingValueNode']
-    foot_comment: ta.Optional['CommentGroupNode'] = None
+    values: ta.List['MappingValueYamlNode']
+    foot_comment: ta.Optional['CommentGroupYamlNode'] = None
 
     def start_pos(self) -> tokens.YamlPosition:
         if len(self.values) == 0:
@@ -1153,8 +1153,8 @@ class MappingNode(BaseYamlNode):
         return check.not_none(self.values[0].key.get_token()).position
 
     # merge merge key/value of map.
-    def merge(self, target: 'MappingNode') -> None:
-        key_to_map_value_map: ta.Dict[str, MappingValueNode] = {}
+    def merge(self, target: 'MappingYamlNode') -> None:
+        key_to_map_value_map: ta.Dict[str, MappingValueYamlNode] = {}
         for value in self.values:
             key = value.key.string()
             key_to_map_value_map[key] = value
@@ -1231,8 +1231,8 @@ class MappingNode(BaseYamlNode):
         return self.block_style_string(comment_mode)
 
     # map_range implements MapNode protocol
-    def map_range(self) -> MapNodeIter:
-        return MapNodeIter(
+    def map_range(self) -> MapYamlNodeIter:
+        return MapYamlNodeIter(
             idx=START_RANGE_INDEX,
             values=self.values,
         )
@@ -1247,7 +1247,7 @@ class MappingNode(BaseYamlNode):
 
 # MappingKeyNode type of tag node
 @dc.dataclass(kw_only=True)
-class MappingKeyNode(MapKeyYamlNode, BaseYamlNode):
+class MappingKeyYamlNode(MapKeyYamlNode, BaseYamlNode):
     start: tokens.YamlToken
     value: ta.Optional[YamlNode] = None
 
@@ -1295,12 +1295,12 @@ class MappingKeyNode(MapKeyYamlNode, BaseYamlNode):
 
 # MappingValueNode type of mapping value
 @dc.dataclass(kw_only=True)
-class MappingValueNode(BaseYamlNode):
+class MappingValueYamlNode(BaseYamlNode):
     start: tokens.YamlToken  # delimiter token ':'.
     collect_entry: ta.Optional[tokens.YamlToken] = None  # collect entry token ','.
     key: MapKeyYamlNode
     value: YamlNode
-    foot_comment: ta.Optional['CommentGroupNode'] = None
+    foot_comment: ta.Optional['CommentGroupYamlNode'] = None
     is_flow_style: bool = False
 
     # Replace replace value node.
@@ -1333,11 +1333,11 @@ class MappingValueNode(BaseYamlNode):
     # set_is_flow_style set value to is_flow_style field recursively.
     def set_is_flow_style(self, is_flow: bool) -> None:
         self.is_flow_style = is_flow
-        if isinstance(self.value, MappingNode):
+        if isinstance(self.value, MappingYamlNode):
             self.value.set_is_flow_style(is_flow)
-        elif isinstance(self.value, MappingValueNode):
+        elif isinstance(self.value, MappingValueYamlNode):
             self.value.set_is_flow_style(is_flow)
-        elif isinstance(self.value, SequenceNode):
+        elif isinstance(self.value, SequenceYamlNode):
             self.value.set_is_flow_style(is_flow)
 
     # String mapping value to text
@@ -1375,32 +1375,32 @@ class MappingValueNode(BaseYamlNode):
 
             return f'{space}{self.key.string()}:\n{self.value.string()}'
 
-        elif isinstance(self.value, MappingNode) and (self.value.is_flow_style or len(self.value.values) == 0):
+        elif isinstance(self.value, MappingYamlNode) and (self.value.is_flow_style or len(self.value.values) == 0):
             return f'{space}{self.key.string()}: {self.value.string()}'
 
-        elif isinstance(self.value, SequenceNode) and (self.value.is_flow_style or len(self.value.values) == 0):
+        elif isinstance(self.value, SequenceYamlNode) and (self.value.is_flow_style or len(self.value.values) == 0):
             return f'{space}{self.key.string()}: {self.value.string()}'
 
-        elif isinstance(self.value, AnchorNode):
+        elif isinstance(self.value, AnchorYamlNode):
             return f'{space}{self.key.string()}: {self.value.string()}'
 
-        elif isinstance(self.value, AliasNode):
+        elif isinstance(self.value, AliasYamlNode):
             return f'{space}{self.key.string()}: {self.value.string()}'
 
-        elif isinstance(self.value, TagNode):
+        elif isinstance(self.value, TagYamlNode):
             return f'{space}{self.key.string()}: {self.value.string()}'
 
         if key_comment is not None:
             return f'{space}{self.key.string_without_comment()}: {key_comment.string()}\n{self.value.string()}'
 
-        if isinstance(self.value, MappingNode) and self.value.comment is not None:
+        if isinstance(self.value, MappingYamlNode) and self.value.comment is not None:
             return f'{space}{self.key.string()}: {self.value.string().lstrip(" ")}'
 
         return f'{space}{self.key.string()}:\n{self.value.string()}'
 
     # map_range implements MapNode protocol
-    def map_range(self) -> MapNodeIter:
-        return MapNodeIter(
+    def map_range(self) -> MapYamlNodeIter:
+        return MapYamlNodeIter(
             idx=START_RANGE_INDEX,
             values=[self],
         )
@@ -1416,13 +1416,13 @@ class MappingValueNode(BaseYamlNode):
 # ArrayNode interface of SequenceNode
 class ArrayYamlNode(YamlNode, Abstract):
     @abc.abstractmethod
-    def array_range(self) -> ta.Optional['ArrayNodeIter']:
+    def array_range(self) -> ta.Optional['ArrayYamlNodeIter']:
         raise NotImplementedError
 
 
 # ArrayNodeIter is an iterator for ranging over a ArrayNode
 @dc.dataclass(kw_only=True)
-class ArrayNodeIter:
+class ArrayYamlNodeIter:
     values: ta.List[YamlNode]
     idx: int
 
@@ -1447,14 +1447,14 @@ class ArrayNodeIter:
 
 # SequenceNode type of sequence node
 @dc.dataclass(kw_only=True)
-class SequenceNode(BaseYamlNode, ArrayYamlNode):
+class SequenceYamlNode(BaseYamlNode, ArrayYamlNode):
     start: tokens.YamlToken
     end: ta.Optional[tokens.YamlToken] = None
     is_flow_style: bool
     values: ta.List[ta.Optional[YamlNode]]
-    value_head_comments: ta.List[ta.Optional['CommentGroupNode']] = dc.field(default_factory=list)
-    entries: ta.List['SequenceEntryNode'] = dc.field(default_factory=list)
-    foot_comment: ta.Optional['CommentGroupNode'] = None
+    value_head_comments: ta.List[ta.Optional['CommentGroupYamlNode']] = dc.field(default_factory=list)
+    entries: ta.List['SequenceEntryYamlNode'] = dc.field(default_factory=list)
+    foot_comment: ta.Optional['CommentGroupYamlNode'] = None
 
     # replace replace value node.
     def replace(self, idx: int, value: YamlNode) -> ta.Optional[YamlError]:
@@ -1467,7 +1467,7 @@ class SequenceNode(BaseYamlNode, ArrayYamlNode):
         return None
 
     # merge merge sequence value.
-    def merge(self, target: 'SequenceNode') -> None:
+    def merge(self, target: 'SequenceYamlNode') -> None:
         column = self.start.position.column - target.start.position.column
         target.add_column(column)
         self.values.extend(target.values)
@@ -1481,11 +1481,11 @@ class SequenceNode(BaseYamlNode, ArrayYamlNode):
     def set_is_flow_style(self, is_flow: bool) -> None:
         self.is_flow_style = is_flow
         for value in self.values:
-            if isinstance(value, MappingNode):
+            if isinstance(value, MappingYamlNode):
                 value.set_is_flow_style(is_flow)
-            elif isinstance(value, MappingValueNode):
+            elif isinstance(value, MappingValueYamlNode):
                 value.set_is_flow_style(is_flow)
-            elif isinstance(value, SequenceNode):
+            elif isinstance(value, SequenceYamlNode):
                 value.set_is_flow_style(is_flow)
 
     # read implements(io.Reader).Read
@@ -1574,8 +1574,8 @@ class SequenceNode(BaseYamlNode, ArrayYamlNode):
         return self.block_style_string()
 
     # array_range implements ArrayNode protocol
-    def array_range(self) -> ta.Optional[ArrayNodeIter]:
-        return ArrayNodeIter(
+    def array_range(self) -> ta.Optional[ArrayYamlNodeIter]:
+        return ArrayYamlNodeIter(
             idx=START_RANGE_INDEX,
             values=ta.cast('ta.List[YamlNode]', self.values),
         )
@@ -1590,9 +1590,9 @@ class SequenceNode(BaseYamlNode, ArrayYamlNode):
 
 # SequenceEntryNode is the sequence entry.
 @dc.dataclass(kw_only=True)
-class SequenceEntryNode(BaseYamlNode):
-    head_comment: ta.Optional['CommentGroupNode']  # head comment.
-    line_comment: ta.Optional['CommentGroupNode'] = None  # line comment e.g.) - # comment.
+class SequenceEntryYamlNode(BaseYamlNode):
+    head_comment: ta.Optional['CommentGroupYamlNode']  # head comment.
+    line_comment: ta.Optional['CommentGroupYamlNode'] = None  # line comment e.g.) - # comment.
     start: ta.Optional[tokens.YamlToken]  # entry token.
     value: YamlNode  # value node.
 
@@ -1613,12 +1613,12 @@ class SequenceEntryNode(BaseYamlNode):
         tokens.YamlToken.add_column(self.start, col)
 
     # set_comment set line comment.
-    def set_comment(self, node: ta.Optional['CommentGroupNode']) -> ta.Optional[YamlError]:
+    def set_comment(self, node: ta.Optional['CommentGroupYamlNode']) -> ta.Optional[YamlError]:
         self.line_comment = node
         return None
 
     # comment returns comment token instance
-    def get_comment(self) -> ta.Optional['CommentGroupNode']:
+    def get_comment(self) -> ta.Optional['CommentGroupYamlNode']:
         return self.line_comment
 
     # marshal_yaml
@@ -1633,9 +1633,9 @@ class SequenceEntryNode(BaseYamlNode):
 def sequence_entry(
         start: ta.Optional[tokens.YamlToken],
         value: YamlNode,
-        head_comment: ta.Optional['CommentGroupNode'],
-) -> SequenceEntryNode:
-    return SequenceEntryNode(
+        head_comment: ta.Optional['CommentGroupYamlNode'],
+) -> SequenceEntryYamlNode:
+    return SequenceEntryYamlNode(
         head_comment=head_comment,
         start=start,
         value=value,
@@ -1643,8 +1643,8 @@ def sequence_entry(
 
 
 # SequenceMergeValue creates SequenceMergeValueNode instance.
-def sequence_merge_value(*values: MapNode) -> 'SequenceMergeValueNode':
-    return SequenceMergeValueNode(
+def sequence_merge_value(*values: MapYamlNode) -> 'SequenceMergeValueYamlNode':
+    return SequenceMergeValueYamlNode(
         values=list(values),
     )
 
@@ -1654,12 +1654,12 @@ def sequence_merge_value(*values: MapNode) -> 'SequenceMergeValueNode':
 
 # SequenceMergeValueNode is used to convert the Sequence node specified for the merge key into a MapNode format.
 @dc.dataclass(kw_only=True)
-class SequenceMergeValueNode(MapNode):
-    values: ta.List[MapNode]
+class SequenceMergeValueYamlNode(MapYamlNode):
+    values: ta.List[MapYamlNode]
 
     # map_range returns MapNodeIter instance.
-    def map_range(self) -> MapNodeIter:
-        ret = MapNodeIter(values=[], idx=START_RANGE_INDEX)
+    def map_range(self) -> MapYamlNodeIter:
+        ret = MapYamlNodeIter(values=[], idx=START_RANGE_INDEX)
         for value in self.values:
             it = value.map_range()
             ret.values.extend(it.values)
@@ -1671,7 +1671,7 @@ class SequenceMergeValueNode(MapNode):
 
 # AnchorNode type of anchor node
 @dc.dataclass(kw_only=True)
-class AnchorNode(ScalarNode, BaseYamlNode):
+class AnchorYamlNode(ScalarNode, BaseYamlNode):
     start: tokens.YamlToken
     name: ta.Optional[YamlNode] = None
     value: ta.Optional[YamlNode] = None
@@ -1683,7 +1683,7 @@ class AnchorNode(ScalarNode, BaseYamlNode):
         if self.name is None:
             return ERR_INVALID_ANCHOR_NAME
         s = self.name
-        if not isinstance(s, StringNode):
+        if not isinstance(s, StringYamlNode):
             return ERR_INVALID_ANCHOR_NAME
         s.value = name
         return None
@@ -1715,9 +1715,9 @@ class AnchorNode(ScalarNode, BaseYamlNode):
     def string(self) -> str:
         anchor = '&' + check.not_none(self.name).string()
         value = check.not_none(self.value).string()
-        if isinstance(self.value, SequenceNode) and not self.value.is_flow_style:
+        if isinstance(self.value, SequenceYamlNode) and not self.value.is_flow_style:
             return f'{anchor}\n{value}'
-        elif isinstance(self.value, MappingNode) and not self.value.is_flow_style:
+        elif isinstance(self.value, MappingYamlNode) and not self.value.is_flow_style:
             return f'{anchor}\n{value}'
         if value == '':
             # implicit null value.
@@ -1743,7 +1743,7 @@ class AnchorNode(ScalarNode, BaseYamlNode):
 
 # AliasNode type of alias node
 @dc.dataclass(kw_only=True)
-class AliasNode(ScalarNode, BaseYamlNode):
+class AliasYamlNode(ScalarNode, BaseYamlNode):
     start: tokens.YamlToken
     value: ta.Optional[YamlNode] = None
 
@@ -1753,7 +1753,7 @@ class AliasNode(ScalarNode, BaseYamlNode):
     def set_name(self, name: str) -> ta.Optional[YamlError]:
         if self.value is None:
             return ERR_INVALID_ALIAS_NAME
-        if not isinstance(self.value, StringNode):
+        if not isinstance(self.value, StringYamlNode):
             return ERR_INVALID_ALIAS_NAME
         self.value.value = name
         return None
@@ -1797,7 +1797,7 @@ class AliasNode(ScalarNode, BaseYamlNode):
 
 # DirectiveNode type of directive node
 @dc.dataclass(kw_only=True)
-class DirectiveNode(BaseYamlNode):
+class DirectiveYamlNode(BaseYamlNode):
     # Start is '%' token.
     start: tokens.YamlToken
     # Name is directive name e.g.) "YAML" or "TAG".
@@ -1841,8 +1841,8 @@ class DirectiveNode(BaseYamlNode):
 
 # TagNode type of tag node
 @dc.dataclass(kw_only=True)
-class TagNode(ScalarNode, BaseYamlNode, ArrayYamlNode):
-    directive: ta.Optional[DirectiveNode] = None
+class TagYamlNode(ScalarNode, BaseYamlNode, ArrayYamlNode):
+    directive: ta.Optional[DirectiveYamlNode] = None
     start: tokens.YamlToken
     value: ta.Optional[YamlNode] = None
 
@@ -1875,9 +1875,9 @@ class TagNode(ScalarNode, BaseYamlNode, ArrayYamlNode):
     # String tag to text
     def string(self) -> str:
         value = check.not_none(self.value).string()
-        if isinstance(self.value, SequenceNode) and not self.value.is_flow_style:
+        if isinstance(self.value, SequenceYamlNode) and not self.value.is_flow_style:
             return f'{self.start.value}\n{value}'
-        elif isinstance(self.value, MappingNode) and not self.value.is_flow_style:
+        elif isinstance(self.value, MappingYamlNode) and not self.value.is_flow_style:
             return f'{self.start.value}\n{value}'
 
         return f'{self.start.value} {value}'
@@ -1895,7 +1895,7 @@ class TagNode(ScalarNode, BaseYamlNode, ArrayYamlNode):
             return False
         return key.is_merge_key()
 
-    def array_range(self) -> ta.Optional[ArrayNodeIter]:
+    def array_range(self) -> ta.Optional[ArrayYamlNodeIter]:
         arr = self.value
         if not isinstance(arr, ArrayYamlNode):
             return None
@@ -1907,7 +1907,7 @@ class TagNode(ScalarNode, BaseYamlNode, ArrayYamlNode):
 
 # CommentNode type of comment node
 @dc.dataclass(kw_only=True)
-class CommentNode(BaseYamlNode):
+class CommentYamlNode(BaseYamlNode):
     token: ta.Optional[tokens.YamlToken]
 
     # read implements(io.Reader).Read
@@ -1940,8 +1940,8 @@ class CommentNode(BaseYamlNode):
 
 # CommentGroupNode type of comment node
 @dc.dataclass(kw_only=True)
-class CommentGroupNode(BaseYamlNode):
-    comments: ta.List[CommentNode]
+class CommentGroupYamlNode(BaseYamlNode):
+    comments: ta.List[CommentYamlNode]
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
@@ -2006,56 +2006,56 @@ def walk(v: Visitor, node: YamlNode) -> None:
     v = v_
 
     n = node
-    if isinstance(n, (CommentNode, NullNode)):
+    if isinstance(n, (CommentYamlNode, NullYamlNode)):
         walk_comment(v, n)
-    if isinstance(n, IntegerNode):
+    if isinstance(n, IntegerYamlNode):
         walk_comment(v, n)
-    if isinstance(n, FloatNode):
+    if isinstance(n, FloatYamlNode):
         walk_comment(v, n)
-    if isinstance(n, StringNode):
+    if isinstance(n, StringYamlNode):
         walk_comment(v, n)
-    if isinstance(n, MergeKeyNode):
+    if isinstance(n, MergeKeyYamlNode):
         walk_comment(v, n)
-    if isinstance(n, BoolNode):
+    if isinstance(n, BoolYamlNode):
         walk_comment(v, n)
-    if isinstance(n, InfinityNode):
+    if isinstance(n, InfinityYamlNode):
         walk_comment(v, n)
-    if isinstance(n, NanNode):
+    if isinstance(n, NanYamlNode):
         walk_comment(v, n)
-    if isinstance(n, LiteralNode):
+    if isinstance(n, LiteralYamlNode):
         walk_comment(v, n)
         walk(v, check.not_none(n.value))
-    if isinstance(n, DirectiveNode):
+    if isinstance(n, DirectiveYamlNode):
         walk_comment(v, n)
         walk(v, check.not_none(n.name))
         for value0 in n.values:
             walk(v, value0)
-    if isinstance(n, TagNode):
+    if isinstance(n, TagYamlNode):
         walk_comment(v, n)
         walk(v, check.not_none(n.value))
-    if isinstance(n, DocumentNode):
+    if isinstance(n, DocumentYamlNode):
         walk_comment(v, n)
         walk(v, check.not_none(n.body))
-    if isinstance(n, MappingNode):
+    if isinstance(n, MappingYamlNode):
         walk_comment(v, n)
         for value1 in n.values:
             walk(v, value1)
-    if isinstance(n, MappingKeyNode):
+    if isinstance(n, MappingKeyYamlNode):
         walk_comment(v, n)
         walk(v, check.not_none(n.value))
-    if isinstance(n, MappingValueNode):
+    if isinstance(n, MappingValueYamlNode):
         walk_comment(v, n)
         walk(v, n.key)
         walk(v, n.value)
-    if isinstance(n, SequenceNode):
+    if isinstance(n, SequenceYamlNode):
         walk_comment(v, n)
         for value2 in n.values:
             walk(v, check.not_none(value2))
-    if isinstance(n, AnchorNode):
+    if isinstance(n, AnchorYamlNode):
         walk_comment(v, n)
         walk(v, check.not_none(n.name))
         walk(v, check.not_none(n.value))
-    if isinstance(n, AliasNode):
+    if isinstance(n, AliasYamlNode):
         walk_comment(v, n)
         walk(v, check.not_none(n.value))
 
@@ -2094,55 +2094,55 @@ class ParentFinder:
             return parent
 
         n = node
-        if isinstance(n, CommentNode):
+        if isinstance(n, CommentYamlNode):
             return None
-        if isinstance(n, NullNode):
+        if isinstance(n, NullYamlNode):
             return None
-        if isinstance(n, IntegerNode):
+        if isinstance(n, IntegerYamlNode):
             return None
-        if isinstance(n, FloatNode):
+        if isinstance(n, FloatYamlNode):
             return None
-        if isinstance(n, StringNode):
+        if isinstance(n, StringYamlNode):
             return None
-        if isinstance(n, MergeKeyNode):
+        if isinstance(n, MergeKeyYamlNode):
             return None
-        if isinstance(n, BoolNode):
+        if isinstance(n, BoolYamlNode):
             return None
-        if isinstance(n, InfinityNode):
+        if isinstance(n, InfinityYamlNode):
             return None
-        if isinstance(n, NanNode):
+        if isinstance(n, NanYamlNode):
             return None
-        if isinstance(n, LiteralNode):
+        if isinstance(n, LiteralYamlNode):
             return self.walk(n, n.value)
-        if isinstance(n, DirectiveNode):
+        if isinstance(n, DirectiveYamlNode):
             if (found := self.walk(n, n.name)) is not None:
                 return found
             for value0 in n.values:
                 if (found := self.walk(n, value0)) is not None:
                     return found
-        if isinstance(n, TagNode):
+        if isinstance(n, TagYamlNode):
             return self.walk(n, n.value)
-        if isinstance(n, DocumentNode):
+        if isinstance(n, DocumentYamlNode):
             return self.walk(n, n.body)
-        if isinstance(n, MappingNode):
+        if isinstance(n, MappingYamlNode):
             for value1 in n.values:
                 if (found := self.walk(n, value1)) is not None:
                     return found
-        if isinstance(n, MappingKeyNode):
+        if isinstance(n, MappingKeyYamlNode):
             return self.walk(n, n.value)
-        if isinstance(n, MappingValueNode):
+        if isinstance(n, MappingValueYamlNode):
             if (found := self.walk(n, n.key)) is not None:
                 return found
             return self.walk(n, n.value)
-        if isinstance(n, SequenceNode):
+        if isinstance(n, SequenceYamlNode):
             for value2 in n.values:
                 if (found := self.walk(n, value2)) is not None:
                     return found
-        if isinstance(n, AnchorNode):
+        if isinstance(n, AnchorYamlNode):
             if (found := self.walk(n, n.name)) is not None:
                 return found
             return self.walk(n, n.value)
-        if isinstance(n, AliasNode):
+        if isinstance(n, AliasYamlNode):
             return self.walk(n, n.value)
         return None
 
@@ -2188,26 +2188,26 @@ class InvalidMergeTypeYamlError(YamlError):
 
 # Merge merge document, map, sequence node.
 def merge(dst: YamlNode, src: YamlNode) -> ta.Optional[YamlError]:
-    if isinstance(src, DocumentNode):
-        doc: DocumentNode = src
+    if isinstance(src, DocumentYamlNode):
+        doc: DocumentYamlNode = src
         src = check.not_none(doc.body)
 
     err = InvalidMergeTypeYamlError(dst=dst, src=src)
     if dst.type() == YamlNodeType.DOCUMENT:
-        node0: DocumentNode = check.isinstance(dst, DocumentNode)
+        node0: DocumentYamlNode = check.isinstance(dst, DocumentYamlNode)
         return merge(check.not_none(node0.body), src)
     if dst.type() == YamlNodeType.MAPPING:
-        node1: MappingNode = check.isinstance(dst, MappingNode)
-        if not isinstance(src, MappingNode):
+        node1: MappingYamlNode = check.isinstance(dst, MappingYamlNode)
+        if not isinstance(src, MappingYamlNode):
             return err
-        target0: MappingNode = src
+        target0: MappingYamlNode = src
         node1.merge(target0)
         return None
     if dst.type() == YamlNodeType.SEQUENCE:
-        node2: SequenceNode = check.isinstance(dst, SequenceNode)
-        if not isinstance(src, SequenceNode):
+        node2: SequenceYamlNode = check.isinstance(dst, SequenceYamlNode)
+        if not isinstance(src, SequenceYamlNode):
             return err
-        target1: SequenceNode = src
+        target1: SequenceYamlNode = src
         node2.merge(target1)
         return None
     return err
