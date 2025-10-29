@@ -1013,12 +1013,12 @@ def new_sequence_node(ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken], 
     return node
 
 
-def new_tag_default_scalar_value_node(ctx: YamlParsingContext, tag: YamlToken) -> YamlErrorOr[ast.ScalarNode]:
+def new_tag_default_scalar_value_node(ctx: YamlParsingContext, tag: YamlToken) -> YamlErrorOr[ast.ScalarYamlNode]:
     pos = copy.copy(tag.position)
     pos.column += 1
 
     tk: YamlErrorOr[YamlParseToken]
-    node: YamlErrorOr[ast.ScalarNode]
+    node: YamlErrorOr[ast.ScalarYamlNode]
 
     if tag.value == YamlReservedTagKeywords.INTEGER:
         tk = YamlParseToken(token=new_yaml_token('0', '0', pos))
@@ -1328,7 +1328,7 @@ class YamlParser:
         ctx.go_next()
         return check.not_none(node6)
 
-    def parse_scalar_value(self, ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[ta.Optional[ast.ScalarNode]]:  # noqa
+    def parse_scalar_value(self, ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[ta.Optional[ast.ScalarYamlNode]]:  # noqa
         tk = check.not_none(tk)
         if tk.group is not None:
             if tk.group_type() == YamlParseTokenGroupType.ANCHOR:
@@ -1948,7 +1948,7 @@ class YamlParser:
             return tag
         if tag.value is None:
             return err_syntax('specified not scalar tag', tag.get_token())
-        if not isinstance(tag.value, ast.ScalarNode):
+        if not isinstance(tag.value, ast.ScalarYamlNode):
             return err_syntax('specified not scalar tag', tag.get_token())
         return tag
 

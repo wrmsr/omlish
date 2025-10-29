@@ -186,7 +186,7 @@ class MapKeyYamlNode(YamlNode, Abstract):
 
 
 # ScalarNode type for scalar node
-class ScalarNode(MapKeyYamlNode, Abstract):
+class ScalarYamlNode(MapKeyYamlNode, Abstract):
     @abc.abstractmethod
     def get_value(self) -> ta.Any:
         raise NotImplementedError
@@ -555,7 +555,7 @@ class DocumentYamlNode(BaseYamlNode):
 
 # NullNode type of null node
 @dc.dataclass(kw_only=True)
-class NullYamlNode(ScalarNode, BaseYamlNode):
+class NullYamlNode(ScalarYamlNode, BaseYamlNode):
     token: YamlToken
 
     # read implements(io.Reader).Read
@@ -606,7 +606,7 @@ class NullYamlNode(ScalarNode, BaseYamlNode):
 
 # IntegerNode type of integer node
 @dc.dataclass(kw_only=True)
-class IntegerYamlNode(ScalarNode, BaseYamlNode):
+class IntegerYamlNode(ScalarYamlNode, BaseYamlNode):
     token: YamlToken
     value: ta.Any  # int64 or uint64 value
 
@@ -653,7 +653,7 @@ class IntegerYamlNode(ScalarNode, BaseYamlNode):
 
 # FloatNode type of float node
 @dc.dataclass(kw_only=True)
-class FloatYamlNode(ScalarNode, BaseYamlNode):
+class FloatYamlNode(ScalarYamlNode, BaseYamlNode):
     token: YamlToken
     precision: int = 0
     value: float
@@ -762,7 +762,7 @@ def strconv_quote(s: str) -> str:
 
 # StringNode type of string node
 @dc.dataclass(kw_only=True)
-class StringYamlNode(ScalarNode, BaseYamlNode):
+class StringYamlNode(ScalarYamlNode, BaseYamlNode):
     token: YamlToken
     value: str
 
@@ -869,7 +869,7 @@ def escape_single_quote(s: str) -> str:
 
 # LiteralNode type of literal node
 @dc.dataclass(kw_only=True)
-class LiteralYamlNode(ScalarNode, BaseYamlNode):
+class LiteralYamlNode(ScalarYamlNode, BaseYamlNode):
     start: YamlToken
     value: ta.Optional['StringYamlNode'] = None
 
@@ -920,7 +920,7 @@ class LiteralYamlNode(ScalarNode, BaseYamlNode):
 
 # MergeKeyNode type of merge key node
 @dc.dataclass(kw_only=True)
-class MergeKeyYamlNode(ScalarNode, BaseYamlNode):
+class MergeKeyYamlNode(ScalarYamlNode, BaseYamlNode):
     token: YamlToken
 
     # read implements(io.Reader).Read
@@ -964,7 +964,7 @@ class MergeKeyYamlNode(ScalarNode, BaseYamlNode):
 
 # BoolNode type of boolean node
 @dc.dataclass(kw_only=True)
-class BoolYamlNode(ScalarNode, BaseYamlNode):
+class BoolYamlNode(ScalarYamlNode, BaseYamlNode):
     token: YamlToken
     value: bool
 
@@ -1011,7 +1011,7 @@ class BoolYamlNode(ScalarNode, BaseYamlNode):
 
 # InfinityNode type of infinity node
 @dc.dataclass(kw_only=True)
-class InfinityYamlNode(ScalarNode, BaseYamlNode):
+class InfinityYamlNode(ScalarYamlNode, BaseYamlNode):
     token: YamlToken
     value: float
 
@@ -1058,7 +1058,7 @@ class InfinityYamlNode(ScalarNode, BaseYamlNode):
 
 # NanNode type of nan node
 @dc.dataclass(kw_only=True)
-class NanYamlNode(ScalarNode, BaseYamlNode):
+class NanYamlNode(ScalarYamlNode, BaseYamlNode):
     token: YamlToken
 
     # read implements(io.Reader).Read
@@ -1366,7 +1366,7 @@ class MappingValueYamlNode(BaseYamlNode):
         value_indent_level = check.not_none(self.value.get_token()).position.indent_level
         key_comment = self.key.get_comment()
 
-        if isinstance(self.value, ScalarNode):
+        if isinstance(self.value, ScalarYamlNode):
             value = self.value.string()
             if value == '':
                 # implicit null value.
@@ -1675,7 +1675,7 @@ class SequenceMergeValueYamlNode(MapYamlNode):
 
 # AnchorNode type of anchor node
 @dc.dataclass(kw_only=True)
-class AnchorYamlNode(ScalarNode, BaseYamlNode):
+class AnchorYamlNode(ScalarYamlNode, BaseYamlNode):
     start: YamlToken
     name: ta.Optional[YamlNode] = None
     value: ta.Optional[YamlNode] = None
@@ -1747,7 +1747,7 @@ class AnchorYamlNode(ScalarNode, BaseYamlNode):
 
 # AliasNode type of alias node
 @dc.dataclass(kw_only=True)
-class AliasYamlNode(ScalarNode, BaseYamlNode):
+class AliasYamlNode(ScalarYamlNode, BaseYamlNode):
     start: YamlToken
     value: ta.Optional[YamlNode] = None
 
@@ -1845,13 +1845,13 @@ class DirectiveYamlNode(BaseYamlNode):
 
 # TagNode type of tag node
 @dc.dataclass(kw_only=True)
-class TagYamlNode(ScalarNode, BaseYamlNode, ArrayYamlNode):
+class TagYamlNode(ScalarYamlNode, BaseYamlNode, ArrayYamlNode):
     directive: ta.Optional[DirectiveYamlNode] = None
     start: YamlToken
     value: ta.Optional[YamlNode] = None
 
     def get_value(self) -> ta.Any:
-        if not isinstance(self.value, ScalarNode):
+        if not isinstance(self.value, ScalarYamlNode):
             return None
         return self.value.get_value()
 
