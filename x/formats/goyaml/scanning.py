@@ -5,11 +5,11 @@ import typing as ta
 
 from omlish.lite.check import check
 
-from . import tokens
 from .errors import EofYamlError
 from .errors import YamlError
 from .errors import YamlErrorOr
 from .errors import yaml_error
+from .tokens import YAML_RESERVED_TAG_KEYWORD_MAP
 from .tokens import YamlIndicator
 from .tokens import YamlPosition
 from .tokens import YamlToken
@@ -249,7 +249,7 @@ class YamlScanningContext:
             return
 
         tag = last_tk.value
-        if tag not in tokens.RESERVED_TAG_KEYWORD_MAP:
+        if tag not in YAML_RESERVED_TAG_KEYWORD_MAP:
             check.not_none(tk).type = YamlTokenType.STRING
 
     def last_token(self) -> ta.Optional[YamlToken]:

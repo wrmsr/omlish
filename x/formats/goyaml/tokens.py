@@ -281,7 +281,7 @@ class YamlReservedTagKeywords:
 
 
 # RESERVED_TAG_KEYWORD_MAP map for reserved tag keywords
-RESERVED_TAG_KEYWORD_MAP: ta.Mapping[YamlReservedTagKeyword, ta.Callable[[str, str, 'YamlPosition'], 'YamlToken']] = {
+YAML_RESERVED_TAG_KEYWORD_MAP: ta.Mapping[YamlReservedTagKeyword, ta.Callable[[str, str, 'YamlPosition'], 'YamlToken']] = {  # noqa
     YamlReservedTagKeywords.INTEGER: lambda value, org, pos: YamlToken(
         type=YamlTokenType.TAG,
         char_type=YamlCharType.INDICATOR,
@@ -839,7 +839,7 @@ class YamlTokenMakers:  # noqa
     # new_tag create token for Tag
     @staticmethod
     def new_tag(value: str, org: str, pos: YamlPosition) -> YamlToken:
-        fn = RESERVED_TAG_KEYWORD_MAP.get(value)
+        fn = YAML_RESERVED_TAG_KEYWORD_MAP.get(value)
         if fn is not None:
             return fn(value, org, pos)
 
