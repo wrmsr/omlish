@@ -2,6 +2,7 @@ import typing as ta
 
 from omlish import inject as inj
 from omlish import lang
+from omlish import typedvalues as tv
 
 from ..... import minichain as mc
 from .injection import backend_configs
@@ -41,7 +42,7 @@ def bind_backends(
         async def inner(be: 'mc.BackendCatalog.Backend', cfgs: _types.BackendConfigs | None) -> ta.Any:
             kwt = inj.build_kwargs_target(be.factory, non_strict=True)
             kw = await injector.provide_kwargs(kwt)
-            return be.factory(*cfgs or [], **kw)
+            return be.factory(*tv.collect(*(be.configs or []), *(cfgs or []), override=True), **kw)
 
         return _catalog.CatalogBackendProvider.Instantiator(inner)
 
