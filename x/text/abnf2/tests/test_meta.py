@@ -1,13 +1,4 @@
-import textwrap
-
-from omlish import check
-
-from .. import base as ba
-from .. import core as co
-from .. import parsers as pa
-from ..meta import META_GRAMMAR
-from ..meta import MetaGrammarRuleVisitor
-from ..utils import fix_grammar_ws
+from ..meta import parse_grammar
 from ..utils import only_match_rules
 from ..utils import strip_insignificant_match_rules
 
@@ -30,18 +21,7 @@ def test_meta() -> None:
         token        = 1*( %x21 / %x23-27 / %x2A-2B / %x2D-2E / %x30-39 / %x41-5A / %x5E-7A / %x7C )
     """
 
-    source = fix_grammar_ws(textwrap.dedent(source))
-
-    ggm = check.not_none(META_GRAMMAR.parse(source, 'rulelist'))
-    ggm = only_match_rules(ggm)
-    ggm = strip_insignificant_match_rules(ggm, META_GRAMMAR)
-    print(ggm.render(indent=2))
-
-    check.isinstance(ggm.parser, pa.Repeat)
-    mg_rv = MetaGrammarRuleVisitor(source)
-    rules = [mg_rv.visit_match(gg_cm) for gg_cm in ggm.children]
-    print(rules)
-    rfc_gram = ba.Grammar(*rules, *co.CORE_RULES)
+    rfc_gram = parse_grammar(source)
 
     rfc_m = rfc_gram.parse('Mon, 02 Jun 1982 00:00:00 GMT', 'HTTP-date')
     rfc_m = only_match_rules(rfc_m)

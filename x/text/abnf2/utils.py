@@ -1,4 +1,5 @@
 import itertools
+import textwrap
 import typing as ta
 
 from omlish import check
@@ -33,8 +34,35 @@ def only_match_rules(m: Match) -> Match:
     return m.flat_map_children(rec)
 
 
+#
+
+
+def parse_rules(
+        grammar: Grammar,
+        source: str,
+        root: str | None = None,
+        **kwargs: ta.Any,
+) -> Match | None:
+    if (match := check.not_none(grammar.parse(
+            source,
+            root,
+            **kwargs,
+    ))) is None:
+        return None
+
+    match = only_match_rules(match)
+    match = strip_insignificant_match_rules(match, grammar)
+
+    return match
+
+
 ##
 
 
 def fix_grammar_ws(s: str) -> str:
-    return s.rstrip().replace('\r', '').replace('\n', '\r\n') + '\r\n'
+    return (
+            textwrap.dedent(s)
+            .rstrip()
+            .replace('\r', '')
+            .replace('\n', '\r\n')
+    ) + '\r\n'

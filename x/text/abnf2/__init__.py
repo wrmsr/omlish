@@ -17,12 +17,14 @@ from .core import (  # noqa
 
 from .errors import (  # noqa
     AbnfError,
+    AbnfGrammarParseError,
 )
 
 from .meta import (  # noqa
     META_GRAMMAR_RULES,
     META_GRAMMAR,
 
+    parse_grammar,
 )
 
 from .parsers import (  # noqa
@@ -49,6 +51,8 @@ from .parsers import (  # noqa
 from .utils import (  # noqa
     strip_insignificant_match_rules,
     only_match_rules,
+
+    parse_rules,
 
     fix_grammar_ws,
 )

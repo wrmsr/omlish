@@ -19,7 +19,10 @@ from .parsers import literal
 from .parsers import option
 from .parsers import repeat
 from .parsers import rule
+from .utils import fix_grammar_ws
 from .visitors import RuleVisitor
+from .utils import parse_rules
+from .errors import AbnfGrammarParseError
 
 
 ##
@@ -533,3 +536,25 @@ class MetaGrammarRuleVisitor(RuleVisitor[ta.Any]):
         else:
             c = chr(int(s, 16))
             return literal(c, c)
+
+
+
+def parse_grammar(
+        source: str,
+        *,
+        no_core_rules: bool = False,
+) -> Grammar:
+    source = fix_grammar_ws(source)
+
+    if (mg_m := parse_rules(META_GRAMMAR, source, 'rulelist')) is None:
+        raise AbnfGrammarParseError(source)
+
+    check.isinstance(mg_m.parser, Repeat)
+
+    mg_rv = MetaGrammarRuleVisitor(source)
+    rules = [mg_rv.visit_match(gg_cm) for gg_cm in mg_m.children]
+
+    return Grammar(
+        *rules,
+        *(CORE_RULES if not no_core_rules else []),
+    )
