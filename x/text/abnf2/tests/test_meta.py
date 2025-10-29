@@ -24,6 +24,7 @@ def test_meta() -> None:
     rfc_gram = parse_grammar(source)
 
     rfc_m = rfc_gram.parse('Mon, 02 Jun 1982 00:00:00 GMT', 'HTTP-date')
+    assert rfc_m is not None
     rfc_m = only_match_rules(rfc_m)
     rfc_m = strip_insignificant_match_rules(rfc_m, rfc_gram)
     print(rfc_m.render(indent=2))

@@ -12,6 +12,7 @@ from .base import Match
 from .base import Parser
 from .base import Rule
 from .core import CORE_RULES
+from .errors import AbnfGrammarParseError
 from .parsers import Repeat
 from .parsers import concat
 from .parsers import either
@@ -20,9 +21,8 @@ from .parsers import option
 from .parsers import repeat
 from .parsers import rule
 from .utils import fix_grammar_ws
-from .visitors import RuleVisitor
 from .utils import parse_rules
-from .errors import AbnfGrammarParseError
+from .visitors import RuleVisitor
 
 
 ##

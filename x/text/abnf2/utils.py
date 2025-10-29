@@ -43,11 +43,11 @@ def parse_rules(
         root: str | None = None,
         **kwargs: ta.Any,
 ) -> Match | None:
-    if (match := check.not_none(grammar.parse(
+    if (match := grammar.parse(
             source,
             root,
             **kwargs,
-    ))) is None:
+    )) is None:
         return None
 
     match = only_match_rules(match)

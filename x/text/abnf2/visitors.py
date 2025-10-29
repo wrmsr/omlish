@@ -1,9 +1,9 @@
 import typing as ta
 
 from omlish import check
+from omlish import collections as col
 from omlish import dispatch
 from omlish import lang
-from omlish import collections as col
 
 from .base import Match
 from .base import Parser
@@ -33,19 +33,9 @@ class ParserVisitor(lang.Abstract, ta.Generic[T]):
 class RuleVisitor(lang.Abstract, ta.Generic[T]):
     _registry = col.AttrRegistry[ta.Callable, str]()
 
-    @ta.overload
     @classmethod
-    def register(cls, fn: ta.Callable, name: str) -> None:
-        ...
-
-    @ta.overload
-    @classmethod
-    def register(cls, name: str) -> ta.Callable[[T], T]:
-        ...
-
-    @classmethod
-    def register(cls, *args):
-        return cls._registry.register(*args)
+    def register(cls, name):
+        return cls._registry.register(name)
 
     @lang.cached_function
     @classmethod

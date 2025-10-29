@@ -245,7 +245,7 @@ def repeat(*args):
     # !!! FIXME: boneheaded args, repeat(1, c) currently means 1-*, should be exactly 1-1, should explicitly pass
     #            None for *
     min: int  # noqa
-    max: int  # noqa
+    max: int | None  # noqa
 
     if len(args) < 2:
         [child] = args
