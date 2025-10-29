@@ -546,7 +546,7 @@ def parse_grammar(
 ) -> Grammar:
     source = fix_grammar_ws(source)
 
-    if (mg_m := parse_rules(META_GRAMMAR, source, 'rulelist')) is None:
+    if (mg_m := parse_rules(META_GRAMMAR, source)) is None:
         raise AbnfGrammarParseError(source)
 
     check.isinstance(mg_m.parser, Repeat)

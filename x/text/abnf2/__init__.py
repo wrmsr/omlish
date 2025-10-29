@@ -1,3 +1,13 @@
+"""
+Parser generator for ABNF grammars.
+
+Originally based on library by Charles Yeomans :
+  https://github.com/declaresub/abnf/tree/561ced67c0a8afc869ad0de5b39dbe4f6e71b0d8/src/abnf
+
+It has however been nearly entirely rewritten.
+"""
+
+
 from .base import (  # noqa
     Match,
     longest_match,
