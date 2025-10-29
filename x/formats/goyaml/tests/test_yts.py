@@ -54,6 +54,8 @@ class YtsItem:
 
 
 def test_spec() -> None:
+    print_success = False
+
     for yts_f in get_yts_files():
         with open(yts_f) as f:
             src = f.read()
@@ -62,7 +64,7 @@ def test_spec() -> None:
         items: list[YtsItem] = msh.unmarshal(doc, list[YtsItem])
 
         for item in items:
-            print(yts_f)
+            # print(yts_f)
 
             try:
                 obj = parsing.parse_str(  # noqa
@@ -72,12 +74,14 @@ def test_spec() -> None:
 
                 if isinstance(obj, YamlError):
                     if item.fail:
-                        print(f'SUCCESS: {obj}')
+                        if print_success:
+                            print(f'SUCCESS: {obj}')
                     else:
                         print(f'FAILURE: {obj}')
                 else:  # noqa
                     if not item.fail:
-                        print(f'SUCCESS: {obj}')
+                        if print_success:
+                            print(f'SUCCESS: {obj}')
                     else:
                         print(f'FAILURE: {obj}')
 

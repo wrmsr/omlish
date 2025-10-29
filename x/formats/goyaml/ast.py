@@ -259,7 +259,7 @@ def check_line_break(t: tokens.Token) -> bool:
         prev = t.prev
         adjustment = 0
         # if the previous type is sequence entry use the previous type for that
-        if prev.type == tokens.Type.SEQUENCE_ENTRY:
+        if prev.type == tokens.YamlTokenType.SEQUENCE_ENTRY:
             # as well as switching to previous type count any new lines in origin to account for:
             # -
             #   b: c
@@ -269,7 +269,7 @@ def check_line_break(t: tokens.Token) -> bool:
 
         line_diff = t.position.line - prev.position.line - 1
         if line_diff > 0:
-            if prev.type == tokens.Type.STRING:
+            if prev.type == tokens.YamlTokenType.STRING:
                 # Remove any line breaks included in multiline string
                 adjustment += prev.origin.strip().rstrip(lbc).count(lbc)
 
@@ -284,7 +284,7 @@ def check_line_break(t: tokens.Token) -> bool:
             #  bar: null # comment
             #
             #  baz: 1
-            if prev.type in (tokens.Type.NULL, tokens.Type.IMPLICIT_NULL):
+            if prev.type in (tokens.YamlTokenType.NULL, tokens.YamlTokenType.IMPLICIT_NULL):
                 return prev.origin.count(lbc) > 0
 
             if line_diff-adjustment > 0:
@@ -576,7 +576,7 @@ class NullNode(ScalarNode, BaseNode):
 
     # String returns `null` text
     def string(self) -> str:
-        if self.token.type == tokens.Type.IMPLICIT_NULL:
+        if self.token.type == tokens.YamlTokenType.IMPLICIT_NULL:
             if self.comment is not None:
                 return self.comment.string()
             return ''
@@ -788,12 +788,12 @@ class StringNode(ScalarNode, BaseNode):
 
     # string string value to text with quote or literal header if required
     def string(self) -> str:
-        if self.token.type == tokens.Type.SINGLE_QUOTE:
+        if self.token.type == tokens.YamlTokenType.SINGLE_QUOTE:
             quoted = escape_single_quote(self.value)
             if self.comment is not None:
                 return add_comment_string(quoted, self.comment)
             return quoted
-        elif self.token.type == tokens.Type.DOUBLE_QUOTE:
+        elif self.token.type == tokens.YamlTokenType.DOUBLE_QUOTE:
             quoted = strconv_quote(self.value)
             if self.comment is not None:
                 return add_comment_string(quoted, self.comment)
@@ -818,10 +818,10 @@ class StringNode(ScalarNode, BaseNode):
         return self.value
 
     def string_without_comment(self) -> str:
-        if self.token.type == tokens.Type.SINGLE_QUOTE:
+        if self.token.type == tokens.YamlTokenType.SINGLE_QUOTE:
             quoted = f"'{self.value}'"
             return quoted
-        elif self.token.type == tokens.Type.DOUBLE_QUOTE:
+        elif self.token.type == tokens.YamlTokenType.DOUBLE_QUOTE:
             quoted = strconv_quote(self.value)
             return quoted
 

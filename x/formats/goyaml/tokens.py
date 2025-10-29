@@ -14,7 +14,7 @@ from .errors import yaml_error
 ##
 
 
-class Chars:
+class YamlChars:
     # SEQUENCE_ENTRY character for sequence entry
     SEQUENCE_ENTRY = '-'
     # MAPPING_KEY character for mapping key
@@ -55,7 +55,7 @@ class Chars:
     LINE_BREAK = '\n'
 
 
-class Type(enum.Enum):
+class YamlTokenType(enum.Enum):
     # UNKNOWN reserve for invalid type
     UNKNOWN = enum.auto()
     # DOCUMENT_HEADER type for DocumentHeader token
@@ -219,7 +219,7 @@ RESERVED_NAN_KEYWORDS = (
 )
 
 
-def reserved_keyword_token(typ: Type, value: str, org: str, pos: 'Position') -> 'Token':
+def reserved_keyword_token(typ: YamlTokenType, value: str, org: str, pos: 'Position') -> 'Token':
     return Token(
         type=typ,
         char_type=CharType.MISCELLANEOUS,
@@ -231,19 +231,19 @@ def reserved_keyword_token(typ: Type, value: str, org: str, pos: 'Position') -> 
 
 
 RESERVED_KEYWORD_MAP: ta.Mapping[str, ta.Callable[[str, str, 'Position'], 'Token']] = {
-    **{keyword: functools.partial(reserved_keyword_token, Type.NULL) for keyword in RESERVED_NULL_KEYWORDS},
-    **{keyword: functools.partial(reserved_keyword_token, Type.BOOL) for keyword in RESERVED_BOOL_KEYWORDS},
-    **{keyword: functools.partial(reserved_keyword_token, Type.INFINITY) for keyword in RESERVED_INF_KEYWORDS},
-    **{keyword: functools.partial(reserved_keyword_token, Type.NAN) for keyword in RESERVED_NAN_KEYWORDS},
+    **{keyword: functools.partial(reserved_keyword_token, YamlTokenType.NULL) for keyword in RESERVED_NULL_KEYWORDS},
+    **{keyword: functools.partial(reserved_keyword_token, YamlTokenType.BOOL) for keyword in RESERVED_BOOL_KEYWORDS},
+    **{keyword: functools.partial(reserved_keyword_token, YamlTokenType.INFINITY) for keyword in RESERVED_INF_KEYWORDS},
+    **{keyword: functools.partial(reserved_keyword_token, YamlTokenType.NAN) for keyword in RESERVED_NAN_KEYWORDS},
 }
 
 # RESERVED_ENC_KEYWORD_MAP contains is the keyword map used at encoding time.
 # This is supposed to be a superset of RESERVED_KEYWORD_MAP, and used to quote legacy keywords present in YAML 1.1 or
 # lesser for compatibility reasons, even though this library is supposed to be YAML 1.2-compliant.
 RESERVED_ENC_KEYWORD_MAP: ta.Mapping[str, ta.Callable[[str, str, 'Position'], 'Token']] = {
-    **{keyword: functools.partial(reserved_keyword_token, Type.NULL) for keyword in RESERVED_NULL_KEYWORDS},
-    **{keyword: functools.partial(reserved_keyword_token, Type.BOOL) for keyword in RESERVED_BOOL_KEYWORDS},
-    **{keyword: functools.partial(reserved_keyword_token, Type.BOOL) for keyword in RESERVED_LEGACY_BOOL_KEYWORDS},
+    **{keyword: functools.partial(reserved_keyword_token, YamlTokenType.NULL) for keyword in RESERVED_NULL_KEYWORDS},
+    **{keyword: functools.partial(reserved_keyword_token, YamlTokenType.BOOL) for keyword in RESERVED_BOOL_KEYWORDS},
+    **{keyword: functools.partial(reserved_keyword_token, YamlTokenType.BOOL) for keyword in RESERVED_LEGACY_BOOL_KEYWORDS},
 }
 
 
@@ -283,7 +283,7 @@ class ReservedTagKeywords:
 # RESERVED_TAG_KEYWORD_MAP map for reserved tag keywords
 RESERVED_TAG_KEYWORD_MAP: ta.Mapping[ReservedTagKeyword, ta.Callable[[str, str, 'Position'], 'Token']] = {
     ReservedTagKeywords.INTEGER: lambda value, org, pos: Token(
-        type=Type.TAG,
+        type=YamlTokenType.TAG,
         char_type=CharType.INDICATOR,
         indicator=Indicator.NODE_PROPERTY,
         value=value,
@@ -291,7 +291,7 @@ RESERVED_TAG_KEYWORD_MAP: ta.Mapping[ReservedTagKeyword, ta.Callable[[str, str, 
         position=pos,
     ),
     ReservedTagKeywords.FLOAT: lambda value, org, pos: Token(
-        type=Type.TAG,
+        type=YamlTokenType.TAG,
         char_type=CharType.INDICATOR,
         indicator=Indicator.NODE_PROPERTY,
         value=value,
@@ -299,7 +299,7 @@ RESERVED_TAG_KEYWORD_MAP: ta.Mapping[ReservedTagKeyword, ta.Callable[[str, str, 
         position=pos,
     ),
     ReservedTagKeywords.NULL: lambda value, org, pos: Token(
-        type=Type.TAG,
+        type=YamlTokenType.TAG,
         char_type=CharType.INDICATOR,
         indicator=Indicator.NODE_PROPERTY,
         value=value,
@@ -307,7 +307,7 @@ RESERVED_TAG_KEYWORD_MAP: ta.Mapping[ReservedTagKeyword, ta.Callable[[str, str, 
         position=pos,
     ),
     ReservedTagKeywords.SEQUENCE: lambda value, org, pos: Token(
-        type=Type.TAG,
+        type=YamlTokenType.TAG,
         char_type=CharType.INDICATOR,
         indicator=Indicator.NODE_PROPERTY,
         value=value,
@@ -315,7 +315,7 @@ RESERVED_TAG_KEYWORD_MAP: ta.Mapping[ReservedTagKeyword, ta.Callable[[str, str, 
         position=pos,
     ),
     ReservedTagKeywords.MAPPING: lambda value, org, pos: Token(
-        type=Type.TAG,
+        type=YamlTokenType.TAG,
         char_type=CharType.INDICATOR,
         indicator=Indicator.NODE_PROPERTY,
         value=value,
@@ -323,7 +323,7 @@ RESERVED_TAG_KEYWORD_MAP: ta.Mapping[ReservedTagKeyword, ta.Callable[[str, str, 
         position=pos,
     ),
     ReservedTagKeywords.STRING: lambda value, org, pos: Token(
-        type=Type.TAG,
+        type=YamlTokenType.TAG,
         char_type=CharType.INDICATOR,
         indicator=Indicator.NODE_PROPERTY,
         value=value,
@@ -331,7 +331,7 @@ RESERVED_TAG_KEYWORD_MAP: ta.Mapping[ReservedTagKeyword, ta.Callable[[str, str, 
         position=pos,
     ),
     ReservedTagKeywords.BINARY: lambda value, org, pos: Token(
-        type=Type.TAG,
+        type=YamlTokenType.TAG,
         char_type=CharType.INDICATOR,
         indicator=Indicator.NODE_PROPERTY,
         value=value,
@@ -339,7 +339,7 @@ RESERVED_TAG_KEYWORD_MAP: ta.Mapping[ReservedTagKeyword, ta.Callable[[str, str, 
         position=pos,
     ),
     ReservedTagKeywords.ORDERED_MAP: lambda value, org, pos: Token(
-        type=Type.TAG,
+        type=YamlTokenType.TAG,
         char_type=CharType.INDICATOR,
         indicator=Indicator.NODE_PROPERTY,
         value=value,
@@ -347,7 +347,7 @@ RESERVED_TAG_KEYWORD_MAP: ta.Mapping[ReservedTagKeyword, ta.Callable[[str, str, 
         position=pos,
     ),
     ReservedTagKeywords.SET: lambda value, org, pos: Token(
-        type=Type.TAG,
+        type=YamlTokenType.TAG,
         char_type=CharType.INDICATOR,
         indicator=Indicator.NODE_PROPERTY,
         value=value,
@@ -355,7 +355,7 @@ RESERVED_TAG_KEYWORD_MAP: ta.Mapping[ReservedTagKeyword, ta.Callable[[str, str, 
         position=pos,
     ),
     ReservedTagKeywords.TIMESTAMP: lambda value, org, pos: Token(
-        type=Type.TAG,
+        type=YamlTokenType.TAG,
         char_type=CharType.INDICATOR,
         indicator=Indicator.NODE_PROPERTY,
         value=value,
@@ -363,7 +363,7 @@ RESERVED_TAG_KEYWORD_MAP: ta.Mapping[ReservedTagKeyword, ta.Callable[[str, str, 
         position=pos,
     ),
     ReservedTagKeywords.BOOLEAN: lambda value, org, pos: Token(
-        type=Type.TAG,
+        type=YamlTokenType.TAG,
         char_type=CharType.INDICATOR,
         indicator=Indicator.NODE_PROPERTY,
         value=value,
@@ -371,7 +371,7 @@ RESERVED_TAG_KEYWORD_MAP: ta.Mapping[ReservedTagKeyword, ta.Callable[[str, str, 
         position=pos,
     ),
     ReservedTagKeywords.MERGE: lambda value, org, pos: Token(
-        type=Type.TAG,
+        type=YamlTokenType.TAG,
         char_type=CharType.INDICATOR,
         indicator=Indicator.NODE_PROPERTY,
         value=value,
@@ -566,7 +566,7 @@ def new(value: str, org: str, pos: 'Position') -> 'Token':
 
     if (num := to_number(value)) is not None:
         tk = Token(
-            type=Type.INTEGER,
+            type=YamlTokenType.INTEGER,
             char_type=CharType.MISCELLANEOUS,
             indicator=Indicator.NOT,
             value=value,
@@ -574,13 +574,13 @@ def new(value: str, org: str, pos: 'Position') -> 'Token':
             position=pos,
         )
         if num.type == NumberType.FLOAT:
-            tk.type = Type.FLOAT
+            tk.type = YamlTokenType.FLOAT
         elif num.type == NumberType.BINARY:
-            tk.type = Type.BINARY_INTEGER
+            tk.type = YamlTokenType.BINARY_INTEGER
         elif num.type == NumberType.OCTET:
-            tk.type = Type.OCTET_INTEGER
+            tk.type = YamlTokenType.OCTET_INTEGER
         elif num.type == NumberType.HEX:
-            tk.type = Type.HEX_INTEGER
+            tk.type = YamlTokenType.HEX_INTEGER
         return tk
 
     return new_string(value, org, pos)
@@ -605,7 +605,7 @@ class Position:
 @ta.final
 class Token:
     # Type is a token type.
-    type: Type
+    type: YamlTokenType
     # CharType is a character type.
     char_type: CharType
     # Indicator is an indicator type.
@@ -624,18 +624,18 @@ class Token:
     prev: ta.Optional['Token'] = dc.field(default=None, repr=False)
 
     # previous_type previous token type
-    def previous_type(self) -> Type:
+    def previous_type(self) -> YamlTokenType:
         if self.prev is not None:
             return self.prev.type
 
-        return Type.UNKNOWN
+        return YamlTokenType.UNKNOWN
 
     # next_type next token type
-    def next_type(self) -> Type:
+    def next_type(self) -> YamlTokenType:
         if self.next is not None:
             return self.next.type
 
-        return Type.UNKNOWN
+        return YamlTokenType.UNKNOWN
 
     # add_column append column number to current position of column
     @classmethod
@@ -666,7 +666,7 @@ class Token:
 class Tokens(ta.List[Token]):
     def invalid_token(self) -> ta.Optional[Token]:
         for tt in self:
-            if tt.type == Type.INVALID:
+            if tt.type == YamlTokenType.INVALID:
                 return tt
         return None
 
@@ -691,7 +691,7 @@ class Tokens(ta.List[Token]):
 # new_string create token for String
 def new_string(value: str, org: str, pos: Position) -> Token:
     return Token(
-        type=Type.STRING,
+        type=YamlTokenType.STRING,
         char_type=CharType.MISCELLANEOUS,
         indicator=Indicator.NOT,
         value=value,
@@ -703,10 +703,10 @@ def new_string(value: str, org: str, pos: Position) -> Token:
 # new_sequence_entry create token for SequenceEntry
 def new_sequence_entry(org: str, pos: Position) -> Token:
     return Token(
-        type=Type.SEQUENCE_ENTRY,
+        type=YamlTokenType.SEQUENCE_ENTRY,
         char_type=CharType.INDICATOR,
         indicator=Indicator.BLOCK_STRUCTURE,
-        value=Chars.SEQUENCE_ENTRY,
+        value=YamlChars.SEQUENCE_ENTRY,
         origin=org,
         position=pos,
     )
@@ -715,11 +715,11 @@ def new_sequence_entry(org: str, pos: Position) -> Token:
 # new_mapping_key create token for MappingKey
 def new_mapping_key(pos: Position) -> Token:
     return Token(
-        type=Type.MAPPING_KEY,
+        type=YamlTokenType.MAPPING_KEY,
         char_type=CharType.INDICATOR,
         indicator=Indicator.BLOCK_STRUCTURE,
-        value=Chars.MAPPING_KEY,
-        origin=Chars.MAPPING_KEY,
+        value=YamlChars.MAPPING_KEY,
+        origin=YamlChars.MAPPING_KEY,
         position=pos,
     )
 
@@ -727,11 +727,11 @@ def new_mapping_key(pos: Position) -> Token:
 # new_mapping_value create token for MappingValue
 def new_mapping_value(pos: Position) -> Token:
     return Token(
-        type=Type.MAPPING_VALUE,
+        type=YamlTokenType.MAPPING_VALUE,
         char_type=CharType.INDICATOR,
         indicator=Indicator.BLOCK_STRUCTURE,
-        value=Chars.MAPPING_VALUE,
-        origin=Chars.MAPPING_VALUE,
+        value=YamlChars.MAPPING_VALUE,
+        origin=YamlChars.MAPPING_VALUE,
         position=pos,
     )
 
@@ -739,10 +739,10 @@ def new_mapping_value(pos: Position) -> Token:
 # new_collect_entry create token for CollectEntry
 def new_collect_entry(org: str, pos: Position) -> Token:
     return Token(
-        type=Type.COLLECT_ENTRY,
+        type=YamlTokenType.COLLECT_ENTRY,
         char_type=CharType.INDICATOR,
         indicator=Indicator.FLOW_COLLECTION,
-        value=Chars.COLLECT_ENTRY,
+        value=YamlChars.COLLECT_ENTRY,
         origin=org,
         position=pos,
     )
@@ -751,10 +751,10 @@ def new_collect_entry(org: str, pos: Position) -> Token:
 # new_sequence_start create token for SequenceStart
 def new_sequence_start(org: str, pos: Position) -> Token:
     return Token(
-        type=Type.SEQUENCE_START,
+        type=YamlTokenType.SEQUENCE_START,
         char_type=CharType.INDICATOR,
         indicator=Indicator.FLOW_COLLECTION,
-        value=Chars.SEQUENCE_START,
+        value=YamlChars.SEQUENCE_START,
         origin=org,
         position=pos,
     )
@@ -763,10 +763,10 @@ def new_sequence_start(org: str, pos: Position) -> Token:
 # new_sequence_end create token for SequenceEnd
 def new_sequence_end(org: str, pos: Position) -> Token:
     return Token(
-        type=Type.SEQUENCE_END,
+        type=YamlTokenType.SEQUENCE_END,
         char_type=CharType.INDICATOR,
         indicator=Indicator.FLOW_COLLECTION,
-        value=Chars.SEQUENCE_END,
+        value=YamlChars.SEQUENCE_END,
         origin=org,
         position=pos,
     )
@@ -775,10 +775,10 @@ def new_sequence_end(org: str, pos: Position) -> Token:
 # new_mapping_start create token for MappingStart
 def new_mapping_start(org: str, pos: Position) -> Token:
     return Token(
-        type=Type.MAPPING_START,
+        type=YamlTokenType.MAPPING_START,
         char_type=CharType.INDICATOR,
         indicator=Indicator.FLOW_COLLECTION,
-        value=Chars.MAPPING_START,
+        value=YamlChars.MAPPING_START,
         origin=org,
         position=pos,
     )
@@ -787,10 +787,10 @@ def new_mapping_start(org: str, pos: Position) -> Token:
 # new_mapping_end create token for MappingEnd
 def new_mapping_end(org: str, pos: Position) -> Token:
     return Token(
-        type=Type.MAPPING_END,
+        type=YamlTokenType.MAPPING_END,
         char_type=CharType.INDICATOR,
         indicator=Indicator.FLOW_COLLECTION,
-        value=Chars.MAPPING_END,
+        value=YamlChars.MAPPING_END,
         origin=org,
         position=pos,
     )
@@ -799,7 +799,7 @@ def new_mapping_end(org: str, pos: Position) -> Token:
 # new_comment create token for Comment
 def new_comment(value: str, org: str, pos: Position) -> Token:
     return Token(
-        type=Type.COMMENT,
+        type=YamlTokenType.COMMENT,
         char_type=CharType.INDICATOR,
         indicator=Indicator.COMMENT,
         value=value,
@@ -811,10 +811,10 @@ def new_comment(value: str, org: str, pos: Position) -> Token:
 # new_anchor create token for Anchor
 def new_anchor(org: str, pos: Position) -> Token:
     return Token(
-        type=Type.ANCHOR,
+        type=YamlTokenType.ANCHOR,
         char_type=CharType.INDICATOR,
         indicator=Indicator.NODE_PROPERTY,
-        value=Chars.ANCHOR,
+        value=YamlChars.ANCHOR,
         origin=org,
         position=pos,
     )
@@ -823,10 +823,10 @@ def new_anchor(org: str, pos: Position) -> Token:
 # new_alias create token for Alias
 def new_alias(org: str, pos: Position) -> Token:
     return Token(
-        type=Type.ALIAS,
+        type=YamlTokenType.ALIAS,
         char_type=CharType.INDICATOR,
         indicator=Indicator.NODE_PROPERTY,
-        value=Chars.ALIAS,
+        value=YamlChars.ALIAS,
         origin=org,
         position=pos,
     )
@@ -839,7 +839,7 @@ def new_tag(value: str, org: str, pos: Position) -> Token:
         return fn(value, org, pos)
 
     return Token(
-        type=Type.TAG,
+        type=YamlTokenType.TAG,
         char_type=CharType.INDICATOR,
         indicator=Indicator.NODE_PROPERTY,
         value=value,
@@ -851,7 +851,7 @@ def new_tag(value: str, org: str, pos: Position) -> Token:
 # new_literal create token for Literal
 def new_literal(value: str, org: str, pos: Position) -> Token:
     return Token(
-        type=Type.LITERAL,
+        type=YamlTokenType.LITERAL,
         char_type=CharType.INDICATOR,
         indicator=Indicator.BLOCK_SCALAR,
         value=value,
@@ -863,7 +863,7 @@ def new_literal(value: str, org: str, pos: Position) -> Token:
 # new_folded create token for Folded
 def new_folded(value: str, org: str, pos: Position) -> Token:
     return Token(
-        type=Type.FOLDED,
+        type=YamlTokenType.FOLDED,
         char_type=CharType.INDICATOR,
         indicator=Indicator.BLOCK_SCALAR,
         value=value,
@@ -875,7 +875,7 @@ def new_folded(value: str, org: str, pos: Position) -> Token:
 # new_single_quote create token for SingleQuote
 def new_single_quote(value: str, org: str, pos: Position) -> Token:
     return Token(
-        type=Type.SINGLE_QUOTE,
+        type=YamlTokenType.SINGLE_QUOTE,
         char_type=CharType.INDICATOR,
         indicator=Indicator.QUOTED_SCALAR,
         value=value,
@@ -887,7 +887,7 @@ def new_single_quote(value: str, org: str, pos: Position) -> Token:
 # new_double_quote create token for DoubleQuote
 def new_double_quote(value: str, org: str, pos: Position) -> Token:
     return Token(
-        type=Type.DOUBLE_QUOTE,
+        type=YamlTokenType.DOUBLE_QUOTE,
         char_type=CharType.INDICATOR,
         indicator=Indicator.QUOTED_SCALAR,
         value=value,
@@ -899,10 +899,10 @@ def new_double_quote(value: str, org: str, pos: Position) -> Token:
 # new_directive create token for Directive
 def new_directive(org: str, pos: Position) -> Token:
     return Token(
-        type=Type.DIRECTIVE,
+        type=YamlTokenType.DIRECTIVE,
         char_type=CharType.INDICATOR,
         indicator=Indicator.DIRECTIVE,
-        value=Chars.DIRECTIVE,
+        value=YamlChars.DIRECTIVE,
         origin=org,
         position=pos,
     )
@@ -911,11 +911,11 @@ def new_directive(org: str, pos: Position) -> Token:
 # new_space create token for Space
 def new_space(pos: Position) -> Token:
     return Token(
-        type=Type.SPACE,
+        type=YamlTokenType.SPACE,
         char_type=CharType.WHITESPACE,
         indicator=Indicator.NOT,
-        value=Chars.SPACE,
-        origin=Chars.SPACE,
+        value=YamlChars.SPACE,
+        origin=YamlChars.SPACE,
         position=pos,
     )
 
@@ -923,7 +923,7 @@ def new_space(pos: Position) -> Token:
 # new_merge_key create token for MergeKey
 def new_merge_key(org: str, pos: Position) -> Token:
     return Token(
-        type=Type.MERGE_KEY,
+        type=YamlTokenType.MERGE_KEY,
         char_type=CharType.MISCELLANEOUS,
         indicator=Indicator.NOT,
         value='<<',
@@ -935,7 +935,7 @@ def new_merge_key(org: str, pos: Position) -> Token:
 # new_document_header create token for DocumentHeader
 def new_document_header(org: str, pos: Position) -> Token:
     return Token(
-        type=Type.DOCUMENT_HEADER,
+        type=YamlTokenType.DOCUMENT_HEADER,
         char_type=CharType.MISCELLANEOUS,
         indicator=Indicator.NOT,
         value='---',
@@ -947,7 +947,7 @@ def new_document_header(org: str, pos: Position) -> Token:
 # new_document_end create token for DocumentEnd
 def new_document_end(org: str, pos: Position) -> Token:
     return Token(
-        type=Type.DOCUMENT_END,
+        type=YamlTokenType.DOCUMENT_END,
         char_type=CharType.MISCELLANEOUS,
         indicator=Indicator.NOT,
         value='...',
@@ -958,7 +958,7 @@ def new_document_end(org: str, pos: Position) -> Token:
 
 def new_invalid(err: YamlError, org: str, pos: Position) -> Token:
     return Token(
-        type=Type.INVALID,
+        type=YamlTokenType.INVALID,
         char_type=CharType.INVALID,
         indicator=Indicator.NOT,
         value=org,

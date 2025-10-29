@@ -239,12 +239,12 @@ class Context:
         if last_tk is None:
             return
 
-        if last_tk.type != tokens.Type.TAG:
+        if last_tk.type != tokens.YamlTokenType.TAG:
             return
 
         tag = last_tk.value
         if tag not in tokens.RESERVED_TAG_KEYWORD_MAP:
-            check.not_none(tk).type = tokens.Type.STRING
+            check.not_none(tk).type = tokens.YamlTokenType.STRING
 
     def last_token(self) -> ta.Optional[tokens_.Token]:
         if len(self.tokens) != 0:
@@ -1332,7 +1332,7 @@ class Scanner:
 
         if self.started_flow_map_num > 0:
             tk = ctx.last_token()
-            if tk is not None and tk.type == tokens.Type.MAPPING_VALUE:
+            if tk is not None and tk.type == tokens.YamlTokenType.MAPPING_VALUE:
                 return False
 
         if ctx.obuf.lstrip(' ').startswith('\t') and not ctx.buf.startswith('\t'):
@@ -1654,7 +1654,7 @@ class Scanner:
                                 ),
                             ))
 
-                        if tk.type != tokens.Type.STRING:
+                        if tk.type != tokens.YamlTokenType.STRING:
                             ctx.add_token(tokens.new_string('', '', self.pos()))
 
                     self.break_multi_line(ctx)

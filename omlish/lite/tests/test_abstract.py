@@ -97,3 +97,24 @@ class TestAbstract(unittest.TestCase):
         #     class C6(Abstract, ta.Generic[T], abc.ABC):
         #         pass
         # assert str(te.exception).endswith('(Abstract, Generic, ABC)')
+
+    def test_abstract_yaml_bug(self):
+        class Node(Abstract):
+            @abc.abstractmethod
+            def get_path(self) -> str:
+                raise NotImplementedError
+
+        class BaseNode(Node, Abstract):
+            def get_path(self) -> str:
+                return 'a real path'
+
+        class MapKeyNode(Node, Abstract):
+            pass
+
+        class ScalarNode(MapKeyNode, Abstract):
+            pass
+
+        class NullNode(ScalarNode, BaseNode):
+            pass
+
+        assert NullNode()

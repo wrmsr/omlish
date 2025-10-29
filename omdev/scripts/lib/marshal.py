@@ -40,8 +40,10 @@ if sys.version_info < (3, 8):
 ########################################
 
 
-# check.py
+# abstract.py
 T = ta.TypeVar('T')
+
+# check.py
 SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
 CheckMessage = ta.Union[str, ta.Callable[..., ta.Optional[str]], None]  # ta.TypeAlias
 CheckLateConfigureFn = ta.Callable[['Checks'], None]  # ta.TypeAlias
@@ -65,25 +67,49 @@ def is_abstract_method(obj: ta.Any) -> bool:
     return bool(getattr(obj, _IS_ABSTRACT_METHOD_ATTR, False))
 
 
-def update_abstracts(cls, *, force=False):
+def compute_abstract_methods(cls: type) -> ta.FrozenSet[str]:
+    # ~> https://github.com/python/cpython/blob/f3476c6507381ca860eec0989f53647b13517423/Modules/_abc.c#L358
+
+    # Stage 1: direct abstract methods
+
+    abstracts = {
+        a
+        # Get items as a list to avoid mutation issues during iteration
+        for a, v in list(cls.__dict__.items())
+        if is_abstract_method(v)
+    }
+
+    # Stage 2: inherited abstract methods
+
+    for base in cls.__bases__:
+        # Get __abstractmethods__ from base if it exists
+        if (base_abstracts := getattr(base, _ABSTRACT_METHODS_ATTR, None)) is None:
+            continue
+
+        # Iterate over abstract methods in base
+        for key in base_abstracts:
+            # Check if this class has an attribute with this name
+            try:
+                value = getattr(cls, key)
+            except AttributeError:
+                # Attribute not found in this class, skip
+                continue
+
+            # Check if it's still abstract
+            if is_abstract_method(value):
+                abstracts.add(key)
+
+    return frozenset(abstracts)
+
+
+def update_abstracts(cls: ta.Type[T], *, force: bool = False) -> ta.Type[T]:
     if not force and not hasattr(cls, _ABSTRACT_METHODS_ATTR):
         # Per stdlib: We check for __abstractmethods__ here because cls might by a C implementation or a python
         # implementation (especially during testing), and we want to handle both cases.
         return cls
 
-    abstracts: ta.Set[str] = set()
-
-    for scls in cls.__bases__:
-        for name in getattr(scls, _ABSTRACT_METHODS_ATTR, ()):
-            value = getattr(cls, name, None)
-            if getattr(value, _IS_ABSTRACT_METHOD_ATTR, False):
-                abstracts.add(name)
-
-    for name, value in cls.__dict__.items():
-        if getattr(value, _IS_ABSTRACT_METHOD_ATTR, False):
-            abstracts.add(name)
-
-    setattr(cls, _ABSTRACT_METHODS_ATTR, frozenset(abstracts))
+    abstracts = compute_abstract_methods(cls)
+    setattr(cls, _ABSTRACT_METHODS_ATTR, abstracts)
     return cls
 
 
@@ -137,23 +163,26 @@ class Abstract:
         super().__init_subclass__(**kwargs)
 
         if not (Abstract in cls.__bases__ or abc.ABC in cls.__bases__):
-            ams = {a: cls for a, o in cls.__dict__.items() if is_abstract_method(o)}
+            if ams := compute_abstract_methods(cls):
+                amd = {
+                    a: mcls
+                    for mcls in cls.__mro__[::-1]
+                    for a in ams
+                    if a in mcls.__dict__
+                }
 
-            seen = set(cls.__dict__)
-            for b in cls.__bases__:
-                ams.update({a: b for a in set(getattr(b, _ABSTRACT_METHODS_ATTR, [])) - seen})  # noqa
-                seen.update(dir(b))
-
-            if ams:
                 raise AbstractTypeError(
                     f'Cannot subclass abstract class {cls.__name__} with abstract methods: ' +
                     ', '.join(sorted([
                         '.'.join([
-                            *([m] if (m := getattr(c, '__module__')) else []),
-                            getattr(c, '__qualname__', getattr(c, '__name__')),
+                            *([
+                                *([m] if (m := getattr(c, '__module__')) else []),
+                                getattr(c, '__qualname__', getattr(c, '__name__')),
+                            ] if c is not None else '?'),
                             a,
                         ])
-                        for a, c in ams.items()
+                        for a in ams
+                        for c in [amd.get(a)]
                     ])),
                 )
 
