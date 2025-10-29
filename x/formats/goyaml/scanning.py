@@ -18,14 +18,14 @@ from .errors import yaml_error
 
 @dc.dataclass()
 class InvalidTokenYamlError(YamlError):
-    token: tokens.Token
+    token: tokens.YamlToken
 
     @property
     def message(self) -> str:
         return check.not_none(self.token.error).message
 
 
-def err_invalid_token(tk: tokens.Token) -> InvalidTokenYamlError:
+def err_invalid_token(tk: tokens.YamlToken) -> InvalidTokenYamlError:
     return InvalidTokenYamlError(
         token=tk,
     )
@@ -44,7 +44,7 @@ class Context:
     src: str = ''
     buf: str = ''
     obuf: str = ''
-    tokens: tokens_.Tokens = dc.field(default_factory=tokens_.Tokens)
+    tokens: tokens_.YamlTokens = dc.field(default_factory=tokens_.YamlTokens)
     mstate: ta.Optional['MultiLineState'] = None
 
     def clear(self) -> None:
@@ -55,7 +55,7 @@ class Context:
         self.idx = 0
         self.size = len(src)
         self.src = src
-        self.tokens = tokens.Tokens()
+        self.tokens = tokens.YamlTokens()
         self.reset_buffer()
         self.mstate = None
 
@@ -98,7 +98,7 @@ class Context:
         mstate.update_indent_column(column)
         self.mstate = mstate
 
-    def add_token(self, tk: ta.Optional[tokens_.Token]) -> None:
+    def add_token(self, tk: ta.Optional[tokens_.YamlToken]) -> None:
         if tk is None:
             return
         self.tokens.append(tk)  # FIXME: .add??
@@ -215,7 +215,7 @@ class Context:
 
         return src
 
-    def buffered_token(self, pos: tokens_.Position) -> ta.Optional[tokens_.Token]:
+    def buffered_token(self, pos: tokens_.YamlPosition) -> ta.Optional[tokens_.YamlToken]:
         if self.idx == 0:
             return None
 
@@ -224,7 +224,7 @@ class Context:
             self.buf = self.buf[:0]  # clear value's buffer only.
             return None
 
-        tk: ta.Optional[tokens.Token]
+        tk: ta.Optional[tokens.YamlToken]
         if self.is_multi_line():
             tk = tokens.new_string(source, self.obuf, pos)
         else:
@@ -234,7 +234,7 @@ class Context:
         self.reset_buffer()
         return tk
 
-    def set_token_type_by_prev_tag(self, tk: ta.Optional[tokens_.Token]) -> None:
+    def set_token_type_by_prev_tag(self, tk: ta.Optional[tokens_.YamlToken]) -> None:
         last_tk = self.last_token()
         if last_tk is None:
             return
@@ -246,7 +246,7 @@ class Context:
         if tag not in tokens.RESERVED_TAG_KEYWORD_MAP:
             check.not_none(tk).type = tokens.YamlTokenType.STRING
 
-    def last_token(self) -> ta.Optional[tokens_.Token]:
+    def last_token(self) -> ta.Optional[tokens_.YamlToken]:
         if len(self.tokens) != 0:
             return self.tokens[len(self.tokens)-1]
 
@@ -437,10 +437,10 @@ class Scanner:
     started_flow_sequence_num: int = 0
     started_flow_map_num: int = 0
     indent_state: IndentState = IndentState.EQUAL
-    saved_pos: ta.Optional[tokens.Position] = None
+    saved_pos: ta.Optional[tokens.YamlPosition] = None
 
-    def pos(self) -> tokens.Position:
-        return tokens.Position(
+    def pos(self) -> tokens.YamlPosition:
+        return tokens.YamlPosition(
             line=self.line,
             column=self.column,
             offset=self.offset,
@@ -448,7 +448,7 @@ class Scanner:
             indent_level=self.indent_level,
         )
 
-    def buffered_token(self, ctx: Context) -> ta.Optional[tokens.Token]:
+    def buffered_token(self, ctx: Context) -> ta.Optional[tokens.YamlToken]:
         if self.saved_pos is not None:
             tk = ctx.buffered_token(self.saved_pos)
             self.saved_pos = None
@@ -465,7 +465,7 @@ class Scanner:
             if last is not None:  # The last token should never be None here.
                 level = last.position.indent_level + 1
 
-        return ctx.buffered_token(tokens.Position(
+        return ctx.buffered_token(tokens.YamlPosition(
             line=line,
             column=column,
             offset=self.offset - len(ctx.buf),
@@ -568,7 +568,7 @@ class Scanner:
     def break_multi_line(self, ctx: Context) -> None:
         ctx.break_multi_line()
 
-    def scan_single_quote(self, ctx: Context) -> YamlErrorOr[tokens.Token]:
+    def scan_single_quote(self, ctx: Context) -> YamlErrorOr[tokens.YamlToken]:
         ctx.add_origin_buf("'")
         srcpos = self.pos()
         start_index = ctx.idx + 1
@@ -655,7 +655,7 @@ class Scanner:
             ),
         )
 
-    def scan_double_quote(self, ctx: Context) -> YamlErrorOr[tokens.Token]:
+    def scan_double_quote(self, ctx: Context) -> YamlErrorOr[tokens.YamlToken]:
         ctx.add_origin_buf('"')
         srcpos = self.pos()
         start_index = ctx.idx + 1
@@ -1353,7 +1353,7 @@ class Scanner:
         elif (tk := ctx.last_token()) is not None:
             # If the map key is quote, the buffer does not exist because it has already been cut into tokens.
             # Therefore, we need to check the last token.
-            if tk.indicator == tokens.Indicator.QUOTED_SCALAR:
+            if tk.indicator == tokens.YamlIndicator.QUOTED_SCALAR:
                 self.last_delim_column = tk.position.column
 
         ctx.add_token(tokens.new_mapping_value(self.pos()))
@@ -1814,13 +1814,13 @@ class Scanner:
         self.indent_num = 0
 
     # scan scans the next token and returns the token collection. The source end is indicated by io.EOF.
-    def scan(self) -> ta.Tuple[ta.Optional[tokens.Tokens], ta.Optional[YamlError]]:
+    def scan(self) -> ta.Tuple[ta.Optional[tokens.YamlTokens], ta.Optional[YamlError]]:
         if self.source_pos >= self.source_size:
             return None, EofYamlError()
 
         ctx = new_context(self.source[self.source_pos:])
 
-        lst = tokens.Tokens()
+        lst = tokens.YamlTokens()
         err = self._scan(ctx)
         lst.extend(ctx.tokens)
 
@@ -1834,11 +1834,11 @@ class Scanner:
 
 
 # Tokenize split to token instances from string
-def tokenize(src: str) -> tokens.Tokens:
+def tokenize(src: str) -> tokens.YamlTokens:
     s = Scanner()
     s.init(src)
 
-    tks = tokens.Tokens()
+    tks = tokens.YamlTokens()
     while True:
         sub_tokens, err = s.scan()
         if isinstance(err, EofYamlError):

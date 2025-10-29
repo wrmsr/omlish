@@ -24,7 +24,7 @@ ERR_INVALID_ANCHOR_NAME = yaml_error('invalid anchor name')
 ERR_INVALID_ALIAS_NAME  = yaml_error('invalid alias name')
 
 
-class NodeType(enum.Enum):
+class YamlNodeType(enum.Enum):
     # UNKNOWN type identifier for default
     UNKNOWN = enum.auto()
     # DOCUMENT type identifier for document node
@@ -72,29 +72,29 @@ class NodeType(enum.Enum):
 
 
 # String node type identifier to YAML Structure name based on https://yaml.org/spec/1.2/spec.html
-NODE_TYPE_YAML_NAMES: ta.Mapping[NodeType, str] = {
-    NodeType.UNKNOWN: 'unknown',
-    NodeType.DOCUMENT: 'document',
-    NodeType.NULL: 'null',
-    NodeType.BOOL: 'boolean',
-    NodeType.INTEGER: 'int',
-    NodeType.FLOAT: 'float',
-    NodeType.INFINITY: 'inf',
-    NodeType.NAN: 'nan',
-    NodeType.STRING: 'string',
-    NodeType.MERGE_KEY: 'merge key',
-    NodeType.LITERAL: 'scalar',
-    NodeType.MAPPING: 'mapping',
-    NodeType.MAPPING_KEY: 'key',
-    NodeType.MAPPING_VALUE: 'value',
-    NodeType.SEQUENCE: 'sequence',
-    NodeType.SEQUENCE_ENTRY: 'value',
-    NodeType.ANCHOR: 'anchor',
-    NodeType.ALIAS: 'alias',
-    NodeType.DIRECTIVE: 'directive',
-    NodeType.TAG: 'tag',
-    NodeType.COMMENT: 'comment',
-    NodeType.COMMENT_GROUP: 'comment',
+NODE_TYPE_YAML_NAMES: ta.Mapping[YamlNodeType, str] = {
+    YamlNodeType.UNKNOWN: 'unknown',
+    YamlNodeType.DOCUMENT: 'document',
+    YamlNodeType.NULL: 'null',
+    YamlNodeType.BOOL: 'boolean',
+    YamlNodeType.INTEGER: 'int',
+    YamlNodeType.FLOAT: 'float',
+    YamlNodeType.INFINITY: 'inf',
+    YamlNodeType.NAN: 'nan',
+    YamlNodeType.STRING: 'string',
+    YamlNodeType.MERGE_KEY: 'merge key',
+    YamlNodeType.LITERAL: 'scalar',
+    YamlNodeType.MAPPING: 'mapping',
+    YamlNodeType.MAPPING_KEY: 'key',
+    YamlNodeType.MAPPING_VALUE: 'value',
+    YamlNodeType.SEQUENCE: 'sequence',
+    YamlNodeType.SEQUENCE_ENTRY: 'value',
+    YamlNodeType.ANCHOR: 'anchor',
+    YamlNodeType.ALIAS: 'alias',
+    YamlNodeType.DIRECTIVE: 'directive',
+    YamlNodeType.TAG: 'tag',
+    YamlNodeType.COMMENT: 'comment',
+    YamlNodeType.COMMENT_GROUP: 'comment',
 }
 
 
@@ -102,7 +102,7 @@ NODE_TYPE_YAML_NAMES: ta.Mapping[NodeType, str] = {
 
 
 # Node type of node
-class Node(Abstract):
+class YamlNode(Abstract):
     # io.Reader
 
     def __str__(self) -> ta.NoReturn:
@@ -115,12 +115,12 @@ class Node(Abstract):
 
     # get_token returns token instance
     @abc.abstractmethod
-    def get_token(self) -> ta.Optional[tokens.Token]:
+    def get_token(self) -> ta.Optional[tokens.YamlToken]:
         raise NotImplementedError
 
     # type returns type of node
     @abc.abstractmethod
-    def type(self) -> NodeType:
+    def type(self) -> YamlNodeType:
         raise NotImplementedError
 
     # add_column add column number to child nodes recursively
@@ -170,7 +170,7 @@ class Node(Abstract):
 
 
 # MapKeyNode type for map key node
-class MapKeyNode(Node, Abstract):
+class MapKeyYamlNode(YamlNode, Abstract):
     @abc.abstractmethod
     def is_merge_key(self) -> bool:
         raise NotImplementedError
@@ -182,7 +182,7 @@ class MapKeyNode(Node, Abstract):
 
 
 # ScalarNode type for scalar node
-class ScalarNode(MapKeyNode, Abstract):
+class ScalarNode(MapKeyYamlNode, Abstract):
     @abc.abstractmethod
     def get_value(self) -> ta.Any:
         raise NotImplementedError
@@ -192,7 +192,7 @@ class ScalarNode(MapKeyNode, Abstract):
 
 
 @dc.dataclass(kw_only=True)
-class BaseNode(Node, Abstract):
+class BaseYamlNode(YamlNode, Abstract):
     path: str = ''
     comment: ta.Optional['CommentGroupNode'] = None
     cur_read: int = 0
@@ -208,14 +208,14 @@ class BaseNode(Node, Abstract):
 
     # get_path returns YAMLPath for the current node.
     @ta.final
-    def get_path(self: ta.Optional['BaseNode']) -> str:
+    def get_path(self: ta.Optional['BaseYamlNode']) -> str:
         if self is None:
             return ''
         return self.path
 
     # set_path set YAMLPath for the current node.
     @ta.final
-    def set_path(self: ta.Optional['BaseNode'], path: str) -> None:
+    def set_path(self: ta.Optional['BaseYamlNode'], path: str) -> None:
         if self is None:
             return
         self.path = path
@@ -237,7 +237,7 @@ def add_comment_string(base: str, node: 'CommentGroupNode') -> str:
 ##
 
 
-def read_node(p: str, node: Node) -> YamlErrorOr[int]:
+def read_node(p: str, node: YamlNode) -> YamlErrorOr[int]:
     s = node.string()
     read_len = node.read_len()
     remain = len(s) - read_len
@@ -253,7 +253,7 @@ def read_node(p: str, node: Node) -> YamlErrorOr[int]:
     return size
 
 
-def check_line_break(t: tokens.Token) -> bool:
+def check_line_break(t: tokens.YamlToken) -> bool:
     if t.prev is not None:
         lbc = '\n'
         prev = t.prev
@@ -297,7 +297,7 @@ def check_line_break(t: tokens.Token) -> bool:
 
 
 # Null create node for null value
-def null(tk: tokens.Token) -> 'NullNode':
+def null(tk: tokens.YamlToken) -> 'NullNode':
     return NullNode(
         token=tk,
     )
@@ -316,7 +316,7 @@ def _parse_bool(s: str) -> bool:
 
 
 # bool_ create node for boolean value
-def bool_(tk: tokens.Token) -> 'BoolNode':
+def bool_(tk: tokens.YamlToken) -> 'BoolNode':
     b = _parse_bool(tk.value)
     return BoolNode(
         token=tk,
@@ -325,7 +325,7 @@ def bool_(tk: tokens.Token) -> 'BoolNode':
 
 
 # integer create node for integer value
-def integer(tk: tokens.Token) -> 'IntegerNode':
+def integer(tk: tokens.YamlToken) -> 'IntegerNode':
     v: ta.Any = None
     if (num := tokens.to_number(tk.value)) is not None:
         v = num.value
@@ -337,7 +337,7 @@ def integer(tk: tokens.Token) -> 'IntegerNode':
 
 
 # float_ create node for float value
-def float_(tk: tokens.Token) -> 'FloatNode':
+def float_(tk: tokens.YamlToken) -> 'FloatNode':
     v: float = 0.
     if (num := tokens.to_number(tk.value)) is not None and num.type == tokens.NumberType.FLOAT:
         if isinstance(num.value, float):
@@ -350,7 +350,7 @@ def float_(tk: tokens.Token) -> 'FloatNode':
 
 
 # infinity create node for .inf or -.inf value
-def infinity(tk: tokens.Token) -> 'InfinityNode':
+def infinity(tk: tokens.YamlToken) -> 'InfinityNode':
     if tk.value in ('.inf', '.Inf', '.INF'):
         value = float('inf')
     elif tk.value in ('-.inf', '-.Inf', '-.INF'):
@@ -363,14 +363,14 @@ def infinity(tk: tokens.Token) -> 'InfinityNode':
 
 
 # nan create node for .nan value
-def nan(tk: tokens.Token) -> 'NanNode':
+def nan(tk: tokens.YamlToken) -> 'NanNode':
     return NanNode(
         token=tk,
     )
 
 
 # string create node for string value
-def string(tk: tokens.Token) -> 'StringNode':
+def string(tk: tokens.YamlToken) -> 'StringNode':
     return StringNode(
         token=tk,
         value=tk.value,
@@ -378,13 +378,13 @@ def string(tk: tokens.Token) -> 'StringNode':
 
 
 # comment create node for comment
-def comment(tk: ta.Optional[tokens.Token]) -> 'CommentNode':
+def comment(tk: ta.Optional[tokens.YamlToken]) -> 'CommentNode':
     return CommentNode(
         token=tk,
     )
 
 
-def comment_group(comments: ta.Iterable[ta.Optional[tokens.Token]]) -> 'CommentGroupNode':
+def comment_group(comments: ta.Iterable[ta.Optional[tokens.YamlToken]]) -> 'CommentGroupNode':
     nodes: ta.List[CommentNode] = []
     for c in comments:
         nodes.append(comment(c))
@@ -395,14 +395,14 @@ def comment_group(comments: ta.Iterable[ta.Optional[tokens.Token]]) -> 'CommentG
 
 
 # merge_key create node for merge key ( << )
-def merge_key(tk: tokens.Token) -> 'MergeKeyNode':
+def merge_key(tk: tokens.YamlToken) -> 'MergeKeyNode':
     return MergeKeyNode(
         token=tk,
     )
 
 
 # mapping create node for map
-def mapping(tk: tokens.Token, is_flow_style: bool, *values: 'MappingValueNode') -> 'MappingNode':
+def mapping(tk: tokens.YamlToken, is_flow_style: bool, *values: 'MappingValueNode') -> 'MappingNode':
     node = MappingNode(
         start=tk,
         is_flow_style=is_flow_style,
@@ -413,7 +413,7 @@ def mapping(tk: tokens.Token, is_flow_style: bool, *values: 'MappingValueNode') 
 
 
 # mapping_value create node for mapping value
-def mapping_value(tk: tokens.Token, key: 'MapKeyNode', value: Node) -> 'MappingValueNode':
+def mapping_value(tk: tokens.YamlToken, key: 'MapKeyYamlNode', value: YamlNode) -> 'MappingValueNode':
     return MappingValueNode(
         start=tk,
         key=key,
@@ -422,14 +422,14 @@ def mapping_value(tk: tokens.Token, key: 'MapKeyNode', value: Node) -> 'MappingV
 
 
 # mapping_key create node for map key ( '?' ).
-def mapping_key(tk: tokens.Token) -> 'MappingKeyNode':
+def mapping_key(tk: tokens.YamlToken) -> 'MappingKeyNode':
     return MappingKeyNode(
         start=tk,
     )
 
 
 # sequence create node for sequence
-def sequence(tk: tokens.Token, is_flow_style: bool) -> 'SequenceNode':
+def sequence(tk: tokens.YamlToken, is_flow_style: bool) -> 'SequenceNode':
     return SequenceNode(
         start=tk,
         is_flow_style=is_flow_style,
@@ -437,38 +437,38 @@ def sequence(tk: tokens.Token, is_flow_style: bool) -> 'SequenceNode':
     )
 
 
-def anchor(tk: tokens.Token) -> 'AnchorNode':
+def anchor(tk: tokens.YamlToken) -> 'AnchorNode':
     return AnchorNode(
         start=tk,
     )
 
 
-def alias(tk: tokens.Token) -> 'AliasNode':
+def alias(tk: tokens.YamlToken) -> 'AliasNode':
     return AliasNode(
         start=tk,
     )
 
 
-def document(tk: ta.Optional[tokens.Token], body: ta.Optional[Node]) -> 'DocumentNode':
+def document(tk: ta.Optional[tokens.YamlToken], body: ta.Optional[YamlNode]) -> 'DocumentNode':
     return DocumentNode(
         start=tk,
         body=body,
     )
 
 
-def directive(tk: tokens.Token) -> 'DirectiveNode':
+def directive(tk: tokens.YamlToken) -> 'DirectiveNode':
     return DirectiveNode(
         start=tk,
     )
 
 
-def literal(tk: tokens.Token) -> 'LiteralNode':
+def literal(tk: tokens.YamlToken) -> 'LiteralNode':
     return LiteralNode(
         start=tk,
     )
 
 
-def tag(tk: tokens.Token) -> 'TagNode':
+def tag(tk: tokens.YamlToken) -> 'TagNode':
     return TagNode(
         start=tk,
     )
@@ -479,7 +479,7 @@ def tag(tk: tokens.Token) -> 'TagNode':
 
 # File contains all documents in YAML file
 @dc.dataclass(kw_only=True)
-class File:
+class YamlFile:
     name: str = ''
     docs: ta.List['DocumentNode']
 
@@ -508,21 +508,21 @@ class File:
 
 # DocumentNode type of Document
 @dc.dataclass(kw_only=True)
-class DocumentNode(BaseNode):
-    start: ta.Optional[tokens.Token]  # position of DocumentHeader ( `---` )
-    end: ta.Optional[tokens.Token] = None  # position of DocumentEnd ( `...` )
-    body: ta.Optional[Node]
+class DocumentNode(BaseYamlNode):
+    start: ta.Optional[tokens.YamlToken]  # position of DocumentHeader ( `---` )
+    end: ta.Optional[tokens.YamlToken] = None  # position of DocumentEnd ( `...` )
+    body: ta.Optional[YamlNode]
 
     # read implements (io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
         return read_node(p, self)
 
     # type returns DocumentNodeType
-    def type(self) -> NodeType:
-        return NodeType.DOCUMENT
+    def type(self) -> YamlNodeType:
+        return YamlNodeType.DOCUMENT
 
     # get_token returns token instance
-    def get_token(self) -> ta.Optional[tokens.Token]:
+    def get_token(self) -> ta.Optional[tokens.YamlToken]:
         return check.not_none(self.body).get_token()
 
     # add_column add column number to child nodes recursively
@@ -551,24 +551,24 @@ class DocumentNode(BaseNode):
 
 # NullNode type of null node
 @dc.dataclass(kw_only=True)
-class NullNode(ScalarNode, BaseNode):
-    token: tokens.Token
+class NullNode(ScalarNode, BaseYamlNode):
+    token: tokens.YamlToken
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
         return read_node(p, self)
 
     # type returns NullType
-    def type(self) -> NodeType:
-        return NodeType.NULL
+    def type(self) -> YamlNodeType:
+        return YamlNodeType.NULL
 
     # get_token returns token instance
-    def get_token(self) -> tokens.Token:
+    def get_token(self) -> tokens.YamlToken:
         return self.token
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        tokens.Token.add_column(self.token, col)
+        tokens.YamlToken.add_column(self.token, col)
 
     # get_value returns nil value
     def get_value(self) -> ta.Any:
@@ -602,8 +602,8 @@ class NullNode(ScalarNode, BaseNode):
 
 # IntegerNode type of integer node
 @dc.dataclass(kw_only=True)
-class IntegerNode(ScalarNode, BaseNode):
-    token: tokens.Token
+class IntegerNode(ScalarNode, BaseYamlNode):
+    token: tokens.YamlToken
     value: ta.Any  # int64 or uint64 value
 
     # read implements(io.Reader).Read
@@ -611,16 +611,16 @@ class IntegerNode(ScalarNode, BaseNode):
         return read_node(p, self)
 
     # type returns IntegerType
-    def type(self) -> NodeType:
-        return NodeType.INTEGER
+    def type(self) -> YamlNodeType:
+        return YamlNodeType.INTEGER
 
     # get_token returns token instance
-    def get_token(self) -> tokens.Token:
+    def get_token(self) -> tokens.YamlToken:
         return self.token
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        tokens.Token.add_column(self.token, col)
+        tokens.YamlToken.add_column(self.token, col)
 
     # get_value returns int64 value
     def get_value(self) -> ta.Any:
@@ -649,8 +649,8 @@ class IntegerNode(ScalarNode, BaseNode):
 
 # FloatNode type of float node
 @dc.dataclass(kw_only=True)
-class FloatNode(ScalarNode, BaseNode):
-    token: tokens.Token
+class FloatNode(ScalarNode, BaseYamlNode):
+    token: tokens.YamlToken
     precision: int = 0
     value: float
 
@@ -659,16 +659,16 @@ class FloatNode(ScalarNode, BaseNode):
         return read_node(p, self)
 
     # type returns FloatType
-    def type(self) -> NodeType:
-        return NodeType.FLOAT
+    def type(self) -> YamlNodeType:
+        return YamlNodeType.FLOAT
 
     # get_token returns token instance
-    def get_token(self) -> tokens.Token:
+    def get_token(self) -> tokens.YamlToken:
         return self.token
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        tokens.Token.add_column(self.token, col)
+        tokens.YamlToken.add_column(self.token, col)
 
     # get_value returns float64 value
     def get_value(self) -> ta.Any:
@@ -758,8 +758,8 @@ def strconv_quote(s: str) -> str:
 
 # StringNode type of string node
 @dc.dataclass(kw_only=True)
-class StringNode(ScalarNode, BaseNode):
-    token: tokens.Token
+class StringNode(ScalarNode, BaseYamlNode):
+    token: tokens.YamlToken
     value: str
 
     # read implements(io.Reader).Read
@@ -767,16 +767,16 @@ class StringNode(ScalarNode, BaseNode):
         return read_node(p, self)
 
     # type returns StringType
-    def type(self) -> NodeType:
-        return NodeType.STRING
+    def type(self) -> YamlNodeType:
+        return YamlNodeType.STRING
 
     # get_token returns token instance
-    def get_token(self) -> tokens.Token:
+    def get_token(self) -> tokens.YamlToken:
         return self.token
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        tokens.Token.add_column(self.token, col)
+        tokens.YamlToken.add_column(self.token, col)
 
     # get_value returns string value
     def get_value(self) -> ta.Any:
@@ -865,8 +865,8 @@ def escape_single_quote(s: str) -> str:
 
 # LiteralNode type of literal node
 @dc.dataclass(kw_only=True)
-class LiteralNode(ScalarNode, BaseNode):
-    start: tokens.Token
+class LiteralNode(ScalarNode, BaseYamlNode):
+    start: tokens.YamlToken
     value: ta.Optional['StringNode'] = None
 
     # read implements(io.Reader).Read
@@ -874,16 +874,16 @@ class LiteralNode(ScalarNode, BaseNode):
         return read_node(p, self)
 
     # type returns LiteralType
-    def type(self) -> NodeType:
-        return NodeType.LITERAL
+    def type(self) -> YamlNodeType:
+        return YamlNodeType.LITERAL
 
     # get_token returns token instance
-    def get_token(self) -> tokens.Token:
+    def get_token(self) -> tokens.YamlToken:
         return self.start
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        tokens.Token.add_column(self.start, col)
+        tokens.YamlToken.add_column(self.start, col)
         if self.value is not None:
             self.value.add_column(col)
 
@@ -916,19 +916,19 @@ class LiteralNode(ScalarNode, BaseNode):
 
 # MergeKeyNode type of merge key node
 @dc.dataclass(kw_only=True)
-class MergeKeyNode(ScalarNode, BaseNode):
-    token: tokens.Token
+class MergeKeyNode(ScalarNode, BaseYamlNode):
+    token: tokens.YamlToken
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
         return read_node(p, self)
 
     # type returns MergeKeyType
-    def type(self) -> NodeType:
-        return NodeType.MERGE_KEY
+    def type(self) -> YamlNodeType:
+        return YamlNodeType.MERGE_KEY
 
     # get_token returns token instance
-    def get_token(self) -> tokens.Token:
+    def get_token(self) -> tokens.YamlToken:
         return self.token
 
     # get_value returns '<<' value
@@ -944,7 +944,7 @@ class MergeKeyNode(ScalarNode, BaseNode):
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        tokens.Token.add_column(self.token, col)
+        tokens.YamlToken.add_column(self.token, col)
 
     # marshal_yaml encodes to a YAML text
     def marshal_yaml(self) -> YamlErrorOr[str]:
@@ -960,8 +960,8 @@ class MergeKeyNode(ScalarNode, BaseNode):
 
 # BoolNode type of boolean node
 @dc.dataclass(kw_only=True)
-class BoolNode(ScalarNode, BaseNode):
-    token: tokens.Token
+class BoolNode(ScalarNode, BaseYamlNode):
+    token: tokens.YamlToken
     value: bool
 
     # read implements(io.Reader).Read
@@ -969,16 +969,16 @@ class BoolNode(ScalarNode, BaseNode):
         return read_node(p, self)
 
     # type returns BoolType
-    def type(self) -> NodeType:
-        return NodeType.BOOL
+    def type(self) -> YamlNodeType:
+        return YamlNodeType.BOOL
 
     # get_token returns token instance
-    def get_token(self) -> tokens.Token:
+    def get_token(self) -> tokens.YamlToken:
         return self.token
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        tokens.Token.add_column(self.token, col)
+        tokens.YamlToken.add_column(self.token, col)
 
     # get_value returns boolean value
     def get_value(self) -> ta.Any:
@@ -1007,8 +1007,8 @@ class BoolNode(ScalarNode, BaseNode):
 
 # InfinityNode type of infinity node
 @dc.dataclass(kw_only=True)
-class InfinityNode(ScalarNode, BaseNode):
-    token: tokens.Token
+class InfinityNode(ScalarNode, BaseYamlNode):
+    token: tokens.YamlToken
     value: float
 
     # read implements(io.Reader).Read
@@ -1016,16 +1016,16 @@ class InfinityNode(ScalarNode, BaseNode):
         return read_node(p, self)
 
     # type returns InfinityType
-    def type(self) -> NodeType:
-        return NodeType.INFINITY
+    def type(self) -> YamlNodeType:
+        return YamlNodeType.INFINITY
 
     # get_token returns token instance
-    def get_token(self) -> tokens.Token:
+    def get_token(self) -> tokens.YamlToken:
         return self.token
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        tokens.Token.add_column(self.token, col)
+        tokens.YamlToken.add_column(self.token, col)
 
     # get_value returns math.Inf(0) or math.Inf(-1)
     def get_value(self) -> ta.Any:
@@ -1054,24 +1054,24 @@ class InfinityNode(ScalarNode, BaseNode):
 
 # NanNode type of nan node
 @dc.dataclass(kw_only=True)
-class NanNode(ScalarNode, BaseNode):
-    token: tokens.Token
+class NanNode(ScalarNode, BaseYamlNode):
+    token: tokens.YamlToken
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
         return read_node(p, self)
 
     # type returns NanType
-    def type(self) -> NodeType:
-        return NodeType.NAN
+    def type(self) -> YamlNodeType:
+        return YamlNodeType.NAN
 
     # get_token returns token instance
-    def get_token(self) -> tokens.Token:
+    def get_token(self) -> tokens.YamlToken:
         return self.token
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        tokens.Token.add_column(self.token, col)
+        tokens.YamlToken.add_column(self.token, col)
 
     # get_value returns math.NaN()
     def get_value(self) -> ta.Any:
@@ -1123,11 +1123,11 @@ class MapNodeIter:
         return nxt
 
     # key returns the key of the iterator's current map node entry.
-    def key(self) -> MapKeyNode:
+    def key(self) -> MapKeyYamlNode:
         return self.values[self.idx].key
 
     # value returns the value of the iterator's current map node entry.
-    def value(self) -> Node:
+    def value(self) -> YamlNode:
         return self.values[self.idx].value
 
     # key_value returns the MappingValueNode of the iterator's current map node entry.
@@ -1140,14 +1140,14 @@ class MapNodeIter:
 
 # MappingNode type of mapping node
 @dc.dataclass(kw_only=True)
-class MappingNode(BaseNode):
-    start: tokens.Token
-    end: ta.Optional[tokens.Token] = None
+class MappingNode(BaseYamlNode):
+    start: tokens.YamlToken
+    end: ta.Optional[tokens.YamlToken] = None
     is_flow_style: bool
     values: ta.List['MappingValueNode']
     foot_comment: ta.Optional['CommentGroupNode'] = None
 
-    def start_pos(self) -> tokens.Position:
+    def start_pos(self) -> tokens.YamlPosition:
         if len(self.values) == 0:
             return self.start.position
         return check.not_none(self.values[0].key.get_token()).position
@@ -1178,17 +1178,17 @@ class MappingNode(BaseNode):
         return read_node(p, self)
 
     # type returns MappingType
-    def type(self) -> NodeType:
-        return NodeType.MAPPING
+    def type(self) -> YamlNodeType:
+        return YamlNodeType.MAPPING
 
     # get_token returns token instance
-    def get_token(self) -> tokens.Token:
+    def get_token(self) -> tokens.YamlToken:
         return self.start
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        tokens.Token.add_column(self.start, col)
-        tokens.Token.add_column(self.end, col)
+        tokens.YamlToken.add_column(self.start, col)
+        tokens.YamlToken.add_column(self.end, col)
         for value in self.values:
             value.add_column(col)
 
@@ -1247,25 +1247,25 @@ class MappingNode(BaseNode):
 
 # MappingKeyNode type of tag node
 @dc.dataclass(kw_only=True)
-class MappingKeyNode(MapKeyNode, BaseNode):
-    start: tokens.Token
-    value: ta.Optional[Node] = None
+class MappingKeyNode(MapKeyYamlNode, BaseYamlNode):
+    start: tokens.YamlToken
+    value: ta.Optional[YamlNode] = None
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
         return read_node(p, self)
 
     # type returns MappingKeyType
-    def type(self) -> NodeType:
-        return NodeType.MAPPING_KEY
+    def type(self) -> YamlNodeType:
+        return YamlNodeType.MAPPING_KEY
 
     # get_token returns token instance
-    def get_token(self) -> tokens.Token:
+    def get_token(self) -> tokens.YamlToken:
         return self.start
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        tokens.Token.add_column(self.start, col)
+        tokens.YamlToken.add_column(self.start, col)
         if self.value is not None:
             self.value.add_column(col)
 
@@ -1285,7 +1285,7 @@ class MappingKeyNode(MapKeyNode, BaseNode):
         if self.value is None:
             return False
         key = self.value
-        if not isinstance(key, MapKeyNode):
+        if not isinstance(key, MapKeyYamlNode):
             return False
         return key.is_merge_key()
 
@@ -1295,16 +1295,16 @@ class MappingKeyNode(MapKeyNode, BaseNode):
 
 # MappingValueNode type of mapping value
 @dc.dataclass(kw_only=True)
-class MappingValueNode(BaseNode):
-    start: tokens.Token  # delimiter token ':'.
-    collect_entry: ta.Optional[tokens.Token] = None  # collect entry token ','.
-    key: MapKeyNode
-    value: Node
+class MappingValueNode(BaseYamlNode):
+    start: tokens.YamlToken  # delimiter token ':'.
+    collect_entry: ta.Optional[tokens.YamlToken] = None  # collect entry token ','.
+    key: MapKeyYamlNode
+    value: YamlNode
     foot_comment: ta.Optional['CommentGroupNode'] = None
     is_flow_style: bool = False
 
     # Replace replace value node.
-    def replace(self, value: Node) -> ta.Optional[YamlError]:
+    def replace(self, value: YamlNode) -> ta.Optional[YamlError]:
         column = check.not_none(self.value.get_token()).position.column - check.not_none(value.get_token()).position.column  # noqa
         value.add_column(column)
         self.value = value
@@ -1315,16 +1315,16 @@ class MappingValueNode(BaseNode):
         return read_node(p, self)
 
     # type returns MappingValueType
-    def type(self) -> NodeType:
-        return NodeType.MAPPING_VALUE
+    def type(self) -> YamlNodeType:
+        return YamlNodeType.MAPPING_VALUE
 
     # get_token returns token instance
-    def get_token(self) -> tokens.Token:
+    def get_token(self) -> tokens.YamlToken:
         return self.start
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        tokens.Token.add_column(self.start, col)
+        tokens.YamlToken.add_column(self.start, col)
         if self.key is not None:
             self.key.add_column(col)
         if self.value is not None:
@@ -1414,7 +1414,7 @@ class MappingValueNode(BaseNode):
 
 
 # ArrayNode interface of SequenceNode
-class ArrayNode(Node, Abstract):
+class ArrayYamlNode(YamlNode, Abstract):
     @abc.abstractmethod
     def array_range(self) -> ta.Optional['ArrayNodeIter']:
         raise NotImplementedError
@@ -1423,7 +1423,7 @@ class ArrayNode(Node, Abstract):
 # ArrayNodeIter is an iterator for ranging over a ArrayNode
 @dc.dataclass(kw_only=True)
 class ArrayNodeIter:
-    values: ta.List[Node]
+    values: ta.List[YamlNode]
     idx: int
 
     # next advances the array iterator and reports whether there is another entry.
@@ -1434,7 +1434,7 @@ class ArrayNodeIter:
         return nxt
 
     # Value returns the value of the iterator's current array entry.
-    def value(self) -> Node:
+    def value(self) -> YamlNode:
         return self.values[self.idx]
 
     # len returns length of array
@@ -1447,17 +1447,17 @@ class ArrayNodeIter:
 
 # SequenceNode type of sequence node
 @dc.dataclass(kw_only=True)
-class SequenceNode(BaseNode, ArrayNode):
-    start: tokens.Token
-    end: ta.Optional[tokens.Token] = None
+class SequenceNode(BaseYamlNode, ArrayYamlNode):
+    start: tokens.YamlToken
+    end: ta.Optional[tokens.YamlToken] = None
     is_flow_style: bool
-    values: ta.List[ta.Optional[Node]]
+    values: ta.List[ta.Optional[YamlNode]]
     value_head_comments: ta.List[ta.Optional['CommentGroupNode']] = dc.field(default_factory=list)
     entries: ta.List['SequenceEntryNode'] = dc.field(default_factory=list)
     foot_comment: ta.Optional['CommentGroupNode'] = None
 
     # replace replace value node.
-    def replace(self, idx: int, value: Node) -> ta.Optional[YamlError]:
+    def replace(self, idx: int, value: YamlNode) -> ta.Optional[YamlError]:
         if len(self.values) <= idx:
             return yaml_error(f'invalid index for sequence: sequence length is {len(self.values):d}, but specified {idx:d} index')  # noqa
 
@@ -1493,17 +1493,17 @@ class SequenceNode(BaseNode, ArrayNode):
         return read_node(p, self)
 
     # type returns SequenceType
-    def type(self) -> NodeType:
-        return NodeType.SEQUENCE
+    def type(self) -> YamlNodeType:
+        return YamlNodeType.SEQUENCE
 
     # get_token returns token instance
-    def get_token(self) -> tokens.Token:
+    def get_token(self) -> tokens.YamlToken:
         return self.start
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        tokens.Token.add_column(self.start, col)
-        tokens.Token.add_column(self.end, col)
+        tokens.YamlToken.add_column(self.start, col)
+        tokens.YamlToken.add_column(self.end, col)
         for value in self.values:
             check.not_none(value).add_column(col)
 
@@ -1533,7 +1533,10 @@ class SequenceNode(BaseNode, ArrayNode):
             splitted_values = value_str.split('\n')
             trimmed_first_value = splitted_values[0].lstrip(' ')
             diff_length = len(splitted_values[0]) - len(trimmed_first_value)
-            if (len(splitted_values) > 1 and value.type() == NodeType.STRING) or value.type() == NodeType.LITERAL:
+            if (
+                    (len(splitted_values) > 1 and value.type() == YamlNodeType.STRING) or
+                    value.type() == YamlNodeType.LITERAL
+            ):
                 # If multi-line string, the space characters for indent have already been added, so delete them.
                 prefix = space + '  '
                 for i in range(1, len(splitted_values)):
@@ -1574,7 +1577,7 @@ class SequenceNode(BaseNode, ArrayNode):
     def array_range(self) -> ta.Optional[ArrayNodeIter]:
         return ArrayNodeIter(
             idx=START_RANGE_INDEX,
-            values=ta.cast('ta.List[Node]', self.values),
+            values=ta.cast('ta.List[YamlNode]', self.values),
         )
 
     # marshal_yaml encodes to a YAML text
@@ -1587,27 +1590,27 @@ class SequenceNode(BaseNode, ArrayNode):
 
 # SequenceEntryNode is the sequence entry.
 @dc.dataclass(kw_only=True)
-class SequenceEntryNode(BaseNode):
+class SequenceEntryNode(BaseYamlNode):
     head_comment: ta.Optional['CommentGroupNode']  # head comment.
     line_comment: ta.Optional['CommentGroupNode'] = None  # line comment e.g.) - # comment.
-    start: ta.Optional[tokens.Token]  # entry token.
-    value: Node  # value node.
+    start: ta.Optional[tokens.YamlToken]  # entry token.
+    value: YamlNode  # value node.
 
     # String node to text
     def string(self) -> str:
         return ''  # TODO
 
     # get_token returns token instance
-    def get_token(self) -> ta.Optional[tokens.Token]:
+    def get_token(self) -> ta.Optional[tokens.YamlToken]:
         return self.start
 
     # type returns type of node
-    def type(self) -> NodeType:
-        return NodeType.SEQUENCE_ENTRY
+    def type(self) -> YamlNodeType:
+        return YamlNodeType.SEQUENCE_ENTRY
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        tokens.Token.add_column(self.start, col)
+        tokens.YamlToken.add_column(self.start, col)
 
     # set_comment set line comment.
     def set_comment(self, node: ta.Optional['CommentGroupNode']) -> ta.Optional[YamlError]:
@@ -1628,8 +1631,8 @@ class SequenceEntryNode(BaseNode):
 
 # sequence_entry creates SequenceEntryNode instance.
 def sequence_entry(
-        start: ta.Optional[tokens.Token],
-        value: Node,
+        start: ta.Optional[tokens.YamlToken],
+        value: YamlNode,
         head_comment: ta.Optional['CommentGroupNode'],
 ) -> SequenceEntryNode:
     return SequenceEntryNode(
@@ -1668,10 +1671,10 @@ class SequenceMergeValueNode(MapNode):
 
 # AnchorNode type of anchor node
 @dc.dataclass(kw_only=True)
-class AnchorNode(ScalarNode, BaseNode):
-    start: tokens.Token
-    name: ta.Optional[Node] = None
-    value: ta.Optional[Node] = None
+class AnchorNode(ScalarNode, BaseYamlNode):
+    start: tokens.YamlToken
+    name: ta.Optional[YamlNode] = None
+    value: ta.Optional[YamlNode] = None
 
     def string_without_comment(self) -> str:
         return check.not_none(self.value).string()
@@ -1690,11 +1693,11 @@ class AnchorNode(ScalarNode, BaseNode):
         return read_node(p, self)
 
     # type returns AnchorType
-    def type(self) -> NodeType:
-        return NodeType.ANCHOR
+    def type(self) -> YamlNodeType:
+        return YamlNodeType.ANCHOR
 
     # get_token returns token instance
-    def get_token(self) -> tokens.Token:
+    def get_token(self) -> tokens.YamlToken:
         return self.start
 
     def get_value(self) -> ta.Any:
@@ -1702,7 +1705,7 @@ class AnchorNode(ScalarNode, BaseNode):
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        tokens.Token.add_column(self.start, col)
+        tokens.YamlToken.add_column(self.start, col)
         if self.name is not None:
             self.name.add_column(col)
         if self.value is not None:
@@ -1730,7 +1733,7 @@ class AnchorNode(ScalarNode, BaseNode):
         if self.value is None:
             return False
         key = self.value
-        if not isinstance(key, MapKeyNode):
+        if not isinstance(key, MapKeyYamlNode):
             return False
         return key.is_merge_key()
 
@@ -1740,9 +1743,9 @@ class AnchorNode(ScalarNode, BaseNode):
 
 # AliasNode type of alias node
 @dc.dataclass(kw_only=True)
-class AliasNode(ScalarNode, BaseNode):
-    start: tokens.Token
-    value: ta.Optional[Node] = None
+class AliasNode(ScalarNode, BaseYamlNode):
+    start: tokens.YamlToken
+    value: ta.Optional[YamlNode] = None
 
     def string_without_comment(self) -> str:
         return check.not_none(self.value).string()
@@ -1760,11 +1763,11 @@ class AliasNode(ScalarNode, BaseNode):
         return read_node(p, self)
 
     # type returns AliasType
-    def type(self) -> NodeType:
-        return NodeType.ALIAS
+    def type(self) -> YamlNodeType:
+        return YamlNodeType.ALIAS
 
     # get_token returns token instance
-    def get_token(self) -> tokens.Token:
+    def get_token(self) -> tokens.YamlToken:
         return self.start
 
     def get_value(self) -> ta.Any:
@@ -1772,7 +1775,7 @@ class AliasNode(ScalarNode, BaseNode):
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        tokens.Token.add_column(self.start, col)
+        tokens.YamlToken.add_column(self.start, col)
         if self.value is not None:
             self.value.add_column(col)
 
@@ -1794,24 +1797,24 @@ class AliasNode(ScalarNode, BaseNode):
 
 # DirectiveNode type of directive node
 @dc.dataclass(kw_only=True)
-class DirectiveNode(BaseNode):
+class DirectiveNode(BaseYamlNode):
     # Start is '%' token.
-    start: tokens.Token
+    start: tokens.YamlToken
     # Name is directive name e.g.) "YAML" or "TAG".
-    name: ta.Optional[Node] = None
+    name: ta.Optional[YamlNode] = None
     # Values is directive values e.g.) "1.2" or "!!" and "tag:clarkevans.com,2002:app/".
-    values: ta.List[Node] = dc.field(default_factory=list)
+    values: ta.List[YamlNode] = dc.field(default_factory=list)
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
         return read_node(p, self)
 
     # type returns DirectiveType
-    def type(self) -> NodeType:
-        return NodeType.DIRECTIVE
+    def type(self) -> YamlNodeType:
+        return YamlNodeType.DIRECTIVE
 
     # get_token returns token instance
-    def get_token(self) -> tokens.Token:
+    def get_token(self) -> tokens.YamlToken:
         return self.start
 
     # add_column add column number to child nodes recursively
@@ -1838,10 +1841,10 @@ class DirectiveNode(BaseNode):
 
 # TagNode type of tag node
 @dc.dataclass(kw_only=True)
-class TagNode(ScalarNode, BaseNode, ArrayNode):
+class TagNode(ScalarNode, BaseYamlNode, ArrayYamlNode):
     directive: ta.Optional[DirectiveNode] = None
-    start: tokens.Token
-    value: ta.Optional[Node] = None
+    start: tokens.YamlToken
+    value: ta.Optional[YamlNode] = None
 
     def get_value(self) -> ta.Any:
         if not isinstance(self.value, ScalarNode):
@@ -1856,16 +1859,16 @@ class TagNode(ScalarNode, BaseNode, ArrayNode):
         return read_node(p, self)
 
     # type returns TagType
-    def type(self) -> NodeType:
-        return NodeType.TAG
+    def type(self) -> YamlNodeType:
+        return YamlNodeType.TAG
 
     # get_token returns token instance
-    def get_token(self) -> tokens.Token:
+    def get_token(self) -> tokens.YamlToken:
         return self.start
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        tokens.Token.add_column(self.start, col)
+        tokens.YamlToken.add_column(self.start, col)
         if self.value is not None:
             self.value.add_column(col)
 
@@ -1888,13 +1891,13 @@ class TagNode(ScalarNode, BaseNode, ArrayNode):
         if self.value is None:
             return False
         key = self.value
-        if not isinstance(key, MapKeyNode):
+        if not isinstance(key, MapKeyYamlNode):
             return False
         return key.is_merge_key()
 
     def array_range(self) -> ta.Optional[ArrayNodeIter]:
         arr = self.value
-        if not isinstance(arr, ArrayNode):
+        if not isinstance(arr, ArrayYamlNode):
             return None
         return arr.array_range()
 
@@ -1904,24 +1907,24 @@ class TagNode(ScalarNode, BaseNode, ArrayNode):
 
 # CommentNode type of comment node
 @dc.dataclass(kw_only=True)
-class CommentNode(BaseNode):
-    token: ta.Optional[tokens.Token]
+class CommentNode(BaseYamlNode):
+    token: ta.Optional[tokens.YamlToken]
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
         return read_node(p, self)
 
     # type returns CommentType
-    def type(self) -> NodeType:
-        return NodeType.COMMENT
+    def type(self) -> YamlNodeType:
+        return YamlNodeType.COMMENT
 
     # get_token returns token instance
-    def get_token(self) -> ta.Optional[tokens.Token]:
+    def get_token(self) -> ta.Optional[tokens.YamlToken]:
         return self.token
 
     # add_column add column number to child nodes recursively
     def add_column(self, col: int) -> None:
-        tokens.Token.add_column(self.token, col)
+        tokens.YamlToken.add_column(self.token, col)
 
     # String comment to text
     def string(self) -> str:
@@ -1937,7 +1940,7 @@ class CommentNode(BaseNode):
 
 # CommentGroupNode type of comment node
 @dc.dataclass(kw_only=True)
-class CommentGroupNode(BaseNode):
+class CommentGroupNode(BaseYamlNode):
     comments: ta.List[CommentNode]
 
     # read implements(io.Reader).Read
@@ -1945,11 +1948,11 @@ class CommentGroupNode(BaseNode):
         return read_node(p, self)
 
     # type returns CommentType
-    def type(self) -> NodeType:
-        return NodeType.COMMENT
+    def type(self) -> YamlNodeType:
+        return YamlNodeType.COMMENT
 
     # get_token returns token instance
-    def get_token(self) -> ta.Optional[tokens.Token]:
+    def get_token(self) -> ta.Optional[tokens.YamlToken]:
         if len(self.comments) > 0:
             return self.comments[0].token
         return None
@@ -1989,7 +1992,7 @@ class CommentGroupNode(BaseNode):
 # followed by a call of w.visit(nil).
 class Visitor(Abstract):
     @abc.abstractmethod
-    def visit(self, node: Node) -> ta.Optional['Visitor']:
+    def visit(self, node: YamlNode) -> ta.Optional['Visitor']:
         raise NotImplementedError
 
 
@@ -1997,7 +2000,7 @@ class Visitor(Abstract):
 # If the visitor w returned by v.visit(node) is not nil,
 # walk is invoked recursively with visitor w for each of the non-nil children of node,
 # followed by a call of w.visit(nil).
-def walk(v: Visitor, node: Node) -> None:
+def walk(v: Visitor, node: YamlNode) -> None:
     if (v_ := v.visit(node)) is None:
         return
     v = v_
@@ -2057,7 +2060,7 @@ def walk(v: Visitor, node: Node) -> None:
         walk(v, check.not_none(n.value))
 
 
-def walk_comment(v: Visitor, base: ta.Optional[BaseNode]) -> None:
+def walk_comment(v: Visitor, base: ta.Optional[BaseYamlNode]) -> None:
     if base is None:
         return
     if base.comment is None:
@@ -2070,10 +2073,10 @@ def walk_comment(v: Visitor, base: ta.Optional[BaseNode]) -> None:
 
 @dc.dataclass(kw_only=True)
 class FilterWalker(Visitor):
-    typ: NodeType
-    results: ta.List[Node] = dc.field(default_factory=list)
+    typ: YamlNodeType
+    results: ta.List[YamlNode] = dc.field(default_factory=list)
 
-    def visit(self, n: Node) -> Visitor:
+    def visit(self, n: YamlNode) -> Visitor:
         if self.typ == n.type():
             self.results.append(n)
         return self
@@ -2084,9 +2087,9 @@ class FilterWalker(Visitor):
 
 @dc.dataclass(kw_only=True)
 class ParentFinder:
-    target: Node
+    target: YamlNode
 
-    def walk(self, parent: Node, node: ta.Optional[Node]) -> ta.Optional[Node]:
+    def walk(self, parent: YamlNode, node: ta.Optional[YamlNode]) -> ta.Optional[YamlNode]:
         if self.target == node:
             return parent
 
@@ -2145,7 +2148,7 @@ class ParentFinder:
 
 
 # Parent get parent node from child node.
-def parent(root: Node, child: Node) -> ta.Optional[Node]:
+def parent(root: YamlNode, child: YamlNode) -> ta.Optional[YamlNode]:
     finder = ParentFinder(target=child)
     return finder.walk(root, root)
 
@@ -2154,15 +2157,15 @@ def parent(root: Node, child: Node) -> ta.Optional[Node]:
 
 
 # Filter returns a list of nodes that match the given type.
-def filter_(typ: NodeType, node: Node) -> ta.List[Node]:
+def filter_(typ: YamlNodeType, node: YamlNode) -> ta.List[YamlNode]:
     walker = FilterWalker(typ=typ)
     walk(walker, node)
     return walker.results
 
 
 # FilterFile returns a list of nodes that match the given type.
-def filter_file(typ: NodeType, file: File) -> ta.List[Node]:
-    results: ta.List[Node] = []
+def filter_file(typ: YamlNodeType, file: YamlFile) -> ta.List[YamlNode]:
+    results: ta.List[YamlNode] = []
     for doc in file.docs:
         walker = FilterWalker(typ=typ)
         walk(walker, doc)
@@ -2175,8 +2178,8 @@ def filter_file(typ: NodeType, file: File) -> ta.List[Node]:
 
 @dc.dataclass(kw_only=True)
 class InvalidMergeTypeYamlError(YamlError):
-    dst: Node
-    src: Node
+    dst: YamlNode
+    src: YamlNode
 
     @property
     def message(self) -> str:
@@ -2184,23 +2187,23 @@ class InvalidMergeTypeYamlError(YamlError):
 
 
 # Merge merge document, map, sequence node.
-def merge(dst: Node, src: Node) -> ta.Optional[YamlError]:
+def merge(dst: YamlNode, src: YamlNode) -> ta.Optional[YamlError]:
     if isinstance(src, DocumentNode):
         doc: DocumentNode = src
         src = check.not_none(doc.body)
 
     err = InvalidMergeTypeYamlError(dst=dst, src=src)
-    if dst.type() == NodeType.DOCUMENT:
+    if dst.type() == YamlNodeType.DOCUMENT:
         node0: DocumentNode = check.isinstance(dst, DocumentNode)
         return merge(check.not_none(node0.body), src)
-    if dst.type() == NodeType.MAPPING:
+    if dst.type() == YamlNodeType.MAPPING:
         node1: MappingNode = check.isinstance(dst, MappingNode)
         if not isinstance(src, MappingNode):
             return err
         target0: MappingNode = src
         node1.merge(target0)
         return None
-    if dst.type() == NodeType.SEQUENCE:
+    if dst.type() == YamlNodeType.SEQUENCE:
         node2: SequenceNode = check.isinstance(dst, SequenceNode)
         if not isinstance(src, SequenceNode):
             return err
