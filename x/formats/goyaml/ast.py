@@ -76,7 +76,7 @@ class YamlNodeType(enum.Enum):
 
 
 # String node type identifier to YAML Structure name based on https://yaml.org/spec/1.2/spec.html
-NODE_TYPE_YAML_NAMES: ta.Mapping[YamlNodeType, str] = {
+YAML_NODE_TYPE_YAML_NAMES: ta.Mapping[YamlNodeType, str] = {
     YamlNodeType.UNKNOWN: 'unknown',
     YamlNodeType.DOCUMENT: 'document',
     YamlNodeType.NULL: 'null',
