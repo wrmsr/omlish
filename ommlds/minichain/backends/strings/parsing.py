@@ -56,7 +56,7 @@ _REPO_MODEL_PAT = re.compile(
 def parse_backend_string(s: str) -> ParsedBackendString:
     backend: str | None
     if ':' in s:
-        backend, s = s.split(':')
+        backend, _, s = s.partition(':')
     else:
         backend = None
 
