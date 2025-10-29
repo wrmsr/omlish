@@ -6,6 +6,7 @@ import io
 import typing as ta
 import unicodedata
 
+from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 
 from . import tokens
@@ -101,16 +102,16 @@ NODE_TYPE_YAML_NAMES: ta.Mapping[NodeType, str] = {
 
 
 # Node type of node
-class Node(abc.ABC):
+class Node(Abstract):
     # io.Reader
 
-    # String node to text
-    def __str__(self) -> str:
+    def __str__(self) -> ta.NoReturn:
         raise TypeError
 
+    @abc.abstractmethod
     def string(self) -> str:
         # FIXME: migrate off - ensure all sprintfy things explicitly call .string()
-        return self.__str__()
+        raise NotImplementedError
 
     # get_token returns token instance
     @abc.abstractmethod
@@ -169,7 +170,7 @@ class Node(abc.ABC):
 
 
 # MapKeyNode type for map key node
-class MapKeyNode(Node, abc.ABC):
+class MapKeyNode(Node, Abstract):
     @abc.abstractmethod
     def is_merge_key(self) -> bool:
         raise NotImplementedError
@@ -181,7 +182,7 @@ class MapKeyNode(Node, abc.ABC):
 
 
 # ScalarNode type for scalar node
-class ScalarNode(MapKeyNode, abc.ABC):
+class ScalarNode(MapKeyNode, Abstract):
     @abc.abstractmethod
     def get_value(self) -> ta.Any:
         raise NotImplementedError
@@ -191,7 +192,7 @@ class ScalarNode(MapKeyNode, abc.ABC):
 
 
 @dc.dataclass(kw_only=True)
-class BaseNode(Node, abc.ABC):
+class BaseNode(Node, Abstract):
     path: str = ''
     comment: ta.Optional['CommentGroupNode'] = None
     cur_read: int = 0
@@ -492,7 +493,7 @@ class File:
         return EofYamlError()
 
     # string all documents to text
-    def __str__(self) -> str:
+    def string(self) -> str:
         docs: ta.List[str] = []
         for doc in self.docs:
             docs.append(doc.string())
@@ -530,7 +531,7 @@ class DocumentNode(BaseNode):
             self.body.add_column(col)
 
     # string document to text
-    def __str__(self) -> str:
+    def string(self) -> str:
         doc: ta.List[str] = []
         if self.start is not None:
             doc.append(self.start.value)
@@ -574,7 +575,7 @@ class NullNode(ScalarNode, BaseNode):
         return None
 
     # String returns `null` text
-    def __str__(self) -> str:
+    def string(self) -> str:
         if self.token.type == tokens.Type.IMPLICIT_NULL:
             if self.comment is not None:
                 return self.comment.string()
@@ -626,7 +627,7 @@ class IntegerNode(ScalarNode, BaseNode):
         return self.value
 
     # String int64 to text
-    def __str__(self) -> str:
+    def string(self) -> str:
         if self.comment is not None:
             return add_comment_string(self.token.value, self.comment)
         return self.string_without_comment()
@@ -674,7 +675,7 @@ class FloatNode(ScalarNode, BaseNode):
         return self.value
 
     # String float64 to text
-    def __str__(self) -> str:
+    def string(self) -> str:
         if self.comment is not None:
             return add_comment_string(self.token.value, self.comment)
         return self.string_without_comment()
@@ -786,7 +787,7 @@ class StringNode(ScalarNode, BaseNode):
         return False
 
     # string string value to text with quote or literal header if required
-    def __str__(self) -> str:
+    def string(self) -> str:
         if self.token.type == tokens.Type.SINGLE_QUOTE:
             quoted = escape_single_quote(self.value)
             if self.comment is not None:
@@ -891,7 +892,7 @@ class LiteralNode(ScalarNode, BaseNode):
         return self.string()
 
     # String literal to text
-    def __str__(self) -> str:
+    def string(self) -> str:
         origin = check.not_none(check.not_none(self.value).get_token()).origin
         lit = origin.rstrip(' ').rstrip('\n')
         if self.comment is not None:
@@ -935,7 +936,7 @@ class MergeKeyNode(ScalarNode, BaseNode):
         return self.token.value
 
     # String returns '<<' value
-    def __str__(self) -> str:
+    def string(self) -> str:
         return self.string_without_comment()
 
     def string_without_comment(self) -> str:
@@ -984,7 +985,7 @@ class BoolNode(ScalarNode, BaseNode):
         return self.value
 
     # String boolean to text
-    def __str__(self) -> str:
+    def string(self) -> str:
         if self.comment is not None:
             return add_comment_string(self.token.value, self.comment)
         return self.string_without_comment()
@@ -1031,7 +1032,7 @@ class InfinityNode(ScalarNode, BaseNode):
         return self.value
 
     # String infinity to text
-    def __str__(self) -> str:
+    def string(self) -> str:
         if self.comment is not None:
             return add_comment_string(self.token.value, self.comment)
         return self.string_without_comment()
@@ -1077,7 +1078,7 @@ class NanNode(ScalarNode, BaseNode):
         return float('nan')
 
     # String returns .nan
-    def __str__(self) -> str:
+    def string(self) -> str:
         if self.comment is not None:
             return add_comment_string(self.token.value, self.comment)
         return self.string_without_comment()
@@ -1098,7 +1099,7 @@ class NanNode(ScalarNode, BaseNode):
 
 
 # MapNode interface of MappingValueNode / MappingNode
-class MapNode(abc.ABC):
+class MapNode(Abstract):
     @abc.abstractmethod
     def map_range(self) -> 'MapNodeIter':
         raise NotImplementedError
@@ -1217,7 +1218,7 @@ class MappingNode(BaseNode):
         return map_text
 
     # String mapping values to text
-    def __str__(self) -> str:
+    def string(self) -> str:
         if len(self.values) == 0:
             if self.comment is not None:
                 return add_comment_string('{}', self.comment)
@@ -1269,7 +1270,7 @@ class MappingKeyNode(MapKeyNode, BaseNode):
             self.value.add_column(col)
 
     # String tag to text
-    def __str__(self) -> str:
+    def string(self) -> str:
         return self.string_without_comment()
 
     def string_without_comment(self) -> str:
@@ -1340,7 +1341,7 @@ class MappingValueNode(BaseNode):
             self.value.set_is_flow_style(is_flow)
 
     # String mapping value to text
-    def __str__(self) -> str:
+    def string(self) -> str:
         text: str
         if self.comment is not None:
             text = f'{self.comment.string_with_space(check.not_none(self.key.get_token()).position.column - 1)}\n{self.to_string()}'  # noqa
@@ -1413,7 +1414,7 @@ class MappingValueNode(BaseNode):
 
 
 # ArrayNode interface of SequenceNode
-class ArrayNode(Node, abc.ABC):
+class ArrayNode(Node, Abstract):
     @abc.abstractmethod
     def array_range(self) -> ta.Optional['ArrayNodeIter']:
         raise NotImplementedError
@@ -1564,7 +1565,7 @@ class SequenceNode(BaseNode, ArrayNode):
         return '\n'.join(values)
 
     # String sequence to text
-    def __str__(self) -> str:
+    def string(self) -> str:
         if self.is_flow_style or len(self.values) == 0:
             return self.flow_style_string()
         return self.block_style_string()
@@ -1593,7 +1594,7 @@ class SequenceEntryNode(BaseNode):
     value: Node  # value node.
 
     # String node to text
-    def __str__(self) -> str:
+    def string(self) -> str:
         return ''  # TODO
 
     # get_token returns token instance
@@ -1708,7 +1709,7 @@ class AnchorNode(ScalarNode, BaseNode):
             self.value.add_column(col)
 
     # String anchor to text
-    def __str__(self) -> str:
+    def string(self) -> str:
         anchor = '&' + check.not_none(self.name).string()
         value = check.not_none(self.value).string()
         if isinstance(self.value, SequenceNode) and not self.value.is_flow_style:
@@ -1776,7 +1777,7 @@ class AliasNode(ScalarNode, BaseNode):
             self.value.add_column(col)
 
     # String alias to text
-    def __str__(self) -> str:
+    def string(self) -> str:
         return f'*{check.not_none(self.value).string()}'
 
     # marshal_yaml encodes to a YAML text
@@ -1821,7 +1822,7 @@ class DirectiveNode(BaseNode):
             value.add_column(col)
 
     # String directive to text
-    def __str__(self) -> str:
+    def string(self) -> str:
         values: ta.List[str] = []
         for val in self.values:
             values.append(val.string())
@@ -1869,7 +1870,7 @@ class TagNode(ScalarNode, BaseNode, ArrayNode):
             self.value.add_column(col)
 
     # String tag to text
-    def __str__(self) -> str:
+    def string(self) -> str:
         value = check.not_none(self.value).string()
         if isinstance(self.value, SequenceNode) and not self.value.is_flow_style:
             return f'{self.start.value}\n{value}'
@@ -1923,7 +1924,7 @@ class CommentNode(BaseNode):
         tokens.Token.add_column(self.token, col)
 
     # String comment to text
-    def __str__(self) -> str:
+    def string(self) -> str:
         return f'#{check.not_none(self.token).value}'
 
     # marshal_yaml encodes to a YAML text
@@ -1959,7 +1960,7 @@ class CommentGroupNode(BaseNode):
             comment.add_column(col)
 
     # String comment to text
-    def __str__(self) -> str:
+    def string(self) -> str:
         values: ta.List[str] = []
         for comment in self.comments:
             values.append(comment.string())
@@ -1986,7 +1987,7 @@ class CommentGroupNode(BaseNode):
 # Visitor has Visit method that is invokded for each node encountered by walk.
 # If the result visitor w is not nil, walk visits each of the children of node with the visitor w,
 # followed by a call of w.visit(nil).
-class Visitor(abc.ABC):
+class Visitor(Abstract):
     @abc.abstractmethod
     def visit(self, node: Node) -> ta.Optional['Visitor']:
         raise NotImplementedError

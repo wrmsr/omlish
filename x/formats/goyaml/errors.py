@@ -3,6 +3,8 @@ import abc
 import dataclasses as dc
 import typing as ta
 
+from omlish.lite.abstract import Abstract
+
 
 T = ta.TypeVar('T')
 
@@ -12,7 +14,7 @@ YamlErrorOr = ta.Union['YamlError', T]  # ta.TypeAlias
 ##
 
 
-class YamlError(abc.ABC):
+class YamlError(Abstract):
     @property
     @abc.abstractmethod
     def message(self) -> str:
