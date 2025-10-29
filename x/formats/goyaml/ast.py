@@ -8,6 +8,7 @@ import unicodedata
 
 from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
+from omlish.lite.dataclasses import dataclass_field_required
 
 from . import tokens
 from .errors import EofYamlError
@@ -195,7 +196,7 @@ class ScalarYamlNode(MapKeyYamlNode, Abstract):
 ##
 
 
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class BaseYamlNode(YamlNode, Abstract):
     path: str = ''
     comment: ta.Optional['CommentGroupYamlNode'] = None
@@ -482,10 +483,10 @@ def tag(tk: YamlToken) -> 'TagYamlNode':
 
 
 # File contains all documents in YAML file
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class YamlFile:
     name: str = ''
-    docs: ta.List['DocumentYamlNode'] = dc.field(default_factory=list)
+    docs: ta.List['DocumentYamlNode'] = dc.field(default_factory=dataclass_field_required('docs'))
 
     # read implements (io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
@@ -511,11 +512,11 @@ class YamlFile:
 
 
 # DocumentNode type of Document
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class DocumentYamlNode(BaseYamlNode):
-    start: ta.Optional[YamlToken] = None  # position of DocumentHeader ( `---` )
+    start: ta.Optional[YamlToken] = dc.field(default_factory=dataclass_field_required('start'))  # position of DocumentHeader ( `---` )  # noqa
     end: ta.Optional[YamlToken] = None  # position of DocumentEnd ( `...` )
-    body: ta.Optional[YamlNode] = None
+    body: ta.Optional[YamlNode] = dc.field(default_factory=dataclass_field_required('body'))
 
     # read implements (io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
@@ -554,9 +555,9 @@ class DocumentYamlNode(BaseYamlNode):
 
 
 # NullNode type of null node
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class NullYamlNode(ScalarYamlNode, BaseYamlNode):
-    token: YamlToken
+    token: YamlToken = dc.field(default_factory=dataclass_field_required('token'))
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:

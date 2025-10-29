@@ -6,6 +6,8 @@ import enum
 import functools
 import typing as ta
 
+from omlish.lite.dataclasses import dataclass_field_required
+
 from .errors import YamlError
 from .errors import YamlErrorOr
 from .errors import yaml_error
@@ -605,16 +607,6 @@ class YamlPosition:
     def __str__(self) -> str:
         return f'[level:{self.indent_level:d},line:{self.line:d},column:{self.column:d},offset:{self.offset:d}]'
 
-    @classmethod
-    def zero(cls) -> 'YamlPosition':
-        return YamlPosition(
-            line=0,
-            column=0,
-            offset=0,
-            indent_num=0,
-            indent_level=0,
-        )
-
 
 # Token type for token
 @dc.dataclass()
@@ -633,7 +625,7 @@ class YamlToken:
     # Error keeps error message for InvalidToken.
     error: ta.Optional[YamlError] = None
     # Position is a token position.
-    position: YamlPosition = dc.field(default_factory=YamlPosition.zero)
+    position: YamlPosition = dc.field(default_factory=dataclass_field_required('position'))
     # Next is a next token reference.
     next: ta.Optional['YamlToken'] = dc.field(default=None, repr=False)
     # Prev is a previous token reference.

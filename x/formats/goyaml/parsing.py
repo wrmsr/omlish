@@ -5,6 +5,7 @@ import enum
 import typing as ta
 
 from omlish.lite.check import check
+from omlish.lite.dataclasses import dataclass_field_required
 
 from . import ast
 from .errors import YamlError
@@ -25,7 +26,7 @@ from .tokens import new_yaml_token
 @dc.dataclass()
 class YamlParsingContext:
     token_ref: ta.Optional['YamlParseTokenRef'] = None
-    path: str = ''
+    path: str = dc.field(default_factory=dataclass_field_required('path'))
     is_flow: bool = False
 
     def current_token(self) -> ta.Optional['YamlParseToken']:
@@ -279,7 +280,7 @@ class YamlParseToken:
 @dc.dataclass()
 class YamlParseTokenGroup:
     type: YamlParseTokenGroupType = YamlParseTokenGroupType.NONE
-    tokens: ta.List[YamlParseToken] = dc.field(default_factory=list)
+    tokens: ta.List[YamlParseToken] = dc.field(default_factory=dataclass_field_required('tokens'))
 
     def first(self) -> ta.Optional[YamlParseToken]:
         if len(self.tokens) == 0:

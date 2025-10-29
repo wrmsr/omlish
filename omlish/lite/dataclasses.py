@@ -191,3 +191,17 @@ def dataclass_kw_only_init():
         return cls
 
     return inner
+
+
+##
+
+
+@dc.dataclass()
+class DataclassFieldRequiredError(Exception):
+    name: str
+
+
+def dataclass_field_required(name: str) -> ta.Callable[[], ta.Any]:
+    def inner() -> ta.NoReturn:
+        raise DataclassFieldRequiredError(name)
+    return inner
