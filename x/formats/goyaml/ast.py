@@ -606,10 +606,10 @@ class NullYamlNode(ScalarYamlNode, BaseYamlNode):
 
 
 # IntegerNode type of integer node
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class IntegerYamlNode(ScalarYamlNode, BaseYamlNode):
-    token: YamlToken
-    value: ta.Any  # int64 or uint64 value
+    token: YamlToken = dc.field(default_factory=dataclass_field_required('token'))
+    value: ta.Any = dc.field(default_factory=dataclass_field_required('value'))  # int64 or uint64 value
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
@@ -653,11 +653,11 @@ class IntegerYamlNode(ScalarYamlNode, BaseYamlNode):
 
 
 # FloatNode type of float node
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class FloatYamlNode(ScalarYamlNode, BaseYamlNode):
-    token: YamlToken
+    token: YamlToken = dc.field(default_factory=dataclass_field_required('token'))
     precision: int = 0
-    value: float
+    value: float = dc.field(default_factory=dataclass_field_required('value'))
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
@@ -762,10 +762,10 @@ def strconv_quote(s: str) -> str:
 
 
 # StringNode type of string node
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class StringYamlNode(ScalarYamlNode, BaseYamlNode):
-    token: YamlToken
-    value: str
+    token: YamlToken = dc.field(default_factory=dataclass_field_required('token'))
+    value: str = dc.field(default_factory=dataclass_field_required('value'))
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
@@ -869,9 +869,9 @@ def escape_single_quote(s: str) -> str:
 
 
 # LiteralNode type of literal node
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class LiteralYamlNode(ScalarYamlNode, BaseYamlNode):
-    start: YamlToken
+    start: YamlToken = dc.field(default_factory=dataclass_field_required('start'))
     value: ta.Optional['StringYamlNode'] = None
 
     # read implements(io.Reader).Read
@@ -920,9 +920,9 @@ class LiteralYamlNode(ScalarYamlNode, BaseYamlNode):
 
 
 # MergeKeyNode type of merge key node
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class MergeKeyYamlNode(ScalarYamlNode, BaseYamlNode):
-    token: YamlToken
+    token: YamlToken = dc.field(default_factory=dataclass_field_required('token'))
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
@@ -964,10 +964,10 @@ class MergeKeyYamlNode(ScalarYamlNode, BaseYamlNode):
 
 
 # BoolNode type of boolean node
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class BoolYamlNode(ScalarYamlNode, BaseYamlNode):
-    token: YamlToken
-    value: bool
+    token: YamlToken = dc.field(default_factory=dataclass_field_required('token'))
+    value: bool = dc.field(default_factory=dataclass_field_required('value'))
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
@@ -1011,10 +1011,10 @@ class BoolYamlNode(ScalarYamlNode, BaseYamlNode):
 
 
 # InfinityNode type of infinity node
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class InfinityYamlNode(ScalarYamlNode, BaseYamlNode):
-    token: YamlToken
-    value: float
+    token: YamlToken = dc.field(default_factory=dataclass_field_required('token'))
+    value: float = dc.field(default_factory=dataclass_field_required('value'))
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
@@ -1058,9 +1058,9 @@ class InfinityYamlNode(ScalarYamlNode, BaseYamlNode):
 
 
 # NanNode type of nan node
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class NanYamlNode(ScalarYamlNode, BaseYamlNode):
-    token: YamlToken
+    token: YamlToken = dc.field(default_factory=dataclass_field_required('token'))
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
@@ -1115,7 +1115,7 @@ START_RANGE_INDEX = -1
 
 
 # MapNodeIter is an iterator for ranging over a MapNode
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class MapYamlNodeIter:
     values: ta.List['MappingValueYamlNode']
     idx: int
@@ -1144,12 +1144,12 @@ class MapYamlNodeIter:
 
 
 # MappingNode type of mapping node
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class MappingYamlNode(BaseYamlNode):
-    start: YamlToken
+    start: YamlToken = dc.field(default_factory=dataclass_field_required('start'))
     end: ta.Optional[YamlToken] = None
-    is_flow_style: bool
-    values: ta.List['MappingValueYamlNode']
+    is_flow_style: bool = dc.field(default_factory=dataclass_field_required('is_flow_style'))
+    values: ta.List['MappingValueYamlNode'] = dc.field(default_factory=dataclass_field_required('values'))
     foot_comment: ta.Optional['CommentGroupYamlNode'] = None
 
     def start_pos(self) -> YamlPosition:
@@ -1251,9 +1251,9 @@ class MappingYamlNode(BaseYamlNode):
 
 
 # MappingKeyNode type of tag node
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class MappingKeyYamlNode(MapKeyYamlNode, BaseYamlNode):
-    start: YamlToken
+    start: YamlToken = dc.field(default_factory=dataclass_field_required('start'))
     value: ta.Optional[YamlNode] = None
 
     # read implements(io.Reader).Read
@@ -1299,12 +1299,12 @@ class MappingKeyYamlNode(MapKeyYamlNode, BaseYamlNode):
 
 
 # MappingValueNode type of mapping value
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class MappingValueYamlNode(BaseYamlNode):
-    start: YamlToken  # delimiter token ':'.
+    start: YamlToken = dc.field(default_factory=dataclass_field_required('start'))  # delimiter token ':'.
     collect_entry: ta.Optional[YamlToken] = None  # collect entry token ','.
-    key: MapKeyYamlNode
-    value: YamlNode
+    key: MapKeyYamlNode = dc.field(default_factory=dataclass_field_required('key'))
+    value: YamlNode = dc.field(default_factory=dataclass_field_required('value'))
     foot_comment: ta.Optional['CommentGroupYamlNode'] = None
     is_flow_style: bool = False
 
@@ -1426,7 +1426,7 @@ class ArrayYamlNode(YamlNode, Abstract):
 
 
 # ArrayNodeIter is an iterator for ranging over a ArrayNode
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class ArrayYamlNodeIter:
     values: ta.List[YamlNode]
     idx: int
@@ -1451,12 +1451,12 @@ class ArrayYamlNodeIter:
 
 
 # SequenceNode type of sequence node
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class SequenceYamlNode(BaseYamlNode, ArrayYamlNode):
-    start: YamlToken
+    start: YamlToken = dc.field(default_factory=dataclass_field_required('start'))
     end: ta.Optional[YamlToken] = None
-    is_flow_style: bool
-    values: ta.List[ta.Optional[YamlNode]]
+    is_flow_style: bool = dc.field(default_factory=dataclass_field_required('is_flow_style'))
+    values: ta.List[ta.Optional[YamlNode]] = dc.field(default_factory=dataclass_field_required('values'))
     value_head_comments: ta.List[ta.Optional['CommentGroupYamlNode']] = dc.field(default_factory=list)
     entries: ta.List['SequenceEntryYamlNode'] = dc.field(default_factory=list)
     foot_comment: ta.Optional['CommentGroupYamlNode'] = None
@@ -1594,12 +1594,12 @@ class SequenceYamlNode(BaseYamlNode, ArrayYamlNode):
 
 
 # SequenceEntryNode is the sequence entry.
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class SequenceEntryYamlNode(BaseYamlNode):
-    head_comment: ta.Optional['CommentGroupYamlNode']  # head comment.
+    head_comment: ta.Optional['CommentGroupYamlNode'] = dc.field(default_factory=dataclass_field_required('head_commend'))  # head comment.  # noqa
     line_comment: ta.Optional['CommentGroupYamlNode'] = None  # line comment e.g.) - # comment.
-    start: ta.Optional[YamlToken]  # entry token.
-    value: YamlNode  # value node.
+    start: ta.Optional[YamlToken] = dc.field(default_factory=dataclass_field_required('start'))  # entry token.
+    value: YamlNode = dc.field(default_factory=dataclass_field_required('value'))  # value node.
 
     # String node to text
     def string(self) -> str:
@@ -1658,9 +1658,9 @@ def sequence_merge_value(*values: MapYamlNode) -> 'SequenceMergeValueYamlNode':
 
 
 # SequenceMergeValueNode is used to convert the Sequence node specified for the merge key into a MapNode format.
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class SequenceMergeValueYamlNode(MapYamlNode):
-    values: ta.List[MapYamlNode]
+    values: ta.List[MapYamlNode] = dc.field(default_factory=dataclass_field_required('values'))
 
     # map_range returns MapNodeIter instance.
     def map_range(self) -> MapYamlNodeIter:
@@ -1675,9 +1675,9 @@ class SequenceMergeValueYamlNode(MapYamlNode):
 
 
 # AnchorNode type of anchor node
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class AnchorYamlNode(ScalarYamlNode, BaseYamlNode):
-    start: YamlToken
+    start: YamlToken = dc.field(default_factory=dataclass_field_required('start'))
     name: ta.Optional[YamlNode] = None
     value: ta.Optional[YamlNode] = None
 
@@ -1747,9 +1747,9 @@ class AnchorYamlNode(ScalarYamlNode, BaseYamlNode):
 
 
 # AliasNode type of alias node
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class AliasYamlNode(ScalarYamlNode, BaseYamlNode):
-    start: YamlToken
+    start: YamlToken = dc.field(default_factory=dataclass_field_required('start'))
     value: ta.Optional[YamlNode] = None
 
     def string_without_comment(self) -> str:
@@ -1801,10 +1801,10 @@ class AliasYamlNode(ScalarYamlNode, BaseYamlNode):
 
 
 # DirectiveNode type of directive node
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class DirectiveYamlNode(BaseYamlNode):
     # Start is '%' token.
-    start: YamlToken
+    start: YamlToken = dc.field(default_factory=dataclass_field_required('start'))
     # Name is directive name e.g.) "YAML" or "TAG".
     name: ta.Optional[YamlNode] = None
     # Values is directive values e.g.) "1.2" or "!!" and "tag:clarkevans.com,2002:app/".
@@ -1845,10 +1845,10 @@ class DirectiveYamlNode(BaseYamlNode):
 
 
 # TagNode type of tag node
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class TagYamlNode(ScalarYamlNode, BaseYamlNode, ArrayYamlNode):
     directive: ta.Optional[DirectiveYamlNode] = None
-    start: YamlToken
+    start: YamlToken = dc.field(default_factory=dataclass_field_required('start'))
     value: ta.Optional[YamlNode] = None
 
     def get_value(self) -> ta.Any:
@@ -1911,9 +1911,9 @@ class TagYamlNode(ScalarYamlNode, BaseYamlNode, ArrayYamlNode):
 
 
 # CommentNode type of comment node
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class CommentYamlNode(BaseYamlNode):
-    token: ta.Optional[YamlToken]
+    token: ta.Optional[YamlToken] = dc.field(default_factory=dataclass_field_required('token'))
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
@@ -1944,9 +1944,9 @@ class CommentYamlNode(BaseYamlNode):
 
 
 # CommentGroupNode type of comment node
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class CommentGroupYamlNode(BaseYamlNode):
-    comments: ta.List[CommentYamlNode]
+    comments: ta.List[CommentYamlNode] = dc.field(default_factory=dataclass_field_required('comments'))
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
@@ -2076,9 +2076,9 @@ def walk_comment(v: Visitor, base: ta.Optional[BaseYamlNode]) -> None:
 #
 
 
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class FilterWalker(Visitor):
-    typ: YamlNodeType
+    typ: YamlNodeType = dc.field(default_factory=dataclass_field_required('typ'))
     results: ta.List[YamlNode] = dc.field(default_factory=list)
 
     def visit(self, n: YamlNode) -> Visitor:
@@ -2090,7 +2090,7 @@ class FilterWalker(Visitor):
 #
 
 
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class ParentFinder:
     target: YamlNode
 
@@ -2181,7 +2181,7 @@ def filter_file(typ: YamlNodeType, file: YamlFile) -> ta.List[YamlNode]:
 #
 
 
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class InvalidMergeTypeYamlError(YamlError):
     dst: YamlNode
     src: YamlNode
