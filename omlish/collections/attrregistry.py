@@ -1,3 +1,7 @@
+"""
+TODO:
+ - lock?
+"""
 import dataclasses as dc
 import typing as ta
 import weakref
@@ -199,3 +203,8 @@ class AttrRegistryCache(ta.Generic[K, V, T]):
         out = self._prepare(instance_cls, collected)
         self._cache[weakref.ref(instance_cls, self._cache_remove)] = out
         return out
+
+
+class SimpleAttrRegistryCache(AttrRegistryCache[K, V, dict[str, tuple[K, V]]], ta.Generic[K, V]):
+    def __init__(self, registry: AttrRegistry[K, V]) -> None:
+        super().__init__(registry, lambda _, dct: dct)

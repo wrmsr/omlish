@@ -31,3 +31,10 @@ def only_match_rules(m: Match) -> Match:
         else:
             return itertools.chain.from_iterable(map(rec, c.children))
     return m.flat_map_children(rec)
+
+
+##
+
+
+def fix_grammar_ws(s: str) -> str:
+    return s.rstrip().replace('\r', '').replace('\n', '\r\n') + '\r\n'

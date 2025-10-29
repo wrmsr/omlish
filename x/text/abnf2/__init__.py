@@ -13,15 +13,16 @@ from .base import (  # noqa
 
 from .core import (  # noqa
     CORE_RULES,
-
-    GRAMMAR_RULES,
-
-    GRAMMAR_GRAMMAR,
-    fix_grammar_ws,
 )
 
 from .errors import (  # noqa
     AbnfError,
+)
+
+from .meta import (  # noqa
+    META_GRAMMAR_RULES,
+    META_GRAMMAR,
+
 )
 
 from .parsers import (  # noqa
@@ -48,4 +49,6 @@ from .parsers import (  # noqa
 from .utils import (  # noqa
     strip_insignificant_match_rules,
     only_match_rules,
+
+    fix_grammar_ws,
 )

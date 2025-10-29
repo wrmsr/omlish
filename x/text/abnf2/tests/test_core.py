@@ -1,17 +1,18 @@
-import functools
 import itertools
 import textwrap
-import typing as ta
 
 import pytest
 
 from omlish import check
-from omlish import dataclasses as dc
 
 from .. import base as ba
 from .. import core as co
 from .. import parsers as pa
-from .. import utils as ut
+from ..utils import only_match_rules
+from ..utils import strip_insignificant_match_rules
+from ..meta import META_GRAMMAR
+from ..utils import fix_grammar_ws
+from .meta import MetaGrammarRuleVisitor
 
 
 CORE_GRAMMAR = ba.Grammar(*co.CORE_RULES)
@@ -21,16 +22,6 @@ CORE_GRAMMAR = ba.Grammar(*co.CORE_RULES)
 def test_alpha(src):
     m = check.not_none(CORE_GRAMMAR.parse(src, 'ALPHA'))
     assert src[m.start:m.end] == src
-
-
-@dc.dataclass(frozen=True)
-class RuleName:
-    s: str
-
-
-@dc.dataclass(frozen=True)
-class QuotedString:
-    s: str
 
 
 @pytest.mark.parametrize('src', [
@@ -44,146 +35,7 @@ def test_lwsp(src):
     # assert src[m.start:m.end] == src
 
 
-def test_core() -> None:
-    @functools.singledispatch
-    def visit_parser(p: ba.Parser, m: ba.Match) -> ta.Any:
-        raise TypeError(p)
-
-    @visit_parser.register
-    def visit_rule_ref_parser(p: pa.RuleRef, m: ba.Match) -> ta.Any:
-        # print(p.name)
-        # for c in m.children:
-        #     visit_match(c)
-        return rule_fns[p.name](m)
-
-    @visit_parser.register
-    def visit_repeat_parser(p: pa.Repeat, m: ba.Match) -> ta.Any:
-        return [visit_match(cm) for cm in m.children]
-
-    #
-
-    rule_fns = {}
-
-    def add_rule_fn(*names):
-        def inner(fn):
-            for n in names:
-                check.not_in(n, rule_fns)
-                rule_fns[n] = fn
-            return fn
-        return inner
-
-    @add_rule_fn('rule')
-    def visit_rule_rule(m: ba.Match) -> ta.Any:
-        rn_m, _, el_m = m.children
-        rn = check.isinstance(visit_match(rn_m), RuleName).s
-        el = visit_match(el_m)
-        return ba.Rule(rn, el)
-
-    @add_rule_fn('rulename')
-    def visit_rulename_rule(m: ba.Match) -> ta.Any:
-        return RuleName(source[m.start:m.end])
-
-    @add_rule_fn('elements')
-    def visit_elements_rule(m: ba.Match) -> ta.Any:
-        return visit_match(check.single(m.children))
-
-    @add_rule_fn('alternation')
-    def visit_alternation_rule(m: ba.Match) -> ta.Any:
-        if len(m.children) == 1:
-            return visit_match(m.children[0])
-        else:
-            return pa.either(*map(visit_match, m.children))
-
-    @add_rule_fn('concatenation')
-    def visit_concatenation_rule(m: ba.Match) -> ta.Any:
-        if len(m.children) == 1:
-            return visit_match(m.children[0])
-        else:
-            return pa.concat(*map(visit_match, m.children))
-
-    @add_rule_fn('repetition')
-    def visit_repetition_rule(m: ba.Match) -> ta.Any:
-        if len(m.children) == 2:
-            ti_m, el_m = m.children
-            ti = check.isinstance(visit_match(ti_m), pa.Repeat.Times)
-            el = visit_match(el_m)
-            return pa.repeat(ti, el)
-        elif len(m.children) == 1:
-            return visit_match(m.children[0])
-        else:
-            raise ValueError(m)
-
-    @add_rule_fn('element')
-    def visit_element_rule(m: ba.Match) -> ta.Any:
-        c = visit_match(check.single(m.children))
-        if isinstance(c, ba.Parser):
-            return c
-        elif isinstance(c, RuleName):
-            return pa.rule(c.s)
-        else:
-            raise TypeError(c)
-
-    @add_rule_fn('char-val')
-    def visit_char_val_rule(m: ba.Match) -> ta.Any:
-        return visit_match(check.single(m.children))
-
-    @add_rule_fn('case-sensitive-string')
-    def visit_case_sensitive_string_rule(m: ba.Match) -> ta.Any:
-        c = visit_match(check.single(m.children))
-        return pa.literal(check.isinstance(c, QuotedString).s, case_sensitive=True)
-
-    @add_rule_fn('case-insensitive-string')
-    def visit_case_insensitive_string_rule(m: ba.Match) -> ta.Any:
-        c = visit_match(check.single(m.children))
-        return pa.literal(check.isinstance(c, QuotedString).s, case_sensitive=False)
-
-    @add_rule_fn('quoted-string')
-    def visit_quoted_string_rule(m: ba.Match) -> ta.Any:
-        check.state(m.end - m.start > 2)
-        check.state(source[m.start] == '"')
-        check.state(source[m.end - 1] == '"')
-        return QuotedString(source[m.start + 1:m.end - 1])
-
-    @add_rule_fn('repeat')
-    def visit_repeat_rule(m: ba.Match) -> ta.Any:
-        # !!! FIXME: boneheaded args, repeat(1, c) currently means 1-*, should be exactly 1-1, should explicitly pass
-        #            None for *
-        s = source[m.start:m.end]
-        if '*' in s:
-            check.state(s.count('*') == 1)
-            if s.endswith('*'):
-                return pa.Repeat.Times(int(s[:-1]))
-            else:
-                mi, mx = s.split('*')
-                return pa.Repeat.Times(int(mi), int(mx))
-        else:
-            return pa.Repeat.Times(n := int(s), n)
-
-    @add_rule_fn('group')
-    def visit_group_rule(m: ba.Match) -> ta.Any:
-        return visit_match(check.single(m.children))
-
-    @add_rule_fn('num-val')
-    def visit_num_val_rule(m: ba.Match) -> ta.Any:
-        return visit_match(check.single(m.children))
-
-    @add_rule_fn('hex-val')
-    def visit_hex_val_rule(m: ba.Match) -> ta.Any:
-        s = source[m.start + 1:m.end]
-        if '-' in s:
-            lo, hi = [chr(int(p, 16)) for p in s.split('-')]
-            return pa.literal(lo, hi)
-        else:
-            c = chr(int(s, 16))
-            return pa.literal(c, c)
-
-    #
-
-    def visit_match(m: ba.Match) -> ta.Any:
-        return visit_parser(m.parser, m)
-
-    ##
-
+def test_meta() -> None:
     # # rfc_2616
     source = r"""
         HTTP-date    = rfc1123-date / rfc850-date / asctime-date
@@ -201,20 +53,22 @@ def test_core() -> None:
         token        = 1*( %x21 / %x23-27 / %x2A-2B / %x2D-2E / %x30-39 / %x41-5A / %x5E-7A / %x7C )
     """
 
-    source = co.fix_grammar_ws(textwrap.dedent(source))
+    source = fix_grammar_ws(textwrap.dedent(source))
 
-    ggm = check.not_none(co.GRAMMAR_GRAMMAR.parse(source, 'rulelist'))
-    ggm = ut.only_match_rules(ggm)
-    ggm = ut.strip_insignificant_match_rules(ggm, co.GRAMMAR_GRAMMAR)
+    ggm = check.not_none(META_GRAMMAR.parse(source, 'rulelist'))
+    ggm = only_match_rules(ggm)
+    ggm = strip_insignificant_match_rules(ggm, META_GRAMMAR)
     print(ggm.render(indent=2))
 
-    rules = visit_match(ggm)
+    check.isinstance(ggm.parser, pa.Repeat)
+    mg_rv = MetaGrammarRuleVisitor(source)
+    rules = [mg_rv.visit_match(gg_cm) for gg_cm in ggm.children]
     print(rules)
     rfc_gram = ba.Grammar(*rules, *co.CORE_RULES)
 
     rfc_m = rfc_gram.parse('Mon, 02 Jun 1982 00:00:00 GMT', 'HTTP-date')
-    rfc_m = ut.only_match_rules(rfc_m)
-    rfc_m = ut.strip_insignificant_match_rules(rfc_m, rfc_gram)
+    rfc_m = only_match_rules(rfc_m)
+    rfc_m = strip_insignificant_match_rules(rfc_m, rfc_gram)
     print(rfc_m.render(indent=2))
 
     # g = Grammar(

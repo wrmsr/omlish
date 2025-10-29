@@ -8,7 +8,9 @@ with _lang.auto_proxy_init(globals()):
 
     from .attrregistry import (  # noqa
         AttrRegistry,
+
         AttrRegistryCache,
+        SimpleAttrRegistryCache,
     )
 
     from .bimap import (  # noqa
