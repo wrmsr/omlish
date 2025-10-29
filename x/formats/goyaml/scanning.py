@@ -36,7 +36,7 @@ def err_invalid_token(tk: tokens.YamlToken) -> InvalidTokenYamlError:
 
 # Context at scanning
 @dc.dataclass(kw_only=True)
-class Context:
+class YamlScanningContext:
     idx: int = 0
     size: int = 0
     not_space_char_pos: int = 0
@@ -253,8 +253,8 @@ class Context:
         return None
 
 
-def new_context(src: str) -> Context:
-    ctx = Context()
+def new_context(src: str) -> YamlScanningContext:
+    ctx = YamlScanningContext()
     ctx.reset(src)
     return ctx
 
@@ -317,7 +317,7 @@ class MultiLineState:
             return column == 1
         return self.first_line_indent_column > column
 
-    def add_indent(self, ctx: Context, column: int) -> None:
+    def add_indent(self, ctx: YamlScanningContext, column: int) -> None:
         if self.first_line_indent_column == 0:
             return
 
@@ -336,7 +336,7 @@ class MultiLineState:
 
     # update_new_line_in_folded if Folded or RawFolded context and the content on the current line starts at the same
     # column as the previous line, treat the new-line-char as a space.
-    def update_new_line_in_folded(self, ctx: Context, column: int) -> None:
+    def update_new_line_in_folded(self, ctx: YamlScanningContext, column: int) -> None:
         if self.is_literal:
             return
 
@@ -448,7 +448,7 @@ class Scanner:
             indent_level=self.indent_level,
         )
 
-    def buffered_token(self, ctx: Context) -> ta.Optional[tokens.YamlToken]:
+    def buffered_token(self, ctx: YamlScanningContext) -> ta.Optional[tokens.YamlToken]:
         if self.saved_pos is not None:
             tk = ctx.buffered_token(self.saved_pos)
             self.saved_pos = None
@@ -473,16 +473,16 @@ class Scanner:
             indent_level=level,
         ))
 
-    def progress_column(self, ctx: Context, num: int) -> None:
+    def progress_column(self, ctx: YamlScanningContext, num: int) -> None:
         self.column += num
         self.offset += num
         self.progress(ctx, num)
 
-    def  progress_only(self, ctx: Context, num: int) -> None:
+    def  progress_only(self, ctx: YamlScanningContext, num: int) -> None:
         self.offset += num
         self.progress(ctx, num)
 
-    def progress_line(self, ctx: Context) -> None:
+    def progress_line(self, ctx: YamlScanningContext) -> None:
         self.prev_line_indent_num = self.indent_num
         self.column = 1
         self.line += 1
@@ -494,7 +494,7 @@ class Scanner:
         self.is_directive = False
         self.progress(ctx, 1)
 
-    def progress(self, ctx: Context, num: int) -> None:
+    def progress(self, ctx: YamlScanningContext, num: int) -> None:
         ctx.progress(num)
         self.source_pos += num
 
@@ -529,7 +529,7 @@ class Scanner:
             if self.indent_level > 0:
                 self.indent_level -= 1
 
-    def update_indent_state(self, ctx: Context) -> None:
+    def update_indent_state(self, ctx: YamlScanningContext) -> None:
         if self.last_delim_column == 0:
             return
 
@@ -540,7 +540,7 @@ class Scanner:
             # delimiter.
             self.indent_state = IndentState.DOWN
 
-    def update_indent(self, ctx: Context, c: str) -> None:
+    def update_indent(self, ctx: YamlScanningContext, c: str) -> None:
         if self.is_first_char_at_line and self.is_new_line_char(c):
             return
         if self.is_first_char_at_line and c == ' ':
@@ -562,13 +562,13 @@ class Scanner:
     def is_changed_to_indent_state_up(self) -> bool:
         return self.indent_state == IndentState.UP
 
-    def add_buffered_token_if_exists(self, ctx: Context) -> None:
+    def add_buffered_token_if_exists(self, ctx: YamlScanningContext) -> None:
         ctx.add_token(self.buffered_token(ctx))
 
-    def break_multi_line(self, ctx: Context) -> None:
+    def break_multi_line(self, ctx: YamlScanningContext) -> None:
         ctx.break_multi_line()
 
-    def scan_single_quote(self, ctx: Context) -> YamlErrorOr[tokens.YamlToken]:
+    def scan_single_quote(self, ctx: YamlScanningContext) -> YamlErrorOr[tokens.YamlToken]:
         ctx.add_origin_buf("'")
         srcpos = self.pos()
         start_index = ctx.idx + 1
@@ -655,7 +655,7 @@ class Scanner:
             ),
         )
 
-    def scan_double_quote(self, ctx: Context) -> YamlErrorOr[tokens.YamlToken]:
+    def scan_double_quote(self, ctx: YamlScanningContext) -> YamlErrorOr[tokens.YamlToken]:
         ctx.add_origin_buf('"')
         srcpos = self.pos()
         start_index = ctx.idx + 1
@@ -954,7 +954,7 @@ class Scanner:
             ),
         )
 
-    def validate_document_separator_marker(self, ctx: Context, src: str) -> ta.Optional[YamlError]:
+    def validate_document_separator_marker(self, ctx: YamlScanningContext, src: str) -> ta.Optional[YamlError]:
         if self.found_document_separator_marker(src):
             return err_invalid_token(
                 tokens.new_invalid(yaml_error('found unexpected document separator'), ctx.obuf, self.pos()),
@@ -974,7 +974,7 @@ class Scanner:
 
         return marker == '---' or marker == '...'
 
-    def scan_quote(self, ctx: Context, ch: str) -> YamlErrorOr[bool]:
+    def scan_quote(self, ctx: YamlScanningContext, ch: str) -> YamlErrorOr[bool]:
         if ctx.exists_buffer():
             return False
 
@@ -995,7 +995,7 @@ class Scanner:
         ctx.clear()
         return True
 
-    def scan_white_space(self, ctx: Context) -> bool:
+    def scan_white_space(self, ctx: YamlScanningContext) -> bool:
         if ctx.is_multi_line():
             return False
 
@@ -1018,7 +1018,7 @@ class Scanner:
         self.is_alias = False
         return True
 
-    def is_merge_key(self, ctx: Context) -> bool:
+    def is_merge_key(self, ctx: YamlScanningContext) -> bool:
         if ctx.repeat_num('<') != 2:
             return False
 
@@ -1039,7 +1039,7 @@ class Scanner:
 
         return False
 
-    def scan_tag(self, ctx: Context) -> YamlErrorOr[bool]:
+    def scan_tag(self, ctx: YamlScanningContext) -> YamlErrorOr[bool]:
         if ctx.exists_buffer() or self.is_directive:
             return False
 
@@ -1095,7 +1095,7 @@ class Scanner:
         ctx.clear()
         return True
 
-    def scan_comment(self, ctx: Context) -> bool:
+    def scan_comment(self, ctx: YamlScanningContext) -> bool:
         if ctx.exists_buffer():
             c = ctx.previous_char()
             if c != ' ' and c != '\t' and not self.is_new_line_char(c):
@@ -1129,7 +1129,7 @@ class Scanner:
         ctx.clear()
         return True
 
-    def scan_multi_line(self, ctx: Context, c: str) -> ta.Optional[YamlError]:
+    def scan_multi_line(self, ctx: YamlScanningContext, c: str) -> ta.Optional[YamlError]:
         state = check.not_none(ctx.get_multi_line_state())
         ctx.add_origin_buf(c)
 
@@ -1202,7 +1202,7 @@ class Scanner:
 
         return None
 
-    def scan_new_line(self, ctx: Context, c: str) -> None:
+    def scan_new_line(self, ctx: YamlScanningContext, c: str) -> None:
         if len(ctx.buf) > 0 and self.saved_pos is None:
             buf_len = len(ctx.buffered_src())
             self.saved_pos = self.pos()
@@ -1253,7 +1253,7 @@ class Scanner:
 
         return False
 
-    def scan_flow_map_start(self, ctx: Context) -> bool:
+    def scan_flow_map_start(self, ctx: YamlScanningContext) -> bool:
         if ctx.exists_buffer() and not self.is_flow_mode():
             return False
 
@@ -1265,7 +1265,7 @@ class Scanner:
         ctx.clear()
         return True
 
-    def scan_flow_map_end(self, ctx: Context) -> bool:
+    def scan_flow_map_end(self, ctx: YamlScanningContext) -> bool:
         if self.started_flow_map_num <= 0:
             return False
 
@@ -1277,7 +1277,7 @@ class Scanner:
         ctx.clear()
         return True
 
-    def scan_flow_array_start(self, ctx: Context) -> bool:
+    def scan_flow_array_start(self, ctx: YamlScanningContext) -> bool:
         if ctx.exists_buffer() and not self.is_flow_mode():
             return False
 
@@ -1289,7 +1289,7 @@ class Scanner:
         ctx.clear()
         return True
 
-    def scan_flow_array_end(self, ctx: Context) -> bool:
+    def scan_flow_array_end(self, ctx: YamlScanningContext) -> bool:
         if ctx.exists_buffer() and self.started_flow_sequence_num <= 0:
             return False
 
@@ -1301,7 +1301,7 @@ class Scanner:
         ctx.clear()
         return True
 
-    def scan_flow_entry(self, ctx: Context, c: str) -> bool:
+    def scan_flow_entry(self, ctx: YamlScanningContext, c: str) -> bool:
         if self.started_flow_sequence_num <= 0 and self.started_flow_map_num <= 0:
             return False
 
@@ -1312,7 +1312,7 @@ class Scanner:
         ctx.clear()
         return True
 
-    def scan_map_delim(self, ctx: Context) -> YamlErrorOr[bool]:
+    def scan_map_delim(self, ctx: YamlScanningContext) -> YamlErrorOr[bool]:
         nc = ctx.next_char()
         if self.is_directive or self.is_anchor or self.is_alias:
             return False
@@ -1361,7 +1361,7 @@ class Scanner:
         ctx.clear()
         return True
 
-    def scan_document_start(self, ctx: Context) -> bool:
+    def scan_document_start(self, ctx: YamlScanningContext) -> bool:
         if self.indent_num != 0:
             return False
 
@@ -1383,7 +1383,7 @@ class Scanner:
         self.clear_state()
         return True
 
-    def scan_document_end(self, ctx: Context) -> bool:
+    def scan_document_end(self, ctx: YamlScanningContext) -> bool:
         if self.indent_num != 0:
             return False
 
@@ -1399,7 +1399,7 @@ class Scanner:
         ctx.clear()
         return True
 
-    def scan_merge_key(self, ctx: Context) -> bool:
+    def scan_merge_key(self, ctx: YamlScanningContext) -> bool:
         if not self.is_merge_key(ctx):
             return False
 
@@ -1409,7 +1409,7 @@ class Scanner:
         ctx.clear()
         return True
 
-    def scan_raw_folded_char(self, ctx: Context) -> bool:
+    def scan_raw_folded_char(self, ctx: YamlScanningContext) -> bool:
         if not ctx.exists_buffer():
             return False
 
@@ -1422,7 +1422,7 @@ class Scanner:
         self.progress_column(ctx, 1)
         return True
 
-    def scan_sequence(self, ctx: Context) -> YamlErrorOr[bool]:
+    def scan_sequence(self, ctx: YamlScanningContext) -> YamlErrorOr[bool]:
         if ctx.exists_buffer():
             return False
 
@@ -1448,7 +1448,7 @@ class Scanner:
         ctx.clear()
         return True
 
-    def scan_multi_line_header(self, ctx: Context) -> YamlErrorOr[bool]:
+    def scan_multi_line_header(self, ctx: YamlScanningContext) -> YamlErrorOr[bool]:
         if ctx.exists_buffer():
             return False
 
@@ -1483,7 +1483,7 @@ class Scanner:
 
         return None
 
-    def scan_multi_line_header_option(self, ctx: Context) -> ta.Optional[YamlError]:
+    def scan_multi_line_header_option(self, ctx: YamlScanningContext) -> ta.Optional[YamlError]:
         header = ctx.current_char()
         ctx.add_origin_buf(header)
         self.progress(ctx, 1)  # skip '|' or '>' character
@@ -1535,7 +1535,7 @@ class Scanner:
         self.progress_column(ctx, progress)
         return None
 
-    def scan_map_key(self, ctx: Context) -> bool:
+    def scan_map_key(self, ctx: YamlScanningContext) -> bool:
         if ctx.exists_buffer():
             return False
 
@@ -1550,7 +1550,7 @@ class Scanner:
         ctx.clear()
         return True
 
-    def scan_directive(self, ctx: Context) -> bool:
+    def scan_directive(self, ctx: YamlScanningContext) -> bool:
         if ctx.exists_buffer():
             return False
         if self.indent_num != 0:
@@ -1564,7 +1564,7 @@ class Scanner:
         self.is_directive = True
         return True
 
-    def scan_anchor(self, ctx: Context) -> bool:
+    def scan_anchor(self, ctx: YamlScanningContext) -> bool:
         if ctx.exists_buffer():
             return False
 
@@ -1576,7 +1576,7 @@ class Scanner:
         ctx.clear()
         return True
 
-    def scan_alias(self, ctx: Context) -> bool:
+    def scan_alias(self, ctx: YamlScanningContext) -> bool:
         if ctx.exists_buffer():
             return False
 
@@ -1588,7 +1588,7 @@ class Scanner:
         ctx.clear()
         return True
 
-    def scan_reserved_char(self, ctx: Context, c: str) -> ta.Optional[YamlError]:
+    def scan_reserved_char(self, ctx: YamlScanningContext, c: str) -> ta.Optional[YamlError]:
         if ctx.exists_buffer():
             return None
 
@@ -1605,7 +1605,7 @@ class Scanner:
         ctx.clear()
         return err
 
-    def scan_tab(self, ctx: Context, c: str) -> ta.Optional[YamlError]:
+    def scan_tab(self, ctx: YamlScanningContext, c: str) -> ta.Optional[YamlError]:
         if self.started_flow_sequence_num > 0 or self.started_flow_map_num > 0:
             # tabs character is allowed in flow mode.
             return None
@@ -1626,7 +1626,7 @@ class Scanner:
         ctx.clear()
         return err
 
-    def _scan(self, ctx: Context) -> ta.Optional[YamlError]:
+    def _scan(self, ctx: YamlScanningContext) -> ta.Optional[YamlError]:
         while ctx.next():
             c = ctx.current_char()
             # First, change the IndentState.
