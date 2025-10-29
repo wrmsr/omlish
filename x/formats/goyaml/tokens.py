@@ -389,7 +389,7 @@ YAML_RESERVED_TAG_KEYWORD_MAP: ta.Mapping[YamlReservedTagKeyword, ta.Callable[[s
 ##
 
 
-class YamlNumberType(enum.StrEnum):
+class YamlNumberType(enum.Enum):
     DECIMAL = 'decimal'
     BINARY = 'binary'
     OCTET = 'octet'
