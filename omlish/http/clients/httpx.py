@@ -69,7 +69,7 @@ class HttpxHttpClient(HttpClient):
             resp_close()
             raise HttpClientError from e
 
-        except Exception:
+        except BaseException:
             resp_close()
             raise
 
@@ -103,7 +103,29 @@ class HttpxAsyncHttpClient(AsyncHttpClient):
             ))
 
             it = resp.aiter_bytes()
-            es.push_async_callback(it.aclose)  # type: ignore[attr-defined]
+
+            # FIXME:
+            #  - https://github.com/encode/httpx/discussions/2963
+            #   - Exception ignored in: <async_generator object HTTP11ConnectionByteStream.__aiter__ at 0x1325a7540>
+            #   - RuntimeError: async generator ignored GeneratorExit
+            #  - Traced to:
+            #   - HTTP11ConnectionByteStream.aclose -> await self._connection._response_closed()
+            #   - AsyncHTTP11Connection._response_closed -> async with self._state_lock
+            #   - anyio._backends._asyncio.Lock.acquire -> await AsyncIOBackend.cancel_shielded_checkpoint() -> await sleep(0)  # noqa
+            #  - Might have something to do with pycharm/pydevd's nested asyncio, doesn't seem to happen under trio ever
+            #    or asyncio outside debugger.
+            @es.push_async_callback
+            async def close_it() -> None:
+                try:
+                    # print(f'close_it.begin: {it=}', file=sys.stderr)
+                    await it.aclose()  # type: ignore[attr-defined]
+                    # print(f'close_it.end: {it=}', file=sys.stderr)
+                except BaseException as be:  # noqa
+                    # print(f'close_it.__exit__: {it=} {be=}', file=sys.stderr)
+                    raise
+                finally:
+                    # print(f'close_it.finally: {it=}', file=sys.stderr)
+                    pass
 
             return AsyncStreamHttpResponse(
                 status=resp.status_code,
@@ -118,6 +140,6 @@ class HttpxAsyncHttpClient(AsyncHttpClient):
             await es.aclose()
             raise HttpClientError from e
 
-        except Exception:
+        except BaseException:
             await es.aclose()
             raise

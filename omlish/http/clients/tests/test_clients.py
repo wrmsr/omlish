@@ -64,7 +64,7 @@ def test_clients_stream(cls, data, readall):
             assert resp.status == 200
 
             if readall:
-                data = resp.readall()
+                data = resp.stream.readall()
             else:
                 l = []
                 while (b := resp.stream.read1(1)):

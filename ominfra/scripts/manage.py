@@ -3591,7 +3591,7 @@ class ExitStacked:
             es.__enter__()
             try:
                 self._enter_contexts()
-            except Exception:  # noqa
+            except BaseException:  # noqa
                 es.__exit__(*sys.exc_info())
                 raise
             return self
@@ -3602,7 +3602,7 @@ class ExitStacked:
             return None
         try:
             self._exit_contexts()
-        except Exception:  # noqa
+        except BaseException:  # noqa
             es.__exit__(*sys.exc_info())
             raise
         return es.__exit__(exc_type, exc_val, exc_tb)
@@ -3650,7 +3650,7 @@ class AsyncExitStacked:
             await es.__aenter__()
             try:
                 await self._async_enter_contexts()
-            except Exception:  # noqa
+            except BaseException:  # noqa
                 await es.__aexit__(*sys.exc_info())
                 raise
             return self
@@ -3661,7 +3661,7 @@ class AsyncExitStacked:
             return None
         try:
             await self._async_exit_contexts()
-        except Exception:  # noqa
+        except BaseException:  # noqa
             await es.__aexit__(*sys.exc_info())
             raise
         return await es.__aexit__(exc_type, exc_val, exc_tb)
