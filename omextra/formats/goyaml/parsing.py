@@ -1,4 +1,5 @@
 # ruff: noqa: UP006 UP007 UP043 UP045
+# @omlish-lite
 import copy
 import dataclasses as dc
 import enum
