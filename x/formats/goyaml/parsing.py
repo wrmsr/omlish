@@ -13,6 +13,7 @@ from . import tokens as tokens_
 from .errors import YamlError
 from .errors import YamlErrorOr
 from .errors import yaml_error
+from .tokens import new_yaml_token
 
 
 ##
@@ -119,7 +120,7 @@ class YamlParsingContext:
     def create_implicit_null_token(self, base: 'YamlParseToken') -> 'YamlParseToken':
         pos = copy.copy(check.not_none(base.raw_token()).position)
         pos.column += 1
-        tk = tokens.new('null', ' null', pos)
+        tk = new_yaml_token('null', ' null', pos)
         tk.type = tokens_.YamlTokenType.IMPLICIT_NULL
         return YamlParseToken(token=tk)
 
@@ -476,13 +477,13 @@ def create_scalar_tag_token_groups(tokens: ta.List[YamlParseToken]) -> YamlError
         if tag.value.startswith('!!'):
             # secondary tag.
             if tag.value in (
-                    tokens_.ReservedTagKeywords.INTEGER,
-                    tokens_.ReservedTagKeywords.FLOAT,
-                    tokens_.ReservedTagKeywords.STRING,
-                    tokens_.ReservedTagKeywords.BINARY,
-                    tokens_.ReservedTagKeywords.TIMESTAMP,
-                    tokens_.ReservedTagKeywords.BOOLEAN,
-                    tokens_.ReservedTagKeywords.NULL,
+                    tokens_.YamlReservedTagKeywords.INTEGER,
+                    tokens_.YamlReservedTagKeywords.FLOAT,
+                    tokens_.YamlReservedTagKeywords.STRING,
+                    tokens_.YamlReservedTagKeywords.BINARY,
+                    tokens_.YamlReservedTagKeywords.TIMESTAMP,
+                    tokens_.YamlReservedTagKeywords.BOOLEAN,
+                    tokens_.YamlReservedTagKeywords.NULL,
             ):
                 if len(tokens) <= i + 1:
                     ret.append(tk)
@@ -503,7 +504,7 @@ def create_scalar_tag_token_groups(tokens: ta.List[YamlParseToken]) -> YamlError
                     i += 1
                 else:
                     ret.append(tk)
-            elif tag.value == tokens_.ReservedTagKeywords.MERGE:
+            elif tag.value == tokens_.YamlReservedTagKeywords.MERGE:
                 if len(tokens) <= i + 1:
                     ret.append(tk)
                     continue
@@ -1017,36 +1018,36 @@ def new_tag_default_scalar_value_node(ctx: YamlParsingContext, tag: tokens_.Yaml
     tk: YamlErrorOr[YamlParseToken]
     node: YamlErrorOr[ast.ScalarNode]
 
-    if tag.value == tokens_.ReservedTagKeywords.INTEGER:
-        tk = YamlParseToken(token=tokens.new('0', '0', pos))
+    if tag.value == tokens_.YamlReservedTagKeywords.INTEGER:
+        tk = YamlParseToken(token=new_yaml_token('0', '0', pos))
         n0 = new_integer_node(ctx, tk)
         if isinstance(n0, YamlError):
             return n0
         node = n0
-    elif tag.value == tokens_.ReservedTagKeywords.FLOAT:
-        tk = YamlParseToken(token=tokens_.new('0', '0', pos))
+    elif tag.value == tokens_.YamlReservedTagKeywords.FLOAT:
+        tk = YamlParseToken(token=new_yaml_token('0', '0', pos))
         n1 = new_float_node(ctx, tk)
         if isinstance(n1, YamlError):
             return n1
         node = n1
     elif tag.value in (
-            tokens_.ReservedTagKeywords.STRING,
-            tokens_.ReservedTagKeywords.BINARY,
-            tokens_.ReservedTagKeywords.TIMESTAMP,
+            tokens_.YamlReservedTagKeywords.STRING,
+            tokens_.YamlReservedTagKeywords.BINARY,
+            tokens_.YamlReservedTagKeywords.TIMESTAMP,
     ):
-        tk = YamlParseToken(token=tokens_.new('', '', pos))
+        tk = YamlParseToken(token=new_yaml_token('', '', pos))
         n2 = new_string_node(ctx, tk)
         if isinstance(n2, YamlError):
             return n2
         node = n2
-    elif tag.value == tokens_.ReservedTagKeywords.BOOLEAN:
-        tk = YamlParseToken(token=tokens_.new('false', 'false', pos))
+    elif tag.value == tokens_.YamlReservedTagKeywords.BOOLEAN:
+        tk = YamlParseToken(token=new_yaml_token('false', 'false', pos))
         n3 = new_bool_node(ctx, tk)
         if isinstance(n3, YamlError):
             return n3
         node = n3
-    elif tag.value == tokens_.ReservedTagKeywords.NULL:
-        tk = YamlParseToken(token=tokens_.new('null', 'null', pos))
+    elif tag.value == tokens_.YamlReservedTagKeywords.NULL:
+        tk = YamlParseToken(token=new_yaml_token('null', 'null', pos))
         n4 = new_null_node(ctx, tk)
         if isinstance(n4, YamlError):
             return n4
@@ -1926,7 +1927,7 @@ class YamlParser:
 
         tk = ctx.current_token()
         if tk is None:
-            value0 = new_string_node(ctx, YamlParseToken(token=tokens.new('', '', node.start.position)))
+            value0 = new_string_node(ctx, YamlParseToken(token=new_yaml_token('', '', node.start.position)))
             if isinstance(value0, YamlError):
                 return value0
             node.value = value0
@@ -1985,8 +1986,8 @@ class YamlParser:
         if tk is None:
             return new_null_node(ctx, ctx.create_implicit_null_token(YamlParseToken(token=tag_raw_tk)))
         if tag_raw_tk.value in (
-                tokens_.ReservedTagKeywords.MAPPING,
-                tokens_.ReservedTagKeywords.SET,
+                tokens_.YamlReservedTagKeywords.MAPPING,
+                tokens_.YamlReservedTagKeywords.SET,
         ):
             if not self.is_map_token(tk):
                 return err_syntax('could not find map', tk.raw_token())
@@ -1994,13 +1995,13 @@ class YamlParser:
                 return self.parse_flow_map(ctx.with_flow(True))
             return self.parse_map(ctx)
         elif tag_raw_tk.value in (
-                tokens_.ReservedTagKeywords.INTEGER,
-                tokens_.ReservedTagKeywords.FLOAT,
-                tokens_.ReservedTagKeywords.STRING,
-                tokens_.ReservedTagKeywords.BINARY,
-                tokens_.ReservedTagKeywords.TIMESTAMP,
-                tokens_.ReservedTagKeywords.BOOLEAN,
-                tokens_.ReservedTagKeywords.NULL,
+                tokens_.YamlReservedTagKeywords.INTEGER,
+                tokens_.YamlReservedTagKeywords.FLOAT,
+                tokens_.YamlReservedTagKeywords.STRING,
+                tokens_.YamlReservedTagKeywords.BINARY,
+                tokens_.YamlReservedTagKeywords.TIMESTAMP,
+                tokens_.YamlReservedTagKeywords.BOOLEAN,
+                tokens_.YamlReservedTagKeywords.NULL,
         ):
             if tk.group_type() == YamlParseTokenGroupType.LITERAL or tk.group_type() == YamlParseTokenGroupType.FOLDED:
                 return self.parse_literal(ctx.with_group(check.not_none(tk.group)))
@@ -2012,8 +2013,8 @@ class YamlParser:
             ctx.go_next()
             return scalar
         elif tag_raw_tk.value in (
-                tokens_.ReservedTagKeywords.SEQUENCE,
-                tokens_.ReservedTagKeywords.ORDERED_MAP,
+                tokens_.YamlReservedTagKeywords.SEQUENCE,
+                tokens_.YamlReservedTagKeywords.ORDERED_MAP,
         ):
             if tk.type() == tokens_.YamlTokenType.SEQUENCE_START:
                 return self.parse_flow_sequence(ctx.with_flow(True))
