@@ -18,21 +18,25 @@ python -m pytest tests/test_rustbpe.py -v -s
 """
 import collections
 import os.path
-import pytest
-import regex as re
 import tempfile
-import tiktoken
 import time
+import typing as ta
+
+import pytest
 
 from omdev.cache import data as dcache
 from omlish import lang
 
-from ..tokenizers import RustBPETokenizer
 from ..tokenizers import HuggingFaceTokenizer
+from ..tokenizers import RustBPETokenizer
 
 
 with lang.auto_proxy_import(globals()):
-    from .. import rustbpe
+    import regex as re
+    import tiktoken
+
+
+rustbpe: ta.Any = lang.proxy_import('..rustbpe', __package__)
 
 
 ##
@@ -53,7 +57,7 @@ def get_stats(ids, counts=None):
     """
 
     counts = {} if counts is None else counts
-    for pair in zip(ids, ids[1:]): # iterate consecutive elements
+    for pair in zip(ids, ids[1:]):  # iterate consecutive elements  # noqa
         counts[pair] = counts.get(pair, 0) + 1
     return counts
 
@@ -68,7 +72,7 @@ def merge(ids, pair, idx):
     i = 0
     while i < len(ids):
         # if not at the very last position AND the pair matches, replace it
-        if ids[i] == pair[0] and i < len(ids) - 1 and ids[i+1] == pair[1]:
+        if ids[i] == pair[0] and i < len(ids) - 1 and ids[i + 1] == pair[1]:
             newids.append(idx)
             i += 2
         else:
@@ -86,7 +90,7 @@ class RegexTokenizer:
         """
 
         self.pattern = GPT4_SPLIT_PATTERN if pattern is None else pattern
-        self.merges = {} # (int, int) -> int
+        self.merges = {}  # (int, int) -> int
         self.compiled_pattern = re.compile(self.pattern)
         self.special_tokens = {}
         self.inverse_special_tokens = {}
@@ -98,7 +102,7 @@ class RegexTokenizer:
         for (p0, p1), idx in self.merges.items():
             vocab[idx] = vocab[p0] + vocab[p1]
         for special, idx in self.special_tokens.items():
-            vocab[idx] = special.encode("utf-8")
+            vocab[idx] = special.encode('utf-8')
         return vocab
 
     def train(self, text, vocab_size, verbose=False):
@@ -112,19 +116,19 @@ class RegexTokenizer:
         text_chunks = re.findall(self.compiled_pattern, text)
 
         # input text preprocessing
-        ids = [list(ch.encode("utf-8")) for ch in text_chunks]
+        ids = [list(ch.encode('utf-8')) for ch in text_chunks]
 
         # iteratively merge the most common pairs to create new tokens
-        merges = {} # (int, int) -> int
-        vocab = {idx: bytes([idx]) for idx in range(256)} # idx -> bytes
+        merges = {}  # (int, int) -> int
+        vocab = {idx: bytes([idx]) for idx in range(256)}  # idx -> bytes
         for i in range(num_merges):
             # count the number of times every consecutive pair appears
-            stats = {}
+            stats: dict = {}
             for chunk_ids in ids:
                 # passing in stats will update it in place, adding up counts
                 get_stats(chunk_ids, stats)
             # find the pair with the highest count
-            pair = max(stats, key=stats.get)
+            pair = max(stats, key=stats.get)  # type: ignore
             # check if the merge is ambiguous - i.e. the max value is not unique
             pair_count = stats[pair]
             pairs_with_max_count = [pair for pair, count in stats.items() if count == pair_count]
@@ -143,11 +147,11 @@ class RegexTokenizer:
             vocab[idx] = vocab[pair[0]] + vocab[pair[1]]
             # prints
             if verbose:
-                print(f"merge {i+1}/{num_merges}: {pair} -> {idx} ({vocab[idx]}) had {stats[pair]} occurrences")
+                print(f'merge {i + 1}/{num_merges}: {pair} -> {idx} ({vocab[idx]!r}) had {stats[pair]} occurrences')
 
         # save class variables
-        self.merges = merges # used in encode()
-        self.vocab = vocab   # used in decode()
+        self.merges = merges  # used in encode()
+        self.vocab = vocab  # used in decode()
         return ambiguous
 
     def _encode_chunk(self, text_bytes):
@@ -157,12 +161,12 @@ class RegexTokenizer:
         while len(ids) >= 2:
             # find the pair with the lowest merge index
             stats = get_stats(ids)
-            pair = min(stats, key=lambda p: self.merges.get(p, float("inf")))
+            pair = min(stats, key=lambda p: self.merges.get(p, float('inf')))
             # subtle: if there are no more merges available, the key will result in an inf for every single pair, and
             # the min will be just the first pair in the list, arbitrarily
             # we can detect this terminating case by a membership check
             if pair not in self.merges:
-                break # nothing else can be merged anymore
+                break  # nothing else can be merged anymore
             # otherwise let's merge the best pair (lowest merge index)
             idx = self.merges[pair]
             ids = merge(ids, pair, idx)
@@ -176,7 +180,7 @@ class RegexTokenizer:
         # all chunks of text are encoded separately, then results are joined
         ids = []
         for chunk in text_chunks:
-            chunk_bytes = chunk.encode("utf-8") # raw bytes
+            chunk_bytes = chunk.encode('utf-8')  # raw bytes
             chunk_ids = self._encode_chunk(chunk_bytes)
             ids.extend(chunk_ids)
         return ids
@@ -195,9 +199,9 @@ def fast_merge_inplace(ids, pair, idx):
     # Find all positions where the pair occurs
     i = 0
     while i < len(ids) - 1:
-        if ids[i] == pair[0] and ids[i+1] == pair[1]:
+        if ids[i] == pair[0] and ids[i + 1] == pair[1]:
             ids[i] = idx
-            ids.pop(i+1)
+            ids.pop(i + 1)
         else:
             i += 1
     return ids
@@ -224,7 +228,7 @@ class FastRegexTokenizer:
         for (p0, p1), idx in self.merges.items():
             vocab[idx] = vocab[p0] + vocab[p1]
         for special, idx in self.special_tokens.items():
-            vocab[idx] = special.encode("utf-8")
+            vocab[idx] = special.encode('utf-8')
         return vocab
 
     def train(self, text, vocab_size, verbose=False):
@@ -248,17 +252,17 @@ class FastRegexTokenizer:
         chunk_counts = [count for ch, count in counts.items()]
 
         # input text preprocessing
-        ids = [list(ch.encode("utf-8")) for ch in unique_chunks]
+        ids = [list(ch.encode('utf-8')) for ch in unique_chunks]
         # iteratively merge the most common pairs to create new tokens
-        merges = {} # (int, int) -> int
-        vocab = {idx: bytes([idx]) for idx in range(256)} # idx -> bytes
+        merges = {}  # (int, int) -> int
+        vocab = {idx: bytes([idx]) for idx in range(256)}  # idx -> bytes
 
         # Initial count: build stats and position tracking
-        stats = collections.defaultdict(int)
+        stats: collections.defaultdict = collections.defaultdict(int)
         positions = collections.defaultdict(set)  # pair -> set of chunk indices that contain this pair
 
         for chunk_idx, (chunk_ids, count) in enumerate(zip(ids, chunk_counts)):
-            for pair in zip(chunk_ids, chunk_ids[1:]):
+            for pair in zip(chunk_ids, chunk_ids[1:]):  # noqa
                 stats[pair] += count
                 positions[pair].add(chunk_idx)
 
@@ -267,7 +271,7 @@ class FastRegexTokenizer:
                 break
 
             # find the pair with the highest count
-            pair = max(stats, key=stats.get)
+            pair = max(stats, key=stats.get)  # type: ignore
             # mint a new token: assign it the next available id
             idx = 256 + i
 
@@ -275,7 +279,7 @@ class FastRegexTokenizer:
             affected_chunks = positions[pair]
 
             # Track count changes for incremental update
-            count_changes = collections.defaultdict(int)
+            count_changes: collections.defaultdict = collections.defaultdict(int)
 
             # Replace all occurrences of pair in affected chunks only
             for chunk_idx in affected_chunks:
@@ -283,31 +287,31 @@ class FastRegexTokenizer:
                 chunk_count = chunk_counts[chunk_idx]
                 ix = 0
                 while ix < len(chunk_ids) - 1:
-                    if chunk_ids[ix] == pair[0] and chunk_ids[ix+1] == pair[1]:
+                    if chunk_ids[ix] == pair[0] and chunk_ids[ix + 1] == pair[1]:
                         # Track what pairs are being removed/added
                         # Remove: (prev, A), (A, B), (B, next)
                         if ix > 0:
-                            old_left = (chunk_ids[ix-1], chunk_ids[ix])
+                            old_left = (chunk_ids[ix - 1], chunk_ids[ix])
                             count_changes[old_left] -= chunk_count
 
                         # The merged pair disappears
                         count_changes[pair] -= chunk_count
 
                         if ix + 2 < len(chunk_ids):
-                            old_right = (chunk_ids[ix+1], chunk_ids[ix+2])
+                            old_right = (chunk_ids[ix + 1], chunk_ids[ix + 2])
                             count_changes[old_right] -= chunk_count
 
                         # Apply the merge
                         chunk_ids[ix] = idx
-                        chunk_ids.pop(ix+1)
+                        chunk_ids.pop(ix + 1)
 
                         # Add: (prev, C), (C, next)
                         if ix > 0:
-                            new_left = (chunk_ids[ix-1], chunk_ids[ix])
+                            new_left = (chunk_ids[ix - 1], chunk_ids[ix])
                             count_changes[new_left] += chunk_count
 
                         if ix + 1 < len(chunk_ids):
-                            new_right = (chunk_ids[ix], chunk_ids[ix+1])
+                            new_right = (chunk_ids[ix], chunk_ids[ix + 1])
                             count_changes[new_right] += chunk_count
                     else:
                         ix += 1
@@ -323,8 +327,10 @@ class FastRegexTokenizer:
                 # Update positions for changed pairs - only check affected chunks
                 for chunk_idx in affected_chunks:
                     chunk_ids = ids[chunk_idx]
-                    contains_pair = any((chunk_ids[j], chunk_ids[j+1]) == changed_pair
-                                      for j in range(len(chunk_ids) - 1))
+                    contains_pair = any(
+                        (chunk_ids[j], chunk_ids[j + 1]) == changed_pair
+                        for j in range(len(chunk_ids) - 1)
+                    )
                     if contains_pair:
                         positions[changed_pair].add(chunk_idx)
                     else:
@@ -339,8 +345,8 @@ class FastRegexTokenizer:
             vocab[idx] = vocab[pair[0]] + vocab[pair[1]]
 
         # save class variables
-        self.merges = merges # used in encode()
-        self.vocab = vocab   # used in decode()
+        self.merges = merges  # used in encode()
+        self.vocab = vocab  # used in decode()
 
     def register_special_tokens(self, special_tokens):
         # special_tokens is a dictionary of str -> int
@@ -355,11 +361,11 @@ class FastRegexTokenizer:
             if idx in self.vocab:
                 part_bytes.append(self.vocab[idx])
             elif idx in self.inverse_special_tokens:
-                part_bytes.append(self.inverse_special_tokens[idx].encode("utf-8"))
+                part_bytes.append(self.inverse_special_tokens[idx].encode('utf-8'))
             else:
-                raise ValueError(f"invalid token id: {idx}")
-        text_bytes = b"".join(part_bytes)
-        text = text_bytes.decode("utf-8", errors="replace")
+                raise ValueError(f'invalid token id: {idx}')
+        text_bytes = b''.join(part_bytes)
+        text = text_bytes.decode('utf-8', errors='replace')
         return text
 
     def _encode_chunk(self, text_bytes):
@@ -369,12 +375,12 @@ class FastRegexTokenizer:
         while len(ids) >= 2:
             # find the pair with the lowest merge index
             stats = get_stats(ids)
-            pair = min(stats, key=lambda p: self.merges.get(p, float("inf")))
+            pair = min(stats, key=lambda p: self.merges.get(p, float('inf')))
             # subtle: if there are no more merges available, the key will result in an inf for every single pair, and
             # the min will be just the first pair in the list, arbitrarily
             # we can detect this terminating case by a membership check
             if pair not in self.merges:
-                break # nothing else can be merged anymore
+                break  # nothing else can be merged anymore
             # otherwise let's merge the best pair (lowest merge index)
             idx = self.merges[pair]
             ids = fast_merge_inplace(ids, pair, idx)
@@ -388,7 +394,7 @@ class FastRegexTokenizer:
         # all chunks of text are encoded separately, then results are joined
         ids = []
         for chunk in text_chunks:
-            chunk_bytes = chunk.encode("utf-8") # raw bytes
+            chunk_bytes = chunk.encode('utf-8')  # raw bytes
             chunk_ids = self._encode_chunk(chunk_bytes)
             ids.extend(chunk_ids)
         return ids
@@ -419,7 +425,7 @@ ENWIK8_DATA = dcache.UrlSpec(
 )
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope='module')
 def enwik8_path():
     """Fixture to download and cache enwik8 dataset."""
 
@@ -427,19 +433,19 @@ def enwik8_path():
     return os.path.join(data_dir, 'enwik8')
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope='module')
 def enwik8_small(enwik8_path):
     """Fixture providing 100KB of enwik8 for quick tests."""
 
-    with open(enwik8_path, "r") as f:
+    with open(enwik8_path) as f:
         return f.read(100_000)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope='module')
 def enwik8_large(enwik8_path):
     """Fixture providing 10MB of enwik8 for performance tests."""
 
-    with open(enwik8_path, "r") as f:
+    with open(enwik8_path) as f:
         return f.read(10**7)
 
 
@@ -461,44 +467,44 @@ def test_correctness(enwik8_small):
     vocab_size = 256 + 20  # 20 merges
 
     # Train slow reference
-    print("\nTraining slow reference...")
+    print('\nTraining slow reference...')
     slow_reference_tokenizer = RegexTokenizer()
     ambiguous_flag, slow_reference_train_time = time_function(slow_reference_tokenizer.train, text, vocab_size)
-    slow_reference_ids, slow_reference_encode_time = time_function(slow_reference_tokenizer.encode_ordinary, encode_text)
-    print(f"Slow reference train time: {slow_reference_train_time:.4f}s")
-    print(f"Slow reference encode time: {slow_reference_encode_time:.4f}s")
+    slow_reference_ids, slow_reference_encode_time = time_function(slow_reference_tokenizer.encode_ordinary, encode_text)  # noqa
+    print(f'Slow reference train time: {slow_reference_train_time:.4f}s')
+    print(f'Slow reference encode time: {slow_reference_encode_time:.4f}s')
     print(slow_reference_ids[:20])
 
     if ambiguous_flag:
-        print("‼️ WARNING: merge order was detected to be ambiguous given current text and vocab size")
-        print("The implementation could be correct but we might see different results below")
+        print('!! WARNING: merge order was detected to be ambiguous given current text and vocab size')
+        print('The implementation could be correct but we might see different results below')
     else:
-        print("✅ Merge order is NOT ambiguous")
+        print('✅ Merge order is NOT ambiguous')
 
     # Train fast reference
-    print("\nTraining fast reference...")
+    print('\nTraining fast reference...')
     fast_reference_tokenizer = FastRegexTokenizer()
     _, fast_reference_train_time = time_function(fast_reference_tokenizer.train, text, vocab_size)
-    fast_reference_ids, fast_reference_encode_time = time_function(fast_reference_tokenizer.encode_ordinary, encode_text)
-    print(f"Fast reference train time: {fast_reference_train_time:.4f}s")
-    print(f"Fast reference encode time: {fast_reference_encode_time:.4f}s")
+    fast_reference_ids, fast_reference_encode_time = time_function(fast_reference_tokenizer.encode_ordinary, encode_text)  # noqa
+    print(f'Fast reference train time: {fast_reference_train_time:.4f}s')
+    print(f'Fast reference encode time: {fast_reference_encode_time:.4f}s')
     print(fast_reference_ids[:20])
 
     # Assert fast equals slow
-    assert fast_reference_ids == slow_reference_ids, "Fast reference should match slow reference"
-    print("✅ Fast == Slow")
+    assert fast_reference_ids == slow_reference_ids, 'Fast reference should match slow reference'
+    print('✅ Fast == Slow')
 
     # Train HuggingFace
-    print("\nTraining HuggingFace...")
+    print('\nTraining HuggingFace...')
     hf_tokenizer, hf_train_time = time_function(train_hugging_face_tokenizer, [text], vocab_size)
     hf_ids, hf_encode_time = time_function(hf_tokenizer.encode_ordinary, encode_text)
-    print(f"HuggingFace train time: {hf_train_time:.4f}s")
-    print(f"HuggingFace encode time: {hf_encode_time:.4f}s")
+    print(f'HuggingFace train time: {hf_train_time:.4f}s')
+    print(f'HuggingFace encode time: {hf_encode_time:.4f}s')
     print(hf_ids[:20])
 
     # HuggingFace has a different byte order, so we need custom matching
     def custom_match(ids1, ids2):
-        perm = {}
+        perm: dict = {}
         for x, y in zip(ids1, ids2):
             if x < 256:
                 if x in perm:
@@ -509,38 +515,38 @@ def test_correctness(enwik8_small):
                 return False
         return True
 
-    assert custom_match(hf_ids, fast_reference_ids), "HuggingFace should match fast reference"
-    print("✅ HuggingFace == Fast")
+    assert custom_match(hf_ids, fast_reference_ids), 'HuggingFace should match fast reference'
+    print('✅ HuggingFace == Fast')
 
     # Finally use our own Rust implementation
-    print("\nTraining rustbpe...")
+    print('\nTraining rustbpe...')
     rustbpe_tokenizer = rustbpe.Tokenizer()
     _, rustbpe_train_time = time_function(rustbpe_tokenizer.train_from_iterator, [text], vocab_size)
     rustbpe_ids, rustbpe_encode_time = time_function(rustbpe_tokenizer.encode, encode_text)
-    print(f"RustBPE train time: {rustbpe_train_time:.4f}s")
-    print(f"RustBPE encode time: {rustbpe_encode_time:.4f}s")
+    print(f'RustBPE train time: {rustbpe_train_time:.4f}s')
+    print(f'RustBPE encode time: {rustbpe_encode_time:.4f}s')
     print(rustbpe_ids[:20])
 
-    assert rustbpe_ids == fast_reference_ids, "RustBPE should match fast reference"
-    print("✅ RustBPE == Fast")
+    assert rustbpe_ids == fast_reference_ids, 'RustBPE should match fast reference'
+    print('✅ RustBPE == Fast')
 
     # Now export rustbpe to tiktoken for more efficient inference
-    print("\nTesting tiktoken export...")
+    print('\nTesting tiktoken export...')
     pattern = rustbpe_tokenizer.get_pattern()
     mergeable_ranks_list = rustbpe_tokenizer.get_mergeable_ranks()
     mergeable_ranks = {bytes(k): v for k, v in mergeable_ranks_list}
     enc = tiktoken.Encoding(
-        name="rustbpe",
+        name='rustbpe',
         pat_str=pattern,
         mergeable_ranks=mergeable_ranks,
         special_tokens={},
     )
     tiktoken_ids, tiktoken_encode_time = time_function(enc.encode, encode_text)
-    print(f"Tiktoken encode time: {tiktoken_encode_time:.4f}s")
+    print(f'Tiktoken encode time: {tiktoken_encode_time:.4f}s')
     print(tiktoken_ids[:20])
 
-    assert tiktoken_ids == rustbpe_ids, "Tiktoken should match RustBPE"
-    print("✅ Tiktoken == RustBPE")
+    assert tiktoken_ids == rustbpe_ids, 'Tiktoken should match RustBPE'
+    print('✅ Tiktoken == RustBPE')
 
 
 @pytest.mark.slow
@@ -549,7 +555,7 @@ def test_training_performance(enwik8_large):
 
     text = enwik8_large
     vocab_size = 2048
-    print(f"\nText length: {len(text)}")
+    print(f'\nText length: {len(text)}')
 
     # Commenting out because it's just way too slow to matter
     # Train optimized python version
@@ -559,23 +565,23 @@ def test_training_performance(enwik8_large):
     # print(f"Optimized python train time: {optimized_python_train_time:.4f}s")
 
     # Train rustbpe
-    print("\nTraining rustbpe...")
+    print('\nTraining rustbpe...')
     rustbpe_tokenizer = rustbpe.Tokenizer()
     _, rustbpe_train_time = time_function(rustbpe_tokenizer.train_from_iterator, [text], vocab_size)
-    print(f"RustBPE train time: {rustbpe_train_time:.4f}s")
-    assert rustbpe_train_time > 0, "Training should take some time"
+    print(f'RustBPE train time: {rustbpe_train_time:.4f}s')
+    assert rustbpe_train_time > 0, 'Training should take some time'
 
     # Train HuggingFace
-    print("\nTraining HuggingFace...")
+    print('\nTraining HuggingFace...')
     hf_tokenizer, hf_train_time = time_function(train_hugging_face_tokenizer, [text], vocab_size)
-    print(f"HuggingFace train time: {hf_train_time:.4f}s")
-    assert hf_train_time > 0, "Training should take some time"
+    print(f'HuggingFace train time: {hf_train_time:.4f}s')
+    assert hf_train_time > 0, 'Training should take some time'
 
     # Print comparison
-    print(f"\n📊 Performance comparison:")
-    print(f"   RustBPE: {rustbpe_train_time:.4f}s")
-    print(f"   HuggingFace: {hf_train_time:.4f}s")
-    print(f"   Speedup: {hf_train_time/rustbpe_train_time:.2f}x")
+    print(f'\n📊 Performance comparison:')
+    print(f'   RustBPE: {rustbpe_train_time:.4f}s')
+    print(f'   HuggingFace: {hf_train_time:.4f}s')
+    print(f'   Speedup: {hf_train_time / rustbpe_train_time:.2f}x')
 
 
 def test_interface(enwik8_small):
@@ -584,34 +590,34 @@ def test_interface(enwik8_small):
     # Simple train test
     vocab_size = 300
     tok = RustBPETokenizer.train_from_iterator([enwik8_small], vocab_size)
-    assert tok.get_vocab_size() == vocab_size, f"Expected vocab size {vocab_size}, got {tok.get_vocab_size()}"
-    print(f"✅ Trained tokenizer with vocab size {vocab_size}")
+    assert tok.get_vocab_size() == vocab_size, f'Expected vocab size {vocab_size}, got {tok.get_vocab_size()}'
+    print(f'✅ Trained tokenizer with vocab size {vocab_size}')
 
     # Encode/decode text
-    encode_text = "Hello world! How are you? 🙃"
+    encode_text = 'Hello world! How are you? 🙃'
     ids = tok.encode(encode_text)
-    print(f"\nInput text: {encode_text}")
-    print(f"IDs: {ids}")
+    print(f'\nInput text: {encode_text}')
+    print(f'IDs: {ids}')
     decoded = tok.decode(ids)
-    print(f"Decoded: {decoded}")
+    print(f'Decoded: {decoded}')
     assert decoded == encode_text, f"Decoded text doesn't match: {decoded} != {encode_text}"
-    print("✅ Encode/decode test passed")
+    print('✅ Encode/decode test passed')
 
     # Encode batch test
     ids_new = tok.encode([encode_text, encode_text])
-    assert all(x == ids for x in ids_new), "Batch encoding should produce identical results"
-    print("✅ Encode batch OK")
+    assert all(x == ids for x in ids_new), 'Batch encoding should produce identical results'
+    print('✅ Encode batch OK')
 
     # append/prepend functionality
-    ids_special = tok.encode(encode_text, prepend="<|bos|>", append="<|bos|>")
-    bos_token_id = tok.encode_special("<|bos|>")
-    assert ids_special == [bos_token_id] + ids + [bos_token_id], "Special tokens not correctly added"
-    print("✅ append/prepend OK")
+    ids_special = tok.encode(encode_text, prepend='<|bos|>', append='<|bos|>')
+    bos_token_id = tok.encode_special('<|bos|>')
+    assert ids_special == [bos_token_id, *ids, bos_token_id], 'Special tokens not correctly added'
+    print('✅ append/prepend OK')
 
     # Save/load test through a temporary directory
     with tempfile.TemporaryDirectory() as tmp_dir:
         tok.save(tmp_dir)
         tok_reloaded = RustBPETokenizer.from_directory(tmp_dir)
         ids_reloaded = tok_reloaded.encode(encode_text)
-        assert ids_reloaded == ids, "Reloaded tokenizer should produce same results"
-        print("✅ Save/load through temporary directory OK")
+        assert ids_reloaded == ids, 'Reloaded tokenizer should produce same results'
+        print('✅ Save/load through temporary directory OK')

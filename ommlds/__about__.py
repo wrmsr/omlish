@@ -41,6 +41,10 @@ class Project(ProjectBase):
             'datasets ~= 4.3',
         ],
 
+        'nanochat': [
+            'regex >= 2025.0',
+        ],
+
         'numpy': [
             'numpy >= 1.26',
         ],

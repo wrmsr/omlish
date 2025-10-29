@@ -19,6 +19,8 @@ with _lang.auto_proxy_init(globals()):
         make_bi_map,
     )
 
+    from . import cache  # noqa
+
     from .coerce import (  # noqa
         abs_set,
         abs_set_of,
