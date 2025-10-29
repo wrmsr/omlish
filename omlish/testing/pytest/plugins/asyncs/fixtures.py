@@ -141,7 +141,10 @@ class AsyncsFixture:
                 finally:
                     nursery_fixture.cancel_scope.cancel()
 
-        except BaseException as exc:  # noqa
+        except* (Skipped, XFailed):
+            pass
+
+        except* BaseException as exc:  # noqa
             test_ctx.crash(self, exc)
 
         finally:
