@@ -182,6 +182,7 @@ mlx-community/DeepSeek-R1-Distill-Llama-70B-8bit
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import json
+import typing as ta
 
 import pytest
 
@@ -288,7 +289,7 @@ def test_dump_chat_templates():
     ]:
         model: mlx.nn.Module
         tokenizer: mlx_lm.utils.TokenizerWrapper
-        model, tokenizer = mlx_lm.load(path_or_hf_repo=checkpoint)  # type: ignore[misc]
+        model, tokenizer = ta.cast(ta.Any, mlx_lm.load(path_or_hf_repo=checkpoint))
 
         prompt = tokenizer.apply_chat_template(
             messages,
@@ -328,7 +329,7 @@ def test_mlx():
 
     model: mlx.nn.Module
     tokenizer: mlx_lm.utils.TokenizerWrapper
-    model, tokenizer = mlx_lm.load(path_or_hf_repo=checkpoint)  # type: ignore[misc]
+    model, tokenizer = ta.cast(ta.Any, mlx_lm.load(path_or_hf_repo=checkpoint))
 
     prompt = tokenizer.apply_chat_template(
         messages,
