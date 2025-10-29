@@ -18,9 +18,9 @@ def test_attr_registry():
         A.foo.register(foo_b, None)
 
     class C(A):
+        @A.foo.register(None)
         def foo_c(self) -> None:
             pass
-        A.foo.register(foo_c, None)
 
     class BC(B, C):
         def foo_bc(self) -> None:
@@ -42,6 +42,23 @@ def test_attr_registry():
 
     foo_cache = AttrRegistryCache[ta.Callable, None, ta.Any](A.foo, lambda _, c: c)
 
-    for cls in [B, C, BC, CB, B2, BC2]:
+    expected = {
+        B: {'foo_a': (A.foo_a, None), 'foo_b': (B.foo_b, None)},
+        C: {'foo_a': (A.foo_a, None), 'foo_c': (C.foo_c, None)},
+        BC: {'foo_a': (A.foo_a, None), 'foo_c': (C.foo_c, None), 'foo_b': (B.foo_b, None), 'foo_bc': (BC.foo_bc, None)},
+        CB: {'foo_a': (A.foo_a, None), 'foo_b': (B.foo_b, None), 'foo_c': (C.foo_c, None), 'foo_cb': (CB.foo_cb, None)},
+        B2: {'foo_a': (A.foo_a, None), 'foo_b': (B2.foo_b, None)},
+        BC2: {'foo_a': (A.foo_a, None), 'foo_c': (C.foo_c, None), 'foo_b': (B2.foo_b, None), 'foo_bc': (BC.foo_bc, None)},  # noqa
+    }
+
+    for cls in [
+        B,
+        C,
+        BC,
+        CB,
+        B2,
+        BC2,
+    ]:
         for _ in range(2):
-            print(foo_cache.get(cls))
+            print(got := foo_cache.get(cls))
+            assert list(got.items()) == list(expected[cls].items())  # type: ignore[attr-defined]

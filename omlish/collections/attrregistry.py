@@ -50,13 +50,32 @@ class AttrRegistry(ta.Generic[K, V]):
     def add_invalidate_callback(self, callback: ta.Callable[[], None]) -> None:
         self._invalidate_callbacks.append(callback)
 
+    @ta.overload
     def register(self, obj: K, val: V) -> None:
-        check.not_in(obj, self._objs)
+        ...
 
-        self._objs[obj] = val
+    @ta.overload
+    def register(self, val: V) -> ta.Callable[[T], T]:
+        ...
 
-        for iv in self._invalidate_callbacks:
-            iv()
+    def register(self, *args):
+        def inner(obj, val):
+            check.not_in(obj, self._objs)
+
+            self._objs[obj] = val
+
+            for iv in self._invalidate_callbacks:
+                iv()
+
+            return obj
+
+        if len(args) == 1:
+            return lambda obj: inner(obj, args[0])
+        elif len(args) == 2:
+            inner = inner(*args)
+            return None
+        else:
+            raise TypeError(args)
 
     def _lookup(self, obj: ta.Any) -> lang.Maybe[V]:
         if not self._identity:
