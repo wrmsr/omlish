@@ -1727,6 +1727,36 @@ class HttpProtocolVersions:
 
 
 ########################################
+# ../../../omlish/io/readers.py
+
+
+##
+
+
+class RawBytesReader(ta.Protocol):
+    def read1(self, /, n: int = -1) -> bytes: ...
+
+
+class BufferedBytesReader(RawBytesReader, ta.Protocol):
+    def read(self, /, n: int = -1) -> bytes: ...
+
+    def readall(self) -> bytes: ...
+
+
+#
+
+
+class AsyncRawBytesReader(ta.Protocol):
+    def read1(self, /, n: int = -1) -> ta.Awaitable[bytes]: ...
+
+
+class AsyncBufferedBytesReader(AsyncRawBytesReader, ta.Protocol):
+    def read(self, /, n: int = -1) -> ta.Awaitable[bytes]: ...
+
+    def readall(self) -> ta.Awaitable[bytes]: ...
+
+
+########################################
 # ../../../omlish/lite/abstract.py
 
 
@@ -4763,6 +4793,10 @@ class HttpRequestParser:
 
 ########################################
 # ../../../omlish/io/buffers.py
+"""
+TODO:
+ - overhaul and just coro-ify pyio?
+"""
 
 
 ##
@@ -4941,6 +4975,9 @@ class ReadableListBuffer:
 
         self._lst: list[bytes] = []
 
+    def __bool__(self) -> ta.NoReturn:
+        raise TypeError("Use 'buf is not None' or 'len(buf)'.")
+
     def __len__(self) -> int:
         return sum(map(len, self._lst))
 
@@ -5006,6 +5043,102 @@ class ReadableListBuffer:
     def read_until(self, delim: bytes = b'\n') -> ta.Optional[bytes]:
         r = self.read_until_(delim)
         return r if isinstance(r, bytes) else None
+
+    #
+
+    DEFAULT_BUFFERED_READER_CHUNK_SIZE: ta.ClassVar[int] = 0x1000
+
+    @ta.final
+    class _BufferedBytesReader(BufferedBytesReader):
+        def __init__(
+                self,
+                raw: RawBytesReader,
+                buf: 'ReadableListBuffer',
+                *,
+                chunk_size: ta.Optional[int] = None,
+        ) -> None:
+            self._raw = raw
+            self._buf = buf
+            self._chunk_size = chunk_size or ReadableListBuffer.DEFAULT_BUFFERED_READER_CHUNK_SIZE
+
+        def read1(self, /, n: int = -1) -> bytes:
+            if len(self._buf):
+                return self._buf.read(n) or b''
+            return self._raw.read1(n)
+
+        def read(self, /, n: int = -1) -> bytes:
+            if n < 0:
+                return self.readall()
+            while len(self._buf) < n:
+                if not (b := self._raw.read1(n)):
+                    break
+                self._buf.feed(b)
+            return self._buf.read(n) or b''
+
+        def readall(self) -> bytes:
+            buf = io.BytesIO()
+            buf.write(self._buf.read() or b'')
+            while (b := self._raw.read1(self._chunk_size)):
+                buf.write(b)
+            return buf.getvalue()
+
+    def new_buffered_reader(
+            self,
+            raw: RawBytesReader,
+            *,
+            chunk_size: ta.Optional[int] = None,
+    ) -> BufferedBytesReader:
+        return self._BufferedBytesReader(
+            raw,
+            self,
+            chunk_size=chunk_size,
+        )
+
+    @ta.final
+    class _AsyncBufferedBytesReader(AsyncBufferedBytesReader):
+        def __init__(
+                self,
+                raw: AsyncRawBytesReader,
+                buf: 'ReadableListBuffer',
+                *,
+                chunk_size: ta.Optional[int] = None,
+        ) -> None:
+            self._raw = raw
+            self._buf = buf
+            self._chunk_size = chunk_size or ReadableListBuffer.DEFAULT_BUFFERED_READER_CHUNK_SIZE
+
+        async def read1(self, /, n: int = -1) -> bytes:
+            if n <= len(self._buf):
+                return self._buf.read(n) or b''
+            return await self._raw.read1(n)
+
+        async def read(self, /, n: int = -1) -> bytes:
+            if n < 0:
+                return await self.readall()
+            while len(self._buf) < n:
+                if not (b := await self._raw.read1(n)):
+                    break
+                self._buf.feed(b)
+            return self._buf.read(n) or b''
+
+        async def readall(self) -> bytes:
+            buf = io.BytesIO()
+            buf.write(self._buf.read() or b'')
+            while b := await self._raw.read1(self._chunk_size):
+                buf.write(b)
+            return buf.getvalue()
+
+    def new_async_buffered_reader(
+            self,
+            raw: AsyncRawBytesReader,
+            *,
+            chunk_size: ta.Optional[int] = None,
+    ) -> AsyncBufferedBytesReader:
+        return self._AsyncBufferedBytesReader(
+            raw,
+            self,
+            chunk_size=chunk_size,
+        )
 
 
 ##
