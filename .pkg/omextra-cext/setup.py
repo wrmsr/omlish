@@ -6,7 +6,7 @@ st.setup(
         st.Extension(
             name='omextra.collections.hamt._hamt',
             sources=['omextra/collections/hamt/_hamt.c'],
-            extra_compile_args=['-std=c++20'],
+            extra_compile_args=['-std=c11'],
         ),
     ],
 )

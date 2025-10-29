@@ -523,7 +523,7 @@ publish: package test-install
 	${MAKE} versions
 	read -p "Press enter to publish"
 
-	${PYTHON} -m twine upload dist/*
+	find dist -type f -maxdepth 1 -print0 | xargs -n1 -P4 -0 ${PYTHON} -m twine upload
 
 	${MAKE} _post-publish
 

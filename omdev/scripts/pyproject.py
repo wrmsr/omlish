@@ -11300,12 +11300,17 @@ class _PyprojectCextPackageGenerator(_PyprojectExtensionPackageGenerator):
         ext_lines = []
 
         for ext_src in self.find_cext_srcs():
+            ext_lang = ext_src.rpartition('.')[2]
+            compile_args = {
+                'c': ['-std=c11'],
+                'cc': ['-std=c++20'],
+            }.get(ext_lang, [])
             ext_name = ext_src.rpartition('.')[0].replace(os.sep, '.')
             ext_lines.extend([
                 'st.Extension(',
                 f"    name='{ext_name}',",
                 f"    sources=['{ext_src}'],",
-                "    extra_compile_args=['-std=c++20'],",
+                f'    extra_compile_args={compile_args!r},',
                 '),',
             ])
 
