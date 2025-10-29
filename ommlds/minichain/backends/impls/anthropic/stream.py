@@ -52,7 +52,7 @@ class AnthropicChatChoicesStreamService:
             self._model_name = cc.pop(AnthropicChatChoicesService.DEFAULT_MODEL_NAME)
             self._api_key = check.not_none(ApiKey.pop_secret(cc, env='ANTHROPIC_API_KEY'))
 
-    READ_CHUNK_SIZE = 64 * 1024
+    READ_CHUNK_SIZE = 64
 
     async def invoke(
             self,
