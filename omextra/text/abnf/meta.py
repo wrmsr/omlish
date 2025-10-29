@@ -538,7 +538,6 @@ class MetaGrammarRuleVisitor(RuleVisitor[ta.Any]):
             return literal(c, c)
 
 
-
 def parse_grammar(
         source: str,
         *,

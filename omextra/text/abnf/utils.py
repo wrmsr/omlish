@@ -61,8 +61,8 @@ def parse_rules(
 
 def fix_grammar_ws(s: str) -> str:
     return (
-            textwrap.dedent(s)
-            .rstrip()
-            .replace('\r', '')
-            .replace('\n', '\r\n')
+        textwrap.dedent(s)
+        .rstrip()
+        .replace('\r', '')
+        .replace('\n', '\r\n')
     ) + '\r\n'

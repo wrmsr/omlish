@@ -15,7 +15,7 @@ def test_alpha(src):
 
 @pytest.mark.parametrize('src', [
     '',
-    *[x*y for x, y in itertools.product([1, 2], [' ', '\t', '\r\n ', '\r\n\t'])],
+    *[x * y for x, y in itertools.product([1, 2], [' ', '\t', '\r\n ', '\r\n\t'])],
 ])
 def test_lwsp(src):
     m = co.CORE_GRAMMAR.parse(src, 'LWSP')
