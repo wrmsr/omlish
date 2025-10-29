@@ -237,6 +237,7 @@ RESERVED_KEYWORD_MAP: ta.Mapping[str, ta.Callable[[str, str, 'YamlPosition'], 'Y
     **{keyword: functools.partial(reserved_keyword_token, YamlTokenType.NAN) for keyword in RESERVED_NAN_KEYWORDS},
 }
 
+
 # RESERVED_ENC_KEYWORD_MAP contains is the keyword map used at encoding time.
 # This is supposed to be a superset of RESERVED_KEYWORD_MAP, and used to quote legacy keywords present in YAML 1.1 or
 # lesser for compatibility reasons, even though this library is supposed to be YAML 1.2-compliant.
@@ -485,7 +486,7 @@ def _to_number(value: str) -> YamlErrorOr[ta.Optional[YamlNumberValue]]:
 
 # This is a subset of the formats permitted by the regular expression defined at http:#yaml.org/type/timestamp.html.
 # Note that time.Parse cannot handle: "2001-12-14 21:59:43.10 -5" from the examples.
-TIMESTAMP_FORMATS = (
+YAML_TIMESTAMP_FORMATS = (
     '%Y-%m-%dT%H:%M:%S.%fZ',  # RFC3339Nano
     '%Y-%m-%dt%H:%M:%S.%fZ',  # RFC3339Nano with lower-case "t"
     '%Y-%m-%d %H:%M:%S',      # DateTime
@@ -496,7 +497,7 @@ TIMESTAMP_FORMATS = (
 )
 
 def _is_timestamp(value: str) -> bool:
-    for format_str in TIMESTAMP_FORMATS:
+    for format_str in YAML_TIMESTAMP_FORMATS:
         try:
             datetime.datetime.strptime(value, format_str)  # noqa
             return True

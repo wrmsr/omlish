@@ -740,67 +740,67 @@ class YamlScanner:
                 elif next_char == 'a':
                     progress = 1
                     ctx.add_origin_buf(next_char)
-                    value += chr(0x07)
+                    value += '\x07'
                 elif next_char == 'b':
                     progress = 1
                     ctx.add_origin_buf(next_char)
-                    value += chr(0x08)
+                    value += '\x08'
                 elif next_char == 't':
                     progress = 1
                     ctx.add_origin_buf(next_char)
-                    value += chr(0x09)
+                    value += '\x09'
                 elif next_char == 'n':
                     progress = 1
                     ctx.add_origin_buf(next_char)
-                    value += chr(0x0A)
+                    value += '\x0A'
                 elif next_char == 'v':
                     progress = 1
                     ctx.add_origin_buf(next_char)
-                    value += chr(0x0B)
+                    value += '\x0B'
                 elif next_char == 'f':
                     progress = 1
                     ctx.add_origin_buf(next_char)
-                    value += chr(0x0C)
+                    value += '\x0C'
                 elif next_char == 'r':
                     progress = 1
                     ctx.add_origin_buf(next_char)
-                    value += chr(0x0D)
+                    value += '\x0D'
                 elif next_char == 'e':
                     progress = 1
                     ctx.add_origin_buf(next_char)
-                    value += chr(0x1B)
+                    value += '\x1B'
                 elif next_char == ' ':
                     progress = 1
                     ctx.add_origin_buf(next_char)
-                    value += chr(0x20)
+                    value += '\x20'
                 elif next_char == '"':
                     progress = 1
                     ctx.add_origin_buf(next_char)
-                    value += chr(0x22)
+                    value += '\x22'
                 elif next_char == '/':
                     progress = 1
                     ctx.add_origin_buf(next_char)
-                    value += chr(0x2F)
+                    value += '\x2F'
                 elif next_char == '\\':
                     progress = 1
                     ctx.add_origin_buf(next_char)
-                    value += chr(0x5C)
+                    value += '\x5C'
                 elif next_char == 'N':
                     progress = 1
                     ctx.add_origin_buf(next_char)
-                    value += chr(0x85)
+                    value += '\x85'
                 elif next_char == '_':
                     progress = 1
                     ctx.add_origin_buf(next_char)
-                    value += chr(0xA0)
+                    value += '\xA0'
                 elif next_char == 'L':
                     progress = 1
                     ctx.add_origin_buf(next_char)
-                    value += chr(0x2028)
+                    value += '\u2028'
                 elif next_char == 'P':
                     progress = 1
                     ctx.add_origin_buf(next_char)
-                    value += chr(0x2029)
+                    value += '\u2029'
 
                 elif next_char == 'x':
                     if idx + 3 >= size:
