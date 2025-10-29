@@ -22,10 +22,10 @@ from .tokens import new_yaml_token
 
 
 # context context at parsing
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class YamlParsingContext:
     token_ref: ta.Optional['YamlParseTokenRef'] = None
-    path: str
+    path: str = ''
     is_flow: bool = False
 
     def current_token(self) -> ta.Optional['YamlParseToken']:
@@ -162,7 +162,7 @@ class YamlParsingContext:
         ref.size = len(ref.tokens)
 
 
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class YamlParseTokenRef:
     tokens: ta.List['YamlParseToken']
     size: int
@@ -226,7 +226,7 @@ class YamlParseTokenGroupType(enum.Enum):
     MAP_KEY_VALUE = enum.auto()
 
 
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class YamlParseToken:
     token: ta.Optional[YamlToken] = None
     group: ta.Optional['YamlParseTokenGroup'] = None
@@ -276,10 +276,10 @@ class YamlParseToken:
 ##
 
 
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class YamlParseTokenGroup:
     type: YamlParseTokenGroupType = YamlParseTokenGroupType.NONE
-    tokens: ta.List[YamlParseToken]
+    tokens: ta.List[YamlParseToken] = dc.field(default_factory=list)
 
     def first(self) -> ta.Optional[YamlParseToken]:
         if len(self.tokens) == 0:
@@ -1154,7 +1154,7 @@ YAML_VERSION_MAP: ta.Mapping[str, YAMLVersion] = {
 
 #
 
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class YamlParser:
     tokens: ta.List[YamlParseToken]
     path_map: ta.Dict[str, ast.YamlNode]

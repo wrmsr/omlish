@@ -41,7 +41,7 @@ def err_invalid_token(tk: YamlToken) -> InvalidTokenYamlError:
 
 
 # Context at scanning
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class YamlScanningContext:
     idx: int = 0
     size: int = 0
@@ -268,7 +268,7 @@ class YamlScanningContext:
 ##
 
 
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class YamlMultiLineState:
     opt: str = ''
     first_line_indent_column: int = 0
@@ -417,7 +417,7 @@ class YamlIndentState(enum.Enum):
 
 # Scanner holds the scanner's internal state while processing a given text. It can be allocated as part of another data
 # structure but must be initialized via init before use.
-@dc.dataclass(kw_only=True)
+@dc.dataclass()
 class YamlScanner:
     source: str = ''
     source_pos: int = 0

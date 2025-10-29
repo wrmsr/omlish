@@ -485,7 +485,7 @@ def tag(tk: YamlToken) -> 'TagYamlNode':
 @dc.dataclass(kw_only=True)
 class YamlFile:
     name: str = ''
-    docs: ta.List['DocumentYamlNode']
+    docs: ta.List['DocumentYamlNode'] = dc.field(default_factory=list)
 
     # read implements (io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
@@ -513,9 +513,9 @@ class YamlFile:
 # DocumentNode type of Document
 @dc.dataclass(kw_only=True)
 class DocumentYamlNode(BaseYamlNode):
-    start: ta.Optional[YamlToken]  # position of DocumentHeader ( `---` )
+    start: ta.Optional[YamlToken] = None  # position of DocumentHeader ( `---` )
     end: ta.Optional[YamlToken] = None  # position of DocumentEnd ( `...` )
-    body: ta.Optional[YamlNode]
+    body: ta.Optional[YamlNode] = None
 
     # read implements (io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
