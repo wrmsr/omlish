@@ -65,7 +65,7 @@ def test_validate_init():
 
         dc.validate(lambda x: x < 20)
 
-        @dc.validate  # noqa
+        @dc.validate
         @staticmethod
         def _validate_x_not_15(x: int) -> bool:
             return x != 15

@@ -17,7 +17,7 @@ The primary reasons for.. doing this.. are as follows:
    pile of regexes, but this codebase itself already uses anchors in its compose.yml, at which point (given the
    potential failure modes of automated infra machinery) that's extremely not acceptable.
 
- - Additionally, as giant yaml files are so pervasive these days, it's useful to be able to programmatically parse
+ - Additionally, as giant yaml files are so pervasive these days, it's useful to be able to programmatically parse and
    manipulate them with full, perfect preservation of all stylistic choices, whitespace, comments, etc. This is already
    partially done here by wrapping pyyaml nodes, but it's not complete and very fragile.
 

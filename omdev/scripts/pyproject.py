@@ -10877,7 +10877,7 @@ class BasePyprojectPackageGenerator(Abstract):
 
     def _write_git_ignore(self) -> None:
         with open(os.path.join(self._pkg_dir(), '.gitignore'), 'w') as f:
-            f.write('\n'.join(self._GIT_IGNORE))
+            f.write('\n'.join([*self._GIT_IGNORE, '']))
 
     #
 
