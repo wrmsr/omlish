@@ -157,7 +157,7 @@ class CoroHttpClient(HttpClient):
             else:
                 raise TypeError(o)
 
-        def read1(self, /, n: int = -1) -> bytes:
+        def read1(self, n: int = -1, /) -> bytes:
             return self._run_coro(check.not_none(self._resp).read(n if n >= 0 else None))
 
         def close(self) -> None:

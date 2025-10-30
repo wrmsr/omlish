@@ -33,7 +33,7 @@ class HttpxHttpClient(HttpClient):
     class _StreamAdapter:
         it: ta.Iterator[bytes]
 
-        def read1(self, /, n: int = -1) -> bytes:
+        def read1(self, n: int = -1, /) -> bytes:
             try:
                 return next(self.it)
             except StopIteration:
@@ -82,7 +82,7 @@ class HttpxAsyncHttpClient(AsyncHttpClient):
     class _StreamAdapter:
         it: ta.AsyncIterator[bytes]
 
-        async def read1(self, /, n: int = -1) -> bytes:
+        async def read1(self, n: int = -1, /) -> bytes:
             try:
                 return await anext(self.it)
             except StopAsyncIteration:

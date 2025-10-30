@@ -23,10 +23,10 @@ class SyncAsyncHttpClient(AsyncHttpClient):
     class _StreamAdapter:
         ul: StreamHttpResponse
 
-        async def read1(self, /, n: int = -1) -> bytes:
+        async def read1(self, n: int = -1, /) -> bytes:
             return self.ul.stream.read1(n)
 
-        async def read(self, /, n: int = -1) -> bytes:
+        async def read(self, n: int = -1, /) -> bytes:
             return self.ul.stream.read(n)
 
         async def readall(self) -> bytes:

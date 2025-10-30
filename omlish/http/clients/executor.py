@@ -30,10 +30,10 @@ class ExecutorAsyncHttpClient(AsyncHttpClient):
         owner: 'ExecutorAsyncHttpClient'
         resp: StreamHttpResponse
 
-        async def read1(self, /, n: int = -1) -> bytes:
+        async def read1(self, n: int = -1, /) -> bytes:
             return await self.owner._run_in_executor(self.resp.stream.read1, n)  # noqa
 
-        async def read(self, /, n: int = -1) -> bytes:
+        async def read(self, n: int = -1, /) -> bytes:
             return await self.owner._run_in_executor(self.resp.stream.read, n)  # noqa
 
         async def readall(self) -> bytes:

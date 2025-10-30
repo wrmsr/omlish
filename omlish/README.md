@@ -125,7 +125,8 @@ dependencies of any kind**.
   - **[queries](https://github.com/wrmsr/omlish/blob/master/omlish/sql/queries)** - A SQL query builder with a fluent
     interface.
   - **[alchemy](https://github.com/wrmsr/omlish/blob/master/omlish/sql/alchemy)** - SQLAlchemy utilities. The codebase
-    is moving away from SQLAlchemy however in favor of its own internal SQL api.
+    has moved away from SQLAlchemy in favor of its own internal SQL api, but it will likely still remain as an optional
+    dep for the api adapter.
 
 - **[testing](https://github.com/wrmsr/omlish/blob/master/omlish/testing)** - Test - primarily pytest - helpers,
   including:
@@ -185,11 +186,11 @@ examples are:
 - **pytest** - What is used for all standard testing - as lite code has no dependencies of any kind its testing uses
   stdlib's [unittest](https://docs.python.org/3/library/unittest.html).
 - **wrapt** - For (optionally-enabled) injector circular proxies.
-- **sqlalchemy** - Parts of the codebase use SQLAlchemy for db stuff, but it is being migrated away from in favor of the
-  internal api. It will however likely still remain as an optional dep for the api adapter.
+- **sqlalchemy** - The codebase has migrated away from SQLAlchemy in favor of the internal api but it retains it as an
+  optional dep to support adapting the internal api to it.
 
 Additionally, some catchall dep categories include:
 
-- **compression** - Various preferred compression backends like lz4, python-snappy, zstandard, and brotli.
+- **compression** - Various preferred compression backends like lz4, python-snappy, and brotli.
 - **formats** - Various preferred data format backends like orjson/ujson, pyyaml, cbor2, and cloudpickle.
 - **sql drivers** - Various preferred and tested sql drivers.

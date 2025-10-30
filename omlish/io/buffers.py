@@ -277,7 +277,7 @@ class ReadableListBuffer:
             self._buf = buf
             self._chunk_size = chunk_size or ReadableListBuffer.DEFAULT_BUFFERED_READER_CHUNK_SIZE
 
-        def read1(self, /, n: int = -1) -> bytes:
+        def read1(self, n: int = -1, /) -> bytes:
             if n < 0:
                 n = self._chunk_size
             if not n:
@@ -327,7 +327,7 @@ class ReadableListBuffer:
             self._buf = buf
             self._chunk_size = chunk_size or ReadableListBuffer.DEFAULT_BUFFERED_READER_CHUNK_SIZE
 
-        async def read1(self, /, n: int = -1) -> bytes:
+        async def read1(self, n: int = -1, /) -> bytes:
             if n < 0:
                 n = self._chunk_size
             if not n:

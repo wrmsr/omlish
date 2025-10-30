@@ -1208,11 +1208,11 @@ class TomlWriter:
 
 
 class RawBytesReader(ta.Protocol):
-    def read1(self, /, n: int = -1) -> bytes: ...
+    def read1(self, n: int = -1, /) -> bytes: ...
 
 
 class BufferedBytesReader(RawBytesReader, ta.Protocol):
-    def read(self, /, n: int = -1) -> bytes: ...
+    def read(self, n: int = -1, /) -> bytes: ...
 
     def readall(self) -> bytes: ...
 
@@ -1221,11 +1221,11 @@ class BufferedBytesReader(RawBytesReader, ta.Protocol):
 
 
 class AsyncRawBytesReader(ta.Protocol):
-    def read1(self, /, n: int = -1) -> ta.Awaitable[bytes]: ...
+    def read1(self, n: int = -1, /) -> ta.Awaitable[bytes]: ...
 
 
 class AsyncBufferedBytesReader(AsyncRawBytesReader, ta.Protocol):
-    def read(self, /, n: int = -1) -> ta.Awaitable[bytes]: ...
+    def read(self, n: int = -1, /) -> ta.Awaitable[bytes]: ...
 
     def readall(self) -> ta.Awaitable[bytes]: ...
 
@@ -4206,7 +4206,7 @@ class ReadableListBuffer:
             self._buf = buf
             self._chunk_size = chunk_size or ReadableListBuffer.DEFAULT_BUFFERED_READER_CHUNK_SIZE
 
-        def read1(self, /, n: int = -1) -> bytes:
+        def read1(self, n: int = -1, /) -> bytes:
             if n < 0:
                 n = self._chunk_size
             if not n:
@@ -4256,7 +4256,7 @@ class ReadableListBuffer:
             self._buf = buf
             self._chunk_size = chunk_size or ReadableListBuffer.DEFAULT_BUFFERED_READER_CHUNK_SIZE
 
-        async def read1(self, /, n: int = -1) -> bytes:
+        async def read1(self, n: int = -1, /) -> bytes:
             if n < 0:
                 n = self._chunk_size
             if not n:
