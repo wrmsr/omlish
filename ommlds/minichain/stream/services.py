@@ -197,13 +197,14 @@ async def new_stream_response(
         fn: ta.Callable[[StreamResponseSink[V]], ta.Awaitable[ta.Sequence[OutputT] | None]],
         outputs: ta.Sequence[StreamOutputT] | None = None,
 ) -> StreamResponse[V, OutputT, StreamOutputT]:
-    return StreamResponse(
-        rs.new_managed(
-            await rs.enter_async_context(
-                _StreamServiceResponse(
-                    fn,
-                ),
-            ),
-        ),
-        outputs or [],
-    )
+    ssr = _StreamServiceResponse(fn)
+
+    v = rs.new_managed(await rs.enter_async_context(ssr))
+    try:
+        return StreamResponse(v, outputs or [])
+    except BaseException:  # noqa
+        # The StreamResponse ctor can raise - for example in `_tv_field_coercer` - in which case we need to clean up the
+        # resources ref we have already allocated before reraising.
+        async with v:
+            pass
+        raise

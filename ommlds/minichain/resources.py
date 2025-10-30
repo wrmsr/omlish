@@ -31,6 +31,7 @@ class ResourcesRefNotRegisteredError(Exception):
     pass
 
 
+@ta.final
 class Resources(lang.Final, lang.NotPicklable):
     def __init__(
             self,
@@ -145,24 +146,48 @@ class Resources(lang.Final, lang.NotPicklable):
 ##
 
 
+@ta.final
 class ResourceManaged(ResourcesRef, lang.Final, lang.NotPicklable, ta.Generic[T]):
+    """
+    A class to 'handoff' a ref to a `Resources`, allowing the `Resources` to temporarily survive being passed from
+    instantiation within a callee to being `__aenter__`'d in the caller.
+
+    The ref to the `Resources` is allocated in the ctor, so the contract is that an instance of this must be immediately
+    `__aenter__`'d before doing anything else with the return value of the call. Failure to do so leaks the `Resources`.
+    """
+
     def __init__(self, v: T, resources: Resources) -> None:
         super().__init__()
 
-        self._v = v
+        self.__v = v
         self.__resources = resources
 
         resources.add_ref(self)
 
+    __state: ta.Literal['new', 'entered', 'exited'] = 'new'
+
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}<{self._v!r}>'
+        return f'{self.__class__.__name__}<{self.__v!r}, {self.__state}>'
 
     async def __aenter__(self) -> T:
-        return self._v
+        check.state(self.__state == 'new')
+        self.__state = 'entered'
+        return self.__v
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
+        check.state(self.__state == 'entered')
+        self.__state = 'exited'
         await self.__resources.remove_ref(self)
 
+    def __del__(self) -> None:
+        if self.__state != 'exited':
+            log.error(
+                f'{__package__}.{self.__class__.__name__}.__del__: '  # noqa
+                f'%r deleted without being entered and exited! '
+                f'resources: %s',
+                repr(self),
+                repr(self.__resources),
+            )
 
 ##
 
