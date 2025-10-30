@@ -73,7 +73,7 @@ fsspec==2025.9.0
 gguf==0.17.1
 google-api-core==2.28.1
 google-api-python-client==2.185.0
-google-auth==2.42.0
+google-auth==2.42.1
 google-auth-httplib2==0.2.0
 google-cloud-compute==1.40.0
 googleapis-common-protos==1.71.0
@@ -163,7 +163,7 @@ nbconvert==7.16.6
 nbformat==5.10.4
 nest-asyncio==1.6.0
 networkx==3.5
-nh3==0.3.1
+nh3==0.3.2
 nodeenv==1.9.1
 nodejs-wheel-binaries==22.20.0
 notebook==7.4.7

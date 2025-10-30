@@ -83,7 +83,7 @@ def client() -> HttpClient:
 
 
 @contextlib.contextmanager
-def manage_client(client: HttpClient | None) -> ta.Generator[HttpClient]:  # noqa
+def manage_client(client: HttpClient | None = None) -> ta.Generator[HttpClient]:  # noqa
     if client is not None:
         yield client
 
@@ -167,7 +167,7 @@ def async_client() -> AsyncHttpClient:
 
 
 @contextlib.asynccontextmanager
-async def manage_async_client(client: AsyncHttpClient | None) -> ta.AsyncGenerator[AsyncHttpClient]:  # noqa
+async def manage_async_client(client: AsyncHttpClient | None = None) -> ta.AsyncGenerator[AsyncHttpClient]:  # noqa
     if client is not None:
         yield client
 
