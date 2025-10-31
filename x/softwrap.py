@@ -373,62 +373,66 @@ class ListBuilder:
 ##
 
 
-class BlockTextJoiner:
-    def __init__(self) -> None:
-        super().__init__()
+def join_text(lst: ta.Sequence[str], ci: int = 0) -> ta.Sequence[str]:
+    # TODO:
+    #  - detect if 'intentionally' smaller than current remaining line width, if so do not merge.
+    #  - maybe if only ending with punctuation?
+    return [' '.join(lst)]
 
-    def _join_text(self, lst: ta.Sequence[str], ci: int) -> ta.Sequence[str]:
-        # TODO:
-        #  - detect if 'intentionally' smaller than current remaining line width, if so do not merge.
-        #  - maybe if only ending with puctuation?
-        return [' '.join(lst)]
 
-    def join_block_text(self, root: Part) -> Part:
-        def rec(p: Part, ci: int) -> Part:
-            if isinstance(p, (Blank, Text)):
-                return p
+class TextJoiner(ta.Protocol):
+    def __call__(self, strs: ta.Sequence[str], current_indent: int) -> ta.Sequence[str]: ...
 
-            elif isinstance(p, Indent):
-                if (np := rec(p.p, ci + p.n)) is not p.p:
-                    p = Indent(p.n, np)  # type: ignore[arg-type]
-                return p
 
-            elif isinstance(p, List):
-                ne = [rec(e, ci + len(p.d) + 1) for e in p.es]
-                if not _all_same(ne, p.es):
-                    p = List(p.d, ne)
-                return p
+def join_block_text(
+        root: Part,
+        text_joiner: TextJoiner = join_text,
+) -> Part:
+    def rec(p: Part, ci: int) -> Part:
+        if isinstance(p, (Blank, Text)):
+            return p
 
-            elif not isinstance(p, Block):
-                raise TypeError(p)
+        elif isinstance(p, Indent):
+            if (np := rec(p.p, ci + p.n)) is not p.p:
+                p = Indent(p.n, np)  # type: ignore[arg-type]
+            return p
 
-            ps = [rec(c, ci) for c in p.ps]
+        elif isinstance(p, List):
+            ne = [rec(e, ci + len(p.d) + 1) for e in p.es]
+            if not _all_same(ne, p.es):
+                p = List(p.d, ne)
+            return p
 
-            if not any(
-                isinstance(ps[i], Text) and
-                isinstance(ps[i + 1], Text)
-                for i in range(len(ps) - 1)
-            ):
-                if not _all_same(ps, p.ps):
-                    p = blockify(*ps)
-                return p
+        elif not isinstance(p, Block):
+            raise TypeError(p)
 
-            new: list[Part | list[str]] = []
-            for c in ps:
-                if isinstance(c, Text):
-                    if new and isinstance(x := new[-1], list):
-                        x.append(c.s)
-                    else:
-                        new.append([c.s])
+        ps = [rec(c, ci) for c in p.ps]
+
+        if not any(
+            isinstance(ps[i], Text) and
+            isinstance(ps[i + 1], Text)
+            for i in range(len(ps) - 1)
+        ):
+            if not _all_same(ps, p.ps):
+                p = blockify(*ps)
+            return p
+
+        new: list[Part | list[str]] = []
+        for c in ps:
+            if isinstance(c, Text):
+                if new and isinstance(x := new[-1], list):
+                    x.append(c.s)
                 else:
-                    new.append(c)
+                    new.append([c.s])
+            else:
+                new.append(c)
 
-            return blockify(*lang.flatmap(
-                lambda x: map(Text, self._join_text(x, ci)) if isinstance(x, list) else [x],  # noqa
-                new
-            ))
+        return blockify(*lang.flatmap(
+            lambda x: map(Text, join_text(x, ci)) if isinstance(x, list) else [x],  # noqa
+            new
+        ))
 
-        return rec(root, 0)
+    return rec(root, 0)
 
 ##
 
@@ -439,7 +443,7 @@ def chop(s: str) -> Part:
     root = build_root(s)
     root = group_indents(root)
     root = ListBuilder().build_lists(root)
-    root = BlockTextJoiner().join_block_text(root)
+    root = join_block_text(root)
 
     return root
 
