@@ -380,6 +380,16 @@ def join_text(lst: ta.Sequence[str], ci: int = 0) -> ta.Sequence[str]:
     return [' '.join(lst)]
 
 
+class SoftwrapTextJoiner:
+    def __init__(self, target_line_width: int) -> None:
+        super().__init__()
+
+        self._target_line_width = target_line_width
+
+    def __call__(self, strs: ta.Sequence[str], current_indent: int) -> ta.Sequence[str]:
+        raise NotImplementedError
+
+
 class TextJoiner(ta.Protocol):
     def __call__(self, strs: ta.Sequence[str], current_indent: int) -> ta.Sequence[str]: ...
 
@@ -456,7 +466,7 @@ def _indent_str(n: int) -> str:
     return ' ' * n
 
 
-def render_part_to(root: Part, out: ta.Callable[[str], ta.Any]) -> None:
+def render_to(root: Part, out: ta.Callable[[str], ta.Any]) -> None:
     i_stk: list[int] = [0]
     ci = 0
 
@@ -517,80 +527,7 @@ def render_part_to(root: Part, out: ta.Callable[[str], ta.Any]) -> None:
     check.state(i_stk == [0])
 
 
-def render_part(root: Part) -> str:
+def render(root: Part) -> str:
     buf = io.StringIO()
-    render_part_to(root, buf.write)
+    render_to(root, buf.write)
     return buf.getvalue()
-
-
-##
-
-
-def _main() -> None:
-    print()
-
-    #
-
-    print(blockify(
-        Text('hi'),
-        Block([Text('foo'), Text('foo2')]),
-        Block([Text('bar'), Text('bar2')]),
-    ))
-    print(blockify(
-        Text('hi'),
-        Indent(2, Text('a')),
-        Indent(2, Text('b')),
-    ))
-    print()
-
-    #
-
-    root = chop("""\
-    Hi I'm some text.
-    
-    I am more text.
-    
-    This is a list:
-     - Item one
-     - item 2
-       with another line
-    
-     - here is a proper nested list
-       - subitem 1
-         with a second line
-       - subitem 2
-       
-       - subitem 3
-    
-     - here is an improper nested list
-      - subitem 1
-        with a second line
-        and a third
-      - subitem 2
-      
-      - subitem 3
-     
-     - item last
-
-  the fuck?
-""")
-    print(root)
-    print(render_part(root))
-    print()
-
-    #
-
-    # from omlish.formats import json
-    # from omlish import marshal as msh
-    #
-    # msh.install_standard_factories(
-    #     *msh.standard_polymorphism_factories(part_poly := msh.polymorphism_from_subclasses(Part)),
-    #     msh.PolymorphismUnionMarshalerFactory(part_poly.impls, allow_partial=True),
-    # )
-    #
-    # print(json.dumps_pretty(msh.marshal(root, Part)))
-    # print()
-
-
-if __name__ == '__main__':
-    _main()
