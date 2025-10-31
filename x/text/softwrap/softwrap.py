@@ -374,19 +374,22 @@ class ListBuilder:
 
 
 def join_text(strs: ta.Sequence[str], current_indent: int = 0) -> ta.Sequence[str]:
-    # TODO:
-    #  - detect if 'intentionally' smaller than current remaining line width, if so do not merge.
-    #  - maybe if only ending with punctuation?
     return [' '.join(strs)]
 
 
 class SoftwrapTextJoiner:
-    def __init__(self, target_line_width: int) -> None:
+    def __init__(
+            self,
+            target_line_width: int,
+    ) -> None:
         super().__init__()
 
         self._target_line_width = target_line_width
 
     def __call__(self, strs: ta.Sequence[str], current_indent: int) -> ta.Sequence[str]:
+        # TODO:
+        #  - detect if 'intentionally' smaller than current remaining line width, if so do not merge.
+        #  - maybe if only ending with punctuation?
         raise NotImplementedError
 
 

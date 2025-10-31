@@ -54,6 +54,27 @@ def test_softwrap():
     print()
 
 
+def test_softwrap2():
+    root = chop("""\
+    Hi! I am a long string! I am longer than twenty characters.
+
+    This is a list:
+     - The items of the list are indented by a single space, followed by a hyphen.
+     - This is the second item.
+      - This is a sub-list, indented by one.
+      - This is the second item of the sub-list
+     - This is the third item.
+       - Weirdly, this sub-list is indented by two, as opposed to the previous item's sublist.
+       - That difference is preserved.
+     - This item has a blank line in it.
+
+       That blank line is preserved, and it is still softwrapped.
+""")
+    print(root)
+    print(render(root))
+    print()
+
+
 def test_marshal():
     # from omlish.formats import json
     # from omlish import marshal as msh
