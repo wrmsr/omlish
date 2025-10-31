@@ -428,7 +428,7 @@ def join_block_text(
                 new.append(c)
 
         return blockify(*lang.flatmap(
-            lambda x: map(Text, join_text(x, ci)) if isinstance(x, list) else [x],  # noqa
+            lambda x: map(Text, text_joiner(x, ci)) if isinstance(x, list) else [x],  # noqa
             new
         ))
 
