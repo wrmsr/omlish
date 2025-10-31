@@ -40,7 +40,7 @@ all = [
     'gprof2dot ~= 2025.4',
     'segno ~= 1.6',
     'rich ~= 14.2',
-    'textual ~= 6.4',
+    'textual ~= 6.5',
 ]
 black = [
     'black ~= 25.9',
@@ -66,7 +66,7 @@ qr = [
 ]
 tui = [
     'rich ~= 14.2',
-    'textual ~= 6.4',
+    'textual ~= 6.5',
 ]
 
 [project.entry-points]

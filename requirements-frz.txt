@@ -283,7 +283,7 @@ sympy==1.14.0
 tabulate==0.9.0
 tavily-python==0.7.12
 terminado==0.18.1
-textual==6.4.0
+textual==6.5.0
 threadpoolctl==3.6.0
 tifffile==2025.10.16
 tiktoken==0.12.0
