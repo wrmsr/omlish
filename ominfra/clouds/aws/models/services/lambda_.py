@@ -161,7 +161,9 @@ class Runtime(_enum.Enum):
     JAVA21 = 'java21'
     PYTHON3_13 = 'python3.13'
     NODEJS22_X = 'nodejs22.x'
+    JAVA25 = 'java25'
     NODEJS24_X = 'nodejs24.x'
+    PYTHON3_14 = 'python3.14'
 
 
 RuntimeVersionArn = _ta.NewType('RuntimeVersionArn', str)

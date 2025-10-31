@@ -191,6 +191,6 @@ examples are:
 
 Additionally, some catchall dep categories include:
 
-- **compression** - Various preferred compression backends like lz4, python-snappy, and brotli.
+- **compression** - Various preferred compression backends like lz4, python-snappy, zstandard, and brotli.
 - **formats** - Various preferred data format backends like orjson/ujson, pyyaml, cbor2, and cloudpickle.
 - **sql drivers** - Various preferred and tested sql drivers.

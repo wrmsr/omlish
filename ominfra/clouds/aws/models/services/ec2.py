@@ -1704,6 +1704,8 @@ class ResourceType(_enum.Enum):
     IPAM_EXTERNAL_RESOURCE_VERIFICATION_TOKEN = 'ipam-external-resource-verification-token'
     CAPACITY_BLOCK = 'capacity-block'
     MAC_MODIFICATION_TASK = 'mac-modification-task'
+    IPAM_PREFIX_LIST_RESOLVER = 'ipam-prefix-list-resolver'
+    IPAM_PREFIX_LIST_RESOLVER_TARGET = 'ipam-prefix-list-resolver-target'
     CAPACITY_MANAGER_DATA_EXPORT = 'capacity-manager-data-export'
 
 
@@ -4958,6 +4960,24 @@ class VpcEncryptionControlExclusions(
     vpc_peering: VpcEncryptionControlExclusion | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='VpcPeering',
         serialization_name='vpcPeering',
+        shape_name='VpcEncryptionControlExclusion',
+    ))
+
+    lambda_: VpcEncryptionControlExclusion | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='Lambda',
+        serialization_name='lambda',
+        shape_name='VpcEncryptionControlExclusion',
+    ))
+
+    vpc_lattice: VpcEncryptionControlExclusion | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='VpcLattice',
+        serialization_name='vpcLattice',
+        shape_name='VpcEncryptionControlExclusion',
+    ))
+
+    elastic_file_system: VpcEncryptionControlExclusion | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='ElasticFileSystem',
+        serialization_name='elasticFileSystem',
         shape_name='VpcEncryptionControlExclusion',
     ))
 

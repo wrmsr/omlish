@@ -76,7 +76,7 @@ httpx[http2]==0.28.1  # FIXME: ,zstd,cli (dev only)
 
 ### async
 
-trio==0.31.0
+trio==0.32.0
 trio-asyncio==0.15.0; python_version < "3.14"  # subprocess watcher issue
 
 aiomysql==0.3.2
