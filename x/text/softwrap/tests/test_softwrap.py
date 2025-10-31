@@ -1,8 +1,8 @@
-from ..softwrap import chop
 from ..softwrap import Block
-from ..softwrap import Text
 from ..softwrap import Indent
+from ..softwrap import Text
 from ..softwrap import blockify
+from ..softwrap import chop
 from ..softwrap import render
 
 

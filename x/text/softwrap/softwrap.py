@@ -373,11 +373,11 @@ class ListBuilder:
 ##
 
 
-def join_text(lst: ta.Sequence[str], ci: int = 0) -> ta.Sequence[str]:
+def join_text(strs: ta.Sequence[str], current_indent: int = 0) -> ta.Sequence[str]:
     # TODO:
     #  - detect if 'intentionally' smaller than current remaining line width, if so do not merge.
     #  - maybe if only ending with punctuation?
-    return [' '.join(lst)]
+    return [' '.join(strs)]
 
 
 class SoftwrapTextJoiner:
@@ -439,7 +439,7 @@ def join_block_text(
 
         return blockify(*lang.flatmap(
             lambda x: map(Text, text_joiner(x, ci)) if isinstance(x, list) else [x],  # noqa
-            new
+            new,
         ))
 
     return rec(root, 0)
@@ -461,7 +461,7 @@ def chop(s: str) -> Part:
 ##
 
 
-@functools.lru_cache()
+@functools.lru_cache
 def _indent_str(n: int) -> str:
     return ' ' * n
 
