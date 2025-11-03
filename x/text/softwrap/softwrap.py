@@ -298,22 +298,22 @@ class ListBuilder:
     def _build_list(self, lp: str, ps: ta.Sequence[Part]) -> List:
         sp = lp + ' '
 
-        new: list[Part | list[Part]] = []
+        new: list[list[Part]] = []
 
         f = check.isinstance(ps[0], Text)
         check.state(f.s.startswith(sp))
-        new.append(Text(f.s[len(sp):]))
+        new.append([Text(f.s[len(sp):])])
         del f
 
         for i in range(1, len(ps)):
             p = ps[i]
 
             if isinstance(p, Blank):
-                new.append(p)
+                new[-1].append(p)
 
             elif isinstance(p, Text):
                 check.state(p.s.startswith(sp))
-                new.append(Text(p.s[len(sp):]))
+                new.append([Text(p.s[len(sp):])])
 
             elif isinstance(p, Indent):
                 if (
@@ -325,11 +325,7 @@ class ListBuilder:
                     p = Indent(len(sp), p.p)
 
                 if p.n == len(sp):
-                    x = new[-1]
-                    if not isinstance(x, list):
-                        x = [x]
-                        new[-1] = x
-                    x.append(p.p)
+                    new[-1].append(p.p)
 
                 else:
                     raise NotImplementedError
@@ -339,10 +335,7 @@ class ListBuilder:
 
         #
 
-        return List(lp, [
-            blockify(*x) if isinstance(x, list) else x
-            for x in new
-        ])
+        return List(lp, [blockify(*x) for x in new])
 
     def build_lists(self, root: Part) -> Part:
         def rec(p: Part) -> Part:  # noqa
