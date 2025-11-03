@@ -1,9 +1,9 @@
-from ..softwrap import Block
-from ..softwrap import Indent
-from ..softwrap import Text
-from ..softwrap import blockify
-from ..softwrap import chop
-from ..softwrap import render
+from ..chopping import chop
+from ..parts import Block
+from ..parts import Indent
+from ..parts import Text
+from ..parts import blockify
+from ..rendering import render
 
 
 def test_blockify():
