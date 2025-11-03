@@ -1,7 +1,3 @@
-"""
-TODO:
- - 'inline' (non-indented) lists?
-"""
 from .groups import group_indents
 from .joining import join_block_text
 from .lists import ListBuilder

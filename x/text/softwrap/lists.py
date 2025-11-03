@@ -1,3 +1,7 @@
+"""
+TODO:
+ - 'inline' (non-indented) lists?
+"""
 import typing as ta
 
 from omlish import check
