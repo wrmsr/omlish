@@ -1,3 +1,8 @@
+"""
+FIXME:
+ - handle text not in blocks lol - `Indent(1, Text(...`, List('-', [Text(...`, etc
+ - rename reflow or smth
+"""
 import typing as ta
 
 from omlish import lang
@@ -15,30 +20,17 @@ from .utils import all_same
 ##
 
 
-def join_text(strs: ta.Sequence[str], current_indent: int = 0) -> ta.Sequence[str]:
-    return [' '.join(strs)]
-
-
-class SoftwrapTextJoiner:
-    def __init__(
-            self,
-            target_line_width: int,
-    ) -> None:
-        super().__init__()
-
-        self._target_line_width = target_line_width
-
-    def __call__(self, strs: ta.Sequence[str], current_indent: int) -> ta.Sequence[str]:
-        raise NotImplementedError
-
-
 class TextJoiner(ta.Protocol):
     def __call__(self, strs: ta.Sequence[str], current_indent: int) -> ta.Sequence[str]: ...
 
 
+def simple_text_joiner(strs: ta.Sequence[str], current_indent: int = 0) -> ta.Sequence[str]:
+    return [' '.join(strs)]
+
+
 def join_block_text(
         root: Part,
-        text_joiner: TextJoiner = join_text,
+        text_joiner: TextJoiner = simple_text_joiner,
 ) -> Part:
     def rec(p: Part, ci: int) -> Part:
         if isinstance(p, (Blank, Text)):

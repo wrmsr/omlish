@@ -1,8 +1,11 @@
 """
 TODO:
+ - obviously handle hyphens, underscores, etc
  - optionally preserve/normalize inter-sentence spaces - '.  ' vs '. '
  - detect if 'intentionally' smaller than current remaining line width, if so do not merge.
   - maybe if only ending with punctuation?
+ - detect 'matched pairs' of 'quotes'? to preserve whitespace? `foo  bar` ...
+  - how to escape it lol - if we see any \\` do we give up?
 """
 import re
 import typing as ta
@@ -47,7 +50,7 @@ def split_line_spans(s: str) -> list[Span]:
 
 
 def _main() -> None:
-    print(split_line_spans('hi i am a string!'))
+    print(split_line_spans('hi i am a string! this has a hy-phen.'))
 
 
 if __name__ == '__main__':
