@@ -1,3 +1,9 @@
+"""
+TODO:
+ - optionally preserve/normalize inter-sentence spaces - '.  ' vs '. '
+ - detect if 'intentionally' smaller than current remaining line width, if so do not merge.
+  - maybe if only ending with punctuation?
+"""
 import re
 import typing as ta
 
@@ -20,7 +26,7 @@ class Span(ta.NamedTuple):
         return f'{self.k}:{self.s!r}'
 
 
-_SPAN_PAT = re.compile(r'(\w)|(\s+)')
+_SPAN_PAT = re.compile(r'(\w+)|(\s+)')
 
 
 def split_line_spans(s: str) -> list[Span]:

@@ -29,9 +29,6 @@ class SoftwrapTextJoiner:
         self._target_line_width = target_line_width
 
     def __call__(self, strs: ta.Sequence[str], current_indent: int) -> ta.Sequence[str]:
-        # TODO:
-        #  - detect if 'intentionally' smaller than current remaining line width, if so do not merge.
-        #  - maybe if only ending with punctuation?
         raise NotImplementedError
 
 
