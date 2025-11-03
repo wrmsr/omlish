@@ -1,3 +1,4 @@
+# ruff: noqa: W293
 from ..chopping import chop
 from ..rendering import render
 
