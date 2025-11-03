@@ -56,3 +56,16 @@ def test_softwrap2():
     print(root)
     print(render(root))
     print()
+
+
+def test_list_one_item():
+    root = chop("""\
+    This is the one item list test.
+    
+     - One item
+
+    That was the one item list test.
+""")
+    print(root)
+    print(render(root))
+    print()

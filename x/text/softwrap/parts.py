@@ -60,7 +60,7 @@ class List(Part, lang.Final):
 
     @dc.init
     def _check_es(self) -> None:
-        check.state(len(self.es) > 1)
+        check.not_empty(self.es)
         for e in self.es:
             check.isinstance(e, Part)
 
