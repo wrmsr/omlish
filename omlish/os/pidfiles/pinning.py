@@ -25,8 +25,8 @@ import sys
 import time
 import typing as ta
 
-from ...diag.lslocks import LslocksCommand
-from ...diag.lsof import LsofCommand
+from ...diag.cmds.lslocks import LslocksCommand
+from ...diag.cmds.lsof import LsofCommand
 from ...lite.abstract import Abstract
 from ...lite.check import check
 from ...lite.timeouts import Timeout
