@@ -25,7 +25,7 @@ beautifulsoup4==4.14.2
 bitsandbytes==0.42.0
 black==25.9.0
 bleach==6.3.0
-blobfile==3.0.0
+blobfile==3.1.0
 boto3==1.40.64
 botocore==1.40.64
 Brotli==1.1.0
@@ -38,7 +38,7 @@ cffi==2.0.0
 charset-normalizer==3.4.4
 cli_helpers==2.7.0
 click==8.3.0
-cloudpickle==3.1.1
+cloudpickle==3.1.2
 coloredlogs==15.0.1
 comm==0.2.3
 configobj==5.0.9
@@ -136,7 +136,7 @@ litecli==1.15.0
 llama_cpp_python==0.3.16
 lsprotocol==2025.0.0
 lxml==6.0.2
-lz4==4.4.4
+lz4==4.4.5
 markdown-it-py==4.0.0
 MarkupSafe==3.0.3
 matplotlib==3.10.7
@@ -258,7 +258,7 @@ s3transfer==0.14.0
 safetensors==0.6.2
 scikit-image==0.25.2
 scikit-learn==1.7.2
-scipy==1.16.2
+scipy==1.16.3
 scramp==1.4.6
 segno==1.6.6
 Send2Trash==1.8.3

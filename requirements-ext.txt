@@ -23,7 +23,7 @@ torchvision==0.24.0
 
 diffusers==0.35.2  # @omlish-venv !14t !14dt
 
-scipy==1.16.2
+scipy==1.16.3
 scikit-learn==1.7.2
 scikit-image==0.25.2
 
@@ -54,7 +54,7 @@ watchdog==6.0.0
 pyright[nodejs]==1.1.407
 basedpyright==1.32.1
 
-blobfile==3.0.0
+blobfile==3.1.0
 
 
 ##
