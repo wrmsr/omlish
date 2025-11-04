@@ -7,7 +7,7 @@ wheel>=0.45.1
 uv>=0.9.7
 
 pytest==8.4.2
-pytest-benchmark==5.2.0
+pytest-benchmark==5.2.1
 pytest-clarity==1.0.1
 pytest-stress==1.0.1
 pytest-timeout==2.4.0
@@ -111,7 +111,7 @@ hf-xet==1.2.0  # @omlish-venv !14t !14dt
 
 ## NOTE: the following add a full minute to CI just setting up the deps..
 
-datasets==4.3.0; python_version < "3.14"  # !! includes arrow and pandas and shit
+datasets==4.4.0; python_version < "3.14"  # !! includes arrow and pandas and shit
 
 transformers==4.57.1  # @omlish-venv !14t !14dt
 sentence-transformers==5.1.2  # @omlish-venv !14t !14dt

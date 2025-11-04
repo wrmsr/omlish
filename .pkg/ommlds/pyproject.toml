@@ -40,7 +40,7 @@ all = [
     'transformers ~= 4.57',
     'sentence-transformers ~= 5.1',
     'huggingface-hub ~= 0.36',
-    'datasets ~= 4.3',
+    'datasets ~= 4.4',
     'regex >= 2025.0',
     'numpy >= 1.26',
     'pytesseract ~= 0.3',
@@ -64,7 +64,7 @@ backends = [
 ]
 huggingface = [
     'huggingface-hub ~= 0.36',
-    'datasets ~= 4.3',
+    'datasets ~= 4.4',
 ]
 nanochat = [
     'regex >= 2025.0',
