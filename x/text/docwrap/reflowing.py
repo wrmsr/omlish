@@ -1,11 +1,13 @@
 """
 FIXME:
- - handle text not in blocks lol - `Indent(1, Text(...`, List('-', [Text(...`, etc
- - rename reflow or smth
+ - use wrapping.py with all its todos
 """
+import dataclasses as dc
+import textwrap
 import typing as ta
 
 from omlish import lang
+from omlish.text.textwrap import TextwrapOpts
 
 from .parts import Blank
 from .parts import Block
@@ -20,20 +22,52 @@ from .utils import all_same
 ##
 
 
-class TextJoiner(ta.Protocol):
+class TextReflower(ta.Protocol):
     def __call__(self, strs: ta.Sequence[str], current_indent: int) -> ta.Sequence[str]: ...
 
 
-def simple_text_joiner(strs: ta.Sequence[str], current_indent: int = 0) -> ta.Sequence[str]:
-    return [' '.join(strs)]
+class NopReflower:
+    def __call__(self, strs: ta.Sequence[str], current_indent: int = 0) -> ta.Sequence[str]:
+        return strs
 
 
-def join_block_text(
+@dc.dataclass(frozen=True)
+class JoiningReflower:
+    sep: str = ' '
+
+    def __call__(self, strs: ta.Sequence[str], current_indent: int = 0) -> ta.Sequence[str]:
+        return [self.sep.join(strs)]
+
+
+@dc.dataclass(frozen=True)
+class TextwrapReflower:
+    sep: str = ' '
+    opts: TextwrapOpts = TextwrapOpts()
+
+    def __call__(self, strs: ta.Sequence[str], current_indent: int = 0) -> ta.Sequence[str]:
+        return textwrap.wrap(
+            self.sep.join(strs),
+            **dc.asdict(dc.replace(
+                self.opts,
+                width=self.opts.width - current_indent,
+            )),
+        )
+
+
+##
+
+
+def reflow_block_text(
         root: Part,
-        text_joiner: TextJoiner = simple_text_joiner,
+        reflower: TextReflower = JoiningReflower(),
 ) -> Part:
     def rec(p: Part, ci: int) -> Part:
-        if isinstance(p, (Blank, Text)):
+        if isinstance(p, Blank):
+            return p
+
+        elif isinstance(p, Text):
+            if (rf := reflower([p.s], ci)) != [p.s]:
+                p = blockify(*map(Text, rf))  # noqa
             return p
 
         elif isinstance(p, Indent):
@@ -52,15 +86,6 @@ def join_block_text(
 
         ps = [rec(c, ci) for c in p.ps]
 
-        if not any(
-                isinstance(ps[i], Text) and
-                isinstance(ps[i + 1], Text)
-                for i in range(len(ps) - 1)
-        ):
-            if not all_same(ps, p.ps):
-                p = blockify(*ps)
-            return p
-
         new: list[Part | list[str]] = []
         for c in ps:
             if isinstance(c, Text):
@@ -72,7 +97,7 @@ def join_block_text(
                 new.append(c)
 
         return blockify(*lang.flatmap(
-            lambda x: map(Text, text_joiner(x, ci)) if isinstance(x, list) else [x],  # noqa
+            lambda x: map(Text, reflower(x, ci)) if isinstance(x, list) else [x],  # noqa
             new,
         ))
 

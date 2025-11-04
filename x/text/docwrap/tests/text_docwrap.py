@@ -1,7 +1,7 @@
 # ruff: noqa: W293
 import pytest
 
-from ..chopping import chop
+from ..api import docwrap
 from ..rendering import dump
 from ..rendering import render
 
@@ -13,7 +13,7 @@ def chop_and_say(s, **kwargs):
     print(s)
 
     print('====')
-    root = chop(s, **kwargs)
+    root = docwrap(s, **kwargs)
     print(dump(root))
 
     print('====')
@@ -72,12 +72,12 @@ def test_docwrap2():
       - This is a sub-list, indented by one.
       - This is the second item of the sub-list
      - This is the third item.
-       - Weirdly, this sub-list is indented by two, as opposed to the previous item's sublist.
+       - Weirdly, this sub-list is indented by two, as opposed to the previous item's sublist. This is a long line.
        - That difference is preserved.
      - This item has a blank line in it.
 
        That blank line is preserved, and it is still docwrapped.
-""")
+""", width=40)
 
 
 def test_list_one_item():

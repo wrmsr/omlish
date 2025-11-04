@@ -1,5 +1,6 @@
 """
 TODO:
+ - a reflowing.TextReflower
  - import textwrap lol
  - obviously handle hyphens, underscores, etc
  - optionally preserve/normalize inter-sentence spaces - '.  ' vs '. '

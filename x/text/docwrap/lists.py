@@ -20,19 +20,22 @@ from .utils import all_same
 
 
 class ListBuilder:
+    DEFAULT_ALLOW_IMPROPER_CHILDREN: ta.ClassVar[bool | ta.Literal['lists_only']] = False
     DEFAULT_LIST_PREFIXES: ta.ClassVar[ta.Sequence[str]] = ['*', '-']
 
     def __init__(
             self,
             *,
             list_prefixes: ta.Iterable[str] | None = None,
-            allow_improper_children: bool | ta.Literal['lists_only'] = False,
+            allow_improper_children: bool | ta.Literal['lists_only'] | None = None,
     ) -> None:
         super().__init__()
 
         if list_prefixes is None:
             list_prefixes = self.DEFAULT_LIST_PREFIXES
         self._list_prefixes = set(check.not_isinstance(list_prefixes, str))
+        if allow_improper_children is None:
+            allow_improper_children = self.DEFAULT_ALLOW_IMPROPER_CHILDREN
         self._allow_improper_children = allow_improper_children
 
         self._len_sorted_list_prefixes = sorted(self._list_prefixes, key=len, reverse=True)

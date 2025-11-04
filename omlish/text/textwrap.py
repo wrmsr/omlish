@@ -12,11 +12,11 @@ class TextwrapOpts:
     _: dc.KW_ONLY
 
     # String that will be prepended to the first line of wrapped output. Counts towards the line's width.
-    initial_indent: str = ""
+    initial_indent: str = ''
 
     # String that will be prepended to all lines save the first of wrapped output; also counts towards each line's
     # width.
-    subsequent_indent: str = ""
+    subsequent_indent: str = ''
 
     # Expand tabs in input text to spaces before further processing. Each tab will become 0 .. 'tabsize' spaces,
     # depending on its position in its line. If false, each tab is treated as a single character.
@@ -48,4 +48,4 @@ class TextwrapOpts:
     max_lines: int | None = None
 
     # Append to the last line of truncated text.
-    placeholder: str =' [...]'
+    placeholder: str = ' [...]'
