@@ -111,7 +111,7 @@ def dump_to(root: Part, out: ta.Callable[[str], ta.Any]) -> None:
             write(f'text:{p.s!r}')
 
         elif isinstance(p, Block):
-            write('block')
+            write(f'block/{len(p.ps)}')
             i += 1
             for c in p.ps:
                 rec(c)
@@ -124,7 +124,7 @@ def dump_to(root: Part, out: ta.Callable[[str], ta.Any]) -> None:
             i -= 1
 
         elif isinstance(p, List):
-            write(f'list:{p.d!r}')
+            write(f'list/{len(p.es)}:{p.d!r}')
             i += 1
             for e in p.es:
                 rec(e)

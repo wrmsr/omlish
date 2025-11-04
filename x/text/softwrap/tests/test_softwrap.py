@@ -1,11 +1,33 @@
 # ruff: noqa: W293
+import pytest
+
 from ..chopping import chop
-from ..rendering import render
 from ..rendering import dump
+from ..rendering import render
 
 
-def test_softwrap():
-    root = chop("""\
+def chop_and_say(s, **kwargs):
+    print()
+
+    print(kwargs)
+    print(s)
+
+    print('====')
+    root = chop(s, **kwargs)
+    print(dump(root))
+
+    print('====')
+    print(render(root))
+
+    print()
+
+    return root
+
+
+@pytest.mark.parametrize('aic', [False, True, 'lists_only'])
+def test_softwrap(aic):
+    root = chop_and_say(  # noqa
+        """\
     Hi I'm some text.
     
     I am more text.
@@ -29,19 +51,19 @@ def test_softwrap():
       - subitem 2
       
       - subitem 3
+
+     - here is an improper
+      text child
      
      - item last
 
   the fuck?
-""")
-    print(root)
-    print(dump(root))
-    print(render(root))
-    print()
+""", allow_improper_list_children=aic)
 
 
 def test_softwrap2():
-    root = chop("""\
+    root = chop_and_say(  # noqa
+        """\
     Hi! I am a long string! I am longer than twenty characters.
 
     This is a list:
@@ -56,14 +78,11 @@ def test_softwrap2():
 
        That blank line is preserved, and it is still softwrapped.
 """)
-    print(root)
-    print(dump(root))
-    print(render(root))
-    print()
 
 
 def test_list_one_item():
-    root = chop("""\
+    root = chop_and_say(  # noqa
+        """\
     This is the one item list test.
     
      - One item
@@ -74,7 +93,3 @@ def test_list_one_item():
 
     That was the one inline item list test.
 """)
-    print(root)
-    print(dump(root))
-    print(render(root))
-    print()
