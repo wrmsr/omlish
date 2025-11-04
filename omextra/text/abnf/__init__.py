@@ -6,6 +6,16 @@ Originally based on library by Charles Yeomans (see LICENSE file):
   https://github.com/declaresub/abnf/tree/561ced67c0a8afc869ad0de5b39dbe4f6e71b0d8/src/abnf
 
 It has however been nearly entirely rewritten.
+
+====
+
+TODO:
+ - cache lol
+ - get greedier
+ - match-powered optimizer
+  - greedily compile regexes
+ - error reporting
+ - codegen
 """
 
 

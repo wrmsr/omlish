@@ -473,6 +473,21 @@ class MetaGrammarRuleVisitor(RuleVisitor[ta.Any]):
         else:
             raise ValueError(m)
 
+    @RuleVisitor.register('repeat')
+    def visit_repeat_rule(self, m: Match) -> ta.Any:
+        s = self._source[m.start:m.end]
+        if '*' in s:
+            check.state(s.count('*') == 1)
+            if s.endswith('*'):
+                return Repeat.Times(int(s[:-1]))
+            else:
+                mi, mx = s.split('*')
+                return Repeat.Times(int(mi), int(mx))
+        elif s:
+            return Repeat.Times(n := int(s), n)
+        else:
+            return Repeat.Times(0)
+
     @RuleVisitor.register('element')
     def visit_element_rule(self, m: Match) -> ta.Any:
         c = self.visit_match(check.single(m.children))
@@ -482,6 +497,24 @@ class MetaGrammarRuleVisitor(RuleVisitor[ta.Any]):
             return rule(c.s)
         else:
             raise TypeError(c)
+
+    @RuleVisitor.register('group')
+    def visit_group_rule(self, m: Match) -> ta.Any:
+        return self.visit_match(check.single(m.children))
+
+    @RuleVisitor.register('num-val')
+    def visit_num_val_rule(self, m: Match) -> ta.Any:
+        return self.visit_match(check.single(m.children))
+
+    @RuleVisitor.register('hex-val')
+    def visit_hex_val_rule(self, m: Match) -> ta.Any:
+        s = self._source[m.start + 1:m.end]
+        if '-' in s:
+            lo, hi = [chr(int(p, 16)) for p in s.split('-')]
+            return literal(lo, hi)
+        else:
+            c = chr(int(s, 16))
+            return literal(c, c)
 
     @RuleVisitor.register('char-val')
     def visit_char_val_rule(self, m: Match) -> ta.Any:
@@ -504,44 +537,12 @@ class MetaGrammarRuleVisitor(RuleVisitor[ta.Any]):
         check.state(self._source[m.end - 1] == '"')
         return self.QuotedString(self._source[m.start + 1:m.end - 1])
 
-    @RuleVisitor.register('repeat')
-    def visit_repeat_rule(self, m: Match) -> ta.Any:
-        # !!! FIXME: boneheaded args, repeat(1, c) currently means 1-*, should be exactly 1-1, should explicitly pass
-        #            None for *
-        s = self._source[m.start:m.end]
-        if '*' in s:
-            check.state(s.count('*') == 1)
-            if s.endswith('*'):
-                return Repeat.Times(int(s[:-1]))
-            else:
-                mi, mx = s.split('*')
-                return Repeat.Times(int(mi), int(mx))
-        else:
-            return Repeat.Times(n := int(s), n)
-
-    @RuleVisitor.register('group')
-    def visit_group_rule(self, m: Match) -> ta.Any:
-        return self.visit_match(check.single(m.children))
-
-    @RuleVisitor.register('num-val')
-    def visit_num_val_rule(self, m: Match) -> ta.Any:
-        return self.visit_match(check.single(m.children))
-
-    @RuleVisitor.register('hex-val')
-    def visit_hex_val_rule(self, m: Match) -> ta.Any:
-        s = self._source[m.start + 1:m.end]
-        if '-' in s:
-            lo, hi = [chr(int(p, 16)) for p in s.split('-')]
-            return literal(lo, hi)
-        else:
-            c = chr(int(s, 16))
-            return literal(c, c)
-
 
 def parse_grammar(
         source: str,
         *,
         no_core_rules: bool = False,
+        root: str | None = None,
 ) -> Grammar:
     source = fix_grammar_ws(source)
 
@@ -556,4 +557,5 @@ def parse_grammar(
     return Grammar(
         *rules,
         *(CORE_RULES if not no_core_rules else []),
+        root=root,
     )

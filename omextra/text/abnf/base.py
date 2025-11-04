@@ -1,11 +1,3 @@
-"""
-TODO:
- - cache lol
- - get greedier
- - match-powered optimizer
-  - greedily compile regexes
- - error reporting
-"""
 import abc
 import io
 import itertools
@@ -231,10 +223,9 @@ class Grammar(lang.Final):
 ##
 
 
+@ta.final
 class _Context(lang.Final):
     def __init__(self, grammar: Grammar, source: str) -> None:
-        super().__init__()
-
         self._grammar = grammar
         self._source = source
 
@@ -247,6 +238,7 @@ class _Context(lang.Final):
         return self._source
 
     def iter_parse(self, parser: Parser, start: int) -> ta.Iterator[Match]:
+        print(f'{parser=} {start=}')
         return parser._iter_parse(self, start)  # noqa
 
 
