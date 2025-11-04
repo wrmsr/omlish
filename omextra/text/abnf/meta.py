@@ -502,19 +502,35 @@ class MetaGrammarRuleVisitor(RuleVisitor[ta.Any]):
     def visit_group_rule(self, m: Match) -> ta.Any:
         return self.visit_match(check.single(m.children))
 
+    @RuleVisitor.register('option')
+    def visit_option_rule(self, m: Match) -> ta.Any:
+        c = self.visit_match(check.single(m.children))
+        return option(check.isinstance(c, Parser))
+
     @RuleVisitor.register('num-val')
     def visit_num_val_rule(self, m: Match) -> ta.Any:
         return self.visit_match(check.single(m.children))
 
+    def _parse_num_val(self, s: str, base: int) -> Parser:
+        if '-' in s:
+            check.not_in('.', s)
+            lo, hi = [chr(int(p, base)) for p in s.split('-')]
+            return literal(lo, hi)
+        elif '.' in s:
+            check.not_in('-', s)
+            cs = [chr(int(p, base)) for p in s.split('.')]
+            return concat(*[literal(c, c) for c in cs])
+        else:
+            c = chr(int(s, base))
+            return literal(c, c)
+
+    @RuleVisitor.register('dec-val')
+    def visit_dec_val_rule(self, m: Match) -> ta.Any:
+        return self._parse_num_val(self._source[m.start + 1:m.end], 10)
+
     @RuleVisitor.register('hex-val')
     def visit_hex_val_rule(self, m: Match) -> ta.Any:
-        s = self._source[m.start + 1:m.end]
-        if '-' in s:
-            lo, hi = [chr(int(p, 16)) for p in s.split('-')]
-            return literal(lo, hi)
-        else:
-            c = chr(int(s, 16))
-            return literal(c, c)
+        return self._parse_num_val(self._source[m.start + 1:m.end], 16)
 
     @RuleVisitor.register('char-val')
     def visit_char_val_rule(self, m: Match) -> ta.Any:

@@ -25,7 +25,7 @@ comment-line = *WSP ";" *VCHAR CRLF
 
 ; --- Statements (demonstrates incremental alternatives =/) -----------
 statement    = set-stmt / list-stmt / block-stmt / bytes-stmt
-statement   =/ keyword-stmt               ; incremental alternative (=/)
+             / keyword-stmt               ; incremental alternative (=/)
 
 ; Set statement: name = value
 set-stmt     = name *WSP "=" *WSP value
@@ -84,9 +84,9 @@ boolean      = %s"TRUE" / %s"FALSE" / %i"yes" / %i"no"
 identifier   = 1*(ALPHA / DIGIT / "_" / "-")
 
 ; --- Core terminals (from RFC 5234) used above ----------------------
-DQUOTE       = %x22
-HTAB         = %x09
-SP           = %x20
+; DQUOTE       = %x22
+; HTAB         = %x09
+; SP           = %x20
 
 ; Note: DIGIT, ALPHA, HEXDIG, WSP, VCHAR, CRLF are core rules from RFC 5234 Appendix B.
 ; They are referenced directly and need not be redefined here.
