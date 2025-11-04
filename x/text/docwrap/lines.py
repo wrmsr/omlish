@@ -1,5 +1,6 @@
 """
 TODO:
+ - import textwrap lol
  - obviously handle hyphens, underscores, etc
  - optionally preserve/normalize inter-sentence spaces - '.  ' vs '. '
  - detect if 'intentionally' smaller than current remaining line width, if so do not merge.

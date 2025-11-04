@@ -1,7 +1,5 @@
 """
 TODO:
- - improper any children not just sublists?
- - 'inline' (non-indented) lists?
  - numeric lettered lists (even unordered) (with separator - `1)` / `1:` / ...)
 """
 import typing as ta

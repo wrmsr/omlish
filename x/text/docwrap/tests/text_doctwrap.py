@@ -25,7 +25,7 @@ def chop_and_say(s, **kwargs):
 
 
 @pytest.mark.parametrize('aic', [False, True, 'lists_only'])
-def test_softwrap(aic):
+def test_docwrap(aic):
     root = chop_and_say(  # noqa
         """\
     Hi I'm some text.
@@ -61,7 +61,7 @@ def test_softwrap(aic):
 """, allow_improper_list_children=aic)
 
 
-def test_softwrap2():
+def test_docwrap2():
     root = chop_and_say(  # noqa
         """\
     Hi! I am a long string! I am longer than twenty characters.
@@ -76,7 +76,7 @@ def test_softwrap2():
        - That difference is preserved.
      - This item has a blank line in it.
 
-       That blank line is preserved, and it is still softwrapped.
+       That blank line is preserved, and it is still docwrapped.
 """)
 
 
