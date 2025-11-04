@@ -1,8 +1,7 @@
 import dataclasses as dc
 import typing as ta
 
-from omlish.text.textwrap import TextwrapOpts
-
+from ..textwrap import TextwrapOpts
 from .groups import group_indents
 from .lists import ListBuilder
 from .parts import Part

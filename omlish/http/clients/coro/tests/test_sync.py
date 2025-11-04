@@ -11,7 +11,7 @@ from ..sync import CoroHttpClient
 def test_clients_stream(data, readall):
     with CoroHttpClient() as cli:
         with cli.stream_request(HttpRequest(
-                'https://httpbun.org/drip?duration=1&numbytes=10&code=200&delay=1',
+                'https://httpbingo.org/drip?duration=1&numbytes=10&code=200&delay=1',
                 'POST' if data is not None else 'GET',
                 headers={'User-Agent': 'omlish'},
                 data=data,

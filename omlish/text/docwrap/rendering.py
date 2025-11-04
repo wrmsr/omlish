@@ -2,8 +2,7 @@ import functools
 import io
 import typing as ta
 
-from omlish import check
-
+from ... import check
 from .parts import Blank
 from .parts import Block
 from .parts import Indent

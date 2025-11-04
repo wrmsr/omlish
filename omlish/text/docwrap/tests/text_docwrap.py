@@ -1,3 +1,4 @@
+# flake8: noqa: W293
 # ruff: noqa: W293
 import pytest
 

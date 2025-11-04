@@ -12,7 +12,7 @@ import typing as ta
 
 from omlish import lang
 
-from ... import textual
+from ... import textual as tx
 from .client import IrcClient
 from .commands import ALL_COMMANDS
 from .commands import IrcCommand
@@ -37,7 +37,7 @@ class IrcWindow:
         self.unread += 1
 
 
-class IrcApp(textual.App):
+class IrcApp(tx.App):
     """IRC client application."""
 
     _commands: ta.ClassVar[ta.Mapping[str, IrcCommand]] = ALL_COMMANDS
@@ -65,9 +65,9 @@ class IrcApp(textual.App):
     }
     """
 
-    BINDINGS: ta.ClassVar[ta.Sequence[textual.Binding]] = [
-        textual.Binding('ctrl+n', 'next_window', 'Next Window', show=False),
-        textual.Binding('ctrl+p', 'prev_window', 'Previous Window', show=False),
+    BINDINGS: ta.ClassVar[ta.Sequence[tx.Binding]] = [
+        tx.Binding('ctrl+n', 'next_window', 'Next Window', show=False),
+        tx.Binding('ctrl+p', 'prev_window', 'Previous Window', show=False),
     ]
 
     def __init__(
@@ -94,12 +94,12 @@ class IrcApp(textual.App):
 
     #
 
-    def compose(self) -> textual.ComposeResult:
-        text_area = textual.TextArea(id='messages', read_only=True, show_line_numbers=False)
+    def compose(self) -> tx.ComposeResult:
+        text_area = tx.TextArea(id='messages', read_only=True, show_line_numbers=False)
         text_area.cursor_blink = False
         yield text_area
-        yield textual.Static('', id='status')
-        yield textual.Input(placeholder='Enter command or message', id='input', select_on_focus=False)
+        yield tx.Static('', id='status')
+        yield tx.Input(placeholder='Enter command or message', id='input', select_on_focus=False)
 
     async def on_mount(self) -> None:
         """Initialize on mount."""
@@ -120,21 +120,21 @@ class IrcApp(textual.App):
             await self.add_message('system', f'Executing: {cmd}')
             await self.handle_command(cmd)
 
-    async def on_key(self, event: textual.Key) -> None:
+    async def on_key(self, event: tx.Key) -> None:
         """Handle key events - redirect typing to input when messages area is focused."""
 
         focused = self.focused
         if focused and focused.id == 'messages':
             # If a printable character or common input key is pressed, focus the input and forward event
             if event.is_printable or event.key in ('space', 'backspace', 'delete'):
-                input_widget = self.query_one('#input', textual.Input)
+                input_widget = self.query_one('#input', tx.Input)
                 input_widget.focus()
                 # Post the key event to the input widget so it handles it naturally
-                input_widget.post_message(textual.Key(event.key, event.character))
+                input_widget.post_message(tx.Key(event.key, event.character))
                 # Stop the event from being processed by the messages widget
                 event.stop()
 
-    async def on_input_submitted(self, event: textual.Input.Submitted) -> None:
+    async def on_input_submitted(self, event: tx.Input.Submitted) -> None:
         """Handle user input."""
 
         text = event.value.strip()
@@ -232,7 +232,7 @@ class IrcApp(textual.App):
         current_window.unread = 0
 
         # Update messages display
-        messages_widget = self.query_one('#messages', textual.TextArea)
+        messages_widget = self.query_one('#messages', tx.TextArea)
 
         # Check if we switched windows or need full reload
         window_changed = self._last_window != current_window_name
@@ -271,7 +271,7 @@ class IrcApp(textual.App):
             window_list.append(indicator)
 
         status_text = ' '.join(window_list)
-        self.query_one('#status', textual.Static).update(status_text)
+        self.query_one('#status', tx.Static).update(status_text)
 
     async def on_unmount(self) -> None:
         if (cl := self._client) is not None:

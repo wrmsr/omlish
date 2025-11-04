@@ -1,8 +1,7 @@
 import typing as ta
 
-from omlish import check
-from omlish import dataclasses as dc
-
+from ... import check
+from ... import dataclasses as dc
 from .parts import Blank
 from .parts import Block
 from .parts import Indent

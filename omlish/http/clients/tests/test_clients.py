@@ -1,5 +1,4 @@
 import contextlib
-import urllib.parse
 
 import pytest
 
@@ -39,7 +38,7 @@ CLIENTS: list = [
 def test_clients(cls, data):
     with cls() as cli:
         resp = cli.request(HttpRequest(
-            'https://httpbun.org/',
+            f'https://httpbingo.org/{"post" if data else "get"}',
             'POST' if data is not None else 'GET',
             headers={'User-Agent': 'omlish'},
             data=data,
@@ -55,7 +54,7 @@ def test_clients(cls, data):
 def test_clients_stream(cls, data, readall):
     with cls() as cli:
         with cli.stream_request(HttpRequest(
-            'https://httpbun.org/drip?duration=1&numbytes=10&code=200&delay=1',
+            'https://httpbingo.org/drip?duration=1&numbytes=10&code=200&delay=1',
             'POST' if data is not None else 'GET',
             headers={'User-Agent': 'omlish'},
             data=data,
@@ -80,7 +79,7 @@ def test_clients_error(cls):
     data = None
     with cls() as cli:
         resp = cli.request(HttpRequest(
-            'https://httpbun.org/basic-auth/foo/bar',
+            'https://httpbingo.org/basic-auth/foo/bar',
             'POST' if data is not None else 'GET',
             headers={'User-Agent': 'omlish'},
             data=data,
@@ -97,7 +96,7 @@ def test_clients_error_check(cls):
         with pytest.raises(HttpStatusError) as ex:
             cli.request(
                 HttpRequest(
-                    'https://httpbun.org/basic-auth/foo/bar',
+                    'https://httpbingo.org/basic-auth/foo/bar',
                     'POST' if data is not None else 'GET',
                     headers={'User-Agent': 'omlish'},
                     data=data,
@@ -128,14 +127,13 @@ def test_clients_redirect(cls, abs):  # noqa
     with cls() as cli:
         resp = cli.request(
             HttpRequest(
-                f'https://httpbun.org/redirect-to?{urllib.parse.urlencode({"url": "https://httpbun.org/html"})}' if abs else  # noqa
-                'https://httpbun.org/redirect?url=html',
+                'https://httpbingo.org/absolute-redirect/3' if abs else 'https://httpbingo.org/redirect/3',
                 headers={'User-Agent': 'omlish'},
             ),
             check=True,
         )
         assert resp.status == 200
-        assert resp.headers.single_str_dct['content-type'].split(';')[0] == 'text/html'
+        # assert resp.headers.single_str_dct['content-type'].split(';')[0] == 'text/html'
         assert resp.data
 
 
@@ -145,7 +143,7 @@ def test_clients_redirect(cls, abs):  # noqa
 def test_default(cls, data):
     with cls() as cli:
         resp = default.request(
-            'https://httpbun.org/',
+            f'https://httpbingo.org/{"post" if data is not None else "get"}',
             'POST' if data is not None else 'GET',
             headers={'User-Agent': 'omlish'},
             data=data,

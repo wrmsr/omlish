@@ -6,9 +6,8 @@ import dataclasses as dc
 import textwrap
 import typing as ta
 
-from omlish import lang
-from omlish.text.textwrap import TextwrapOpts
-
+from ... import lang
+from ..textwrap import TextwrapOpts
 from .parts import Blank
 from .parts import Block
 from .parts import Indent

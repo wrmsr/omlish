@@ -46,7 +46,7 @@ CLIENTS: list = [
 async def test_clients(cls, data):
     async with cls() as cli:
         resp = await cli.request(HttpRequest(
-            'https://httpbun.org/',
+            f'https://httpbingo.org/{"post" if data else "get"}',
             'POST' if data is not None else 'GET',
             headers={'User-Agent': 'omlish'},
             data=data,
@@ -63,7 +63,7 @@ async def test_clients(cls, data):
 async def test_clients_stream(cls, data, readall):
     async with cls() as cli:
         async with (await cli.stream_request(HttpRequest(
-                'https://httpbun.org/drip?duration=1&numbytes=10&code=200&delay=1',
+                'https://httpbingo.org/drip?duration=1&numbytes=10&code=200&delay=1',
                 'POST' if data is not None else 'GET',
                 headers={'User-Agent': 'omlish'},
                 data=data,
@@ -89,7 +89,7 @@ async def test_clients_error(cls):
     data = None
     async with cls() as cli:
         resp = await cli.request(HttpRequest(
-            'https://httpbun.org/basic-auth/foo/bar',
+            'https://httpbingo.org/basic-auth/foo/bar',
             'POST' if data is not None else 'GET',
             headers={'User-Agent': 'omlish'},
             data=data,
@@ -107,7 +107,7 @@ async def test_clients_error_check(cls):
         with pytest.raises(HttpStatusError) as ex:
             await cli.request(
                 HttpRequest(
-                    'https://httpbun.org/basic-auth/foo/bar',
+                    'https://httpbingo.org/basic-auth/foo/bar',
                     'POST' if data is not None else 'GET',
                     headers={'User-Agent': 'omlish'},
                     data=data,
@@ -139,7 +139,7 @@ async def test_clients_error_url(cls):
 async def test_default(cls, data):
     async with cls() as cli:
         resp = await default.async_request(
-            'https://httpbun.org/',
+            f'https://httpbingo.org/{"post" if data is not None else "get"}',
             'POST' if data is not None else 'GET',
             headers={'User-Agent': 'omlish'},
             data=data,
