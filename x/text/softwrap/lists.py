@@ -1,5 +1,6 @@
 """
 TODO:
+ - improper any children not just sublists?
  - 'inline' (non-indented) lists?
  - numeric lettered lists (even unordered) (with separator - `1)` / `1:` / ...)
 """
@@ -46,7 +47,8 @@ class ListBuilder:
         len: int
 
     def _detect_list(self, ps: ta.Sequence[Part]) -> _DetectedList | None:
-        check.not_empty(ps)
+        if not ps:
+            return None
 
         if not isinstance(f := ps[0], Text):
             return None
@@ -133,13 +135,13 @@ class ListBuilder:
                 if not all_same(new, p.ps):
                     return rec(blockify(*new))
 
-                if (dl := self._detect_list(p.ps)) is None:
-                    return p
+                st = 0
+                while (dl := self._detect_list(new[st:])) is not None:
+                    ln = self._build_list(dl.pfx, p.ps[dl.ofs:dl.ofs + dl.len])
+                    new[dl.ofs:dl.ofs + dl.len + 1] = [ln]
+                    st = dl.ofs + 1
 
-                if (dl.ofs, dl.len) != (0, len(p.ps)):
-                    raise NotImplementedError
-
-                return self._build_list(dl.pfx, p.ps)
+                return blockify(*new)
 
             elif isinstance(p, Indent):
                 if (n := rec(p.p)) is not p.p:
