@@ -242,8 +242,6 @@ def repeat(min: int, max: int | None, child: Parser) -> Repeat:  # noqa
 
 
 def repeat(*args):
-    # !!! FIXME: boneheaded args, repeat(1, c) currently means 1-*, should be exactly 1-1, should explicitly pass
-    #            None for *
     min: int  # noqa
     max: int | None  # noqa
 

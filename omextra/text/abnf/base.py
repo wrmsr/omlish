@@ -193,6 +193,7 @@ class Grammar(lang.Final):
             root: Rule | str | None = None,
             *,
             start: int = 0,
+            debug: bool = False,
     ) -> ta.Iterator[Match]:
         if root is None:
             if (root := self._root) is None:
@@ -203,7 +204,13 @@ class Grammar(lang.Final):
             else:
                 root = check.in_(check.isinstance(root, Rule), self._rules)
 
-        ctx = _Context(self, source)
+        ctx_cls: type[_Context]
+        if debug:
+            ctx_cls = _DebugContext
+        else:
+            ctx_cls = _Context
+        ctx = ctx_cls(self, source)
+
         return ctx.iter_parse(root._parser, start)  # noqa
 
     def parse(
@@ -212,20 +219,27 @@ class Grammar(lang.Final):
             root: str | None = None,
             *,
             start: int = 0,
+            debug: bool = False,
     ) -> Match | None:
         return longest_match(self.iter_parse(
             source,
             root,
             start=start,
+            debug=debug,
         ))
 
 
 ##
 
 
-@ta.final
-class _Context(lang.Final):
-    def __init__(self, grammar: Grammar, source: str) -> None:
+class _Context:
+    def __init__(
+            self,
+            grammar: Grammar,
+            source: str,
+    ) -> None:
+        super().__init__()
+
         self._grammar = grammar
         self._source = source
 
@@ -238,8 +252,22 @@ class _Context(lang.Final):
         return self._source
 
     def iter_parse(self, parser: Parser, start: int) -> ta.Iterator[Match]:
-        print(f'{parser=} {start=}')
         return parser._iter_parse(self, start)  # noqa
+
+
+class _DebugContext(_Context):
+    _level: int = 0
+
+    def iter_parse(self, parser: Parser, start: int) -> ta.Iterator[Match]:
+        print(f'{"  " * self._level}enter: {parser=} {start=}')
+        try:
+            self._level += 1
+            for m in super().iter_parse(parser, start):
+                # print(f'{"  " * (self._level - 1)}match: {parser=} {start=}')
+                yield m
+        finally:
+            self._level -= 1
+            print(f'{"  " * self._level}exit: {parser=} {start=}')
 
 
 ##

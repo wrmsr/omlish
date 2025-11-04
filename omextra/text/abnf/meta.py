@@ -543,10 +543,16 @@ def parse_grammar(
         *,
         no_core_rules: bool = False,
         root: str | None = None,
+        **kwargs: ta.Any,
 ) -> Grammar:
     source = fix_grammar_ws(source)
 
-    if (mg_m := parse_rules(META_GRAMMAR, source)) is None:
+    if (mg_m := parse_rules(
+            META_GRAMMAR,
+            source,
+            complete=True,
+            **kwargs,
+    )) is None:
         raise AbnfGrammarParseError(source)
 
     check.isinstance(mg_m.parser, Repeat)
