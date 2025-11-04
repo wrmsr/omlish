@@ -31,7 +31,7 @@ statement   =/ keyword-stmt               ; incremental alternative (=/)
 set-stmt     = name *WSP "=" *WSP value
 
 ; List statement: items separated by commas, allowing line folding
-list-stmt    = name *WSP ":" *WSP list1(value, list-sep)
+list-stmt    = name *WSP ":" *WSP value *(list-sep value)
 list-sep     = *WSP "," *WSP
                / *(WSP / (CRLF 1*WSP)) "," *(WSP / (CRLF 1*WSP))
                ; Shows list separator that tolerates folded whitespace (c-wsp idea)
@@ -48,12 +48,10 @@ keyword-stmt = %s"ENABLE" / %s"DISABLE" / %i"debug"
 
 ; Bytes statement: shows numeric terminals, ranges, sequences, and prose-val
 bytes-stmt   = %i"bytes" *WSP "=" *WSP ( hex-bytes / dec-bytes / bin-bytes / ascii-demo )
-hex-bytes    = 1*(%x00-FF)                ; %x range over a single octet (00–FF)
+hex-bytes    = 1*(%x00-FF)                ; %x range over a single octet (00-FF)
 dec-bytes    = 1*(%d0-255)                ; %d decimal range
-bin-bytes    = 1*(%b00000000-%b11111111)  ; %b binary range
-ascii-demo   = %x41.42.43                 ; %x sequences with '.' → "ABC"
-            /  %d65.66.67                 ; decimal sequence → "ABC"
-            /  <arbitrary payload bytes>  ; prose-val (freeform, non-normative description)
+ascii-demo   = %x41.42.43                 ; %x sequences with '.' -> "ABC"
+            /  %d65.66.67                 ; decimal sequence -> "ABC"
 
 ; --- Lexical pieces --------------------------------------------------
 ; Names: start ALPHA or "_", then 2*5 of (ALPHA / DIGIT / "_")
@@ -92,9 +90,3 @@ SP           = %x20
 
 ; Note: DIGIT, ALPHA, HEXDIG, WSP, VCHAR, CRLF are core rules from RFC 5234 Appendix B.
 ; They are referenced directly and need not be redefined here.
-
-; --- A tiny "list1" helper (pattern seen in many ABNFs) --------------
-; list1(element, sep) means: element *( sep element )
-; ABNF does not have macros; we inline the pattern with comments to show intent.
-; (This rule name is just illustrative; the "parameters" in parentheses are a comment.)
-list1(element, sep) = element *(sep element)

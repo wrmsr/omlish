@@ -262,7 +262,7 @@ class _DebugContext(_Context):
         print(f'{"  " * self._level}enter: {parser=} {start=}')
         try:
             self._level += 1
-            for m in super().iter_parse(parser, start):
+            for m in super().iter_parse(parser, start):  # noqa
                 # print(f'{"  " * (self._level - 1)}match: {parser=} {start=}')
                 yield m
         finally:

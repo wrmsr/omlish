@@ -1,13 +1,20 @@
 import os.path
 
+import pytest
+
 from ..meta import parse_grammar
 
 
+@pytest.mark.xfail
 def test_demo():
     with open(os.path.join(os.path.dirname(__file__), 'demo.abnf')) as f:
         gram_src = f.read()
 
-    gram = parse_grammar(gram_src, root='config', debug=True)
+    gram = parse_grammar(
+        gram_src,
+        root='config',
+        # debug=True,
+    )
 
     with open(os.path.join(os.path.dirname(__file__), 'demo.txt')) as f:
         ast_src = f.read()

@@ -475,18 +475,18 @@ class MetaGrammarRuleVisitor(RuleVisitor[ta.Any]):
 
     @RuleVisitor.register('repeat')
     def visit_repeat_rule(self, m: Match) -> ta.Any:
-        s = self._source[m.start:m.end]
-        if '*' in s:
+        s = check.non_empty_str(self._source[m.start:m.end])
+        if s == '*':
+            return Repeat.Times(0)
+        elif '*' in s:
             check.state(s.count('*') == 1)
             if s.endswith('*'):
                 return Repeat.Times(int(s[:-1]))
             else:
                 mi, mx = s.split('*')
                 return Repeat.Times(int(mi), int(mx))
-        elif s:
-            return Repeat.Times(n := int(s), n)
         else:
-            return Repeat.Times(0)
+            return Repeat.Times(n := int(s), n)
 
     @RuleVisitor.register('element')
     def visit_element_rule(self, m: Match) -> ta.Any:
