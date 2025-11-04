@@ -1415,6 +1415,7 @@ class InstanceType(_enum.Enum):
     M8A_48XLARGE = 'm8a.48xlarge'
     M8A_METAL_24XL = 'm8a.metal-24xl'
     M8A_METAL_48XL = 'm8a.metal-48xl'
+    TRN2_3XLARGE = 'trn2.3xlarge'
 
 
 class InstanceTypeHypervisor(_enum.Enum):
