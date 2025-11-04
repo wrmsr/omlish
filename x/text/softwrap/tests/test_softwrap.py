@@ -66,6 +66,10 @@ def test_list_one_item():
      - One item
 
     That was the one item list test.
+    
+    - One inline item
+
+    That was the one inline item list test.
 """)
     print(root)
     print(render(root))

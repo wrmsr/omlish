@@ -28,14 +28,14 @@ class ListBuilder:
             self,
             *,
             list_prefixes: ta.Iterable[str] | None = None,
-            forbid_improper_sublists: bool = False,
+            allow_improper_children: bool | ta.Literal['lists_only'] = False,
     ) -> None:
         super().__init__()
 
         if list_prefixes is None:
             list_prefixes = self.DEFAULT_LIST_PREFIXES
         self._list_prefixes = set(check.not_isinstance(list_prefixes, str))
-        self._forbid_improper_sublists = forbid_improper_sublists
+        self._allow_improper_children = allow_improper_children
 
         self._len_sorted_list_prefixes = sorted(self._list_prefixes, key=len, reverse=True)
 
@@ -50,14 +50,8 @@ class ListBuilder:
         if not ps:
             return None
 
-        if not isinstance(f := ps[0], Text):
-            return None
-
         for lp in self._len_sorted_list_prefixes:
             sp = lp + ' '
-
-            if not f.s.startswith(sp):
-                continue
 
             mo = -1
             n = 0
@@ -65,16 +59,25 @@ class ListBuilder:
                 p = ps[n]
 
                 if isinstance(p, (Blank, Text)):
-                    if isinstance(p, Text) and not p.s.startswith(sp):
-                        break
-                    if mo < 0:
-                        mo = n
+                    if isinstance(p, Text):
+                        if p.s.startswith(sp):
+                            if mo < 0:
+                                mo = n
+                        elif mo >= 0:
+                            break
 
                 elif isinstance(p, Indent):
-                    if p.n < len(sp):
-                        if not self._forbid_improper_sublists and isinstance(p.p, List):
-                            continue
-                        break
+                    if mo >= 0 and p.n < len(sp):
+                        match self._allow_improper_children:
+                            case 'lists_only':
+                                if not isinstance(p.p, List):
+                                    break
+                            case True:
+                                pass
+                            case False:
+                                break
+                            case _:
+                                raise TypeError(self._allow_improper_children)
 
                 else:
                     raise TypeError(p)
@@ -138,7 +141,7 @@ class ListBuilder:
                 st = 0
                 while (dl := self._detect_list(new[st:])) is not None:
                     ln = self._build_list(dl.pfx, p.ps[dl.ofs:dl.ofs + dl.len])
-                    new[dl.ofs:dl.ofs + dl.len + 1] = [ln]
+                    new[dl.ofs:dl.ofs + dl.len] = [ln]
                     st = dl.ofs + 1
 
                 return blockify(*new)
