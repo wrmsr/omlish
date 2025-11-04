@@ -41,12 +41,23 @@ class ListBuilder:
 
     #
 
+    def _should_promote_indent_child(self, p: Indent) -> bool:
+        ac = self._allow_improper_children
+        if isinstance(ac, bool):
+            return ac
+        elif ac == 'lists_only':
+            return isinstance(p.p, List)
+        else:
+            raise TypeError(ac)
+
+    #
+
     class _DetectedList(ta.NamedTuple):
         pfx: str
         ofs: int
         len: int
 
-    def _detect_list(self, ps: ta.Sequence[Part]) -> _DetectedList | None:
+    def _detect_list(self, ps: ta.Sequence[Part], st: int = 0) -> _DetectedList | None:
         if not ps:
             return None
 
@@ -54,7 +65,7 @@ class ListBuilder:
             sp = lp + ' '
 
             mo = -1
-            n = 0
+            n = st
             while n < len(ps):
                 p = ps[n]
 
@@ -68,16 +79,12 @@ class ListBuilder:
 
                 elif isinstance(p, Indent):
                     if mo >= 0 and p.n < len(sp):
-                        match self._allow_improper_children:
-                            case 'lists_only':
-                                if not isinstance(p.p, List):
-                                    break
-                            case True:
-                                pass
-                            case False:
-                                break
-                            case _:
-                                raise TypeError(self._allow_improper_children)
+                        if not self._should_promote_indent_child(p):
+                            break
+
+                elif isinstance(p, List):
+                    if mo >= 0:
+                        break
 
                 else:
                     raise TypeError(p)
@@ -110,12 +117,8 @@ class ListBuilder:
                 new.append([Text(p.s[len(sp):])])
 
             elif isinstance(p, Indent):
-                if (
-                        p.n < len(sp) and
-                        isinstance(p.p, List) and
-                        not self._forbid_improper_sublists
-                ):
-                    # Promote improper sublists to the outer list's indent
+                if p.n < len(sp):
+                    check.state(self._should_promote_indent_child(p))
                     p = Indent(len(sp), p.p)
 
                 if p.n == len(sp):
@@ -139,12 +142,16 @@ class ListBuilder:
                     return rec(blockify(*new))
 
                 st = 0
-                while (dl := self._detect_list(new[st:])) is not None:
-                    ln = self._build_list(dl.pfx, p.ps[dl.ofs:dl.ofs + dl.len])
+                diff = False
+                while (dl := self._detect_list(new, st)) is not None:
+                    diff = True
+                    ln = self._build_list(dl.pfx, new[dl.ofs:dl.ofs + dl.len])
                     new[dl.ofs:dl.ofs + dl.len] = [ln]
                     st = dl.ofs + 1
 
-                return blockify(*new)
+                if diff:
+                    p = blockify(*new)
+                return p
 
             elif isinstance(p, Indent):
                 if (n := rec(p.p)) is not p.p:

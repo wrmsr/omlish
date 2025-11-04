@@ -20,6 +20,9 @@ def _indent_str(n: int) -> str:
     return ' ' * n
 
 
+##
+
+
 def render_to(root: Part, out: ta.Callable[[str], ta.Any]) -> None:
     i_stk: list[int] = [0]
     ci = 0
@@ -84,4 +87,57 @@ def render_to(root: Part, out: ta.Callable[[str], ta.Any]) -> None:
 def render(root: Part) -> str:
     buf = io.StringIO()
     render_to(root, buf.write)
+    return buf.getvalue()
+
+
+##
+
+
+def dump_to(root: Part, out: ta.Callable[[str], ta.Any]) -> None:
+    i = 0
+
+    def write(s: str) -> None:
+        out(_indent_str(i * 2))
+        out(s)
+        out('\n')
+
+    def rec(p: Part) -> None:
+        nonlocal i
+
+        if isinstance(p, Blank):
+            write('blank')
+
+        elif isinstance(p, Text):
+            write(f'text:{p.s!r}')
+
+        elif isinstance(p, Block):
+            write('block')
+            i += 1
+            for c in p.ps:
+                rec(c)
+            i -= 1
+
+        elif isinstance(p, Indent):
+            write(f'indent:{p.n}')
+            i += 1
+            rec(p.p)
+            i -= 1
+
+        elif isinstance(p, List):
+            write(f'list:{p.d!r}')
+            i += 1
+            for e in p.es:
+                rec(e)
+            i -= 1
+
+        else:
+            raise TypeError(p)
+
+    rec(root)
+    check.state(i == 0)
+
+
+def dump(root: Part) -> str:
+    buf = io.StringIO()
+    dump_to(root, buf.write)
     return buf.getvalue()

@@ -1,6 +1,7 @@
 # ruff: noqa: W293
 from ..chopping import chop
 from ..rendering import render
+from ..rendering import dump
 
 
 def test_softwrap():
@@ -34,6 +35,7 @@ def test_softwrap():
   the fuck?
 """)
     print(root)
+    print(dump(root))
     print(render(root))
     print()
 
@@ -55,6 +57,7 @@ def test_softwrap2():
        That blank line is preserved, and it is still softwrapped.
 """)
     print(root)
+    print(dump(root))
     print(render(root))
     print()
 
@@ -72,5 +75,6 @@ def test_list_one_item():
     That was the one inline item list test.
 """)
     print(root)
+    print(dump(root))
     print(render(root))
     print()
