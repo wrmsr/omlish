@@ -1,6 +1,7 @@
 """
 TODO:
  - 'inline' (non-indented) lists?
+ - numeric lettered lists (even unordered) (with separator - `1)` / `1:` / ...)
 """
 import typing as ta
 
@@ -39,7 +40,12 @@ class ListBuilder:
 
     #
 
-    def _detect_list_prefix(self, ps: ta.Sequence[Part]) -> str | None:
+    class _DetectedList(ta.NamedTuple):
+        pfx: str
+        ofs: int
+        len: int
+
+    def _detect_list(self, ps: ta.Sequence[Part]) -> _DetectedList | None:
         check.not_empty(ps)
 
         if not isinstance(f := ps[0], Text):
@@ -51,27 +57,30 @@ class ListBuilder:
             if not f.s.startswith(sp):
                 continue
 
-            i = 0
-            for p in ps:
+            mo = -1
+            n = 0
+            while n < len(ps):
+                p = ps[n]
+
                 if isinstance(p, (Blank, Text)):
                     if isinstance(p, Text) and not p.s.startswith(sp):
                         break
-                    i += 1
-                    continue
+                    if mo < 0:
+                        mo = n
 
                 elif isinstance(p, Indent):
                     if p.n < len(sp):
                         if not self._forbid_improper_sublists and isinstance(p.p, List):
                             continue
-
                         break
 
                 else:
                     raise TypeError(p)
 
-            else:
-                if i:
-                    return lp
+                n += 1
+
+            if mo >= 0:
+                return ListBuilder._DetectedList(lp, mo, n - mo)
 
         return None
 
@@ -124,10 +133,13 @@ class ListBuilder:
                 if not all_same(new, p.ps):
                     return rec(blockify(*new))
 
-                if (lp := self._detect_list_prefix(p.ps)) is None:
+                if (dl := self._detect_list(p.ps)) is None:
                     return p
 
-                return self._build_list(lp, p.ps)
+                if (dl.ofs, dl.len) != (0, len(p.ps)):
+                    raise NotImplementedError
+
+                return self._build_list(dl.pfx, p.ps)
 
             elif isinstance(p, Indent):
                 if (n := rec(p.p)) is not p.p:
