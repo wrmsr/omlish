@@ -34,6 +34,8 @@ from omlish import check
 from omlish import lang
 
 from .console import ConsoleEvent
+from .keymap import compile_keymap
+from .keymap import parse_keys
 from .types import CommandName
 
 
@@ -66,52 +68,52 @@ class KeymapTranslator(InputTranslator):
             *,
             invalid_cls: ta.Any | None = None,
             character_cls: ta.Any | None = None,
-    ):
-        self.keymap = keymap
-        self.invalid_cls = invalid_cls
-        self.character_cls = character_cls
+    ) -> None:
+        super().__init__()
+
+        self._keymap = keymap
+        self._invalid_cls = invalid_cls
+        self._character_cls = character_cls
 
         d = {}
-        from .keymap import parse_keys  # noqa
         for keyspec, command in keymap:
             keyseq = tuple(parse_keys(keyspec))
             d[keyseq] = command
 
-        from .keymap import compile_keymap  # noqa
-        self.k = self.ck = compile_keymap(d, ())
+        self._k = self._ck = compile_keymap(d, ())
 
-        self.results: collections.deque[InputEvent] = collections.deque()
+        self._results: collections.deque[InputEvent] = collections.deque()
 
-        self.stack: list[str] = []
+        self._stack: list[str] = []
 
     def push(self, evt: ConsoleEvent) -> None:
         key = check.non_empty_str(evt.data)
-        d = self.k.get(key)
+        d = self._k.get(key)
 
         if isinstance(d, dict):
-            self.stack.append(key)
-            self.k = d
+            self._stack.append(key)
+            self._k = d
 
         else:
             if d is None:
-                if self.stack or len(key) > 1 or unicodedata.category(key) == 'C':
-                    self.results.append(InputEvent(self.invalid_cls, [*self.stack, key]))
+                if self._stack or len(key) > 1 or unicodedata.category(key) == 'C':
+                    self._results.append(InputEvent(self._invalid_cls, [*self._stack, key]))
                 else:
                     # small optimization:
-                    self.k[key] = self.character_cls
-                    self.results.append(InputEvent(self.character_cls, [key]))
+                    self._k[key] = self._character_cls
+                    self._results.append(InputEvent(self._character_cls, [key]))
 
             else:
-                self.results.append(InputEvent(d, [*self.stack, key]))
+                self._results.append(InputEvent(d, [*self._stack, key]))
 
-            self.stack = []
-            self.k = self.ck
+            self._stack = []
+            self._k = self._ck
 
     def get(self):
-        if self.results:
-            return self.results.popleft()
+        if self._results:
+            return self._results.popleft()
         else:
             return None
 
     def empty(self) -> bool:
-        return not self.results
+        return not self._results
