@@ -75,12 +75,12 @@ class KeymapTranslator(InputTranslator):
         self._invalid_cls = invalid_cls
         self._character_cls = character_cls
 
-        d = {}
+        d: dict[tuple[str, ...], str] = {}
         for keyspec, command in keymap:
             keyseq = tuple(parse_keys(keyspec))
             d[keyseq] = command
 
-        self._k = self._ck = compile_keymap(d, ())
+        self._k = self._ck = compile_keymap(d)
 
         self._results: collections.deque[InputEvent] = collections.deque()
 
@@ -109,7 +109,7 @@ class KeymapTranslator(InputTranslator):
             self._stack = []
             self._k = self._ck
 
-    def get(self):
+    def get(self) -> InputEvent | None:
         if self._results:
             return self._results.popleft()
         else:

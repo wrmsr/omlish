@@ -37,6 +37,10 @@ Examples:
 import typing as ta
 
 
+StrKeyMap: ta.TypeAlias = ta.Mapping[str, ta.Union['StrKeyMap', str]]
+BytesKeyMap: ta.TypeAlias = ta.Mapping[bytes, ta.Union['BytesKeyMap', str]]
+
+
 ##
 
 
@@ -180,7 +184,17 @@ def _parse_single_key_sequence(key: str, s: int) -> tuple[list[str], int]:
     return result
 
 
-def compile_keymap(keymap, empty=b''):
+@ta.overload
+def compile_keymap(keymap: ta.Mapping[bytes, str]) -> BytesKeyMap:
+    ...
+
+
+@ta.overload
+def compile_keymap(keymap: ta.Mapping[tuple[str, ...], str]) -> StrKeyMap:
+    ...
+
+
+def compile_keymap(keymap):
     r: dict = {}
 
     for key, value in keymap.items():
@@ -188,15 +202,15 @@ def compile_keymap(keymap, empty=b''):
             first = key[:1]
         else:
             first = key[0]
-        r.setdefault(first, {})[key[1:]] = value
+        r.setdefault(first, {})[key[1:] or None] = value
 
     for key, value in r.items():
-        if empty in value:
+        if None in value:
             if len(value) != 1:
                 raise KeySpecError(f'key definitions for {value.values()} clash')
             else:
-                r[key] = value[empty]
+                r[key] = value[None]
         else:
-            r[key] = compile_keymap(value, empty)
+            r[key] = compile_keymap(value)
 
     return r
