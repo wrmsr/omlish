@@ -37,8 +37,8 @@ Examples:
 import typing as ta
 
 
-StrKeyMap: ta.TypeAlias = ta.Mapping[str, ta.Union['StrKeyMap', str]]
-BytesKeyMap: ta.TypeAlias = ta.Mapping[bytes, ta.Union['BytesKeyMap', str]]
+StrKeyMap: ta.TypeAlias = dict[str, ta.Union['StrKeyMap', str]]
+BytesKeyMap: ta.TypeAlias = dict[bytes, ta.Union['BytesKeyMap', str]]
 
 
 ##
