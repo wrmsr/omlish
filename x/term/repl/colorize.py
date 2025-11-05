@@ -1,3 +1,4 @@
+import dataclasses as dc
 import io
 import os
 import sys
@@ -10,80 +11,81 @@ import typing as ta
 COLORIZE = True
 
 
-class ANSIColors:
-    RESET = '\x1b[0m'
+@dc.dataclass(frozen=True)
+class AnsiColors:
+    RESET: str = '\x1b[0m'
 
-    BLACK = '\x1b[30m'
-    BLUE = '\x1b[34m'
-    CYAN = '\x1b[36m'
-    GREEN = '\x1b[32m'
-    GREY = '\x1b[90m'
-    MAGENTA = '\x1b[35m'
-    RED = '\x1b[31m'
-    WHITE = '\x1b[37m'  # more like LIGHT GRAY
-    YELLOW = '\x1b[33m'
+    BLACK: str = '\x1b[30m'
+    BLUE: str = '\x1b[34m'
+    CYAN: str = '\x1b[36m'
+    GREEN: str = '\x1b[32m'
+    GREY: str = '\x1b[90m'
+    MAGENTA: str = '\x1b[35m'
+    RED: str = '\x1b[31m'
+    WHITE: str = '\x1b[37m'  # more like LIGHT GRAY
+    YELLOW: str = '\x1b[33m'
 
-    BOLD = '\x1b[1m'
-    BOLD_BLACK = '\x1b[1;30m'  # DARK GRAY
-    BOLD_BLUE = '\x1b[1;34m'
-    BOLD_CYAN = '\x1b[1;36m'
-    BOLD_GREEN = '\x1b[1;32m'
-    BOLD_MAGENTA = '\x1b[1;35m'
-    BOLD_RED = '\x1b[1;31m'
-    BOLD_WHITE = '\x1b[1;37m'  # actual WHITE
-    BOLD_YELLOW = '\x1b[1;33m'
+    BOLD: str = '\x1b[1m'
+    BOLD_BLACK: str = '\x1b[1;30m'  # DARK GRAY
+    BOLD_BLUE: str = '\x1b[1;34m'
+    BOLD_CYAN: str = '\x1b[1;36m'
+    BOLD_GREEN: str = '\x1b[1;32m'
+    BOLD_MAGENTA: str = '\x1b[1;35m'
+    BOLD_RED: str = '\x1b[1;31m'
+    BOLD_WHITE: str = '\x1b[1;37m'  # actual WHITE
+    BOLD_YELLOW: str = '\x1b[1;33m'
 
-    # intense = like bold but without being bold
-    INTENSE_BLACK = '\x1b[90m'
-    INTENSE_BLUE = '\x1b[94m'
-    INTENSE_CYAN = '\x1b[96m'
-    INTENSE_GREEN = '\x1b[92m'
-    INTENSE_MAGENTA = '\x1b[95m'
-    INTENSE_RED = '\x1b[91m'
-    INTENSE_WHITE = '\x1b[97m'
-    INTENSE_YELLOW = '\x1b[93m'
+    # intense: str = like bold but without being bold
+    INTENSE_BLACK: str = '\x1b[90m'
+    INTENSE_BLUE: str = '\x1b[94m'
+    INTENSE_CYAN: str = '\x1b[96m'
+    INTENSE_GREEN: str = '\x1b[92m'
+    INTENSE_MAGENTA: str = '\x1b[95m'
+    INTENSE_RED: str = '\x1b[91m'
+    INTENSE_WHITE: str = '\x1b[97m'
+    INTENSE_YELLOW: str = '\x1b[93m'
 
-    BACKGROUND_BLACK = '\x1b[40m'
-    BACKGROUND_BLUE = '\x1b[44m'
-    BACKGROUND_CYAN = '\x1b[46m'
-    BACKGROUND_GREEN = '\x1b[42m'
-    BACKGROUND_MAGENTA = '\x1b[45m'
-    BACKGROUND_RED = '\x1b[41m'
-    BACKGROUND_WHITE = '\x1b[47m'
-    BACKGROUND_YELLOW = '\x1b[43m'
+    BACKGROUND_BLACK: str = '\x1b[40m'
+    BACKGROUND_BLUE: str = '\x1b[44m'
+    BACKGROUND_CYAN: str = '\x1b[46m'
+    BACKGROUND_GREEN: str = '\x1b[42m'
+    BACKGROUND_MAGENTA: str = '\x1b[45m'
+    BACKGROUND_RED: str = '\x1b[41m'
+    BACKGROUND_WHITE: str = '\x1b[47m'
+    BACKGROUND_YELLOW: str = '\x1b[43m'
 
-    INTENSE_BACKGROUND_BLACK = '\x1b[100m'
-    INTENSE_BACKGROUND_BLUE = '\x1b[104m'
-    INTENSE_BACKGROUND_CYAN = '\x1b[106m'
-    INTENSE_BACKGROUND_GREEN = '\x1b[102m'
-    INTENSE_BACKGROUND_MAGENTA = '\x1b[105m'
-    INTENSE_BACKGROUND_RED = '\x1b[101m'
-    INTENSE_BACKGROUND_WHITE = '\x1b[107m'
-    INTENSE_BACKGROUND_YELLOW = '\x1b[103m'
+    INTENSE_BACKGROUND_BLACK: str = '\x1b[100m'
+    INTENSE_BACKGROUND_BLUE: str = '\x1b[104m'
+    INTENSE_BACKGROUND_CYAN: str = '\x1b[106m'
+    INTENSE_BACKGROUND_GREEN: str = '\x1b[102m'
+    INTENSE_BACKGROUND_MAGENTA: str = '\x1b[105m'
+    INTENSE_BACKGROUND_RED: str = '\x1b[101m'
+    INTENSE_BACKGROUND_WHITE: str = '\x1b[107m'
+    INTENSE_BACKGROUND_YELLOW: str = '\x1b[103m'
 
 
-ColorCodes = set()
-NoColors = ANSIColors()
+ANSI_COLORS = AnsiColors()
 
-for attr, code in ANSIColors.__dict__.items():
-    if not attr.startswith('__'):
-        ColorCodes.add(code)
-        setattr(NoColors, attr, '')
+COLOR_CODES = {f.name for f in dc.fields(AnsiColors)}
+
+NO_COLORS = AnsiColors(**{c: '' for c in COLOR_CODES})
 
 
 def get_colors(
-    colorize: bool = False, *, file: ta.IO[str] | ta.IO[bytes] | None = None,
-) -> ANSIColors:
+        colorize: bool = False,
+        *,
+        file: ta.IO[str] | ta.IO[bytes] | None = None,
+) -> AnsiColors:
     if colorize or can_colorize(file=file):
-        return ANSIColors()
+        return ANSI_COLORS
     else:
-        return NoColors
+        return NO_COLORS
 
 
 def decolor(text: str) -> str:
     """Remove ANSI color codes from a string."""
 
-    for code in ColorCodes:
+    for code in COLOR_CODES:
         text = text.replace(code, '')
     return text
 

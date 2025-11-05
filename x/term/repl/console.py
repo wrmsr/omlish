@@ -29,7 +29,7 @@ class InvalidTerminal(RuntimeError):  # noqa
         super().__init__(errno.EIO, message)
 
 
-CONSOLE_ERROR_TYPES = (
+CONSOLE_ERROR_TYPES: tuple[type[BaseException], ...] = (
     termios.error,
     InvalidTerminal,
 )

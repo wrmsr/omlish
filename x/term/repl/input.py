@@ -30,24 +30,28 @@ import collections
 import typing as ta
 import unicodedata
 
+from omlish import check
 from omlish import lang
 
+from .console import ConsoleEvent
 from .types import CommandName
-
-
-EventTuple: ta.TypeAlias = tuple[CommandName, str]
 
 
 ##
 
 
+class InputEvent(ta.NamedTuple):
+    cls: ta.Any | None
+    arg: ta.Any
+
+
 class InputTranslator(lang.Abstract):
     @abc.abstractmethod
-    def push(self, evt: 'EventTuple') -> None:
+    def push(self, evt: ConsoleEvent) -> None:
         pass
 
     @abc.abstractmethod
-    def get(self) -> ta.Optional['EventTuple']:
+    def get(self) -> InputEvent | None:
         return None
 
     @abc.abstractmethod
@@ -58,9 +62,10 @@ class InputTranslator(lang.Abstract):
 class KeymapTranslator(InputTranslator):
     def __init__(
             self,
-            keymap,
-            invalid_cls=None,
-            character_cls=None,
+            keymap: ta.Sequence[tuple[str, CommandName]],
+            *,
+            invalid_cls: ta.Any | None = None,
+            character_cls: ta.Any | None = None,
     ):
         self.keymap = keymap
         self.invalid_cls = invalid_cls
@@ -75,12 +80,12 @@ class KeymapTranslator(InputTranslator):
         from .keymap import compile_keymap  # noqa
         self.k = self.ck = compile_keymap(d, ())
 
-        self.results: collections.deque = collections.deque()
+        self.results: collections.deque[InputEvent] = collections.deque()
 
-        self.stack = []
+        self.stack: list[str] = []
 
-    def push(self, evt):
-        key = evt.data
+    def push(self, evt: ConsoleEvent) -> None:
+        key = check.non_empty_str(evt.data)
         d = self.k.get(key)
 
         if isinstance(d, dict):
@@ -90,14 +95,14 @@ class KeymapTranslator(InputTranslator):
         else:
             if d is None:
                 if self.stack or len(key) > 1 or unicodedata.category(key) == 'C':
-                    self.results.append((self.invalid_cls, [*self.stack, key]))
+                    self.results.append(InputEvent(self.invalid_cls, [*self.stack, key]))
                 else:
                     # small optimization:
                     self.k[key] = self.character_cls
-                    self.results.append((self.character_cls, [key]))
+                    self.results.append(InputEvent(self.character_cls, [key]))
 
             else:
-                self.results.append((d, [*self.stack, key]))
+                self.results.append(InputEvent(d, [*self.stack, key]))
 
             self.stack = []
             self.k = self.ck
