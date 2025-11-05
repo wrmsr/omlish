@@ -74,13 +74,13 @@ static PyMethodDef capture_methods[] = {
     {NULL, NULL, 0, NULL}
 };
 
-static struct PyModuleDef_Slot capture_slots[] = {
+static PyModuleDef_Slot capture_slots[] = {
     {Py_mod_gil, Py_MOD_GIL_NOT_USED},
     {Py_mod_multiple_interpreters, Py_MOD_PER_INTERPRETER_GIL_SUPPORTED},
     {0, NULL}
 };
 
-static struct PyModuleDef capture_module = {
+static PyModuleDef capture_module = {
     .m_base = PyModuleDef_HEAD_INIT,
     .m_name = _MODULE_NAME,
     .m_doc = capture_doc,
