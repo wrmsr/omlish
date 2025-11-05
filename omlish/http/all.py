@@ -78,6 +78,8 @@ with _lang.auto_proxy_init(globals()):
         UrllibHttpClient,
     )
 
+    from . import asgi  # noqa
+
     from . import consts  # noqa
 
     from .cookies import (  # noqa
@@ -116,3 +118,5 @@ with _lang.auto_proxy_init(globals()):
         MultipartEncoder,
         MultipartField,
     )
+
+    from . import wsgi  # noqa

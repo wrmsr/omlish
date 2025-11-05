@@ -52,7 +52,7 @@ all = [
     'aiomysql ~= 0.3',
     'aiosqlite ~= 0.21',
     'asyncpg ~= 0.30',
-    'apsw ~= 3.50',
+    'apsw ~= 3.51',
     'sqlean.py ~= 3.50',
     'duckdb ~= 1.4',
     'markupsafe ~= 3.0',
@@ -109,7 +109,7 @@ sqldrivers = [
     'aiomysql ~= 0.3',
     'aiosqlite ~= 0.21',
     'asyncpg ~= 0.30',
-    'apsw ~= 3.50',
+    'apsw ~= 3.51',
     'sqlean.py ~= 3.50',
     'duckdb ~= 1.4',
 ]
