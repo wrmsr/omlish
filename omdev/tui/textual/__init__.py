@@ -27,6 +27,7 @@ with _lang.auto_proxy_init(globals()):
     from textual import timer  # noqa
     from textual import widget  # noqa
     from textual import widgets  # noqa
+    from textual import work  # noqa
     from textual.app import ActionError  # noqa
     from textual.app import ActiveModeError  # noqa
     from textual.app import App as App_  # noqa
