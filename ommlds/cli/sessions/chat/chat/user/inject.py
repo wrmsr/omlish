@@ -24,6 +24,7 @@ def bind_user(
         initial_system_content: ta.Optional['mc.Content'] = None,
         initial_user_content: ta.Optional['mc.Content'] = None,
         interactive: bool = False,
+        use_readline: bool | ta.Literal['auto'] = False,
 ) -> inj.Elements:
     els: list[inj.Elemental] = []
 
@@ -48,6 +49,11 @@ def bind_user(
             raise NotImplementedError
 
         els.append(inj.bind(_types.UserChatInput, to_ctor=_interactive.InteractiveUserChatInput, singleton=True))
+
+        els.extend([
+            inj.bind(_interactive.SyncStringInput, to_const=_interactive.InputSyncStringInput(use_readline=use_readline)),  # noqa
+            inj.bind(_interactive.AsyncStringInput, to_ctor=_interactive.ThreadAsyncStringInput, singleton=True),
+        ])
 
     else:
         if initial_user_content is None:

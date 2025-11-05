@@ -24,7 +24,9 @@ class ChatConfig:
 
     initial_system_content: ta.Optional['mc.Content'] = None
     initial_user_content: ta.Optional['mc.Content'] = None
+
     interactive: bool = False
+    use_readline: bool | ta.Literal['auto'] = 'auto'
 
     silent: bool = False
     markdown: bool = False

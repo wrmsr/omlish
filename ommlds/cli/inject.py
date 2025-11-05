@@ -5,6 +5,7 @@ from omlish import lang
 
 
 with lang.auto_proxy_import(globals()):
+    from . import asyncs
     from .backends import inject as _backends
     from .sessions import inject as _sessions
     from .state import inject as _state
@@ -30,6 +31,12 @@ def bind_main(
         _sessions.bind_sessions(session_cfg),
 
         _state.bind_state(),
+    ])
+
+    #
+
+    els.extend([
+        inj.bind(asyncs.AsyncThreadRunner, to_ctor=asyncs.AnyioAsyncThreadRunner),
     ])
 
     #

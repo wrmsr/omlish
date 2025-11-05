@@ -42,6 +42,7 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
             initial_system_content=cfg.initial_system_content,
             initial_user_content=cfg.initial_user_content,
             interactive=cfg.interactive,
+            use_readline=cfg.use_readline,
         ),
 
         _chat_state.bind_state(
