@@ -75,10 +75,10 @@ class KeymapTranslator(InputTranslator):
         self._invalid_cls = invalid_cls
         self._character_cls = character_cls
 
-        d: dict[tuple[str, ...], str] = {}
-        for keyspec, command in keymap:
-            keyseq = tuple(parse_keys(keyspec))
-            d[keyseq] = command
+        d: dict[tuple[str, ...], str] = {
+            tuple(parse_keys(keyspec)): command
+            for keyspec, command in keymap
+        }
 
         self._k = self._ck = compile_keymap(d)
 

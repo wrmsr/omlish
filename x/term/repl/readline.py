@@ -149,7 +149,7 @@ class ReadlineAlikeReader(
 
     # support for reading multiline Python statements
 
-    def collect_keymap(self) -> tuple[tuple[KeySpec, CommandName], ...]:
+    def collect_keymap(self) -> ta.Sequence[tuple[KeySpec, CommandName]]:
         return (
             *super().collect_keymap(),
             (r'\n', 'maybe-accept'),
@@ -549,7 +549,6 @@ _get_reader = _wrapper.get_reader
 
 def _make_stub(_name: str, _ret: object) -> None:
     def stub(*args: object, **kwds: object) -> None:
-        import warnings  # noqa
         warnings.warn(f'readline.{_name}() not implemented', stacklevel=2)
 
     stub.__name__ = _name

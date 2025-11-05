@@ -1,5 +1,8 @@
 import sys
 
+from .interact import InteractiveConsole  # noqa
+from .interact import run_multiline_interactive_console  # noqa
+
 
 ##
 
@@ -12,8 +15,6 @@ def _main() -> None:
     if not hasattr(sys, 'ps2'):
         sys.ps2 = '... '
 
-    from .interact import InteractiveConsole  # noqa
-    from .interact import run_multiline_interactive_console  # noqa
     run_multiline_interactive_console(InteractiveConsole())
 
 

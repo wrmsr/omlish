@@ -29,6 +29,7 @@ from ..console import Console
 from ..input import KeymapTranslator
 from ..types import CommandName
 from ..types import KeySpec
+from ..utils import color_codes
 from ..utils import disp_str
 from ..utils import unbracket
 from ..utils import wlen
@@ -68,7 +69,7 @@ def make_default_commands() -> dict[CommandName, type[Command]]:
 ##
 
 
-DEFAULT_KEYMAP: tuple[tuple[KeySpec, CommandName], ...] = (
+DEFAULT_KEYMAP: ta.Sequence[tuple[KeySpec, CommandName]] = (
     (r'\C-a', 'beginning-of-line'),
     (r'\C-b', 'left'),
     (r'\C-c', 'interrupt'),
@@ -129,8 +130,7 @@ DEFAULT_KEYMAP: tuple[tuple[KeySpec, CommandName], ...] = (
     (r'\<f2>', 'show-history'),
     (r'\<f3>', 'paste-mode'),
     (r'\EOF', 'end'),  # the entries in the terminfo database for xterms
-    (r'\EOH', 'home'),  # seem to be wrong. this is a less than ideal
-    # workaround
+    (r'\EOH', 'home'),  # seem to be wrong. this is a less than ideal workaround
 )
 
 
@@ -254,7 +254,7 @@ class Reader:
 
         # Enable the use of `insert` without a `prepare` call - necessary to facilitate the tab completion hack
         # implemented for <https://bugs.python.org/issue25660>.
-        self.keymap: tuple[tuple[str, str], ...] = self.collect_keymap()
+        self.keymap: ta.Sequence[tuple[str, str]] = self.collect_keymap()
         self.input_trans = KeymapTranslator(
             self.keymap,
             invalid_cls='invalid-key',
@@ -282,7 +282,7 @@ class Reader:
             dimensions=(0, 0),
         )
 
-    def collect_keymap(self) -> tuple[tuple[KeySpec, CommandName], ...]:
+    def collect_keymap(self) -> ta.Sequence[tuple[KeySpec, CommandName]]:
         return DEFAULT_KEYMAP
 
     def calc_screen(self) -> list[str]:
@@ -523,7 +523,6 @@ class Reader:
             prompt = self.prompts.ps1
 
         if self.can_colorize:
-            from ..utils import color_codes  # noqa
             t = color_codes()
             prompt = f'{t["prompt"]}{prompt}{t.reset}'
         return prompt
@@ -732,17 +731,18 @@ class Reader:
 
     def run_hooks(self) -> None:
         threading_hook = self.threading_hook
+
         if threading_hook is None and 'threading' in sys.modules:
             from ..threadhook import install_threading_hook  # noqa
             install_threading_hook(self)
+
         if threading_hook is not None:
             try:
-                threading_hook()
+                threading_hook()  # noqa
             except Exception:  # noqa
                 pass
 
-        input_hook = self.console.input_hook
-        if input_hook:
+        if input_hook := self.console.input_hook:
             try:
                 input_hook()
             except Exception:  # noqa

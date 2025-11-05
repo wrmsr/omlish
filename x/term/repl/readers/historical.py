@@ -276,7 +276,7 @@ class HistoricalReader(Reader):
             character_cls=isearch_add_character,
         )
 
-    def collect_keymap(self) -> tuple[tuple[KeySpec, CommandName], ...]:
+    def collect_keymap(self) -> ta.Sequence[tuple[KeySpec, CommandName]]:
         return (
             *super().collect_keymap(),
             (r'\C-n', 'next-history'),

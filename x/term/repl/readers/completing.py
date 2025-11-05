@@ -13,6 +13,7 @@
 # OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 # OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 import re
+import typing as ta
 
 from ..commands import Command
 from ..commands import self_insert as base_self_insert
@@ -257,7 +258,7 @@ class CompletingReader(Reader):
             self.commands[c.__name__] = c
             self.commands[c.__name__.replace('_', '-')] = c
 
-    def collect_keymap(self) -> tuple[tuple[KeySpec, CommandName], ...]:
+    def collect_keymap(self) -> ta.Sequence[tuple[KeySpec, CommandName]]:
         return (
             *super().collect_keymap(),
             (r'\t', 'complete'),
