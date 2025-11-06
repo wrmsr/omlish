@@ -1,5 +1,6 @@
 import contextlib
 import ctypes as ct
+import os
 import sys
 import typing as ta
 
@@ -72,6 +73,9 @@ def unload_llm(llm: 'llama3.Llama3Llm') -> None:  # noqa
 
 
 def _main(es: contextlib.ExitStack) -> None:
+    print(f'{os.getpid()=}')
+    input()
+
     @es.callback
     def say_done() -> None:
         print('all done!', file=sys.stderr)

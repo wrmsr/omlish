@@ -35,9 +35,14 @@ requires = ['-rrequirements-dev.txt']
 srcs = ['@main']
 use_uv = true
 
-[tool.omlish.pyproject.venvs.default]
+[tool.omlish.pyproject.venvs.debug]
 inherits = ['_default']
 requires = ['-rrequirements-ext.txt']
+
+[tool.omlish.pyproject.venvs.default]
+interp = '@13d'
+inherits = ['_default']
+requires = ['-rrequirements-dev.txt']
 
 [tool.omlish.pyproject.venvs.check]
 inherits = ['_default']
