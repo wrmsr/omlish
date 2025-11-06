@@ -288,6 +288,7 @@ class DedicatedThreadExecutor:
                         break
 
                     elif isinstance(o, DedicatedThreadExecutor._Call):
+                        v: ta.Any = None
                         try:
                             v = o.fn()
                         except BaseException as e:  # noqa
