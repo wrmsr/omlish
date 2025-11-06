@@ -83,7 +83,8 @@ def _main(es: contextlib.ExitStack) -> None:
     tge.get_or_make_executor().start()
     es.callback(tge.get_executor().stop)
 
-    tge.get_executor().add_shutdown_callback(tge.call(setup_autorelease_pool))
+    if sys.platform == 'darwin':
+        tge.get_executor().add_shutdown_callback(tge.call(setup_autorelease_pool))
 
     llm = tge.call(load_llm, ['--size=1B'])
     tge.get_executor().add_shutdown_callback(lambda: unload_llm(llm))
