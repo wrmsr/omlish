@@ -11,7 +11,7 @@ from .protocols import LoggerLike
 ##
 
 
-def error_logging(log):  # noqa
+def exception_logging(log):  # noqa
     def outer(fn):
         @functools.wraps(fn)
         def inner(*args, **kwargs):

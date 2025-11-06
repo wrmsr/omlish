@@ -213,7 +213,7 @@ class FileAnalyzer:
         self.verbose and print()
         return True
 
-    @logs.error_logging(log)
+    @logs.exception_logging(log)
     def run(self, file_name: str) -> None:
         log.info(f'{self._ctx.deathpact=} {file_name}')  # noqa
 
@@ -268,7 +268,7 @@ class FileAnalyzer:
             self._flush_rows()
 
 
-@logs.error_logging(log)
+@logs.exception_logging(log)
 def analyze_file(
         file_name: str,
         db_url: str,

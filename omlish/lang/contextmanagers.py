@@ -406,8 +406,8 @@ def double_check_setdefault(
 
 def call_with_exit_stack(
         fn: ta.Callable[ta.Concatenate[contextlib.ExitStack, P], T],
-        *args: ta.Any,
-        **kwargs: ta.Any,
+        *args: P.args,
+        **kwargs: P.kwargs,
 ) -> T:
     with contextlib.ExitStack() as es:
         return fn(es, *args, **kwargs)
@@ -415,8 +415,8 @@ def call_with_exit_stack(
 
 async def call_with_async_exit_stack(
         fn: ta.Callable[ta.Concatenate[contextlib.AsyncExitStack, P], ta.Awaitable[T]],
-        *args: ta.Any,
-        **kwargs: ta.Any,
+        *args: P.args,
+        **kwargs: P.kwargs,
 ) -> T:
     async with contextlib.AsyncExitStack() as aes:
         return await fn(aes, *args, **kwargs)

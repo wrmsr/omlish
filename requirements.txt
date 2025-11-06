@@ -21,7 +21,7 @@ lz4==4.4.5
 
 python-snappy==0.7.3
 zstandard==0.25.0
-brotli==1.1.0
+brotli==1.2.0
 
 
 ### db:

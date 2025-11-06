@@ -8137,7 +8137,7 @@ def configure_standard_logging(
 ##
 
 
-def error_logging(log):  # noqa
+def exception_logging(log):  # noqa
     def outer(fn):
         @functools.wraps(fn)
         def inner(*args, **kwargs):

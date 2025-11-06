@@ -53,7 +53,7 @@ class Project(ProjectBase):
 
             'zstandard ~= 0.25; python_version < "3.14"',
 
-            'brotli ~= 1.1',
+            'brotli ~= 1.2',
         ],
 
         'diag': [

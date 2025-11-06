@@ -88,7 +88,7 @@ with _lang.auto_proxy_init(globals()):
         LogTimingContext,
         log_timing_context,
 
-        error_logging,
+        exception_logging,
     )
 
     from .warnings import (  # noqa
