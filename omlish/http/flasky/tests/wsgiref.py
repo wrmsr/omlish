@@ -27,16 +27,17 @@ def wsgiref_app_runner(params: flasky.AppRunParams) -> None:
 
         with flasky.Cvs.REQUEST.set(request):
             for brf in params.app.before_request_funcs:
-                brf()
+                if (response := brf()) is not None:
+                    break
 
-            out = view_func()
+            if response is None:
+                out = view_func()
 
-            response = flasky.Response(
-                data=out,
-            )
+                response = flasky.Response(out)
 
-            for arf in params.app.after_request_funcs:
-                response = arf(response)
+                # short-circuited if before_request_funcs returned something
+                for arf in params.app.after_request_funcs:
+                    response = arf(response)
 
         start_response(
             consts.STATUS_OK,

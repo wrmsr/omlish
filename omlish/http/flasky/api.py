@@ -1,10 +1,12 @@
 import threading
+import typing as ta
 
 from ... import lang
 from ._compat import compat
 from .app import App
 from .cvs import Cvs
 from .requests import Request
+from .responses import Response
 
 
 ##
@@ -29,7 +31,8 @@ class Api:
     def __repr__(self) -> str:
         return f'{self._cls_name_repr}()'
 
-    #
+    ##
+    # app cls
 
     _app_cls: type[App]
 
@@ -59,9 +62,21 @@ class Api:
     def Flask(self) -> type[App]:  # noqa
         return self.app_cls
 
-    #
+    ##
+    # helpers
+
+    def abort(self, code: int | Response, *args: ta.Any, **kwargs: ta.Any) -> ta.NoReturn:
+        raise NotImplementedError
+
+    ##
+    # cv's
 
     @property
     @compat
     def request(self) -> Request:
         return Cvs.REQUEST.get()
+
+    ##
+    # type aliases - must be last
+
+    Response = Response

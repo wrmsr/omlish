@@ -4,6 +4,7 @@ from ... import check
 from ... import dataclasses as dc
 from ._compat import compat
 from .cvs import Cvs
+from .responses import Response
 from .routes import Route
 from .routes import RouteKey
 
@@ -33,7 +34,7 @@ AppRunner: ta.TypeAlias = ta.Callable[[AppRunParams], None]
 
 ViewFunc: ta.TypeAlias = ta.Callable[[], str]
 
-BeforeRequestFunc: ta.TypeAlias = ta.Callable[[], None]
+BeforeRequestFunc: ta.TypeAlias = ta.Callable[[], Response | None]
 AfterRequestFunc: ta.TypeAlias = ta.Callable[[ta.Any], ta.Any]
 
 

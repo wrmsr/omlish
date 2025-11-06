@@ -23,6 +23,10 @@ from .requests import (  # noqa
 )
 
 from .responses import (  # noqa
+    ResponseData,
+    ResponseStatus,
+    ResponseHeaders,
+
     Response,
 )
 
