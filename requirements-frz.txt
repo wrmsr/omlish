@@ -19,7 +19,7 @@ asyncpg==0.30.0
 asyncssh==2.21.1
 attrs==25.4.0
 babel==2.17.0
-basedpyright==1.32.1
+basedpyright==1.33.0
 bcrypt==5.0.0
 beautifulsoup4==4.14.2
 bitsandbytes==0.42.0
@@ -227,7 +227,7 @@ pyproject_hooks==1.2.0
 pyright==1.1.407
 pytesseract==0.3.13
 pytest==8.4.2
-pytest-benchmark==5.2.1
+pytest-benchmark==5.2.2
 pytest-clarity==1.0.1
 pytest-stress==1.0.1
 pytest-timeout==2.4.0
