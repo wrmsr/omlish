@@ -13,7 +13,7 @@ urls = {source = 'https://github.com/wrmsr/omlish'}
 license = 'BSD-3-Clause'
 readme = 'README.md'
 requires-python = '>=3.13'
-version = '0.0.0.dev475'
+version = '0.0.0.dev476'
 classifiers = [
     'Development Status :: 2 - Pre-Alpha',
     'Intended Audience :: Developers',
@@ -24,7 +24,7 @@ classifiers = [
 ]
 description = 'omextra'
 dependencies = [
-    'omextra == 0.0.0.dev475',
+    'omextra == 0.0.0.dev476',
 ]
 
 [tool.setuptools]
