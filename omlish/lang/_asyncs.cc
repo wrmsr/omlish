@@ -134,24 +134,20 @@ module_exec(PyObject *module)
         return -1;
     }
 
-    state->SyncAwaitCoroutineNotTerminatedError = PyErr_NewException(
-        "_asyncs.SyncAwaitCoroutineNotTerminatedError",
-        PyExc_RuntimeError,
-        NULL
-    );
-    if (!state->SyncAwaitCoroutineNotTerminatedError) {
+    PyObject *asyncs_module = PyImport_ImportModule("omlish.lite.asyncs");
+    if (!asyncs_module) {
         return -1;
     }
 
-    if (PyModule_AddObject(
-        module,
-        "SyncAwaitCoroutineNotTerminatedError",
-        state->SyncAwaitCoroutineNotTerminatedError
-    ) < 0) {
-        Py_DECREF(state->SyncAwaitCoroutineNotTerminatedError);
+    state->SyncAwaitCoroutineNotTerminatedError = PyObject_GetAttrString(
+        asyncs_module,
+        "SyncAwaitCoroutineNotTerminatedError"
+    );
+    Py_DECREF(asyncs_module);
+
+    if (!state->SyncAwaitCoroutineNotTerminatedError) {
         return -1;
     }
-    Py_INCREF(state->SyncAwaitCoroutineNotTerminatedError);
 
     return 0;
 }

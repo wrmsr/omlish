@@ -3,7 +3,6 @@ import functools
 import typing as ta
 
 from ..lite.abstract import Abstract
-from ..lite.asyncs import SyncAwaitCoroutineNotTerminatedError
 from ..lite.asyncs import sync_await as _sync_await
 from ..lite.maybes import Maybe
 
@@ -85,25 +84,14 @@ def async_generator_with_return(
 ##
 
 
-_cext_: ta.Any
+sync_await = _sync_await
 
 
-def _cext() -> ta.Any:
-    global _cext_
-    try:
-        return _cext_
-    except NameError:
-        pass
+try:
+    from . import _asyncs as cext  # type: ignore
 
-    cext: ta.Any
-    try:
-        from . import _asyncs as cext  # type: ignore
-    except ImportError:
-        cext = None
+except ImportError:
+    pass
 
-    _cext_ = cext
-    return cext
-
-
-def sync_await(aw: ta.Awaitable[T]) -> T:
-    return _sync_await(aw)
+else:
+    sync_await = cext.sync_await

@@ -11,7 +11,7 @@
 #undef Py_BUILD_CORE
 
 #if PY_VERSION_HEX < 0x030D0000
-#  error "This extension requires CPython 3.13+"
+#error "This extension requires CPython 3.13+"
 #endif
 
 //
@@ -94,7 +94,8 @@ static PyModuleDef capture_module = {
 
 extern "C" {
 
-PyMODINIT_FUNC PyInit__capture(void)
+PyMODINIT_FUNC
+PyInit__capture(void)
 {
     return PyModuleDef_Init(&capture_module);
 }
