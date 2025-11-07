@@ -10,10 +10,13 @@ import anyio
 
 from omlish import check
 from omlish import dataclasses as dc
+from omlish import inject as inj
 from omlish import lang
 from omlish.argparse import all as ap
 from omlish.logs import all as logs
 
+from .inject import bind_main
+from .sessions.base import Session
 from .sessions.chat.configs import ChatConfig
 
 
@@ -36,13 +39,6 @@ def _process_main_extra_args(args: ap.Namespace) -> None:
 ##
 
 
-# class ProfileAspect(lang.Abstract):
-#     def get_parser_args(self) -> ta.Sequence[ap.Arg]: ...
-#     def set_args(self, args: ap.Namespace) -> None: ...
-#     def configure(self, cfg: ChatConfig) -> ChatConfig: ...
-#     def bind(self) -> inj.Elements: ...
-
-
 class Profile(lang.Abstract):
     @abc.abstractmethod
     def run(self, argv: ta.Sequence[str]) -> ta.Awaitable[None]:
@@ -52,8 +48,26 @@ class Profile(lang.Abstract):
 ##
 
 
+# class ChatAspect(lang.Abstract):
+#     def get_parser_args(self) -> ta.Sequence[ap.Arg]: ...
+#     def set_args(self, args: ap.Namespace) -> None: ...
+#     def configure(self, cfg: ChatConfig) -> ChatConfig: ...
+
+
 class ChatProfile(Profile):
     _args: ap.Namespace
+
+    #
+
+    BACKEND_ARGS: ta.ClassVar[ta.Sequence[ap.Arg]] = [
+        ap.arg('-b', '--backend', group='backend'),
+    ]
+
+    def configure_backend(self, cfg: ChatConfig) -> ChatConfig:
+        return dc.replace(
+            cfg,
+            backend=self._args.backend,
+        )
 
     #
 
@@ -71,11 +85,17 @@ class ChatProfile(Profile):
 
         elif self._args.interactive:
             check.arg(not self._args.message)
-            raise NotImplementedError
+            return dc.replace(
+                cfg,
+                interactive=True,
+            )
 
         elif self._args.message:
             # TODO: '-' -> stdin
-            raise NotImplementedError
+            return dc.replace(
+                cfg,
+                initial_user_content=' '.join(self._args.message),
+            )
 
         else:
             raise ValueError('Must specify input')
@@ -113,6 +133,7 @@ class ChatProfile(Profile):
         parser = ap.ArgumentParser()
 
         for grp_name, grp_args in [
+            ('backend', self.BACKEND_ARGS),
             ('input', self.INPUT_ARGS),
             ('state', self.STATE_ARGS),
             ('output', self.OUTPUT_ARGS),
@@ -124,11 +145,34 @@ class ChatProfile(Profile):
         self._args = parser.parse_args(argv)
 
         cfg = ChatConfig()
+        cfg = self.configure_backend(cfg)
         cfg = self.configure_input(cfg)
         cfg = self.configure_state(cfg)
         cfg = self.configure_output(cfg)
 
-        print(cfg)
+        # session_cfg = ChatConfig(
+        #     initial_system_content=system_content,
+        #     enable_tools=(
+        #             args.enable_fs_tools or
+        #             args.enable_todo_tools or
+        #             args.enable_unsafe_tools_do_not_use_lol or
+        #             args.enable_test_weather_tool or
+        #             args.code
+        #     ),
+        #     enabled_tools={  # noqa
+        #         *(['fs'] if args.enable_fs_tools else []),
+        #         *(['todo'] if args.enable_todo_tools else []),
+        #         *(['weather'] if args.enable_test_weather_tool else []),
+        #         # FIXME: enable_unsafe_tools_do_not_use_lol
+        #     },
+        #     dangerous_no_tool_confirmation=bool(args.dangerous_no_tool_confirmation),
+        # )
+
+        with inj.create_managed_injector(bind_main(
+                session_cfg=cfg,
+                enable_backend_strings=True,
+        )) as injector:
+            await injector[Session].run()
 
 
 ##
