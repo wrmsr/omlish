@@ -41,7 +41,7 @@ class DataclassCodeGen:
         if not config.codegen:
             return
 
-        log.info('Running codegen on package: %s', pkg_root)
+        log.info(lambda: f'Running codegen on package: {pkg_root}')
 
         sub_pkgs = sorted(lang.yield_importable(
             pkg_root,

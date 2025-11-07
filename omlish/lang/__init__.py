@@ -9,6 +9,8 @@ with _auto_proxy_init(globals(), update_exports=True):
 
         AsyncGeneratorWithReturn,
         async_generator_with_return,
+
+        sync_await,
     )
 
     from .attrstorage import (  # noqa
@@ -536,7 +538,6 @@ with _auto_proxy_init(globals(), update_exports=True):
         async_enumerate,
 
         SyncAwaitCoroutineNotTerminatedError,
-        sync_await,
 
         sync_aiter,
         sync_async_list,

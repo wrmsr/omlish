@@ -5,7 +5,7 @@
 //
 
 #define _MODULE_NAME "_asyncs"
-#define _PACKAGE_NAME "omextra.asyncs"
+#define _PACKAGE_NAME "omlish.lang"
 #define _MODULE_FULL_NAME _PACKAGE_NAME "." _MODULE_NAME
 
 //

@@ -55,7 +55,7 @@ class CompileCallback(ta.Protocol):
 
 @dc.dataclass(frozen=True)
 class Codegen(ProcessingOption):
-    callback: CompileCallback
+    callback: CompileCallback | None = None
 
 
 @register_processor_type(priority=ProcessorPriority.GENERATION)
@@ -140,7 +140,7 @@ class GeneratorProcessor(Processor):
             fn(**kw)
 
             if (cg := self._codegen) is not None and (cb := cg.callback) is not None:
-                cb(
+                cb(  # noqa
                     gp._ctx,  # noqa
                     gp.prepare(),
                     comp,
