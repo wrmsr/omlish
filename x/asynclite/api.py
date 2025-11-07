@@ -5,6 +5,7 @@ from .events import AsyncliteEvents
 from .locks import AsyncliteLocks
 from .queues import AsyncliteQueues
 from .semaphores import AsyncliteSemaphores
+from .sleeps import AsyncliteSleeps
 
 
 ##
@@ -15,6 +16,7 @@ class Asynclite(
     AsyncliteLocks,
     AsyncliteQueues,
     AsyncliteSemaphores,
+    AsyncliteSleeps,
 
     Abstract,
 ):

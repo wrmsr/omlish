@@ -1,9 +1,9 @@
+# ruff: noqa: UP006 UP007 UP045
 """
 TODO:
  - -x / --exec - os.exec entrypoint
  - refuse to install non-exec-relevant Bootstraps when chosen
 """
-# ruff: noqa: UP006 UP007 UP045
 import argparse
 import dataclasses as dc
 import io
@@ -19,11 +19,8 @@ from .harness import BOOTSTRAP_TYPES_BY_NAME
 from .harness import bootstrap
 
 
-if ta.TYPE_CHECKING:
+with lang.auto_proxy_import(globals()):
     import runpy
-
-else:
-    runpy = lang.proxy_import('runpy')
 
 
 ##

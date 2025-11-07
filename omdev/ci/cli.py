@@ -14,7 +14,6 @@ import argparse
 import asyncio
 import itertools
 import os.path
-import sys
 import typing as ta
 
 from omlish.argparse.cli import ArgparseCli
@@ -260,7 +259,7 @@ async def _async_main() -> ta.Optional[int]:
 def _main() -> None:
     configure_standard_logging('DEBUG')
 
-    sys.exit(rc if isinstance(rc := asyncio.run(_async_main()), int) else 0)
+    raise SystemExit(rc if isinstance(rc := asyncio.run(_async_main()), int) else 0)
 
 
 if __name__ == '__main__':

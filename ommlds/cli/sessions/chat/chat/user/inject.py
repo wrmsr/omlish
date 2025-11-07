@@ -11,6 +11,7 @@ from ...phases.types import ChatPhaseCallback
 
 with lang.auto_proxy_import(globals()):
     from ..state import types as _state
+    from . import inputs as _inputs
     from . import interactive as _interactive
     from . import oneshot as _oneshot
     from . import types as _types
@@ -51,8 +52,8 @@ def bind_user(
         els.append(inj.bind(_types.UserChatInput, to_ctor=_interactive.InteractiveUserChatInput, singleton=True))
 
         els.extend([
-            inj.bind(_interactive.SyncStringInput, to_const=_interactive.InputSyncStringInput(use_readline=use_readline)),  # noqa
-            inj.bind(_interactive.AsyncStringInput, to_ctor=_interactive.ThreadAsyncStringInput, singleton=True),
+            inj.bind(_inputs.SyncStringInput, to_const=_inputs.InputSyncStringInput(use_readline=use_readline)),  # noqa
+            inj.bind(_inputs.AsyncStringInput, to_ctor=_inputs.ThreadAsyncStringInput, singleton=True),
         ])
 
     else:

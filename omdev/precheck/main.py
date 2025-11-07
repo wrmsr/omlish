@@ -21,7 +21,6 @@ TODO:
 import argparse
 import asyncio
 import os.path
-import sys
 import typing as ta
 
 from omlish import inject as inj
@@ -126,7 +125,7 @@ def _check_cmd(args) -> None:
 
         if vs:
             print(f'{len(vs)} violations found')
-            sys.exit(1)
+            raise SystemExit(1)
 
 
 ##

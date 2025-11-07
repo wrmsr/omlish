@@ -384,9 +384,9 @@ def main() -> None:
         # Workaround for close failed in file object destructor: sys.excepthook is missing lost sys.stderr
         # http://stackoverflow.com/questions/7955138/addressing-sys-excepthook-error-in-bash-script
         sys.stderr.write(str(e) + '\n')
-        sys.exit(1)
+        raise SystemExit(1) from None
     except KeyboardInterrupt:
-        sys.exit(1)
+        raise SystemExit(1) from None
 
 
 # @omlish-manifest

@@ -5957,6 +5957,7 @@ TODO:
  - pre-run, post-run hooks
  - exitstack?
  - suggestion - difflib.get_close_matches
+ - add_argument_group - group kw on ArgparseKwarg?
 """
 
 
@@ -5967,6 +5968,7 @@ TODO:
 class ArgparseArg:
     args: ta.Sequence[ta.Any]
     kwargs: ta.Mapping[str, ta.Any]
+    group: ta.Optional[str] = None
     dest: ta.Optional[str] = None
 
     def __get__(self, instance, owner=None):
@@ -5976,7 +5978,11 @@ class ArgparseArg:
 
 
 def argparse_arg(*args, **kwargs) -> ArgparseArg:
-    return ArgparseArg(args, kwargs)
+    return ArgparseArg(
+        args=args,
+        group=kwargs.pop('group', None),
+        kwargs=kwargs,
+    )
 
 
 def argparse_arg_(*args, **kwargs) -> ta.Any:
@@ -6146,6 +6152,10 @@ class ArgparseCli:
                     subparser.set_defaults(_cmd=obj)
 
             elif isinstance(obj, ArgparseArg):
+                if obj.group is not None:
+                    # FIXME: add_argument_group
+                    raise NotImplementedError
+
                 if att in anns:
                     ann_kwargs = _get_argparse_arg_ann_kwargs(anns[att])
                     obj.kwargs = {**ann_kwargs, **obj.kwargs}
@@ -6191,7 +6201,7 @@ class ArgparseCli:
 
         if self._unknown_args and not (cmd is not None and cmd.accepts_unknown):
             msg = f'unrecognized arguments: {" ".join(self._unknown_args)}'
-            if (parser := self.get_parser()).exit_on_error:
+            if (parser := self.get_parser()).exit_on_error:  # noqa
                 parser.error(msg)
             else:
                 raise argparse.ArgumentError(None, msg)
@@ -6211,7 +6221,10 @@ class ArgparseCli:
         return fn()
 
     def cli_run_and_exit(self) -> ta.NoReturn:
-        sys.exit(rc if isinstance(rc := self.cli_run(), int) else 0)
+        rc = self.cli_run()
+        if not isinstance(rc, int):
+            rc = 0
+        raise SystemExit(rc)
 
     def __call__(self, *, exit: bool = False) -> ta.Optional[int]:  # noqa
         if exit:
@@ -16999,7 +17012,7 @@ class MainCli(ArgparseCli):
 
 
 def _main() -> None:
-    sys.exit(asyncio.run(MainCli().async_cli_run()))
+    raise SystemExit(asyncio.run(MainCli().async_cli_run()))
 
 
 if __name__ == '__main__':

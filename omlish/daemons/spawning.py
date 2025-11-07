@@ -2,7 +2,6 @@ import abc
 import enum
 import functools
 import os
-import sys
 import threading
 import typing as ta
 
@@ -166,9 +165,9 @@ class ForkSpawner(Spawner, dc.Frozen):
         try:
             spawn.fn()
         except BaseException:  # noqa
-            sys.exit(1)
+            raise SystemExit(1) from None
         else:
-            sys.exit(0)
+            raise SystemExit(0)
 
         raise RuntimeError('Unreachable')  # noqa
 

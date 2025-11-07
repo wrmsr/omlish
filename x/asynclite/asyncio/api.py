@@ -4,6 +4,7 @@ from .events import AsyncioAsyncliteEvents
 from .locks import AsyncioAsyncliteLocks
 from .queues import AsyncioAsyncliteQueues
 from .semaphores import AsyncioAsyncliteSemaphores
+from .sleeps import AsyncioAsyncliteSleeps
 
 
 ##
@@ -14,6 +15,7 @@ class AsyncioAsynclite(
     AsyncioAsyncliteQueues,
     AsyncioAsyncliteLocks,
     AsyncioAsyncliteSemaphores,
+    AsyncioAsyncliteSleeps,
 
     Asynclite,
 ):

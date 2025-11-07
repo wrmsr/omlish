@@ -8,7 +8,6 @@ import asyncio
 import dataclasses as dc
 import json
 import os.path
-import sys
 import typing as ta
 
 from omdev.home.paths import get_home_paths
@@ -150,7 +149,7 @@ class MainCli(ArgparseCli):
 
 
 def _main() -> None:
-    sys.exit(asyncio.run(MainCli().async_cli_run()))
+    raise SystemExit(asyncio.run(MainCli().async_cli_run()))
 
 
 if __name__ == '__main__':

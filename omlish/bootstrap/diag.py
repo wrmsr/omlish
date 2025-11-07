@@ -13,23 +13,14 @@ from .base import ContextBootstrap
 from .base import SimpleBootstrap
 
 
-if ta.TYPE_CHECKING:
+with lang.auto_proxy_import(globals()):
     import cProfile  # noqa
     import pstats
 
-    from ..diag import debug as ddbg
-    from ..diag import pycharm as diagpc
-    from ..diag import replserver as diagrs
-    from ..diag import threads as diagt
-
-else:
-    cProfile = lang.proxy_import('cProfile')  # noqa
-    pstats = lang.proxy_import('pstats')
-
-    ddbg = lang.proxy_import('..diag.debug', __package__)
-    diagpc = lang.proxy_import('..diag.pycharm', __package__)
-    diagrs = lang.proxy_import('..diag.replserver', __package__)
-    diagt = lang.proxy_import('..diag.threads', __package__)
+    from ..diag import debug as d_debug
+    from ..diag import pycharm as d_pycharm
+    from ..diag import replserver
+    from ..diag import threads as d_threads
 
 
 ##
@@ -110,7 +101,7 @@ class ThreadDumpBootstrap(ContextBootstrap['ThreadDumpBootstrap.Config']):
     @contextlib.contextmanager
     def enter(self) -> ta.Iterator[None]:
         if self._config.interval_s:
-            tdt = diagt.create_thread_dump_thread(
+            tdt = d_threads.create_thread_dump_thread(
                 interval_s=self._config.interval_s,
                 start=True,
                 nodaemon=self._config.nodaemon,
@@ -119,7 +110,7 @@ class ThreadDumpBootstrap(ContextBootstrap['ThreadDumpBootstrap.Config']):
             tdt = None
 
         if self._config.on_sigquit:
-            dump_threads_str = diagt.dump_threads_str
+            dump_threads_str = d_threads.dump_threads_str
 
             def handler(signum, frame):
                 print(dump_threads_str(), file=sys.stderr)
@@ -153,7 +144,7 @@ class TimebombBootstrap(ContextBootstrap['TimebombBootstrap.Config']):
             yield
             return
 
-        tbt = diagt.create_timebomb_thread(
+        tbt = d_threads.create_timebomb_thread(
             self._config.delay_s,
             start=True,
         )
@@ -173,8 +164,8 @@ class PycharmBootstrap(SimpleBootstrap['PycharmBootstrap.Config']):
 
     def run(self) -> None:
         if self._config.debug is not None:
-            prd = diagpc.PycharmRemoteDebugger.parse(self._config.debug)
-            diagpc.pycharm_remote_debugger_attach(prd)
+            prd = d_pycharm.PycharmRemoteDebugger.parse(self._config.debug)
+            d_pycharm.pycharm_remote_debugger_attach(prd)
 
 
 ##
@@ -190,7 +181,7 @@ class ReplServerBootstrap(ContextBootstrap['ReplServerBootstrap.Config']):
         if self._config.path is None:
             return
 
-        with diagrs.ReplServer(diagrs.ReplServer.Config(
+        with replserver.ReplServer(replserver.ReplServer.Config(
             path=self._config.path,
         )) as rs:
             thread = threading.Thread(target=rs.run, name='replserver')
@@ -212,5 +203,5 @@ class DebugBootstrap(ContextBootstrap['DebugBootstrap.Config']):
         if not self._config.enable:
             return
 
-        with ddbg.debugging_on_exception():
+        with d_debug.debugging_on_exception():
             yield

@@ -257,11 +257,11 @@ class UnittestRunCli:
 
         if exit:
             if not result.num_tests_run and not result.skipped:
-                sys.exit(self.NO_TESTS_EXITCODE)
+                raise SystemExit(self.NO_TESTS_EXITCODE)
             elif result.was_successful:
-                sys.exit(0)
+                raise SystemExit(0)
             else:
-                sys.exit(1)
+                raise SystemExit(1)
 
 
 ##

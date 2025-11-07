@@ -32,7 +32,7 @@ def get_user_text_editor(default: ta.Optional[str] = None) -> str:
 ##
 
 
-class EditTextWithUserEditor(SubprocessRunnable, ExitStacked):
+class EditTextWithUserEditor(SubprocessRunnable[ta.Optional[str]], ExitStacked):
     def __init__(self, initial_text: str = '') -> None:
         super().__init__()
 

@@ -10,13 +10,12 @@ def reparent_process(
         no_close_stdio: bool = False,
 ) -> None:
     if (pid := os.fork()):  # noqa
-        sys.exit(0)
-        raise RuntimeError('Unreachable')  # noqa
+        raise SystemExit(0)
 
     os.setsid()
 
     if (pid := os.fork()):  # noqa
-        sys.exit(0)
+        raise SystemExit(0)
 
     if not no_close_stdio:
         rn_fd = os.open('/dev/null', os.O_RDONLY)

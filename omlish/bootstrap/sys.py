@@ -2,14 +2,10 @@
 import contextlib
 import dataclasses as dc
 import enum
-import faulthandler
 import gc
 import importlib
 import logging
 import os
-import pwd
-import resource
-import signal
 import sys
 import typing as ta
 
@@ -19,17 +15,16 @@ from .base import ContextBootstrap
 from .base import SimpleBootstrap
 
 
-if ta.TYPE_CHECKING:
+with lang.auto_proxy_import(globals()):
+    import faulthandler
+    import pwd
+    import resource
+    import signal
+
     from .. import libc
     from ..formats import dotenv
     from ..logs import all as logs
     from ..os.pidfiles import pidfile
-
-else:
-    libc = lang.proxy_import('..libc', __package__)
-    logs = lang.proxy_import('..logs', __package__)
-    dotenv = lang.proxy_import('..formats.dotenv', __package__)
-    pidfile = lang.proxy_import('..os.pidfiles.pidfile', __package__)
 
 
 ##
@@ -184,14 +179,16 @@ class FaulthandlerBootstrap(ContextBootstrap['FaulthandlerBootstrap.Config']):
 ##
 
 
-SIGNALS_BY_NAME = {
-    a[len('SIG'):]: v  # noqa
-    for a in dir(signal)
-    if a.startswith('SIG')
-    and not a.startswith('SIG_')
-    and a == a.upper()
-    and isinstance((v := getattr(signal, a)), int)
-}
+@lang.cached_function
+def signals_by_name() -> ta.Mapping[str, int]:
+    return {
+        a[len('SIG'):]: v  # noqa
+        for a in dir(signal)
+        if a.startswith('SIG')
+        and not a.startswith('SIG_')
+        and a == a.upper()
+        and isinstance((v := getattr(signal, a)), int)
+    }
 
 
 class PrctlBootstrap(SimpleBootstrap['PrctlBootstrap.Config']):
@@ -208,20 +205,22 @@ class PrctlBootstrap(SimpleBootstrap['PrctlBootstrap.Config']):
             if isinstance(self._config.deathsig, int):
                 sig = self._config.deathsig
             else:
-                sig = SIGNALS_BY_NAME[self._config.deathsig.upper()]
+                sig = signals_by_name()[self._config.deathsig.upper()]
             libc.prctl(libc.PR_SET_PDEATHSIG, sig, 0, 0, 0, 0)
 
 
 ##
 
 
-RLIMITS_BY_NAME = {
-    a[len('RLIMIT_'):]: v  # noqa
-    for a in dir(resource)
-    if a.startswith('RLIMIT_')
-    and a == a.upper()
-    and isinstance((v := getattr(resource, a)), int)
-}
+@lang.cached_function
+def rlimits_by_name() -> ta.Mapping[str, int]:
+    return {
+        a[len('RLIMIT_'):]: v  # noqa
+        for a in dir(resource)
+        if a.startswith('RLIMIT_')
+        and a == a.upper()
+        and isinstance((v := getattr(resource, a)), int)
+    }
 
 
 class RlimitBootstrap(ContextBootstrap['RlimitBootstrap.Config']):
@@ -240,7 +239,7 @@ class RlimitBootstrap(ContextBootstrap['RlimitBootstrap.Config']):
 
         prev = {}
         for k, (s, h) in self._config.limits.items():
-            i = RLIMITS_BY_NAME[k.upper()]
+            i = rlimits_by_name()[k.upper()]
             prev[i] = resource.getrlimit(i)
             resource.setrlimit(i, (or_infin(s), or_infin(h)))
 

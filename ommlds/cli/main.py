@@ -4,10 +4,8 @@ See:
  - https://github.com/TheR1D/shell_gpt
  - https://github.com/paul-gauthier/aider
 """
-import argparse
 import functools
 import os.path
-import sys
 import typing as ta
 
 import anyio
@@ -16,7 +14,7 @@ from omdev.home.secrets import load_secrets
 from omlish import check
 from omlish import inject as inj
 from omlish import lang
-from omlish.diag import pycharm
+from omlish.argparse import all as ap
 from omlish.logs import all as logs
 from omlish.subprocesses.editor import edit_text_with_user_editor
 from omlish.subprocesses.sync import subprocesses
@@ -39,7 +37,7 @@ else:
 
 
 async def _a_main(args: ta.Any = None) -> None:
-    parser = argparse.ArgumentParser()
+    parser = ap.ArgumentParser()
     parser.add_argument('prompt', nargs='*')
 
     parser.add_argument('-b', '--backend', default='openai')
@@ -104,16 +102,6 @@ async def _a_main(args: ta.Any = None) -> None:
 
     elif not args.prompt:
         raise ValueError('Must provide prompt')
-
-    else:
-        prompt = ' '.join(args.prompt)
-
-        # FIXME: ptk / maysync
-        if not sys.stdin.isatty() and not pycharm.is_pycharm_hosted():
-            stdin_data = sys.stdin.read()
-            prompt = '\n'.join([prompt, stdin_data])
-
-        content = prompt
 
     #
 

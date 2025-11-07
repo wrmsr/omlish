@@ -1,7 +1,6 @@
 import argparse
 import os.path
 import subprocess
-import sys
 import typing as ta
 
 from omlish.formats import json
@@ -60,7 +59,7 @@ def _main() -> None:
             entry_dcts = [json.loads(sl) for l in log_lines if (sl := l.strip())]
             print(json.dumps_compact(entry_dcts))
 
-    sys.exit(rc)
+    raise SystemExit(rc)
 
 
 if __name__ == '__main__':
