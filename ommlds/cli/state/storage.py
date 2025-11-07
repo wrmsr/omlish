@@ -1,8 +1,8 @@
 import abc
-import dataclasses as dc
 import os.path
 import typing as ta
 
+from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
 from omlish.formats import json

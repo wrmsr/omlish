@@ -16,6 +16,7 @@ from omlish.argparse import all as ap
 from omlish.logs import all as logs
 
 from .inject import bind_main
+from .secrets import install_secrets
 from .sessions.base import Session
 from .sessions.chat.configs import ChatConfig
 
@@ -199,6 +200,8 @@ async def _a_main(argv: ta.Any = None) -> None:
         parser.add_argument(*a.args, **a.kwargs)
 
     args, unk_args = parser.parse_known_args(argv)
+
+    install_secrets()
 
     _process_main_extra_args(args)
 

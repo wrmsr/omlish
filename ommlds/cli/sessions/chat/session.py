@@ -1,4 +1,4 @@
-import dataclasses as dc
+from omlish import dataclasses as dc
 
 from ..base import Session
 from .configs import ChatConfig

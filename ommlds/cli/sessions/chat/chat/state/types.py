@@ -1,8 +1,8 @@
 import abc
-import dataclasses as dc
 import datetime
 import typing as ta
 
+from omlish import dataclasses as dc
 from omlish import lang
 
 from ...... import minichain as mc

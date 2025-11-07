@@ -5,12 +5,10 @@ See:
  - https://github.com/paul-gauthier/aider
 """
 import functools
-import os.path
 import typing as ta
 
 import anyio
 
-from omdev.home.secrets import load_secrets
 from omlish import check
 from omlish import inject as inj
 from omlish import lang
@@ -21,6 +19,7 @@ from omlish.subprocesses.sync import subprocesses
 
 from .. import minichain as mc
 from .inject import bind_main
+from .secrets import install_secrets
 from .sessions.base import Session
 from .sessions.chat.configs import ChatConfig
 from .sessions.completion.configs import CompletionConfig
@@ -105,17 +104,7 @@ async def _a_main(args: ta.Any = None) -> None:
 
     #
 
-    # FIXME: lol garbage
-    for key in [
-        'OPENAI_API_KEY',
-        'HUGGINGFACE_TOKEN',
-        'TAVILY_API_KEY',
-        'ANTHROPIC_API_KEY',
-        'MISTRAL_API_KEY',
-        'GEMINI_API_KEY',
-    ]:
-        if (sec := load_secrets().try_get(key.lower())) is not None:
-            os.environ[key] = sec.reveal()
+    install_secrets()
 
     #
 
