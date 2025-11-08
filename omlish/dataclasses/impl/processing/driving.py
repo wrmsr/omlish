@@ -51,11 +51,9 @@ def drive_cls_processing(
 
     #
 
-    pkg_cfg = DEFAULT_PACKAGE_CONFIG
     cls_mod = cls.__module__
-    if '.' in cls_mod:
-        cls_pkg = cls_mod.rpartition('.')[0]
-        pkg_cfg = lang.coalesce(PACKAGE_CONFIG_CACHE.get(cls_pkg), DEFAULT_PACKAGE_CONFIG)
+    cls_pkg = cls_mod.rpartition('.')[0]
+    pkg_cfg = lang.coalesce(PACKAGE_CONFIG_CACHE.get(cls_pkg), DEFAULT_PACKAGE_CONFIG)
     pkg_cfg  # noqa
 
     #
