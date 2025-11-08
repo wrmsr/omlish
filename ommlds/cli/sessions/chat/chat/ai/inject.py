@@ -2,6 +2,7 @@ from omlish import inject as inj
 from omlish import lang
 
 from ...... import minichain as mc
+from .configs import AiConfig
 from .injection import chat_options_providers
 
 
@@ -15,12 +16,7 @@ with lang.auto_proxy_import(globals()):
 ##
 
 
-def bind_ai(
-        *,
-        stream: bool = False,
-        silent: bool = False,
-        enable_tools: bool = False,
-) -> inj.Elements:
+def bind_ai(cfg: AiConfig = AiConfig()) -> inj.Elements:
     els: list[inj.Elemental] = []
 
     #
@@ -38,12 +34,12 @@ def bind_ai(
 
     ai_stack = inj.wrapper_binder_helper(_types.AiChatGenerator)
 
-    if stream:
+    if cfg.stream:
         stream_ai_stack = inj.wrapper_binder_helper(_types.StreamAiChatGenerator)
 
         els.append(stream_ai_stack.push_bind(to_ctor=_services.ChatChoicesStreamServiceStreamAiChatGenerator, singleton=True))  # noqa
 
-        if not silent:
+        if not cfg.silent:
             els.append(stream_ai_stack.push_bind(to_ctor=_rendering.RenderingStreamAiChatGenerator, singleton=True))
 
         els.extend([
@@ -54,17 +50,17 @@ def bind_ai(
     else:
         els.append(ai_stack.push_bind(to_ctor=_services.ChatChoicesServiceAiChatGenerator, singleton=True))
 
-        if not silent:
+        if not cfg.silent:
             els.append(ai_stack.push_bind(to_ctor=_rendering.RenderingAiChatGenerator, singleton=True))
 
-    if enable_tools:
+    if cfg.enable_tools:
         els.append(ai_stack.push_bind(to_ctor=_tools.ToolExecutingAiChatGenerator, singleton=True))
 
     els.append(inj.bind(_types.AiChatGenerator, to_key=ai_stack.top))
 
     #
 
-    if enable_tools:
+    if cfg.enable_tools:
         def _provide_tools_chat_choices_options_provider(tc: mc.ToolCatalog) -> _services.ChatChoicesServiceOptionsProvider:  # noqa
             return _services.ChatChoicesServiceOptionsProvider(lambda: [
                 mc.Tool(tce.spec)

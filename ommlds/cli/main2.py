@@ -67,7 +67,10 @@ class ChatProfile(Profile):
     def configure_backend(self, cfg: ChatConfig) -> ChatConfig:
         return dc.replace(
             cfg,
-            backend=self._args.backend,
+            backend=dc.replace(
+                cfg.backend,
+                backend=self._args.backend,
+            ),
         )
 
     #
@@ -88,14 +91,20 @@ class ChatProfile(Profile):
             check.arg(not self._args.message)
             return dc.replace(
                 cfg,
-                interactive=True,
+                user=dc.replace(
+                    cfg.user,
+                    interactive=True,
+                ),
             )
 
         elif self._args.message:
             # TODO: '-' -> stdin
             return dc.replace(
                 cfg,
-                initial_user_content=' '.join(self._args.message),
+                user=dc.replace(
+                    cfg.user,
+                    initial_user_content=' '.join(self._args.message),
+                ),
             )
 
         else:
@@ -111,7 +120,10 @@ class ChatProfile(Profile):
     def configure_state(self, cfg: ChatConfig) -> ChatConfig:
         return dc.replace(
             cfg,
-            state='ephemeral' if self._args.ephemeral else 'new' if self._args.new else 'continue',
+            state=dc.replace(
+                cfg.state,
+                state='ephemeral' if self._args.ephemeral else 'new' if self._args.new else 'continue',
+            ),
         )
 
     #
@@ -124,8 +136,14 @@ class ChatProfile(Profile):
     def configure_output(self, cfg: ChatConfig) -> ChatConfig:
         return dc.replace(
             cfg,
-            stream=bool(self._args.stream),
-            markdown=bool(self._args.markdown),
+            ai=dc.replace(
+                cfg.ai,
+                stream=bool(self._args.stream),
+            ),
+            rendering=dc.replace(
+                cfg.rendering,
+                markdown=bool(self._args.markdown),
+            ),
         )
 
     #

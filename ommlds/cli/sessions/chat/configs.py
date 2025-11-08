@@ -1,39 +1,21 @@
-import typing as ta
-
 from omlish import dataclasses as dc
 
-from .... import minichain as mc
+from .backends.configs import BackendConfig
+from .chat.ai.configs import AiConfig
+from .chat.state.configs import StateConfig
+from .chat.user.configs import UserConfig
+from .rendering.configs import RenderingConfig
+from .tools.configs import ToolsConfig
 
 
 ##
 
 
-DEFAULT_CHAT_MODEL_BACKEND = 'openai'
-
-
-##
-
-
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, kw_only=True)
 class ChatConfig:
-    _: dc.KW_ONLY
-
-    backend: str | None = None
-    model_name: str | None = None
-
-    state: ta.Literal['new', 'continue', 'ephemeral'] = 'continue'
-
-    initial_system_content: ta.Optional['mc.Content'] = None
-    initial_user_content: ta.Optional['mc.Content'] = None
-
-    interactive: bool = False
-    use_readline: bool | ta.Literal['auto'] = 'auto'
-
-    silent: bool = False
-    markdown: bool = False
-
-    stream: bool = False
-
-    enable_tools: bool = False
-    enabled_tools: ta.AbstractSet[str] | None = None
-    dangerous_no_tool_confirmation: bool = False
+    backend: BackendConfig = BackendConfig()
+    ai: AiConfig = AiConfig()
+    state: StateConfig = StateConfig()
+    user: UserConfig = UserConfig()
+    rendering: RenderingConfig = RenderingConfig()
+    tools: ToolsConfig = ToolsConfig()

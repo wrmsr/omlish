@@ -6,6 +6,7 @@ from omlish import inject as inj
 from omlish import lang
 
 from ..... import minichain as mc
+from .configs import ToolsConfig
 from .injection import bind_tool_context_provider_to_key
 from .injection import tool_catalog_entries
 from .injection import tool_context_providers
@@ -90,12 +91,7 @@ def _bind_fs_tools() -> inj.Elements:
 ##
 
 
-def bind_tools(
-        *,
-        silent: bool = False,
-        dangerous_no_confirmation: bool = False,
-        enabled_tools: ta.Iterable[str] | None = None,
-) -> inj.Elements:
+def bind_tools(cfg: ToolsConfig = ToolsConfig()) -> inj.Elements:
     els: list[inj.Elemental] = []
 
     #
@@ -106,7 +102,7 @@ def bind_tools(
 
     els.append(tool_catalog_entries().bind_items_provider(singleton=True))
 
-    for etn in check.not_isinstance(enabled_tools or [], str):
+    for etn in check.not_isinstance(cfg.enabled_tools or [], str):
         els.append(_TOOL_BINDERS[etn]())
 
     #
@@ -115,10 +111,10 @@ def bind_tools(
 
     els.append(exec_stack.push_bind(to_ctor=_execution.ToolUseExecutorImpl, singleton=True))
 
-    if not silent:
+    if not cfg.silent:
         els.append(exec_stack.push_bind(to_ctor=_rendering.ResultRenderingToolUseExecutor, singleton=True))
 
-        if dangerous_no_confirmation:
+        if cfg.dangerous_no_confirmation:
             els.append(exec_stack.push_bind(to_ctor=_rendering.ArgsRenderingToolUseExecutor, singleton=True))
 
     els.extend([
@@ -127,7 +123,7 @@ def bind_tools(
 
     #
 
-    if not dangerous_no_confirmation:
+    if not cfg.dangerous_no_confirmation:
         els.append(inj.bind(_confirmation.ToolExecutionConfirmation, to_ctor=_confirmation.InteractiveToolExecutionConfirmation, singleton=True))  # noqa
 
     #

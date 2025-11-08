@@ -1,11 +1,10 @@
-import typing as ta
-
 from omlish import inject as inj
 from omlish import lang
 
 from ...phases.injection import phase_callbacks
 from ...phases.types import ChatPhase
 from ...phases.types import ChatPhaseCallback
+from .configs import StateConfig
 
 
 with lang.auto_proxy_import(globals()):
@@ -17,24 +16,21 @@ with lang.auto_proxy_import(globals()):
 ##
 
 
-def bind_state(
-        *,
-        state: ta.Literal['new', 'continue', 'ephemeral'] = 'continue',
-) -> inj.Elements:
+def bind_state(cfg: StateConfig = StateConfig()) -> inj.Elements:
     els: list[inj.Elemental] = []
 
-    if state in ('continue', 'new'):
+    if cfg.state in ('continue', 'new'):
         els.append(inj.bind(_types.ChatStateManager, to_ctor=_storage.StateStorageChatStateManager, singleton=True))
 
-        if state == 'new':
+        if cfg.state == 'new':
             els.append(phase_callbacks().bind_item(to_fn=lang.typed_lambda(cm=_types.ChatStateManager)(
                 lambda cm: ChatPhaseCallback(ChatPhase.STARTING, cm.clear_state),
             )))
 
-    elif state == 'ephemeral':
+    elif cfg.state == 'ephemeral':
         els.append(inj.bind(_types.ChatStateManager, to_ctor=_inmemory.InMemoryChatStateManager, singleton=True))
 
     else:
-        raise TypeError(state)
+        raise TypeError(cfg.state)
 
     return inj.as_elements(*els)

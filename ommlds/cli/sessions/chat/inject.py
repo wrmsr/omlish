@@ -3,7 +3,6 @@ from omlish import inject as inj
 from omlish import lang
 
 from ..base import Session
-from .configs import DEFAULT_CHAT_MODEL_BACKEND
 from .configs import ChatConfig
 
 
@@ -28,42 +27,20 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
     #
 
     els.extend([
-        _backends.bind_backends(
-            backend=cfg.backend or DEFAULT_CHAT_MODEL_BACKEND,
-        ),
+        _backends.bind_backends(cfg.backend),
 
-        _chat_ai.bind_ai(
-            stream=cfg.stream,
-            silent=cfg.silent,
-            enable_tools=cfg.enable_tools,
-        ),
+        _chat_ai.bind_ai(cfg.ai),
 
-        _chat_user.bind_user(
-            initial_system_content=cfg.initial_system_content,
-            initial_user_content=cfg.initial_user_content,
-            interactive=cfg.interactive,
-            use_readline=cfg.use_readline,
-        ),
+        _chat_user.bind_user(cfg.user),
 
-        _chat_state.bind_state(
-            state=cfg.state,
-        ),
+        _chat_state.bind_state(cfg.state),
 
         _phases.bind_phases(),
 
-        _rendering.bind_rendering(
-            markdown=cfg.markdown,
-        ),
+        _rendering.bind_rendering(cfg.rendering),
+
+        _tools.bind_tools(cfg.tools),
     ])
-
-    #
-
-    if cfg.enable_tools:
-        els.append(_tools.bind_tools(
-            silent=cfg.silent,
-            dangerous_no_confirmation=cfg.dangerous_no_tool_confirmation,
-            enabled_tools=cfg.enabled_tools,
-        ))
 
     #
 

@@ -5,6 +5,8 @@ from omlish import lang
 from omlish import typedvalues as tv
 
 from ..... import minichain as mc
+from .configs import DEFAULT_BACKEND
+from .configs import BackendConfig
 from .injection import backend_configs
 
 
@@ -16,10 +18,7 @@ with lang.auto_proxy_import(globals()):
 ##
 
 
-def bind_backends(
-        *,
-        backend: str | None = None,
-) -> inj.Elements:
+def bind_backends(cfg: BackendConfig = BackendConfig()) -> inj.Elements:
     els: list[inj.Elemental] = []
 
     #
@@ -28,8 +27,7 @@ def bind_backends(
 
     #
 
-    if backend is not None:
-        els.append(inj.bind(_types.BackendName, to_const=backend))
+    els.append(inj.bind(_types.BackendName, to_const=cfg.backend or DEFAULT_BACKEND))
 
     els.extend([
         inj.bind(_types.ChatChoicesServiceBackendProvider, to_ctor=_catalog.CatalogChatChoicesServiceBackendProvider, singleton=True),  # noqa

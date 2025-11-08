@@ -1,6 +1,8 @@
 from omlish import inject as inj
 from omlish import lang
 
+from .configs import RenderingConfig
+
 
 with lang.auto_proxy_import(globals()):
     from . import markdown as _markdown
@@ -11,13 +13,10 @@ with lang.auto_proxy_import(globals()):
 ##
 
 
-def bind_rendering(
-        *,
-        markdown: bool = False,
-) -> inj.Elements:
+def bind_rendering(cfg: RenderingConfig = RenderingConfig()) -> inj.Elements:
     els: list[inj.Elemental] = []
 
-    if markdown:
+    if cfg.markdown:
         els.extend([
             inj.bind(_types.ContentRendering, to_ctor=_markdown.MarkdownContentRendering, singleton=True),
             inj.bind(_types.StreamContentRendering, to_ctor=_markdown.MarkdownStreamContentRendering, singleton=True),

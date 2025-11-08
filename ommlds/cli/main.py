@@ -21,7 +21,13 @@ from .. import minichain as mc
 from .inject import bind_main
 from .secrets import install_secrets
 from .sessions.base import Session
+from .sessions.chat.backends.configs import BackendConfig
+from .sessions.chat.chat.ai.configs import AiConfig
+from .sessions.chat.chat.state.configs import StateConfig
+from .sessions.chat.chat.user.configs import UserConfig
 from .sessions.chat.configs import ChatConfig
+from .sessions.chat.rendering.configs import RenderingConfig
+from .sessions.chat.tools.configs import ToolsConfig
 from .sessions.completion.configs import CompletionConfig
 from .sessions.embedding.configs import EmbeddingConfig
 
@@ -129,28 +135,39 @@ async def _a_main(args: ta.Any = None) -> None:
             system_content = CODE_AGENT_SYSTEM_PROMPT
 
         session_cfg = ChatConfig(
-            backend=args.backend,
-            model_name=args.model_name,
-            state='ephemeral' if args.ephemeral else 'new' if args.new else 'continue',
-            initial_system_content=system_content,
-            initial_user_content=content,  # noqa
-            interactive=bool(args.interactive),
-            markdown=bool(args.markdown),
-            stream=bool(args.stream),
-            enable_tools=(
-                args.enable_fs_tools or
-                args.enable_todo_tools or
-                args.enable_unsafe_tools_do_not_use_lol or
-                args.enable_test_weather_tool or
-                args.code
+            backend=BackendConfig(
+                backend=args.backend,
             ),
-            enabled_tools={  # noqa
-                *(['fs'] if args.enable_fs_tools else []),
-                *(['todo'] if args.enable_todo_tools else []),
-                *(['weather'] if args.enable_test_weather_tool else []),
-                # FIXME: enable_unsafe_tools_do_not_use_lol
-            },
-            dangerous_no_tool_confirmation=bool(args.dangerous_no_tool_confirmation),
+            ai=AiConfig(
+                stream=bool(args.stream),
+                enable_tools=(
+                    args.enable_fs_tools or
+                    args.enable_todo_tools or
+                    args.enable_unsafe_tools_do_not_use_lol or
+                    args.enable_test_weather_tool or
+                    args.code
+                ),
+            ),
+            state=StateConfig(
+                state='ephemeral' if args.ephemeral else 'new' if args.new else 'continue',
+            ),
+            user=UserConfig(
+                initial_system_content=system_content,
+                initial_user_content=content,  # noqa
+                interactive=bool(args.interactive),
+            ),
+            rendering=RenderingConfig(
+                markdown=bool(args.markdown),
+            ),
+            tools=ToolsConfig(
+                enabled_tools={  # noqa
+                    *(['fs'] if args.enable_fs_tools else []),
+                    *(['todo'] if args.enable_todo_tools else []),
+                    *(['weather'] if args.enable_test_weather_tool else []),
+                    # FIXME: enable_unsafe_tools_do_not_use_lol
+                },
+                dangerous_no_confirmation=bool(args.dangerous_no_tool_confirmation),
+            ),
         )
 
     #
