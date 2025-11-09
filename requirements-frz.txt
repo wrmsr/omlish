@@ -48,7 +48,7 @@ cryptography==46.0.3
 cycler==0.12.1
 Cython==3.2.0
 datasets==4.4.1
-ddgs==9.8.0
+ddgs==9.9.0
 debugpy==1.8.17
 decorator==5.2.1
 defusedxml==0.7.1
@@ -226,8 +226,8 @@ pyperclip==1.11.0
 pyproject_hooks==1.2.0
 pyright==1.1.407
 pytesseract==0.3.13
-pytest==8.4.2
-pytest-benchmark==5.2.2
+pytest==9.0.0
+pytest-benchmark==5.2.3
 pytest-clarity==1.0.1
 pytest-stress==1.0.1
 pytest-timeout==2.4.0

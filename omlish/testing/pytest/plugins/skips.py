@@ -11,10 +11,11 @@ from ._registry import register
 class SkipsPlugin:
     def pytest_collection_modifyitems(self, session, items):
         dct: dict[str, set[str]] = {}
-        for arg in session.config.args:
+        for i, arg in enumerate(session.config.args):
             ca = resolve_collection_argument(
                 session.config.invocation_params.dir,
                 arg,
+                i,
                 as_pypath=session.config.option.pyargs,
             )
             if ca.path.is_file():

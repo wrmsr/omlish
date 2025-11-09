@@ -376,20 +376,18 @@ class TestCase(unittest.TestCase):
             pass
 
         for cls in [C0, C1]:
-            with self.subTest(cls=cls):
-                self.assertEqual(cls(), cls())
-                for idx, fn in enumerate([
-                    lambda a, b: a < b,
-                    lambda a, b: a <= b,
-                    lambda a, b: a > b,
-                    lambda a, b: a >= b,
-                ]):
-                    with self.subTest(idx=idx):
-                        with self.assertRaisesRegex(
-                                TypeError,
-                                f"not supported between instances of '{cls.__name__}' and '{cls.__name__}'"
-                        ):
-                            fn(cls(), cls())
+            self.assertEqual(cls(), cls())
+            for idx, fn in enumerate([
+                lambda a, b: a < b,
+                lambda a, b: a <= b,
+                lambda a, b: a > b,
+                lambda a, b: a >= b,
+            ]):
+                with self.assertRaisesRegex(
+                        TypeError,
+                        f"not supported between instances of '{cls.__name__}' and '{cls.__name__}'"
+                ):
+                    fn(cls(), cls())
 
         @dataclass(order=True)
         class C:
@@ -409,21 +407,19 @@ class TestCase(unittest.TestCase):
             x: int
 
         for cls in [C0, C1]:
-            with self.subTest(cls=cls):
-                self.assertEqual(cls(1), cls(1))
-                self.assertNotEqual(cls(0), cls(1))
-                for idx, fn in enumerate([
-                    lambda a, b: a < b,
-                    lambda a, b: a <= b,
-                    lambda a, b: a > b,
-                    lambda a, b: a >= b,
-                ]):
-                    with self.subTest(idx=idx):
-                        with self.assertRaisesRegex(
-                                TypeError,
-                                f"not supported between instances of '{cls.__name__}' and '{cls.__name__}'",
-                        ):
-                            fn(cls(0), cls(0))
+            self.assertEqual(cls(1), cls(1))
+            self.assertNotEqual(cls(0), cls(1))
+            for idx, fn in enumerate([
+                lambda a, b: a < b,
+                lambda a, b: a <= b,
+                lambda a, b: a > b,
+                lambda a, b: a >= b,
+            ]):
+                with self.assertRaisesRegex(
+                        TypeError,
+                        f"not supported between instances of '{cls.__name__}' and '{cls.__name__}'",
+                ):
+                    fn(cls(0), cls(0))
 
         @dataclass(order=True)
         class C:
@@ -449,24 +445,22 @@ class TestCase(unittest.TestCase):
             y: int
 
         for cls in [C0, C1]:
-            with self.subTest(cls=cls):
-                self.assertEqual(cls(0, 0), cls(0, 0))
-                self.assertEqual(cls(1, 2), cls(1, 2))
-                self.assertNotEqual(cls(1, 0), cls(0, 0))
-                self.assertNotEqual(cls(1, 0), cls(1, 1))
+            self.assertEqual(cls(0, 0), cls(0, 0))
+            self.assertEqual(cls(1, 2), cls(1, 2))
+            self.assertNotEqual(cls(1, 0), cls(0, 0))
+            self.assertNotEqual(cls(1, 0), cls(1, 1))
 
-                for idx, fn in enumerate([
-                    lambda a, b: a < b,
-                    lambda a, b: a <= b,
-                    lambda a, b: a > b,
-                    lambda a, b: a >= b,
-                ]):
-                    with self.subTest(idx=idx):
-                        with self.assertRaisesRegex(
-                                TypeError,
-                                f"not supported between instances of '{cls.__name__}' and '{cls.__name__}'",
-                        ):
-                            fn(cls(0, 0), cls(0, 0))
+            for idx, fn in enumerate([
+                lambda a, b: a < b,
+                lambda a, b: a <= b,
+                lambda a, b: a > b,
+                lambda a, b: a >= b,
+            ]):
+                with self.assertRaisesRegex(
+                        TypeError,
+                        f"not supported between instances of '{cls.__name__}' and '{cls.__name__}'",
+                ):
+                    fn(cls(0, 0), cls(0, 0))
 
         @dataclass(order=True)
         class C:
@@ -478,28 +472,25 @@ class TestCase(unittest.TestCase):
             lambda a, b: a <= b,
             lambda a, b: a >= b,
         ]):
-            with self.subTest(idx=idx):
-                self.assertTrue(fn(C(0, 0), C(0, 0)))
+            self.assertTrue(fn(C(0, 0), C(0, 0)))
 
         for idx, fn in enumerate([
             lambda a, b: a < b,
             lambda a, b: a <= b,
             lambda a, b: a != b,
         ]):
-            with self.subTest(idx=idx):
-                self.assertTrue(fn(C(0, 0), C(0, 1)))
-                self.assertTrue(fn(C(0, 1), C(1, 0)))
-                self.assertTrue(fn(C(1, 0), C(1, 1)))
+            self.assertTrue(fn(C(0, 0), C(0, 1)))
+            self.assertTrue(fn(C(0, 1), C(1, 0)))
+            self.assertTrue(fn(C(1, 0), C(1, 1)))
 
         for idx, fn in enumerate([
             lambda a, b: a > b,
             lambda a, b: a >= b,
             lambda a, b: a != b,
         ]):
-            with self.subTest(idx=idx):
-                self.assertTrue(fn(C(0, 1), C(0, 0)))
-                self.assertTrue(fn(C(1, 0), C(0, 1)))
-                self.assertTrue(fn(C(1, 1), C(1, 0)))
+            self.assertTrue(fn(C(0, 1), C(0, 0)))
+            self.assertTrue(fn(C(1, 0), C(0, 1)))
+            self.assertTrue(fn(C(1, 1), C(1, 0)))
 
     def test_compare_subclasses(self):
         # Comparisons fail for subclasses, even if no fields are added.
@@ -515,8 +506,7 @@ class TestCase(unittest.TestCase):
             (lambda a, b: a == b, False),
             (lambda a, b: a != b, True),
         ]):
-            with self.subTest(idx=idx):
-                self.assertEqual(fn(B(0), C(0)), expected)
+            self.assertEqual(fn(B(0), C(0)), expected)
 
         for idx, fn in enumerate([
             lambda a, b: a < b,
@@ -524,9 +514,8 @@ class TestCase(unittest.TestCase):
             lambda a, b: a > b,
             lambda a, b: a >= b,
         ]):
-            with self.subTest(idx=idx):
-                with self.assertRaisesRegex(TypeError, "not supported between instances of 'B' and 'C'"):
-                    fn(B(0), C(0))
+            with self.assertRaisesRegex(TypeError, "not supported between instances of 'B' and 'C'"):
+                fn(B(0), C(0))
 
     def test_eq_order(self):
         # Test combining eq and order.
@@ -536,41 +525,40 @@ class TestCase(unittest.TestCase):
             (True,  False, 'eq_only'),
             (True,  True,  'both'),
         ]:
-            with self.subTest(eq=eq, order=order):
-                if result == 'exception':
-                    with self.assertRaisesRegex(ValueError, 'eq must be true if order is true'):
-                        @dataclass(eq=eq, order=order)
-                        class C:
-                            pass
-
-                else:
+            if result == 'exception':
+                with self.assertRaisesRegex(ValueError, 'eq must be true if order is true'):
                     @dataclass(eq=eq, order=order)
                     class C:
                         pass
 
-                    if result == 'neither':
-                        self.assertNotIn('__eq__', C.__dict__)
-                        self.assertNotIn('__lt__', C.__dict__)
-                        self.assertNotIn('__le__', C.__dict__)
-                        self.assertNotIn('__gt__', C.__dict__)
-                        self.assertNotIn('__ge__', C.__dict__)
+            else:
+                @dataclass(eq=eq, order=order)
+                class C:
+                    pass
 
-                    elif result == 'both':
-                        self.assertIn('__eq__', C.__dict__)
-                        self.assertIn('__lt__', C.__dict__)
-                        self.assertIn('__le__', C.__dict__)
-                        self.assertIn('__gt__', C.__dict__)
-                        self.assertIn('__ge__', C.__dict__)
+                if result == 'neither':
+                    self.assertNotIn('__eq__', C.__dict__)
+                    self.assertNotIn('__lt__', C.__dict__)
+                    self.assertNotIn('__le__', C.__dict__)
+                    self.assertNotIn('__gt__', C.__dict__)
+                    self.assertNotIn('__ge__', C.__dict__)
 
-                    elif result == 'eq_only':
-                        self.assertIn('__eq__', C.__dict__)
-                        self.assertNotIn('__lt__', C.__dict__)
-                        self.assertNotIn('__le__', C.__dict__)
-                        self.assertNotIn('__gt__', C.__dict__)
-                        self.assertNotIn('__ge__', C.__dict__)
+                elif result == 'both':
+                    self.assertIn('__eq__', C.__dict__)
+                    self.assertIn('__lt__', C.__dict__)
+                    self.assertIn('__le__', C.__dict__)
+                    self.assertIn('__gt__', C.__dict__)
+                    self.assertIn('__ge__', C.__dict__)
 
-                    else:
-                        assert False, f'unknown result {result!r}'
+                elif result == 'eq_only':
+                    self.assertIn('__eq__', C.__dict__)
+                    self.assertNotIn('__lt__', C.__dict__)
+                    self.assertNotIn('__le__', C.__dict__)
+                    self.assertNotIn('__gt__', C.__dict__)
+                    self.assertNotIn('__ge__', C.__dict__)
+
+                else:
+                    assert False, f'unknown result {result!r}'
 
     def test_field_no_default(self):
         @dataclass
@@ -669,19 +657,18 @@ class TestCase(unittest.TestCase):
             (None,     False,   'absent'),
             (None,     True,    'field' ),
         ]:
-            with self.subTest(hash=hash_, compare=compare):
-                @dataclass(unsafe_hash=True)
-                class C:
-                    x: int = field(compare=compare, hash=hash_, default=5)
+            @dataclass(unsafe_hash=True)
+            class C:
+                x: int = field(compare=compare, hash=hash_, default=5)
 
-                if result == 'field':
-                    # __hash__ contains the field.
-                    self.assertEqual(hash(C(5)), hash((5,)))
-                elif result == 'absent':
-                    # The field is not present in the hash.
-                    self.assertEqual(hash(C(5)), hash(()))
-                else:
-                    assert False, f'unknown result {result!r}'
+            if result == 'field':
+                # __hash__ contains the field.
+                self.assertEqual(hash(C(5)), hash((5,)))
+            elif result == 'absent':
+                # The field is not present in the hash.
+                self.assertEqual(hash(C(5)), hash(()))
+            else:
+                assert False, f'unknown result {result!r}'
 
     def test_init_false_no_default(self):
         # If init=False and no default value, then the field won't be present in the instance.
@@ -803,37 +790,36 @@ class TestCase(unittest.TestCase):
             (dict, {}, {0:1}),
             (set, set(), {1}),
         ]:
-            with self.subTest(typ=typ):
-                # Can't use a zero-length value.
-                with self.assertRaisesRegex(ValueError, f'mutable default {typ} for field ' 'x is not allowed'):
-                    @dataclass
-                    class Point:
-                        x: typ = empty
-
-                # Nor a non-zero-length value
-                with self.assertRaisesRegex(ValueError, f'mutable default {typ} for field ' 'y is not allowed'):
-                    @dataclass
-                    class Point:
-                        y: typ = non_empty
-
-                # Check subtypes also fail.
-                class Subclass(typ):
-                    pass
-
-                with self.assertRaisesRegex(ValueError, "mutable default .*Subclass'>" " for field z is not allowed"):
-                    @dataclass
-                    class Point:
-                        z: typ = Subclass()
-
-                # Because this is a ClassVar, it can be mutable.
+            # Can't use a zero-length value.
+            with self.assertRaisesRegex(ValueError, f'mutable default {typ} for field ' 'x is not allowed'):
                 @dataclass
-                class UsesMutableClassVar:
-                    z: ClassVar[typ] = typ()
+                class Point:
+                    x: typ = empty
 
-                # Because this is a ClassVar, it can be mutable.
+            # Nor a non-zero-length value
+            with self.assertRaisesRegex(ValueError, f'mutable default {typ} for field ' 'y is not allowed'):
                 @dataclass
-                class UsesMutableClassVarWithSubType:
-                    x: ClassVar[typ] = Subclass()
+                class Point:
+                    y: typ = non_empty
+
+            # Check subtypes also fail.
+            class Subclass(typ):
+                pass
+
+            with self.assertRaisesRegex(ValueError, "mutable default .*Subclass'>" " for field z is not allowed"):
+                @dataclass
+                class Point:
+                    z: typ = Subclass()
+
+            # Because this is a ClassVar, it can be mutable.
+            @dataclass
+            class UsesMutableClassVar:
+                z: ClassVar[typ] = typ()
+
+            # Because this is a ClassVar, it can be mutable.
+            @dataclass
+            class UsesMutableClassVarWithSubType:
+                x: ClassVar[typ] = Subclass()
 
     def test_deliberately_mutable_defaults(self):
         # If a mutable default isn't in the known list of (list, dict, set), then it's okay.
@@ -1566,16 +1552,15 @@ class TestCase(unittest.TestCase):
         b.__dataclass_fields__ = []
 
         for obj in a, b:
-            with self.subTest(obj=obj):
-                self.assertFalse(is_dataclass(obj))
+            self.assertFalse(is_dataclass(obj))
 
-                # Indirect tests for _is_dataclass_instance().
-                with self.assertRaisesRegex(TypeError, 'should be called on dataclass instances'):
-                    asdict(obj)
-                with self.assertRaisesRegex(TypeError, 'should be called on dataclass instances'):
-                    astuple(obj)
-                with self.assertRaisesRegex(TypeError, 'should be called on dataclass instances'):
-                    replace(obj, x=0)
+            # Indirect tests for _is_dataclass_instance().
+            with self.assertRaisesRegex(TypeError, 'should be called on dataclass instances'):
+                asdict(obj)
+            with self.assertRaisesRegex(TypeError, 'should be called on dataclass instances'):
+                astuple(obj)
+            with self.assertRaisesRegex(TypeError, 'should be called on dataclass instances'):
+                replace(obj, x=0)
 
     def test_is_dataclass_genericalias(self):
         @dataclass
@@ -2926,47 +2911,46 @@ class TestHash(unittest.TestCase):
             (True,  True,  Base,   'tuple'),
         ]:
 
-            with self.subTest(frozen=frozen, eq=eq, base=base, expected=expected):
-                # First, create the class.
-                if frozen is None and eq is None:
-                    @dataclass
-                    class C(base):
-                        i: int
+            # First, create the class.
+            if frozen is None and eq is None:
+                @dataclass
+                class C(base):
+                    i: int
 
-                elif frozen is None:
-                    @dataclass(eq=eq)
-                    class C(base):
-                        i: int
+            elif frozen is None:
+                @dataclass(eq=eq)
+                class C(base):
+                    i: int
 
-                elif eq is None:
-                    @dataclass(frozen=frozen)
-                    class C(base):
-                        i: int
+            elif eq is None:
+                @dataclass(frozen=frozen)
+                class C(base):
+                    i: int
 
-                else:
-                    @dataclass(frozen=frozen, eq=eq)
-                    class C(base):
-                        i: int
+            else:
+                @dataclass(frozen=frozen, eq=eq)
+                class C(base):
+                    i: int
 
-                # Now, make sure it hashes as expected.
-                if expected == 'unhashable':
-                    c = C(10)
-                    with self.assertRaisesRegex(TypeError, 'unhashable type'):
-                        hash(c)
+            # Now, make sure it hashes as expected.
+            if expected == 'unhashable':
+                c = C(10)
+                with self.assertRaisesRegex(TypeError, 'unhashable type'):
+                    hash(c)
 
-                elif expected == 'base':
-                    self.assertEqual(hash(C(10)), 301)
+            elif expected == 'base':
+                self.assertEqual(hash(C(10)), 301)
 
-                elif expected == 'object':
-                    # I'm not sure what test to use here.  object's hash isn't based on id(), so calling hash() won't
-                    # tell us much.  So, just check the function used is object's.
-                    self.assertIs(C.__hash__, object.__hash__)
+            elif expected == 'object':
+                # I'm not sure what test to use here.  object's hash isn't based on id(), so calling hash() won't
+                # tell us much.  So, just check the function used is object's.
+                self.assertIs(C.__hash__, object.__hash__)
 
-                elif expected == 'tuple':
-                    self.assertEqual(hash(C(42)), hash((42,)))
+            elif expected == 'tuple':
+                self.assertEqual(hash(C(42)), hash((42,)))
 
-                else:
-                    assert False, f'unknown value for expected={expected!r}'
+            else:
+                assert False, f'unknown value for expected={expected!r}'
 
 
 class TestFrozen(unittest.TestCase):
@@ -3039,14 +3023,13 @@ class TestFrozen(unittest.TestCase):
             (Frozen, NotDataclass),
             (NotDataclass, Frozen),
         ):
-            with self.subTest(bases=bases):
-                with self.assertRaisesRegex(
-                    TypeError,
-                    'cannot inherit non-frozen dataclass from a frozen one',
-                ):
-                    @dataclass
-                    class NotFrozenChild(*bases):
-                        pass
+            with self.assertRaisesRegex(
+                TypeError,
+                'cannot inherit non-frozen dataclass from a frozen one',
+            ):
+                @dataclass
+                class NotFrozenChild(*bases):
+                    pass
 
         for bases in (
             (NotFrozen, Frozen),
@@ -3054,14 +3037,13 @@ class TestFrozen(unittest.TestCase):
             (NotFrozen, NotDataclass),
             (NotDataclass, NotFrozen),
         ):
-            with self.subTest(bases=bases):
-                with self.assertRaisesRegex(
-                    TypeError,
-                    'cannot inherit frozen dataclass from a non-frozen one',
-                ):
-                    @dataclass(frozen=True)
-                    class FrozenChild(*bases):
-                        pass
+            with self.assertRaisesRegex(
+                TypeError,
+                'cannot inherit frozen dataclass from a non-frozen one',
+            ):
+                @dataclass(frozen=True)
+                class FrozenChild(*bases):
+                    pass
 
     def test_inherit_frozen_mutliple_inheritance_regular_mixins(self):
         @dataclass(frozen=True)
@@ -4161,33 +4143,32 @@ class TestStringAnnotations(unittest.TestCase):
                 dataclass_module_2,
                 dataclass_module_2_str,
         ):
-            with self.subTest(m=m):
-                # There's a difference in how the ClassVars are interpreted when using string annotations or not. See
-                # the imported modules for details.
-                if m.USING_STRINGS:
-                    c = m.CV(10)
-                else:
-                    c = m.CV()
-                self.assertEqual(c.cv0, 20)
+            # There's a difference in how the ClassVars are interpreted when using string annotations or not. See
+            # the imported modules for details.
+            if m.USING_STRINGS:
+                c = m.CV(10)
+            else:
+                c = m.CV()
+            self.assertEqual(c.cv0, 20)
 
-                # There's a difference in how the InitVars are interpreted when using string annotations or not. See the
-                # imported modules for details.
-                c = m.IV(0, 1, 2, 3, 4)
+            # There's a difference in how the InitVars are interpreted when using string annotations or not. See the
+            # imported modules for details.
+            c = m.IV(0, 1, 2, 3, 4)
 
-                for field_name in ('iv0', 'iv1', 'iv2', 'iv3'):
-                    with self.subTest(field_name=field_name):
-                        with self.assertRaisesRegex(AttributeError, f"object has no attribute '{field_name}'"):
-                            # Since field_name is an InitVar, it's
-                            # not an instance field.
-                            getattr(c, field_name)
+            for field_name in ('iv0', 'iv1', 'iv2', 'iv3'):
+                with self.subTest(field_name=field_name):
+                    with self.assertRaisesRegex(AttributeError, f"object has no attribute '{field_name}'"):
+                        # Since field_name is an InitVar, it's
+                        # not an instance field.
+                        getattr(c, field_name)
 
-                if m.USING_STRINGS:
-                    # iv4 is interpreted as a normal field.
-                    self.assertIn('not_iv4', c.__dict__)
-                    self.assertEqual(c.not_iv4, 4)
-                else:
-                    # iv4 is interpreted as an InitVar, so it won't exist on the instance.
-                    self.assertNotIn('not_iv4', c.__dict__)
+            if m.USING_STRINGS:
+                # iv4 is interpreted as a normal field.
+                self.assertIn('not_iv4', c.__dict__)
+                self.assertEqual(c.not_iv4, 4)
+            else:
+                # iv4 is interpreted as an InitVar, so it won't exist on the instance.
+                self.assertNotIn('not_iv4', c.__dict__)
 
     def test_text_annotations(self):
         from . import dataclass_textanno
@@ -4456,18 +4437,16 @@ class TestMakeDataclass(unittest.TestCase):
             (),
             (1, 2, 3, 4),
         ]:
-            with self.subTest(bad_field=bad_field):
-                with self.assertRaisesRegex(TypeError, r'Invalid field: '):
-                    make_dataclass('C', ['a', bad_field])
+            with self.assertRaisesRegex(TypeError, r'Invalid field: '):
+                make_dataclass('C', ['a', bad_field])
 
         # And test for things with no len().
         for bad_field in [
             float,
             lambda x:x,
         ]:
-            with self.subTest(bad_field=bad_field):
-                with self.assertRaisesRegex(TypeError, r'has no len\(\)'):
-                    make_dataclass('C', ['a', bad_field])
+            with self.assertRaisesRegex(TypeError, r'has no len\(\)'):
+                make_dataclass('C', ['a', bad_field])
 
     def test_duplicate_field_names(self):
         for field in ['a', 'ab']:

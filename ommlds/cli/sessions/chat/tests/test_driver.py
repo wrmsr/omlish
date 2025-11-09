@@ -1,5 +1,3 @@
-import typing as ta
-
 import pytest  # noqa
 
 from omlish import inject as inj
@@ -9,7 +7,10 @@ from ..... import minichain as mc
 from ....backends.inject import bind_backends
 from ....state.storage import InMemoryStateStorage
 from ....state.storage import StateStorage
+from ..chat.user.configs import UserConfig
+from ..rendering.configs import RenderingConfig
 from ..configs import ChatConfig
+from ..chat.state.configs import StateConfig
 from ..driver import ChatDriver
 from ..inject import bind_chat
 
@@ -21,14 +22,8 @@ class DummyChatChoicesService:
 
 
 def make_driver(
-        cfg: ChatConfig | None = None,
-        **kwargs: ta.Any,
+        cfg: ChatConfig = ChatConfig(),
 ) -> ChatDriver:
-    if cfg is not None:
-        assert not kwargs
-    else:
-        cfg = ChatConfig(**kwargs)
-
     injector = inj.create_injector(
         bind_chat(cfg),
 
@@ -45,15 +40,29 @@ def make_driver(
 
 def test_inject():
     assert make_driver(
-        state='new',
-        initial_user_content='Hi!',
+        cfg=ChatConfig(
+            user=UserConfig(
+                initial_user_content='Hi!',
+            ),
+            state=StateConfig(
+                state='new',
+            ),
+        ),
     )
 
 
 @pytest.mark.skip
 def test_driver():
     lang.sync_await(make_driver(
-        state='new',
-        initial_user_content='Hi!',
-        markdown=True,
+        cfg=ChatConfig(
+            user=UserConfig(
+                initial_user_content='Hi!',
+            ),
+            rendering=RenderingConfig(
+                markdown=True,
+            ),
+            state=StateConfig(
+                state='new',
+            ),
+        ),
     ).run())
