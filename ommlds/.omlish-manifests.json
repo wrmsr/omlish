@@ -195,6 +195,60 @@
     }
   },
   {
+    "module": ".minichain.backends.impls.groq.chat",
+    "attr": null,
+    "file": "ommlds/minichain/backends/impls/groq/chat.py",
+    "line": 24,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "ommlds.minichain.backends.impls.groq.chat",
+        "attr": "GroqChatChoicesService",
+        "name": "groq",
+        "aliases": null,
+        "type": "ChatChoicesService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.impls.groq.names",
+    "attr": "_BACKEND_STRINGS_MANIFEST",
+    "file": "ommlds/minichain/backends/impls/groq/names.py",
+    "line": 27,
+    "value": {
+      "!.minichain.backends.strings.manifests.BackendStringsManifest": {
+        "service_cls_names": [
+          "ChatChoicesService",
+          "ChatChoicesStreamService"
+        ],
+        "backend_name": "groq",
+        "model_names": {
+          "default": "gpt-oss-120b",
+          "aliases": {
+            "gpt-oss-120b": "openai/gpt-oss-120b",
+            "openai/gpt-oss-120b": null,
+            "gpt-oss-20b": "openai/gpt-oss-20b",
+            "openai/gpt-oss-20b": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.impls.groq.stream",
+    "attr": null,
+    "file": "ommlds/minichain/backends/impls/groq/stream.py",
+    "line": 35,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "ommlds.minichain.backends.impls.groq.stream",
+        "attr": "GroqChatChoicesStreamService",
+        "name": "groq",
+        "aliases": null,
+        "type": "ChatChoicesStreamService"
+      }
+    }
+  },
+  {
     "module": ".minichain.backends.impls.huggingface.repos",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/huggingface/repos.py",
