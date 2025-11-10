@@ -4,7 +4,7 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
-from ..... import asyncs
+from . import asyncs
 
 
 with lang.auto_proxy_import(globals()):

@@ -7,6 +7,7 @@ from .configs import ChatConfig
 
 
 with lang.auto_proxy_import(globals()):
+    from ...rendering import inject as _rendering
     from . import driver as _driver
     from . import session as _session
     from .backends import inject as _backends
@@ -14,7 +15,6 @@ with lang.auto_proxy_import(globals()):
     from .chat.state import inject as _chat_state
     from .chat.user import inject as _chat_user
     from .phases import inject as _phases
-    from .rendering import inject as _rendering
     from .tools import inject as _tools
 
 

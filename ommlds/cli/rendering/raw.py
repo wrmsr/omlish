@@ -2,7 +2,7 @@ import typing as ta
 
 from omlish import lang
 
-from ..... import minichain as mc
+from ... import minichain as mc
 from ..content.strings import ContentStringifier
 from ..content.strings import HasContentStringifier
 from .types import ContentRendering

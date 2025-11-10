@@ -184,7 +184,6 @@ class ChatProfile(Profile):
         #         *(['weather'] if args.enable_test_weather_tool else []),
         #         # FIXME: enable_unsafe_tools_do_not_use_lol
         #     },
-        #     dangerous_no_tool_confirmation=bool(args.dangerous_no_tool_confirmation),
         # )
 
         with inj.create_managed_injector(bind_main(
@@ -197,8 +196,26 @@ class ChatProfile(Profile):
 ##
 
 
+class CompletionProfile(Profile):
+    async def run(self, argv: ta.Sequence[str]) -> None:
+        raise NotImplementedError
+
+
+##
+
+
+class EmbedProfile(Profile):
+    async def run(self, argv: ta.Sequence[str]) -> None:
+        raise NotImplementedError
+
+
+##
+
+
 PROFILE_TYPES: ta.Mapping[str, type[Profile]] = {
+    'complete': CompletionProfile,
     'chat': ChatProfile,
+    'embed': EmbedProfile,
 }
 
 

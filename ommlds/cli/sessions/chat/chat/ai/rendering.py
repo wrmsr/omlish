@@ -1,10 +1,10 @@
 import typing as ta
 
 from ...... import minichain as mc
+from .....rendering.types import ContentRendering
+from .....rendering.types import StreamContentRendering
 from ...content.messages import MessageContentExtractor
 from ...content.messages import MessageContentExtractorImpl
-from ...rendering.types import ContentRendering
-from ...rendering.types import StreamContentRendering
 from .types import AiChatGenerator
 from .types import StreamAiChatGenerator
 

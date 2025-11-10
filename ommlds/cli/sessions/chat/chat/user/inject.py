@@ -9,8 +9,8 @@ from .configs import UserConfig
 
 
 with lang.auto_proxy_import(globals()):
+    from ..... import inputs as _inputs
     from ..state import types as _state
-    from . import inputs as _inputs
     from . import interactive as _interactive
     from . import oneshot as _oneshot
     from . import types as _types
