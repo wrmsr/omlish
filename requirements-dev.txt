@@ -22,7 +22,7 @@ types-paramiko==4.0.0.20250822  # @omlish-venv !13t !13dt  # cffi ????
 types-pyyaml==6.0.12.20250915
 types-ujson==5.10.0.20250822
 
-black==25.9.0
+black==25.11.0
 mypy==1.18.2
 pipdeptree==2.29.0
 
@@ -99,7 +99,7 @@ asttokens==3.0.0
 numpy>=1.26
 
 rich==14.2.0
-textual==6.5.0
+textual==6.6.0
 
 snowflake-connector-python[secure-local-storage]==4.0.0  # @omlish-venv !13t !13dt  # cffi
 # snowflake-sqlalchemy==1.7.7  # @omlish-venv !13t !13dt  # cffi
@@ -125,7 +125,7 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.40.69
+boto3>=1.40.70
 
 antlr4-python3-runtime==4.13.2
 

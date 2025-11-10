@@ -1,16 +1,19 @@
 """
 TODO:
- - move to pyproject
  - pyproject api!
 """
 import importlib.metadata
 import re
 import sys
-import tomllib
 
-from omdev.packaging.names import canonicalize_name
-from omdev.packaging.requires import parse_requirement
-from omdev.packaging.specifiers import Specifier
+from omlish.formats.toml.parser import toml_loads
+
+from ...packaging.names import canonicalize_name
+from ...packaging.requires import parse_requirement
+from ...packaging.specifiers import Specifier
+
+
+##
 
 
 def _main() -> None:
@@ -23,8 +26,8 @@ def _main() -> None:
 
     #
 
-    with open('pyproject.toml', 'rb') as f:
-        dct = tomllib.load(f)
+    with open('pyproject.toml') as f:
+        dct = toml_loads(f.read())
 
     pkgs = dct['tool']['omlish']['pyproject']['pkgs']
 

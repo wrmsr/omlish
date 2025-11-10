@@ -131,6 +131,10 @@ dep-refresh: venv
 	${PYTHON} -m uv pip install --upgrade pip setuptools uv wheel
 	${PYTHON} -m uv pip install --upgrade -r requirements-ext.txt
 
+.PHONY: dep-about
+dep-about: venv
+	${PYTHON} -m omdev.pyproject.tools.aboutdeps
+
 
 ### Gen
 

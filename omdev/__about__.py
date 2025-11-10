@@ -13,7 +13,7 @@ class Project(ProjectBase):
 
     optional_dependencies = {
         'black': [
-            'black ~= 25.9',
+            'black ~= 25.11',
         ],
 
         'c': [
@@ -44,7 +44,7 @@ class Project(ProjectBase):
 
         'tui': [
             'rich ~= 14.2',
-            'textual ~= 6.5',
+            'textual ~= 6.6',
         ],
     }
 
