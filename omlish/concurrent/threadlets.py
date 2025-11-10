@@ -75,7 +75,7 @@ class GreenletThreadlet(Threadlet):
 
     @property
     def parent(self) -> ta.Optional['GreenletThreadlet']:
-        return GreenletThreadlet(self.g.parent)
+        return GreenletThreadlet(p) if (p := self.g.parent) is not None else None
 
     @property
     def dead(self) -> bool:

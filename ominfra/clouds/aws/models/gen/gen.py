@@ -175,10 +175,13 @@ class ModelGen:
 
     def get_type_ann(
             self,
-            name: str,
+            name: str | None,
             *,
             unquoted_names: bool = False,
     ) -> str | None:
+        if name is None:
+            return None
+
         try:
             return self.BASE_TYPE_ANNS[name]
         except KeyError:
@@ -434,17 +437,17 @@ class ModelGen:
         elif isinstance(shape, botocore.model.MapShape):
             # shape.key, shape.value
             kn = shape.key.name
-            ka = self.get_type_ann(
+            ka2 = self.get_type_ann(
                 kn,
                 unquoted_names=unquoted_names,
             )
             vn = shape.key.name
-            va = self.get_type_ann(
+            va2 = self.get_type_ann(
                 vn,
                 unquoted_names=unquoted_names,
             )
-            l = f'{san_name}: _ta.TypeAlias = _ta.Mapping[{ka or kn}, {va or vn}]'
-            if ka is None or va is None:
+            l = f'{san_name}: _ta.TypeAlias = _ta.Mapping[{ka2 or kn}, {va2 or vn}]'
+            if ka2 is None or va2 is None:
                 l = '# ' + l
             return self.ShapeSrc(l)
 

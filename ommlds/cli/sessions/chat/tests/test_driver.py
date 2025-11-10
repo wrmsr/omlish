@@ -8,7 +8,7 @@ from ....backends.inject import bind_backends
 from ....state.storage import InMemoryStateStorage
 from ....state.storage import StateStorage
 from ..chat.user.configs import UserConfig
-from ..rendering.configs import RenderingConfig
+from ....rendering.configs import RenderingConfig
 from ..configs import ChatConfig
 from ..chat.state.configs import StateConfig
 from ..driver import ChatDriver

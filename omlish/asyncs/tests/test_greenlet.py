@@ -6,6 +6,7 @@ TODO:
 import asyncio
 import functools
 
+from ... import check
 from ...testing import pytest as ptu
 
 
@@ -50,7 +51,7 @@ def test_bridge():
         return ret
 
     def gl_await(awaitable):
-        return greenlet.getcurrent().parent.switch(awaitable)
+        return check.not_none(greenlet.getcurrent().parent).switch(awaitable)
 
     def f(sleepfor) -> int:
         gl_await(asyncio.sleep(sleepfor))

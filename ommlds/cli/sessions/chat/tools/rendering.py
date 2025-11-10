@@ -1,7 +1,7 @@
 import typing as ta
 
 from ..... import minichain as mc
-from ..rendering.types import ContentRendering
+from ....rendering.types import ContentRendering
 from .execution import ToolUseExecutor
 
 

@@ -1,9 +1,9 @@
 import typing as ta
 
 from ...... import minichain as mc
-from .inputs import AsyncStringInput
-from .inputs import InputSyncStringInput
-from .inputs import SyncAsyncStringInput
+from .....inputs import AsyncStringInput
+from .....inputs import InputSyncStringInput
+from .....inputs import SyncAsyncStringInput
 from .types import UserChatInput
 
 

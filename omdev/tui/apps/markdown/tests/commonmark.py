@@ -30,7 +30,7 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
-from ....cache import data as dcache
+from .....cache import data as dcache
 
 
 ##

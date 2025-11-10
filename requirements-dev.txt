@@ -18,7 +18,12 @@ flake8-pyproject==1.2.3
 ruff==0.14.4
 
 docutils-stubs==0.0.22
+lxml-stubs==0.5.1
+types-boto3==1.40.70
+types-botocore==1.0.2
+types-greenlet==3.2.0.20250915
 types-paramiko==4.0.0.20250822  # @omlish-venv !13t !13dt  # cffi ????
+types-psutil==7.0.0.20251001
 types-pyyaml==6.0.12.20250915
 types-ujson==5.10.0.20250822
 

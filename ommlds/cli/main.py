@@ -19,6 +19,7 @@ from omlish.subprocesses.sync import subprocesses
 
 from .. import minichain as mc
 from .inject import bind_main
+from .rendering.configs import RenderingConfig
 from .secrets import install_secrets
 from .sessions.base import Session
 from .sessions.chat.backends.configs import BackendConfig
@@ -26,7 +27,6 @@ from .sessions.chat.chat.ai.configs import AiConfig
 from .sessions.chat.chat.state.configs import StateConfig
 from .sessions.chat.chat.user.configs import UserConfig
 from .sessions.chat.configs import ChatConfig
-from .sessions.chat.rendering.configs import RenderingConfig
 from .sessions.chat.tools.configs import ToolsConfig
 from .sessions.completion.configs import CompletionConfig
 from .sessions.embedding.configs import EmbeddingConfig

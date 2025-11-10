@@ -24,7 +24,7 @@ else:
 
 T = ta.TypeVar('T')
 
-Element: ta.TypeAlias = ta.Union[ET.Element, 'lxml_etree.Element']
+Element: ta.TypeAlias = ta.Union[ET.Element, 'lxml_etree.Element']  # type: ignore[valid-type]
 
 
 ##
@@ -83,8 +83,8 @@ class ElementToKwargs:
                 raise KeyError(k)
             kw[k] = v
 
-        if el.attrib:
-            for k, v in el.attrib.items():
+        if el.attrib:  # type: ignore
+            for k, v in el.attrib.items():  # type: ignore
                 k = strip_ns(k)
 
                 if k in self.attrs:
@@ -99,7 +99,7 @@ class ElementToKwargs:
                 else:
                     raise KeyError(k)
 
-        for cel in el:
+        for cel in el:  # type: ignore
             k = strip_ns(cel.tag)
 
             if k in self.scalars:
@@ -123,7 +123,7 @@ class ElementToKwargs:
                 raise KeyError(k)
 
         if self.text is not None:
-            set_kw(self.text, el.text)
+            set_kw(self.text, el.text)  # type: ignore
 
         return kw
 
