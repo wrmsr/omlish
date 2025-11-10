@@ -19,6 +19,8 @@ from .inject import bind_main
 from .secrets import install_secrets
 from .sessions.base import Session
 from .sessions.chat.configs import ChatConfig
+from .sessions.completion.configs import CompletionConfig
+from .sessions.embedding.configs import EmbeddingConfig
 
 
 ##
@@ -148,6 +150,71 @@ class ChatProfile(Profile):
 
     #
 
+    TOOLS_ARGS: ta.ClassVar[ta.Sequence[ap.Arg]] = [
+        ap.arg('--enable-fs-tools', action='store_true', group='tools'),
+        ap.arg('--enable-todo-tools', action='store_true', group='tools'),
+        # ap.arg('--enable-unsafe-tools-do-not-use-lol', action='store_true', group='tools'),
+        ap.arg('--enable-test-weather-tool', action='store_true', group='tools'),
+    ]
+
+    def configure_tools(self, cfg: ChatConfig) -> ChatConfig:
+        return dc.replace(
+            cfg,
+            ai=dc.replace(
+                cfg.ai,
+                enable_tools=(
+                    self._args.enable_fs_tools or
+                    self._args.enable_todo_tools or
+                    # self._args.enable_unsafe_tools_do_not_use_lol or
+                    self._args.enable_test_weather_tool or
+                    self._args.code
+                ),
+            ),
+            tools=dc.replace(
+                cfg.tools,
+                enabled_tools={  # noqa
+                    *(cfg.tools.enabled_tools or []),
+                    *(['fs'] if self._args.enable_fs_tools else []),
+                    *(['todo'] if self._args.enable_todo_tools else []),
+                    *(['weather'] if self._args.enable_test_weather_tool else []),
+                },
+            ),
+        )
+
+    #
+
+    CODE_CONFIG: ta.ClassVar[ta.Sequence[ap.Arg]] = [
+        ap.arg('-c', '--code', action='store_true', group='code'),
+    ]
+
+    def configure_code(self, cfg: ChatConfig) -> ChatConfig:
+        if not self._args.code:
+            return cfg
+
+        cfg = dc.replace(
+            cfg,
+            ai=dc.replace(
+                cfg.ai,
+                enable_tools=True,
+            ),
+        )
+
+        if self._args.new or self._args.ephemeral:
+            from ..minichain.lib.code.prompts import CODE_AGENT_SYSTEM_PROMPT
+            system_content = CODE_AGENT_SYSTEM_PROMPT
+
+            cfg = dc.replace(
+                cfg,
+                user=dc.replace(
+                    cfg.user,
+                    initial_system_content=system_content,
+                ),
+            )
+
+        return cfg
+
+    #
+
     async def run(self, argv: ta.Sequence[str]) -> None:
         parser = ap.ArgumentParser()
 
@@ -156,6 +223,8 @@ class ChatProfile(Profile):
             ('input', self.INPUT_ARGS),
             ('state', self.STATE_ARGS),
             ('output', self.OUTPUT_ARGS),
+            ('tools', self.TOOLS_ARGS),
+            ('code', self.CODE_CONFIG),
         ]:
             grp = parser.add_argument_group(grp_name)
             for a in grp_args:
@@ -168,23 +237,8 @@ class ChatProfile(Profile):
         cfg = self.configure_input(cfg)
         cfg = self.configure_state(cfg)
         cfg = self.configure_output(cfg)
-
-        # session_cfg = ChatConfig(
-        #     initial_system_content=system_content,
-        #     enable_tools=(
-        #             args.enable_fs_tools or
-        #             args.enable_todo_tools or
-        #             args.enable_unsafe_tools_do_not_use_lol or
-        #             args.enable_test_weather_tool or
-        #             args.code
-        #     ),
-        #     enabled_tools={  # noqa
-        #         *(['fs'] if args.enable_fs_tools else []),
-        #         *(['todo'] if args.enable_todo_tools else []),
-        #         *(['weather'] if args.enable_test_weather_tool else []),
-        #         # FIXME: enable_unsafe_tools_do_not_use_lol
-        #     },
-        # )
+        cfg = self.configure_tools(cfg)
+        cfg = self.configure_code(cfg)
 
         with inj.create_managed_injector(bind_main(
                 session_cfg=cfg,
@@ -198,7 +252,22 @@ class ChatProfile(Profile):
 
 class CompletionProfile(Profile):
     async def run(self, argv: ta.Sequence[str]) -> None:
-        raise NotImplementedError
+        parser = ap.ArgumentParser()
+        parser.add_argument('prompt', nargs='*')
+        parser.add_argument('-b', '--backend', default='openai')
+        args = parser.parse_args()
+
+        content = ' '.join(args.prompt)
+
+        cfg = CompletionConfig(
+            check.non_empty_str(content),
+            backend=args.backend,
+        )
+
+        with inj.create_managed_injector(bind_main(
+                session_cfg=cfg,
+        )) as injector:
+            await injector[Session].run()
 
 
 ##
@@ -206,7 +275,22 @@ class CompletionProfile(Profile):
 
 class EmbedProfile(Profile):
     async def run(self, argv: ta.Sequence[str]) -> None:
-        raise NotImplementedError
+        parser = ap.ArgumentParser()
+        parser.add_argument('prompt', nargs='*')
+        parser.add_argument('-b', '--backend', default='openai')
+        args = parser.parse_args()
+
+        content = ' '.join(args.prompt)
+
+        cfg = EmbeddingConfig(
+            check.non_empty_str(content),
+            backend=args.backend,
+        )
+
+        with inj.create_managed_injector(bind_main(
+                session_cfg=cfg,
+        )) as injector:
+            await injector[Session].run()
 
 
 ##
