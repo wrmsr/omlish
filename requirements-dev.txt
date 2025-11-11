@@ -140,6 +140,7 @@ mlx-lm==0.28.3; sys_platform == "darwin" and python_version < "3.14"  # @omlish-
 apsw==3.51.0.0
 
 rapidocr-onnxruntime==1.4.4; python_version < "3.14"  # @omlish-venv !13t !13dt !14t
+# opencv-python==4.12.0.88; python_version < "3.14"  # @omlish-venv !13t !13dt !14t  # FIXME: downgrades numpy
 
 pillow==12.0.0
 

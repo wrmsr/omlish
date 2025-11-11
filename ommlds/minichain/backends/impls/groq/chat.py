@@ -10,11 +10,13 @@ from .....backends.groq import protocol as pt
 from ....chat.choices.services import ChatChoicesRequest
 from ....chat.choices.services import ChatChoicesResponse
 from ....chat.choices.services import static_check_is_chat_choices_service
+from ....chat.tools.types import Tool
 from ....models.configs import ModelName
 from ....standard import ApiKey
 from ....standard import DefaultOptions
 from .names import MODEL_NAMES
 from .protocol import build_gq_request_message
+from .protocol import build_gq_request_tool
 from .protocol import build_mc_choices_response
 
 
@@ -44,12 +46,19 @@ class GroqChatChoicesService:
             self._default_options: tv.TypedValues = DefaultOptions.pop(cc)
 
     async def invoke(self, request: ChatChoicesRequest) -> ChatChoicesResponse:
+        tools: list[pt.ChatCompletionRequest.Tool] = []
+        with tv.TypedValues(*request.options).consume() as oc:
+            t: Tool
+            for t in oc.pop(Tool, []):
+                tools.append(build_gq_request_tool(t))
+
         gq_request = pt.ChatCompletionRequest(
             messages=[
                 build_gq_request_message(m)
                 for m in request.v
             ],
             model=MODEL_NAMES.resolve(self._model_name.v),
+            tools=tools or None,
         )
 
         raw_request = msh.marshal(gq_request)

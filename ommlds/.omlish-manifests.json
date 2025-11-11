@@ -198,7 +198,7 @@
     "module": ".minichain.backends.impls.groq.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/groq/chat.py",
-    "line": 24,
+    "line": 26,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.groq.chat",
@@ -213,7 +213,7 @@
     "module": ".minichain.backends.impls.groq.names",
     "attr": "_BACKEND_STRINGS_MANIFEST",
     "file": "ommlds/minichain/backends/impls/groq/names.py",
-    "line": 27,
+    "line": 40,
     "value": {
       "!.minichain.backends.strings.manifests.BackendStringsManifest": {
         "service_cls_names": [

@@ -103,8 +103,24 @@ class ChatCompletionRequest(lang.Final):
     stream: bool | None = None
     stream_options: ta.Mapping[str, ta.Any] | None = None
     temperature: float | None = None
-    tool_choice: str | None = None
-    tools: ta.Sequence[ta.Mapping[str, ta.Any]] | None = None
+    ool_choice: str | None = None
+
+    @dc.dataclass(frozen=True, kw_only=True)
+    @_set_class_marshal_options
+    class Tool(lang.Final):
+        @dc.dataclass(frozen=True, kw_only=True)
+        @_set_class_marshal_options
+        class Function(lang.Final):
+            description: str | None = None
+            name: str
+            parameters: ta.Mapping[str, ta.Any] | None = None  # json schema
+            strict: bool | None = None
+
+        function: Function
+        type: ta.Literal['function', 'browser_search', 'code_interpreter'] = 'function'
+
+    tools: ta.Sequence[Tool] | None = None
+
     top_logprobs: int | None = None
     top_p: float | None = None
     user: str | None = None
@@ -125,10 +141,38 @@ class ChatCompletionResponse(lang.Final):
         class Message(lang.Final):
             annotations: ta.Sequence[ta.Mapping[str, ta.Any]] | None = None
             content: str | None = None
-            executed_tools: ta.Sequence[ta.Mapping[str, ta.Any]] | None = None
+
+            @dc.dataclass(frozen=True, kw_only=True)
+            @_set_class_marshal_options
+            class ExecutedTool(lang.Final):
+                arguments: str
+                index: int
+                type: str
+                browser_results: ta.Sequence[ta.Any] | None = None
+                code_results: ta.Sequence[ta.Any] | None = None
+                output: str | None = None
+                search_results: ta.Any | None = None
+
+            executed_tools: ta.Sequence[ExecutedTool] | None = None
+
             reasoning: str | None = None
             role: ta.Literal['assistant'] = 'assistant'
-            tool_calls: ta.Sequence[ta.Mapping[str, ta.Any]] | None = None
+
+            @dc.dataclass(frozen=True, kw_only=True)
+            @_set_class_marshal_options
+            class ToolCall(lang.Final):
+                id: str
+
+                @dc.dataclass(frozen=True, kw_only=True)
+                @_set_class_marshal_options
+                class Function(lang.Final):
+                    arguments: str
+                    name: str
+
+                function: Function
+                type: ta.Literal['function'] = 'function'
+
+            tool_calls: ta.Sequence[ToolCall] | None = None
 
         message: Message
 
