@@ -21,7 +21,7 @@ from ....stream.services import StreamResponseSink
 from ....stream.services import new_stream_response
 from .chat import GroqChatChoicesService
 from .names import MODEL_NAMES
-from .protocol import build_gq_request_message
+from .protocol import build_gq_request_messages
 from .protocol import build_mc_ai_choice_deltas
 
 
@@ -53,10 +53,7 @@ class GroqChatChoicesStreamService:
         # check.isinstance(request, ChatRequest)
 
         gq_request = pt.ChatCompletionRequest(
-            messages=[
-                build_gq_request_message(m)
-                for m in request.v
-            ],
+            messages=build_gq_request_messages(request.v),
             model=MODEL_NAMES.resolve(self._model_name.v),
             stream=True,
         )

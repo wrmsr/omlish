@@ -15,7 +15,7 @@ from ....models.configs import ModelName
 from ....standard import ApiKey
 from ....standard import DefaultOptions
 from .names import MODEL_NAMES
-from .protocol import build_gq_request_message
+from .protocol import build_gq_request_messages
 from .protocol import build_gq_request_tool
 from .protocol import build_mc_choices_response
 
@@ -53,10 +53,7 @@ class GroqChatChoicesService:
                 tools.append(build_gq_request_tool(t))
 
         gq_request = pt.ChatCompletionRequest(
-            messages=[
-                build_gq_request_message(m)
-                for m in request.v
-            ],
+            messages=build_gq_request_messages(request.v),
             model=MODEL_NAMES.resolve(self._model_name.v),
             tools=tools or None,
         )
