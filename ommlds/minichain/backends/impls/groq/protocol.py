@@ -11,6 +11,7 @@ from ....chat.messages import AnyAiMessage
 from ....chat.messages import Chat
 from ....chat.messages import SystemMessage
 from ....chat.messages import ToolUseMessage
+from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
 from ....chat.stream.types import AiChoiceDeltas
 from ....chat.stream.types import ContentAiChoiceDelta
@@ -70,6 +71,12 @@ def build_gq_request_messages(chat: Chat) -> list[pt.ChatCompletionRequest.Messa
                         content=check.isinstance(mc_msg.c, str),
                     ))
 
+                elif isinstance(mc_msg, ToolUseResultMessage):
+                    gq_msgs.append(pt.ChatCompletionRequest.ToolMessage(
+                        tool_call_id=check.not_none(mc_msg.tur.id),
+                        content=check.isinstance(mc_msg.tur.c, str),
+                    ))
+
                 else:
                     raise TypeError(mc_msg)
 
@@ -114,5 +121,8 @@ def build_mc_ai_choice_deltas(delta: pt.ChatCompletionChunk.Choice.Delta) -> AiC
     if delta.role in (None, 'assistant') and delta.content is not None:
         return AiChoiceDeltas([ContentAiChoiceDelta(delta.content)])
 
-    else:
+    elif delta.channel in ('analysis', 'commentary'):
         return AiChoiceDeltas([])
+
+    else:
+        raise ValueError(delta)

@@ -237,7 +237,7 @@
     "module": ".minichain.backends.impls.groq.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/groq/stream.py",
-    "line": 31,
+    "line": 33,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.groq.stream",

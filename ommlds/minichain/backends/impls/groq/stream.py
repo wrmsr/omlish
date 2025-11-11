@@ -14,6 +14,7 @@ from ....chat.stream.services import ChatChoicesStreamRequest
 from ....chat.stream.services import ChatChoicesStreamResponse
 from ....chat.stream.services import static_check_is_chat_choices_stream_service
 from ....chat.stream.types import AiChoicesDeltas
+from ....chat.tools.types import Tool
 from ....configs import Config
 from ....resources import UseResources
 from ....standard import ApiKey
@@ -22,6 +23,7 @@ from ....stream.services import new_stream_response
 from .chat import GroqChatChoicesService
 from .names import MODEL_NAMES
 from .protocol import build_gq_request_messages
+from .protocol import build_gq_request_tool
 from .protocol import build_mc_ai_choice_deltas
 
 
@@ -50,11 +52,16 @@ class GroqChatChoicesStreamService:
     READ_CHUNK_SIZE: ta.ClassVar[int] = -1
 
     async def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
-        # check.isinstance(request, ChatRequest)
+        tools: list[pt.ChatCompletionRequest.Tool] = []
+        with tv.TypedValues(*request.options).consume() as oc:
+            t: Tool
+            for t in oc.pop(Tool, []):
+                tools.append(build_gq_request_tool(t))
 
         gq_request = pt.ChatCompletionRequest(
             messages=build_gq_request_messages(request.v),
             model=MODEL_NAMES.resolve(self._model_name.v),
+            tools=tools or None,
             stream=True,
         )
 

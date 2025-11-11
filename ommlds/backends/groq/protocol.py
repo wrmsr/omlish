@@ -128,6 +128,18 @@ class ChatCompletionRequest(lang.Final):
 
 @dc.dataclass(frozen=True, kw_only=True)
 @_set_class_marshal_options
+class ExecutedTool(lang.Final):
+    arguments: str
+    index: int
+    type: str
+    browser_results: ta.Sequence[ta.Any] | None = None
+    code_results: ta.Sequence[ta.Any] | None = None
+    output: str | None = None
+    search_results: ta.Any | None = None
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+@_set_class_marshal_options
 class ChatCompletionResponse(lang.Final):
     @dc.dataclass(frozen=True, kw_only=True)
     @_set_class_marshal_options
@@ -141,17 +153,6 @@ class ChatCompletionResponse(lang.Final):
         class Message(lang.Final):
             annotations: ta.Sequence[ta.Mapping[str, ta.Any]] | None = None
             content: str | None = None
-
-            @dc.dataclass(frozen=True, kw_only=True)
-            @_set_class_marshal_options
-            class ExecutedTool(lang.Final):
-                arguments: str
-                index: int
-                type: str
-                browser_results: ta.Sequence[ta.Any] | None = None
-                code_results: ta.Sequence[ta.Any] | None = None
-                output: str | None = None
-                search_results: ta.Any | None = None
 
             executed_tools: ta.Sequence[ExecutedTool] | None = None
 
@@ -210,6 +211,26 @@ class ChatCompletionChunk(lang.Final):
 
             channel: str | None = None
             reasoning: str | None = None
+
+            @dc.dataclass(frozen=True, kw_only=True)
+            @_set_class_marshal_options
+            class ToolCall(lang.Final):
+                index: int
+                id: str | None = None
+
+                @dc.dataclass(frozen=True, kw_only=True)
+                @_set_class_marshal_options
+                class Function(lang.Final):
+                    arguments: str | None = None
+                    name: str | None = None
+
+                function: Function | None = None
+
+                type: ta.Literal['function'] = 'function'
+
+            tool_calls: ta.Sequence[ToolCall] | None = None
+
+            executed_tools: ta.Sequence[ExecutedTool] | None = None
 
         delta: Delta
         logprobs: ta.Mapping[str, ta.Any] | None = None
