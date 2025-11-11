@@ -6,7 +6,7 @@ import typing as ta
 from omlish.logs import all as logs
 
 from ...cli import CliModule
-from ...tokens import all as tks
+from ..tokens import all as tks
 
 
 T = ta.TypeVar('T')

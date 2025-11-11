@@ -4,7 +4,7 @@ import itertools
 import os.path
 import typing as ta
 
-from ...tokens import all as tks
+from ...py.tokens import all as tks
 
 
 ##

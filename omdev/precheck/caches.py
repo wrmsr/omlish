@@ -8,7 +8,7 @@ from omlish.text.filecache import TextFileCache
 
 from ..py.srcheaders import PyHeaderLine
 from ..py.srcheaders import get_py_header_lines
-from ..tokens import all as tks
+from ..py.tokens import all as tks
 
 
 ##

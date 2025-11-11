@@ -2,7 +2,7 @@ import ast
 
 from omlish import check
 
-from ...tokens import all as tks
+from ...py.tokens import all as tks
 
 
 ##

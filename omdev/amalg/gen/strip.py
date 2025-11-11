@@ -2,7 +2,7 @@ import re
 import typing as ta
 
 from ... import magic
-from ...tokens import all as tks
+from ...py.tokens import all as tks
 
 
 ##
