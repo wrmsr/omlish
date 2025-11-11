@@ -1,13 +1,18 @@
 import typing as ta
 
+from omlish import dataclasses as dc
 from omlish import inject as inj
 from omlish import lang
 
 from ..... import minichain as mc
+from .configs import ToolSetConfig
 
 
 with lang.auto_proxy_import(globals()):
     from . import execution as _execution
+
+
+ToolSetConfigT = ta.TypeVar('ToolSetConfigT', bound='ToolSetConfig')
 
 
 ##
@@ -28,3 +33,12 @@ def bind_tool_context_provider_to_key(key: ta.Any) -> inj.Elements:
         lambda v: _execution.ToolContextProvider(lambda: [v]),
         v=key,
     ), singleton=True)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class ToolSetBinder(lang.Final, ta.Generic[ToolSetConfigT]):
+    cfg_cls: type[ToolSetConfig]
+    fn: ta.Callable[[ToolSetConfigT], inj.Elements]

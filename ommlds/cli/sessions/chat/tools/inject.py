@@ -9,6 +9,8 @@ from omlish import lang
 
 from ..... import minichain as mc
 from .configs import ToolsConfig
+from .configs import ToolSetConfig
+from .injection import ToolSetBinder
 from .injection import bind_tool_context_provider_to_key
 from .injection import tool_catalog_entries
 from .injection import tool_context_providers
@@ -24,23 +26,6 @@ ToolSetConfigT = ta.TypeVar('ToolSetConfigT', bound='ToolSetConfig')
 
 
 ##
-
-
-@dc.dataclass(frozen=True, kw_only=True)
-class ToolSetConfig(lang.Abstract):
-    pass
-
-
-##
-
-
-@dc.dataclass(frozen=True)
-class ToolSetBinder(lang.Final, ta.Generic[ToolSetConfigT]):
-    cfg_cls: type[ToolSetConfig]
-    fn: ta.Callable[[ToolSetConfigT], inj.Elements]
-
-
-#
 
 
 _TOOL_SET_BINDERS: dict[type[ToolSetConfig], ToolSetBinder] = {}
