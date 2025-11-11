@@ -34,14 +34,23 @@ class ToolSetConfig(lang.Abstract):
 ##
 
 
-_TOOL_SET_BINDERS: dict[type[ToolSetConfig], ta.Callable[[ta.Any], inj.Elements]] = {}
+@dc.dataclass(frozen=True)
+class ToolSetBinder(lang.Final, ta.Generic[ToolSetConfigT]):
+    cfg_cls: type[ToolSetConfig]
+    fn: ta.Callable[[ToolSetConfigT], inj.Elements]
+
+
+#
+
+
+_TOOL_SET_BINDERS: dict[type[ToolSetConfig], ToolSetBinder] = {}
 
 
 def _tool_set_binder(fn: ta.Callable[[ToolSetConfigT], inj.Elements]) -> ta.Callable[[ToolSetConfigT], inj.Elements]:
     [param] = inspect.signature(fn).parameters.values()
     cfg_cls = check.issubclass(param.annotation, ToolSetConfig)
     check.not_in(cfg_cls, _TOOL_SET_BINDERS)
-    _TOOL_SET_BINDERS[cfg_cls] = fn
+    _TOOL_SET_BINDERS[cfg_cls] = ToolSetBinder(cfg_cls, fn)
     return fn
 
 
@@ -54,7 +63,7 @@ class WeatherToolSetConfig(ToolSetConfig, lang.Final):
 
 
 @_tool_set_binder
-def _bind_weather_tool_set(cfg:WeatherToolSetConfig) -> inj.Elements:
+def _bind_weather_tool_set(cfg: WeatherToolSetConfig) -> inj.Elements:
     from .weather import WEATHER_TOOL
 
     return inj.as_elements(
@@ -146,7 +155,7 @@ def bind_tools(cfg: ToolsConfig = ToolsConfig()) -> inj.Elements:
             'fs': FsToolSetConfig,
         }[etn]()
 
-        els.append(_TOOL_SET_BINDERS[type(ts_cfg)](ts_cfg))
+        els.append(_TOOL_SET_BINDERS[type(ts_cfg)].fn(ts_cfg))
 
     #
 
