@@ -16,7 +16,7 @@ class Project(ProjectBase):
             'h11 ~= 0.16',
             'h2 ~= 4.3',
             'priority ~= 2.0',
-            'wsproto ~= 1.2',
+            'wsproto ~= 1.3',
         ],
 
         'templates': [

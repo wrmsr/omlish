@@ -24,6 +24,7 @@ from ..events import Request
 from ..events import Response
 from ..events import ServerEvent
 from ..events import StreamClosed
+from ..events import Trailers
 from ..events import Updated
 from ..headers import filter_pseudo_headers
 from ..headers import response_headers
@@ -239,6 +240,10 @@ class H2Protocol(Protocol):
                 await self.has_data.set()
                 await self.stream_buffers[event.stream_id].drain()
 
+            elif isinstance(event, Trailers):
+                self.connection.send_headers(event.stream_id, event.headers)
+                await self._flush()
+
             elif isinstance(event, StreamClosed):
                 await self._close_stream(event.stream_id)
                 idle = len(self.streams) == 0 or all(
@@ -288,9 +293,13 @@ class H2Protocol(Protocol):
                 )
 
             elif isinstance(event, h2.events.StreamEnded):
-                await self.streams[check.not_none(event.stream_id)].handle(
-                    EndBody(stream_id=check.not_none(event.stream_id)),
-                )
+                try:
+                    stream = self.streams[check.not_none(event.stream_id)]
+                except KeyError:
+                    # Response sent before full request received, nothing to do already closed.
+                    pass
+                else:
+                    await stream.handle(EndBody(stream_id=check.not_none(event.stream_id)))
 
             elif isinstance(event, h2.events.StreamReset):
                 await self._close_stream(check.not_none(event.stream_id))

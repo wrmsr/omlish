@@ -65,6 +65,7 @@ class Handshake:
     ) -> None:
         super().__init__()
 
+        self.accepted = False
         self.http_version = http_version
         self.connection_tokens: list[str] | None = None
         self.extensions: list[str] | None = None
@@ -149,6 +150,7 @@ class Handshake:
 
             headers.append((name, value))
 
+        self.accepted = True
         return status_code, headers, wsp.Connection(wsp.ConnectionType.SERVER, extensions)
 
 
@@ -261,6 +263,10 @@ class WsStream:
             self.connection.receive_data(event.data)
             await self._handle_events()
 
+        elif isinstance(event, (Body, Data)) and not self.handshake.accepted:
+            await self._send_error_response(400)
+            self.closed = True
+
         elif isinstance(event, StreamClosed):
             self.closed = True
 
@@ -312,7 +318,7 @@ class WsStream:
         elif message['type'] == 'websocket.send' and self.state == AsgiWebsocketState.CONNECTED:
             event: wse.Event
             if message.get('bytes') is not None:
-                event = wse.BytesMessage(data=bytes(message['bytes']))
+                event = wse.BytesMessage(data=bytearray(message['bytes']))
 
             elif not isinstance(message['text'], str):
                 raise TypeError(f'{message["text"]} should be a str')

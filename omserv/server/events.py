@@ -58,6 +58,11 @@ class Data(ProtocolEvent):
 
 
 @dc.dataclass(frozen=True)
+class Trailers(ProtocolEvent):
+    headers: list[tuple[bytes, bytes]]
+
+
+@dc.dataclass(frozen=True)
 class EndData(ProtocolEvent):
     pass
 

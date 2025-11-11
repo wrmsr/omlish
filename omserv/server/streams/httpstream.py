@@ -13,6 +13,7 @@ from ..events import ProtocolEvent
 from ..events import Request
 from ..events import Response
 from ..events import StreamClosed
+from ..events import Trailers
 from ..taskspawner import TaskSpawner
 from ..types import AppWrapper
 from ..types import AsgiSendEvent
@@ -32,6 +33,7 @@ log = logs.get_module_logger(globals())
 ##
 
 
+TRAILERS_VERSIONS = {'2', '3'}
 PUSH_VERSIONS = {'2', '3'}
 EARLY_HINTS_VERSIONS = {'2', '3'}
 
@@ -41,6 +43,7 @@ class AsgiHttpState(enum.Enum):
     # hence why this state tracking is required.
     REQUEST = enum.auto()
     RESPONSE = enum.auto()
+    TRAILERS = enum.auto()
     CLOSED = enum.auto()
 
 
@@ -100,6 +103,9 @@ class HttpStream:
                 'server': self.server,
                 'extensions': {},
             }
+
+            if event.http_version in TRAILERS_VERSIONS:
+                self.scope['extensions']['http.response.trailers'] = {}
 
             if event.http_version in PUSH_VERSIONS:
                 self.scope['extensions']['http.response.push'] = {}
@@ -200,7 +206,12 @@ class HttpStream:
                 await self.send(Body(stream_id=self.stream_id, data=bytes(message.get('body', b''))))
 
             if not message.get('more_body', False):
-                if self.state != AsgiHttpState.CLOSED:
+                await self.send(EndBody(stream_id=self.stream_id))
+
+                if self.response.get('trailers', False):
+                    self.state = AsgiHttpState.TRAILERS
+
+                else:
                     self.state = AsgiHttpState.CLOSED
 
                     log_access(
@@ -210,7 +221,30 @@ class HttpStream:
                         time.time() - self.start_time,
                     )
 
-                    await self.send(EndBody(stream_id=self.stream_id))
+                    await self.send(StreamClosed(stream_id=self.stream_id))
+
+            elif (
+                    message['type'] == 'http.response.trailers' and
+                    self.scope['http_version'] in TRAILERS_VERSIONS and
+                    self.state == AsgiHttpState.TRAILERS
+            ):
+                for name, value in self.scope['headers']:
+                    if name == b'te' and value == b'trailers':
+                        headers = build_and_validate_headers(message['headers'])
+
+                        await self.send(Trailers(stream_id=self.stream_id, headers=headers))
+
+                        break
+
+                if not message.get('more_trailers', False):
+                    self.state = AsgiHttpState.CLOSED
+
+                    log_access(
+                        self.config,
+                        self.scope,
+                        self.response,  # type: ignore  # noqa
+                        time.time() - self.start_time,
+                    )
 
                     await self.send(StreamClosed(stream_id=self.stream_id))
 
