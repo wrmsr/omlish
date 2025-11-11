@@ -83,8 +83,8 @@ apply = Apply
 
 @dc.dataclass(frozen=True)
 class Flatten(Transform_[ta.Iterable[T], T]):
-    def __call__(self, it: ta.Iterable[ta.Iterable[T]]) -> ta.Iterable[U]:
-        return itertools.chain.from_iterable(it)  # type: ignore[arg-type]
+    def __call__(self, it: ta.Iterable[ta.Iterable[T]]) -> ta.Iterable[T]:
+        return itertools.chain.from_iterable(it)
 
 
 flatten = Flatten

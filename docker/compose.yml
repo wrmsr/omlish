@@ -91,7 +91,7 @@ services:
   # ext
 
   omlish-elasticsearch:
-    image: 'elasticsearch:8.19.6'
+    image: 'elasticsearch:8.19.7'
     restart: 'unless-stopped'
     environment:
       ES_JAVA_OPTS: '-Xms750m -Xmx750m'
@@ -103,7 +103,7 @@ services:
       - '35228:9200'
 
   omlish-neo4j:
-    image: 'neo4j:5.26.16-community'
+    image: 'neo4j:5.27.0-community'
     restart: 'unless-stopped'
     environment:
       NEO4J_AUTH: 'none'
