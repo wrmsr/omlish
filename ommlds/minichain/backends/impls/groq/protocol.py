@@ -13,8 +13,10 @@ from ....chat.messages import SystemMessage
 from ....chat.messages import ToolUseMessage
 from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
+from ....chat.stream.types import AiChoiceDelta
 from ....chat.stream.types import AiChoiceDeltas
 from ....chat.stream.types import ContentAiChoiceDelta
+from ....chat.stream.types import ToolUseAiChoiceDelta
 from ....chat.tools.types import Tool
 from ....content.prepare import prepare_content_str
 from ....tools.jsonschema import build_tool_spec_params_json_schema
@@ -118,8 +120,21 @@ def build_mc_choices_response(gq_resp: pt.ChatCompletionResponse) -> ChatChoices
 
 
 def build_mc_ai_choice_deltas(delta: pt.ChatCompletionChunk.Choice.Delta) -> AiChoiceDeltas:
-    if delta.role in (None, 'assistant') and delta.content is not None:
-        return AiChoiceDeltas([ContentAiChoiceDelta(delta.content)])
+    if delta.role in (None, 'assistant'):
+        lst: list[AiChoiceDelta] = []
+
+        if delta.content is not None:
+            lst.append(ContentAiChoiceDelta(delta.content))
+
+        for tc in delta.tool_calls or []:
+            tc_fn = check.not_none(tc.function)
+            lst.append(ToolUseAiChoiceDelta(
+                id=tc.id,
+                name=check.not_none(tc_fn.name),
+                args=json.loads(tc_fn.arguments or '{}'),
+            ))
+
+        return AiChoiceDeltas(lst)
 
     elif delta.channel in ('analysis', 'commentary'):
         return AiChoiceDeltas([])

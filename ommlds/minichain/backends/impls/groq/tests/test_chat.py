@@ -5,8 +5,6 @@ from omlish.secrets.tests.harness import HarnessSecrets
 
 from .....chat.choices.services import ChatChoicesRequest
 from .....chat.messages import UserMessage
-from .....llms.types import MaxTokens
-from .....llms.types import Temperature
 from .....standard import ApiKey
 from ..chat import GroqChatChoicesService
 
@@ -19,10 +17,6 @@ def test_groq(harness):
 
     req = ChatChoicesRequest(
         [UserMessage('Is water dry?')],
-        [
-            Temperature(.1),
-            MaxTokens(64),
-        ],
     )
 
     rm = msh.marshal(req)

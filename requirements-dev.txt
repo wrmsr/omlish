@@ -23,7 +23,7 @@ types-boto3==1.40.70
 types-botocore==1.0.2
 types-greenlet==3.2.0.20250915
 types-paramiko==4.0.0.20250822  # @omlish-venv !13t !13dt  # cffi ????
-types-psutil==7.0.0.20251001
+types-psutil==7.0.0.20251111
 types-pyyaml==6.0.12.20250915
 types-ujson==5.10.0.20250822
 

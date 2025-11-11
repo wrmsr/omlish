@@ -73,6 +73,7 @@ class AiChoiceDeltaJoiner:
                 id=d.id,
                 name=check.not_none(d.name),
                 args=d.args or {},
+                raw_args=json.dumps_compact(d.args),
             )))
 
         else:

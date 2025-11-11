@@ -304,12 +304,12 @@ trino==0.336.0
 trio==0.32.0
 trio_asyncio==0.15.0
 twine==6.2.0
-types-awscrt==0.28.2
+types-awscrt==0.28.4
 types-boto3==1.40.70
 types-botocore==1.0.2
 types-greenlet==3.2.0.20250915
 types-paramiko==4.0.0.20250822
-types-psutil==7.0.0.20251001
+types-psutil==7.0.0.20251111
 types-PyYAML==6.0.12.20250915
 types-s3transfer==0.14.0
 types-ujson==5.10.0.20250822
