@@ -1,4 +1,4 @@
-from ..... import minichain as mc
+from ...... import minichain as mc
 
 
 ##
