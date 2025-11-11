@@ -1,10 +1,9 @@
 from omlish import dataclasses as dc
-from omlish import lang
 from omlish.formats import json
 
 from .... import minichain as mc
+from ...backends.types import EmbeddingServiceBackendProvider
 from ..base import Session
-from .configs import DEFAULT_EMBEDDING_MODEL_BACKEND
 from .configs import EmbeddingConfig
 
 
@@ -20,17 +19,15 @@ class EmbeddingSession(Session['EmbeddingSession.Config']):
             self,
             config: Config,
             *,
-            backend_catalog: mc.BackendCatalog,
+            service_provider: EmbeddingServiceBackendProvider,
     ) -> None:
         super().__init__(config)
 
-        self._backend_catalog = backend_catalog
+        self._service_provider = service_provider
 
     async def run(self) -> None:
         mdl: mc.EmbeddingService
-        async with lang.async_maybe_managing(self._backend_catalog.new_backend(
-            mc.EmbeddingService,
-            self._config.backend or DEFAULT_EMBEDDING_MODEL_BACKEND,
-        )) as mdl:
+        async with self._service_provider.provide_backend() as mdl:
             response = await mdl.invoke(mc.EmbeddingRequest(self._config.content))
-            print(json.dumps_compact(list(map(float, response.v))))
+
+        print(json.dumps_compact(list(map(float, response.v))))

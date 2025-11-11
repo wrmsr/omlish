@@ -6,7 +6,7 @@ from .... import minichain as mc
 ##
 
 
-DEFAULT_EMBEDDING_MODEL_BACKEND = 'openai'
+DEFAULT_BACKEND = 'openai'
 
 
 ##

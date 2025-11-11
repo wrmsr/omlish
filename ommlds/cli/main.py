@@ -242,7 +242,6 @@ class ChatProfile(Profile):
 
         with inj.create_managed_injector(bind_main(
                 session_cfg=cfg,
-                enable_backend_strings=True,
         )) as injector:
             await injector[Session].run()
 

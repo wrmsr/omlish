@@ -8,25 +8,21 @@ from omlish.http import all as http
 from omlish.http import sse
 from omlish.io.buffers import DelimitingBuffer
 
-from .....backends.openai import protocol as pt
+from .....backends.groq import protocol as pt
 from ....chat.choices.services import ChatChoicesOutputs
 from ....chat.stream.services import ChatChoicesStreamRequest
 from ....chat.stream.services import ChatChoicesStreamResponse
 from ....chat.stream.services import static_check_is_chat_choices_stream_service
-from ....chat.stream.types import AiChoiceDeltas
 from ....chat.stream.types import AiChoicesDeltas
-from ....chat.stream.types import ChatChoicesStreamOption
 from ....configs import Config
-from ....resources import ResourcesOption
 from ....resources import UseResources
 from ....standard import ApiKey
-from ....stream.services import StreamOption
 from ....stream.services import StreamResponseSink
 from ....stream.services import new_stream_response
-from ..openai.format import OpenaiChatRequestHandler
-from ..openai.format import build_mc_ai_choice_delta
 from .chat import GroqChatChoicesService
 from .names import MODEL_NAMES
+from .protocol import build_gq_request_message
+from .protocol import build_mc_ai_choice_deltas
 
 
 ##
@@ -56,23 +52,16 @@ class GroqChatChoicesStreamService:
     async def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
         # check.isinstance(request, ChatRequest)
 
-        rh = OpenaiChatRequestHandler(
-            request.v,
-            *[
-                o
-                for o in request.options
-                if not isinstance(o, (ChatChoicesStreamOption, StreamOption, ResourcesOption))
+        gq_request = pt.ChatCompletionRequest(
+            messages=[
+                build_gq_request_message(m)
+                for m in request.v
             ],
             model=MODEL_NAMES.resolve(self._model_name.v),
-            mandatory_kwargs=dict(
-                stream=True,
-                stream_options=pt.ChatCompletionRequest.StreamOptions(
-                    include_usage=True,
-                ),
-            ),
+            stream=True,
         )
 
-        raw_request = msh.marshal(rh.oai_request())
+        raw_request = msh.marshal(gq_request)
 
         http_request = http.HttpRequest(
             'https://api.groq.com/openai/v1/chat/completions',
@@ -119,7 +108,7 @@ class GroqChatChoicesStreamService:
                                     break
 
                                 await sink.emit(AiChoicesDeltas([
-                                    AiChoiceDeltas([build_mc_ai_choice_delta(choice.delta)])
+                                    build_mc_ai_choice_deltas(choice.delta)
                                     for choice in ccc.choices
                                 ]))
 

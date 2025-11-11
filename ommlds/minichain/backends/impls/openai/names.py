@@ -33,7 +33,7 @@ _GPT_MODEL_NAMES = [
 ]
 
 
-MODEL_NAMES = ModelNameCollection(
+CHAT_MODEL_NAMES = ModelNameCollection(
     default='gpt',
     aliases={
         **{
@@ -61,11 +61,35 @@ MODEL_NAMES = ModelNameCollection(
 
 
 # @omlish-manifest
-_BACKEND_STRINGS_MANIFEST = BackendStringsManifest(
+_CHAT_BACKEND_STRINGS_MANIFEST = BackendStringsManifest(
     [
         'ChatChoicesService',
         'ChatChoicesStreamService',
     ],
     'openai',
-    model_names=MODEL_NAMES,
+    model_names=CHAT_MODEL_NAMES,
+)
+
+
+##
+
+
+# @omlish-manifest
+_COMPLETION_BACKEND_STRINGS_MANIFEST = BackendStringsManifest(
+    [
+        'CompletionService',
+    ],
+    'openai',
+)
+
+
+##
+
+
+# @omlish-manifest
+_EMBEDDING_BACKEND_STRINGS_MANIFEST = BackendStringsManifest(
+    [
+        'EmbeddingService',
+    ],
+    'openai',
 )

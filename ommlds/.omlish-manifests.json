@@ -237,7 +237,7 @@
     "module": ".minichain.backends.impls.groq.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/groq/stream.py",
-    "line": 35,
+    "line": 31,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.groq.stream",
@@ -494,7 +494,7 @@
   },
   {
     "module": ".minichain.backends.impls.openai.names",
-    "attr": "_BACKEND_STRINGS_MANIFEST",
+    "attr": "_CHAT_BACKEND_STRINGS_MANIFEST",
     "file": "ommlds/minichain/backends/impls/openai/names.py",
     "line": 63,
     "value": {
@@ -541,6 +541,36 @@
             "o4-mini-deep-research": null
           }
         }
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.impls.openai.names",
+    "attr": "_COMPLETION_BACKEND_STRINGS_MANIFEST",
+    "file": "ommlds/minichain/backends/impls/openai/names.py",
+    "line": 77,
+    "value": {
+      "!.minichain.backends.strings.manifests.BackendStringsManifest": {
+        "service_cls_names": [
+          "CompletionService"
+        ],
+        "backend_name": "openai",
+        "model_names": null
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.impls.openai.names",
+    "attr": "_EMBEDDING_BACKEND_STRINGS_MANIFEST",
+    "file": "ommlds/minichain/backends/impls/openai/names.py",
+    "line": 89,
+    "value": {
+      "!.minichain.backends.strings.manifests.BackendStringsManifest": {
+        "service_cls_names": [
+          "EmbeddingService"
+        ],
+        "backend_name": "openai",
+        "model_names": null
       }
     }
   },

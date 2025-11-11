@@ -6,7 +6,7 @@ from .... import minichain as mc
 ##
 
 
-DEFAULT_COMPLETION_MODEL_BACKEND = 'openai'
+DEFAULT_BACKEND = 'openai'
 
 
 ##

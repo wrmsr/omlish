@@ -3,7 +3,7 @@ import typing as ta
 
 from omlish import lang
 
-from ..... import minichain as mc
+from ... import minichain as mc
 
 
 ServiceT = ta.TypeVar('ServiceT', bound=mc.Service)
@@ -13,6 +13,8 @@ ServiceT = ta.TypeVar('ServiceT', bound=mc.Service)
 
 
 BackendName = ta.NewType('BackendName', str)
+DefaultBackendName = ta.NewType('DefaultBackendName', str)
+
 BackendConfigs = ta.NewType('BackendConfigs', ta.Sequence['mc.Config'])
 
 
@@ -33,4 +35,12 @@ class ChatChoicesServiceBackendProvider(BackendProvider['mc.ChatChoicesService']
 
 
 class ChatChoicesStreamServiceBackendProvider(BackendProvider['mc.ChatChoicesStreamService'], lang.Abstract):
+    pass
+
+
+class CompletionServiceBackendProvider(BackendProvider['mc.CompletionService'], lang.Abstract):
+    pass
+
+
+class EmbeddingServiceBackendProvider(BackendProvider['mc.EmbeddingService'], lang.Abstract):
     pass

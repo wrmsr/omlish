@@ -39,7 +39,7 @@ class BackendStringBackendCatalog(BackendCatalog):
 
         al: list = list(rs.args or [])
 
-        # FIXME: lol
+        # FIXME: lol - move *into* local model classes as an injected dep?
         if al and isinstance(al[0], ModelRepo):
             [mr] = al
             mrr = check.not_none(self._model_repo_resolver)

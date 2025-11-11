@@ -29,7 +29,7 @@ from ....stream.services import new_stream_response
 from .chat import OpenaiChatChoicesService
 from .format import OpenaiChatRequestHandler
 from .format import build_mc_ai_choice_delta
-from .names import MODEL_NAMES
+from .names import CHAT_MODEL_NAMES
 
 
 ##
@@ -66,7 +66,7 @@ class OpenaiChatChoicesStreamService:
                 for o in request.options
                 if not isinstance(o, (ChatChoicesStreamOption, StreamOption, ResourcesOption))
             ],
-            model=MODEL_NAMES.resolve(self._model_name.v),
+            model=CHAT_MODEL_NAMES.resolve(self._model_name.v),
             mandatory_kwargs=dict(
                 stream=True,
                 stream_options=pt.ChatCompletionRequest.StreamOptions(

@@ -144,6 +144,40 @@ class ChatCompletionResponse(lang.Final):
     service_tier: str | None = None
 
 
+@dc.dataclass(frozen=True, kw_only=True)
+@_set_class_marshal_options
+class ChatCompletionChunk(lang.Final):
+    id: str
+    object: ta.Literal['chat.completion.chunk'] = 'chat.completion.chunk'
+    created: int
+    model: str
+    system_fingerprint: str
+
+    @dc.dataclass(frozen=True, kw_only=True)
+    @_set_class_marshal_options
+    class Choice(lang.Final):
+        index: int
+
+        @dc.dataclass(frozen=True, kw_only=True)
+        @_set_class_marshal_options
+        class Delta(lang.Final):
+            role: str | None = None
+            content: str | None = None
+
+            channel: str | None = None
+            reasoning: str | None = None
+
+        delta: Delta
+        logprobs: ta.Mapping[str, ta.Any] | None = None
+        finish_reason: ta.Literal['stop', 'length', 'tool_calls', 'function_call'] | None = None
+
+    choices: ta.Sequence[Choice]
+
+    x_groq: ta.Mapping[str, ta.Any] | None = None
+    service_tier: str | None = None
+    usage: ta.Mapping[str, ta.Any] | None = None
+
+
 ##
 
 

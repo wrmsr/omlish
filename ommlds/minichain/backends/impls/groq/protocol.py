@@ -7,6 +7,8 @@ from ....chat.messages import AiMessage
 from ....chat.messages import Message
 from ....chat.messages import SystemMessage
 from ....chat.messages import UserMessage
+from ....chat.stream.types import AiChoiceDeltas
+from ....chat.stream.types import ContentAiChoiceDelta
 
 
 ##
@@ -34,3 +36,11 @@ def build_mc_choices_response(gq_resp: pt.ChatCompletionResponse) -> ChatChoices
         )])
         for gq_choice in gq_resp.choices
     ])
+
+
+def build_mc_ai_choice_deltas(delta: pt.ChatCompletionChunk.Choice.Delta) -> AiChoiceDeltas:
+    if delta.role in (None, 'assistant') and delta.content is not None:
+        return AiChoiceDeltas([ContentAiChoiceDelta(delta.content)])
+
+    else:
+        return AiChoiceDeltas([])

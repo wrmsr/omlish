@@ -1,10 +1,9 @@
 from omlish import check
 from omlish import dataclasses as dc
-from omlish import lang
 
 from .... import minichain as mc
+from ...backends.types import CompletionServiceBackendProvider
 from ..base import Session
-from .configs import DEFAULT_COMPLETION_MODEL_BACKEND
 from .configs import CompletionConfig
 
 
@@ -20,19 +19,17 @@ class CompletionSession(Session['CompletionSession.Config']):
             self,
             config: Config,
             *,
-            backend_catalog: mc.BackendCatalog,
+            service_provider: CompletionServiceBackendProvider,
     ) -> None:
         super().__init__(config)
 
-        self._backend_catalog = backend_catalog
+        self._service_provider = service_provider
 
     async def run(self) -> None:
         prompt = check.isinstance(self._config.content, str)
 
         mdl: mc.CompletionService
-        async with lang.async_maybe_managing(self._backend_catalog.new_backend(
-                mc.CompletionService,
-                self._config.backend or DEFAULT_COMPLETION_MODEL_BACKEND,
-        )) as mdl:
+        async with self._service_provider.provide_backend() as mdl:
             response = await mdl.invoke(mc.CompletionRequest(prompt))
-            print(response.v.strip())
+
+        print(response.v.strip())

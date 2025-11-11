@@ -2,15 +2,17 @@ from omlish import dataclasses as dc
 from omlish import inject as inj
 from omlish import lang
 
+from ...backends.types import DefaultBackendName
 from ..base import Session
+from .configs import DEFAULT_BACKEND
 from .configs import ChatConfig
 
 
 with lang.auto_proxy_import(globals()):
+    from ...backends import inject as _backends
     from ...rendering import inject as _rendering
     from . import driver as _driver
     from . import session as _session
-    from .backends import inject as _backends
     from .chat.ai import inject as _chat_ai
     from .chat.state import inject as _chat_state
     from .chat.user import inject as _chat_user
@@ -54,6 +56,10 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
         inj.bind(_session.ChatSession.Config(**dc.asdict(cfg))),
         inj.bind(Session, to_ctor=_session.ChatSession, singleton=True),
     ])
+
+    #
+
+    els.append(inj.bind(DefaultBackendName, to_const=DEFAULT_BACKEND))
 
     #
 

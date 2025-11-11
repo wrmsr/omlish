@@ -4,7 +4,6 @@ from omlish import inject as inj
 from omlish import lang
 
 from ..... import minichain as mc
-from ....backends.inject import bind_backends
 from ....state.storage import InMemoryStateStorage
 from ....state.storage import StateStorage
 from ..chat.user.configs import UserConfig
@@ -26,8 +25,6 @@ def make_driver(
 ) -> ChatDriver:
     injector = inj.create_injector(
         bind_chat(cfg),
-
-        bind_backends(enable_backend_strings=True),
 
         inj.bind(mc.ChatChoicesService, to_ctor=DummyChatChoicesService),
 

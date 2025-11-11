@@ -4,8 +4,8 @@ from omlish import check
 from omlish import lang
 
 from ...... import minichain as mc
-from ...backends.types import ChatChoicesServiceBackendProvider
-from ...backends.types import ChatChoicesStreamServiceBackendProvider
+from .....backends.types import ChatChoicesServiceBackendProvider
+from .....backends.types import ChatChoicesStreamServiceBackendProvider
 from .types import AiChatGenerator
 from .types import StreamAiChatGenerator
 

@@ -1,7 +1,7 @@
 from omlish import inject as inj
 from omlish import lang
 
-from ..... import minichain as mc
+from ... import minichain as mc
 
 
 with lang.auto_proxy_import(globals()):

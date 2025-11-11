@@ -28,7 +28,7 @@ from ....standard import ApiKey
 from ....standard import DefaultOptions
 from .format import OpenaiChatRequestHandler
 from .format import build_mc_choices_response
-from .names import MODEL_NAMES
+from .names import CHAT_MODEL_NAMES
 
 
 ##
@@ -40,7 +40,7 @@ from .names import MODEL_NAMES
 # )
 @static_check_is_chat_choices_service
 class OpenaiChatChoicesService:
-    DEFAULT_MODEL_NAME: ta.ClassVar[ModelName] = ModelName(check.not_none(MODEL_NAMES.default))
+    DEFAULT_MODEL_NAME: ta.ClassVar[ModelName] = ModelName(check.not_none(CHAT_MODEL_NAMES.default))
 
     def __init__(
             self,
@@ -66,7 +66,7 @@ class OpenaiChatChoicesService:
                 *request.options,
                 override=True,
             ),
-            model=MODEL_NAMES.resolve(self._model_name.v),
+            model=CHAT_MODEL_NAMES.resolve(self._model_name.v),
             mandatory_kwargs=dict(
                 stream=False,
             ),
