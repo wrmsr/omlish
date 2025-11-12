@@ -6,6 +6,12 @@ TODO:
  - still need plan repr / cmp
  - !! manifests for dataclass config?
   - more sparse / diffuse intent, not package-level
+ - _gen subdirs
+ - static analyze codegen kwarg if possible
+ - assess trie, child pkgs can turn off codegen last-in-wins
+ - delegate to subprocess import worker
+ - statically find only modules that contain dataclass defs?
+  - cache asts?
 """
 import ast
 import importlib
