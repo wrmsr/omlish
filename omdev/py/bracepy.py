@@ -101,18 +101,26 @@ _CLI_MODULE = {'!.cli.types.CliModule': {
 if __name__ == '__main__':
     def _main(argv=None) -> None:
         import argparse
+        import sys
 
         parser = argparse.ArgumentParser()
         parser.add_argument('-x', '--exec', action='store_true')
-        parser.add_argument('cmd')
+        parser.add_argument('-i', '--indent', type=int)
+        parser.add_argument('code', nargs='?')
 
         args = parser.parse_args(argv)
 
-        src = translate_brace_python(args.cmd)
+        if (code := args.code) is None:
+            code = sys.stdin.read()
+
+        out = translate_brace_python(
+            code,
+            **(dict(indent_width=args.indent) if args.indent is not None else {}),
+        )
 
         if args.exec:
-            exec(src)
+            exec(out)
         else:
-            print(src)
+            print(out)
 
     _main()
