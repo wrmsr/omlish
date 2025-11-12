@@ -13,7 +13,7 @@ TODO:
    scan_root_dirs
   - currently the cli cant subprocess itself and keep manifests working
   - EnvVar cls is already lite
-
+ - can discover_packages deadlock with concurrent / multithreaded imports?
 """
 import dataclasses as dc
 import importlib.machinery
@@ -417,6 +417,7 @@ class ManifestLoader:
     def _read_package_file_text(cls, package_name: str, file_name: str) -> ta.Optional[str]:
         # importlib.resources.files actually imports the package - to avoid this, if possible, the file is read straight
         # off the filesystem.
+        # FIXME: find_spec *still* imports the parent package to get __path__ to feed to _find_spec...
         spec = importlib.util.find_spec(package_name)
         if (
                 spec is not None and

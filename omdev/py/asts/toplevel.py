@@ -1,5 +1,10 @@
+"""
+Quite, quite lame, but sufficient for immediate needs. Accurate static symbol resolution is in development but can't
+block other work.
+"""
 import ast
 import dataclasses as dc
+import typing as ta
 
 from omlish import check
 
@@ -20,12 +25,16 @@ class TopLevelCall:
     imp: TopLevelImport
 
 
-class _TopLevelCallFinderVisitor(ast.NodeVisitor):
-    """
-    Quite, quite lame, but sufficient for immediate needs. Accurate static symbol resolution is in development but
-    can't block other work.
-    """
+@dc.dataclass(frozen=True, kw_only=True)
+class TopLevelFindings:
+    imports: ta.Mapping[str, TopLevelImport]
+    calls: ta.Sequence[TopLevelCall]
 
+
+##
+
+
+class _TopLevelModuleVisitor(ast.NodeVisitor):
     def __init__(self, module_name: str) -> None:
         super().__init__()
 
@@ -102,10 +111,13 @@ class _TopLevelCallFinderVisitor(ast.NodeVisitor):
         self.handle_call(node)
 
 
-def find_module_top_level_calls(
+def analyze_module_top_level(
         module: ast.Module,
         module_name: str,
-) -> list[TopLevelCall]:
-    visitor = _TopLevelCallFinderVisitor(module_name)
+) -> TopLevelFindings:
+    visitor = _TopLevelModuleVisitor(module_name)
     visitor.visit(module)
-    return visitor.calls
+    return TopLevelFindings(
+        imports=visitor.imports,
+        calls=visitor.calls,
+    )

@@ -37,11 +37,15 @@ class Trie(ta.MutableMapping[ta.Sequence[K], V], ta.Generic[K, V]):
         def children(self) -> ta.Mapping[K2, 'Trie.Node[K2, V2]']:
             return self._children
 
-    def __init__(self) -> None:
+    def __init__(self, items: ta.Iterable[tuple[ta.Iterable[K], V]] | None = None) -> None:
         super().__init__()
 
         self._len = 0
         self._root: Trie.Node[K, V] = Trie.Node()
+
+        if items is not None:
+            for k, v in items:
+                self[k] = v
 
     @property
     def root(self) -> Node[K, V]:

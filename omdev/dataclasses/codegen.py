@@ -13,6 +13,7 @@ import os.path
 import typing as ta
 
 from omlish import check
+from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish.dataclasses.impl.configs import PackageConfig
@@ -24,7 +25,7 @@ from omlish.dataclasses.impl.processing.driving import processing_options_contex
 from omlish.logs import all as logs
 
 from ..py.asts.toplevel import TopLevelCall
-from ..py.asts.toplevel import find_module_top_level_calls
+from ..py.asts.toplevel import analyze_module_top_level
 
 
 log = logs.get_module_logger(globals())
@@ -33,9 +34,20 @@ log = logs.get_module_logger(globals())
 ##
 
 
+def _find_dir_py_files(dir_path: str) -> list[str]:
+    return sorted(
+        os.path.join(p, fn)
+        for p, dns, fns in os.walk(dir_path)
+        for fn in fns
+        if fn.endswith('.py')
+    )
+
+
 class DataclassCodeGen:
     def __init__(self) -> None:
         super().__init__()
+
+    #
 
     def run_package_config(
             self,
@@ -88,10 +100,10 @@ class DataclassCodeGen:
             os.path.basename(file_path).removesuffix('.py'),
         ])
 
-        calls = find_module_top_level_calls(module, module_name)
+        tl = analyze_module_top_level(module, module_name)
 
         init_calls: list[TopLevelCall] = []
-        for call in calls:
+        for call in tl.calls:
             if call.imp.spec != 'omlish.dataclasses':
                 continue
             match call.node:
@@ -112,34 +124,35 @@ class DataclassCodeGen:
             check.single(init_calls),
         )
 
-    #
-
-    def find_configured_packages(self, root_dirs: ta.Iterable[str]) -> None:
+    def find_configured_packages(self, root_dirs: ta.Iterable[str]) -> list[ConfiguredPackage]:
         check.not_isinstance(root_dirs, str)
 
         py_files = (
-            os.path.join(p, fn)
+            fp
             for rd in root_dirs
-            for p, dns, fns in os.walk(rd)
-            for fn in fns
-            if fn.endswith('.py')
+            for fp in _find_dir_py_files(rd)
         )
 
-        cfg_pkgs = [
+        return [
             cfg_pkg
             for file_path in py_files
             if (cfg_pkg := self.scan_py_file(file_path)) is not None
         ]
 
-        for cfg_pkg in cfg_pkgs:
-            print(cfg_pkg)
+    #
+
+    def process_configured_package(self, cfg_pkg: ConfiguredPackage) -> None:
+        pass
 
     def run(self, root_dirs: ta.Iterable[str]) -> None:
         check.not_isinstance(root_dirs, str)
 
-        self.find_configured_packages(root_dirs)
+        cfg_pkgs = self.find_configured_packages(root_dirs)
 
-        # config_trie = self.build_config_trie(root_dirs)
-        #
-        # for pkg_parts, pkg_config in config_trie.iteritems(sort_children=True):
-        #     self.run_package_config('.'.join(pkg_parts), pkg_config)
+        cfg_pkg_trie = col.Trie([  # noqa
+            (cfg_pkg.name.split('.'), cfg_pkg)
+            for cfg_pkg in cfg_pkgs
+        ])
+
+        for cfg_pkg in cfg_pkgs:
+            self.process_configured_package(cfg_pkg)
