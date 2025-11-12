@@ -6,7 +6,7 @@ wheel>=0.45.1
 
 uv>=0.9.8
 
-pytest==9.0.0
+pytest==9.0.1
 pytest-benchmark==5.2.3
 pytest-clarity==1.0.1
 pytest-stress==1.0.1
@@ -28,7 +28,7 @@ types-ujson==5.10.0.20250822
 
 black==25.11.0
 mypy==1.18.2
-pipdeptree==2.29.0
+pipdeptree==2.30.0
 
 astpretty==3.0.0
 
@@ -79,7 +79,7 @@ redis==7.0.1
 sqlean.py==3.50.4.5
 # git+https://github.com/wrmsr/sqlean.py.git
 
-duckdb==1.4.1
+duckdb==1.4.2
 
 pycparser==2.23
 pcpp==1.30
