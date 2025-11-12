@@ -2,10 +2,10 @@
 Features:
  - get (line, offset)
  - invalidate
-  - filewatcher
+  - TODO: filewatcher
  - linecache interop
   - tokenize.open - detect encoding - only for .py
- - directory / path_parts tree?
+ - TODO: directory / path_parts tree?
 
 TODO:
  - read raw, decode (detect)

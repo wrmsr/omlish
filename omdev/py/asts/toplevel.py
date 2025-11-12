@@ -9,9 +9,8 @@ from omlish import check
 
 @dc.dataclass(frozen=True, kw_only=True)
 class TopLevelImport:
-    module: str
+    spec: str
     name: str
-    alias: str | None
     node: ast.Import | ast.ImportFrom
 
 
@@ -42,30 +41,28 @@ class _TopLevelCallFinderVisitor(ast.NodeVisitor):
         for alias in node.names:
             name = alias.asname if alias.asname else alias.name
             self.imports[name] = TopLevelImport(
-                module=alias.name,
-                name=alias.name,
-                alias=alias.asname,
+                spec=alias.name,
+                name=name,
                 node=node,
             )
 
         self.generic_visit(node)
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
+        if node.level:
+            check.state(node.level < len(self.module_name_parts))
+            module = '.'.join([
+                *self.module_name_parts[:-node.level],
+                *([node.module] if node.module else []),
+            ])
+        else:
+            module = check.not_none(node.module)
+
         for alias in node.names:
-            if node.level:
-                level = node.level - 1
-                check.state(level < len(self.module_name_parts))
-                module = '.'.join([
-                    *self.module_name_parts[:level],
-                    *([node.module] if node.module else []),
-                ])
-            else:
-                module = check.not_none(node.module)
             name = alias.asname if alias.asname else alias.name
             self.imports[name] = TopLevelImport(
-                module=module,
-                name=alias.name,
-                alias=alias.asname,
+                spec='.'.join([module, alias.name]),
+                name=name,
                 node=node,
             )
 

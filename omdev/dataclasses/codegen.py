@@ -7,12 +7,13 @@ TODO:
  - !! manifests for dataclass config?
   - more sparse / diffuse intent, not package-level
 """
+import ast
 import importlib
 import os.path
 import typing as ta
 
 from omlish import check
-from omlish import collections as col
+from omlish import dataclasses as dc
 from omlish import lang
 from omlish.dataclasses.impl.configs import PackageConfig
 from omlish.dataclasses.impl.generation.compilation import OpCompiler
@@ -21,6 +22,9 @@ from omlish.dataclasses.impl.generation.processor import GeneratorProcessor
 from omlish.dataclasses.impl.processing.base import ProcessingContext
 from omlish.dataclasses.impl.processing.driving import processing_options_context
 from omlish.logs import all as logs
+
+from ..py.asts.toplevel import TopLevelCall
+from ..py.asts.toplevel import find_module_top_level_calls
 
 
 log = logs.get_module_logger(globals())
@@ -65,31 +69,77 @@ class DataclassCodeGen:
                 except ImportError as e:
                     print(repr(e))
 
-    def build_config_trie(
-            self,
-            root_dirs: ta.Iterable[str],
-    ) -> col.Trie[str, PackageConfig]:
+    #
+
+    @dc.dataclass(frozen=True)
+    class ConfiguredPackage:
+        name: str
+        init_file_path: str
+        init_module_name: str
+        init_package_call: TopLevelCall
+
+    def scan_py_file(self, file_path: str) -> ConfiguredPackage | None:
+        with open(file_path) as f:
+            source = f.read()
+
+        module = check.isinstance(ast.parse(source), ast.Module)
+        module_name = '.'.join([
+            *os.path.dirname(file_path).split(os.path.sep),
+            os.path.basename(file_path).removesuffix('.py'),
+        ])
+
+        calls = find_module_top_level_calls(module, module_name)
+
+        init_calls: list[TopLevelCall] = []
+        for call in calls:
+            if call.imp.spec != 'omlish.dataclasses':
+                continue
+            match call.node:
+                case ast.Call(func=ast.Attribute(attr='init_package')):
+                    init_calls.append(call)
+
+        if not init_calls:
+            return None
+        if os.path.basename(file_path) != '__init__.py':
+            raise ValueError(f'File {file_path} has init_package call and is not an __init__.py: {init_calls!r}')
+        if len(init_calls) > 1:
+            raise ValueError(f'File {file_path} has multiple init_package calls: {init_calls!r}')
+
+        return DataclassCodeGen.ConfiguredPackage(
+            '.'.join(module_name.split('.')[:-1]),
+            file_path,
+            module_name,
+            check.single(init_calls),
+        )
+
+    #
+
+    def find_configured_packages(self, root_dirs: ta.Iterable[str]) -> None:
         check.not_isinstance(root_dirs, str)
 
-        trie: col.Trie[str, PackageConfig] = col.Trie()
-        for root_dir in root_dirs:
-            for dp, _, fns in os.walk(root_dir):  # noqa
-                # if PACKAGE_CONFIG_FILE_NAME in fns:
-                #     with open(os.path.join(dp, PACKAGE_CONFIG_FILE_NAME)) as f:
-                #         config = PackageConfig.loads(f.read())
-                #     pkg_parts = dp.split(os.sep)
-                #     trie[pkg_parts] = config
-                pass
+        py_files = (
+            os.path.join(p, fn)
+            for rd in root_dirs
+            for p, dns, fns in os.walk(rd)
+            for fn in fns
+            if fn.endswith('.py')
+        )
 
-        return trie
+        cfg_pkgs = [
+            cfg_pkg
+            for file_path in py_files
+            if (cfg_pkg := self.scan_py_file(file_path)) is not None
+        ]
 
-    def run(
-            self,
-            root_dirs: ta.Iterable[str],
-    ) -> None:
+        for cfg_pkg in cfg_pkgs:
+            print(cfg_pkg)
+
+    def run(self, root_dirs: ta.Iterable[str]) -> None:
         check.not_isinstance(root_dirs, str)
 
-        config_trie = self.build_config_trie(root_dirs)
+        self.find_configured_packages(root_dirs)
 
-        for pkg_parts, pkg_config in config_trie.iteritems(sort_children=True):
-            self.run_package_config('.'.join(pkg_parts), pkg_config)
+        # config_trie = self.build_config_trie(root_dirs)
+        #
+        # for pkg_parts, pkg_config in config_trie.iteritems(sort_children=True):
+        #     self.run_package_config('.'.join(pkg_parts), pkg_config)
