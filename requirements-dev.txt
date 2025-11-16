@@ -22,7 +22,7 @@ lxml-stubs==0.5.1
 types-boto3==1.40.74
 types-greenlet==3.2.0.20250915
 types-paramiko==4.0.0.20250822  # @omlish-venv !13t !13dt  # cffi ????
-types-psutil==7.0.0.20251111
+types-psutil==7.0.0.20251116
 types-pyyaml==6.0.12.20250915
 types-ujson==5.10.0.20250822
 
@@ -98,7 +98,7 @@ mwparserfromhell==0.7.2
 wikitextparser==0.56.4  # !! GPL
 
 executing==2.2.1
-asttokens==3.0.0
+asttokens==3.0.1
 
 numpy>=1.26
 
