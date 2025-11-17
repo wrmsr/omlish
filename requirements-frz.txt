@@ -171,7 +171,7 @@ nodeenv==1.9.1
 nodejs-wheel-binaries==22.20.0
 notebook==7.4.7
 notebook_shim==0.2.4
-numpy==2.3.4
+numpy==2.3.5
 objgraph==3.6.2
 onnxruntime==1.23.2
 opencv-python==4.11.0.86
@@ -278,7 +278,7 @@ sortedcontainers==2.4.0
 soupsieve==2.8
 SQLAlchemy==2.0.44
 sqlean.py==3.50.4.5
-sqlglot==27.29.0
+sqlglot==28.0.0
 sqlite-vec==0.1.6
 sqlparse==0.4.4
 stack-data==0.6.3
@@ -324,7 +324,7 @@ uritemplate==4.2.0
 urllib3==2.5.0
 urwid==3.0.3
 urwid_readline==0.15.1
-uv==0.9.9
+uv==0.9.10
 watchdog==6.0.0
 wcwidth==0.2.14
 webcolors==25.10.0
