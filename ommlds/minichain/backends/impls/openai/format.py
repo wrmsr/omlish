@@ -166,8 +166,8 @@ class OpenaiChatRequestHandler:
         self._mandatory_kwargs = mandatory_kwargs
 
     DEFAULT_OPTIONS: ta.ClassVar[tv.TypedValues[Option]] = tv.TypedValues[Option](
-        Temperature(0.),
-        MaxTokens(1024),
+        # Temperature(0.),
+        # MaxTokens(1024),
     )
 
     _OPTION_KWARG_NAMES_MAP: ta.ClassVar[ta.Mapping[str, type[ChatChoicesOptions]]] = dict(
@@ -182,8 +182,8 @@ class OpenaiChatRequestHandler:
     @cached.function
     def _process_options(self) -> _ProcessedOptions:
         kwargs: dict = dict(
-            temperature=0,
-            max_tokens=1024,
+            # temperature=0,
+            # max_tokens=1024,
         )
 
         tools_by_name: dict[str, ToolSpec] = {}
