@@ -7,6 +7,9 @@ from omlish.formats import json
 
 from .....backends.openai import protocol as pt
 from ....chat.choices.services import ChatChoicesResponse
+from ....chat.choices.stream.types import AiChoiceDelta
+from ....chat.choices.stream.types import ContentAiChoiceDelta
+from ....chat.choices.stream.types import PartialToolUseAiChoiceDelta
 from ....chat.choices.types import AiChoice
 from ....chat.choices.types import AiChoices
 from ....chat.choices.types import ChatChoicesOptions
@@ -17,9 +20,6 @@ from ....chat.messages import SystemMessage
 from ....chat.messages import ToolUseMessage
 from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
-from ....chat.stream.types import AiChoiceDelta
-from ....chat.stream.types import ContentAiChoiceDelta
-from ....chat.stream.types import PartialToolUseAiChoiceDelta
 from ....chat.tools.types import Tool
 from ....content.json import JsonContent
 from ....content.prepare import prepare_content_str

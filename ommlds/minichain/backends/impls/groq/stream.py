@@ -10,10 +10,10 @@ from omlish.io.buffers import DelimitingBuffer
 
 from .....backends.groq import protocol as pt
 from ....chat.choices.services import ChatChoicesOutputs
-from ....chat.stream.services import ChatChoicesStreamRequest
-from ....chat.stream.services import ChatChoicesStreamResponse
-from ....chat.stream.services import static_check_is_chat_choices_stream_service
-from ....chat.stream.types import AiChoicesDeltas
+from ....chat.choices.stream.services import ChatChoicesStreamRequest
+from ....chat.choices.stream.services import ChatChoicesStreamResponse
+from ....chat.choices.stream.services import static_check_is_chat_choices_stream_service
+from ....chat.choices.stream.types import AiChoicesDeltas
 from ....chat.tools.types import Tool
 from ....configs import Config
 from ....resources import UseResources

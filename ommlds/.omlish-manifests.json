@@ -730,6 +730,18 @@
     }
   },
   {
+    "module": ".minichain.chat.choices.stream.services",
+    "attr": null,
+    "file": "ommlds/minichain/chat/choices/stream/services.py",
+    "line": 28,
+    "value": {
+      "!.minichain.registries.manifests.RegistryTypeManifest": {
+        "module": "ommlds.minichain.chat.choices.stream.services",
+        "attr": "ChatChoicesStreamService"
+      }
+    }
+  },
+  {
     "module": ".minichain.chat.services",
     "attr": null,
     "file": "ommlds/minichain/chat/services.py",
@@ -738,18 +750,6 @@
       "!.minichain.registries.manifests.RegistryTypeManifest": {
         "module": "ommlds.minichain.chat.services",
         "attr": "ChatService"
-      }
-    }
-  },
-  {
-    "module": ".minichain.chat.stream.services",
-    "attr": null,
-    "file": "ommlds/minichain/chat/stream/services.py",
-    "line": 28,
-    "value": {
-      "!.minichain.registries.manifests.RegistryTypeManifest": {
-        "module": "ommlds.minichain.chat.stream.services",
-        "attr": "ChatChoicesStreamService"
       }
     }
   },

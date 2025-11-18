@@ -11,13 +11,13 @@ from omlish.io.buffers import DelimitingBuffer
 from .....backends.anthropic.protocol import types as pt
 from .....backends.anthropic.protocol.sse.events import AnthropicSseDecoderEvents
 from ....chat.choices.services import ChatChoicesOutputs
-from ....chat.stream.services import ChatChoicesStreamRequest
-from ....chat.stream.services import ChatChoicesStreamResponse
-from ....chat.stream.services import static_check_is_chat_choices_stream_service
-from ....chat.stream.types import AiChoiceDeltas
-from ....chat.stream.types import AiChoicesDeltas
-from ....chat.stream.types import ContentAiChoiceDelta
-from ....chat.stream.types import PartialToolUseAiChoiceDelta
+from ....chat.choices.stream.services import ChatChoicesStreamRequest
+from ....chat.choices.stream.services import ChatChoicesStreamResponse
+from ....chat.choices.stream.services import static_check_is_chat_choices_stream_service
+from ....chat.choices.stream.types import AiChoiceDeltas
+from ....chat.choices.stream.types import AiChoicesDeltas
+from ....chat.choices.stream.types import ContentAiChoiceDelta
+from ....chat.choices.stream.types import PartialToolUseAiChoiceDelta
 from ....chat.tools.types import Tool
 from ....configs import Config
 from ....resources import UseResources

@@ -3,10 +3,10 @@ from omlish.http import all as http
 from omlish.secrets.tests.harness import HarnessSecrets
 
 from .....chat.choices.adapters import ChatChoicesServiceChatService
+from .....chat.choices.stream.adapters import ChatChoicesStreamServiceChatChoicesService
+from .....chat.choices.stream.services import ChatChoicesStreamRequest
 from .....chat.messages import UserMessage
 from .....chat.services import ChatService
-from .....chat.stream.adapters import ChatChoicesStreamServiceChatChoicesService
-from .....chat.stream.services import ChatChoicesStreamRequest
 from .....resources import Resources
 from .....resources import UseResources
 from .....services import Request

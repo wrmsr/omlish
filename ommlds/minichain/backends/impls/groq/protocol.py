@@ -5,6 +5,10 @@ from omlish.formats import json
 
 from .....backends.groq import protocol as pt
 from ....chat.choices.services import ChatChoicesResponse
+from ....chat.choices.stream.types import AiChoiceDelta
+from ....chat.choices.stream.types import AiChoiceDeltas
+from ....chat.choices.stream.types import ContentAiChoiceDelta
+from ....chat.choices.stream.types import ToolUseAiChoiceDelta
 from ....chat.choices.types import AiChoice
 from ....chat.messages import AiMessage
 from ....chat.messages import AnyAiMessage
@@ -13,10 +17,6 @@ from ....chat.messages import SystemMessage
 from ....chat.messages import ToolUseMessage
 from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
-from ....chat.stream.types import AiChoiceDelta
-from ....chat.stream.types import AiChoiceDeltas
-from ....chat.stream.types import ContentAiChoiceDelta
-from ....chat.stream.types import ToolUseAiChoiceDelta
 from ....chat.tools.types import Tool
 from ....content.prepare import prepare_content_str
 from ....tools.jsonschema import build_tool_spec_params_json_schema

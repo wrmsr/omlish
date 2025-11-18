@@ -65,6 +65,39 @@ with _lang.auto_proxy_init(
 
     ##
 
+    from .chat.choices.stream.adapters import (  # noqa
+        ChatChoicesStreamServiceChatChoicesService,
+    )
+
+    from .chat.choices.stream.joining import (  # noqa
+        AiChoiceDeltaJoiner,
+    )
+
+    from .chat.choices.stream.services import (  # noqa
+        ChatChoicesStreamRequest,
+        ChatChoicesStreamResponse,
+        ChatChoicesStreamService,
+        AbstractChatChoicesStreamService,
+        static_check_is_chat_choices_stream_service,
+    )
+
+    from .chat.choices.stream.types import (  # noqa
+        ChatChoicesStreamOption,
+        ChatChoicesStreamOptions,
+
+        ChatChoicesStreamOutput,
+        ChatChoicesStreamOutputs,
+
+        AiChoiceDelta,
+        ContentAiChoiceDelta,
+        AnyToolUseAiChoiceDelta,
+        ToolUseAiChoiceDelta,
+        PartialToolUseAiChoiceDelta,
+
+        AiChoiceDeltas,
+        AiChoicesDeltas,
+    )
+
     from .chat.choices.adapters import (  # noqa
         ChatChoicesServiceChatService,
     )
@@ -86,39 +119,6 @@ with _lang.auto_proxy_init(
 
         AiChoice,
         AiChoices,
-    )
-
-    from .chat.stream.adapters import (  # noqa
-        ChatChoicesStreamServiceChatChoicesService,
-    )
-
-    from .chat.stream.joining import (  # noqa
-        AiChoiceDeltaJoiner,
-    )
-
-    from .chat.stream.services import (  # noqa
-        ChatChoicesStreamRequest,
-        ChatChoicesStreamResponse,
-        ChatChoicesStreamService,
-        AbstractChatChoicesStreamService,
-        static_check_is_chat_choices_stream_service,
-    )
-
-    from .chat.stream.types import (  # noqa
-        ChatChoicesStreamOption,
-        ChatChoicesStreamOptions,
-
-        ChatChoicesStreamOutput,
-        ChatChoicesStreamOutputs,
-
-        AiChoiceDelta,
-        ContentAiChoiceDelta,
-        AnyToolUseAiChoiceDelta,
-        ToolUseAiChoiceDelta,
-        PartialToolUseAiChoiceDelta,
-
-        AiChoiceDeltas,
-        AiChoicesDeltas,
     )
 
     from .chat.tools.execution import (  # noqa

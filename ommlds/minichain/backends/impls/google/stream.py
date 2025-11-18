@@ -11,6 +11,13 @@ from omlish.http import all as http
 from omlish.io.buffers import DelimitingBuffer
 
 from .....backends.google.protocol import types as pt
+from ....chat.choices.stream.services import ChatChoicesStreamRequest
+from ....chat.choices.stream.services import ChatChoicesStreamResponse
+from ....chat.choices.stream.services import static_check_is_chat_choices_stream_service
+from ....chat.choices.stream.types import AiChoiceDeltas
+from ....chat.choices.stream.types import AiChoicesDeltas
+from ....chat.choices.stream.types import ContentAiChoiceDelta
+from ....chat.choices.stream.types import ToolUseAiChoiceDelta
 from ....chat.choices.types import ChatChoicesOutputs
 from ....chat.messages import AiMessage
 from ....chat.messages import Message
@@ -18,13 +25,6 @@ from ....chat.messages import SystemMessage
 from ....chat.messages import ToolUseMessage
 from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
-from ....chat.stream.services import ChatChoicesStreamRequest
-from ....chat.stream.services import ChatChoicesStreamResponse
-from ....chat.stream.services import static_check_is_chat_choices_stream_service
-from ....chat.stream.types import AiChoiceDeltas
-from ....chat.stream.types import AiChoicesDeltas
-from ....chat.stream.types import ContentAiChoiceDelta
-from ....chat.stream.types import ToolUseAiChoiceDelta
 from ....chat.tools.types import Tool
 from ....models.configs import ModelName
 from ....resources import UseResources

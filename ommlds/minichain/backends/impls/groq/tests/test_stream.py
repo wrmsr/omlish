@@ -2,8 +2,8 @@ from omlish import lang
 from omlish.http import all as http
 from omlish.secrets.tests.harness import HarnessSecrets
 
+from .....chat.choices.stream.services import ChatChoicesStreamRequest
 from .....chat.messages import UserMessage
-from .....chat.stream.services import ChatChoicesStreamRequest
 from .....standard import ApiKey
 from ..stream import GroqChatChoicesStreamService
 

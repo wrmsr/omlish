@@ -4,11 +4,11 @@ from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
 
-from ...content.types import Content
-from ...stream.services import StreamOptions
-from ...types import Option
-from ...types import Output
-from ..choices.types import ChatChoicesOptions
+from ....content.types import Content
+from ....stream.services import StreamOptions
+from ....types import Option
+from ....types import Output
+from ..types import ChatChoicesOptions
 
 
 msh.register_global_module_import('._marshal', __package__)

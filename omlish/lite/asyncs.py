@@ -50,12 +50,12 @@ def sync_await(aw: ta.Awaitable[T]) -> T:
 
     ret = missing = object()
 
-    async def gate():
+    async def thunk():
         nonlocal ret
 
         ret = await aw
 
-    cr = gate()
+    cr = thunk()
     try:
         try:
             cr.send(None)

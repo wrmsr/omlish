@@ -3,12 +3,12 @@ import typing as ta
 
 from omlish import lang
 
-from ...registries.globals import register_type
-from ...services import Request
-from ...services import Service
-from ...stream.services import StreamResponse
-from ..choices.types import ChatChoicesOutputs
-from ..messages import Chat
+from ....registries.globals import register_type
+from ....services import Request
+from ....services import Service
+from ....stream.services import StreamResponse
+from ...messages import Chat
+from ..types import ChatChoicesOutputs
 from .types import AiChoicesDeltas
 from .types import ChatChoicesStreamOptions
 from .types import ChatChoicesStreamOutputs

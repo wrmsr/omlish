@@ -3,11 +3,11 @@ import typing as ta
 from omlish import check
 from omlish.formats import json
 
-from ...tools.types import ToolUse
-from ..messages import AiChat
-from ..messages import AiMessage
-from ..messages import AnyAiMessage
-from ..messages import ToolUseMessage
+from ....tools.types import ToolUse
+from ...messages import AiChat
+from ...messages import AiMessage
+from ...messages import AnyAiMessage
+from ...messages import ToolUseMessage
 from .types import AiChoiceDelta
 from .types import AiChoiceDeltas
 from .types import ContentAiChoiceDelta
