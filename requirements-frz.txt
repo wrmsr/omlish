@@ -168,7 +168,7 @@ nest-asyncio==1.6.0
 networkx==3.5
 nh3==0.3.2
 nodeenv==1.9.1
-nodejs-wheel-binaries==22.20.0
+nodejs-wheel-binaries==24.11.1
 notebook==7.4.7
 notebook_shim==0.2.4
 numpy==2.3.5

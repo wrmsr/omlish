@@ -161,3 +161,8 @@ def test_get():
 
 def test_get_any():
     TypedValues(TopK(10)).get_any(lang.Abstract)
+
+
+def test_bool():
+    with pytest.raises(TypeError):  # noqa
+        bool(TopK(0))  # noqa

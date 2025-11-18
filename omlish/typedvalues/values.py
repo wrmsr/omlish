@@ -11,7 +11,8 @@ T = ta.TypeVar('T')
 
 
 class TypedValue(lang.Abstract):
-    pass
+    def __bool__(self) -> ta.NoReturn:
+        raise TypeError(f"Cannot convert {self!r} to bool - use '.v' or 'is not None'.")
 
 
 ##
