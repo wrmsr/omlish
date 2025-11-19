@@ -119,6 +119,14 @@ with _lang.auto_proxy_init(
         AiDeltaJoiner,
     )
 
+    from .chat.stream.services import (  # noqa
+        ChatStreamRequest,
+        ChatStreamResponse,
+        ChatStreamService,
+        AbstractChatStreamService,
+        static_check_is_chat_stream_service,
+    )
+
     from .chat.stream.types import (  # noqa
         AiDelta,
         AiDeltas,

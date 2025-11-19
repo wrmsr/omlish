@@ -754,6 +754,18 @@
     }
   },
   {
+    "module": ".minichain.chat.stream.services",
+    "attr": null,
+    "file": "ommlds/minichain/chat/stream/services.py",
+    "line": 28,
+    "value": {
+      "!.minichain.registries.manifests.RegistryTypeManifest": {
+        "module": "ommlds.minichain.chat.stream.services",
+        "attr": "ChatStreamService"
+      }
+    }
+  },
+  {
     "module": ".minichain.completion",
     "attr": null,
     "file": "ommlds/minichain/completion.py",

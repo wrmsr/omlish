@@ -5,9 +5,33 @@ from omlish import lang
 from omlish import marshal as msh
 
 from ...content.types import Content
+from ...stream.services import StreamOptions
+from ...types import Option
+from ...types import Output
+from ..types import ChatOptions
 
 
 msh.register_global_module_import('._marshal', __package__)
+
+
+##
+
+
+class ChatStreamOption(Option, lang.Abstract, lang.PackageSealed):
+    pass
+
+
+ChatStreamOptions: ta.TypeAlias = ChatStreamOption | StreamOptions | ChatOptions
+
+
+##
+
+
+class ChatStreamOutput(Output, lang.Abstract, lang.PackageSealed):
+    pass
+
+
+ChatStreamOutputs: ta.TypeAlias = ChatStreamOutput
 
 
 ##
