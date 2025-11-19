@@ -19,16 +19,16 @@ asyncpg==0.30.0
 asyncssh==2.21.1
 attrs==25.4.0
 babel==2.17.0
-basedpyright==1.33.0
+basedpyright==1.34.0
 bcrypt==5.0.0
 beautifulsoup4==4.14.2
 bitsandbytes==0.42.0
 black==25.11.0
 bleach==6.3.0
 blobfile==3.1.0
-boto3==1.40.75
-botocore==1.40.75
-botocore-stubs==1.40.75
+boto3==1.40.76
+botocore==1.40.76
+botocore-stubs==1.40.76
 brotli==1.2.0
 build==1.3.0
 cachetools==6.2.2
@@ -125,7 +125,7 @@ jupyter_client==8.6.3
 jupyter_core==5.9.1
 jupyter_server==2.17.0
 jupyter_server_terminals==0.5.3
-jupyterlab==4.4.10
+jupyterlab==4.5.0
 jupyterlab_pygments==0.3.0
 jupyterlab_server==2.28.0
 jupyterlab_widgets==3.0.16
@@ -169,7 +169,7 @@ networkx==3.5
 nh3==0.3.2
 nodeenv==1.9.1
 nodejs-wheel-binaries==24.11.1
-notebook==7.4.7
+notebook==7.5.0
 notebook_shim==0.2.4
 numpy==2.3.5
 objgraph==3.6.2
@@ -244,7 +244,7 @@ PyYAML==6.0.3
 pyzmq==27.1.0
 rapidocr-onnxruntime==1.4.4
 readme_renderer==44.0
-redis==7.0.1
+redis==7.1.0
 referencing==0.37.0
 regex==2025.11.3
 requests==2.32.5
@@ -258,7 +258,7 @@ rpds-py==0.29.0
 rsa==4.9.1
 ruff==0.14.5
 s3transfer==0.14.0
-safetensors==0.6.2
+safetensors==0.7.0
 scikit-image==0.25.2
 scikit-learn==1.7.2
 scipy==1.16.3
@@ -272,7 +272,7 @@ setuptools==80.9.0
 shapely==2.1.2
 six==1.17.0
 sniffio==1.3.1
-snowflake-connector-python==4.0.0
+snowflake-connector-python==4.1.0
 socksio==1.0.0
 sortedcontainers==2.4.0
 soupsieve==2.8
@@ -306,8 +306,7 @@ trio==0.32.0
 trio_asyncio==0.15.0
 twine==6.2.0
 types-awscrt==0.28.4
-types-boto3==1.40.75
-types-botocore==1.0.2
+types-boto3==1.40.76
 types-greenlet==3.2.0.20250915
 types-paramiko==4.0.0.20250822
 types-psutil==7.0.0.20251116

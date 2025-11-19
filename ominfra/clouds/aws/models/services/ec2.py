@@ -1720,6 +1720,7 @@ class ResourceType(_enum.Enum):
     IPAM_PREFIX_LIST_RESOLVER = 'ipam-prefix-list-resolver'
     IPAM_PREFIX_LIST_RESOLVER_TARGET = 'ipam-prefix-list-resolver-target'
     CAPACITY_MANAGER_DATA_EXPORT = 'capacity-manager-data-export'
+    VPN_CONCENTRATOR = 'vpn-concentrator'
 
 
 class RootDeviceType(_enum.Enum):
