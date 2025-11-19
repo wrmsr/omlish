@@ -34,6 +34,21 @@ if sys.version_info < (3, 8):
     raise OSError(f'Requires python (3, 8), got {sys.version_info} from {sys.executable}')  # noqa
 
 
+def __omlish_amalg__():  # noqa
+    return dict(
+        src_files=[
+            dict(path='../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
+            dict(path='../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
+            dict(path='../../omlish/lite/check.py', sha1='bb6b6b63333699b84462951a854d99ae83195b94'),
+            dict(path='../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
+            dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
+            dict(path='../../omlish/lite/strings.py', sha1='89831ecbc34ad80e118a865eceb390ed399dc4d6'),
+            dict(path='../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
+            dict(path='dumping.py', sha1='49acd06fdcc3427f4a255fea295d7042bb655a13'),
+        ],
+    )
+
+
 ########################################
 
 

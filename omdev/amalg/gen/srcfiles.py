@@ -1,4 +1,5 @@
 import dataclasses as dc
+import hashlib
 import typing as ta
 
 from omlish import collections as col
@@ -25,6 +26,9 @@ from .typing import skip_root_level_if_type_checking_block
 @dc.dataclass(frozen=True, kw_only=True)
 class SrcFile:
     path: str
+
+    src_bytes: bytes = dc.field(repr=False)
+    sha1: str = dc.field(repr=False)
 
     src: str = dc.field(repr=False)
     tokens: tks.Tokens = dc.field(repr=False)
@@ -56,9 +60,12 @@ def make_src_file(
         *,
         mounts: ta.Mapping[str, str],
 ) -> SrcFile:
-    with open(path) as f:
-        src = f.read().strip()
+    with open(path, 'rb') as f:
+        src_bytes = f.read()
 
+    sha1 = hashlib.sha1(src_bytes).hexdigest()  # noqa
+
+    src = src_bytes.decode('utf-8').strip()
     tokens = tks.src_to_tokens(src)
     lines = tks.split_lines(tokens)
 
@@ -114,6 +121,9 @@ def make_src_file(
 
     return SrcFile(
         path=path,
+
+        src_bytes=src_bytes,
+        sha1=sha1,
 
         src=src,
         tokens=tokens,

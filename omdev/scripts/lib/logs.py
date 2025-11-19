@@ -30,6 +30,27 @@ if sys.version_info < (3, 8):
     raise OSError(f'Requires python (3, 8), got {sys.version_info} from {sys.executable}')  # noqa
 
 
+def __omlish_amalg__():  # noqa
+    return dict(
+        src_files=[
+            dict(path='../lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
+            dict(path='../lite/json.py', sha1='57eeddc4d23a17931e00284ffa5cb6e3ce089486'),
+            dict(path='levels.py', sha1='91405563d082a5eba874da82aac89d83ce7b6152'),
+            dict(path='std/filters.py', sha1='f36aab646d84d31e295b33aaaaa6f8b67ff38b3d'),
+            dict(path='std/proxy.py', sha1='3e7301a2aa351127f9c85f61b2f85dcc3f15aafb'),
+            dict(path='warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
+            dict(path='infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
+            dict(path='std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
+            dict(path='contexts.py', sha1='7456964ade9ac66460e9ade4e242dbdc24b39501'),
+            dict(path='standard.py', sha1='818b674f7d15012f25b79f52f6e8e7368b633038'),
+            dict(path='base.py', sha1='a376460b11b9dc0555fd4ead5437af62c2109a4b'),
+            dict(path='std/records.py', sha1='8bbf6ef9eccb3a012c6ca416ddf3969450fd8fc9'),
+            dict(path='std/loggers.py', sha1='daa35bdc4adea5006e442688017f0de3392579b7'),
+            dict(path='_amalg.py', sha1='ec64a142cbae11f6705d0d3ee8ff9c5bc4a7f90b'),
+        ],
+    )
+
+
 ########################################
 
 

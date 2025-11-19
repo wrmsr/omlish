@@ -50,6 +50,54 @@ if sys.version_info < (3, 8):
     raise OSError(f'Requires python (3, 8), got {sys.version_info} from {sys.executable}')  # noqa
 
 
+def __omlish_amalg__():  # noqa
+    return dict(
+        src_files=[
+            dict(path='../packaging/versions.py', sha1='3c86e791d308654a6085a4ba2c135545d6f931db'),
+            dict(path='../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
+            dict(path='../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
+            dict(path='../../omlish/lite/check.py', sha1='bb6b6b63333699b84462951a854d99ae83195b94'),
+            dict(path='../../omlish/lite/json.py', sha1='57eeddc4d23a17931e00284ffa5cb6e3ce089486'),
+            dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
+            dict(path='../../omlish/lite/strings.py', sha1='89831ecbc34ad80e118a865eceb390ed399dc4d6'),
+            dict(path='../../omlish/logs/levels.py', sha1='91405563d082a5eba874da82aac89d83ce7b6152'),
+            dict(path='../../omlish/logs/std/filters.py', sha1='f36aab646d84d31e295b33aaaaa6f8b67ff38b3d'),
+            dict(path='../../omlish/logs/std/proxy.py', sha1='3e7301a2aa351127f9c85f61b2f85dcc3f15aafb'),
+            dict(path='../packaging/specifiers.py', sha1='5f0afc92d2795d14f0d0aa13646c63a0e91434fa'),
+            dict(path='../../omlish/argparse/cli.py', sha1='f4dc3cd353d14386b5da0306768700e396afd2b3'),
+            dict(path='../../omlish/lite/maybes.py', sha1='bdf5136654ccd14b6a072588cad228925bdfbabd'),
+            dict(path='../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
+            dict(path='../../omlish/lite/timeouts.py', sha1='a0f673033a6943f242e35848d78a41892b9c62a1'),
+            dict(path='../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
+            dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
+            dict(path='types.py', sha1='cfc14929777fb19f723c875bcafc8f7c66593d6d'),
+            dict(path='../../omlish/asyncs/asyncio/timeouts.py', sha1='4d31b02b3c39b8f2fa7e94db36552fde6942e36a'),
+            dict(path='../../omlish/lite/inject.py', sha1='6f097e3170019a34ff6834d36fcc9cbeed3a7ab4'),
+            dict(path='../../omlish/logs/standard.py', sha1='818b674f7d15012f25b79f52f6e8e7368b633038'),
+            dict(path='../../omlish/subprocesses/run.py', sha1='8200e48f0c49d164df3503cd0143038d0c4d30aa'),
+            dict(path='../../omlish/subprocesses/wrap.py', sha1='8a9b7d2255481fae15c05f5624b0cdc0766f4b3f'),
+            dict(path='providers/base.py', sha1='f5d068c21f230d742e9015b033cd6320f4c68898'),
+            dict(path='../../omlish/subprocesses/base.py', sha1='77801dc86adde9b2614d32991e3aa85c39707c78'),
+            dict(path='resolvers.py', sha1='817b8e76401cd7a19eb43ca54d65272e4c8a4b0e'),
+            dict(path='../../omlish/subprocesses/asyncs.py', sha1='bba44d524c24c6ac73168aee6343488414e5bf48'),
+            dict(path='../../omlish/asyncs/asyncio/subprocesses.py', sha1='b6b5f9ae3fd0b9c83593bad2e04a08f726e5904d'),
+            dict(path='inspect.py', sha1='736287b4ec8d14a8c30afa0ba23996fdc0662caa'),
+            dict(path='pyenv/pyenv.py', sha1='d1f6e657c671c1b1a5b0e627284df656fe2d10d3'),
+            dict(path='uv/uv.py', sha1='8c6515cd6755efab3972da92a285e94ccb255515'),
+            dict(path='providers/running.py', sha1='85c9cc69ff6fbd6c8cf78ed6262619a30856c2f1'),
+            dict(path='providers/system.py', sha1='9638a154475ca98775159d27739563ac7fb2eb16'),
+            dict(path='pyenv/install.py', sha1='4a10a19717364b4ba9f3b8bf1d12621cf21ba8b8'),
+            dict(path='uv/provider.py', sha1='149f19f95eb701ffad5dc74392f4692c21b5f8c0'),
+            dict(path='providers/inject.py', sha1='7cc9ebf58cf2ec09545321456bd9da9f9a3a79fb'),
+            dict(path='pyenv/provider.py', sha1='377542ce01a35849e2a5b4a4dbafedc26882f983'),
+            dict(path='uv/inject.py', sha1='e95d058c2340baa5a3155ec3440f311d1daa10a8'),
+            dict(path='pyenv/inject.py', sha1='b8fb68f5a7cae86c70fe1bad6c29a8b2dfc985c3'),
+            dict(path='inject.py', sha1='b039abbadf0b096d2724182af2e0ebda2a230852'),
+            dict(path='cli.py', sha1='28d807b2080447c179a9ef17b3efd83dd513027b'),
+        ],
+    )
+
+
 ########################################
 
 

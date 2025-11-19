@@ -54,6 +54,57 @@ if sys.version_info < (3, 8):
     raise OSError(f'Requires python (3, 8), got {sys.version_info} from {sys.executable}')  # noqa
 
 
+def __omlish_amalg__():  # noqa
+    return dict(
+        src_files=[
+            dict(path='../../../../omlish/configs/types.py', sha1='f7a5584cd6eccb77d18d729796072a162e9a8790'),
+            dict(path='../../../../omlish/formats/ini/sections.py', sha1='731c92cce82e183d1d4bdc23fc781fad62187394'),
+            dict(path='../../../../omlish/formats/toml/parser.py', sha1='73dac82289350ab951c4bcdbfe61167fa221f26f'),
+            dict(path='../../../../omlish/formats/toml/writer.py', sha1='6ea41d7e724bb1dcf6bd84b88993ff4e8798e021'),
+            dict(path='../../../../omlish/io/readers.py', sha1='4b19ab4a87f2fa2a6f6c3cad7e1f3892b7cbd3a4'),
+            dict(path='../../../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
+            dict(path='../../../../omlish/lite/attrops.py', sha1='c1ebfb8573d766d34593c452a2377208d02726dc'),
+            dict(path='../../../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
+            dict(path='../../../../omlish/lite/check.py', sha1='bb6b6b63333699b84462951a854d99ae83195b94'),
+            dict(path='../../../../omlish/lite/contextmanagers.py', sha1='993f5ed96d3410f739a20363f55670d5e5267fa3'),
+            dict(path='../../../../omlish/lite/json.py', sha1='57eeddc4d23a17931e00284ffa5cb6e3ce089486'),
+            dict(path='../../../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
+            dict(path='../../../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
+            dict(path='../../../../omlish/lite/strings.py', sha1='89831ecbc34ad80e118a865eceb390ed399dc4d6'),
+            dict(path='../../../../omlish/logs/levels.py', sha1='91405563d082a5eba874da82aac89d83ce7b6152'),
+            dict(path='../../../../omlish/logs/std/filters.py', sha1='f36aab646d84d31e295b33aaaaa6f8b67ff38b3d'),
+            dict(path='../../../../omlish/logs/std/proxy.py', sha1='3e7301a2aa351127f9c85f61b2f85dcc3f15aafb'),
+            dict(path='../../../../omlish/logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
+            dict(path='../../../../omlish/os/pidfiles/pidfile.py', sha1='7c3c6d4674855bfc4f1d7fd77b8fa40f36581535'),
+            dict(path='../../../../omlish/subprocesses/utils.py', sha1='2210d90ab1bfc75642aa2f4caad662368900aa1c'),
+            dict(path='../auth.py', sha1='b1ac1a5e03d4e9e38957a54e346943c6dcc964a1'),
+            dict(path='../dataclasses.py', sha1='8e950d7815904588fed284889392cbb0b1002605'),
+            dict(path='../../../../omlish/configs/formats.py', sha1='9bc4f953b4b8700f6f109e6f49e2d70f8e48ce7c'),
+            dict(path='../../../../omlish/io/buffers.py', sha1='45a5f79c6d71f02ab82082a48d63ebbd10959031'),
+            dict(path='../../../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
+            dict(path='../../../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
+            dict(path='../../../../omlish/logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
+            dict(path='../../../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
+            dict(path='../logs.py', sha1='5a4fad522508bdc1b790f1d5234a87f319c9da2d'),
+            dict(path='../../../../omlish/lite/configs.py', sha1='c8602e0e197ef1133e7e8e248935ac745bfd46cb'),
+            dict(path='../../../../omlish/logs/contexts.py', sha1='7456964ade9ac66460e9ade4e242dbdc24b39501'),
+            dict(path='../../../../omlish/logs/standard.py', sha1='818b674f7d15012f25b79f52f6e8e7368b633038'),
+            dict(path='../../../../omlish/subprocesses/wrap.py', sha1='8a9b7d2255481fae15c05f5624b0cdc0766f4b3f'),
+            dict(path='../../../../omlish/logs/base.py', sha1='a376460b11b9dc0555fd4ead5437af62c2109a4b'),
+            dict(path='../../../../omlish/logs/std/records.py', sha1='8bbf6ef9eccb3a012c6ca416ddf3969450fd8fc9'),
+            dict(path='../../../../omlish/logs/std/loggers.py', sha1='daa35bdc4adea5006e442688017f0de3392579b7'),
+            dict(path='../../../../omlish/logs/modules.py', sha1='99e73cde6872fd5eda6af3dbf0fc9322bdeb641a'),
+            dict(path='cursor.py', sha1='00f1c62e16e4c85b20658eaf33c0bedf22c9e18f'),
+            dict(path='../../../journald/messages.py', sha1='6f2d2eeedb71723b1c6631ad2e634b473b297696'),
+            dict(path='../../../threadworkers.py', sha1='e3413436070b66faeb3e6974dc9a75cd8a949ad7'),
+            dict(path='poster.py', sha1='275770a4e60ea5777053c9044e37d71397c3ed20'),
+            dict(path='../../../journald/tailer.py', sha1='1c37a6bbde32e8556d26b94b439f14869731ac01'),
+            dict(path='driver.py', sha1='a9353a417fc4e57f29e7f04038c3bf4668f36dbd'),
+            dict(path='main.py', sha1='e051dbef37e026f887b6084cfaa811ccfa543ee7'),
+        ],
+    )
+
+
 ########################################
 
 

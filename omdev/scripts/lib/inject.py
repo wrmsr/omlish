@@ -28,6 +28,18 @@ if sys.version_info < (3, 8):
     raise OSError(f'Requires python (3, 8), got {sys.version_info} from {sys.executable}')  # noqa
 
 
+def __omlish_amalg__():  # noqa
+    return dict(
+        src_files=[
+            dict(path='abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
+            dict(path='check.py', sha1='bb6b6b63333699b84462951a854d99ae83195b94'),
+            dict(path='reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
+            dict(path='maybes.py', sha1='bdf5136654ccd14b6a072588cad228925bdfbabd'),
+            dict(path='inject.py', sha1='6f097e3170019a34ff6834d36fcc9cbeed3a7ab4'),
+        ],
+    )
+
+
 ########################################
 
 

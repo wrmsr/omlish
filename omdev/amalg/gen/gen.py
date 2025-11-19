@@ -10,6 +10,7 @@ from omlish.lite.runtime import LITE_REQUIRED_PYTHON_VERSION
 
 from ...git.magic import GIT_DIFF_OMIT_MAGIC
 from ...py.tokens import all as tks
+from ..info import AMALG_INFO_ATTR
 from .srcfiles import SrcFile
 from .srcfiles import make_src_file
 from .strip import strip_main_lines
@@ -32,18 +33,22 @@ SCAN_COMMENT = '# @omlish-amalg '
 
 
 class AmalgGenerator:
+    DEFAULT_TARGET_LINE_LEN: ta.ClassVar[int] = 120
+
     def __init__(
             self,
             main_path: str,
             *,
             mounts: ta.Mapping[str, str],
             output_dir: str | None = None,
+            target_line_len: int | None = DEFAULT_TARGET_LINE_LEN,
     ) -> None:
         super().__init__()
 
         self._main_path = main_path
         self._mounts = mounts
         self._output_dir = output_dir
+        self._target_line_len = target_line_len
 
     @cached.function
     def _src_files(self) -> dict[str, SrcFile]:
@@ -105,6 +110,40 @@ class AmalgGenerator:
 
         return [*additional_header_lines, *header_lines]
 
+    def gen_amalg_info_block(self, sfs: ta.Sequence[str]) -> str:
+        md = os.path.dirname(self._main_path)
+        src_files = self._src_files()
+        sf_dcts = [
+            dict(
+                path=os.path.relpath(sfn, md),
+                sha1=src_files[sfn].sha1,
+            )
+            for sfn in sfs
+        ]
+        sf_lines = [
+            ''.join([
+                '            dict(',
+                ', '.join([f'{k}={v!r}' for k, v in sf_dct.items()]),
+                '),',
+            ])
+            for sf_dct in sf_dcts
+        ]
+        if (tll := self._target_line_len) is not None:
+            sf_lines = [
+                l + '  # noqa' if len(l) >= tll else l
+                for l in sf_lines
+            ]
+
+        return '\n'.join([
+            f'def {AMALG_INFO_ATTR}():  # noqa',
+            f'    return dict(',
+            f'        src_files=[',
+            *sf_lines,
+            f'        ],',
+            f'    )',
+            '',
+        ])
+
     @cached.function
     def gen_amalg(self) -> str:
         src_files = self._src_files()
@@ -137,6 +176,13 @@ class AmalgGenerator:
             out.write(il if isinstance(il, str) else tks.join_toks(il.toks))
         if dct:
             out.write('\n\n')
+        ##
+
+        ts = list(alg.toposort({  # noqa
+            f.path: {mp for i in f.imports if (mp := i.mod_path) is not None}
+            for f in src_files.values()
+        }))
+        sfs = [sf for ss in ts for sf in sorted(ss)]
 
         ##
 
@@ -155,11 +201,8 @@ class AmalgGenerator:
 
         ##
 
-        ts = list(alg.toposort({  # noqa
-            f.path: {mp for i in f.imports if (mp := i.mod_path) is not None}
-            for f in src_files.values()
-        }))
-        sfs = [sf for ss in ts for sf in sorted(ss)]
+        out.write(self.gen_amalg_info_block(sfs))
+        out.write('\n\n')
 
         ##
 
