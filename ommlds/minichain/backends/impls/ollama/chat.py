@@ -18,13 +18,13 @@ from ....chat.choices.stream.services import ChatChoicesStreamResponse
 from ....chat.choices.stream.services import static_check_is_chat_choices_stream_service
 from ....chat.choices.stream.types import AiChoiceDeltas
 from ....chat.choices.stream.types import AiChoicesDeltas
-from ....chat.choices.stream.types import ContentAiChoiceDelta
 from ....chat.choices.types import AiChoice
 from ....chat.messages import AiMessage
 from ....chat.messages import AnyAiMessage
 from ....chat.messages import Message
 from ....chat.messages import SystemMessage
 from ....chat.messages import UserMessage
+from ....chat.stream.types import ContentAiDelta
 from ....models.configs import ModelName
 from ....resources import UseResources
 from ....standard import ApiUrl
@@ -189,7 +189,7 @@ class OllamaChatChoicesStreamService(BaseOllamaChatChoicesService):
                         check.state(not lp.message.tool_calls)
 
                         if (c := lp.message.content):
-                            await sink.emit(AiChoicesDeltas([AiChoiceDeltas([ContentAiChoiceDelta(
+                            await sink.emit(AiChoicesDeltas([AiChoiceDeltas([ContentAiDelta(
                                 c,
                             )])]))
 

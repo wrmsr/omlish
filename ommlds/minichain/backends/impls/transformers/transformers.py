@@ -24,7 +24,6 @@ from ....chat.choices.stream.services import ChatChoicesStreamResponse
 from ....chat.choices.stream.services import static_check_is_chat_choices_stream_service
 from ....chat.choices.stream.types import AiChoiceDeltas  # noqa
 from ....chat.choices.stream.types import AiChoicesDeltas  # noqa
-from ....chat.choices.stream.types import ContentAiChoiceDelta  # noqa
 from ....chat.choices.types import AiChoice
 from ....chat.choices.types import ChatChoicesOutputs
 from ....chat.messages import AiMessage
@@ -33,6 +32,7 @@ from ....chat.messages import SystemMessage
 from ....chat.messages import ToolUseMessage
 from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
+from ....chat.stream.types import ContentAiDelta  # noqa
 from ....completion import CompletionRequest
 from ....completion import CompletionResponse
 from ....completion import static_check_is_completion_service
@@ -288,7 +288,7 @@ class TransformersChatChoicesStreamService(BaseTransformersChatChoicesService):
                         end = False
 
                     if out:
-                        await sink.emit(AiChoicesDeltas([AiChoiceDeltas([ContentAiChoiceDelta(out)])]))
+                        await sink.emit(AiChoicesDeltas([AiChoiceDeltas([ContentAiDelta(out)])]))
 
                     if end:
                         break

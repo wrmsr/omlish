@@ -16,8 +16,8 @@ from ....chat.choices.stream.services import ChatChoicesStreamResponse
 from ....chat.choices.stream.services import static_check_is_chat_choices_stream_service
 from ....chat.choices.stream.types import AiChoiceDeltas
 from ....chat.choices.stream.types import AiChoicesDeltas
-from ....chat.choices.stream.types import ContentAiChoiceDelta
-from ....chat.choices.stream.types import PartialToolUseAiChoiceDelta
+from ....chat.stream.types import ContentAiDelta
+from ....chat.stream.types import PartialToolUseAiDelta
 from ....chat.tools.types import Tool
 from ....configs import Config
 from ....resources import UseResources
@@ -131,12 +131,12 @@ class AnthropicChatChoicesStreamService:
                                         cbk_start = ae
 
                                         if isinstance(ae.content_block, AnthropicSseDecoderEvents.ContentBlockStart.Text):  # noqa
-                                            await sink.emit(AiChoicesDeltas([AiChoiceDeltas([ContentAiChoiceDelta(
+                                            await sink.emit(AiChoicesDeltas([AiChoiceDeltas([ContentAiDelta(
                                                 ae.content_block.text,
                                             )])]))
 
                                         elif isinstance(ae.content_block, AnthropicSseDecoderEvents.ContentBlockStart.ToolUse):  # noqa
-                                            await sink.emit(AiChoicesDeltas([AiChoiceDeltas([PartialToolUseAiChoiceDelta(  # noqa
+                                            await sink.emit(AiChoicesDeltas([AiChoiceDeltas([PartialToolUseAiDelta(  # noqa
                                                 id=ae.content_block.id,
                                                 name=ae.content_block.name,
                                                 raw_args=ae.content_block.input,
@@ -149,12 +149,12 @@ class AnthropicChatChoicesStreamService:
                                         check.not_none(cbk_start)
 
                                         if isinstance(ae.delta, AnthropicSseDecoderEvents.ContentBlockDelta.TextDelta):
-                                            await sink.emit(AiChoicesDeltas([AiChoiceDeltas([ContentAiChoiceDelta(
+                                            await sink.emit(AiChoicesDeltas([AiChoiceDeltas([ContentAiDelta(
                                                 ae.delta.text,
                                             )])]))
 
                                         elif isinstance(ae.delta, AnthropicSseDecoderEvents.ContentBlockDelta.InputJsonDelta):  # noqa
-                                            await sink.emit(AiChoicesDeltas([AiChoiceDeltas([PartialToolUseAiChoiceDelta(  # noqa
+                                            await sink.emit(AiChoicesDeltas([AiChoiceDeltas([PartialToolUseAiDelta(  # noqa
                                                 raw_args=ae.delta.partial_json,
                                             )])]))
 

@@ -70,7 +70,7 @@ with _lang.auto_proxy_init(
     )
 
     from .chat.choices.stream.joining import (  # noqa
-        AiChoiceDeltaJoiner,
+        AiChoicesDeltaJoiner,
     )
 
     from .chat.choices.stream.services import (  # noqa
@@ -87,12 +87,6 @@ with _lang.auto_proxy_init(
 
         ChatChoicesStreamOutput,
         ChatChoicesStreamOutputs,
-
-        AiChoiceDelta,
-        ContentAiChoiceDelta,
-        AnyToolUseAiChoiceDelta,
-        ToolUseAiChoiceDelta,
-        PartialToolUseAiChoiceDelta,
 
         AiChoiceDeltas,
         AiChoicesDeltas,
@@ -119,6 +113,21 @@ with _lang.auto_proxy_init(
 
         AiChoice,
         AiChoices,
+    )
+
+    from .chat.stream.joining import (  # noqa
+        AiDeltaJoiner,
+    )
+
+    from .chat.stream.types import (  # noqa
+        AiDelta,
+        AiDeltas,
+
+        ContentAiDelta,
+
+        AnyToolUseAiDelta,
+        ToolUseAiDelta,
+        PartialToolUseAiDelta,
     )
 
     from .chat.tools.execution import (  # noqa

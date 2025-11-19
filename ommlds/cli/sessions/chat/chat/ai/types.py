@@ -23,6 +23,6 @@ class StreamAiChatGenerator(AiChatGenerator, lang.Abstract):
     def get_next_ai_messages_streamed(
             self,
             chat: 'mc.Chat',
-            delta_callback: ta.Callable[['mc.AiChoiceDelta'], ta.Awaitable[None]] | None = None,
+            delta_callback: ta.Callable[['mc.AiDelta'], ta.Awaitable[None]] | None = None,
     ) -> ta.Awaitable['mc.Chat']:
         raise NotImplementedError

@@ -28,7 +28,7 @@ from ....stream.services import StreamResponseSink
 from ....stream.services import new_stream_response
 from .chat import OpenaiChatChoicesService
 from .format import OpenaiChatRequestHandler
-from .format import build_mc_ai_choice_delta
+from .format import build_mc_ai_delta
 from .names import CHAT_MODEL_NAMES
 
 
@@ -122,7 +122,7 @@ class OpenaiChatChoicesStreamService:
                                     break
 
                                 await sink.emit(AiChoicesDeltas([
-                                    AiChoiceDeltas([build_mc_ai_choice_delta(choice.delta)])
+                                    AiChoiceDeltas([build_mc_ai_delta(choice.delta)])
                                     for choice in ccc.choices
                                 ]))
 

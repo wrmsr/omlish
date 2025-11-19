@@ -15,13 +15,13 @@ from ....chat.choices.stream.services import ChatChoicesStreamResponse
 from ....chat.choices.stream.services import static_check_is_chat_choices_stream_service
 from ....chat.choices.stream.types import AiChoiceDeltas
 from ....chat.choices.stream.types import AiChoicesDeltas
-from ....chat.choices.stream.types import ContentAiChoiceDelta
 from ....chat.choices.types import AiChoice
 from ....chat.choices.types import ChatChoicesOptions
 from ....chat.messages import AiMessage
 from ....chat.messages import Message
 from ....chat.messages import SystemMessage
 from ....chat.messages import UserMessage
+from ....chat.stream.types import ContentAiDelta
 from ....configs import Config
 from ....llms.types import MaxTokens
 from ....models.configs import ModelPath
@@ -207,7 +207,7 @@ class MlxChatChoicesStreamService(BaseMlxChatChoicesService):
                 for go in gen:
                     if go.text:
                         await sink.emit(AiChoicesDeltas([AiChoiceDeltas([
-                            ContentAiChoiceDelta(go.text),
+                            ContentAiDelta(go.text),
                         ])]))
 
                 return []

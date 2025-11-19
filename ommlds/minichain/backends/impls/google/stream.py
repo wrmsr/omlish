@@ -16,8 +16,6 @@ from ....chat.choices.stream.services import ChatChoicesStreamResponse
 from ....chat.choices.stream.services import static_check_is_chat_choices_stream_service
 from ....chat.choices.stream.types import AiChoiceDeltas
 from ....chat.choices.stream.types import AiChoicesDeltas
-from ....chat.choices.stream.types import ContentAiChoiceDelta
-from ....chat.choices.stream.types import ToolUseAiChoiceDelta
 from ....chat.choices.types import ChatChoicesOutputs
 from ....chat.messages import AiMessage
 from ....chat.messages import Message
@@ -25,6 +23,8 @@ from ....chat.messages import SystemMessage
 from ....chat.messages import ToolUseMessage
 from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
+from ....chat.stream.types import ContentAiDelta
+from ....chat.stream.types import ToolUseAiDelta
 from ....chat.tools.types import Tool
 from ....models.configs import ModelName
 from ....resources import UseResources
@@ -194,7 +194,7 @@ class GoogleChatChoicesStreamService:
                                     check.none(p.function_call)
                                     await sink.emit(AiChoicesDeltas([
                                         AiChoiceDeltas([
-                                            ContentAiChoiceDelta(check.not_none(txt)),
+                                            ContentAiDelta(check.not_none(txt)),
                                         ]),
                                     ]))
 
@@ -202,7 +202,7 @@ class GoogleChatChoicesStreamService:
                                     check.none(p.text)
                                     await sink.emit(AiChoicesDeltas([
                                         AiChoiceDeltas([
-                                            ToolUseAiChoiceDelta(
+                                            ToolUseAiDelta(
                                                 id=fc.id,
                                                 name=fc.name,
                                                 args=fc.args,

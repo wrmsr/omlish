@@ -5,10 +5,7 @@ from omlish.formats import json
 
 from .....backends.groq import protocol as pt
 from ....chat.choices.services import ChatChoicesResponse
-from ....chat.choices.stream.types import AiChoiceDelta
 from ....chat.choices.stream.types import AiChoiceDeltas
-from ....chat.choices.stream.types import ContentAiChoiceDelta
-from ....chat.choices.stream.types import ToolUseAiChoiceDelta
 from ....chat.choices.types import AiChoice
 from ....chat.messages import AiMessage
 from ....chat.messages import AnyAiMessage
@@ -17,6 +14,9 @@ from ....chat.messages import SystemMessage
 from ....chat.messages import ToolUseMessage
 from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
+from ....chat.stream.types import AiDelta
+from ....chat.stream.types import ContentAiDelta
+from ....chat.stream.types import ToolUseAiDelta
 from ....chat.tools.types import Tool
 from ....content.prepare import prepare_content_str
 from ....tools.jsonschema import build_tool_spec_params_json_schema
@@ -121,14 +121,14 @@ def build_mc_choices_response(gq_resp: pt.ChatCompletionResponse) -> ChatChoices
 
 def build_mc_ai_choice_deltas(delta: pt.ChatCompletionChunk.Choice.Delta) -> AiChoiceDeltas:
     if delta.role in (None, 'assistant'):
-        lst: list[AiChoiceDelta] = []
+        lst: list[AiDelta] = []
 
         if delta.content is not None:
-            lst.append(ContentAiChoiceDelta(delta.content))
+            lst.append(ContentAiDelta(delta.content))
 
         for tc in delta.tool_calls or []:
             tc_fn = check.not_none(tc.function)
-            lst.append(ToolUseAiChoiceDelta(
+            lst.append(ToolUseAiDelta(
                 id=tc.id,
                 name=check.not_none(tc_fn.name),
                 args=json.loads(tc_fn.arguments or '{}'),

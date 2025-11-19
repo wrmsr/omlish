@@ -15,7 +15,6 @@ from ..choices.stream.services import ChatChoicesStreamResponse
 from ..choices.stream.services import static_check_is_chat_choices_stream_service
 from ..choices.stream.types import AiChoiceDeltas
 from ..choices.stream.types import AiChoicesDeltas
-from ..choices.stream.types import ContentAiChoiceDelta
 from ..choices.types import AiChoice
 from ..messages import AiChat
 from ..messages import AiMessage
@@ -24,6 +23,7 @@ from ..messages import UserMessage
 from ..services import ChatRequest
 from ..services import ChatResponse
 from ..services import static_check_is_chat_service
+from ..stream.types import ContentAiDelta
 
 
 ##
@@ -77,7 +77,7 @@ class DummyChatChoicesStreamService(DummyFnService):
                 ac = self.fn(request.v)
                 await sink.emit(AiChoicesDeltas([
                     AiChoiceDeltas([
-                        ContentAiChoiceDelta(
+                        ContentAiDelta(
                             check.isinstance(am, AiMessage).c,
                         )
                         for am in ac

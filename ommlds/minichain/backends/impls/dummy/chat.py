@@ -11,10 +11,10 @@ from ....chat.choices.stream.services import ChatChoicesStreamResponse
 from ....chat.choices.stream.services import static_check_is_chat_choices_stream_service
 from ....chat.choices.stream.types import AiChoiceDeltas
 from ....chat.choices.stream.types import AiChoicesDeltas
-from ....chat.choices.stream.types import ContentAiChoiceDelta
 from ....chat.choices.types import AiChoice
 from ....chat.choices.types import ChatChoicesOutputs
 from ....chat.messages import AiMessage
+from ....chat.stream.types import ContentAiDelta
 from ....resources import UseResources
 from ....stream.services import StreamResponseSink
 from ....stream.services import new_stream_response
@@ -48,7 +48,7 @@ class DummyChatChoicesStreamService:
                 for s in LOREM:
                     await sink.emit(AiChoicesDeltas([
                         AiChoiceDeltas([
-                            ContentAiChoiceDelta(s),
+                            ContentAiDelta(s),
                         ]),
                     ]))
 

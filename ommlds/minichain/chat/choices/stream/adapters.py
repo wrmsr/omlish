@@ -5,7 +5,7 @@ from ..services import ChatChoicesRequest
 from ..services import static_check_is_chat_choices_service
 from ..types import AiChoice
 from ..types import AiChoices
-from .joining import AiChoiceDeltaJoiner
+from .joining import AiChoicesDeltaJoiner
 from .services import ChatChoicesOutputs
 from .services import ChatChoicesStreamOutputs
 from .services import ChatChoicesStreamService
@@ -23,7 +23,7 @@ class ChatChoicesStreamServiceChatChoicesService:
         AiChoices,
         ChatChoicesOutputs | ChatChoicesStreamOutputs,
     ]:
-        joiner = AiChoiceDeltaJoiner()
+        joiner = AiChoicesDeltaJoiner()
 
         async with (resp := await self.service.invoke(request)).v as it:  # noqa
             async for cs in it:

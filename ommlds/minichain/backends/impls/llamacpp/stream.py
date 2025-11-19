@@ -15,7 +15,7 @@ from ....chat.choices.stream.services import ChatChoicesStreamResponse
 from ....chat.choices.stream.services import static_check_is_chat_choices_stream_service
 from ....chat.choices.stream.types import AiChoiceDeltas
 from ....chat.choices.stream.types import AiChoicesDeltas
-from ....chat.choices.stream.types import ContentAiChoiceDelta
+from ....chat.stream.types import ContentAiDelta
 from ....configs import Config
 from ....models.configs import ModelPath
 from ....resources import UseResources
@@ -102,7 +102,7 @@ class LlamacppChatChoicesStreamService(lang.ExitStacked):
                     # FIXME: stop reason
 
                     if (content := delta.get('content', '')):
-                        await sink.emit(AiChoicesDeltas([AiChoiceDeltas([ContentAiChoiceDelta(content)])]))
+                        await sink.emit(AiChoicesDeltas([AiChoiceDeltas([ContentAiDelta(content)])]))
 
                 return None
 

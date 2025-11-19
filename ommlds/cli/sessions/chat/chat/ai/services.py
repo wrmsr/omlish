@@ -59,12 +59,12 @@ class ChatChoicesStreamServiceStreamAiChatGenerator(StreamAiChatGenerator):
     async def get_next_ai_messages_streamed(
             self,
             chat: 'mc.Chat',
-            delta_callback: ta.Callable[['mc.AiChoiceDelta'], ta.Awaitable[None]] | None = None,
+            delta_callback: ta.Callable[['mc.AiDelta'], ta.Awaitable[None]] | None = None,
     ) -> mc.AiChat:
         opts = self._options() if self._options is not None else []
 
         async with self._service_provider.provide_backend() as service:
-            joiner = mc.AiChoiceDeltaJoiner()
+            joiner = mc.AiChoicesDeltaJoiner()
 
             async with (await service.invoke(mc.ChatChoicesStreamRequest(chat, opts))).v as st_resp:
                 async for o in st_resp:

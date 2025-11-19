@@ -7,9 +7,6 @@ from omlish.formats import json
 
 from .....backends.openai import protocol as pt
 from ....chat.choices.services import ChatChoicesResponse
-from ....chat.choices.stream.types import AiChoiceDelta
-from ....chat.choices.stream.types import ContentAiChoiceDelta
-from ....chat.choices.stream.types import PartialToolUseAiChoiceDelta
 from ....chat.choices.types import AiChoice
 from ....chat.choices.types import AiChoices
 from ....chat.choices.types import ChatChoicesOptions
@@ -20,6 +17,9 @@ from ....chat.messages import SystemMessage
 from ....chat.messages import ToolUseMessage
 from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
+from ....chat.stream.types import AiDelta
+from ....chat.stream.types import ContentAiDelta
+from ....chat.stream.types import PartialToolUseAiDelta
 from ....chat.tools.types import Tool
 from ....content.json import JsonContent
 from ....content.prepare import prepare_content_str
@@ -128,16 +128,16 @@ def build_mc_choices_response(oai_resp: pt.ChatCompletionResponse) -> ChatChoice
     )
 
 
-def build_mc_ai_choice_delta(delta: pt.ChatCompletionChunkChoiceDelta) -> AiChoiceDelta:
+def build_mc_ai_delta(delta: pt.ChatCompletionChunkChoiceDelta) -> AiDelta:
     if delta.content is not None:
         check.state(not delta.tool_calls)
-        return ContentAiChoiceDelta(delta.content)
+        return ContentAiDelta(delta.content)
 
     elif delta.tool_calls is not None:
         check.state(delta.content is None)
         tc = check.single(delta.tool_calls)
         tc_fn = check.not_none(tc.function)
-        return PartialToolUseAiChoiceDelta(
+        return PartialToolUseAiDelta(
             id=tc.id,
             name=tc_fn.name,
             raw_args=tc_fn.arguments,
