@@ -359,5 +359,17 @@
         "module": "omlish.specs.jmespath.__main__"
       }
     }
+  },
+  {
+    "module": ".text.docwrap.__main__",
+    "attr": "_CLI_MODULE",
+    "file": "omlish/text/docwrap/__main__.py",
+    "line": 1,
+    "value": {
+      "!omdev.cli.types.CliModule": {
+        "name": "docwrap",
+        "module": "omlish.text.docwrap.__main__"
+      }
+    }
   }
 ]

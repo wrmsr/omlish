@@ -161,9 +161,9 @@ class Runtime(_enum.Enum):
     JAVA21 = 'java21'
     PYTHON3_13 = 'python3.13'
     NODEJS22_X = 'nodejs22.x'
-    JAVA25 = 'java25'
     NODEJS24_X = 'nodejs24.x'
     PYTHON3_14 = 'python3.14'
+    JAVA25 = 'java25'
 
 
 RuntimeVersionArn = _ta.NewType('RuntimeVersionArn', str)
@@ -227,6 +227,10 @@ class SystemLogLevel(_enum.Enum):
     DEBUG = 'DEBUG'
     INFO = 'INFO'
     WARN = 'WARN'
+
+
+class TenantIsolationMode(_enum.Enum):
+    PER_TENANT = 'PER_TENANT'
 
 
 class ThrottleReason(_enum.Enum):
@@ -482,6 +486,17 @@ class SnapStartResponse(
 StringList: _ta.TypeAlias = _ta.Sequence[str]
 
 SubnetIds: _ta.TypeAlias = _ta.Sequence[SubnetId]
+
+
+@_dc.dataclass(frozen=True, kw_only=True)
+class TenancyConfig(
+    _base.Shape,
+    shape_name='TenancyConfig',
+):
+    tenant_isolation_mode: TenantIsolationMode = _dc.field(metadata=_base.field_metadata(
+        member_name='TenantIsolationMode',
+        shape_name='TenantIsolationMode',
+    ))
 
 
 @_dc.dataclass(frozen=True, kw_only=True)
@@ -816,6 +831,11 @@ class FunctionConfiguration(
         shape_name='LoggingConfig',
     ))
 
+    tenancy_config: TenancyConfig | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='TenancyConfig',
+        shape_name='TenancyConfig',
+    ))
+
 
 FunctionList: _ta.TypeAlias = _ta.Sequence[FunctionConfiguration]
 
@@ -856,6 +876,7 @@ ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
     RuntimeVersionError,
     ServiceException,
     SnapStartResponse,
+    TenancyConfig,
     TooManyRequestsException,
     TracingConfigResponse,
     VpcConfigResponse,

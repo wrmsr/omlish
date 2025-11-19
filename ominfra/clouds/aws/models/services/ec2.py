@@ -1718,6 +1718,7 @@ class ResourceType(_enum.Enum):
     CAPACITY_BLOCK = 'capacity-block'
     MAC_MODIFICATION_TASK = 'mac-modification-task'
     IPAM_PREFIX_LIST_RESOLVER = 'ipam-prefix-list-resolver'
+    IPAM_POLICY = 'ipam-policy'
     IPAM_PREFIX_LIST_RESOLVER_TARGET = 'ipam-prefix-list-resolver-target'
     CAPACITY_MANAGER_DATA_EXPORT = 'capacity-manager-data-export'
     VPN_CONCENTRATOR = 'vpn-concentrator'
@@ -1765,6 +1766,7 @@ class ServiceManaged(_enum.Enum):
     ALB = 'alb'
     NLB = 'nlb'
     RNAT = 'rnat'
+    RDS = 'rds'
 
 
 class ShutdownBehavior(_enum.Enum):
