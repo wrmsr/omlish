@@ -1,3 +1,7 @@
+"""
+Usable as a jetbrains external tool:
+  `om docwrap -i "$FilePath$" -s "$SelectionStartLine$" -e "$SelectionEndLine$"`
+"""
 import argparse
 import sys
 import typing as ta
