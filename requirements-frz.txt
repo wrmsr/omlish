@@ -323,7 +323,7 @@ uritemplate==4.2.0
 urllib3==2.5.0
 urwid==3.0.3
 urwid_readline==0.15.1
-uv==0.9.10
+uv==0.9.11
 watchdog==6.0.0
 wcwidth==0.2.14
 webcolors==25.10.0

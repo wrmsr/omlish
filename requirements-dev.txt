@@ -4,7 +4,7 @@ build>=1.2.2
 twine>=6.2.0
 wheel>=0.45.1
 
-uv>=0.9.10
+uv>=0.9.11
 
 pytest==9.0.1
 pytest-benchmark==5.2.3
