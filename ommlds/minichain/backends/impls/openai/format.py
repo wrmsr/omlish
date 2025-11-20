@@ -23,6 +23,7 @@ from ....chat.stream.types import PartialToolUseAiDelta
 from ....chat.tools.types import Tool
 from ....content.json import JsonContent
 from ....content.prepare import prepare_content_str
+from ....llms.types import MaxCompletionTokens
 from ....llms.types import MaxTokens
 from ....llms.types import Temperature
 from ....llms.types import TokenUsage
@@ -173,6 +174,7 @@ class OpenaiChatRequestHandler:
     _OPTION_KWARG_NAMES_MAP: ta.ClassVar[ta.Mapping[str, type[ChatChoicesOptions]]] = dict(
         temperature=Temperature,
         max_tokens=MaxTokens,
+        max_completion_tokens=MaxCompletionTokens,
     )
 
     class _ProcessedOptions(ta.NamedTuple):

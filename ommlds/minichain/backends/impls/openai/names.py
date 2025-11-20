@@ -30,6 +30,8 @@ _GPT_MODEL_NAMES = [
     'gpt-5-chat-latest',
     'gpt-5-mini',
     'gpt-5-nano',
+
+    'gpt-5.1',
 ]
 
 
@@ -46,7 +48,7 @@ CHAT_MODEL_NAMES = ModelNameCollection(
             for n in _GPT_MODEL_NAMES
         },
 
-        'gpt': 'gpt-5',
+        'gpt': 'gpt-5.1',
         'gpt-mini': 'gpt-5-mini',
 
         #

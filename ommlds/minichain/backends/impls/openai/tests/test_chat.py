@@ -15,8 +15,7 @@ from .....chat.messages import ToolUseResultMessage
 from .....chat.messages import UserMessage
 from .....chat.tools.types import Tool
 from .....content.text import TextContent
-from .....llms.types import MaxTokens
-from .....llms.types import Temperature
+from .....llms.types import MaxCompletionTokens
 from .....standard import ApiKey
 from .....standard import DefaultOptions
 from .....tools.types import ToolDtype
@@ -35,8 +34,8 @@ def test_openai(harness):
     req = ChatChoicesRequest(
         [UserMessage('Is water dry?')],
         [
-            Temperature(.1),
-            MaxTokens(64),
+            # Temperature(.1),
+            MaxCompletionTokens(64),
         ],
     )
 
@@ -59,8 +58,8 @@ def test_openai_content(harness):
     req = ChatChoicesRequest(
         [UserMessage(['Is water ', [TextContent('dry?')]])],
         [
-            Temperature(.1),
-            MaxTokens(64),
+            # Temperature(.1),
+            MaxCompletionTokens(64),
         ],
     )
 
@@ -100,8 +99,8 @@ def test_openai_tools(harness):
     resp = lang.sync_await(llm.invoke(ChatChoicesRequest(
         chat,
         [
-            Temperature(.1),
-            MaxTokens(64),
+            # Temperature(.1),
+            MaxCompletionTokens(64),
             Tool(tool_spec),
         ],
     )))
@@ -125,8 +124,8 @@ def test_openai_tools(harness):
     resp = lang.sync_await(llm.invoke(ChatChoicesRequest(
         chat,
         [
-            Temperature(.1),
-            MaxTokens(64),
+            # Temperature(.1),
+            MaxCompletionTokens(64),
             Tool(tool_spec),
         ],
     )))
@@ -148,9 +147,11 @@ def test_openai_chat_promote(harness):
 def test_default_options(harness):
     llm: ChatChoicesService = ta.cast(ChatChoicesService, OpenaiChatChoicesService(
         ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
-        DefaultOptions([MaxTokens(100)]),
+        DefaultOptions([
+            MaxCompletionTokens(100),
+        ]),
         http_client=http.SyncAsyncHttpClient(http.client()),
     ))
 
     assert lang.sync_await(llm.invoke(ChatChoicesRequest([UserMessage('Hi!')]))).v
-    assert lang.sync_await(llm.invoke(ChatChoicesRequest([UserMessage('Hi!')], [MaxTokens(101)]))).v
+    assert lang.sync_await(llm.invoke(ChatChoicesRequest([UserMessage('Hi!')], [MaxCompletionTokens(101)]))).v

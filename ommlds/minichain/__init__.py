@@ -308,6 +308,7 @@ with _lang.auto_proxy_init(
         TopK,
         Temperature,
         MaxTokens,
+        MaxCompletionTokens,
 
         LlmOutput,
 

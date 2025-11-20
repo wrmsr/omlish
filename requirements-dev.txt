@@ -133,7 +133,7 @@ boto3>=1.41.0
 
 antlr4-python3-runtime==4.13.2
 
-mlx==0.29.3; sys_platform == "darwin" and python_version < "3.14"  # @omlish-venv !13t !13dt !14t
+mlx==0.30.0; sys_platform == "darwin" and python_version < "3.14"  # @omlish-venv !13t !13dt !14t
 mlx-lm==0.28.3; sys_platform == "darwin" and python_version < "3.14"  # @omlish-venv !13t !13dt !14t
 
 apsw==3.51.0.0

@@ -31,6 +31,10 @@ class MaxTokens(LlmOption, tv.UniqueScalarTypedValue[int]):
     pass
 
 
+class MaxCompletionTokens(LlmOption, tv.UniqueScalarTypedValue[int]):
+    pass
+
+
 ##
 
 
