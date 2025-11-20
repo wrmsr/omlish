@@ -4,6 +4,24 @@ https://docs.tavily.com/documentation/api-reference/endpoint/search
 import typing as ta
 
 from omlish import dataclasses as dc
+from omlish import lang
+from omlish import marshal as msh
+
+
+##
+
+
+def _set_class_marshal_options(cls):
+    msh.update_object_metadata(
+        cls,
+        field_defaults=msh.FieldMetadata(
+            options=msh.FieldOptions(
+                omit_if=lang.is_none,
+            ),
+        ),
+    )
+
+    return cls
 
 
 ##
@@ -183,6 +201,7 @@ KNOWN_COUNTRIES = frozenset([
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+@_set_class_marshal_options
 class SearchRequest:
     query: str
 
@@ -214,11 +233,13 @@ class SearchRequest:
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+@_set_class_marshal_options
 class SearchResponse:
     query: str
     answer: str
 
     @dc.dataclass(frozen=True, kw_only=True)
+    @_set_class_marshal_options
     class Image:
         url: str | None = None
         description: str | None = None
@@ -226,6 +247,7 @@ class SearchResponse:
     images: ta.Sequence[Image] | None = None
 
     @dc.dataclass(frozen=True, kw_only=True)
+    @_set_class_marshal_options
     class Result:
         title: str | None = None
         url: str | None = None
@@ -235,6 +257,8 @@ class SearchResponse:
         favicon: str | None = None
 
     results: ta.Sequence[Result] | None = None
+
+    follow_up_questions: ta.Sequence[str] | None = None
 
     auto_parameters: ta.Mapping[str, ta.Any] | None = None
 

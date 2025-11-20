@@ -281,6 +281,14 @@ class TenantDatabaseQuotaExceededFault(
 
 
 @_dc.dataclass(frozen=True, kw_only=True)
+class VpcEncryptionControlViolationException(
+    _base.Shape,
+    shape_name='VpcEncryptionControlViolationException',
+):
+    pass
+
+
+@_dc.dataclass(frozen=True, kw_only=True)
 class AvailabilityZone(
     _base.Shape,
     shape_name='AvailabilityZone',
@@ -1828,6 +1836,7 @@ ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
     StorageTypeNotSupportedFault,
     Subnet,
     TenantDatabaseQuotaExceededFault,
+    VpcEncryptionControlViolationException,
     VpcSecurityGroupMembership,
 ])
 
@@ -1862,6 +1871,7 @@ CREATE_DB_INSTANCE = _base.Operation(
         StorageQuotaExceededFault,
         StorageTypeNotSupportedFault,
         TenantDatabaseQuotaExceededFault,
+        VpcEncryptionControlViolationException,
     ],
 )
 
@@ -1916,6 +1926,7 @@ START_DB_INSTANCE = _base.Operation(
         InvalidSubnet,
         InvalidVPCNetworkStateFault,
         KMSKeyNotAccessibleFault,
+        VpcEncryptionControlViolationException,
     ],
 )
 

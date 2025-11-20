@@ -1,4 +1,3 @@
-import ddgs.exceptions
 import pytest
 
 from omlish import lang
@@ -13,6 +12,8 @@ from ..search import DuckduckgoSearchService
 @ptu.skip.if_cant_import('ddgs')
 @pytest.mark.online
 def test_search():
+    import ddgs.exceptions
+
     try:
         res = lang.sync_await(DuckduckgoSearchService().invoke(Request('the disco biscuits')))
     except (ddgs.exceptions.RatelimitException, TimeoutError) as e:

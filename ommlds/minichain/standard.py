@@ -25,6 +25,7 @@ class Device(tv.UniqueScalarTypedValue[ta.Any], Config):
 ##
 
 
+# TODO: ApiEndpointPath, ApiEndpointUrl, ApiBaseUrl, ...
 class ApiUrl(tv.UniqueScalarTypedValue[str], Config):
     pass
 

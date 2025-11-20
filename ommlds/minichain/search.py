@@ -19,7 +19,7 @@ class SearchHit(lang.Final):
     title: str | None
     url: str | None
     description: str | None = None
-    snippets: lang.SequenceNotStr[str] | None
+    snippets: lang.SequenceNotStr[str] | None = None
 
 
 @dc.dataclass(frozen=True, kw_only=True)
