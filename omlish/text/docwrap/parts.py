@@ -114,13 +114,20 @@ def blockify(*ps: Part) -> Part:
     return Block(ps)
 
 
+def unblockify(p: Part) -> ta.Sequence[Part]:
+    if isinstance(p, Block):
+        return p.ps
+    else:
+        return [p]
+
+
 ##
 
 
 def build_root(s: str) -> Part:
     lst: list[Part] = []
 
-    for l in s.splitlines():
+    for l in s.split('\n'):
         if not (sl := l.strip()):
             lst.append(Blank())
             continue

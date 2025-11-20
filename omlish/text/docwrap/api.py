@@ -50,6 +50,12 @@ def parse(
 ##
 
 
+DEFAULT_TEXTWRAP_OPTS = TextwrapOpts(
+    width=120,
+    break_on_hyphens=False,
+)
+
+
 def docwrap(
         s: str,
         *,
@@ -60,7 +66,7 @@ def docwrap(
     if isinstance(textwrap, ta.Mapping):
         textwrap = TextwrapOpts(**textwrap)
     elif textwrap is None:
-        textwrap = TextwrapOpts()
+        textwrap = DEFAULT_TEXTWRAP_OPTS
     if width is not None:
         textwrap = dc.replace(textwrap, width=width)
 

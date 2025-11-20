@@ -15,6 +15,7 @@ from .parts import List
 from .parts import Part
 from .parts import Text
 from .parts import blockify
+from .parts import unblockify
 from .utils import all_same
 
 
@@ -84,6 +85,8 @@ def reflow_block_text(
             raise TypeError(p)
 
         ps = [rec(c, ci) for c in p.ps]
+
+        ps = list(unblockify(blockify(*ps)))
 
         new: list[Part | list[str]] = []
         for c in ps:

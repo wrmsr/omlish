@@ -25,22 +25,32 @@ def _indent_str(n: int) -> str:
 def render_to(root: Part, out: ta.Callable[[str], ta.Any]) -> None:
     i_stk: list[int] = [0]
     ci = 0
+    need_nl = False
 
-    def write(s: str, ti: int | None = None) -> None:
-        if (nl := '\n' in s) and s != '\n':
-            check.state(s[-1] == '\n')
-            check.state(s.count('\n') == 1)
+    def write(
+            s: str,
+            ti: int | None = None,
+            endl: bool = False,
+    ) -> None:
+        check.not_in('\n', s)
+
+        nonlocal need_nl
+        nonlocal ci
+        if need_nl:
+            check.state(ci == 0)
+            out('\n')
+            need_nl = False
 
         if ti is None:
             ti = i_stk[-1]
-        nonlocal ci
         if ci < ti:
             out(_indent_str(ti - ci))
             ci = ti
 
         out(s)
 
-        if nl:
+        if endl:
+            need_nl = True
             ci = 0
 
     def rec(p: Part) -> None:
@@ -51,8 +61,7 @@ def render_to(root: Part, out: ta.Callable[[str], ta.Any]) -> None:
             out('\n')
 
         elif isinstance(p, Text):
-            write(p.s)
-            write('\n')
+            write(p.s, endl=True)
 
         elif isinstance(p, Block):
             for c in p.ps:

@@ -94,3 +94,20 @@ def test_list_one_item():
 
     That was the one inline item list test.
 """)
+
+
+def test_list_empty_item():
+    root = chop_and_say(  # noqa
+        """\
+    This is the one item list test.
+    
+     - One item
+     -
+
+    That was the one item list test.
+    
+    -
+    - One inline item
+
+    That was the one inline item list test.
+""")
