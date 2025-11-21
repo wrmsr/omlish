@@ -17,6 +17,7 @@ from ....chat.choices.services import ChatChoicesRequest
 from ....chat.choices.services import ChatChoicesResponse
 from ....chat.choices.services import static_check_is_chat_choices_service
 from ....chat.choices.types import AiChoice
+from ....chat.choices.types import ChatChoicesOptions
 from ....chat.messages import AiMessage
 from ....chat.messages import AnyAiMessage
 from ....chat.messages import Message
@@ -24,9 +25,12 @@ from ....chat.messages import SystemMessage
 from ....chat.messages import ToolUseMessage
 from ....chat.messages import UserMessage
 from ....chat.tools.types import Tool
+from ....llms.types import MaxTokens
+from ....llms.types import Temperature
 from ....models.configs import ModelName
 from ....standard import ApiKey
 from ....tools.types import ToolUse
+from ....types import Option
 from .names import MODEL_NAMES
 from .protocol import build_protocol_chat_messages
 from .protocol import build_protocol_tool
@@ -67,16 +71,31 @@ class AnthropicChatChoicesService:
         else:
             raise TypeError(m)
 
+    DEFAULT_OPTIONS: ta.ClassVar[tv.TypedValues[Option]] = tv.TypedValues[Option](
+        MaxTokens(4096),
+    )
+
+    _OPTION_KWARG_NAMES_MAP: ta.ClassVar[ta.Mapping[str, type[ChatChoicesOptions]]] = dict(
+        temperature=Temperature,
+        max_tokens=MaxTokens,
+    )
+
     async def invoke(
             self,
             request: ChatChoicesRequest,
-            *,
-            max_tokens: int = 4096,  # FIXME: ChatOption
     ) -> ChatChoicesResponse:
         messages, system = build_protocol_chat_messages(request.v)
 
+        kwargs: dict = dict()
+
         tools: list[pt.ToolSpec] = []
-        with tv.TypedValues(*request.options).consume() as oc:
+        with tv.TypedValues(
+            *self.DEFAULT_OPTIONS,
+                *request.options,
+                override=True,
+        ).consume() as oc:
+            kwargs.update(oc.pop_scalar_kwargs(**self._OPTION_KWARG_NAMES_MAP))
+
             t: Tool
             for t in oc.pop(Tool, []):
                 tools.append(build_protocol_tool(t))
@@ -86,7 +105,7 @@ class AnthropicChatChoicesService:
             system=system,
             messages=messages,
             tools=tools or None,
-            max_tokens=max_tokens,
+            **kwargs,
         )
 
         raw_request = msh.marshal(a_req)
