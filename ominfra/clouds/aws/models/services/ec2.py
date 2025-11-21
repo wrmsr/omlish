@@ -298,6 +298,7 @@ class InstanceLifecycleType(_enum.Enum):
     SPOT = 'spot'
     SCHEDULED = 'scheduled'
     CAPACITY_BLOCK = 'capacity-block'
+    INTERRUPTIBLE_CAPACITY_RESERVATION = 'interruptible-capacity-reservation'
 
 
 class InstanceMetadataEndpointState(_enum.Enum):
@@ -1471,6 +1472,7 @@ LocalGatewayId = _ta.NewType('LocalGatewayId', str)
 class MarketType(_enum.Enum):
     SPOT = 'spot'
     CAPACITY_BLOCK = 'capacity-block'
+    INTERRUPTIBLE_CAPACITY_RESERVATION = 'interruptible-capacity-reservation'
 
 
 MaxIpv4AddrPerInterface = _ta.NewType('MaxIpv4AddrPerInterface', int)

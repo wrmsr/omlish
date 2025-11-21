@@ -280,6 +280,12 @@ class TenantDatabaseQuotaExceededFault(
     pass
 
 
+class UpgradeRolloutOrder(_enum.Enum):
+    FIRST = 'first'
+    SECOND = 'second'
+    LAST = 'last'
+
+
 @_dc.dataclass(frozen=True, kw_only=True)
 class VpcEncryptionControlViolationException(
     _base.Shape,
@@ -1339,6 +1345,11 @@ class DBInstance(
     preferred_maintenance_window: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='PreferredMaintenanceWindow',
         shape_name='String',
+    ))
+
+    upgrade_rollout_order: UpgradeRolloutOrder | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='UpgradeRolloutOrder',
+        shape_name='UpgradeRolloutOrder',
     ))
 
     pending_modified_values: PendingModifiedValues | None = _dc.field(default=None, metadata=_base.field_metadata(

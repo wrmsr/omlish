@@ -15,11 +15,11 @@ pytest-xdist==3.8.0
 
 flake8==7.3.0
 flake8-pyproject==1.2.3
-ruff==0.14.5
+ruff==0.14.6
 
 docutils-stubs==0.0.22
 lxml-stubs==0.5.1
-types-boto3==1.41.1
+types-boto3==1.41.2
 types-greenlet==3.2.0.20250915
 types-paramiko==4.0.0.20250822  # @omlish-venv !13t !13dt  # cffi ????
 types-psutil==7.0.0.20251116
@@ -65,7 +65,7 @@ json5==0.12.1
 # c/libpq
 psycopg2==2.9.11
 # py/cy
-psycopg==3.2.12
+psycopg==3.2.13
 
 mysql-connector-python==9.5.0
 mysqlclient==2.2.7; sys_platform == "darwin"  # brew install mysql pkg-config  # PKG_CONFIG_PATH="/opt/homebrew/opt/mysql-client/lib/pkgconfig" pip install ...
@@ -129,7 +129,7 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.41.1
+boto3>=1.41.2
 
 antlr4-python3-runtime==4.13.2
 
@@ -143,7 +143,7 @@ rapidocr-onnxruntime==1.4.4; python_version < "3.14"  # @omlish-venv !13t !13dt 
 
 pillow==12.0.0
 
-accelerate==1.11.0  # @omlish-venv !14t !14dt
+accelerate==1.12.0  # @omlish-venv !14t !14dt
 
 # bitsandbytes==0.45.4
 bitsandbytes
