@@ -7,7 +7,9 @@ from .identity import IdentitySet
 
 T = ta.TypeVar('T')
 K = ta.TypeVar('K')
+K2 = ta.TypeVar('K2')
 V = ta.TypeVar('V')
+V2 = ta.TypeVar('V2')
 
 
 ##
@@ -127,6 +129,81 @@ def make_map_by(
 ):
     return make_map(
         ((fn(v), v) for v in vs),
+        identity=identity,
+        strict=strict,
+    )
+
+
+##
+
+
+@ta.overload
+def map_keys(
+        fn: ta.Callable[[K], K2],
+        dct: ta.Mapping[K, V] | ta.Iterable[tuple[K, V]],
+        *,
+        identity: ta.Literal[False] = False,
+        strict: bool = False,
+) -> dict[K2, V]:
+    return {}
+
+
+@ta.overload
+def map_keys(
+        fn: ta.Callable[[K], K2],
+        dct: ta.Mapping[K, V] | ta.Iterable[tuple[K, V]],
+        *,
+        identity: bool = False,
+        strict: bool = False,
+) -> ta.MutableMapping[K2, V]:
+    return {}
+
+
+def map_keys(
+        fn,
+        dct,
+        *,
+        identity=False,
+        strict=False,
+):
+    return make_map(
+        ((fn(k), v) for k, v in (dct.items() if isinstance(dct, ta.Mapping) else dct)),
+        identity=identity,
+        strict=strict,
+    )
+
+
+@ta.overload
+def map_values(
+        fn: ta.Callable[[V], V2],
+        dct: ta.Mapping[K, V] | ta.Iterable[tuple[K, V]],
+        *,
+        identity: ta.Literal[False] = False,
+        strict: bool = False,
+) -> dict[K, V2]:
+    return {}
+
+
+@ta.overload
+def map_values(
+        fn: ta.Callable[[V], V2],
+        dct: ta.Mapping[K, V] | ta.Iterable[tuple[K, V]],
+        *,
+        identity: bool = False,
+        strict: bool = False,
+) -> ta.MutableMapping[K2, V]:
+    return {}
+
+
+def map_values(
+        fn,
+        dct,
+        *,
+        identity=False,
+        strict=False,
+):
+    return make_map(
+        ((k, fn(v)) for k, v in (dct.items() if isinstance(dct, ta.Mapping) else dct)),
         identity=identity,
         strict=strict,
     )

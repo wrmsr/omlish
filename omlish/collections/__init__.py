@@ -155,6 +155,8 @@ with _lang.auto_proxy_init(globals()):
         key_cmp,
         make_map,
         make_map_by,
+        map_keys,
+        map_values,
         multi_map,
         multi_map_by,
         partition,
