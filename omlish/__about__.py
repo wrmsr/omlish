@@ -101,7 +101,7 @@ class Project(ProjectBase):
 
             'aiomysql ~= 0.3',
             'aiosqlite ~= 0.21',
-            'asyncpg ~= 0.30',
+            'asyncpg ~= 0.31',
 
             'apsw ~= 3.51',
 

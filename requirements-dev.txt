@@ -19,7 +19,7 @@ ruff==0.14.6
 
 docutils-stubs==0.0.22
 lxml-stubs==0.5.1
-types-boto3==1.41.2
+types-boto3==1.41.3
 types-greenlet==3.2.0.20250915
 types-paramiko==4.0.0.20250822  # @omlish-venv !13t !13dt  # cffi ????
 types-psutil==7.1.1.20251122
@@ -117,7 +117,7 @@ hf-xet==1.2.0  # @omlish-venv !14t !14dt
 
 datasets==4.4.1; python_version < "3.14"  # !! includes arrow and pandas and shit
 
-transformers==4.57.1  # @omlish-venv !14t !14dt
+transformers==4.57.2  # @omlish-venv !14t !14dt
 sentence-transformers==5.1.2  # @omlish-venv !14t !14dt
 
 sentencepiece==0.2.1
@@ -129,7 +129,7 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.41.2
+boto3>=1.41.3
 
 antlr4-python3-runtime==4.13.2
 
