@@ -11,6 +11,12 @@ from omlish import lang
 from omlish import marshal as msh
 
 
+ClientRequestT = ta.TypeVar('ClientRequestT', bound='ClientRequest')
+ClientResultT = ta.TypeVar('ClientResultT', bound='ClientResult')
+ServerRequestT = ta.TypeVar('ServerRequestT', bound='ServerRequest')
+ServerResultT = ta.TypeVar('ServerResultT', bound='ServerResult')
+
+
 msh.register_global_module_import('._marshal', __package__)
 
 
@@ -41,27 +47,36 @@ class Message(lang.Sealed, lang.Abstract):
         raise NotImplementedError
 
 
-class ClientRequest(Message, lang.Abstract):
+#
+
+
+class ClientRequest(Message, lang.Abstract, ta.Generic[ClientResultT]):
     pass
 
 
-class ClientResult(Message, lang.Abstract):
+class ClientResult(Message, lang.Abstract, ta.Generic[ClientRequestT]):
     pass
 
 
-class ServerRequest(Message, lang.Abstract):
+#
+
+
+class ServerRequest(Message, lang.Abstract, ta.Generic[ServerResultT]):
     pass
 
 
-class ServerResult(Message, lang.Abstract):
+class ServerResult(Message, lang.Abstract, ta.Generic[ServerRequestT]):
     pass
+
+
+#
 
 
 class Notification(Message, lang.Abstract):
     pass
 
 
-#
+##
 
 
 @dc.dataclass(frozen=True, kw_only=True)
@@ -84,7 +99,7 @@ DEFAULT_PROTOCOL_VERSION = '2025-06-18'
 
 @dc.dataclass(frozen=True, kw_only=True)
 @_set_class_marshal_options
-class ClientCapabilities:
+class ClientCapabilities(lang.Final):
     elicitation: ta.Any | None = None
 
     experimental: ta.Mapping[str, ta.Any] | None = None
@@ -101,7 +116,7 @@ class ClientCapabilities:
 
 @dc.dataclass(frozen=True, kw_only=True)
 @_set_class_marshal_options
-class InitializeRequest(ClientRequest):
+class InitializeRequest(ClientRequest['InitializeResult']):
     json_rpc_method_name: ta.ClassVar[str] = 'initialize'
 
     client_info: Implementation
@@ -143,7 +158,7 @@ class ServerCapabilities:
 
 @dc.dataclass(frozen=True, kw_only=True)
 @_set_class_marshal_options
-class InitializeResult(ClientResult, WithMeta):
+class InitializeResult(ClientResult[InitializeRequest], WithMeta):
     json_rpc_method_name: ta.ClassVar[str] = 'initialize'
 
     server_info: Implementation
@@ -186,7 +201,7 @@ class Tool(lang.Final):
 
 @dc.dataclass(frozen=True, kw_only=True)
 @_set_class_marshal_options
-class ListToolsRequest(ClientRequest):
+class ListToolsRequest(ClientRequest['ListToolsResult']):
     json_rpc_method_name: ta.ClassVar[str] = 'tools/list'
 
     cursor: str | None = None
@@ -194,7 +209,7 @@ class ListToolsRequest(ClientRequest):
 
 @dc.dataclass(frozen=True, kw_only=True)
 @_set_class_marshal_options
-class ListToolsResult(ClientResult, WithMeta):
+class ListToolsResult(ClientResult[ListToolsRequest], WithMeta):
     json_rpc_method_name: ta.ClassVar[str] = 'tools/list'
 
     tools: ta.Sequence[Tool]
@@ -219,7 +234,7 @@ class TextContentBlock(ContentBlock, lang.Final):
 
 @dc.dataclass(frozen=True, kw_only=True)
 @_set_class_marshal_options
-class CallToolRequest(ClientRequest):
+class CallToolRequest(ClientRequest['CallToolResult']):
     json_rpc_method_name: ta.ClassVar[str] = 'tools/call'
 
     name: str
@@ -228,7 +243,7 @@ class CallToolRequest(ClientRequest):
 
 @dc.dataclass(frozen=True, kw_only=True)
 @_set_class_marshal_options
-class CallToolResult(ClientResult, WithMeta):
+class CallToolResult(ClientResult[CallToolRequest], WithMeta):
     json_rpc_method_name: ta.ClassVar[str] = 'tools/call'
 
     content: ta.Sequence[ContentBlock]
@@ -241,13 +256,25 @@ class CallToolResult(ClientResult, WithMeta):
 
 @dc.dataclass(frozen=True, kw_only=True)
 @_set_class_marshal_options
-class PingRequest(ClientRequest, WithMeta):
+class PingClientRequest(ClientRequest['PingClientResult'], WithMeta):
     json_rpc_method_name: ta.ClassVar[str] = 'ping'
 
 
 @dc.dataclass(frozen=True, kw_only=True)
 @_set_class_marshal_options
-class PingResult(ClientResult):
+class PingClientResult(ClientResult[PingClientRequest]):
+    json_rpc_method_name: ta.ClassVar[str] = 'ping'
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+@_set_class_marshal_options
+class PingServerRequest(ServerRequest['PingServerResult'], WithMeta):
+    json_rpc_method_name: ta.ClassVar[str] = 'ping'
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+@_set_class_marshal_options
+class PingServerResult(ServerResult[PingServerRequest]):
     json_rpc_method_name: ta.ClassVar[str] = 'ping'
 
 
