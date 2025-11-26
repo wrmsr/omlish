@@ -177,6 +177,7 @@ class InitializeResult(ClientResult[InitializeRequest], WithMeta):
     server_info: Implementation
     protocol_version: str
     capabilities: ServerCapabilities
+    instructions: str | None = None
 
 
 @dc.dataclass(frozen=True, kw_only=True)
@@ -213,7 +214,7 @@ class ToolAnnotations(lang.Final):
 
 @dc.dataclass(frozen=True, kw_only=True)
 @_set_class_marshal_options
-class Tool(lang.Final):
+class Tool(WithMeta, lang.Final):
     name: str
     title: str | None = None
 
@@ -299,6 +300,60 @@ class PingServerRequest(ServerRequest['PingServerResult'], WithMeta):
 @_set_class_marshal_options
 class PingServerResult(ServerResult[PingServerRequest]):
     json_rpc_method_name: ta.ClassVar[str] = 'ping'
+
+
+##
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+@_set_class_marshal_options
+class PromptArgument(lang.Final):
+    name: str
+    title: str | None = None
+
+    description: str | None = None
+
+    required: bool | None = None
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+@_set_class_marshal_options
+class Prompt(WithMeta, lang.Final):
+    name: str
+    title: str | None = None
+
+    description: str | None = None
+
+    arguments: ta.Sequence[PromptArgument] | None = None
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+@_set_class_marshal_options
+class ListPromptsRequest(CursorClientRequest['ListPromptsResult']):
+    json_rpc_method_name: ta.ClassVar[str] = 'prompts/list'
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+@_set_class_marshal_options
+class ListPromptsResult(CursorClientResult[ListPromptsRequest], WithMeta):
+    json_rpc_method_name: ta.ClassVar[str] = 'prompts/list'
+
+    prompts: ta.Sequence[Prompt]
+
+
+##
+
+
+LoggingLevel: ta.TypeAlias = ta.Literal[
+    'debug',
+    'info',
+    'notice',
+    'warning',
+    'error',
+    'critical',
+    'alert',
+    'emergency',
+]
 
 
 ##

@@ -137,3 +137,10 @@ class McpServerConnection:
             async for res in self.yield_cursor_request(pt.ListToolsRequest())
             for tool in res.tools
         ]
+
+    async def list_prompts(self) -> list[pt.Prompt]:
+        return [
+            prompt
+            async for res in self.yield_cursor_request(pt.ListPromptsRequest())
+            for prompt in res.prompts
+        ]
