@@ -36,6 +36,19 @@ from .types import (  # noqa
 ##
 
 
+from ... import lang as _lang
+
+
+with _lang.auto_proxy_init(globals()):
+    from .conns import (  # noqa
+        JsonrpcConnection as Connection,
+    )
+
+
+##
+
+
 from ... import marshal as _msh
+
 
 _msh.register_global_module_import('._marshal', __package__)
