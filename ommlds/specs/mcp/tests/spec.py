@@ -11,11 +11,11 @@ from omlish.specs import jsonschema as jsch
 ##
 
 
-MCP_SPEC_VERSION = '2025-03-26'
+MCP_SPEC_VERSION = '2025-06-18'
 
 MCP_SPEC_DATA = dcache.GitSpec(
     'https://github.com/modelcontextprotocol/modelcontextprotocol',
-    rev='9b15ff98b87d6a6a54055f4189feb22e750d9389',
+    rev='ef175d72115b25f0a0e89dd52f40442761b6a380',
     subtrees=[
         f'schema/{MCP_SPEC_VERSION}/schema.json',
     ],
