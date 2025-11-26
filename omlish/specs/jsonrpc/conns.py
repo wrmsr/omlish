@@ -26,11 +26,6 @@ from .types import request
 ##
 
 
-@lang.cached_function
-def _create_id() -> str:
-    return str(uuid.uuid4())
-
-
 class JsonrpcConnection:
     def __init__(
             self,
@@ -40,6 +35,7 @@ class JsonrpcConnection:
             request_handler: ta.Callable[['JsonrpcConnection', Request], ta.Awaitable[None]] | None = None,
             notification_handler: ta.Callable[['JsonrpcConnection', Request], ta.Awaitable[None]] | None = None,
             default_timeout: float | None = 30.,
+            id_creator: ta.Callable[[], Id] | None = None,
     ) -> None:
         super().__init__()
 
@@ -48,12 +44,19 @@ class JsonrpcConnection:
         self._request_handler = request_handler
         self._notification_handler = notification_handler
         self._default_timeout = default_timeout
+        if id_creator is None:
+            id_creator = self.default_create_id
+        self._create_id = id_creator
 
         self._buf = DelimitingBuffer(b'\n')
         self._response_futures_by_id: dict[Id, aiu.Future[Response]] = {}
         self._send_lock = anyio.Lock()
         self._shutdown_event = anyio.Event()
         self._received_eof = False
+
+    @classmethod
+    def default_create_id(cls) -> Id:
+        return str(uuid.uuid4())
 
     #
 
@@ -191,7 +194,7 @@ class JsonrpcConnection:
     async def send_message(self, msg: Message) -> None:
         async with self._send_lock:
             try:
-                await self._stream.send(json.dumps(msh.marshal(msg)).encode() + b'\n')
+                await self._stream.send(json.dumps(msh.marshal(msg)).encode() + b'\n')  # noqa
             except self.ERROR_EXCEPTIONS as e:
                 raise ConnectionError('Failed to send message') from e
 
@@ -204,7 +207,7 @@ class JsonrpcConnection:
             *,
             timeout: lang.TimeoutLike | None = lang.Timeout.DEFAULT,
     ) -> ta.Any:
-        msg_id = _create_id()
+        msg_id = self._create_id()
         req = request(msg_id, method, params)
 
         fut = aiu.create_future[Response]()

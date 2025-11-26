@@ -98,13 +98,13 @@ class McpServerConnection:
 
     #
 
-    async def send_request(self, req: pt.ClientRequest, res_cls: type[ClientResultT]) -> ClientResultT:
+    async def request(self, req: pt.ClientRequest, res_cls: type[ClientResultT]) -> ClientResultT:
         # res_cls = pt.MESSAGE_TYPES_BY_JSON_RPC_METHOD_NAME[pt.ClientResult][req.json_rpc_method_name]
         req_mv = msh.marshal(req)
         res_mv = await self._conn.request(req.json_rpc_method_name, req_mv)  # type: ignore[arg-type]
         res = msh.unmarshal(res_mv, res_cls)
         return res
 
-    async def send_notification(self, no: pt.Notification) -> None:
+    async def notify(self, no: pt.Notification) -> None:
         no_mv = msh.marshal(no)
         await self._conn.notify(no.json_rpc_method_name, no_mv)  # type: ignore[arg-type]
