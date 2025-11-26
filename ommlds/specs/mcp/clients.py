@@ -5,14 +5,12 @@ import typing as ta
 import anyio.abc
 
 from omlish import check
+from omlish import dataclasses as dc
 from omlish import marshal as msh
 from omlish.asyncs import anyio as aiu
 from omlish.specs import jsonrpc as jr
 
 from . import protocol as pt
-
-
-ClientResultT = ta.TypeVar('ClientResultT', bound=pt.ClientResult)
 
 
 ##
@@ -98,13 +96,44 @@ class McpServerConnection:
 
     #
 
-    async def request(self, req: pt.ClientRequest[ClientResultT]) -> ClientResultT:
+    async def request(self, req: pt.ClientRequest[pt.ClientResultT]) -> pt.ClientResultT:
         res_cls = pt.MESSAGE_TYPES_BY_JSON_RPC_METHOD_NAME[pt.ClientResult][req.json_rpc_method_name]  # type: ignore[type-abstract]  # noqa
         req_mv = msh.marshal(req)
         res_mv = await self._conn.request(req.json_rpc_method_name, req_mv)  # type: ignore[arg-type]
         res = msh.unmarshal(res_mv, res_cls)
-        return ta.cast(ClientResultT, res)
+        return ta.cast(pt.ClientResultT, res)
 
     async def notify(self, no: pt.Notification) -> None:
         no_mv = msh.marshal(no)
         await self._conn.notify(no.json_rpc_method_name, no_mv)  # type: ignore[arg-type]
+
+    #
+
+    async def yield_cursor_request(
+            self,
+            req: pt.CursorClientRequest[pt.CursorClientResultT],
+    ) -> ta.AsyncGenerator[pt.CursorClientResultT]:
+        check.none(req.cursor)
+
+        cursor: str | None = None
+        while True:
+            res = await self.request(dc.replace(req, cursor=cursor))  # noqa
+            yield res
+
+            if (cursor := res.next_cursor) is None:
+                break
+
+    async def list_cursor_request(
+            self,
+            req: pt.CursorClientRequest[pt.CursorClientResultT],
+    ) -> list[pt.CursorClientResultT]:
+        return [res async for res in self.yield_cursor_request(req)]
+
+    #
+
+    async def list_tools(self) -> list[pt.Tool]:
+        return [
+            tool
+            async for res in self.yield_cursor_request(pt.ListToolsRequest())
+            for tool in res.tools
+        ]

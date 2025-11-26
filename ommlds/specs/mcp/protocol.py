@@ -1,6 +1,15 @@
 """
 https://modelcontextprotocol.io/specification/2025-06-18
 https://modelcontextprotocol.io/specification/2025-06-18/schema
+
+TODO:
+ - https://modelcontextprotocol.io/specification/2025-06-18/basic/utilities/cancellation
+ - https://modelcontextprotocol.io/specification/2025-06-18/basic/utilities/progress
+ - https://modelcontextprotocol.io/specification/2025-06-18/client/sampling
+ - https://modelcontextprotocol.io/specification/2025-06-18/client/elicitation
+ - https://modelcontextprotocol.io/specification/2025-06-18/server/prompts
+ - https://modelcontextprotocol.io/specification/2025-06-18/server/resources
+ - https://modelcontextprotocol.io/specification/2025-06-18/server/utilities/logging
 """
 import abc
 import typing as ta
@@ -13,8 +22,12 @@ from omlish import marshal as msh
 
 ClientRequestT = ta.TypeVar('ClientRequestT', bound='ClientRequest')
 ClientResultT = ta.TypeVar('ClientResultT', bound='ClientResult')
+
 ServerRequestT = ta.TypeVar('ServerRequestT', bound='ServerRequest')
 ServerResultT = ta.TypeVar('ServerResultT', bound='ServerResult')
+
+CursorClientRequestT = ta.TypeVar('CursorClientRequestT', bound='CursorClientRequest')
+CursorClientResultT = ta.TypeVar('CursorClientResultT', bound='CursorClientResult')
 
 
 msh.register_global_module_import('._marshal', __package__)
@@ -176,6 +189,19 @@ class InitializedNotification(Notification):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+class CursorClientRequest(ClientRequest[CursorClientResultT], lang.Abstract):
+    cursor: str | None = None
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class CursorClientResult(ClientResult[CursorClientRequestT], lang.Abstract):
+    next_cursor: str | None = None
+
+
+##
+
+
+@dc.dataclass(frozen=True, kw_only=True)
 @_set_class_marshal_options
 class ToolAnnotations(lang.Final):
     destructive_hint: bool | None = None
@@ -201,19 +227,16 @@ class Tool(lang.Final):
 
 @dc.dataclass(frozen=True, kw_only=True)
 @_set_class_marshal_options
-class ListToolsRequest(ClientRequest['ListToolsResult']):
+class ListToolsRequest(CursorClientRequest['ListToolsResult']):
     json_rpc_method_name: ta.ClassVar[str] = 'tools/list'
-
-    cursor: str | None = None
 
 
 @dc.dataclass(frozen=True, kw_only=True)
 @_set_class_marshal_options
-class ListToolsResult(ClientResult[ListToolsRequest], WithMeta):
+class ListToolsResult(CursorClientResult[ListToolsRequest], WithMeta):
     json_rpc_method_name: ta.ClassVar[str] = 'tools/list'
 
     tools: ta.Sequence[Tool]
-    next_cursor: str | None = None
 
 
 ##
