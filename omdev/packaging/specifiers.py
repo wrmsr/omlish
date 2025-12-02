@@ -451,7 +451,7 @@ class SpecifierSet(BaseSpecifier):
         if isinstance(other, str):
             other = SpecifierSet(other)
         elif not isinstance(other, SpecifierSet):
-            return NotImplemented  # type: ignore
+            return NotImplemented
 
         specifier = SpecifierSet()
         specifier._specs = frozenset(self._specs | other._specs)
@@ -471,6 +471,7 @@ class SpecifierSet(BaseSpecifier):
         if isinstance(other, (str, Specifier)):
             other = SpecifierSet(str(other))
         elif not isinstance(other, SpecifierSet):
+
             return NotImplemented
 
         return self._specs == other._specs

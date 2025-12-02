@@ -295,6 +295,83 @@ class VpcEncryptionControlViolationException(
 
 
 @_dc.dataclass(frozen=True, kw_only=True)
+class AdditionalStorageVolume(
+    _base.Shape,
+    shape_name='AdditionalStorageVolume',
+):
+    volume_name: str = _dc.field(metadata=_base.field_metadata(
+        member_name='VolumeName',
+        shape_name='String',
+    ))
+
+    allocated_storage: IntegerOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='AllocatedStorage',
+        shape_name='IntegerOptional',
+    ))
+
+    io_p_s: IntegerOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='IOPS',
+        shape_name='IntegerOptional',
+    ))
+
+    max_allocated_storage: IntegerOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='MaxAllocatedStorage',
+        shape_name='IntegerOptional',
+    ))
+
+    storage_throughput: IntegerOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='StorageThroughput',
+        shape_name='IntegerOptional',
+    ))
+
+    storage_type: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='StorageType',
+        shape_name='String',
+    ))
+
+
+@_dc.dataclass(frozen=True, kw_only=True)
+class AdditionalStorageVolumeOutput(
+    _base.Shape,
+    shape_name='AdditionalStorageVolumeOutput',
+):
+    volume_name: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='VolumeName',
+        shape_name='String',
+    ))
+
+    storage_volume_status: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='StorageVolumeStatus',
+        shape_name='String',
+    ))
+
+    allocated_storage: int | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='AllocatedStorage',
+        shape_name='Integer',
+    ))
+
+    io_p_s: IntegerOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='IOPS',
+        shape_name='IntegerOptional',
+    ))
+
+    max_allocated_storage: IntegerOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='MaxAllocatedStorage',
+        shape_name='IntegerOptional',
+    ))
+
+    storage_throughput: IntegerOptional | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='StorageThroughput',
+        shape_name='IntegerOptional',
+    ))
+
+    storage_type: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='StorageType',
+        shape_name='String',
+    ))
+
+
+@_dc.dataclass(frozen=True, kw_only=True)
 class AvailabilityZone(
     _base.Shape,
     shape_name='AvailabilityZone',
@@ -598,6 +675,10 @@ class VpcSecurityGroupMembership(
         shape_name='String',
     ))
 
+
+AdditionalStorageVolumesList: _ta.TypeAlias = _ta.Sequence[AdditionalStorageVolume]
+
+AdditionalStorageVolumesOutputList: _ta.TypeAlias = _ta.Sequence[AdditionalStorageVolumeOutput]
 
 DBInstanceAutomatedBackupsReplicationList: _ta.TypeAlias = _ta.Sequence[DBInstanceAutomatedBackupsReplication]
 
@@ -1058,6 +1139,12 @@ class CreateDBInstanceMessage(
         shape_name='MasterUserAuthenticationType',
     ))
 
+    additional_storage_volumes: AdditionalStorageVolumesList | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='AdditionalStorageVolumes',
+        value_type=_base.ListValueType(AdditionalStorageVolume),
+        shape_name='AdditionalStorageVolumesList',
+    ))
+
 
 DomainMembershipList: _ta.TypeAlias = _ta.Sequence[DomainMembership]
 
@@ -1178,6 +1265,12 @@ class PendingModifiedValues(
     engine: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Engine',
         shape_name='String',
+    ))
+
+    additional_storage_volumes: AdditionalStorageVolumesList | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='AdditionalStorageVolumes',
+        value_type=_base.ListValueType(AdditionalStorageVolume),
+        shape_name='AdditionalStorageVolumesList',
     ))
 
 
@@ -1712,6 +1805,17 @@ class DBInstance(
         shape_name='String',
     ))
 
+    additional_storage_volumes: AdditionalStorageVolumesOutputList | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='AdditionalStorageVolumes',
+        value_type=_base.ListValueType(AdditionalStorageVolumeOutput),
+        shape_name='AdditionalStorageVolumesOutputList',
+    ))
+
+    storage_volume_status: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='StorageVolumeStatus',
+        shape_name='String',
+    ))
+
 
 @_dc.dataclass(frozen=True, kw_only=True)
 class CreateDBInstanceResult(
@@ -1789,6 +1893,8 @@ class DBInstanceMessage(
 
 
 ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
+    AdditionalStorageVolume,
+    AdditionalStorageVolumeOutput,
     AuthorizationNotFoundFault,
     AvailabilityZone,
     BackupPolicyNotFoundFault,

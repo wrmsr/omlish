@@ -69,7 +69,7 @@ if sys.version_info < (3, 8):
 def __omlish_amalg__():  # noqa
     return dict(
         src_files=[
-            dict(path='../../omdev/packaging/versions.py', sha1='3c86e791d308654a6085a4ba2c135545d6f931db'),
+            dict(path='../../omdev/packaging/versions.py', sha1='71627ad600b3529b829b0e227b0952f2c63c7271'),
             dict(path='config.py', sha1='6ff640634488fa142d9aadee5aec95db462ce46f'),
             dict(path='deploy/config.py', sha1='b11f480014b42206531ea897e76dd0220eb59969'),
             dict(path='deploy/paths/types.py', sha1='4364179744afb2344f2b44d188e37f786c955970'),
@@ -103,7 +103,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/os/paths.py', sha1='56c40b7c2aa84d1778d60ee4cda498f8c380cc8d'),
             dict(path='../../omlish/shlex.py', sha1='a69721913bcd4f4008600e390fb7822637c2a8ec'),
             dict(path='../../omdev/home/paths.py', sha1='a83516c97a2e99e79153a414db3d23091186bb23'),
-            dict(path='../../omdev/packaging/specifiers.py', sha1='5f0afc92d2795d14f0d0aa13646c63a0e91434fa'),
+            dict(path='../../omdev/packaging/specifiers.py', sha1='a56ab4e8c9b174adb523921f6280ac41e0fce749'),
             dict(path='deploy/paths/specs.py', sha1='023167da1ad9fcf09d9d44963177175591a97377'),
             dict(path='remote/config.py', sha1='48f9367e9db4b23166657ff34eb644c9869d48a8'),
             dict(path='remote/payload.py', sha1='acacf4c2901b7708224af5d4414ecb823947297a'),
@@ -418,12 +418,12 @@ class _BaseVersion:
 
     def __lt__(self, other: '_BaseVersion') -> bool:
         if not isinstance(other, _BaseVersion):
-            return NotImplemented  # type: ignore
+            return NotImplemented
         return self._key < other._key
 
     def __le__(self, other: '_BaseVersion') -> bool:
         if not isinstance(other, _BaseVersion):
-            return NotImplemented  # type: ignore
+            return NotImplemented
         return self._key <= other._key
 
     def __eq__(self, other: object) -> bool:
@@ -433,12 +433,12 @@ class _BaseVersion:
 
     def __ge__(self, other: '_BaseVersion') -> bool:
         if not isinstance(other, _BaseVersion):
-            return NotImplemented  # type: ignore
+            return NotImplemented
         return self._key >= other._key
 
     def __gt__(self, other: '_BaseVersion') -> bool:
         if not isinstance(other, _BaseVersion):
-            return NotImplemented  # type: ignore
+            return NotImplemented
         return self._key > other._key
 
     def __ne__(self, other: object) -> bool:
@@ -5787,7 +5787,7 @@ class SpecifierSet(BaseSpecifier):
         if isinstance(other, str):
             other = SpecifierSet(other)
         elif not isinstance(other, SpecifierSet):
-            return NotImplemented  # type: ignore
+            return NotImplemented
 
         specifier = SpecifierSet()
         specifier._specs = frozenset(self._specs | other._specs)
@@ -5807,6 +5807,7 @@ class SpecifierSet(BaseSpecifier):
         if isinstance(other, (str, Specifier)):
             other = SpecifierSet(str(other))
         elif not isinstance(other, SpecifierSet):
+
             return NotImplemented
 
         return self._specs == other._specs

@@ -31,7 +31,7 @@ class Project(ProjectBase):
         ],
 
         'mypy': [
-            'mypy ~= 1.18',
+            'mypy ~= 1.19',
         ],
 
         'prof': [
@@ -44,7 +44,7 @@ class Project(ProjectBase):
 
         'tui': [
             'rich ~= 14.2',
-            'textual ~= 6.6',
+            'textual ~= 6.7',
         ],
     }
 

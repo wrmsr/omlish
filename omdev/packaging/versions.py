@@ -121,12 +121,12 @@ class _BaseVersion:
 
     def __lt__(self, other: '_BaseVersion') -> bool:
         if not isinstance(other, _BaseVersion):
-            return NotImplemented  # type: ignore
+            return NotImplemented
         return self._key < other._key
 
     def __le__(self, other: '_BaseVersion') -> bool:
         if not isinstance(other, _BaseVersion):
-            return NotImplemented  # type: ignore
+            return NotImplemented
         return self._key <= other._key
 
     def __eq__(self, other: object) -> bool:
@@ -136,12 +136,12 @@ class _BaseVersion:
 
     def __ge__(self, other: '_BaseVersion') -> bool:
         if not isinstance(other, _BaseVersion):
-            return NotImplemented  # type: ignore
+            return NotImplemented
         return self._key >= other._key
 
     def __gt__(self, other: '_BaseVersion') -> bool:
         if not isinstance(other, _BaseVersion):
-            return NotImplemented  # type: ignore
+            return NotImplemented
         return self._key > other._key
 
     def __ne__(self, other: object) -> bool:

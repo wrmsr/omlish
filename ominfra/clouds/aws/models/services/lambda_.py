@@ -29,6 +29,8 @@ class Architecture(_enum.Enum):
 
 Arn = _ta.NewType('Arn', str)
 
+CapacityProviderArn = _ta.NewType('CapacityProviderArn', str)
+
 Description = _ta.NewType('Description', str)
 
 EnvironmentVariableName = _ta.NewType('EnvironmentVariableName', str)
@@ -36,6 +38,10 @@ EnvironmentVariableName = _ta.NewType('EnvironmentVariableName', str)
 EnvironmentVariableValue = _ta.NewType('EnvironmentVariableValue', str)
 
 EphemeralStorageSize = _ta.NewType('EphemeralStorageSize', int)
+
+ExecutionEnvironmentMemoryGiBPerVCpu = _ta.NewType('ExecutionEnvironmentMemoryGiBPerVCpu', float)
+
+ExecutionTimeout = _ta.NewType('ExecutionTimeout', int)
 
 FileSystemArn = _ta.NewType('FileSystemArn', str)
 
@@ -82,6 +88,18 @@ class LastUpdateStatusReasonCode(_enum.Enum):
     INVALID_RUNTIME = 'InvalidRuntime'
     INVALID_ZIP_FILE_EXCEPTION = 'InvalidZipFileException'
     FUNCTION_ERROR = 'FunctionError'
+    VCPU_LIMIT_EXCEEDED = 'VcpuLimitExceeded'
+    CAPACITY_PROVIDER_SCALING_LIMIT_EXCEEDED = 'CapacityProviderScalingLimitExceeded'
+    INSUFFICIENT_CAPACITY = 'InsufficientCapacity'
+    E_C2_REQUEST_LIMIT_EXCEEDED = 'EC2RequestLimitExceeded'
+    FUNCTION_ERROR__INIT_TIMEOUT = 'FunctionError.InitTimeout'
+    FUNCTION_ERROR__RUNTIME_INIT_ERROR = 'FunctionError.RuntimeInitError'
+    FUNCTION_ERROR__EXTENSION_INIT_ERROR = 'FunctionError.ExtensionInitError'
+    FUNCTION_ERROR__INVALID_ENTRY_POINT = 'FunctionError.InvalidEntryPoint'
+    FUNCTION_ERROR__INVALID_WORKING_DIRECTORY = 'FunctionError.InvalidWorkingDirectory'
+    FUNCTION_ERROR__PERMISSION_DENIED = 'FunctionError.PermissionDenied'
+    FUNCTION_ERROR__TOO_MANY_EXTENSIONS = 'FunctionError.TooManyExtensions'
+    FUNCTION_ERROR__INIT_RESOURCE_EXHAUSTED = 'FunctionError.InitResourceExhausted'
 
 
 LayerVersionArn = _ta.NewType('LayerVersionArn', str)
@@ -114,7 +132,11 @@ class PackageType(_enum.Enum):
     IMAGE = 'Image'
 
 
+PerExecutionEnvironmentMaxConcurrency = _ta.NewType('PerExecutionEnvironmentMaxConcurrency', int)
+
 ResourceArn = _ta.NewType('ResourceArn', str)
+
+RetentionPeriodInDays = _ta.NewType('RetentionPeriodInDays', int)
 
 RoleArn = _ta.NewType('RoleArn', str)
 
@@ -188,6 +210,10 @@ class State(_enum.Enum):
     ACTIVE = 'Active'
     INACTIVE = 'Inactive'
     FAILED = 'Failed'
+    DEACTIVATING = 'Deactivating'
+    DEACTIVATED = 'Deactivated'
+    ACTIVE_NON_INVOCABLE = 'ActiveNonInvocable'
+    DELETING = 'Deleting'
 
 
 StateReason = _ta.NewType('StateReason', str)
@@ -218,6 +244,19 @@ class StateReasonCode(_enum.Enum):
     INVALID_RUNTIME = 'InvalidRuntime'
     INVALID_ZIP_FILE_EXCEPTION = 'InvalidZipFileException'
     FUNCTION_ERROR = 'FunctionError'
+    DRAINING_DURABLE_EXECUTIONS = 'DrainingDurableExecutions'
+    VCPU_LIMIT_EXCEEDED = 'VcpuLimitExceeded'
+    CAPACITY_PROVIDER_SCALING_LIMIT_EXCEEDED = 'CapacityProviderScalingLimitExceeded'
+    INSUFFICIENT_CAPACITY = 'InsufficientCapacity'
+    E_C2_REQUEST_LIMIT_EXCEEDED = 'EC2RequestLimitExceeded'
+    FUNCTION_ERROR__INIT_TIMEOUT = 'FunctionError.InitTimeout'
+    FUNCTION_ERROR__RUNTIME_INIT_ERROR = 'FunctionError.RuntimeInitError'
+    FUNCTION_ERROR__EXTENSION_INIT_ERROR = 'FunctionError.ExtensionInitError'
+    FUNCTION_ERROR__INVALID_ENTRY_POINT = 'FunctionError.InvalidEntryPoint'
+    FUNCTION_ERROR__INVALID_WORKING_DIRECTORY = 'FunctionError.InvalidWorkingDirectory'
+    FUNCTION_ERROR__PERMISSION_DENIED = 'FunctionError.PermissionDenied'
+    FUNCTION_ERROR__TOO_MANY_EXTENSIONS = 'FunctionError.TooManyExtensions'
+    FUNCTION_ERROR__INIT_RESOURCE_EXHAUSTED = 'FunctionError.InitResourceExhausted'
 
 
 SubnetId = _ta.NewType('SubnetId', str)
@@ -269,6 +308,22 @@ class DeadLetterConfig(
     target_arn: ResourceArn | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='TargetArn',
         shape_name='ResourceArn',
+    ))
+
+
+@_dc.dataclass(frozen=True, kw_only=True)
+class DurableConfig(
+    _base.Shape,
+    shape_name='DurableConfig',
+):
+    retention_period_in_days: RetentionPeriodInDays | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='RetentionPeriodInDays',
+        shape_name='RetentionPeriodInDays',
+    ))
+
+    execution_timeout: ExecutionTimeout | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='ExecutionTimeout',
+        shape_name='ExecutionTimeout',
     ))
 
 
@@ -347,6 +402,27 @@ class InvalidParameterValueException(
     message: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='message',
         shape_name='String',
+    ))
+
+
+@_dc.dataclass(frozen=True, kw_only=True)
+class LambdaManagedInstancesCapacityProviderConfig(
+    _base.Shape,
+    shape_name='LambdaManagedInstancesCapacityProviderConfig',
+):
+    capacity_provider_arn: CapacityProviderArn = _dc.field(metadata=_base.field_metadata(
+        member_name='CapacityProviderArn',
+        shape_name='CapacityProviderArn',
+    ))
+
+    per_execution_environment_max_concurrency: PerExecutionEnvironmentMaxConcurrency | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='PerExecutionEnvironmentMaxConcurrency',
+        shape_name='PerExecutionEnvironmentMaxConcurrency',
+    ))
+
+    execution_environment_memory_gi_b_per_v_cpu: ExecutionEnvironmentMemoryGiBPerVCpu | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='ExecutionEnvironmentMemoryGiBPerVCpu',
+        shape_name='ExecutionEnvironmentMemoryGiBPerVCpu',
     ))
 
 
@@ -534,6 +610,17 @@ class TracingConfigResponse(
     mode: TracingMode | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='Mode',
         shape_name='TracingMode',
+    ))
+
+
+@_dc.dataclass(frozen=True, kw_only=True)
+class CapacityProviderConfig(
+    _base.Shape,
+    shape_name='CapacityProviderConfig',
+):
+    lambda_managed_instances_capacity_provider_config: LambdaManagedInstancesCapacityProviderConfig = _dc.field(metadata=_base.field_metadata(
+        member_name='LambdaManagedInstancesCapacityProviderConfig',
+        shape_name='LambdaManagedInstancesCapacityProviderConfig',
     ))
 
 
@@ -831,6 +918,21 @@ class FunctionConfiguration(
         shape_name='LoggingConfig',
     ))
 
+    capacity_provider_config: CapacityProviderConfig | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='CapacityProviderConfig',
+        shape_name='CapacityProviderConfig',
+    ))
+
+    config_sha256: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='ConfigSha256',
+        shape_name='String',
+    ))
+
+    durable_config: DurableConfig | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='DurableConfig',
+        shape_name='DurableConfig',
+    ))
+
     tenancy_config: TenancyConfig | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='TenancyConfig',
         shape_name='TenancyConfig',
@@ -858,7 +960,9 @@ class ListFunctionsResponse(
 
 
 ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
+    CapacityProviderConfig,
     DeadLetterConfig,
+    DurableConfig,
     EnvironmentError_,
     EnvironmentResponse,
     EphemeralStorage,
@@ -868,6 +972,7 @@ ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
     ImageConfigError,
     ImageConfigResponse,
     InvalidParameterValueException,
+    LambdaManagedInstancesCapacityProviderConfig,
     Layer,
     ListFunctionsRequest,
     ListFunctionsResponse,

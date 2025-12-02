@@ -36,7 +36,7 @@ class Project(ProjectBase):
 
     optional_dependencies = {
         'async': [
-            'anyio ~= 4.11',
+            'anyio ~= 4.12',
             'sniffio ~= 1.3',
 
             'greenlet ~= 3.2',
@@ -92,7 +92,7 @@ class Project(ProjectBase):
 
         'sqldrivers': [
             'pg8000 ~= 1.31',
-            # 'psycopg2 ~= 2.9',
+            # 'psycopg2 ~= 3.3',
             # 'psycopg ~= 3.2',
 
             'pymysql ~= 1.1',

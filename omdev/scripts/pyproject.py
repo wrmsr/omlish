@@ -89,7 +89,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../magic/magic.py', sha1='16a7598eac927e7994d78b9f851dd6cd1fce34c9'),
             dict(path='../magic/prepare.py', sha1='a9b6bd7408d86a52fab7aae2c522032fb251cb8e'),
             dict(path='../magic/styles.py', sha1='60fc56d089669eaad72c5c134b91bc69d4bc107e'),
-            dict(path='../packaging/versions.py', sha1='3c86e791d308654a6085a4ba2c135545d6f931db'),
+            dict(path='../packaging/versions.py', sha1='71627ad600b3529b829b0e227b0952f2c63c7271'),
             dict(path='../packaging/wheelfile.py', sha1='a59e2d75c53e824341c8a8b916b1574d1d58c9b5'),
             dict(path='../../omlish/formats/toml/parser.py', sha1='73dac82289350ab951c4bcdbfe61167fa221f26f'),
             dict(path='../../omlish/formats/toml/writer.py', sha1='6ea41d7e724bb1dcf6bd84b88993ff4e8798e021'),
@@ -107,7 +107,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
             dict(path='../cexts/magic.py', sha1='4e5ce6732454f75c9dd27352959708d8fa7b1666'),
             dict(path='../magic/find.py', sha1='436228a9cf1d8bab6b9234d09f72913b0960382f'),
-            dict(path='../packaging/specifiers.py', sha1='5f0afc92d2795d14f0d0aa13646c63a0e91434fa'),
+            dict(path='../packaging/specifiers.py', sha1='a56ab4e8c9b174adb523921f6280ac41e0fce749'),
             dict(path='../../omlish/argparse/cli.py', sha1='f4dc3cd353d14386b5da0306768700e396afd2b3'),
             dict(path='../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
             dict(path='../../omlish/lite/maybes.py', sha1='bdf5136654ccd14b6a072588cad228925bdfbabd'),
@@ -447,12 +447,12 @@ class _BaseVersion:
 
     def __lt__(self, other: '_BaseVersion') -> bool:
         if not isinstance(other, _BaseVersion):
-            return NotImplemented  # type: ignore
+            return NotImplemented
         return self._key < other._key
 
     def __le__(self, other: '_BaseVersion') -> bool:
         if not isinstance(other, _BaseVersion):
-            return NotImplemented  # type: ignore
+            return NotImplemented
         return self._key <= other._key
 
     def __eq__(self, other: object) -> bool:
@@ -462,12 +462,12 @@ class _BaseVersion:
 
     def __ge__(self, other: '_BaseVersion') -> bool:
         if not isinstance(other, _BaseVersion):
-            return NotImplemented  # type: ignore
+            return NotImplemented
         return self._key >= other._key
 
     def __gt__(self, other: '_BaseVersion') -> bool:
         if not isinstance(other, _BaseVersion):
-            return NotImplemented  # type: ignore
+            return NotImplemented
         return self._key > other._key
 
     def __ne__(self, other: object) -> bool:
@@ -4043,7 +4043,7 @@ class SpecifierSet(BaseSpecifier):
         if isinstance(other, str):
             other = SpecifierSet(other)
         elif not isinstance(other, SpecifierSet):
-            return NotImplemented  # type: ignore
+            return NotImplemented
 
         specifier = SpecifierSet()
         specifier._specs = frozenset(self._specs | other._specs)
@@ -4063,6 +4063,7 @@ class SpecifierSet(BaseSpecifier):
         if isinstance(other, (str, Specifier)):
             other = SpecifierSet(str(other))
         elif not isinstance(other, SpecifierSet):
+
             return NotImplemented
 
         return self._specs == other._specs

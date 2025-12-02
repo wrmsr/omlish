@@ -224,6 +224,7 @@ class ObjectStorageClass(_enum.Enum):
     SNOW = 'SNOW'
     EXPRESS_ONEZONE = 'EXPRESS_ONEZONE'
     FSX_OPENZFS = 'FSX_OPENZFS'
+    FSX_ONTAP = 'FSX_ONTAP'
 
 
 ObjectVersionId = _ta.NewType('ObjectVersionId', str)
@@ -312,6 +313,7 @@ class StorageClass(_enum.Enum):
     SNOW = 'SNOW'
     EXPRESS_ONEZONE = 'EXPRESS_ONEZONE'
     FSX_OPENZFS = 'FSX_OPENZFS'
+    FSX_ONTAP = 'FSX_ONTAP'
 
 
 TagCount = _ta.NewType('TagCount', int)

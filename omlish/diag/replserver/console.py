@@ -173,7 +173,7 @@ class InteractiveSocketConsole:
 
         # Case 3 (complete)
         try:
-            node = ast.parse(source)  # type: ignore
+            node = ast.parse(source)
         except (OverflowError, SyntaxError, ValueError):
             return True
 
