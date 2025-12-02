@@ -21,6 +21,7 @@ TODO:
   fatal: Need to specify how to reconcile divergent branches.
 """
 import dataclasses as dc
+import glob
 import os
 import shutil
 import tempfile
@@ -502,9 +503,17 @@ class Cli(ap.Cli):
                 repo_dir = os.path.join(tmp_dir, repo_dir_name)
                 check.state(os.path.isdir(repo_dir))
 
+                #
+
                 git_dir = os.path.join(repo_dir, '.git')
                 check.state(os.path.isdir(git_dir))
                 shutil.rmtree(git_dir)
+
+                for f in glob.glob(os.path.join(repo_dir, '**/.gitattributes'), recursive=True):
+                    if os.path.isfile(f):
+                        os.unlink(f)
+
+                #
 
                 shutil.move(repo_dir, cwd)
 
