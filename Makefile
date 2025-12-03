@@ -139,7 +139,7 @@ dep-about: venv
 ### Gen
 
 .PHONY: gen
-gen: gen-amalg gen-cmake gen-aws gen-manifest gen-pkg
+gen: gen-amalg gen-cmake gen-aws gen-manifest gen-dataclass gen-pkg
 
 .PHONY: gen-amalg
 gen-amalg: venv
@@ -166,6 +166,10 @@ gen-aws-instance-types:
 .PHONY: gen-manifest
 gen-manifest:
 	${PYTHON} -m omdev.manifests gen -wq ${SRCS} x
+
+.PHONY: gen-dataclass
+gen-dataclass:
+	${PYTHON} -m omdev.dataclasses codegen ${SRCS}
 
 .PHONY: gen-pkg
 gen-pkg:

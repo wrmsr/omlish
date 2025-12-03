@@ -117,7 +117,7 @@ class _DataclassCodegenDumper:
 
                 try:
                     __import__(spec)
-                except ImportError as e:
+                except Exception as e:  # noqa
                     import_errors[spec] = repr(e)
 
             finally:
@@ -144,7 +144,7 @@ class _DataclassCodegenDumper:
                     fns.append(n)
 
             for fn in sorted(fns):
-                if not fn.endswith('.py') or fn == 'conftest.py':
+                if not fn.endswith('.py') or fn in ('conftest.py', '_dataclasses.py'):
                     continue
 
                 fp = os.path.join(dir_path, fn)

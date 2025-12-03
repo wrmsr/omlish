@@ -1,6 +1,12 @@
 # type: ignore
 # ruff: noqa
 # flake8: noqa
+import dataclasses
+import reprlib
+import types
+
+
+#
 
 
 REGISTRY = {}

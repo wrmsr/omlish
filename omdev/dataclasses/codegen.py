@@ -36,6 +36,7 @@ from omlish.subprocesses.sync import subprocesses
 from ..py.asts.toplevel import TopLevelCall
 from ..py.asts.toplevel import analyze_module_top_level
 from ..py.reprs import textwrap_repr
+from ..py.srcheaders import get_py_header_lines
 from .dumping import DataclassCodegenDumperOutput
 
 
@@ -60,11 +61,19 @@ def _module_manifest_dumper_payload_src() -> str:
     return inspect.getsource(_dumping)
 
 
+def _is_generated_py_file(fp: str) -> bool:
+    with open(fp) as f:
+        gen_file_src = f.read()
+
+    gen_hdr_lines = get_py_header_lines(gen_file_src)
+    return any(hl.src.strip() == '# @omlish-generated' for hl in gen_hdr_lines)
+
+
 #
 
 
 class DataclassCodeGen:
-    DEFAULT_TARGET_LINE_WIDTH: ta.ClassVar[int] = 100
+    DEFAULT_TARGET_LINE_WIDTH: ta.ClassVar[int] = 120
 
     def __init__(
             self,
@@ -241,7 +250,14 @@ class DataclassCodeGen:
             ])
             lines.extend(x.fn_lines)
 
-        print('\n'.join(lines))
+        lines.append('')
+
+        gen_file_path = os.path.join(os.path.dirname(cfg_pkg.init_file_path), '_dataclasses.py')
+        if os.path.isfile(gen_file_path) and not _is_generated_py_file(gen_file_path):
+            raise RuntimeError(f'Refusing to overwrite non-generated file: {gen_file_path!r}')
+
+        with open(gen_file_path, 'w') as f:
+            f.write('\n'.join(lines))
 
     def run(self, root_dirs: ta.Iterable[str]) -> None:
         check.not_isinstance(root_dirs, str)

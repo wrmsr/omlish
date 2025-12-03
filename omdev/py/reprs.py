@@ -1,4 +1,4 @@
-def textwrap_repr(text: str, width: int = 100, quote_char: str = '"') -> list[str]:
+def textwrap_repr(text: str, width: int = 120, quote_char: str = '"') -> list[str]:
     escaped_quote = '\\' + quote_char
     content_width = width - 2
 

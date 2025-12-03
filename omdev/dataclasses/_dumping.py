@@ -44,7 +44,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='../../omlish/lite/strings.py', sha1='89831ecbc34ad80e118a865eceb390ed399dc4d6'),
             dict(path='../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
-            dict(path='dumping.py', sha1='5ab72ba6396e3c830e62f47e9ece07340af276a7'),
+            dict(path='dumping.py', sha1='f01a9b4cd8c9d82e86542ec5b4e3308b594ff774'),
         ],
     )
 
@@ -1877,7 +1877,7 @@ class _DataclassCodegenDumper:
 
                 try:
                     __import__(spec)
-                except ImportError as e:
+                except Exception as e:  # noqa
                     import_errors[spec] = repr(e)
 
             finally:
@@ -1904,7 +1904,7 @@ class _DataclassCodegenDumper:
                     fns.append(n)
 
             for fn in sorted(fns):
-                if not fn.endswith('.py') or fn == 'conftest.py':
+                if not fn.endswith('.py') or fn in ('conftest.py', '_dataclasses.py'):
                     continue
 
                 fp = os.path.join(dir_path, fn)
