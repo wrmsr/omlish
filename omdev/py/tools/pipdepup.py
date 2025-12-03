@@ -1,6 +1,8 @@
 """
 TODO:
  - min_time_since_prev_version
+  - how to handle non-linearity? new minor vers come out in parallel for diff major vers
+   - trie?
 """
 # Copyright (c) 2008-present The pip developers (see AUTHORS.txt file)
 #
@@ -19,6 +21,7 @@ TODO:
 # ~> https://github.com/pypa/pip/blob/a52069365063ea813fe3a3f8bac90397c9426d35/src/pip/_internal/commands/list.py (25.3)
 import dataclasses as dc
 import datetime
+import email.parser
 import os.path
 import ssl
 import typing as ta
@@ -37,6 +40,14 @@ from omlish import collections as col
 from omlish.concurrent import all as conc
 from omlish.formats import json
 from omlish.sync import ObjectPool
+
+
+##
+
+
+@cached.function
+def now_utc() -> datetime.datetime:
+    return datetime.datetime.now(datetime.UTC)
 
 
 ##
@@ -266,36 +277,6 @@ def get_dists(
 ##
 
 
-class Context:
-    def __init__(self) -> None:
-        super().__init__()
-
-    #
-
-    _session: PipSession | None = None
-
-    def session(self) -> PipSession:
-        if self._session is None:
-            self._session = build_session()
-        return self._session
-
-    #
-
-    _finder: MyPackageFinder | None = None
-
-    def finder(self) -> MyPackageFinder:
-        if self._finder is None:
-            self._finder = build_package_finder(self.session())
-        return self._finder
-
-    #
-
-    def close(self) -> None:
-        if self._session is not None:
-            self._session.close()
-            self._session = None
-
-
 @dc.dataclass()
 class Package:
     dist: BaseDistribution
@@ -340,6 +321,7 @@ def set_package_finder_info(
         *,
         pre: bool = False,
         max_uploaded_at: datetime.datetime | None = None,
+        min_time_since_prev_version: datetime.timedelta | None = None,
 ) -> None:
     candidates = [
         Package.Candidate(
@@ -359,6 +341,16 @@ def set_package_finder_info(
             for c in candidates
             if not c.install.version.is_prerelease
         ]
+
+    #
+
+    if min_time_since_prev_version is not None:
+        # candidates_by_version = col.multi_map((c.install.version, c) for c in candidates)
+        # uploaded_at_by_version = {
+        #     v: min([c_ut for c in cs if (c_ut := c.upload_time()) is not None], default=None)
+        #     for v, cs in candidates_by_version.items()
+        # }
+        raise NotImplementedError
 
     #
 
@@ -405,15 +397,174 @@ def set_package_finder_info(
 ##
 
 
+class Context:
+    def __init__(self) -> None:
+        super().__init__()
+
+    #
+
+    _session: PipSession | None = None
+
+    def session(self) -> PipSession:
+        if self._session is None:
+            self._session = build_session()
+        return self._session
+
+    #
+
+    _finder: MyPackageFinder | None = None
+
+    def finder(self) -> MyPackageFinder:
+        if self._finder is None:
+            self._finder = build_package_finder(self.session())
+        return self._finder
+
+    #
+
+    def close(self) -> None:
+        if self._session is not None:
+            self._session.close()
+            self._session = None
+
+
+##
+
+
+def human_round_td(td: datetime.timedelta) -> str:
+    """Round a timedelta to its largest sensible unit."""
+
+    seconds = td.total_seconds()
+
+    # Define unit sizes in seconds
+    units = [
+        ('y', 365 * 24 * 3600),
+        ('mo', 30 * 24 * 3600),
+        ('w', 7 * 24 * 3600),
+        ('d', 24 * 3600),
+        ('h', 3600),
+        ('m', 60),
+        ('s', 1),
+    ]
+
+    for suffix, unit_seconds in units:
+        value = seconds / unit_seconds
+        if abs(value) >= 1:  # first unit where magnitude is >= 1
+            return f'{round(value)}{suffix}'
+
+    return '0s'
+
+
+#
+
+
+def format_for_json(
+        pkgs: ta.Sequence[Package],
+        *,
+        now: datetime.datetime | None = None,
+) -> list[dict[str, ta.Any]]:
+    infos: list[dict[str, ta.Any]] = []
+
+    for pkg in pkgs:
+        latest_info = check.not_none(pkg.latest_info)
+
+        info = {
+            'name': pkg.dist.raw_name,
+            'version': pkg.version(),
+            'location': pkg.dist.location or '',
+            'installer': pkg.dist.installer,
+            'latest_version': str(latest_info.version),
+            'latest_filetype': latest_info.filetype,
+        }
+
+        if (l_ut := latest_info.candidate.upload_time()) is not None:
+            info['latest_age'] = human_round_td(now_utc() - l_ut)
+
+        if editable_project_location := pkg.dist.editable_project_location:
+            info['editable_project_location'] = editable_project_location
+
+        infos.append(info)
+
+    return infos
+
+
+#
+
+
+def format_for_columns(pkgs: ta.Sequence[Package]) -> tuple[list[list[str]], list[str]]:
+    """Convert the package data into something usable by output_package_listing_columns."""
+
+    header = ['Package', 'Version', 'Latest', 'Age', 'Type']
+
+    def wheel_build_tag(dist: BaseDistribution) -> str | None:
+        try:
+            wheel_file = dist.read_text('WHEEL')
+        except FileNotFoundError:
+            return None
+        return email.parser.Parser().parsestr(wheel_file).get('Build')
+
+    build_tags = [wheel_build_tag(p.dist) for p in pkgs]
+    has_build_tags = any(build_tags)
+    if has_build_tags:
+        header.append('Build')
+
+    has_editables = any(x.dist.editable for x in pkgs)
+    if has_editables:
+        header.append('Editable project location')
+
+    data = []
+    for i, proj in enumerate(pkgs):
+        # if we're working on the 'outdated' list, separate out the latest_version and type
+        row = [proj.dist.raw_name, proj.dist.raw_version]
+
+        latest_info = check.not_none(proj.latest_info)
+        row.append(str(latest_info.version))
+        if (l_ut := latest_info.candidate.upload_time()) is not None:
+            row.append(human_round_td(now_utc() - l_ut))
+        else:
+            row.append('')
+        row.append(latest_info.filetype)
+
+        if has_build_tags:
+            row.append(build_tags[i] or '')
+
+        if has_editables:
+            row.append(proj.dist.editable_project_location or '')
+
+        data.append(row)
+
+    return data, header
+
+
+def render_package_listing_columns(data: list[list[str]], header: list[str]) -> list[str]:
+    # insert the header first: we need to know the size of column names
+    if len(data) > 0:
+        data.insert(0, header)
+
+    from pip._internal.utils.misc import tabulate  # noqa
+    pkg_strings, sizes = tabulate(data)
+
+    # Create and add a separator.
+    if len(data) > 0:
+        pkg_strings.insert(1, ' '.join('-' * x for x in sizes))
+
+    return pkg_strings
+
+
+##
+
+
 def _main() -> None:
     import argparse
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--exclude', action='append', dest='excludes')
+    parser.add_argument('--min-age-h', type=float, default=4 * 24)
     parser.add_argument('-P', '--parallelism', type=int, default=4)
+    parser.add_argument('--json', action='store_true')
     args = parser.parse_args()
 
-    max_uploaded_at: datetime.datetime | None = datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=4)
+    max_uploaded_at: datetime.datetime | None = now_utc() - datetime.timedelta(hours=args.min_age_h)
+    min_time_since_prev_version: datetime.timedelta | None = None  # datetime.timedelta(days=1)
 
     #
 
@@ -440,6 +591,7 @@ def _main() -> None:
                         pkg,
                         ctx.finder(),
                         max_uploaded_at=max_uploaded_at,
+                        min_time_since_prev_version=min_time_since_prev_version,
                     )
 
             conc.wait_all_futures_or_raise([
@@ -449,27 +601,21 @@ def _main() -> None:
 
     #
 
-    infos: list[dict[str, ta.Any]] = []
+    pkgs = [
+        pkg
+        for pkg in pkgs
+        if (li := pkg.latest_info) is not None
+        and li.version > pkg.dist.version
+    ]
 
-    for pkg in pkgs:
-        if (latest_info := pkg.latest_info) is None or not (latest_info.version > pkg.dist.version):
-            continue
+    pkgs.sort(key=lambda x: x.dist.raw_name)
 
-        info = {
-            'name': pkg.dist.raw_name,
-            'version': pkg.version(),
-            'location': pkg.dist.location or '',
-            'installer': pkg.dist.installer,
-            'latest_version': str(latest_info.version),
-            'latest_filetype': latest_info.filetype,
-        }
+    #
 
-        if editable_project_location := pkg.dist.editable_project_location:
-            info['editable_project_location'] = editable_project_location
-
-        infos.append(info)
-
-    print(json.dumps_pretty(infos))
+    if args.json:
+        print(json.dumps_pretty(format_for_json(pkgs)))
+    else:
+        print('\n'.join(render_package_listing_columns(*format_for_columns(pkgs))))
 
 
 if __name__ == '__main__':

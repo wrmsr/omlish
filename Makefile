@@ -120,7 +120,7 @@ dep-tree:
 
 .PHONY: dep-updates
 dep-updates: venv
-	${PYTHON} -m pip list -o --format=columns
+	${PYTHON} -m omdev.py.tools.pipdepup
 
 .PHONY: dep-dry-run
 dep-dry-run: venv
