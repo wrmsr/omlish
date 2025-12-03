@@ -279,7 +279,7 @@ class DataclassCodeGen:
                     '    (',
                     *[
                         f'        {r!r},'
-                        for r in op_ref_idents
+                        for r in sorted(op_ref_idents)
                     ],
                     '    ),',
                 ])

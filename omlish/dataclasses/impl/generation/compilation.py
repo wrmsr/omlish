@@ -229,7 +229,7 @@ class OpCompiler:
                 src=f'{k.ident}={v.src}' if not v.src.startswith('.') else k.ident,
                 noqa=k.ident != k.ident.lower() or not v.src.startswith('.'),
             )
-            for k, v in FN_GLOBALS.items()
+            for k, v in sorted(FN_GLOBALS.items(), key=lambda t: t[0])
         ])
 
         #

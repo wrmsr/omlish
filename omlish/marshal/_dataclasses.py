@@ -39,9 +39,9 @@ def _register(*args):
         "d=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__0__annotation',
     ),
 )
 def _process_dataclass__omlish_2fmarshal_2fcomposite_2funions_2fliterals_2fLiteralUnionMarshaler():
@@ -51,19 +51,19 @@ def _process_dataclass__omlish_2fmarshal_2fcomposite_2funions_2fliterals_2fLiter
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__2__annotation,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -194,9 +194,9 @@ def _process_dataclass__omlish_2fmarshal_2fcomposite_2funions_2fliterals_2fLiter
         "d=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__0__annotation',
     ),
 )
 def _process_dataclass__omlish_2fmarshal_2fcomposite_2funions_2fliterals_2fLiteralUnionUnmarshaler():
@@ -206,19 +206,19 @@ def _process_dataclass__omlish_2fmarshal_2fcomposite_2funions_2fliterals_2fLiter
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__2__annotation,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -346,9 +346,9 @@ def _process_dataclass__omlish_2fmarshal_2fcomposite_2funions_2fliterals_2fLiter
         " fn=None), ReprPlan.Field(name='x', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__0__annotation',
     ),
 )
 def _process_dataclass__omlish_2fmarshal_2fcomposite_2funions_2fprimitives_2fPrimitiveUnionMarshaler():
@@ -358,19 +358,19 @@ def _process_dataclass__omlish_2fmarshal_2fcomposite_2funions_2fprimitives_2fPri
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -488,8 +488,8 @@ def _process_dataclass__omlish_2fmarshal_2fcomposite_2funions_2fprimitives_2fPri
         "=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__0__default',
         '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__0__default',
     ),
 )
 def _process_dataclass__omlish_2fmarshal_2fcomposite_2funions_2fprimitives_2fPrimitiveUnionMarshalerFactory():
@@ -498,19 +498,19 @@ def _process_dataclass__omlish_2fmarshal_2fcomposite_2funions_2fprimitives_2fPri
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__0__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -622,9 +622,9 @@ def _process_dataclass__omlish_2fmarshal_2fcomposite_2funions_2fprimitives_2fPri
         " fn=None), ReprPlan.Field(name='x', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__0__annotation',
     ),
 )
 def _process_dataclass__omlish_2fmarshal_2fcomposite_2funions_2fprimitives_2fPrimitiveUnionUnmarshaler():
@@ -634,19 +634,19 @@ def _process_dataclass__omlish_2fmarshal_2fcomposite_2funions_2fprimitives_2fPri
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -764,8 +764,8 @@ def _process_dataclass__omlish_2fmarshal_2fcomposite_2funions_2fprimitives_2fPri
         "=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__0__default',
         '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__0__default',
     ),
 )
 def _process_dataclass__omlish_2fmarshal_2fcomposite_2funions_2fprimitives_2fPrimitiveUnionUnmarshalerFactory():
@@ -774,19 +774,19 @@ def _process_dataclass__omlish_2fmarshal_2fcomposite_2funions_2fprimitives_2fPri
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__0__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -914,19 +914,19 @@ def _process_dataclass__omlish_2fmarshal_2fcomposite_2funions_2fprimitives_2fPri
         "=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__5__annotation',
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__check_type',
         '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__check_type',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
     ),
 )
 def _process_dataclass__omlish_2fmarshal_2fobjects_2fmetadata_2fFieldOptions():
@@ -946,19 +946,19 @@ def _process_dataclass__omlish_2fmarshal_2fobjects_2fmetadata_2fFieldOptions():
         __dataclass__init__fields__4__default,
         __dataclass__init__fields__5__annotation,
         __dataclass__init__fields__5__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -1138,22 +1138,22 @@ def _process_dataclass__omlish_2fmarshal_2fobjects_2fmetadata_2fFieldOptions():
         "=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__0__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__3__check_type',
         '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__check_type',
+        '__dataclass__init__fields__5__default',
         '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__5__check_type',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__omlish_2fmarshal_2fobjects_2fmetadata_2fFieldMetadata():
@@ -1176,19 +1176,19 @@ def _process_dataclass__omlish_2fmarshal_2fobjects_2fmetadata_2fFieldMetadata():
         __dataclass__init__fields__5__default,
         __dataclass__init__fields__6__annotation,
         __dataclass__init__fields__6__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -1376,15 +1376,15 @@ def _process_dataclass__omlish_2fmarshal_2fobjects_2fmetadata_2fFieldMetadata():
         "wn', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__0__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
     ),
 )
@@ -1402,19 +1402,19 @@ def _process_dataclass__omlish_2fmarshal_2fobjects_2fmetadata_2fObjectMetadata()
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -1560,10 +1560,10 @@ def _process_dataclass__omlish_2fmarshal_2fobjects_2fmetadata_2fObjectMetadata()
         "eld(name='source', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__0__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__omlish_2fmarshal_2fobjects_2fmetadata_2fObjectSpecials():
@@ -1574,19 +1574,19 @@ def _process_dataclass__omlish_2fmarshal_2fobjects_2fmetadata_2fObjectSpecials()
         __dataclass__init__fields__0__default,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -1721,14 +1721,14 @@ def _process_dataclass__omlish_2fmarshal_2fobjects_2fmetadata_2fObjectSpecials()
         "e)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__5__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
     ),
 )
 def _process_dataclass__omlish_2fmarshal_2fobjects_2fmetadata_2fFieldInfo():
@@ -1743,19 +1743,19 @@ def _process_dataclass__omlish_2fmarshal_2fobjects_2fmetadata_2fFieldInfo():
         __dataclass__init__fields__4__default,
         __dataclass__init__fields__5__annotation,
         __dataclass__init__fields__5__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -1906,10 +1906,10 @@ def _process_dataclass__omlish_2fmarshal_2fobjects_2fmetadata_2fFieldInfo():
         "ds=(ReprPlan.Field(name='lst', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__init_fns__2',
-        '__dataclass__init__init_fns__1',
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__init_fns__0',
+        '__dataclass__init__init_fns__1',
+        '__dataclass__init__init_fns__2',
     ),
 )
 def _process_dataclass__omlish_2fmarshal_2fobjects_2fmetadata_2fFieldInfos():
@@ -1920,19 +1920,19 @@ def _process_dataclass__omlish_2fmarshal_2fobjects_2fmetadata_2fFieldInfos():
         __dataclass__init__init_fns__0,
         __dataclass__init__init_fns__1,
         __dataclass__init__init_fns__2,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -2052,11 +2052,11 @@ def _process_dataclass__omlish_2fmarshal_2fobjects_2fmetadata_2fFieldInfos():
         "t_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
     ),
 )
 def _process_dataclass__omlish_2fmarshal_2fobjects_2fmarshal_2fObjectMarshaler():
@@ -2068,19 +2068,19 @@ def _process_dataclass__omlish_2fmarshal_2fobjects_2fmarshal_2fObjectMarshaler()
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -2210,9 +2210,9 @@ def _process_dataclass__omlish_2fmarshal_2fobjects_2fmarshal_2fObjectMarshaler()
         "id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__0__annotation',
     ),
 )
 def _process_dataclass__omlish_2fmarshal_2fobjects_2fmarshal_2fSimpleObjectMarshalerFactory():
@@ -2222,19 +2222,19 @@ def _process_dataclass__omlish_2fmarshal_2fobjects_2fmarshal_2fSimpleObjectMarsh
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -2375,18 +2375,18 @@ def _process_dataclass__omlish_2fmarshal_2fobjects_2fmarshal_2fSimpleObjectMarsh
         "None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__5__default',
         '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
     ),
 )
 def _process_dataclass__omlish_2fmarshal_2fobjects_2funmarshal_2fObjectUnmarshaler():
@@ -2405,19 +2405,19 @@ def _process_dataclass__omlish_2fmarshal_2fobjects_2funmarshal_2fObjectUnmarshal
         __dataclass__init__fields__5__default,
         __dataclass__init__fields__6__annotation,
         __dataclass__init__fields__6__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -2579,9 +2579,9 @@ def _process_dataclass__omlish_2fmarshal_2fobjects_2funmarshal_2fObjectUnmarshal
         "id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__0__annotation',
     ),
 )
 def _process_dataclass__omlish_2fmarshal_2fobjects_2funmarshal_2fSimpleObjectUnmarshalerFactory():
@@ -2591,19 +2591,19 @@ def _process_dataclass__omlish_2fmarshal_2fobjects_2funmarshal_2fSimpleObjectUnm
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -2722,9 +2722,9 @@ def _process_dataclass__omlish_2fmarshal_2fobjects_2funmarshal_2fSimpleObjectUnm
         "ly=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__0__coerce',
         '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__0__coerce',
+        '__dataclass__init__fields__0__default_factory',
     ),
 )
 def _process_dataclass__omlish_2fmarshal_2ffactories_2ftypemap_2fTypeMapMarshalerFactory():
@@ -2734,19 +2734,19 @@ def _process_dataclass__omlish_2fmarshal_2ffactories_2ftypemap_2fTypeMapMarshale
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__0__coerce,
         __dataclass__init__fields__0__default_factory,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -2859,9 +2859,9 @@ def _process_dataclass__omlish_2fmarshal_2ffactories_2ftypemap_2fTypeMapMarshale
         "ly=False, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__0__default_factory',
-        '__dataclass__init__fields__0__coerce',
         '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__0__coerce',
+        '__dataclass__init__fields__0__default_factory',
     ),
 )
 def _process_dataclass__omlish_2fmarshal_2ffactories_2ftypemap_2fTypeMapUnmarshalerFactory():
@@ -2871,19 +2871,19 @@ def _process_dataclass__omlish_2fmarshal_2ffactories_2ftypemap_2fTypeMapUnmarsha
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__0__coerce,
         __dataclass__init__fields__0__default_factory,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -3004,19 +3004,19 @@ def _process_dataclass__omlish_2fmarshal_2fsingular_2fprimitives_2fPrimitiveMars
         *,
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -3133,12 +3133,12 @@ def _process_dataclass__omlish_2fmarshal_2fsingular_2fprimitives_2fPrimitiveMars
         "=None)))"
     ),
     (
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__init_fns__0',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__init_fns__0',
     ),
 )
 def _process_dataclass__omlish_2fmarshal_2fpolymorphism_2funions_2f_00BasePolymorphismUnionFactory():
@@ -3151,19 +3151,19 @@ def _process_dataclass__omlish_2fmarshal_2fpolymorphism_2funions_2f_00BasePolymo
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
         __dataclass__init__init_fns__0,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -3298,12 +3298,12 @@ def _process_dataclass__omlish_2fmarshal_2fpolymorphism_2funions_2f_00BasePolymo
         "=None)))"
     ),
     (
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__init_fns__0',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__init_fns__0',
     ),
 )
 def _process_dataclass__omlish_2fmarshal_2fpolymorphism_2funions_2fPolymorphismUnionMarshalerFactory():
@@ -3316,19 +3316,19 @@ def _process_dataclass__omlish_2fmarshal_2fpolymorphism_2funions_2fPolymorphismU
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
         __dataclass__init__init_fns__0,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -3463,12 +3463,12 @@ def _process_dataclass__omlish_2fmarshal_2fpolymorphism_2funions_2fPolymorphismU
         "=None)))"
     ),
     (
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__init_fns__0',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__init_fns__0',
     ),
 )
 def _process_dataclass__omlish_2fmarshal_2fpolymorphism_2funions_2fPolymorphismUnionUnmarshalerFactory():
@@ -3481,19 +3481,19 @@ def _process_dataclass__omlish_2fmarshal_2fpolymorphism_2funions_2fPolymorphismU
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
         __dataclass__init__init_fns__0,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -3629,19 +3629,19 @@ def _process_dataclass__omlish_2fmarshal_2fsingular_2fbase64_2fBase64MarshalerUn
         *,
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:

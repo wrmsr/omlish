@@ -46,19 +46,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fbase_2fTag():
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -183,19 +183,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fbase_2fListValueType()
         *,
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -317,19 +317,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fbase_2fMapValueType():
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -451,19 +451,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fbase_2fShape():
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fbase_2fShape(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -574,12 +574,12 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fbase_2fShape():
     ),
     (
         '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fbase_2fOperation():
@@ -593,19 +593,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fbase_2fOperation():
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -771,38 +771,38 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fbase_2fOperation():
         "None), ReprPlan.Field(name='public_ip', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__10__annotation',
-        '__dataclass__init__fields__16__default',
-        '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__13__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__13__annotation',
-        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__10__default',
         '__dataclass__init__fields__11__annotation',
         '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__14__default',
+        '__dataclass__init__fields__12__annotation',
         '__dataclass__init__fields__12__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__15__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__16__annotation',
-        '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__default',
+        '__dataclass__init__fields__13__annotation',
+        '__dataclass__init__fields__13__default',
         '__dataclass__init__fields__14__annotation',
+        '__dataclass__init__fields__14__default',
+        '__dataclass__init__fields__15__annotation',
         '__dataclass__init__fields__15__default',
+        '__dataclass__init__fields__16__annotation',
+        '__dataclass__init__fields__16__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__9__annotation',
+        '__dataclass__init__fields__9__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fAddress():
@@ -841,19 +841,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fAddre
         __dataclass__init__fields__8__default,
         __dataclass__init__fields__9__annotation,
         __dataclass__init__fields__9__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -1089,8 +1089,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fAddre
         "e, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fAttachmentEnaSrdUdpSpecification():
@@ -1099,19 +1099,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fAttac
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -1228,8 +1228,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fAttac
         "))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fBlockPublicAccessStates():
@@ -1238,19 +1238,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fBlock
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -1372,10 +1372,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fBlock
         "one)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCapacityReservationTarget():
@@ -1386,19 +1386,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCapac
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -1528,10 +1528,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCapac
         "one)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCapacityReservationTargetResponse():
@@ -1542,19 +1542,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCapac
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -1686,12 +1686,12 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCapac
         "erse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fConnectionTrackingConfiguration():
@@ -1704,19 +1704,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fConne
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -1856,12 +1856,12 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fConne
         "erse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fConnectionTrackingSpecificationRequest():
@@ -1874,19 +1874,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fConne
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -2026,12 +2026,12 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fConne
         "erse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fConnectionTrackingSpecificationResponse():
@@ -2044,19 +2044,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fConne
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -2195,12 +2195,12 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fConne
         "se, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCpuOptions():
@@ -2213,19 +2213,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCpuOp
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -2364,12 +2364,12 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCpuOp
         "se, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCpuOptionsRequest():
@@ -2382,19 +2382,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCpuOp
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -2590,39 +2590,39 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCpuOp
         "se, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__10__annotation',
-        '__dataclass__init__fields__16__default',
-        '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__13__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__17__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__13__annotation',
-        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__10__default',
         '__dataclass__init__fields__11__annotation',
         '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__17__default',
-        '__dataclass__init__fields__14__default',
+        '__dataclass__init__fields__12__annotation',
         '__dataclass__init__fields__12__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__15__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__16__annotation',
-        '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__13__annotation',
+        '__dataclass__init__fields__13__default',
         '__dataclass__init__fields__14__annotation',
+        '__dataclass__init__fields__14__default',
+        '__dataclass__init__fields__15__annotation',
         '__dataclass__init__fields__15__default',
+        '__dataclass__init__fields__16__annotation',
+        '__dataclass__init__fields__16__default',
+        '__dataclass__init__fields__17__annotation',
+        '__dataclass__init__fields__17__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__9__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCreateRouteRequest():
@@ -2662,19 +2662,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCreat
         __dataclass__init__fields__8__annotation,
         __dataclass__init__fields__8__default,
         __dataclass__init__fields__9__annotation,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -2917,8 +2917,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCreat
         "ame='return_', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCreateRouteResult():
@@ -2927,19 +2927,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCreat
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -3061,12 +3061,12 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCreat
         "ld(name='security_group_arn', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCreateSecurityGroupResult():
@@ -3079,19 +3079,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCreat
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -3230,19 +3230,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCredi
         *,
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -3374,15 +3374,15 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCredi
         "e, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__5__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDeleteRouteRequest():
@@ -3398,19 +3398,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDelet
         __dataclass__init__fields__4__default,
         __dataclass__init__fields__5__annotation,
         __dataclass__init__fields__5__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -3561,9 +3561,9 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDelet
         "default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDeleteRouteTableRequest():
@@ -3573,19 +3573,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDelet
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -3715,12 +3715,12 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDelet
         "ly=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDeleteSecurityGroupRequest():
@@ -3733,19 +3733,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDelet
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -3880,10 +3880,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDelet
         "None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDeleteSecurityGroupResult():
@@ -3894,19 +3894,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDelet
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -4036,12 +4036,12 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDelet
         " default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDiskInfo():
@@ -4054,19 +4054,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDiskI
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -4238,30 +4238,30 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDiskI
         "lan.Field(name='availability_zone_id', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__12__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__10__annotation',
-        '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__default',
         '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__default',
-        '__dataclass__init__fields__6__default',
         '__dataclass__init__fields__11__annotation',
+        '__dataclass__init__fields__11__default',
+        '__dataclass__init__fields__12__annotation',
+        '__dataclass__init__fields__12__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__9__annotation',
+        '__dataclass__init__fields__9__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fEbsBlockDevice():
@@ -4292,19 +4292,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fEbsBl
         __dataclass__init__fields__8__default,
         __dataclass__init__fields__9__annotation,
         __dataclass__init__fields__9__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -4529,18 +4529,18 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fEbsBl
         "n.Field(name='maximum_iops', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__4__default',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__5__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fEbsOptimizedInfo():
@@ -4559,19 +4559,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fEbsOp
         __dataclass__init__fields__5__default,
         __dataclass__init__fields__6__annotation,
         __dataclass__init__fields__6__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -4727,8 +4727,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fEbsOp
         "erfaces', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fEfaInfo():
@@ -4737,19 +4737,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fEfaIn
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -4878,14 +4878,14 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fEfaIn
         "Field(name='elastic_gpu_association_time', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fElasticGpuAssociation():
@@ -4900,19 +4900,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fElast
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -5059,19 +5059,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fElast
         *,
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -5189,9 +5189,9 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fElast
         "), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fElasticInferenceAccelerator():
@@ -5201,19 +5201,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fElast
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -5355,14 +5355,14 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fElast
         "e', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fElasticInferenceAcceleratorAssociation():
@@ -5377,19 +5377,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fElast
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -5529,8 +5529,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fElast
         "e, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fEnaSrdUdpSpecificationRequest():
@@ -5539,19 +5539,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fEnaSr
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -5666,8 +5666,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fEnaSr
         "ame='enabled', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fEnclaveOptions():
@@ -5676,19 +5676,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fEncla
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -5803,8 +5803,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fEncla
         "ame='enabled', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fEnclaveOptionsRequest():
@@ -5813,19 +5813,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fEncla
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -5941,8 +5941,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fEncla
         "None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fFpgaDeviceMemoryInfo():
@@ -5951,19 +5951,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fFpgaD
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -6079,8 +6079,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fFpgaD
         "None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fGpuDeviceMemoryInfo():
@@ -6089,19 +6089,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fGpuDe
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -6220,10 +6220,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fGpuDe
         "se=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fGroupIdentifier():
@@ -6234,19 +6234,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fGroup
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -6369,8 +6369,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fGroup
         "=(ReprPlan.Field(name='configured', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fHibernationOptions():
@@ -6379,19 +6379,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fHiber
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -6506,8 +6506,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fHiber
         "=(ReprPlan.Field(name='configured', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fHibernationOptionsRequest():
@@ -6516,19 +6516,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fHiber
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -6646,10 +6646,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fHiber
         "ne)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fIamInstanceProfile():
@@ -6660,19 +6660,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fIamIn
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -6798,10 +6798,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fIamIn
         "ly=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fIamInstanceProfileSpecification():
@@ -6812,19 +6812,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fIamIn
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -6948,8 +6948,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fIamIn
         "None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInferenceDeviceMemoryInfo():
@@ -6958,19 +6958,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInfer
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -7086,8 +7086,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInfer
         "e, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInstanceAttachmentEnaSrdUdpSpecification():
@@ -7096,19 +7096,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -7223,8 +7223,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         "fields=(ReprPlan.Field(name='ipv4_prefix', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInstanceIpv4Prefix():
@@ -7233,19 +7233,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -7364,10 +7364,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         "(name='is_primary_ipv6', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInstanceIpv6Address():
@@ -7378,19 +7378,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -7513,8 +7513,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         "fields=(ReprPlan.Field(name='ipv6_prefix', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInstanceIpv6Prefix():
@@ -7523,19 +7523,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -7654,10 +7654,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         "eprPlan.Field(name='reboot_migration', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInstanceMaintenanceOptions():
@@ -7668,19 +7668,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -7804,8 +7804,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         "ult_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInstanceMaintenanceOptionsRequest():
@@ -7814,19 +7814,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -7958,16 +7958,16 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         "n=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__5__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInstanceMetadataOptionsRequest():
@@ -7984,19 +7984,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         __dataclass__init__fields__4__default,
         __dataclass__init__fields__5__annotation,
         __dataclass__init__fields__5__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -8163,18 +8163,18 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         "s', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__4__default',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__5__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInstanceMetadataOptionsResponse():
@@ -8193,19 +8193,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         __dataclass__init__fields__5__default,
         __dataclass__init__fields__6__annotation,
         __dataclass__init__fields__6__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -8375,16 +8375,16 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         ", kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__5__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInstanceNetworkInterfaceAssociation():
@@ -8401,19 +8401,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         __dataclass__init__fields__4__default,
         __dataclass__init__fields__5__annotation,
         __dataclass__init__fields__5__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -8561,8 +8561,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         "e, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInstanceNetworkPerformanceOptions():
@@ -8571,19 +8571,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -8699,8 +8699,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         "e, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInstanceNetworkPerformanceOptionsRequest():
@@ -8709,19 +8709,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -8839,10 +8839,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         ", kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInstanceState():
@@ -8853,19 +8853,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -8991,10 +8991,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         "n.Field(name='vpc_id', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInternetGatewayAttachment():
@@ -9005,19 +9005,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInter
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -9144,10 +9144,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInter
         "se=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fIpRange():
@@ -9158,19 +9158,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fIpRan
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -9293,8 +9293,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fIpRan
         "fields=(ReprPlan.Field(name='ipv4_prefix', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fIpv4PrefixSpecification():
@@ -9303,19 +9303,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fIpv4P
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -9430,8 +9430,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fIpv4P
         "fields=(ReprPlan.Field(name='ipv4_prefix', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fIpv4PrefixSpecificationRequest():
@@ -9440,19 +9440,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fIpv4P
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -9567,8 +9567,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fIpv4P
         "fields=(ReprPlan.Field(name='ipv6_prefix', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fIpv6PrefixSpecification():
@@ -9577,19 +9577,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fIpv6P
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -9704,8 +9704,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fIpv6P
         "fields=(ReprPlan.Field(name='ipv6_prefix', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fIpv6PrefixSpecificationRequest():
@@ -9714,19 +9714,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fIpv6P
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -9845,10 +9845,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fIpv6P
         " id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fIpv6Range():
@@ -9859,19 +9859,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fIpv6R
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -10015,20 +10015,20 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fIpv6R
         "nt', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__5__annotation',
         '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__7__default',
         '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fKeyPairInfo():
@@ -10049,19 +10049,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fKeyPa
         __dataclass__init__fields__6__default,
         __dataclass__init__fields__7__annotation,
         __dataclass__init__fields__7__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -10232,12 +10232,12 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fKeyPa
         "an.Field(name='version', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fLaunchTemplateSpecification():
@@ -10250,19 +10250,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fLaunc
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -10394,8 +10394,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fLaunc
         "e='license_configuration_arn', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fLicenseConfiguration():
@@ -10404,19 +10404,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fLicen
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -10532,8 +10532,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fLicen
         "e='license_configuration_arn', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fLicenseConfigurationRequest():
@@ -10542,19 +10542,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fLicen
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -10670,8 +10670,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fLicen
         "None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fMediaDeviceMemoryInfo():
@@ -10680,19 +10680,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fMedia
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -10808,8 +10808,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fMedia
         "None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fMemoryInfo():
@@ -10818,19 +10818,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fMemor
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -10945,8 +10945,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fMemor
         " kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fMonitoring():
@@ -10955,19 +10955,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fMonit
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -11115,22 +11115,22 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fMonit
         "kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__5__annotation',
         '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__7__default',
         '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__8__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNetworkCardInfo():
@@ -11153,19 +11153,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNetwo
         __dataclass__init__fields__7__default,
         __dataclass__init__fields__8__annotation,
         __dataclass__init__fields__8__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -11359,20 +11359,20 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNetwo
         "ne)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__5__annotation',
         '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__7__default',
         '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNetworkInterfaceAssociation():
@@ -11393,19 +11393,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNetwo
         __dataclass__init__fields__6__default,
         __dataclass__init__fields__7__annotation,
         __dataclass__init__fields__7__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -11576,12 +11576,12 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNetwo
         "ReprPlan.Field(name='is_primary_ipv6', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNetworkInterfaceIpv6Address():
@@ -11594,19 +11594,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNetwo
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -11740,10 +11740,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNetwo
         "eprPlan.Field(name='version', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNeuronDeviceCoreInfo():
@@ -11754,19 +11754,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNeuro
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -11890,8 +11890,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNeuro
         "None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNeuronDeviceMemoryInfo():
@@ -11900,19 +11900,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNeuro
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -12027,8 +12027,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNeuro
         "Plan.Field(name='principal', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fOperatorRequest():
@@ -12037,19 +12037,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fOpera
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -12168,10 +12168,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fOpera
         "ult_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fOperatorResponse():
@@ -12182,19 +12182,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fOpera
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -12351,26 +12351,26 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fOpera
         " default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__10__annotation',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__default',
         '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__default',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__9__annotation',
+        '__dataclass__init__fields__9__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fPlacement():
@@ -12397,19 +12397,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fPlace
         __dataclass__init__fields__8__default,
         __dataclass__init__fields__9__annotation,
         __dataclass__init__fields__9__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -12600,10 +12600,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fPlace
         "_list_id', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fPrefixListId():
@@ -12614,19 +12614,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fPrefi
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -12760,12 +12760,12 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fPrefi
         ", default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fPrivateDnsNameOptionsOnLaunch():
@@ -12778,19 +12778,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fPriva
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -12932,12 +12932,12 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fPriva
         ", default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fPrivateDnsNameOptionsRequest():
@@ -12950,19 +12950,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fPriva
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -13104,12 +13104,12 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fPriva
         ", default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fPrivateDnsNameOptionsResponse():
@@ -13122,19 +13122,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fPriva
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -13269,10 +13269,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fPriva
         "_address', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fPrivateIpAddressSpecification():
@@ -13283,19 +13283,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fPriva
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -13423,10 +13423,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fPriva
         "fault_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fProductCode():
@@ -13437,19 +13437,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fProdu
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -13572,8 +13572,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fProdu
         "=(ReprPlan.Field(name='gateway_id', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fPropagatingVgw():
@@ -13582,19 +13582,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fPropa
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -13723,14 +13723,14 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fPropa
         "_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fPublicIpDnsNameOptions():
@@ -13745,19 +13745,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fPubli
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -13964,42 +13964,42 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fPubli
         " fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__10__annotation',
-        '__dataclass__init__fields__16__default',
-        '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__13__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__17__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__13__annotation',
-        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__10__default',
         '__dataclass__init__fields__11__annotation',
         '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__17__default',
-        '__dataclass__init__fields__14__default',
+        '__dataclass__init__fields__12__annotation',
         '__dataclass__init__fields__12__default',
+        '__dataclass__init__fields__13__annotation',
+        '__dataclass__init__fields__13__default',
+        '__dataclass__init__fields__14__annotation',
+        '__dataclass__init__fields__14__default',
+        '__dataclass__init__fields__15__annotation',
+        '__dataclass__init__fields__15__default',
+        '__dataclass__init__fields__16__annotation',
+        '__dataclass__init__fields__16__default',
+        '__dataclass__init__fields__17__annotation',
+        '__dataclass__init__fields__17__default',
+        '__dataclass__init__fields__18__annotation',
         '__dataclass__init__fields__18__default',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__15__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__16__annotation',
-        '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__18__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
         '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__9__annotation',
         '__dataclass__init__fields__9__default',
-        '__dataclass__init__fields__14__annotation',
-        '__dataclass__init__fields__15__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fRoute():
@@ -14042,19 +14042,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fRoute
         __dataclass__init__fields__8__default,
         __dataclass__init__fields__9__annotation,
         __dataclass__init__fields__9__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -14309,10 +14309,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fRoute
         "se, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fRouteTableAssociationState():
@@ -14323,19 +14323,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fRoute
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -14466,19 +14466,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fRunIn
         *,
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -14610,16 +14610,16 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fRunIn
         "), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__5__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fSpotMarketOptions():
@@ -14636,19 +14636,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fSpotM
         __dataclass__init__fields__4__default,
         __dataclass__init__fields__5__annotation,
         __dataclass__init__fields__5__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -14798,10 +14798,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fSpotM
         ".Field(name='message', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fStateReason():
@@ -14812,19 +14812,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fState
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -14951,10 +14951,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fState
         "se, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fSubnetCidrBlockState():
@@ -14965,19 +14965,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fSubne
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -15104,10 +15104,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fSubne
         "e, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fTagSpecification():
@@ -15118,19 +15118,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fTagSp
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -15275,20 +15275,20 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fTagSp
         "=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__5__annotation',
         '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__7__default',
         '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fUserIdGroupPair():
@@ -15309,19 +15309,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fUserI
         __dataclass__init__fields__6__default,
         __dataclass__init__fields__7__annotation,
         __dataclass__init__fields__7__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -15488,10 +15488,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fUserI
         "se, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fVpcCidrBlockState():
@@ -15502,19 +15502,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fVpcCi
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -15641,10 +15641,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fVpcCi
         "se=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fVpcEncryptionControlExclusion():
@@ -15655,19 +15655,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fVpcEn
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -15795,10 +15795,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fVpcEn
         "ion', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fAttachmentEnaSrdSpecification():
@@ -15809,19 +15809,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fAttac
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -15955,14 +15955,14 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fAttac
         "ne)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fBlockDeviceMapping():
@@ -15977,19 +15977,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fBlock
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -16134,10 +16134,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fBlock
         "_reservation_target', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCapacityReservationSpecification():
@@ -16148,19 +16148,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCapac
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -16289,10 +16289,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCapac
         "_reservation_target', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCapacityReservationSpecificationResponse():
@@ -16303,19 +16303,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCapac
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -16459,18 +16459,18 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCapac
         "limit_type', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__4__default',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__5__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fEbsInfo():
@@ -16489,19 +16489,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fEbsIn
         __dataclass__init__fields__5__default,
         __dataclass__init__fields__6__annotation,
         __dataclass__init__fields__6__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -16679,20 +16679,20 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fEbsIn
         "ne)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__5__annotation',
         '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__7__default',
         '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fEbsInstanceBlockDevice():
@@ -16713,19 +16713,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fEbsIn
         __dataclass__init__fields__6__default,
         __dataclass__init__fields__7__annotation,
         __dataclass__init__fields__7__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -16893,10 +16893,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fEbsIn
         "ion', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fEnaSrdSpecificationRequest():
@@ -16907,19 +16907,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fEnaSr
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -17045,10 +17045,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fEnaSr
         "(name='values', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fFilter():
@@ -17059,19 +17059,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fFilte
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -17204,14 +17204,14 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fFilte
         "n.Field(name='memory_info', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fFpgaDeviceInfo():
@@ -17226,19 +17226,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fFpgaD
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -17387,14 +17387,14 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fFpgaD
         "n.Field(name='memory_info', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fGpuDeviceInfo():
@@ -17409,19 +17409,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fGpuDe
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -17570,14 +17570,14 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fGpuDe
         "n.Field(name='memory_info', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInferenceDeviceInfo():
@@ -17592,19 +17592,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInfer
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -17748,10 +17748,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInfer
         "ion', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInstanceAttachmentEnaSrdSpecification():
@@ -17762,19 +17762,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -17901,10 +17901,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         "only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInstanceMarketOptionsRequest():
@@ -17915,19 +17915,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -18062,14 +18062,14 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         "ult_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInstancePrivateIpAddress():
@@ -18084,19 +18084,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -18243,12 +18243,12 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         " id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInstanceStateChange():
@@ -18261,19 +18261,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -18414,14 +18414,14 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         "n.Field(name='memory_info', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fMediaDeviceInfo():
@@ -18436,19 +18436,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fMedia
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -18599,14 +18599,14 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fMedia
         "ult_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNetworkInterfacePrivateIpAddress():
@@ -18621,19 +18621,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNetwo
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -18782,14 +18782,14 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNetwo
         "info', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNeuronDeviceInfo():
@@ -18804,19 +18804,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNeuro
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -18956,8 +18956,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNeuro
         "one),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNitroTpmInfo():
@@ -18966,19 +18966,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNitro
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -19094,8 +19094,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNitro
         "nly=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fPlacementGroupInfo():
@@ -19104,19 +19104,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fPlace
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -19244,14 +19244,14 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fPlace
         "ne), ReprPlan.Field(name='manufacturer', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fProcessorInfo():
@@ -19266,19 +19266,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fProce
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -19421,9 +19421,9 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fProce
         "e)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fRebootInstancesRequest():
@@ -19433,19 +19433,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fReboo
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -19591,20 +19591,20 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fReboo
         ", fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__5__annotation',
         '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__7__default',
         '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fRouteTableAssociation():
@@ -19625,19 +19625,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fRoute
         __dataclass__init__fields__6__default,
         __dataclass__init__fields__7__annotation,
         __dataclass__init__fields__7__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -19807,11 +19807,11 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fRoute
         "Plan.Field(name='dry_run', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fStartInstancesRequest():
@@ -19823,19 +19823,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fStart
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -19980,15 +19980,15 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fStart
         "ue, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
         '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fStopInstancesRequest():
@@ -20004,19 +20004,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fStopI
         __dataclass__init__fields__4__default,
         __dataclass__init__fields__5__annotation,
         __dataclass__init__fields__5__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -20179,16 +20179,16 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fStopI
         ".Field(name='ip_source', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__5__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fSubnetIpv6CidrBlockAssociation():
@@ -20205,19 +20205,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fSubne
         __dataclass__init__fields__4__default,
         __dataclass__init__fields__5__annotation,
         __dataclass__init__fields__5__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -20375,13 +20375,13 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fSubne
         "n=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fTerminateInstancesRequest():
@@ -20395,19 +20395,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fTermi
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -20563,16 +20563,16 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fTermi
         "))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__5__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fVCpuInfo():
@@ -20589,19 +20589,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fVCpuI
         __dataclass__init__fields__4__default,
         __dataclass__init__fields__5__annotation,
         __dataclass__init__fields__5__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -20756,12 +20756,12 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fVCpuI
         "ue, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fVpcCidrBlockAssociation():
@@ -20774,19 +20774,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fVpcCi
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -20945,22 +20945,22 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fVpcCi
         "se=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__5__annotation',
         '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__7__default',
         '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__8__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fVpcEncryptionControlExclusions():
@@ -20983,19 +20983,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fVpcEn
         __dataclass__init__fields__7__default,
         __dataclass__init__fields__8__annotation,
         __dataclass__init__fields__8__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -21190,20 +21190,20 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fVpcEn
         " id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__5__annotation',
         '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__7__default',
         '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fVpcIpv6CidrBlockAssociation():
@@ -21224,19 +21224,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fVpcIp
         __dataclass__init__fields__6__default,
         __dataclass__init__fields__7__annotation,
         __dataclass__init__fields__7__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -21410,13 +21410,13 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fVpcIp
         "erse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCreateRouteTableRequest():
@@ -21430,19 +21430,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCreat
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -21595,14 +21595,14 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCreat
         "e)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
         '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCreateSecurityGroupRequest():
@@ -21617,19 +21617,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCreat
         __dataclass__init__fields__4__default,
         __dataclass__init__fields__5__annotation,
         __dataclass__init__fields__5__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -21776,8 +21776,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCreat
         "Plan.Field(name='addresses', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescribeAddressesResult():
@@ -21786,19 +21786,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -21913,8 +21913,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         "Plan.Field(name='key_pairs', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescribeKeyPairsResult():
@@ -21923,19 +21923,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -22053,10 +22053,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         "=True, fn=None), ReprPlan.Field(name='ebs', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInstanceBlockDeviceMapping():
@@ -22067,19 +22067,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -22229,22 +22229,22 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         "_count', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__5__annotation',
         '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__7__default',
         '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__8__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInstanceNetworkInterfaceAttachment():
@@ -22267,19 +22267,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         __dataclass__init__fields__7__default,
         __dataclass__init__fields__8__annotation,
         __dataclass__init__fields__8__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -22539,52 +22539,52 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         "n=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__10__annotation',
-        '__dataclass__init__fields__16__default',
-        '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__13__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__17__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__13__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__20__default',
-        '__dataclass__init__fields__11__annotation',
-        '__dataclass__init__fields__21__annotation',
-        '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__17__default',
-        '__dataclass__init__fields__14__default',
-        '__dataclass__init__fields__12__default',
-        '__dataclass__init__fields__18__default',
-        '__dataclass__init__fields__22__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__23__annotation',
-        '__dataclass__init__fields__15__annotation',
-        '__dataclass__init__fields__21__default',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__16__annotation',
-        '__dataclass__init__fields__22__default',
         '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__23__default',
-        '__dataclass__init__fields__18__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__default',
-        '__dataclass__init__fields__19__annotation',
+        '__dataclass__init__fields__11__annotation',
+        '__dataclass__init__fields__11__default',
+        '__dataclass__init__fields__12__annotation',
+        '__dataclass__init__fields__12__default',
+        '__dataclass__init__fields__13__annotation',
+        '__dataclass__init__fields__13__default',
         '__dataclass__init__fields__14__annotation',
-        '__dataclass__init__fields__19__default',
-        '__dataclass__init__fields__20__annotation',
+        '__dataclass__init__fields__14__default',
+        '__dataclass__init__fields__15__annotation',
         '__dataclass__init__fields__15__default',
+        '__dataclass__init__fields__16__annotation',
+        '__dataclass__init__fields__16__default',
+        '__dataclass__init__fields__17__annotation',
+        '__dataclass__init__fields__17__default',
+        '__dataclass__init__fields__18__annotation',
+        '__dataclass__init__fields__18__default',
+        '__dataclass__init__fields__19__annotation',
+        '__dataclass__init__fields__19__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__20__annotation',
+        '__dataclass__init__fields__20__default',
+        '__dataclass__init__fields__21__annotation',
+        '__dataclass__init__fields__21__default',
+        '__dataclass__init__fields__22__annotation',
+        '__dataclass__init__fields__22__default',
+        '__dataclass__init__fields__23__annotation',
+        '__dataclass__init__fields__23__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__9__annotation',
+        '__dataclass__init__fields__9__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInstanceNetworkInterfaceSpecification():
@@ -22637,19 +22637,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         __dataclass__init__fields__8__default,
         __dataclass__init__fields__9__annotation,
         __dataclass__init__fields__9__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -22952,14 +22952,14 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         "None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInstanceStorageInfo():
@@ -22974,19 +22974,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -23136,14 +23136,14 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         ", fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInternetGateway():
@@ -23158,19 +23158,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInter
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -23331,20 +23331,20 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInter
         "=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__5__annotation',
         '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__7__default',
         '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fIpPermission():
@@ -23365,19 +23365,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fIpPer
         __dataclass__init__fields__6__default,
         __dataclass__init__fields__7__annotation,
         __dataclass__init__fields__7__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -23599,36 +23599,36 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fIpPer
         "y=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__10__annotation',
-        '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__13__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__13__annotation',
-        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__10__default',
         '__dataclass__init__fields__11__annotation',
         '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__14__default',
+        '__dataclass__init__fields__12__annotation',
         '__dataclass__init__fields__12__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__15__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__default',
+        '__dataclass__init__fields__13__annotation',
+        '__dataclass__init__fields__13__default',
         '__dataclass__init__fields__14__annotation',
+        '__dataclass__init__fields__14__default',
+        '__dataclass__init__fields__15__annotation',
         '__dataclass__init__fields__15__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__9__annotation',
+        '__dataclass__init__fields__9__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNetworkInfo():
@@ -23665,19 +23665,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNetwo
         __dataclass__init__fields__8__default,
         __dataclass__init__fields__9__annotation,
         __dataclass__init__fields__9__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -23939,26 +23939,26 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNetwo
         "e, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__10__annotation',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__default',
         '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__default',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__9__annotation',
+        '__dataclass__init__fields__9__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNetworkInterfaceAttachment():
@@ -23985,19 +23985,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNetwo
         __dataclass__init__fields__8__default,
         __dataclass__init__fields__9__annotation,
         __dataclass__init__fields__9__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -24206,20 +24206,20 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNetwo
         "alse, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__5__annotation',
         '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__7__default',
         '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fVpcEncryptionControl():
@@ -24240,19 +24240,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fVpcEn
         __dataclass__init__fields__6__default,
         __dataclass__init__fields__7__annotation,
         __dataclass__init__fields__7__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -24426,14 +24426,14 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fVpcEn
         "=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescribeAddressesRequest():
@@ -24448,19 +24448,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -24628,24 +24628,24 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         "=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__5__annotation',
         '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__7__default',
         '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__default',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__9__annotation',
+        '__dataclass__init__fields__9__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescribeImagesRequest():
@@ -24670,19 +24670,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         __dataclass__init__fields__8__default,
         __dataclass__init__fields__9__annotation,
         __dataclass__init__fields__9__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -24875,16 +24875,16 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         "d(name='next_token', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__5__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescribeInstanceTypesRequest():
@@ -24901,19 +24901,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         __dataclass__init__fields__4__default,
         __dataclass__init__fields__5__annotation,
         __dataclass__init__fields__5__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -25074,16 +25074,16 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         "ults', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__5__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescribeInstancesRequest():
@@ -25100,19 +25100,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         __dataclass__init__fields__4__default,
         __dataclass__init__fields__5__annotation,
         __dataclass__init__fields__5__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -25274,16 +25274,16 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         " default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__5__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescribeInternetGatewaysRequest():
@@ -25300,19 +25300,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         __dataclass__init__fields__4__default,
         __dataclass__init__fields__5__annotation,
         __dataclass__init__fields__5__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -25474,16 +25474,16 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         "ne)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__5__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescribeKeyPairsRequest():
@@ -25500,19 +25500,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         __dataclass__init__fields__4__default,
         __dataclass__init__fields__5__annotation,
         __dataclass__init__fields__5__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -25674,16 +25674,16 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         "=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__5__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescribeNetworkInterfacesRequest():
@@ -25700,19 +25700,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         __dataclass__init__fields__4__default,
         __dataclass__init__fields__5__annotation,
         __dataclass__init__fields__5__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -25873,16 +25873,16 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         "rPlan.Field(name='filters', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__5__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescribeRouteTablesRequest():
@@ -25899,19 +25899,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         __dataclass__init__fields__4__default,
         __dataclass__init__fields__5__annotation,
         __dataclass__init__fields__5__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -26076,18 +26076,18 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         ")))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__4__default',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__5__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescribeSecurityGroupsRequest():
@@ -26106,19 +26106,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         __dataclass__init__fields__5__default,
         __dataclass__init__fields__6__annotation,
         __dataclass__init__fields__6__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -26287,16 +26287,16 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         "=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__5__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescribeSubnetsRequest():
@@ -26313,19 +26313,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         __dataclass__init__fields__4__default,
         __dataclass__init__fields__5__annotation,
         __dataclass__init__fields__5__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -26486,16 +26486,16 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         "False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__5__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescribeVpcsRequest():
@@ -26512,19 +26512,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         __dataclass__init__fields__4__default,
         __dataclass__init__fields__5__annotation,
         __dataclass__init__fields__5__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -26676,10 +26676,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         "))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fFpgaInfo():
@@ -26690,19 +26690,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fFpgaI
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -26829,10 +26829,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fFpgaI
         "ame='total_gpu_memory_in_mi_b', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fGpuInfo():
@@ -26843,19 +26843,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fGpuIn
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -27112,80 +27112,80 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fGpuIn
         ")"
     ),
     (
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__37__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__29__default',
-        '__dataclass__init__fields__36__default',
-        '__dataclass__init__fields__16__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__13__default',
-        '__dataclass__init__fields__26__annotation',
-        '__dataclass__init__fields__28__annotation',
-        '__dataclass__init__fields__25__default',
-        '__dataclass__init__fields__25__annotation',
-        '__dataclass__init__fields__37__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__33__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__13__annotation',
-        '__dataclass__init__fields__11__annotation',
-        '__dataclass__init__fields__32__default',
-        '__dataclass__init__fields__21__annotation',
-        '__dataclass__init__fields__33__default',
-        '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__35__annotation',
-        '__dataclass__init__fields__18__default',
-        '__dataclass__init__fields__14__default',
-        '__dataclass__init__fields__22__annotation',
-        '__dataclass__init__fields__23__annotation',
-        '__dataclass__init__fields__21__default',
-        '__dataclass__init__fields__24__annotation',
-        '__dataclass__init__fields__34__annotation',
-        '__dataclass__init__fields__22__default',
-        '__dataclass__init__fields__30__annotation',
-        '__dataclass__init__fields__27__annotation',
-        '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__23__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__30__default',
-        '__dataclass__init__fields__19__annotation',
-        '__dataclass__init__fields__31__default',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__31__annotation',
         '__dataclass__init__fields__10__annotation',
+        '__dataclass__init__fields__10__default',
+        '__dataclass__init__fields__11__annotation',
+        '__dataclass__init__fields__11__default',
         '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__27__default',
-        '__dataclass__init__fields__34__default',
-        '__dataclass__init__fields__17__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__20__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__17__default',
-        '__dataclass__init__fields__24__default',
         '__dataclass__init__fields__12__default',
-        '__dataclass__init__fields__32__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__35__default',
+        '__dataclass__init__fields__13__annotation',
+        '__dataclass__init__fields__13__default',
+        '__dataclass__init__fields__14__annotation',
+        '__dataclass__init__fields__14__default',
         '__dataclass__init__fields__15__annotation',
+        '__dataclass__init__fields__15__default',
+        '__dataclass__init__fields__16__annotation',
+        '__dataclass__init__fields__16__default',
+        '__dataclass__init__fields__17__annotation',
+        '__dataclass__init__fields__17__default',
+        '__dataclass__init__fields__18__annotation',
+        '__dataclass__init__fields__18__default',
+        '__dataclass__init__fields__19__annotation',
+        '__dataclass__init__fields__19__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__20__annotation',
+        '__dataclass__init__fields__20__default',
+        '__dataclass__init__fields__21__annotation',
+        '__dataclass__init__fields__21__default',
+        '__dataclass__init__fields__22__annotation',
+        '__dataclass__init__fields__22__default',
+        '__dataclass__init__fields__23__annotation',
+        '__dataclass__init__fields__23__default',
+        '__dataclass__init__fields__24__annotation',
+        '__dataclass__init__fields__24__default',
+        '__dataclass__init__fields__25__annotation',
+        '__dataclass__init__fields__25__default',
+        '__dataclass__init__fields__26__annotation',
         '__dataclass__init__fields__26__default',
+        '__dataclass__init__fields__27__annotation',
+        '__dataclass__init__fields__27__default',
+        '__dataclass__init__fields__28__annotation',
         '__dataclass__init__fields__28__default',
         '__dataclass__init__fields__29__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__16__annotation',
+        '__dataclass__init__fields__29__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__30__annotation',
+        '__dataclass__init__fields__30__default',
+        '__dataclass__init__fields__31__annotation',
+        '__dataclass__init__fields__31__default',
+        '__dataclass__init__fields__32__annotation',
+        '__dataclass__init__fields__32__default',
+        '__dataclass__init__fields__33__annotation',
+        '__dataclass__init__fields__33__default',
+        '__dataclass__init__fields__34__annotation',
+        '__dataclass__init__fields__34__default',
+        '__dataclass__init__fields__35__annotation',
+        '__dataclass__init__fields__35__default',
         '__dataclass__init__fields__36__annotation',
-        '__dataclass__init__fields__18__annotation',
+        '__dataclass__init__fields__36__default',
+        '__dataclass__init__fields__37__annotation',
+        '__dataclass__init__fields__37__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
         '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__9__annotation',
         '__dataclass__init__fields__9__default',
-        '__dataclass__init__fields__14__annotation',
-        '__dataclass__init__fields__19__default',
-        '__dataclass__init__fields__20__annotation',
-        '__dataclass__init__fields__15__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fImage():
@@ -27266,19 +27266,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fImage
         __dataclass__init__fields__8__default,
         __dataclass__init__fields__9__annotation,
         __dataclass__init__fields__9__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -27686,10 +27686,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fImage
         "ce_memory_in_mi_b', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInferenceAcceleratorInfo():
@@ -27700,19 +27700,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInfer
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -27906,46 +27906,46 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInfer
         ", fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__10__annotation',
-        '__dataclass__init__fields__16__default',
-        '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__13__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__17__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__13__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__20__default',
+        '__dataclass__init__fields__10__default',
         '__dataclass__init__fields__11__annotation',
         '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__17__default',
-        '__dataclass__init__fields__14__default',
+        '__dataclass__init__fields__12__annotation',
         '__dataclass__init__fields__12__default',
-        '__dataclass__init__fields__18__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__15__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__16__annotation',
-        '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__18__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__default',
-        '__dataclass__init__fields__19__annotation',
+        '__dataclass__init__fields__13__annotation',
+        '__dataclass__init__fields__13__default',
         '__dataclass__init__fields__14__annotation',
-        '__dataclass__init__fields__19__default',
-        '__dataclass__init__fields__20__annotation',
+        '__dataclass__init__fields__14__default',
+        '__dataclass__init__fields__15__annotation',
         '__dataclass__init__fields__15__default',
+        '__dataclass__init__fields__16__annotation',
+        '__dataclass__init__fields__16__default',
+        '__dataclass__init__fields__17__annotation',
+        '__dataclass__init__fields__17__default',
+        '__dataclass__init__fields__18__annotation',
+        '__dataclass__init__fields__18__default',
+        '__dataclass__init__fields__19__annotation',
+        '__dataclass__init__fields__19__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__20__annotation',
+        '__dataclass__init__fields__20__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__9__annotation',
+        '__dataclass__init__fields__9__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInstanceNetworkInterface():
@@ -27992,19 +27992,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         __dataclass__init__fields__8__default,
         __dataclass__init__fields__9__annotation,
         __dataclass__init__fields__9__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -28276,10 +28276,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         "True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fMediaAcceleratorInfo():
@@ -28290,19 +28290,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fMedia
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -28542,70 +28542,70 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fMedia
         "vailability_zone_id', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__29__default',
-        '__dataclass__init__fields__16__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__13__default',
-        '__dataclass__init__fields__26__annotation',
-        '__dataclass__init__fields__28__annotation',
-        '__dataclass__init__fields__25__default',
-        '__dataclass__init__fields__25__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__13__annotation',
-        '__dataclass__init__fields__11__annotation',
-        '__dataclass__init__fields__32__default',
-        '__dataclass__init__fields__21__annotation',
-        '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__18__default',
-        '__dataclass__init__fields__14__default',
-        '__dataclass__init__fields__22__annotation',
-        '__dataclass__init__fields__23__annotation',
-        '__dataclass__init__fields__21__default',
-        '__dataclass__init__fields__24__annotation',
-        '__dataclass__init__fields__22__default',
-        '__dataclass__init__fields__30__annotation',
-        '__dataclass__init__fields__27__annotation',
-        '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__23__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__30__default',
-        '__dataclass__init__fields__19__annotation',
-        '__dataclass__init__fields__31__default',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__31__annotation',
         '__dataclass__init__fields__10__annotation',
+        '__dataclass__init__fields__10__default',
+        '__dataclass__init__fields__11__annotation',
+        '__dataclass__init__fields__11__default',
         '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__27__default',
-        '__dataclass__init__fields__17__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__20__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__17__default',
-        '__dataclass__init__fields__24__default',
         '__dataclass__init__fields__12__default',
-        '__dataclass__init__fields__32__annotation',
-        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__13__annotation',
+        '__dataclass__init__fields__13__default',
+        '__dataclass__init__fields__14__annotation',
+        '__dataclass__init__fields__14__default',
         '__dataclass__init__fields__15__annotation',
+        '__dataclass__init__fields__15__default',
+        '__dataclass__init__fields__16__annotation',
+        '__dataclass__init__fields__16__default',
+        '__dataclass__init__fields__17__annotation',
+        '__dataclass__init__fields__17__default',
+        '__dataclass__init__fields__18__annotation',
+        '__dataclass__init__fields__18__default',
+        '__dataclass__init__fields__19__annotation',
+        '__dataclass__init__fields__19__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__20__annotation',
+        '__dataclass__init__fields__20__default',
+        '__dataclass__init__fields__21__annotation',
+        '__dataclass__init__fields__21__default',
+        '__dataclass__init__fields__22__annotation',
+        '__dataclass__init__fields__22__default',
+        '__dataclass__init__fields__23__annotation',
+        '__dataclass__init__fields__23__default',
+        '__dataclass__init__fields__24__annotation',
+        '__dataclass__init__fields__24__default',
+        '__dataclass__init__fields__25__annotation',
+        '__dataclass__init__fields__25__default',
+        '__dataclass__init__fields__26__annotation',
         '__dataclass__init__fields__26__default',
+        '__dataclass__init__fields__27__annotation',
+        '__dataclass__init__fields__27__default',
+        '__dataclass__init__fields__28__annotation',
         '__dataclass__init__fields__28__default',
         '__dataclass__init__fields__29__annotation',
+        '__dataclass__init__fields__29__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__30__annotation',
+        '__dataclass__init__fields__30__default',
+        '__dataclass__init__fields__31__annotation',
+        '__dataclass__init__fields__31__default',
+        '__dataclass__init__fields__32__annotation',
+        '__dataclass__init__fields__32__default',
+        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__16__annotation',
-        '__dataclass__init__fields__18__annotation',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
         '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__9__annotation',
         '__dataclass__init__fields__9__default',
-        '__dataclass__init__fields__14__annotation',
-        '__dataclass__init__fields__19__default',
-        '__dataclass__init__fields__20__annotation',
-        '__dataclass__init__fields__15__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNetworkInterface():
@@ -28676,19 +28676,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNetwo
         __dataclass__init__fields__8__default,
         __dataclass__init__fields__9__annotation,
         __dataclass__init__fields__9__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -29057,10 +29057,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNetwo
         "default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNeuronInfo():
@@ -29071,19 +29071,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNeuro
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -29227,20 +29227,20 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fNeuro
         "_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__5__annotation',
         '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__7__default',
         '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fRouteTable():
@@ -29261,19 +29261,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fRoute
         __dataclass__init__fields__6__default,
         __dataclass__init__fields__7__annotation,
         __dataclass__init__fields__7__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -29437,8 +29437,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fRoute
         "one),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fStartInstancesResult():
@@ -29447,19 +29447,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fStart
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -29575,8 +29575,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fStart
         "one),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fStopInstancesResult():
@@ -29585,19 +29585,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fStopI
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -29800,52 +29800,52 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fStopI
         "se, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__10__annotation',
-        '__dataclass__init__fields__16__default',
-        '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__13__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__17__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__13__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__20__default',
-        '__dataclass__init__fields__11__annotation',
-        '__dataclass__init__fields__21__annotation',
-        '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__17__default',
-        '__dataclass__init__fields__14__default',
-        '__dataclass__init__fields__12__default',
-        '__dataclass__init__fields__18__default',
-        '__dataclass__init__fields__22__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__23__annotation',
-        '__dataclass__init__fields__15__annotation',
-        '__dataclass__init__fields__21__default',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__16__annotation',
-        '__dataclass__init__fields__22__default',
         '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__23__default',
-        '__dataclass__init__fields__18__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__default',
-        '__dataclass__init__fields__19__annotation',
+        '__dataclass__init__fields__11__annotation',
+        '__dataclass__init__fields__11__default',
+        '__dataclass__init__fields__12__annotation',
+        '__dataclass__init__fields__12__default',
+        '__dataclass__init__fields__13__annotation',
+        '__dataclass__init__fields__13__default',
         '__dataclass__init__fields__14__annotation',
-        '__dataclass__init__fields__19__default',
-        '__dataclass__init__fields__20__annotation',
+        '__dataclass__init__fields__14__default',
+        '__dataclass__init__fields__15__annotation',
         '__dataclass__init__fields__15__default',
+        '__dataclass__init__fields__16__annotation',
+        '__dataclass__init__fields__16__default',
+        '__dataclass__init__fields__17__annotation',
+        '__dataclass__init__fields__17__default',
+        '__dataclass__init__fields__18__annotation',
+        '__dataclass__init__fields__18__default',
+        '__dataclass__init__fields__19__annotation',
+        '__dataclass__init__fields__19__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__20__annotation',
+        '__dataclass__init__fields__20__default',
+        '__dataclass__init__fields__21__annotation',
+        '__dataclass__init__fields__21__default',
+        '__dataclass__init__fields__22__annotation',
+        '__dataclass__init__fields__22__default',
+        '__dataclass__init__fields__23__annotation',
+        '__dataclass__init__fields__23__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__9__annotation',
+        '__dataclass__init__fields__9__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fSubnet():
@@ -29898,19 +29898,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fSubne
         __dataclass__init__fields__8__default,
         __dataclass__init__fields__9__annotation,
         __dataclass__init__fields__9__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -30202,8 +30202,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fSubne
         "', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fTerminateInstancesResult():
@@ -30212,19 +30212,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fTermi
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -30381,30 +30381,30 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fTermi
         "ld(name='dhcp_options_id', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__12__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__10__annotation',
-        '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__default',
         '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__default',
-        '__dataclass__init__fields__6__default',
         '__dataclass__init__fields__11__annotation',
+        '__dataclass__init__fields__11__default',
+        '__dataclass__init__fields__12__annotation',
+        '__dataclass__init__fields__12__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__9__annotation',
+        '__dataclass__init__fields__9__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fVpc():
@@ -30435,19 +30435,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fVpc()
         __dataclass__init__fields__8__default,
         __dataclass__init__fields__9__annotation,
         __dataclass__init__fields__9__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -30654,10 +30654,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fVpc()
         "only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCreateRouteTableResult():
@@ -30668,19 +30668,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCreat
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -30807,10 +30807,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fCreat
         "Field(name='next_token', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescribeInternetGatewaysResult():
@@ -30821,19 +30821,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -31077,68 +31077,68 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         " kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__29__default',
-        '__dataclass__init__fields__16__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__13__default',
-        '__dataclass__init__fields__26__annotation',
-        '__dataclass__init__fields__28__annotation',
-        '__dataclass__init__fields__25__default',
-        '__dataclass__init__fields__25__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__13__annotation',
-        '__dataclass__init__fields__11__annotation',
-        '__dataclass__init__fields__21__annotation',
-        '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__18__default',
-        '__dataclass__init__fields__14__default',
-        '__dataclass__init__fields__22__annotation',
-        '__dataclass__init__fields__23__annotation',
-        '__dataclass__init__fields__21__default',
-        '__dataclass__init__fields__24__annotation',
-        '__dataclass__init__fields__22__default',
-        '__dataclass__init__fields__30__annotation',
-        '__dataclass__init__fields__27__annotation',
-        '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__23__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__30__default',
-        '__dataclass__init__fields__19__annotation',
-        '__dataclass__init__fields__31__default',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__31__annotation',
         '__dataclass__init__fields__10__annotation',
+        '__dataclass__init__fields__10__default',
+        '__dataclass__init__fields__11__annotation',
+        '__dataclass__init__fields__11__default',
         '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__27__default',
-        '__dataclass__init__fields__17__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__20__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__17__default',
-        '__dataclass__init__fields__24__default',
         '__dataclass__init__fields__12__default',
-        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__13__annotation',
+        '__dataclass__init__fields__13__default',
+        '__dataclass__init__fields__14__annotation',
+        '__dataclass__init__fields__14__default',
         '__dataclass__init__fields__15__annotation',
+        '__dataclass__init__fields__15__default',
+        '__dataclass__init__fields__16__annotation',
+        '__dataclass__init__fields__16__default',
+        '__dataclass__init__fields__17__annotation',
+        '__dataclass__init__fields__17__default',
+        '__dataclass__init__fields__18__annotation',
+        '__dataclass__init__fields__18__default',
+        '__dataclass__init__fields__19__annotation',
+        '__dataclass__init__fields__19__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__20__annotation',
+        '__dataclass__init__fields__20__default',
+        '__dataclass__init__fields__21__annotation',
+        '__dataclass__init__fields__21__default',
+        '__dataclass__init__fields__22__annotation',
+        '__dataclass__init__fields__22__default',
+        '__dataclass__init__fields__23__annotation',
+        '__dataclass__init__fields__23__default',
+        '__dataclass__init__fields__24__annotation',
+        '__dataclass__init__fields__24__default',
+        '__dataclass__init__fields__25__annotation',
+        '__dataclass__init__fields__25__default',
+        '__dataclass__init__fields__26__annotation',
         '__dataclass__init__fields__26__default',
+        '__dataclass__init__fields__27__annotation',
+        '__dataclass__init__fields__27__default',
+        '__dataclass__init__fields__28__annotation',
         '__dataclass__init__fields__28__default',
         '__dataclass__init__fields__29__annotation',
+        '__dataclass__init__fields__29__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__30__annotation',
+        '__dataclass__init__fields__30__default',
+        '__dataclass__init__fields__31__annotation',
+        '__dataclass__init__fields__31__default',
+        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__16__annotation',
-        '__dataclass__init__fields__18__annotation',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
         '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__9__annotation',
         '__dataclass__init__fields__9__default',
-        '__dataclass__init__fields__14__annotation',
-        '__dataclass__init__fields__19__default',
-        '__dataclass__init__fields__20__annotation',
-        '__dataclass__init__fields__15__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInstanceTypeInfo():
@@ -31207,19 +31207,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         __dataclass__init__fields__8__default,
         __dataclass__init__fields__9__annotation,
         __dataclass__init__fields__9__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -31739,90 +31739,90 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         "ue, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__37__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__29__default',
-        '__dataclass__init__fields__36__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__16__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__13__default',
-        '__dataclass__init__fields__26__annotation',
-        '__dataclass__init__fields__28__annotation',
-        '__dataclass__init__fields__40__annotation',
-        '__dataclass__init__fields__25__default',
-        '__dataclass__init__fields__25__annotation',
-        '__dataclass__init__fields__37__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__33__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__13__annotation',
-        '__dataclass__init__fields__11__annotation',
-        '__dataclass__init__fields__32__default',
-        '__dataclass__init__fields__21__annotation',
-        '__dataclass__init__fields__33__default',
-        '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__35__annotation',
-        '__dataclass__init__fields__42__annotation',
-        '__dataclass__init__fields__18__default',
-        '__dataclass__init__fields__14__default',
-        '__dataclass__init__fields__40__default',
-        '__dataclass__init__fields__22__annotation',
-        '__dataclass__init__fields__43__annotation',
-        '__dataclass__init__fields__23__annotation',
-        '__dataclass__init__fields__21__default',
-        '__dataclass__init__fields__24__annotation',
-        '__dataclass__init__fields__34__annotation',
-        '__dataclass__init__fields__22__default',
-        '__dataclass__init__fields__30__annotation',
-        '__dataclass__init__fields__27__annotation',
-        '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__23__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__38__default',
-        '__dataclass__init__fields__30__default',
-        '__dataclass__init__fields__19__annotation',
-        '__dataclass__init__fields__31__default',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__31__annotation',
         '__dataclass__init__fields__10__annotation',
+        '__dataclass__init__fields__10__default',
+        '__dataclass__init__fields__11__annotation',
+        '__dataclass__init__fields__11__default',
         '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__27__default',
-        '__dataclass__init__fields__39__annotation',
-        '__dataclass__init__fields__34__default',
-        '__dataclass__init__fields__17__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__41__default',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__20__default',
-        '__dataclass__init__fields__39__default',
-        '__dataclass__init__fields__43__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__17__default',
-        '__dataclass__init__fields__24__default',
-        '__dataclass__init__fields__42__default',
         '__dataclass__init__fields__12__default',
-        '__dataclass__init__fields__32__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__41__annotation',
-        '__dataclass__init__fields__35__default',
+        '__dataclass__init__fields__13__annotation',
+        '__dataclass__init__fields__13__default',
+        '__dataclass__init__fields__14__annotation',
+        '__dataclass__init__fields__14__default',
         '__dataclass__init__fields__15__annotation',
+        '__dataclass__init__fields__15__default',
+        '__dataclass__init__fields__16__annotation',
+        '__dataclass__init__fields__16__default',
+        '__dataclass__init__fields__17__annotation',
+        '__dataclass__init__fields__17__default',
+        '__dataclass__init__fields__18__annotation',
+        '__dataclass__init__fields__18__default',
+        '__dataclass__init__fields__19__annotation',
+        '__dataclass__init__fields__19__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__20__annotation',
+        '__dataclass__init__fields__20__default',
+        '__dataclass__init__fields__21__annotation',
+        '__dataclass__init__fields__21__default',
+        '__dataclass__init__fields__22__annotation',
+        '__dataclass__init__fields__22__default',
+        '__dataclass__init__fields__23__annotation',
+        '__dataclass__init__fields__23__default',
+        '__dataclass__init__fields__24__annotation',
+        '__dataclass__init__fields__24__default',
+        '__dataclass__init__fields__25__annotation',
+        '__dataclass__init__fields__25__default',
+        '__dataclass__init__fields__26__annotation',
         '__dataclass__init__fields__26__default',
-        '__dataclass__init__fields__38__annotation',
+        '__dataclass__init__fields__27__annotation',
+        '__dataclass__init__fields__27__default',
+        '__dataclass__init__fields__28__annotation',
         '__dataclass__init__fields__28__default',
         '__dataclass__init__fields__29__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__16__annotation',
+        '__dataclass__init__fields__29__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__30__annotation',
+        '__dataclass__init__fields__30__default',
+        '__dataclass__init__fields__31__annotation',
+        '__dataclass__init__fields__31__default',
+        '__dataclass__init__fields__32__annotation',
+        '__dataclass__init__fields__32__default',
+        '__dataclass__init__fields__33__annotation',
+        '__dataclass__init__fields__33__default',
+        '__dataclass__init__fields__34__annotation',
+        '__dataclass__init__fields__34__default',
+        '__dataclass__init__fields__35__annotation',
+        '__dataclass__init__fields__35__default',
         '__dataclass__init__fields__36__annotation',
-        '__dataclass__init__fields__18__annotation',
-        '__dataclass__init__fields__14__annotation',
-        '__dataclass__init__fields__19__default',
-        '__dataclass__init__fields__20__annotation',
-        '__dataclass__init__fields__15__default',
+        '__dataclass__init__fields__36__default',
+        '__dataclass__init__fields__37__annotation',
+        '__dataclass__init__fields__37__default',
+        '__dataclass__init__fields__38__annotation',
+        '__dataclass__init__fields__38__default',
+        '__dataclass__init__fields__39__annotation',
+        '__dataclass__init__fields__39__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__40__annotation',
+        '__dataclass__init__fields__40__default',
+        '__dataclass__init__fields__41__annotation',
+        '__dataclass__init__fields__41__default',
+        '__dataclass__init__fields__42__annotation',
+        '__dataclass__init__fields__42__default',
+        '__dataclass__init__fields__43__annotation',
+        '__dataclass__init__fields__43__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__9__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fRunInstancesRequest():
@@ -31913,19 +31913,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fRunIn
         __dataclass__init__fields__7__default,
         __dataclass__init__fields__8__annotation,
         __dataclass__init__fields__9__annotation,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -32405,24 +32405,24 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fRunIn
         "=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__5__annotation',
         '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__7__default',
         '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__default',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__9__annotation',
+        '__dataclass__init__fields__9__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fSecurityGroup():
@@ -32447,19 +32447,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fSecur
         __dataclass__init__fields__8__default,
         __dataclass__init__fields__9__annotation,
         __dataclass__init__fields__9__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -32642,10 +32642,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fSecur
         "ult_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescribeImagesResult():
@@ -32656,19 +32656,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -32795,10 +32795,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         "prPlan.Field(name='next_token', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescribeNetworkInterfacesResult():
@@ -32809,19 +32809,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -32948,10 +32948,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         "ue, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescribeRouteTablesResult():
@@ -32962,19 +32962,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -33101,10 +33101,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         "e, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescribeSubnetsResult():
@@ -33115,19 +33115,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -33253,10 +33253,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         "True, fn=None), ReprPlan.Field(name='vpcs', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescribeVpcsResult():
@@ -33267,19 +33267,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -33630,126 +33630,126 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         "), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__57__default',
-        '__dataclass__init__fields__37__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__49__default',
-        '__dataclass__init__fields__29__default',
-        '__dataclass__init__fields__36__default',
-        '__dataclass__init__fields__59__annotation',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__44__annotation',
-        '__dataclass__init__fields__50__annotation',
-        '__dataclass__init__fields__16__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__13__default',
-        '__dataclass__init__fields__26__annotation',
-        '__dataclass__init__fields__28__annotation',
-        '__dataclass__init__fields__53__annotation',
-        '__dataclass__init__fields__40__annotation',
-        '__dataclass__init__fields__25__default',
-        '__dataclass__init__fields__25__annotation',
-        '__dataclass__init__fields__37__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__33__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__13__annotation',
-        '__dataclass__init__fields__45__default',
-        '__dataclass__init__fields__11__annotation',
-        '__dataclass__init__fields__32__default',
-        '__dataclass__init__fields__54__default',
-        '__dataclass__init__fields__21__annotation',
-        '__dataclass__init__fields__33__default',
-        '__dataclass__init__fields__58__default',
-        '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__42__annotation',
-        '__dataclass__init__fields__35__annotation',
-        '__dataclass__init__fields__53__default',
-        '__dataclass__init__fields__18__default',
-        '__dataclass__init__fields__14__default',
-        '__dataclass__init__fields__40__default',
-        '__dataclass__init__fields__22__annotation',
-        '__dataclass__init__fields__43__annotation',
-        '__dataclass__init__fields__23__annotation',
-        '__dataclass__init__fields__21__default',
-        '__dataclass__init__fields__24__annotation',
-        '__dataclass__init__fields__59__default',
-        '__dataclass__init__fields__34__annotation',
-        '__dataclass__init__fields__22__default',
-        '__dataclass__init__fields__30__annotation',
-        '__dataclass__init__fields__47__annotation',
-        '__dataclass__init__fields__27__annotation',
-        '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__23__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__38__default',
-        '__dataclass__init__fields__15__default',
-        '__dataclass__init__fields__30__default',
-        '__dataclass__init__fields__19__annotation',
-        '__dataclass__init__fields__45__annotation',
-        '__dataclass__init__fields__60__annotation',
-        '__dataclass__init__fields__31__default',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__56__annotation',
-        '__dataclass__init__fields__52__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__31__annotation',
-        '__dataclass__init__fields__55__default',
-        '__dataclass__init__fields__57__annotation',
-        '__dataclass__init__fields__50__default',
         '__dataclass__init__fields__10__annotation',
+        '__dataclass__init__fields__10__default',
+        '__dataclass__init__fields__11__annotation',
+        '__dataclass__init__fields__11__default',
         '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__27__default',
-        '__dataclass__init__fields__46__default',
-        '__dataclass__init__fields__60__default',
-        '__dataclass__init__fields__39__annotation',
-        '__dataclass__init__fields__52__default',
-        '__dataclass__init__fields__34__default',
-        '__dataclass__init__fields__17__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__41__default',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__46__annotation',
-        '__dataclass__init__fields__20__default',
-        '__dataclass__init__fields__51__annotation',
-        '__dataclass__init__fields__39__default',
-        '__dataclass__init__fields__43__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__17__default',
-        '__dataclass__init__fields__24__default',
-        '__dataclass__init__fields__42__default',
         '__dataclass__init__fields__12__default',
-        '__dataclass__init__fields__32__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__41__annotation',
-        '__dataclass__init__fields__35__default',
-        '__dataclass__init__fields__47__default',
+        '__dataclass__init__fields__13__annotation',
+        '__dataclass__init__fields__13__default',
+        '__dataclass__init__fields__14__annotation',
+        '__dataclass__init__fields__14__default',
         '__dataclass__init__fields__15__annotation',
+        '__dataclass__init__fields__15__default',
+        '__dataclass__init__fields__16__annotation',
+        '__dataclass__init__fields__16__default',
+        '__dataclass__init__fields__17__annotation',
+        '__dataclass__init__fields__17__default',
+        '__dataclass__init__fields__18__annotation',
+        '__dataclass__init__fields__18__default',
+        '__dataclass__init__fields__19__annotation',
+        '__dataclass__init__fields__19__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__20__annotation',
+        '__dataclass__init__fields__20__default',
+        '__dataclass__init__fields__21__annotation',
+        '__dataclass__init__fields__21__default',
+        '__dataclass__init__fields__22__annotation',
+        '__dataclass__init__fields__22__default',
+        '__dataclass__init__fields__23__annotation',
+        '__dataclass__init__fields__23__default',
+        '__dataclass__init__fields__24__annotation',
+        '__dataclass__init__fields__24__default',
+        '__dataclass__init__fields__25__annotation',
+        '__dataclass__init__fields__25__default',
+        '__dataclass__init__fields__26__annotation',
         '__dataclass__init__fields__26__default',
-        '__dataclass__init__fields__38__annotation',
+        '__dataclass__init__fields__27__annotation',
+        '__dataclass__init__fields__27__default',
+        '__dataclass__init__fields__28__annotation',
         '__dataclass__init__fields__28__default',
         '__dataclass__init__fields__29__annotation',
-        '__dataclass__init__fields__44__default',
-        '__dataclass__init__fields__58__annotation',
-        '__dataclass__init__fields__55__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__16__annotation',
-        '__dataclass__init__fields__49__annotation',
-        '__dataclass__init__fields__51__default',
+        '__dataclass__init__fields__29__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__30__annotation',
+        '__dataclass__init__fields__30__default',
+        '__dataclass__init__fields__31__annotation',
+        '__dataclass__init__fields__31__default',
+        '__dataclass__init__fields__32__annotation',
+        '__dataclass__init__fields__32__default',
+        '__dataclass__init__fields__33__annotation',
+        '__dataclass__init__fields__33__default',
+        '__dataclass__init__fields__34__annotation',
+        '__dataclass__init__fields__34__default',
+        '__dataclass__init__fields__35__annotation',
+        '__dataclass__init__fields__35__default',
         '__dataclass__init__fields__36__annotation',
-        '__dataclass__init__fields__18__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__default',
+        '__dataclass__init__fields__36__default',
+        '__dataclass__init__fields__37__annotation',
+        '__dataclass__init__fields__37__default',
+        '__dataclass__init__fields__38__annotation',
+        '__dataclass__init__fields__38__default',
+        '__dataclass__init__fields__39__annotation',
+        '__dataclass__init__fields__39__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__40__annotation',
+        '__dataclass__init__fields__40__default',
+        '__dataclass__init__fields__41__annotation',
+        '__dataclass__init__fields__41__default',
+        '__dataclass__init__fields__42__annotation',
+        '__dataclass__init__fields__42__default',
+        '__dataclass__init__fields__43__annotation',
+        '__dataclass__init__fields__43__default',
+        '__dataclass__init__fields__44__annotation',
+        '__dataclass__init__fields__44__default',
+        '__dataclass__init__fields__45__annotation',
+        '__dataclass__init__fields__45__default',
+        '__dataclass__init__fields__46__annotation',
+        '__dataclass__init__fields__46__default',
+        '__dataclass__init__fields__47__annotation',
+        '__dataclass__init__fields__47__default',
         '__dataclass__init__fields__48__annotation',
         '__dataclass__init__fields__48__default',
-        '__dataclass__init__fields__14__annotation',
-        '__dataclass__init__fields__19__default',
-        '__dataclass__init__fields__20__annotation',
-        '__dataclass__init__fields__56__default',
+        '__dataclass__init__fields__49__annotation',
+        '__dataclass__init__fields__49__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__50__annotation',
+        '__dataclass__init__fields__50__default',
+        '__dataclass__init__fields__51__annotation',
+        '__dataclass__init__fields__51__default',
+        '__dataclass__init__fields__52__annotation',
+        '__dataclass__init__fields__52__default',
+        '__dataclass__init__fields__53__annotation',
+        '__dataclass__init__fields__53__default',
         '__dataclass__init__fields__54__annotation',
+        '__dataclass__init__fields__54__default',
+        '__dataclass__init__fields__55__annotation',
+        '__dataclass__init__fields__55__default',
+        '__dataclass__init__fields__56__annotation',
+        '__dataclass__init__fields__56__default',
+        '__dataclass__init__fields__57__annotation',
+        '__dataclass__init__fields__57__default',
+        '__dataclass__init__fields__58__annotation',
+        '__dataclass__init__fields__58__default',
+        '__dataclass__init__fields__59__annotation',
+        '__dataclass__init__fields__59__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__60__annotation',
+        '__dataclass__init__fields__60__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__9__annotation',
+        '__dataclass__init__fields__9__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInstance():
@@ -33876,19 +33876,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         __dataclass__init__fields__8__default,
         __dataclass__init__fields__9__annotation,
         __dataclass__init__fields__9__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -34479,10 +34479,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fInsta
         "n', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescribeInstanceTypesResult():
@@ -34493,19 +34493,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -34632,10 +34632,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         "y_groups', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescribeSecurityGroupsResult():
@@ -34646,19 +34646,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -34795,16 +34795,16 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         "ld(name='instances', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__5__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fReservation():
@@ -34821,19 +34821,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fReser
         __dataclass__init__fields__4__default,
         __dataclass__init__fields__5__annotation,
         __dataclass__init__fields__5__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -34984,10 +34984,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fReser
         "ue, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescribeInstancesResult():
@@ -34998,19 +34998,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -35133,8 +35133,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fec2_2fDescr
         "=(ReprPlan.Field(name='target_arn', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2fDeadLetterConfig():
@@ -35143,19 +35143,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -35275,10 +35275,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         "on_timeout', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2fDurableConfig():
@@ -35289,19 +35289,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -35428,10 +35428,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         "e, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2fEnvironmentError_00():
@@ -35442,19 +35442,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -35585,19 +35585,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         *,
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -35715,8 +35715,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         "cal_mount_path', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__2__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2fFileSystemConfig():
@@ -35725,19 +35725,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__2__annotation,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -35864,10 +35864,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         "e, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2fImageConfigError():
@@ -35878,19 +35878,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -36016,10 +36016,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         ".Field(name='message', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2fInvalidParameterValueException():
@@ -36030,19 +36030,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -36177,11 +36177,11 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         "d=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2fLambdaManagedInstancesCapacityProviderConfig():
@@ -36193,19 +36193,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -36348,14 +36348,14 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         "se=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2fLayer():
@@ -36370,19 +36370,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -36532,14 +36532,14 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         ", kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2fListFunctionsRequest():
@@ -36554,19 +36554,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -36717,14 +36717,14 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         " id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2fLoggingConfig():
@@ -36739,19 +36739,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -36894,10 +36894,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         "e, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2fRuntimeVersionError():
@@ -36908,19 +36908,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -37046,10 +37046,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         ".Field(name='message', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2fServiceException():
@@ -37060,19 +37060,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -37199,10 +37199,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         "e='optimization_status', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2fSnapStartResponse():
@@ -37213,19 +37213,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -37357,19 +37357,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         *,
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -37495,14 +37495,14 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         "t_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2fTooManyRequestsException():
@@ -37517,19 +37517,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -37668,8 +37668,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         "y=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2fTracingConfigResponse():
@@ -37678,19 +37678,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -37816,19 +37816,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         *,
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -37946,10 +37946,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         "rue, fn=None), ReprPlan.Field(name='error', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2fEnvironmentResponse():
@@ -37960,19 +37960,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -38103,12 +38103,12 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         "e, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2fImageConfig():
@@ -38121,19 +38121,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -38268,10 +38268,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         "r', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2fRuntimeVersionConfig():
@@ -38282,19 +38282,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -38429,14 +38429,14 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         "al_stack', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2fVpcConfigResponse():
@@ -38451,19 +38451,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -38606,10 +38606,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         "e, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2fImageConfigResponse():
@@ -38620,19 +38620,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -38901,86 +38901,86 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         "d(name='tenancy_config', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__37__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__29__default',
-        '__dataclass__init__fields__36__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__16__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__13__default',
-        '__dataclass__init__fields__26__annotation',
-        '__dataclass__init__fields__28__annotation',
-        '__dataclass__init__fields__40__annotation',
-        '__dataclass__init__fields__25__default',
-        '__dataclass__init__fields__25__annotation',
-        '__dataclass__init__fields__37__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__33__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__13__annotation',
-        '__dataclass__init__fields__11__annotation',
-        '__dataclass__init__fields__32__default',
-        '__dataclass__init__fields__21__annotation',
-        '__dataclass__init__fields__33__default',
-        '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__35__annotation',
-        '__dataclass__init__fields__18__default',
-        '__dataclass__init__fields__14__default',
-        '__dataclass__init__fields__40__default',
-        '__dataclass__init__fields__22__annotation',
-        '__dataclass__init__fields__23__annotation',
-        '__dataclass__init__fields__21__default',
-        '__dataclass__init__fields__24__annotation',
-        '__dataclass__init__fields__34__annotation',
-        '__dataclass__init__fields__22__default',
-        '__dataclass__init__fields__30__annotation',
-        '__dataclass__init__fields__27__annotation',
-        '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__23__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__38__default',
-        '__dataclass__init__fields__30__default',
-        '__dataclass__init__fields__19__annotation',
-        '__dataclass__init__fields__31__default',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__31__annotation',
         '__dataclass__init__fields__10__annotation',
+        '__dataclass__init__fields__10__default',
+        '__dataclass__init__fields__11__annotation',
+        '__dataclass__init__fields__11__default',
         '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__27__default',
-        '__dataclass__init__fields__39__annotation',
-        '__dataclass__init__fields__34__default',
-        '__dataclass__init__fields__17__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__20__default',
-        '__dataclass__init__fields__39__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__17__default',
-        '__dataclass__init__fields__24__default',
         '__dataclass__init__fields__12__default',
-        '__dataclass__init__fields__32__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__35__default',
+        '__dataclass__init__fields__13__annotation',
+        '__dataclass__init__fields__13__default',
+        '__dataclass__init__fields__14__annotation',
+        '__dataclass__init__fields__14__default',
         '__dataclass__init__fields__15__annotation',
+        '__dataclass__init__fields__15__default',
+        '__dataclass__init__fields__16__annotation',
+        '__dataclass__init__fields__16__default',
+        '__dataclass__init__fields__17__annotation',
+        '__dataclass__init__fields__17__default',
+        '__dataclass__init__fields__18__annotation',
+        '__dataclass__init__fields__18__default',
+        '__dataclass__init__fields__19__annotation',
+        '__dataclass__init__fields__19__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__20__annotation',
+        '__dataclass__init__fields__20__default',
+        '__dataclass__init__fields__21__annotation',
+        '__dataclass__init__fields__21__default',
+        '__dataclass__init__fields__22__annotation',
+        '__dataclass__init__fields__22__default',
+        '__dataclass__init__fields__23__annotation',
+        '__dataclass__init__fields__23__default',
+        '__dataclass__init__fields__24__annotation',
+        '__dataclass__init__fields__24__default',
+        '__dataclass__init__fields__25__annotation',
+        '__dataclass__init__fields__25__default',
+        '__dataclass__init__fields__26__annotation',
         '__dataclass__init__fields__26__default',
-        '__dataclass__init__fields__38__annotation',
+        '__dataclass__init__fields__27__annotation',
+        '__dataclass__init__fields__27__default',
+        '__dataclass__init__fields__28__annotation',
         '__dataclass__init__fields__28__default',
         '__dataclass__init__fields__29__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__16__annotation',
+        '__dataclass__init__fields__29__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__30__annotation',
+        '__dataclass__init__fields__30__default',
+        '__dataclass__init__fields__31__annotation',
+        '__dataclass__init__fields__31__default',
+        '__dataclass__init__fields__32__annotation',
+        '__dataclass__init__fields__32__default',
+        '__dataclass__init__fields__33__annotation',
+        '__dataclass__init__fields__33__default',
+        '__dataclass__init__fields__34__annotation',
+        '__dataclass__init__fields__34__default',
+        '__dataclass__init__fields__35__annotation',
+        '__dataclass__init__fields__35__default',
         '__dataclass__init__fields__36__annotation',
-        '__dataclass__init__fields__18__annotation',
+        '__dataclass__init__fields__36__default',
+        '__dataclass__init__fields__37__annotation',
+        '__dataclass__init__fields__37__default',
+        '__dataclass__init__fields__38__annotation',
+        '__dataclass__init__fields__38__default',
+        '__dataclass__init__fields__39__annotation',
+        '__dataclass__init__fields__39__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__40__annotation',
+        '__dataclass__init__fields__40__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
         '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__9__annotation',
         '__dataclass__init__fields__9__default',
-        '__dataclass__init__fields__14__annotation',
-        '__dataclass__init__fields__19__default',
-        '__dataclass__init__fields__20__annotation',
-        '__dataclass__init__fields__15__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2fFunctionConfiguration():
@@ -39067,19 +39067,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         __dataclass__init__fields__8__default,
         __dataclass__init__fields__9__annotation,
         __dataclass__init__fields__9__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -39510,10 +39510,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         " id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2fListFunctionsResponse():
@@ -39524,19 +39524,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2flambda_00_2
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -39661,19 +39661,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fAutho
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fAuthorizationNotFoundFault(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -39779,19 +39779,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fBacku
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fBackupPolicyNotFoundFault(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -39897,19 +39897,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fCerti
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fCertificateNotFoundFault(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -40015,19 +40015,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBClu
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBClusterNotFoundFault(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -40133,19 +40133,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBIns
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBInstanceAlreadyExistsFault(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -40251,19 +40251,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBIns
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBInstanceAutomatedBackupQuotaExceededFault(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -40369,19 +40369,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBIns
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBInstanceNotFoundFault(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -40487,19 +40487,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBPar
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBParameterGroupNotFoundFault(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -40605,19 +40605,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBSec
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBSecurityGroupNotFoundFault(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -40723,19 +40723,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBSna
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBSnapshotAlreadyExistsFault(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -40841,19 +40841,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBSub
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBSubnetGroupDoesNotCoverEnoughAZs(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -40959,19 +40959,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBSub
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBSubnetGroupNotFoundFault(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -41077,19 +41077,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDomai
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDomainNotFoundFault(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -41195,19 +41195,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fInsta
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fInstanceQuotaExceededFault(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -41313,19 +41313,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fInsuf
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fInsufficientDBInstanceCapacityFault(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -41431,19 +41431,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fInval
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fInvalidDBClusterStateFault(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -41549,19 +41549,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fInval
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fInvalidDBInstanceStateFault(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -41667,19 +41667,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fInval
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fInvalidSubnet(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -41785,19 +41785,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fInval
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fInvalidVPCNetworkStateFault(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -41903,19 +41903,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fKMSKe
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fKMSKeyNotAccessibleFault(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -42021,19 +42021,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fNetwo
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fNetworkTypeNotSupported(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -42139,19 +42139,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fOptio
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fOptionGroupNotFoundFault(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -42257,19 +42257,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fProvi
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fProvisionedIopsNotAvailableInAZFault(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -42375,19 +42375,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fSnaps
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fSnapshotQuotaExceededFault(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -42493,19 +42493,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fStora
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fStorageQuotaExceededFault(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -42611,19 +42611,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fStora
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fStorageTypeNotSupportedFault(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -42729,19 +42729,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fTenan
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fTenantDatabaseQuotaExceededFault(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -42847,19 +42847,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fVpcEn
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fVpcEncryptionControlViolationException(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -42982,17 +42982,17 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fVpcEn
         "ype', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__4__default',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
         '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fAdditionalStorageVolume():
@@ -43010,19 +43010,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fAddit
         __dataclass__init__fields__5__default,
         __dataclass__init__fields__6__annotation,
         __dataclass__init__fields__6__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -43201,20 +43201,20 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fAddit
         "ult_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__5__annotation',
         '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__7__default',
         '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fAdditionalStorageVolumeOutput():
@@ -43235,19 +43235,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fAddit
         __dataclass__init__fields__6__default,
         __dataclass__init__fields__7__annotation,
         __dataclass__init__fields__7__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -43410,8 +43410,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fAddit
         "y=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fAvailabilityZone():
@@ -43420,19 +43420,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fAvail
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -43551,10 +43551,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fAvail
         "only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fCertificateDetails():
@@ -43565,19 +43565,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fCerti
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -43702,8 +43702,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fCerti
         "), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBInstanceAutomatedBackupsReplication():
@@ -43712,19 +43712,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBIns
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -43846,12 +43846,12 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBIns
         ", kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBInstanceRole():
@@ -43864,19 +43864,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBIns
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -44017,14 +44017,14 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBIns
         "me='message', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBInstanceStatusInfo():
@@ -44039,19 +44039,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBIns
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -44195,10 +44195,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBIns
         "lan.Field(name='parameter_apply_status', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBParameterGroupStatus():
@@ -44209,19 +44209,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBPar
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -44348,10 +44348,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBPar
         ", ReprPlan.Field(name='status', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBSecurityGroupMembership():
@@ -44362,19 +44362,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBSec
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -44511,13 +44511,13 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBSec
         "=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDeleteDBInstanceMessage():
@@ -44531,19 +44531,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDelet
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -44689,12 +44689,12 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDelet
         "ly=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fEndpoint():
@@ -44707,19 +44707,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fEndpo
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -44858,12 +44858,12 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fEndpo
         "None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fMasterUserSecret():
@@ -44876,19 +44876,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fMaste
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -45023,10 +45023,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fMaste
         "only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fOptionGroupMembership():
@@ -45037,19 +45037,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fOptio
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -45172,8 +45172,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fOptio
         " fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fOutpost():
@@ -45182,19 +45182,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fOutpo
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -45312,10 +45312,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fOutpo
         "'value', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fProcessorFeature():
@@ -45326,19 +45326,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fProce
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -45466,9 +45466,9 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fProce
         "lt_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fRebootDBInstanceMessage():
@@ -45478,19 +45478,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fReboo
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -45622,19 +45622,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fStart
         *,
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -45754,9 +45754,9 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fStart
         "', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fStopDBInstanceMessage():
@@ -45766,19 +45766,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fStopD
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -45905,10 +45905,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fStopD
         "lan.Field(name='status', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fVpcSecurityGroupMembership():
@@ -45919,19 +45919,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fVpcSe
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -46074,20 +46074,20 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fVpcSe
         "(name='dns_ips', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__5__annotation',
         '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__7__default',
         '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDomainMembership():
@@ -46108,19 +46108,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDomai
         __dataclass__init__fields__6__default,
         __dataclass__init__fields__7__annotation,
         __dataclass__init__fields__7__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -46286,8 +46286,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDomai
         ", default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__2__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fFilter():
@@ -46296,19 +46296,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fFilte
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__2__annotation,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -46436,10 +46436,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fFilte
         "w_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fPendingCloudwatchLogsExports():
@@ -46450,19 +46450,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fPendi
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -46598,14 +46598,14 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fPendi
         "fault_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fSubnet():
@@ -46620,19 +46620,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fSubne
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -47035,135 +47035,135 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fSubne
         ", id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__37__default',
-        '__dataclass__init__fields__29__default',
-        '__dataclass__init__fields__36__default',
-        '__dataclass__init__fields__59__annotation',
-        '__dataclass__init__fields__50__annotation',
-        '__dataclass__init__fields__16__default',
-        '__dataclass__init__fields__13__default',
-        '__dataclass__init__fields__64__default',
-        '__dataclass__init__fields__40__annotation',
-        '__dataclass__init__fields__37__annotation',
-        '__dataclass__init__fields__33__annotation',
-        '__dataclass__init__fields__13__annotation',
-        '__dataclass__init__fields__11__annotation',
-        '__dataclass__init__fields__32__default',
-        '__dataclass__init__fields__21__annotation',
-        '__dataclass__init__fields__33__default',
-        '__dataclass__init__fields__58__default',
-        '__dataclass__init__fields__65__annotation',
-        '__dataclass__init__fields__42__annotation',
-        '__dataclass__init__fields__18__default',
-        '__dataclass__init__fields__14__default',
-        '__dataclass__init__fields__40__default',
-        '__dataclass__init__fields__22__annotation',
-        '__dataclass__init__fields__43__annotation',
-        '__dataclass__init__fields__23__annotation',
-        '__dataclass__init__fields__21__default',
-        '__dataclass__init__fields__24__annotation',
-        '__dataclass__init__fields__59__default',
-        '__dataclass__init__fields__61__default',
-        '__dataclass__init__fields__66__default',
-        '__dataclass__init__fields__34__annotation',
-        '__dataclass__init__fields__22__default',
-        '__dataclass__init__fields__30__annotation',
-        '__dataclass__init__fields__47__annotation',
-        '__dataclass__init__fields__23__default',
-        '__dataclass__init__fields__38__default',
-        '__dataclass__init__fields__19__annotation',
-        '__dataclass__init__fields__45__annotation',
-        '__dataclass__init__fields__60__annotation',
-        '__dataclass__init__fields__56__annotation',
-        '__dataclass__init__fields__57__annotation',
         '__dataclass__init__fields__10__annotation',
+        '__dataclass__init__fields__10__default',
+        '__dataclass__init__fields__11__annotation',
+        '__dataclass__init__fields__11__default',
         '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__62__annotation',
-        '__dataclass__init__fields__46__default',
-        '__dataclass__init__fields__60__default',
-        '__dataclass__init__fields__34__default',
+        '__dataclass__init__fields__12__default',
+        '__dataclass__init__fields__13__annotation',
+        '__dataclass__init__fields__13__default',
+        '__dataclass__init__fields__14__annotation',
+        '__dataclass__init__fields__14__default',
+        '__dataclass__init__fields__15__annotation',
+        '__dataclass__init__fields__15__default',
+        '__dataclass__init__fields__16__annotation',
+        '__dataclass__init__fields__16__default',
         '__dataclass__init__fields__17__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__20__default',
-        '__dataclass__init__fields__39__default',
-        '__dataclass__init__fields__66__annotation',
-        '__dataclass__init__fields__61__annotation',
         '__dataclass__init__fields__17__default',
-        '__dataclass__init__fields__63__default',
-        '__dataclass__init__fields__41__annotation',
-        '__dataclass__init__fields__35__default',
-        '__dataclass__init__fields__47__default',
+        '__dataclass__init__fields__18__annotation',
+        '__dataclass__init__fields__18__default',
+        '__dataclass__init__fields__19__annotation',
+        '__dataclass__init__fields__19__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__20__annotation',
+        '__dataclass__init__fields__20__default',
+        '__dataclass__init__fields__21__annotation',
+        '__dataclass__init__fields__21__default',
+        '__dataclass__init__fields__22__annotation',
+        '__dataclass__init__fields__22__default',
+        '__dataclass__init__fields__23__annotation',
+        '__dataclass__init__fields__23__default',
+        '__dataclass__init__fields__24__annotation',
+        '__dataclass__init__fields__24__default',
+        '__dataclass__init__fields__25__annotation',
+        '__dataclass__init__fields__25__default',
+        '__dataclass__init__fields__26__annotation',
         '__dataclass__init__fields__26__default',
-        '__dataclass__init__fields__62__default',
-        '__dataclass__init__fields__38__annotation',
+        '__dataclass__init__fields__27__annotation',
+        '__dataclass__init__fields__27__default',
+        '__dataclass__init__fields__28__annotation',
         '__dataclass__init__fields__28__default',
         '__dataclass__init__fields__29__annotation',
-        '__dataclass__init__fields__44__default',
-        '__dataclass__init__fields__58__annotation',
-        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__29__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__30__annotation',
+        '__dataclass__init__fields__30__default',
+        '__dataclass__init__fields__31__annotation',
+        '__dataclass__init__fields__31__default',
+        '__dataclass__init__fields__32__annotation',
+        '__dataclass__init__fields__32__default',
+        '__dataclass__init__fields__33__annotation',
+        '__dataclass__init__fields__33__default',
+        '__dataclass__init__fields__34__annotation',
+        '__dataclass__init__fields__34__default',
+        '__dataclass__init__fields__35__annotation',
+        '__dataclass__init__fields__35__default',
         '__dataclass__init__fields__36__annotation',
-        '__dataclass__init__fields__18__annotation',
-        '__dataclass__init__fields__9__default',
+        '__dataclass__init__fields__36__default',
+        '__dataclass__init__fields__37__annotation',
+        '__dataclass__init__fields__37__default',
+        '__dataclass__init__fields__38__annotation',
+        '__dataclass__init__fields__38__default',
+        '__dataclass__init__fields__39__annotation',
+        '__dataclass__init__fields__39__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__40__annotation',
+        '__dataclass__init__fields__40__default',
+        '__dataclass__init__fields__41__annotation',
+        '__dataclass__init__fields__41__default',
+        '__dataclass__init__fields__42__annotation',
+        '__dataclass__init__fields__42__default',
+        '__dataclass__init__fields__43__annotation',
+        '__dataclass__init__fields__43__default',
+        '__dataclass__init__fields__44__annotation',
+        '__dataclass__init__fields__44__default',
+        '__dataclass__init__fields__45__annotation',
+        '__dataclass__init__fields__45__default',
+        '__dataclass__init__fields__46__annotation',
+        '__dataclass__init__fields__46__default',
+        '__dataclass__init__fields__47__annotation',
+        '__dataclass__init__fields__47__default',
         '__dataclass__init__fields__48__annotation',
         '__dataclass__init__fields__48__default',
-        '__dataclass__init__fields__19__default',
-        '__dataclass__init__fields__15__default',
-        '__dataclass__init__fields__57__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__49__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__44__annotation',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__26__annotation',
-        '__dataclass__init__fields__28__annotation',
-        '__dataclass__init__fields__53__annotation',
-        '__dataclass__init__fields__25__default',
-        '__dataclass__init__fields__25__annotation',
-        '__dataclass__init__fields__63__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__45__default',
-        '__dataclass__init__fields__54__default',
-        '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__35__annotation',
-        '__dataclass__init__fields__53__default',
-        '__dataclass__init__fields__27__annotation',
-        '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__30__default',
-        '__dataclass__init__fields__64__annotation',
-        '__dataclass__init__fields__31__default',
-        '__dataclass__init__fields__52__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__31__annotation',
-        '__dataclass__init__fields__55__default',
-        '__dataclass__init__fields__50__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__27__default',
-        '__dataclass__init__fields__39__annotation',
-        '__dataclass__init__fields__52__default',
-        '__dataclass__init__fields__65__default',
-        '__dataclass__init__fields__41__default',
-        '__dataclass__init__fields__46__annotation',
-        '__dataclass__init__fields__51__annotation',
-        '__dataclass__init__fields__43__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__24__default',
-        '__dataclass__init__fields__42__default',
-        '__dataclass__init__fields__12__default',
-        '__dataclass__init__fields__32__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__15__annotation',
-        '__dataclass__init__fields__55__annotation',
-        '__dataclass__init__fields__16__annotation',
         '__dataclass__init__fields__49__annotation',
+        '__dataclass__init__fields__49__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__50__annotation',
+        '__dataclass__init__fields__50__default',
+        '__dataclass__init__fields__51__annotation',
         '__dataclass__init__fields__51__default',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__14__annotation',
-        '__dataclass__init__fields__20__annotation',
-        '__dataclass__init__fields__56__default',
+        '__dataclass__init__fields__52__annotation',
+        '__dataclass__init__fields__52__default',
+        '__dataclass__init__fields__53__annotation',
+        '__dataclass__init__fields__53__default',
         '__dataclass__init__fields__54__annotation',
+        '__dataclass__init__fields__54__default',
+        '__dataclass__init__fields__55__annotation',
+        '__dataclass__init__fields__55__default',
+        '__dataclass__init__fields__56__annotation',
+        '__dataclass__init__fields__56__default',
+        '__dataclass__init__fields__57__annotation',
+        '__dataclass__init__fields__57__default',
+        '__dataclass__init__fields__58__annotation',
+        '__dataclass__init__fields__58__default',
+        '__dataclass__init__fields__59__annotation',
+        '__dataclass__init__fields__59__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__60__annotation',
+        '__dataclass__init__fields__60__default',
+        '__dataclass__init__fields__61__annotation',
+        '__dataclass__init__fields__61__default',
+        '__dataclass__init__fields__62__annotation',
+        '__dataclass__init__fields__62__default',
+        '__dataclass__init__fields__63__annotation',
+        '__dataclass__init__fields__63__default',
+        '__dataclass__init__fields__64__annotation',
+        '__dataclass__init__fields__64__default',
+        '__dataclass__init__fields__65__annotation',
+        '__dataclass__init__fields__65__default',
+        '__dataclass__init__fields__66__annotation',
+        '__dataclass__init__fields__66__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__9__annotation',
+        '__dataclass__init__fields__9__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fCreateDBInstanceMessage():
@@ -47299,19 +47299,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fCreat
         __dataclass__init__fields__8__default,
         __dataclass__init__fields__9__annotation,
         __dataclass__init__fields__9__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -48035,52 +48035,52 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fCreat
         "True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__10__annotation',
-        '__dataclass__init__fields__16__default',
-        '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__13__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__17__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__13__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__20__default',
-        '__dataclass__init__fields__11__annotation',
-        '__dataclass__init__fields__21__annotation',
-        '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__17__default',
-        '__dataclass__init__fields__14__default',
-        '__dataclass__init__fields__12__default',
-        '__dataclass__init__fields__18__default',
-        '__dataclass__init__fields__22__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__23__annotation',
-        '__dataclass__init__fields__15__annotation',
-        '__dataclass__init__fields__21__default',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__16__annotation',
-        '__dataclass__init__fields__22__default',
         '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__23__default',
-        '__dataclass__init__fields__18__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__default',
-        '__dataclass__init__fields__19__annotation',
+        '__dataclass__init__fields__11__annotation',
+        '__dataclass__init__fields__11__default',
+        '__dataclass__init__fields__12__annotation',
+        '__dataclass__init__fields__12__default',
+        '__dataclass__init__fields__13__annotation',
+        '__dataclass__init__fields__13__default',
         '__dataclass__init__fields__14__annotation',
-        '__dataclass__init__fields__19__default',
-        '__dataclass__init__fields__20__annotation',
+        '__dataclass__init__fields__14__default',
+        '__dataclass__init__fields__15__annotation',
         '__dataclass__init__fields__15__default',
+        '__dataclass__init__fields__16__annotation',
+        '__dataclass__init__fields__16__default',
+        '__dataclass__init__fields__17__annotation',
+        '__dataclass__init__fields__17__default',
+        '__dataclass__init__fields__18__annotation',
+        '__dataclass__init__fields__18__default',
+        '__dataclass__init__fields__19__annotation',
+        '__dataclass__init__fields__19__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__20__annotation',
+        '__dataclass__init__fields__20__default',
+        '__dataclass__init__fields__21__annotation',
+        '__dataclass__init__fields__21__default',
+        '__dataclass__init__fields__22__annotation',
+        '__dataclass__init__fields__22__default',
+        '__dataclass__init__fields__23__annotation',
+        '__dataclass__init__fields__23__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__9__annotation',
+        '__dataclass__init__fields__9__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fPendingModifiedValues():
@@ -48133,19 +48133,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fPendi
         __dataclass__init__fields__8__default,
         __dataclass__init__fields__9__annotation,
         __dataclass__init__fields__9__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -48461,20 +48461,20 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fPendi
         "n=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__5__annotation',
         '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__7__default',
         '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBSubnetGroup():
@@ -48495,19 +48495,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBSub
         __dataclass__init__fields__6__default,
         __dataclass__init__fields__7__annotation,
         __dataclass__init__fields__7__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -48681,14 +48681,14 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBSub
         "(name='marker', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDescribeDBInstancesMessage():
@@ -48703,19 +48703,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDescr
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -49230,186 +49230,186 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDescr
         "e, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__37__default',
-        '__dataclass__init__fields__74__default',
-        '__dataclass__init__fields__84__annotation',
-        '__dataclass__init__fields__29__default',
-        '__dataclass__init__fields__36__default',
-        '__dataclass__init__fields__59__annotation',
-        '__dataclass__init__fields__50__annotation',
-        '__dataclass__init__fields__16__default',
-        '__dataclass__init__fields__78__annotation',
-        '__dataclass__init__fields__13__default',
-        '__dataclass__init__fields__64__default',
-        '__dataclass__init__fields__40__annotation',
-        '__dataclass__init__fields__79__default',
-        '__dataclass__init__fields__37__annotation',
-        '__dataclass__init__fields__33__annotation',
-        '__dataclass__init__fields__13__annotation',
-        '__dataclass__init__fields__11__annotation',
-        '__dataclass__init__fields__32__default',
-        '__dataclass__init__fields__21__annotation',
-        '__dataclass__init__fields__33__default',
-        '__dataclass__init__fields__58__default',
-        '__dataclass__init__fields__65__annotation',
-        '__dataclass__init__fields__42__annotation',
-        '__dataclass__init__fields__72__annotation',
-        '__dataclass__init__fields__18__default',
-        '__dataclass__init__fields__14__default',
-        '__dataclass__init__fields__40__default',
-        '__dataclass__init__fields__22__annotation',
-        '__dataclass__init__fields__43__annotation',
-        '__dataclass__init__fields__23__annotation',
-        '__dataclass__init__fields__21__default',
-        '__dataclass__init__fields__24__annotation',
-        '__dataclass__init__fields__59__default',
-        '__dataclass__init__fields__61__default',
-        '__dataclass__init__fields__66__default',
-        '__dataclass__init__fields__34__annotation',
-        '__dataclass__init__fields__22__default',
-        '__dataclass__init__fields__30__annotation',
-        '__dataclass__init__fields__47__annotation',
-        '__dataclass__init__fields__23__default',
-        '__dataclass__init__fields__82__default',
-        '__dataclass__init__fields__38__default',
-        '__dataclass__init__fields__67__default',
-        '__dataclass__init__fields__19__annotation',
-        '__dataclass__init__fields__45__annotation',
-        '__dataclass__init__fields__87__annotation',
-        '__dataclass__init__fields__60__annotation',
-        '__dataclass__init__fields__56__annotation',
-        '__dataclass__init__fields__74__annotation',
-        '__dataclass__init__fields__56__default',
-        '__dataclass__init__fields__90__annotation',
-        '__dataclass__init__fields__57__annotation',
         '__dataclass__init__fields__10__annotation',
+        '__dataclass__init__fields__10__default',
+        '__dataclass__init__fields__11__annotation',
+        '__dataclass__init__fields__11__default',
         '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__62__annotation',
-        '__dataclass__init__fields__76__annotation',
-        '__dataclass__init__fields__46__default',
-        '__dataclass__init__fields__60__default',
-        '__dataclass__init__fields__76__default',
-        '__dataclass__init__fields__34__default',
+        '__dataclass__init__fields__12__default',
+        '__dataclass__init__fields__13__annotation',
+        '__dataclass__init__fields__13__default',
+        '__dataclass__init__fields__14__annotation',
+        '__dataclass__init__fields__14__default',
+        '__dataclass__init__fields__15__annotation',
+        '__dataclass__init__fields__15__default',
+        '__dataclass__init__fields__16__annotation',
+        '__dataclass__init__fields__16__default',
         '__dataclass__init__fields__17__annotation',
-        '__dataclass__init__fields__70__annotation',
-        '__dataclass__init__fields__20__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__20__default',
-        '__dataclass__init__fields__39__default',
-        '__dataclass__init__fields__66__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__61__annotation',
         '__dataclass__init__fields__17__default',
-        '__dataclass__init__fields__63__default',
-        '__dataclass__init__fields__77__annotation',
-        '__dataclass__init__fields__41__annotation',
-        '__dataclass__init__fields__35__default',
-        '__dataclass__init__fields__47__default',
+        '__dataclass__init__fields__18__annotation',
+        '__dataclass__init__fields__18__default',
+        '__dataclass__init__fields__19__annotation',
+        '__dataclass__init__fields__19__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__20__annotation',
+        '__dataclass__init__fields__20__default',
+        '__dataclass__init__fields__21__annotation',
+        '__dataclass__init__fields__21__default',
+        '__dataclass__init__fields__22__annotation',
+        '__dataclass__init__fields__22__default',
+        '__dataclass__init__fields__23__annotation',
+        '__dataclass__init__fields__23__default',
+        '__dataclass__init__fields__24__annotation',
+        '__dataclass__init__fields__24__default',
+        '__dataclass__init__fields__25__annotation',
+        '__dataclass__init__fields__25__default',
+        '__dataclass__init__fields__26__annotation',
         '__dataclass__init__fields__26__default',
-        '__dataclass__init__fields__62__default',
-        '__dataclass__init__fields__38__annotation',
+        '__dataclass__init__fields__27__annotation',
+        '__dataclass__init__fields__27__default',
+        '__dataclass__init__fields__28__annotation',
         '__dataclass__init__fields__28__default',
         '__dataclass__init__fields__29__annotation',
-        '__dataclass__init__fields__44__default',
-        '__dataclass__init__fields__58__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__70__default',
+        '__dataclass__init__fields__29__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__30__annotation',
+        '__dataclass__init__fields__30__default',
+        '__dataclass__init__fields__31__annotation',
+        '__dataclass__init__fields__31__default',
+        '__dataclass__init__fields__32__annotation',
+        '__dataclass__init__fields__32__default',
+        '__dataclass__init__fields__33__annotation',
+        '__dataclass__init__fields__33__default',
+        '__dataclass__init__fields__34__annotation',
+        '__dataclass__init__fields__34__default',
+        '__dataclass__init__fields__35__annotation',
+        '__dataclass__init__fields__35__default',
         '__dataclass__init__fields__36__annotation',
-        '__dataclass__init__fields__83__annotation',
-        '__dataclass__init__fields__18__annotation',
-        '__dataclass__init__fields__9__default',
+        '__dataclass__init__fields__36__default',
+        '__dataclass__init__fields__37__annotation',
+        '__dataclass__init__fields__37__default',
+        '__dataclass__init__fields__38__annotation',
+        '__dataclass__init__fields__38__default',
+        '__dataclass__init__fields__39__annotation',
+        '__dataclass__init__fields__39__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__40__annotation',
+        '__dataclass__init__fields__40__default',
+        '__dataclass__init__fields__41__annotation',
+        '__dataclass__init__fields__41__default',
+        '__dataclass__init__fields__42__annotation',
+        '__dataclass__init__fields__42__default',
+        '__dataclass__init__fields__43__annotation',
+        '__dataclass__init__fields__43__default',
+        '__dataclass__init__fields__44__annotation',
+        '__dataclass__init__fields__44__default',
+        '__dataclass__init__fields__45__annotation',
+        '__dataclass__init__fields__45__default',
+        '__dataclass__init__fields__46__annotation',
+        '__dataclass__init__fields__46__default',
+        '__dataclass__init__fields__47__annotation',
+        '__dataclass__init__fields__47__default',
         '__dataclass__init__fields__48__annotation',
         '__dataclass__init__fields__48__default',
-        '__dataclass__init__fields__19__default',
-        '__dataclass__init__fields__15__default',
-        '__dataclass__init__fields__57__default',
-        '__dataclass__init__fields__71__annotation',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__69__annotation',
-        '__dataclass__init__fields__49__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__78__default',
-        '__dataclass__init__fields__44__annotation',
-        '__dataclass__init__fields__86__default',
-        '__dataclass__init__fields__71__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__26__annotation',
-        '__dataclass__init__fields__28__annotation',
-        '__dataclass__init__fields__53__annotation',
-        '__dataclass__init__fields__69__default',
-        '__dataclass__init__fields__25__default',
-        '__dataclass__init__fields__25__annotation',
-        '__dataclass__init__fields__63__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__45__default',
-        '__dataclass__init__fields__54__default',
-        '__dataclass__init__fields__88__annotation',
-        '__dataclass__init__fields__90__default',
-        '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__35__annotation',
-        '__dataclass__init__fields__53__default',
-        '__dataclass__init__fields__85__default',
-        '__dataclass__init__fields__81__default',
-        '__dataclass__init__fields__87__default',
-        '__dataclass__init__fields__89__default',
-        '__dataclass__init__fields__27__annotation',
-        '__dataclass__init__fields__86__annotation',
-        '__dataclass__init__fields__88__default',
-        '__dataclass__init__fields__72__default',
-        '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__30__default',
-        '__dataclass__init__fields__89__annotation',
-        '__dataclass__init__fields__64__annotation',
-        '__dataclass__init__fields__68__default',
-        '__dataclass__init__fields__73__default',
-        '__dataclass__init__fields__31__default',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__82__annotation',
-        '__dataclass__init__fields__52__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__31__annotation',
-        '__dataclass__init__fields__55__default',
-        '__dataclass__init__fields__50__default',
-        '__dataclass__init__fields__83__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__27__default',
-        '__dataclass__init__fields__75__annotation',
-        '__dataclass__init__fields__39__annotation',
-        '__dataclass__init__fields__52__default',
-        '__dataclass__init__fields__65__default',
-        '__dataclass__init__fields__81__annotation',
-        '__dataclass__init__fields__41__default',
-        '__dataclass__init__fields__46__annotation',
-        '__dataclass__init__fields__77__default',
-        '__dataclass__init__fields__84__default',
-        '__dataclass__init__fields__51__annotation',
-        '__dataclass__init__fields__43__default',
-        '__dataclass__init__fields__68__annotation',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__24__default',
-        '__dataclass__init__fields__42__default',
-        '__dataclass__init__fields__12__default',
-        '__dataclass__init__fields__32__annotation',
-        '__dataclass__init__fields__73__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__80__annotation',
-        '__dataclass__init__fields__15__annotation',
-        '__dataclass__init__fields__55__annotation',
-        '__dataclass__init__fields__16__annotation',
         '__dataclass__init__fields__49__annotation',
+        '__dataclass__init__fields__49__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__50__annotation',
+        '__dataclass__init__fields__50__default',
+        '__dataclass__init__fields__51__annotation',
         '__dataclass__init__fields__51__default',
-        '__dataclass__init__fields__85__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__80__default',
-        '__dataclass__init__fields__67__annotation',
-        '__dataclass__init__fields__14__annotation',
-        '__dataclass__init__fields__75__default',
-        '__dataclass__init__fields__79__annotation',
+        '__dataclass__init__fields__52__annotation',
+        '__dataclass__init__fields__52__default',
+        '__dataclass__init__fields__53__annotation',
+        '__dataclass__init__fields__53__default',
         '__dataclass__init__fields__54__annotation',
+        '__dataclass__init__fields__54__default',
+        '__dataclass__init__fields__55__annotation',
+        '__dataclass__init__fields__55__default',
+        '__dataclass__init__fields__56__annotation',
+        '__dataclass__init__fields__56__default',
+        '__dataclass__init__fields__57__annotation',
+        '__dataclass__init__fields__57__default',
+        '__dataclass__init__fields__58__annotation',
+        '__dataclass__init__fields__58__default',
+        '__dataclass__init__fields__59__annotation',
+        '__dataclass__init__fields__59__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__60__annotation',
+        '__dataclass__init__fields__60__default',
+        '__dataclass__init__fields__61__annotation',
+        '__dataclass__init__fields__61__default',
+        '__dataclass__init__fields__62__annotation',
+        '__dataclass__init__fields__62__default',
+        '__dataclass__init__fields__63__annotation',
+        '__dataclass__init__fields__63__default',
+        '__dataclass__init__fields__64__annotation',
+        '__dataclass__init__fields__64__default',
+        '__dataclass__init__fields__65__annotation',
+        '__dataclass__init__fields__65__default',
+        '__dataclass__init__fields__66__annotation',
+        '__dataclass__init__fields__66__default',
+        '__dataclass__init__fields__67__annotation',
+        '__dataclass__init__fields__67__default',
+        '__dataclass__init__fields__68__annotation',
+        '__dataclass__init__fields__68__default',
+        '__dataclass__init__fields__69__annotation',
+        '__dataclass__init__fields__69__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__70__annotation',
+        '__dataclass__init__fields__70__default',
+        '__dataclass__init__fields__71__annotation',
+        '__dataclass__init__fields__71__default',
+        '__dataclass__init__fields__72__annotation',
+        '__dataclass__init__fields__72__default',
+        '__dataclass__init__fields__73__annotation',
+        '__dataclass__init__fields__73__default',
+        '__dataclass__init__fields__74__annotation',
+        '__dataclass__init__fields__74__default',
+        '__dataclass__init__fields__75__annotation',
+        '__dataclass__init__fields__75__default',
+        '__dataclass__init__fields__76__annotation',
+        '__dataclass__init__fields__76__default',
+        '__dataclass__init__fields__77__annotation',
+        '__dataclass__init__fields__77__default',
+        '__dataclass__init__fields__78__annotation',
+        '__dataclass__init__fields__78__default',
+        '__dataclass__init__fields__79__annotation',
+        '__dataclass__init__fields__79__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__80__annotation',
+        '__dataclass__init__fields__80__default',
+        '__dataclass__init__fields__81__annotation',
+        '__dataclass__init__fields__81__default',
+        '__dataclass__init__fields__82__annotation',
+        '__dataclass__init__fields__82__default',
+        '__dataclass__init__fields__83__annotation',
+        '__dataclass__init__fields__83__default',
+        '__dataclass__init__fields__84__annotation',
+        '__dataclass__init__fields__84__default',
+        '__dataclass__init__fields__85__annotation',
+        '__dataclass__init__fields__85__default',
+        '__dataclass__init__fields__86__annotation',
+        '__dataclass__init__fields__86__default',
+        '__dataclass__init__fields__87__annotation',
+        '__dataclass__init__fields__87__default',
+        '__dataclass__init__fields__88__annotation',
+        '__dataclass__init__fields__88__default',
+        '__dataclass__init__fields__89__annotation',
+        '__dataclass__init__fields__89__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__90__annotation',
+        '__dataclass__init__fields__90__default',
+        '__dataclass__init__fields__9__annotation',
+        '__dataclass__init__fields__9__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBInstance():
@@ -49596,19 +49596,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBIns
         __dataclass__init__fields__90__default,
         __dataclass__init__fields__9__annotation,
         __dataclass__init__fields__9__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -50435,8 +50435,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBIns
         "fields=(ReprPlan.Field(name='db_instance', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fCreateDBInstanceResult():
@@ -50445,19 +50445,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fCreat
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -50572,8 +50572,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fCreat
         "fields=(ReprPlan.Field(name='db_instance', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDeleteDBInstanceResult():
@@ -50582,19 +50582,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDelet
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -50709,8 +50709,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDelet
         "fields=(ReprPlan.Field(name='db_instance', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fRebootDBInstanceResult():
@@ -50719,19 +50719,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fReboo
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -50846,8 +50846,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fReboo
         "fields=(ReprPlan.Field(name='db_instance', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fStartDBInstanceResult():
@@ -50856,19 +50856,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fStart
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -50983,8 +50983,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fStart
         "fields=(ReprPlan.Field(name='db_instance', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fStopDBInstanceResult():
@@ -50993,19 +50993,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fStopD
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -51124,10 +51124,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fStopD
         "se=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBInstanceMessage():
@@ -51138,19 +51138,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2frds_2fDBIns
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -51275,19 +51275,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fEncryp
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fEncryptionTypeMismatch(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -51393,19 +51393,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fInvali
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fInvalidRequest(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -51511,19 +51511,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fInvali
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fInvalidWriteOffset(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -51629,19 +51629,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fNoSuch
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fNoSuchBucket(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -51747,19 +51747,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fNoSuch
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fNoSuchKey(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -51865,19 +51865,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fTooMan
     def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fTooManyParts(
         *,
         __dataclass__cls,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -51992,14 +51992,14 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fTooMan
         "d=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fBucket():
@@ -52014,19 +52014,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fBucket
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -52165,8 +52165,8 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fBucket
         "refix', kw_only=True, fn=None),), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fCommonPrefix():
@@ -52175,19 +52175,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fCommon
         __dataclass__cls,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -52310,12 +52310,12 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fCommon
         " id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fDeleteObjectOutput():
@@ -52328,19 +52328,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fDelete
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -52504,24 +52504,24 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fDelete
         "f_match_size', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__10__annotation',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__default',
         '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__default',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__9__annotation',
+        '__dataclass__init__fields__9__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fDeleteObjectRequest():
@@ -52546,19 +52546,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fDelete
         __dataclass__init__fields__8__default,
         __dataclass__init__fields__9__annotation,
         __dataclass__init__fields__9__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -52823,46 +52823,46 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fDelete
         "se=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__10__annotation',
-        '__dataclass__init__fields__16__default',
-        '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__13__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__17__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__13__annotation',
-        '__dataclass__init__fields__20__default',
-        '__dataclass__init__fields__11__annotation',
-        '__dataclass__init__fields__21__annotation',
-        '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__17__default',
-        '__dataclass__init__fields__14__default',
-        '__dataclass__init__fields__12__default',
-        '__dataclass__init__fields__18__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__15__annotation',
-        '__dataclass__init__fields__21__default',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__16__annotation',
         '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__18__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__default',
-        '__dataclass__init__fields__19__annotation',
+        '__dataclass__init__fields__11__annotation',
+        '__dataclass__init__fields__11__default',
+        '__dataclass__init__fields__12__annotation',
+        '__dataclass__init__fields__12__default',
+        '__dataclass__init__fields__13__annotation',
+        '__dataclass__init__fields__13__default',
         '__dataclass__init__fields__14__annotation',
-        '__dataclass__init__fields__19__default',
-        '__dataclass__init__fields__20__annotation',
+        '__dataclass__init__fields__14__default',
+        '__dataclass__init__fields__15__annotation',
         '__dataclass__init__fields__15__default',
+        '__dataclass__init__fields__16__annotation',
+        '__dataclass__init__fields__16__default',
+        '__dataclass__init__fields__17__annotation',
+        '__dataclass__init__fields__17__default',
+        '__dataclass__init__fields__18__annotation',
+        '__dataclass__init__fields__18__default',
+        '__dataclass__init__fields__19__annotation',
+        '__dataclass__init__fields__19__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__20__annotation',
+        '__dataclass__init__fields__20__default',
+        '__dataclass__init__fields__21__annotation',
+        '__dataclass__init__fields__21__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__9__annotation',
+        '__dataclass__init__fields__9__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fGetObjectRequest():
@@ -52909,19 +52909,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fGetObj
         __dataclass__init__fields__8__default,
         __dataclass__init__fields__9__annotation,
         __dataclass__init__fields__9__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -53200,10 +53200,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fGetObj
         "r', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fInvalidObjectState():
@@ -53214,19 +53214,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fInvali
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -53360,14 +53360,14 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fInvali
         "n.Field(name='bucket_region', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fListBucketsRequest():
@@ -53382,19 +53382,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fListBu
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -53537,10 +53537,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fListBu
         "None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fOwner():
@@ -53551,19 +53551,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fOwner(
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -53748,40 +53748,40 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fOwner(
         "=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__10__annotation',
-        '__dataclass__init__fields__16__default',
-        '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__13__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__17__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__13__annotation',
-        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__10__default',
         '__dataclass__init__fields__11__annotation',
         '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__17__default',
-        '__dataclass__init__fields__14__default',
+        '__dataclass__init__fields__12__annotation',
         '__dataclass__init__fields__12__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__15__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__16__annotation',
-        '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__default',
+        '__dataclass__init__fields__13__annotation',
+        '__dataclass__init__fields__13__default',
         '__dataclass__init__fields__14__annotation',
+        '__dataclass__init__fields__14__default',
+        '__dataclass__init__fields__15__annotation',
         '__dataclass__init__fields__15__default',
+        '__dataclass__init__fields__16__annotation',
+        '__dataclass__init__fields__16__default',
+        '__dataclass__init__fields__17__annotation',
+        '__dataclass__init__fields__17__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__9__annotation',
+        '__dataclass__init__fields__9__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fPutObjectOutput():
@@ -53822,19 +53822,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fPutObj
         __dataclass__init__fields__8__default,
         __dataclass__init__fields__9__annotation,
         __dataclass__init__fields__9__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -54082,10 +54082,10 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fPutObj
         "xpiry_date', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__1__annotation',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fRestoreStatus():
@@ -54096,19 +54096,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fRestor
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -54372,82 +54372,82 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fRestor
         "tus', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__37__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__29__default',
-        '__dataclass__init__fields__36__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__16__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__13__default',
-        '__dataclass__init__fields__26__annotation',
-        '__dataclass__init__fields__28__annotation',
-        '__dataclass__init__fields__25__default',
-        '__dataclass__init__fields__25__annotation',
-        '__dataclass__init__fields__37__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__33__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__13__annotation',
-        '__dataclass__init__fields__11__annotation',
-        '__dataclass__init__fields__32__default',
-        '__dataclass__init__fields__21__annotation',
-        '__dataclass__init__fields__33__default',
-        '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__35__annotation',
-        '__dataclass__init__fields__18__default',
-        '__dataclass__init__fields__14__default',
-        '__dataclass__init__fields__22__annotation',
-        '__dataclass__init__fields__23__annotation',
-        '__dataclass__init__fields__21__default',
-        '__dataclass__init__fields__24__annotation',
-        '__dataclass__init__fields__34__annotation',
-        '__dataclass__init__fields__22__default',
-        '__dataclass__init__fields__30__annotation',
-        '__dataclass__init__fields__27__annotation',
-        '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__23__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__38__default',
-        '__dataclass__init__fields__30__default',
-        '__dataclass__init__fields__19__annotation',
-        '__dataclass__init__fields__31__default',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__31__annotation',
         '__dataclass__init__fields__10__annotation',
+        '__dataclass__init__fields__10__default',
+        '__dataclass__init__fields__11__annotation',
+        '__dataclass__init__fields__11__default',
         '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__27__default',
-        '__dataclass__init__fields__34__default',
-        '__dataclass__init__fields__17__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__20__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__17__default',
-        '__dataclass__init__fields__24__default',
         '__dataclass__init__fields__12__default',
-        '__dataclass__init__fields__32__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__35__default',
+        '__dataclass__init__fields__13__annotation',
+        '__dataclass__init__fields__13__default',
+        '__dataclass__init__fields__14__annotation',
+        '__dataclass__init__fields__14__default',
         '__dataclass__init__fields__15__annotation',
+        '__dataclass__init__fields__15__default',
+        '__dataclass__init__fields__16__annotation',
+        '__dataclass__init__fields__16__default',
+        '__dataclass__init__fields__17__annotation',
+        '__dataclass__init__fields__17__default',
+        '__dataclass__init__fields__18__annotation',
+        '__dataclass__init__fields__18__default',
+        '__dataclass__init__fields__19__annotation',
+        '__dataclass__init__fields__19__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__20__annotation',
+        '__dataclass__init__fields__20__default',
+        '__dataclass__init__fields__21__annotation',
+        '__dataclass__init__fields__21__default',
+        '__dataclass__init__fields__22__annotation',
+        '__dataclass__init__fields__22__default',
+        '__dataclass__init__fields__23__annotation',
+        '__dataclass__init__fields__23__default',
+        '__dataclass__init__fields__24__annotation',
+        '__dataclass__init__fields__24__default',
+        '__dataclass__init__fields__25__annotation',
+        '__dataclass__init__fields__25__default',
+        '__dataclass__init__fields__26__annotation',
         '__dataclass__init__fields__26__default',
-        '__dataclass__init__fields__38__annotation',
+        '__dataclass__init__fields__27__annotation',
+        '__dataclass__init__fields__27__default',
+        '__dataclass__init__fields__28__annotation',
         '__dataclass__init__fields__28__default',
         '__dataclass__init__fields__29__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__16__annotation',
+        '__dataclass__init__fields__29__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__30__annotation',
+        '__dataclass__init__fields__30__default',
+        '__dataclass__init__fields__31__annotation',
+        '__dataclass__init__fields__31__default',
+        '__dataclass__init__fields__32__annotation',
+        '__dataclass__init__fields__32__default',
+        '__dataclass__init__fields__33__annotation',
+        '__dataclass__init__fields__33__default',
+        '__dataclass__init__fields__34__annotation',
+        '__dataclass__init__fields__34__default',
+        '__dataclass__init__fields__35__annotation',
+        '__dataclass__init__fields__35__default',
         '__dataclass__init__fields__36__annotation',
-        '__dataclass__init__fields__18__annotation',
+        '__dataclass__init__fields__36__default',
+        '__dataclass__init__fields__37__annotation',
+        '__dataclass__init__fields__37__default',
+        '__dataclass__init__fields__38__annotation',
+        '__dataclass__init__fields__38__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
         '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__9__annotation',
         '__dataclass__init__fields__9__default',
-        '__dataclass__init__fields__14__annotation',
-        '__dataclass__init__fields__19__default',
-        '__dataclass__init__fields__20__annotation',
-        '__dataclass__init__fields__15__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fGetObjectOutput():
@@ -54530,19 +54530,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fGetObj
         __dataclass__init__fields__8__default,
         __dataclass__init__fields__9__annotation,
         __dataclass__init__fields__9__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -54990,27 +54990,27 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fGetObj
         "w_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__10__annotation',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__default',
         '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__default',
-        '__dataclass__init__fields__6__default',
         '__dataclass__init__fields__11__annotation',
+        '__dataclass__init__fields__11__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__9__annotation',
+        '__dataclass__init__fields__9__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fListObjectsV2Request():
@@ -55038,19 +55038,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fListOb
         __dataclass__init__fields__8__default,
         __dataclass__init__fields__9__annotation,
         __dataclass__init__fields__9__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -55273,24 +55273,24 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fListOb
         "', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__5__annotation',
         '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__7__default',
         '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__default',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
         '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__9__annotation',
+        '__dataclass__init__fields__9__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fObject():
@@ -55315,19 +55315,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fObject
         __dataclass__init__fields__8__default,
         __dataclass__init__fields__9__annotation,
         __dataclass__init__fields__9__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -55659,86 +55659,86 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fObject
         "=None)), id=False, terse=False, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__37__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__29__default',
-        '__dataclass__init__fields__36__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__16__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__13__default',
-        '__dataclass__init__fields__26__annotation',
-        '__dataclass__init__fields__28__annotation',
-        '__dataclass__init__fields__40__annotation',
-        '__dataclass__init__fields__25__default',
-        '__dataclass__init__fields__25__annotation',
-        '__dataclass__init__fields__37__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__33__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__13__annotation',
-        '__dataclass__init__fields__11__annotation',
-        '__dataclass__init__fields__32__default',
-        '__dataclass__init__fields__21__annotation',
-        '__dataclass__init__fields__33__default',
-        '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__35__annotation',
-        '__dataclass__init__fields__18__default',
-        '__dataclass__init__fields__14__default',
-        '__dataclass__init__fields__40__default',
-        '__dataclass__init__fields__22__annotation',
-        '__dataclass__init__fields__23__annotation',
-        '__dataclass__init__fields__21__default',
-        '__dataclass__init__fields__24__annotation',
-        '__dataclass__init__fields__34__annotation',
-        '__dataclass__init__fields__22__default',
-        '__dataclass__init__fields__30__annotation',
-        '__dataclass__init__fields__27__annotation',
-        '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__23__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__38__default',
-        '__dataclass__init__fields__30__default',
-        '__dataclass__init__fields__19__annotation',
-        '__dataclass__init__fields__31__default',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__31__annotation',
         '__dataclass__init__fields__10__annotation',
+        '__dataclass__init__fields__10__default',
+        '__dataclass__init__fields__11__annotation',
+        '__dataclass__init__fields__11__default',
         '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__27__default',
-        '__dataclass__init__fields__39__annotation',
-        '__dataclass__init__fields__34__default',
-        '__dataclass__init__fields__17__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__41__default',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__20__default',
-        '__dataclass__init__fields__39__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__17__default',
         '__dataclass__init__fields__12__default',
-        '__dataclass__init__fields__32__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__41__annotation',
-        '__dataclass__init__fields__35__default',
+        '__dataclass__init__fields__13__annotation',
+        '__dataclass__init__fields__13__default',
+        '__dataclass__init__fields__14__annotation',
+        '__dataclass__init__fields__14__default',
         '__dataclass__init__fields__15__annotation',
+        '__dataclass__init__fields__15__default',
+        '__dataclass__init__fields__16__annotation',
+        '__dataclass__init__fields__16__default',
+        '__dataclass__init__fields__17__annotation',
+        '__dataclass__init__fields__17__default',
+        '__dataclass__init__fields__18__annotation',
+        '__dataclass__init__fields__18__default',
+        '__dataclass__init__fields__19__annotation',
+        '__dataclass__init__fields__19__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__20__annotation',
+        '__dataclass__init__fields__20__default',
+        '__dataclass__init__fields__21__annotation',
+        '__dataclass__init__fields__21__default',
+        '__dataclass__init__fields__22__annotation',
+        '__dataclass__init__fields__22__default',
+        '__dataclass__init__fields__23__annotation',
+        '__dataclass__init__fields__23__default',
+        '__dataclass__init__fields__24__annotation',
+        '__dataclass__init__fields__25__annotation',
+        '__dataclass__init__fields__25__default',
+        '__dataclass__init__fields__26__annotation',
         '__dataclass__init__fields__26__default',
-        '__dataclass__init__fields__38__annotation',
+        '__dataclass__init__fields__27__annotation',
+        '__dataclass__init__fields__27__default',
+        '__dataclass__init__fields__28__annotation',
         '__dataclass__init__fields__28__default',
         '__dataclass__init__fields__29__annotation',
-        '__dataclass__init__fields__16__annotation',
+        '__dataclass__init__fields__29__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__30__annotation',
+        '__dataclass__init__fields__30__default',
+        '__dataclass__init__fields__31__annotation',
+        '__dataclass__init__fields__31__default',
+        '__dataclass__init__fields__32__annotation',
+        '__dataclass__init__fields__32__default',
+        '__dataclass__init__fields__33__annotation',
+        '__dataclass__init__fields__33__default',
+        '__dataclass__init__fields__34__annotation',
+        '__dataclass__init__fields__34__default',
+        '__dataclass__init__fields__35__annotation',
+        '__dataclass__init__fields__35__default',
         '__dataclass__init__fields__36__annotation',
-        '__dataclass__init__fields__18__annotation',
+        '__dataclass__init__fields__36__default',
+        '__dataclass__init__fields__37__annotation',
+        '__dataclass__init__fields__37__default',
+        '__dataclass__init__fields__38__annotation',
+        '__dataclass__init__fields__38__default',
+        '__dataclass__init__fields__39__annotation',
+        '__dataclass__init__fields__39__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__40__annotation',
+        '__dataclass__init__fields__40__default',
+        '__dataclass__init__fields__41__annotation',
+        '__dataclass__init__fields__41__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
         '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__9__annotation',
         '__dataclass__init__fields__9__default',
-        '__dataclass__init__fields__14__annotation',
-        '__dataclass__init__fields__19__default',
-        '__dataclass__init__fields__20__annotation',
-        '__dataclass__init__fields__15__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fPutObjectRequest():
@@ -55825,19 +55825,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fPutObj
         __dataclass__init__fields__8__default,
         __dataclass__init__fields__9__annotation,
         __dataclass__init__fields__9__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -56283,14 +56283,14 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fPutObj
         "t_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__1__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fListBucketsOutput():
@@ -56305,19 +56305,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fListBu
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:
@@ -56500,32 +56500,32 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fListBu
         "e, default_fn=None)))"
     ),
     (
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__12__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__10__annotation',
-        '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__13__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__default',
         '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__13__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__9__default',
         '__dataclass__init__fields__11__annotation',
+        '__dataclass__init__fields__11__default',
+        '__dataclass__init__fields__12__annotation',
+        '__dataclass__init__fields__12__default',
+        '__dataclass__init__fields__13__annotation',
+        '__dataclass__init__fields__13__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__9__annotation',
+        '__dataclass__init__fields__9__default',
     ),
 )
 def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fListObjectsV2Output():
@@ -56558,19 +56558,19 @@ def _process_dataclass__ominfra_2fclouds_2faws_2fmodels_2fservices_2fs3_2fListOb
         __dataclass__init__fields__8__default,
         __dataclass__init__fields__9__annotation,
         __dataclass__init__fields__9__default,
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__property=property,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
     ):
         def __copy__(self):
             if self.__class__ is not __dataclass__cls:

@@ -10,6 +10,7 @@ import typing as ta
 
 from .... import check
 from .... import lang
+from ....logs import all as logs
 from ..processing.base import ProcessingContext
 from ..processing.base import ProcessingOption
 from ..processing.base import Processor
@@ -30,6 +31,9 @@ from .registry import all_generator_types
 from .registry import generator_type_for_plan_type
 
 
+log = logs.get_module_logger(globals())
+
+
 ##
 
 
@@ -38,9 +42,10 @@ class PlanOnly(ProcessingOption):
     b: bool
 
 
-@dc.dataclass(frozen=True)
-class Verbose(ProcessingOption):
-    b: bool
+@dc.dataclass(frozen=True, kw_only=True)
+class Verbosity(ProcessingOption):
+    warn: bool = False
+    debug: bool = False
 
 
 class CompileCallback(ta.Protocol):
@@ -58,6 +63,9 @@ class Codegen(ProcessingOption):
     style: ta.Literal['jit', 'aot'] = 'jit'
 
     callback: CompileCallback | None = None
+
+
+##
 
 
 @register_processor_type(priority=ProcessorPriority.GENERATION)
@@ -91,21 +99,14 @@ class GeneratorProcessor(Processor):
 
             self._codegen = codegen
 
-        # def build_proc_fn_kwargs(self, gp: 'GeneratorProcessor', cls: type) -> None:
-        #     kw: dict = {CLS_IDENT: cls}
-        #     kw.update({
-        #         k.ident: v.value
-        #         for k, v in FN_GLOBALS.items()
-        #         # if v.src.startswith('.')
-        #     })
-        #     orm = gp.prepare().ref_map
-        #     for r in comp.refs:
-        #         if isinstance(r, OpRef):
-        #             kw[r.ident()] = orm[r]
-        #         elif isinstance(r, FnGlobal):
-        #             pass
-        #         else:
-        #             raise TypeError(r)
+        @classmethod
+        def build_standard_kwargs(cls, dc_cls: type) -> dict[str, ta.Any]:
+            kw: dict = {CLS_IDENT: dc_cls}
+            kw.update({
+                k.ident: v.value
+                for k, v in FN_GLOBALS.items()
+            })
+            return kw
 
         def _process(self, gp: 'GeneratorProcessor', cls: type) -> None:
             style: OpCompiler.Style = {
@@ -128,7 +129,7 @@ class GeneratorProcessor(Processor):
                 *comp.fn_lines,
             ])
 
-            if (vo := gp._ctx.option(Verbose)) is not None and vo.b:  # noqa
+            if (vo := gp._ctx.option(Verbosity)) is not None and vo.debug:  # noqa
                 print(gp.prepare().plans.render(), file=sys.stderr)
                 print(file=sys.stderr)
                 print(comp_src, file=sys.stderr)
@@ -153,12 +154,8 @@ class GeneratorProcessor(Processor):
                 ),
             })
 
-            kw: dict = {CLS_IDENT: cls}
-            kw.update({
-                k.ident: v.value
-                for k, v in FN_GLOBALS.items()
-                # if v.src.startswith('.')
-            })
+            kw = self.build_standard_kwargs(cls)
+
             orm = gp.prepare().ref_map
             for r in comp.refs:
                 if isinstance(r, OpRef):
@@ -232,7 +229,8 @@ class GeneratorProcessor(Processor):
         try:
             __import__(cg_mod_spec)
         except ImportError:
-            # TODO: log
+            if (vo := self._ctx.option(Verbosity)) is not None and vo.warn:  # noqa
+                log.warning(lambda: f'Codegen module missing for {cls.__name__} at {cg_mod_spec}')
             return False
 
         cg_mod = sys.modules[cg_mod_spec]
@@ -245,7 +243,10 @@ class GeneratorProcessor(Processor):
         try:
             cg_reg_item = cg_fn_reg[fn_name]
         except KeyError:
-            # TODO: log
+            if (vo := self._ctx.option(Verbosity)) is not None and vo.warn:  # noqa
+                log.warning(lambda: (
+                    f'Codegen missing for {cls.__name__} in {cg_mod_spec}: {fn_name}'
+                ))
             return False
 
         (cg_plan_repr, cg_op_refs), cg_fn = cg_reg_item
@@ -256,11 +257,31 @@ class GeneratorProcessor(Processor):
 
         prep_plan_repr = repr(prep.plans)
         if prep_plan_repr != cg_plan_repr:
-            # TODO: log
+            if (vo := self._ctx.option(Verbosity)) is not None and vo.warn:  # noqa
+                log.warning(lambda: (
+                    f'Codegen mismatch for {cls.__name__} in {cg_mod_spec}: '
+                    f'{prep_plan_repr!r} != {cg_plan_repr!r}'
+                ))
             return False
 
-        # raise NotImplementedError
-        return False
+        #
+
+        ref_map = {
+            ref.ident(): v
+            for ref, v in prep.ref_map.items()
+        }
+
+        #
+
+        fn_kw = {
+            **GeneratorProcessor.CompilerMode.build_standard_kwargs(cls),
+            **{k: ref_map[k] for k in cg_op_refs},
+        }
+
+        fn = cg_fn()
+        fn(**fn_kw)
+
+        return True
 
     #
 
