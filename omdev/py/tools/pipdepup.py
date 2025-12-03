@@ -1,3 +1,7 @@
+"""
+TODO:
+ - min_time_since_prev_version
+"""
 # Copyright (c) 2008-present The pip developers (see AUTHORS.txt file)
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
@@ -311,6 +315,13 @@ class Package:
 
         pypi_dict: dict[str, ta.Any] | None = None
 
+        @cached.function
+        def upload_time(self) -> datetime.datetime | None:
+            if (ut := (self.pypi_dict or {}).get('upload-time')) is None:
+                return None
+
+            return datetime.datetime.fromisoformat(check.isinstance(ut, str))  # noqa
+
     candidates: ta.Sequence[Candidate] | None = None
 
     @dc.dataclass(frozen=True, kw_only=True)
@@ -352,20 +363,13 @@ def set_package_finder_info(
     #
 
     if max_uploaded_at is not None:
-        def is_too_new(c: Package.Candidate) -> bool:
-            if (pypi_dict := c.pypi_dict) is None:
-                return False
-
-            if (ut := pypi_dict.get('upload-time')) is None:
-                return False
-
-            c_dt = datetime.datetime.fromisoformat(check.isinstance(ut, str))
-            return c_dt > max_uploaded_at
-
         candidates = [
             c
             for c in candidates
-            if not is_too_new(c)
+            if not (
+                (c_dt := c.upload_time()) is not None and
+                c_dt > max_uploaded_at
+            )
         ]
 
     #
