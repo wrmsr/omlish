@@ -3,6 +3,11 @@ TODO:
  - min_time_since_prev_version
   - how to handle non-linearity? new minor vers come out in parallel for diff major vers
    - trie?
+
+#
+
+https://blog.yossarian.net/2025/11/21/We-should-all-be-using-dependency-cooldowns
+https://news.ycombinator.com/item?id=46005111
 """
 # Copyright (c) 2008-present The pip developers (see AUTHORS.txt file)
 #
