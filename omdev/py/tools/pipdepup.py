@@ -18,18 +18,20 @@ import os.path
 import ssl
 import typing as ta
 
+from pip._internal.index.package_finder import LinkEvaluator  # noqa
+from pip._internal.index.package_finder import PackageFinder  # noqa
+from pip._internal.metadata import BaseDistribution  # noqa
+from pip._internal.models.candidate import InstallationCandidate  # noqa
+from pip._internal.models.link import Link  # noqa
+from pip._internal.network.session import PipSession  # noqa
+from pip._vendor.packaging.version import Version  # noqa
+
 from omlish import cached
 from omlish import check
+from omlish import collections as col
 from omlish.concurrent import all as conc
 from omlish.formats import json
 from omlish.sync import ObjectPool
-
-
-if ta.TYPE_CHECKING:
-    from pip._internal.index.package_finder import PackageFinder  # noqa
-    from pip._internal.metadata import BaseDistribution  # noqa
-    from pip._internal.network.session import PipSession  # noqa
-    from pip._vendor.packaging.version import Version  # noqa
 
 
 ##
@@ -112,10 +114,9 @@ def build_session(
         *,
         cache_opts: CacheOpts = CacheOpts(),
         index_opts: IndexOptions = IndexOptions(),
-) -> 'PipSession':
+) -> PipSession:
     ssl_context = _create_truststore_ssl_context()
 
-    from pip._internal.network.session import PipSession  # noqa
     session = PipSession(
         cache=os.path.join(cache_dir, 'http-v2') if (cache_dir := cache_opts.get_cache_dir()) else None,
         retries=session_opts.retries or 0,
@@ -156,14 +157,59 @@ def build_session(
 ##
 
 
+class MyPackageFinder(PackageFinder):
+    def __init__(self, *args: ta.Any, **kwargs: ta.Any) -> None:
+        super().__init__(*args, **kwargs)
+
+        self._link_pypi_dict_by_hash: dict[str, dict[str, ta.Any]] = {}
+
+    def get_link_pypi_dict(self, link: Link) -> dict[str, ta.Any] | None:
+        if link.hash is None:
+            return None
+        return self._link_pypi_dict_by_hash.get(link.hash)
+
+    def process_project_url(
+            self,
+            project_url: Link,
+            link_evaluator: LinkEvaluator,
+    ) -> list[InstallationCandidate]:
+        index_response = self._link_collector.fetch_response(project_url)
+        if index_response is None:
+            return []
+
+        page_links: list[Link] = []
+        if index_response.content_type.lower().startswith('application/vnd.pypi.simple.v1+json'):
+            data = json.loads(index_response.content)
+            for file in data.get('files', []):
+                link = Link.from_json(file, index_response.url)
+                if link is None:
+                    continue
+                if link.hash is not None:
+                    self._link_pypi_dict_by_hash[link.hash] = file
+                page_links.append(link)
+
+        else:
+            from pip._internal.index.collector import parse_links  # noqa
+            page_links = list(parse_links(index_response))
+
+        from pip._internal.utils.logging import indent_log  # noqa
+        with indent_log():
+            package_links = self.evaluate_links(
+                link_evaluator,
+                links=page_links,
+            )
+
+        return package_links
+
+
 def build_package_finder(
-        session: 'PipSession',
+        session: PipSession,
         *,
         index_opts: IndexOptions = IndexOptions(),
 
         find_links: ta.Sequence[str] | None = None,
         pre: bool = False,
-) -> 'PackageFinder':
+) -> MyPackageFinder:
     from pip._internal.models.search_scope import SearchScope  # noqa
     search_scope = SearchScope.create(
         find_links=list(find_links or []),
@@ -184,11 +230,10 @@ def build_package_finder(
         allow_all_prereleases=pre,
     )
 
-    from pip._internal.index.package_finder import PackageFinder  # noqa
-    return PackageFinder.create(
+    return check.isinstance(MyPackageFinder.create(
         link_collector=link_collector,
         selection_prefs=selection_prefs,
-    )
+    ), MyPackageFinder)
 
 
 ##
@@ -202,7 +247,7 @@ def get_dists(
         editable: bool = False,
         include_editable: bool = True,
         skip: ta.Container | None = None,
-) -> list['BaseDistribution']:
+) -> list[BaseDistribution]:
     from pip._internal.metadata import get_environment  # noqa
     return list(get_environment(path).iter_installed_distributions(
         local_only=local,
@@ -216,67 +261,24 @@ def get_dists(
 ##
 
 
-@dc.dataclass(frozen=True, kw_only=True)
-class DistLatestInfo:
-    version: 'Version'
-    filetype: str
-
-
-def get_dist_latest_info(
-        dist: 'BaseDistribution',
-        finder: 'PackageFinder',
-        *,
-        pre: bool = False,
-) -> DistLatestInfo | None:
-    all_candidates = finder.find_all_candidates(dist.canonical_name)
-    if not pre:
-        # Remove prereleases
-        all_candidates = [
-            candidate
-            for candidate in all_candidates
-            if not candidate.version.is_prerelease
-        ]
-
-    evaluator = finder.make_candidate_evaluator(
-        project_name=dist.canonical_name,
-    )
-    best_candidate = evaluator.sort_best_candidate(all_candidates)
-    if best_candidate is None:
-        return None
-
-    remote_version = best_candidate.version
-    if best_candidate.link.is_wheel:
-        typ = 'wheel'
-    else:
-        typ = 'sdist'
-
-    return DistLatestInfo(
-        version=remote_version,
-        filetype=typ,
-    )
-
-
-##
-
-
 class Context:
     def __init__(self) -> None:
         super().__init__()
 
     #
 
-    _session: ta.Optional['PipSession'] = None
+    _session: PipSession | None = None
 
-    def session(self) -> 'PipSession':
+    def session(self) -> PipSession:
         if self._session is None:
             self._session = build_session()
         return self._session
 
     #
 
-    _finder: ta.Optional['PackageFinder'] = None
+    _finder: MyPackageFinder | None = None
 
-    def finder(self) -> 'PackageFinder':
+    def finder(self) -> MyPackageFinder:
         if self._finder is None:
             self._finder = build_package_finder(self.session())
         return self._finder
@@ -291,7 +293,7 @@ class Context:
 
 @dc.dataclass()
 class Package:
-    dist: 'BaseDistribution'
+    dist: BaseDistribution
 
     @cached.function
     def version(self) -> str:
@@ -302,7 +304,81 @@ class Package:
             pass
         return self.dist.raw_version
 
-    latest_info: DistLatestInfo | None = None
+    @dc.dataclass(frozen=True)
+    class Candidate:
+        install: InstallationCandidate
+
+        pypi_dict: dict[str, ta.Any] | None = None
+
+    candidates: ta.Sequence[Candidate] | None = None
+
+    @dc.dataclass(frozen=True, kw_only=True)
+    class LatestInfo:
+        candidate: 'Package.Candidate'
+
+        version: Version
+        filetype: str
+
+    latest_info: LatestInfo | None = None
+
+
+def set_package_finder_info(
+        pkg: Package,
+        finder: MyPackageFinder,
+        *,
+        pre: bool = False,
+        # max_uploaded_at: datetime.datetime | None = None,
+) -> None:
+    candidates = [
+        Package.Candidate(
+            c,
+            finder.get_link_pypi_dict(c.link),
+        )
+        for c in finder.find_all_candidates(pkg.dist.canonical_name)
+    ]
+    pkg.candidates = candidates
+
+    #
+
+    if not pre:
+        # Remove prereleases
+        candidates = [
+            c
+            for c in candidates
+            if not c.install.version.is_prerelease
+        ]
+
+    #
+
+    candidates_by_install: ta.Mapping[InstallationCandidate, Package.Candidate] = col.make_map((
+        (c.install, c)
+        for c in candidates
+    ), strict=True, identity=True)
+
+    evaluator = finder.make_candidate_evaluator(
+        project_name=pkg.dist.canonical_name,
+    )
+    best_install = evaluator.sort_best_candidate([c.install for c in candidates])
+    if best_install is None:
+        return
+    best_candidate = candidates_by_install[best_install]
+
+    #
+
+    remote_version = best_candidate.install.version
+    if best_candidate.install.link.is_wheel:
+        typ = 'wheel'
+    else:
+        typ = 'sdist'
+
+    pkg.latest_info = Package.LatestInfo(
+        candidate=best_candidate,
+        version=remote_version,
+        filetype=typ,
+    )
+
+
+##
 
 
 def _main() -> None:
@@ -331,11 +407,11 @@ def _main() -> None:
     #
 
     with ObjectPool[Context](Context).manage(lambda ctx: ctx.close()) as ctx_pool:
-        def set_pkg_latest_info(pkg: Package) -> None:
-            with ctx_pool.acquire() as ctx:  # noqa
-                pkg.latest_info = get_dist_latest_info(pkg.dist, ctx.finder())
-
         with conc.new_executor(args.parallelism) as exe:
+            def set_pkg_latest_info(pkg: Package) -> None:
+                with ctx_pool.acquire() as ctx:  # noqa
+                    set_package_finder_info(pkg, ctx.finder())
+
             conc.wait_all_futures_or_raise([
                 exe.submit(set_pkg_latest_info, pkg)
                 for pkg in pkgs
