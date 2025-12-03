@@ -16,6 +16,7 @@ class _OpRef(ta.NamedTuple, ta.Generic[T]):
     name: str
 
 
+@ta.final
 class OpRef(_OpRef[T]):
     def __repr__(self) -> str:
         return f'OpRef(name={self.name!r})'

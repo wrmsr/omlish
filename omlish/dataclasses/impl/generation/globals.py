@@ -12,6 +12,7 @@ from .idents import IDENT_PREFIX
 ##
 
 
+@ta.final
 class FnGlobal(ta.NamedTuple):
     ident: str
 

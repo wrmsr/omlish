@@ -1,17 +1,49 @@
 # ruff: noqa: UP006 UP007 UP037 UP045
 # @omlish-lite
 # @omlish-amalg _dumping.py
-import json
+import dataclasses as dc
 import os.path
 import typing as ta
 
 from omlish.lite.check import check
+from omlish.lite.json import json_dumps_pretty
+from omlish.lite.marshal import marshal_obj
 
 
 ##
 
 
+@dc.dataclass(frozen=True)
+class DumpedDataclassCodegen:
+    module: str
+
+    plan_repr: str
+
+    fn_name: str
+    fn_params: ta.Sequence[str]
+
+    hdr_lines: ta.Sequence[str]
+    fn_lines: ta.Sequence[str]
+
+    @dc.dataclass(frozen=True)
+    class Ref:
+        kind: ta.Literal['op', 'global']
+        ident: str
+
+    refs: ta.Sequence[Ref]
+
+
 class _DataclassCodegenDumper:
+    @dc.dataclass(frozen=True)
+    class Output:
+        init_file_path: str
+        out_file_path: str
+
+        processed_modules: ta.Sequence[str]
+        import_errors: ta.Mapping[str, str]
+
+        dumped: ta.Sequence[DumpedDataclassCodegen]
+
     def __call__(
             self,
             *,
@@ -20,30 +52,72 @@ class _DataclassCodegenDumper:
     ) -> None:
         from omlish.dataclasses.impl.configs import PACKAGE_CONFIG_CACHE  # noqa
         from omlish.dataclasses.impl.generation.compilation import OpCompiler  # noqa
+        from omlish.dataclasses.impl.generation.globals import FnGlobal  # noqa
+        from omlish.dataclasses.impl.generation.ops import OpRef  # noqa
         from omlish.dataclasses.impl.generation.processor import Codegen  # noqa
         from omlish.dataclasses.impl.generation.processor import GeneratorProcessor  # noqa
         from omlish.dataclasses.impl.processing.base import ProcessingContext  # noqa
         from omlish.dataclasses.impl.processing.driving import processing_options_context  # noqa
+
+        cur_module: ta.Optional[str] = None
+
+        dumped: ta.List[DumpedDataclassCodegen] = []
 
         def callback(
                 ctx: ProcessingContext,
                 prepared: GeneratorProcessor.Prepared,
                 comp: OpCompiler.CompileResult,
         ) -> None:
-            print(comp)
+            d_refs: ta.List[DumpedDataclassCodegen.Ref] = []
+            for ref in comp.refs:
+                if isinstance(ref, OpRef):
+                    d_refs.append(DumpedDataclassCodegen.Ref(
+                        kind='op',
+                        ident=ref.ident(),
+                    ))
+                elif isinstance(ref, FnGlobal):
+                    d_refs.append(DumpedDataclassCodegen.Ref(
+                        kind='global',
+                        ident=ref.ident,
+                    ))
+                else:
+                    raise TypeError(ref)
+
+            dumped.append(DumpedDataclassCodegen(
+                module=check.not_none(cur_module),
+
+                plan_repr=repr(prepared.plans),
+
+                fn_name=comp.fn_name,
+                fn_params=comp.fn_params,
+
+                hdr_lines=comp.hdr_lines,
+                fn_lines=comp.fn_lines,
+
+                refs=d_refs,
+            ))
 
         #
 
         processed_modules: ta.List[str] = []
 
+        import_errors: ta.Dict[str, str] = {}
+
         def process_module(spec: str) -> None:
-            processed_modules.append(spec)
+            nonlocal cur_module
+            check.none(cur_module)
+            cur_module = spec
 
             try:
-                __import__(spec)
-            except ImportError as e:
-                # FIXME: include error in output
-                print(repr(e))
+                processed_modules.append(spec)
+
+                try:
+                    __import__(spec)
+                except ImportError as e:
+                    import_errors[spec] = repr(e)
+
+            finally:
+                cur_module = None
 
         def process_dir(dir_path: str) -> None:
             spec = '.'.join(dir_path.split(os.path.sep))
@@ -101,9 +175,15 @@ class _DataclassCodegenDumper:
 
         #
 
+        output = _DataclassCodegenDumper.Output(
+            init_file_path=init_file_path,
+            out_file_path=out_file_path,
+
+            processed_modules=processed_modules,
+            import_errors=import_errors,
+
+            dumped=dumped,
+        )
+
         with open(out_file_path, 'w') as f:
-            f.write(json.dumps({
-                'init_file_path': init_file_path,
-                'out_file_path': out_file_path,
-                'processed_modules': processed_modules,
-            }))
+            f.write(json_dumps_pretty(marshal_obj(output)))

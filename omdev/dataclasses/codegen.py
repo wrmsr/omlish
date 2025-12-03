@@ -57,6 +57,15 @@ def _module_manifest_dumper_payload_src() -> str:
     return inspect.getsource(_dumping)
 
 
+# class DumpedDataclassCodegen(ta.TypedDict):
+#     origin: ta.Mapping[str, ta.Any]
+#     kind: ta.Literal['inline']
+#     cls_mod_name: str
+#     cls_qualname: str
+#     init_src: str
+#     kwargs: ta.Mapping[str, ta.Any]
+
+
 class DataclassCodeGen:
     def __init__(
             self,
