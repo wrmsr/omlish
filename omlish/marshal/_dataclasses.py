@@ -23,7 +23,6 @@ def _register(plan_repr):
 ##
 
 
-
 @_register(
     "Plans(tup=(CopyPlan(fields=('v_ty', 'l', 'x')), EqPlan(fields=('v_ty', 'l', 'x')), FrozenPlan(fields=('v_ty', 'l',"
     " 'x'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('v_ty', 'l', 'x'), cache=False), InitPlan"

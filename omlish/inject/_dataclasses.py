@@ -23,7 +23,6 @@ def _register(plan_repr):
 ##
 
 
-
 @_register(
     "Plans(tup=(CopyPlan(fields=('lst',)), EqPlan(fields=('lst',)), FrozenPlan(fields=('lst',), allow_dynamic_dunder_at"
     "trs=False), HashPlan(action='add', fields=('lst',), cache=True), InitPlan(fields=(InitPlan.Field(name='lst', annot"

@@ -250,7 +250,7 @@ class DataclassCodeGen:
         ]
 
         from . import _template
-        lines.extend(inspect.getsource(_template).split('\n'))
+        lines.extend(inspect.getsource(_template).strip().split('\n'))
 
         seen_fn_names: set[str] = set()
 

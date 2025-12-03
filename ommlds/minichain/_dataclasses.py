@@ -23,7 +23,6 @@ def _register(plan_repr):
 ##
 
 
-
 @_register(
     "Plans(tup=(CopyPlan(fields=()), ReprPlan(fields=(), id=False, terse=False, default_fn=None)))"
 )
