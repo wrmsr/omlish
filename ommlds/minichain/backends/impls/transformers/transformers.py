@@ -7,15 +7,11 @@ import sys
 import threading
 import typing as ta
 
-import transformers as tfm
-
 from omlish import check
 from omlish import lang
 from omlish import typedvalues as tv
 from omlish.asyncs.asyncio.sync import AsyncioBufferRelay
 
-from .....backends.transformers.filecache import file_cache_patch_context
-from .....backends.transformers.streamers import CancellableTextStreamer
 from ....chat.choices.services import ChatChoicesRequest
 from ....chat.choices.services import ChatChoicesResponse
 from ....chat.choices.services import static_check_is_chat_choices_service
@@ -42,6 +38,12 @@ from ....resources import UseResources
 from ....stream.services import StreamResponseSink
 from ....stream.services import new_stream_response
 from ...impls.huggingface.configs import HuggingfaceHubToken
+
+
+with lang.auto_proxy_import(globals()):
+    import transformers as tfm
+
+    from .....backends import transformers as tfm_u
 
 
 ##
@@ -168,7 +170,7 @@ class BaseTransformersChatChoicesService(lang.ExitStacked):
             self._huggingface_hub_token = HuggingfaceHubToken.pop_secret(cc, env='HUGGINGFACE_HUB_TOKEN')
 
     @lang.cached_function(transient=True)
-    def _load_pipeline(self) -> tfm.Pipeline:
+    def _load_pipeline(self) -> 'tfm.Pipeline':
         # FIXME: unload
         check.not_none(self._exit_stack)
 
@@ -181,7 +183,7 @@ class BaseTransformersChatChoicesService(lang.ExitStacked):
         for pkw_cfg in self._pipeline_kwargs:
             pkw.update(pkw_cfg.v)
 
-        with file_cache_patch_context(
+        with tfm_u.file_cache_patch_context(
                 local_first=True,
                 local_config_present_is_authoritative=True,
         ):
@@ -246,7 +248,7 @@ class TransformersChatChoicesStreamService(BaseTransformersChatChoicesService):
             if text or stream_end:
                 relay.push(text, *([None] if stream_end else []))
 
-        streamer = CancellableTextStreamer(
+        streamer = tfm_u.CancellableTextStreamer(
             check.not_none(pipeline.tokenizer),  # type: ignore[arg-type]
             streamer_callback,  # noqa
             skip_prompt=True,
@@ -255,7 +257,7 @@ class TransformersChatChoicesStreamService(BaseTransformersChatChoicesService):
 
         async with UseResources.or_new(request.options) as rs:
             thread = threading.Thread(
-                target=CancellableTextStreamer.ignoring_cancelled(pipeline),
+                target=tfm_u.CancellableTextStreamer.ignoring_cancelled(pipeline),
                 args=(
                     inputs,
                 ),

@@ -1,15 +1,18 @@
+# ruff: noqa: TC002
 import dataclasses as dc
 import pathlib
 import typing as ta
-
-import mlx_lm.utils
-from mlx import nn
 
 from omlish import check
 from omlish import lang
 
 from .tokenization import Tokenization
 from .tokenization import load_tokenization
+
+
+with lang.auto_proxy_import(globals()):
+    import mlx.nn as mlx_nn
+    import mlx_lm.utils
 
 
 ##
@@ -76,7 +79,7 @@ def get_model_path(
 class LoadedModel:
     path: pathlib.Path
 
-    model: nn.Module
+    model: 'mlx_nn.Module'
     config: dict
 
     #

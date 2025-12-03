@@ -1,7 +1,6 @@
 import typing as ta
 
-import sentence_transformers as stfm
-
+from omlish import lang
 from omlish import typedvalues as tv
 
 from ....configs import Config
@@ -11,6 +10,10 @@ from ....vectors.embeddings import EmbeddingRequest
 from ....vectors.embeddings import EmbeddingResponse
 from ....vectors.embeddings import static_check_is_embedding_service
 from ....vectors.types import Vector
+
+
+with lang.auto_proxy_import(globals()):
+    import sentence_transformers as stfm
 
 
 ##

@@ -2,11 +2,9 @@ import contextlib
 import os.path
 import typing as ta
 
-import llama_cpp as lcc
-
+from omlish import lang
 from omlish import typedvalues as tv
 
-from .....backends import llamacpp as lcu
 from ....completion import CompletionOption
 from ....completion import CompletionRequest
 from ....completion import CompletionResponse
@@ -16,6 +14,12 @@ from ....llms.types import LlmOption
 from ....llms.types import MaxTokens
 from ....llms.types import Temperature
 from ....models.configs import ModelPath
+
+
+with lang.auto_proxy_import(globals()):
+    import llama_cpp as lcc
+
+    from .....backends import llamacpp as lcu
 
 
 ##

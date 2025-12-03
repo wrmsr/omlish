@@ -5,7 +5,6 @@ from omlish import check
 from omlish import lang
 from omlish import typedvalues as tv
 
-from .....backends import mlx as mlxu
 from ....chat.choices.services import ChatChoicesOutputs
 from ....chat.choices.services import ChatChoicesRequest
 from ....chat.choices.services import ChatChoicesResponse
@@ -31,6 +30,10 @@ from ....resources import UseResources
 from ....standard import DefaultOptions
 from ....stream.services import StreamResponseSink
 from ....stream.services import new_stream_response
+
+
+with lang.auto_proxy_import(globals()):
+    from .....backends import mlx as mlxu
 
 
 ##
@@ -83,7 +86,7 @@ class BaseMlxChatChoicesService(lang.ExitStacked):
             raise TypeError(m)
 
     @lang.cached_function(transient=True)
-    def _load_model(self) -> mlxu.LoadedModel:
+    def _load_model(self) -> 'mlxu.LoadedModel':
         # FIXME: walk state, find all mx.arrays, dealloc/set to empty
         check.not_none(self._exit_stack)
 
@@ -100,7 +103,7 @@ class BaseMlxChatChoicesService(lang.ExitStacked):
     )
 
     @lang.cached_function(transient=True)
-    def _get_tokenizer(self) -> mlxu.tokenization.Tokenizer:
+    def _get_tokenizer(self) -> 'mlxu.tokenization.Tokenizer':
         tokenizer = self._load_model().tokenization.tokenizer
 
         if not (

@@ -1,17 +1,20 @@
 import typing as ta
 
-import transformers as tfm
-
 from omlish import check
 from omlish import collections as col
+from omlish import lang
 
 from .... import tokens as tks
+
+
+with lang.auto_proxy_import(globals()):
+    import transformers as tfm
 
 
 ##
 
 
-def build_vocab(tfm_tokenizer: tfm.PreTrainedTokenizerBase) -> tks.Vocab:
+def build_vocab(tfm_tokenizer: 'tfm.PreTrainedTokenizerBase') -> tks.Vocab:
     return tks.Vocab([
         (ta.cast(tks.Token, i), tks.TokenStr(s))
         for s, i in tfm_tokenizer.get_vocab().items()
@@ -32,7 +35,7 @@ SPECIAL_TOKEN_ATTR_MAP: col.BiMap[type[tks.SpecialToken], str] = col.make_bi_map
 })
 
 
-def build_specials(tfm_tokenizer: tfm.PreTrainedTokenizerBase) -> tks.SpecialTokens:
+def build_specials(tfm_tokenizer: 'tfm.PreTrainedTokenizerBase') -> tks.SpecialTokens:
     return tks.SpecialTokens.from_dict({
         st: getattr(tfm_tokenizer, a)
         for st, a in SPECIAL_TOKEN_ATTR_MAP.items()
@@ -45,7 +48,7 @@ def build_specials(tfm_tokenizer: tfm.PreTrainedTokenizerBase) -> tks.SpecialTok
 class TransformersTokenizer(tks.BaseTokenizer):
     def __init__(
             self,
-            tfm_tokenizer: tfm.PreTrainedTokenizerBase,
+            tfm_tokenizer: 'tfm.PreTrainedTokenizerBase',
     ) -> None:
         self._tfm_tokenizer = check.isinstance(tfm_tokenizer, tfm.PreTrainedTokenizerBase)
 
@@ -55,7 +58,7 @@ class TransformersTokenizer(tks.BaseTokenizer):
         )
 
     @property
-    def tfm_tokenizer(self) -> tfm.PreTrainedTokenizerBase:
+    def tfm_tokenizer(self) -> 'tfm.PreTrainedTokenizerBase':
         return self._tfm_tokenizer
 
     #

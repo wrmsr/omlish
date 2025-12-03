@@ -2,13 +2,10 @@ import contextlib
 import threading
 import typing as ta  # noqa
 
-import llama_cpp as lcc
-
 from omlish import check
 from omlish import lang
 from omlish import typedvalues as tv
 
-from .....backends import llamacpp as lcu
 from ....chat.choices.services import ChatChoicesOutputs
 from ....chat.choices.stream.services import ChatChoicesStreamRequest
 from ....chat.choices.stream.services import ChatChoicesStreamResponse
@@ -24,6 +21,12 @@ from ....stream.services import new_stream_response
 from .chat import LlamacppChatChoicesService
 from .format import ROLES_MAP
 from .format import get_msg_content
+
+
+with lang.auto_proxy_import(globals()):
+    import llama_cpp as lcc
+
+    from .....backends import llamacpp as lcu
 
 
 ##

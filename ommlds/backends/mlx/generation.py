@@ -21,16 +21,18 @@ import io
 import sys
 import typing as ta
 
-import mlx.core as mx
-import mlx_lm.models.cache
-from mlx import nn
-
 from omlish import check
 from omlish import lang
 
 from .caching import maybe_quantize_kv_cache
 from .limits import wired_limit_context
 from .tokenization import Tokenization
+
+
+with lang.auto_proxy_import(globals()):
+    import mlx.core as mx
+    import mlx.nn as mlx_nn
+    import mlx_lm.models.cache as mlx_lm_models_cache
 
 
 ##
@@ -47,9 +49,9 @@ def _generation_stream():
 class LogitProcessor(ta.Protocol):
     def __call__(
             self,
-            tokens: mx.array,
-            logits: mx.array,
-    ) -> mx.array:
+            tokens: 'mx.array',
+            logits: 'mx.array',
+    ) -> 'mx.array':
         ...
 
 
@@ -99,12 +101,12 @@ class GenerationParams:
 
 class _GenerationStep(ta.NamedTuple):
     token: int
-    logprobs: mx.array
+    logprobs: 'mx.array'
 
 
 def _generate_step(
-        prompt: mx.array,
-        model: nn.Module,
+        prompt: 'mx.array',
+        model: 'mlx_nn.Module',
         params: GenerationParams = GenerationParams(),
 ) -> ta.Generator[_GenerationStep]:
     y = prompt
@@ -113,7 +115,7 @@ def _generate_step(
     # Create the Kv cache for generation
     prompt_cache = params.prompt_cache
     if prompt_cache is None:
-        prompt_cache = mlx_lm.models.cache.make_prompt_cache(
+        prompt_cache = mlx_lm_models_cache.make_prompt_cache(
             model,
             max_kv_size=params.max_kv_size,
         )
@@ -221,7 +223,7 @@ class GenerationOutput:
     token: int
 
     # A vector of log probabilities.
-    logprobs: mx.array
+    logprobs: 'mx.array'
 
     # The number of tokens in the prompt.
     prompt_tokens: int
@@ -234,9 +236,9 @@ class GenerationOutput:
 
 
 def stream_generate(
-        model: nn.Module,
+        model: 'mlx_nn.Module',
         tokenization: Tokenization,
-        prompt: str | mx.array,
+        prompt: ta.Union[str, 'mx.array'],
         params: GenerationParams = GenerationParams(),
 ) -> ta.Generator[GenerationOutput]:
     if not isinstance(prompt, mx.array):
@@ -308,9 +310,9 @@ def stream_generate(
 
 
 def generate(
-        model: nn.Module,
+        model: 'mlx_nn.Module',
         tokenization: Tokenization,
-        prompt: str | mx.array,
+        prompt: ta.Union[str, 'mx.array'],
         params: GenerationParams = GenerationParams(),
         *,
         verbose: bool = False,

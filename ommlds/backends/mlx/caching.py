@@ -17,7 +17,11 @@
 # https://github.com/ml-explore/mlx-lm/blob/ce2358d297af245b002e690623f00195b6507da0/mlx_lm/generate.py
 import typing as ta
 
-import mlx_lm.models.cache
+from omlish import lang
+
+
+with lang.auto_proxy_import(globals()):
+    import mlx_lm.models.cache as mlx_lm_models_cache
 
 
 ##
@@ -32,13 +36,13 @@ def maybe_quantize_kv_cache(
 ) -> None:
     if not (
             kv_bits is not None and
-            not isinstance(prompt_cache[0], mlx_lm.models.cache.QuantizedKVCache) and
+            not isinstance(prompt_cache[0], mlx_lm_models_cache.QuantizedKVCache) and
             prompt_cache[0].offset > quantized_kv_start
     ):
         return
 
     for i in range(len(prompt_cache)):
-        if isinstance(prompt_cache[i], mlx_lm.models.cache.KVCache):
+        if isinstance(prompt_cache[i], mlx_lm_models_cache.KVCache):
             prompt_cache[i] = prompt_cache[i].to_quantized(
                 bits=kv_bits,
                 group_size=kv_group_size,

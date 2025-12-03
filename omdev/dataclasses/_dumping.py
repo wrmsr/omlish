@@ -8,6 +8,7 @@
 # ruff: noqa: UP006 UP007 UP036 UP037 UP045
 import collections
 import json
+import os.path
 import sys
 import threading
 import typing as ta
@@ -24,7 +25,7 @@ def __omlish_amalg__():  # noqa
     return dict(
         src_files=[
             dict(path='../../omlish/lite/check.py', sha1='bb6b6b63333699b84462951a854d99ae83195b94'),
-            dict(path='dumping.py', sha1='039bbef32374aba0ed504e766b4cc3dd75e951e7'),
+            dict(path='dumping.py', sha1='00b017f6a36c57eb4df20601e186b39928b6860a'),
         ],
     )
 
@@ -544,10 +545,19 @@ class _DataclassCodegenDumper:
     def __call__(
             self,
             *,
-            import_specs: ta.Sequence[str],
+            init_file_path: str,
             out_file_path: str,
     ) -> None:
-        check.not_isinstance(import_specs, str)
+        pkg_dir = os.path.dirname(init_file_path)
+
+        py_files = sorted(
+            os.path.join(dn, fn)
+            for dn, _, fns in os.walk(pkg_dir)
+            for fn in fns
+            if fn.endswith('.py')
+            if 'tests' not in os.path.split(dn)
+            and fn != 'conftest.py'
+        )
 
         from omlish.dataclasses.impl.generation.compilation import OpCompiler  # noqa
         from omlish.dataclasses.impl.generation.processor import Codegen  # noqa
@@ -563,7 +573,16 @@ class _DataclassCodegenDumper:
             print(comp.src)
 
         with processing_options_context(Codegen(callback)):
-            for import_spec in import_specs:
+            for py_file in py_files:
+                parts = py_file.split(os.path.sep)
+                check.state(parts[-1].endswith('.py'))
+                parts[-1] = parts[-1][:-3]
+                if parts[-1] == '__init__':
+                    parts.pop()
+
+                import_spec = '.'.join(parts)
+
+                # FIXME: terminate on non-codegen config
                 try:
                     __import__(import_spec)
                 except ImportError as e:
@@ -572,6 +591,6 @@ class _DataclassCodegenDumper:
 
         with open(out_file_path, 'w') as f:
             f.write(json.dumps({
-                'import_specs': import_specs,
+                'init_file_path': init_file_path,
                 'out_file_path': out_file_path,
             }))

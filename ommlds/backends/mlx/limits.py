@@ -19,9 +19,13 @@ import contextlib
 import sys
 import typing as ta
 
-import mlx.core as mx
-import mlx.utils
-from mlx import nn
+from omlish import lang
+
+
+with lang.auto_proxy_import(globals()):
+    import mlx.core as mx
+    import mlx.nn as mlx_nn
+    import mlx.utils as mlx_utils
 
 
 ##
@@ -29,8 +33,8 @@ from mlx import nn
 
 @contextlib.contextmanager
 def wired_limit_context(
-        model: nn.Module,
-        streams: ta.Iterable[mx.Stream] | None = None,
+        model: 'mlx_nn.Module',
+        streams: ta.Iterable['mx.Stream'] | None = None,
 ) -> ta.Generator[None]:
     """
     A context manager to temporarily change the wired limit.
@@ -43,7 +47,7 @@ def wired_limit_context(
         yield
         return
 
-    model_bytes = mlx.utils.tree_reduce(
+    model_bytes = mlx_utils.tree_reduce(
         lambda acc, x: acc + x.nbytes if isinstance(x, mx.array) else acc,
         model,
         0,

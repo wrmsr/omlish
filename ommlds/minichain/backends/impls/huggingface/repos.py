@@ -3,8 +3,6 @@ TODO:
  - local-only check first
   - cat ~/.cache/.../models/.../refs/main -> c5bfd839cd4cda0e5a39a97e00218d9c56e468af
 """
-import typing as ta
-
 from omlish import lang
 
 from ....models.configs import ModelRepo
@@ -12,10 +10,8 @@ from ....models.repos.resolving import ModelRepoResolver
 from ....models.repos.resolving import ResolvedModelRepo
 
 
-if ta.TYPE_CHECKING:
+with lang.auto_proxy_import(globals()):
     import huggingface_hub as hf
-else:
-    hf = lang.proxy_import('huggingface_hub')
 
 
 ##

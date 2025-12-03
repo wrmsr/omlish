@@ -2,13 +2,10 @@ import contextlib
 import os.path
 import typing as ta
 
-import llama_cpp as lcc
-
 from omlish import check
 from omlish import lang
 from omlish import typedvalues as tv
 
-from .....backends import llamacpp as lcu
 from ....chat.choices.services import ChatChoicesRequest
 from ....chat.choices.services import ChatChoicesResponse
 from ....chat.choices.services import static_check_is_chat_choices_service
@@ -25,6 +22,12 @@ from ....models.configs import ModelPath
 from ....tools.types import PrimitiveToolDtype
 from .format import ROLES_MAP
 from .format import get_msg_content
+
+
+with lang.auto_proxy_import(globals()):
+    import llama_cpp as lcc
+
+    from .....backends import llamacpp as lcu
 
 
 ##

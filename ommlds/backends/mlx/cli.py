@@ -20,14 +20,17 @@ import json
 import sys
 import typing as ta
 
-import mlx.core as mx
-import mlx_lm.models.cache
-import mlx_lm.sample_utils
-import mlx_lm.utils
+from omlish import lang
 
 from .generation import GenerationParams
 from .generation import generate
 from .loading import load_model
+
+
+with lang.auto_proxy_import(globals()):
+    import mlx.core as mx
+    import mlx_lm.models.cache as mlx_lm_models_cache
+    import mlx_lm.sample_utils as mlx_lm_sample_utils
 
 
 ##
@@ -214,11 +217,11 @@ def _main() -> None:
     # Load the prompt cache and metadata if a cache file is provided
     using_cache = args.prompt_cache_file is not None
     if using_cache:
-        prompt_cache, metadata = mlx_lm.models.cache.load_prompt_cache(
+        prompt_cache, metadata = mlx_lm_models_cache.load_prompt_cache(
             args.prompt_cache_file,
             return_metadata=True,
         )
-        if isinstance(prompt_cache[0], mlx_lm.models.cache.QuantizedKVCache):
+        if isinstance(prompt_cache[0], mlx_lm_models_cache.QuantizedKVCache):
             if args.kv_bits is not None and args.kv_bits != prompt_cache[0].bits:
                 raise ValueError('--kv-bits does not match the kv cache loaded from --prompt-cache-file.')
             if args.kv_group_size != prompt_cache[0].group_size:
@@ -293,7 +296,7 @@ def _main() -> None:
     else:
         prompt = tokenizer.encode(prompt)
 
-    sampler = mlx_lm.sample_utils.make_sampler(
+    sampler = mlx_lm_sample_utils.make_sampler(
         args.temp,
         args.top_p,
         args.min_p,

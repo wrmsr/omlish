@@ -217,9 +217,7 @@ class DataclassCodeGen:
         out_file_path = os.path.join(out_dir, 'output.json')
 
         dumper_kwargs = dict(
-            import_specs=[
-                cfg_pkg.name,
-            ],
+            init_file_path=cfg_pkg.init_file_path,
             out_file_path=out_file_path,
         )
 
