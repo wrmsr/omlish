@@ -29,11 +29,14 @@ from omlish import check
 from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
+from omlish.lite.marshal import unmarshal_obj
 from omlish.logs import all as logs
 from omlish.subprocesses.sync import subprocesses
 
 from ..py.asts.toplevel import TopLevelCall
 from ..py.asts.toplevel import analyze_module_top_level
+from ..py.reprs import textwrap_repr
+from .dumping import DataclassCodegenDumperOutput
 
 
 log = logs.get_module_logger(globals())
@@ -57,23 +60,21 @@ def _module_manifest_dumper_payload_src() -> str:
     return inspect.getsource(_dumping)
 
 
-# class DumpedDataclassCodegen(ta.TypedDict):
-#     origin: ta.Mapping[str, ta.Any]
-#     kind: ta.Literal['inline']
-#     cls_mod_name: str
-#     cls_qualname: str
-#     init_src: str
-#     kwargs: ta.Mapping[str, ta.Any]
+#
 
 
 class DataclassCodeGen:
+    DEFAULT_TARGET_LINE_WIDTH: ta.ClassVar[int] = 100
+
     def __init__(
             self,
             *,
+            target_line_width: int | None = None,
             subprocess_kwargs: ta.Mapping[str, ta.Any] | None = None,
     ) -> None:
         super().__init__()
 
+        self._target_line_width = target_line_width or self.DEFAULT_TARGET_LINE_WIDTH
         self._subprocess_kwargs = subprocess_kwargs
 
     #
@@ -204,8 +205,43 @@ class DataclassCodeGen:
         with open(out_file_path) as f:
             out_s = f.read()
 
-        out_dct = json.loads(out_s)
-        print(out_dct)
+        output: DataclassCodegenDumperOutput = unmarshal_obj(json.loads(out_s), DataclassCodegenDumperOutput)
+
+        self.process_dumper_output(cfg_pkg, output)
+
+    #
+
+    def process_dumper_output(
+            self,
+            cfg_pkg: ConfiguredPackage,
+            output: DataclassCodegenDumperOutput,
+    ) -> None:
+        lines = [
+            '# @omlish-generated',
+        ]
+
+        from . import _template
+        lines.extend(inspect.getsource(_template).split('\n'))
+
+        seen_fn_names: set[str] = set()
+
+        for x in output.dumped:
+            check.not_in(x.fn_name, seen_fn_names)
+            seen_fn_names.add(x.fn_name)
+
+            lines.extend(['', ''])
+
+            lines.extend([
+                '@_register(',
+                *[
+                    f'    {prl}'
+                    for prl in textwrap_repr(x.plan_repr, self._target_line_width - 4)
+                ],
+                ')',
+            ])
+            lines.extend(x.fn_lines)
+
+        print('\n'.join(lines))
 
     def run(self, root_dirs: ta.Iterable[str]) -> None:
         check.not_isinstance(root_dirs, str)

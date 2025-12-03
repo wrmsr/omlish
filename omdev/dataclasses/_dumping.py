@@ -44,7 +44,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='../../omlish/lite/strings.py', sha1='89831ecbc34ad80e118a865eceb390ed399dc4d6'),
             dict(path='../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
-            dict(path='dumping.py', sha1='ba4f8a506da6f599046e74b5f195bb8ff25cf481'),
+            dict(path='dumping.py', sha1='5ab72ba6396e3c830e62f47e9ece07340af276a7'),
         ],
     )
 
@@ -1793,17 +1793,21 @@ class DumpedDataclassCodegen:
     refs: ta.Sequence[Ref]
 
 
+@dc.dataclass(frozen=True)
+class DataclassCodegenDumperOutput:
+    init_file_path: str
+    out_file_path: str
+
+    processed_modules: ta.Sequence[str]
+    import_errors: ta.Mapping[str, str]
+
+    dumped: ta.Sequence[DumpedDataclassCodegen]
+
+
+##
+
+
 class _DataclassCodegenDumper:
-    @dc.dataclass(frozen=True)
-    class Output:
-        init_file_path: str
-        out_file_path: str
-
-        processed_modules: ta.Sequence[str]
-        import_errors: ta.Mapping[str, str]
-
-        dumped: ta.Sequence[DumpedDataclassCodegen]
-
     def __call__(
             self,
             *,
@@ -1935,7 +1939,7 @@ class _DataclassCodegenDumper:
 
         #
 
-        output = _DataclassCodegenDumper.Output(
+        output = DataclassCodegenDumperOutput(
             init_file_path=init_file_path,
             out_file_path=out_file_path,
 

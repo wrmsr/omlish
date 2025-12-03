@@ -33,17 +33,21 @@ class DumpedDataclassCodegen:
     refs: ta.Sequence[Ref]
 
 
+@dc.dataclass(frozen=True)
+class DataclassCodegenDumperOutput:
+    init_file_path: str
+    out_file_path: str
+
+    processed_modules: ta.Sequence[str]
+    import_errors: ta.Mapping[str, str]
+
+    dumped: ta.Sequence[DumpedDataclassCodegen]
+
+
+##
+
+
 class _DataclassCodegenDumper:
-    @dc.dataclass(frozen=True)
-    class Output:
-        init_file_path: str
-        out_file_path: str
-
-        processed_modules: ta.Sequence[str]
-        import_errors: ta.Mapping[str, str]
-
-        dumped: ta.Sequence[DumpedDataclassCodegen]
-
     def __call__(
             self,
             *,
@@ -175,7 +179,7 @@ class _DataclassCodegenDumper:
 
         #
 
-        output = _DataclassCodegenDumper.Output(
+        output = DataclassCodegenDumperOutput(
             init_file_path=init_file_path,
             out_file_path=out_file_path,
 

@@ -139,7 +139,10 @@ class OpCompiler:
     ) -> CompileResult:
         body_lines: list[str] = []
 
-        for op in ops:
+        for i, op in enumerate(ops):
+            if i:
+                body_lines.append('')
+
             if isinstance(op, SetAttrOp):
                 if isinstance(v := op.value, OpRef):
                     vs = v.ident()
@@ -203,8 +206,6 @@ class OpCompiler:
 
             else:
                 raise TypeError(op)
-
-            body_lines.append('')
 
         #
 
