@@ -1,0 +1,102 @@
+[build-system]
+requires = [
+    'setuptools',
+]
+build-backend = 'setuptools.build_meta'
+
+[project]
+name = 'omdev'
+authors = [
+    {name = 'wrmsr'},
+]
+urls = {source = 'https://github.com/wrmsr/omlish'}
+license = 'BSD-3-Clause'
+readme = 'README.md'
+requires-python = '>=3.13'
+version = '0.0.0.dev481'
+classifiers = [
+    'Development Status :: 2 - Pre-Alpha',
+    'Intended Audience :: Developers',
+    'Operating System :: OS Independent',
+    'Operating System :: POSIX',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.13',
+]
+description = 'omdev'
+dependencies = [
+    'omlish == 0.0.0.dev481',
+]
+
+[project.optional-dependencies]
+all = [
+    'black ~= 25.11',
+    'pycparser ~= 2.23',
+    'pcpp ~= 1.30',
+    'docutils ~= 0.22',
+    'markdown-it-py ~= 4.0',
+    'mdit-py-plugins ~= 0.5',
+    'pygments ~= 2.19',
+    'mypy ~= 1.19',
+    'gprof2dot ~= 2025.4',
+    'segno ~= 1.6',
+    'rich ~= 14.2',
+    'textual ~= 6.7',
+]
+black = [
+    'black ~= 25.11',
+]
+c = [
+    'pycparser ~= 2.23',
+    'pcpp ~= 1.30',
+]
+doc = [
+    'docutils ~= 0.22',
+    'markdown-it-py ~= 4.0',
+    'mdit-py-plugins ~= 0.5',
+    'pygments ~= 2.19',
+]
+mypy = [
+    'mypy ~= 1.19',
+]
+prof = [
+    'gprof2dot ~= 2025.4',
+]
+qr = [
+    'segno ~= 1.6',
+]
+tui = [
+    'rich ~= 14.2',
+    'textual ~= 6.7',
+]
+
+[project.entry-points]
+'omlish.manifests' = {omdev = 'omdev'}
+
+[tool.setuptools]
+
+[tool.setuptools.packages.find]
+include = [
+    'omdev',
+    'omdev.*',
+]
+exclude = [
+    '*.tests',
+    '*.tests.*',
+]
+
+[tool.setuptools.package-data]
+'*' = [
+    '*.c',
+    '*.cc',
+    '*.cu',
+    '*.g4',
+    '*.h',
+    '*.hh',
+    '.omlish-manifests.json',
+    'LICENSE',
+    'LICENSE.txt',
+    'cc/cdeps.toml',
+    'pyproject/resources/*.sh',
+    'tools/jsonview/resources/*.css',
+    'tools/jsonview/resources/*.js',
+]
