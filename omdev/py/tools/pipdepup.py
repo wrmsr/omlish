@@ -3,6 +3,8 @@ TODO:
  - min_time_since_prev_version
   - how to handle non-linearity? new minor vers come out in parallel for diff major vers
    - trie?
+ - find which reqs file + lineno to update
+  - auto update
 
 #
 

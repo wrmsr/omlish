@@ -58,6 +58,10 @@ class VerboseCalledProcessError(subprocess.CalledProcessError):
 class BaseSubprocesses(Abstract):
     DEFAULT_LOGGER: ta.ClassVar[ta.Optional[LoggerLike]] = None
 
+    PIPE: ta.ClassVar[int] = subprocess.PIPE
+    STDOUT: ta.ClassVar[int] = subprocess.STDOUT
+    DEVNULL: ta.ClassVar[int] = subprocess.DEVNULL
+
     def __init__(
             self,
             *,

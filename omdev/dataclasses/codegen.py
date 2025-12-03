@@ -12,10 +12,18 @@ TODO:
  - delegate to subprocess import worker
  - statically find only modules that contain dataclass defs?
   - cache asts?
+ - amalg gen payload
+ - ignore tests dirs
 """
 import ast
 import importlib
+import inspect
+import json
 import os.path
+import shlex
+import sys
+import tempfile
+import time
 import typing as ta
 
 from omlish import check
@@ -29,6 +37,7 @@ from omlish.dataclasses.impl.generation.processor import GeneratorProcessor
 from omlish.dataclasses.impl.processing.base import ProcessingContext
 from omlish.dataclasses.impl.processing.driving import processing_options_context
 from omlish.logs import all as logs
+from omlish.subprocesses.sync import subprocesses
 
 from ..py.asts.toplevel import TopLevelCall
 from ..py.asts.toplevel import analyze_module_top_level
@@ -49,9 +58,21 @@ def _find_dir_py_files(dir_path: str) -> list[str]:
     )
 
 
+@lang.cached_function
+def _module_manifest_dumper_payload_src() -> str:
+    from . import _dumping
+    return inspect.getsource(_dumping)
+
+
 class DataclassCodeGen:
-    def __init__(self) -> None:
+    def __init__(
+            self,
+            *,
+            subprocess_kwargs: ta.Mapping[str, ta.Any] | None = None,
+    ) -> None:
         super().__init__()
+
+        self._subprocess_kwargs = subprocess_kwargs
 
     #
 
@@ -92,8 +113,10 @@ class DataclassCodeGen:
     @dc.dataclass(frozen=True)
     class ConfiguredPackage:
         name: str
+
         init_file_path: str
         init_module_name: str
+
         init_package_call: TopLevelCall
 
     def scan_py_file(self, file_path: str) -> ConfiguredPackage | None:
@@ -147,8 +170,74 @@ class DataclassCodeGen:
 
     #
 
-    def process_configured_package(self, cfg_pkg: ConfiguredPackage) -> None:
-        pass
+    def _run_dumper_subprocess(
+            self,
+            cfg_pkg: ConfiguredPackage,
+            dumper_kwargs: ta.Mapping[str, ta.Any],
+            *,
+            shell_wrap: bool = True,
+    ) -> None:
+        dumper_payload_src = _module_manifest_dumper_payload_src()
+
+        subproc_src = '\n\n'.join([
+            dumper_payload_src,
+            f'_DataclassCodegenDumper()(**{dumper_kwargs!r})\n',
+        ])
+
+        args = [
+            sys.executable,
+            '-c',
+            subproc_src,
+        ]
+
+        if shell_wrap:
+            args = ['sh', '-c', ' '.join(map(shlex.quote, args))]
+
+        subprocesses.check_call(
+            *args,
+            **(self._subprocess_kwargs or {}),
+        )
+
+    def _run_dumper_inline(
+            self,
+            cfg_pkg: ConfiguredPackage,
+            dumper_kwargs: ta.Mapping[str, ta.Any],
+    ) -> None:
+        from . import dumping
+
+        dumping._DataclassCodegenDumper()(**dumper_kwargs)  # noqa
+
+    def process_configured_package(
+            self,
+            cfg_pkg: ConfiguredPackage,
+            *,
+            warn_threshold_s: float | None = 10.,
+    ) -> None:
+        out_dir = tempfile.mkdtemp()
+        out_file_path = os.path.join(out_dir, 'output.json')
+
+        dumper_kwargs = dict(
+            import_specs=[
+                cfg_pkg.name,
+            ],
+            out_file_path=out_file_path,
+        )
+
+        start_time = time.time()
+
+        # self._run_dumper_subprocess(cfg_pkg, dumper_kwargs)
+        self._run_dumper_inline(cfg_pkg, dumper_kwargs)
+
+        end_time = time.time()
+
+        if warn_threshold_s is not None and (elapsed_time := (end_time - start_time)) >= warn_threshold_s:
+            log.warning('Dataclass codegen took a long time: %s, %.2f s', cfg_pkg.name, elapsed_time)
+
+        with open(out_file_path) as f:
+            out_s = f.read()
+
+        out_dct = json.loads(out_s)
+        print(out_dct)
 
     def run(self, root_dirs: ta.Iterable[str]) -> None:
         check.not_isinstance(root_dirs, str)

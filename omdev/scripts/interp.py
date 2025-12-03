@@ -77,7 +77,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/subprocesses/run.py', sha1='8200e48f0c49d164df3503cd0143038d0c4d30aa'),
             dict(path='../../omlish/subprocesses/wrap.py', sha1='8a9b7d2255481fae15c05f5624b0cdc0766f4b3f'),
             dict(path='providers/base.py', sha1='f5d068c21f230d742e9015b033cd6320f4c68898'),
-            dict(path='../../omlish/subprocesses/base.py', sha1='77801dc86adde9b2614d32991e3aa85c39707c78'),
+            dict(path='../../omlish/subprocesses/base.py', sha1='cb9f668be5422fecb27222caabb67daac6c1bab9'),
             dict(path='resolvers.py', sha1='817b8e76401cd7a19eb43ca54d65272e4c8a4b0e'),
             dict(path='../../omlish/subprocesses/asyncs.py', sha1='bba44d524c24c6ac73168aee6343488414e5bf48'),
             dict(path='../../omlish/asyncs/asyncio/subprocesses.py', sha1='b6b5f9ae3fd0b9c83593bad2e04a08f726e5904d'),
@@ -4690,6 +4690,10 @@ class VerboseCalledProcessError(subprocess.CalledProcessError):
 
 class BaseSubprocesses(Abstract):
     DEFAULT_LOGGER: ta.ClassVar[ta.Optional[LoggerLike]] = None
+
+    PIPE: ta.ClassVar[int] = subprocess.PIPE
+    STDOUT: ta.ClassVar[int] = subprocess.STDOUT
+    DEVNULL: ta.ClassVar[int] = subprocess.DEVNULL
 
     def __init__(
             self,
