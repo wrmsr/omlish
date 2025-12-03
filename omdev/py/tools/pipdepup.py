@@ -14,6 +14,7 @@
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 # ~> https://github.com/pypa/pip/blob/a52069365063ea813fe3a3f8bac90397c9426d35/src/pip/_internal/commands/list.py (25.3)
 import dataclasses as dc
+import datetime
 import os.path
 import ssl
 import typing as ta
@@ -327,7 +328,7 @@ def set_package_finder_info(
         finder: MyPackageFinder,
         *,
         pre: bool = False,
-        # max_uploaded_at: datetime.datetime | None = None,
+        max_uploaded_at: datetime.datetime | None = None,
 ) -> None:
     candidates = [
         Package.Candidate(
@@ -346,6 +347,25 @@ def set_package_finder_info(
             c
             for c in candidates
             if not c.install.version.is_prerelease
+        ]
+
+    #
+
+    if max_uploaded_at is not None:
+        def is_too_new(c: Package.Candidate) -> bool:
+            if (pypi_dict := c.pypi_dict) is None:
+                return False
+
+            if (ut := pypi_dict.get('upload-time')) is None:
+                return False
+
+            c_dt = datetime.datetime.fromisoformat(check.isinstance(ut, str))
+            return c_dt > max_uploaded_at
+
+        candidates = [
+            c
+            for c in candidates
+            if not is_too_new(c)
         ]
 
     #
@@ -389,6 +409,8 @@ def _main() -> None:
     parser.add_argument('-P', '--parallelism', type=int, default=4)
     args = parser.parse_args()
 
+    max_uploaded_at: datetime.datetime | None = datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=4)
+
     #
 
     from pip._internal.utils.compat import stdlib_pkgs  # noqa
@@ -410,7 +432,11 @@ def _main() -> None:
         with conc.new_executor(args.parallelism) as exe:
             def set_pkg_latest_info(pkg: Package) -> None:
                 with ctx_pool.acquire() as ctx:  # noqa
-                    set_package_finder_info(pkg, ctx.finder())
+                    set_package_finder_info(
+                        pkg,
+                        ctx.finder(),
+                        max_uploaded_at=max_uploaded_at,
+                    )
 
             conc.wait_all_futures_or_raise([
                 exe.submit(set_pkg_latest_info, pkg)
