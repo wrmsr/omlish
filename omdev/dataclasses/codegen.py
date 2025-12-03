@@ -16,7 +16,6 @@ TODO:
  - ignore tests dirs
 """
 import ast
-import importlib
 import inspect
 import json
 import os.path
@@ -30,12 +29,6 @@ from omlish import check
 from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
-from omlish.dataclasses.impl.configs import PackageConfig
-from omlish.dataclasses.impl.generation.compilation import OpCompiler
-from omlish.dataclasses.impl.generation.processor import Codegen as CodegenProcessingOption
-from omlish.dataclasses.impl.generation.processor import GeneratorProcessor
-from omlish.dataclasses.impl.processing.base import ProcessingContext
-from omlish.dataclasses.impl.processing.driving import processing_options_context
 from omlish.logs import all as logs
 from omlish.subprocesses.sync import subprocesses
 
@@ -73,40 +66,6 @@ class DataclassCodeGen:
         super().__init__()
 
         self._subprocess_kwargs = subprocess_kwargs
-
-    #
-
-    def run_package_config(
-            self,
-            pkg_root: str,
-            config: PackageConfig,
-    ) -> None:
-        if not config.codegen:
-            return
-
-        log.info(lambda: f'Running codegen on package: {pkg_root}')
-
-        sub_pkgs = sorted(lang.yield_importable(
-            pkg_root,
-            recursive=True,
-        ))
-
-        for sub_pkg in sub_pkgs:
-            def callback(
-                    ctx: ProcessingContext,
-                    prepared: GeneratorProcessor.Prepared,
-                    comp: OpCompiler.CompileResult,
-            ) -> None:
-                print(ctx.cls)
-                print(prepared.plans)
-                print(comp.src)
-
-            with processing_options_context(CodegenProcessingOption(callback)):
-                print(f'{sub_pkg=}')
-                try:
-                    importlib.import_module(sub_pkg)
-                except ImportError as e:
-                    print(repr(e))
 
     #
 
@@ -213,6 +172,8 @@ class DataclassCodeGen:
             *,
             warn_threshold_s: float | None = 10.,
     ) -> None:
+        log.info(lambda: f'Running codegen on package: {cfg_pkg.name}')
+
         out_dir = tempfile.mkdtemp()
         out_file_path = os.path.join(out_dir, 'output.json')
 

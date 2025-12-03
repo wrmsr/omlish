@@ -53,8 +53,10 @@ class CompileCallback(ta.Protocol):
         ...
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass(frozen=True, kw_only=True)
 class Codegen(ProcessingOption):
+    style: ta.Literal['jit', 'aot'] = 'jit'
+
     callback: CompileCallback | None = None
 
 
@@ -86,28 +88,36 @@ class GeneratorProcessor(Processor):
             self._codegen = codegen
 
         def _process(self, gp: 'GeneratorProcessor', cls: type) -> None:
-            compiler = OpCompiler(
-                OpCompiler.AotStyle(),
-                # OpCompiler.JitStyle(),
-            )
+            style: OpCompiler.Style = {
+                'jit': OpCompiler.JitStyle,
+                'aot': OpCompiler.AotStyle,
+            }[self._codegen.style]()
 
-            fn_name = '_process_dataclass__' + IDENT_MANGLER.mangle(cls.__qualname__)
+            compiler = OpCompiler(style)
+
+            fn_name = '_process_dataclass__' + IDENT_MANGLER.mangle('.'.join([cls.__module__, cls.__qualname__]))
 
             comp = compiler.compile(
                 fn_name,
                 gp.ops(),
             )
 
+            comp_src = '\n'.join([
+                *comp.hdr_lines,
+                *(['', ''] if comp.hdr_lines else []),
+                *comp.fn_lines,
+            ])
+
             if (vo := gp._ctx.option(Verbose)) is not None and vo.b:  # noqa
                 print(gp.prepare().plans.render(), file=sys.stderr)
                 print(file=sys.stderr)
-                print(comp.src, file=sys.stderr)
+                print(comp_src, file=sys.stderr)
                 print(file=sys.stderr)
 
             ns: dict = {}
             ns.update(compiler.style.globals_ns())  # noqa
 
-            exec(comp.src, ns)
+            exec(comp_src, ns)
             o_fn = ns[comp.fn_name]
 
             if cls.__module__ in sys.modules:

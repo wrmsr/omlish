@@ -30,11 +30,15 @@ class _DataclassCodegenDumper:
                 prepared: GeneratorProcessor.Prepared,
                 comp: OpCompiler.CompileResult,
         ) -> None:
-            print(comp.src)
+            print(comp)
 
         #
 
+        processed_modules: ta.List[str] = []
+
         def process_module(spec: str) -> None:
+            processed_modules.append(spec)
+
             try:
                 __import__(spec)
             except ImportError as e:
@@ -42,6 +46,16 @@ class _DataclassCodegenDumper:
                 print(repr(e))
 
         def process_dir(dir_path: str) -> None:
+            spec = '.'.join(dir_path.split(os.path.sep))
+
+            process_module(spec)
+
+            pkg_cfg = PACKAGE_CONFIG_CACHE.get(spec)
+            if pkg_cfg is not None and not pkg_cfg.codegen:
+                return
+
+            #
+
             dns: ta.List[str] = []
             fns: ta.List[str] = []
             for n in os.listdir(dir_path):
@@ -75,14 +89,14 @@ class _DataclassCodegenDumper:
                 if not os.path.isfile(os.path.join(dp, '__init__.py')):
                     continue
 
-                # FIXME: terminate on non-codegen config
-                spec = '.'.join(dp.split(os.path.sep))  # noqa
-
                 process_dir(dp)
 
         #
 
-        with processing_options_context(Codegen(callback)):
+        with processing_options_context(Codegen(
+                style='aot',
+                callback=callback,
+        )):
             process_dir(os.path.dirname(init_file_path))
 
         #
@@ -91,4 +105,5 @@ class _DataclassCodegenDumper:
             f.write(json.dumps({
                 'init_file_path': init_file_path,
                 'out_file_path': out_file_path,
+                'processed_modules': processed_modules,
             }))

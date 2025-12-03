@@ -64,7 +64,6 @@ class OpCompiler:
                     f'import {i}'
                     for i in FN_GLOBAL_IMPORTS
                 ],
-                '\n',
             ]
 
         def globals_ns(self) -> ta.Mapping[str, ta.Any]:
@@ -84,11 +83,14 @@ class OpCompiler:
     def style(self) -> Style:
         return self._style
 
-    @dc.dataclass(frozen=True)
+    @dc.dataclass(frozen=True, kw_only=True)
     class CompileResult:
         fn_name: str
-        params: ta.Sequence[str]
-        src: str
+        fn_params: ta.Sequence[str]
+
+        hdr_lines: ta.Sequence[str]
+        fn_lines: ta.Sequence[str]
+
         refs: frozenset[Ref]
 
     @dc.dataclass(frozen=True)
@@ -229,11 +231,9 @@ class OpCompiler:
             for k, v in FN_GLOBALS.items()
         ])
 
-        lines: list[str] = []
+        #
 
-        lines.extend(self._style.header_lines())
-
-        lines.extend([
+        fn_lines = [
             f'def {fn_name}(',
             f'    *,',
             *[
@@ -245,15 +245,16 @@ class OpCompiler:
                 f'    {l}'
                 for l in body_lines
             ],
-        ])
+        ]
 
         #
 
-        src = '\n'.join(lines)
-
         return self.CompileResult(
-            fn_name,
-            [p.name for p in params],
-            src,
-            refs,
+            fn_name=fn_name,
+            fn_params=[p.name for p in params],
+
+            hdr_lines=self._style.header_lines(),
+            fn_lines=fn_lines,
+
+            refs=refs,
         )
