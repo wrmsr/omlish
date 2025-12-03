@@ -129,7 +129,7 @@ class _DataclassCodegenDumper:
             process_module(spec)
 
             pkg_cfg = PACKAGE_CONFIG_CACHE.get(spec)
-            if pkg_cfg is not None and not pkg_cfg.codegen:
+            if pkg_cfg is not None and not pkg_cfg.cfg.codegen:
                 return
 
             #

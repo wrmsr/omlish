@@ -5,7 +5,7 @@ import typing as ta
 from .... import lang
 from ...specs import ClassSpec
 from .. import concerns as _concerns  # noqa  # imported for registration
-from ..configs import DEFAULT_PACKAGE_CONFIG
+from ..configs import DEFAULT_NAMED_PACKAGE_CONFIG
 from ..configs import PACKAGE_CONFIG_CACHE
 from ..generation import processor as gp
 from .base import ProcessingContext
@@ -53,8 +53,7 @@ def drive_cls_processing(
 
     cls_mod = cls.__module__
     cls_pkg = cls_mod.rpartition('.')[0]
-    pkg_cfg = lang.coalesce(PACKAGE_CONFIG_CACHE.get(cls_pkg), DEFAULT_PACKAGE_CONFIG)
-    pkg_cfg  # noqa
+    pkg_cfg = lang.coalesce(PACKAGE_CONFIG_CACHE.get(cls_pkg), DEFAULT_NAMED_PACKAGE_CONFIG)
 
     #
 
@@ -62,6 +61,7 @@ def drive_cls_processing(
         cls,
         cs,
         all_processing_context_item_factories(),
+        pkg_cfg=pkg_cfg,
         options=options,
     )
 

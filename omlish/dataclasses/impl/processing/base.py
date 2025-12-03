@@ -10,6 +10,8 @@ import typing as ta
 from .... import check
 from .... import lang
 from ...specs import ClassSpec
+from ..configs import DEFAULT_NAMED_PACKAGE_CONFIG
+from ..configs import NamedPackageConfig
 
 
 T = ta.TypeVar('T')
@@ -33,6 +35,7 @@ class ProcessingContext:
             cs: ClassSpec,
             item_factories: ta.Mapping[type, ProcessingContextItemFactory],
             *,
+            pkg_cfg: NamedPackageConfig = DEFAULT_NAMED_PACKAGE_CONFIG,
             options: ta.Sequence[ProcessingOption] | None = None,
     ) -> None:
         super().__init__()
@@ -40,6 +43,7 @@ class ProcessingContext:
         self._cls = cls
         self._cs = cs
         self._item_factories = item_factories
+        self._pkg_cfg = pkg_cfg
 
         options_dct: dict = {}
         for o in options or ():
@@ -56,6 +60,10 @@ class ProcessingContext:
     @property
     def cs(self) -> ClassSpec:
         return self._cs
+
+    @property
+    def pkg_cfg(self) -> NamedPackageConfig:
+        return self._pkg_cfg
 
     def __getitem__(self, ty: type[T]) -> T:
         try:

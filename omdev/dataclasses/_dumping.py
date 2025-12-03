@@ -44,7 +44,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='../../omlish/lite/strings.py', sha1='89831ecbc34ad80e118a865eceb390ed399dc4d6'),
             dict(path='../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
-            dict(path='dumping.py', sha1='f01a9b4cd8c9d82e86542ec5b4e3308b594ff774'),
+            dict(path='dumping.py', sha1='6f2525cb2d5dd2317eaf0c207fcb97909c3c37be'),
         ],
     )
 
@@ -1889,7 +1889,7 @@ class _DataclassCodegenDumper:
             process_module(spec)
 
             pkg_cfg = PACKAGE_CONFIG_CACHE.get(spec)
-            if pkg_cfg is not None and not pkg_cfg.codegen:
+            if pkg_cfg is not None and not pkg_cfg.cfg.codegen:
                 return
 
             #

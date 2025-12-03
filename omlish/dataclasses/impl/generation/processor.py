@@ -209,6 +209,9 @@ class GeneratorProcessor(Processor):
             self.prepare()
             return cls
 
+        # if self._ctx.pkg_cfg.cfg.codegen:
+        #     raise NotImplementedError
+
         mode: GeneratorProcessor.Mode
         if (cg := self._ctx.option(Codegen)) is not None:  # noqa
             mode = GeneratorProcessor.CompilerMode(codegen=cg)
