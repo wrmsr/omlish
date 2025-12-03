@@ -6,7 +6,7 @@ import reprlib
 import types
 
 
-#
+##
 
 
 REGISTRY = {}
@@ -17,3 +17,6 @@ def _register(plan_repr):
         REGISTRY[fn.__name__] = (plan_repr, fn)
         return fn
     return inner
+
+
+##

@@ -92,7 +92,7 @@ def __omlish_amalg__():  # noqa
             dict(path='shell.py', sha1='a59e59b812394d0502837f4c198e1cf604f90227'),
             dict(path='utils.py', sha1='f0f9ef0778db316b1ba83e6eeac79c8fd132d86a'),
             dict(path='../oci/compression.py', sha1='7d165bc51a77db13ff45927daecc42839cfd75ea'),
-            dict(path='../../omlish/asyncs/asyncio/utils.py', sha1='cbd32cbf8d818f40e85522968aac0ec405932a24'),
+            dict(path='../../omlish/asyncs/asyncio/utils.py', sha1='34691d4d0e5bab68f14e193a6200df040cfd0136'),
             dict(path='../../omlish/docker/ports.py', sha1='a3202c69b85bc4f1034479df3400fddc86130e5c'),
             dict(path='../../omlish/http/urllib.py', sha1='25431c5bdc7dd5cbecfcb8c0bdffaabf8c1691b9'),
             dict(path='../../omlish/http/versions.py', sha1='197685ffbb62a457a0e8d4047a9df26aebd7dae4'),
@@ -462,6 +462,8 @@ async def asyncio_wait_concurrent(
     if isinstance(concurrency, asyncio.Semaphore):
         semaphore = concurrency
     elif isinstance(concurrency, int):
+        if concurrency < 1:
+            raise ValueError(f'Concurrency must be >= 1, got {concurrency}')
         semaphore = asyncio.Semaphore(concurrency)
     else:
         raise TypeError(concurrency)

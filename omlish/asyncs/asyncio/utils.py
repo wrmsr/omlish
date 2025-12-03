@@ -76,6 +76,8 @@ async def asyncio_wait_concurrent(
     if isinstance(concurrency, asyncio.Semaphore):
         semaphore = concurrency
     elif isinstance(concurrency, int):
+        if concurrency < 1:
+            raise ValueError(f'Concurrency must be >= 1, got {concurrency}')
         semaphore = asyncio.Semaphore(concurrency)
     else:
         raise TypeError(concurrency)

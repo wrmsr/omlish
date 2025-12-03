@@ -12,7 +12,12 @@ class Cli(ap.Cli):
         ap.arg('roots', metavar='root', nargs='+'),
     )
     def codegen(self) -> None:
-        DataclassCodeGen().run(self.args.roots)
+        import asyncio
+        asyncio.run(DataclassCodeGen(
+            # dump_inline=True,
+        ).run(
+            self.args.roots,
+        ))
 
 
 ##

@@ -16,6 +16,7 @@ TODO:
  - ignore tests dirs
 """
 import ast
+import asyncio
 import inspect
 import json
 import os.path
@@ -29,9 +30,9 @@ from omlish import check
 from omlish import collections as col
 from omlish import dataclasses as dc
 from omlish import lang
+from omlish.asyncs.asyncio import all as au
 from omlish.lite.marshal import unmarshal_obj
 from omlish.logs import all as logs
-from omlish.subprocesses.sync import subprocesses
 
 from ..py.asts.toplevel import TopLevelCall
 from ..py.asts.toplevel import analyze_module_top_level
@@ -79,11 +80,13 @@ class DataclassCodeGen:
             self,
             *,
             target_line_width: int | None = None,
+            dump_inline: bool = False,
             subprocess_kwargs: ta.Mapping[str, ta.Any] | None = None,
     ) -> None:
         super().__init__()
 
         self._target_line_width = target_line_width or self.DEFAULT_TARGET_LINE_WIDTH
+        self._dump_inline = dump_inline
         self._subprocess_kwargs = subprocess_kwargs
 
     #
@@ -148,7 +151,7 @@ class DataclassCodeGen:
 
     #
 
-    def _run_dumper_subprocess(
+    async def _run_dumper_subprocess(
             self,
             cfg_pkg: ConfiguredPackage,
             dumper_kwargs: ta.Mapping[str, ta.Any],
@@ -171,12 +174,15 @@ class DataclassCodeGen:
         if shell_wrap:
             args = ['sh', '-c', ' '.join(map(shlex.quote, args))]
 
-        subprocesses.check_call(
+        proc = await asyncio.create_subprocess_exec(
             *args,
             **(self._subprocess_kwargs or {}),
         )
 
-    def _run_dumper_inline(
+        if await proc.wait():
+            raise Exception('Subprocess failed')
+
+    async def _run_dumper_inline(
             self,
             cfg_pkg: ConfiguredPackage,
             dumper_kwargs: ta.Mapping[str, ta.Any],
@@ -185,7 +191,7 @@ class DataclassCodeGen:
 
         dumping._DataclassCodegenDumper()(**dumper_kwargs)  # noqa
 
-    def process_configured_package(
+    async def process_configured_package(
             self,
             cfg_pkg: ConfiguredPackage,
             *,
@@ -203,28 +209,42 @@ class DataclassCodeGen:
 
         start_time = time.time()
 
-        # self._run_dumper_subprocess(cfg_pkg, dumper_kwargs)
-        self._run_dumper_inline(cfg_pkg, dumper_kwargs)
+        if self._dump_inline:
+            await self._run_dumper_inline(cfg_pkg, dumper_kwargs)
+        else:
+            await self._run_dumper_subprocess(cfg_pkg, dumper_kwargs)
 
         end_time = time.time()
 
         if warn_threshold_s is not None and (elapsed_time := (end_time - start_time)) >= warn_threshold_s:
             log.warning('Dataclass codegen took a long time: %s, %.2f s', cfg_pkg.name, elapsed_time)
 
-        with open(out_file_path) as f:
+        with open(out_file_path) as f:  # noqa
             out_s = f.read()
 
         output: DataclassCodegenDumperOutput = unmarshal_obj(json.loads(out_s), DataclassCodegenDumperOutput)
 
-        self.process_dumper_output(cfg_pkg, output)
+        await self.process_dumper_output(cfg_pkg, output)
 
     #
 
-    def process_dumper_output(
+    async def process_dumper_output(
             self,
             cfg_pkg: ConfiguredPackage,
             output: DataclassCodegenDumperOutput,
     ) -> None:
+        gen_file_path = os.path.join(os.path.dirname(cfg_pkg.init_file_path), '_dataclasses.py')
+
+        if os.path.isfile(gen_file_path):
+            if not _is_generated_py_file(gen_file_path):
+                raise RuntimeError(f'Refusing to overwrite non-generated file: {gen_file_path!r}')
+
+            if not output.dumped:
+                os.unlink(gen_file_path)
+                return
+
+        #
+
         lines = [
             '# @omlish-generated',
         ]
@@ -248,18 +268,19 @@ class DataclassCodeGen:
                 ],
                 ')',
             ])
-            lines.extend(x.fn_lines)
+            lines.extend([l if l.strip() else '' for l in x.fn_lines])
 
         lines.append('')
 
-        gen_file_path = os.path.join(os.path.dirname(cfg_pkg.init_file_path), '_dataclasses.py')
-        if os.path.isfile(gen_file_path) and not _is_generated_py_file(gen_file_path):
-            raise RuntimeError(f'Refusing to overwrite non-generated file: {gen_file_path!r}')
-
-        with open(gen_file_path, 'w') as f:
+        with open(gen_file_path, 'w') as f:  # noqa
             f.write('\n'.join(lines))
 
-    def run(self, root_dirs: ta.Iterable[str]) -> None:
+    async def run(
+            self,
+            root_dirs: ta.Iterable[str],
+            *,
+            concurrency: int | None = 4,
+    ) -> None:
         check.not_isinstance(root_dirs, str)
 
         cfg_pkgs = self.find_configured_packages(root_dirs)
@@ -269,5 +290,7 @@ class DataclassCodeGen:
             for cfg_pkg in cfg_pkgs
         ])
 
-        for cfg_pkg in cfg_pkgs:
+        await au.wait_maybe_concurrent([
             self.process_configured_package(cfg_pkg)
+            for cfg_pkg in cfg_pkgs
+        ], concurrency)
