@@ -12,9 +12,9 @@ import types
 REGISTRY = {}
 
 
-def _register(plan_repr):
+def _register(*args):
     def inner(fn):
-        REGISTRY[fn.__name__] = (plan_repr, fn)
+        REGISTRY[fn.__name__] = (args, fn)
         return fn
     return inner
 

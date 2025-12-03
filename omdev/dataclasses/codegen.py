@@ -260,15 +260,51 @@ class DataclassCodeGen:
 
             lines.extend(['', ''])
 
-            lines.extend([
+            lines.append(
                 '@_register(',
+            )
+
+            lines.extend([
+                '    (',
                 *[
-                    f'    {prl}'
-                    for prl in textwrap_repr(x.plan_repr, self._target_line_width - 4)
+                    f'        {prl}'
+                    for prl in textwrap_repr(x.plan_repr, self._target_line_width - 8)
                 ],
-                ')',
+                '    ),',
             ])
-            lines.extend([l if l.strip() else '' for l in x.fn_lines])
+
+            op_ref_idents = [r.ident for r in x.refs if r.kind == 'op']
+            if op_ref_idents:
+                lines.extend([
+                    '    (',
+                    *[
+                        f'        {r!r},'
+                        for r in op_ref_idents
+                    ],
+                    '    ),',
+                ])
+            else:
+                lines.append(
+                    '    (),',
+                )
+
+            lines.append(
+                ')',
+            )
+
+            lines.extend([
+                f'def {x.fn_name}():',
+            ])
+
+            lines.extend([
+                f'    {l}' if l.strip() else ''
+                for l in x.fn_lines
+            ])
+
+            lines.extend([
+                '',
+                f'    return {x.fn_name}',
+            ])
 
         lines.append('')
 

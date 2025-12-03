@@ -62,6 +62,10 @@ class Codegen(ProcessingOption):
 
 @register_processor_type(priority=ProcessorPriority.GENERATION)
 class GeneratorProcessor(Processor):
+    @classmethod
+    def build_process_fn_name(cls, dc_cls) -> str:
+        return '_process_dataclass__' + IDENT_MANGLER.mangle('.'.join([dc_cls.__module__, dc_cls.__qualname__]))
+
     class Mode(lang.Abstract):
         @abc.abstractmethod
         def _process(self, gp: 'GeneratorProcessor', cls: type) -> None:
@@ -87,6 +91,22 @@ class GeneratorProcessor(Processor):
 
             self._codegen = codegen
 
+        # def build_proc_fn_kwargs(self, gp: 'GeneratorProcessor', cls: type) -> None:
+        #     kw: dict = {CLS_IDENT: cls}
+        #     kw.update({
+        #         k.ident: v.value
+        #         for k, v in FN_GLOBALS.items()
+        #         # if v.src.startswith('.')
+        #     })
+        #     orm = gp.prepare().ref_map
+        #     for r in comp.refs:
+        #         if isinstance(r, OpRef):
+        #             kw[r.ident()] = orm[r]
+        #         elif isinstance(r, FnGlobal):
+        #             pass
+        #         else:
+        #             raise TypeError(r)
+
         def _process(self, gp: 'GeneratorProcessor', cls: type) -> None:
             style: OpCompiler.Style = {
                 'jit': OpCompiler.JitStyle,
@@ -95,7 +115,7 @@ class GeneratorProcessor(Processor):
 
             compiler = OpCompiler(style)
 
-            fn_name = '_process_dataclass__' + IDENT_MANGLER.mangle('.'.join([cls.__module__, cls.__qualname__]))
+            fn_name = GeneratorProcessor.build_process_fn_name(cls)
 
             comp = compiler.compile(
                 fn_name,
@@ -125,6 +145,7 @@ class GeneratorProcessor(Processor):
             else:
                 gl = {}
 
+            # TODO: comment why lol
             fn = lang.new_function(**{
                 **lang.new_function_kwargs(o_fn),
                 **dict(
@@ -204,13 +225,53 @@ class GeneratorProcessor(Processor):
 
     #
 
+    def _process_from_codegen(self, cls: type) -> bool:
+        cg_pkg = check.not_none(self._ctx.pkg_cfg.pkg)
+        cg_mod_spec = f'{cg_pkg}._dataclasses'
+
+        try:
+            __import__(cg_mod_spec)
+        except ImportError:
+            # TODO: log
+            return False
+
+        cg_mod = sys.modules[cg_mod_spec]
+        cg_fn_reg = cg_mod.REGISTRY
+
+        #
+
+        fn_name = GeneratorProcessor.build_process_fn_name(cls)
+
+        try:
+            cg_reg_item = cg_fn_reg[fn_name]
+        except KeyError:
+            # TODO: log
+            return False
+
+        (cg_plan_repr, cg_op_refs), cg_fn = cg_reg_item
+
+        #
+
+        prep = self.prepare()
+
+        prep_plan_repr = repr(prep.plans)
+        if prep_plan_repr != cg_plan_repr:
+            # TODO: log
+            return False
+
+        # raise NotImplementedError
+        return False
+
+    #
+
     def process(self, cls: type) -> type:
         if (po := self._ctx.option(PlanOnly)) is not None and po.b:
             self.prepare()
             return cls
 
-        # if self._ctx.pkg_cfg.cfg.codegen:
-        #     raise NotImplementedError
+        if self._ctx.pkg_cfg.cfg.codegen:
+            if self._process_from_codegen(cls):
+                return cls
 
         mode: GeneratorProcessor.Mode
         if (cg := self._ctx.option(Codegen)) is not None:  # noqa
