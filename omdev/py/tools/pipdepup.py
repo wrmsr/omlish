@@ -18,8 +18,10 @@ import os.path
 import ssl
 import typing as ta
 
+from omlish import cached
 from omlish import check
 from omlish.formats import json
+from omlish.sync import ObjectPool
 
 
 if ta.TYPE_CHECKING:
@@ -256,6 +258,52 @@ def get_dist_latest_info(
 ##
 
 
+class Context:
+    def __init__(self) -> None:
+        super().__init__()
+
+    #
+
+    _session: ta.Optional['PipSession'] = None
+
+    def session(self) -> 'PipSession':
+        if self._session is None:
+            self._session = build_session()
+        return self._session
+
+    #
+
+    _finder: ta.Optional['PackageFinder'] = None
+
+    def finder(self) -> 'PackageFinder':
+        if self._finder is None:
+            self._finder = build_package_finder(self.session())
+        return self._finder
+
+    #
+
+    def close(self) -> None:
+        if self._session is not None:
+            self._session.close()
+            self._session = None
+
+
+@dc.dataclass()
+class Package:
+    dist: 'BaseDistribution'
+
+    @cached.function
+    def version(self) -> str:
+        from pip._vendor.packaging.version import InvalidVersion  # noqa
+        try:
+            return str(self.dist.version)
+        except InvalidVersion:
+            pass
+        return self.dist.raw_version
+
+    latest_info: DistLatestInfo | None = None
+
+
 def _main() -> None:
     excludes: ta.Iterable[str] | None = None
 
@@ -265,41 +313,49 @@ def _main() -> None:
         from pip._vendor.packaging.utils import canonicalize_name  # noqa
         skip.update(canonicalize_name(n) for n in excludes)
 
-    dists = get_dists(
-        skip=skip,
-    )
+    pkgs = [
+        Package(dist)
+        for dist in get_dists(
+            skip=skip,
+        )
+    ]
 
-    infos: list = []
+    #
 
-    with build_session() as session:
-        finder = build_package_finder(session)
+    context_pool: ObjectPool[Context] = ObjectPool(Context)
 
-        for dist in dists:
-            if (latest_info := get_dist_latest_info(dist, finder)) is None:
-                continue
+    def set_pkg_latest_info(pkg: Package) -> None:
+        with context_pool.acquire() as ctx:
+            pkg.latest_info = get_dist_latest_info(pkg.dist, ctx.finder())
 
-            if not (latest_info.version > dist.version):
-                continue
+    for pkg in pkgs:
+        set_pkg_latest_info(pkg)
 
-            from pip._vendor.packaging.version import InvalidVersion  # noqa
-            try:
-                version = str(dist.version)
-            except InvalidVersion:
-                version = dist.raw_version
+    context_pool.close()
+    for ctx in context_pool.drain():
+        ctx.close()
 
-            info = {
-                'name': dist.raw_name,
-                'version': version,
-                'location': dist.location or '',
-                'installer': dist.installer,
-                'latest_version': str(latest_info.version),
-                'latest_filetype': latest_info.filetype,
-            }
+    #
 
-            if editable_project_location := dist.editable_project_location:
-                info['editable_project_location'] = editable_project_location
+    infos: list[dict[str, ta.Any]] = []
 
-            infos.append(info)
+    for pkg in pkgs:
+        if (latest_info := pkg.latest_info) is None or not (latest_info.version > pkg.dist.version):
+            continue
+
+        info = {
+            'name': pkg.dist.raw_name,
+            'version': pkg.version(),
+            'location': pkg.dist.location or '',
+            'installer': pkg.dist.installer,
+            'latest_version': str(latest_info.version),
+            'latest_filetype': latest_info.filetype,
+        }
+
+        if editable_project_location := pkg.dist.editable_project_location:
+            info['editable_project_location'] = editable_project_location
+
+        infos.append(info)
 
     print(json.dumps_pretty(infos))
 

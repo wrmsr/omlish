@@ -7,6 +7,7 @@ TODO:
  - Once poison=False, PoisonedError
 """
 import collections
+import contextlib
 import threading
 import typing as ta
 
@@ -204,3 +205,67 @@ class CountDownLatch:
                 lambda: self._count < 1,
                 timeout,
             )
+
+
+##
+
+
+class ObjectPool(ta.Generic[T]):
+    def __init__(self, new: ta.Optional[ta.Callable[[], T]] = None) -> None:
+        super().__init__()
+
+        self._new = new
+
+        self._lock = threading.Lock()
+        self._pool: ta.List[T] = []
+        self._closed: bool = False
+
+    #
+
+    class ClosedError(Exception):
+        pass
+
+    def _check_not_closed(self) -> None:
+        if self._closed:
+            raise ObjectPool.ClosedError
+
+    def close(self) -> None:
+        with self._lock:
+            self._closed = True
+
+    #
+
+    class EmptyError(Exception):
+        pass
+
+    def get(self, new: ta.Optional[ta.Callable[[], T]] = None) -> T:
+        with self._lock:
+            self._check_not_closed()
+            if self._pool:
+                return self._pool.pop()
+
+        if new is None:
+            new = self._new
+        if new is not None:
+            return new()
+
+        raise ObjectPool.EmptyError
+
+    def put(self, obj: T) -> None:
+        with self._lock:
+            self._check_not_closed()
+            self._pool.append(obj)
+
+    @contextlib.contextmanager
+    def acquire(self, new: ta.Optional[ta.Callable[[], T]] = None) -> ta.Iterator[T]:
+        o = self.get(new)
+        try:
+            yield o
+        finally:
+            self.put(o)
+
+    def drain(self) -> ta.List[T]:
+        with self._lock:
+            out = self._pool
+            self._pool = []
+        return out
