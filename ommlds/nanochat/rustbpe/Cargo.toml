@@ -7,8 +7,8 @@ edition = "2024"
 dary_heap = "0.3"
 indexmap = "2.12"
 fancy-regex = "0.16.2"
-log = "0.4.28"
-pyo3 = { version = "0.27.1", features = ["extension-module"] }
+log = "0.4.29"
+pyo3 = { version = "0.27.2", features = ["extension-module"] }
 pyo3-log = "0.13.2"
 ahash = "0.8.12"
 rayon = "1.11.0"

@@ -544,6 +544,20 @@ _post-publish:
 	${MAKE} gen
 
 
+### Rust
+
+.PHONY: rust-dep-update
+rust-dep-update:
+	# cargo install cargo-edit
+	for R in ${SRCS} ; do \
+		for F in $$(find "$$R" -type f -name 'Cargo.toml') ; do \
+			echo "$$F" ; \
+			(cd $$(dirname "$$F") && cargo upgrade) ; \
+			echo ; \
+		done ; \
+	done
+
+
 ### Utils
 
 .PHONY: my-repl
