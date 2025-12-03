@@ -48,6 +48,13 @@ def wait_futures(
         raise_exceptions: bool = False,
         cancel_on_exception: bool = False,
 ) -> bool:
+    # TODO:
+    #  - raise_exceptions 'at_end', ExceptionGroup
+    #  - more responsive than tick_interval_s - semaphore, add callbacks to each fut to decrement, sleep with a timed
+    #    wait on sem
+    #  - cancel_on_timeout
+    #  - obviate wait_all_futures_or_raise
+
     start = time.time()
 
     not_done = set(futures)
@@ -70,6 +77,24 @@ def wait_futures(
         time.sleep(tick_interval_s)
 
     return False
+
+
+def wait_all_futures_or_raise(futures: ta.Sequence[cf.Future]) -> None:
+    done, not_done = cf.wait(futures, return_when=cf.ALL_COMPLETED)
+    if not_done:
+        raise RuntimeError(f'Not all futures finished: {not_done}')
+
+    excs: list[Exception] = []
+    for f in done:
+        try:
+            f.result()
+        except Exception as e:  # noqa
+            excs.append(e)
+
+    if len(excs) == 1:
+        raise excs[0]
+    elif excs:
+        raise ExceptionGroup('One or more futures failed', excs)
 
 
 def wait_dependent_futures(

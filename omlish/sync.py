@@ -15,6 +15,7 @@ from .lite.maybes import Maybe
 
 
 T = ta.TypeVar('T')
+U = ta.TypeVar('U')
 
 
 ##
@@ -256,16 +257,43 @@ class ObjectPool(ta.Generic[T]):
             self._check_not_closed()
             self._pool.append(obj)
 
-    @contextlib.contextmanager
-    def acquire(self, new: ta.Optional[ta.Callable[[], T]] = None) -> ta.Iterator[T]:
-        o = self.get(new)
-        try:
-            yield o
-        finally:
-            self.put(o)
+    def acquire(self, new: ta.Optional[ta.Callable[[], T]] = None) -> ta.ContextManager[T]:
+        @contextlib.contextmanager
+        def inner():
+            o = self.get(new)
+            try:
+                yield o
+            finally:
+                self.put(o)
+
+        return inner()
 
     def drain(self) -> ta.List[T]:
         with self._lock:
             out = self._pool
             self._pool = []
+
         return out
+
+    #
+
+    def manage(
+            self,
+            drain: ta.Optional[ta.Callable[[T], None]] = None,
+    ) -> ta.ContextManager['ObjectPool[T]']:
+        @contextlib.contextmanager
+        def inner():
+            with self._lock:
+                self._check_not_closed()
+
+            try:
+                yield self
+
+            finally:
+                self.close()
+
+                if drain is not None:
+                    for o in self.drain():
+                        drain(o)
+
+        return inner()

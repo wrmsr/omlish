@@ -12,6 +12,7 @@ with _lang.auto_proxy_init(globals()):
     from .futures import (  # noqa
         FutureError,
         FutureTimeoutError,
-        wait_futures,
+        wait_all_futures_or_raise,
         wait_dependent_futures,
+        wait_futures,
     )

@@ -20,6 +20,7 @@ import typing as ta
 
 from omlish import cached
 from omlish import check
+from omlish.concurrent import all as conc
 from omlish.formats import json
 from omlish.sync import ObjectPool
 
@@ -305,13 +306,20 @@ class Package:
 
 
 def _main() -> None:
-    excludes: ta.Iterable[str] | None = None
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--exclude', action='append', dest='excludes')
+    parser.add_argument('-P', '--parallelism', type=int, default=4)
+    args = parser.parse_args()
+
+    #
 
     from pip._internal.utils.compat import stdlib_pkgs  # noqa
     skip = set(stdlib_pkgs)
-    if excludes:
+    if args.excludes:
         from pip._vendor.packaging.utils import canonicalize_name  # noqa
-        skip.update(canonicalize_name(n) for n in excludes)
+        skip.update(canonicalize_name(n) for n in args.excludes)
 
     pkgs = [
         Package(dist)
@@ -322,18 +330,16 @@ def _main() -> None:
 
     #
 
-    context_pool: ObjectPool[Context] = ObjectPool(Context)
+    with ObjectPool[Context](Context).manage(lambda ctx: ctx.close()) as ctx_pool:
+        def set_pkg_latest_info(pkg: Package) -> None:
+            with ctx_pool.acquire() as ctx:  # noqa
+                pkg.latest_info = get_dist_latest_info(pkg.dist, ctx.finder())
 
-    def set_pkg_latest_info(pkg: Package) -> None:
-        with context_pool.acquire() as ctx:
-            pkg.latest_info = get_dist_latest_info(pkg.dist, ctx.finder())
-
-    for pkg in pkgs:
-        set_pkg_latest_info(pkg)
-
-    context_pool.close()
-    for ctx in context_pool.drain():
-        ctx.close()
+        with conc.new_executor(args.parallelism) as exe:
+            conc.wait_all_futures_or_raise([
+                exe.submit(set_pkg_latest_info, pkg)
+                for pkg in pkgs
+            ])
 
     #
 
