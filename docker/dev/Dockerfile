@@ -177,7 +177,7 @@ RUN ( \
 ## go
 
 RUN ( \
-    export GO_VERSION=1.25.1 && \
+    export GO_VERSION=1.25.5 && \
     curl -fsSL "https://go.dev/dl/go${GO_VERSION}.linux-$(dpkg --print-architecture).tar.gz" | tar -C "$HOME" -xzf - && \
     mv "$HOME/go" "$HOME/.go" && \
     echo '\n\
@@ -190,7 +190,7 @@ export PATH="$GOROOT/bin:$PATH"\
 ## zig
 
 RUN ( \
-    export ZIG_VERSION=0.15.1 && \
+    export ZIG_VERSION=0.15.2 && \
     curl -fsSL "https://ziglang.org/download/${ZIG_VERSION}/zig-$(uname -m)-linux-${ZIG_VERSION}.tar.xz" | tar -xJ -C "$HOME" && \
     mv "$HOME/zig-$(uname -m)-linux-${ZIG_VERSION}" "$HOME/.zig" && \
     echo '\n\
