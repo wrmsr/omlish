@@ -44,7 +44,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='../../omlish/lite/strings.py', sha1='89831ecbc34ad80e118a865eceb390ed399dc4d6'),
             dict(path='../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
-            dict(path='dumping.py', sha1='9b2305b5dd89cffc6ae36ed1603be3bec1b6cf18'),
+            dict(path='dumping.py', sha1='982d4f7a46f40e48da4daadb082b7e66acb34ae9'),
         ],
     )
 
@@ -1776,6 +1776,8 @@ unmarshal_obj = OBJ_MARSHALER_MANAGER.unmarshal_obj
 @dc.dataclass(frozen=True)
 class DumpedDataclassCodegen:
     mod_name: str
+
+    cls_module: str
     cls_qualname: str
 
     plan_repr: str
@@ -1850,6 +1852,8 @@ class _DataclassCodegenDumper:
 
             dumped.append(DumpedDataclassCodegen(
                 mod_name=check.not_none(cur_module),
+
+                cls_module=ctx.cls.__module__,
                 cls_qualname=ctx.cls.__qualname__,
 
                 plan_repr=repr(prepared.plans),

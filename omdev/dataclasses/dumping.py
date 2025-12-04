@@ -16,6 +16,8 @@ from omlish.lite.marshal import marshal_obj
 @dc.dataclass(frozen=True)
 class DumpedDataclassCodegen:
     mod_name: str
+
+    cls_module: str
     cls_qualname: str
 
     plan_repr: str
@@ -90,6 +92,8 @@ class _DataclassCodegenDumper:
 
             dumped.append(DumpedDataclassCodegen(
                 mod_name=check.not_none(cur_module),
+
+                cls_module=ctx.cls.__module__,
                 cls_qualname=ctx.cls.__qualname__,
 
                 plan_repr=repr(prepared.plans),

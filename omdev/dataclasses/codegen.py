@@ -262,8 +262,14 @@ class DataclassCodeGen:
 
         seen_cls_name_tups: set[tuple[str, str]] = set()
 
+        cp_name_parts = cfg_pkg.name.split('.')
+
         for x in output.dumped:
-            cls_name_tup = (x.mod_name, x.cls_qualname)
+            x_mod_name_parts = x.cls_module.split('.')
+            if x_mod_name_parts[:len(cp_name_parts)] != cp_name_parts:
+                continue
+
+            cls_name_tup = (x.cls_module, x.cls_qualname)
             check.not_in(cls_name_tup, seen_cls_name_tups)
             seen_cls_name_tups.add(cls_name_tup)
 
