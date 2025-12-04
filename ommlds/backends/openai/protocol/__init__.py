@@ -1,8 +1,22 @@
+# ruff: noqa: I001
 """
 https://platform.openai.com/docs/api-reference/introduction
 https://github.com/openai/openai-openapi/blob/master/openapi.yaml
 """
-# ruff: noqa: I001
+##
+
+
+from omlish import dataclasses as _dc  # noqa
+
+
+_dc.init_package(
+    globals(),
+    codegen=True,
+)
+
+
+##
+
 
 from .chatcompletion.chunk import (  # noqa
     ChatCompletionChunkChoiceDelta,

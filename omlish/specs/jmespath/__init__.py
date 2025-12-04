@@ -28,6 +28,18 @@ See:
  - https://github.com/jmespath-community/jmespath.spec/discussions?discussions_q=label%3Ajep-candidate
  - https://github.com/jmespath-community/jmespath.spec/discussions/97
 """  # noqa
+from ... import dataclasses as _dc  # noqa
+
+
+_dc.init_package(
+    globals(),
+    codegen=True,
+)
+
+
+##
+
+
 from . import errors  # noqa
 from . import functions  # noqa
 from . import lexer  # noqa
@@ -41,6 +53,3 @@ from .parser import (  # noqa
 from .visitor import (  # noqa
     Options,
 )
-
-
-__version__ = '1.0.1'
