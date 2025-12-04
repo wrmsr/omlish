@@ -17,6 +17,7 @@ TODO:
 """
 import ast
 import asyncio
+import hashlib
 import inspect
 import json
 import os.path
@@ -39,6 +40,7 @@ from ..py.asts.toplevel import analyze_module_top_level
 from ..py.reprs import textwrap_repr
 from ..py.srcheaders import get_py_header_lines
 from .dumping import DataclassCodegenDumperOutput
+from .dumping import DumpedDataclassCodegen
 
 
 log = logs.get_module_logger(globals())
@@ -228,6 +230,8 @@ class DataclassCodeGen:
 
     #
 
+    PROCESS_FN_NAME: ta.ClassVar[str] = '_process_dataclass'
+
     async def process_dumper_output(
             self,
             cfg_pkg: ConfiguredPackage,
@@ -252,11 +256,41 @@ class DataclassCodeGen:
         from . import _template
         lines.extend(inspect.getsource(_template).strip().split('\n'))
 
-        seen_fn_names: set[str] = set()
+        #
+
+        dumped_by_plan_repr: dict[str, list[DumpedDataclassCodegen]] = {}
+
+        seen_cls_name_tups: set[tuple[str, str]] = set()
 
         for x in output.dumped:
-            check.not_in(x.fn_name, seen_fn_names)
-            seen_fn_names.add(x.fn_name)
+            cls_name_tup = (x.mod_name, x.cls_qualname)
+            check.not_in(cls_name_tup, seen_cls_name_tups)
+            seen_cls_name_tups.add(cls_name_tup)
+
+            try:
+                lst = dumped_by_plan_repr[x.plan_repr]
+            except KeyError:
+                dumped_by_plan_repr[x.plan_repr] = [x]
+                continue
+
+            y = lst[0]
+            if set(x.refs) != set(y.refs):
+                raise RuntimeError(f'Mismatched refs: {x!r} != {y!r}')
+
+            lst.append(x)
+
+        #
+
+        prs_by_sha1 = col.make_map((
+            (hashlib.sha1(pr.encode()).hexdigest(), pr)  # noqa
+            for pr in dumped_by_plan_repr
+        ), strict=True)
+
+        for pr_sha1, pr in sorted(prs_by_sha1.items()):
+            grp = dumped_by_plan_repr[pr]
+            x = grp[0]
+
+            fn_name = f'{self.PROCESS_FN_NAME}__{pr_sha1}'
 
             lines.extend(['', ''])
 
@@ -265,35 +299,48 @@ class DataclassCodeGen:
             )
 
             lines.extend([
-                '    (',
+                f'    plan_repr=(',
                 *[
                     f'        {prl}'
                     for prl in textwrap_repr(x.plan_repr, self._target_line_width - 8)
                 ],
-                '    ),',
+                f'    ),',
+                f'    plan_repr_sha1={pr_sha1!r},',
             ])
 
             op_ref_idents = [r.ident for r in x.refs if r.kind == 'op']
             if op_ref_idents:
                 lines.extend([
-                    '    (',
+                    f'    op_ref_idents=(',
                     *[
                         f'        {r!r},'
                         for r in sorted(op_ref_idents)
                     ],
-                    '    ),',
+                    f'    ),',
                 ])
             else:
                 lines.append(
-                    '    (),',
+                    '    op_ref_idents=(),',
                 )
+
+            lines.extend([
+                f'    cls_names=(',
+                *[
+                    f'        {cn!r},'
+                    for cn in sorted([
+                        (y.mod_name, y.cls_qualname)
+                        for y in grp
+                    ])
+                ],
+                f'    ),',
+            ])
 
             lines.append(
                 ')',
             )
 
             lines.extend([
-                f'def {x.fn_name}():',
+                f'def {fn_name}():',
             ])
 
             lines.extend([

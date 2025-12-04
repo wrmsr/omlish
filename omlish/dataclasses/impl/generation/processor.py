@@ -22,7 +22,6 @@ from .execution import OpExecutor
 from .globals import FN_GLOBALS
 from .globals import FnGlobal
 from .idents import CLS_IDENT
-from .mangling import IDENT_MANGLER
 from .ops import Op
 from .ops import OpRef
 from .ops import OpRefMap
@@ -62,6 +61,7 @@ class CompileCallback(ta.Protocol):
 class Codegen(ProcessingOption):
     style: ta.Literal['jit', 'aot'] = 'jit'
 
+    force: bool = False
     callback: CompileCallback | None = None
 
 
@@ -70,9 +70,7 @@ class Codegen(ProcessingOption):
 
 @register_processor_type(priority=ProcessorPriority.GENERATION)
 class GeneratorProcessor(Processor):
-    @classmethod
-    def build_process_fn_name(cls, dc_cls) -> str:
-        return '_process_dataclass__' + IDENT_MANGLER.mangle('.'.join([dc_cls.__module__, dc_cls.__qualname__]))
+    PROCESS_FN_NAME: ta.ClassVar[str] = '_process_dataclass'
 
     class Mode(lang.Abstract):
         @abc.abstractmethod
@@ -116,10 +114,8 @@ class GeneratorProcessor(Processor):
 
             compiler = OpCompiler(style)
 
-            fn_name = GeneratorProcessor.build_process_fn_name(cls)
-
             comp = compiler.compile(
-                fn_name,
+                GeneratorProcessor.PROCESS_FN_NAME,
                 gp.ops(),
             )
 
@@ -139,7 +135,7 @@ class GeneratorProcessor(Processor):
             ns.update(compiler.style.globals_ns())  # noqa
 
             exec(comp_src, ns)
-            o_fn = ns[comp.fn_name]
+            o_fn = ns[GeneratorProcessor.PROCESS_FN_NAME]
 
             if cls.__module__ in sys.modules:
                 gl = sys.modules[cls.__module__].__dict__
@@ -230,7 +226,7 @@ class GeneratorProcessor(Processor):
             __import__(cg_mod_spec)
         except ImportError:
             if (vo := self._ctx.option(Verbosity)) is not None and vo.warn:  # noqa
-                log.warning(lambda: f'Codegen module missing for {cls.__name__} at {cg_mod_spec}')
+                log.warning(lambda: f'Codegen module missing for {cls.__module__}.{cls.__qualname__} at {cg_mod_spec}')
             return False
 
         cg_mod = sys.modules[cg_mod_spec]
@@ -238,31 +234,19 @@ class GeneratorProcessor(Processor):
 
         #
 
-        fn_name = GeneratorProcessor.build_process_fn_name(cls)
-
-        try:
-            cg_reg_item = cg_fn_reg[fn_name]
-        except KeyError:
-            if (vo := self._ctx.option(Verbosity)) is not None and vo.warn:  # noqa
-                log.warning(lambda: (
-                    f'Codegen missing for {cls.__name__} in {cg_mod_spec}: {fn_name}'
-                ))
-            return False
-
-        (cg_plan_repr, cg_op_refs), cg_fn = cg_reg_item
+        prep = self.prepare()
+        prep_plan_repr = repr(prep.plans)
 
         #
 
-        prep = self.prepare()
-
-        prep_plan_repr = repr(prep.plans)
-        if prep_plan_repr != cg_plan_repr:
+        try:
+            cg_reg_item = cg_fn_reg[prep_plan_repr]
+        except KeyError:
             if (vo := self._ctx.option(Verbosity)) is not None and vo.warn:  # noqa
-                log.warning(lambda: (
-                    f'Codegen mismatch for {cls.__name__} in {cg_mod_spec}: '
-                    f'{prep_plan_repr!r} != {cg_plan_repr!r}'
-                ))
+                log.warning(lambda: f'Codegen missing for {cls.__module__}.{cls.__qualname__} in {cg_mod_spec}')
             return False
+
+        cg_kw, cg_fn = cg_reg_item
 
         #
 
@@ -275,7 +259,7 @@ class GeneratorProcessor(Processor):
 
         fn_kw = {
             **GeneratorProcessor.CompilerMode.build_standard_kwargs(cls),
-            **{k: ref_map[k] for k in cg_op_refs},
+            **{k: ref_map[k] for k in cg_kw['op_ref_idents']},
         }
 
         fn = cg_fn()
@@ -290,12 +274,14 @@ class GeneratorProcessor(Processor):
             self.prepare()
             return cls
 
-        if self._ctx.pkg_cfg.cfg.codegen:
+        cg = self._ctx.option(Codegen)
+
+        if not (cg is not None and cg.force) and self._ctx.pkg_cfg.cfg.codegen:
             if self._process_from_codegen(cls):
                 return cls
 
         mode: GeneratorProcessor.Mode
-        if (cg := self._ctx.option(Codegen)) is not None:  # noqa
+        if cg is not None:  # noqa
             mode = GeneratorProcessor.CompilerMode(codegen=cg)
         else:
             mode = GeneratorProcessor.ExecutorMode()

@@ -15,7 +15,8 @@ from omlish.lite.marshal import marshal_obj
 
 @dc.dataclass(frozen=True)
 class DumpedDataclassCodegen:
-    module: str
+    mod_name: str
+    cls_qualname: str
 
     plan_repr: str
 
@@ -88,7 +89,8 @@ class _DataclassCodegenDumper:
                     raise TypeError(ref)
 
             dumped.append(DumpedDataclassCodegen(
-                module=check.not_none(cur_module),
+                mod_name=check.not_none(cur_module),
+                cls_qualname=ctx.cls.__qualname__,
 
                 plan_repr=repr(prepared.plans),
 
@@ -173,6 +175,7 @@ class _DataclassCodegenDumper:
 
         with processing_options_context(Codegen(
                 style='aot',
+                force=True,
                 callback=callback,
         )):
             process_dir(os.path.dirname(init_file_path))
