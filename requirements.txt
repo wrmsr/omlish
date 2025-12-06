@@ -1,6 +1,6 @@
 #### optional
 
-greenlet==3.2.4
+greenlet==3.3.0
 
 wrapt==2.0.1
 
@@ -51,7 +51,7 @@ psutil==7.1.3
 ## json
 
 #> ujson==5.10.0
-orjson==3.11.4
+orjson==3.11.5
 
 ## pickle
 

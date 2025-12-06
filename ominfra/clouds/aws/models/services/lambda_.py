@@ -100,6 +100,7 @@ class LastUpdateStatusReasonCode(_enum.Enum):
     FUNCTION_ERROR__PERMISSION_DENIED = 'FunctionError.PermissionDenied'
     FUNCTION_ERROR__TOO_MANY_EXTENSIONS = 'FunctionError.TooManyExtensions'
     FUNCTION_ERROR__INIT_RESOURCE_EXHAUSTED = 'FunctionError.InitResourceExhausted'
+    DISALLOWED_BY_VPC_ENCRYPTION_CONTROL = 'DisallowedByVpcEncryptionControl'
 
 
 LayerVersionArn = _ta.NewType('LayerVersionArn', str)
@@ -257,6 +258,7 @@ class StateReasonCode(_enum.Enum):
     FUNCTION_ERROR__PERMISSION_DENIED = 'FunctionError.PermissionDenied'
     FUNCTION_ERROR__TOO_MANY_EXTENSIONS = 'FunctionError.TooManyExtensions'
     FUNCTION_ERROR__INIT_RESOURCE_EXHAUSTED = 'FunctionError.InitResourceExhausted'
+    DISALLOWED_BY_VPC_ENCRYPTION_CONTROL = 'DisallowedByVpcEncryptionControl'
 
 
 SubnetId = _ta.NewType('SubnetId', str)

@@ -29,13 +29,13 @@ scikit-image==0.25.2
 
 safetensors==0.7.0
 
-tavily-python==0.7.13
+tavily-python==0.7.14
 
 sqlite-vec==0.1.6
 
 pytesseract==0.3.13
 
-ddgs==9.9.2
+ddgs==9.9.3
 
 gguf==0.17.1
 
@@ -52,7 +52,7 @@ tree-sitter-python==0.25.0
 watchdog==6.0.0
 
 pyright[nodejs]==1.1.407
-basedpyright==1.34.0
+basedpyright==1.35.0
 
 blobfile==3.1.0
 
