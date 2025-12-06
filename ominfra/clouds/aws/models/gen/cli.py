@@ -86,7 +86,8 @@ class Cli(ap.Cli):
         fn = svc.name
         if fn in keyword.kwlist:
             fn += '_'
-        output_file = os.path.join(output_dir, f'{fn}.py')
+        output_file = os.path.join(output_dir, fn, '__init__.py')
+        os.makedirs(os.path.dirname(output_file), exist_ok=True)
         with open(output_file, 'w') as f:
             f.write(mod)
 

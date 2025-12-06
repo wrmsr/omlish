@@ -7,7 +7,13 @@ import typing as _ta  # noqa
 
 from omlish import dataclasses as _dc  # noqa
 
-from .. import base as _base  # noqa
+from ... import base as _base  # noqa
+
+
+_dc.init_package(
+    globals(),
+    codegen=True,
+)
 
 
 ##
