@@ -1,19 +1,10 @@
 """
 TODO:
- - subdir conf files override parents, codegen those separately, don't duplicate
  - refactor dc gen to just Execute and Codegen
  - need to bubble up imports, preamble, deduped
- - still need plan repr / cmp
- - !! manifests for dataclass config?
-  - more sparse / diffuse intent, not package-level
  - _gen subdirs
  - static analyze codegen kwarg if possible
- - assess trie, child pkgs can turn off codegen last-in-wins
- - delegate to subprocess import worker
- - statically find only modules that contain dataclass defs?
-  - cache asts?
- - amalg gen payload
- - ignore tests dirs
+ - better ignore configurability than just tests dirs lol
 """
 import ast
 import asyncio
@@ -258,15 +249,14 @@ class DataclassCodeGen:
 
         #
 
+        processed_modules = set(output.processed_modules)
+
         dumped_by_plan_repr: dict[str, list[DumpedDataclassCodegen]] = {}
 
         seen_cls_name_tups: set[tuple[str, str]] = set()
 
-        cp_name_parts = cfg_pkg.name.split('.')
-
         for x in output.dumped:
-            x_mod_name_parts = x.cls_module.split('.')
-            if x_mod_name_parts[:len(cp_name_parts)] != cp_name_parts:
+            if x.cls_module not in processed_modules:
                 continue
 
             cls_name_tup = (x.cls_module, x.cls_qualname)
@@ -287,14 +277,14 @@ class DataclassCodeGen:
 
         #
 
-        prs_by_sha1 = col.make_map((
-            (hashlib.sha1(pr.encode()).hexdigest(), pr)  # noqa
-            for pr in dumped_by_plan_repr
-        ), strict=True)
-
-        for pr_sha1, pr in sorted(prs_by_sha1.items()):
-            grp = dumped_by_plan_repr[pr]
+        # Sorted by first cls name for more stable diffs than say sha1
+        for grp in sorted(
+                dumped_by_plan_repr.values(),
+                key=lambda grp: sorted([(y.mod_name, y.cls_qualname) for y in grp])[0],
+        ):
             x = grp[0]
+            pr = x.plan_repr
+            pr_sha1 = hashlib.sha1(pr.encode()).hexdigest()  # noqa
 
             fn_name = f'{self.PROCESS_FN_NAME}__{pr_sha1}'
 

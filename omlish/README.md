@@ -58,7 +58,7 @@ dependencies of any kind**.
   - An optional [metaclass](https://github.com/wrmsr/omlish/blob/master/omlish/dataclasses/metaclass) which removes the
     need for re-decorating subclasses (with support for inheritance of dataclass parameters like `frozen`), and some
     basic [base classes](https://github.com/wrmsr/omlish/blob/master/omlish/dataclasses/metaclass/bases.py).
-  - (Nearly finished) support for ahead-of-time / build-time code generation, greatly reducing import times.
+  - Support for ahead-of-time / build-time code generation, significantly reducing import times.
 
   The stdlib-equivalent api is exported in such a way as to appear to be direct aliases for the stdlib api itself,
   simplifying tool support.
