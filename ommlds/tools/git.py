@@ -12,6 +12,7 @@ import urllib.request
 
 from omdev.git.magic import GIT_DIFF_OMIT_MAGIC_COMMENT
 from omdev.home.secrets import load_secrets
+from omdev.py.srcheaders import get_py_header_lines
 from omdev.tools.git.messages import GitMessageGenerator
 from omlish import check
 from omlish import lang
@@ -216,9 +217,14 @@ class AiGitMessageGenerator(GitMessageGenerator):
         except FileNotFoundError:
             return False
 
+        hls = get_py_header_lines(f_src)
+
         return any(
-            l.startswith(GIT_DIFF_OMIT_MAGIC_COMMENT)
-            for l in f_src.splitlines()
+            hl.src.strip() in (
+                '# @omlish-generated',
+                GIT_DIFF_OMIT_MAGIC_COMMENT,
+            )
+            for hl in hls
         )
 
     # TODO: configurable

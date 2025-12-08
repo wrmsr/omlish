@@ -2079,6 +2079,1201 @@ def _process_dataclass__257988ac1433a45fc765065121e7c50a1887c0cd():
 
 @_register(
     plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('db_name', 'db_instance_identifier', 'allocated_storage', 'db_instance_class', 'en"
+        "gine', 'master_username', 'master_user_password', 'db_security_groups', 'vpc_security_group_ids', 'availabilit"
+        "y_zone', 'db_subnet_group_name', 'preferred_maintenance_window', 'db_parameter_group_name', 'backup_retention_"
+        "period', 'preferred_backup_window', 'port', 'multi_az', 'engine_version', 'auto_minor_version_upgrade', 'licen"
+        "se_model', 'iops', 'storage_throughput', 'option_group_name', 'character_set_name', 'nchar_character_set_name'"
+        ", 'publicly_accessible', 'tags', 'db_cluster_identifier', 'storage_type', 'tde_credential_arn', 'tde_credentia"
+        "l_password', 'storage_encrypted', 'kms_key_id', 'domain', 'domain_fqdn', 'domain_ou', 'domain_auth_secret_arn'"
+        ", 'domain_dns_ips', 'copy_tags_to_snapshot', 'monitoring_interval', 'monitoring_role_arn', 'domain_iam_role_na"
+        "me', 'promotion_tier', 'timezone', 'enable_iam_database_authentication', 'database_insights_mode', 'enable_per"
+        "formance_insights', 'performance_insights_kms_key_id', 'performance_insights_retention_period', 'enable_cloudw"
+        "atch_logs_exports', 'processor_features', 'deletion_protection', 'max_allocated_storage', 'enable_customer_own"
+        "ed_ip', 'network_type', 'backup_target', 'custom_iam_instance_profile', 'db_system_id', 'ca_certificate_identi"
+        "fier', 'manage_master_user_password', 'master_user_secret_kms_key_id', 'multi_tenant', 'dedicated_log_volume',"
+        " 'engine_lifecycle_support', 'tag_specifications', 'master_user_authentication_type', 'additional_storage_volu"
+        "mes')), EqPlan(fields=('db_name', 'db_instance_identifier', 'allocated_storage', 'db_instance_class', 'engine'"
+        ", 'master_username', 'master_user_password', 'db_security_groups', 'vpc_security_group_ids', 'availability_zon"
+        "e', 'db_subnet_group_name', 'preferred_maintenance_window', 'db_parameter_group_name', 'backup_retention_perio"
+        "d', 'preferred_backup_window', 'port', 'multi_az', 'engine_version', 'auto_minor_version_upgrade', 'license_mo"
+        "del', 'iops', 'storage_throughput', 'option_group_name', 'character_set_name', 'nchar_character_set_name', 'pu"
+        "blicly_accessible', 'tags', 'db_cluster_identifier', 'storage_type', 'tde_credential_arn', 'tde_credential_pas"
+        "sword', 'storage_encrypted', 'kms_key_id', 'domain', 'domain_fqdn', 'domain_ou', 'domain_auth_secret_arn', 'do"
+        "main_dns_ips', 'copy_tags_to_snapshot', 'monitoring_interval', 'monitoring_role_arn', 'domain_iam_role_name', "
+        "'promotion_tier', 'timezone', 'enable_iam_database_authentication', 'database_insights_mode', 'enable_performa"
+        "nce_insights', 'performance_insights_kms_key_id', 'performance_insights_retention_period', 'enable_cloudwatch_"
+        "logs_exports', 'processor_features', 'deletion_protection', 'max_allocated_storage', 'enable_customer_owned_ip"
+        "', 'network_type', 'backup_target', 'custom_iam_instance_profile', 'db_system_id', 'ca_certificate_identifier'"
+        ", 'manage_master_user_password', 'master_user_secret_kms_key_id', 'multi_tenant', 'dedicated_log_volume', 'eng"
+        "ine_lifecycle_support', 'tag_specifications', 'master_user_authentication_type', 'additional_storage_volumes')"
+        "), FrozenPlan(fields=('__shape__', 'db_name', 'db_instance_identifier', 'allocated_storage', 'db_instance_clas"
+        "s', 'engine', 'master_username', 'master_user_password', 'db_security_groups', 'vpc_security_group_ids', 'avai"
+        "lability_zone', 'db_subnet_group_name', 'preferred_maintenance_window', 'db_parameter_group_name', 'backup_ret"
+        "ention_period', 'preferred_backup_window', 'port', 'multi_az', 'engine_version', 'auto_minor_version_upgrade',"
+        " 'license_model', 'iops', 'storage_throughput', 'option_group_name', 'character_set_name', 'nchar_character_se"
+        "t_name', 'publicly_accessible', 'tags', 'db_cluster_identifier', 'storage_type', 'tde_credential_arn', 'tde_cr"
+        "edential_password', 'storage_encrypted', 'kms_key_id', 'domain', 'domain_fqdn', 'domain_ou', 'domain_auth_secr"
+        "et_arn', 'domain_dns_ips', 'copy_tags_to_snapshot', 'monitoring_interval', 'monitoring_role_arn', 'domain_iam_"
+        "role_name', 'promotion_tier', 'timezone', 'enable_iam_database_authentication', 'database_insights_mode', 'ena"
+        "ble_performance_insights', 'performance_insights_kms_key_id', 'performance_insights_retention_period', 'enable"
+        "_cloudwatch_logs_exports', 'processor_features', 'deletion_protection', 'max_allocated_storage', 'enable_custo"
+        "mer_owned_ip', 'network_type', 'backup_target', 'custom_iam_instance_profile', 'db_system_id', 'ca_certificate"
+        "_identifier', 'manage_master_user_password', 'master_user_secret_kms_key_id', 'multi_tenant', 'dedicated_log_v"
+        "olume', 'engine_lifecycle_support', 'tag_specifications', 'master_user_authentication_type', 'additional_stora"
+        "ge_volumes'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('db_name', 'db_instance_identi"
+        "fier', 'allocated_storage', 'db_instance_class', 'engine', 'master_username', 'master_user_password', 'db_secu"
+        "rity_groups', 'vpc_security_group_ids', 'availability_zone', 'db_subnet_group_name', 'preferred_maintenance_wi"
+        "ndow', 'db_parameter_group_name', 'backup_retention_period', 'preferred_backup_window', 'port', 'multi_az', 'e"
+        "ngine_version', 'auto_minor_version_upgrade', 'license_model', 'iops', 'storage_throughput', 'option_group_nam"
+        "e', 'character_set_name', 'nchar_character_set_name', 'publicly_accessible', 'tags', 'db_cluster_identifier', "
+        "'storage_type', 'tde_credential_arn', 'tde_credential_password', 'storage_encrypted', 'kms_key_id', 'domain', "
+        "'domain_fqdn', 'domain_ou', 'domain_auth_secret_arn', 'domain_dns_ips', 'copy_tags_to_snapshot', 'monitoring_i"
+        "nterval', 'monitoring_role_arn', 'domain_iam_role_name', 'promotion_tier', 'timezone', 'enable_iam_database_au"
+        "thentication', 'database_insights_mode', 'enable_performance_insights', 'performance_insights_kms_key_id', 'pe"
+        "rformance_insights_retention_period', 'enable_cloudwatch_logs_exports', 'processor_features', 'deletion_protec"
+        "tion', 'max_allocated_storage', 'enable_customer_owned_ip', 'network_type', 'backup_target', 'custom_iam_insta"
+        "nce_profile', 'db_system_id', 'ca_certificate_identifier', 'manage_master_user_password', 'master_user_secret_"
+        "kms_key_id', 'multi_tenant', 'dedicated_log_volume', 'engine_lifecycle_support', 'tag_specifications', 'master"
+        "_user_authentication_type', 'additional_storage_volumes'), cache=False), InitPlan(fields=(InitPlan.Field(name="
+        "'__shape__', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True,"
+        " override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field("
+        "name='db_name', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default')"
+        ", default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, "
+        "check_type=None), InitPlan.Field(name='db_instance_identifier', annotation=OpRef(name='init.fields.2.annotatio"
+        "n'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None"
+        ", validate=None, check_type=None), InitPlan.Field(name='allocated_storage', annotation=OpRef(name='init.fields"
+        ".3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False,"
+        " field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='db_instance"
+        "_class', annotation=OpRef(name='init.fields.4.annotation'), default=None, default_factory=None, init=True, ove"
+        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name="
+        "'engine', annotation=OpRef(name='init.fields.5.annotation'), default=None, default_factory=None, init=True, ov"
+        "erride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name"
+        "='master_username', annotation=OpRef(name='init.fields.6.annotation'), default=OpRef(name='init.fields.6.defau"
+        "lt'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=No"
+        "ne, check_type=None), InitPlan.Field(name='master_user_password', annotation=OpRef(name='init.fields.7.annotat"
+        "ion'), default=OpRef(name='init.fields.7.default'), default_factory=None, init=True, override=False, field_typ"
+        "e=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='db_security_groups', "
+        "annotation=OpRef(name='init.fields.8.annotation'), default=OpRef(name='init.fields.8.default'), default_factor"
+        "y=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)"
+        ", InitPlan.Field(name='vpc_security_group_ids', annotation=OpRef(name='init.fields.9.annotation'), default=OpR"
+        "ef(name='init.fields.9.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTAN"
+        "CE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='availability_zone', annotation=OpRef(na"
+        "me='init.fields.10.annotation'), default=OpRef(name='init.fields.10.default'), default_factory=None, init=True"
+        ", override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field("
+        "name='db_subnet_group_name', annotation=OpRef(name='init.fields.11.annotation'), default=OpRef(name='init.fiel"
+        "ds.11.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, "
+        "validate=None, check_type=None), InitPlan.Field(name='preferred_maintenance_window', annotation=OpRef(name='in"
+        "it.fields.12.annotation'), default=OpRef(name='init.fields.12.default'), default_factory=None, init=True, over"
+        "ride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='"
+        "db_parameter_group_name', annotation=OpRef(name='init.fields.13.annotation'), default=OpRef(name='init.fields."
+        "13.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
+        "idate=None, check_type=None), InitPlan.Field(name='backup_retention_period', annotation=OpRef(name='init.field"
+        "s.14.annotation'), default=OpRef(name='init.fields.14.default'), default_factory=None, init=True, override=Fal"
+        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='preferre"
+        "d_backup_window', annotation=OpRef(name='init.fields.15.annotation'), default=OpRef(name='init.fields.15.defau"
+        "lt'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=No"
+        "ne, check_type=None), InitPlan.Field(name='port', annotation=OpRef(name='init.fields.16.annotation'), default="
+        "OpRef(name='init.fields.16.default'), default_factory=None, init=True, override=False, field_type=FieldType.IN"
+        "STANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='multi_az', annotation=OpRef(name='i"
+        "nit.fields.17.annotation'), default=OpRef(name='init.fields.17.default'), default_factory=None, init=True, ove"
+        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name="
+        "'engine_version', annotation=OpRef(name='init.fields.18.annotation'), default=OpRef(name='init.fields.18.defau"
+        "lt'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=No"
+        "ne, check_type=None), InitPlan.Field(name='auto_minor_version_upgrade', annotation=OpRef(name='init.fields.19."
+        "annotation'), default=OpRef(name='init.fields.19.default'), default_factory=None, init=True, override=False, f"
+        "ield_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='license_model"
+        "', annotation=OpRef(name='init.fields.20.annotation'), default=OpRef(name='init.fields.20.default'), default_f"
+        "actory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type="
+        "None), InitPlan.Field(name='iops', annotation=OpRef(name='init.fields.21.annotation'), default=OpRef(name='ini"
+        "t.fields.21.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
+        "None, validate=None, check_type=None), InitPlan.Field(name='storage_throughput', annotation=OpRef(name='init.f"
+        "ields.22.annotation'), default=OpRef(name='init.fields.22.default'), default_factory=None, init=True, override"
+        "=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='opti"
+        "on_group_name', annotation=OpRef(name='init.fields.23.annotation'), default=OpRef(name='init.fields.23.default"
+        "'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None"
+        ", check_type=None), InitPlan.Field(name='character_set_name', annotation=OpRef(name='init.fields.24.annotation"
+        "'), default=OpRef(name='init.fields.24.default'), default_factory=None, init=True, override=False, field_type="
+        "FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='nchar_character_set_nam"
+        "e', annotation=OpRef(name='init.fields.25.annotation'), default=OpRef(name='init.fields.25.default'), default_"
+        "factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type"
+        "=None), InitPlan.Field(name='publicly_accessible', annotation=OpRef(name='init.fields.26.annotation'), default"
+        "=OpRef(name='init.fields.26.default'), default_factory=None, init=True, override=False, field_type=FieldType.I"
+        "NSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='tags', annotation=OpRef(name='init"
+        ".fields.27.annotation'), default=OpRef(name='init.fields.27.default'), default_factory=None, init=True, overri"
+        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='db"
+        "_cluster_identifier', annotation=OpRef(name='init.fields.28.annotation'), default=OpRef(name='init.fields.28.d"
+        "efault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
+        "e=None, check_type=None), InitPlan.Field(name='storage_type', annotation=OpRef(name='init.fields.29.annotation"
+        "'), default=OpRef(name='init.fields.29.default'), default_factory=None, init=True, override=False, field_type="
+        "FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='tde_credential_arn', an"
+        "notation=OpRef(name='init.fields.30.annotation'), default=OpRef(name='init.fields.30.default'), default_factor"
+        "y=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)"
+        ", InitPlan.Field(name='tde_credential_password', annotation=OpRef(name='init.fields.31.annotation'), default=O"
+        "pRef(name='init.fields.31.default'), default_factory=None, init=True, override=False, field_type=FieldType.INS"
+        "TANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='storage_encrypted', annotation=OpRef"
+        "(name='init.fields.32.annotation'), default=OpRef(name='init.fields.32.default'), default_factory=None, init=T"
+        "rue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fie"
+        "ld(name='kms_key_id', annotation=OpRef(name='init.fields.33.annotation'), default=OpRef(name='init.fields.33.d"
+        "efault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
+        "e=None, check_type=None), InitPlan.Field(name='domain', annotation=OpRef(name='init.fields.34.annotation'), de"
+        "fault=OpRef(name='init.fields.34.default'), default_factory=None, init=True, override=False, field_type=FieldT"
+        "ype.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='domain_fqdn', annotation=OpRe"
+        "f(name='init.fields.35.annotation'), default=OpRef(name='init.fields.35.default'), default_factory=None, init="
+        "True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fi"
+        "eld(name='domain_ou', annotation=OpRef(name='init.fields.36.annotation'), default=OpRef(name='init.fields.36.d"
+        "efault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
+        "e=None, check_type=None), InitPlan.Field(name='domain_auth_secret_arn', annotation=OpRef(name='init.fields.37."
+        "annotation'), default=OpRef(name='init.fields.37.default'), default_factory=None, init=True, override=False, f"
+        "ield_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='domain_dns_ip"
+        "s', annotation=OpRef(name='init.fields.38.annotation'), default=OpRef(name='init.fields.38.default'), default_"
+        "factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type"
+        "=None), InitPlan.Field(name='copy_tags_to_snapshot', annotation=OpRef(name='init.fields.39.annotation'), defau"
+        "lt=OpRef(name='init.fields.39.default'), default_factory=None, init=True, override=False, field_type=FieldType"
+        ".INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='monitoring_interval', annotation"
+        "=OpRef(name='init.fields.40.annotation'), default=OpRef(name='init.fields.40.default'), default_factory=None, "
+        "init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPl"
+        "an.Field(name='monitoring_role_arn', annotation=OpRef(name='init.fields.41.annotation'), default=OpRef(name='i"
+        "nit.fields.41.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
+        "e=None, validate=None, check_type=None), InitPlan.Field(name='domain_iam_role_name', annotation=OpRef(name='in"
+        "it.fields.42.annotation'), default=OpRef(name='init.fields.42.default'), default_factory=None, init=True, over"
+        "ride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='"
+        "promotion_tier', annotation=OpRef(name='init.fields.43.annotation'), default=OpRef(name='init.fields.43.defaul"
+        "t'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=Non"
+        "e, check_type=None), InitPlan.Field(name='timezone', annotation=OpRef(name='init.fields.44.annotation'), defau"
+        "lt=OpRef(name='init.fields.44.default'), default_factory=None, init=True, override=False, field_type=FieldType"
+        ".INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='enable_iam_database_authenticati"
+        "on', annotation=OpRef(name='init.fields.45.annotation'), default=OpRef(name='init.fields.45.default'), default"
+        "_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_typ"
+        "e=None), InitPlan.Field(name='database_insights_mode', annotation=OpRef(name='init.fields.46.annotation'), def"
+        "ault=OpRef(name='init.fields.46.default'), default_factory=None, init=True, override=False, field_type=FieldTy"
+        "pe.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='enable_performance_insights', "
+        "annotation=OpRef(name='init.fields.47.annotation'), default=OpRef(name='init.fields.47.default'), default_fact"
+        "ory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=Non"
+        "e), InitPlan.Field(name='performance_insights_kms_key_id', annotation=OpRef(name='init.fields.48.annotation'),"
+        " default=OpRef(name='init.fields.48.default'), default_factory=None, init=True, override=False, field_type=Fie"
+        "ldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='performance_insights_reten"
+        "tion_period', annotation=OpRef(name='init.fields.49.annotation'), default=OpRef(name='init.fields.49.default')"
+        ", default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, "
+        "check_type=None), InitPlan.Field(name='enable_cloudwatch_logs_exports', annotation=OpRef(name='init.fields.50."
+        "annotation'), default=OpRef(name='init.fields.50.default'), default_factory=None, init=True, override=False, f"
+        "ield_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='processor_fea"
+        "tures', annotation=OpRef(name='init.fields.51.annotation'), default=OpRef(name='init.fields.51.default'), defa"
+        "ult_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_"
+        "type=None), InitPlan.Field(name='deletion_protection', annotation=OpRef(name='init.fields.52.annotation'), def"
+        "ault=OpRef(name='init.fields.52.default'), default_factory=None, init=True, override=False, field_type=FieldTy"
+        "pe.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='max_allocated_storage', annota"
+        "tion=OpRef(name='init.fields.53.annotation'), default=OpRef(name='init.fields.53.default'), default_factory=No"
+        "ne, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), In"
+        "itPlan.Field(name='enable_customer_owned_ip', annotation=OpRef(name='init.fields.54.annotation'), default=OpRe"
+        "f(name='init.fields.54.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTAN"
+        "CE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='network_type', annotation=OpRef(name='i"
+        "nit.fields.55.annotation'), default=OpRef(name='init.fields.55.default'), default_factory=None, init=True, ove"
+        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name="
+        "'backup_target', annotation=OpRef(name='init.fields.56.annotation'), default=OpRef(name='init.fields.56.defaul"
+        "t'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=Non"
+        "e, check_type=None), InitPlan.Field(name='custom_iam_instance_profile', annotation=OpRef(name='init.fields.57."
+        "annotation'), default=OpRef(name='init.fields.57.default'), default_factory=None, init=True, override=False, f"
+        "ield_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='db_system_id'"
+        ", annotation=OpRef(name='init.fields.58.annotation'), default=OpRef(name='init.fields.58.default'), default_fa"
+        "ctory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=N"
+        "one), InitPlan.Field(name='ca_certificate_identifier', annotation=OpRef(name='init.fields.59.annotation'), def"
+        "ault=OpRef(name='init.fields.59.default'), default_factory=None, init=True, override=False, field_type=FieldTy"
+        "pe.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='manage_master_user_password', "
+        "annotation=OpRef(name='init.fields.60.annotation'), default=OpRef(name='init.fields.60.default'), default_fact"
+        "ory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=Non"
+        "e), InitPlan.Field(name='master_user_secret_kms_key_id', annotation=OpRef(name='init.fields.61.annotation'), d"
+        "efault=OpRef(name='init.fields.61.default'), default_factory=None, init=True, override=False, field_type=Field"
+        "Type.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='multi_tenant', annotation=Op"
+        "Ref(name='init.fields.62.annotation'), default=OpRef(name='init.fields.62.default'), default_factory=None, ini"
+        "t=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan."
+        "Field(name='dedicated_log_volume', annotation=OpRef(name='init.fields.63.annotation'), default=OpRef(name='ini"
+        "t.fields.63.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
+        "None, validate=None, check_type=None), InitPlan.Field(name='engine_lifecycle_support', annotation=OpRef(name='"
+        "init.fields.64.annotation'), default=OpRef(name='init.fields.64.default'), default_factory=None, init=True, ov"
+        "erride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name"
+        "='tag_specifications', annotation=OpRef(name='init.fields.65.annotation'), default=OpRef(name='init.fields.65."
+        "default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valida"
+        "te=None, check_type=None), InitPlan.Field(name='master_user_authentication_type', annotation=OpRef(name='init."
+        "fields.66.annotation'), default=OpRef(name='init.fields.66.default'), default_factory=None, init=True, overrid"
+        "e=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='add"
+        "itional_storage_volumes', annotation=OpRef(name='init.fields.67.annotation'), default=OpRef(name='init.fields."
+        "67.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
+        "idate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('db_name', 'db_instance_ident"
+        "ifier', 'allocated_storage', 'db_instance_class', 'engine', 'master_username', 'master_user_password', 'db_sec"
+        "urity_groups', 'vpc_security_group_ids', 'availability_zone', 'db_subnet_group_name', 'preferred_maintenance_w"
+        "indow', 'db_parameter_group_name', 'backup_retention_period', 'preferred_backup_window', 'port', 'multi_az', '"
+        "engine_version', 'auto_minor_version_upgrade', 'license_model', 'iops', 'storage_throughput', 'option_group_na"
+        "me', 'character_set_name', 'nchar_character_set_name', 'publicly_accessible', 'tags', 'db_cluster_identifier',"
+        " 'storage_type', 'tde_credential_arn', 'tde_credential_password', 'storage_encrypted', 'kms_key_id', 'domain',"
+        " 'domain_fqdn', 'domain_ou', 'domain_auth_secret_arn', 'domain_dns_ips', 'copy_tags_to_snapshot', 'monitoring_"
+        "interval', 'monitoring_role_arn', 'domain_iam_role_name', 'promotion_tier', 'timezone', 'enable_iam_database_a"
+        "uthentication', 'database_insights_mode', 'enable_performance_insights', 'performance_insights_kms_key_id', 'p"
+        "erformance_insights_retention_period', 'enable_cloudwatch_logs_exports', 'processor_features', 'deletion_prote"
+        "ction', 'max_allocated_storage', 'enable_customer_owned_ip', 'network_type', 'backup_target', 'custom_iam_inst"
+        "ance_profile', 'db_system_id', 'ca_certificate_identifier', 'manage_master_user_password', 'master_user_secret"
+        "_kms_key_id', 'multi_tenant', 'dedicated_log_volume', 'engine_lifecycle_support', 'tag_specifications', 'maste"
+        "r_user_authentication_type', 'additional_storage_volumes'), frozen=True, slots=False, post_init_params=None, i"
+        "nit_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='db_name', kw_only=True, fn=None), ReprPlan"
+        ".Field(name='db_instance_identifier', kw_only=True, fn=None), ReprPlan.Field(name='allocated_storage', kw_only"
+        "=True, fn=None), ReprPlan.Field(name='db_instance_class', kw_only=True, fn=None), ReprPlan.Field(name='engine'"
+        ", kw_only=True, fn=None), ReprPlan.Field(name='master_username', kw_only=True, fn=None), ReprPlan.Field(name='"
+        "master_user_password', kw_only=True, fn=None), ReprPlan.Field(name='db_security_groups', kw_only=True, fn=None"
+        "), ReprPlan.Field(name='vpc_security_group_ids', kw_only=True, fn=None), ReprPlan.Field(name='availability_zon"
+        "e', kw_only=True, fn=None), ReprPlan.Field(name='db_subnet_group_name', kw_only=True, fn=None), ReprPlan.Field"
+        "(name='preferred_maintenance_window', kw_only=True, fn=None), ReprPlan.Field(name='db_parameter_group_name', k"
+        "w_only=True, fn=None), ReprPlan.Field(name='backup_retention_period', kw_only=True, fn=None), ReprPlan.Field(n"
+        "ame='preferred_backup_window', kw_only=True, fn=None), ReprPlan.Field(name='port', kw_only=True, fn=None), Rep"
+        "rPlan.Field(name='multi_az', kw_only=True, fn=None), ReprPlan.Field(name='engine_version', kw_only=True, fn=No"
+        "ne), ReprPlan.Field(name='auto_minor_version_upgrade', kw_only=True, fn=None), ReprPlan.Field(name='license_mo"
+        "del', kw_only=True, fn=None), ReprPlan.Field(name='iops', kw_only=True, fn=None), ReprPlan.Field(name='storage"
+        "_throughput', kw_only=True, fn=None), ReprPlan.Field(name='option_group_name', kw_only=True, fn=None), ReprPla"
+        "n.Field(name='character_set_name', kw_only=True, fn=None), ReprPlan.Field(name='nchar_character_set_name', kw_"
+        "only=True, fn=None), ReprPlan.Field(name='publicly_accessible', kw_only=True, fn=None), ReprPlan.Field(name='t"
+        "ags', kw_only=True, fn=None), ReprPlan.Field(name='db_cluster_identifier', kw_only=True, fn=None), ReprPlan.Fi"
+        "eld(name='storage_type', kw_only=True, fn=None), ReprPlan.Field(name='tde_credential_arn', kw_only=True, fn=No"
+        "ne), ReprPlan.Field(name='tde_credential_password', kw_only=True, fn=None), ReprPlan.Field(name='storage_encry"
+        "pted', kw_only=True, fn=None), ReprPlan.Field(name='kms_key_id', kw_only=True, fn=None), ReprPlan.Field(name='"
+        "domain', kw_only=True, fn=None), ReprPlan.Field(name='domain_fqdn', kw_only=True, fn=None), ReprPlan.Field(nam"
+        "e='domain_ou', kw_only=True, fn=None), ReprPlan.Field(name='domain_auth_secret_arn', kw_only=True, fn=None), R"
+        "eprPlan.Field(name='domain_dns_ips', kw_only=True, fn=None), ReprPlan.Field(name='copy_tags_to_snapshot', kw_o"
+        "nly=True, fn=None), ReprPlan.Field(name='monitoring_interval', kw_only=True, fn=None), ReprPlan.Field(name='mo"
+        "nitoring_role_arn', kw_only=True, fn=None), ReprPlan.Field(name='domain_iam_role_name', kw_only=True, fn=None)"
+        ", ReprPlan.Field(name='promotion_tier', kw_only=True, fn=None), ReprPlan.Field(name='timezone', kw_only=True, "
+        "fn=None), ReprPlan.Field(name='enable_iam_database_authentication', kw_only=True, fn=None), ReprPlan.Field(nam"
+        "e='database_insights_mode', kw_only=True, fn=None), ReprPlan.Field(name='enable_performance_insights', kw_only"
+        "=True, fn=None), ReprPlan.Field(name='performance_insights_kms_key_id', kw_only=True, fn=None), ReprPlan.Field"
+        "(name='performance_insights_retention_period', kw_only=True, fn=None), ReprPlan.Field(name='enable_cloudwatch_"
+        "logs_exports', kw_only=True, fn=None), ReprPlan.Field(name='processor_features', kw_only=True, fn=None), ReprP"
+        "lan.Field(name='deletion_protection', kw_only=True, fn=None), ReprPlan.Field(name='max_allocated_storage', kw_"
+        "only=True, fn=None), ReprPlan.Field(name='enable_customer_owned_ip', kw_only=True, fn=None), ReprPlan.Field(na"
+        "me='network_type', kw_only=True, fn=None), ReprPlan.Field(name='backup_target', kw_only=True, fn=None), ReprPl"
+        "an.Field(name='custom_iam_instance_profile', kw_only=True, fn=None), ReprPlan.Field(name='db_system_id', kw_on"
+        "ly=True, fn=None), ReprPlan.Field(name='ca_certificate_identifier', kw_only=True, fn=None), ReprPlan.Field(nam"
+        "e='manage_master_user_password', kw_only=True, fn=None), ReprPlan.Field(name='master_user_secret_kms_key_id', "
+        "kw_only=True, fn=None), ReprPlan.Field(name='multi_tenant', kw_only=True, fn=None), ReprPlan.Field(name='dedic"
+        "ated_log_volume', kw_only=True, fn=None), ReprPlan.Field(name='engine_lifecycle_support', kw_only=True, fn=Non"
+        "e), ReprPlan.Field(name='tag_specifications', kw_only=True, fn=None), ReprPlan.Field(name='master_user_authent"
+        "ication_type', kw_only=True, fn=None), ReprPlan.Field(name='additional_storage_volumes', kw_only=True, fn=None"
+        ")), id=False, terse=False, default_fn=None)))"
+    ),
+    plan_repr_sha1='31ff148188ee1c0bf5d5ca29183ea035d0dc7541',
+    op_ref_idents=(
+        '__dataclass__init__fields__10__annotation',
+        '__dataclass__init__fields__10__default',
+        '__dataclass__init__fields__11__annotation',
+        '__dataclass__init__fields__11__default',
+        '__dataclass__init__fields__12__annotation',
+        '__dataclass__init__fields__12__default',
+        '__dataclass__init__fields__13__annotation',
+        '__dataclass__init__fields__13__default',
+        '__dataclass__init__fields__14__annotation',
+        '__dataclass__init__fields__14__default',
+        '__dataclass__init__fields__15__annotation',
+        '__dataclass__init__fields__15__default',
+        '__dataclass__init__fields__16__annotation',
+        '__dataclass__init__fields__16__default',
+        '__dataclass__init__fields__17__annotation',
+        '__dataclass__init__fields__17__default',
+        '__dataclass__init__fields__18__annotation',
+        '__dataclass__init__fields__18__default',
+        '__dataclass__init__fields__19__annotation',
+        '__dataclass__init__fields__19__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__20__annotation',
+        '__dataclass__init__fields__20__default',
+        '__dataclass__init__fields__21__annotation',
+        '__dataclass__init__fields__21__default',
+        '__dataclass__init__fields__22__annotation',
+        '__dataclass__init__fields__22__default',
+        '__dataclass__init__fields__23__annotation',
+        '__dataclass__init__fields__23__default',
+        '__dataclass__init__fields__24__annotation',
+        '__dataclass__init__fields__24__default',
+        '__dataclass__init__fields__25__annotation',
+        '__dataclass__init__fields__25__default',
+        '__dataclass__init__fields__26__annotation',
+        '__dataclass__init__fields__26__default',
+        '__dataclass__init__fields__27__annotation',
+        '__dataclass__init__fields__27__default',
+        '__dataclass__init__fields__28__annotation',
+        '__dataclass__init__fields__28__default',
+        '__dataclass__init__fields__29__annotation',
+        '__dataclass__init__fields__29__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__30__annotation',
+        '__dataclass__init__fields__30__default',
+        '__dataclass__init__fields__31__annotation',
+        '__dataclass__init__fields__31__default',
+        '__dataclass__init__fields__32__annotation',
+        '__dataclass__init__fields__32__default',
+        '__dataclass__init__fields__33__annotation',
+        '__dataclass__init__fields__33__default',
+        '__dataclass__init__fields__34__annotation',
+        '__dataclass__init__fields__34__default',
+        '__dataclass__init__fields__35__annotation',
+        '__dataclass__init__fields__35__default',
+        '__dataclass__init__fields__36__annotation',
+        '__dataclass__init__fields__36__default',
+        '__dataclass__init__fields__37__annotation',
+        '__dataclass__init__fields__37__default',
+        '__dataclass__init__fields__38__annotation',
+        '__dataclass__init__fields__38__default',
+        '__dataclass__init__fields__39__annotation',
+        '__dataclass__init__fields__39__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__40__annotation',
+        '__dataclass__init__fields__40__default',
+        '__dataclass__init__fields__41__annotation',
+        '__dataclass__init__fields__41__default',
+        '__dataclass__init__fields__42__annotation',
+        '__dataclass__init__fields__42__default',
+        '__dataclass__init__fields__43__annotation',
+        '__dataclass__init__fields__43__default',
+        '__dataclass__init__fields__44__annotation',
+        '__dataclass__init__fields__44__default',
+        '__dataclass__init__fields__45__annotation',
+        '__dataclass__init__fields__45__default',
+        '__dataclass__init__fields__46__annotation',
+        '__dataclass__init__fields__46__default',
+        '__dataclass__init__fields__47__annotation',
+        '__dataclass__init__fields__47__default',
+        '__dataclass__init__fields__48__annotation',
+        '__dataclass__init__fields__48__default',
+        '__dataclass__init__fields__49__annotation',
+        '__dataclass__init__fields__49__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__50__annotation',
+        '__dataclass__init__fields__50__default',
+        '__dataclass__init__fields__51__annotation',
+        '__dataclass__init__fields__51__default',
+        '__dataclass__init__fields__52__annotation',
+        '__dataclass__init__fields__52__default',
+        '__dataclass__init__fields__53__annotation',
+        '__dataclass__init__fields__53__default',
+        '__dataclass__init__fields__54__annotation',
+        '__dataclass__init__fields__54__default',
+        '__dataclass__init__fields__55__annotation',
+        '__dataclass__init__fields__55__default',
+        '__dataclass__init__fields__56__annotation',
+        '__dataclass__init__fields__56__default',
+        '__dataclass__init__fields__57__annotation',
+        '__dataclass__init__fields__57__default',
+        '__dataclass__init__fields__58__annotation',
+        '__dataclass__init__fields__58__default',
+        '__dataclass__init__fields__59__annotation',
+        '__dataclass__init__fields__59__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__60__annotation',
+        '__dataclass__init__fields__60__default',
+        '__dataclass__init__fields__61__annotation',
+        '__dataclass__init__fields__61__default',
+        '__dataclass__init__fields__62__annotation',
+        '__dataclass__init__fields__62__default',
+        '__dataclass__init__fields__63__annotation',
+        '__dataclass__init__fields__63__default',
+        '__dataclass__init__fields__64__annotation',
+        '__dataclass__init__fields__64__default',
+        '__dataclass__init__fields__65__annotation',
+        '__dataclass__init__fields__65__default',
+        '__dataclass__init__fields__66__annotation',
+        '__dataclass__init__fields__66__default',
+        '__dataclass__init__fields__67__annotation',
+        '__dataclass__init__fields__67__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__9__annotation',
+        '__dataclass__init__fields__9__default',
+    ),
+    cls_names=(
+        ('ominfra.clouds.aws.models.services.rds', 'CreateDBInstanceMessage'),
+    ),
+)
+def _process_dataclass__31ff148188ee1c0bf5d5ca29183ea035d0dc7541():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__10__annotation,
+        __dataclass__init__fields__10__default,
+        __dataclass__init__fields__11__annotation,
+        __dataclass__init__fields__11__default,
+        __dataclass__init__fields__12__annotation,
+        __dataclass__init__fields__12__default,
+        __dataclass__init__fields__13__annotation,
+        __dataclass__init__fields__13__default,
+        __dataclass__init__fields__14__annotation,
+        __dataclass__init__fields__14__default,
+        __dataclass__init__fields__15__annotation,
+        __dataclass__init__fields__15__default,
+        __dataclass__init__fields__16__annotation,
+        __dataclass__init__fields__16__default,
+        __dataclass__init__fields__17__annotation,
+        __dataclass__init__fields__17__default,
+        __dataclass__init__fields__18__annotation,
+        __dataclass__init__fields__18__default,
+        __dataclass__init__fields__19__annotation,
+        __dataclass__init__fields__19__default,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__1__default,
+        __dataclass__init__fields__20__annotation,
+        __dataclass__init__fields__20__default,
+        __dataclass__init__fields__21__annotation,
+        __dataclass__init__fields__21__default,
+        __dataclass__init__fields__22__annotation,
+        __dataclass__init__fields__22__default,
+        __dataclass__init__fields__23__annotation,
+        __dataclass__init__fields__23__default,
+        __dataclass__init__fields__24__annotation,
+        __dataclass__init__fields__24__default,
+        __dataclass__init__fields__25__annotation,
+        __dataclass__init__fields__25__default,
+        __dataclass__init__fields__26__annotation,
+        __dataclass__init__fields__26__default,
+        __dataclass__init__fields__27__annotation,
+        __dataclass__init__fields__27__default,
+        __dataclass__init__fields__28__annotation,
+        __dataclass__init__fields__28__default,
+        __dataclass__init__fields__29__annotation,
+        __dataclass__init__fields__29__default,
+        __dataclass__init__fields__2__annotation,
+        __dataclass__init__fields__30__annotation,
+        __dataclass__init__fields__30__default,
+        __dataclass__init__fields__31__annotation,
+        __dataclass__init__fields__31__default,
+        __dataclass__init__fields__32__annotation,
+        __dataclass__init__fields__32__default,
+        __dataclass__init__fields__33__annotation,
+        __dataclass__init__fields__33__default,
+        __dataclass__init__fields__34__annotation,
+        __dataclass__init__fields__34__default,
+        __dataclass__init__fields__35__annotation,
+        __dataclass__init__fields__35__default,
+        __dataclass__init__fields__36__annotation,
+        __dataclass__init__fields__36__default,
+        __dataclass__init__fields__37__annotation,
+        __dataclass__init__fields__37__default,
+        __dataclass__init__fields__38__annotation,
+        __dataclass__init__fields__38__default,
+        __dataclass__init__fields__39__annotation,
+        __dataclass__init__fields__39__default,
+        __dataclass__init__fields__3__annotation,
+        __dataclass__init__fields__3__default,
+        __dataclass__init__fields__40__annotation,
+        __dataclass__init__fields__40__default,
+        __dataclass__init__fields__41__annotation,
+        __dataclass__init__fields__41__default,
+        __dataclass__init__fields__42__annotation,
+        __dataclass__init__fields__42__default,
+        __dataclass__init__fields__43__annotation,
+        __dataclass__init__fields__43__default,
+        __dataclass__init__fields__44__annotation,
+        __dataclass__init__fields__44__default,
+        __dataclass__init__fields__45__annotation,
+        __dataclass__init__fields__45__default,
+        __dataclass__init__fields__46__annotation,
+        __dataclass__init__fields__46__default,
+        __dataclass__init__fields__47__annotation,
+        __dataclass__init__fields__47__default,
+        __dataclass__init__fields__48__annotation,
+        __dataclass__init__fields__48__default,
+        __dataclass__init__fields__49__annotation,
+        __dataclass__init__fields__49__default,
+        __dataclass__init__fields__4__annotation,
+        __dataclass__init__fields__50__annotation,
+        __dataclass__init__fields__50__default,
+        __dataclass__init__fields__51__annotation,
+        __dataclass__init__fields__51__default,
+        __dataclass__init__fields__52__annotation,
+        __dataclass__init__fields__52__default,
+        __dataclass__init__fields__53__annotation,
+        __dataclass__init__fields__53__default,
+        __dataclass__init__fields__54__annotation,
+        __dataclass__init__fields__54__default,
+        __dataclass__init__fields__55__annotation,
+        __dataclass__init__fields__55__default,
+        __dataclass__init__fields__56__annotation,
+        __dataclass__init__fields__56__default,
+        __dataclass__init__fields__57__annotation,
+        __dataclass__init__fields__57__default,
+        __dataclass__init__fields__58__annotation,
+        __dataclass__init__fields__58__default,
+        __dataclass__init__fields__59__annotation,
+        __dataclass__init__fields__59__default,
+        __dataclass__init__fields__5__annotation,
+        __dataclass__init__fields__60__annotation,
+        __dataclass__init__fields__60__default,
+        __dataclass__init__fields__61__annotation,
+        __dataclass__init__fields__61__default,
+        __dataclass__init__fields__62__annotation,
+        __dataclass__init__fields__62__default,
+        __dataclass__init__fields__63__annotation,
+        __dataclass__init__fields__63__default,
+        __dataclass__init__fields__64__annotation,
+        __dataclass__init__fields__64__default,
+        __dataclass__init__fields__65__annotation,
+        __dataclass__init__fields__65__default,
+        __dataclass__init__fields__66__annotation,
+        __dataclass__init__fields__66__default,
+        __dataclass__init__fields__67__annotation,
+        __dataclass__init__fields__67__default,
+        __dataclass__init__fields__6__annotation,
+        __dataclass__init__fields__6__default,
+        __dataclass__init__fields__7__annotation,
+        __dataclass__init__fields__7__default,
+        __dataclass__init__fields__8__annotation,
+        __dataclass__init__fields__8__default,
+        __dataclass__init__fields__9__annotation,
+        __dataclass__init__fields__9__default,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                db_name=self.db_name,
+                db_instance_identifier=self.db_instance_identifier,
+                allocated_storage=self.allocated_storage,
+                db_instance_class=self.db_instance_class,
+                engine=self.engine,
+                master_username=self.master_username,
+                master_user_password=self.master_user_password,
+                db_security_groups=self.db_security_groups,
+                vpc_security_group_ids=self.vpc_security_group_ids,
+                availability_zone=self.availability_zone,
+                db_subnet_group_name=self.db_subnet_group_name,
+                preferred_maintenance_window=self.preferred_maintenance_window,
+                db_parameter_group_name=self.db_parameter_group_name,
+                backup_retention_period=self.backup_retention_period,
+                preferred_backup_window=self.preferred_backup_window,
+                port=self.port,
+                multi_az=self.multi_az,
+                engine_version=self.engine_version,
+                auto_minor_version_upgrade=self.auto_minor_version_upgrade,
+                license_model=self.license_model,
+                iops=self.iops,
+                storage_throughput=self.storage_throughput,
+                option_group_name=self.option_group_name,
+                character_set_name=self.character_set_name,
+                nchar_character_set_name=self.nchar_character_set_name,
+                publicly_accessible=self.publicly_accessible,
+                tags=self.tags,
+                db_cluster_identifier=self.db_cluster_identifier,
+                storage_type=self.storage_type,
+                tde_credential_arn=self.tde_credential_arn,
+                tde_credential_password=self.tde_credential_password,
+                storage_encrypted=self.storage_encrypted,
+                kms_key_id=self.kms_key_id,
+                domain=self.domain,
+                domain_fqdn=self.domain_fqdn,
+                domain_ou=self.domain_ou,
+                domain_auth_secret_arn=self.domain_auth_secret_arn,
+                domain_dns_ips=self.domain_dns_ips,
+                copy_tags_to_snapshot=self.copy_tags_to_snapshot,
+                monitoring_interval=self.monitoring_interval,
+                monitoring_role_arn=self.monitoring_role_arn,
+                domain_iam_role_name=self.domain_iam_role_name,
+                promotion_tier=self.promotion_tier,
+                timezone=self.timezone,
+                enable_iam_database_authentication=self.enable_iam_database_authentication,
+                database_insights_mode=self.database_insights_mode,
+                enable_performance_insights=self.enable_performance_insights,
+                performance_insights_kms_key_id=self.performance_insights_kms_key_id,
+                performance_insights_retention_period=self.performance_insights_retention_period,
+                enable_cloudwatch_logs_exports=self.enable_cloudwatch_logs_exports,
+                processor_features=self.processor_features,
+                deletion_protection=self.deletion_protection,
+                max_allocated_storage=self.max_allocated_storage,
+                enable_customer_owned_ip=self.enable_customer_owned_ip,
+                network_type=self.network_type,
+                backup_target=self.backup_target,
+                custom_iam_instance_profile=self.custom_iam_instance_profile,
+                db_system_id=self.db_system_id,
+                ca_certificate_identifier=self.ca_certificate_identifier,
+                manage_master_user_password=self.manage_master_user_password,
+                master_user_secret_kms_key_id=self.master_user_secret_kms_key_id,
+                multi_tenant=self.multi_tenant,
+                dedicated_log_volume=self.dedicated_log_volume,
+                engine_lifecycle_support=self.engine_lifecycle_support,
+                tag_specifications=self.tag_specifications,
+                master_user_authentication_type=self.master_user_authentication_type,
+                additional_storage_volumes=self.additional_storage_volumes,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.db_name == other.db_name and
+                self.db_instance_identifier == other.db_instance_identifier and
+                self.allocated_storage == other.allocated_storage and
+                self.db_instance_class == other.db_instance_class and
+                self.engine == other.engine and
+                self.master_username == other.master_username and
+                self.master_user_password == other.master_user_password and
+                self.db_security_groups == other.db_security_groups and
+                self.vpc_security_group_ids == other.vpc_security_group_ids and
+                self.availability_zone == other.availability_zone and
+                self.db_subnet_group_name == other.db_subnet_group_name and
+                self.preferred_maintenance_window == other.preferred_maintenance_window and
+                self.db_parameter_group_name == other.db_parameter_group_name and
+                self.backup_retention_period == other.backup_retention_period and
+                self.preferred_backup_window == other.preferred_backup_window and
+                self.port == other.port and
+                self.multi_az == other.multi_az and
+                self.engine_version == other.engine_version and
+                self.auto_minor_version_upgrade == other.auto_minor_version_upgrade and
+                self.license_model == other.license_model and
+                self.iops == other.iops and
+                self.storage_throughput == other.storage_throughput and
+                self.option_group_name == other.option_group_name and
+                self.character_set_name == other.character_set_name and
+                self.nchar_character_set_name == other.nchar_character_set_name and
+                self.publicly_accessible == other.publicly_accessible and
+                self.tags == other.tags and
+                self.db_cluster_identifier == other.db_cluster_identifier and
+                self.storage_type == other.storage_type and
+                self.tde_credential_arn == other.tde_credential_arn and
+                self.tde_credential_password == other.tde_credential_password and
+                self.storage_encrypted == other.storage_encrypted and
+                self.kms_key_id == other.kms_key_id and
+                self.domain == other.domain and
+                self.domain_fqdn == other.domain_fqdn and
+                self.domain_ou == other.domain_ou and
+                self.domain_auth_secret_arn == other.domain_auth_secret_arn and
+                self.domain_dns_ips == other.domain_dns_ips and
+                self.copy_tags_to_snapshot == other.copy_tags_to_snapshot and
+                self.monitoring_interval == other.monitoring_interval and
+                self.monitoring_role_arn == other.monitoring_role_arn and
+                self.domain_iam_role_name == other.domain_iam_role_name and
+                self.promotion_tier == other.promotion_tier and
+                self.timezone == other.timezone and
+                self.enable_iam_database_authentication == other.enable_iam_database_authentication and
+                self.database_insights_mode == other.database_insights_mode and
+                self.enable_performance_insights == other.enable_performance_insights and
+                self.performance_insights_kms_key_id == other.performance_insights_kms_key_id and
+                self.performance_insights_retention_period == other.performance_insights_retention_period and
+                self.enable_cloudwatch_logs_exports == other.enable_cloudwatch_logs_exports and
+                self.processor_features == other.processor_features and
+                self.deletion_protection == other.deletion_protection and
+                self.max_allocated_storage == other.max_allocated_storage and
+                self.enable_customer_owned_ip == other.enable_customer_owned_ip and
+                self.network_type == other.network_type and
+                self.backup_target == other.backup_target and
+                self.custom_iam_instance_profile == other.custom_iam_instance_profile and
+                self.db_system_id == other.db_system_id and
+                self.ca_certificate_identifier == other.ca_certificate_identifier and
+                self.manage_master_user_password == other.manage_master_user_password and
+                self.master_user_secret_kms_key_id == other.master_user_secret_kms_key_id and
+                self.multi_tenant == other.multi_tenant and
+                self.dedicated_log_volume == other.dedicated_log_volume and
+                self.engine_lifecycle_support == other.engine_lifecycle_support and
+                self.tag_specifications == other.tag_specifications and
+                self.master_user_authentication_type == other.master_user_authentication_type and
+                self.additional_storage_volumes == other.additional_storage_volumes
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            '__shape__',
+            'db_name',
+            'db_instance_identifier',
+            'allocated_storage',
+            'db_instance_class',
+            'engine',
+            'master_username',
+            'master_user_password',
+            'db_security_groups',
+            'vpc_security_group_ids',
+            'availability_zone',
+            'db_subnet_group_name',
+            'preferred_maintenance_window',
+            'db_parameter_group_name',
+            'backup_retention_period',
+            'preferred_backup_window',
+            'port',
+            'multi_az',
+            'engine_version',
+            'auto_minor_version_upgrade',
+            'license_model',
+            'iops',
+            'storage_throughput',
+            'option_group_name',
+            'character_set_name',
+            'nchar_character_set_name',
+            'publicly_accessible',
+            'tags',
+            'db_cluster_identifier',
+            'storage_type',
+            'tde_credential_arn',
+            'tde_credential_password',
+            'storage_encrypted',
+            'kms_key_id',
+            'domain',
+            'domain_fqdn',
+            'domain_ou',
+            'domain_auth_secret_arn',
+            'domain_dns_ips',
+            'copy_tags_to_snapshot',
+            'monitoring_interval',
+            'monitoring_role_arn',
+            'domain_iam_role_name',
+            'promotion_tier',
+            'timezone',
+            'enable_iam_database_authentication',
+            'database_insights_mode',
+            'enable_performance_insights',
+            'performance_insights_kms_key_id',
+            'performance_insights_retention_period',
+            'enable_cloudwatch_logs_exports',
+            'processor_features',
+            'deletion_protection',
+            'max_allocated_storage',
+            'enable_customer_owned_ip',
+            'network_type',
+            'backup_target',
+            'custom_iam_instance_profile',
+            'db_system_id',
+            'ca_certificate_identifier',
+            'manage_master_user_password',
+            'master_user_secret_kms_key_id',
+            'multi_tenant',
+            'dedicated_log_volume',
+            'engine_lifecycle_support',
+            'tag_specifications',
+            'master_user_authentication_type',
+            'additional_storage_volumes',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                 or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            '__shape__',
+            'db_name',
+            'db_instance_identifier',
+            'allocated_storage',
+            'db_instance_class',
+            'engine',
+            'master_username',
+            'master_user_password',
+            'db_security_groups',
+            'vpc_security_group_ids',
+            'availability_zone',
+            'db_subnet_group_name',
+            'preferred_maintenance_window',
+            'db_parameter_group_name',
+            'backup_retention_period',
+            'preferred_backup_window',
+            'port',
+            'multi_az',
+            'engine_version',
+            'auto_minor_version_upgrade',
+            'license_model',
+            'iops',
+            'storage_throughput',
+            'option_group_name',
+            'character_set_name',
+            'nchar_character_set_name',
+            'publicly_accessible',
+            'tags',
+            'db_cluster_identifier',
+            'storage_type',
+            'tde_credential_arn',
+            'tde_credential_password',
+            'storage_encrypted',
+            'kms_key_id',
+            'domain',
+            'domain_fqdn',
+            'domain_ou',
+            'domain_auth_secret_arn',
+            'domain_dns_ips',
+            'copy_tags_to_snapshot',
+            'monitoring_interval',
+            'monitoring_role_arn',
+            'domain_iam_role_name',
+            'promotion_tier',
+            'timezone',
+            'enable_iam_database_authentication',
+            'database_insights_mode',
+            'enable_performance_insights',
+            'performance_insights_kms_key_id',
+            'performance_insights_retention_period',
+            'enable_cloudwatch_logs_exports',
+            'processor_features',
+            'deletion_protection',
+            'max_allocated_storage',
+            'enable_customer_owned_ip',
+            'network_type',
+            'backup_target',
+            'custom_iam_instance_profile',
+            'db_system_id',
+            'ca_certificate_identifier',
+            'manage_master_user_password',
+            'master_user_secret_kms_key_id',
+            'multi_tenant',
+            'dedicated_log_volume',
+            'engine_lifecycle_support',
+            'tag_specifications',
+            'master_user_authentication_type',
+            'additional_storage_volumes',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                 or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.db_name,
+                self.db_instance_identifier,
+                self.allocated_storage,
+                self.db_instance_class,
+                self.engine,
+                self.master_username,
+                self.master_user_password,
+                self.db_security_groups,
+                self.vpc_security_group_ids,
+                self.availability_zone,
+                self.db_subnet_group_name,
+                self.preferred_maintenance_window,
+                self.db_parameter_group_name,
+                self.backup_retention_period,
+                self.preferred_backup_window,
+                self.port,
+                self.multi_az,
+                self.engine_version,
+                self.auto_minor_version_upgrade,
+                self.license_model,
+                self.iops,
+                self.storage_throughput,
+                self.option_group_name,
+                self.character_set_name,
+                self.nchar_character_set_name,
+                self.publicly_accessible,
+                self.tags,
+                self.db_cluster_identifier,
+                self.storage_type,
+                self.tde_credential_arn,
+                self.tde_credential_password,
+                self.storage_encrypted,
+                self.kms_key_id,
+                self.domain,
+                self.domain_fqdn,
+                self.domain_ou,
+                self.domain_auth_secret_arn,
+                self.domain_dns_ips,
+                self.copy_tags_to_snapshot,
+                self.monitoring_interval,
+                self.monitoring_role_arn,
+                self.domain_iam_role_name,
+                self.promotion_tier,
+                self.timezone,
+                self.enable_iam_database_authentication,
+                self.database_insights_mode,
+                self.enable_performance_insights,
+                self.performance_insights_kms_key_id,
+                self.performance_insights_retention_period,
+                self.enable_cloudwatch_logs_exports,
+                self.processor_features,
+                self.deletion_protection,
+                self.max_allocated_storage,
+                self.enable_customer_owned_ip,
+                self.network_type,
+                self.backup_target,
+                self.custom_iam_instance_profile,
+                self.db_system_id,
+                self.ca_certificate_identifier,
+                self.manage_master_user_password,
+                self.master_user_secret_kms_key_id,
+                self.multi_tenant,
+                self.dedicated_log_volume,
+                self.engine_lifecycle_support,
+                self.tag_specifications,
+                self.master_user_authentication_type,
+                self.additional_storage_volumes,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            *,
+            db_name: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
+            db_instance_identifier: __dataclass__init__fields__2__annotation,
+            allocated_storage: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
+            db_instance_class: __dataclass__init__fields__4__annotation,
+            engine: __dataclass__init__fields__5__annotation,
+            master_username: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
+            master_user_password: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
+            db_security_groups: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
+            vpc_security_group_ids: __dataclass__init__fields__9__annotation = __dataclass__init__fields__9__default,
+            availability_zone: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
+            db_subnet_group_name: __dataclass__init__fields__11__annotation = __dataclass__init__fields__11__default,
+            preferred_maintenance_window: __dataclass__init__fields__12__annotation = __dataclass__init__fields__12__default,
+            db_parameter_group_name: __dataclass__init__fields__13__annotation = __dataclass__init__fields__13__default,
+            backup_retention_period: __dataclass__init__fields__14__annotation = __dataclass__init__fields__14__default,
+            preferred_backup_window: __dataclass__init__fields__15__annotation = __dataclass__init__fields__15__default,
+            port: __dataclass__init__fields__16__annotation = __dataclass__init__fields__16__default,
+            multi_az: __dataclass__init__fields__17__annotation = __dataclass__init__fields__17__default,
+            engine_version: __dataclass__init__fields__18__annotation = __dataclass__init__fields__18__default,
+            auto_minor_version_upgrade: __dataclass__init__fields__19__annotation = __dataclass__init__fields__19__default,
+            license_model: __dataclass__init__fields__20__annotation = __dataclass__init__fields__20__default,
+            iops: __dataclass__init__fields__21__annotation = __dataclass__init__fields__21__default,
+            storage_throughput: __dataclass__init__fields__22__annotation = __dataclass__init__fields__22__default,
+            option_group_name: __dataclass__init__fields__23__annotation = __dataclass__init__fields__23__default,
+            character_set_name: __dataclass__init__fields__24__annotation = __dataclass__init__fields__24__default,
+            nchar_character_set_name: __dataclass__init__fields__25__annotation = __dataclass__init__fields__25__default,
+            publicly_accessible: __dataclass__init__fields__26__annotation = __dataclass__init__fields__26__default,
+            tags: __dataclass__init__fields__27__annotation = __dataclass__init__fields__27__default,
+            db_cluster_identifier: __dataclass__init__fields__28__annotation = __dataclass__init__fields__28__default,
+            storage_type: __dataclass__init__fields__29__annotation = __dataclass__init__fields__29__default,
+            tde_credential_arn: __dataclass__init__fields__30__annotation = __dataclass__init__fields__30__default,
+            tde_credential_password: __dataclass__init__fields__31__annotation = __dataclass__init__fields__31__default,
+            storage_encrypted: __dataclass__init__fields__32__annotation = __dataclass__init__fields__32__default,
+            kms_key_id: __dataclass__init__fields__33__annotation = __dataclass__init__fields__33__default,
+            domain: __dataclass__init__fields__34__annotation = __dataclass__init__fields__34__default,
+            domain_fqdn: __dataclass__init__fields__35__annotation = __dataclass__init__fields__35__default,
+            domain_ou: __dataclass__init__fields__36__annotation = __dataclass__init__fields__36__default,
+            domain_auth_secret_arn: __dataclass__init__fields__37__annotation = __dataclass__init__fields__37__default,
+            domain_dns_ips: __dataclass__init__fields__38__annotation = __dataclass__init__fields__38__default,
+            copy_tags_to_snapshot: __dataclass__init__fields__39__annotation = __dataclass__init__fields__39__default,
+            monitoring_interval: __dataclass__init__fields__40__annotation = __dataclass__init__fields__40__default,
+            monitoring_role_arn: __dataclass__init__fields__41__annotation = __dataclass__init__fields__41__default,
+            domain_iam_role_name: __dataclass__init__fields__42__annotation = __dataclass__init__fields__42__default,
+            promotion_tier: __dataclass__init__fields__43__annotation = __dataclass__init__fields__43__default,
+            timezone: __dataclass__init__fields__44__annotation = __dataclass__init__fields__44__default,
+            enable_iam_database_authentication: __dataclass__init__fields__45__annotation = __dataclass__init__fields__45__default,
+            database_insights_mode: __dataclass__init__fields__46__annotation = __dataclass__init__fields__46__default,
+            enable_performance_insights: __dataclass__init__fields__47__annotation = __dataclass__init__fields__47__default,
+            performance_insights_kms_key_id: __dataclass__init__fields__48__annotation = __dataclass__init__fields__48__default,
+            performance_insights_retention_period: __dataclass__init__fields__49__annotation = __dataclass__init__fields__49__default,
+            enable_cloudwatch_logs_exports: __dataclass__init__fields__50__annotation = __dataclass__init__fields__50__default,
+            processor_features: __dataclass__init__fields__51__annotation = __dataclass__init__fields__51__default,
+            deletion_protection: __dataclass__init__fields__52__annotation = __dataclass__init__fields__52__default,
+            max_allocated_storage: __dataclass__init__fields__53__annotation = __dataclass__init__fields__53__default,
+            enable_customer_owned_ip: __dataclass__init__fields__54__annotation = __dataclass__init__fields__54__default,
+            network_type: __dataclass__init__fields__55__annotation = __dataclass__init__fields__55__default,
+            backup_target: __dataclass__init__fields__56__annotation = __dataclass__init__fields__56__default,
+            custom_iam_instance_profile: __dataclass__init__fields__57__annotation = __dataclass__init__fields__57__default,
+            db_system_id: __dataclass__init__fields__58__annotation = __dataclass__init__fields__58__default,
+            ca_certificate_identifier: __dataclass__init__fields__59__annotation = __dataclass__init__fields__59__default,
+            manage_master_user_password: __dataclass__init__fields__60__annotation = __dataclass__init__fields__60__default,
+            master_user_secret_kms_key_id: __dataclass__init__fields__61__annotation = __dataclass__init__fields__61__default,
+            multi_tenant: __dataclass__init__fields__62__annotation = __dataclass__init__fields__62__default,
+            dedicated_log_volume: __dataclass__init__fields__63__annotation = __dataclass__init__fields__63__default,
+            engine_lifecycle_support: __dataclass__init__fields__64__annotation = __dataclass__init__fields__64__default,
+            tag_specifications: __dataclass__init__fields__65__annotation = __dataclass__init__fields__65__default,
+            master_user_authentication_type: __dataclass__init__fields__66__annotation = __dataclass__init__fields__66__default,
+            additional_storage_volumes: __dataclass__init__fields__67__annotation = __dataclass__init__fields__67__default,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'db_name', db_name)
+            __dataclass__object_setattr(self, 'db_instance_identifier', db_instance_identifier)
+            __dataclass__object_setattr(self, 'allocated_storage', allocated_storage)
+            __dataclass__object_setattr(self, 'db_instance_class', db_instance_class)
+            __dataclass__object_setattr(self, 'engine', engine)
+            __dataclass__object_setattr(self, 'master_username', master_username)
+            __dataclass__object_setattr(self, 'master_user_password', master_user_password)
+            __dataclass__object_setattr(self, 'db_security_groups', db_security_groups)
+            __dataclass__object_setattr(self, 'vpc_security_group_ids', vpc_security_group_ids)
+            __dataclass__object_setattr(self, 'availability_zone', availability_zone)
+            __dataclass__object_setattr(self, 'db_subnet_group_name', db_subnet_group_name)
+            __dataclass__object_setattr(self, 'preferred_maintenance_window', preferred_maintenance_window)
+            __dataclass__object_setattr(self, 'db_parameter_group_name', db_parameter_group_name)
+            __dataclass__object_setattr(self, 'backup_retention_period', backup_retention_period)
+            __dataclass__object_setattr(self, 'preferred_backup_window', preferred_backup_window)
+            __dataclass__object_setattr(self, 'port', port)
+            __dataclass__object_setattr(self, 'multi_az', multi_az)
+            __dataclass__object_setattr(self, 'engine_version', engine_version)
+            __dataclass__object_setattr(self, 'auto_minor_version_upgrade', auto_minor_version_upgrade)
+            __dataclass__object_setattr(self, 'license_model', license_model)
+            __dataclass__object_setattr(self, 'iops', iops)
+            __dataclass__object_setattr(self, 'storage_throughput', storage_throughput)
+            __dataclass__object_setattr(self, 'option_group_name', option_group_name)
+            __dataclass__object_setattr(self, 'character_set_name', character_set_name)
+            __dataclass__object_setattr(self, 'nchar_character_set_name', nchar_character_set_name)
+            __dataclass__object_setattr(self, 'publicly_accessible', publicly_accessible)
+            __dataclass__object_setattr(self, 'tags', tags)
+            __dataclass__object_setattr(self, 'db_cluster_identifier', db_cluster_identifier)
+            __dataclass__object_setattr(self, 'storage_type', storage_type)
+            __dataclass__object_setattr(self, 'tde_credential_arn', tde_credential_arn)
+            __dataclass__object_setattr(self, 'tde_credential_password', tde_credential_password)
+            __dataclass__object_setattr(self, 'storage_encrypted', storage_encrypted)
+            __dataclass__object_setattr(self, 'kms_key_id', kms_key_id)
+            __dataclass__object_setattr(self, 'domain', domain)
+            __dataclass__object_setattr(self, 'domain_fqdn', domain_fqdn)
+            __dataclass__object_setattr(self, 'domain_ou', domain_ou)
+            __dataclass__object_setattr(self, 'domain_auth_secret_arn', domain_auth_secret_arn)
+            __dataclass__object_setattr(self, 'domain_dns_ips', domain_dns_ips)
+            __dataclass__object_setattr(self, 'copy_tags_to_snapshot', copy_tags_to_snapshot)
+            __dataclass__object_setattr(self, 'monitoring_interval', monitoring_interval)
+            __dataclass__object_setattr(self, 'monitoring_role_arn', monitoring_role_arn)
+            __dataclass__object_setattr(self, 'domain_iam_role_name', domain_iam_role_name)
+            __dataclass__object_setattr(self, 'promotion_tier', promotion_tier)
+            __dataclass__object_setattr(self, 'timezone', timezone)
+            __dataclass__object_setattr(self, 'enable_iam_database_authentication', enable_iam_database_authentication)
+            __dataclass__object_setattr(self, 'database_insights_mode', database_insights_mode)
+            __dataclass__object_setattr(self, 'enable_performance_insights', enable_performance_insights)
+            __dataclass__object_setattr(self, 'performance_insights_kms_key_id', performance_insights_kms_key_id)
+            __dataclass__object_setattr(self, 'performance_insights_retention_period', performance_insights_retention_period)
+            __dataclass__object_setattr(self, 'enable_cloudwatch_logs_exports', enable_cloudwatch_logs_exports)
+            __dataclass__object_setattr(self, 'processor_features', processor_features)
+            __dataclass__object_setattr(self, 'deletion_protection', deletion_protection)
+            __dataclass__object_setattr(self, 'max_allocated_storage', max_allocated_storage)
+            __dataclass__object_setattr(self, 'enable_customer_owned_ip', enable_customer_owned_ip)
+            __dataclass__object_setattr(self, 'network_type', network_type)
+            __dataclass__object_setattr(self, 'backup_target', backup_target)
+            __dataclass__object_setattr(self, 'custom_iam_instance_profile', custom_iam_instance_profile)
+            __dataclass__object_setattr(self, 'db_system_id', db_system_id)
+            __dataclass__object_setattr(self, 'ca_certificate_identifier', ca_certificate_identifier)
+            __dataclass__object_setattr(self, 'manage_master_user_password', manage_master_user_password)
+            __dataclass__object_setattr(self, 'master_user_secret_kms_key_id', master_user_secret_kms_key_id)
+            __dataclass__object_setattr(self, 'multi_tenant', multi_tenant)
+            __dataclass__object_setattr(self, 'dedicated_log_volume', dedicated_log_volume)
+            __dataclass__object_setattr(self, 'engine_lifecycle_support', engine_lifecycle_support)
+            __dataclass__object_setattr(self, 'tag_specifications', tag_specifications)
+            __dataclass__object_setattr(self, 'master_user_authentication_type', master_user_authentication_type)
+            __dataclass__object_setattr(self, 'additional_storage_volumes', additional_storage_volumes)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"db_name={self.db_name!r}")
+            parts.append(f"db_instance_identifier={self.db_instance_identifier!r}")
+            parts.append(f"allocated_storage={self.allocated_storage!r}")
+            parts.append(f"db_instance_class={self.db_instance_class!r}")
+            parts.append(f"engine={self.engine!r}")
+            parts.append(f"master_username={self.master_username!r}")
+            parts.append(f"master_user_password={self.master_user_password!r}")
+            parts.append(f"db_security_groups={self.db_security_groups!r}")
+            parts.append(f"vpc_security_group_ids={self.vpc_security_group_ids!r}")
+            parts.append(f"availability_zone={self.availability_zone!r}")
+            parts.append(f"db_subnet_group_name={self.db_subnet_group_name!r}")
+            parts.append(f"preferred_maintenance_window={self.preferred_maintenance_window!r}")
+            parts.append(f"db_parameter_group_name={self.db_parameter_group_name!r}")
+            parts.append(f"backup_retention_period={self.backup_retention_period!r}")
+            parts.append(f"preferred_backup_window={self.preferred_backup_window!r}")
+            parts.append(f"port={self.port!r}")
+            parts.append(f"multi_az={self.multi_az!r}")
+            parts.append(f"engine_version={self.engine_version!r}")
+            parts.append(f"auto_minor_version_upgrade={self.auto_minor_version_upgrade!r}")
+            parts.append(f"license_model={self.license_model!r}")
+            parts.append(f"iops={self.iops!r}")
+            parts.append(f"storage_throughput={self.storage_throughput!r}")
+            parts.append(f"option_group_name={self.option_group_name!r}")
+            parts.append(f"character_set_name={self.character_set_name!r}")
+            parts.append(f"nchar_character_set_name={self.nchar_character_set_name!r}")
+            parts.append(f"publicly_accessible={self.publicly_accessible!r}")
+            parts.append(f"tags={self.tags!r}")
+            parts.append(f"db_cluster_identifier={self.db_cluster_identifier!r}")
+            parts.append(f"storage_type={self.storage_type!r}")
+            parts.append(f"tde_credential_arn={self.tde_credential_arn!r}")
+            parts.append(f"tde_credential_password={self.tde_credential_password!r}")
+            parts.append(f"storage_encrypted={self.storage_encrypted!r}")
+            parts.append(f"kms_key_id={self.kms_key_id!r}")
+            parts.append(f"domain={self.domain!r}")
+            parts.append(f"domain_fqdn={self.domain_fqdn!r}")
+            parts.append(f"domain_ou={self.domain_ou!r}")
+            parts.append(f"domain_auth_secret_arn={self.domain_auth_secret_arn!r}")
+            parts.append(f"domain_dns_ips={self.domain_dns_ips!r}")
+            parts.append(f"copy_tags_to_snapshot={self.copy_tags_to_snapshot!r}")
+            parts.append(f"monitoring_interval={self.monitoring_interval!r}")
+            parts.append(f"monitoring_role_arn={self.monitoring_role_arn!r}")
+            parts.append(f"domain_iam_role_name={self.domain_iam_role_name!r}")
+            parts.append(f"promotion_tier={self.promotion_tier!r}")
+            parts.append(f"timezone={self.timezone!r}")
+            parts.append(f"enable_iam_database_authentication={self.enable_iam_database_authentication!r}")
+            parts.append(f"database_insights_mode={self.database_insights_mode!r}")
+            parts.append(f"enable_performance_insights={self.enable_performance_insights!r}")
+            parts.append(f"performance_insights_kms_key_id={self.performance_insights_kms_key_id!r}")
+            parts.append(f"performance_insights_retention_period={self.performance_insights_retention_period!r}")
+            parts.append(f"enable_cloudwatch_logs_exports={self.enable_cloudwatch_logs_exports!r}")
+            parts.append(f"processor_features={self.processor_features!r}")
+            parts.append(f"deletion_protection={self.deletion_protection!r}")
+            parts.append(f"max_allocated_storage={self.max_allocated_storage!r}")
+            parts.append(f"enable_customer_owned_ip={self.enable_customer_owned_ip!r}")
+            parts.append(f"network_type={self.network_type!r}")
+            parts.append(f"backup_target={self.backup_target!r}")
+            parts.append(f"custom_iam_instance_profile={self.custom_iam_instance_profile!r}")
+            parts.append(f"db_system_id={self.db_system_id!r}")
+            parts.append(f"ca_certificate_identifier={self.ca_certificate_identifier!r}")
+            parts.append(f"manage_master_user_password={self.manage_master_user_password!r}")
+            parts.append(f"master_user_secret_kms_key_id={self.master_user_secret_kms_key_id!r}")
+            parts.append(f"multi_tenant={self.multi_tenant!r}")
+            parts.append(f"dedicated_log_volume={self.dedicated_log_volume!r}")
+            parts.append(f"engine_lifecycle_support={self.engine_lifecycle_support!r}")
+            parts.append(f"tag_specifications={self.tag_specifications!r}")
+            parts.append(f"master_user_authentication_type={self.master_user_authentication_type!r}")
+            parts.append(f"additional_storage_volumes={self.additional_storage_volumes!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
         "Plans(tup=(CopyPlan(fields=('vpc_security_group_id', 'status')), EqPlan(fields=('vpc_security_group_id', 'stat"
         "us')), FrozenPlan(fields=('__shape__', 'vpc_security_group_id', 'status'), allow_dynamic_dunder_attrs=False), "
         "HashPlan(action='add', fields=('vpc_security_group_id', 'status'), cache=False), InitPlan(fields=(InitPlan.Fie"
@@ -3065,6 +4260,163 @@ def _process_dataclass__6eeb5cf87ddee1bcad75c8766a916fd57479a19d():
         def __repr__(self):
             parts = []
             parts.append(f"arn={self.arn!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('resource_type', 'tags')), EqPlan(fields=('resource_type', 'tags')), FrozenPlan(fi"
+        "elds=('__shape__', 'resource_type', 'tags'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields="
+        "('resource_type', 'tags'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(na"
+        "me='init.fields.0.annotation'), default=None, default_factory=None, init=True, override=False, field_type=Fiel"
+        "dType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='resource_type', annotation"
+        "=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, in"
+        "it=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan"
+        ".Field(name='tags', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.defau"
+        "lt'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=No"
+        "ne, check_type=None)), self_param='self', std_params=(), kw_only_params=('resource_type', 'tags'), frozen=True"
+        ", slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='res"
+        "ource_type', kw_only=True, fn=None), ReprPlan.Field(name='tags', kw_only=True, fn=None)), id=False, terse=Fals"
+        "e, default_fn=None)))"
+    ),
+    plan_repr_sha1='72408a250113d7efc0131778f5e6fa438b55e772',
+    op_ref_idents=(
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+    ),
+    cls_names=(
+        ('ominfra.clouds.aws.models.services.rds', 'TagSpecification'),
+    ),
+)
+def _process_dataclass__72408a250113d7efc0131778f5e6fa438b55e772():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__1__default,
+        __dataclass__init__fields__2__annotation,
+        __dataclass__init__fields__2__default,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                resource_type=self.resource_type,
+                tags=self.tags,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.resource_type == other.resource_type and
+                self.tags == other.tags
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            '__shape__',
+            'resource_type',
+            'tags',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                 or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            '__shape__',
+            'resource_type',
+            'tags',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                 or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.resource_type,
+                self.tags,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            *,
+            resource_type: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
+            tags: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'resource_type', resource_type)
+            __dataclass__object_setattr(self, 'tags', tags)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"resource_type={self.resource_type!r}")
+            parts.append(f"tags={self.tags!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -5337,1185 +6689,6 @@ def _process_dataclass__dfef3bd76104061b462b6d622ccea966239e7922():
             parts.append(f"normal={self.normal!r}")
             parts.append(f"status={self.status!r}")
             parts.append(f"message={self.message!r}")
-            return (
-                f"{self.__class__.__qualname__}("
-                f"{', '.join(parts)}"
-                f")"
-            )
-
-        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
-        if '__repr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__repr__', __repr__)
-
-    return _process_dataclass
-
-
-@_register(
-    plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('db_name', 'db_instance_identifier', 'allocated_storage', 'db_instance_class', 'en"
-        "gine', 'master_username', 'master_user_password', 'db_security_groups', 'vpc_security_group_ids', 'availabilit"
-        "y_zone', 'db_subnet_group_name', 'preferred_maintenance_window', 'db_parameter_group_name', 'backup_retention_"
-        "period', 'preferred_backup_window', 'port', 'multi_az', 'engine_version', 'auto_minor_version_upgrade', 'licen"
-        "se_model', 'iops', 'storage_throughput', 'option_group_name', 'character_set_name', 'nchar_character_set_name'"
-        ", 'publicly_accessible', 'tags', 'db_cluster_identifier', 'storage_type', 'tde_credential_arn', 'tde_credentia"
-        "l_password', 'storage_encrypted', 'kms_key_id', 'domain', 'domain_fqdn', 'domain_ou', 'domain_auth_secret_arn'"
-        ", 'domain_dns_ips', 'copy_tags_to_snapshot', 'monitoring_interval', 'monitoring_role_arn', 'domain_iam_role_na"
-        "me', 'promotion_tier', 'timezone', 'enable_iam_database_authentication', 'database_insights_mode', 'enable_per"
-        "formance_insights', 'performance_insights_kms_key_id', 'performance_insights_retention_period', 'enable_cloudw"
-        "atch_logs_exports', 'processor_features', 'deletion_protection', 'max_allocated_storage', 'enable_customer_own"
-        "ed_ip', 'network_type', 'backup_target', 'custom_iam_instance_profile', 'db_system_id', 'ca_certificate_identi"
-        "fier', 'manage_master_user_password', 'master_user_secret_kms_key_id', 'multi_tenant', 'dedicated_log_volume',"
-        " 'engine_lifecycle_support', 'master_user_authentication_type', 'additional_storage_volumes')), EqPlan(fields="
-        "('db_name', 'db_instance_identifier', 'allocated_storage', 'db_instance_class', 'engine', 'master_username', '"
-        "master_user_password', 'db_security_groups', 'vpc_security_group_ids', 'availability_zone', 'db_subnet_group_n"
-        "ame', 'preferred_maintenance_window', 'db_parameter_group_name', 'backup_retention_period', 'preferred_backup_"
-        "window', 'port', 'multi_az', 'engine_version', 'auto_minor_version_upgrade', 'license_model', 'iops', 'storage"
-        "_throughput', 'option_group_name', 'character_set_name', 'nchar_character_set_name', 'publicly_accessible', 't"
-        "ags', 'db_cluster_identifier', 'storage_type', 'tde_credential_arn', 'tde_credential_password', 'storage_encry"
-        "pted', 'kms_key_id', 'domain', 'domain_fqdn', 'domain_ou', 'domain_auth_secret_arn', 'domain_dns_ips', 'copy_t"
-        "ags_to_snapshot', 'monitoring_interval', 'monitoring_role_arn', 'domain_iam_role_name', 'promotion_tier', 'tim"
-        "ezone', 'enable_iam_database_authentication', 'database_insights_mode', 'enable_performance_insights', 'perfor"
-        "mance_insights_kms_key_id', 'performance_insights_retention_period', 'enable_cloudwatch_logs_exports', 'proces"
-        "sor_features', 'deletion_protection', 'max_allocated_storage', 'enable_customer_owned_ip', 'network_type', 'ba"
-        "ckup_target', 'custom_iam_instance_profile', 'db_system_id', 'ca_certificate_identifier', 'manage_master_user_"
-        "password', 'master_user_secret_kms_key_id', 'multi_tenant', 'dedicated_log_volume', 'engine_lifecycle_support'"
-        ", 'master_user_authentication_type', 'additional_storage_volumes')), FrozenPlan(fields=('__shape__', 'db_name'"
-        ", 'db_instance_identifier', 'allocated_storage', 'db_instance_class', 'engine', 'master_username', 'master_use"
-        "r_password', 'db_security_groups', 'vpc_security_group_ids', 'availability_zone', 'db_subnet_group_name', 'pre"
-        "ferred_maintenance_window', 'db_parameter_group_name', 'backup_retention_period', 'preferred_backup_window', '"
-        "port', 'multi_az', 'engine_version', 'auto_minor_version_upgrade', 'license_model', 'iops', 'storage_throughpu"
-        "t', 'option_group_name', 'character_set_name', 'nchar_character_set_name', 'publicly_accessible', 'tags', 'db_"
-        "cluster_identifier', 'storage_type', 'tde_credential_arn', 'tde_credential_password', 'storage_encrypted', 'km"
-        "s_key_id', 'domain', 'domain_fqdn', 'domain_ou', 'domain_auth_secret_arn', 'domain_dns_ips', 'copy_tags_to_sna"
-        "pshot', 'monitoring_interval', 'monitoring_role_arn', 'domain_iam_role_name', 'promotion_tier', 'timezone', 'e"
-        "nable_iam_database_authentication', 'database_insights_mode', 'enable_performance_insights', 'performance_insi"
-        "ghts_kms_key_id', 'performance_insights_retention_period', 'enable_cloudwatch_logs_exports', 'processor_featur"
-        "es', 'deletion_protection', 'max_allocated_storage', 'enable_customer_owned_ip', 'network_type', 'backup_targe"
-        "t', 'custom_iam_instance_profile', 'db_system_id', 'ca_certificate_identifier', 'manage_master_user_password',"
-        " 'master_user_secret_kms_key_id', 'multi_tenant', 'dedicated_log_volume', 'engine_lifecycle_support', 'master_"
-        "user_authentication_type', 'additional_storage_volumes'), allow_dynamic_dunder_attrs=False), HashPlan(action='"
-        "add', fields=('db_name', 'db_instance_identifier', 'allocated_storage', 'db_instance_class', 'engine', 'master"
-        "_username', 'master_user_password', 'db_security_groups', 'vpc_security_group_ids', 'availability_zone', 'db_s"
-        "ubnet_group_name', 'preferred_maintenance_window', 'db_parameter_group_name', 'backup_retention_period', 'pref"
-        "erred_backup_window', 'port', 'multi_az', 'engine_version', 'auto_minor_version_upgrade', 'license_model', 'io"
-        "ps', 'storage_throughput', 'option_group_name', 'character_set_name', 'nchar_character_set_name', 'publicly_ac"
-        "cessible', 'tags', 'db_cluster_identifier', 'storage_type', 'tde_credential_arn', 'tde_credential_password', '"
-        "storage_encrypted', 'kms_key_id', 'domain', 'domain_fqdn', 'domain_ou', 'domain_auth_secret_arn', 'domain_dns_"
-        "ips', 'copy_tags_to_snapshot', 'monitoring_interval', 'monitoring_role_arn', 'domain_iam_role_name', 'promotio"
-        "n_tier', 'timezone', 'enable_iam_database_authentication', 'database_insights_mode', 'enable_performance_insig"
-        "hts', 'performance_insights_kms_key_id', 'performance_insights_retention_period', 'enable_cloudwatch_logs_expo"
-        "rts', 'processor_features', 'deletion_protection', 'max_allocated_storage', 'enable_customer_owned_ip', 'netwo"
-        "rk_type', 'backup_target', 'custom_iam_instance_profile', 'db_system_id', 'ca_certificate_identifier', 'manage"
-        "_master_user_password', 'master_user_secret_kms_key_id', 'multi_tenant', 'dedicated_log_volume', 'engine_lifec"
-        "ycle_support', 'master_user_authentication_type', 'additional_storage_volumes'), cache=False), InitPlan(fields"
-        "=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_fa"
-        "ctory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type="
-        "None), InitPlan.Field(name='db_name', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='i"
-        "nit.fields.1.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce"
-        "=None, validate=None, check_type=None), InitPlan.Field(name='db_instance_identifier', annotation=OpRef(name='i"
-        "nit.fields.2.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType"
-        ".INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='allocated_storage', annotation=O"
-        "pRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init"
-        "=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.F"
-        "ield(name='db_instance_class', annotation=OpRef(name='init.fields.4.annotation'), default=None, default_factor"
-        "y=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)"
-        ", InitPlan.Field(name='engine', annotation=OpRef(name='init.fields.5.annotation'), default=None, default_facto"
-        "ry=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None"
-        "), InitPlan.Field(name='master_username', annotation=OpRef(name='init.fields.6.annotation'), default=OpRef(nam"
-        "e='init.fields.6.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, co"
-        "erce=None, validate=None, check_type=None), InitPlan.Field(name='master_user_password', annotation=OpRef(name="
-        "'init.fields.7.annotation'), default=OpRef(name='init.fields.7.default'), default_factory=None, init=True, ove"
-        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name="
-        "'db_security_groups', annotation=OpRef(name='init.fields.8.annotation'), default=OpRef(name='init.fields.8.def"
-        "ault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate="
-        "None, check_type=None), InitPlan.Field(name='vpc_security_group_ids', annotation=OpRef(name='init.fields.9.ann"
-        "otation'), default=OpRef(name='init.fields.9.default'), default_factory=None, init=True, override=False, field"
-        "_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='availability_zone"
-        "', annotation=OpRef(name='init.fields.10.annotation'), default=OpRef(name='init.fields.10.default'), default_f"
-        "actory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type="
-        "None), InitPlan.Field(name='db_subnet_group_name', annotation=OpRef(name='init.fields.11.annotation'), default"
-        "=OpRef(name='init.fields.11.default'), default_factory=None, init=True, override=False, field_type=FieldType.I"
-        "NSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='preferred_maintenance_window', ann"
-        "otation=OpRef(name='init.fields.12.annotation'), default=OpRef(name='init.fields.12.default'), default_factory"
-        "=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),"
-        " InitPlan.Field(name='db_parameter_group_name', annotation=OpRef(name='init.fields.13.annotation'), default=Op"
-        "Ref(name='init.fields.13.default'), default_factory=None, init=True, override=False, field_type=FieldType.INST"
-        "ANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='backup_retention_period', annotation="
-        "OpRef(name='init.fields.14.annotation'), default=OpRef(name='init.fields.14.default'), default_factory=None, i"
-        "nit=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPla"
-        "n.Field(name='preferred_backup_window', annotation=OpRef(name='init.fields.15.annotation'), default=OpRef(name"
-        "='init.fields.15.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, co"
-        "erce=None, validate=None, check_type=None), InitPlan.Field(name='port', annotation=OpRef(name='init.fields.16."
-        "annotation'), default=OpRef(name='init.fields.16.default'), default_factory=None, init=True, override=False, f"
-        "ield_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='multi_az', an"
-        "notation=OpRef(name='init.fields.17.annotation'), default=OpRef(name='init.fields.17.default'), default_factor"
-        "y=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)"
-        ", InitPlan.Field(name='engine_version', annotation=OpRef(name='init.fields.18.annotation'), default=OpRef(name"
-        "='init.fields.18.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, co"
-        "erce=None, validate=None, check_type=None), InitPlan.Field(name='auto_minor_version_upgrade', annotation=OpRef"
-        "(name='init.fields.19.annotation'), default=OpRef(name='init.fields.19.default'), default_factory=None, init=T"
-        "rue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fie"
-        "ld(name='license_model', annotation=OpRef(name='init.fields.20.annotation'), default=OpRef(name='init.fields.2"
-        "0.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, vali"
-        "date=None, check_type=None), InitPlan.Field(name='iops', annotation=OpRef(name='init.fields.21.annotation'), d"
-        "efault=OpRef(name='init.fields.21.default'), default_factory=None, init=True, override=False, field_type=Field"
-        "Type.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='storage_throughput', annotat"
-        "ion=OpRef(name='init.fields.22.annotation'), default=OpRef(name='init.fields.22.default'), default_factory=Non"
-        "e, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Ini"
-        "tPlan.Field(name='option_group_name', annotation=OpRef(name='init.fields.23.annotation'), default=OpRef(name='"
-        "init.fields.23.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coer"
-        "ce=None, validate=None, check_type=None), InitPlan.Field(name='character_set_name', annotation=OpRef(name='ini"
-        "t.fields.24.annotation'), default=OpRef(name='init.fields.24.default'), default_factory=None, init=True, overr"
-        "ide=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='n"
-        "char_character_set_name', annotation=OpRef(name='init.fields.25.annotation'), default=OpRef(name='init.fields."
-        "25.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
-        "idate=None, check_type=None), InitPlan.Field(name='publicly_accessible', annotation=OpRef(name='init.fields.26"
-        ".annotation'), default=OpRef(name='init.fields.26.default'), default_factory=None, init=True, override=False, "
-        "field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='tags', annot"
-        "ation=OpRef(name='init.fields.27.annotation'), default=OpRef(name='init.fields.27.default'), default_factory=N"
-        "one, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), I"
-        "nitPlan.Field(name='db_cluster_identifier', annotation=OpRef(name='init.fields.28.annotation'), default=OpRef("
-        "name='init.fields.28.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE"
-        ", coerce=None, validate=None, check_type=None), InitPlan.Field(name='storage_type', annotation=OpRef(name='ini"
-        "t.fields.29.annotation'), default=OpRef(name='init.fields.29.default'), default_factory=None, init=True, overr"
-        "ide=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='t"
-        "de_credential_arn', annotation=OpRef(name='init.fields.30.annotation'), default=OpRef(name='init.fields.30.def"
-        "ault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate="
-        "None, check_type=None), InitPlan.Field(name='tde_credential_password', annotation=OpRef(name='init.fields.31.a"
-        "nnotation'), default=OpRef(name='init.fields.31.default'), default_factory=None, init=True, override=False, fi"
-        "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='storage_encryp"
-        "ted', annotation=OpRef(name='init.fields.32.annotation'), default=OpRef(name='init.fields.32.default'), defaul"
-        "t_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_ty"
-        "pe=None), InitPlan.Field(name='kms_key_id', annotation=OpRef(name='init.fields.33.annotation'), default=OpRef("
-        "name='init.fields.33.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE"
-        ", coerce=None, validate=None, check_type=None), InitPlan.Field(name='domain', annotation=OpRef(name='init.fiel"
-        "ds.34.annotation'), default=OpRef(name='init.fields.34.default'), default_factory=None, init=True, override=Fa"
-        "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='domain_"
-        "fqdn', annotation=OpRef(name='init.fields.35.annotation'), default=OpRef(name='init.fields.35.default'), defau"
-        "lt_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_t"
-        "ype=None), InitPlan.Field(name='domain_ou', annotation=OpRef(name='init.fields.36.annotation'), default=OpRef("
-        "name='init.fields.36.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE"
-        ", coerce=None, validate=None, check_type=None), InitPlan.Field(name='domain_auth_secret_arn', annotation=OpRef"
-        "(name='init.fields.37.annotation'), default=OpRef(name='init.fields.37.default'), default_factory=None, init=T"
-        "rue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fie"
-        "ld(name='domain_dns_ips', annotation=OpRef(name='init.fields.38.annotation'), default=OpRef(name='init.fields."
-        "38.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
-        "idate=None, check_type=None), InitPlan.Field(name='copy_tags_to_snapshot', annotation=OpRef(name='init.fields."
-        "39.annotation'), default=OpRef(name='init.fields.39.default'), default_factory=None, init=True, override=False"
-        ", field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='monitoring"
-        "_interval', annotation=OpRef(name='init.fields.40.annotation'), default=OpRef(name='init.fields.40.default'), "
-        "default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, ch"
-        "eck_type=None), InitPlan.Field(name='monitoring_role_arn', annotation=OpRef(name='init.fields.41.annotation'),"
-        " default=OpRef(name='init.fields.41.default'), default_factory=None, init=True, override=False, field_type=Fie"
-        "ldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='domain_iam_role_name', ann"
-        "otation=OpRef(name='init.fields.42.annotation'), default=OpRef(name='init.fields.42.default'), default_factory"
-        "=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),"
-        " InitPlan.Field(name='promotion_tier', annotation=OpRef(name='init.fields.43.annotation'), default=OpRef(name="
-        "'init.fields.43.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
-        "rce=None, validate=None, check_type=None), InitPlan.Field(name='timezone', annotation=OpRef(name='init.fields."
-        "44.annotation'), default=OpRef(name='init.fields.44.default'), default_factory=None, init=True, override=False"
-        ", field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='enable_iam"
-        "_database_authentication', annotation=OpRef(name='init.fields.45.annotation'), default=OpRef(name='init.fields"
-        ".45.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
-        "lidate=None, check_type=None), InitPlan.Field(name='database_insights_mode', annotation=OpRef(name='init.field"
-        "s.46.annotation'), default=OpRef(name='init.fields.46.default'), default_factory=None, init=True, override=Fal"
-        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='enable_p"
-        "erformance_insights', annotation=OpRef(name='init.fields.47.annotation'), default=OpRef(name='init.fields.47.d"
-        "efault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
-        "e=None, check_type=None), InitPlan.Field(name='performance_insights_kms_key_id', annotation=OpRef(name='init.f"
-        "ields.48.annotation'), default=OpRef(name='init.fields.48.default'), default_factory=None, init=True, override"
-        "=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='perf"
-        "ormance_insights_retention_period', annotation=OpRef(name='init.fields.49.annotation'), default=OpRef(name='in"
-        "it.fields.49.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce"
-        "=None, validate=None, check_type=None), InitPlan.Field(name='enable_cloudwatch_logs_exports', annotation=OpRef"
-        "(name='init.fields.50.annotation'), default=OpRef(name='init.fields.50.default'), default_factory=None, init=T"
-        "rue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fie"
-        "ld(name='processor_features', annotation=OpRef(name='init.fields.51.annotation'), default=OpRef(name='init.fie"
-        "lds.51.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None,"
-        " validate=None, check_type=None), InitPlan.Field(name='deletion_protection', annotation=OpRef(name='init.field"
-        "s.52.annotation'), default=OpRef(name='init.fields.52.default'), default_factory=None, init=True, override=Fal"
-        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='max_allo"
-        "cated_storage', annotation=OpRef(name='init.fields.53.annotation'), default=OpRef(name='init.fields.53.default"
-        "'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None"
-        ", check_type=None), InitPlan.Field(name='enable_customer_owned_ip', annotation=OpRef(name='init.fields.54.anno"
-        "tation'), default=OpRef(name='init.fields.54.default'), default_factory=None, init=True, override=False, field"
-        "_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='network_type', an"
-        "notation=OpRef(name='init.fields.55.annotation'), default=OpRef(name='init.fields.55.default'), default_factor"
-        "y=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)"
-        ", InitPlan.Field(name='backup_target', annotation=OpRef(name='init.fields.56.annotation'), default=OpRef(name="
-        "'init.fields.56.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
-        "rce=None, validate=None, check_type=None), InitPlan.Field(name='custom_iam_instance_profile', annotation=OpRef"
-        "(name='init.fields.57.annotation'), default=OpRef(name='init.fields.57.default'), default_factory=None, init=T"
-        "rue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fie"
-        "ld(name='db_system_id', annotation=OpRef(name='init.fields.58.annotation'), default=OpRef(name='init.fields.58"
-        ".default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valid"
-        "ate=None, check_type=None), InitPlan.Field(name='ca_certificate_identifier', annotation=OpRef(name='init.field"
-        "s.59.annotation'), default=OpRef(name='init.fields.59.default'), default_factory=None, init=True, override=Fal"
-        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='manage_m"
-        "aster_user_password', annotation=OpRef(name='init.fields.60.annotation'), default=OpRef(name='init.fields.60.d"
-        "efault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
-        "e=None, check_type=None), InitPlan.Field(name='master_user_secret_kms_key_id', annotation=OpRef(name='init.fie"
-        "lds.61.annotation'), default=OpRef(name='init.fields.61.default'), default_factory=None, init=True, override=F"
-        "alse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='multi_"
-        "tenant', annotation=OpRef(name='init.fields.62.annotation'), default=OpRef(name='init.fields.62.default'), def"
-        "ault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check"
-        "_type=None), InitPlan.Field(name='dedicated_log_volume', annotation=OpRef(name='init.fields.63.annotation'), d"
-        "efault=OpRef(name='init.fields.63.default'), default_factory=None, init=True, override=False, field_type=Field"
-        "Type.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='engine_lifecycle_support', a"
-        "nnotation=OpRef(name='init.fields.64.annotation'), default=OpRef(name='init.fields.64.default'), default_facto"
-        "ry=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None"
-        "), InitPlan.Field(name='master_user_authentication_type', annotation=OpRef(name='init.fields.65.annotation'), "
-        "default=OpRef(name='init.fields.65.default'), default_factory=None, init=True, override=False, field_type=Fiel"
-        "dType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='additional_storage_volumes'"
-        ", annotation=OpRef(name='init.fields.66.annotation'), default=OpRef(name='init.fields.66.default'), default_fa"
-        "ctory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=N"
-        "one)), self_param='self', std_params=(), kw_only_params=('db_name', 'db_instance_identifier', 'allocated_stora"
-        "ge', 'db_instance_class', 'engine', 'master_username', 'master_user_password', 'db_security_groups', 'vpc_secu"
-        "rity_group_ids', 'availability_zone', 'db_subnet_group_name', 'preferred_maintenance_window', 'db_parameter_gr"
-        "oup_name', 'backup_retention_period', 'preferred_backup_window', 'port', 'multi_az', 'engine_version', 'auto_m"
-        "inor_version_upgrade', 'license_model', 'iops', 'storage_throughput', 'option_group_name', 'character_set_name"
-        "', 'nchar_character_set_name', 'publicly_accessible', 'tags', 'db_cluster_identifier', 'storage_type', 'tde_cr"
-        "edential_arn', 'tde_credential_password', 'storage_encrypted', 'kms_key_id', 'domain', 'domain_fqdn', 'domain_"
-        "ou', 'domain_auth_secret_arn', 'domain_dns_ips', 'copy_tags_to_snapshot', 'monitoring_interval', 'monitoring_r"
-        "ole_arn', 'domain_iam_role_name', 'promotion_tier', 'timezone', 'enable_iam_database_authentication', 'databas"
-        "e_insights_mode', 'enable_performance_insights', 'performance_insights_kms_key_id', 'performance_insights_rete"
-        "ntion_period', 'enable_cloudwatch_logs_exports', 'processor_features', 'deletion_protection', 'max_allocated_s"
-        "torage', 'enable_customer_owned_ip', 'network_type', 'backup_target', 'custom_iam_instance_profile', 'db_syste"
-        "m_id', 'ca_certificate_identifier', 'manage_master_user_password', 'master_user_secret_kms_key_id', 'multi_ten"
-        "ant', 'dedicated_log_volume', 'engine_lifecycle_support', 'master_user_authentication_type', 'additional_stora"
-        "ge_volumes'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields="
-        "(ReprPlan.Field(name='db_name', kw_only=True, fn=None), ReprPlan.Field(name='db_instance_identifier', kw_only="
-        "True, fn=None), ReprPlan.Field(name='allocated_storage', kw_only=True, fn=None), ReprPlan.Field(name='db_insta"
-        "nce_class', kw_only=True, fn=None), ReprPlan.Field(name='engine', kw_only=True, fn=None), ReprPlan.Field(name="
-        "'master_username', kw_only=True, fn=None), ReprPlan.Field(name='master_user_password', kw_only=True, fn=None),"
-        " ReprPlan.Field(name='db_security_groups', kw_only=True, fn=None), ReprPlan.Field(name='vpc_security_group_ids"
-        "', kw_only=True, fn=None), ReprPlan.Field(name='availability_zone', kw_only=True, fn=None), ReprPlan.Field(nam"
-        "e='db_subnet_group_name', kw_only=True, fn=None), ReprPlan.Field(name='preferred_maintenance_window', kw_only="
-        "True, fn=None), ReprPlan.Field(name='db_parameter_group_name', kw_only=True, fn=None), ReprPlan.Field(name='ba"
-        "ckup_retention_period', kw_only=True, fn=None), ReprPlan.Field(name='preferred_backup_window', kw_only=True, f"
-        "n=None), ReprPlan.Field(name='port', kw_only=True, fn=None), ReprPlan.Field(name='multi_az', kw_only=True, fn="
-        "None), ReprPlan.Field(name='engine_version', kw_only=True, fn=None), ReprPlan.Field(name='auto_minor_version_u"
-        "pgrade', kw_only=True, fn=None), ReprPlan.Field(name='license_model', kw_only=True, fn=None), ReprPlan.Field(n"
-        "ame='iops', kw_only=True, fn=None), ReprPlan.Field(name='storage_throughput', kw_only=True, fn=None), ReprPlan"
-        ".Field(name='option_group_name', kw_only=True, fn=None), ReprPlan.Field(name='character_set_name', kw_only=Tru"
-        "e, fn=None), ReprPlan.Field(name='nchar_character_set_name', kw_only=True, fn=None), ReprPlan.Field(name='publ"
-        "icly_accessible', kw_only=True, fn=None), ReprPlan.Field(name='tags', kw_only=True, fn=None), ReprPlan.Field(n"
-        "ame='db_cluster_identifier', kw_only=True, fn=None), ReprPlan.Field(name='storage_type', kw_only=True, fn=None"
-        "), ReprPlan.Field(name='tde_credential_arn', kw_only=True, fn=None), ReprPlan.Field(name='tde_credential_passw"
-        "ord', kw_only=True, fn=None), ReprPlan.Field(name='storage_encrypted', kw_only=True, fn=None), ReprPlan.Field("
-        "name='kms_key_id', kw_only=True, fn=None), ReprPlan.Field(name='domain', kw_only=True, fn=None), ReprPlan.Fiel"
-        "d(name='domain_fqdn', kw_only=True, fn=None), ReprPlan.Field(name='domain_ou', kw_only=True, fn=None), ReprPla"
-        "n.Field(name='domain_auth_secret_arn', kw_only=True, fn=None), ReprPlan.Field(name='domain_dns_ips', kw_only=T"
-        "rue, fn=None), ReprPlan.Field(name='copy_tags_to_snapshot', kw_only=True, fn=None), ReprPlan.Field(name='monit"
-        "oring_interval', kw_only=True, fn=None), ReprPlan.Field(name='monitoring_role_arn', kw_only=True, fn=None), Re"
-        "prPlan.Field(name='domain_iam_role_name', kw_only=True, fn=None), ReprPlan.Field(name='promotion_tier', kw_onl"
-        "y=True, fn=None), ReprPlan.Field(name='timezone', kw_only=True, fn=None), ReprPlan.Field(name='enable_iam_data"
-        "base_authentication', kw_only=True, fn=None), ReprPlan.Field(name='database_insights_mode', kw_only=True, fn=N"
-        "one), ReprPlan.Field(name='enable_performance_insights', kw_only=True, fn=None), ReprPlan.Field(name='performa"
-        "nce_insights_kms_key_id', kw_only=True, fn=None), ReprPlan.Field(name='performance_insights_retention_period',"
-        " kw_only=True, fn=None), ReprPlan.Field(name='enable_cloudwatch_logs_exports', kw_only=True, fn=None), ReprPla"
-        "n.Field(name='processor_features', kw_only=True, fn=None), ReprPlan.Field(name='deletion_protection', kw_only="
-        "True, fn=None), ReprPlan.Field(name='max_allocated_storage', kw_only=True, fn=None), ReprPlan.Field(name='enab"
-        "le_customer_owned_ip', kw_only=True, fn=None), ReprPlan.Field(name='network_type', kw_only=True, fn=None), Rep"
-        "rPlan.Field(name='backup_target', kw_only=True, fn=None), ReprPlan.Field(name='custom_iam_instance_profile', k"
-        "w_only=True, fn=None), ReprPlan.Field(name='db_system_id', kw_only=True, fn=None), ReprPlan.Field(name='ca_cer"
-        "tificate_identifier', kw_only=True, fn=None), ReprPlan.Field(name='manage_master_user_password', kw_only=True,"
-        " fn=None), ReprPlan.Field(name='master_user_secret_kms_key_id', kw_only=True, fn=None), ReprPlan.Field(name='m"
-        "ulti_tenant', kw_only=True, fn=None), ReprPlan.Field(name='dedicated_log_volume', kw_only=True, fn=None), Repr"
-        "Plan.Field(name='engine_lifecycle_support', kw_only=True, fn=None), ReprPlan.Field(name='master_user_authentic"
-        "ation_type', kw_only=True, fn=None), ReprPlan.Field(name='additional_storage_volumes', kw_only=True, fn=None))"
-        ", id=False, terse=False, default_fn=None)))"
-    ),
-    plan_repr_sha1='e0b36cd17bf218d50022119d36b015f0f52cd20c',
-    op_ref_idents=(
-        '__dataclass__init__fields__10__annotation',
-        '__dataclass__init__fields__10__default',
-        '__dataclass__init__fields__11__annotation',
-        '__dataclass__init__fields__11__default',
-        '__dataclass__init__fields__12__annotation',
-        '__dataclass__init__fields__12__default',
-        '__dataclass__init__fields__13__annotation',
-        '__dataclass__init__fields__13__default',
-        '__dataclass__init__fields__14__annotation',
-        '__dataclass__init__fields__14__default',
-        '__dataclass__init__fields__15__annotation',
-        '__dataclass__init__fields__15__default',
-        '__dataclass__init__fields__16__annotation',
-        '__dataclass__init__fields__16__default',
-        '__dataclass__init__fields__17__annotation',
-        '__dataclass__init__fields__17__default',
-        '__dataclass__init__fields__18__annotation',
-        '__dataclass__init__fields__18__default',
-        '__dataclass__init__fields__19__annotation',
-        '__dataclass__init__fields__19__default',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__20__annotation',
-        '__dataclass__init__fields__20__default',
-        '__dataclass__init__fields__21__annotation',
-        '__dataclass__init__fields__21__default',
-        '__dataclass__init__fields__22__annotation',
-        '__dataclass__init__fields__22__default',
-        '__dataclass__init__fields__23__annotation',
-        '__dataclass__init__fields__23__default',
-        '__dataclass__init__fields__24__annotation',
-        '__dataclass__init__fields__24__default',
-        '__dataclass__init__fields__25__annotation',
-        '__dataclass__init__fields__25__default',
-        '__dataclass__init__fields__26__annotation',
-        '__dataclass__init__fields__26__default',
-        '__dataclass__init__fields__27__annotation',
-        '__dataclass__init__fields__27__default',
-        '__dataclass__init__fields__28__annotation',
-        '__dataclass__init__fields__28__default',
-        '__dataclass__init__fields__29__annotation',
-        '__dataclass__init__fields__29__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__30__annotation',
-        '__dataclass__init__fields__30__default',
-        '__dataclass__init__fields__31__annotation',
-        '__dataclass__init__fields__31__default',
-        '__dataclass__init__fields__32__annotation',
-        '__dataclass__init__fields__32__default',
-        '__dataclass__init__fields__33__annotation',
-        '__dataclass__init__fields__33__default',
-        '__dataclass__init__fields__34__annotation',
-        '__dataclass__init__fields__34__default',
-        '__dataclass__init__fields__35__annotation',
-        '__dataclass__init__fields__35__default',
-        '__dataclass__init__fields__36__annotation',
-        '__dataclass__init__fields__36__default',
-        '__dataclass__init__fields__37__annotation',
-        '__dataclass__init__fields__37__default',
-        '__dataclass__init__fields__38__annotation',
-        '__dataclass__init__fields__38__default',
-        '__dataclass__init__fields__39__annotation',
-        '__dataclass__init__fields__39__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__40__annotation',
-        '__dataclass__init__fields__40__default',
-        '__dataclass__init__fields__41__annotation',
-        '__dataclass__init__fields__41__default',
-        '__dataclass__init__fields__42__annotation',
-        '__dataclass__init__fields__42__default',
-        '__dataclass__init__fields__43__annotation',
-        '__dataclass__init__fields__43__default',
-        '__dataclass__init__fields__44__annotation',
-        '__dataclass__init__fields__44__default',
-        '__dataclass__init__fields__45__annotation',
-        '__dataclass__init__fields__45__default',
-        '__dataclass__init__fields__46__annotation',
-        '__dataclass__init__fields__46__default',
-        '__dataclass__init__fields__47__annotation',
-        '__dataclass__init__fields__47__default',
-        '__dataclass__init__fields__48__annotation',
-        '__dataclass__init__fields__48__default',
-        '__dataclass__init__fields__49__annotation',
-        '__dataclass__init__fields__49__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__50__annotation',
-        '__dataclass__init__fields__50__default',
-        '__dataclass__init__fields__51__annotation',
-        '__dataclass__init__fields__51__default',
-        '__dataclass__init__fields__52__annotation',
-        '__dataclass__init__fields__52__default',
-        '__dataclass__init__fields__53__annotation',
-        '__dataclass__init__fields__53__default',
-        '__dataclass__init__fields__54__annotation',
-        '__dataclass__init__fields__54__default',
-        '__dataclass__init__fields__55__annotation',
-        '__dataclass__init__fields__55__default',
-        '__dataclass__init__fields__56__annotation',
-        '__dataclass__init__fields__56__default',
-        '__dataclass__init__fields__57__annotation',
-        '__dataclass__init__fields__57__default',
-        '__dataclass__init__fields__58__annotation',
-        '__dataclass__init__fields__58__default',
-        '__dataclass__init__fields__59__annotation',
-        '__dataclass__init__fields__59__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__60__annotation',
-        '__dataclass__init__fields__60__default',
-        '__dataclass__init__fields__61__annotation',
-        '__dataclass__init__fields__61__default',
-        '__dataclass__init__fields__62__annotation',
-        '__dataclass__init__fields__62__default',
-        '__dataclass__init__fields__63__annotation',
-        '__dataclass__init__fields__63__default',
-        '__dataclass__init__fields__64__annotation',
-        '__dataclass__init__fields__64__default',
-        '__dataclass__init__fields__65__annotation',
-        '__dataclass__init__fields__65__default',
-        '__dataclass__init__fields__66__annotation',
-        '__dataclass__init__fields__66__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-        '__dataclass__init__fields__7__annotation',
-        '__dataclass__init__fields__7__default',
-        '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__default',
-        '__dataclass__init__fields__9__annotation',
-        '__dataclass__init__fields__9__default',
-    ),
-    cls_names=(
-        ('ominfra.clouds.aws.models.services.rds', 'CreateDBInstanceMessage'),
-    ),
-)
-def _process_dataclass__e0b36cd17bf218d50022119d36b015f0f52cd20c():
-    def _process_dataclass(
-        *,
-        __dataclass__cls,
-        __dataclass__init__fields__10__annotation,
-        __dataclass__init__fields__10__default,
-        __dataclass__init__fields__11__annotation,
-        __dataclass__init__fields__11__default,
-        __dataclass__init__fields__12__annotation,
-        __dataclass__init__fields__12__default,
-        __dataclass__init__fields__13__annotation,
-        __dataclass__init__fields__13__default,
-        __dataclass__init__fields__14__annotation,
-        __dataclass__init__fields__14__default,
-        __dataclass__init__fields__15__annotation,
-        __dataclass__init__fields__15__default,
-        __dataclass__init__fields__16__annotation,
-        __dataclass__init__fields__16__default,
-        __dataclass__init__fields__17__annotation,
-        __dataclass__init__fields__17__default,
-        __dataclass__init__fields__18__annotation,
-        __dataclass__init__fields__18__default,
-        __dataclass__init__fields__19__annotation,
-        __dataclass__init__fields__19__default,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
-        __dataclass__init__fields__20__annotation,
-        __dataclass__init__fields__20__default,
-        __dataclass__init__fields__21__annotation,
-        __dataclass__init__fields__21__default,
-        __dataclass__init__fields__22__annotation,
-        __dataclass__init__fields__22__default,
-        __dataclass__init__fields__23__annotation,
-        __dataclass__init__fields__23__default,
-        __dataclass__init__fields__24__annotation,
-        __dataclass__init__fields__24__default,
-        __dataclass__init__fields__25__annotation,
-        __dataclass__init__fields__25__default,
-        __dataclass__init__fields__26__annotation,
-        __dataclass__init__fields__26__default,
-        __dataclass__init__fields__27__annotation,
-        __dataclass__init__fields__27__default,
-        __dataclass__init__fields__28__annotation,
-        __dataclass__init__fields__28__default,
-        __dataclass__init__fields__29__annotation,
-        __dataclass__init__fields__29__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__30__annotation,
-        __dataclass__init__fields__30__default,
-        __dataclass__init__fields__31__annotation,
-        __dataclass__init__fields__31__default,
-        __dataclass__init__fields__32__annotation,
-        __dataclass__init__fields__32__default,
-        __dataclass__init__fields__33__annotation,
-        __dataclass__init__fields__33__default,
-        __dataclass__init__fields__34__annotation,
-        __dataclass__init__fields__34__default,
-        __dataclass__init__fields__35__annotation,
-        __dataclass__init__fields__35__default,
-        __dataclass__init__fields__36__annotation,
-        __dataclass__init__fields__36__default,
-        __dataclass__init__fields__37__annotation,
-        __dataclass__init__fields__37__default,
-        __dataclass__init__fields__38__annotation,
-        __dataclass__init__fields__38__default,
-        __dataclass__init__fields__39__annotation,
-        __dataclass__init__fields__39__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
-        __dataclass__init__fields__40__annotation,
-        __dataclass__init__fields__40__default,
-        __dataclass__init__fields__41__annotation,
-        __dataclass__init__fields__41__default,
-        __dataclass__init__fields__42__annotation,
-        __dataclass__init__fields__42__default,
-        __dataclass__init__fields__43__annotation,
-        __dataclass__init__fields__43__default,
-        __dataclass__init__fields__44__annotation,
-        __dataclass__init__fields__44__default,
-        __dataclass__init__fields__45__annotation,
-        __dataclass__init__fields__45__default,
-        __dataclass__init__fields__46__annotation,
-        __dataclass__init__fields__46__default,
-        __dataclass__init__fields__47__annotation,
-        __dataclass__init__fields__47__default,
-        __dataclass__init__fields__48__annotation,
-        __dataclass__init__fields__48__default,
-        __dataclass__init__fields__49__annotation,
-        __dataclass__init__fields__49__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__50__annotation,
-        __dataclass__init__fields__50__default,
-        __dataclass__init__fields__51__annotation,
-        __dataclass__init__fields__51__default,
-        __dataclass__init__fields__52__annotation,
-        __dataclass__init__fields__52__default,
-        __dataclass__init__fields__53__annotation,
-        __dataclass__init__fields__53__default,
-        __dataclass__init__fields__54__annotation,
-        __dataclass__init__fields__54__default,
-        __dataclass__init__fields__55__annotation,
-        __dataclass__init__fields__55__default,
-        __dataclass__init__fields__56__annotation,
-        __dataclass__init__fields__56__default,
-        __dataclass__init__fields__57__annotation,
-        __dataclass__init__fields__57__default,
-        __dataclass__init__fields__58__annotation,
-        __dataclass__init__fields__58__default,
-        __dataclass__init__fields__59__annotation,
-        __dataclass__init__fields__59__default,
-        __dataclass__init__fields__5__annotation,
-        __dataclass__init__fields__60__annotation,
-        __dataclass__init__fields__60__default,
-        __dataclass__init__fields__61__annotation,
-        __dataclass__init__fields__61__default,
-        __dataclass__init__fields__62__annotation,
-        __dataclass__init__fields__62__default,
-        __dataclass__init__fields__63__annotation,
-        __dataclass__init__fields__63__default,
-        __dataclass__init__fields__64__annotation,
-        __dataclass__init__fields__64__default,
-        __dataclass__init__fields__65__annotation,
-        __dataclass__init__fields__65__default,
-        __dataclass__init__fields__66__annotation,
-        __dataclass__init__fields__66__default,
-        __dataclass__init__fields__6__annotation,
-        __dataclass__init__fields__6__default,
-        __dataclass__init__fields__7__annotation,
-        __dataclass__init__fields__7__default,
-        __dataclass__init__fields__8__annotation,
-        __dataclass__init__fields__8__default,
-        __dataclass__init__fields__9__annotation,
-        __dataclass__init__fields__9__default,
-        __dataclass__FieldFnValidationError,  # noqa
-        __dataclass__FieldTypeValidationError,  # noqa
-        __dataclass__FnValidationError,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__property=property,  # noqa
-    ):
-        def __copy__(self):
-            if self.__class__ is not __dataclass__cls:
-                raise TypeError(self)
-            return __dataclass__cls(  # noqa
-                db_name=self.db_name,
-                db_instance_identifier=self.db_instance_identifier,
-                allocated_storage=self.allocated_storage,
-                db_instance_class=self.db_instance_class,
-                engine=self.engine,
-                master_username=self.master_username,
-                master_user_password=self.master_user_password,
-                db_security_groups=self.db_security_groups,
-                vpc_security_group_ids=self.vpc_security_group_ids,
-                availability_zone=self.availability_zone,
-                db_subnet_group_name=self.db_subnet_group_name,
-                preferred_maintenance_window=self.preferred_maintenance_window,
-                db_parameter_group_name=self.db_parameter_group_name,
-                backup_retention_period=self.backup_retention_period,
-                preferred_backup_window=self.preferred_backup_window,
-                port=self.port,
-                multi_az=self.multi_az,
-                engine_version=self.engine_version,
-                auto_minor_version_upgrade=self.auto_minor_version_upgrade,
-                license_model=self.license_model,
-                iops=self.iops,
-                storage_throughput=self.storage_throughput,
-                option_group_name=self.option_group_name,
-                character_set_name=self.character_set_name,
-                nchar_character_set_name=self.nchar_character_set_name,
-                publicly_accessible=self.publicly_accessible,
-                tags=self.tags,
-                db_cluster_identifier=self.db_cluster_identifier,
-                storage_type=self.storage_type,
-                tde_credential_arn=self.tde_credential_arn,
-                tde_credential_password=self.tde_credential_password,
-                storage_encrypted=self.storage_encrypted,
-                kms_key_id=self.kms_key_id,
-                domain=self.domain,
-                domain_fqdn=self.domain_fqdn,
-                domain_ou=self.domain_ou,
-                domain_auth_secret_arn=self.domain_auth_secret_arn,
-                domain_dns_ips=self.domain_dns_ips,
-                copy_tags_to_snapshot=self.copy_tags_to_snapshot,
-                monitoring_interval=self.monitoring_interval,
-                monitoring_role_arn=self.monitoring_role_arn,
-                domain_iam_role_name=self.domain_iam_role_name,
-                promotion_tier=self.promotion_tier,
-                timezone=self.timezone,
-                enable_iam_database_authentication=self.enable_iam_database_authentication,
-                database_insights_mode=self.database_insights_mode,
-                enable_performance_insights=self.enable_performance_insights,
-                performance_insights_kms_key_id=self.performance_insights_kms_key_id,
-                performance_insights_retention_period=self.performance_insights_retention_period,
-                enable_cloudwatch_logs_exports=self.enable_cloudwatch_logs_exports,
-                processor_features=self.processor_features,
-                deletion_protection=self.deletion_protection,
-                max_allocated_storage=self.max_allocated_storage,
-                enable_customer_owned_ip=self.enable_customer_owned_ip,
-                network_type=self.network_type,
-                backup_target=self.backup_target,
-                custom_iam_instance_profile=self.custom_iam_instance_profile,
-                db_system_id=self.db_system_id,
-                ca_certificate_identifier=self.ca_certificate_identifier,
-                manage_master_user_password=self.manage_master_user_password,
-                master_user_secret_kms_key_id=self.master_user_secret_kms_key_id,
-                multi_tenant=self.multi_tenant,
-                dedicated_log_volume=self.dedicated_log_volume,
-                engine_lifecycle_support=self.engine_lifecycle_support,
-                master_user_authentication_type=self.master_user_authentication_type,
-                additional_storage_volumes=self.additional_storage_volumes,
-            )
-
-        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
-        if '__copy__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__copy__', __copy__)
-
-        def __eq__(self, other):
-            if self is other:
-                return True
-            if self.__class__ is not other.__class__:
-                return NotImplemented
-            return (
-                self.db_name == other.db_name and
-                self.db_instance_identifier == other.db_instance_identifier and
-                self.allocated_storage == other.allocated_storage and
-                self.db_instance_class == other.db_instance_class and
-                self.engine == other.engine and
-                self.master_username == other.master_username and
-                self.master_user_password == other.master_user_password and
-                self.db_security_groups == other.db_security_groups and
-                self.vpc_security_group_ids == other.vpc_security_group_ids and
-                self.availability_zone == other.availability_zone and
-                self.db_subnet_group_name == other.db_subnet_group_name and
-                self.preferred_maintenance_window == other.preferred_maintenance_window and
-                self.db_parameter_group_name == other.db_parameter_group_name and
-                self.backup_retention_period == other.backup_retention_period and
-                self.preferred_backup_window == other.preferred_backup_window and
-                self.port == other.port and
-                self.multi_az == other.multi_az and
-                self.engine_version == other.engine_version and
-                self.auto_minor_version_upgrade == other.auto_minor_version_upgrade and
-                self.license_model == other.license_model and
-                self.iops == other.iops and
-                self.storage_throughput == other.storage_throughput and
-                self.option_group_name == other.option_group_name and
-                self.character_set_name == other.character_set_name and
-                self.nchar_character_set_name == other.nchar_character_set_name and
-                self.publicly_accessible == other.publicly_accessible and
-                self.tags == other.tags and
-                self.db_cluster_identifier == other.db_cluster_identifier and
-                self.storage_type == other.storage_type and
-                self.tde_credential_arn == other.tde_credential_arn and
-                self.tde_credential_password == other.tde_credential_password and
-                self.storage_encrypted == other.storage_encrypted and
-                self.kms_key_id == other.kms_key_id and
-                self.domain == other.domain and
-                self.domain_fqdn == other.domain_fqdn and
-                self.domain_ou == other.domain_ou and
-                self.domain_auth_secret_arn == other.domain_auth_secret_arn and
-                self.domain_dns_ips == other.domain_dns_ips and
-                self.copy_tags_to_snapshot == other.copy_tags_to_snapshot and
-                self.monitoring_interval == other.monitoring_interval and
-                self.monitoring_role_arn == other.monitoring_role_arn and
-                self.domain_iam_role_name == other.domain_iam_role_name and
-                self.promotion_tier == other.promotion_tier and
-                self.timezone == other.timezone and
-                self.enable_iam_database_authentication == other.enable_iam_database_authentication and
-                self.database_insights_mode == other.database_insights_mode and
-                self.enable_performance_insights == other.enable_performance_insights and
-                self.performance_insights_kms_key_id == other.performance_insights_kms_key_id and
-                self.performance_insights_retention_period == other.performance_insights_retention_period and
-                self.enable_cloudwatch_logs_exports == other.enable_cloudwatch_logs_exports and
-                self.processor_features == other.processor_features and
-                self.deletion_protection == other.deletion_protection and
-                self.max_allocated_storage == other.max_allocated_storage and
-                self.enable_customer_owned_ip == other.enable_customer_owned_ip and
-                self.network_type == other.network_type and
-                self.backup_target == other.backup_target and
-                self.custom_iam_instance_profile == other.custom_iam_instance_profile and
-                self.db_system_id == other.db_system_id and
-                self.ca_certificate_identifier == other.ca_certificate_identifier and
-                self.manage_master_user_password == other.manage_master_user_password and
-                self.master_user_secret_kms_key_id == other.master_user_secret_kms_key_id and
-                self.multi_tenant == other.multi_tenant and
-                self.dedicated_log_volume == other.dedicated_log_volume and
-                self.engine_lifecycle_support == other.engine_lifecycle_support and
-                self.master_user_authentication_type == other.master_user_authentication_type and
-                self.additional_storage_volumes == other.additional_storage_volumes
-            )
-
-        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
-        if '__eq__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__eq__', __eq__)
-
-        __dataclass___setattr_frozen_fields = {
-            '__shape__',
-            'db_name',
-            'db_instance_identifier',
-            'allocated_storage',
-            'db_instance_class',
-            'engine',
-            'master_username',
-            'master_user_password',
-            'db_security_groups',
-            'vpc_security_group_ids',
-            'availability_zone',
-            'db_subnet_group_name',
-            'preferred_maintenance_window',
-            'db_parameter_group_name',
-            'backup_retention_period',
-            'preferred_backup_window',
-            'port',
-            'multi_az',
-            'engine_version',
-            'auto_minor_version_upgrade',
-            'license_model',
-            'iops',
-            'storage_throughput',
-            'option_group_name',
-            'character_set_name',
-            'nchar_character_set_name',
-            'publicly_accessible',
-            'tags',
-            'db_cluster_identifier',
-            'storage_type',
-            'tde_credential_arn',
-            'tde_credential_password',
-            'storage_encrypted',
-            'kms_key_id',
-            'domain',
-            'domain_fqdn',
-            'domain_ou',
-            'domain_auth_secret_arn',
-            'domain_dns_ips',
-            'copy_tags_to_snapshot',
-            'monitoring_interval',
-            'monitoring_role_arn',
-            'domain_iam_role_name',
-            'promotion_tier',
-            'timezone',
-            'enable_iam_database_authentication',
-            'database_insights_mode',
-            'enable_performance_insights',
-            'performance_insights_kms_key_id',
-            'performance_insights_retention_period',
-            'enable_cloudwatch_logs_exports',
-            'processor_features',
-            'deletion_protection',
-            'max_allocated_storage',
-            'enable_customer_owned_ip',
-            'network_type',
-            'backup_target',
-            'custom_iam_instance_profile',
-            'db_system_id',
-            'ca_certificate_identifier',
-            'manage_master_user_password',
-            'master_user_secret_kms_key_id',
-            'multi_tenant',
-            'dedicated_log_volume',
-            'engine_lifecycle_support',
-            'master_user_authentication_type',
-            'additional_storage_volumes',
-        }
-
-        def __setattr__(self, name, value):
-            if (
-                type(self) is __dataclass__cls
-                 or name in __dataclass___setattr_frozen_fields
-            ):
-                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
-            super(__dataclass__cls, self).__setattr__(name, value)
-
-        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
-        if '__setattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__setattr__', __setattr__)
-
-        __dataclass___delattr_frozen_fields = {
-            '__shape__',
-            'db_name',
-            'db_instance_identifier',
-            'allocated_storage',
-            'db_instance_class',
-            'engine',
-            'master_username',
-            'master_user_password',
-            'db_security_groups',
-            'vpc_security_group_ids',
-            'availability_zone',
-            'db_subnet_group_name',
-            'preferred_maintenance_window',
-            'db_parameter_group_name',
-            'backup_retention_period',
-            'preferred_backup_window',
-            'port',
-            'multi_az',
-            'engine_version',
-            'auto_minor_version_upgrade',
-            'license_model',
-            'iops',
-            'storage_throughput',
-            'option_group_name',
-            'character_set_name',
-            'nchar_character_set_name',
-            'publicly_accessible',
-            'tags',
-            'db_cluster_identifier',
-            'storage_type',
-            'tde_credential_arn',
-            'tde_credential_password',
-            'storage_encrypted',
-            'kms_key_id',
-            'domain',
-            'domain_fqdn',
-            'domain_ou',
-            'domain_auth_secret_arn',
-            'domain_dns_ips',
-            'copy_tags_to_snapshot',
-            'monitoring_interval',
-            'monitoring_role_arn',
-            'domain_iam_role_name',
-            'promotion_tier',
-            'timezone',
-            'enable_iam_database_authentication',
-            'database_insights_mode',
-            'enable_performance_insights',
-            'performance_insights_kms_key_id',
-            'performance_insights_retention_period',
-            'enable_cloudwatch_logs_exports',
-            'processor_features',
-            'deletion_protection',
-            'max_allocated_storage',
-            'enable_customer_owned_ip',
-            'network_type',
-            'backup_target',
-            'custom_iam_instance_profile',
-            'db_system_id',
-            'ca_certificate_identifier',
-            'manage_master_user_password',
-            'master_user_secret_kms_key_id',
-            'multi_tenant',
-            'dedicated_log_volume',
-            'engine_lifecycle_support',
-            'master_user_authentication_type',
-            'additional_storage_volumes',
-        }
-
-        def __delattr__(self, name):
-            if (
-                type(self) is __dataclass__cls
-                 or name in __dataclass___delattr_frozen_fields
-            ):
-                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
-            super(__dataclass__cls, self).__delattr__(name)
-
-        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
-        if '__delattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__delattr__', __delattr__)
-
-        def __hash__(self):
-            return hash((
-                self.db_name,
-                self.db_instance_identifier,
-                self.allocated_storage,
-                self.db_instance_class,
-                self.engine,
-                self.master_username,
-                self.master_user_password,
-                self.db_security_groups,
-                self.vpc_security_group_ids,
-                self.availability_zone,
-                self.db_subnet_group_name,
-                self.preferred_maintenance_window,
-                self.db_parameter_group_name,
-                self.backup_retention_period,
-                self.preferred_backup_window,
-                self.port,
-                self.multi_az,
-                self.engine_version,
-                self.auto_minor_version_upgrade,
-                self.license_model,
-                self.iops,
-                self.storage_throughput,
-                self.option_group_name,
-                self.character_set_name,
-                self.nchar_character_set_name,
-                self.publicly_accessible,
-                self.tags,
-                self.db_cluster_identifier,
-                self.storage_type,
-                self.tde_credential_arn,
-                self.tde_credential_password,
-                self.storage_encrypted,
-                self.kms_key_id,
-                self.domain,
-                self.domain_fqdn,
-                self.domain_ou,
-                self.domain_auth_secret_arn,
-                self.domain_dns_ips,
-                self.copy_tags_to_snapshot,
-                self.monitoring_interval,
-                self.monitoring_role_arn,
-                self.domain_iam_role_name,
-                self.promotion_tier,
-                self.timezone,
-                self.enable_iam_database_authentication,
-                self.database_insights_mode,
-                self.enable_performance_insights,
-                self.performance_insights_kms_key_id,
-                self.performance_insights_retention_period,
-                self.enable_cloudwatch_logs_exports,
-                self.processor_features,
-                self.deletion_protection,
-                self.max_allocated_storage,
-                self.enable_customer_owned_ip,
-                self.network_type,
-                self.backup_target,
-                self.custom_iam_instance_profile,
-                self.db_system_id,
-                self.ca_certificate_identifier,
-                self.manage_master_user_password,
-                self.master_user_secret_kms_key_id,
-                self.multi_tenant,
-                self.dedicated_log_volume,
-                self.engine_lifecycle_support,
-                self.master_user_authentication_type,
-                self.additional_storage_volumes,
-            ))
-
-        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
-        setattr(__dataclass__cls, '__hash__', __hash__)
-
-        def __init__(
-            self,
-            *,
-            db_name: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            db_instance_identifier: __dataclass__init__fields__2__annotation,
-            allocated_storage: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            db_instance_class: __dataclass__init__fields__4__annotation,
-            engine: __dataclass__init__fields__5__annotation,
-            master_username: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            master_user_password: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
-            db_security_groups: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
-            vpc_security_group_ids: __dataclass__init__fields__9__annotation = __dataclass__init__fields__9__default,
-            availability_zone: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
-            db_subnet_group_name: __dataclass__init__fields__11__annotation = __dataclass__init__fields__11__default,
-            preferred_maintenance_window: __dataclass__init__fields__12__annotation = __dataclass__init__fields__12__default,
-            db_parameter_group_name: __dataclass__init__fields__13__annotation = __dataclass__init__fields__13__default,
-            backup_retention_period: __dataclass__init__fields__14__annotation = __dataclass__init__fields__14__default,
-            preferred_backup_window: __dataclass__init__fields__15__annotation = __dataclass__init__fields__15__default,
-            port: __dataclass__init__fields__16__annotation = __dataclass__init__fields__16__default,
-            multi_az: __dataclass__init__fields__17__annotation = __dataclass__init__fields__17__default,
-            engine_version: __dataclass__init__fields__18__annotation = __dataclass__init__fields__18__default,
-            auto_minor_version_upgrade: __dataclass__init__fields__19__annotation = __dataclass__init__fields__19__default,
-            license_model: __dataclass__init__fields__20__annotation = __dataclass__init__fields__20__default,
-            iops: __dataclass__init__fields__21__annotation = __dataclass__init__fields__21__default,
-            storage_throughput: __dataclass__init__fields__22__annotation = __dataclass__init__fields__22__default,
-            option_group_name: __dataclass__init__fields__23__annotation = __dataclass__init__fields__23__default,
-            character_set_name: __dataclass__init__fields__24__annotation = __dataclass__init__fields__24__default,
-            nchar_character_set_name: __dataclass__init__fields__25__annotation = __dataclass__init__fields__25__default,
-            publicly_accessible: __dataclass__init__fields__26__annotation = __dataclass__init__fields__26__default,
-            tags: __dataclass__init__fields__27__annotation = __dataclass__init__fields__27__default,
-            db_cluster_identifier: __dataclass__init__fields__28__annotation = __dataclass__init__fields__28__default,
-            storage_type: __dataclass__init__fields__29__annotation = __dataclass__init__fields__29__default,
-            tde_credential_arn: __dataclass__init__fields__30__annotation = __dataclass__init__fields__30__default,
-            tde_credential_password: __dataclass__init__fields__31__annotation = __dataclass__init__fields__31__default,
-            storage_encrypted: __dataclass__init__fields__32__annotation = __dataclass__init__fields__32__default,
-            kms_key_id: __dataclass__init__fields__33__annotation = __dataclass__init__fields__33__default,
-            domain: __dataclass__init__fields__34__annotation = __dataclass__init__fields__34__default,
-            domain_fqdn: __dataclass__init__fields__35__annotation = __dataclass__init__fields__35__default,
-            domain_ou: __dataclass__init__fields__36__annotation = __dataclass__init__fields__36__default,
-            domain_auth_secret_arn: __dataclass__init__fields__37__annotation = __dataclass__init__fields__37__default,
-            domain_dns_ips: __dataclass__init__fields__38__annotation = __dataclass__init__fields__38__default,
-            copy_tags_to_snapshot: __dataclass__init__fields__39__annotation = __dataclass__init__fields__39__default,
-            monitoring_interval: __dataclass__init__fields__40__annotation = __dataclass__init__fields__40__default,
-            monitoring_role_arn: __dataclass__init__fields__41__annotation = __dataclass__init__fields__41__default,
-            domain_iam_role_name: __dataclass__init__fields__42__annotation = __dataclass__init__fields__42__default,
-            promotion_tier: __dataclass__init__fields__43__annotation = __dataclass__init__fields__43__default,
-            timezone: __dataclass__init__fields__44__annotation = __dataclass__init__fields__44__default,
-            enable_iam_database_authentication: __dataclass__init__fields__45__annotation = __dataclass__init__fields__45__default,
-            database_insights_mode: __dataclass__init__fields__46__annotation = __dataclass__init__fields__46__default,
-            enable_performance_insights: __dataclass__init__fields__47__annotation = __dataclass__init__fields__47__default,
-            performance_insights_kms_key_id: __dataclass__init__fields__48__annotation = __dataclass__init__fields__48__default,
-            performance_insights_retention_period: __dataclass__init__fields__49__annotation = __dataclass__init__fields__49__default,
-            enable_cloudwatch_logs_exports: __dataclass__init__fields__50__annotation = __dataclass__init__fields__50__default,
-            processor_features: __dataclass__init__fields__51__annotation = __dataclass__init__fields__51__default,
-            deletion_protection: __dataclass__init__fields__52__annotation = __dataclass__init__fields__52__default,
-            max_allocated_storage: __dataclass__init__fields__53__annotation = __dataclass__init__fields__53__default,
-            enable_customer_owned_ip: __dataclass__init__fields__54__annotation = __dataclass__init__fields__54__default,
-            network_type: __dataclass__init__fields__55__annotation = __dataclass__init__fields__55__default,
-            backup_target: __dataclass__init__fields__56__annotation = __dataclass__init__fields__56__default,
-            custom_iam_instance_profile: __dataclass__init__fields__57__annotation = __dataclass__init__fields__57__default,
-            db_system_id: __dataclass__init__fields__58__annotation = __dataclass__init__fields__58__default,
-            ca_certificate_identifier: __dataclass__init__fields__59__annotation = __dataclass__init__fields__59__default,
-            manage_master_user_password: __dataclass__init__fields__60__annotation = __dataclass__init__fields__60__default,
-            master_user_secret_kms_key_id: __dataclass__init__fields__61__annotation = __dataclass__init__fields__61__default,
-            multi_tenant: __dataclass__init__fields__62__annotation = __dataclass__init__fields__62__default,
-            dedicated_log_volume: __dataclass__init__fields__63__annotation = __dataclass__init__fields__63__default,
-            engine_lifecycle_support: __dataclass__init__fields__64__annotation = __dataclass__init__fields__64__default,
-            master_user_authentication_type: __dataclass__init__fields__65__annotation = __dataclass__init__fields__65__default,
-            additional_storage_volumes: __dataclass__init__fields__66__annotation = __dataclass__init__fields__66__default,
-        ) -> __dataclass__None:
-            __dataclass__object_setattr(self, 'db_name', db_name)
-            __dataclass__object_setattr(self, 'db_instance_identifier', db_instance_identifier)
-            __dataclass__object_setattr(self, 'allocated_storage', allocated_storage)
-            __dataclass__object_setattr(self, 'db_instance_class', db_instance_class)
-            __dataclass__object_setattr(self, 'engine', engine)
-            __dataclass__object_setattr(self, 'master_username', master_username)
-            __dataclass__object_setattr(self, 'master_user_password', master_user_password)
-            __dataclass__object_setattr(self, 'db_security_groups', db_security_groups)
-            __dataclass__object_setattr(self, 'vpc_security_group_ids', vpc_security_group_ids)
-            __dataclass__object_setattr(self, 'availability_zone', availability_zone)
-            __dataclass__object_setattr(self, 'db_subnet_group_name', db_subnet_group_name)
-            __dataclass__object_setattr(self, 'preferred_maintenance_window', preferred_maintenance_window)
-            __dataclass__object_setattr(self, 'db_parameter_group_name', db_parameter_group_name)
-            __dataclass__object_setattr(self, 'backup_retention_period', backup_retention_period)
-            __dataclass__object_setattr(self, 'preferred_backup_window', preferred_backup_window)
-            __dataclass__object_setattr(self, 'port', port)
-            __dataclass__object_setattr(self, 'multi_az', multi_az)
-            __dataclass__object_setattr(self, 'engine_version', engine_version)
-            __dataclass__object_setattr(self, 'auto_minor_version_upgrade', auto_minor_version_upgrade)
-            __dataclass__object_setattr(self, 'license_model', license_model)
-            __dataclass__object_setattr(self, 'iops', iops)
-            __dataclass__object_setattr(self, 'storage_throughput', storage_throughput)
-            __dataclass__object_setattr(self, 'option_group_name', option_group_name)
-            __dataclass__object_setattr(self, 'character_set_name', character_set_name)
-            __dataclass__object_setattr(self, 'nchar_character_set_name', nchar_character_set_name)
-            __dataclass__object_setattr(self, 'publicly_accessible', publicly_accessible)
-            __dataclass__object_setattr(self, 'tags', tags)
-            __dataclass__object_setattr(self, 'db_cluster_identifier', db_cluster_identifier)
-            __dataclass__object_setattr(self, 'storage_type', storage_type)
-            __dataclass__object_setattr(self, 'tde_credential_arn', tde_credential_arn)
-            __dataclass__object_setattr(self, 'tde_credential_password', tde_credential_password)
-            __dataclass__object_setattr(self, 'storage_encrypted', storage_encrypted)
-            __dataclass__object_setattr(self, 'kms_key_id', kms_key_id)
-            __dataclass__object_setattr(self, 'domain', domain)
-            __dataclass__object_setattr(self, 'domain_fqdn', domain_fqdn)
-            __dataclass__object_setattr(self, 'domain_ou', domain_ou)
-            __dataclass__object_setattr(self, 'domain_auth_secret_arn', domain_auth_secret_arn)
-            __dataclass__object_setattr(self, 'domain_dns_ips', domain_dns_ips)
-            __dataclass__object_setattr(self, 'copy_tags_to_snapshot', copy_tags_to_snapshot)
-            __dataclass__object_setattr(self, 'monitoring_interval', monitoring_interval)
-            __dataclass__object_setattr(self, 'monitoring_role_arn', monitoring_role_arn)
-            __dataclass__object_setattr(self, 'domain_iam_role_name', domain_iam_role_name)
-            __dataclass__object_setattr(self, 'promotion_tier', promotion_tier)
-            __dataclass__object_setattr(self, 'timezone', timezone)
-            __dataclass__object_setattr(self, 'enable_iam_database_authentication', enable_iam_database_authentication)
-            __dataclass__object_setattr(self, 'database_insights_mode', database_insights_mode)
-            __dataclass__object_setattr(self, 'enable_performance_insights', enable_performance_insights)
-            __dataclass__object_setattr(self, 'performance_insights_kms_key_id', performance_insights_kms_key_id)
-            __dataclass__object_setattr(self, 'performance_insights_retention_period', performance_insights_retention_period)
-            __dataclass__object_setattr(self, 'enable_cloudwatch_logs_exports', enable_cloudwatch_logs_exports)
-            __dataclass__object_setattr(self, 'processor_features', processor_features)
-            __dataclass__object_setattr(self, 'deletion_protection', deletion_protection)
-            __dataclass__object_setattr(self, 'max_allocated_storage', max_allocated_storage)
-            __dataclass__object_setattr(self, 'enable_customer_owned_ip', enable_customer_owned_ip)
-            __dataclass__object_setattr(self, 'network_type', network_type)
-            __dataclass__object_setattr(self, 'backup_target', backup_target)
-            __dataclass__object_setattr(self, 'custom_iam_instance_profile', custom_iam_instance_profile)
-            __dataclass__object_setattr(self, 'db_system_id', db_system_id)
-            __dataclass__object_setattr(self, 'ca_certificate_identifier', ca_certificate_identifier)
-            __dataclass__object_setattr(self, 'manage_master_user_password', manage_master_user_password)
-            __dataclass__object_setattr(self, 'master_user_secret_kms_key_id', master_user_secret_kms_key_id)
-            __dataclass__object_setattr(self, 'multi_tenant', multi_tenant)
-            __dataclass__object_setattr(self, 'dedicated_log_volume', dedicated_log_volume)
-            __dataclass__object_setattr(self, 'engine_lifecycle_support', engine_lifecycle_support)
-            __dataclass__object_setattr(self, 'master_user_authentication_type', master_user_authentication_type)
-            __dataclass__object_setattr(self, 'additional_storage_volumes', additional_storage_volumes)
-
-        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
-        if '__init__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__init__', __init__)
-
-        @__dataclass___recursive_repr()
-        def __repr__(self):
-            parts = []
-            parts.append(f"db_name={self.db_name!r}")
-            parts.append(f"db_instance_identifier={self.db_instance_identifier!r}")
-            parts.append(f"allocated_storage={self.allocated_storage!r}")
-            parts.append(f"db_instance_class={self.db_instance_class!r}")
-            parts.append(f"engine={self.engine!r}")
-            parts.append(f"master_username={self.master_username!r}")
-            parts.append(f"master_user_password={self.master_user_password!r}")
-            parts.append(f"db_security_groups={self.db_security_groups!r}")
-            parts.append(f"vpc_security_group_ids={self.vpc_security_group_ids!r}")
-            parts.append(f"availability_zone={self.availability_zone!r}")
-            parts.append(f"db_subnet_group_name={self.db_subnet_group_name!r}")
-            parts.append(f"preferred_maintenance_window={self.preferred_maintenance_window!r}")
-            parts.append(f"db_parameter_group_name={self.db_parameter_group_name!r}")
-            parts.append(f"backup_retention_period={self.backup_retention_period!r}")
-            parts.append(f"preferred_backup_window={self.preferred_backup_window!r}")
-            parts.append(f"port={self.port!r}")
-            parts.append(f"multi_az={self.multi_az!r}")
-            parts.append(f"engine_version={self.engine_version!r}")
-            parts.append(f"auto_minor_version_upgrade={self.auto_minor_version_upgrade!r}")
-            parts.append(f"license_model={self.license_model!r}")
-            parts.append(f"iops={self.iops!r}")
-            parts.append(f"storage_throughput={self.storage_throughput!r}")
-            parts.append(f"option_group_name={self.option_group_name!r}")
-            parts.append(f"character_set_name={self.character_set_name!r}")
-            parts.append(f"nchar_character_set_name={self.nchar_character_set_name!r}")
-            parts.append(f"publicly_accessible={self.publicly_accessible!r}")
-            parts.append(f"tags={self.tags!r}")
-            parts.append(f"db_cluster_identifier={self.db_cluster_identifier!r}")
-            parts.append(f"storage_type={self.storage_type!r}")
-            parts.append(f"tde_credential_arn={self.tde_credential_arn!r}")
-            parts.append(f"tde_credential_password={self.tde_credential_password!r}")
-            parts.append(f"storage_encrypted={self.storage_encrypted!r}")
-            parts.append(f"kms_key_id={self.kms_key_id!r}")
-            parts.append(f"domain={self.domain!r}")
-            parts.append(f"domain_fqdn={self.domain_fqdn!r}")
-            parts.append(f"domain_ou={self.domain_ou!r}")
-            parts.append(f"domain_auth_secret_arn={self.domain_auth_secret_arn!r}")
-            parts.append(f"domain_dns_ips={self.domain_dns_ips!r}")
-            parts.append(f"copy_tags_to_snapshot={self.copy_tags_to_snapshot!r}")
-            parts.append(f"monitoring_interval={self.monitoring_interval!r}")
-            parts.append(f"monitoring_role_arn={self.monitoring_role_arn!r}")
-            parts.append(f"domain_iam_role_name={self.domain_iam_role_name!r}")
-            parts.append(f"promotion_tier={self.promotion_tier!r}")
-            parts.append(f"timezone={self.timezone!r}")
-            parts.append(f"enable_iam_database_authentication={self.enable_iam_database_authentication!r}")
-            parts.append(f"database_insights_mode={self.database_insights_mode!r}")
-            parts.append(f"enable_performance_insights={self.enable_performance_insights!r}")
-            parts.append(f"performance_insights_kms_key_id={self.performance_insights_kms_key_id!r}")
-            parts.append(f"performance_insights_retention_period={self.performance_insights_retention_period!r}")
-            parts.append(f"enable_cloudwatch_logs_exports={self.enable_cloudwatch_logs_exports!r}")
-            parts.append(f"processor_features={self.processor_features!r}")
-            parts.append(f"deletion_protection={self.deletion_protection!r}")
-            parts.append(f"max_allocated_storage={self.max_allocated_storage!r}")
-            parts.append(f"enable_customer_owned_ip={self.enable_customer_owned_ip!r}")
-            parts.append(f"network_type={self.network_type!r}")
-            parts.append(f"backup_target={self.backup_target!r}")
-            parts.append(f"custom_iam_instance_profile={self.custom_iam_instance_profile!r}")
-            parts.append(f"db_system_id={self.db_system_id!r}")
-            parts.append(f"ca_certificate_identifier={self.ca_certificate_identifier!r}")
-            parts.append(f"manage_master_user_password={self.manage_master_user_password!r}")
-            parts.append(f"master_user_secret_kms_key_id={self.master_user_secret_kms_key_id!r}")
-            parts.append(f"multi_tenant={self.multi_tenant!r}")
-            parts.append(f"dedicated_log_volume={self.dedicated_log_volume!r}")
-            parts.append(f"engine_lifecycle_support={self.engine_lifecycle_support!r}")
-            parts.append(f"master_user_authentication_type={self.master_user_authentication_type!r}")
-            parts.append(f"additional_storage_volumes={self.additional_storage_volumes!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

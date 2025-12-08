@@ -663,6 +663,24 @@ class StopDBInstanceMessage(
 
 StringList: _ta.TypeAlias = _ta.Sequence[str]
 
+
+@_dc.dataclass(frozen=True, kw_only=True)
+class TagSpecification(
+    _base.Shape,
+    shape_name='TagSpecification',
+):
+    resource_type: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='ResourceType',
+        shape_name='String',
+    ))
+
+    tags: _base.TagList | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='Tags',
+        value_type=_base.ListValueType(_base.Tag),
+        shape_name='TagList',
+    ))
+
+
 VpcSecurityGroupIdList: _ta.TypeAlias = _ta.Sequence[str]
 
 
@@ -805,6 +823,8 @@ class Subnet(
         shape_name='String',
     ))
 
+
+TagSpecificationList: _ta.TypeAlias = _ta.Sequence[TagSpecification]
 
 VpcSecurityGroupMembershipList: _ta.TypeAlias = _ta.Sequence[VpcSecurityGroupMembership]
 
@@ -1138,6 +1158,12 @@ class CreateDBInstanceMessage(
     engine_lifecycle_support: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='EngineLifecycleSupport',
         shape_name='String',
+    ))
+
+    tag_specifications: TagSpecificationList | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='TagSpecifications',
+        value_type=_base.ListValueType(TagSpecification),
+        shape_name='TagSpecificationList',
     ))
 
     master_user_authentication_type: MasterUserAuthenticationType | None = _dc.field(default=None, metadata=_base.field_metadata(
@@ -1958,6 +1984,7 @@ ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
     StorageQuotaExceededFault,
     StorageTypeNotSupportedFault,
     Subnet,
+    TagSpecification,
     TenantDatabaseQuotaExceededFault,
     VpcEncryptionControlViolationException,
     VpcSecurityGroupMembership,

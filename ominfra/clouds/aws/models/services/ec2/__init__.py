@@ -1435,6 +1435,19 @@ class InstanceType(_enum.Enum):
     R8A_48XLARGE = 'r8a.48xlarge'
     R8A_METAL_24XL = 'r8a.metal-24xl'
     R8A_METAL_48XL = 'r8a.metal-48xl'
+    P6_B300_48XLARGE = 'p6-b300.48xlarge'
+    C8A_MEDIUM = 'c8a.medium'
+    C8A_LARGE = 'c8a.large'
+    C8A_XLARGE = 'c8a.xlarge'
+    C8A_2XLARGE = 'c8a.2xlarge'
+    C8A_4XLARGE = 'c8a.4xlarge'
+    C8A_8XLARGE = 'c8a.8xlarge'
+    C8A_12XLARGE = 'c8a.12xlarge'
+    C8A_16XLARGE = 'c8a.16xlarge'
+    C8A_24XLARGE = 'c8a.24xlarge'
+    C8A_48XLARGE = 'c8a.48xlarge'
+    C8A_METAL_24XL = 'c8a.metal-24xl'
+    C8A_METAL_48XL = 'c8a.metal-48xl'
 
 
 class InstanceTypeHypervisor(_enum.Enum):

@@ -171,7 +171,6 @@ with _lang.auto_proxy_init(globals()):
     from textual.widgets import Button  # noqa
     from textual.widgets import Checkbox  # noqa
     from textual.widgets import Collapsible  # noqa
-    from textual.widgets import CollapsibleTitle  # noqa
     from textual.widgets import ContentSwitcher  # noqa
     from textual.widgets import DataTable  # noqa
     from textual.widgets import Digits  # noqa

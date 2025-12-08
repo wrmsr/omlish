@@ -14,7 +14,7 @@ class Project(ProjectBase):
 
     optional_dependencies = {
         'backends': [
-            # 'diffusers ~= 0.35',
+            # 'diffusers ~= 0.36',
 
             'llama-cpp-python ~= 0.3',
 
