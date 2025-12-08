@@ -12,6 +12,9 @@ TODO:
  - multiple live request scopes on single injector - use private injectors?
  - more listeners - UnboundKeyListener
   - lazy parent listener chain cache thing
+ - https://github.com/7mind/izumi-chibi-ts
+  - Axis tagging for conditional bindings (e.g., dev vs prod implementations)
+  - Fail-fast validation with circular and missing dependency detection
 """
 import contextlib
 import functools
