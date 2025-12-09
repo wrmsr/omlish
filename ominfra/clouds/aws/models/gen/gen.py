@@ -17,7 +17,7 @@ from omlish.lite.strings import snake_case
 
 if ta.TYPE_CHECKING:
     import botocore.loaders
-    import botocore.mode2
+    import botocore.model
     import botocore.session
 else:
     botocore = lang.proxy_import('botocore', extras=[

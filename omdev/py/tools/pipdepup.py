@@ -1,6 +1,7 @@
 """
 TODO:
  - min_time_since_prev_version
+  - without this the min age is moot lol, can still catch a bad release at the same time of day just n days later
   - how to handle non-linearity? new minor vers come out in parallel for diff major vers
    - trie?
  - find which reqs file + lineno to update
@@ -570,7 +571,9 @@ def _main() -> None:
     parser.add_argument('--json', action='store_true')
     args = parser.parse_args()
 
-    max_uploaded_at: datetime.datetime | None = now_utc() - datetime.timedelta(hours=args.min_age_h)
+    max_uploaded_at: datetime.datetime | None = None
+    if args.min_age_h is not None:
+        max_uploaded_at = now_utc() - datetime.timedelta(hours=args.min_age_h)
     min_time_since_prev_version: datetime.timedelta | None = None  # datetime.timedelta(days=1)
 
     #

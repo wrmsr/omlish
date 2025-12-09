@@ -26,7 +26,7 @@ brotli==1.2.0
 
 ### db:
 
-sqlalchemy[asyncio]==2.0.44
+sqlalchemy[asyncio]==2.0.45
 
 ## sql
 
