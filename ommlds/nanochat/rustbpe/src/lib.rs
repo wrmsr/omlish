@@ -19,8 +19,10 @@ type Pair = (u32, u32);
 pub struct Tokenizer {
     /// Maps pairs of token IDs to their merged token ID
     pub merges: StdHashMap<Pair, u32>,
+
     /// The regex pattern used for text splitting
     pub pattern: String,
+
     /// Compiled regex for efficiency
     compiled_pattern: Regex,
 }
@@ -78,9 +80,11 @@ impl Word {
                 // write merged token
                 out.push(new_id);
                 i += 2; // skip 'a' and 'b'
+
             } else {
                 out.push(self.ids[i]);
                 i += 1;
+
             }
         }
 
@@ -93,6 +97,7 @@ impl Word {
 struct MergeJob {
     pair: Pair,
     count: u64,
+
     /// set of word indices where this pair may occur and needs processing
     pos: AHashSet<usize>,
 }
@@ -157,7 +162,6 @@ fn count_pairs_parallel(
 // ------------------------ END helpers ------------------------
 
 impl Tokenizer {
-
     /// Core incremental BPE training given unique words and their counts.
     /// `words`: one entry per unique chunk (Vec<u32> of token-ids/bytes).
     /// `counts`: same length as `words`, count per chunk.
@@ -215,6 +219,7 @@ impl Tokenizer {
             for &word_idx in &top.pos {
                 // Apply merge to this word and collect pair-count deltas
                 let changes = words[word_idx].merge_pair(top.pair, new_id);
+
                 // Update global pair counts based on this word's count
                 for (pair, delta) in changes {
                     let delta_total = delta * counts[word_idx];
@@ -310,14 +315,17 @@ impl Tokenizer {
             pyo3::Python::with_gil(|py| {
                 buf.clear();
                 let it = py_iter.bind(py);
+
                 loop {
                     if buf.len() >= buffer_size {
                         return Ok(false);
                     }
+
                     // next(it)
                     let next_obj = unsafe {
                         pyo3::Bound::from_owned_ptr_or_opt(py, pyo3::ffi::PyIter_Next(it.as_ptr()))
                     };
+
                     match next_obj {
                         Some(obj) => {
                             let s: String = obj.extract()?;
@@ -411,6 +419,7 @@ impl Tokenizer {
 
         for (&pair, &merged_id) in sorted_merges {
             let (left, right) = pair;
+
             let mut merged_bytes = token_bytes[left as usize].clone();
             merged_bytes.extend(&token_bytes[right as usize]);
 
