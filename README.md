@@ -21,8 +21,8 @@ for 3.8+.
   standard library, including language helpers (like lazy imports), a `dataclasses` rebuild, a dependency injector, and
   a serde system. This is the most stable of the libraries, and the bottom of the dependency graph.
 - **[omdev](https://github.com/wrmsr/omlish/blob/master/omdev#readme)** - Development utilities, including the
-  all-in-one CLI, the amalgamator, the `pyproject` tool, and the ci engine. This is intended to not generally be present
-  in production environments.
+  all-in-one `om` CLI, the amalgamator, the `pyproject` tool, and the ci engine. This is intended to not generally be
+  present in production environments.
 - **[ommlds](https://github.com/wrmsr/omlish/blob/master/ommlds#readme)** - ML / data science code, including
   `minichain` (roughly like langchain) and its CLI.
 - **[ominfra](https://github.com/wrmsr/omlish/blob/master/ominfra#readme)** - Infrastructure and cloud code, including
