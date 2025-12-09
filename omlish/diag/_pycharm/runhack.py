@@ -95,7 +95,7 @@ _BOOL_ENV_VAR_VALUES = {
 def _get_opt_env_bool(n, d):  # type: (str | None, bool) -> bool
     if n is None or n not in os.environ:
         return d
-    return _BOOL_ENV_VAR_VALUES[os.environ[n]]
+    return _BOOL_ENV_VAR_VALUES[os.environ[n].lower()]
 
 
 def _get_env_path_list(k):  # type: (str) -> list[str]
