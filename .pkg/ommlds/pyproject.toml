@@ -24,12 +24,12 @@ classifiers = [
 ]
 description = 'ommlds'
 dependencies = [
-    'omdev == 0.0.0.dev486',
     'omlish == 0.0.0.dev486',
 ]
 
 [project.optional-dependencies]
 all = [
+    'omdev == 0.0.0.dev486',
     'llama-cpp-python ~= 0.3',
     'mlx ~= 0.30; sys_platform == "darwin"',
     'mlx-lm ~= 0.28; sys_platform == "darwin"',
@@ -50,6 +50,9 @@ all = [
     'mwparserfromhell ~= 0.7',
     'wikitextparser ~= 0.56',
     'lxml >= 5.3; python_version < "3.13"',
+]
+omdev = [
+    'omdev == 0.0.0.dev486',
 ]
 backends = [
     'llama-cpp-python ~= 0.3',

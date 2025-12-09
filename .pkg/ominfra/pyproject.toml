@@ -24,14 +24,17 @@ classifiers = [
 ]
 description = 'ominfra'
 dependencies = [
-    'omdev == 0.0.0.dev486',
     'omlish == 0.0.0.dev486',
 ]
 
 [project.optional-dependencies]
 all = [
+    'omdev == 0.0.0.dev486',
     'paramiko ~= 4.0',
     'asyncssh ~= 2.21',
+]
+omdev = [
+    'omdev == 0.0.0.dev486',
 ]
 ssh = [
     'paramiko ~= 4.0',

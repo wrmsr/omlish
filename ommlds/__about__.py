@@ -8,11 +8,14 @@ class Project(ProjectBase):
     description = 'ommlds'
 
     dependencies = [
-        f'omdev == {__version__}',
         f'omlish == {__version__}',
     ]
 
     optional_dependencies = {
+        'omdev': [
+            f'omdev == {__version__}',
+        ],
+
         'backends': [
             # 'diffusers ~= 0.36',
 

@@ -1,27 +1,38 @@
 # Overview
 
 My python monorepo, the successor to my previous one `omnibus`(... 'ish').
+ 
+This is my 'production' codebase - code which has graduated from and powers my various other little projects.
 
-The core libraries have no required dependencies besides each other, but there are numerous optional ones - see their
-respective `pyproject.toml` files for details.
+It's organized into a handful of toplevel libraries - the `om*` directories - which are each independently installable
+and published to pypi.
+
+The most substantial toplevel libraries are `omlish`, `omdev`, and (at the moment) `ommlds`, described below.
+
+The toplevel libraries have no required dependencies besides each other - `omlish` in particular has none at all - but
+there are a number of optional ones - see their respective `pyproject.toml` files for details.
 
 Standard code is written for python 3.13+, '[lite](https://github.com/wrmsr/omlish/blob/master/omlish#lite-code)' code
 for 3.8+.
 
-# Core libraries
+# Toplevel libraries
 
 - **[omlish](https://github.com/wrmsr/omlish/blob/master/omlish#readme)** - Core foundational code - the comprehensive
-  standard library.
+  standard library, including language helpers (like lazy imports), a `dataclasses` rebuild, a dependency injector, and
+  a serde system. This is the most stable of the libraries, and the bottom of the dependency graph.
 - **[omdev](https://github.com/wrmsr/omlish/blob/master/omdev#readme)** - Development utilities, including the
-  multipurpose CLI.
+  all-in-one CLI, the amalgamator, the `pyproject` tool, and the ci engine. This is intended to not generally be present
+  in production environments.
 - **[ommlds](https://github.com/wrmsr/omlish/blob/master/ommlds#readme)** - ML / data science code, including
   `minichain` (roughly like langchain) and its CLI.
-- **[ominfra](https://github.com/wrmsr/omlish/blob/master/ominfra#readme)** - Infrastructure and cloud code.
-- **[omserv](https://github.com/wrmsr/omlish/blob/master/omserv#readme)** - Request serving code.
+- **[ominfra](https://github.com/wrmsr/omlish/blob/master/ominfra#readme)** - Infrastructure and cloud code, including
+  a boto alternative, a remote management tool, and a [supervisor](https://github.com/Supervisor/supervisor) rebuild.
+- **[omserv](https://github.com/wrmsr/omlish/blob/master/omserv#readme)** - Request serving code, including an internal
+  fork of [hypercorn](https://github.com/pgjones/hypercorn).
 
 # Installation
 
-Core libraries installable by name from pypi:
+Toplevel libraries installable by name from pypi:
 
 ```bash
 pip install omlish

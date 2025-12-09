@@ -8,11 +8,14 @@ class Project(ProjectBase):
     description = 'ominfra'
 
     dependencies = [
-        f'omdev == {__version__}',
         f'omlish == {__version__}',
     ]
 
     optional_dependencies = {
+        'omdev': [
+            f'omdev == {__version__}',
+        ],
+
         'ssh': [
             'paramiko ~= 4.0',  # !! LGPL
 
