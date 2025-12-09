@@ -7,6 +7,12 @@ from omlish import dataclasses as dc
 from omlish import lang
 
 
+dc.init_package(
+    globals(),
+    codegen=True,
+)
+
+
 DateTime = ta.NewType('DateTime', str)
 MillisecondDateTime = ta.NewType('MillisecondDateTime', str)
 

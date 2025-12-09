@@ -1,5 +1,6 @@
 import contextlib
 import contextvars
+import sys
 import typing as ta
 
 from .... import lang
@@ -36,6 +37,14 @@ def processing_options_context(*opts: ProcessingOption) -> ta.Iterator[None]:
 ##
 
 
+def _is_pkg_init_mod(mod_name: str) -> bool:
+    if (mod_obj := sys.modules.get(mod_name)) is None:
+        return False
+    if (mod_spec := getattr(mod_obj, '__spec__', None)) is None:
+        return False
+    return bool(mod_spec.submodule_search_locations)
+
+
 def drive_cls_processing(
         cls: type,
         cs: ClassSpec,
@@ -53,7 +62,10 @@ def drive_cls_processing(
     #
 
     cls_mod = cls.__module__
-    cls_pkg = cls_mod.rpartition('.')[0]
+    if _is_pkg_init_mod(cls_mod):
+        cls_pkg = cls_mod
+    else:
+        cls_pkg = cls_mod.rpartition('.')[0]
     pkg_cfg = lang.coalesce(PACKAGE_CONFIG_CACHE.get(cls_pkg), DEFAULT_NAMED_PACKAGE_CONFIG)
 
     #
