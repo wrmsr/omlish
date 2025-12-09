@@ -1,1 +1,1 @@
-The `attic` of the codebase.
+The `attic` / `scratch` of the codebase.

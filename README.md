@@ -32,7 +32,7 @@ for 3.8+.
 
 # Installation
 
-Toplevel libraries installable by name from pypi:
+Toplevel libraries are installable by name from pypi:
 
 ```bash
 pip install omlish
