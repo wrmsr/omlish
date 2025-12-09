@@ -27,7 +27,7 @@ pub struct Tokenizer {
     compiled_pattern: Regex,
 }
 
-// ------------------------ internal helpers ------------------------
+// internal helpers
 
 #[derive(Clone, Debug)]
 struct Word {
@@ -159,7 +159,7 @@ fn count_pairs_parallel(
         )
 }
 
-// ------------------------ END helpers ------------------------
+//
 
 impl Tokenizer {
     /// Core incremental BPE training given unique words and their counts.
@@ -171,11 +171,11 @@ impl Tokenizer {
         log::info!("Starting BPE training: {} merges to compute", num_merges);
         self.merges.clear();
 
-        // ---- Initial pair_counts and where_to_update (parallel) ----
+        // Initial pair_counts and where_to_update (parallel)
         log::info!("Computing initial pair counts from {} unique sequences", words.len());
         let (mut pair_counts, mut where_to_update) = count_pairs_parallel(&words, &counts);
 
-        // ---- Build heap ----
+        // Build heap
         log::info!("Building heap with {} unique pairs", pair_counts.len());
         let mut heap = OctonaryHeap::with_capacity(pair_counts.len());
         for (pair, pos) in where_to_update.drain() {
@@ -189,7 +189,7 @@ impl Tokenizer {
             }
         }
 
-        // ---- Merge loop ----
+        // Merge loop
         log::info!("Starting merge loop");
         let mut merges_done = 0u32;
         let mut last_log_percent = 0u32;
