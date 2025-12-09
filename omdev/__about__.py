@@ -13,7 +13,7 @@ class Project(ProjectBase):
 
     optional_dependencies = {
         'black': [
-            'black ~= 25.11',
+            'black ~= 25.12',
         ],
 
         'c': [

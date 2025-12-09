@@ -38,10 +38,15 @@ def _main() -> None:
         pkg_opt_deps = {d for ds in pkg_prj.optional_dependencies.values() for d in ds}
         for opt_dep in sorted(pkg_opt_deps):
             opt_req = parse_requirement(opt_dep)
+
             opt_cn = canonicalize_name(opt_req.name, validate=True)
+
             opt_spec = Specifier(opt_req.specifier)
             if re.fullmatch(r'~=\s*\d+(\.\d+)*', str(opt_spec)):
                 opt_spec = Specifier(str(opt_spec) + '.0')
+
+            if opt_cn in pkgs:
+                continue
 
             opt_dist = dist_dct[opt_cn]
             opt_ver = opt_dist.version
