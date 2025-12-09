@@ -87,7 +87,7 @@ def __omlish_amalg__():  # noqa
             dict(path='providers/running.py', sha1='85c9cc69ff6fbd6c8cf78ed6262619a30856c2f1'),
             dict(path='providers/system.py', sha1='9638a154475ca98775159d27739563ac7fb2eb16'),
             dict(path='pyenv/install.py', sha1='4a10a19717364b4ba9f3b8bf1d12621cf21ba8b8'),
-            dict(path='uv/provider.py', sha1='149f19f95eb701ffad5dc74392f4692c21b5f8c0'),
+            dict(path='uv/provider.py', sha1='997dc9453589a4cee0658d2fa0893c4ec60b5a0d'),
             dict(path='providers/inject.py', sha1='7cc9ebf58cf2ec09545321456bd9da9f9a3a79fb'),
             dict(path='pyenv/provider.py', sha1='377542ce01a35849e2a5b4a4dbafedc26882f983'),
             dict(path='uv/inject.py', sha1='e95d058c2340baa5a3155ec3440f311d1daa10a8'),
@@ -5914,6 +5914,7 @@ uv run pip
 uv run --python 3.11.6 pip
 uv venv --python 3.11.6 --seed barf
 python3 -m venv barf && barf/bin/pip install uv && barf/bin/uv venv --python 3.11.6 --seed barf2
+uv python find '3.13.10'
 """
 
 

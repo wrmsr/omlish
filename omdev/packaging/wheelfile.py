@@ -116,11 +116,13 @@ class WheelFile(zipfile.ZipFile):
     @staticmethod
     def _urlsafe_b64encode(data: bytes) -> bytes:
         """urlsafe_b64encode without padding"""
+
         return base64.urlsafe_b64encode(data).rstrip(b'=')
 
     @staticmethod
     def _urlsafe_b64decode(data: bytes) -> bytes:
         """urlsafe_b64decode without padding"""
+
         pad = b'=' * (4 - (len(data) & 3))
         return base64.urlsafe_b64decode(data + pad)
 

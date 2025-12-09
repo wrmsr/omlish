@@ -4,6 +4,7 @@ uv run pip
 uv run --python 3.11.6 pip
 uv venv --python 3.11.6 --seed barf
 python3 -m venv barf && barf/bin/pip install uv && barf/bin/uv venv --python 3.11.6 --seed barf2
+uv python find '3.13.10'
 """
 import typing as ta
 

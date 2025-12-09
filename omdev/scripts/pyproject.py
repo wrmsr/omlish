@@ -90,7 +90,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../magic/prepare.py', sha1='a9b6bd7408d86a52fab7aae2c522032fb251cb8e'),
             dict(path='../magic/styles.py', sha1='60fc56d089669eaad72c5c134b91bc69d4bc107e'),
             dict(path='../packaging/versions.py', sha1='71627ad600b3529b829b0e227b0952f2c63c7271'),
-            dict(path='../packaging/wheelfile.py', sha1='a59e2d75c53e824341c8a8b916b1574d1d58c9b5'),
+            dict(path='../packaging/wheelfile.py', sha1='2e1113819aa85ed00e1fe25c71a2b3dbc0a383f5'),
             dict(path='../../omlish/formats/toml/parser.py', sha1='73dac82289350ab951c4bcdbfe61167fa221f26f'),
             dict(path='../../omlish/formats/toml/writer.py', sha1='6ea41d7e724bb1dcf6bd84b88993ff4e8798e021'),
             dict(path='../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
@@ -143,7 +143,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../interp/providers/running.py', sha1='85c9cc69ff6fbd6c8cf78ed6262619a30856c2f1'),
             dict(path='../interp/providers/system.py', sha1='9638a154475ca98775159d27739563ac7fb2eb16'),
             dict(path='../interp/pyenv/install.py', sha1='4a10a19717364b4ba9f3b8bf1d12621cf21ba8b8'),
-            dict(path='../interp/uv/provider.py', sha1='149f19f95eb701ffad5dc74392f4692c21b5f8c0'),
+            dict(path='../interp/uv/provider.py', sha1='997dc9453589a4cee0658d2fa0893c4ec60b5a0d'),
             dict(path='pkg.py', sha1='a7b64fcf267ba385442393b90c9711af08ba9ac3'),
             dict(path='../interp/providers/inject.py', sha1='7cc9ebf58cf2ec09545321456bd9da9f9a3a79fb'),
             dict(path='../interp/pyenv/provider.py', sha1='377542ce01a35849e2a5b4a4dbafedc26882f983'),
@@ -851,11 +851,13 @@ class WheelFile(zipfile.ZipFile):
     @staticmethod
     def _urlsafe_b64encode(data: bytes) -> bytes:
         """urlsafe_b64encode without padding"""
+
         return base64.urlsafe_b64encode(data).rstrip(b'=')
 
     @staticmethod
     def _urlsafe_b64decode(data: bytes) -> bytes:
         """urlsafe_b64decode without padding"""
+
         pad = b'=' * (4 - (len(data) & 3))
         return base64.urlsafe_b64decode(data + pad)
 
@@ -10869,6 +10871,7 @@ uv run pip
 uv run --python 3.11.6 pip
 uv venv --python 3.11.6 --seed barf
 python3 -m venv barf && barf/bin/pip install uv && barf/bin/uv venv --python 3.11.6 --seed barf2
+uv python find '3.13.10'
 """
 
 
