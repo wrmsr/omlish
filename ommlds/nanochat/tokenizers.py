@@ -18,7 +18,10 @@ from omlish import lang
 
 with lang.auto_proxy_import(globals()):
     import tiktoken
-    import tokenizers
+    import tokenizers.decoders
+    import tokenizers.models
+    import tokenizers.pre_tokenizers
+    import tokenizers.trainers
 
 
 rustbpe: ta.Any = lang.proxy_import('.rustbpe', __package__)
@@ -27,7 +30,7 @@ rustbpe: ta.Any = lang.proxy_import('.rustbpe', __package__)
 ##
 
 
-SPECIAL_TOKENS = [
+SPECIAL_TOKENS: ta.Sequence[str] = [
     # every document begins with the Beginning of Sequence (BOS) token that delimits documents
     '<|bos|>',
     # tokens below are only used during finetuning to render Conversations into token ids
@@ -45,10 +48,18 @@ SPECIAL_TOKENS = [
 # NOTE: this split pattern deviates from GPT-4 in that we use \p{N}{1,2} instead of \p{N}{1,3}
 # I did this because I didn't want to "waste" too many tokens on numbers for smaller vocab sizes.
 # I haven't validated that this is actually a good idea, TODO.
-SPLIT_PATTERN = r"""'(?i:[sdmt]|ll|ve|re)|[^\r\n\p{L}\p{N}]?+\p{L}+|\p{N}{1,2}| ?[^\s\p{L}\p{N}]++[\r\n]*|\s*[\r\n]|\s+(?!\S)|\s+"""  # noqa
+SPLIT_PATTERN = (
+    r"'(?i:[sdmt]|ll|ve|re)|"
+    r"[^\r\n\p{L}\p{N}]?+\p{L}+|"
+    r"\p{N}{1,2}|"
+    r" ?[^\s\p{L}\p{N}]++[\r\n]*|"
+    r"\s*[\r\n]|"
+    r"\s+(?!\S)|"
+    r"\s+"
+)
 
 
-# -----------------------------------------------------------------------------
+##
 # Generic GPT-4-style tokenizer based on HuggingFace Tokenizer
 
 
@@ -87,22 +98,28 @@ class HuggingFaceTokenizer:
             unk_token=None,
             fuse_unk=False,
         ))
+
         # Normalizer: None
         tokenizer.normalizer = None
+
         # Pre-tokenizer: GPT-4 style
         # the regex pattern used by GPT-4 to split text into groups before BPE
         # NOTE: The pattern was changed from \p{N}{1,3} to \p{N}{1,2} because I suspect it is harmful to
         # very small models and smaller vocab sizes, because it is a little bit wasteful in the token space.
         # (but I haven't validated this! TODO)
         gpt4_split_regex = tokenizers.Regex(split_pattern)  # huggingface demands that you wrap it in Regex!!
+
         tokenizer.pre_tokenizer = tokenizers.pre_tokenizers.Sequence([
             tokenizers.pre_tokenizers.Split(pattern=gpt4_split_regex, behavior='isolated', invert=False),
             tokenizers.pre_tokenizers.ByteLevel(add_prefix_space=False, use_regex=False),
         ])
+
         # Decoder: ByteLevel (it pairs together with the ByteLevel pre-tokenizer)
         tokenizer.decoder = tokenizers.decoders.ByteLevel()
+
         # Post-processor: None
         tokenizer.post_processor = None
+
         # Trainer: BPE
         trainer = tokenizers.trainers.BpeTrainer(
             vocab_size=vocab_size,
@@ -111,8 +128,10 @@ class HuggingFaceTokenizer:
             initial_alphabet=tokenizers.pre_tokenizers.ByteLevel.alphabet(),
             special_tokens=special_tokens,
         )
+
         # Kick off the training
         tokenizer.train_from_iterator(text_iterator, trainer)
+
         return cls(tokenizer)
 
     def encode_ordinary(self, text):
@@ -174,7 +193,7 @@ class HuggingFaceTokenizer:
         print(f'Saved tokenizer to {tokenizer_path}')
 
 
-# -----------------------------------------------------------------------------
+##
 # Tokenizer based on rustbpe + tiktoken combo
 
 
@@ -255,6 +274,7 @@ class RustBPETokenizer:
                 ids.insert(0, prepend_id)  # TODO: slightly inefficient here? :( hmm
             if append is not None:
                 ids.append(append_id)
+
         elif isinstance(text, list):
             ids = self.enc.encode_ordinary_batch(text, num_threads=num_threads)
             if prepend is not None:
@@ -263,6 +283,7 @@ class RustBPETokenizer:
             if append is not None:
                 for ids_row in ids:
                     ids_row.append(append_id)
+
         else:
             raise ValueError(f'Invalid input type: {type(text)}')  # noqa
 
@@ -285,6 +306,7 @@ class RustBPETokenizer:
     def render_conversation(self, conversation, max_tokens=2048):
         """
         Tokenize a single Chat conversation (which we call a "doc" or "document" here).
+
         Returns:
         - ids: list[int] is a list of token ids of this rendered conversation
         - mask: list[int] of same length, mask = 1 for tokens that the Assistant is expected to train on.
@@ -324,7 +346,10 @@ class RustBPETokenizer:
         for i, message in enumerate(messages):
             # some sanity checking here around assumptions, to prevent footguns
             must_be_from = 'user' if i % 2 == 0 else 'assistant'
-            check.state(message['role'] == must_be_from, f"Message {i} is from {message['role']} but should be from {must_be_from}")  # noqa
+            check.state(
+                message['role'] == must_be_from,
+                f"Message {i} is from {message['role']} but should be from {must_be_from}",
+            )
 
             # content can be either a simple string or a list of parts (e.g. containing tool calls)
             content = message['content']
@@ -335,33 +360,42 @@ class RustBPETokenizer:
                 add_tokens(user_start, 0)
                 add_tokens(value_ids, 0)
                 add_tokens(user_end, 0)
+
             elif message['role'] == 'assistant':
                 add_tokens(assistant_start, 0)
+
                 if isinstance(content, str):
                     # simple string => simply add the tokens
                     value_ids = self.encode(content)
                     add_tokens(value_ids, 1)
+
                 elif isinstance(content, list):
                     for part in content:
                         value_ids = self.encode(part['text'])
+
                         if part['type'] == 'text':
                             # string part => simply add the tokens
                             add_tokens(value_ids, 1)
+
                         elif part['type'] == 'python':
                             # python tool call => add the tokens inside <|python_start|> and <|python_end|>
                             add_tokens(python_start, 1)
                             add_tokens(value_ids, 1)
                             add_tokens(python_end, 1)
+
                         elif part['type'] == 'python_output':
                             # python output => add the tokens inside <|output_start|> and <|output_end|>
                             # none of these tokens are supervised because the tokens come from Python at test time
                             add_tokens(output_start, 0)
                             add_tokens(value_ids, 0)
                             add_tokens(output_end, 0)
+
                         else:
                             raise ValueError(f"Unknown part type: {part['type']}")
+
                 else:
                     raise ValueError(f'Unknown content type: {type(content)}')
+
                 add_tokens(assistant_end, 1)
 
         # truncate to max_tokens tokens MAX (helps prevent OOMs)

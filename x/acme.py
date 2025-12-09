@@ -24,6 +24,13 @@
 #
 # Copyright Daniel Roesler, under MIT license, included above.
 """
+TODO:
+ - should only need sudo -u www-data
+ - build key request in here
+  - and cleanup
+
+====
+
 openssl genrsa 4096 > www/mydomain.party.key
 openssl req -new -sha256 -key www/mydomain.party.key -subj "/CN=mydomain.party" > mydomain.party.csr
 
@@ -683,5 +690,5 @@ def main(argv: ta.Sequence[str] | None = None) -> None:
     sys.stdout.write(signed_crt)
 
 
-if __name__ == '__main__': # pragma: no cover
+if __name__ == '__main__':
     main(sys.argv[1:])
