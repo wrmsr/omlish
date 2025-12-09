@@ -39,7 +39,7 @@
     "module": ".cli.clicli",
     "attr": "_CLI_MODULE",
     "file": "omdev/cli/clicli.py",
-    "line": 233,
+    "line": 251,
     "value": {
       "!.cli.types.CliModule": {
         "name": "cli",

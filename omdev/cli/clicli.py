@@ -1,3 +1,4 @@
+import dataclasses as dc
 import inspect
 import os
 import re
@@ -13,6 +14,7 @@ from omlish import lang
 from omlish.argparse import all as ap
 from omlish.os.temp import temp_dir_context
 
+from ..packaging.versions import Version
 from ..pip import get_root_dists
 from ..pip import lookup_latest_package_version
 from . import install
@@ -87,22 +89,38 @@ class CliCli(ap.Cli):
 
     #
 
+    @dc.dataclass()
+    class ReinstallWouldNotUpgradeError(Exception):
+        current_version: str
+        target_version: str
+
+        def __str__(self) -> str:
+            return f'Current version {self.current_version} is not older than target version {self.target_version} '
+
     @ap.cmd(
         ap.arg('--url', default=DEFAULT_REINSTALL_URL),
         ap.arg('--local', action='store_true'),
         ap.arg('--no-deps', action='store_true'),
         ap.arg('--no-uv', action='store_true'),
         ap.arg('--dry-run', action='store_true'),
+        ap.arg('--must-upgrade', action='store_true'),
         ap.arg('--version'),
         ap.arg('extra_deps', nargs='*'),
     )
     def reinstall(self) -> None:
+        current_version = __about__.__version__
         latest_version = _parse_latest_version_str(lookup_latest_package_version(__package__.split('.')[0]))
 
         if self.args.version is not None:
             target_version: str = self.args.version
         else:
             target_version = latest_version
+
+        if self.args.must_upgrade:
+            current_vo = Version(current_version)
+            target_vo = Version(target_version)
+            if not (target_vo > current_vo):
+                raise CliCli.ReinstallWouldNotUpgradeError(current_version, target_version)
 
         #
 
@@ -186,7 +204,7 @@ class CliCli(ap.Cli):
 
         #
 
-        print(f'Current version: {__about__.__version__}')
+        print(f'Current version: {current_version}')
         print(f'Latest version: {latest_version}')
         print(f'Target version: {target_version}')
         print()
