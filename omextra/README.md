@@ -10,5 +10,5 @@ unpublished `x` root dir, or just being deleted.
 
 - **[text.antlr](https://github.com/wrmsr/omlish/blob/master/omextra/text/antlr)** -
   [ANTLR](https://www.antlr.org/)-related code. The codebase is generally moving away from antlr in favor of an internal
-  [abnf engine](text/abnf), but I have other projects that need the full power of antlr, so it may remain as an optional
-  dep for utility code (much like sqlalchemy).
+  [abnf engine](https://github.com/wrmsr/omlish/blob/master/omextra/text/abnf), but I have other projects that need the
+  full power of antlr, so it may remain as an optional dep for utility code (much like sqlalchemy).
