@@ -70,7 +70,7 @@ psycopg==3.3.2
 mysql-connector-python==9.5.0
 mysqlclient==2.2.7; sys_platform == "darwin"  # brew install mysql pkg-config  # PKG_CONFIG_PATH="/opt/homebrew/opt/mysql-client/lib/pkgconfig" pip install ...
 
-ujson==5.11.0
+ujson==5.11.0  # @omlish-venv !13t !13dt !14t !14dt  # https://github.com/ultrajson/ultrajson/issues/684
 
 markupsafe==3.0.3
 
@@ -108,7 +108,7 @@ textual==6.8.0
 snowflake-connector-python[secure-local-storage]==4.1.1  # @omlish-venv !13t !13dt  # cffi
 # snowflake-sqlalchemy==1.7.7  # @omlish-venv !13t !13dt  # cffi
 
-trino==0.336.0
+trino==0.336.0  # @omlish-venv !13t !13dt !14t !14dt  # orjson
 
 huggingface-hub==0.36.0  # @omlish-venv !14t !14dt
 hf-xet==1.2.0  # @omlish-venv !14t !14dt

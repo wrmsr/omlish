@@ -99,3 +99,7 @@ def test_partial():
 
     r = ''.join(i).strip()
     assert r == '</tools>'
+
+
+def test_recursion():
+    assert len(stream_parse_one_value(('[' * (n := 128 * 1024)) + ']' * n)) == 1
