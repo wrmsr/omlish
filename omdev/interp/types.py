@@ -85,9 +85,10 @@ class InterpSpecifier:
     def parse(cls, s: str) -> 'InterpSpecifier':
         s, o = InterpOpts.parse_suffix(s)
         if not any(s.startswith(o) for o in Specifier.OPERATORS):
-            s = '~=' + s
             if s.count('.') < 2:
-                s += '.0'
+                s = '~=' + s + '.0'
+            else:
+                s = '==' + s
         return cls(
             specifier=Specifier(s),
             opts=o,

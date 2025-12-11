@@ -120,7 +120,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='../../omlish/os/atomics.py', sha1='ccb62620b95f60ac50561c283d50e5fcfdccb215'),
             dict(path='../../omlish/text/indent.py', sha1='cc23647bdcd8d26c8afe9e36a0aefb32da58cbb8'),
-            dict(path='../../omdev/interp/types.py', sha1='cfc14929777fb19f723c875bcafc8f7c66593d6d'),
+            dict(path='../../omdev/interp/types.py', sha1='caf068a6e81fb6e221d777b341ac5777d92b8091'),
             dict(path='commands/base.py', sha1='17310f7272b6ac7b6438e32bfd7b24004d284399'),
             dict(path='deploy/conf/specs.py', sha1='d191fa887c59198f5eff5c62414031204a76fa65'),
             dict(path='deploy/tags.py', sha1='e6e7a1f4fcee9f5764acbe7f307b31e26f81bbc3'),
@@ -8612,9 +8612,10 @@ class InterpSpecifier:
     def parse(cls, s: str) -> 'InterpSpecifier':
         s, o = InterpOpts.parse_suffix(s)
         if not any(s.startswith(o) for o in Specifier.OPERATORS):
-            s = '~=' + s
             if s.count('.') < 2:
-                s += '.0'
+                s = '~=' + s + '.0'
+            else:
+                s = '==' + s
         return cls(
             specifier=Specifier(s),
             opts=o,

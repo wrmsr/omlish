@@ -70,7 +70,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/timeouts.py', sha1='a0f673033a6943f242e35848d78a41892b9c62a1'),
             dict(path='../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
             dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
-            dict(path='types.py', sha1='cfc14929777fb19f723c875bcafc8f7c66593d6d'),
+            dict(path='types.py', sha1='caf068a6e81fb6e221d777b341ac5777d92b8091'),
             dict(path='../../omlish/asyncs/asyncio/timeouts.py', sha1='4d31b02b3c39b8f2fa7e94db36552fde6942e36a'),
             dict(path='../../omlish/lite/inject.py', sha1='6f097e3170019a34ff6834d36fcc9cbeed3a7ab4'),
             dict(path='../../omlish/logs/standard.py', sha1='818b674f7d15012f25b79f52f6e8e7368b633038'),
@@ -3175,9 +3175,10 @@ class InterpSpecifier:
     def parse(cls, s: str) -> 'InterpSpecifier':
         s, o = InterpOpts.parse_suffix(s)
         if not any(s.startswith(o) for o in Specifier.OPERATORS):
-            s = '~=' + s
             if s.count('.') < 2:
-                s += '.0'
+                s = '~=' + s + '.0'
+            else:
+                s = '==' + s
         return cls(
             specifier=Specifier(s),
             opts=o,
