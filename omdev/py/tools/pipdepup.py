@@ -2,6 +2,7 @@
 TODO:
  - min_time_since_prev_version
   - without this the min age is moot lol, can still catch a bad release at the same time of day just n days later
+   - * at least show 'suggested', 'suggested age', 'latest', 'latest age', 'number of releases between the 2' *
   - how to handle non-linearity? new minor vers come out in parallel for diff major vers
    - trie?
  - find which reqs file + lineno to update
