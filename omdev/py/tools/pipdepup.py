@@ -566,8 +566,8 @@ def _main() -> None:
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--exclude', action='append', dest='excludes')
-    parser.add_argument('--min-age-h', type=float, default=4 * 24)
-    parser.add_argument('-P', '--parallelism', type=int, default=4)
+    parser.add_argument('--min-age-h', type=float, default=24)
+    parser.add_argument('-P', '--parallelism', type=int, default=3)
     parser.add_argument('--json', action='store_true')
     args = parser.parse_args()
 

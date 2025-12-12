@@ -77,31 +77,47 @@ class ChatProfile(Profile):
 
     #
 
-    INPUT_ARGS: ta.ClassVar[ta.Sequence[ap.Arg]] = [
-        ap.arg('message', nargs='*', group='input'),
-        ap.arg('-i', '--interactive', action='store_true', group='input'),
-        ap.arg('-e', '--editor', action='store_true', group='input'),
+    INTERFACE_ARGS: ta.ClassVar[ta.Sequence[ap.Arg]] = [
+        ap.arg('-i', '--interactive', action='store_true', group='interface'),
+        ap.arg('-T', '--textual', action='store_true', group='interface'),
+        ap.arg('-e', '--editor', action='store_true', group='interface'),
     ]
 
-    def configure_input(self, cfg: ChatConfig) -> ChatConfig:
+    def configure_interface(self, cfg: ChatConfig) -> ChatConfig:
         if self._args.editor:
             check.arg(not self._args.interactive)
             check.arg(not self._args.message)
             raise NotImplementedError
 
-        elif self._args.interactive:
-            check.arg(not self._args.message)
-            return dc.replace(
+        if self._args.interactive:
+            cfg = dc.replace(
                 cfg,
+                interface=dc.replace(
+                    cfg.interface,
+                    interactive=True,
+                    use_textual=self._args.textual,
+                ),
                 user=dc.replace(
                     cfg.user,
                     interactive=True,
                 ),
             )
 
+        return cfg
+
+    #
+
+    INPUT_ARGS: ta.ClassVar[ta.Sequence[ap.Arg]] = [
+        ap.arg('message', nargs='*', group='input'),
+    ]
+
+    def configure_input(self, cfg: ChatConfig) -> ChatConfig:
+        if self._args.interactive:
+            check.arg(not self._args.message)
+
         elif self._args.message:
             # TODO: '-' -> stdin
-            return dc.replace(
+            cfg = dc.replace(
                 cfg,
                 user=dc.replace(
                     cfg.user,
@@ -111,6 +127,8 @@ class ChatProfile(Profile):
 
         else:
             raise ValueError('Must specify input')
+
+        return cfg
 
     #
 
@@ -220,6 +238,7 @@ class ChatProfile(Profile):
 
         for grp_name, grp_args in [
             ('backend', self.BACKEND_ARGS),
+            ('interface', self.INTERFACE_ARGS),
             ('input', self.INPUT_ARGS),
             ('state', self.STATE_ARGS),
             ('output', self.OUTPUT_ARGS),
@@ -234,6 +253,7 @@ class ChatProfile(Profile):
 
         cfg = ChatConfig()
         cfg = self.configure_backend(cfg)
+        cfg = self.configure_interface(cfg)
         cfg = self.configure_input(cfg)
         cfg = self.configure_state(cfg)
         cfg = self.configure_output(cfg)

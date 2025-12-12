@@ -9,8 +9,6 @@ from .configs import UserConfig
 
 
 with lang.auto_proxy_import(globals()):
-    from .....inputs import asyncs as _inputs_asyncs
-    from .....inputs import sync as _inputs_sync
     from ..state import types as _state
     from . import interactive as _interactive
     from . import oneshot as _oneshot
@@ -44,11 +42,6 @@ def bind_user(cfg: UserConfig = UserConfig()) -> inj.Elements:
             raise NotImplementedError
 
         els.append(inj.bind(_types.UserChatInput, to_ctor=_interactive.InteractiveUserChatInput, singleton=True))
-
-        els.extend([
-            inj.bind(_inputs_sync.SyncStringInput, to_const=_inputs_sync.InputSyncStringInput(use_readline=cfg.use_readline)),  # noqa
-            inj.bind(_inputs_asyncs.AsyncStringInput, to_ctor=_inputs_asyncs.ThreadAsyncStringInput, singleton=True),
-        ])
 
     else:
         if cfg.initial_user_content is None:

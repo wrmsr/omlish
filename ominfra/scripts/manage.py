@@ -172,7 +172,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omdev/interp/providers/running.py', sha1='85c9cc69ff6fbd6c8cf78ed6262619a30856c2f1'),
             dict(path='../../omdev/interp/providers/system.py', sha1='9638a154475ca98775159d27739563ac7fb2eb16'),
             dict(path='../../omdev/interp/pyenv/install.py', sha1='4a10a19717364b4ba9f3b8bf1d12621cf21ba8b8'),
-            dict(path='../../omdev/interp/uv/provider.py', sha1='997dc9453589a4cee0658d2fa0893c4ec60b5a0d'),
+            dict(path='../../omdev/interp/uv/provider.py', sha1='3c3980878ad2b9fd2cd02172f9424954759c7f06'),
             dict(path='commands/inject.py', sha1='7a95b6487b01230dd2fe0d9f67382d8889039e7b'),
             dict(path='system/commands.py', sha1='17bbaa945b6ded0a88d31c52b410cbce8fc324a0'),
             dict(path='system/config.py', sha1='fd1ebc2cf36fd312ff69d1af100a7e9c638f1fcc'),
@@ -15280,7 +15280,36 @@ uv run --python 3.11.6 pip
 uv venv --python 3.11.6 --seed barf
 python3 -m venv barf && barf/bin/pip install uv && barf/bin/uv venv --python 3.11.6 --seed barf2
 uv python find '3.13.10'
+uv python list --output-format=json
 """
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class UvPythonListOutput:
+    key: str
+    version: str
+
+    @dc.dataclass(frozen=True)
+    class VersionParts:
+        major: int
+        minor: int
+        patch: int
+
+    version_parts: VersionParts
+
+    path: ta.Optional[str]
+    symlink: ta.Optional[str]
+
+    url: str
+
+    os: str  # emscripten linux macos
+    variant: str  # default freethreaded
+    implementation: str  # cpython graalpy pyodide pypy
+    arch: str  # aarch64 wasm32 x86_64
+    libc: str  # gnu musl none
 
 
 ##
@@ -15305,6 +15334,12 @@ class UvInterpProvider(InterpProvider):
 
     async def get_installed_version(self, version: InterpVersion) -> Interp:
         raise NotImplementedError
+
+    # async def get_installable_versions(self, spec: InterpSpecifier) -> ta.Sequence[InterpVersion]:
+    #     return []
+
+    # async def install_version(self, version: InterpVersion) -> Interp:
+    #     raise TypeError
 
 
 ########################################

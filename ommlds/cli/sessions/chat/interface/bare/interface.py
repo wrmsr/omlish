@@ -1,0 +1,19 @@
+from ...driver import ChatDriver
+from ..base import ChatInterface
+
+
+##
+
+
+class BareChatInterface(ChatInterface):
+    def __init__(
+            self,
+            *,
+            driver: ChatDriver,
+    ) -> None:
+        super().__init__()
+
+        self._driver = driver
+
+    async def run(self) -> None:
+        await self._driver.run()

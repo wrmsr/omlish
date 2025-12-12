@@ -2,6 +2,8 @@
 TODO:
  - options lol - csv header, newline, etc
  - edn
+ - jsonl
+ - jsonc (just comments)
 """
 import dataclasses as dc
 import enum
