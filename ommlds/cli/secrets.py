@@ -10,6 +10,7 @@ def install_secrets() -> None:
     # FIXME: lol garbage
     for key in [
         'ANTHROPIC_API_KEY',
+        'CEREBRAS_API_KEY',
         'GEMINI_API_KEY',
         'GROQ_API_KEY',
         'HUGGINGFACE_TOKEN',

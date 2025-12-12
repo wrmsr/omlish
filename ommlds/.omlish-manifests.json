@@ -75,6 +75,60 @@
     }
   },
   {
+    "module": ".minichain.backends.impls.cerebras.chat",
+    "attr": null,
+    "file": "ommlds/minichain/backends/impls/cerebras/chat.py",
+    "line": 26,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "ommlds.minichain.backends.impls.cerebras.chat",
+        "attr": "CerebrasChatChoicesService",
+        "name": "cerebras",
+        "aliases": null,
+        "type": "ChatChoicesService"
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.impls.cerebras.names",
+    "attr": "_BACKEND_STRINGS_MANIFEST",
+    "file": "ommlds/minichain/backends/impls/cerebras/names.py",
+    "line": 22,
+    "value": {
+      "!.minichain.backends.strings.manifests.BackendStringsManifest": {
+        "service_cls_names": [
+          "ChatChoicesService",
+          "ChatChoicesStreamService"
+        ],
+        "backend_name": "cerebras",
+        "model_names": {
+          "default": "gpt-oss-120b",
+          "aliases": {
+            "llama3.1-8b": null,
+            "llama-3.3-70b": null,
+            "gpt-oss-120b": null,
+            "qwen-3-32b": null
+          }
+        }
+      }
+    }
+  },
+  {
+    "module": ".minichain.backends.impls.cerebras.stream",
+    "attr": null,
+    "file": "ommlds/minichain/backends/impls/cerebras/stream.py",
+    "line": 33,
+    "value": {
+      "!.minichain.registries.manifests.RegistryManifest": {
+        "module": "ommlds.minichain.backends.impls.cerebras.stream",
+        "attr": "CerebrasChatChoicesStreamService",
+        "name": "cerebras",
+        "aliases": null,
+        "type": "ChatChoicesStreamService"
+      }
+    }
+  },
+  {
     "module": ".minichain.backends.impls.duckduckgo.search",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/duckduckgo/search.py",
