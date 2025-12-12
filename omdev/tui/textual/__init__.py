@@ -210,9 +210,13 @@ with _lang.auto_proxy_init(globals()):
     from textual.widgets import Tooltip  # noqa
     from textual.widgets import Tree  # noqa
     from textual.widgets import Welcome  # noqa
-    from textual.widgets.option_list import OptionDoesNotExist  # noqa
-    from textual.widgets.option_list import Option  # noqa
+    from textual.widgets.markdown import MarkdownBlock  # noqa
+    from textual.widgets.markdown import MarkdownFence  # noqa
+    from textual.widgets.markdown import MarkdownStream  # noqa
+    from textual.widgets.markdown import MarkdownTableOfContents  # noqa
     from textual.widgets.option_list import DuplicateID  # noqa
+    from textual.widgets.option_list import Option  # noqa
+    from textual.widgets.option_list import OptionDoesNotExist  # noqa
 
     ##
 

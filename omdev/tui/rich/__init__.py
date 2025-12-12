@@ -6,12 +6,15 @@ from omlish import lang as _lang
 with _lang.auto_proxy_init(globals()):
     ##
 
+    from rich import align  # noqa
     from rich import console  # noqa
     from rich import live  # noqa
     from rich import markdown  # noqa
     from rich import repr  # noqa
     from rich import text  # noqa
+    from rich.align import Align  # noqa
     from rich.console import Console  # noqa
+    from rich.console import Group  # noqa
     from rich.live import Live  # noqa
     from rich.markdown import Markdown  # noqa
     from rich.text import Text  # noqa
