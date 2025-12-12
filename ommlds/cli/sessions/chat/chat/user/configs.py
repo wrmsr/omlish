@@ -12,6 +12,3 @@ from ...... import minichain as mc
 class UserConfig:
     initial_system_content: ta.Optional['mc.Content'] = None
     initial_user_content: ta.Optional['mc.Content'] = None
-
-    interactive: bool = False
-    use_readline: bool | ta.Literal['auto'] = 'auto'

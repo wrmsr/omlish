@@ -16,6 +16,7 @@ with lang.auto_proxy_import(globals()):
     from .chat.ai import inject as _chat_ai
     from .chat.state import inject as _chat_state
     from .chat.user import inject as _chat_user
+    from .interface import inject as _interface
     from .phases import inject as _phases
     from .tools import inject as _tools
 
@@ -36,6 +37,8 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
         _chat_user.bind_user(cfg.user),
 
         _chat_state.bind_state(cfg.state),
+
+        _interface.bind_interface(cfg.interface),
 
         _phases.bind_phases(),
 
