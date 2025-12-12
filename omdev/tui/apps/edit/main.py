@@ -19,13 +19,17 @@ class QuitConfirmScreen(tx.ModalScreen[bool]):
         #dialog {
             width: 60;
             height: 11;
+
             border: thick $background 80%;
-            background: $surface;
+
             padding: 1 2;
+
+            background: $surface;
         }
 
         #question {
             height: 3;
+
             content-align: center middle;
         }
 

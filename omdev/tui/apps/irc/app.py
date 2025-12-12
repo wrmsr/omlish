@@ -43,26 +43,34 @@ class IrcApp(tx.App):
     _commands: ta.ClassVar[ta.Mapping[str, IrcCommand]] = ALL_COMMANDS
 
     CSS = """
-    #messages {
-        height: 1fr;
-        overflow-y: auto;
-        border: none;
-        padding: 0;
-    }
+        #messages {
+            height: 1fr;
 
-    #status {
-        height: 1;
-        background: $primary;
-        color: $text;
-        border: none;
-        padding: 0;
-    }
+            border: none;
 
-    #input {
-        dock: bottom;
-        border: none;
-        padding: 0;
-    }
+            padding: 0;
+
+            overflow-y: auto;
+        }
+
+        #status {
+            height: 1;
+
+            border: none;
+
+            padding: 0;
+
+            color: $text;
+            background: $primary;
+        }
+
+        #input {
+            border: none;
+
+            padding: 0;
+
+            dock: bottom;
+        }
     """
 
     BINDINGS: ta.ClassVar[ta.Sequence[tx.Binding]] = [
