@@ -1,3 +1,4 @@
+import dataclasses as dc
 import typing as ta
 
 from omdev.tui import textual as tx
@@ -6,9 +7,31 @@ from omdev.tui import textual as tx
 ##
 
 
+class UserMessage(tx.Static):
+    pass
+
+
+##
+
+
 class InputTextArea(tx.TextArea):
+    @dc.dataclass()
+    class Submitted(tx.Message):
+        text: str
+
     def __init__(self, **kwargs: ta.Any) -> None:
         super().__init__(**kwargs)
+
+    async def _on_key(self, event: tx.Key) -> None:
+        if event.key == 'enter':
+            event.prevent_default()
+            event.stop()
+
+            if text := self.text.strip():
+                self.post_message(self.Submitted(text))
+
+        else:
+            await super()._on_key(event)
 
 
 ##
@@ -28,7 +51,7 @@ class ChatApp(tx.App):
             padding: 0 2 0 2;
         }
 
-        #messages {
+        #messages-container {
             height: auto;
             width: 100%;
 
@@ -94,9 +117,11 @@ class ChatApp(tx.App):
 
     ENABLE_COMMAND_PALETTE: ta.ClassVar[bool] = False
 
+    #
+
     def compose(self) -> tx.ComposeResult:
         with tx.VerticalScroll(id='messages-scroll'):
-            yield tx.Static(id='messages')
+            yield tx.Static(id='messages-container')
 
         with tx.Static(id='input-outer'):
             with tx.Vertical(id='input-vertical'):
@@ -105,5 +130,20 @@ class ChatApp(tx.App):
                         yield tx.Static('>', id='input-glyph')
                         yield InputTextArea(placeholder='...', id='input')
 
+    #
+
+    def _get_input_text_area(self) -> InputTextArea:
+        return self.query_one('#input', InputTextArea)
+
+    def _get_messages_container(self) -> tx.Static:
+        return self.query_one('#messages-container', tx.Static)
+
+    #
+
     async def on_mount(self) -> None:
-        await self.query_one('#messages').mount(tx.Static('Hi!'))
+        self._get_input_text_area().focus()
+
+        await self._get_messages_container().mount(UserMessage('Hi!'))
+
+    def on_input_text_area_submitted(self, event: InputTextArea.Submitted) -> None:
+        self._get_input_text_area().clear()
