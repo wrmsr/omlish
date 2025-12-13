@@ -11,6 +11,10 @@ class UserMessage(tx.Static):
     pass
 
 
+class AiMessage(tx.Static):
+    pass
+
+
 ##
 
 
@@ -140,10 +144,25 @@ class ChatApp(tx.App):
 
     #
 
+    async def _mount_message(self, *messages: tx.Widget) -> None:
+        msg_ctr = self._get_messages_container()
+
+        for msg in messages:
+            await msg_ctr.mount(msg)
+
+        self.call_after_refresh(lambda: msg_ctr.scroll_end(animate=False))
+
+    #
+
     async def on_mount(self) -> None:
         self._get_input_text_area().focus()
 
-        await self._get_messages_container().mount(UserMessage('Hi!'))
+        await self._mount_message(UserMessage('Hello!'))
 
-    def on_input_text_area_submitted(self, event: InputTextArea.Submitted) -> None:
+    async def on_input_text_area_submitted(self, event: InputTextArea.Submitted) -> None:
         self._get_input_text_area().clear()
+
+        await self._mount_message(
+            UserMessage(event.text),
+            AiMessage(f'You said: {event.text}!'),
+        )
