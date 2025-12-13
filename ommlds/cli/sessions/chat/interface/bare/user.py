@@ -4,7 +4,7 @@ from ...... import minichain as mc
 from .....inputs.asyncs import AsyncStringInput
 from .....inputs.asyncs import SyncAsyncStringInput
 from .....inputs.sync import InputSyncStringInput
-from .types import UserChatInput
+from ...chat.user.types import UserChatInput
 
 
 ##

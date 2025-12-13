@@ -9,6 +9,8 @@ from .interface import BareChatInterface
 with lang.auto_proxy_import(globals()):
     from .....inputs import asyncs as _inputs_asyncs
     from .....inputs import sync as _inputs_sync
+    from ...chat.user import types as _user_types
+    from . import user as _user
 
 
 ##
@@ -20,6 +22,8 @@ def bind_bare(cfg: InterfaceConfig = InterfaceConfig()) -> inj.Elements:
     ]
 
     if cfg.interactive:
+        els.append(inj.bind(_user_types.UserChatInput, to_ctor=_user.InteractiveUserChatInput, singleton=True))
+
         els.extend([
             inj.bind(_inputs_sync.SyncStringInput, to_const=_inputs_sync.InputSyncStringInput(use_readline=cfg.use_readline)),  # noqa
             inj.bind(_inputs_asyncs.AsyncStringInput, to_ctor=_inputs_asyncs.ThreadAsyncStringInput, singleton=True),
