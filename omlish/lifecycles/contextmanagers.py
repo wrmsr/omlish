@@ -30,6 +30,9 @@ class ContextManagerLifecycle(Lifecycle, lang.Final, ta.Generic[ContextManagerT]
         self.cm.__exit__(None, None, None)
 
 
+##
+
+
 class LifecycleContextManager(ta.Generic[LifecycleT]):
     def __init__(self, lifecycle: LifecycleT) -> None:
         super().__init__()

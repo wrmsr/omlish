@@ -92,6 +92,39 @@ def as_async_lifecycle(lifecycle: Lifecycle | AsyncLifecycle) -> AsyncLifecycle:
         raise TypeError(lifecycle)
 
 
+@ta.final
+@dc.dataclass(frozen=True)
+class _AsyncToSyncLifecycle(Lifecycle, lang.Final):
+    lifecycle: AsyncLifecycle
+
+    def lifecycle_construct(self) -> None:
+        lang.sync_await(self.lifecycle.lifecycle_construct())
+
+    def lifecycle_start(self) -> None:
+        lang.sync_await(self.lifecycle.lifecycle_start())
+
+    def lifecycle_stop(self) -> None:
+        lang.sync_await(self.lifecycle.lifecycle_stop())
+
+    def lifecycle_destroy(self) -> None:
+        lang.sync_await(self.lifecycle.lifecycle_destroy())
+
+
+def async_to_sync_lifecycle(lifecycle: AsyncLifecycle) -> Lifecycle:
+    return _AsyncToSyncLifecycle(lifecycle)
+
+
+def as_sync_lifecycle(lifecycle: Lifecycle | AsyncLifecycle) -> Lifecycle:
+    if isinstance(lifecycle, Lifecycle):
+        return lifecycle
+
+    elif isinstance(lifecycle, AsyncLifecycle):
+        return async_to_sync_lifecycle(lifecycle)
+
+    else:
+        raise TypeError(lifecycle)
+
+
 ##
 
 

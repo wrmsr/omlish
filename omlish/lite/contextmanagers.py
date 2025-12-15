@@ -13,6 +13,22 @@ AsyncExitStackedT = ta.TypeVar('AsyncExitStackedT', bound='AsyncExitStacked')
 ##
 
 
+class SyncToAsyncContextManager(ta.AsyncContextManager[T]):
+    def __init__(self, cm: ta.ContextManager[T]) -> None:
+        super().__init__()
+
+        self._cm = cm
+
+    async def __aenter__(self) -> T:
+        return self._cm.__enter__()
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        return self._cm.__exit__(exc_type, exc_val, exc_tb)
+
+
+##
+
+
 class ExitStacked:
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)

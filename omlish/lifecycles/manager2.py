@@ -12,6 +12,7 @@ from .controller import AnyLifecycleController
 from .controller import AsyncLifecycleController
 from .controller import LifecycleController
 from .managed import AsyncLifecycleManaged
+from .managed import LifecycleManaged
 from .states import LifecycleState
 from .states import LifecycleStateError
 from .states import LifecycleStates
@@ -20,15 +21,16 @@ from .states import LifecycleStates
 ##
 
 
+@dc.dataclass(frozen=True, eq=False)
+class LifecycleManagerEntry(lang.Final):
+    controller: AnyLifecycleController
+
+    dependencies: ta.MutableSet['LifecycleManagerEntry'] = dc.field(default_factory=set)
+    dependents: ta.MutableSet['LifecycleManagerEntry'] = dc.field(default_factory=set)
+
+
 @ta.final
 class AnyLifecycleManager(AsyncLifecycleManaged, lang.Final):
-    @dc.dataclass(frozen=True, eq=False)
-    class Entry(lang.Final):
-        controller: AnyLifecycleController
-
-        dependencies: ta.MutableSet['AnyLifecycleManager.Entry'] = dc.field(default_factory=set)
-        dependents: ta.MutableSet['AnyLifecycleManager.Entry'] = dc.field(default_factory=set)
-
     def __init__(
             self,
             *,
@@ -38,7 +40,7 @@ class AnyLifecycleManager(AsyncLifecycleManaged, lang.Final):
 
         self._lock = lang.default_async_lock(lock, None)
 
-        self._entries_by_lifecycle: ta.MutableMapping[AnyLifecycle, AnyLifecycleManager.Entry] = col.IdentityKeyDict()
+        self._entries_by_lifecycle: ta.MutableMapping[AnyLifecycle, LifecycleManagerEntry] = col.IdentityKeyDict()
 
         self._controller = AsyncLifecycleController(self._lifecycle, lock=self._lock)
 
@@ -49,6 +51,8 @@ class AnyLifecycleManager(AsyncLifecycleManaged, lang.Final):
     @property
     def state(self) -> LifecycleState:
         return self._controller.state
+
+    #
 
     def _make_controller(self, lifecycle: AnyLifecycle) -> AnyLifecycleController:
         if isinstance(lifecycle, (LifecycleController, AsyncLifecycleController)):
@@ -63,18 +67,18 @@ class AnyLifecycleManager(AsyncLifecycleManaged, lang.Final):
         else:
             raise TypeError(lifecycle)
 
-    def _add_internal(self, lifecycle: AnyLifecycle, dependencies: ta.Iterable[AnyLifecycle]) -> Entry:
+    def _add_internal(self, lifecycle: AnyLifecycle, dependencies: ta.Iterable[AnyLifecycle]) -> LifecycleManagerEntry:
         check.state(self.state < LifecycleStates.STOPPING and not self.state.is_failed)
 
-        check.isinstance(lifecycle, Lifecycle)
+        check.isinstance(lifecycle, (Lifecycle, AsyncLifecycle))
         try:
             entry = self._entries_by_lifecycle[lifecycle]
         except KeyError:
             controller = self._make_controller(lifecycle)
-            entry = self._entries_by_lifecycle[lifecycle] = AnyLifecycleManager.Entry(controller)
+            entry = self._entries_by_lifecycle[lifecycle] = LifecycleManagerEntry(controller)
 
         for dep in dependencies:
-            check.isinstance(dep, Lifecycle)
+            check.isinstance(dep, (Lifecycle, AsyncLifecycle))
             dep_entry = self._add_internal(dep, [])
             entry.dependencies.add(dep_entry)
             dep_entry.dependents.add(entry)
@@ -85,7 +89,7 @@ class AnyLifecycleManager(AsyncLifecycleManaged, lang.Final):
             self,
             lifecycle: AnyLifecycle,
             dependencies: ta.Iterable[AnyLifecycle] = (),
-    ) -> Entry:
+    ) -> LifecycleManagerEntry:
         check.state(self.state < LifecycleStates.STOPPING and not self.state.is_failed)
 
         async with self._lock():
@@ -117,7 +121,7 @@ class AnyLifecycleManager(AsyncLifecycleManaged, lang.Final):
 
     @ta.override
     async def _lifecycle_construct(self) -> None:
-        async def rec(e: AnyLifecycleManager.Entry) -> None:
+        async def rec(e: LifecycleManagerEntry) -> None:
             for dep in e.dependencies:
                 await rec(dep)
 
@@ -132,7 +136,7 @@ class AnyLifecycleManager(AsyncLifecycleManaged, lang.Final):
 
     @ta.override
     async def _lifecycle_start(self) -> None:
-        async def rec(e: AnyLifecycleManager.Entry) -> None:
+        async def rec(e: LifecycleManagerEntry) -> None:
             for dep in e.dependencies:
                 await rec(dep)
 
@@ -150,7 +154,7 @@ class AnyLifecycleManager(AsyncLifecycleManaged, lang.Final):
 
     @ta.override
     async def _lifecycle_stop(self) -> None:
-        async def rec(e: AnyLifecycleManager.Entry) -> None:
+        async def rec(e: LifecycleManagerEntry) -> None:
             for dep in e.dependents:
                 await rec(dep)
 
@@ -165,7 +169,7 @@ class AnyLifecycleManager(AsyncLifecycleManaged, lang.Final):
 
     @ta.override
     async def _lifecycle_destroy(self) -> None:
-        async def rec(e: AnyLifecycleManager.Entry) -> None:
+        async def rec(e: LifecycleManagerEntry) -> None:
             for dep in e.dependents:
                 await rec(dep)
 
@@ -174,3 +178,59 @@ class AnyLifecycleManager(AsyncLifecycleManaged, lang.Final):
 
         for entry in self._entries_by_lifecycle.values():
             await rec(entry)
+
+
+##
+
+
+class LifecycleManager(LifecycleManaged, lang.Final):
+    def __init__(
+            self,
+            *,
+            lock: lang.DefaultLockable = None,
+    ) -> None:
+        super().__init__()
+
+        a_lock: lang.AsyncLockable
+        if (lock := lang.default_lock(lock, None)) is not None:
+            a_lock = lambda: lang.SyncToAsyncContextManager(lock)
+        else:
+            a_lock = lang.default_async_lock(None)
+
+        self._inner = AnyLifecycleManager(lock=a_lock)
+
+    @property
+    def state(self) -> LifecycleState:
+        return self._inner.controller.state
+
+    async def add(
+            self,
+            lifecycle: AnyLifecycle,
+            dependencies: ta.Iterable[AnyLifecycle] = (),
+    ) -> LifecycleManagerEntry:
+        raise NotImplementedError
+
+
+#
+
+
+class AsyncLifecycleManager(AsyncLifecycleManaged, lang.Final):
+    def __init__(
+            self,
+            *,
+            lock: lang.DefaultAsyncLockable = None,
+    ) -> None:
+        super().__init__()
+
+        self._inner = AnyLifecycleManager(lock=lock)
+
+    @property
+    def state(self) -> LifecycleState:
+        return self._inner.state
+
+    async def add(
+            self,
+            lifecycle: AnyLifecycle,
+            dependencies: ta.Iterable[AnyLifecycle] = (),
+    ) -> LifecycleManagerEntry:
+        raise NotImplementedError

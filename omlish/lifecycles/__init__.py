@@ -6,6 +6,8 @@ from .base import (  # noqa
 
     sync_to_async_lifecycle,
     as_async_lifecycle,
+    async_to_sync_lifecycle,
+    as_sync_lifecycle,
 
     CallbackLifecycle,
     CallbackAsyncLifecycle,
@@ -18,6 +20,7 @@ from .base import (  # noqa
 
 from .contextmanagers import (  # noqa
     ContextManagerLifecycle,
+
     LifecycleContextManager,
 )
 

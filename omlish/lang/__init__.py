@@ -559,6 +559,7 @@ with _auto_proxy_init(globals(), update_exports=True):
     from ..lite.contextmanagers import (  # noqa
         AsyncExitStacked,
         ExitStacked,
+        SyncToAsyncContextManager,
         adefer,
         attr_setting,
         defer,
