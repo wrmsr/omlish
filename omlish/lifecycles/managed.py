@@ -1,6 +1,7 @@
 import typing as ta
 
 from .. import cached
+from .. import check
 from .. import dataclasses as dc
 from .. import lang
 from .base import AsyncLifecycle
@@ -16,6 +17,16 @@ AsyncLifecycleManagedT = ta.TypeVar('AsyncLifecycleManagedT', bound='AsyncLifecy
 
 
 class LifecycleManaged(lang.Abstract):
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        try:
+            async_lifecycle_managed_cls = AsyncLifecycleManaged
+        except NameError:
+            pass
+        else:
+            check.not_issubclass(cls, async_lifecycle_managed_cls)
+
     @ta.final
     @dc.dataclass(frozen=True)
     class _Lifecycle(
@@ -58,6 +69,11 @@ class LifecycleManaged(lang.Abstract):
 
 
 class AsyncLifecycleManaged(lang.Abstract):
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        check.not_issubclass(cls, LifecycleManaged)
+
     @ta.final
     @dc.dataclass(frozen=True)
     class _Lifecycle(
