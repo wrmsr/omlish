@@ -4,6 +4,9 @@ from .base import (  # noqa
     AnyLifecycle,
     ANY_LIFECYCLE_TYPES,
 
+    sync_to_async_lifecycle,
+    as_async_lifecycle,
+
     CallbackLifecycle,
     CallbackAsyncLifecycle,
 
@@ -20,14 +23,16 @@ from .contextmanagers import (  # noqa
 
 from .controller import (  # noqa
     LifecycleController,
-
     AsyncLifecycleController,
+    AnyLifecycleController,
+    ANY_LIFECYCLE_CONTROLLER_TYPES,
 )
 
 from .managed import (  # noqa
     LifecycleManaged,
-
     AsyncLifecycleManaged,
+    AnyLifecycleManaged,
+    ANY_LIFECYCLE_MANAGED_TYPES,
 )
 
 from .manager import (  # noqa

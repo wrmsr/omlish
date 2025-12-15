@@ -1,3 +1,5 @@
+import typing as ta
+
 from .. import check
 from .. import dataclasses as dc
 from .. import lang
@@ -8,6 +10,7 @@ from .states import LifecycleStates
 ##
 
 
+@ta.final
 @dc.dataclass(frozen=True)
 class LifecycleTransition(lang.Final):
     old: frozenset[LifecycleState]

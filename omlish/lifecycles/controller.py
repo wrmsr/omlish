@@ -15,6 +15,7 @@ from .transitions import LifecycleTransitions
 ##
 
 
+@ta.final
 class LifecycleController(Lifecycle, lang.Final):
     def __init__(
             self,
@@ -108,9 +109,10 @@ class LifecycleController(Lifecycle, lang.Final):
         )
 
 
-##
+#
 
 
+@ta.final
 class AsyncLifecycleController(AsyncLifecycle, lang.Final):
     def __init__(
             self,
@@ -202,3 +204,11 @@ class AsyncLifecycleController(AsyncLifecycle, lang.Final):
             LifecycleTransitions.DESTROY,
             self._lifecycle.lifecycle_destroy,
         )
+
+
+#
+
+
+AnyLifecycleController: ta.TypeAlias = LifecycleController | AsyncLifecycleController
+
+ANY_LIFECYCLE_CONTROLLER_TYPES: tuple[type[LifecycleController | AsyncLifecycleController], ...] = (LifecycleController, AsyncLifecycleController)  # noqa

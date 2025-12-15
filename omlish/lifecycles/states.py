@@ -1,4 +1,5 @@
 import functools
+import typing as ta
 
 from .. import check
 from .. import dataclasses as dc
@@ -12,6 +13,7 @@ class LifecycleStateError(Exception):
     pass
 
 
+@ta.final
 @dc.dataclass(frozen=True, eq=False)
 @functools.total_ordering
 class LifecycleState(lang.Final):

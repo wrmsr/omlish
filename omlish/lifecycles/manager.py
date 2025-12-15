@@ -16,6 +16,7 @@ from .states import LifecycleStates
 
 
 class LifecycleManager(LifecycleManaged):
+    @ta.final
     @dc.dataclass(frozen=True)
     class Entry(lang.Final):
         controller: LifecycleController

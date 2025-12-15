@@ -65,7 +65,7 @@ class LifecycleManaged(lang.Abstract):
         pass
 
 
-##
+#
 
 
 class AsyncLifecycleManaged(lang.Abstract):
@@ -110,3 +110,11 @@ class AsyncLifecycleManaged(lang.Abstract):
 
     async def _lifecycle_destroy(self) -> None:
         pass
+
+
+#
+
+
+AnyLifecycleManaged: ta.TypeAlias = LifecycleManaged | AsyncLifecycleManaged
+
+ANY_LIFECYCLE_MANAGED_TYPES: tuple[type[LifecycleManaged | AsyncLifecycleManaged], ...] = (LifecycleManaged, AsyncLifecycleManaged)  # noqa

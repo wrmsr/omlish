@@ -60,6 +60,42 @@ ANY_LIFECYCLE_TYPES: tuple[type[Lifecycle | AsyncLifecycle], ...] = (Lifecycle, 
 
 
 @ta.final
+@dc.dataclass(frozen=True)
+class _SyncToAsyncLifecycle(AsyncLifecycle, lang.Final):
+    lifecycle: Lifecycle
+
+    async def lifecycle_construct(self) -> None:
+        self.lifecycle.lifecycle_construct()
+
+    async def lifecycle_start(self) -> None:
+        self.lifecycle.lifecycle_start()
+
+    async def lifecycle_stop(self) -> None:
+        self.lifecycle.lifecycle_stop()
+
+    async def lifecycle_destroy(self) -> None:
+        self.lifecycle.lifecycle_destroy()
+
+
+def sync_to_async_lifecycle(lifecycle: Lifecycle) -> AsyncLifecycle:
+    return _SyncToAsyncLifecycle(lifecycle)
+
+
+def as_async_lifecycle(lifecycle: Lifecycle | AsyncLifecycle) -> AsyncLifecycle:
+    if isinstance(lifecycle, Lifecycle):
+        return sync_to_async_lifecycle(lifecycle)
+
+    elif isinstance(lifecycle, AsyncLifecycle):
+        return lifecycle
+
+    else:
+        raise TypeError(lifecycle)
+
+
+##
+
+
+@ta.final
 @dc.dataclass(frozen=True, kw_only=True)
 class CallbackLifecycle(Lifecycle, lang.Final):
     on_construct: ta.Callable[[], None] | None = None

@@ -17,6 +17,7 @@ from ..manager import LifecycleManager
 ##
 
 
+@ta.final
 class _LifecycleRegistrar(lang.Final):
     def __init__(self) -> None:
         super().__init__()
@@ -24,11 +25,13 @@ class _LifecycleRegistrar(lang.Final):
         self._seen: ta.MutableSet[ta.Any] = col.IdentityWeakSet()
         self._stack: list[_LifecycleRegistrar.State] = []
 
+    @ta.final
     @dc.dataclass(frozen=True)
     class Dep(lang.Final):
         binding: inj.Binding | None
         obj: ta.Any
 
+    @ta.final
     @dc.dataclass(frozen=True)
     class State(lang.Final):
         key: inj.Key
