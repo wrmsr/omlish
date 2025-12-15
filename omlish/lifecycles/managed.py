@@ -7,18 +7,23 @@ from .base import AsyncLifecycle
 from .base import Lifecycle
 
 
-AbstractLifecycleT = ta.TypeVar('AbstractLifecycleT', bound='AbstractLifecycle')
+LifecycleManagedT = ta.TypeVar('LifecycleManagedT', bound='LifecycleManaged')
 
-AbstractAsyncLifecycleT = ta.TypeVar('AbstractAsyncLifecycleT', bound='AbstractAsyncLifecycle')
+AsyncLifecycleManagedT = ta.TypeVar('AsyncLifecycleManagedT', bound='AsyncLifecycleManaged')
 
 
 ##
 
 
-class AbstractLifecycle(lang.Abstract):
+class LifecycleManaged(lang.Abstract):
+    @ta.final
     @dc.dataclass(frozen=True)
-    class _Lifecycle(Lifecycle, lang.Final, ta.Generic[AbstractLifecycleT]):
-        obj: AbstractLifecycleT
+    class _Lifecycle(
+        Lifecycle,
+        lang.Final,
+        ta.Generic[LifecycleManagedT],
+    ):
+        obj: LifecycleManagedT
 
         def lifecycle_construct(self) -> None:
             self.obj._lifecycle_construct()  # noqa
@@ -34,7 +39,7 @@ class AbstractLifecycle(lang.Abstract):
 
     @cached.property
     def _lifecycle(self) -> _Lifecycle[ta.Self]:
-        return AbstractLifecycle._Lifecycle(self)
+        return LifecycleManaged._Lifecycle(self)
 
     def _lifecycle_construct(self) -> None:
         pass
@@ -52,10 +57,15 @@ class AbstractLifecycle(lang.Abstract):
 ##
 
 
-class AbstractAsyncLifecycle(lang.Abstract):
+class AsyncLifecycleManaged(lang.Abstract):
+    @ta.final
     @dc.dataclass(frozen=True)
-    class _Lifecycle(AsyncLifecycle, lang.Final, ta.Generic[AbstractAsyncLifecycleT]):
-        obj: AbstractAsyncLifecycleT
+    class _Lifecycle(
+        AsyncLifecycle,
+        lang.Final,
+        ta.Generic[AsyncLifecycleManagedT],
+    ):
+        obj: AsyncLifecycleManagedT
 
         async def lifecycle_construct(self) -> None:
             await self.obj._lifecycle_construct()  # noqa
@@ -71,7 +81,7 @@ class AbstractAsyncLifecycle(lang.Abstract):
 
     @cached.property
     def _lifecycle(self) -> _Lifecycle[ta.Self]:
-        return AbstractAsyncLifecycle._Lifecycle(self)
+        return AsyncLifecycleManaged._Lifecycle(self)
 
     async def _lifecycle_construct(self) -> None:
         pass

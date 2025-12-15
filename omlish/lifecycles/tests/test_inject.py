@@ -65,6 +65,13 @@ class _LifecycleRegistrar(lang.Final):
         return obj
 
 
+def bind_lifecycle_registrar() -> inj.Elements:
+    return inj.as_elements(
+        inj.bind(_LifecycleRegistrar, to_const=(lr := _LifecycleRegistrar())),
+        inj.bind_provision_listener(lr._on_provision),  # noqa
+    )
+
+
 ##
 
 
@@ -106,11 +113,8 @@ class ServiceC(DumbLifecycle):
 
 
 def test_inject():
-    lr = _LifecycleRegistrar()
     with inj.create_managed_injector(
-            inj.bind(_LifecycleRegistrar, to_const=lr),
-            inj.bind_provision_listener(lr._on_provision),  # noqa
-
+        bind_lifecycle_registrar(),
             inj.bind(LifecycleManager, singleton=True, eager=True),
 
             inj.bind(Db, singleton=True),

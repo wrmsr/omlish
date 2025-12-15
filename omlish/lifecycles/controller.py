@@ -1,94 +1,90 @@
-import abc
 import typing as ta
 
 from .. import check
 from .. import lang
-from .base import AnyLifecycle  # noqa
-from .base import Lifecycle  # noqa
+from .base import AsyncLifecycle
+from .base import AsyncLifecycleListener
+from .base import Lifecycle
+from .base import LifecycleListener
 from .states import LifecycleState
 from .states import LifecycleStates
 from .transitions import LifecycleTransition
 from .transitions import LifecycleTransitions
 
 
-R = ta.TypeVar('R')
-
-AnyLifecycleT = ta.TypeVar('AnyLifecycleT', bound='AnyLifecycle')
-
-LifecycleT = ta.TypeVar('LifecycleT', bound='Lifecycle')
-
-
 ##
 
 
-class AnyLifecycleListener(ta.Generic[AnyLifecycleT, R]):
-    def on_starting(self, obj: AnyLifecycleT) -> R | None:
-        return None
-
-    def on_started(self, obj: AnyLifecycleT) -> R | None:
-        return None
-
-    def on_stopping(self, obj: AnyLifecycleT) -> R | None:
-        return None
-
-    def on_stopped(self, obj: AnyLifecycleT) -> R | None:
-        return None
-
-
-class AnyLifecycleController(AnyLifecycle[R], lang.Abstract, ta.Generic[AnyLifecycleT, R]):
+class LifecycleController(Lifecycle, lang.Final):
     def __init__(
             self,
-            lifecycle: AnyLifecycleT,
+            lifecycle: Lifecycle,
+            *,
+            lock: lang.DefaultLockable = None,
     ) -> None:
         super().__init__()
 
-        self._lifecycle: AnyLifecycleT = check.isinstance(lifecycle, AnyLifecycle)  # type: ignore
+        self._lifecycle: Lifecycle = check.isinstance(lifecycle, Lifecycle)
+        self._lock = lang.default_lock(lock, None)
 
         self._state = LifecycleStates.NEW
-        self._listeners: list[AnyLifecycleListener[AnyLifecycleT, R]] = []
+        self._listeners: list[LifecycleListener] = []
 
     __repr__ = lang.attr_ops(lambda o: (o.lifecycle, o.state)).repr
 
     @property
-    def lifecycle(self) -> AnyLifecycleT:
+    def lifecycle(self) -> Lifecycle:
         return self._lifecycle
 
     @property
     def state(self) -> LifecycleState:
         return self._state
 
-    def add_listener(self, listener: AnyLifecycleListener[AnyLifecycleT, R]) -> ta.Self:
-        self._listeners.append(check.isinstance(listener, AnyLifecycleListener))
+    def add_listener(self, listener: LifecycleListener) -> ta.Self:
+        self._listeners.append(check.isinstance(listener, LifecycleListener))
         return self
 
-    @abc.abstractmethod
+    #
+
     def _advance(
             self,
             transition: LifecycleTransition,
-            lifecycle_fn: ta.Callable[[], R | None],
-            pre_listener_fn: ta.Callable[
-                [AnyLifecycleListener[AnyLifecycleT, R]],
-                ta.Callable[[AnyLifecycleT], R | None],
-            ] | None = None,
-            post_listener_fn: ta.Callable[
-                [AnyLifecycleListener[AnyLifecycleT, R]],
-                ta.Callable[[AnyLifecycleT], R | None],
-            ] | None = None,
-    ) -> R | None:
-        raise NotImplementedError
+            lifecycle_fn: ta.Callable[[], None],
+            pre_listener_fn: ta.Callable[[LifecycleListener], ta.Callable[[Lifecycle], None]] | None = None,
+            post_listener_fn: ta.Callable[[LifecycleListener], ta.Callable[[Lifecycle], None]] | None = None,
+    ) -> None:
+        with self._lock():
+            if pre_listener_fn is not None:
+                for listener in self._listeners:
+                    pre_listener_fn(listener)(self._lifecycle)
+
+            check.state(self._state in transition.old)
+            self._state = transition.new_intermediate
+
+            try:
+                lifecycle_fn()
+            except Exception:
+                self._state = transition.new_failed
+                raise
+
+            self._state = transition.new_succeeded
+
+            if post_listener_fn is not None:
+                for listener in self._listeners:
+                    post_listener_fn(listener)(self._lifecycle)
 
     ##
 
     @ta.override
-    def lifecycle_construct(self) -> R | None:
-        return self._advance(
+    def lifecycle_construct(self) -> None:
+        self._advance(
             LifecycleTransitions.CONSTRUCT,
             self._lifecycle.lifecycle_construct,
         )
 
     @ta.override
-    def lifecycle_start(self) -> R | None:
-        return self._advance(
+    def lifecycle_start(self) -> None:
+        self._advance(
             LifecycleTransitions.START,
             self._lifecycle.lifecycle_start,
             lambda l: l.on_starting,
@@ -96,8 +92,8 @@ class AnyLifecycleController(AnyLifecycle[R], lang.Abstract, ta.Generic[AnyLifec
         )
 
     @ta.override
-    def lifecycle_stop(self) -> R | None:
-        return self._advance(
+    def lifecycle_stop(self) -> None:
+        self._advance(
             LifecycleTransitions.STOP,
             self._lifecycle.lifecycle_stop,
             lambda l: l.on_stopping,
@@ -105,8 +101,8 @@ class AnyLifecycleController(AnyLifecycle[R], lang.Abstract, ta.Generic[AnyLifec
         )
 
     @ta.override
-    def lifecycle_destroy(self) -> R | None:
-        return self._advance(
+    def lifecycle_destroy(self) -> None:
+        self._advance(
             LifecycleTransitions.DESTROY,
             self._lifecycle.lifecycle_destroy,
         )
@@ -115,49 +111,94 @@ class AnyLifecycleController(AnyLifecycle[R], lang.Abstract, ta.Generic[AnyLifec
 ##
 
 
-LifecycleListener: ta.TypeAlias = AnyLifecycleListener[LifecycleT, None]
-
-
-class LifecycleController(
-    AnyLifecycleController[LifecycleT, None],
-    Lifecycle,
-    ta.Generic[LifecycleT],
-):
+class AsyncLifecycleController(AsyncLifecycle, lang.Final):
     def __init__(
             self,
-            lifecycle: LifecycleT,
+            lifecycle: AsyncLifecycle,
             *,
-            lock: lang.DefaultLockable = None,
+            lock: lang.DefaultAsyncLockable = None,
     ) -> None:
-        super().__init__(lifecycle)
+        super().__init__()
 
-        self._lock = lang.default_lock(lock, False)
+        self._lifecycle: AsyncLifecycle = check.isinstance(lifecycle, AsyncLifecycle)
+        self._lock = lang.default_async_lock(lock, None)
 
-    def _advance(
+        self._state = LifecycleStates.NEW
+        self._listeners: list[AsyncLifecycleListener] = []
+
+    __repr__ = lang.attr_ops(lambda o: (o.lifecycle, o.state)).repr
+
+    @property
+    def lifecycle(self) -> AsyncLifecycle:
+        return self._lifecycle
+
+    @property
+    def state(self) -> LifecycleState:
+        return self._state
+
+    def add_listener(self, listener: AsyncLifecycleListener) -> ta.Self:
+        self._listeners.append(check.isinstance(listener, AsyncLifecycleListener))
+        return self
+
+    #
+
+    async def _advance(
             self,
             transition: LifecycleTransition,
-            lifecycle_fn: ta.Callable[[], None],
-            pre_listener_fn: ta.Callable[
-                [LifecycleListener[LifecycleT]],
-                ta.Callable[[LifecycleT], None],
-            ] | None = None,
-            post_listener_fn: ta.Callable[
-                [LifecycleListener[LifecycleT]],
-                ta.Callable[[LifecycleT], None],
-            ] | None = None,
+            lifecycle_fn: ta.Callable[[], ta.Awaitable[None]],
+            pre_listener_fn: ta.Callable[[AsyncLifecycleListener], ta.Callable[[AsyncLifecycle], ta.Awaitable[None]]] | None = None,  # noqa
+            post_listener_fn: ta.Callable[[AsyncLifecycleListener], ta.Callable[[AsyncLifecycle], ta.Awaitable[None]]] | None = None,  # noqa
     ) -> None:
-        with self._lock():
+        async with self._lock():
             if pre_listener_fn is not None:
                 for listener in self._listeners:
-                    pre_listener_fn(listener)(self._lifecycle)
+                    await pre_listener_fn(listener)(self._lifecycle)
+
             check.state(self._state in transition.old)
             self._state = transition.new_intermediate
+
             try:
-                lifecycle_fn()
+                await lifecycle_fn()
             except Exception:
                 self._state = transition.new_failed
                 raise
+
             self._state = transition.new_succeeded
+
             if post_listener_fn is not None:
                 for listener in self._listeners:
-                    post_listener_fn(listener)(self._lifecycle)
+                    await post_listener_fn(listener)(self._lifecycle)
+
+    ##
+
+    @ta.override
+    async def lifecycle_construct(self) -> None:
+        await self._advance(
+            LifecycleTransitions.CONSTRUCT,
+            self._lifecycle.lifecycle_construct,
+        )
+
+    @ta.override
+    async def lifecycle_start(self) -> None:
+        await self._advance(
+            LifecycleTransitions.START,
+            self._lifecycle.lifecycle_start,
+            lambda l: l.on_starting,
+            lambda l: l.on_started,
+        )
+
+    @ta.override
+    async def lifecycle_stop(self) -> None:
+        await self._advance(
+            LifecycleTransitions.STOP,
+            self._lifecycle.lifecycle_stop,
+            lambda l: l.on_stopping,
+            lambda l: l.on_stopped,
+        )
+
+    @ta.override
+    async def lifecycle_destroy(self) -> None:
+        await self._advance(
+            LifecycleTransitions.DESTROY,
+            self._lifecycle.lifecycle_destroy,
+        )

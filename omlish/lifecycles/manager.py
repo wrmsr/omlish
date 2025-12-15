@@ -4,9 +4,9 @@ from .. import check
 from .. import collections as col
 from .. import dataclasses as dc
 from .. import lang
-from .abstract import AbstractLifecycle
 from .base import Lifecycle
 from .controller import LifecycleController
+from .managed import LifecycleManaged
 from .states import LifecycleState
 from .states import LifecycleStateError
 from .states import LifecycleStates
@@ -15,7 +15,7 @@ from .states import LifecycleStates
 ##
 
 
-class LifecycleManager(AbstractLifecycle):
+class LifecycleManager(LifecycleManaged):
     @dc.dataclass(frozen=True)
     class Entry(lang.Final):
         controller: LifecycleController
@@ -29,7 +29,7 @@ class LifecycleManager(AbstractLifecycle):
     ) -> None:
         super().__init__()
 
-        self._lock = lang.default_lock(lock, False)
+        self._lock = lang.default_lock(lock, None)
 
         self._entries_by_lifecycle: ta.MutableMapping[Lifecycle, LifecycleManager.Entry] = col.IdentityKeyDict()
 
@@ -104,60 +104,60 @@ class LifecycleManager(AbstractLifecycle):
 
     @ta.override
     def _lifecycle_construct(self) -> None:
-        def rec(entry: LifecycleManager.Entry) -> None:
-            for dep in entry.dependencies:
+        def rec(e: LifecycleManager.Entry) -> None:
+            for dep in e.dependencies:
                 rec(dep)
 
-            if entry.controller.state.is_failed:
-                raise LifecycleStateError(entry.controller)
+            if e.controller.state.is_failed:
+                raise LifecycleStateError(e.controller)
 
-            if entry.controller.state < LifecycleStates.CONSTRUCTED:
-                entry.controller.lifecycle_construct()
+            if e.controller.state < LifecycleStates.CONSTRUCTED:
+                e.controller.lifecycle_construct()
 
         for entry in self._entries_by_lifecycle.values():
             rec(entry)
 
     @ta.override
     def _lifecycle_start(self) -> None:
-        def rec(entry: LifecycleManager.Entry) -> None:
-            for dep in entry.dependencies:
+        def rec(e: LifecycleManager.Entry) -> None:
+            for dep in e.dependencies:
                 rec(dep)
 
-            if entry.controller.state.is_failed:
-                raise LifecycleStateError(entry.controller)
+            if e.controller.state.is_failed:
+                raise LifecycleStateError(e.controller)
 
-            if entry.controller.state < LifecycleStates.CONSTRUCTED:
-                entry.controller.lifecycle_construct()
+            if e.controller.state < LifecycleStates.CONSTRUCTED:
+                e.controller.lifecycle_construct()
 
-            if entry.controller.state < LifecycleStates.STARTED:
-                entry.controller.lifecycle_start()
+            if e.controller.state < LifecycleStates.STARTED:
+                e.controller.lifecycle_start()
 
         for entry in self._entries_by_lifecycle.values():
             rec(entry)
 
     @ta.override
     def _lifecycle_stop(self) -> None:
-        def rec(entry: LifecycleManager.Entry) -> None:
-            for dep in entry.dependents:
+        def rec(e: LifecycleManager.Entry) -> None:
+            for dep in e.dependents:
                 rec(dep)
 
-            if entry.controller.state.is_failed:
-                raise LifecycleStateError(entry.controller)
+            if e.controller.state.is_failed:
+                raise LifecycleStateError(e.controller)
 
-            if entry.controller.state is LifecycleStates.STARTED:
-                entry.controller.lifecycle_stop()
+            if e.controller.state is LifecycleStates.STARTED:
+                e.controller.lifecycle_stop()
 
         for entry in self._entries_by_lifecycle.values():
             rec(entry)
 
     @ta.override
     def _lifecycle_destroy(self) -> None:
-        def rec(entry: LifecycleManager.Entry) -> None:
-            for dep in entry.dependents:
+        def rec(e: LifecycleManager.Entry) -> None:
+            for dep in e.dependents:
                 rec(dep)
 
-            if entry.controller.state < LifecycleStates.DESTROYED:
-                entry.controller.lifecycle_destroy()
+            if e.controller.state < LifecycleStates.DESTROYED:
+                e.controller.lifecycle_destroy()
 
         for entry in self._entries_by_lifecycle.values():
             rec(entry)

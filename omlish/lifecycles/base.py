@@ -1,103 +1,168 @@
 import typing as ta
 
+from .. import check
 from .. import dataclasses as dc
 from .. import lang
 
 
-R = ta.TypeVar('R')
+##
 
-AnyLifecycleT = ta.TypeVar('AnyLifecycleT', bound='AnyLifecycle')
-AnyLifecycleCallback: ta.TypeAlias = ta.Callable[[AnyLifecycleT], R]
 
-LifecycleT = ta.TypeVar('LifecycleT', bound='Lifecycle')
-LifecycleCallback: ta.TypeAlias = ta.Callable[[LifecycleT], R]
+class Lifecycle(lang.Abstract):
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
 
-AsyncLifecycleT = ta.TypeVar('AsyncLifecycleT', bound='AsyncLifecycle')
-AsyncLifecycleCallback: ta.TypeAlias = ta.Callable[[AsyncLifecycleT], R]
+        try:
+            async_lifecycle_cls = AsyncLifecycle
+        except NameError:
+            pass
+        else:
+            check.not_issubclass(cls, async_lifecycle_cls)
+
+    def lifecycle_construct(self) -> None:
+        pass
+
+    def lifecycle_start(self) -> None:
+        pass
+
+    def lifecycle_stop(self) -> None:
+        pass
+
+    def lifecycle_destroy(self) -> None:
+        pass
+
+
+class AsyncLifecycle(lang.Abstract):
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        check.not_issubclass(cls, Lifecycle)
+
+    async def lifecycle_construct(self) -> None:
+        pass
+
+    async def lifecycle_start(self) -> None:
+        pass
+
+    async def lifecycle_stop(self) -> None:
+        pass
+
+    async def lifecycle_destroy(self) -> None:
+        pass
+
+
+AnyLifecycle: ta.TypeAlias = Lifecycle | AsyncLifecycle
+
+ANY_LIFECYCLE_TYPES: tuple[type[Lifecycle | AsyncLifecycle], ...] = (Lifecycle, AsyncLifecycle)
 
 
 ##
 
 
-class AnyLifecycle(lang.Abstract, ta.Generic[R]):
-    def lifecycle_construct(self) -> R | None:
-        return None
-
-    def lifecycle_start(self) -> R | None:
-        return None
-
-    def lifecycle_stop(self) -> R | None:
-        return None
-
-    def lifecycle_destroy(self) -> R | None:
-        return None
-
-
+@ta.final
 @dc.dataclass(frozen=True, kw_only=True)
-class AnyCallbackLifecycle(
-    AnyLifecycle[R],
-    lang.Abstract,
-    ta.Generic[AnyLifecycleT, R],
-):
-    on_construct: AnyLifecycleCallback['AnyCallbackLifecycle[AnyLifecycleT, R]', R] | None = None
-    on_start: AnyLifecycleCallback['AnyCallbackLifecycle[AnyLifecycleT, R]', R] | None = None
-    on_stop: AnyLifecycleCallback['AnyCallbackLifecycle[AnyLifecycleT, R]', R] | None = None
-    on_destroy: AnyLifecycleCallback['AnyCallbackLifecycle[AnyLifecycleT, R]', R] | None = None
+class CallbackLifecycle(Lifecycle, lang.Final):
+    on_construct: ta.Callable[[], None] | None = None
+    on_start: ta.Callable[[], None] | None = None
+    on_stop: ta.Callable[[], None] | None = None
+    on_destroy: ta.Callable[[], None] | None = None
 
     @ta.override
-    def lifecycle_construct(self) -> R | None:
+    def lifecycle_construct(self) -> None:
         if self.on_construct is not None:
-            return self.on_construct(self)
-        else:
-            return None
+            self.on_construct()
 
     @ta.override
-    def lifecycle_start(self) -> R | None:
+    def lifecycle_start(self) -> None:
         if self.on_start is not None:
-            return self.on_start(self)
-        else:
-            return None
+            self.on_start()
 
     @ta.override
-    def lifecycle_stop(self) -> R | None:
+    def lifecycle_stop(self) -> None:
         if self.on_stop is not None:
-            return self.on_stop(self)
-        else:
-            return None
+            self.on_stop()
 
     @ta.override
-    def lifecycle_destroy(self) -> R | None:
+    def lifecycle_destroy(self) -> None:
         if self.on_destroy is not None:
-            return self.on_destroy(self)
+            self.on_destroy()
+
+
+@ta.final
+@dc.dataclass(frozen=True, kw_only=True)
+class CallbackAsyncLifecycle(AsyncLifecycle, lang.Final):
+    on_construct: ta.Callable[[], ta.Awaitable[None]] | None = None
+    on_start: ta.Callable[[], ta.Awaitable[None]] | None = None
+    on_stop: ta.Callable[[], ta.Awaitable[None]] | None = None
+    on_destroy: ta.Callable[[], ta.Awaitable[None]] | None = None
+
+    @ta.override
+    async def lifecycle_construct(self) -> None:
+        if self.on_construct is not None:
+            await self.on_construct()
+
+    @ta.override
+    async def lifecycle_start(self) -> None:
+        if self.on_start is not None:
+            await self.on_start()
+
+    @ta.override
+    async def lifecycle_stop(self) -> None:
+        if self.on_stop is not None:
+            await self.on_stop()
+
+    @ta.override
+    async def lifecycle_destroy(self) -> None:
+        if self.on_destroy is not None:
+            await self.on_destroy()
+
+
+##
+
+
+class LifecycleListener:
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        try:
+            async_lifecycle_listener_cls = AsyncLifecycleListener
+        except NameError:
+            pass
         else:
-            return None
+            check.not_issubclass(cls, async_lifecycle_listener_cls)
+
+    def on_starting(self, obj: Lifecycle) -> None:
+        pass
+
+    def on_started(self, obj: Lifecycle) -> None:
+        pass
+
+    def on_stopping(self, obj: Lifecycle) -> None:
+        pass
+
+    def on_stopped(self, obj: Lifecycle) -> None:
+        pass
 
 
-##
+class AsyncLifecycleListener:
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        check.not_issubclass(cls, LifecycleListener)
+
+    async def on_starting(self, obj: AsyncLifecycle) -> None:
+        pass
+
+    async def on_started(self, obj: AsyncLifecycle) -> None:
+        pass
+
+    async def on_stopping(self, obj: AsyncLifecycle) -> None:
+        pass
+
+    async def on_stopped(self, obj: AsyncLifecycle) -> None:
+        pass
 
 
-class Lifecycle(AnyLifecycle[None]):
-    pass
+AnyLifecycleListener: ta.TypeAlias = LifecycleListener | AsyncLifecycleListener
 
-
-class CallbackLifecycle(
-    AnyCallbackLifecycle[LifecycleT, None],
-    lang.Final,
-    ta.Generic[LifecycleT],
-):
-    pass
-
-
-##
-
-
-class AsyncLifecycle(AnyLifecycle[ta.Awaitable[None]]):
-    pass
-
-
-class CallbackAsyncLifecycle(
-    AnyCallbackLifecycle[LifecycleT, ta.Awaitable[None]],
-    lang.Final,
-    ta.Generic[LifecycleT],
-):
-    pass
+ANY_LIFECYCLE_LISTENER_TYPES: tuple[type[LifecycleListener | AsyncLifecycleListener], ...] = (LifecycleListener, AsyncLifecycleListener)  # noqa
