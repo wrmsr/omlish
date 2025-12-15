@@ -25,5 +25,5 @@ def test_context_managers():
     f = foo()
     mgr.add(ContextManagerLifecycle(f))
 
-    with LifecycleContextManager(mgr.controller):
+    with LifecycleContextManager(mgr.lifecycle):
         print('inner')
