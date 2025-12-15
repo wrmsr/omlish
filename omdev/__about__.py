@@ -44,7 +44,7 @@ class Project(ProjectBase):
 
         'tui': [
             'rich ~= 14.2',
-            'textual ~= 6.8',
+            'textual ~= 6.9',
         ],
     }
 
