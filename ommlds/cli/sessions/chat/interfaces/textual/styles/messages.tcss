@@ -46,6 +46,16 @@
     height: auto;
 }
 
+.user-message-glyph {
+    width: auto;
+    height: auto;
+
+    background: transparent;
+    color: $primary;
+
+    text-style: bold;
+}
+
 .user-message-inner {
     width: 100%;
     height: auto;
@@ -64,6 +74,16 @@
 .ai-message-outer {
     width: 100%;
     height: auto;
+}
+
+.ai-message-glyph {
+    width: auto;
+    height: auto;
+
+    background: transparent;
+    color: $primary;
+
+    text-style: bold;
 }
 
 .ai-message-inner {
