@@ -9,15 +9,15 @@ import anyio.abc
 from omlish import check
 from omlish import marshal as msh
 
-from .client import LspClient
-from .data import DefinitionResponse
-from .data import DidOpenTextDocumentParams
-from .data import InitializeParams
-from .data import InitializeResult
-from .data import Position
-from .data import TextDocumentIdentifier
-from .data import TextDocumentItem
-from .data import TextDocumentPositionParams
+from ..client import LspClient
+from ..data import DefinitionResponse
+from ..data import DidOpenTextDocumentParams
+from ..data import InitializeParams
+from ..data import InitializeResult
+from ..data import Position
+from ..data import TextDocumentIdentifier
+from ..data import TextDocumentItem
+from ..data import TextDocumentPositionParams
 
 
 ##
