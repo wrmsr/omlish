@@ -13,8 +13,8 @@ from .configs import AgentConfig
 with lang.auto_proxy_import(globals()):
     from ....backends import inject as _backends
     from . import agent as _agent
-    from . import events as _events
     from .ai import inject as _ai
+    from .events import inject as _events
     from .phases import inject as _phases
     from .state import inject as _state
     from .tools import inject as _tools
@@ -34,6 +34,8 @@ def bind_agent(cfg: AgentConfig) -> inj.Elements:
 
         _ai.bind_ai(cfg.ai),
 
+        _events.bind_events(),
+
         _phases.bind_phases(),
 
         _state.bind_state(cfg.state),
@@ -49,13 +51,6 @@ def bind_agent(cfg: AgentConfig) -> inj.Elements:
         inj.bind(_agent.ChatAgent, singleton=True),
 
         inj.bind_late(_agent.ChatAgent),
-    ])
-
-    #
-
-    # FIXME:
-    els.extend([
-        inj.bind(_events.ChatAgentEventSink, to_const=lang.as_async(lambda e: None)),  # type: ignore[misc]
     ])
 
     #

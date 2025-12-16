@@ -1859,7 +1859,7 @@ def _process_dataclass__55eb2b38eb7d4e32f3a9306577040632e1c376fb():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.cli.sessions.chat.agents.agent', 'AiMessagesChatAgentEvent'),
+        ('ommlds.cli.sessions.chat.agents.agent', 'AiMessagesChatEvent'),
     ),
 )
 def _process_dataclass__b211fde543b7c2c533cdcf9f21b47d2f7f76e5c9():

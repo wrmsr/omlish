@@ -5,8 +5,8 @@ TODO:
 """
 from ..... import minichain as mc
 from .ai.types import AiChatGenerator
-from .events import AiMessagesChatAgentEvent
-from .events import ChatAgentEventSink
+from .events.manager import ChatEventsManager
+from .events.types import AiMessagesChatEvent
 from .phases.manager import ChatPhaseManager
 from .phases.types import ChatPhase
 from .state.types import ChatStateManager
@@ -22,14 +22,14 @@ class ChatAgent:
             phases: ChatPhaseManager,
             ai_chat_generator: AiChatGenerator,
             chat_state_manager: ChatStateManager,
-            event_sink: ChatAgentEventSink,
+            events: ChatEventsManager,
     ) -> None:
         super().__init__()
 
         self._phases = phases
         self._ai_chat_generator = ai_chat_generator
         self._chat_state_manager = chat_state_manager
-        self._event_sink = event_sink
+        self._events = events
 
     async def start(self) -> None:
         await self._phases.set_phase(ChatPhase.STARTING)
@@ -44,6 +44,6 @@ class ChatAgent:
 
         next_ai_chat = await self._ai_chat_generator.get_next_ai_messages([*prev_user_chat, *next_user_chat])
 
-        await self._event_sink(AiMessagesChatAgentEvent(next_ai_chat))
+        await self._events.emit_event(AiMessagesChatEvent(next_ai_chat))
 
         await self._chat_state_manager.extend_chat([*next_user_chat, *next_ai_chat])
