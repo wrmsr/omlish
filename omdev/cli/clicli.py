@@ -5,6 +5,7 @@ import re
 import shlex
 import subprocess
 import sys
+import time
 import typing as ta
 import urllib.parse
 import urllib.request
@@ -104,23 +105,34 @@ class CliCli(ap.Cli):
         ap.arg('--no-uv', action='store_true'),
         ap.arg('--dry-run', action='store_true'),
         ap.arg('--must-upgrade', action='store_true'),
+        ap.arg('--must-upgrade-loop', action='store_true'),
         ap.arg('--version'),
         ap.arg('extra_deps', nargs='*'),
     )
     def reinstall(self) -> None:
         current_version = __about__.__version__
-        latest_version = _parse_latest_version_str(lookup_latest_package_version(__package__.split('.')[0]))
 
-        if self.args.version is not None:
-            target_version: str = self.args.version
-        else:
-            target_version = latest_version
+        while True:
+            latest_version = _parse_latest_version_str(lookup_latest_package_version(__package__.split('.')[0]))
 
-        if self.args.must_upgrade:
-            current_vo = Version(current_version)
-            target_vo = Version(target_version)
-            if not (target_vo > current_vo):
-                raise CliCli.ReinstallWouldNotUpgradeError(current_version, target_version)
+            if self.args.version is not None:
+                target_version: str = self.args.version
+            else:
+                target_version = latest_version
+
+            if self.args.must_upgrade or self.args.must_upgrade_loop:
+                current_vo = Version(current_version)
+                target_vo = Version(target_version)
+                if not (target_vo > current_vo):
+                    ex = CliCli.ReinstallWouldNotUpgradeError(current_version, target_version)
+                    if self.args.must_upgrade_loop:
+                        print(ex)
+                        time.sleep(1)
+                        continue
+                    else:
+                        raise ex
+
+            break
 
         #
 

@@ -6,11 +6,11 @@ TODO:
 from .ai.types import AiChatGenerator
 from .phases.manager import ChatPhaseManager
 from .phases.types import ChatPhase
-from .state.types import ChatStateManager
+from .protocol import AiMessagesChatAgentOutput
 from .protocol import ChatAgentInput
 from .protocol import ChatAgentOutputSink
 from .protocol import UserMessagesChatAgentInput
-from .protocol import AiMessagesChatAgentOutput
+from .state.types import ChatStateManager
 
 
 ##
