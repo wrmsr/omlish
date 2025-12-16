@@ -6,12 +6,12 @@ from omlish import lang
 from ..... import minichain as mc
 from ....state.storage import InMemoryStateStorage
 from ....state.storage import StateStorage
-from ..drivers.configs import DriverConfig
-from ..drivers.user.configs import UserConfig
+from ..agents.configs import AgentConfig
+from ..agents.user.configs import UserConfig
 from ....rendering.configs import RenderingConfig
 from ..configs import ChatConfig
-from ..drivers.state.configs import StateConfig
-from ..drivers.driver import ChatDriver
+from ..agents.state.configs import StateConfig
+from ..agents.agent import ChatAgent
 from ..inject import bind_chat
 
 
@@ -21,9 +21,9 @@ class DummyChatChoicesService:
         return mc.ChatChoicesResponse([mc.AiChoice([mc.AiMessage(f'*Ai Message {len(request.v) + 1}*')])])
 
 
-def make_driver(
+def make_agent(
         cfg: ChatConfig = ChatConfig(),
-) -> ChatDriver:
+) -> ChatAgent:
     injector = inj.create_injector(
         bind_chat(cfg),
 
@@ -33,13 +33,13 @@ def make_driver(
         inj.bind(StateStorage, to_key=InMemoryStateStorage),
     )
 
-    return injector[ChatDriver]
+    return injector[ChatAgent]
 
 
 def test_inject():
-    assert make_driver(
+    assert make_agent(
         cfg=ChatConfig(
-            driver=DriverConfig(
+            agent=AgentConfig(
                 user=UserConfig(
                     initial_user_content='Hi!',
                 ),
@@ -51,11 +51,11 @@ def test_inject():
     )
 
 
-@pytest.mark.skip
-def test_driver():
-    lang.sync_await(make_driver(
+# @pytest.mark.skip
+def test_agent():
+    agent = make_agent(
         cfg=ChatConfig(
-            driver=DriverConfig(
+            agent=AgentConfig(
                 user=UserConfig(
                     initial_user_content='Hi!',
                 ),
@@ -67,4 +67,6 @@ def test_driver():
                 markdown=True,
             ),
         ),
-    ).run())
+    )
+    lang.sync_await(agent.start())
+    lang.sync_await(agent.stop())

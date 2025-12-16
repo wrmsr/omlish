@@ -3,22 +3,23 @@ from omlish import lang
 
 from ....backends.types import DefaultBackendName
 from .configs import DEFAULT_BACKEND
-from .configs import DriverConfig
+from .configs import AgentConfig
 
 
 with lang.auto_proxy_import(globals()):
     from ....backends import inject as _backends
-    from . import driver as _driver
+    from . import agent as _agent
     from .ai import inject as _ai
     from .phases import inject as _phases
     from .state import inject as _state
     from .tools import inject as _tools
+    from .user import inject as _user
 
 
 ##
 
 
-def bind_agent(cfg: DriverConfig) -> inj.Elements:
+def bind_agent(cfg: AgentConfig) -> inj.Elements:
     els: list[inj.Elemental] = []
 
     #
@@ -28,17 +29,19 @@ def bind_agent(cfg: DriverConfig) -> inj.Elements:
 
         _ai.bind_ai(cfg.ai),
 
-        _state.bind_state(cfg.state),
-
         _phases.bind_phases(),
 
+        _state.bind_state(cfg.state),
+
         _tools.bind_tools(cfg.tools),
+
+        _user.bind_user(cfg.user),
     ])
 
     #
 
     els.extend([
-        inj.bind(_driver.ChatDriver, singleton=True),
+        inj.bind(_agent.ChatAgent, singleton=True),
     ])
 
     #

@@ -9,7 +9,7 @@ from .configs import ChatConfig
 with lang.auto_proxy_import(globals()):
     from ...rendering import inject as _rendering
     from . import session as _session
-    from .drivers import inject as _drivers
+    from .agents import inject as _agents
     from .interfaces import inject as _interfaces
 
 
@@ -22,7 +22,7 @@ def bind_chat(cfg: ChatConfig) -> inj.Elements:
     #
 
     els.extend([
-        _drivers.bind_driver(cfg.driver),
+        _agents.bind_agent(cfg.agent),
 
         _interfaces.bind_interface(cfg.interface),
 

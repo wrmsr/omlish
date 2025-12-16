@@ -3,13 +3,12 @@ TODO:
  - lifecycles
  - StreamService
 """
+from ..... import minichain as mc
 from .ai.types import AiChatGenerator
+from .events import AiMessagesChatAgentEvent
+from .events import ChatAgentEventSink
 from .phases.manager import ChatPhaseManager
 from .phases.types import ChatPhase
-from .protocol import AiMessagesChatAgentOutput
-from .protocol import ChatAgentInput
-from .protocol import ChatAgentOutputSink
-from .protocol import UserMessagesChatAgentInput
 from .state.types import ChatStateManager
 
 
@@ -23,12 +22,14 @@ class ChatAgent:
             phases: ChatPhaseManager,
             ai_chat_generator: AiChatGenerator,
             chat_state_manager: ChatStateManager,
+            event_sink: ChatAgentEventSink,
     ) -> None:
         super().__init__()
 
         self._phases = phases
         self._ai_chat_generator = ai_chat_generator
         self._chat_state_manager = chat_state_manager
+        self._event_sink = event_sink
 
     async def start(self) -> None:
         await self._phases.set_phase(ChatPhase.STARTING)
@@ -38,21 +39,11 @@ class ChatAgent:
         await self._phases.set_phase(ChatPhase.STOPPING)
         await self._phases.set_phase(ChatPhase.STOPPED)
 
-    async def invoke(
-            self,
-            input: ChatAgentInput,  # noqa
-            output: ChatAgentOutputSink,
-    ) -> None:
-        if isinstance(input, UserMessagesChatAgentInput):
-            next_user_chat = input.chat
+    async def send_user_messages(self, next_user_chat: 'mc.UserChat') -> None:
+        prev_user_chat = (await self._chat_state_manager.get_state()).chat
 
-            prev_user_chat = (await self._chat_state_manager.get_state()).chat
+        next_ai_chat = await self._ai_chat_generator.get_next_ai_messages([*prev_user_chat, *next_user_chat])
 
-            next_ai_chat = await self._ai_chat_generator.get_next_ai_messages([*prev_user_chat, *next_user_chat])
+        await self._event_sink(AiMessagesChatAgentEvent(next_ai_chat))
 
-            await output(AiMessagesChatAgentOutput(next_ai_chat))
-
-            await self._chat_state_manager.extend_chat([*next_user_chat, *next_ai_chat])
-
-        else:
-            raise TypeError(input)
+        await self._chat_state_manager.extend_chat([*next_user_chat, *next_ai_chat])

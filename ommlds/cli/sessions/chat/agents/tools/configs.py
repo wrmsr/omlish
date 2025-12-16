@@ -10,7 +10,10 @@ from omlish import lang
 @dc.dataclass(frozen=True, kw_only=True)
 class ToolsConfig:
     dangerous_no_confirmation: bool = False
+
     enabled_tools: ta.Iterable[str] | None = None
+
+    verbose: bool = False
 
 
 ##
