@@ -2,8 +2,8 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 
-from ...... import minichain as mc
-from .....state.storage import StateStorage
+from ....... import minichain as mc
+from ......state.storage import StateStorage
 from .types import ChatState
 from .types import ChatStateManager
 

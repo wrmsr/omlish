@@ -5,7 +5,7 @@ from omlish import lang
 from omlish.formats import json
 from omlish.term.confirm import confirm_action
 
-from ..... import minichain as mc
+from ...... import minichain as mc
 
 
 ##

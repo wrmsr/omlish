@@ -1,7 +1,7 @@
 from omlish import inject as inj
 from omlish import lang
 
-from ...... import minichain as mc
+from ....... import minichain as mc
 from ...phases.injection import phase_callbacks
 from ...phases.types import ChatPhase
 from ...phases.types import ChatPhaseCallback

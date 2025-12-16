@@ -10,9 +10,9 @@ from .configs import TodoToolSetConfig
 
 
 def bind_todo_tools(cfg: TodoToolSetConfig) -> inj.Elements:
-    from ......minichain.lib.todo.context import TodoContext
-    from ......minichain.lib.todo.tools.read import todo_read_tool
-    from ......minichain.lib.todo.tools.write import todo_write_tool
+    from .......minichain.lib.todo.context import TodoContext
+    from .......minichain.lib.todo.tools.read import todo_read_tool
+    from .......minichain.lib.todo.tools.write import todo_write_tool
 
     return inj.as_elements(
         tool_catalog_entries().bind_item_consts(
