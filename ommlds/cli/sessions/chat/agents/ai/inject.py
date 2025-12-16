@@ -7,6 +7,7 @@ from .injection import chat_options_providers
 
 
 with lang.auto_proxy_import(globals()):
+    from . import events as _events
     from . import rendering as _rendering
     from . import services as _services
     from . import tools as _tools
@@ -42,6 +43,8 @@ def bind_ai(cfg: AiConfig = AiConfig()) -> inj.Elements:
         if cfg.verbose:
             els.append(stream_ai_stack.push_bind(to_ctor=_rendering.RenderingStreamAiChatGenerator, singleton=True))
 
+        els.append(stream_ai_stack.push_bind(to_ctor=_events.EventEmittingStreamAiChatGenerator, singleton=True))
+
         els.extend([
             inj.bind(_types.StreamAiChatGenerator, to_key=stream_ai_stack.top),
             ai_stack.push_bind(to_key=_types.StreamAiChatGenerator),
@@ -52,6 +55,8 @@ def bind_ai(cfg: AiConfig = AiConfig()) -> inj.Elements:
 
         if cfg.verbose:
             els.append(ai_stack.push_bind(to_ctor=_rendering.RenderingAiChatGenerator, singleton=True))
+
+        els.append(ai_stack.push_bind(to_ctor=_events.EventEmittingAiChatGenerator, singleton=True))
 
     if cfg.enable_tools:
         els.append(ai_stack.push_bind(to_ctor=_tools.ToolExecutingAiChatGenerator, singleton=True))
