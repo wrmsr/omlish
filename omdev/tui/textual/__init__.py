@@ -78,6 +78,8 @@ with _lang.auto_proxy_init(globals()):
     from textual.content import ContentType  # noqa
     from textual.content import EMPTY_CONTENT  # noqa
     from textual.content import Span  # noqa
+    from textual.dom import DOMError  # noqa
+    from textual.dom import DOMNode  # noqa
     from textual.driver import Driver  # noqa
     from textual.events import Action  # noqa
     from textual.events import AppBlur  # noqa
