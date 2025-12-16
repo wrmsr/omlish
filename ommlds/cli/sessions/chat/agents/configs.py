@@ -4,7 +4,6 @@ from ....backends.configs import BackendConfig
 from .ai.configs import AiConfig
 from .state.configs import StateConfig
 from .tools.configs import ToolsConfig
-from .user.configs import UserConfig
 
 
 ##
@@ -22,4 +21,3 @@ class DriverConfig:
     backend: BackendConfig = BackendConfig()
     state: StateConfig = StateConfig()
     tools: ToolsConfig = ToolsConfig()
-    user: UserConfig = UserConfig()

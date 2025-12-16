@@ -1,49 +1,58 @@
+"""
+TODO:
+ - lifecycles
+ - StreamService
+"""
 from .ai.types import AiChatGenerator
-from .ai.types import AiChatOutput
 from .phases.manager import ChatPhaseManager
 from .phases.types import ChatPhase
 from .state.types import ChatStateManager
-from .user.types import UserChatInput
+from .protocol import ChatAgentInput
+from .protocol import ChatAgentOutputSink
+from .protocol import UserMessagesChatAgentInput
+from .protocol import AiMessagesChatAgentOutput
 
 
 ##
 
 
-class ChatDriver:
+class ChatAgent:
     def __init__(
             self,
             *,
             phases: ChatPhaseManager,
-            user_chat_input: UserChatInput,
             ai_chat_generator: AiChatGenerator,
-            ai_chat_output: AiChatOutput | None = None,
             chat_state_manager: ChatStateManager,
     ) -> None:
         super().__init__()
 
         self._phases = phases
-        self._user_chat_input = user_chat_input
         self._ai_chat_generator = ai_chat_generator
-        self._ai_chat_output = ai_chat_output
         self._chat_state_manager = chat_state_manager
 
-    async def run(self) -> None:
+    async def start(self) -> None:
         await self._phases.set_phase(ChatPhase.STARTING)
         await self._phases.set_phase(ChatPhase.STARTED)
 
-        while True:
-            next_user_chat = await self._user_chat_input.get_next_user_messages()
-            if not next_user_chat:
-                break
+    async def stop(self) -> None:
+        await self._phases.set_phase(ChatPhase.STOPPING)
+        await self._phases.set_phase(ChatPhase.STOPPED)
+
+    async def invoke(
+            self,
+            input: ChatAgentInput,  # noqa
+            output: ChatAgentOutputSink,
+    ) -> None:
+        if isinstance(input, UserMessagesChatAgentInput):
+            next_user_chat = input.chat
 
             prev_user_chat = (await self._chat_state_manager.get_state()).chat
 
             next_ai_chat = await self._ai_chat_generator.get_next_ai_messages([*prev_user_chat, *next_user_chat])
 
-            if self._ai_chat_output is not None:
-                await self._ai_chat_output.output_ai_chat(next_ai_chat)
+            await output(AiMessagesChatAgentOutput(next_ai_chat))
 
             await self._chat_state_manager.extend_chat([*next_user_chat, *next_ai_chat])
 
-        await self._phases.set_phase(ChatPhase.STOPPING)
-        await self._phases.set_phase(ChatPhase.STOPPED)
+        else:
+            raise TypeError(input)
