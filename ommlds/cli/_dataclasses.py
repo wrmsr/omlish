@@ -1994,6 +1994,7 @@ def _process_dataclass__aff24d9a92d53ba94dacb7fb303b9eb4ebd0763f():
     ),
     cls_names=(
         ('ommlds.cli.sessions.chat.agents.agent', 'AiMessagesChatEvent'),
+        ('ommlds.cli.sessions.chat.agents.agent', 'UserMessagesChatEvent'),
     ),
 )
 def _process_dataclass__b211fde543b7c2c533cdcf9f21b47d2f7f76e5c9():

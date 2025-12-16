@@ -24,6 +24,11 @@ ChatEventCallbacks = ta.NewType('ChatEventCallbacks', ta.Sequence[ChatEventCallb
 
 
 @dc.dataclass(frozen=True)
+class UserMessagesChatEvent(ChatEvent, lang.Final):
+    chat: 'mc.UserChat'
+
+
+@dc.dataclass(frozen=True)
 class AiMessagesChatEvent(ChatEvent, lang.Final):
     chat: 'mc.Chat'
 
