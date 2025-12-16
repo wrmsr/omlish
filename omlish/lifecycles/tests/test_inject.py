@@ -9,8 +9,10 @@ from ... import collections as col
 from ... import dataclasses as dc
 from ... import inject as inj
 from ... import lang
+from ..base import AsyncLifecycle
 from ..base import Lifecycle
 from ..contextmanagers import LifecycleContextManager
+from ..manager import AsyncLifecycleManager
 from ..manager import LifecycleManager
 
 
@@ -19,8 +21,15 @@ from ..manager import LifecycleManager
 
 @ta.final
 class _LifecycleRegistrar(lang.Final):
-    def __init__(self) -> None:
+    def __init__(
+            self,
+            lifecycle_manager_cls: type[LifecycleManager | AsyncLifecycleManager],
+            lifecycle_cls_tup: tuple[type[Lifecycle | AsyncLifecycle], ...],
+    ) -> None:
         super().__init__()
+
+        self._lifecycle_manager_cls = lifecycle_manager_cls
+        self._lifecycle_cls_tup = lifecycle_cls_tup
 
         self._seen: ta.MutableSet[ta.Any] = col.IdentityWeakSet()
         self._stack: list[_LifecycleRegistrar.State] = []
@@ -52,14 +61,25 @@ class _LifecycleRegistrar(lang.Final):
             popped = self._stack.pop()
             check.state(popped is st)
 
-        if isinstance(obj, Lifecycle) and not isinstance(obj, LifecycleManager):
+        if (
+                isinstance(obj, self._lifecycle_cls_tup) and
+                not isinstance(obj, self._lifecycle_manager_cls)
+        ):
             if self._stack:
                 self._stack[-1].deps.append(_LifecycleRegistrar.Dep(binding, obj))
 
             if obj not in self._seen:
-                mgr = await injector[LifecycleManager]
+                mgr = await injector[self._lifecycle_manager_cls]
+
                 dep_objs = [d.obj for d in st.deps]
-                mgr.add(obj, dep_objs)
+
+                if isinstance(mgr, AsyncLifecycleManager):
+                    await mgr.add(obj, dep_objs)
+                elif isinstance(mgr, LifecycleManager):
+                    mgr.add(obj, dep_objs)
+                else:
+                    raise TypeError(mgr)
+
                 self._seen.add(obj)
 
         elif self._stack:
@@ -70,7 +90,10 @@ class _LifecycleRegistrar(lang.Final):
 
 def bind_lifecycle_registrar() -> inj.Elements:
     return inj.as_elements(
-        inj.bind(_LifecycleRegistrar, to_const=(lr := _LifecycleRegistrar())),
+        inj.bind(_LifecycleRegistrar, to_const=(lr := _LifecycleRegistrar(
+            LifecycleManager,
+            (Lifecycle,),
+        ))),
         inj.bind_provision_listener(lr._on_provision),  # noqa
     )
 

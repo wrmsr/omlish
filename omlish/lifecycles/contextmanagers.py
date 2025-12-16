@@ -5,6 +5,7 @@ from .. import dataclasses as dc
 from .. import lang
 from .base import AsyncLifecycle
 from .base import Lifecycle
+from .controller import AsyncLifecycleController
 from .controller import LifecycleController
 from .states import LifecycleState
 from .states import LifecycleStates
@@ -36,7 +37,7 @@ class ContextManagerLifecycle(Lifecycle, lang.Final, ta.Generic[ContextManagerT]
 
 @ta.final
 @dc.dataclass(frozen=True)
-class AsyncContextManagerAsyncLifecycle(AsyncLifecycle, lang.Final, ta.Generic[AsyncContextManagerT]):
+class AsyncContextManagerLifecycle(AsyncLifecycle, lang.Final, ta.Generic[AsyncContextManagerT]):
     cm: AsyncContextManagerT
 
     @ta.override
@@ -51,7 +52,8 @@ class AsyncContextManagerAsyncLifecycle(AsyncLifecycle, lang.Final, ta.Generic[A
 ##
 
 
-class LifecycleContextManager(ta.Generic[LifecycleT]):
+@ta.final
+class LifecycleContextManager(lang.Final, ta.Generic[LifecycleT]):
     def __init__(self, lifecycle: LifecycleT) -> None:
         super().__init__()
 
@@ -59,6 +61,8 @@ class LifecycleContextManager(ta.Generic[LifecycleT]):
         self._controller = lifecycle if isinstance(lifecycle, LifecycleController) else LifecycleController(lifecycle)
 
     __repr__ = lang.attr_ops(lambda o: (o.lifecycle, o.state)).repr
+
+    #
 
     @property
     def lifecycle(self) -> LifecycleT:
@@ -71,6 +75,8 @@ class LifecycleContextManager(ta.Generic[LifecycleT]):
     @property
     def state(self) -> LifecycleState:
         return self._controller.state
+
+    #
 
     def __enter__(self) -> ta.Self:
         try:
@@ -95,4 +101,56 @@ class LifecycleContextManager(ta.Generic[LifecycleT]):
             raise
         else:
             self._controller.lifecycle_destroy()
+        return None
+
+
+@ta.final
+class AsyncLifecycleContextManager(lang.Final, ta.Generic[AsyncLifecycleT]):
+    def __init__(self, lifecycle: AsyncLifecycleT) -> None:
+        super().__init__()
+
+        self._lifecycle = lifecycle
+        self._controller = lifecycle if isinstance(lifecycle, AsyncLifecycleController) else AsyncLifecycleController(lifecycle)  # noqa
+
+    __repr__ = lang.attr_ops(lambda o: (o.lifecycle, o.state)).repr
+
+    #
+
+    @property
+    def lifecycle(self) -> AsyncLifecycleT:
+        return self._lifecycle
+
+    @property
+    def controller(self) -> AsyncLifecycleController:
+        return self._controller
+
+    @property
+    def state(self) -> LifecycleState:
+        return self._controller.state
+
+    #
+
+    async def __aenter__(self) -> ta.Self:
+        try:
+            await self._controller.lifecycle_construct()
+            await self._controller.lifecycle_start()
+        except Exception:
+            await self._controller.lifecycle_destroy()
+            raise
+        return self
+
+    async def __aexit__(
+            self,
+            exc_type: type[BaseException] | None,
+            exc_val: BaseException | None,
+            exc_tb: types.TracebackType | None,
+    ) -> bool | None:
+        try:
+            if self._controller.state is LifecycleStates.STARTED:
+                await self._controller.lifecycle_stop()
+        except Exception:
+            await self._controller.lifecycle_destroy()
+            raise
+        else:
+            await self._controller.lifecycle_destroy()
         return None
