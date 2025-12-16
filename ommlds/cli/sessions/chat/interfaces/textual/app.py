@@ -21,6 +21,18 @@ ChatAgentEventQueue = ta.NewType('ChatAgentEventQueue', asyncio.Queue)
 ##
 
 
+class InputOuter(tx.Static):
+    def compose(self) -> tx.ComposeResult:
+        with tx.Vertical(id='input-vertical'):
+            with tx.Vertical(id='input-vertical2'):
+                with tx.Horizontal(id='input-horizontal'):
+                    yield tx.Static('>', id='input-glyph')
+                    yield InputTextArea(placeholder='...', id='input')
+
+
+#
+
+
 class WelcomeMessage(tx.Static):
     def __init__(self, content: str) -> None:
         super().__init__(content)
@@ -132,12 +144,7 @@ class ChatApp(tx.App):
         with tx.VerticalScroll(id='messages-scroll'):
             yield tx.Static(id='messages-container')
 
-        with tx.Static(id='input-outer'):
-            with tx.Vertical(id='input-vertical'):
-                with tx.Vertical(id='input-vertical2'):
-                    with tx.Horizontal(id='input-horizontal'):
-                        yield tx.Static('>', id='input-glyph')
-                        yield InputTextArea(placeholder='...', id='input')
+        yield InputOuter(id='input-outer')
 
     #
 
