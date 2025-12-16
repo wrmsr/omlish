@@ -1,7 +1,7 @@
 from omlish import inject as inj
 from omlish import lang
 
-from ....... import minichain as mc
+from ...... import minichain as mc
 from .configs import AiConfig
 from .injection import chat_options_providers
 

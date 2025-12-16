@@ -9,11 +9,11 @@ from .configs import DriverConfig
 with lang.auto_proxy_import(globals()):
     from ....backends import inject as _backends
     from . import driver as _driver
-    from .chat.ai import inject as _chat_ai
-    from .chat.state import inject as _chat_state
-    from .chat.user import inject as _chat_user
+    from .ai import inject as _ai
     from .phases import inject as _phases
+    from .state import inject as _state
     from .tools import inject as _tools
+    from .user import inject as _user
 
 
 ##
@@ -27,11 +27,11 @@ def bind_driver(cfg: DriverConfig) -> inj.Elements:
     els.extend([
         _backends.bind_backends(cfg.backend),
 
-        _chat_ai.bind_ai(cfg.ai),
+        _ai.bind_ai(cfg.ai),
 
-        _chat_user.bind_user(cfg.user),
+        _user.bind_user(cfg.user),
 
-        _chat_state.bind_state(cfg.state),
+        _state.bind_state(cfg.state),
 
         _phases.bind_phases(),
 

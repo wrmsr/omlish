@@ -1,5 +1,5 @@
-from ....... import minichain as mc
-from ...tools.execution import ToolUseExecutor
+from ...... import minichain as mc
+from ..tools.execution import ToolUseExecutor
 from .types import AiChatGenerator
 
 

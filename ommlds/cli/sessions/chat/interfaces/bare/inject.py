@@ -9,7 +9,7 @@ from .interface import BareChatInterface
 with lang.auto_proxy_import(globals()):
     from .....inputs import asyncs as _inputs_asyncs
     from .....inputs import sync as _inputs_sync
-    from ...drivers.chat.user import types as _user_types
+    from ...drivers.user import types as _user_types
     from . import user as _user
 
 

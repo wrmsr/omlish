@@ -1,10 +1,10 @@
 from omlish import dataclasses as dc
 
 from ....backends.configs import BackendConfig
-from .chat.ai.configs import AiConfig
-from .chat.state.configs import StateConfig
-from .chat.user.configs import UserConfig
+from .ai.configs import AiConfig
+from .state.configs import StateConfig
 from .tools.configs import ToolsConfig
+from .user.configs import UserConfig
 
 
 ##

@@ -7,10 +7,10 @@ from ..... import minichain as mc
 from ....state.storage import InMemoryStateStorage
 from ....state.storage import StateStorage
 from ..drivers.configs import DriverConfig
-from ..drivers.chat.user.configs import UserConfig
+from ..drivers.user.configs import UserConfig
 from ....rendering.configs import RenderingConfig
 from ..configs import ChatConfig
-from ..drivers.chat.state.configs import StateConfig
+from ..drivers.state.configs import StateConfig
 from ..drivers.driver import ChatDriver
 from ..inject import bind_chat
 

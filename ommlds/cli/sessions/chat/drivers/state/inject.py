@@ -1,9 +1,9 @@
 from omlish import inject as inj
 from omlish import lang
 
-from ...phases.injection import phase_callbacks
-from ...phases.types import ChatPhase
-from ...phases.types import ChatPhaseCallback
+from ..phases.injection import phase_callbacks
+from ..phases.types import ChatPhase
+from ..phases.types import ChatPhaseCallback
 from .configs import StateConfig
 
 

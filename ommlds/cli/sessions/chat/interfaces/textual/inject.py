@@ -1,6 +1,6 @@
 from omlish import inject as inj
 
-from ...drivers.chat.user.types import UserChatInput
+from ...drivers.user.types import UserChatInput
 from ..base import ChatInterface
 from .app import ChatApp
 from .interface import TextualChatInterface
