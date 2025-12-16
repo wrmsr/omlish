@@ -30,16 +30,30 @@ class WelcomeMessage(tx.Static):
 
 class UserMessage(tx.Static):
     def __init__(self, content: str) -> None:
-        super().__init__(content)
+        super().__init__()
 
         self.add_class('user-message')
+
+        self._content = content
+
+    def compose(self) -> tx.ComposeResult:
+        with tx.Horizontal(classes='user-message-outer'):
+            with tx.Vertical(classes='user-message-inner'):
+                yield tx.Static(self._content)
 
 
 class AiMessage(tx.Static):
     def __init__(self, content: str) -> None:
-        super().__init__(content)
+        super().__init__()
 
         self.add_class('ai-message')
+
+        self._content = content
+
+    def compose(self) -> tx.ComposeResult:
+        with tx.Horizontal(classes='ai-message-outer'):
+            with tx.Vertical(classes='ai-message-inner'):
+                yield tx.Static(self._content)
 
 
 ##
@@ -82,7 +96,7 @@ def _read_app_css() -> str:
         if i:
             out.write('\n\n')
 
-        out.write(f'/* {rsrc.name} */\n')
+        out.write(f'/*** {rsrc.name} ***/\n')
         out.write('\n')
 
         out.write(rsrc.read_text().strip())
