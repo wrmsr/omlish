@@ -92,13 +92,28 @@ class ChatProfile(Profile):
             check.arg(not self._args.message)
             raise NotImplementedError
 
-        if self._args.interactive:
+        if self._args.textual:
             cfg = dc.replace(
                 cfg,
                 interface=dc.replace(
                     cfg.interface,
-                    interactive=True,
-                    use_textual=self._args.textual,
+                    use_textual=True,
+                ),
+            )
+
+        else:
+            cfg = dc.replace(
+                cfg,
+                agent=dc.replace(
+                    cfg.agent,
+                    ai=dc.replace(
+                        cfg.agent.ai,
+                        verbose=True,
+                    ),
+                ),
+                interface=dc.replace(
+                    cfg.interface,
+                    interactive=self._args.interactive,
                 ),
             )
 
