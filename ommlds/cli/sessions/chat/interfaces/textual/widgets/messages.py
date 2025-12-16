@@ -38,4 +38,4 @@ class AiMessage(tx.Static):
         with tx.Horizontal(classes='ai-message-outer'):
             yield tx.Static('< ', classes='ai-message-glyph')
             with tx.Vertical(classes='ai-message-inner'):
-                yield tx.Static(self._content)
+                yield tx.Markdown(self._content)

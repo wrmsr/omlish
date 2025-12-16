@@ -25,6 +25,8 @@ ChatAgentEventQueue = ta.NewType('ChatAgentEventQueue', asyncio.Queue)
 
 
 class ChatApp(tx.App):
+    # ENABLE_COMMAND_PALETTE: ta.ClassVar[bool] = False
+
     def __init__(
             self,
             *,
@@ -37,8 +39,6 @@ class ChatApp(tx.App):
         self._event_queue = event_queue
 
     CSS: ta.ClassVar[str] = read_app_css()
-
-    ENABLE_COMMAND_PALETTE: ta.ClassVar[bool] = False
 
     #
 

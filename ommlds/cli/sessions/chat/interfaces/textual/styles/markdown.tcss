@@ -1,0 +1,7 @@
+Markdown MarkdownFence {
+    max-width: 95%;
+
+    overflow-x: auto;
+
+    scrollbar-size-horizontal: 1;
+}

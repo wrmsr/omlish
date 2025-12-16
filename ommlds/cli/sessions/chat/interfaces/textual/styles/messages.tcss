@@ -74,6 +74,8 @@
 .ai-message-outer {
     width: 100%;
     height: auto;
+
+    align: left top;
 }
 
 .ai-message-glyph {
@@ -89,4 +91,14 @@
 .ai-message-inner {
     width: 100%;
     height: auto;
+
+    padding: 0;
+
+    Markdown {
+        width: 100%;
+        height: auto;
+
+        margin: 0;
+        padding: 0;
+    }
 }

@@ -19,7 +19,7 @@ ruff==0.14.9
 
 docutils-stubs==0.0.22
 lxml-stubs==0.5.1
-types-boto3>=1.42.9
+types-boto3>=1.42.11
 types-greenlet==3.3.0.20251206
 types-paramiko==4.0.0.20250822  # @omlish-venv !13t !13dt  # cffi ????
 types-psutil==7.1.3.20251211
@@ -103,7 +103,8 @@ asttokens==3.0.1
 numpy>=1.26
 
 rich==14.2.0
-textual==6.9.0
+textual[syntax]==6.9.0
+textual-dev==1.8.0  # pretty useless
 
 snowflake-connector-python[secure-local-storage]==4.1.1  # @omlish-venv !13t !13dt  # cffi
 # snowflake-sqlalchemy==1.7.7  # @omlish-venv !13t !13dt  # cffi
@@ -129,7 +130,7 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.42.9
+boto3>=1.42.11
 
 antlr4-python3-runtime==4.13.2
 
