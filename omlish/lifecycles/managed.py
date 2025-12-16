@@ -48,6 +48,7 @@ class LifecycleManaged(lang.Abstract):
         def lifecycle_destroy(self) -> None:
             self.obj._lifecycle_destroy()  # noqa
 
+    @ta.final
     @cached.property
     def _lifecycle(self) -> _Lifecycle[ta.Self]:
         return LifecycleManaged._Lifecycle(self)
@@ -95,6 +96,7 @@ class AsyncLifecycleManaged(lang.Abstract):
         async def lifecycle_destroy(self) -> None:
             await self.obj._lifecycle_destroy()  # noqa
 
+    @ta.final
     @cached.property
     def _lifecycle(self) -> _Lifecycle[ta.Self]:
         return AsyncLifecycleManaged._Lifecycle(self)

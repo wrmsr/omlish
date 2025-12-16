@@ -3,9 +3,9 @@ import typing as ta
 from .. import check
 from .. import lang
 from .base import AsyncLifecycle
-from .base import AsyncLifecycleListener
 from .base import Lifecycle
-from .base import LifecycleListener
+from .listeners import AsyncLifecycleListener
+from .listeners import LifecycleListener
 from .states import LifecycleState
 from .states import LifecycleStates
 from .transitions import LifecycleTransition
@@ -19,23 +19,25 @@ from .transitions import LifecycleTransitions
 class LifecycleController(Lifecycle, lang.Final):
     def __init__(
             self,
-            lifecycle: Lifecycle,
+            controlled: Lifecycle,
             *,
             lock: lang.DefaultLockable = None,
     ) -> None:
         super().__init__()
 
-        self._lifecycle: Lifecycle = check.isinstance(lifecycle, Lifecycle)
+        self._controlled: Lifecycle = check.isinstance(controlled, Lifecycle)
         self._lock = lang.default_lock(lock, None)
 
         self._state = LifecycleStates.NEW
         self._listeners: list[LifecycleListener] = []
 
-    __repr__ = lang.attr_ops(lambda o: (o.lifecycle, o.state)).repr
+    __repr__ = lang.attr_ops(lambda o: (o.controlled, o.state)).repr
+
+    #
 
     @property
-    def lifecycle(self) -> Lifecycle:
-        return self._lifecycle
+    def controlled(self) -> Lifecycle:
+        return self._controlled
 
     @property
     def state(self) -> LifecycleState:
@@ -50,20 +52,20 @@ class LifecycleController(Lifecycle, lang.Final):
     def _advance(
             self,
             transition: LifecycleTransition,
-            lifecycle_fn: ta.Callable[[], None],
+            controlled_fn: ta.Callable[[], None],
             pre_listener_fn: ta.Callable[[LifecycleListener], ta.Callable[[Lifecycle], None]] | None = None,
             post_listener_fn: ta.Callable[[LifecycleListener], ta.Callable[[Lifecycle], None]] | None = None,
     ) -> None:
         with self._lock():
             if pre_listener_fn is not None:
                 for listener in self._listeners:
-                    pre_listener_fn(listener)(self._lifecycle)
+                    pre_listener_fn(listener)(self._controlled)
 
             check.state(self._state in transition.old)
             self._state = transition.new_intermediate
 
             try:
-                lifecycle_fn()
+                controlled_fn()
             except Exception:
                 self._state = transition.new_failed
                 raise
@@ -72,7 +74,7 @@ class LifecycleController(Lifecycle, lang.Final):
 
             if post_listener_fn is not None:
                 for listener in self._listeners:
-                    post_listener_fn(listener)(self._lifecycle)
+                    post_listener_fn(listener)(self._controlled)
 
     ##
 
@@ -80,14 +82,14 @@ class LifecycleController(Lifecycle, lang.Final):
     def lifecycle_construct(self) -> None:
         self._advance(
             LifecycleTransitions.CONSTRUCT,
-            self._lifecycle.lifecycle_construct,
+            self._controlled.lifecycle_construct,
         )
 
     @ta.override
     def lifecycle_start(self) -> None:
         self._advance(
             LifecycleTransitions.START,
-            self._lifecycle.lifecycle_start,
+            self._controlled.lifecycle_start,
             lambda l: l.on_starting,
             lambda l: l.on_started,
         )
@@ -96,7 +98,7 @@ class LifecycleController(Lifecycle, lang.Final):
     def lifecycle_stop(self) -> None:
         self._advance(
             LifecycleTransitions.STOP,
-            self._lifecycle.lifecycle_stop,
+            self._controlled.lifecycle_stop,
             lambda l: l.on_stopping,
             lambda l: l.on_stopped,
         )
@@ -105,7 +107,7 @@ class LifecycleController(Lifecycle, lang.Final):
     def lifecycle_destroy(self) -> None:
         self._advance(
             LifecycleTransitions.DESTROY,
-            self._lifecycle.lifecycle_destroy,
+            self._controlled.lifecycle_destroy,
         )
 
 
@@ -116,23 +118,25 @@ class LifecycleController(Lifecycle, lang.Final):
 class AsyncLifecycleController(AsyncLifecycle, lang.Final):
     def __init__(
             self,
-            lifecycle: AsyncLifecycle,
+            controlled: AsyncLifecycle,
             *,
             lock: lang.DefaultAsyncLockable = None,
     ) -> None:
         super().__init__()
 
-        self._lifecycle: AsyncLifecycle = check.isinstance(lifecycle, AsyncLifecycle)
+        self._controlled: AsyncLifecycle = check.isinstance(controlled, AsyncLifecycle)
         self._lock = lang.default_async_lock(lock, None)
 
         self._state = LifecycleStates.NEW
         self._listeners: list[AsyncLifecycleListener] = []
 
-    __repr__ = lang.attr_ops(lambda o: (o.lifecycle, o.state)).repr
+    __repr__ = lang.attr_ops(lambda o: (o.controlled, o.state)).repr
+
+    #
 
     @property
-    def lifecycle(self) -> AsyncLifecycle:
-        return self._lifecycle
+    def controlled(self) -> AsyncLifecycle:
+        return self._controlled
 
     @property
     def state(self) -> LifecycleState:
@@ -147,20 +151,20 @@ class AsyncLifecycleController(AsyncLifecycle, lang.Final):
     async def _advance(
             self,
             transition: LifecycleTransition,
-            lifecycle_fn: ta.Callable[[], ta.Awaitable[None]],
+            controlled_fn: ta.Callable[[], ta.Awaitable[None]],
             pre_listener_fn: ta.Callable[[AsyncLifecycleListener], ta.Callable[[AsyncLifecycle], ta.Awaitable[None]]] | None = None,  # noqa
             post_listener_fn: ta.Callable[[AsyncLifecycleListener], ta.Callable[[AsyncLifecycle], ta.Awaitable[None]]] | None = None,  # noqa
     ) -> None:
         async with self._lock():
             if pre_listener_fn is not None:
                 for listener in self._listeners:
-                    await pre_listener_fn(listener)(self._lifecycle)
+                    await pre_listener_fn(listener)(self._controlled)
 
             check.state(self._state in transition.old)
             self._state = transition.new_intermediate
 
             try:
-                await lifecycle_fn()
+                await controlled_fn()
             except Exception:
                 self._state = transition.new_failed
                 raise
@@ -169,7 +173,7 @@ class AsyncLifecycleController(AsyncLifecycle, lang.Final):
 
             if post_listener_fn is not None:
                 for listener in self._listeners:
-                    await post_listener_fn(listener)(self._lifecycle)
+                    await post_listener_fn(listener)(self._controlled)
 
     ##
 
@@ -177,14 +181,14 @@ class AsyncLifecycleController(AsyncLifecycle, lang.Final):
     async def lifecycle_construct(self) -> None:
         await self._advance(
             LifecycleTransitions.CONSTRUCT,
-            self._lifecycle.lifecycle_construct,
+            self._controlled.lifecycle_construct,
         )
 
     @ta.override
     async def lifecycle_start(self) -> None:
         await self._advance(
             LifecycleTransitions.START,
-            self._lifecycle.lifecycle_start,
+            self._controlled.lifecycle_start,
             lambda l: l.on_starting,
             lambda l: l.on_started,
         )
@@ -193,7 +197,7 @@ class AsyncLifecycleController(AsyncLifecycle, lang.Final):
     async def lifecycle_stop(self) -> None:
         await self._advance(
             LifecycleTransitions.STOP,
-            self._lifecycle.lifecycle_stop,
+            self._controlled.lifecycle_stop,
             lambda l: l.on_stopping,
             lambda l: l.on_stopped,
         )
@@ -202,7 +206,7 @@ class AsyncLifecycleController(AsyncLifecycle, lang.Final):
     async def lifecycle_destroy(self) -> None:
         await self._advance(
             LifecycleTransitions.DESTROY,
-            self._lifecycle.lifecycle_destroy,
+            self._controlled.lifecycle_destroy,
         )
 
 
