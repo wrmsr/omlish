@@ -1,17 +1,20 @@
+import contextlib
+
 import pytest  # noqa
 
 from omlish import inject as inj
 from omlish import lang
 
 from ..... import minichain as mc
+from ....backends.types import ChatChoicesServiceBackendProvider
+from ....rendering.configs import RenderingConfig
 from ....state.storage import InMemoryStateStorage
 from ....state.storage import StateStorage
-from ..agents.configs import AgentConfig
-from ..agents.user.configs import UserConfig
-from ....rendering.configs import RenderingConfig
-from ..configs import ChatConfig
-from ..agents.state.configs import StateConfig
 from ..agents.agent import ChatAgent
+from ..agents.configs import AgentConfig
+from ..agents.state.configs import StateConfig
+from ..agents.user.configs import UserConfig
+from ..configs import ChatConfig
 from ..inject import bind_chat
 
 
@@ -21,13 +24,21 @@ class DummyChatChoicesService:
         return mc.ChatChoicesResponse([mc.AiChoice([mc.AiMessage(f'*Ai Message {len(request.v) + 1}*')])])
 
 
+class DummyChatChoicesServiceBackendProvider(ChatChoicesServiceBackendProvider):
+    @contextlib.asynccontextmanager
+    async def provide_backend(self):
+        yield DummyChatChoicesService()
+
+
 def make_agent(
         cfg: ChatConfig = ChatConfig(),
 ) -> ChatAgent:
     injector = inj.create_injector(
-        bind_chat(cfg),
+        inj.override(
+            bind_chat(cfg),
 
-        inj.bind(mc.ChatChoicesService, to_ctor=DummyChatChoicesService),
+            inj.bind(ChatChoicesServiceBackendProvider, to_ctor=DummyChatChoicesServiceBackendProvider),
+        ),
 
         inj.bind(InMemoryStateStorage, singleton=True),
         inj.bind(StateStorage, to_key=InMemoryStateStorage),
@@ -51,7 +62,6 @@ def test_inject():
     )
 
 
-# @pytest.mark.skip
 def test_agent():
     agent = make_agent(
         cfg=ChatConfig(

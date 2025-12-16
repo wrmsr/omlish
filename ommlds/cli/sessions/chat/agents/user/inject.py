@@ -23,16 +23,18 @@ def bind_user(cfg: UserConfig = UserConfig()) -> inj.Elements:
         async def add_initial_system_content(cm: '_state.ChatStateManager') -> None:
             await cm.extend_chat([mc.SystemMessage(cfg.initial_system_content)])
 
-        els.append(phase_callbacks().bind_item(to_fn=lang.typed_lambda(cm=_state.ChatStateManager)(
+        els.append(phase_callbacks().bind_item(to_fn=inj.KwargsTarget.of(
             lambda cm: ChatPhaseCallback(ChatPhase.STARTED, lambda: add_initial_system_content(cm)),
+            cm=_state.ChatStateManager,
         )))
 
     if cfg.initial_user_content is not None:
         async def add_initial_user_content(ca: '_agent.ChatAgent') -> None:
             await ca.send_user_messages([mc.UserMessage(cfg.initial_user_content)])
 
-        els.append(phase_callbacks().bind_item(to_fn=lang.typed_lambda(ca=_agent.ChatAgent)(
-            lambda ca: ChatPhaseCallback(ChatPhase.STARTED, lambda: add_initial_user_content(ca)),
+        els.append(phase_callbacks().bind_item(to_fn=inj.KwargsTarget.of(
+            lambda ca: ChatPhaseCallback(ChatPhase.STARTED, lambda: add_initial_user_content(ca())),
+            ca=inj.Late[_agent.ChatAgent],
         )))
 
     return inj.as_elements(*els)
