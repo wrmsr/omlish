@@ -2,7 +2,7 @@ from ... import dataclasses as dc
 from ... import inject as inj
 from ..base import Lifecycle
 from ..contextmanagers import LifecycleContextManager
-from ..inject import bind_lifecycle_registrar
+from ..injection import bind_lifecycle_registrar
 from ..managed import LifecycleManaged
 from ..manager import LifecycleManager
 

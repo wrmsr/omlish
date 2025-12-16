@@ -1085,7 +1085,7 @@ def _process_dataclass__375fd7fd537e2cfb878109217fe4c57607b10510():
         '__dataclass__init__fields__2__annotation',
     ),
     cls_names=(
-        ('omlish.lifecycles.inject', '_LifecycleRegistrar.Dep'),
+        ('omlish.lifecycles.injection', '_LifecycleRegistrar.Dep'),
     ),
 )
 def _process_dataclass__b3f39a9348415b6ae3908bd546728de8b2b6d308():
@@ -1242,7 +1242,7 @@ def _process_dataclass__b3f39a9348415b6ae3908bd546728de8b2b6d308():
         '__dataclass__init__fields__1__default_factory',
     ),
     cls_names=(
-        ('omlish.lifecycles.inject', '_LifecycleRegistrar.State'),
+        ('omlish.lifecycles.injection', '_LifecycleRegistrar.State'),
     ),
 )
 def _process_dataclass__56c73a66344b180e8ef52aca8500185dd538bf10():

@@ -117,7 +117,7 @@ from .. import lang as _lang  # noqa
 with _lang.auto_proxy_init(globals()):
     ##
 
-    from .inject import (  # noqa
+    from .injection import (  # noqa
         bind_lifecycle_registrar,
         bind_async_lifecycle_registrar,
     )
