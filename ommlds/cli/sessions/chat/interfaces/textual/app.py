@@ -3,11 +3,15 @@ import dataclasses as dc
 import typing as ta
 
 from omdev.tui import textual as tx
-from omlish import check
 
 from ...... import minichain as mc
-from ...drivers.driver import ChatDriver
-from .user import QueueUserChatInput
+from ...agents.agent import ChatAgent
+
+
+##
+
+
+ChatAgentEventQueue = ta.NewType('ChatAgentEventQueue', asyncio.Queue)
 
 
 ##
@@ -51,13 +55,13 @@ class ChatApp(tx.App):
     def __init__(
             self,
             *,
-            chat_driver: ChatDriver,
-            queue_user_chat_input: QueueUserChatInput,
+            agent: ChatAgent,
+            event_queue: ChatAgentEventQueue,
     ) -> None:
         super().__init__()
 
-        self._chat_driver = chat_driver
-        self._queue_user_chat_input = queue_user_chat_input
+        self._agent = agent
+        self._event_queue = event_queue
 
     CSS: ta.ClassVar[str] = """
         #messages-scroll {
@@ -166,19 +170,15 @@ class ChatApp(tx.App):
 
     #
 
-    _chat_driver_task: asyncio.Task | None = None
-
     async def on_mount(self) -> None:
-        check.none(self._chat_driver_task)
-        self._chat_driver_task = asyncio.create_task(self._chat_driver.run())
+        await self._agent.start()
 
         self._get_input_text_area().focus()
 
         await self._mount_message(UserMessage('Hello!'))
 
     async def on_unmount(self) -> None:
-        await self._queue_user_chat_input.push_next_user_messages([])
-        await check.not_none(self._chat_driver_task)
+        await self._agent.stop()
 
     async def on_input_text_area_submitted(self, event: InputTextArea.Submitted) -> None:
         self._get_input_text_area().clear()
@@ -188,4 +188,4 @@ class ChatApp(tx.App):
             # AiMessage(f'You said: {event.text}!'),
         )
 
-        await self._queue_user_chat_input.push_next_user_messages([mc.UserMessage(event.text)])
+        await self._agent.send_user_messages([mc.UserMessage(event.text)])

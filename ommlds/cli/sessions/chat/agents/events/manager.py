@@ -13,4 +13,4 @@ class ChatEventsManager:
 
     async def emit_event(self, event: ChatEvent) -> None:
         for cb in self._callbacks:
-            await cb.fn(event)
+            await cb(event)

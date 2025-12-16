@@ -126,7 +126,7 @@ class ChatProfile(Profile):
     ]
 
     def configure_input(self, cfg: ChatConfig) -> ChatConfig:
-        if self._args.interactive:
+        if self._args.interactive or self._args.textual:
             check.arg(not self._args.message)
 
         elif self._args.message:
