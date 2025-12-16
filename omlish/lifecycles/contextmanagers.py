@@ -3,14 +3,18 @@ import typing as ta
 
 from .. import dataclasses as dc
 from .. import lang
+from .base import AsyncLifecycle
 from .base import Lifecycle
 from .controller import LifecycleController
 from .states import LifecycleState
 from .states import LifecycleStates
 
 
-LifecycleT = ta.TypeVar('LifecycleT', bound='Lifecycle')
 ContextManagerT = ta.TypeVar('ContextManagerT', bound=ta.ContextManager)
+AsyncContextManagerT = ta.TypeVar('AsyncContextManagerT', bound=ta.AsyncContextManager)
+
+LifecycleT = ta.TypeVar('LifecycleT', bound=Lifecycle)
+AsyncLifecycleT = ta.TypeVar('AsyncLifecycleT', bound=AsyncLifecycle)
 
 
 ##
@@ -28,6 +32,20 @@ class ContextManagerLifecycle(Lifecycle, lang.Final, ta.Generic[ContextManagerT]
     @ta.override
     def lifecycle_stop(self) -> None:
         self.cm.__exit__(None, None, None)
+
+
+@ta.final
+@dc.dataclass(frozen=True)
+class AsyncContextManagerAsyncLifecycle(AsyncLifecycle, lang.Final, ta.Generic[AsyncContextManagerT]):
+    cm: AsyncContextManagerT
+
+    @ta.override
+    async def lifecycle_start(self) -> None:
+        await self.cm.__aenter__()
+
+    @ta.override
+    async def lifecycle_stop(self) -> None:
+        await self.cm.__aexit__(None, None, None)
 
 
 ##
