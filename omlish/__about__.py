@@ -178,6 +178,9 @@ class SetuptoolsBase:
 
             '.omlish-manifests.json',
 
+            'README',
+            'README.md',
+
             'LICENSE',
             'LICENSE.txt',
         ],

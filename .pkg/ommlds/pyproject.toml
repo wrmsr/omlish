@@ -117,6 +117,8 @@ exclude = [
     '*.h',
     '*.hh',
     '.omlish-manifests.json',
+    'README',
+    'README.md',
     'LICENSE',
     'LICENSE.txt',
     'cli/sessions/chat/interfaces/textual/styles/*.tcss',

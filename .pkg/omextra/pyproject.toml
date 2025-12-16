@@ -53,6 +53,8 @@ exclude = [
     '*.h',
     '*.hh',
     '.omlish-manifests.json',
+    'README',
+    'README.md',
     'LICENSE',
     'LICENSE.txt',
 ]

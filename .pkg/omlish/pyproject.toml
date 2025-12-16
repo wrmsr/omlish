@@ -154,6 +154,8 @@ exclude = [
     '*.h',
     '*.hh',
     '.omlish-manifests.json',
+    'README',
+    'README.md',
     'LICENSE',
     'LICENSE.txt',
     'specs/jsonschema/schemas/draft202012/*.json',
