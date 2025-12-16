@@ -3,9 +3,11 @@ import dataclasses as dc
 import typing as ta
 
 from omdev.tui import textual as tx
+from omlish import check
 
 from ...... import minichain as mc
 from ...agents.agent import ChatAgent
+from ...agents.events.types import AiMessagesChatEvent
 
 
 ##
@@ -160,32 +162,75 @@ class ChatApp(tx.App):
 
     #
 
-    async def _mount_message(self, *messages: tx.Widget) -> None:
+    _pending_mount_messages: list[tx.Widget] | None = None
+
+    async def _enqueue_mount_messages(self, *messages: tx.Widget) -> None:
+        if (lst := self._pending_mount_messages) is None:
+            lst = self._pending_mount_messages = []
+
+        lst.extend(messages)
+
+    async def _mount_messages(self, *messages: tx.Widget) -> None:
         msg_ctr = self._get_messages_container()
 
-        for msg in messages:
+        for msg in [*(self._pending_mount_messages or []), *messages]:
             await msg_ctr.mount(msg)
+
+        self._pending_mount_messages = None
 
         self.call_after_refresh(lambda: msg_ctr.scroll_end(animate=False))
 
     #
 
+    _event_queue_task: asyncio.Task[None] | None = None
+
+    async def _event_queue_task_main(self) -> None:
+        while True:
+            ev = await self._event_queue.get()
+            if ev is None:
+                break
+
+            if isinstance(ev, AiMessagesChatEvent):
+                wx: list[tx.Widget] = []
+
+                for ai_msg in ev.chat:
+                    if isinstance(ai_msg, mc.AiMessage):
+                        wx.append(
+                            AiMessage(
+                                check.isinstance(ai_msg.c, str),
+                            ),
+                        )
+
+                if wx:
+                    await self._enqueue_mount_messages(*wx)
+                    self.call_later(self._mount_messages)
+
+    #
+
     async def on_mount(self) -> None:
+        check.state(self._event_queue_task is None)
+        self._event_queue_task = asyncio.create_task(self._event_queue_task_main())
+
         await self._agent.start()
 
         self._get_input_text_area().focus()
 
-        await self._mount_message(UserMessage('Hello!'))
+        await self._mount_messages(UserMessage('Hello!'))
 
     async def on_unmount(self) -> None:
         await self._agent.stop()
 
+        if (eqt := self._event_queue_task) is not None:
+            await self._event_queue.put(None)
+            await eqt
+
     async def on_input_text_area_submitted(self, event: InputTextArea.Submitted) -> None:
         self._get_input_text_area().clear()
 
-        await self._mount_message(
-            UserMessage(event.text),
-            # AiMessage(f'You said: {event.text}!'),
+        await self._mount_messages(
+            UserMessage(
+                event.text,
+            ),
         )
 
         await self._agent.send_user_messages([mc.UserMessage(event.text)])
