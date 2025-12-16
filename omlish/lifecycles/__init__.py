@@ -5,29 +5,39 @@ A central idea is to 'hide the guts' of a given class's lifecycle management fro
 
 The main classes are as follows:
 
- - Lifecycle / AsyncLifecycle - the code 'managed by' the rest of the lifecycle machinery. In general, user code will
-   hide its implementations of these from the code that otherwise interacts with it. Being the lowest level / unit of
-   management callbacks, it intentionally provides no additional machinery, existing solely as a skeleton of methods
-   which will be called by lifecycle internals - this is to reduce friction with more functional / less OO code.
+  - Lifecycle / AsyncLifecycle - the code 'managed by' the rest of the lifecycle machinery. In general, user code will
+    hide its implementations of these from the code that otherwise interacts with it. Being the lowest level / unit of
+    management callbacks, it intentionally provides no additional machinery, existing solely as a skeleton of methods
+    which will be called by lifecycle internals - this is to reduce friction with more functional / less OO code.
 
- - LifecycleManaged / AsyncLifecycleManaged - a mixin which can be used to add lifecycle management behavior to a class.
-   This removes the need for manual subclassing of Lifecycle / AsyncLifecycle, providing private '_lifecycle_<state>'
-   callback methods (with default no-op implementations) which subclasses may override.
+  - LifecycleManaged / AsyncLifecycleManaged - a mixin which can be used to add lifecycle management behavior to a
+    class. This removes the need for manual subclassing of Lifecycle / AsyncLifecycle, providing private
+    '_lifecycle_<state>' callback methods (with default no-op implementations) which subclasses may override.
 
- - LifecycleListener / AsyncLifecycleListener - callback interfaces whose methods will be called when a lifecycle object
-   goes through a lifecycle state transition.
+  - LifecycleListener / AsyncLifecycleListener - callback interfaces whose methods will be called when a lifecycle
+    object goes through a lifecycle state transition.
 
- - LifecycleController / AsyncLifecycleController - these classes run the state machine for any single Lifecycle /
-   AsyncLifecycle instance. They are also responsible for maintaining a registry of lifecycle listeners and calling
-   their methods as necessary. Unlike user code, these classes are openly subclasses of Lifecycle / AsyncLifecycle,
-   allowing them to be called as application state dictates - they will internally ensure correct state transitions.
+  - LifecycleController / AsyncLifecycleController - these classes run the state machine for any single Lifecycle /
+    AsyncLifecycle instance. They are also responsible for maintaining a registry of lifecycle listeners and calling
+    their methods as necessary. Unlike user code, these classes are openly subclasses of Lifecycle / AsyncLifecycle,
+    allowing them to be called as application state dictates - they will internally ensure correct state transitions.
 
- - LifecycleManager / AsyncLifecycleManager - these classes are responsible for construction and operation of (acyclic)
-   graphs of lifecycle objects. They will ensure that, as necessary according to registered dependencies, lifecycle
-   objects are started in the correct order, and that they are stopped in the correct order. This class is itself
-   a LifecycleManaged / AsyncLifecycleManaged, and exposes a public 'lifecycle' property itself suitable for being given
-   to a controller. Notably, AsyncLifecycleManager can also manage sync Lifecycles.
+  - LifecycleManager / AsyncLifecycleManager - these classes are responsible for construction and operation of (acyclic)
+    graphs of lifecycle objects. They will ensure that, as necessary according to registered dependencies, lifecycle
+    objects are started in the correct order, and that they are stopped in the correct order. This class is itself a
+    LifecycleManaged / AsyncLifecycleManaged, and exposes a public 'lifecycle' property itself suitable for being given
+    to a controller. Notably, AsyncLifecycleManager can also manage sync Lifecycles.
 """
+from .. import dataclasses as _dc
+
+
+_dc.init_package(
+    globals(),
+    codegen=True,
+)
+
+
+##
 
 
 from .base import (  # noqa
@@ -90,3 +100,24 @@ from .transitions import (  # noqa
     LifecycleTransition,
     LifecycleTransitions,
 )
+
+from .unwrap import (  # noqa
+    unwrap_lifecycle,
+    unwrap_async_lifecycle,
+    unwrap_any_lifecycle,
+)
+
+
+##
+
+
+from .. import lang as _lang  # noqa
+
+
+with _lang.auto_proxy_init(globals()):
+    ##
+
+    from .inject import (  # noqa
+        bind_lifecycle_registrar,
+        bind_async_lifecycle_registrar,
+    )
