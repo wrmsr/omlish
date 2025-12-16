@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON Viewer</title>
+  <link
+      href="https://cdn.jsdelivr.net/npm/jsoneditor/dist/jsoneditor.min.css"
+      rel="stylesheet"
+      type="text/css"
+  >
+  <style>
+{{ ctx['css_src'] }}
+  </style>
+</head>
+
+<body>
+<div class="input-area">
+  <label for="jmespath-input">JMESPath:</label>
+  <input
+      type="text"
+      id="jmespath-input"
+      list="jmespath-history"
+      placeholder="Enter JMESPath expression..."
+      autocomplete="off"
+  >
+  <datalist id="jmespath-history"></datalist>
+  <span id="error-message"></span>
+</div>
+<div id="jsoneditor"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/jsoneditor@10.2.0/dist/jsoneditor.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jmespath@0.16.0/jmespath.min.js"></script>
+<script>
+  const originalJsonData = {{ ctx['json_data'] }};
+</script>
+<script>
+{{ ctx['js_src'] }}
+</script>
+</body>
+
+</html>

@@ -98,5 +98,7 @@ exclude = [
     'cc/cdeps.toml',
     'pyproject/resources/*.sh',
     'tools/jsonview/resources/*.css',
+    'tools/jsonview/resources/*.html',
+    'tools/jsonview/resources/*.j2',
     'tools/jsonview/resources/*.js',
 ]
