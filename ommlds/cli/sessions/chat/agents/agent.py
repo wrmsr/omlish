@@ -6,7 +6,6 @@ TODO:
 from ..... import minichain as mc
 from .ai.types import AiChatGenerator
 from .events.manager import ChatEventsManager
-from .events.types import AiMessagesChatEvent
 from .events.types import UserMessagesChatEvent
 from .phases.manager import ChatPhaseManager
 from .phases.types import ChatPhase
@@ -46,7 +45,5 @@ class ChatAgent:
         prev_user_chat = (await self._chat_state_manager.get_state()).chat
 
         next_ai_chat = await self._ai_chat_generator.get_next_ai_messages([*prev_user_chat, *next_user_chat])
-
-        await self._events.emit_event(AiMessagesChatEvent(next_ai_chat))
 
         await self._chat_state_manager.extend_chat([*next_user_chat, *next_ai_chat])

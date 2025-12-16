@@ -19,12 +19,25 @@ ChatAgentEventQueue = ta.NewType('ChatAgentEventQueue', asyncio.Queue)
 ##
 
 
+class WelcomeMessage(tx.Static):
+    def __init__(self, content: str) -> None:
+        super().__init__(content)
+
+        self.add_class('welcome-message')
+
+
 class UserMessage(tx.Static):
-    pass
+    def __init__(self, content: str) -> None:
+        super().__init__(content)
+
+        self.add_class('user-message')
 
 
 class AiMessage(tx.Static):
-    pass
+    def __init__(self, content: str) -> None:
+        super().__init__(content)
+
+        self.add_class('ai-message')
 
 
 ##
@@ -82,6 +95,22 @@ class ChatApp(tx.App):
 
             layout: stream;
             text-align: left;
+        }
+
+        .welcome-message {
+            margin: 1;
+
+            border: round;
+
+            padding: 1;
+
+            text-align: center;
+        }
+
+        .user-message {
+        }
+
+        .ai-message {
         }
 
         #input-outer {
@@ -215,7 +244,11 @@ class ChatApp(tx.App):
 
         self._get_input_text_area().focus()
 
-        await self._mount_messages(UserMessage('Hello!'))
+        await self._mount_messages(
+            WelcomeMessage(
+                'Hello!',
+            ),
+        )
 
     async def on_unmount(self) -> None:
         await self._agent.stop()
