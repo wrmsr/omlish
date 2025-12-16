@@ -58,7 +58,7 @@ class RenderingStreamAiChatGenerator(StreamAiChatGenerator):
             self,
             chat: 'mc.Chat',
             delta_callback: ta.Callable[['mc.AiDelta'], ta.Awaitable[None]] | None = None,
-    ) -> mc.Chat:
+    ) -> 'mc.Chat':
         async with self._renderer.create_context() as renderer:
             async def inner(delta: mc.AiDelta) -> None:
                 if isinstance(delta, mc.ContentAiDelta):

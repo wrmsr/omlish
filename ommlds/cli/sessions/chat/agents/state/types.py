@@ -18,7 +18,7 @@ class ChatState:
     created_at: datetime.datetime = dc.field(default_factory=lang.utcnow)
     updated_at: datetime.datetime = dc.field(default_factory=lang.utcnow)
 
-    chat: mc.Chat = ()
+    chat: 'mc.Chat' = ()
 
 
 ##

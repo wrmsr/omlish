@@ -60,7 +60,7 @@ class ChatChoicesStreamServiceStreamAiChatGenerator(StreamAiChatGenerator):
             self,
             chat: 'mc.Chat',
             delta_callback: ta.Callable[['mc.AiDelta'], ta.Awaitable[None]] | None = None,
-    ) -> mc.AiChat:
+    ) -> 'mc.AiChat':
         opts = self._options() if self._options is not None else []
 
         async with self._service_provider.provide_backend() as service:
