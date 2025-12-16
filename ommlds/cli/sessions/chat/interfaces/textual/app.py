@@ -1,9 +1,11 @@
 import asyncio
 import dataclasses as dc
+import io
 import typing as ta
 
 from omdev.tui import textual as tx
 from omlish import check
+from omlish import lang
 
 from ...... import minichain as mc
 from ...agents.agent import ChatAgent
@@ -66,6 +68,32 @@ class InputTextArea(tx.TextArea):
 ##
 
 
+@lang.cached_function
+def _read_app_css() -> str:
+    tcss_rsrcs = [
+        rsrc
+        for rsrc in lang.get_relative_resources('.styles', globals=globals()).values()
+        if rsrc.name.endswith('.tcss')
+    ]
+
+    out = io.StringIO()
+
+    for i, rsrc in enumerate(tcss_rsrcs):
+        if i:
+            out.write('\n\n')
+
+        out.write(f'/* {rsrc.name} */\n')
+        out.write('\n')
+
+        out.write(rsrc.read_text().strip())
+        out.write('\n')
+
+    return out.getvalue()
+
+
+#
+
+
 class ChatApp(tx.App):
     def __init__(
             self,
@@ -78,93 +106,7 @@ class ChatApp(tx.App):
         self._agent = agent
         self._event_queue = event_queue
 
-    CSS: ta.ClassVar[str] = """
-        #messages-scroll {
-            width: 100%;
-            height: 1fr;
-
-            padding: 0 2 0 2;
-        }
-
-        #messages-container {
-            height: auto;
-            width: 100%;
-
-            margin-top: 1;
-            margin-bottom: 0;
-
-            layout: stream;
-            text-align: left;
-        }
-
-        .welcome-message {
-            margin: 1;
-
-            border: round;
-
-            padding: 1;
-
-            text-align: center;
-        }
-
-        .user-message {
-        }
-
-        .ai-message {
-        }
-
-        #input-outer {
-            width: 100%;
-            height: auto;
-        }
-
-        #input-vertical {
-            width: 100%;
-            height: auto;
-
-            margin: 0 2 1 2;
-
-            padding: 0;
-        }
-
-        #input-vertical2 {
-            width: 100%;
-            height: auto;
-
-            border: round $foreground-muted;
-
-            padding: 0 1;
-        }
-
-        #input-horizontal {
-            width: 100%;
-            height: auto;
-        }
-
-        #input-glyph {
-            width: auto;
-
-            padding: 0 1 0 0;
-
-            background: transparent;
-            color: $primary;
-
-            text-style: bold;
-        }
-
-        #input {
-            width: 1fr;
-            height: auto;
-            max-height: 16;
-
-            border: none;
-
-            padding: 0;
-
-            background: transparent;
-            color: $text;
-        }
-    """
+    CSS: ta.ClassVar[str] = _read_app_css()
 
     ENABLE_COMMAND_PALETTE: ta.ClassVar[bool] = False
 

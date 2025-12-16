@@ -119,4 +119,5 @@ exclude = [
     '.omlish-manifests.json',
     'LICENSE',
     'LICENSE.txt',
+    'cli/sessions/chat/interfaces/textual/styles/*.tcss',
 ]
