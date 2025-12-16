@@ -69,9 +69,12 @@ class ChatProfile(Profile):
     def configure_backend(self, cfg: ChatConfig) -> ChatConfig:
         return dc.replace(
             cfg,
-            backend=dc.replace(
-                cfg.backend,
-                backend=self._args.backend,
+            driver=dc.replace(
+                cfg.driver,
+                backend=dc.replace(
+                    cfg.driver.backend,
+                    backend=self._args.backend,
+                ),
             ),
         )
 
@@ -92,14 +95,17 @@ class ChatProfile(Profile):
         if self._args.interactive:
             cfg = dc.replace(
                 cfg,
+                driver=dc.replace(
+                    cfg.driver,
+                    user=dc.replace(
+                        cfg.driver.user,
+                        interactive=True,
+                    ),
+                ),
                 interface=dc.replace(
                     cfg.interface,
                     interactive=True,
                     use_textual=self._args.textual,
-                ),
-                user=dc.replace(
-                    cfg.user,
-                    interactive=True,
                 ),
             )
 
@@ -119,9 +125,12 @@ class ChatProfile(Profile):
             # TODO: '-' -> stdin
             cfg = dc.replace(
                 cfg,
-                user=dc.replace(
-                    cfg.user,
-                    initial_user_content=' '.join(self._args.message),
+                driver=dc.replace(
+                    cfg.driver,
+                    user=dc.replace(
+                        cfg.driver.user,
+                        initial_user_content=' '.join(self._args.message),
+                    ),
                 ),
             )
 
@@ -140,9 +149,12 @@ class ChatProfile(Profile):
     def configure_state(self, cfg: ChatConfig) -> ChatConfig:
         return dc.replace(
             cfg,
-            state=dc.replace(
-                cfg.state,
-                state='ephemeral' if self._args.ephemeral else 'new' if self._args.new else 'continue',
+            driver=dc.replace(
+                cfg.driver,
+                state=dc.replace(
+                    cfg.driver.state,
+                    state='ephemeral' if self._args.ephemeral else 'new' if self._args.new else 'continue',
+                ),
             ),
         )
 
@@ -156,9 +168,12 @@ class ChatProfile(Profile):
     def configure_output(self, cfg: ChatConfig) -> ChatConfig:
         return dc.replace(
             cfg,
-            ai=dc.replace(
-                cfg.ai,
-                stream=bool(self._args.stream),
+            driver=dc.replace(
+                cfg.driver,
+                ai=dc.replace(
+                    cfg.driver.ai,
+                    stream=bool(self._args.stream),
+                ),
             ),
             rendering=dc.replace(
                 cfg.rendering,
@@ -178,24 +193,27 @@ class ChatProfile(Profile):
     def configure_tools(self, cfg: ChatConfig) -> ChatConfig:
         return dc.replace(
             cfg,
-            ai=dc.replace(
-                cfg.ai,
-                enable_tools=(
-                    self._args.enable_fs_tools or
-                    self._args.enable_todo_tools or
-                    # self._args.enable_unsafe_tools_do_not_use_lol or
-                    self._args.enable_test_weather_tool or
-                    self._args.code
+            driver=dc.replace(
+                cfg.driver,
+                ai=dc.replace(
+                    cfg.driver.ai,
+                    enable_tools=(
+                        self._args.enable_fs_tools or
+                        self._args.enable_todo_tools or
+                        # self._args.enable_unsafe_tools_do_not_use_lol or
+                        self._args.enable_test_weather_tool or
+                        self._args.code
+                    ),
                 ),
-            ),
-            tools=dc.replace(
-                cfg.tools,
-                enabled_tools={  # noqa
-                    *(cfg.tools.enabled_tools or []),
-                    *(['fs'] if self._args.enable_fs_tools else []),
-                    *(['todo'] if self._args.enable_todo_tools else []),
-                    *(['weather'] if self._args.enable_test_weather_tool else []),
-                },
+                tools=dc.replace(
+                    cfg.driver.tools,
+                    enabled_tools={  # noqa
+                        *(cfg.driver.tools.enabled_tools or []),
+                        *(['fs'] if self._args.enable_fs_tools else []),
+                        *(['todo'] if self._args.enable_todo_tools else []),
+                        *(['weather'] if self._args.enable_test_weather_tool else []),
+                    },
+                ),
             ),
         )
 
@@ -211,9 +229,12 @@ class ChatProfile(Profile):
 
         cfg = dc.replace(
             cfg,
-            ai=dc.replace(
-                cfg.ai,
-                enable_tools=True,
+            driver=dc.replace(
+                cfg.driver,
+                ai=dc.replace(
+                    cfg.driver.ai,
+                    enable_tools=True,
+                ),
             ),
         )
 
@@ -223,9 +244,12 @@ class ChatProfile(Profile):
 
             cfg = dc.replace(
                 cfg,
-                user=dc.replace(
-                    cfg.user,
-                    initial_system_content=system_content,
+                driver=dc.replace(
+                    cfg.driver,
+                    user=dc.replace(
+                        cfg.driver.user,
+                        initial_system_content=system_content,
+                    ),
                 ),
             )
 

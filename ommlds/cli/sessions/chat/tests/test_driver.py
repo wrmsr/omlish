@@ -6,11 +6,12 @@ from omlish import lang
 from ..... import minichain as mc
 from ....state.storage import InMemoryStateStorage
 from ....state.storage import StateStorage
-from ..chat.user.configs import UserConfig
+from ..drivers.configs import DriverConfig
+from ..drivers.chat.user.configs import UserConfig
 from ....rendering.configs import RenderingConfig
 from ..configs import ChatConfig
-from ..chat.state.configs import StateConfig
-from ..driver import ChatDriver
+from ..drivers.chat.state.configs import StateConfig
+from ..drivers.driver import ChatDriver
 from ..inject import bind_chat
 
 
@@ -38,11 +39,13 @@ def make_driver(
 def test_inject():
     assert make_driver(
         cfg=ChatConfig(
-            user=UserConfig(
-                initial_user_content='Hi!',
-            ),
-            state=StateConfig(
-                state='new',
+            driver=DriverConfig(
+                user=UserConfig(
+                    initial_user_content='Hi!',
+                ),
+                state=StateConfig(
+                    state='new',
+                ),
             ),
         ),
     )
@@ -52,14 +55,16 @@ def test_inject():
 def test_driver():
     lang.sync_await(make_driver(
         cfg=ChatConfig(
-            user=UserConfig(
-                initial_user_content='Hi!',
+            driver=DriverConfig(
+                user=UserConfig(
+                    initial_user_content='Hi!',
+                ),
+                state=StateConfig(
+                    state='new',
+                ),
             ),
             rendering=RenderingConfig(
                 markdown=True,
-            ),
-            state=StateConfig(
-                state='new',
             ),
         ),
     ).run())

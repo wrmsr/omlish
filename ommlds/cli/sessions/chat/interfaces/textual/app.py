@@ -6,7 +6,7 @@ from omdev.tui import textual as tx
 from omlish import check
 
 from ...... import minichain as mc
-from ...driver import ChatDriver
+from ...drivers.driver import ChatDriver
 from .user import QueueUserChatInput
 
 

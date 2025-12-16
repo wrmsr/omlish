@@ -1,7 +1,7 @@
 import asyncio
 
 from ...... import minichain as mc
-from ...chat.user.types import UserChatInput
+from ...drivers.chat.user.types import UserChatInput
 
 
 ##

@@ -5,8 +5,8 @@ from .....content.messages import MessageContentExtractor
 from .....content.messages import MessageContentExtractorImpl
 from .....rendering.types import ContentRendering
 from .....rendering.types import StreamContentRendering
-from ...chat.ai.types import AiChatGenerator
-from ...chat.ai.types import StreamAiChatGenerator
+from ...drivers.chat.ai.types import AiChatGenerator
+from ...drivers.chat.ai.types import StreamAiChatGenerator
 
 
 ##
