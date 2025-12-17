@@ -230,3 +230,8 @@ with _lang.auto_proxy_init(globals()):
         PendingWritesDriverMixin,
         get_pending_writes_driver_class,
     )
+
+    from .types import (  # noqa
+        TopRightBottomLeft,
+        trbl_to_dict,
+    )
