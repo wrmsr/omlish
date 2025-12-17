@@ -5,12 +5,11 @@ TODO:
 import typing as ta
 
 from textual.dom import DOMNode
-from textual.geometry import Spacing
 from textual.widget import Widget
 
 from omlish import dataclasses as dc
 
-from ..types import TopRightBottomLeft
+from ..types import trbl_to_dict
 
 
 ##
@@ -44,28 +43,7 @@ class DomNodeInfo:
     children: list['DomNodeInfo'] = dc.field(default_factory=list)
 
 
-@ta.overload
-def _trbl_to_dict(trbl: Spacing) -> dict[str, int]:
-    ...
-
-
-@ta.overload
-def _trbl_to_dict(trbl: TopRightBottomLeft) -> dict[str, ta.Any]:
-    ...
-
-
-def _trbl_to_dict(trbl):
-    """Helper to convert Textual Spacing objects (margin/padding) to dict."""
-
-    return {
-        'top': trbl.top,
-        'right': trbl.right,
-        'bottom': trbl.bottom,
-        'left': trbl.left,
-    }
-
-
-def inspect_dom(node: DOMNode) -> DomNodeInfo:
+def inspect_dom_node(node: DOMNode) -> DomNodeInfo:
     """
     Recursively builds a tree of DomNodeInfo objects from a Textual DOM node.
 
@@ -107,9 +85,9 @@ def inspect_dom(node: DOMNode) -> DomNodeInfo:
         styles_info['box_sizing'] = str(s.box_sizing)  # border-box vs content-box
 
         # Spacing (Critical for debugging gaps)
-        styles_info['margin'] = _trbl_to_dict(s.margin)
-        styles_info['padding'] = _trbl_to_dict(s.padding)
-        styles_info['border'] = _trbl_to_dict(s.border)
+        styles_info['margin'] = trbl_to_dict(s.margin)
+        styles_info['padding'] = trbl_to_dict(s.padding)
+        styles_info['border'] = trbl_to_dict(s.border)
 
         # Alignment
         styles_info['align'] = f'{s.align_horizontal} {s.align_vertical}'
@@ -151,7 +129,7 @@ def inspect_dom(node: DOMNode) -> DomNodeInfo:
     )
 
     child_nodes = [
-        inspect_dom(child)
+        inspect_dom_node(child)
         for child in sorted_children
     ]
 

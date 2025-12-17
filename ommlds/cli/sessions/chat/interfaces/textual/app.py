@@ -25,7 +25,7 @@ ChatAgentEventQueue = ta.NewType('ChatAgentEventQueue', asyncio.Queue)
 
 
 class ChatApp(tx.App):
-    # ENABLE_COMMAND_PALETTE: ta.ClassVar[bool] = False
+    ENABLE_COMMAND_PALETTE: ta.ClassVar[bool] = False
 
     def __init__(
             self,
@@ -94,6 +94,7 @@ class ChatApp(tx.App):
                         wx.append(
                             AiMessage(
                                 check.isinstance(ai_msg.c, str),
+                                markdown=True,
                             ),
                         )
 
@@ -103,7 +104,24 @@ class ChatApp(tx.App):
 
     #
 
+    def _schedule_after_refresh(self) -> None:
+        self.call_after_refresh(self._after_refresh)
+
+    def _after_refresh(self) -> None:
+        self.after_repaint()
+
+        self._schedule_after_refresh()
+
+    def after_repaint(self) -> None:
+        # from omdev.tui.textual.debug.dominfo import inspect_dom_node  # noqa
+
+        pass
+
+    #
+
     async def on_mount(self) -> None:
+        self._schedule_after_refresh()
+
         check.state(self._event_queue_task is None)
         self._event_queue_task = asyncio.create_task(self._event_queue_task_main())
 
