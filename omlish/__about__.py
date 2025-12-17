@@ -183,6 +183,8 @@ class SetuptoolsBase:
 
             'LICENSE',
             'LICENSE.txt',
+
+            'AUTHORS',
         ],
     }
 

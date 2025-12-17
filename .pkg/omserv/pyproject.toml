@@ -73,6 +73,7 @@ exclude = [
     'README.md',
     'LICENSE',
     'LICENSE.txt',
+    'AUTHORS',
     'nginx/patches/*.patch',
     'server/resources/*.ico',
 ]

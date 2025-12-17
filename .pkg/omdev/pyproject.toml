@@ -97,6 +97,7 @@ exclude = [
     'README.md',
     'LICENSE',
     'LICENSE.txt',
+    'AUTHORS',
     'cc/cdeps.toml',
     'pyproject/resources/*.sh',
     'tools/jsonview/resources/*.css',

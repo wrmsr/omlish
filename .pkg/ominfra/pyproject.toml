@@ -69,6 +69,7 @@ exclude = [
     'README.md',
     'LICENSE',
     'LICENSE.txt',
+    'AUTHORS',
     'clouds/aws/instancetypes/cache.json.gz',
     'clouds/aws/models/services/*.toml',
     'manage/targets/bestpython.sh',
