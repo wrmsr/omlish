@@ -194,10 +194,6 @@ class LifecycleManager(LifecycleManaged, lang.Final):
     #
 
     @property
-    def lifecycle(self) -> Lifecycle:
-        return self._lifecycle
-
-    @property
     def state(self) -> LifecycleState:
         return self._inner_controller.state
 
@@ -253,10 +249,6 @@ class AsyncLifecycleManager(AsyncLifecycleManaged, lang.Final):
         )
 
     #
-
-    @property
-    def lifecycle(self) -> AsyncLifecycle:
-        return self._lifecycle
 
     @property
     def state(self) -> LifecycleState:

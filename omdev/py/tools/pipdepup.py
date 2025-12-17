@@ -1,5 +1,6 @@
 """
 TODO:
+ - output 2 tables lol
  - min_time_since_prev_version
   - without this the min age is moot lol, can still catch a bad release at the same time of day just n days later
    - * at least show 'suggested', 'suggested age', 'latest', 'latest age', 'number of releases between the 2' *
@@ -30,7 +31,6 @@ https://news.ycombinator.com/item?id=46005111
 # ~> https://github.com/pypa/pip/blob/a52069365063ea813fe3a3f8bac90397c9426d35/src/pip/_internal/commands/list.py (25.3)
 import dataclasses as dc
 import datetime
-import email.parser
 import os.path
 import ssl
 import typing as ta
@@ -312,69 +312,29 @@ class Package:
 
             return datetime.datetime.fromisoformat(check.isinstance(ut, str))  # noqa
 
+        @cached.property
+        def version(self) -> Version:
+            return self.install.version
+
+        @cached.property
+        def filetype(self) -> ta.Literal['wheel', 'sdist']:
+            if self.install.link.is_wheel:
+                return 'wheel'
+            else:
+                return 'sdist'
+
+    unfiltered_candidates: ta.Sequence[Candidate] | None = None
     candidates: ta.Sequence[Candidate] | None = None
 
-    @dc.dataclass(frozen=True, kw_only=True)
-    class LatestInfo:
-        candidate: 'Package.Candidate'
-
-        version: Version
-        filetype: str
-
-    latest_info: LatestInfo | None = None
+    latest_candidate: Candidate | None = None
+    suggested_candidate: Candidate | None = None
 
 
-def set_package_finder_info(
+def get_best_candidate(
         pkg: Package,
         finder: MyPackageFinder,
-        *,
-        pre: bool = False,
-        max_uploaded_at: datetime.datetime | None = None,
-        min_time_since_prev_version: datetime.timedelta | None = None,
-) -> None:
-    candidates = [
-        Package.Candidate(
-            c,
-            finder.get_link_pypi_dict(c.link),
-        )
-        for c in finder.find_all_candidates(pkg.dist.canonical_name)
-    ]
-    pkg.candidates = candidates
-
-    #
-
-    if not pre:
-        # Remove prereleases
-        candidates = [
-            c
-            for c in candidates
-            if not c.install.version.is_prerelease
-        ]
-
-    #
-
-    if min_time_since_prev_version is not None:
-        # candidates_by_version = col.multi_map((c.install.version, c) for c in candidates)
-        # uploaded_at_by_version = {
-        #     v: min([c_ut for c in cs if (c_ut := c.upload_time()) is not None], default=None)
-        #     for v, cs in candidates_by_version.items()
-        # }
-        raise NotImplementedError
-
-    #
-
-    if max_uploaded_at is not None:
-        candidates = [
-            c
-            for c in candidates
-            if not (
-                (c_dt := c.upload_time()) is not None and
-                c_dt > max_uploaded_at
-            )
-        ]
-
-    #
-
+        candidates: ta.Sequence[Package.Candidate],
+) -> Package.Candidate | None:
     candidates_by_install: ta.Mapping[InstallationCandidate, Package.Candidate] = col.make_map((
         (c.install, c)
         for c in candidates
@@ -385,22 +345,68 @@ def set_package_finder_info(
     )
     best_install = evaluator.sort_best_candidate([c.install for c in candidates])
     if best_install is None:
-        return
-    best_candidate = candidates_by_install[best_install]
+        return None
+
+    return candidates_by_install[best_install]
+
+
+def set_package_finder_info(
+        pkg: Package,
+        finder: MyPackageFinder,
+        *,
+        pre: bool = False,
+        max_uploaded_at: datetime.datetime | None = None,
+        min_time_since_prev_version: datetime.timedelta | None = None,
+) -> None:
+    pkg.unfiltered_candidates = [
+        Package.Candidate(
+            c,
+            finder.get_link_pypi_dict(c.link),
+        )
+        for c in finder.find_all_candidates(pkg.dist.canonical_name)
+    ]
 
     #
 
-    remote_version = best_candidate.install.version
-    if best_candidate.install.link.is_wheel:
-        typ = 'wheel'
-    else:
-        typ = 'sdist'
+    candidates = pkg.unfiltered_candidates
 
-    pkg.latest_info = Package.LatestInfo(
-        candidate=best_candidate,
-        version=remote_version,
-        filetype=typ,
-    )
+    if not pre:
+        # Remove prereleases
+        candidates = [
+            c
+            for c in candidates
+            if not c.install.version.is_prerelease
+        ]
+
+    pkg.candidates = candidates
+
+    #
+
+    pkg.latest_candidate = get_best_candidate(pkg, finder, pkg.candidates)
+
+    #
+
+    suggested_candidates = candidates
+
+    if min_time_since_prev_version is not None:
+        # candidates_by_version = col.multi_map((c.install.version, c) for c in candidates)
+        # uploaded_at_by_version = {
+        #     v: min([c_ut for c in cs if (c_ut := c.upload_time()) is not None], default=None)
+        #     for v, cs in candidates_by_version.items()
+        # }
+        raise NotImplementedError
+
+    if max_uploaded_at is not None:
+        suggested_candidates = [
+            c
+            for c in suggested_candidates
+            if not (
+                (c_dt := c.upload_time()) is not None and
+                c_dt > max_uploaded_at
+            )
+        ]
+
+    pkg.suggested_candidate = get_best_candidate(pkg, finder, suggested_candidates)
 
 
 ##
@@ -474,18 +480,18 @@ def format_for_json(
     infos: list[dict[str, ta.Any]] = []
 
     for pkg in pkgs:
-        latest_info = check.not_none(pkg.latest_info)
+        latest = check.not_none(pkg.latest_candidate)
 
         info = {
             'name': pkg.dist.raw_name,
             'version': pkg.version(),
             'location': pkg.dist.location or '',
             'installer': pkg.dist.installer,
-            'latest_version': str(latest_info.version),
-            'latest_filetype': latest_info.filetype,
+            'latest_version': str(latest.install.version),
+            'latest_filetype': latest.filetype,
         }
 
-        if (l_ut := latest_info.candidate.upload_time()) is not None:
+        if (l_ut := latest.upload_time()) is not None:
             info['latest_age'] = human_round_td(now_utc() - l_ut)
 
         if editable_project_location := pkg.dist.editable_project_location:
@@ -502,42 +508,59 @@ def format_for_json(
 def format_for_columns(pkgs: ta.Sequence[Package]) -> tuple[list[list[str]], list[str]]:
     """Convert the package data into something usable by output_package_listing_columns."""
 
-    header = ['Package', 'Version', 'Latest', 'Age', 'Type']
+    header = [
+        'Package',
+        'Version',
 
-    def wheel_build_tag(dist: BaseDistribution) -> str | None:
-        try:
-            wheel_file = dist.read_text('WHEEL')
-        except FileNotFoundError:
-            return None
-        return email.parser.Parser().parsestr(wheel_file).get('Build')
+        'Latest',
+        'Age',
 
-    build_tags = [wheel_build_tag(p.dist) for p in pkgs]
-    has_build_tags = any(build_tags)
-    if has_build_tags:
-        header.append('Build')
+        'Suggested',
+        'Age',
 
-    has_editables = any(x.dist.editable for x in pkgs)
-    if has_editables:
-        header.append('Editable project location')
+        'Unstable',
+    ]
+
+    # def wheel_build_tag(dist: BaseDistribution) -> str | None:
+    #     try:
+    #         wheel_file = dist.read_text('WHEEL')
+    #     except FileNotFoundError:
+    #         return None
+    #     return email.parser.Parser().parsestr(wheel_file).get('Build')
+
+    # build_tags = [wheel_build_tag(p.dist) for p in pkgs]
+    # has_build_tags = any(build_tags)
+    # if has_build_tags:
+    #     header.append('Build')
+
+    # has_editables = any(x.dist.editable for x in pkgs)
+    # if has_editables:
+    #     header.append('Editable project location')
 
     data = []
-    for i, proj in enumerate(pkgs):
-        # if we're working on the 'outdated' list, separate out the latest_version and type
+    for proj in pkgs:
         row = [proj.dist.raw_name, proj.dist.raw_version]
 
-        latest_info = check.not_none(proj.latest_info)
-        row.append(str(latest_info.version))
-        if (l_ut := latest_info.candidate.upload_time()) is not None:
-            row.append(human_round_td(now_utc() - l_ut))
-        else:
-            row.append('')
-        row.append(latest_info.filetype)
+        lc = check.not_none(proj.latest_candidate)
+        sc = check.not_none(proj.suggested_candidate)
 
-        if has_build_tags:
-            row.append(build_tags[i] or '')
+        for c in [lc, sc]:
+            row.append(str(c.version))
 
-        if has_editables:
-            row.append(proj.dist.editable_project_location or '')
+            if (l_ut := c.upload_time()) is not None:
+                row.append(human_round_td(now_utc() - l_ut))
+            else:
+                row.append('')
+
+            # row.append(c.filetype)
+
+        row.append('!!' if lc is not sc else '')
+
+        # if has_build_tags:
+        #     row.append(build_tags[i] or '')
+
+        # if has_editables:
+        #     row.append(proj.dist.editable_project_location or '')
 
         data.append(row)
 
@@ -615,7 +638,7 @@ def _main() -> None:
     pkgs = [
         pkg
         for pkg in pkgs
-        if (li := pkg.latest_info) is not None
+        if (li := pkg.latest_candidate) is not None
         and li.version > pkg.dist.version
     ]
 

@@ -1,3 +1,4 @@
+from ... import check
 from ... import dataclasses as dc
 from ... import inject as inj
 from ..base import Lifecycle
@@ -5,6 +6,7 @@ from ..contextmanagers import LifecycleContextManager
 from ..injection import bind_lifecycle_registrar
 from ..managed import LifecycleManaged
 from ..manager import LifecycleManager
+from ..unwrap import unwrap_lifecycle
 
 
 ##
@@ -69,5 +71,5 @@ def test_inject():
             inj.bind(420),
     ) as i:  # noqa
         print()
-        with LifecycleContextManager(i[LifecycleManager].lifecycle):
+        with LifecycleContextManager(check.not_none(unwrap_lifecycle(i[LifecycleManager]))):
             print(i[ServiceC])

@@ -27,5 +27,4 @@ The main classes are as follows:
 - LifecycleManager / AsyncLifecycleManager - these classes are responsible for construction and operation of (acyclic)
   graphs of lifecycle objects. They will ensure that, as necessary according to registered dependencies, lifecycle
   objects are started in the correct order, and that they are stopped in the correct order. This class is itself a
-  LifecycleManaged / AsyncLifecycleManaged, and exposes a public 'lifecycle' property itself suitable for being given to
-  a controller. Notably, AsyncLifecycleManager can also manage sync Lifecycles.
+  LifecycleManaged / AsyncLifecycleManaged. Notably, AsyncLifecycleManager can also manage sync Lifecycles.

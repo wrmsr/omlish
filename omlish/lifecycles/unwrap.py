@@ -1,3 +1,4 @@
+import functools
 import typing as ta
 
 from .base import AsyncLifecycle
@@ -9,26 +10,40 @@ from .managed import LifecycleManaged
 ##
 
 
+@functools.singledispatch
 def unwrap_lifecycle(obj: ta.Any) -> Lifecycle | None:
-    if isinstance(obj, Lifecycle):
-        return obj
-
-    elif isinstance(obj, LifecycleManaged):
-        return obj._lifecycle  # noqa
-
-    else:
-        return None
+    return None
 
 
+@unwrap_lifecycle.register
+def _(obj: Lifecycle) -> Lifecycle:
+    return obj
+
+
+@unwrap_lifecycle.register
+def _(obj: LifecycleManaged) -> Lifecycle:
+    return obj._lifecycle  # noqa
+
+
+#
+
+
+@functools.singledispatch
 def unwrap_async_lifecycle(obj: ta.Any) -> AsyncLifecycle | None:
-    if isinstance(obj, AsyncLifecycle):
-        return obj
+    return None
 
-    elif isinstance(obj, AsyncLifecycleManaged):
-        return obj._lifecycle  # noqa
 
-    else:
-        return None
+@unwrap_async_lifecycle.register
+def _(obj: AsyncLifecycle) -> AsyncLifecycle:
+    return obj
+
+
+@unwrap_async_lifecycle.register
+def _(obj: AsyncLifecycleManaged) -> AsyncLifecycle:
+    return obj._lifecycle  # noqa
+
+
+#
 
 
 def unwrap_any_lifecycle(obj: ta.Any) -> Lifecycle | AsyncLifecycle | None:
