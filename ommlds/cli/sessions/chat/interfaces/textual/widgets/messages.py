@@ -27,15 +27,24 @@ class UserMessage(tx.Static):
 
 
 class AiMessage(tx.Static):
-    def __init__(self, content: str) -> None:
+    def __init__(
+            self,
+            content: str,
+            *,
+            markdown: bool = False,
+    ) -> None:
         super().__init__()
 
         self.add_class('ai-message')
 
         self._content = content
+        self._markdown = markdown
 
     def compose(self) -> tx.ComposeResult:
         with tx.Horizontal(classes='ai-message-outer'):
             yield tx.Static('< ', classes='ai-message-glyph')
             with tx.Vertical(classes='ai-message-inner'):
-                yield tx.Markdown(self._content)
+                if self._markdown:
+                    yield tx.Markdown(self._content)
+                else:
+                    yield tx.Static(self._content)
