@@ -16,20 +16,17 @@ from ....chat.choices.services import static_check_is_chat_choices_service
 from ....chat.choices.stream.services import ChatChoicesStreamRequest
 from ....chat.choices.stream.services import ChatChoicesStreamResponse
 from ....chat.choices.stream.services import static_check_is_chat_choices_stream_service
-from ....chat.choices.stream.types import AiChoiceDeltas
 from ....chat.choices.stream.types import AiChoicesDeltas
-from ....chat.choices.types import AiChoice
-from ....chat.messages import AiMessage
-from ....chat.messages import AnyAiMessage
-from ....chat.messages import Message
-from ....chat.messages import SystemMessage
-from ....chat.messages import UserMessage
-from ....chat.stream.types import ContentAiDelta
+from ....chat.tools.types import Tool
 from ....models.configs import ModelName
 from ....resources import UseResources
 from ....standard import ApiUrl
 from ....stream.services import StreamResponseSink
 from ....stream.services import new_stream_response
+from .protocol import build_mc_ai_choice_deltas
+from .protocol import build_mc_choices_response
+from .protocol import build_ol_request_messages
+from .protocol import build_ol_request_tool
 
 
 ##
@@ -64,31 +61,6 @@ class BaseOllamaChatChoicesService(lang.Abstract):
             self._api_url = cc.pop(self.DEFAULT_API_URL)
             self._model_name = cc.pop(self.DEFAULT_MODEL_NAME)
 
-    #
-
-    ROLE_MAP: ta.ClassVar[ta.Mapping[type[Message], pt.Role]] = {  # noqa
-        SystemMessage: 'system',
-        UserMessage: 'user',
-        AiMessage: 'assistant',
-    }
-
-    @classmethod
-    def _get_message_content(cls, m: Message) -> str | None:
-        if isinstance(m, (AiMessage, UserMessage, SystemMessage)):
-            return check.isinstance(m.c, str)
-        else:
-            raise TypeError(m)
-
-    @classmethod
-    def _build_request_messages(cls, mc_msgs: ta.Iterable[Message]) -> ta.Sequence[pt.Message]:
-        messages: list[pt.Message] = []
-        for m in mc_msgs:
-            messages.append(pt.Message(
-                role=cls.ROLE_MAP[type(m)],
-                content=cls._get_message_content(m),
-            ))
-        return messages
-
 
 ##
 
@@ -103,12 +75,18 @@ class OllamaChatChoicesService(BaseOllamaChatChoicesService):
             self,
             request: ChatChoicesRequest,
     ) -> ChatChoicesResponse:
-        messages = self._build_request_messages(request.v)
+        messages = build_ol_request_messages(request.v)
+
+        tools: list[pt.Tool] = []
+        with tv.TypedValues(*request.options).consume() as oc:
+            t: Tool
+            for t in oc.pop(Tool, []):
+                tools.append(build_ol_request_tool(t))
 
         a_req = pt.ChatRequest(
             model=self._model_name.v,
             messages=messages,
-            # tools=tools or None,
+            tools=tools or None,
             stream=False,
         )
 
@@ -124,17 +102,7 @@ class OllamaChatChoicesService(BaseOllamaChatChoicesService):
 
         resp = msh.unmarshal(json_response, pt.ChatResponse)
 
-        out: list[AnyAiMessage] = []
-        if resp.message.role == 'assistant':
-            out.append(AiMessage(
-                check.not_none(resp.message.content),
-            ))
-        else:
-            raise TypeError(resp.message.role)
-
-        return ChatChoicesResponse([
-            AiChoice(out),
-        ])
+        return build_mc_choices_response(resp)
 
 
 ##
@@ -152,12 +120,18 @@ class OllamaChatChoicesStreamService(BaseOllamaChatChoicesService):
             self,
             request: ChatChoicesStreamRequest,
     ) -> ChatChoicesStreamResponse:
-        messages = self._build_request_messages(request.v)
+        messages = build_ol_request_messages(request.v)
+
+        tools: list[pt.Tool] = []
+        with tv.TypedValues(*request.options).consume() as oc:
+            t: Tool
+            for t in oc.pop(Tool, []):
+                tools.append(build_ol_request_tool(t))
 
         a_req = pt.ChatRequest(
             model=self._model_name.v,
             messages=messages,
-            # tools=tools or None,
+            tools=tools or None,
             stream=True,
         )
 
@@ -184,14 +158,8 @@ class OllamaChatChoicesStreamService(BaseOllamaChatChoicesService):
                         lj = json.loads(l.decode('utf-8'))
                         lp: pt.ChatResponse = msh.unmarshal(lj, pt.ChatResponse)
 
-                        check.state(lp.message.role == 'assistant')
-                        check.none(lp.message.tool_name)
-                        check.state(not lp.message.tool_calls)
-
-                        if (c := lp.message.content):
-                            await sink.emit(AiChoicesDeltas([AiChoiceDeltas([ContentAiDelta(
-                                c,
-                            )])]))
+                        if (ds := build_mc_ai_choice_deltas(lp)).deltas:
+                            await sink.emit(AiChoicesDeltas([ds]))
 
                     if not b:
                         return []

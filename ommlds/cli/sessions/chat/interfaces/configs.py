@@ -1,3 +1,8 @@
+"""
+TODO:
+ - obviously, subclasses of InterfaceConfig
+  - this is really just another instance of the whole `argparse -> config -> inject` flow
+"""
 import typing as ta
 
 from omlish import dataclasses as dc
@@ -14,4 +19,5 @@ class InterfaceConfig:
 
     use_readline: bool | ta.Literal['auto'] = 'auto'
 
-    dangerous_no_confirmation: bool = False
+    enable_tools: bool = False
+    dangerous_no_tool_confirmation: bool = False

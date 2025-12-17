@@ -481,6 +481,7 @@ def format_for_json(
 
     for pkg in pkgs:
         latest = check.not_none(pkg.latest_candidate)
+        suggested = check.not_none(pkg.suggested_candidate)
 
         info = {
             'name': pkg.dist.raw_name,
@@ -488,11 +489,10 @@ def format_for_json(
             'location': pkg.dist.location or '',
             'installer': pkg.dist.installer,
             'latest_version': str(latest.install.version),
-            'latest_filetype': latest.filetype,
+            'latest_upload_time': lut.isoformat() if (lut := latest.upload_time()) is not None else None,
+            'suggested_version': str(suggested.install.version),
+            'suggested_upload_time': sut.isoformat() if (sut := suggested.upload_time()) is not None else None,
         }
-
-        if (l_ut := latest.upload_time()) is not None:
-            info['latest_age'] = human_round_td(now_utc() - l_ut)
 
         if editable_project_location := pkg.dist.editable_project_location:
             info['editable_project_location'] = editable_project_location
@@ -509,16 +509,20 @@ def format_for_columns(pkgs: ta.Sequence[Package]) -> tuple[list[list[str]], lis
     """Convert the package data into something usable by output_package_listing_columns."""
 
     header = [
-        'Package',
-        'Version',
+        ' ',
 
-        'Latest',
-        'Age',
+        'Package',
+        'Current',
+
+        ' ',
 
         'Suggested',
         'Age',
 
-        'Unstable',
+        ' ',
+
+        'Latest',
+        'Age',
     ]
 
     # def wheel_build_tag(dist: BaseDistribution) -> str | None:
@@ -539,13 +543,22 @@ def format_for_columns(pkgs: ta.Sequence[Package]) -> tuple[list[list[str]], lis
 
     data = []
     for proj in pkgs:
-        row = [proj.dist.raw_name, proj.dist.raw_version]
-
-        lc = check.not_none(proj.latest_candidate)
         sc = check.not_none(proj.suggested_candidate)
+        lc = check.not_none(proj.latest_candidate)
 
-        for c in [lc, sc]:
-            row.append(str(c.version))
+        row = [
+            '*' if lc is not sc else '',
+
+            proj.dist.raw_name,
+            proj.dist.raw_version,
+        ]
+
+        for c in [sc, lc]:
+            row.extend([
+                '|',
+
+                str(c.version),
+            ])
 
             if (l_ut := c.upload_time()) is not None:
                 row.append(human_round_td(now_utc() - l_ut))
@@ -553,8 +566,6 @@ def format_for_columns(pkgs: ta.Sequence[Package]) -> tuple[list[list[str]], lis
                 row.append('')
 
             # row.append(c.filetype)
-
-        row.append('!!' if lc is not sc else '')
 
         # if has_build_tags:
         #     row.append(build_tags[i] or '')
@@ -577,7 +588,7 @@ def render_package_listing_columns(data: list[list[str]], header: list[str]) -> 
 
     # Create and add a separator.
     if len(data) > 0:
-        pkg_strings.insert(1, ' '.join('-' * x for x in sizes))
+        pkg_strings.insert(1, '  '.join('-' * x for x in sizes))
 
     return pkg_strings
 
@@ -635,21 +646,27 @@ def _main() -> None:
 
     #
 
-    pkgs = [
+    outdated_pkgs = [
         pkg
         for pkg in pkgs
         if (li := pkg.latest_candidate) is not None
         and li.version > pkg.dist.version
     ]
 
-    pkgs.sort(key=lambda x: x.dist.raw_name)
+    outdated_pkgs.sort(key=lambda x: x.dist.raw_name)
 
     #
 
     if args.json:
-        print(json.dumps_pretty(format_for_json(pkgs)))
+        print(json.dumps_pretty(format_for_json(outdated_pkgs)))
+
     else:
-        print('\n'.join(render_package_listing_columns(*format_for_columns(pkgs))))
+        # stable_pkgs, unstable_pkgs = col.partition(
+        #     outdated_pkgs,
+        #     lambda pkg: pkg.latest_candidate is pkg.suggested_candidate,
+        # )
+
+        print('\n'.join(render_package_listing_columns(*format_for_columns(outdated_pkgs))))
 
 
 if __name__ == '__main__':

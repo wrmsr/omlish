@@ -2,6 +2,8 @@
 TODO:
  - private + expose(ChatDriver)
 """
+import uuid
+
 from omlish import inject as inj
 from omlish import lang
 
@@ -13,6 +15,7 @@ from .configs import DriverConfig
 with lang.auto_proxy_import(globals()):
     from ....backends import inject as _backends
     from . import driver as _driver
+    from . import types as _types
     from .ai import inject as _ai
     from .events import inject as _events
     from .phases import inject as _phases
@@ -56,6 +59,10 @@ def bind_driver(cfg: DriverConfig) -> inj.Elements:
     #
 
     els.append(inj.bind(DefaultBackendName, to_const=DEFAULT_BACKEND))
+
+    #
+
+    els.append(inj.bind(_types.ChatDriverId(uuid.uuid4())))
 
     #
 

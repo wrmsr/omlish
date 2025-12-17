@@ -20,6 +20,8 @@ with lang.auto_proxy_import(globals()):
 def bind_bare(cfg: InterfaceConfig = InterfaceConfig()) -> inj.Elements:
     els: list[inj.Elemental] = []
 
+    #
+
     if cfg.interactive:
         els.extend([
             inj.bind(_interactive.InteractiveBareChatInterface, singleton=True),
@@ -39,19 +41,20 @@ def bind_bare(cfg: InterfaceConfig = InterfaceConfig()) -> inj.Elements:
 
     #
 
-    if cfg.dangerous_no_confirmation:
-        els.append(inj.bind(
-            _tools_confirmation.ToolExecutionConfirmation,
-            to_ctor=_tools_confirmation.UnsafeAlwaysAllowToolExecutionConfirmation,
-            singleton=True,
-        ))
+    if cfg.enable_tools:
+        if cfg.dangerous_no_tool_confirmation:
+            els.append(inj.bind(
+                _tools_confirmation.ToolExecutionConfirmation,
+                to_ctor=_tools_confirmation.UnsafeAlwaysAllowToolExecutionConfirmation,
+                singleton=True,
+            ))
 
-    else:
-        els.append(inj.bind(
-            _tools_confirmation.ToolExecutionConfirmation,
-            to_ctor=_tools.InteractiveToolExecutionConfirmation,
-            singleton=True,
-        ))
+        else:
+            els.append(inj.bind(
+                _tools_confirmation.ToolExecutionConfirmation,
+                to_ctor=_tools.InteractiveToolExecutionConfirmation,
+                singleton=True,
+            ))
 
     #
 

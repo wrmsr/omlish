@@ -199,19 +199,22 @@ class ChatProfile(Profile):
     ]
 
     def configure_tools(self, cfg: ChatConfig) -> ChatConfig:
+        if not (
+                self._args.enable_fs_tools or
+                self._args.enable_todo_tools or
+                # self._args.enable_unsafe_tools_do_not_use_lol or
+                self._args.enable_test_weather_tool or
+                self._args.code
+        ):
+            return cfg
+
         return dc.replace(
             cfg,
             driver=dc.replace(
                 cfg.driver,
                 ai=dc.replace(
                     cfg.driver.ai,
-                    enable_tools=(
-                        self._args.enable_fs_tools or
-                        self._args.enable_todo_tools or
-                        # self._args.enable_unsafe_tools_do_not_use_lol or
-                        self._args.enable_test_weather_tool or
-                        self._args.code
-                    ),
+                    enable_tools=True,
                 ),
                 tools=dc.replace(
                     cfg.driver.tools,
@@ -222,6 +225,10 @@ class ChatProfile(Profile):
                         *(['weather'] if self._args.enable_test_weather_tool else []),
                     },
                 ),
+            ),
+            interface=dc.replace(
+                cfg.interface,
+                enable_tools=True,
             ),
         )
 

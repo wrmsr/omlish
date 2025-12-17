@@ -131,10 +131,13 @@ class Message:
 
     @dc.dataclass(frozen=True, kw_only=True)
     class ToolCall:
+        id: str | None = None
+
         @dc.dataclass(frozen=True, kw_only=True)
         class Function:
             name: str
             arguments: ta.Mapping[str, ta.Any]
+            index: int | None = None
 
         function: Function
 
