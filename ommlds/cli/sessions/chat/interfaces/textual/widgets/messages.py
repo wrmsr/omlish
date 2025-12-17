@@ -1,17 +1,31 @@
+import abc
+import typing as ta
+
 from omdev.tui import textual as tx
+from omlish import lang
 
 
 ##
 
 
-class WelcomeMessage(tx.Static):
+class Message(tx.Static, lang.Abstract):
+    pass
+
+
+##
+
+
+class WelcomeMessage(Message):
     def __init__(self, content: str) -> None:
         super().__init__(content)
 
         self.add_class('welcome-message')
 
 
-class UserMessage(tx.Static):
+##
+
+
+class UserMessage(Message):
     def __init__(self, content: str) -> None:
         super().__init__()
 
@@ -26,7 +40,27 @@ class UserMessage(tx.Static):
                 yield tx.Static(self._content)
 
 
-class AiMessage(tx.Static):
+##
+
+
+class AiMessage(Message, lang.Abstract):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.add_class('ai-message')
+
+    def compose(self) -> tx.ComposeResult:
+        with tx.Horizontal(classes='ai-message-outer'):
+            yield tx.Static('< ', classes='ai-message-glyph')
+            with tx.Vertical(classes='ai-message-inner'):
+                yield from self._compose_content()
+
+    @abc.abstractmethod
+    def _compose_content(self) -> ta.Generator:
+        raise NotImplementedError
+
+
+class StaticAiMessage(AiMessage):
     def __init__(
             self,
             content: str,
@@ -35,16 +69,11 @@ class AiMessage(tx.Static):
     ) -> None:
         super().__init__()
 
-        self.add_class('ai-message')
-
         self._content = content
         self._markdown = markdown
 
-    def compose(self) -> tx.ComposeResult:
-        with tx.Horizontal(classes='ai-message-outer'):
-            yield tx.Static('< ', classes='ai-message-glyph')
-            with tx.Vertical(classes='ai-message-inner'):
-                if self._markdown:
-                    yield tx.Markdown(self._content)
-                else:
-                    yield tx.Static(self._content)
+    def _compose_content(self) -> ta.Generator:
+        if self._markdown:
+            yield tx.Markdown(self._content)
+        else:
+            yield tx.Static(self._content)

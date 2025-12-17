@@ -10,7 +10,7 @@ from ...drivers.events.types import AiMessagesChatEvent
 from .styles import read_app_css
 from .widgets.input import InputOuter
 from .widgets.input import InputTextArea
-from .widgets.messages import AiMessage
+from .widgets.messages import StaticAiMessage
 from .widgets.messages import UserMessage
 from .widgets.messages import WelcomeMessage
 
@@ -115,7 +115,7 @@ class ChatApp(tx.App):
                 for ai_msg in ev.chat:
                     if isinstance(ai_msg, mc.AiMessage):
                         wx.append(
-                            AiMessage(
+                            StaticAiMessage(
                                 check.isinstance(ai_msg.c, str),
                                 markdown=True,
                             ),
