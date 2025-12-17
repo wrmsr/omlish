@@ -56,8 +56,23 @@ class ChatApp(tx.App):
     def _get_input_text_area(self) -> InputTextArea:
         return self.query_one('#input', InputTextArea)
 
+    def _get_messages_scroll(self) -> tx.VerticalScroll:
+        return self.query_one('#messages-scroll', tx.VerticalScroll)
+
     def _get_messages_container(self) -> tx.Static:
         return self.query_one('#messages-container', tx.Static)
+
+    #
+
+    def _is_messages_at_bottom(self, threshold: int = 3) -> bool:
+        return (ms := self._get_messages_scroll()).scroll_y >= (ms.max_scroll_y - threshold)
+
+    def _scroll_messages_to_bottom(self) -> None:
+        self._get_messages_scroll().scroll_end(animate=False)
+
+    def _anchor_messages(self) -> None:
+        if (ms := self._get_messages_scroll()).max_scroll_y:
+            ms.anchor()
 
     #
 
@@ -70,6 +85,8 @@ class ChatApp(tx.App):
         lst.extend(messages)
 
     async def _mount_messages(self, *messages: tx.Widget) -> None:
+        was_at_bottom = self._is_messages_at_bottom()
+
         msg_ctr = self._get_messages_container()
 
         for msg in [*(self._pending_mount_messages or []), *messages]:
@@ -78,6 +95,9 @@ class ChatApp(tx.App):
         self._pending_mount_messages = None
 
         self.call_after_refresh(lambda: msg_ctr.scroll_end(animate=False))
+
+        if was_at_bottom:
+            self.call_after_refresh(self._anchor_messages)
 
     #
 
