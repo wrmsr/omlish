@@ -31,6 +31,7 @@ https://news.ycombinator.com/item?id=46005111
 # ~> https://github.com/pypa/pip/blob/a52069365063ea813fe3a3f8bac90397c9426d35/src/pip/_internal/commands/list.py (25.3)
 import dataclasses as dc
 import datetime
+import itertools
 import os.path
 import ssl
 import typing as ta
@@ -578,13 +579,32 @@ def format_for_columns(pkgs: ta.Sequence[Package]) -> tuple[list[list[str]], lis
     return data, header
 
 
+def _tabulate(
+        rows: ta.Iterable[ta.Iterable[ta.Any]],
+        *,
+        sep: str = ' ',
+) -> tuple[list[str], list[int]]:
+    """
+    Return a list of formatted rows and a list of column sizes.
+
+    For example::
+
+    >>> tabulate([['foobar', 2000], [0xdeadbeef]])
+    (['foobar     2000', '3735928559'], [10, 4])
+    """
+
+    rows = [tuple(map(str, row)) for row in rows]
+    sizes = [max(map(len, col)) for col in itertools.zip_longest(*rows, fillvalue='')]
+    table = [sep.join(map(str.ljust, row, sizes)).rstrip() for row in rows]
+    return table, sizes
+
+
 def render_package_listing_columns(data: list[list[str]], header: list[str]) -> list[str]:
     # insert the header first: we need to know the size of column names
     if len(data) > 0:
         data.insert(0, header)
 
-    from pip._internal.utils.misc import tabulate  # noqa
-    pkg_strings, sizes = tabulate(data)
+    pkg_strings, sizes = _tabulate(data, sep='  ')
 
     # Create and add a separator.
     if len(data) > 0:
