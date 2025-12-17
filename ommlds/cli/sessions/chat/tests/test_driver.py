@@ -10,11 +10,11 @@ from ....backends.types import ChatChoicesServiceBackendProvider
 from ....rendering.configs import RenderingConfig
 from ....state.storage import InMemoryStateStorage
 from ....state.storage import StateStorage
-from ..agents.agent import ChatAgent
-from ..agents.configs import AgentConfig
-from ..agents.state.configs import StateConfig
-from ..agents.user.configs import UserConfig
 from ..configs import ChatConfig
+from ..drivers.configs import DriverConfig
+from ..drivers.driver import ChatDriver
+from ..drivers.state.configs import StateConfig
+from ..drivers.user.configs import UserConfig
 from ..inject import bind_chat
 
 
@@ -30,9 +30,9 @@ class DummyChatChoicesServiceBackendProvider(ChatChoicesServiceBackendProvider):
         yield DummyChatChoicesService()
 
 
-def make_agent(
+def make_driver(
         cfg: ChatConfig = ChatConfig(),
-) -> ChatAgent:
+) -> ChatDriver:
     injector = inj.create_injector(
         inj.override(
             bind_chat(cfg),
@@ -44,13 +44,13 @@ def make_agent(
         inj.bind(StateStorage, to_key=InMemoryStateStorage),
     )
 
-    return injector[ChatAgent]
+    return injector[ChatDriver]
 
 
 def test_inject():
-    assert make_agent(
+    assert make_driver(
         cfg=ChatConfig(
-            agent=AgentConfig(
+            driver=DriverConfig(
                 user=UserConfig(
                     initial_user_content='Hi!',
                 ),
@@ -62,10 +62,10 @@ def test_inject():
     )
 
 
-def test_agent():
-    agent = make_agent(
+def test_driver():
+    driver = make_driver(
         cfg=ChatConfig(
-            agent=AgentConfig(
+            driver=DriverConfig(
                 user=UserConfig(
                     initial_user_content='Hi!',
                 ),
@@ -78,5 +78,5 @@ def test_agent():
             ),
         ),
     )
-    lang.sync_await(agent.start())
-    lang.sync_await(agent.stop())
+    lang.sync_await(driver.start())
+    lang.sync_await(driver.stop())

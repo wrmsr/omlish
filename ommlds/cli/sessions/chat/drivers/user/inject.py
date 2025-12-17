@@ -9,7 +9,7 @@ from .configs import UserConfig
 
 
 with lang.auto_proxy_import(globals()):
-    from .. import agent as _agent
+    from .. import driver as _driver
     from ..state import types as _state
 
 
@@ -29,12 +29,12 @@ def bind_user(cfg: UserConfig = UserConfig()) -> inj.Elements:
         )))
 
     if cfg.initial_user_content is not None:
-        async def add_initial_user_content(ca: '_agent.ChatAgent') -> None:
+        async def add_initial_user_content(ca: '_driver.ChatDriver') -> None:
             await ca.send_user_messages([mc.UserMessage(cfg.initial_user_content)])
 
         els.append(phase_callbacks().bind_item(to_fn=inj.KwargsTarget.of(
             lambda ca: ChatPhaseCallback(ChatPhase.STARTED, lambda: add_initial_user_content(ca())),
-            ca=inj.Late[_agent.ChatAgent],
+            ca=inj.Late[_driver.ChatDriver],
         )))
 
     return inj.as_elements(*els)

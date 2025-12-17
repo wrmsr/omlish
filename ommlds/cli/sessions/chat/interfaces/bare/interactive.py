@@ -4,7 +4,7 @@ from ...... import minichain as mc
 from .....inputs.asyncs import AsyncStringInput
 from .....inputs.asyncs import SyncAsyncStringInput
 from .....inputs.sync import InputSyncStringInput
-from ...agents.agent import ChatAgent
+from ...drivers.driver import ChatDriver
 from ..base import ChatInterface
 
 
@@ -17,18 +17,18 @@ class InteractiveBareChatInterface(ChatInterface):
     def __init__(
             self,
             *,
-            agent: ChatAgent,
+            driver: ChatDriver,
             string_input: AsyncStringInput | None = None,
     ) -> None:
         super().__init__()
 
-        self._agent = agent
+        self._driver = driver
         if string_input is None:
             string_input = self.DEFAULT_STRING_INPUT
         self._string_input = string_input
 
     async def run(self) -> None:
-        await self._agent.start()
+        await self._driver.start()
 
         while True:
             try:
@@ -36,6 +36,6 @@ class InteractiveBareChatInterface(ChatInterface):
             except EOFError:
                 break
 
-            await self._agent.send_user_messages([mc.UserMessage(s)])
+            await self._driver.send_user_messages([mc.UserMessage(s)])
 
-        await self._agent.stop()
+        await self._driver.stop()

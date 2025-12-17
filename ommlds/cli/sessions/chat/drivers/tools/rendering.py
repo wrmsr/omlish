@@ -2,7 +2,7 @@ import typing as ta
 
 from ...... import minichain as mc
 from .....rendering.types import ContentRendering
-from ...agents.tools.execution import ToolUseExecutor
+from ...drivers.tools.execution import ToolUseExecutor
 
 
 ##

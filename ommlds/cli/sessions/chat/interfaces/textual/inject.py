@@ -6,10 +6,10 @@ import asyncio
 
 from omlish import inject as inj
 
-from ...agents.events.injection import event_callbacks
+from ...drivers.events.injection import event_callbacks
 from ..base import ChatInterface
-from .app import ChatAgentEventQueue
 from .app import ChatApp
+from .app import ChatDriverEventQueue
 from .interface import TextualChatInterface
 
 
@@ -30,11 +30,11 @@ def bind_textual() -> inj.Elements:
     #
 
     els.extend([
-        inj.bind(ChatAgentEventQueue, to_const=asyncio.Queue()),
+        inj.bind(ChatDriverEventQueue, to_const=asyncio.Queue()),
 
         event_callbacks().bind_item(to_fn=inj.KwargsTarget.of(
             lambda eq: lambda ev: eq.put(ev),
-            eq=ChatAgentEventQueue,
+            eq=ChatDriverEventQueue,
         )),
     ])
 

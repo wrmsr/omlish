@@ -5,8 +5,8 @@ from omdev.tui import textual as tx
 from omlish import check
 
 from ...... import minichain as mc
-from ...agents.agent import ChatAgent
-from ...agents.events.types import AiMessagesChatEvent
+from ...drivers.driver import ChatDriver
+from ...drivers.events.types import AiMessagesChatEvent
 from .styles import read_app_css
 from .widgets.input import InputOuter
 from .widgets.input import InputTextArea
@@ -18,7 +18,7 @@ from .widgets.messages import WelcomeMessage
 ##
 
 
-ChatAgentEventQueue = ta.NewType('ChatAgentEventQueue', asyncio.Queue)
+ChatDriverEventQueue = ta.NewType('ChatDriverEventQueue', asyncio.Queue)
 
 
 ##
@@ -30,12 +30,12 @@ class ChatApp(tx.App):
     def __init__(
             self,
             *,
-            agent: ChatAgent,
-            event_queue: ChatAgentEventQueue,
+            driver: ChatDriver,
+            event_queue: ChatDriverEventQueue,
     ) -> None:
         super().__init__()
 
-        self._agent = agent
+        self._chat_driver = driver
         self._event_queue = event_queue
 
     CSS: ta.ClassVar[str] = read_app_css()
@@ -125,7 +125,7 @@ class ChatApp(tx.App):
         check.state(self._event_queue_task is None)
         self._event_queue_task = asyncio.create_task(self._event_queue_task_main())
 
-        await self._agent.start()
+        await self._chat_driver.start()
 
         self._get_input_text_area().focus()
 
@@ -136,7 +136,7 @@ class ChatApp(tx.App):
         )
 
     async def on_unmount(self) -> None:
-        await self._agent.stop()
+        await self._chat_driver.stop()
 
         if (eqt := self._event_queue_task) is not None:
             await self._event_queue.put(None)
@@ -151,4 +151,4 @@ class ChatApp(tx.App):
             ),
         )
 
-        await self._agent.send_user_messages([mc.UserMessage(event.text)])
+        await self._chat_driver.send_user_messages([mc.UserMessage(event.text)])

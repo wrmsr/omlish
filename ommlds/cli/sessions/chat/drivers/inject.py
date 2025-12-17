@@ -1,18 +1,18 @@
 """
 TODO:
- - private + expose(ChatAgent)
+ - private + expose(ChatDriver)
 """
 from omlish import inject as inj
 from omlish import lang
 
 from ....backends.types import DefaultBackendName
 from .configs import DEFAULT_BACKEND
-from .configs import AgentConfig
+from .configs import DriverConfig
 
 
 with lang.auto_proxy_import(globals()):
     from ....backends import inject as _backends
-    from . import agent as _agent
+    from . import driver as _driver
     from .ai import inject as _ai
     from .events import inject as _events
     from .phases import inject as _phases
@@ -24,7 +24,7 @@ with lang.auto_proxy_import(globals()):
 ##
 
 
-def bind_agent(cfg: AgentConfig) -> inj.Elements:
+def bind_driver(cfg: DriverConfig) -> inj.Elements:
     els: list[inj.Elemental] = []
 
     #
@@ -48,9 +48,9 @@ def bind_agent(cfg: AgentConfig) -> inj.Elements:
     #
 
     els.extend([
-        inj.bind(_agent.ChatAgent, singleton=True),
+        inj.bind(_driver.ChatDriver, singleton=True),
 
-        inj.bind_late(_agent.ChatAgent),
+        inj.bind_late(_driver.ChatDriver),
     ])
 
     #

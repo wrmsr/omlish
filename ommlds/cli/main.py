@@ -69,10 +69,10 @@ class ChatProfile(Profile):
     def configure_backend(self, cfg: ChatConfig) -> ChatConfig:
         return dc.replace(
             cfg,
-            agent=dc.replace(
-                cfg.agent,
+            driver=dc.replace(
+                cfg.driver,
                 backend=dc.replace(
-                    cfg.agent.backend,
+                    cfg.driver.backend,
                     backend=self._args.backend,
                 ),
             ),
@@ -104,10 +104,10 @@ class ChatProfile(Profile):
         else:
             cfg = dc.replace(
                 cfg,
-                agent=dc.replace(
-                    cfg.agent,
+                driver=dc.replace(
+                    cfg.driver,
                     ai=dc.replace(
-                        cfg.agent.ai,
+                        cfg.driver.ai,
                         verbose=True,
                     ),
                 ),
@@ -133,10 +133,10 @@ class ChatProfile(Profile):
             # TODO: '-' -> stdin
             cfg = dc.replace(
                 cfg,
-                agent=dc.replace(
-                    cfg.agent,
+                driver=dc.replace(
+                    cfg.driver,
                     user=dc.replace(
-                        cfg.agent.user,
+                        cfg.driver.user,
                         initial_user_content=' '.join(self._args.message),
                     ),
                 ),
@@ -157,10 +157,10 @@ class ChatProfile(Profile):
     def configure_state(self, cfg: ChatConfig) -> ChatConfig:
         return dc.replace(
             cfg,
-            agent=dc.replace(
-                cfg.agent,
+            driver=dc.replace(
+                cfg.driver,
                 state=dc.replace(
-                    cfg.agent.state,
+                    cfg.driver.state,
                     state='ephemeral' if self._args.ephemeral else 'new' if self._args.new else 'continue',
                 ),
             ),
@@ -176,10 +176,10 @@ class ChatProfile(Profile):
     def configure_output(self, cfg: ChatConfig) -> ChatConfig:
         return dc.replace(
             cfg,
-            agent=dc.replace(
-                cfg.agent,
+            driver=dc.replace(
+                cfg.driver,
                 ai=dc.replace(
-                    cfg.agent.ai,
+                    cfg.driver.ai,
                     stream=bool(self._args.stream),
                 ),
             ),
@@ -201,10 +201,10 @@ class ChatProfile(Profile):
     def configure_tools(self, cfg: ChatConfig) -> ChatConfig:
         return dc.replace(
             cfg,
-            agent=dc.replace(
-                cfg.agent,
+            driver=dc.replace(
+                cfg.driver,
                 ai=dc.replace(
-                    cfg.agent.ai,
+                    cfg.driver.ai,
                     enable_tools=(
                         self._args.enable_fs_tools or
                         self._args.enable_todo_tools or
@@ -214,9 +214,9 @@ class ChatProfile(Profile):
                     ),
                 ),
                 tools=dc.replace(
-                    cfg.agent.tools,
+                    cfg.driver.tools,
                     enabled_tools={  # noqa
-                        *(cfg.agent.tools.enabled_tools or []),
+                        *(cfg.driver.tools.enabled_tools or []),
                         *(['fs'] if self._args.enable_fs_tools else []),
                         *(['todo'] if self._args.enable_todo_tools else []),
                         *(['weather'] if self._args.enable_test_weather_tool else []),
@@ -237,10 +237,10 @@ class ChatProfile(Profile):
 
         cfg = dc.replace(
             cfg,
-            agent=dc.replace(
-                cfg.agent,
+            driver=dc.replace(
+                cfg.driver,
                 ai=dc.replace(
-                    cfg.agent.ai,
+                    cfg.driver.ai,
                     enable_tools=True,
                 ),
             ),
@@ -252,10 +252,10 @@ class ChatProfile(Profile):
 
             cfg = dc.replace(
                 cfg,
-                agent=dc.replace(
-                    cfg.agent,
+                driver=dc.replace(
+                    cfg.driver,
                     user=dc.replace(
-                        cfg.agent.user,
+                        cfg.driver.user,
                         initial_system_content=system_content,
                     ),
                 ),

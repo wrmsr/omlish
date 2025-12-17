@@ -1,4 +1,4 @@
-from ...agents.agent import ChatAgent
+from ...drivers.driver import ChatDriver
 from ..base import ChatInterface
 
 
@@ -9,13 +9,13 @@ class OneshotBareChatInterface(ChatInterface):
     def __init__(
             self,
             *,
-            agent: ChatAgent,
+            driver: ChatDriver,
     ) -> None:
         super().__init__()
 
-        self._agent = agent
+        self._driver = driver
 
     async def run(self) -> None:
-        await self._agent.start()
+        await self._driver.start()
 
-        await self._agent.stop()
+        await self._driver.stop()

@@ -17,7 +17,7 @@ DEFAULT_BACKEND = 'openai'
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class AgentConfig:
+class DriverConfig:
     ai: AiConfig = AiConfig()
     backend: BackendConfig = BackendConfig()
     state: StateConfig = StateConfig()

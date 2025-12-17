@@ -15,7 +15,7 @@ from .state.types import ChatStateManager
 ##
 
 
-class ChatAgent:
+class ChatDriver:
     def __init__(
             self,
             *,
