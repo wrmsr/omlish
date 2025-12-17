@@ -37,7 +37,7 @@ class ToolUseExecutorImpl(ToolUseExecutor):
             *,
             catalog: 'mc.ToolCatalog',
             ctx_provider: ToolContextProvider,
-            confirmation: ToolExecutionConfirmation | None = None,
+            confirmation: ToolExecutionConfirmation,
     ) -> None:
         super().__init__()
 
@@ -52,8 +52,7 @@ class ToolUseExecutorImpl(ToolUseExecutor):
     ) -> 'mc.ToolUseResultMessage':
         tce = self._catalog.by_name[check.non_empty_str(use.name)]
 
-        if self._confirmation is not None:
-            await self._confirmation.confirm_tool_execution_or_raise(use, tce)
+        await self._confirmation.confirm_tool_execution_or_raise(use, tce)
 
         return await mc.execute_tool_use(
             mc.ToolContext(

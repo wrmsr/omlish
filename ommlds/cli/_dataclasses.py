@@ -846,22 +846,27 @@ def _process_dataclass__ccc522b0563e76033e8f2d3b6864b8a7c48c0fb7():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('interactive', 'use_textual', 'use_readline')), EqPlan(fields=('interactive', 'use"
-        "_textual', 'use_readline')), FrozenPlan(fields=('interactive', 'use_textual', 'use_readline'), allow_dynamic_d"
-        "under_attrs=False), HashPlan(action='add', fields=('interactive', 'use_textual', 'use_readline'), cache=False)"
-        ", InitPlan(fields=(InitPlan.Field(name='interactive', annotation=OpRef(name='init.fields.0.annotation'), defau"
-        "lt=OpRef(name='init.fields.0.default'), default_factory=None, init=True, override=False, field_type=FieldType."
-        "INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='use_textual', annotation=OpRef(na"
-        "me='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, "
-        "override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(na"
-        "me='use_readline', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.defaul"
-        "t'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=Non"
-        "e, check_type=None)), self_param='self', std_params=(), kw_only_params=('interactive', 'use_textual', 'use_rea"
-        "dline'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(Repr"
-        "Plan.Field(name='interactive', kw_only=True, fn=None), ReprPlan.Field(name='use_textual', kw_only=True, fn=Non"
-        "e), ReprPlan.Field(name='use_readline', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('interactive', 'use_textual', 'use_readline', 'dangerous_no_confirmation')), EqPla"
+        "n(fields=('interactive', 'use_textual', 'use_readline', 'dangerous_no_confirmation')), FrozenPlan(fields=('int"
+        "eractive', 'use_textual', 'use_readline', 'dangerous_no_confirmation'), allow_dynamic_dunder_attrs=False), Has"
+        "hPlan(action='add', fields=('interactive', 'use_textual', 'use_readline', 'dangerous_no_confirmation'), cache="
+        "False), InitPlan(fields=(InitPlan.Field(name='interactive', annotation=OpRef(name='init.fields.0.annotation'),"
+        " default=OpRef(name='init.fields.0.default'), default_factory=None, init=True, override=False, field_type=Fiel"
+        "dType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='use_textual', annotation=Op"
+        "Ref(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init="
+        "True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fi"
+        "eld(name='use_readline', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2."
+        "default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valida"
+        "te=None, check_type=None), InitPlan.Field(name='dangerous_no_confirmation', annotation=OpRef(name='init.fields"
+        ".3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False,"
+        " field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=("
+        "), kw_only_params=('interactive', 'use_textual', 'use_readline', 'dangerous_no_confirmation'), frozen=True, sl"
+        "ots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='interac"
+        "tive', kw_only=True, fn=None), ReprPlan.Field(name='use_textual', kw_only=True, fn=None), ReprPlan.Field(name="
+        "'use_readline', kw_only=True, fn=None), ReprPlan.Field(name='dangerous_no_confirmation', kw_only=True, fn=None"
+        ")), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='0c29bdcf28d77e398675068cd30b99ca2f7f6c9e',
+    plan_repr_sha1='6e0af973e66882002db5f7e99905d0ac720b5ddc',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
@@ -869,12 +874,14 @@ def _process_dataclass__ccc522b0563e76033e8f2d3b6864b8a7c48c0fb7():
         '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
     ),
     cls_names=(
         ('ommlds.cli.main', 'InterfaceConfig'),
     ),
 )
-def _process_dataclass__0c29bdcf28d77e398675068cd30b99ca2f7f6c9e():
+def _process_dataclass__6e0af973e66882002db5f7e99905d0ac720b5ddc():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -884,6 +891,8 @@ def _process_dataclass__0c29bdcf28d77e398675068cd30b99ca2f7f6c9e():
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
+        __dataclass__init__fields__3__annotation,
+        __dataclass__init__fields__3__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -905,6 +914,7 @@ def _process_dataclass__0c29bdcf28d77e398675068cd30b99ca2f7f6c9e():
                 interactive=self.interactive,
                 use_textual=self.use_textual,
                 use_readline=self.use_readline,
+                dangerous_no_confirmation=self.dangerous_no_confirmation,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -920,7 +930,8 @@ def _process_dataclass__0c29bdcf28d77e398675068cd30b99ca2f7f6c9e():
             return (
                 self.interactive == other.interactive and
                 self.use_textual == other.use_textual and
-                self.use_readline == other.use_readline
+                self.use_readline == other.use_readline and
+                self.dangerous_no_confirmation == other.dangerous_no_confirmation
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -932,6 +943,7 @@ def _process_dataclass__0c29bdcf28d77e398675068cd30b99ca2f7f6c9e():
             'interactive',
             'use_textual',
             'use_readline',
+            'dangerous_no_confirmation',
         }
 
         def __setattr__(self, name, value):
@@ -951,6 +963,7 @@ def _process_dataclass__0c29bdcf28d77e398675068cd30b99ca2f7f6c9e():
             'interactive',
             'use_textual',
             'use_readline',
+            'dangerous_no_confirmation',
         }
 
         def __delattr__(self, name):
@@ -971,6 +984,7 @@ def _process_dataclass__0c29bdcf28d77e398675068cd30b99ca2f7f6c9e():
                 self.interactive,
                 self.use_textual,
                 self.use_readline,
+                self.dangerous_no_confirmation,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -982,10 +996,12 @@ def _process_dataclass__0c29bdcf28d77e398675068cd30b99ca2f7f6c9e():
             interactive: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
             use_textual: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
             use_readline: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+            dangerous_no_confirmation: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'interactive', interactive)
             __dataclass__object_setattr(self, 'use_textual', use_textual)
             __dataclass__object_setattr(self, 'use_readline', use_readline)
+            __dataclass__object_setattr(self, 'dangerous_no_confirmation', dangerous_no_confirmation)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -998,6 +1014,7 @@ def _process_dataclass__0c29bdcf28d77e398675068cd30b99ca2f7f6c9e():
             parts.append(f"interactive={self.interactive!r}")
             parts.append(f"use_textual={self.use_textual!r}")
             parts.append(f"use_readline={self.use_readline!r}")
+            parts.append(f"dangerous_no_confirmation={self.dangerous_no_confirmation!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -1523,36 +1540,30 @@ def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('dangerous_no_confirmation', 'enabled_tools', 'verbose')), EqPlan(fields=('dangero"
-        "us_no_confirmation', 'enabled_tools', 'verbose')), FrozenPlan(fields=('dangerous_no_confirmation', 'enabled_to"
-        "ols', 'verbose'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('dangerous_no_confirmation"
-        "', 'enabled_tools', 'verbose'), cache=False), InitPlan(fields=(InitPlan.Field(name='dangerous_no_confirmation'"
-        ", annotation=OpRef(name='init.fields.0.annotation'), default=OpRef(name='init.fields.0.default'), default_fact"
-        "ory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=Non"
-        "e), InitPlan.Field(name='enabled_tools', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name"
-        "='init.fields.1.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
-        "rce=None, validate=None, check_type=None), InitPlan.Field(name='verbose', annotation=OpRef(name='init.fields.2"
-        ".annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=False, f"
-        "ield_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(),"
-        " kw_only_params=('dangerous_no_confirmation', 'enabled_tools', 'verbose'), frozen=True, slots=False, post_init"
-        "_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='dangerous_no_confirmation',"
-        " kw_only=True, fn=None), ReprPlan.Field(name='enabled_tools', kw_only=True, fn=None), ReprPlan.Field(name='ver"
-        "bose', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('enabled_tools', 'verbose')), EqPlan(fields=('enabled_tools', 'verbose')), FrozenP"
+        "lan(fields=('enabled_tools', 'verbose'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('en"
+        "abled_tools', 'verbose'), cache=False), InitPlan(fields=(InitPlan.Field(name='enabled_tools', annotation=OpRef"
+        "(name='init.fields.0.annotation'), default=OpRef(name='init.fields.0.default'), default_factory=None, init=Tru"
+        "e, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field"
+        "(name='verbose', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'"
+        "), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None,"
+        " check_type=None)), self_param='self', std_params=(), kw_only_params=('enabled_tools', 'verbose'), frozen=True"
+        ", slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='ena"
+        "bled_tools', kw_only=True, fn=None), ReprPlan.Field(name='verbose', kw_only=True, fn=None)), id=False, terse=F"
+        "alse, default_fn=None)))"
     ),
-    plan_repr_sha1='94fc5ada3f0f98f677c48389927571e7b6e56249',
+    plan_repr_sha1='aa22ff44ed3bf3e31aaa2841f61d3f7175c85c42',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
     ),
     cls_names=(
         ('ommlds.cli.main', 'ToolsConfig'),
     ),
 )
-def _process_dataclass__94fc5ada3f0f98f677c48389927571e7b6e56249():
+def _process_dataclass__aa22ff44ed3bf3e31aaa2841f61d3f7175c85c42():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -1560,8 +1571,6 @@ def _process_dataclass__94fc5ada3f0f98f677c48389927571e7b6e56249():
         __dataclass__init__fields__0__default,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -1580,7 +1589,6 @@ def _process_dataclass__94fc5ada3f0f98f677c48389927571e7b6e56249():
             if self.__class__ is not __dataclass__cls:
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
-                dangerous_no_confirmation=self.dangerous_no_confirmation,
                 enabled_tools=self.enabled_tools,
                 verbose=self.verbose,
             )
@@ -1596,7 +1604,6 @@ def _process_dataclass__94fc5ada3f0f98f677c48389927571e7b6e56249():
             if self.__class__ is not other.__class__:
                 return NotImplemented
             return (
-                self.dangerous_no_confirmation == other.dangerous_no_confirmation and
                 self.enabled_tools == other.enabled_tools and
                 self.verbose == other.verbose
             )
@@ -1607,7 +1614,6 @@ def _process_dataclass__94fc5ada3f0f98f677c48389927571e7b6e56249():
         setattr(__dataclass__cls, '__eq__', __eq__)
 
         __dataclass___setattr_frozen_fields = {
-            'dangerous_no_confirmation',
             'enabled_tools',
             'verbose',
         }
@@ -1626,7 +1632,6 @@ def _process_dataclass__94fc5ada3f0f98f677c48389927571e7b6e56249():
         setattr(__dataclass__cls, '__setattr__', __setattr__)
 
         __dataclass___delattr_frozen_fields = {
-            'dangerous_no_confirmation',
             'enabled_tools',
             'verbose',
         }
@@ -1646,7 +1651,6 @@ def _process_dataclass__94fc5ada3f0f98f677c48389927571e7b6e56249():
 
         def __hash__(self):
             return hash((
-                self.dangerous_no_confirmation,
                 self.enabled_tools,
                 self.verbose,
             ))
@@ -1657,11 +1661,9 @@ def _process_dataclass__94fc5ada3f0f98f677c48389927571e7b6e56249():
         def __init__(
             self,
             *,
-            dangerous_no_confirmation: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
-            enabled_tools: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            verbose: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+            enabled_tools: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
+            verbose: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
         ) -> __dataclass__None:
-            __dataclass__object_setattr(self, 'dangerous_no_confirmation', dangerous_no_confirmation)
             __dataclass__object_setattr(self, 'enabled_tools', enabled_tools)
             __dataclass__object_setattr(self, 'verbose', verbose)
 
@@ -1673,7 +1675,6 @@ def _process_dataclass__94fc5ada3f0f98f677c48389927571e7b6e56249():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"dangerous_no_confirmation={self.dangerous_no_confirmation!r}")
             parts.append(f"enabled_tools={self.enabled_tools!r}")
             parts.append(f"verbose={self.verbose!r}")
             return (

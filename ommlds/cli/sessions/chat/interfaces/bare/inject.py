@@ -8,8 +8,10 @@ from ..configs import InterfaceConfig
 with lang.auto_proxy_import(globals()):
     from .....inputs import asyncs as _inputs_asyncs
     from .....inputs import sync as _inputs_sync
+    from ...drivers.tools import confirmation as _tools_confirmation
     from . import interactive as _interactive
     from . import oneshot as _oneshot
+    from . import tools as _tools
 
 
 ##
@@ -34,5 +36,23 @@ def bind_bare(cfg: InterfaceConfig = InterfaceConfig()) -> inj.Elements:
             inj.bind(_oneshot.OneshotBareChatInterface, singleton=True),
             inj.bind(ChatInterface, to_key=_oneshot.OneshotBareChatInterface),
         ])
+
+    #
+
+    if cfg.dangerous_no_confirmation:
+        els.append(inj.bind(
+            _tools_confirmation.ToolExecutionConfirmation,
+            to_ctor=_tools_confirmation.UnsafeAlwaysAllowToolExecutionConfirmation,
+            singleton=True,
+        ))
+
+    else:
+        els.append(inj.bind(
+            _tools_confirmation.ToolExecutionConfirmation,
+            to_ctor=_tools.InteractiveToolExecutionConfirmation,
+            singleton=True,
+        ))
+
+    #
 
     return inj.as_elements(*els)

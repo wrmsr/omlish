@@ -1,3 +1,9 @@
+"""
+TODO:
+ - html?
+ - terminal?
+ - rich? textual.Content?
+"""
 import abc
 import typing as ta
 

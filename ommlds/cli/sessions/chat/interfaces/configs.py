@@ -13,3 +13,5 @@ class InterfaceConfig:
     use_textual: bool = False
 
     use_readline: bool | ta.Literal['auto'] = 'auto'
+
+    dangerous_no_confirmation: bool = False

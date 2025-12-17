@@ -66,7 +66,9 @@ def bind_ai(cfg: AiConfig = AiConfig()) -> inj.Elements:
     #
 
     if cfg.enable_tools:
-        def _provide_tools_chat_choices_options_provider(tc: mc.ToolCatalog) -> _services.ChatChoicesServiceOptionsProvider:  # noqa
+        def _provide_tools_chat_choices_options_provider(
+                tc: mc.ToolCatalog,
+        ) -> _services.ChatChoicesServiceOptionsProvider:
             return _services.ChatChoicesServiceOptionsProvider(lambda: [
                 mc.Tool(tce.spec)
                 for tce in tc.by_name.values()
