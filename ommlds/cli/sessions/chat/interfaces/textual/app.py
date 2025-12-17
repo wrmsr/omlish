@@ -38,6 +38,9 @@ class ChatApp(tx.App):
         self._chat_driver = driver
         self._event_queue = event_queue
 
+    def get_driver_class(self) -> type[tx.Driver]:
+        return tx.get_pending_writes_driver_class(super().get_driver_class())
+
     CSS: ta.ClassVar[str] = read_app_css()
 
     #

@@ -71,4 +71,4 @@ debugpy==1.8.19
 
 jupyter==1.1.1
 jupyterlab==4.5.1
-notebook==7.5.0
+notebook==7.5.1

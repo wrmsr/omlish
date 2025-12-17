@@ -103,7 +103,7 @@ asttokens==3.0.1
 numpy>=1.26
 
 rich==14.2.0
-textual[syntax]==6.9.0
+textual[syntax]==6.10.0
 textual-dev==1.8.0  # pretty useless
 
 snowflake-connector-python[secure-local-storage]==4.1.1  # @omlish-venv !13t !13dt  # cffi
@@ -135,7 +135,7 @@ boto3>=1.42.11
 antlr4-python3-runtime==4.13.2
 
 mlx==0.30.0; sys_platform == "darwin" and python_version < "3.14"  # @omlish-venv !13t !13dt !14t
-mlx-lm==0.28.4; sys_platform == "darwin" and python_version < "3.14"  # @omlish-venv !13t !13dt !14t
+mlx-lm==0.29.1; sys_platform == "darwin" and python_version < "3.14"  # @omlish-venv !13t !13dt !14t
 
 apsw==3.51.1.0
 

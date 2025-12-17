@@ -32,7 +32,7 @@ all = [
     'omdev == 0.0.0.dev491',
     'llama-cpp-python ~= 0.3',
     'mlx ~= 0.30; sys_platform == "darwin"',
-    'mlx-lm ~= 0.28; sys_platform == "darwin"',
+    'mlx-lm ~= 0.29; sys_platform == "darwin"',
     'tiktoken ~= 0.12',
     'tinygrad ~= 0.11',
     'tokenizers ~= 0.22',
@@ -57,7 +57,7 @@ omdev = [
 backends = [
     'llama-cpp-python ~= 0.3',
     'mlx ~= 0.30; sys_platform == "darwin"',
-    'mlx-lm ~= 0.28; sys_platform == "darwin"',
+    'mlx-lm ~= 0.29; sys_platform == "darwin"',
     'tiktoken ~= 0.12',
     'tinygrad ~= 0.11',
     'tokenizers ~= 0.22',
