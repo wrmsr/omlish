@@ -77,3 +77,38 @@ class StaticAiMessage(AiMessage):
             yield tx.Markdown(self._content)
         else:
             yield tx.Static(self._content)
+
+
+class StreamAiMessage(AiMessage):
+    def __init__(self, content: str) -> None:
+        super().__init__()
+
+        self._content = content
+
+    def _compose_content(self) -> ta.Generator:
+        yield tx.Markdown('')
+
+    _stream_: tx.MarkdownStream | None = None
+
+    def _stream(self) -> tx.MarkdownStream:
+        if self._stream_ is None:
+            self._stream_ = tx.Markdown.get_stream(self.query_one(tx.Markdown))
+        return self._stream_
+
+    async def write_initial_content(self) -> None:
+        if self._content:
+            await self._stream().write(self._content)
+
+    async def append_content(self, content: str) -> None:
+        if not content:
+            return
+
+        self._content += content
+        await self._stream().write(content)
+
+    async def stop_stream(self) -> None:
+        if (stream := self._stream_) is None:
+            return
+
+        await stream.stop()
+        self._stream_ = None

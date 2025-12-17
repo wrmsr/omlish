@@ -6,11 +6,14 @@ from omlish import check
 
 from ...... import minichain as mc
 from ...drivers.driver import ChatDriver
+from ...drivers.events.types import AiDeltaChatEvent
 from ...drivers.events.types import AiMessagesChatEvent
 from .styles import read_app_css
 from .widgets.input import InputOuter
 from .widgets.input import InputTextArea
+from .widgets.messages import AiMessage
 from .widgets.messages import StaticAiMessage
+from .widgets.messages import StreamAiMessage
 from .widgets.messages import UserMessage
 from .widgets.messages import WelcomeMessage
 
@@ -84,12 +87,42 @@ class ChatApp(tx.App):
 
         lst.extend(messages)
 
+    _stream_ai_message: StreamAiMessage | None = None
+
+    async def _finalize_stream_ai_message(self) -> None:
+        if self._stream_ai_message is None:
+            return
+
+        await self._stream_ai_message.stop_stream()
+        self._stream_ai_message = None
+
+    async def _append_stream_ai_message_content(self, content: str) -> None:
+        if (sam := self._stream_ai_message) is not None:
+            was_at_bottom = self._is_messages_at_bottom()
+
+            await sam.append_content(content)
+
+            self.call_after_refresh(lambda: self._get_messages_container().scroll_end(animate=False))
+
+            if was_at_bottom:
+                self.call_after_refresh(self._anchor_messages)
+
+        else:
+            await self._mount_messages(StreamAiMessage(content))
+
     async def _mount_messages(self, *messages: tx.Widget) -> None:
         was_at_bottom = self._is_messages_at_bottom()
 
         msg_ctr = self._get_messages_container()
 
         for msg in [*(self._pending_mount_messages or []), *messages]:
+            if isinstance(msg, AiMessage):
+                await self._finalize_stream_ai_message()
+
+            if isinstance(msg, StreamAiMessage):
+                self._stream_ai_message = check.replacing_none(self._stream_ai_message, msg)
+                await msg.write_initial_content()
+
             await msg_ctr.mount(msg)
 
         self._pending_mount_messages = None
@@ -124,6 +157,11 @@ class ChatApp(tx.App):
                 if wx:
                     await self._enqueue_mount_messages(*wx)
                     self.call_later(self._mount_messages)
+
+            elif isinstance(ev, AiDeltaChatEvent):
+                cd = check.isinstance(ev.delta, mc.ContentAiDelta)
+                cc = check.isinstance(cd.c, str)
+                self.call_later(self. _append_stream_ai_message_content, cc)
 
     #
 
@@ -167,6 +205,8 @@ class ChatApp(tx.App):
 
     async def on_input_text_area_submitted(self, event: InputTextArea.Submitted) -> None:
         self._get_input_text_area().clear()
+
+        await self._finalize_stream_ai_message()
 
         await self._mount_messages(
             UserMessage(
