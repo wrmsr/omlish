@@ -15,6 +15,7 @@ from .widgets.input import InputTextArea
 from .widgets.messages import AiMessage
 from .widgets.messages import StaticAiMessage
 from .widgets.messages import StreamAiMessage
+from .widgets.messages import ToolConfirmationMessage
 from .widgets.messages import UserMessage
 from .widgets.messages import WelcomeMessage
 
@@ -123,7 +124,7 @@ class ChatApp(tx.App):
         msg_ctr = self._get_messages_container()
 
         for msg in [*(self._pending_mount_messages or []), *messages]:
-            if isinstance(msg, AiMessage):
+            if isinstance(msg, (AiMessage, ToolConfirmationMessage)):
                 await self._finalize_stream_ai_message()
 
             await msg_ctr.mount(msg)
@@ -144,47 +145,61 @@ class ChatApp(tx.App):
     _chat_driver_event_task: asyncio.Task[None] | None = None
 
     async def _chat_driver_event_task_main(self) -> None:
-        while True:
-            ev = await self._chat_driver_event_queue.get()
-            if ev is None:
-                break
+        try:
+            while True:
+                ev = await self._chat_driver_event_queue.get()
+                if ev is None:
+                    break
 
-            if isinstance(ev, AiMessagesChatEvent):
-                wx: list[tx.Widget] = []
+                if isinstance(ev, AiMessagesChatEvent):
+                    wx: list[tx.Widget] = []
 
-                for ai_msg in ev.chat:
-                    if isinstance(ai_msg, mc.AiMessage):
-                        wx.append(
-                            StaticAiMessage(
-                                check.isinstance(ai_msg.c, str),
-                                markdown=True,
-                            ),
-                        )
+                    for ai_msg in ev.chat:
+                        if isinstance(ai_msg, mc.AiMessage):
+                            wx.append(
+                                StaticAiMessage(
+                                    check.isinstance(ai_msg.c, str),
+                                    markdown=True,
+                                ),
+                            )
 
-                if wx:
-                    await self._enqueue_mount_messages(*wx)
-                    self.call_later(self._mount_messages)
+                    if wx:
+                        await self._enqueue_mount_messages(*wx)
+                        self.call_later(self._mount_messages)
 
-            elif isinstance(ev, AiDeltaChatEvent):
-                cd = check.isinstance(ev.delta, mc.ContentAiDelta)
-                cc = check.isinstance(cd.c, str)
-                self.call_later(self. _append_stream_ai_message_content, cc)
+                elif isinstance(ev, AiDeltaChatEvent):
+                    if isinstance(ev.delta, mc.ContentAiDelta):
+                        cc = check.isinstance(ev.delta.c, str)
+                        self.call_later(self._append_stream_ai_message_content, cc)
+
+                    elif isinstance(ev.delta, mc.ToolUseAiDelta):
+                        pass
+
+        except Exception as e:  # noqa
+            raise
 
     #
 
     _chat_driver_action_task: asyncio.Task[None] | None = None
 
     async def _chat_driver_action_task_main(self) -> None:
-        while True:
-            ac = await self._chat_driver_action_queue.get()
-            if ac is None:
-                break
+        try:
+            while True:
+                ac = await self._chat_driver_action_queue.get()
+                if ac is None:
+                    break
 
-            if isinstance(ac, mc.UserMessage):
-                await self._chat_driver.send_user_messages([ac])
+                if isinstance(ac, mc.UserMessage):
+                    try:
+                        await self._chat_driver.send_user_messages([ac])
+                    except Exception as e:  # noqa
+                        raise
 
-            else:
-                raise TypeError(ac)
+                else:
+                    raise TypeError(ac)  # noqa
+
+        except Exception as e:  # noqa
+            raise
 
     #
 
@@ -232,4 +247,17 @@ class ChatApp(tx.App):
     #
 
     async def confirm_tool_use(self, message: str) -> bool:
-        raise NotImplementedError
+        tcm = ToolConfirmationMessage(message)
+
+        fut: asyncio.Future[bool] = asyncio.get_running_loop().create_future()
+
+        async def inner() -> None:
+            await self._mount_messages(tcm)
+
+            fut.set_result(True)
+
+        self.call_later(inner)
+
+        ret = await fut
+
+        return ret

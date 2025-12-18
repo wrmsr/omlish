@@ -371,6 +371,11 @@ MAIN_PROFILE_ARGS: ta.Sequence[ap.Arg] = [
 
 
 async def _a_main(argv: ta.Any = None) -> None:
+    # FIXME: lol
+    import os
+    os.environ['TEXTUAL'] = 'debug,devtools'
+    os.environ['TEXTUAL_DEVTOOLS_PORT'] = '41932'
+
     parser = ap.ArgumentParser()
 
     for a in [*MAIN_PROFILE_ARGS, *MAIN_EXTRA_ARGS]:
