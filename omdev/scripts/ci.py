@@ -97,6 +97,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/http/urllib.py', sha1='25431c5bdc7dd5cbecfcb8c0bdffaabf8c1691b9'),
             dict(path='../../omlish/http/versions.py', sha1='197685ffbb62a457a0e8d4047a9df26aebd7dae4'),
             dict(path='../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
+            dict(path='../../omlish/lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
             dict(path='../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
             dict(path='../../omlish/lite/check.py', sha1='bb6b6b63333699b84462951a854d99ae83195b94'),
             dict(path='../../omlish/lite/contextmanagers.py', sha1='993f5ed96d3410f739a20363f55670d5e5267fa3'),
@@ -153,7 +154,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../oci/media.py', sha1='a20324c5b0661c9a9a7679406d019ab3ba4acd98'),
             dict(path='../oci/pack/packing.py', sha1='7585c3dea6b8a62b6ca63fe78968497db915ea57'),
             dict(path='../../omlish/http/coro/server/server.py', sha1='c0a980afa8346dbc20570acddb2b3b579bfc1ce0'),
-            dict(path='../../omlish/logs/base.py', sha1='a376460b11b9dc0555fd4ead5437af62c2109a4b'),
+            dict(path='../../omlish/logs/base.py', sha1='4e3ccb71da2e6b9bf8b42dc40ef6006afb8c02ef'),
             dict(path='../../omlish/logs/std/records.py', sha1='8bbf6ef9eccb3a012c6ca416ddf3969450fd8fc9'),
             dict(path='../../omlish/secrets/tempssl.py', sha1='360d4cd98483357bcf013e156dafd92fd37ed220'),
             dict(path='../../omlish/sockets/server/server.py', sha1='a93a74f6beb38d69e0fb9047c932f2a95aa37eca'),
@@ -165,7 +166,8 @@ def __omlish_amalg__():  # noqa
             dict(path='../oci/building.py', sha1='b4fea06c03ba02d3ecfc6d10d955dc76f263846a'),
             dict(path='../oci/loading.py', sha1='64d806ffad8d24087ccc29f759f672e6d795bee2'),
             dict(path='../../omlish/http/coro/server/sockets.py', sha1='40ef4aa43f94f1a1a2a431a012cb961f25905ff4'),
-            dict(path='../../omlish/logs/std/loggers.py', sha1='daa35bdc4adea5006e442688017f0de3392579b7'),
+            dict(path='../../omlish/logs/asyncs.py', sha1='f47419ce01244c3890e0161f7bd1da1d766303a4'),
+            dict(path='../../omlish/logs/std/loggers.py', sha1='a569179445d6a8a942b5dcfad1d1f77702868803'),
             dict(path='../../omlish/subprocesses/asyncs.py', sha1='bba44d524c24c6ac73168aee6343488414e5bf48'),
             dict(path='../../omlish/subprocesses/sync.py', sha1='8434919eba4da67825773d56918fdc0cb2f1883b'),
             dict(path='requirements.py', sha1='c370a65958a00412e00608a0e1f12795e276aee1'),
@@ -173,7 +175,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../oci/dataserver.py', sha1='dd147b56282b054cef264556a0ff3b3d1719bcee'),
             dict(path='../../omlish/asyncs/asyncio/subprocesses.py', sha1='b6b5f9ae3fd0b9c83593bad2e04a08f726e5904d'),
             dict(path='../../omlish/http/coro/server/simple.py', sha1='2332079fe29993123c68d7dbc266b47cd44cd6a6'),
-            dict(path='../../omlish/logs/modules.py', sha1='99e73cde6872fd5eda6af3dbf0fc9322bdeb641a'),
+            dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='cache.py', sha1='9353e5c3b73bed47258680fd15ac49417113f0ca'),
             dict(path='compose.py', sha1='d2bec1385701979c7ff9913456b72d8c7b31f70b'),
             dict(path='docker/cmds.py', sha1='5528c384f68f9003732bfaf6be302e84747909dd'),
@@ -757,6 +759,150 @@ class Abstract:
 
         if not isinstance(cls, abc.ABCMeta):
             update_abstracts(cls, force=True)
+
+
+########################################
+# ../../../omlish/lite/asyncs.py
+
+
+##
+
+
+async def opt_await(aw: ta.Optional[ta.Awaitable[T]]) -> ta.Optional[T]:
+    return (await aw if aw is not None else None)
+
+
+async def async_list(ai: ta.AsyncIterable[T]) -> ta.List[T]:
+    return [v async for v in ai]
+
+
+async def async_enumerate(ai: ta.AsyncIterable[T]) -> ta.AsyncIterable[ta.Tuple[int, T]]:
+    i = 0
+    async for e in ai:
+        yield (i, e)
+        i += 1
+
+
+##
+
+
+def as_async(fn: ta.Callable[..., T], *, wrap: bool = False) -> ta.Callable[..., ta.Awaitable[T]]:
+    async def inner(*args, **kwargs):
+        return fn(*args, **kwargs)
+
+    return functools.wraps(fn)(inner) if wrap else inner
+
+
+##
+
+
+class SyncAwaitCoroutineNotTerminatedError(Exception):
+    pass
+
+
+def sync_await(aw: ta.Awaitable[T]) -> T:
+    """
+    Allows for the synchronous execution of async functions which will never actually *externally* await anything. These
+    functions are allowed to await any number of other functions - including contextmanagers and generators - so long as
+    nothing ever actually 'leaks' out of the function, presumably to an event loop.
+    """
+
+    ret = missing = object()
+
+    async def thunk():
+        nonlocal ret
+
+        ret = await aw
+
+    cr = thunk()
+    try:
+        try:
+            cr.send(None)
+        except StopIteration:
+            pass
+
+        if ret is missing or cr.cr_await is not None or cr.cr_running:
+            raise SyncAwaitCoroutineNotTerminatedError('Not terminated')
+
+    finally:
+        cr.close()
+
+    return ta.cast(T, ret)
+
+
+#
+
+
+def sync_aiter(ai: ta.AsyncIterator[T]) -> ta.Iterator[T]:
+    while True:
+        try:
+            o = sync_await(ai.__anext__())
+        except StopAsyncIteration:
+            break
+        yield o
+
+
+def sync_async_list(ai: ta.AsyncIterable[T]) -> ta.List[T]:
+    """
+    Uses `sync_await` to synchronously read the full contents of a function call returning an async iterator, given that
+    the function never externally awaits anything.
+    """
+
+    lst: ta.Optional[ta.List[T]] = None
+
+    async def inner():
+        nonlocal lst
+
+        lst = [v async for v in ai]
+
+    sync_await(inner())
+
+    if not isinstance(lst, list):
+        raise TypeError(lst)
+
+    return lst
+
+
+#
+
+
+@ta.final
+class SyncAwaitContextManager(ta.Generic[T]):
+    def __init__(self, acm: ta.AsyncContextManager[T]) -> None:
+        self._acm = acm
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self._acm!r})'
+
+    def __enter__(self) -> T:
+        return sync_await(self._acm.__aenter__())
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return sync_await(self._acm.__aexit__(exc_type, exc_val, exc_tb))
+
+
+sync_async_with = SyncAwaitContextManager
+
+
+##
+
+
+@ta.final
+class SyncToAsyncContextManager(ta.Generic[T]):
+    def __init__(self, cm: ta.ContextManager[T]) -> None:
+        self._cm = cm
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self._cm!r})'
+
+    async def __aenter__(self) -> T:
+        return self._cm.__enter__()
+
+    async def __aexit__(self, exc_type, exc_value, traceback, /):
+        return self._cm.__exit__(exc_type, exc_value, traceback)
+
+
+as_async_context_manager = SyncToAsyncContextManager
 
 
 ########################################
@@ -9926,19 +10072,37 @@ class AnyLogger(Abstract, ta.Generic[T]):
     ##
 
     @abc.abstractmethod
-    def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> T:  # noqa
+    def _log(
+            self,
+            ctx: CaptureLoggingContext,
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> T:
         raise NotImplementedError
 
 
 class Logger(AnyLogger[None], Abstract):
     @abc.abstractmethod
-    def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> None:  # noqa
+    def _log(
+            self,
+            ctx: CaptureLoggingContext,
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> None:
         raise NotImplementedError
 
 
 class AsyncLogger(AnyLogger[ta.Awaitable[None]], Abstract):
     @abc.abstractmethod
-    def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> ta.Awaitable[None]:  # noqa
+    def _log(
+            self,
+            ctx: CaptureLoggingContext,
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> ta.Awaitable[None]:
         raise NotImplementedError
 
 
@@ -9953,13 +10117,25 @@ class AnyNopLogger(AnyLogger[T], Abstract):
 
 @ta.final
 class NopLogger(AnyNopLogger[None], Logger):
-    def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> None:  # noqa
+    def _log(
+            self,
+            ctx: CaptureLoggingContext,
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> None:
         pass
 
 
 @ta.final
 class AsyncNopLogger(AnyNopLogger[ta.Awaitable[None]], AsyncLogger):
-    async def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> None:  # noqa
+    async def _log(
+            self,
+            ctx: CaptureLoggingContext,
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> None:
         pass
 
 
@@ -11819,6 +11995,63 @@ class CoroHttpServerSocketHandler(SocketHandler_):
 
 
 ########################################
+# ../../../omlish/logs/asyncs.py
+
+
+##
+
+
+class AsyncLoggerToLogger(Logger):
+    def __init__(self, u: AsyncLogger) -> None:
+        super().__init__()
+
+        self._u = u
+
+    def get_effective_level(self) -> LogLevel:
+        return self._u.get_effective_level()
+
+    def _log(
+            self,
+            ctx: CaptureLoggingContext,
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> None:
+        sync_await(
+            self._u._log(  # noqa
+                ctx,
+                msg,
+                *args,
+                **kwargs,
+            ),
+        )
+
+
+class LoggerToAsyncLogger(AsyncLogger):
+    def __init__(self, u: Logger) -> None:
+        super().__init__()
+
+        self._u = u
+
+    def get_effective_level(self) -> LogLevel:
+        return self._u.get_effective_level()
+
+    async def _log(
+            self,
+            ctx: CaptureLoggingContext,
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> None:
+        return self._u._log(  # noqa
+            ctx,
+            msg,
+            *args,
+            **kwargs,
+        )
+
+
+########################################
 # ../../../omlish/logs/std/loggers.py
 
 
@@ -11841,7 +12074,12 @@ class StdLogger(Logger):
     def get_effective_level(self) -> LogLevel:
         return self._std.getEffectiveLevel()
 
-    def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any) -> None:
+    def _log(
+            self,
+            ctx: CaptureLoggingContext,
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            *args: ta.Any,
+    ) -> None:
         if not self.is_enabled_for(ctx.must_get_info(LoggingContextInfos.Level).level):
             return
 
@@ -12592,8 +12830,23 @@ def make_simple_http_server(
 ##
 
 
+def _get_module_std_logger(mod_globals: ta.Mapping[str, ta.Any]) -> logging.Logger:
+    return logging.getLogger(mod_globals.get('__name__'))
+
+
 def get_module_logger(mod_globals: ta.Mapping[str, ta.Any]) -> Logger:
-    return StdLogger(logging.getLogger(mod_globals.get('__name__')))  # noqa
+    return StdLogger(_get_module_std_logger(mod_globals))
+
+
+def get_module_async_logger(mod_globals: ta.Mapping[str, ta.Any]) -> AsyncLogger:
+    return LoggerToAsyncLogger(get_module_logger(mod_globals))
+
+
+def get_module_loggers(mod_globals: ta.Mapping[str, ta.Any]) -> ta.Tuple[Logger, AsyncLogger]:
+    return (
+        log := get_module_logger(mod_globals),
+        LoggerToAsyncLogger(log),
+    )
 
 
 ########################################

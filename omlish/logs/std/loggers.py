@@ -30,7 +30,12 @@ class StdLogger(Logger):
     def get_effective_level(self) -> LogLevel:
         return self._std.getEffectiveLevel()
 
-    def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any) -> None:
+    def _log(
+            self,
+            ctx: CaptureLoggingContext,
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            *args: ta.Any,
+    ) -> None:
         if not self.is_enabled_for(ctx.must_get_info(LoggingContextInfos.Level).level):
             return
 

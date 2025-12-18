@@ -43,9 +43,9 @@ def __omlish_amalg__():  # noqa
             dict(path='std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='contexts.py', sha1='7456964ade9ac66460e9ade4e242dbdc24b39501'),
             dict(path='standard.py', sha1='818b674f7d15012f25b79f52f6e8e7368b633038'),
-            dict(path='base.py', sha1='a376460b11b9dc0555fd4ead5437af62c2109a4b'),
+            dict(path='base.py', sha1='4e3ccb71da2e6b9bf8b42dc40ef6006afb8c02ef'),
             dict(path='std/records.py', sha1='8bbf6ef9eccb3a012c6ca416ddf3969450fd8fc9'),
-            dict(path='std/loggers.py', sha1='daa35bdc4adea5006e442688017f0de3392579b7'),
+            dict(path='std/loggers.py', sha1='a569179445d6a8a942b5dcfad1d1f77702868803'),
             dict(path='_amalg.py', sha1='ec64a142cbae11f6705d0d3ee8ff9c5bc4a7f90b'),
         ],
     )
@@ -1336,19 +1336,37 @@ class AnyLogger(Abstract, ta.Generic[T]):
     ##
 
     @abc.abstractmethod
-    def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> T:  # noqa
+    def _log(
+            self,
+            ctx: CaptureLoggingContext,
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> T:
         raise NotImplementedError
 
 
 class Logger(AnyLogger[None], Abstract):
     @abc.abstractmethod
-    def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> None:  # noqa
+    def _log(
+            self,
+            ctx: CaptureLoggingContext,
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> None:
         raise NotImplementedError
 
 
 class AsyncLogger(AnyLogger[ta.Awaitable[None]], Abstract):
     @abc.abstractmethod
-    def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> ta.Awaitable[None]:  # noqa
+    def _log(
+            self,
+            ctx: CaptureLoggingContext,
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> ta.Awaitable[None]:
         raise NotImplementedError
 
 
@@ -1363,13 +1381,25 @@ class AnyNopLogger(AnyLogger[T], Abstract):
 
 @ta.final
 class NopLogger(AnyNopLogger[None], Logger):
-    def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> None:  # noqa
+    def _log(
+            self,
+            ctx: CaptureLoggingContext,
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> None:
         pass
 
 
 @ta.final
 class AsyncNopLogger(AnyNopLogger[ta.Awaitable[None]], AsyncLogger):
-    async def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any, **kwargs: ta.Any) -> None:  # noqa
+    async def _log(
+            self,
+            ctx: CaptureLoggingContext,
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> None:
         pass
 
 
@@ -2054,7 +2084,12 @@ class StdLogger(Logger):
     def get_effective_level(self) -> LogLevel:
         return self._std.getEffectiveLevel()
 
-    def _log(self, ctx: CaptureLoggingContext, msg: ta.Union[str, tuple, LoggingMsgFn], *args: ta.Any) -> None:
+    def _log(
+            self,
+            ctx: CaptureLoggingContext,
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            *args: ta.Any,
+    ) -> None:
         if not self.is_enabled_for(ctx.must_get_info(LoggingContextInfos.Level).level):
             return
 

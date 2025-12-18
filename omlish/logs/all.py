@@ -38,6 +38,11 @@ with _lang.auto_proxy_init(globals()):
         LoggingContextLogRecord,
     )
 
+    from .asyncs import (  # noqa
+        AsyncLoggerToLogger,
+        LoggerToAsyncLogger,
+    )
+
     from .base import (  # noqa
         AnyLogger,
         Logger,
