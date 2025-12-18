@@ -10,7 +10,7 @@ from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.logs.modules import get_module_logger
 from omlish.lite.runtime import check_lite_runtime_version
-from omlish.logs.standard import configure_standard_logging
+from omlish.logs.std.standard import configure_standard_logging
 from omlish.os.sizes import PAGE_SIZE
 from omlish.os.temp import make_temp_file  # noqa
 from omlish.subprocesses.sync import subprocesses

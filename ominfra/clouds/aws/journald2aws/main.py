@@ -5,7 +5,7 @@ import os.path
 import sys
 
 from omlish.lite.configs import load_config_file_obj
-from omlish.logs.standard import configure_standard_logging
+from omlish.logs.std.standard import configure_standard_logging
 
 from .driver import JournalctlToAwsDriver
 

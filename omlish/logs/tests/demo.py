@@ -1,7 +1,7 @@
 import logging
 
-from ..standard import configure_standard_logging
 from ..std.loggers import StdLogger
+from ..std.standard import configure_standard_logging
 
 
 ##

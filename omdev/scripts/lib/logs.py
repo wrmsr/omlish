@@ -42,11 +42,11 @@ def __omlish_amalg__():  # noqa
             dict(path='infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
             dict(path='std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
-            dict(path='standard.py', sha1='818b674f7d15012f25b79f52f6e8e7368b633038'),
+            dict(path='std/standard.py', sha1='5c97c1b9f7ead58d6127d047b873398f708f288d'),
             dict(path='base.py', sha1='9772b763a04c1687a36b7eaa152d29648c193db6'),
             dict(path='std/records.py', sha1='8bbf6ef9eccb3a012c6ca416ddf3969450fd8fc9'),
             dict(path='std/loggers.py', sha1='a569179445d6a8a942b5dcfad1d1f77702868803'),
-            dict(path='_amalg.py', sha1='ec64a142cbae11f6705d0d3ee8ff9c5bc4a7f90b'),
+            dict(path='_amalg.py', sha1='ae5189de25ab155651a5b2f21dd0baf6eb4f3916'),
         ],
     )
 
@@ -1059,10 +1059,9 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
 
 
 ########################################
-# ../standard.py
+# ../std/standard.py
 """
 TODO:
- - !! move to std !!
  - structured
  - prefixed
  - debug

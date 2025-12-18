@@ -38,6 +38,15 @@ with _lang.auto_proxy_init(globals()):
         LoggingContextLogRecord,
     )
 
+    from .std.standard import (  # noqa
+        STANDARD_LOG_FORMAT_PARTS,
+        StandardLoggingFormatter,
+
+        StandardConfiguredLoggingHandler,
+
+        configure_standard_logging,
+    )
+
     from .asyncs import (  # noqa
         AsyncLoggerToLogger,
         LoggerToAsyncLogger,
@@ -86,15 +95,6 @@ with _lang.auto_proxy_init(globals()):
 
     from .protocols import (  # noqa
         LoggerLike,
-    )
-
-    from .standard import (  # noqa
-        STANDARD_LOG_FORMAT_PARTS,
-        StandardLoggingFormatter,
-
-        StandardConfiguredLoggingHandler,
-
-        configure_standard_logging,
     )
 
     from .utils import (  # noqa

@@ -122,7 +122,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/asyncs/asyncio/timeouts.py', sha1='4d31b02b3c39b8f2fa7e94db36552fde6942e36a'),
             dict(path='../../omlish/lite/inject.py', sha1='6f097e3170019a34ff6834d36fcc9cbeed3a7ab4'),
             dict(path='../../omlish/logs/contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
-            dict(path='../../omlish/logs/standard.py', sha1='818b674f7d15012f25b79f52f6e8e7368b633038'),
+            dict(path='../../omlish/logs/std/standard.py', sha1='5c97c1b9f7ead58d6127d047b873398f708f288d'),
             dict(path='../../omlish/subprocesses/run.py', sha1='8200e48f0c49d164df3503cd0143038d0c4d30aa'),
             dict(path='../../omlish/subprocesses/wrap.py', sha1='8a9b7d2255481fae15c05f5624b0cdc0766f4b3f'),
             dict(path='../interp/providers/base.py', sha1='f5d068c21f230d742e9015b033cd6320f4c68898'),
@@ -140,7 +140,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../interp/inspect.py', sha1='736287b4ec8d14a8c30afa0ba23996fdc0662caa'),
             dict(path='../interp/pyenv/pyenv.py', sha1='d1f6e657c671c1b1a5b0e627284df656fe2d10d3'),
             dict(path='../interp/uv/uv.py', sha1='8c6515cd6755efab3972da92a285e94ccb255515'),
-            dict(path='../packaging/revisions.py', sha1='4ea4ac3006ae5b0bdc0c5a6c587cfed8fbad87b3'),
+            dict(path='../packaging/revisions.py', sha1='9ba90e4a93b1bfcc93f6ca65dbaaf38f79929677'),
             dict(path='reqs.py', sha1='822e265b0d2e6d9548ee24d3ac60c81066e40ee8'),
             dict(path='../interp/providers/running.py', sha1='85c9cc69ff6fbd6c8cf78ed6262619a30856c2f1'),
             dict(path='../interp/providers/system.py', sha1='9638a154475ca98775159d27739563ac7fb2eb16'),
@@ -156,7 +156,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../interp/venvs.py', sha1='9ba8f2c3131d7d519d5cf36ca69b75f9c6fe2b27'),
             dict(path='configs.py', sha1='7b1c1ed034ecb728d67ff15e3bb2b21a218773c9'),
             dict(path='venvs.py', sha1='9f1935171017aeb802da56e14d7f41d632a7aa25'),
-            dict(path='cli.py', sha1='e2f06505bb59793af3a2779bfa2c15aefb308539'),
+            dict(path='cli.py', sha1='77efd5e792baa941a79adef6b363751dbd6a0d3e'),
         ],
     )
 
@@ -8101,10 +8101,9 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
 
 
 ########################################
-# ../../../omlish/logs/standard.py
+# ../../../omlish/logs/std/standard.py
 """
 TODO:
- - !! move to std !!
  - structured
  - prefixed
  - debug

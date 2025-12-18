@@ -32,7 +32,7 @@ class _HackLoggingHandler(logging.Handler):
     """
     TODO:
      - reify caller from LogContextInfos
-     - queue worker
+     - queue worker, this blocks the asyncio thread lol
     """
 
     def __init__(self, devtools: ta.Optional['DevtoolsClient']) -> None:

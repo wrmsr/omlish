@@ -2,7 +2,6 @@
 # @omlish-lite
 """
 TODO:
- - !! move to std !!
  - structured
  - prefixed
  - debug
@@ -13,9 +12,9 @@ import datetime
 import logging
 import typing as ta
 
-from .std.filters import TidLoggingFilter
-from .std.json import JsonLoggingFormatter
-from .std.proxy import ProxyLoggingHandler
+from .filters import TidLoggingFilter
+from .json import JsonLoggingFormatter
+from .proxy import ProxyLoggingHandler
 
 
 ##

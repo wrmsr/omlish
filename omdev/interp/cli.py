@@ -17,7 +17,7 @@ from omlish.lite.check import check
 from omlish.lite.inject import Injector
 from omlish.lite.inject import inj
 from omlish.lite.runtime import check_lite_runtime_version
-from omlish.logs.standard import configure_standard_logging
+from omlish.logs.std.standard import configure_standard_logging
 
 from .inject import bind_interp
 from .resolvers import InterpResolver

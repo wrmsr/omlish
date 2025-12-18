@@ -41,7 +41,7 @@ from omlish.http.coro.server.server import CoroHttpServer
 from omlish.lite.configs import load_config_file_obj
 from omlish.lite.inject import inj
 from omlish.lite.runtime import is_debugger_attached
-from omlish.logs.standard import configure_standard_logging
+from omlish.logs.std.standard import configure_standard_logging
 from omlish.os.journald import journald_logging_handler_factory
 
 from .configs import ServerConfig

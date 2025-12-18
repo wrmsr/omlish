@@ -7,7 +7,7 @@ import unittest
 from omlish.lite.configs import load_config_file_obj
 from omlish.lite.inject import inj
 from omlish.lite.runtime import is_debugger_attached
-from omlish.logs.standard import configure_standard_logging
+from omlish.logs.std.standard import configure_standard_logging
 
 from ..configs import ServerConfig
 from ..configs import prepare_server_config

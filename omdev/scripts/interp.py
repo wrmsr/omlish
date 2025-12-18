@@ -73,7 +73,7 @@ def __omlish_amalg__():  # noqa
             dict(path='types.py', sha1='caf068a6e81fb6e221d777b341ac5777d92b8091'),
             dict(path='../../omlish/asyncs/asyncio/timeouts.py', sha1='4d31b02b3c39b8f2fa7e94db36552fde6942e36a'),
             dict(path='../../omlish/lite/inject.py', sha1='6f097e3170019a34ff6834d36fcc9cbeed3a7ab4'),
-            dict(path='../../omlish/logs/standard.py', sha1='818b674f7d15012f25b79f52f6e8e7368b633038'),
+            dict(path='../../omlish/logs/std/standard.py', sha1='5c97c1b9f7ead58d6127d047b873398f708f288d'),
             dict(path='../../omlish/subprocesses/run.py', sha1='8200e48f0c49d164df3503cd0143038d0c4d30aa'),
             dict(path='../../omlish/subprocesses/wrap.py', sha1='8a9b7d2255481fae15c05f5624b0cdc0766f4b3f'),
             dict(path='providers/base.py', sha1='f5d068c21f230d742e9015b033cd6320f4c68898'),
@@ -93,7 +93,7 @@ def __omlish_amalg__():  # noqa
             dict(path='uv/inject.py', sha1='e95d058c2340baa5a3155ec3440f311d1daa10a8'),
             dict(path='pyenv/inject.py', sha1='b8fb68f5a7cae86c70fe1bad6c29a8b2dfc985c3'),
             dict(path='inject.py', sha1='b039abbadf0b096d2724182af2e0ebda2a230852'),
-            dict(path='cli.py', sha1='28d807b2080447c179a9ef17b3efd83dd513027b'),
+            dict(path='cli.py', sha1='6b747ba4f91e0ab6290b791c2c274f268d11c33e'),
         ],
     )
 
@@ -4301,10 +4301,9 @@ inj = InjectionApi()
 
 
 ########################################
-# ../../../omlish/logs/standard.py
+# ../../../omlish/logs/std/standard.py
 """
 TODO:
- - !! move to std !!
  - structured
  - prefixed
  - debug

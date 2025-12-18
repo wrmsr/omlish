@@ -132,7 +132,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/configs.py', sha1='c8602e0e197ef1133e7e8e248935ac745bfd46cb'),
             dict(path='../../omlish/lite/inject.py', sha1='6f097e3170019a34ff6834d36fcc9cbeed3a7ab4'),
             dict(path='../../omlish/logs/contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
-            dict(path='../../omlish/logs/standard.py', sha1='818b674f7d15012f25b79f52f6e8e7368b633038'),
+            dict(path='../../omlish/logs/std/standard.py', sha1='5c97c1b9f7ead58d6127d047b873398f708f288d'),
             dict(path='../../omlish/subprocesses/run.py', sha1='8200e48f0c49d164df3503cd0143038d0c4d30aa'),
             dict(path='../../omlish/subprocesses/wrap.py', sha1='8a9b7d2255481fae15c05f5624b0cdc0766f4b3f'),
             dict(path='../../omdev/interp/providers/base.py', sha1='f5d068c21f230d742e9015b033cd6320f4c68898'),
@@ -198,7 +198,7 @@ def __omlish_amalg__():  # noqa
             dict(path='deploy/commands.py', sha1='0e9fdd122fe3a4028efede0862b059c091cc13cb'),
             dict(path='deploy/inject.py', sha1='d84e9c3e980c5a1ec62d18628d8911f5b6bb125f'),
             dict(path='inject.py', sha1='b1c173df021f190d3631f3828470fa1564e0b4b4'),
-            dict(path='bootstrap_.py', sha1='c7d7c3e88703200a836df63e395f7154bf871f36'),
+            dict(path='bootstrap_.py', sha1='96fff62e0152795271c79ea29face58dadab0894'),
             dict(path='main.py', sha1='ddddcdb54aabe67188dce6a5f65e04ce296a75b0'),
         ],
     )
@@ -10735,10 +10735,9 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
 
 
 ########################################
-# ../../../omlish/logs/standard.py
+# ../../../omlish/logs/std/standard.py
 """
 TODO:
- - !! move to std !!
  - structured
  - prefixed
  - debug

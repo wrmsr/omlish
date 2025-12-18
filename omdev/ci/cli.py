@@ -22,7 +22,7 @@ from omlish.argparse.cli import argparse_cmd
 from omlish.lite.check import check
 from omlish.lite.inject import inj
 from omlish.logs.modules import get_module_logger
-from omlish.logs.standard import configure_standard_logging
+from omlish.logs.std.standard import configure_standard_logging
 
 from .cache import DirectoryFileCache
 from .ci import Ci

@@ -40,7 +40,7 @@ from omlish.formats.toml.parser import toml_loads
 from omlish.lite.cached import cached_nullary
 from omlish.lite.check import check
 from omlish.lite.runtime import check_lite_runtime_version
-from omlish.logs.standard import configure_standard_logging
+from omlish.logs.std.standard import configure_standard_logging
 
 from .configs import PyprojectConfig
 from .configs import PyprojectConfigPreparer
