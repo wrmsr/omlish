@@ -117,17 +117,22 @@ class StreamAiMessage(AiMessage):
 ##
 
 
+class ToolConfirmationControls(tx.Static):
+    def compose(self) -> tx.ComposeResult:
+        yield tx.Static('(y/n)')
+
+
 class ToolConfirmationMessage(Message):
     def __init__(self, content: str) -> None:
         super().__init__()
 
         self.add_class('tool-confirmation-message')
-        self.add_class('tool-confirmation-message-open')
 
         self._content = content
 
     def compose(self) -> tx.ComposeResult:
         with tx.Horizontal(classes='tool-confirmation-message-outer'):
             yield tx.Static('? ', classes='tool-confirmation-message-glyph')
-            with tx.Vertical(classes='tool-confirmation-message-inner'):
-                yield tx.Static(self._content)
+            with tx.Vertical(classes='tool-confirmation-message-inner tool-confirmation-message-inner-open'):
+                yield tx.Static(self._content, classes='tool-confirmation-message-content')
+                yield ToolConfirmationControls(classes='tool-confirmation-message-controls')

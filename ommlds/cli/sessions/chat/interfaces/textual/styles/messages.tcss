@@ -13,9 +13,6 @@
     width: 100%;
     height: auto;
 
-    margin-top: 1;
-    margin-bottom: 0;
-
     layout: stream;
     text-align: left;
 }
@@ -115,13 +112,6 @@
     margin-top: 1;
 }
 
-.tool-confirmation-message-open {
-    background: $warning-lighten-3 15%;
-}
-
-.tool-confirmation-message-closed {
-}
-
 .tool-confirmation-message-outer {
     width: 100%;
     height: auto;
@@ -143,5 +133,22 @@
     width: 100%;
     height: auto;
 
-    padding: 0;
+    padding: 1;
+}
+
+.tool-confirmation-message-inner-open {
+    background: $warning-lighten-3 15%;
+}
+
+.tool-confirmation-message-inner-closed {
+}
+
+.tool-confirmation-message-content {
+    background: $background;
+}
+
+.tool-confirmation-message-controls {
+    margin-top: 1;
+
+    background: $background-darken-3;
 }
