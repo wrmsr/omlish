@@ -510,17 +510,11 @@ def format_for_columns(pkgs: ta.Sequence[Package]) -> tuple[list[list[str]], lis
     """Convert the package data into something usable by output_package_listing_columns."""
 
     header = [
-        ' ',
-
         'Package',
         'Current',
 
-        ' ',
-
         'Suggested',
         'Age',
-
-        ' ',
 
         'Latest',
         'Age',
@@ -542,41 +536,40 @@ def format_for_columns(pkgs: ta.Sequence[Package]) -> tuple[list[list[str]], lis
     # if has_editables:
     #     header.append('Editable project location')
 
-    data = []
-    for proj in pkgs:
-        sc = check.not_none(proj.suggested_candidate)
-        lc = check.not_none(proj.latest_candidate)
+    def add_c(row, c):
+        if c is None:
+            row.extend(['', ''])
+            return
+
+        row.append(str(c.version))
+
+        if (l_ut := c.upload_time()) is not None:
+            row.append(human_round_td(now_utc() - l_ut))
+        else:
+            row.append('')
+
+    rows = []
+    for pkg in pkgs:
+        sc = check.not_none(pkg.suggested_candidate)
+        lc = check.not_none(pkg.latest_candidate)
 
         row = [
-            '*' if lc is not sc else '',
-
-            proj.dist.raw_name,
-            proj.dist.raw_version,
+            pkg.dist.raw_name,
+            pkg.dist.raw_version,
         ]
 
-        for c in [sc, lc]:
-            row.extend([
-                '|',
-
-                str(c.version),
-            ])
-
-            if (l_ut := c.upload_time()) is not None:
-                row.append(human_round_td(now_utc() - l_ut))
-            else:
-                row.append('')
-
-            # row.append(c.filetype)
+        add_c(row, sc if sc.version != pkg.dist.version else None)
+        add_c(row, lc if sc is not lc else None)
 
         # if has_build_tags:
         #     row.append(build_tags[i] or '')
 
         # if has_editables:
-        #     row.append(proj.dist.editable_project_location or '')
+        #     row.append(pkg.dist.editable_project_location or '')
 
-        data.append(row)
+        rows.append(row)
 
-    return data, header
+    return rows, header
 
 
 def _tabulate(

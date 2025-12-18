@@ -287,7 +287,7 @@ sqlparse==0.4.4
 stack-data==0.6.3
 sympy==1.14.0
 tabulate==0.9.0
-tavily-python==0.7.15
+tavily-python==0.7.16
 terminado==0.18.1
 textual==6.10.0
 textual-dev==1.8.0
