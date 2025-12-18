@@ -134,6 +134,7 @@
     height: auto;
 
     padding: 1;
+    margin-right: 3;
 }
 
 .tool-confirmation-message-inner-open {
