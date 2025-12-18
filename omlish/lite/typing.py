@@ -63,6 +63,24 @@ class Func3(ta.Generic[A0, A1, A2, T]):
 ##
 
 
+@dc.dataclass(frozen=True)
+class CachedFunc0(ta.Generic[T]):
+    fn: ta.Callable[[], T]
+
+    def __call__(self) -> T:
+        try:
+            return object.__getattribute__(self, '_value')
+        except AttributeError:
+            pass
+
+        value = self.fn()
+        object.__setattr__(self, '_value', value)
+        return value
+
+
+##
+
+
 _TYPING_ANNOTATIONS_ATTR = '__annotate__' if sys.version_info >= (3, 14) else '__annotations__'
 
 

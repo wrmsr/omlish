@@ -3,6 +3,7 @@ import typing as ta
 
 from omdev.tui import textual as tx
 from omlish import check
+from omlish import lang
 
 from ...... import minichain as mc
 from ...drivers.driver import ChatDriver
@@ -25,6 +26,10 @@ ChatDriverEventQueue = ta.NewType('ChatDriverEventQueue', asyncio.Queue)
 
 
 ##
+
+
+class ChatAppGetter(lang.CachedFunc0['ChatApp']):
+    pass
 
 
 class ChatApp(tx.App):
@@ -223,3 +228,8 @@ class ChatApp(tx.App):
         )
 
         await self._chat_driver_action_queue.put(mc.UserMessage(event.text))
+
+    #
+
+    async def confirm_tool_use(self, message: str) -> bool:
+        raise NotImplementedError

@@ -621,6 +621,8 @@ with _auto_proxy_init(globals(), update_exports=True):
         Func2,
         Func3,
 
+        CachedFunc0,
+
         typing_annotations_attr,
     )
 

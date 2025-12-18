@@ -7,6 +7,7 @@ TODO:
  - annotations lol
  - some kind of stdlib/langy auto interoppy thingy? ala Provider[T]?
   - nothing really in stdlib
+  - allow explicitly specifying [Cached]Func0-like types
 """
 import abc
 import functools
@@ -18,6 +19,7 @@ from ..elements import Elements
 from ..elements import as_elements
 from ..injector import AsyncInjector
 from ..inspect import KwargsTarget
+from ..keys import as_key
 from ..sync import Injector
 
 
@@ -43,18 +45,20 @@ class AsyncLate(lang.Abstract, ta.Generic[T]):
 
 
 def bind_late(cls: ta.Any) -> Elements:
+    cls_key = as_key(cls)
     return as_elements(
         bind(Late[cls], to_fn=KwargsTarget.of(  # noqa
-            lambda i: functools.partial(i.provide, cls),
+            lambda i: functools.partial(i.provide, cls_key),
             i=Injector,
         )),
     )
 
 
 def bind_async_late(cls: ta.Any) -> Elements:
+    cls_key = as_key(cls)
     return as_elements(
         bind(AsyncLate[cls], to_fn=KwargsTarget.of(  # noqa
-            lambda i: functools.partial(i.provide, cls),
+            lambda i: functools.partial(i.provide, cls_key),
             i=AsyncInjector,
         )),
     )

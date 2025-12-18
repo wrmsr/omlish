@@ -31,6 +31,13 @@ def bind_textual(cfg: InterfaceConfig = InterfaceConfig()) -> inj.Elements:
 
     els.extend([
         inj.bind(_app.ChatApp, singleton=True),
+
+        inj.bind_late(_app.ChatApp),
+
+        inj.bind(_app.ChatAppGetter, to_fn=inj.KwargsTarget.of(
+            lambda l: _app.ChatAppGetter(l),
+            l=inj.Late[_app.ChatApp],
+        )),
     ])
 
     #

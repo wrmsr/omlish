@@ -3,6 +3,8 @@ TODO:
  - lifecycles
  - StreamService
 """
+from omlish import lang
+
 from ..... import minichain as mc
 from .ai.types import AiChatGenerator
 from .events.manager import ChatEventsManager
@@ -13,6 +15,10 @@ from .state.types import ChatStateManager
 
 
 ##
+
+
+class ChatDriverGetter(lang.Func0['ChatDriver']):
+    pass
 
 
 class ChatDriver:

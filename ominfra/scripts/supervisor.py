@@ -124,7 +124,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
             dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='../../omlish/lite/strings.py', sha1='89831ecbc34ad80e118a865eceb390ed399dc4d6'),
-            dict(path='../../omlish/lite/typing.py', sha1='deaaa560b63d9a0e40991ec0006451f5f0df04c1'),
+            dict(path='../../omlish/lite/typing.py', sha1='c501ff8f9ed08202e8016eaa098526d4deede834'),
             dict(path='../../omlish/logs/levels.py', sha1='91405563d082a5eba874da82aac89d83ce7b6152'),
             dict(path='../../omlish/logs/std/filters.py', sha1='f36aab646d84d31e295b33aaaaa6f8b67ff38b3d'),
             dict(path='../../omlish/logs/std/proxy.py', sha1='3e7301a2aa351127f9c85f61b2f85dcc3f15aafb'),
@@ -3347,6 +3347,24 @@ class Func3(ta.Generic[A0, A1, A2, T]):
 
     def __call__(self, a0: A0, a1: A1, a2: A2) -> T:
         return self.fn(a0, a1, a2)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class CachedFunc0(ta.Generic[T]):
+    fn: ta.Callable[[], T]
+
+    def __call__(self) -> T:
+        try:
+            return object.__getattribute__(self, '_value')
+        except AttributeError:
+            pass
+
+        value = self.fn()
+        object.__setattr__(self, '_value', value)
+        return value
 
 
 ##

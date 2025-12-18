@@ -54,6 +54,11 @@ def bind_driver(cfg: DriverConfig) -> inj.Elements:
         inj.bind(_driver.ChatDriver, singleton=True),
 
         inj.bind_late(_driver.ChatDriver),
+
+        inj.bind(_driver.ChatDriverGetter, to_fn=inj.KwargsTarget.of(
+            lambda l: _driver.ChatDriverGetter(l),
+            l=inj.Late[_driver.ChatDriver],
+        )),
     ])
 
     #
