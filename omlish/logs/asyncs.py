@@ -36,12 +36,12 @@ class AsyncLoggerToLogger(Logger):
         if not self.is_enabled_for(ctx.must_get_info(LoggingContextInfos.Level).level):
             return
 
-        # Note: we hardcode the stack offset of sync_await. In non-lite code, lang.sync_await uses a cext if present to
-        # avoid being on the py stack, which would obviously complicate this, but this is lite code so we will always
-        # have the non-c version.
+        # Note: we hardcode the stack offset of sync_await (which is 2 - sync_await + sync_await.thunk). In non-lite
+        # code, lang.sync_await uses a cext if present to avoid being on the py stack, which would obviously complicate
+        # this, but this is lite code so we will always have the non-c version.
         sync_await(
             self._u._log(  # noqa
-                check.isinstance(ctx, CaptureLoggingContextImpl).inc_stack_offset(2),
+                check.isinstance(ctx, CaptureLoggingContextImpl).inc_stack_offset(3),
                 msg,
                 *args,
                 **kwargs,

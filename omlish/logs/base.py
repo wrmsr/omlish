@@ -40,6 +40,11 @@ class AnyLogger(Abstract, ta.Generic[T]):
 
     ##
 
+    # This will be 1 for [Sync]Logger and 0 for AsyncLogger - in sync loggers these methods remain present on the stack,
+    # in async loggers they return a coroutine to be awaited and thus aren't actually present when said coroutine is
+    # awaited.
+    _level_proxy_method_stack_offset: ta.ClassVar[int]
+
     @ta.overload
     def log(self, level: LogLevel, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
         ...
@@ -54,7 +59,14 @@ class AnyLogger(Abstract, ta.Generic[T]):
 
     @ta.final
     def log(self, level: LogLevel, *args, **kwargs):
-        return self._log(CaptureLoggingContextImpl(level, stack_offset=1), *args, **kwargs)
+        return self._log(
+            CaptureLoggingContextImpl(
+                level,
+                stack_offset=self._level_proxy_method_stack_offset,
+            ),
+            *args,
+            **kwargs,
+        )
 
     #
 
@@ -72,7 +84,14 @@ class AnyLogger(Abstract, ta.Generic[T]):
 
     @ta.final
     def debug(self, *args, **kwargs):
-        return self._log(CaptureLoggingContextImpl(NamedLogLevel.DEBUG, stack_offset=1), *args, **kwargs)
+        return self._log(
+            CaptureLoggingContextImpl(
+                NamedLogLevel.DEBUG,
+                stack_offset=self._level_proxy_method_stack_offset,
+            ),
+            *args,
+            **kwargs,
+        )
 
     #
 
@@ -90,7 +109,14 @@ class AnyLogger(Abstract, ta.Generic[T]):
 
     @ta.final
     def info(self, *args, **kwargs):
-        return self._log(CaptureLoggingContextImpl(NamedLogLevel.INFO, stack_offset=1), *args, **kwargs)
+        return self._log(
+            CaptureLoggingContextImpl(
+                NamedLogLevel.INFO,
+                stack_offset=self._level_proxy_method_stack_offset,
+            ),
+            *args,
+            **kwargs,
+        )
 
     #
 
@@ -108,7 +134,14 @@ class AnyLogger(Abstract, ta.Generic[T]):
 
     @ta.final
     def warning(self, *args, **kwargs):
-        return self._log(CaptureLoggingContextImpl(NamedLogLevel.WARNING, stack_offset=1), *args, **kwargs)
+        return self._log(
+            CaptureLoggingContextImpl(
+                NamedLogLevel.WARNING,
+                stack_offset=self._level_proxy_method_stack_offset,
+            ),
+            *args,
+            **kwargs,
+        )
 
     #
 
@@ -126,7 +159,14 @@ class AnyLogger(Abstract, ta.Generic[T]):
 
     @ta.final
     def error(self, *args, **kwargs):
-        return self._log(CaptureLoggingContextImpl(NamedLogLevel.ERROR, stack_offset=1), *args, **kwargs)
+        return self._log(
+            CaptureLoggingContextImpl(
+                NamedLogLevel.ERROR,
+                stack_offset=self._level_proxy_method_stack_offset,
+            ),
+            *args,
+            **kwargs,
+        )
 
     #
 
@@ -144,7 +184,15 @@ class AnyLogger(Abstract, ta.Generic[T]):
 
     @ta.final
     def exception(self, *args, exc_info: LoggingExcInfoArg = True, **kwargs):
-        return self._log(CaptureLoggingContextImpl(NamedLogLevel.ERROR, exc_info=exc_info, stack_offset=1), *args, **kwargs)  # noqa
+        return self._log(
+            CaptureLoggingContextImpl(
+                NamedLogLevel.ERROR,
+                exc_info=exc_info,
+                stack_offset=self._level_proxy_method_stack_offset,
+            ),
+            *args,
+            **kwargs,
+        )
 
     #
 
@@ -162,7 +210,14 @@ class AnyLogger(Abstract, ta.Generic[T]):
 
     @ta.final
     def critical(self, *args, **kwargs):
-        return self._log(CaptureLoggingContextImpl(NamedLogLevel.CRITICAL, stack_offset=1), *args, **kwargs)
+        return self._log(
+            CaptureLoggingContextImpl(
+                NamedLogLevel.CRITICAL,
+                stack_offset=self._level_proxy_method_stack_offset,
+            ),
+            *args,
+            **kwargs,
+        )
 
     ##
 
@@ -178,6 +233,8 @@ class AnyLogger(Abstract, ta.Generic[T]):
 
 
 class Logger(AnyLogger[None], Abstract):
+    _level_proxy_method_stack_offset: ta.ClassVar[int] = 1
+
     @abc.abstractmethod
     def _log(
             self,
@@ -190,6 +247,8 @@ class Logger(AnyLogger[None], Abstract):
 
 
 class AsyncLogger(AnyLogger[ta.Awaitable[None]], Abstract):
+    _level_proxy_method_stack_offset: ta.ClassVar[int] = 0
+
     @abc.abstractmethod
     def _log(
             self,

@@ -126,11 +126,11 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/subprocesses/run.py', sha1='8200e48f0c49d164df3503cd0143038d0c4d30aa'),
             dict(path='../../omlish/subprocesses/wrap.py', sha1='8a9b7d2255481fae15c05f5624b0cdc0766f4b3f'),
             dict(path='../interp/providers/base.py', sha1='f5d068c21f230d742e9015b033cd6320f4c68898'),
-            dict(path='../../omlish/logs/base.py', sha1='4e3ccb71da2e6b9bf8b42dc40ef6006afb8c02ef'),
+            dict(path='../../omlish/logs/base.py', sha1='9772b763a04c1687a36b7eaa152d29648c193db6'),
             dict(path='../../omlish/logs/std/records.py', sha1='8bbf6ef9eccb3a012c6ca416ddf3969450fd8fc9'),
             dict(path='../../omlish/subprocesses/base.py', sha1='cb9f668be5422fecb27222caabb67daac6c1bab9'),
             dict(path='../interp/resolvers.py', sha1='817b8e76401cd7a19eb43ca54d65272e4c8a4b0e'),
-            dict(path='../../omlish/logs/asyncs.py', sha1='79bc4a81a1ddad5f9ccec0092451b58ee046df0c'),
+            dict(path='../../omlish/logs/asyncs.py', sha1='ab11b70033d9f2e9a4e70254185aa1c6130c6077'),
             dict(path='../../omlish/logs/std/loggers.py', sha1='a569179445d6a8a942b5dcfad1d1f77702868803'),
             dict(path='../../omlish/subprocesses/asyncs.py', sha1='bba44d524c24c6ac73168aee6343488414e5bf48'),
             dict(path='../../omlish/subprocesses/sync.py', sha1='8434919eba4da67825773d56918fdc0cb2f1883b'),
@@ -8474,6 +8474,11 @@ class AnyLogger(Abstract, ta.Generic[T]):
 
     ##
 
+    # This will be 1 for [Sync]Logger and 0 for AsyncLogger - in sync loggers these methods remain present on the stack,
+    # in async loggers they return a coroutine to be awaited and thus aren't actually present when said coroutine is
+    # awaited.
+    _level_proxy_method_stack_offset: ta.ClassVar[int]
+
     @ta.overload
     def log(self, level: LogLevel, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
         ...
@@ -8488,7 +8493,14 @@ class AnyLogger(Abstract, ta.Generic[T]):
 
     @ta.final
     def log(self, level: LogLevel, *args, **kwargs):
-        return self._log(CaptureLoggingContextImpl(level, stack_offset=1), *args, **kwargs)
+        return self._log(
+            CaptureLoggingContextImpl(
+                level,
+                stack_offset=self._level_proxy_method_stack_offset,
+            ),
+            *args,
+            **kwargs,
+        )
 
     #
 
@@ -8506,7 +8518,14 @@ class AnyLogger(Abstract, ta.Generic[T]):
 
     @ta.final
     def debug(self, *args, **kwargs):
-        return self._log(CaptureLoggingContextImpl(NamedLogLevel.DEBUG, stack_offset=1), *args, **kwargs)
+        return self._log(
+            CaptureLoggingContextImpl(
+                NamedLogLevel.DEBUG,
+                stack_offset=self._level_proxy_method_stack_offset,
+            ),
+            *args,
+            **kwargs,
+        )
 
     #
 
@@ -8524,7 +8543,14 @@ class AnyLogger(Abstract, ta.Generic[T]):
 
     @ta.final
     def info(self, *args, **kwargs):
-        return self._log(CaptureLoggingContextImpl(NamedLogLevel.INFO, stack_offset=1), *args, **kwargs)
+        return self._log(
+            CaptureLoggingContextImpl(
+                NamedLogLevel.INFO,
+                stack_offset=self._level_proxy_method_stack_offset,
+            ),
+            *args,
+            **kwargs,
+        )
 
     #
 
@@ -8542,7 +8568,14 @@ class AnyLogger(Abstract, ta.Generic[T]):
 
     @ta.final
     def warning(self, *args, **kwargs):
-        return self._log(CaptureLoggingContextImpl(NamedLogLevel.WARNING, stack_offset=1), *args, **kwargs)
+        return self._log(
+            CaptureLoggingContextImpl(
+                NamedLogLevel.WARNING,
+                stack_offset=self._level_proxy_method_stack_offset,
+            ),
+            *args,
+            **kwargs,
+        )
 
     #
 
@@ -8560,7 +8593,14 @@ class AnyLogger(Abstract, ta.Generic[T]):
 
     @ta.final
     def error(self, *args, **kwargs):
-        return self._log(CaptureLoggingContextImpl(NamedLogLevel.ERROR, stack_offset=1), *args, **kwargs)
+        return self._log(
+            CaptureLoggingContextImpl(
+                NamedLogLevel.ERROR,
+                stack_offset=self._level_proxy_method_stack_offset,
+            ),
+            *args,
+            **kwargs,
+        )
 
     #
 
@@ -8578,7 +8618,15 @@ class AnyLogger(Abstract, ta.Generic[T]):
 
     @ta.final
     def exception(self, *args, exc_info: LoggingExcInfoArg = True, **kwargs):
-        return self._log(CaptureLoggingContextImpl(NamedLogLevel.ERROR, exc_info=exc_info, stack_offset=1), *args, **kwargs)  # noqa
+        return self._log(
+            CaptureLoggingContextImpl(
+                NamedLogLevel.ERROR,
+                exc_info=exc_info,
+                stack_offset=self._level_proxy_method_stack_offset,
+            ),
+            *args,
+            **kwargs,
+        )
 
     #
 
@@ -8596,7 +8644,14 @@ class AnyLogger(Abstract, ta.Generic[T]):
 
     @ta.final
     def critical(self, *args, **kwargs):
-        return self._log(CaptureLoggingContextImpl(NamedLogLevel.CRITICAL, stack_offset=1), *args, **kwargs)
+        return self._log(
+            CaptureLoggingContextImpl(
+                NamedLogLevel.CRITICAL,
+                stack_offset=self._level_proxy_method_stack_offset,
+            ),
+            *args,
+            **kwargs,
+        )
 
     ##
 
@@ -8612,6 +8667,8 @@ class AnyLogger(Abstract, ta.Generic[T]):
 
 
 class Logger(AnyLogger[None], Abstract):
+    _level_proxy_method_stack_offset: ta.ClassVar[int] = 1
+
     @abc.abstractmethod
     def _log(
             self,
@@ -8624,6 +8681,8 @@ class Logger(AnyLogger[None], Abstract):
 
 
 class AsyncLogger(AnyLogger[ta.Awaitable[None]], Abstract):
+    _level_proxy_method_stack_offset: ta.ClassVar[int] = 0
+
     @abc.abstractmethod
     def _log(
             self,
@@ -9657,12 +9716,12 @@ class AsyncLoggerToLogger(Logger):
         if not self.is_enabled_for(ctx.must_get_info(LoggingContextInfos.Level).level):
             return
 
-        # Note: we hardcode the stack offset of sync_await. In non-lite code, lang.sync_await uses a cext if present to
-        # avoid being on the py stack, which would obviously complicate this, but this is lite code so we will always
-        # have the non-c version.
+        # Note: we hardcode the stack offset of sync_await (which is 2 - sync_await + sync_await.thunk). In non-lite
+        # code, lang.sync_await uses a cext if present to avoid being on the py stack, which would obviously complicate
+        # this, but this is lite code so we will always have the non-c version.
         sync_await(
             self._u._log(  # noqa
-                check.isinstance(ctx, CaptureLoggingContextImpl).inc_stack_offset(2),
+                check.isinstance(ctx, CaptureLoggingContextImpl).inc_stack_offset(3),
                 msg,
                 *args,
                 **kwargs,

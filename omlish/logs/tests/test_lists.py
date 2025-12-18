@@ -7,7 +7,7 @@ from ..lists import ListAsyncLogger
 from ..lists import ListLogger
 
 
-class TestLogsLists(unittest.TestCase):
+class TestLogsLists(unittest.IsolatedAsyncioTestCase):
     def test_logs_lists(self):
         log = ListLogger(level=logging.INFO)
         log.info('hi')
