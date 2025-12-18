@@ -16,7 +16,7 @@ def bind_interface(cfg: InterfaceConfig = InterfaceConfig()) -> inj.Elements:
     els: list[inj.Elemental] = []
 
     if cfg.use_textual:
-        els.append(_textual.bind_textual())
+        els.append(_textual.bind_textual(cfg))
 
     else:
         els.append(_bare.bind_bare(cfg))
