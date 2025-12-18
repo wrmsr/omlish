@@ -119,11 +119,11 @@ class ChatApp(tx.App):
             if isinstance(msg, AiMessage):
                 await self._finalize_stream_ai_message()
 
+            await msg_ctr.mount(msg)
+
             if isinstance(msg, StreamAiMessage):
                 self._stream_ai_message = check.replacing_none(self._stream_ai_message, msg)
                 await msg.write_initial_content()
-
-            await msg_ctr.mount(msg)
 
         self._pending_mount_messages = None
 
