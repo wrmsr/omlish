@@ -2,6 +2,8 @@ import inspect
 import logging
 import typing as ta
 
+from omdev.tui import textual as tx
+
 from ..base import ChatInterface
 from .app import ChatApp
 
@@ -13,12 +15,24 @@ if ta.TYPE_CHECKING:
 ##
 
 
+def _translate_log_level(level: int) -> tuple['tx.LogGroup', 'tx.LogVerbosity']:
+    if level >= logging.ERROR:
+        return (tx.LogGroup.ERROR, tx.LogVerbosity.HIGH)
+    elif level >= logging.WARNING:
+        return (tx.LogGroup.ERROR, tx.LogVerbosity.HIGH)
+    elif level >= logging.INFO:
+        return (tx.LogGroup.INFO, tx.LogVerbosity.NORMAL)
+    elif level >= logging.DEBUG:
+        return (tx.LogGroup.DEBUG, tx.LogVerbosity.NORMAL)
+    else:
+        return (tx.LogGroup.UNDEFINED, tx.LogVerbosity.NORMAL)
+
+
 class _HackLoggingHandler(logging.Handler):
     """
     TODO:
      - reify caller from LogContextInfos
      - queue worker
-     - translate verbosity and group
     """
 
     def __init__(self, devtools: ta.Optional['DevtoolsClient']) -> None:
@@ -26,23 +40,29 @@ class _HackLoggingHandler(logging.Handler):
 
         self._devtools = devtools
 
-    def emit(self, record):
+    def emit(self, record: logging.LogRecord) -> None:
         if (devtools := self._devtools) is not None and devtools.is_connected:
             from textual_dev.client import DevtoolsLog
 
+            msg = self.format(record)
+
             caller = inspect.Traceback(
-                filename='',
-                lineno=0,
-                function='',
+                filename=record.filename,
+                lineno=record.lineno,
+                function=record.funcName,
                 code_context=None,
                 index=None,
             )
 
+            group, verbosity = _translate_log_level(record.levelno)
+
             devtools.log(
                 DevtoolsLog(
-                    repr(record),
+                    msg,
                     caller=caller,
                 ),
+                group=group,
+                verbosity=verbosity,
             )
 
 

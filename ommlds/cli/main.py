@@ -36,7 +36,7 @@ def _process_main_extra_args(args: ap.Namespace) -> None:
         logs.configure_standard_logging('DEBUG')
     else:
         logs.configure_standard_logging('INFO')
-        logs.silence_noisy_loggers()
+    logs.silence_noisy_loggers()
 
 
 ##
@@ -373,7 +373,10 @@ MAIN_PROFILE_ARGS: ta.Sequence[ap.Arg] = [
 async def _a_main(argv: ta.Any = None) -> None:
     # FIXME: lol
     import os
-    os.environ['TEXTUAL'] = 'debug,devtools'
+    os.environ['TEXTUAL'] = ','.join([
+        # 'debug',
+        'devtools',
+    ])
     os.environ['TEXTUAL_DEVTOOLS_PORT'] = '41932'
 
     parser = ap.ArgumentParser()

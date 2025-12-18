@@ -4,16 +4,17 @@ import logging
 ##
 
 
-NOISY_LOGGERS: set[str] = {
-    'boto3.resources.action',
-    'datadog.dogstatsd',
-    'elasticsearch',
-    'httpx',
-    'kazoo.client',
-    'requests.packages.urllib3.connectionpool',
+NOISY_LOGGER_LEVELS: dict[str, int] = {
+    'boto3.resources.action': logging.WARNING,
+    'datadog.dogstatsd': logging.WARNING,
+    'elasticsearch': logging.WARNING,
+    'httpx': logging.WARNING,
+    'kazoo.client': logging.WARNING,
+    'requests.packages.urllib3.connectionpool': logging.WARNING,
+    'markdown_it': logging.INFO,
 }
 
 
 def silence_noisy_loggers() -> None:
-    for noisy_logger in NOISY_LOGGERS:
-        logging.getLogger(noisy_logger).setLevel(logging.WARNING)
+    for name, level in NOISY_LOGGER_LEVELS.items():
+        logging.getLogger(name).setLevel(level)

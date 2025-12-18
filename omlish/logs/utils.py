@@ -17,7 +17,7 @@ def exception_logging(log):  # noqa
         def inner(*args, **kwargs):
             try:
                 return fn(*args, **kwargs)
-            except Exception:
+            except Exception as e:  # noqa
                 log.exception('Error in %r', fn)
                 raise
 
@@ -32,7 +32,7 @@ def async_exception_logging(alog):  # noqa
         async def inner(*args, **kwargs):
             try:
                 return await fn(*args, **kwargs)
-            except Exception:
+            except Exception as e:  # noqa
                 await alog.exception('Error in %r', fn)
                 raise
 

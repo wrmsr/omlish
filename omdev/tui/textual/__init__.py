@@ -6,6 +6,8 @@ from omlish import lang as _lang
 with _lang.auto_proxy_init(globals()):
     ##
 
+    from textual import LogGroup  # noqa
+    from textual import LogVerbosity  # noqa
     from textual import app  # noqa
     from textual import binding  # noqa
     from textual import constants  # noqa
