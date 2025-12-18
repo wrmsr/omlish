@@ -155,6 +155,8 @@ class ChatApp(tx.App):
             if ev is None:
                 break
 
+            await alog.debug(lambda: f'Got chat driver event: {ev!r}')
+
             if isinstance(ev, AiMessagesChatEvent):
                 wx: list[tx.Widget] = []
 
@@ -189,6 +191,8 @@ class ChatApp(tx.App):
             ac = await self._chat_driver_action_queue.get()
             if ac is None:
                 break
+
+            await alog.debug(lambda: f'Got chat driver action: {ac!r}')
 
             if isinstance(ac, mc.UserMessage):
                 try:

@@ -536,18 +536,6 @@ def format_for_columns(pkgs: ta.Sequence[Package]) -> tuple[list[list[str]], lis
     # if has_editables:
     #     header.append('Editable project location')
 
-    def add_c(row, c):
-        if c is None:
-            row.extend(['', ''])
-            return
-
-        row.append(str(c.version))
-
-        if (l_ut := c.upload_time()) is not None:
-            row.append(human_round_td(now_utc() - l_ut))
-        else:
-            row.append('')
-
     rows = []
     for pkg in pkgs:
         sc = check.not_none(pkg.suggested_candidate)
@@ -558,8 +546,20 @@ def format_for_columns(pkgs: ta.Sequence[Package]) -> tuple[list[list[str]], lis
             pkg.dist.raw_version,
         ]
 
-        add_c(row, sc if sc.version != pkg.dist.version else None)
-        add_c(row, lc if sc is not lc else None)
+        def add_c(c):
+            if c is None:
+                row.extend(['', ''])
+                return
+
+            row.append(str(c.version))
+
+            if (l_ut := c.upload_time()) is not None:
+                row.append(human_round_td(now_utc() - l_ut))
+            else:
+                row.append('')
+
+        add_c(sc if sc.version != pkg.dist.version else None)
+        add_c(lc if sc is not lc else None)
 
         # if has_build_tags:
         #     row.append(build_tags[i] or '')

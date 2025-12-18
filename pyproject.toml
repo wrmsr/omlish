@@ -197,6 +197,7 @@ ignore = [
     'B008',  # function-call-in-default-argument
     'B009',  # get-attr-with-constant
     'B010',  # set-attr-with-constant
+    'B023',  # function-uses-loop-variable
     'B027',  # empty-method-without-abstract-decorator
     'B028',  # no-explicit-stacklevel
     'B905',  # zip-without-explicit-strict
