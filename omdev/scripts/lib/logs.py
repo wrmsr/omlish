@@ -41,7 +41,7 @@ def __omlish_amalg__():  # noqa
             dict(path='warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
             dict(path='infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
             dict(path='std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
-            dict(path='contexts.py', sha1='7456964ade9ac66460e9ade4e242dbdc24b39501'),
+            dict(path='contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
             dict(path='standard.py', sha1='818b674f7d15012f25b79f52f6e8e7368b633038'),
             dict(path='base.py', sha1='4e3ccb71da2e6b9bf8b42dc40ef6006afb8c02ef'),
             dict(path='std/records.py', sha1='8bbf6ef9eccb3a012c6ca416ddf3969450fd8fc9'),
@@ -1002,6 +1002,9 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
                 self._infos[type(info)] = info
         return self
 
+    def get_infos(self) -> ta.Mapping[ta.Type[LoggingContextInfo], LoggingContextInfo]:
+        return self._infos
+
     def get_info(self, ty: ta.Type[LoggingContextInfoT]) -> ta.Optional[LoggingContextInfoT]:
         return self._infos.get(ty)
 
@@ -1024,7 +1027,7 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
     _stack_offset: int
     _stack_info: bool
 
-    def inc_stack_offset(self, ofs: int = 1) -> 'CaptureLoggingContext':
+    def inc_stack_offset(self, ofs: int = 1) -> 'CaptureLoggingContextImpl':
         if hasattr(self, '_stack_offset'):
             self._stack_offset += ofs
         return self

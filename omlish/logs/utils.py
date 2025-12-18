@@ -26,6 +26,21 @@ def exception_logging(log):  # noqa
     return outer
 
 
+def async_exception_logging(alog):  # noqa
+    def outer(fn):
+        @functools.wraps(fn)
+        async def inner(*args, **kwargs):
+            try:
+                return await fn(*args, **kwargs)
+            except Exception:
+                await alog.exception('Error in %r', fn)
+                raise
+
+        return inner
+
+    return outer
+
+
 ##
 
 

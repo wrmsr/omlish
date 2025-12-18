@@ -118,6 +118,9 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
                 self._infos[type(info)] = info
         return self
 
+    def get_infos(self) -> ta.Mapping[ta.Type[LoggingContextInfo], LoggingContextInfo]:
+        return self._infos
+
     def get_info(self, ty: ta.Type[LoggingContextInfoT]) -> ta.Optional[LoggingContextInfoT]:
         return self._infos.get(ty)
 
@@ -140,7 +143,7 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
     _stack_offset: int
     _stack_info: bool
 
-    def inc_stack_offset(self, ofs: int = 1) -> 'CaptureLoggingContext':
+    def inc_stack_offset(self, ofs: int = 1) -> 'CaptureLoggingContextImpl':
         if hasattr(self, '_stack_offset'):
             self._stack_offset += ofs
         return self

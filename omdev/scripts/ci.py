@@ -143,9 +143,9 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/asyncs/asyncio/timeouts.py', sha1='4d31b02b3c39b8f2fa7e94db36552fde6942e36a'),
             dict(path='../../omlish/http/handlers.py', sha1='40629060bac22ea5e94b720b57001861a4ec9031'),
             dict(path='../../omlish/lite/inject.py', sha1='6f097e3170019a34ff6834d36fcc9cbeed3a7ab4'),
-            dict(path='../../omlish/logs/contexts.py', sha1='7456964ade9ac66460e9ade4e242dbdc24b39501'),
+            dict(path='../../omlish/logs/contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
             dict(path='../../omlish/logs/standard.py', sha1='818b674f7d15012f25b79f52f6e8e7368b633038'),
-            dict(path='../../omlish/logs/utils.py', sha1='8430cddbb7de34afb2793ab8a0cc6fbee47fef2c'),
+            dict(path='../../omlish/logs/utils.py', sha1='0cd11e0a5dde24199322c403c145f88883b5d05d'),
             dict(path='../../omlish/sockets/server/handlers.py', sha1='6f9adca9fa04774a28a488a4e2a11bb4492c71d0'),
             dict(path='../../omlish/subprocesses/run.py', sha1='8200e48f0c49d164df3503cd0143038d0c4d30aa'),
             dict(path='../../omlish/subprocesses/wrap.py', sha1='8a9b7d2255481fae15c05f5624b0cdc0766f4b3f'),
@@ -166,7 +166,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../oci/building.py', sha1='b4fea06c03ba02d3ecfc6d10d955dc76f263846a'),
             dict(path='../oci/loading.py', sha1='64d806ffad8d24087ccc29f759f672e6d795bee2'),
             dict(path='../../omlish/http/coro/server/sockets.py', sha1='40ef4aa43f94f1a1a2a431a012cb961f25905ff4'),
-            dict(path='../../omlish/logs/asyncs.py', sha1='f47419ce01244c3890e0161f7bd1da1d766303a4'),
+            dict(path='../../omlish/logs/asyncs.py', sha1='79bc4a81a1ddad5f9ccec0092451b58ee046df0c'),
             dict(path='../../omlish/logs/std/loggers.py', sha1='a569179445d6a8a942b5dcfad1d1f77702868803'),
             dict(path='../../omlish/subprocesses/asyncs.py', sha1='bba44d524c24c6ac73168aee6343488414e5bf48'),
             dict(path='../../omlish/subprocesses/sync.py', sha1='8434919eba4da67825773d56918fdc0cb2f1883b'),
@@ -8227,6 +8227,9 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
                 self._infos[type(info)] = info
         return self
 
+    def get_infos(self) -> ta.Mapping[ta.Type[LoggingContextInfo], LoggingContextInfo]:
+        return self._infos
+
     def get_info(self, ty: ta.Type[LoggingContextInfoT]) -> ta.Optional[LoggingContextInfoT]:
         return self._infos.get(ty)
 
@@ -8249,7 +8252,7 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
     _stack_offset: int
     _stack_info: bool
 
-    def inc_stack_offset(self, ofs: int = 1) -> 'CaptureLoggingContext':
+    def inc_stack_offset(self, ofs: int = 1) -> 'CaptureLoggingContextImpl':
         if hasattr(self, '_stack_offset'):
             self._stack_offset += ofs
         return self
@@ -8422,6 +8425,21 @@ def exception_logging(log):  # noqa
                 return fn(*args, **kwargs)
             except Exception:
                 log.exception('Error in %r', fn)
+                raise
+
+        return inner
+
+    return outer
+
+
+def async_exception_logging(alog):  # noqa
+    def outer(fn):
+        @functools.wraps(fn)
+        async def inner(*args, **kwargs):
+            try:
+                return await fn(*args, **kwargs)
+            except Exception:
+                await alog.exception('Error in %r', fn)
                 raise
 
         return inner
@@ -12017,9 +12035,16 @@ class AsyncLoggerToLogger(Logger):
             *args: ta.Any,
             **kwargs: ta.Any,
     ) -> None:
+        # Nope out early to avoid sync_await if possible - don't bother in the LoggerToAsyncLogger.
+        if not self.is_enabled_for(ctx.must_get_info(LoggingContextInfos.Level).level):
+            return
+
+        # Note: we hardcode the stack offset of sync_await. In non-lite code, lang.sync_await uses a cext if present to
+        # avoid being on the py stack, which would obviously complicate this, but this is lite code so we will always
+        # have the non-c version.
         sync_await(
             self._u._log(  # noqa
-                ctx,
+                check.isinstance(ctx, CaptureLoggingContextImpl).inc_stack_offset(2),
                 msg,
                 *args,
                 **kwargs,
@@ -12044,7 +12069,7 @@ class LoggerToAsyncLogger(AsyncLogger):
             **kwargs: ta.Any,
     ) -> None:
         return self._u._log(  # noqa
-            ctx,
+            check.isinstance(ctx, CaptureLoggingContextImpl).inc_stack_offset(),
             msg,
             *args,
             **kwargs,

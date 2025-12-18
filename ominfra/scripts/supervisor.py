@@ -157,7 +157,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/io/fdio/kqueue.py', sha1='c90ba13e9e5ee795b6af752a6f25f8bcfd7f88a0'),
             dict(path='../../omlish/lite/configs.py', sha1='c8602e0e197ef1133e7e8e248935ac745bfd46cb'),
             dict(path='../../omlish/lite/inject.py', sha1='6f097e3170019a34ff6834d36fcc9cbeed3a7ab4'),
-            dict(path='../../omlish/logs/contexts.py', sha1='7456964ade9ac66460e9ade4e242dbdc24b39501'),
+            dict(path='../../omlish/logs/contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
             dict(path='../../omlish/logs/standard.py', sha1='818b674f7d15012f25b79f52f6e8e7368b633038'),
             dict(path='types.py', sha1='7ef67f710fb54c3af067aa596cb593f33eafe380'),
             dict(path='../../omlish/http/coro/server/server.py', sha1='c0a980afa8346dbc20570acddb2b3b579bfc1ce0'),
@@ -167,7 +167,7 @@ def __omlish_amalg__():  # noqa
             dict(path='groupsimpl.py', sha1='4fe587a6eaff7dd874b54450be62f9689283d230'),
             dict(path='process.py', sha1='ec0903adbde7552ba8a6aad9030716ef57fc4a6c'),
             dict(path='../../omlish/http/coro/server/fdio.py', sha1='3f1b4865e589a336f942a763dc11ce42fa5c8857'),
-            dict(path='../../omlish/logs/asyncs.py', sha1='f47419ce01244c3890e0161f7bd1da1d766303a4'),
+            dict(path='../../omlish/logs/asyncs.py', sha1='79bc4a81a1ddad5f9ccec0092451b58ee046df0c'),
             dict(path='../../omlish/logs/std/loggers.py', sha1='a569179445d6a8a942b5dcfad1d1f77702868803'),
             dict(path='groups.py', sha1='a02a602d28793e5c84fbe7bfbcfa6ccce2ee0788'),
             dict(path='spawning.py', sha1='9e65e562395ad04e3f3a314f946b7a4e58a601da'),
@@ -9308,6 +9308,9 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
                 self._infos[type(info)] = info
         return self
 
+    def get_infos(self) -> ta.Mapping[ta.Type[LoggingContextInfo], LoggingContextInfo]:
+        return self._infos
+
     def get_info(self, ty: ta.Type[LoggingContextInfoT]) -> ta.Optional[LoggingContextInfoT]:
         return self._infos.get(ty)
 
@@ -9330,7 +9333,7 @@ class CaptureLoggingContextImpl(CaptureLoggingContext):
     _stack_offset: int
     _stack_info: bool
 
-    def inc_stack_offset(self, ofs: int = 1) -> 'CaptureLoggingContext':
+    def inc_stack_offset(self, ofs: int = 1) -> 'CaptureLoggingContextImpl':
         if hasattr(self, '_stack_offset'):
             self._stack_offset += ofs
         return self
@@ -11383,9 +11386,16 @@ class AsyncLoggerToLogger(Logger):
             *args: ta.Any,
             **kwargs: ta.Any,
     ) -> None:
+        # Nope out early to avoid sync_await if possible - don't bother in the LoggerToAsyncLogger.
+        if not self.is_enabled_for(ctx.must_get_info(LoggingContextInfos.Level).level):
+            return
+
+        # Note: we hardcode the stack offset of sync_await. In non-lite code, lang.sync_await uses a cext if present to
+        # avoid being on the py stack, which would obviously complicate this, but this is lite code so we will always
+        # have the non-c version.
         sync_await(
             self._u._log(  # noqa
-                ctx,
+                check.isinstance(ctx, CaptureLoggingContextImpl).inc_stack_offset(2),
                 msg,
                 *args,
                 **kwargs,
@@ -11410,7 +11420,7 @@ class LoggerToAsyncLogger(AsyncLogger):
             **kwargs: ta.Any,
     ) -> None:
         return self._u._log(  # noqa
-            ctx,
+            check.isinstance(ctx, CaptureLoggingContextImpl).inc_stack_offset(),
             msg,
             *args,
             **kwargs,

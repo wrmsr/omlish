@@ -4,6 +4,7 @@ import typing as ta
 from omdev.tui import textual as tx
 from omlish import check
 from omlish import lang
+from omlish.logs import all as logs
 
 from ...... import minichain as mc
 from ...drivers.driver import ChatDriver
@@ -18,6 +19,9 @@ from .widgets.messages import StreamAiMessage
 from .widgets.messages import ToolConfirmationMessage
 from .widgets.messages import UserMessage
 from .widgets.messages import WelcomeMessage
+
+
+log, alog = logs.get_module_loggers(globals())
 
 
 ##
@@ -144,62 +148,56 @@ class ChatApp(tx.App):
 
     _chat_driver_event_task: asyncio.Task[None] | None = None
 
+    @logs.async_exception_logging(alog)
     async def _chat_driver_event_task_main(self) -> None:
-        try:
-            while True:
-                ev = await self._chat_driver_event_queue.get()
-                if ev is None:
-                    break
+        while True:
+            ev = await self._chat_driver_event_queue.get()
+            if ev is None:
+                break
 
-                if isinstance(ev, AiMessagesChatEvent):
-                    wx: list[tx.Widget] = []
+            if isinstance(ev, AiMessagesChatEvent):
+                wx: list[tx.Widget] = []
 
-                    for ai_msg in ev.chat:
-                        if isinstance(ai_msg, mc.AiMessage):
-                            wx.append(
-                                StaticAiMessage(
-                                    check.isinstance(ai_msg.c, str),
-                                    markdown=True,
-                                ),
-                            )
+                for ai_msg in ev.chat:
+                    if isinstance(ai_msg, mc.AiMessage):
+                        wx.append(
+                            StaticAiMessage(
+                                check.isinstance(ai_msg.c, str),
+                                markdown=True,
+                            ),
+                        )
 
-                    if wx:
-                        await self._enqueue_mount_messages(*wx)
-                        self.call_later(self._mount_messages)
+                if wx:
+                    await self._enqueue_mount_messages(*wx)
+                    self.call_later(self._mount_messages)
 
-                elif isinstance(ev, AiDeltaChatEvent):
-                    if isinstance(ev.delta, mc.ContentAiDelta):
-                        cc = check.isinstance(ev.delta.c, str)
-                        self.call_later(self._append_stream_ai_message_content, cc)
+            elif isinstance(ev, AiDeltaChatEvent):
+                if isinstance(ev.delta, mc.ContentAiDelta):
+                    cc = check.isinstance(ev.delta.c, str)
+                    self.call_later(self._append_stream_ai_message_content, cc)
 
-                    elif isinstance(ev.delta, mc.ToolUseAiDelta):
-                        pass
-
-        except Exception as e:  # noqa
-            raise
+                elif isinstance(ev.delta, mc.ToolUseAiDelta):
+                    pass
 
     #
 
     _chat_driver_action_task: asyncio.Task[None] | None = None
 
+    @logs.async_exception_logging(alog)
     async def _chat_driver_action_task_main(self) -> None:
-        try:
-            while True:
-                ac = await self._chat_driver_action_queue.get()
-                if ac is None:
-                    break
+        while True:
+            ac = await self._chat_driver_action_queue.get()
+            if ac is None:
+                break
 
-                if isinstance(ac, mc.UserMessage):
-                    try:
-                        await self._chat_driver.send_user_messages([ac])
-                    except Exception as e:  # noqa
-                        raise
+            if isinstance(ac, mc.UserMessage):
+                try:
+                    await self._chat_driver.send_user_messages([ac])
+                except Exception as e:  # noqa
+                    raise
 
-                else:
-                    raise TypeError(ac)  # noqa
-
-        except Exception as e:  # noqa
-            raise
+            else:
+                raise TypeError(ac)  # noqa
 
     #
 

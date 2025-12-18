@@ -72,8 +72,16 @@ with _lang.auto_proxy_init(globals()):
         NamedLogLevel,
     )
 
+    from .lists import (  # noqa
+        AnyListLogger,
+        ListLogger,
+        AsyncLogger,
+    )
+
     from .modules import (  # noqa
         get_module_logger,
+        get_module_async_logger,
+        get_module_loggers,
     )
 
     from .protocols import (  # noqa
@@ -90,10 +98,11 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .utils import (  # noqa
+        exception_logging,
+        async_exception_logging,
+
         LogTimingContext,
         log_timing_context,
-
-        exception_logging,
     )
 
     from .warnings import (  # noqa
