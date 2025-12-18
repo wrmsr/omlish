@@ -10,13 +10,13 @@ from omlish import lang
 from ...drivers.events.injection import event_callbacks
 from ..base import ChatInterface
 from ..configs import InterfaceConfig
-from .app import ChatApp
-from .app import ChatDriverEventQueue
-from .interface import TextualChatInterface
 
 
 with lang.auto_proxy_import(globals()):
     from ...drivers.tools import confirmation as _tools_confirmation
+    from . import app as _app
+    from . import interface as _interface
+    from . import tools as _tools
 
 
 ##
@@ -24,23 +24,23 @@ with lang.auto_proxy_import(globals()):
 
 def bind_textual(cfg: InterfaceConfig = InterfaceConfig()) -> inj.Elements:
     els: list[inj.Elemental] = [
-        inj.bind(ChatInterface, to_ctor=TextualChatInterface, singleton=True),
+        inj.bind(ChatInterface, to_ctor=_interface.TextualChatInterface, singleton=True),
     ]
 
     #
 
     els.extend([
-        inj.bind(ChatApp, singleton=True),
+        inj.bind(_app.ChatApp, singleton=True),
     ])
 
     #
 
     els.extend([
-        inj.bind(ChatDriverEventQueue, to_const=asyncio.Queue()),
+        inj.bind(_app.ChatDriverEventQueue, to_const=asyncio.Queue()),
 
         event_callbacks().bind_item(to_fn=inj.KwargsTarget.of(
             lambda eq: lambda ev: eq.put(ev),
-            eq=ChatDriverEventQueue,
+            eq=_app.ChatDriverEventQueue,
         )),
     ])
 
@@ -55,12 +55,11 @@ def bind_textual(cfg: InterfaceConfig = InterfaceConfig()) -> inj.Elements:
             ))
 
         else:
-            # els.append(inj.bind(
-            #     _tools_confirmation.ToolExecutionConfirmation,
-            #     to_ctor=_tools.InteractiveToolExecutionConfirmation,
-            #     singleton=True,
-            # ))
-            raise NotImplementedError
+            els.append(inj.bind(
+                _tools_confirmation.ToolExecutionConfirmation,
+                to_ctor=_tools.ChatAppToolExecutionConfirmation,
+                singleton=True,
+            ))
 
     #
 
