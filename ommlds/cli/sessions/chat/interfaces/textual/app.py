@@ -33,13 +33,15 @@ class ChatApp(tx.App):
     def __init__(
             self,
             *,
-            driver: ChatDriver,
-            event_queue: ChatDriverEventQueue,
+            chat_driver: ChatDriver,
+            chat_driver_event_queue: ChatDriverEventQueue,
     ) -> None:
         super().__init__()
 
-        self._chat_driver = driver
-        self._event_queue = event_queue
+        self._chat_driver = chat_driver
+        self._chat_driver_event_queue = chat_driver_event_queue
+
+        self._chat_driver_action_queue: asyncio.Queue[ta.Any] = asyncio.Queue()
 
     def get_driver_class(self) -> type[tx.Driver]:
         return tx.get_pending_writes_driver_class(super().get_driver_class())
@@ -134,11 +136,11 @@ class ChatApp(tx.App):
 
     #
 
-    _event_queue_task: asyncio.Task[None] | None = None
+    _chat_driver_event_task: asyncio.Task[None] | None = None
 
-    async def _event_queue_task_main(self) -> None:
+    async def _chat_driver_event_task_main(self) -> None:
         while True:
-            ev = await self._event_queue.get()
+            ev = await self._chat_driver_event_queue.get()
             if ev is None:
                 break
 
@@ -165,28 +167,30 @@ class ChatApp(tx.App):
 
     #
 
-    # def _schedule_after_refresh(self) -> None:
-    #     self.call_after_refresh(self._after_refresh)
+    _chat_driver_action_task: asyncio.Task[None] | None = None
 
-    # def _after_refresh(self) -> None:
-    #     self.after_repaint()
-    #
-    #     self._schedule_after_refresh()
+    async def _chat_driver_action_task_main(self) -> None:
+        while True:
+            ac = await self._chat_driver_action_queue.get()
+            if ac is None:
+                break
 
-    # def after_repaint(self) -> None:
-    #     # from omdev.tui.textual.debug.dominfo import inspect_dom_node  # noqa
-    #
-    #     pass
+            if isinstance(ac, mc.UserMessage):
+                await self._chat_driver.send_user_messages([ac])
+
+            else:
+                raise TypeError(ac)
 
     #
 
     async def on_mount(self) -> None:
-        # self._schedule_after_refresh()
-
-        check.state(self._event_queue_task is None)
-        self._event_queue_task = asyncio.create_task(self._event_queue_task_main())
+        check.state(self._chat_driver_event_task is None)
+        self._chat_driver_event_task = asyncio.create_task(self._chat_driver_event_task_main())
 
         await self._chat_driver.start()
+
+        check.state(self._chat_driver_action_task is None)
+        self._chat_driver_action_task = asyncio.create_task(self._chat_driver_action_task_main())
 
         self._get_input_text_area().focus()
 
@@ -197,11 +201,15 @@ class ChatApp(tx.App):
         )
 
     async def on_unmount(self) -> None:
+        if (cdt := self._chat_driver_event_task) is not None:
+            await self._chat_driver_event_queue.put(None)
+            await cdt
+
         await self._chat_driver.stop()
 
-        if (eqt := self._event_queue_task) is not None:
-            await self._event_queue.put(None)
-            await eqt
+        if (cet := self._chat_driver_event_task) is not None:
+            await self._chat_driver_event_queue.put(None)
+            await cet
 
     async def on_input_text_area_submitted(self, event: InputTextArea.Submitted) -> None:
         self._get_input_text_area().clear()
@@ -214,4 +222,4 @@ class ChatApp(tx.App):
             ),
         )
 
-        await self._chat_driver.send_user_messages([mc.UserMessage(event.text)])
+        await self._chat_driver_action_queue.put(mc.UserMessage(event.text))

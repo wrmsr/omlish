@@ -112,3 +112,21 @@ class StreamAiMessage(AiMessage):
 
         await stream.stop()
         self._stream_ = None
+
+
+##
+
+
+class ToolConfirmationMessage(Message):
+    def __init__(self, content: str) -> None:
+        super().__init__()
+
+        self.add_class('tool-confirmation-message')
+
+        self._content = content
+
+    def compose(self) -> tx.ComposeResult:
+        with tx.Horizontal(classes='tool-confirmation-message-outer'):
+            yield tx.Static('? ', classes='tool-confirmation-message-glyph')
+            with tx.Vertical(classes='tool-confirmation-message-inner'):
+                yield tx.Static(self._content)

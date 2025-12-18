@@ -102,3 +102,37 @@
         padding: 0;
     }
 }
+
+
+/* Tool Confirmation */
+
+.tool-confirmation-message {
+    width: 100%;
+    height: auto;
+
+    margin-top: 1;
+}
+
+.tool-confirmation-message-outer {
+    width: 100%;
+    height: auto;
+
+    align: left top;
+}
+
+.tool-confirmation-message-glyph {
+    width: auto;
+    height: auto;
+
+    background: transparent;
+    color: $primary;
+
+    text-style: bold;
+}
+
+.tool-confirmation-message-inner {
+    width: 100%;
+    height: auto;
+
+    padding: 0;
+}
