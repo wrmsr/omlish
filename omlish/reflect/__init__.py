@@ -9,52 +9,69 @@ with _lang.auto_proxy_init(
     ##
 
     from .inspect import (  # noqa
-        get_annotations,
-        get_filtered_type_hints,
         has_annotations,
+
+        get_annotations,
+
+        get_filtered_type_hints,
     )
 
     from .ops import (  # noqa
-        get_concrete_type,
-        get_underlying,
-        strip_annotations,
         strip_objs,
-        to_annotation,
+        strip_annotations,
+
         types_equivalent,
+
+        get_underlying,
+        get_concrete_type,
+
+        to_annotation,
     )
 
     from .subst import (  # noqa
-        ALIAS_UPDATING_GENERIC_SUBSTITUTION,
-        DEFAULT_GENERIC_SUBSTITUTION,
-        GenericSubstitution,
-        generic_mro,
-        get_generic_bases,
         get_type_var_replacements,
         replace_type_vars,
+
+        GenericSubstitution,
+        DEFAULT_GENERIC_SUBSTITUTION,
+        ALIAS_UPDATING_GENERIC_SUBSTITUTION,
+
+        generic_mro,
+        get_generic_bases,
     )
 
     from .types import (  # noqa
-        ANY,
-        Annotated,
-        Any,
-        DEFAULT_REFLECTOR,
-        Generic,
-        GenericLike,
-        Literal,
-        NewType,
-        Protocol,
-        ReflectTypeError,
-        Reflector,
-        TYPES,
-        Type,
-        TypeInfo,
-        Union,
-        get_newtype_supertype,
+        is_simple_generic_alias_type,
+        get_params,
+        is_union_type,
         get_orig_bases,
         get_orig_class,
-        get_params,
+        get_newtype_supertype,
         get_type_var_bound,
+
+        TypeInfo,
+        Type,
+        TYPES,
+
+        Union,
+
+        GenericLike,
+        Generic,
+        Protocol,
+
+        NewType,
+
+        Annotated,
+
+        Literal,
+
+        Any,
+        ANY,
+
+        ReflectTypeError,
+
+        Reflector,
+        DEFAULT_REFLECTOR,
         is_type,
-        is_union_type,
         type_,
     )

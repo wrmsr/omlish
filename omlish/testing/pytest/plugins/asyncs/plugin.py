@@ -1,6 +1,8 @@
 """
 TODO:
  - auto drain_asyncio
+ - sync backend - sync_await
+ - maysync backend
 """
 import contextvars
 import functools

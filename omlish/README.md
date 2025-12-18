@@ -189,7 +189,6 @@ examples are:
 - **anyio** - While lite code must use only asyncio, non-trivial async standard code prefers to be written to anyio.
 - **pytest** - What is used for all standard testing - as lite code has no dependencies of any kind its testing uses
   stdlib's [unittest](https://docs.python.org/3/library/unittest.html).
-- **wrapt** - For (optionally-enabled) injector circular proxies.
 - **sqlalchemy** - The codebase has migrated away from SQLAlchemy in favor of the internal api but it retains it as an
   optional dep to support adapting the internal api to it.
 

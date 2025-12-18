@@ -126,7 +126,7 @@ class GeneratorProcessor(Processor):
             ])
 
             if (vo := gp._ctx.option(Verbosity)) is not None and vo.debug:  # noqa
-                print(gp.prepare().plans.render(), file=sys.stderr)
+                print(gp.prepare().plans.repr(), file=sys.stderr)
                 print(file=sys.stderr)
                 print(comp_src, file=sys.stderr)
                 print(file=sys.stderr)
@@ -235,7 +235,7 @@ class GeneratorProcessor(Processor):
         #
 
         prep = self.prepare()
-        prep_plan_repr = repr(prep.plans)
+        prep_plan_repr = prep.plans.repr()
 
         #
 

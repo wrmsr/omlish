@@ -57,11 +57,17 @@ def strip_annotations(ty: Type) -> Type:
     raise TypeError(ty)
 
 
+##
+
+
 def types_equivalent(l: Type, r: Type) -> bool:
     if isinstance(l, Generic) and isinstance(r, Generic):
         return l.cls == r.cls and l.args == r.args
 
     return l == r
+
+
+##
 
 
 def get_underlying(nt: NewType) -> Type:
@@ -97,6 +103,9 @@ def get_concrete_type(
     return rec(ty)
 
 
+##
+
+
 def to_annotation(ty: Type) -> ta.Any:
     if isinstance(ty, Generic):
         return ty.obj if ty.obj is not None else ty.cls
@@ -105,7 +114,7 @@ def to_annotation(ty: Type) -> ta.Any:
         return ta.Union[*tuple(to_annotation(e) for e in ty.args)]
 
     if isinstance(ty, Protocol):
-        return ta.Protocol[*ty.params]
+        return ta.Protocol[*ty.params]  # noqa
 
     if isinstance(ty, (type, ta.TypeVar, NewType)):
         return ty

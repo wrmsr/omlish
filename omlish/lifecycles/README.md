@@ -13,7 +13,7 @@ The main classes are as follows:
   explicit division is a conscious choice.
 
 - LifecycleManaged / AsyncLifecycleManaged - a mixin which can be used to add lifecycle management behavior to a class.
-  This removes the need for manual subclassing of Lifecycle / AsyncLifecycle, providing private '_lifecycle_<state>'
+  This removes the need for manual subclassing of Lifecycle / AsyncLifecycle, providing private '\_lifecycle_<state>'
   callback methods (with default no-op implementations) which subclasses may override.
 
 - LifecycleListener / AsyncLifecycleListener - callback interfaces whose methods will be called when a lifecycle object

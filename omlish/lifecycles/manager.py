@@ -18,12 +18,15 @@ from .states import LifecycleStateError
 from .states import LifecycleStates
 
 
+LifecycleControllerT = ta.TypeVar('LifecycleControllerT', bound=AnyLifecycleController)
+
+
 ##
 
 
 @dc.dataclass(frozen=True, eq=False)
-class LifecycleManagerEntry(lang.Final):
-    controller: AnyLifecycleController
+class LifecycleManagerEntry(lang.Final, ta.Generic[LifecycleControllerT]):
+    controller: LifecycleControllerT
 
     dependencies: ta.MutableSet['LifecycleManagerEntry'] = dc.field(default_factory=set)
     dependents: ta.MutableSet['LifecycleManagerEntry'] = dc.field(default_factory=set)
@@ -203,7 +206,7 @@ class LifecycleManager(LifecycleManaged, lang.Final):
             self,
             lifecycle: Lifecycle,
             dependencies: ta.Iterable[Lifecycle] = (),
-    ) -> LifecycleManagerEntry:
+    ) -> LifecycleManagerEntry[LifecycleController]:
         return lang.sync_await(self._inner.add(
             check.isinstance(lifecycle, Lifecycle),
             [check.isinstance(d, Lifecycle) for d in dependencies],
@@ -260,7 +263,7 @@ class AsyncLifecycleManager(AsyncLifecycleManaged, lang.Final):
             self,
             lifecycle: AnyLifecycle,
             dependencies: ta.Iterable[AnyLifecycle] = (),
-    ) -> LifecycleManagerEntry:
+    ) -> LifecycleManagerEntry[AnyLifecycleController]:
         return await self._inner.add(
             lifecycle,
             dependencies,
