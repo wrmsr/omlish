@@ -122,6 +122,7 @@ class ToolConfirmationMessage(Message):
         super().__init__()
 
         self.add_class('tool-confirmation-message')
+        self.add_class('tool-confirmation-message-open')
 
         self._content = content
 

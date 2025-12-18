@@ -36,6 +36,12 @@ class InteractiveBareChatInterface(ChatInterface):
             except EOFError:
                 break
 
+            print()
+            print('<')
+            print()
+
             await self._driver.send_user_messages([mc.UserMessage(s)])
+
+            print()
 
         await self._driver.stop()
