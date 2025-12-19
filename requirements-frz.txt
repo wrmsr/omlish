@@ -49,7 +49,7 @@ cramjam==2.11.0
 cryptography==46.0.3
 cycler==0.12.1
 Cython==3.2.3
-datasets==4.4.1
+datasets==4.4.2
 ddgs==9.10.0
 debugpy==1.8.19
 decorator==5.2.1
@@ -58,7 +58,7 @@ diffusers==0.36.0
 dill==0.4.0
 diskcache==5.6.3
 docstring-to-markdown==0.17
-docutils==0.22.3
+docutils==0.22.4
 docutils-stubs==0.0.22
 duckdb==1.4.3
 execnet==2.1.2
@@ -164,7 +164,7 @@ mypy==1.19.1
 mypy_extensions==1.1.0
 mysql-connector-python==9.5.0
 mysqlclient==2.2.7
-nbclient==0.10.2
+nbclient==0.10.3
 nbconvert==7.16.6
 nbformat==5.10.4
 nest-asyncio==1.6.0

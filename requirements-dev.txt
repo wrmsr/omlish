@@ -87,7 +87,7 @@ pcpp==1.30
 # !! LGPL
 paramiko==4.0.0  # @omlish-venv !13t !13dt  # cffi
 
-docutils==0.22.3
+docutils==0.22.4
 
 markdown-it-py==4.0.0
 mdit-py-plugins==0.5.0
@@ -116,7 +116,7 @@ hf-xet==1.2.0  # @omlish-venv !14t !14dt
 
 ## NOTE: the following add a full minute to CI just setting up the deps..
 
-datasets==4.4.1; python_version < "3.14"  # !! includes arrow and pandas and shit
+datasets==4.4.2; python_version < "3.14"  # !! includes arrow and pandas and shit
 
 transformers==4.57.3  # @omlish-venv !14t !14dt
 sentence-transformers==5.2.0  # @omlish-venv !14t !14dt
