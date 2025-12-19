@@ -1,8 +1,8 @@
-import typing as ta
-
 from omlish import inject as inj
 from omlish import lang
 from omlish import lifecycles as lc
+
+from .sessions.configs import SessionConfig
 
 
 with lang.auto_proxy_import(globals()):
@@ -16,7 +16,7 @@ with lang.auto_proxy_import(globals()):
 
 def bind_main(
         *,
-        session_cfg: ta.Any,
+        session_cfg: SessionConfig,
 ) -> inj.Elements:
     els: list[inj.Elemental] = []
 

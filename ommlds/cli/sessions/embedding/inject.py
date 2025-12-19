@@ -1,4 +1,3 @@
-from omlish import dataclasses as dc
 from omlish import inject as inj
 from omlish import lang
 
@@ -23,7 +22,7 @@ def bind_embedding(cfg: EmbeddingConfig) -> inj.Elements:
     #
 
     els.extend([
-        inj.bind(_session.EmbeddingSession.Config(**dc.asdict(cfg))),
+        inj.bind(cfg),
         inj.bind(Session, to_ctor=_session.EmbeddingSession, singleton=True),
     ])
 

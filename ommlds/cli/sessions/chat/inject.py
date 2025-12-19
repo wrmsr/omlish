@@ -1,4 +1,3 @@
-from omlish import dataclasses as dc
 from omlish import inject as inj
 from omlish import lang
 
@@ -35,7 +34,7 @@ def bind_chat(cfg: ChatConfig = ChatConfig()) -> inj.Elements:
     #
 
     els.extend([
-        inj.bind(_session.ChatSession.Config(**dc.asdict(cfg))),
+        # inj.bind(cfg),  # NOTE: *not* done - the code is properly structured around not needing it.
         inj.bind(Session, to_ctor=_session.ChatSession, singleton=True),
     ])
 

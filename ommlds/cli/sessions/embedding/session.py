@@ -1,4 +1,3 @@
-from omlish import dataclasses as dc
 from omlish.formats import json
 
 from .... import minichain as mc
@@ -10,19 +9,16 @@ from .configs import EmbeddingConfig
 ##
 
 
-class EmbeddingSession(Session['EmbeddingSession.Config']):
-    @dc.dataclass(frozen=True)
-    class Config(Session.Config, EmbeddingConfig):
-        pass
-
+class EmbeddingSession(Session):
     def __init__(
             self,
-            config: Config,
+            config: EmbeddingConfig,
             *,
             service_provider: EmbeddingServiceBackendProvider,
     ) -> None:
-        super().__init__(config)
+        super().__init__()
 
+        self._config = config
         self._service_provider = service_provider
 
     async def run(self) -> None:

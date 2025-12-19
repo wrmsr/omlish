@@ -23,6 +23,7 @@ from .sessions.chat.interfaces.bare.configs import BareInterfaceConfig
 from .sessions.chat.interfaces.configs import InterfaceConfig
 from .sessions.chat.interfaces.textual.configs import TextualInterfaceConfig
 from .sessions.completion.configs import CompletionConfig
+from .sessions.configs import SessionConfig
 from .sessions.embedding.configs import EmbeddingConfig
 
 
@@ -48,7 +49,7 @@ def _process_main_extra_args(args: ap.Namespace) -> None:
 
 class Profile(lang.Abstract):
     @abc.abstractmethod
-    def run(self, argv: ta.Sequence[str]) -> ta.Awaitable[None]:
+    def configure(self, argv: ta.Sequence[str]) -> SessionConfig:
         raise NotImplementedError
 
 
@@ -277,7 +278,7 @@ class ChatProfile(Profile):
 
     #
 
-    async def run(self, argv: ta.Sequence[str]) -> None:
+    def configure(self, argv: ta.Sequence[str]) -> SessionConfig:
         parser = ap.ArgumentParser()
 
         for grp_name, grp_args in [
@@ -304,17 +305,14 @@ class ChatProfile(Profile):
         cfg = self.configure_tools(cfg)
         cfg = self.configure_code(cfg)
 
-        async with inj.create_async_managed_injector(bind_main(
-                session_cfg=cfg,
-        )) as injector:
-            await (await injector[Session]).run()
+        return cfg
 
 
 ##
 
 
 class CompletionProfile(Profile):
-    async def run(self, argv: ta.Sequence[str]) -> None:
+    def configure(self, argv: ta.Sequence[str]) -> SessionConfig:
         parser = ap.ArgumentParser()
         parser.add_argument('prompt', nargs='*')
         parser.add_argument('-b', '--backend', default='openai')
@@ -323,21 +321,18 @@ class CompletionProfile(Profile):
         content = ' '.join(args.prompt)
 
         cfg = CompletionConfig(
-            check.non_empty_str(content),
+            content=check.non_empty_str(content),
             backend=args.backend,
         )
 
-        async with inj.create_async_managed_injector(bind_main(
-                session_cfg=cfg,
-        )) as injector:
-            await (await injector[Session]).run()
+        return cfg
 
 
 ##
 
 
 class EmbedProfile(Profile):
-    async def run(self, argv: ta.Sequence[str]) -> None:
+    def configure(self, argv: ta.Sequence[str]) -> SessionConfig:
         parser = ap.ArgumentParser()
         parser.add_argument('prompt', nargs='*')
         parser.add_argument('-b', '--backend', default='openai')
@@ -346,14 +341,11 @@ class EmbedProfile(Profile):
         content = ' '.join(args.prompt)
 
         cfg = EmbeddingConfig(
-            check.non_empty_str(content),
+            content=check.non_empty_str(content),
             backend=args.backend,
         )
 
-        async with inj.create_async_managed_injector(bind_main(
-                session_cfg=cfg,
-        )) as injector:
-            await (await injector[Session]).run()
+        return cfg
 
 
 ##
@@ -364,6 +356,16 @@ PROFILE_TYPES: ta.Mapping[str, type[Profile]] = {
     'complete': CompletionProfile,
     'embed': EmbedProfile,
 }
+
+
+##
+
+
+async def _run_session_cfg(session_cfg: SessionConfig) -> None:
+    async with inj.create_async_managed_injector(bind_main(
+            session_cfg=session_cfg,
+    )) as injector:
+        await (await injector[Session]).run()
 
 
 ##
@@ -389,7 +391,10 @@ async def _a_main(argv: ta.Any = None) -> None:
 
     profile_cls = PROFILE_TYPES[args.profile]
     profile = profile_cls()
-    await profile.run([*unk_args, *args.args])
+
+    session_cfg = profile.configure([*unk_args, *args.args])
+
+    await _run_session_cfg(session_cfg)
 
 
 def _main(args: ta.Any = None) -> None:

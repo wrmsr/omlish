@@ -1,6 +1,7 @@
 from omlish import dataclasses as dc
 
 from .... import minichain as mc
+from ..configs import SessionConfig
 
 
 ##
@@ -12,10 +13,8 @@ DEFAULT_BACKEND = 'openai'
 ##
 
 
-@dc.dataclass(frozen=True)
-class EmbeddingConfig:
+@dc.dataclass(frozen=True, kw_only=True)
+class EmbeddingConfig(SessionConfig):
     content: 'mc.Content'
-
-    _: dc.KW_ONLY
 
     backend: str | None = None

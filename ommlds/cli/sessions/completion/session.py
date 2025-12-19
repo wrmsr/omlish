@@ -1,5 +1,4 @@
 from omlish import check
-from omlish import dataclasses as dc
 
 from .... import minichain as mc
 from ...backends.types import CompletionServiceBackendProvider
@@ -10,19 +9,16 @@ from .configs import CompletionConfig
 ##
 
 
-class CompletionSession(Session['CompletionSession.Config']):
-    @dc.dataclass(frozen=True)
-    class Config(Session.Config, CompletionConfig):
-        pass
-
+class CompletionSession(Session):
     def __init__(
             self,
-            config: Config,
+            config: CompletionConfig,
             *,
             service_provider: CompletionServiceBackendProvider,
     ) -> None:
-        super().__init__(config)
+        super().__init__()
 
+        self._config = config
         self._service_provider = service_provider
 
     async def run(self) -> None:
