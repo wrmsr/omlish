@@ -3,6 +3,7 @@ import typing as ta
 from .. import check
 from .. import dataclasses as dc
 from .. import lang
+from .states import LifecycleState
 
 
 ##
@@ -18,6 +19,12 @@ class Lifecycle(lang.Abstract):
             pass
         else:
             check.not_issubclass(cls, async_lifecycle_cls)
+
+    def lifecycle_state(self, state: LifecycleState) -> None:
+        """
+        This method is not intended for actual work - this is intended solely for safe bookkeeping. Only do real work in
+        the explicit per-state methods.
+        """
 
     def lifecycle_construct(self) -> None:
         pass
@@ -37,6 +44,12 @@ class AsyncLifecycle(lang.Abstract):
         super().__init_subclass__(**kwargs)
 
         check.not_issubclass(cls, Lifecycle)
+
+    async def lifecycle_state(self, state: LifecycleState) -> None:
+        """
+        This method is not intended for actual work - this is intended solely for safe bookkeeping. Only do real work in
+        the explicit per-state methods.
+        """
 
     async def lifecycle_construct(self) -> None:
         pass
@@ -63,6 +76,9 @@ ANY_LIFECYCLE_TYPES: tuple[type[Lifecycle | AsyncLifecycle], ...] = (Lifecycle, 
 @dc.dataclass(frozen=True)
 class _SyncToAsyncLifecycle(AsyncLifecycle, lang.Final):
     lifecycle: Lifecycle
+
+    async def lifecycle_state(self, state: LifecycleState) -> None:
+        self.lifecycle.lifecycle_state(state)
 
     async def lifecycle_construct(self) -> None:
         self.lifecycle.lifecycle_construct()
@@ -96,6 +112,9 @@ def as_async_lifecycle(lifecycle: Lifecycle | AsyncLifecycle) -> AsyncLifecycle:
 @dc.dataclass(frozen=True)
 class _AsyncToSyncLifecycle(Lifecycle, lang.Final):
     lifecycle: AsyncLifecycle
+
+    def lifecycle_state(self, state: LifecycleState) -> None:
+        lang.sync_await(self.lifecycle.lifecycle_state(state))
 
     def lifecycle_construct(self) -> None:
         lang.sync_await(self.lifecycle.lifecycle_construct())
@@ -131,10 +150,16 @@ def as_sync_lifecycle(lifecycle: Lifecycle | AsyncLifecycle) -> Lifecycle:
 @ta.final
 @dc.dataclass(frozen=True, kw_only=True)
 class CallbackLifecycle(Lifecycle, lang.Final):
+    on_state: ta.Callable[[LifecycleState], None] | None = None
     on_construct: ta.Callable[[], None] | None = None
     on_start: ta.Callable[[], None] | None = None
     on_stop: ta.Callable[[], None] | None = None
     on_destroy: ta.Callable[[], None] | None = None
+
+    @ta.override
+    def lifecycle_state(self, state: LifecycleState) -> None:
+        if self.on_state is not None:
+            self.on_state(state)
 
     @ta.override
     def lifecycle_construct(self) -> None:
@@ -160,10 +185,16 @@ class CallbackLifecycle(Lifecycle, lang.Final):
 @ta.final
 @dc.dataclass(frozen=True, kw_only=True)
 class CallbackAsyncLifecycle(AsyncLifecycle, lang.Final):
+    on_state: ta.Callable[[LifecycleState], ta.Awaitable[None]] | None = None
     on_construct: ta.Callable[[], ta.Awaitable[None]] | None = None
     on_start: ta.Callable[[], ta.Awaitable[None]] | None = None
     on_stop: ta.Callable[[], ta.Awaitable[None]] | None = None
     on_destroy: ta.Callable[[], ta.Awaitable[None]] | None = None
+
+    @ta.override
+    async def lifecycle_state(self, state: LifecycleState) -> None:
+        if self.on_state is not None:
+            await self.on_state(state)
 
     @ta.override
     async def lifecycle_construct(self) -> None:

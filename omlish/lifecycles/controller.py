@@ -49,6 +49,10 @@ class LifecycleController(Lifecycle, lang.Final):
 
     #
 
+    def _set_state(self, state: LifecycleState) -> None:
+        self._state = state
+        self._controlled.lifecycle_state(state)
+
     def _advance(
             self,
             transition: LifecycleTransition,
@@ -62,15 +66,15 @@ class LifecycleController(Lifecycle, lang.Final):
                     pre_listener_fn(listener)(self._controlled)
 
             check.state(self._state in transition.old)
-            self._state = transition.new_intermediate
+            self._set_state(transition.new_intermediate)
 
             try:
                 controlled_fn()
             except Exception:
-                self._state = transition.new_failed
+                self._set_state(transition.new_failed)
                 raise
 
-            self._state = transition.new_succeeded
+            self._set_state(transition.new_succeeded)
 
             if post_listener_fn is not None:
                 for listener in self._listeners:
@@ -148,6 +152,10 @@ class AsyncLifecycleController(AsyncLifecycle, lang.Final):
 
     #
 
+    async def _set_state(self, state: LifecycleState) -> None:
+        self._state = state
+        await self._controlled.lifecycle_state(state)
+
     async def _advance(
             self,
             transition: LifecycleTransition,
@@ -161,15 +169,15 @@ class AsyncLifecycleController(AsyncLifecycle, lang.Final):
                     await pre_listener_fn(listener)(self._controlled)
 
             check.state(self._state in transition.old)
-            self._state = transition.new_intermediate
+            await self._set_state(transition.new_intermediate)
 
             try:
                 await controlled_fn()
             except Exception:
-                self._state = transition.new_failed
+                await self._set_state(transition.new_failed)
                 raise
 
-            self._state = transition.new_succeeded
+            await self._set_state(transition.new_succeeded)
 
             if post_listener_fn is not None:
                 for listener in self._listeners:

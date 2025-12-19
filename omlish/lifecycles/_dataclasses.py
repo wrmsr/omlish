@@ -295,26 +295,29 @@ def _process_dataclass__32f5b8178dfdf24f4db24e8d8cd63ebd10bf83f3():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('on_construct', 'on_start', 'on_stop', 'on_destroy')), EqPlan(fields=('on_construc"
-        "t', 'on_start', 'on_stop', 'on_destroy')), FrozenPlan(fields=('on_construct', 'on_start', 'on_stop', 'on_destr"
-        "oy'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('on_construct', 'on_start', 'on_stop',"
-        " 'on_destroy'), cache=False), InitPlan(fields=(InitPlan.Field(name='on_construct', annotation=OpRef(name='init"
-        ".fields.0.annotation'), default=OpRef(name='init.fields.0.default'), default_factory=None, init=True, override"
-        "=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='on_s"
-        "tart', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default"
-        "_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_typ"
-        "e=None), InitPlan.Field(name='on_stop', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name="
-        "'init.fields.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coer"
-        "ce=None, validate=None, check_type=None), InitPlan.Field(name='on_destroy', annotation=OpRef(name='init.fields"
-        ".3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False,"
-        " field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=("
-        "), kw_only_params=('on_construct', 'on_start', 'on_stop', 'on_destroy'), frozen=True, slots=False, post_init_p"
-        "arams=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='on_construct', kw_only=True, "
-        "fn=None), ReprPlan.Field(name='on_start', kw_only=True, fn=None), ReprPlan.Field(name='on_stop', kw_only=True,"
-        " fn=None), ReprPlan.Field(name='on_destroy', kw_only=True, fn=None)), id=False, terse=False, default_fn=None))"
-        ")"
+        "Plans(tup=(CopyPlan(fields=('on_state', 'on_construct', 'on_start', 'on_stop', 'on_destroy')), EqPlan(fields=("
+        "'on_state', 'on_construct', 'on_start', 'on_stop', 'on_destroy')), FrozenPlan(fields=('on_state', 'on_construc"
+        "t', 'on_start', 'on_stop', 'on_destroy'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('o"
+        "n_state', 'on_construct', 'on_start', 'on_stop', 'on_destroy'), cache=False), InitPlan(fields=(InitPlan.Field("
+        "name='on_state', annotation=OpRef(name='init.fields.0.annotation'), default=OpRef(name='init.fields.0.default'"
+        "), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None,"
+        " check_type=None), InitPlan.Field(name='on_construct', annotation=OpRef(name='init.fields.1.annotation'), defa"
+        "ult=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False, field_type=FieldType"
+        ".INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='on_start', annotation=OpRef(name"
+        "='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, ov"
+        "erride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name"
+        "='on_stop', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'), de"
+        "fault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, chec"
+        "k_type=None), InitPlan.Field(name='on_destroy', annotation=OpRef(name='init.fields.4.annotation'), default=OpR"
+        "ef(name='init.fields.4.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTAN"
+        "CE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('on_state"
+        "', 'on_construct', 'on_start', 'on_stop', 'on_destroy'), frozen=True, slots=False, post_init_params=None, init"
+        "_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='on_state', kw_only=True, fn=None), ReprPlan.F"
+        "ield(name='on_construct', kw_only=True, fn=None), ReprPlan.Field(name='on_start', kw_only=True, fn=None), Repr"
+        "Plan.Field(name='on_stop', kw_only=True, fn=None), ReprPlan.Field(name='on_destroy', kw_only=True, fn=None)), "
+        "id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='93c1fd2e54b8bd528939f466421cfa8b8d909398',
+    plan_repr_sha1='d177836dcedc950662bdf1c8a8d52e05fc91c5c7',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
@@ -324,13 +327,15 @@ def _process_dataclass__32f5b8178dfdf24f4db24e8d8cd63ebd10bf83f3():
         '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
     ),
     cls_names=(
         ('omlish.lifecycles', 'CallbackAsyncLifecycle'),
         ('omlish.lifecycles', 'CallbackLifecycle'),
     ),
 )
-def _process_dataclass__93c1fd2e54b8bd528939f466421cfa8b8d909398():
+def _process_dataclass__d177836dcedc950662bdf1c8a8d52e05fc91c5c7():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -342,6 +347,8 @@ def _process_dataclass__93c1fd2e54b8bd528939f466421cfa8b8d909398():
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
+        __dataclass__init__fields__4__annotation,
+        __dataclass__init__fields__4__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -360,6 +367,7 @@ def _process_dataclass__93c1fd2e54b8bd528939f466421cfa8b8d909398():
             if self.__class__ is not __dataclass__cls:
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
+                on_state=self.on_state,
                 on_construct=self.on_construct,
                 on_start=self.on_start,
                 on_stop=self.on_stop,
@@ -377,6 +385,7 @@ def _process_dataclass__93c1fd2e54b8bd528939f466421cfa8b8d909398():
             if self.__class__ is not other.__class__:
                 return NotImplemented
             return (
+                self.on_state == other.on_state and
                 self.on_construct == other.on_construct and
                 self.on_start == other.on_start and
                 self.on_stop == other.on_stop and
@@ -389,6 +398,7 @@ def _process_dataclass__93c1fd2e54b8bd528939f466421cfa8b8d909398():
         setattr(__dataclass__cls, '__eq__', __eq__)
 
         __dataclass___setattr_frozen_fields = {
+            'on_state',
             'on_construct',
             'on_start',
             'on_stop',
@@ -409,6 +419,7 @@ def _process_dataclass__93c1fd2e54b8bd528939f466421cfa8b8d909398():
         setattr(__dataclass__cls, '__setattr__', __setattr__)
 
         __dataclass___delattr_frozen_fields = {
+            'on_state',
             'on_construct',
             'on_start',
             'on_stop',
@@ -430,6 +441,7 @@ def _process_dataclass__93c1fd2e54b8bd528939f466421cfa8b8d909398():
 
         def __hash__(self):
             return hash((
+                self.on_state,
                 self.on_construct,
                 self.on_start,
                 self.on_stop,
@@ -442,11 +454,13 @@ def _process_dataclass__93c1fd2e54b8bd528939f466421cfa8b8d909398():
         def __init__(
             self,
             *,
-            on_construct: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
-            on_start: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            on_stop: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            on_destroy: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
+            on_state: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
+            on_construct: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
+            on_start: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+            on_stop: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
+            on_destroy: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
         ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'on_state', on_state)
             __dataclass__object_setattr(self, 'on_construct', on_construct)
             __dataclass__object_setattr(self, 'on_start', on_start)
             __dataclass__object_setattr(self, 'on_stop', on_stop)
@@ -460,6 +474,7 @@ def _process_dataclass__93c1fd2e54b8bd528939f466421cfa8b8d909398():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
+            parts.append(f"on_state={self.on_state!r}")
             parts.append(f"on_construct={self.on_construct!r}")
             parts.append(f"on_start={self.on_start!r}")
             parts.append(f"on_stop={self.on_stop!r}")
