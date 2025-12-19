@@ -1,3 +1,5 @@
+import typing as ta
+
 from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
@@ -11,12 +13,15 @@ from .types import ChatStateManager
 ##
 
 
+ChatStateStorageKey = ta.NewType('ChatStateStorageKey', str)
+
+
 class StateStorageChatStateManager(ChatStateManager):
     def __init__(
             self,
             *,
             storage: StateStorage,
-            key: str = 'chat',
+            key: ChatStateStorageKey,
     ) -> None:
         super().__init__()
 
@@ -31,12 +36,6 @@ class StateStorageChatStateManager(ChatStateManager):
         state: ChatState | None = await self._storage.load_state(self._key, ChatState)
         if state is None:
             state = ChatState()
-        self._state = state
-        return state
-
-    async def clear_state(self) -> ChatState:
-        state = ChatState()
-        await self._storage.save_state(self._key, state, ChatState)
         self._state = state
         return state
 

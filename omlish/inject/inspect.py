@@ -58,7 +58,7 @@ class KwargsTarget(ta.NamedTuple):
 
         return cls(
             obj,
-            [*kws, *kw_kwargs],
+            (*kws, *kw_kwargs),
         )
 
 

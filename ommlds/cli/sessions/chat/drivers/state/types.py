@@ -1,11 +1,20 @@
 import abc
 import datetime
 import typing as ta
+import uuid
 
 from omlish import dataclasses as dc
 from omlish import lang
+from omlish import typedvalues as tv
 
 from ...... import minichain as mc
+
+
+##
+
+
+class ChatId(tv.UniqueScalarTypedValue[uuid.UUID]):
+    pass
 
 
 ##
@@ -27,10 +36,6 @@ class ChatState:
 class ChatStateManager(lang.Abstract):
     @abc.abstractmethod
     def get_state(self) -> ta.Awaitable[ChatState]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def clear_state(self) -> ta.Awaitable[ChatState]:
         raise NotImplementedError
 
     @abc.abstractmethod

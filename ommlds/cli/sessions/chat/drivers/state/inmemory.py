@@ -20,10 +20,6 @@ class InMemoryChatStateManager(ChatStateManager):
     async def get_state(self) -> ChatState:
         return self._state
 
-    async def clear_state(self) -> ChatState:
-        self._state = ChatState()
-        return self._state
-
     async def extend_chat(self, chat_additions: 'mc.Chat') -> ChatState:
         self._state = dc.replace(
             self._state,

@@ -1,14 +1,14 @@
 """
-devstral-small-2:24b      24277f07f62d    15 GB     15 hours ago
-
 dolphin3:latest           d5ab9ae8e1f2    4.9 GB    11 months ago (no tools)
 
+functiongemma:270m        7c19b650567a    300 MB    5 minutes ago
 gemma3:27b                a418f5838eaf    17 GB     7 weeks ago (no tools)
 gemma3:4b                 a2af6cc3eb7f    3.3 GB    7 weeks ago (no tools)
 
 llama3.2:1b               baf6a787fdff    1.3 GB    13 months ago (too stupid for tools)
 llama3.2:latest           a80c4f17acd5    2.0 GB    13 months ago
 
+devstral-small-2:24b      24277f07f62d    15 GB     15 hours ago
 ministral-3:14b           4760c35aeb9d    9.1 GB    11 hours ago
 mistral:latest            6577803aa9a0    4.4 GB    3 seconds ago
 
