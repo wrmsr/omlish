@@ -3,6 +3,8 @@ TODO:
  - lifecycles
  - StreamService
 """
+import typing as ta
+
 from omlish import lang
 
 from ..... import minichain as mc
@@ -17,7 +19,7 @@ from .state.types import ChatStateManager
 ##
 
 
-class ChatDriverGetter(lang.Func0['ChatDriver']):
+class ChatDriverGetter(lang.Func0[ta.Awaitable['ChatDriver']]):
     pass
 
 

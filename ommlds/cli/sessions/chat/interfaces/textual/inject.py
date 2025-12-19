@@ -32,7 +32,7 @@ def bind_textual(cfg: InterfaceConfig = InterfaceConfig()) -> inj.Elements:
     els.extend([
         inj.bind(_app.ChatApp, singleton=True),
 
-        inj.bind_late(_app.ChatApp, _app.ChatAppGetter),
+        inj.bind_async_late(_app.ChatApp, _app.ChatAppGetter),
     ])
 
     #

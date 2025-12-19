@@ -300,10 +300,10 @@ class ChatProfile(Profile):
         cfg = self.configure_tools(cfg)
         cfg = self.configure_code(cfg)
 
-        with inj.create_managed_injector(bind_main(
+        async with inj.create_async_managed_injector(bind_main(
                 session_cfg=cfg,
         )) as injector:
-            await injector[Session].run()
+            await (await injector[Session]).run()
 
 
 ##
@@ -323,10 +323,10 @@ class CompletionProfile(Profile):
             backend=args.backend,
         )
 
-        with inj.create_managed_injector(bind_main(
+        async with inj.create_async_managed_injector(bind_main(
                 session_cfg=cfg,
         )) as injector:
-            await injector[Session].run()
+            await (await injector[Session]).run()
 
 
 ##
@@ -346,10 +346,10 @@ class EmbedProfile(Profile):
             backend=args.backend,
         )
 
-        with inj.create_managed_injector(bind_main(
+        async with inj.create_async_managed_injector(bind_main(
                 session_cfg=cfg,
         )) as injector:
-            await injector[Session].run()
+            await (await injector[Session]).run()
 
 
 ##

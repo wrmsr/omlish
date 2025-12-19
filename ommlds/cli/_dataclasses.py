@@ -2160,6 +2160,7 @@ def _process_dataclass__b211fde543b7c2c533cdcf9f21b47d2f7f76e5c9():
     ),
     cls_names=(
         ('ommlds.cli.sessions.chat.drivers.driver', 'ChatId'),
+        ('ommlds.cli.sessions.chat.drivers.state.ids', 'ChatStateStorageKey'),
         ('ommlds.cli.sessions.chat.drivers.types', 'ChatDriverId'),
     ),
 )
@@ -2623,32 +2624,47 @@ def _process_dataclass__9f7e26a87dd163b610f38caa1ce9b3c6356e632a():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('version', 'payload')), EqPlan(fields=('version', 'payload')), FrozenPlan(fields=("
-        "'version', 'payload'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('version', 'payload')"
-        ", cache=False), InitPlan(fields=(InitPlan.Field(name='version', annotation=OpRef(name='init.fields.0.annotatio"
-        "n'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None"
-        ", validate=None, check_type=None), InitPlan.Field(name='payload', annotation=OpRef(name='init.fields.1.annotat"
+        "Plans(tup=(CopyPlan(fields=('version', 'payload', 'created_at', 'updated_at')), EqPlan(fields=('version', 'pay"
+        "load', 'created_at', 'updated_at')), FrozenPlan(fields=('version', 'payload', 'created_at', 'updated_at'), all"
+        "ow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('version', 'payload', 'created_at', 'updated_at"
+        "'), cache=False), InitPlan(fields=(InitPlan.Field(name='version', annotation=OpRef(name='init.fields.0.annotat"
         "ion'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=No"
-        "ne, validate=None, check_type=None)), self_param='self', std_params=('version', 'payload'), kw_only_params=(),"
-        " frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Fie"
-        "ld(name='version', kw_only=False, fn=None), ReprPlan.Field(name='payload', kw_only=False, fn=None)), id=False,"
-        " terse=False, default_fn=None)))"
+        "ne, validate=None, check_type=None), InitPlan.Field(name='payload', annotation=OpRef(name='init.fields.1.annot"
+        "ation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
+        "None, validate=None, check_type=None), InitPlan.Field(name='created_at', annotation=OpRef(name='init.fields.2."
+        "annotation'), default=None, default_factory=OpRef(name='init.fields.2.default_factory'), init=True, override=F"
+        "alse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='update"
+        "d_at', annotation=OpRef(name='init.fields.3.annotation'), default=None, default_factory=OpRef(name='init.field"
+        "s.3.default_factory'), init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, c"
+        "heck_type=None)), self_param='self', std_params=('version', 'payload', 'created_at', 'updated_at'), kw_only_pa"
+        "rams=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(Repr"
+        "Plan.Field(name='version', kw_only=False, fn=None), ReprPlan.Field(name='payload', kw_only=False, fn=None), Re"
+        "prPlan.Field(name='created_at', kw_only=False, fn=None), ReprPlan.Field(name='updated_at', kw_only=False, fn=N"
+        "one)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='be0d400bb9a95f7b7d493de698bc2bcac269b46e',
+    plan_repr_sha1='61e69339fbc885327f4389d705747f188b874a91',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default_factory',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default_factory',
     ),
     cls_names=(
-        ('ommlds.cli.sessions.chat.drivers.state.storage', 'MarshaledState'),
+        ('ommlds.cli.sessions.chat.drivers.state.ids', 'MarshaledState'),
     ),
 )
-def _process_dataclass__be0d400bb9a95f7b7d493de698bc2bcac269b46e():
+def _process_dataclass__61e69339fbc885327f4389d705747f188b874a91():
     def _process_dataclass(
         *,
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__2__annotation,
+        __dataclass__init__fields__2__default_factory,
+        __dataclass__init__fields__3__annotation,
+        __dataclass__init__fields__3__default_factory,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -2669,6 +2685,8 @@ def _process_dataclass__be0d400bb9a95f7b7d493de698bc2bcac269b46e():
             return __dataclass__cls(  # noqa
                 version=self.version,
                 payload=self.payload,
+                created_at=self.created_at,
+                updated_at=self.updated_at,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -2683,7 +2701,9 @@ def _process_dataclass__be0d400bb9a95f7b7d493de698bc2bcac269b46e():
                 return NotImplemented
             return (
                 self.version == other.version and
-                self.payload == other.payload
+                self.payload == other.payload and
+                self.created_at == other.created_at and
+                self.updated_at == other.updated_at
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -2694,6 +2714,8 @@ def _process_dataclass__be0d400bb9a95f7b7d493de698bc2bcac269b46e():
         __dataclass___setattr_frozen_fields = {
             'version',
             'payload',
+            'created_at',
+            'updated_at',
         }
 
         def __setattr__(self, name, value):
@@ -2712,6 +2734,8 @@ def _process_dataclass__be0d400bb9a95f7b7d493de698bc2bcac269b46e():
         __dataclass___delattr_frozen_fields = {
             'version',
             'payload',
+            'created_at',
+            'updated_at',
         }
 
         def __delattr__(self, name):
@@ -2731,6 +2755,8 @@ def _process_dataclass__be0d400bb9a95f7b7d493de698bc2bcac269b46e():
             return hash((
                 self.version,
                 self.payload,
+                self.created_at,
+                self.updated_at,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -2740,9 +2766,17 @@ def _process_dataclass__be0d400bb9a95f7b7d493de698bc2bcac269b46e():
             self,
             version: __dataclass__init__fields__0__annotation,
             payload: __dataclass__init__fields__1__annotation,
+            created_at: __dataclass__init__fields__2__annotation = __dataclass__HAS_DEFAULT_FACTORY,
+            updated_at: __dataclass__init__fields__3__annotation = __dataclass__HAS_DEFAULT_FACTORY,
         ) -> __dataclass__None:
+            if created_at is __dataclass__HAS_DEFAULT_FACTORY:
+                created_at = __dataclass__init__fields__2__default_factory()
+            if updated_at is __dataclass__HAS_DEFAULT_FACTORY:
+                updated_at = __dataclass__init__fields__3__default_factory()
             __dataclass__object_setattr(self, 'version', version)
             __dataclass__object_setattr(self, 'payload', payload)
+            __dataclass__object_setattr(self, 'created_at', created_at)
+            __dataclass__object_setattr(self, 'updated_at', updated_at)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -2754,6 +2788,8 @@ def _process_dataclass__be0d400bb9a95f7b7d493de698bc2bcac269b46e():
             parts = []
             parts.append(f"version={self.version!r}")
             parts.append(f"payload={self.payload!r}")
+            parts.append(f"created_at={self.created_at!r}")
+            parts.append(f"updated_at={self.updated_at!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

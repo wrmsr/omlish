@@ -1,4 +1,5 @@
 import abc
+import datetime
 import os.path
 import typing as ta
 
@@ -52,7 +53,11 @@ STATE_VERSION = 0
 @dc.dataclass(frozen=True)
 class MarshaledState:
     version: int
+
     payload: ta.Any
+
+    created_at: datetime.datetime | None = dc.field(default_factory=lang.utcnow)
+    updated_at: datetime.datetime | None = dc.field(default_factory=lang.utcnow)
 
 
 class MarshalStateStorage(StateStorage, lang.Abstract):
@@ -75,6 +80,7 @@ class MarshalStateStorage(StateStorage, lang.Abstract):
         ms = MarshaledState(
             version=self._version,
             payload=msh.marshal(obj, ty),
+            updated_at=lang.utcnow(),
         )
         return msh.marshal(ms)
 
@@ -102,7 +108,7 @@ class JsonFileStateStorage(MarshalStateStorage):
         return json.loads(data)
 
     def _save_file_data(self, data: ta.Any) -> None:
-        data = json.dumps_pretty(data)
+        data = json.dumps_compact(data)
         with open(self._file, 'w') as f:
             f.write(data)
 

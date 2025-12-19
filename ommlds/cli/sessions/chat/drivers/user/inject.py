@@ -29,11 +29,11 @@ def bind_user(cfg: UserConfig = UserConfig()) -> inj.Elements:
         )))
 
     if cfg.initial_user_content is not None:
-        async def add_initial_user_content(cd: '_driver.ChatDriver') -> None:
-            await cd.send_user_messages([mc.UserMessage(cfg.initial_user_content)])
+        async def add_initial_user_content(cdg: '_driver.ChatDriverGetter') -> None:
+            await (await cdg()).send_user_messages([mc.UserMessage(cfg.initial_user_content)])
 
         els.append(phase_callbacks().bind_item(to_fn=inj.KwargsTarget.of(
-            lambda cdg: ChatPhaseCallback(ChatPhase.STARTED, lambda: add_initial_user_content(cdg())),
+            lambda cdg: ChatPhaseCallback(ChatPhase.STARTED, lambda: add_initial_user_content(cdg)),
             cdg=_driver.ChatDriverGetter,
         )))
 
