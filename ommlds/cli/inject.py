@@ -2,6 +2,7 @@ import typing as ta
 
 from omlish import inject as inj
 from omlish import lang
+from omlish import lifecycles as lc
 
 
 with lang.auto_proxy_import(globals()):
@@ -18,6 +19,13 @@ def bind_main(
         session_cfg: ta.Any,
 ) -> inj.Elements:
     els: list[inj.Elemental] = []
+
+    #
+
+    els.extend([
+        lc.bind_async_lifecycle_registrar(),
+        inj.bind(lc.AsyncLifecycleManager, singleton=True, eager=True),
+    ])
 
     #
 

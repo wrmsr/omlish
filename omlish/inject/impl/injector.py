@@ -78,12 +78,12 @@ class AsyncInjectorImpl(AsyncInjector, lang.Final):
 
         self._ekbs = ec.eager_keys_by_scope()
 
-        self._pls: tuple[ProvisionListener, ...] = tuple(
-            b.listener  # type: ignore[attr-defined]
-            for b in itertools.chain(
-                ec.elements_of_type(ProvisionListenerBinding),
-                p._pls if p is not None else (),  # noqa
-            )
+        self._pls: tuple[ProvisionListener, ...] = (
+            *(
+                b.listener
+                for b in ec.elements_of_type(ProvisionListenerBinding)
+            ),
+            *(p._pls if p is not None else []),  # noqa
         )
 
         self._root: AsyncInjectorImpl = p._root if p is not None else self  # noqa
