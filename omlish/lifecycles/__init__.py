@@ -97,3 +97,25 @@ with _lang.auto_proxy_init(globals()):
         bind_managed_lifecycle_manager,
         bind_async_managed_lifecycle_manager,
     )
+
+
+##
+
+
+NEW = LifecycleStates.NEW
+
+CONSTRUCTING = LifecycleStates.CONSTRUCTING
+FAILED_CONSTRUCTING = LifecycleStates.FAILED_CONSTRUCTING
+CONSTRUCTED = LifecycleStates.CONSTRUCTED
+
+STARTING = LifecycleStates.STARTING
+FAILED_STARTING = LifecycleStates.FAILED_STARTING
+STARTED = LifecycleStates.STARTED
+
+STOPPING = LifecycleStates.STOPPING
+FAILED_STOPPING = LifecycleStates.FAILED_STOPPING
+STOPPED = LifecycleStates.STOPPED
+
+DESTROYING = LifecycleStates.DESTROYING
+FAILED_DESTROYING = LifecycleStates.FAILED_DESTROYING
+DESTROYED = LifecycleStates.DESTROYED
