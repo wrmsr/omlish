@@ -20,7 +20,7 @@
     width: 1fr;
     height: auto;
 
-    margin: 1 1 0 0;
+    margin: 1 0 0 0;
 
     padding-right: 1;
 
@@ -45,7 +45,7 @@
 }
 
 .user-message-outer {
-    width: 100%;
+    width: 1fr;
     height: auto;
 }
 
@@ -60,7 +60,7 @@
 }
 
 .user-message-inner {
-    width: 100%;
+    width: 1fr;
     height: auto;
 }
 
@@ -71,7 +71,7 @@
 }
 
 .ai-message-outer {
-    width: 100%;
+    width: 1fr;
     height: auto;
 
     align: left top;
@@ -88,7 +88,7 @@
 }
 
 .ai-message-inner {
-    width: 100%;
+    width: 1fr;
     height: auto;
 
     padding: 0;
@@ -109,7 +109,7 @@
 }
 
 .tool-confirmation-message-outer {
-    width: 100%;
+    width: 1fr;
     height: auto;
 
     align: left top;
@@ -126,11 +126,10 @@
 }
 
 .tool-confirmation-message-inner {
-    width: 100%;
+    width: 1fr;
     height: auto;
 
     padding: 1;
-    margin-right: 2;
 }
 
 .tool-confirmation-message-inner-open {
