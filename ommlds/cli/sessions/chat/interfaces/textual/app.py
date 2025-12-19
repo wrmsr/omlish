@@ -48,6 +48,8 @@ class ChatApp(tx.App):
     ) -> None:
         super().__init__()
 
+        tx.setup_app_devtools(self, port=41932)
+
         self._chat_driver = chat_driver
         self._chat_driver_event_queue = chat_driver_event_queue
 

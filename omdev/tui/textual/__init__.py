@@ -224,6 +224,10 @@ with _lang.auto_proxy_init(globals()):
 
     ##
 
+    from . devtools import (  # noqa
+        setup_app_devtools,
+    )
+
     from . import debug  # noqa
 
     from .app2 import (  # noqa

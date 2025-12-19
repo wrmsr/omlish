@@ -33,6 +33,7 @@ class _HackLoggingHandler(logging.Handler):
     TODO:
      - reify caller from LogContextInfos
      - queue worker, this blocks the asyncio thread lol
+     - move to omdev.tui.textual obviously
     """
 
     def __init__(self, devtools: ta.Optional['DevtoolsClient']) -> None:
