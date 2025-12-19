@@ -1,53 +1,92 @@
-*.dSYM/
-*.dylib
-*.exe
-*.log
-*.out
-*.pid
+# Git
+/.git-bare/
+
+
+# Editors
+
+## Emacs
+*~
+.#*
+
+## Vim
+*.swp
+
+## IntelliJ
+.idea*/
+
+
+# Languages
+/build/
+/target/
+test-*.xml
+
+## C/C++
+/cmake/
+cmake-build-*/
+
+## JS
+node_modules/
+
+## Python
+*.pyc
+*.pyo
+.venv*
+__pycache__/
+
+### Build
+*.egg-info/
+/MANIFEST
+/dist/
+
+### Tools
 *.pstats
 *.pstats.pdf
 *.pstats.png
-*.pyc
-*.pyo
-*.so
-*.sock
-*.swp
-*/_version.py
-.DS_Store
+*.pstats.svg
 .benchmarks/
-.cache/
-.env
-.idea*/
+.hypothesis/
 .ipynb_checkpoints/
-/*.egg-info/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.tox/
+cython_debug/
+
+
+# OS
+
+## Mac
+.DS_Store
+
+
+# Binaries
+*.dSYM/
+*.dylib
+*.exe
+*.out
+*.so
+
+
+# Var
+*.log
+*.pid
+*.sock
+
+
+# Config
+.env
+/secrets.yml
+
+
+# Misc / Project specific
+.cache/
 /.cache/
 /.data/
-/.git-bare/
-/.hypothesis/
-/.ipynb_checkpoints/
-/.mypy_cache/
-/.pytest_cache/
-/.ruff_cache/
-/.tox/
 /.vector_cache/
-/.venv*
-/MANIFEST
-/build/
-/cmake/
-/cython_debug/
 /deploy/
-/dist/
 /gen/
 /output/
 /profiles/
-/target/
 /tmp/
-/venv/
 /weights/
 /wmt32k_data/
-__pycache__/
-cmake-build-*/
-node_modules/
-test-*.xml
-
-/secrets.yml
