@@ -65,9 +65,12 @@ from .relations import (  # noqa
 )
 
 from .rendering import (  # noqa
+    RenderedQuery,
+    RenderedQueryParts,
     Renderer,
     StdRenderer,
     render,
+    render_parts,
 )
 
 from .selects import (  # noqa

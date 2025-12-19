@@ -7,18 +7,45 @@ with _lang.auto_proxy_init(globals()):
 
     from . import api  # noqa
 
+    from . import queries  # noqa
+
+    #
+
+    from .abc import (  # noqa
+        DbapiTypeCode,
+        DbapiColumnDescription,
+        DbapiColumnDescription_,
+        DbapiConnection,
+        DbapiCursor,
+        DbapiThreadSafety,
+        DbapiModule,
+    )
+
     from .dbs import (  # noqa
-        DbLoc,
-        DbSpec,
         DbType,
         DbTypes,
-        HostDbLoc,
+
+        DbLoc,
         UrlDbLoc,
+        HostDbLoc,
+
+        DbSpec,
+    )
+
+    from .params import (  # noqa
+        ParamKey,
+        ParamsPreparer,
+        LinearParamsPreparer,
+        NumericParamsPreparer,
+        NamedParamsPreparer,
+
+        ParamStyle,
+        make_params_preparer,
+
+        substitute_params,
     )
 
     from .qualifiedname import (  # noqa
         QualifiedName,
         qn,
     )
-
-    from . import queries  # noqa
