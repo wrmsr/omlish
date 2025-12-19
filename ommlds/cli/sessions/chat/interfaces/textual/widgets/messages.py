@@ -20,9 +20,15 @@ class Message(tx.Static, lang.Abstract):
 
 class WelcomeMessage(Message):
     def __init__(self, content: str) -> None:
-        super().__init__(content)
+        super().__init__()
 
         self.add_class('welcome-message')
+
+        self._content = content
+
+    def compose(self) -> tx.ComposeResult:
+        with tx.Vertical(classes='welcome-message-outer'):
+            yield tx.Static(self._content, classes='welcome-message-content')
 
 
 ##

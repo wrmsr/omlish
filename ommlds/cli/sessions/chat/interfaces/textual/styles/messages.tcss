@@ -34,7 +34,14 @@
     padding: 1 2 1 1;
 
     border: round;
+}
 
+.welcome-message-outer {
+    width: 1fr;
+    height: auto;
+}
+
+.welcome-message-content {
     text-align: center;
 }
 
