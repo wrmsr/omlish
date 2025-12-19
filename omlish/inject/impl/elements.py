@@ -214,13 +214,16 @@ class ElementCollection(CollectedElements, lang.Final):
         return [sb.scope for sb in self.elements_of_type(ScopeBinding)]
 
     @lang.cached_function
-    def eager_keys_by_scope(self) -> ta.Mapping[Scope, ta.Sequence[Key]]:
+    def sorted_eager_keys_by_scope(self) -> ta.Mapping[Scope, ta.Sequence[Key]]:
         bim = self.binding_impl_map()
-        ret: dict[Scope, list[Key]] = {}
+        dct: dict[Scope, list[Eager]] = {}
         for e in self.elements_of_type(Eager):
             bi = bim[e.key]
-            ret.setdefault(bi.scope, []).append(e.key)
-        return ret
+            dct.setdefault(bi.scope, []).append(e)
+        return {
+            sc: tuple(eg.key for eg in sorted(egs, key=lambda eg: eg.priority))
+            for sc, egs in dct.items()
+        }
 
 
 ##

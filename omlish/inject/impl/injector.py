@@ -76,7 +76,7 @@ class AsyncInjectorImpl(AsyncInjector, lang.Final):
 
         self._bim = ec.binding_impl_map()
 
-        self._ekbs = ec.eager_keys_by_scope()
+        self._ekbs = ec.sorted_eager_keys_by_scope()
 
         self._pls: tuple[ProvisionListener, ...] = (
             *(

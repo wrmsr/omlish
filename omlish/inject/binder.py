@@ -88,7 +88,7 @@ def bind(
         in_: Scope | None = None,
         singleton: bool = False,
 
-        eager: bool = False,
+        eager: bool | int = False,
         expose: bool = False,
 ) -> Element | Elements:
     if obj is None or obj is inspect.Parameter.empty:
@@ -183,8 +183,8 @@ def bind(
 
     elements: list[Element] = [binding]
 
-    if eager:
-        elements.append(Eager(key))
+    if eager is not False:
+        elements.append(Eager(key, priority=eager if isinstance(eager, int) else 0))
     if expose:
         elements.append(Expose(key))
 
