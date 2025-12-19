@@ -10,7 +10,6 @@ from .types import BackendProvider
 from .types import ChatChoicesServiceBackendProvider
 from .types import ChatChoicesStreamServiceBackendProvider
 from .types import CompletionServiceBackendProvider
-from .types import DefaultBackendName
 from .types import EmbeddingServiceBackendProvider
 from .types import ServiceT
 
@@ -26,7 +25,6 @@ class CatalogBackendProvider(BackendProvider[ServiceT], lang.Abstract):
             self,
             *,
             name: BackendName | None = None,
-            default_name: DefaultBackendName | None = None,
             catalog: 'mc.BackendCatalog',
             configs: BackendConfigs | None = None,
             instantiator: Instantiator | None = None,
@@ -34,7 +32,6 @@ class CatalogBackendProvider(BackendProvider[ServiceT], lang.Abstract):
         super().__init__()
 
         self._name = name
-        self._default_name = default_name
         self._catalog = catalog
         self._configs = configs
         if instantiator is None:
@@ -46,8 +43,6 @@ class CatalogBackendProvider(BackendProvider[ServiceT], lang.Abstract):
         name: str
         if self._name is not None:
             name = self._name
-        elif self._default_name is not None:
-            name = self._default_name
         else:
             raise RuntimeError('No backend name specified')
 

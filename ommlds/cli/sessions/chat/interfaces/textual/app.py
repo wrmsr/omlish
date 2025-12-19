@@ -1,4 +1,5 @@
 import asyncio
+import os
 import typing as ta
 
 from omdev.tui import textual as tx
@@ -8,6 +9,7 @@ from omlish import lang
 from omlish.logs import all as logs
 
 from ...... import minichain as mc
+from .....backends.types import BackendName
 from ...drivers.driver import ChatDriver
 from ...drivers.events.types import AiDeltaChatEvent
 from ...drivers.events.types import AiMessagesChatEvent
@@ -48,6 +50,7 @@ class ChatApp(tx.App):
             chat_facade: ChatFacade,
             chat_driver: ChatDriver,
             chat_event_queue: ChatEventQueue,
+            backend_name: BackendName | None = None,
     ) -> None:
         super().__init__()
 
@@ -56,6 +59,7 @@ class ChatApp(tx.App):
         self._chat_facade = chat_facade
         self._chat_driver = chat_driver
         self._chat_event_queue = chat_event_queue
+        self._backend_name = backend_name
 
         self._chat_action_queue: asyncio.Queue[ta.Any] = asyncio.Queue()
 
@@ -223,9 +227,10 @@ class ChatApp(tx.App):
         self._get_input_text_area().focus()
 
         await self._mount_messages(
-            WelcomeMessage(
-                'Hello!',
-            ),
+            WelcomeMessage('\n'.join([
+                f'Backend: {self._backend_name or "?"}',
+                f'Dir: {os.getcwd()}',
+            ])),
         )
 
     async def on_unmount(self) -> None:

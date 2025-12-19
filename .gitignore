@@ -8,11 +8,11 @@
 *~
 .#*
 
-## Vim
-*.swp
-
 ## IntelliJ
 .idea*/
+
+## Vim
+*.swp
 
 
 # Languages

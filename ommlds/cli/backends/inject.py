@@ -42,6 +42,8 @@ def bind_backends(cfg: BackendConfig = BackendConfig()) -> inj.Elements:
 
     if cfg.backend is not None:
         lst.append(inj.bind(_types.BackendName, to_const=cfg.backend))
+    else:
+        lst.append(inj.bind(_types.BackendName, to_fn=inj.KwargsTarget.of(lambda dbn: dbn, dbn=_types.DefaultBackendName)))  # noqa
 
     lst.extend([
         inj.bind(_types.ChatChoicesServiceBackendProvider, to_ctor=_catalog.CatalogChatChoicesServiceBackendProvider, singleton=True),  # noqa
