@@ -231,6 +231,7 @@ class ChatApp(tx.App):
             await self._chat_driver_event_queue.put(None)
             await cet
 
+    @tx.on(InputTextArea.Submitted)
     async def on_input_text_area_submitted(self, event: InputTextArea.Submitted) -> None:
         self._get_input_text_area().clear()
 
@@ -247,14 +248,12 @@ class ChatApp(tx.App):
     #
 
     async def confirm_tool_use(self, message: str) -> bool:
-        tcm = ToolConfirmationMessage(message)
-
         fut: asyncio.Future[bool] = asyncio.get_running_loop().create_future()
+
+        tcm = ToolConfirmationMessage(message, fut)
 
         async def inner() -> None:
             await self._mount_messages(tcm)
-
-            fut.set_result(True)
 
         self.call_later(inner)
 

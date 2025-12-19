@@ -1,4 +1,5 @@
 import abc
+import asyncio
 import typing as ta
 
 from omdev.tui import textual as tx
@@ -127,17 +128,24 @@ class StreamAiMessage(AiMessage):
 
 
 class ToolConfirmationControls(tx.Static):
+    class Allowed(tx.Message):
+        pass
+
     def compose(self) -> tx.ComposeResult:
-        yield tx.Static('(y/n)')
+        yield tx.Button('Allow', action='allow')
+
+    def action_allow(self) -> None:
+        self.post_message(self.Allowed())
 
 
 class ToolConfirmationMessage(Message):
-    def __init__(self, content: str) -> None:
+    def __init__(self, content: str, fut: asyncio.Future[bool]) -> None:
         super().__init__()
 
         self.add_class('tool-confirmation-message')
 
         self._content = content
+        self._fut = fut
 
     def compose(self) -> tx.ComposeResult:
         with tx.Horizontal(classes='tool-confirmation-message-outer'):
@@ -145,3 +153,12 @@ class ToolConfirmationMessage(Message):
             with tx.Vertical(classes='tool-confirmation-message-inner tool-confirmation-message-inner-open'):
                 yield tx.Static(self._content, classes='tool-confirmation-message-content')
                 yield ToolConfirmationControls(classes='tool-confirmation-message-controls')
+
+    @tx.on(ToolConfirmationControls.Allowed)
+    async def on_allowed(self, event: ToolConfirmationControls.Allowed) -> None:
+        inner = self.query_one(tx.Vertical)
+        await inner.query_one(ToolConfirmationControls).remove()
+        inner.remove_class('tool-confirmation-message-inner-open')
+        inner.add_class('tool-confirmation-message-inner-closed')
+
+        self._fut.set_result(True)
