@@ -224,8 +224,17 @@ with _lang.auto_proxy_init(globals()):
 
     ##
 
+    from textual_dev.client import DevtoolsClient  # noqa
+    from textual_dev.client import DevtoolsConnectionError  # noqa
+    from textual_dev.client import DevtoolsConsole  # noqa
+    from textual_dev.client import DevtoolsLog  # noqa
+
+    ##
+
     from . devtools import (  # noqa
         setup_app_devtools,
+
+        DevtoolsLoggingHandler,
     )
 
     from . import debug  # noqa
@@ -237,6 +246,10 @@ with _lang.auto_proxy_init(globals()):
     from .drivers2 import (  # noqa
         PendingWritesDriverMixin,
         get_pending_writes_driver_class,
+    )
+
+    from .logging2 import (  # noqa
+        translate_log_level,
     )
 
     from .types import (  # noqa

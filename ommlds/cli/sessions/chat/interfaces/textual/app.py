@@ -54,6 +54,7 @@ class ChatApp(tx.App):
     ) -> None:
         super().__init__()
 
+        # FIXME: lol
         tx.setup_app_devtools(self, port=41932)
 
         self._chat_facade = chat_facade
