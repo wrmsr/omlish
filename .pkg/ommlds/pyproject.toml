@@ -46,7 +46,7 @@ all = [
     'pytesseract ~= 0.3',
     'rapidocr-onnxruntime ~= 1.4',
     'pillow ~= 12.0',
-    'ddgs ~= 9.9',
+    'ddgs ~= 9.10',
     'mwparserfromhell ~= 0.7',
     'wikitextparser ~= 0.56',
     'lxml >= 5.3; python_version < "3.13"',
@@ -83,7 +83,7 @@ pillow = [
     'pillow ~= 12.0',
 ]
 search = [
-    'ddgs ~= 9.9',
+    'ddgs ~= 9.10',
 ]
 wiki = [
     'mwparserfromhell ~= 0.7',

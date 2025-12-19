@@ -29,13 +29,13 @@ scikit-image==0.25.2
 
 safetensors==0.7.0
 
-tavily-python==0.7.16
+tavily-python==0.7.17
 
 sqlite-vec==0.1.6
 
 pytesseract==0.3.13
 
-ddgs==9.9.3
+ddgs==9.10.0
 
 gguf==0.17.1
 
