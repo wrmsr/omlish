@@ -165,7 +165,7 @@ class AsyncLifecycleContextManager(lang.Final, ta.Generic[AsyncLifecycleT]):
 ##
 
 
-def context_manage_lifecycle(obj: T) -> ta.ContextManager[T]:
+def lifecycle_context_manage(obj: T) -> ta.ContextManager[T]:
     @contextlib.contextmanager
     def inner():
         lc = check.not_none(unwrap_lifecycle(obj))
@@ -175,7 +175,7 @@ def context_manage_lifecycle(obj: T) -> ta.ContextManager[T]:
     return inner()
 
 
-def async_context_manage_lifecycle(obj: T) -> ta.AsyncContextManager[T]:
+def async_lifecycle_context_manage(obj: T) -> ta.AsyncContextManager[T]:
     @contextlib.asynccontextmanager
     async def inner():
         lc = check.not_none(unwrap_async_lifecycle(obj))

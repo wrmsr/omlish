@@ -32,8 +32,8 @@ from .contextmanagers import (  # noqa
     LifecycleContextManager,
     AsyncLifecycleContextManager,
 
-    context_manage_lifecycle,
-    async_context_manage_lifecycle,
+    lifecycle_context_manage,
+    async_lifecycle_context_manage,
 )
 
 from .controller import (  # noqa

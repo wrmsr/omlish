@@ -8,8 +8,8 @@ from .. import inject as inj
 from .. import lang
 from .base import AsyncLifecycle
 from .base import Lifecycle
-from .contextmanagers import async_context_manage_lifecycle
-from .contextmanagers import context_manage_lifecycle
+from .contextmanagers import async_lifecycle_context_manage
+from .contextmanagers import lifecycle_context_manage
 from .manager import AsyncLifecycleManager
 from .manager import LifecycleManager
 from .unwrap import unwrap_any_lifecycle
@@ -126,7 +126,7 @@ def bind_async_lifecycle_registrar() -> inj.Elements:
 def bind_managed_lifecycle_manager() -> inj.Elements:
     # FIXME: lock?
     def inner(es: contextlib.ExitStack) -> LifecycleManager:
-        return es.enter_context(context_manage_lifecycle(LifecycleManager()))
+        return es.enter_context(lifecycle_context_manage(LifecycleManager()))
 
     return inj.as_elements(
         inj.bind(inner, singleton=True, eager=True),
@@ -136,7 +136,7 @@ def bind_managed_lifecycle_manager() -> inj.Elements:
 def bind_async_managed_lifecycle_manager() -> inj.Elements:
     # FIXME: lock?
     async def inner(aes: contextlib.AsyncExitStack) -> AsyncLifecycleManager:
-        return await aes.enter_async_context(async_context_manage_lifecycle(AsyncLifecycleManager()))
+        return await aes.enter_async_context(async_lifecycle_context_manage(AsyncLifecycleManager()))
 
     return inj.as_elements(
         inj.bind(inner, singleton=True, eager=True),
