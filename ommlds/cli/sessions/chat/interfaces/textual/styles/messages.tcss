@@ -134,8 +134,6 @@
 .tool-confirmation-message-inner {
     width: 1fr;
     height: auto;
-
-    padding: 1;
 }
 
 .tool-confirmation-message-inner-open {
@@ -145,10 +143,16 @@
 .tool-confirmation-message-inner-closed {
 }
 
-.tool-confirmation-message-content {
+.tool-confirmation-message-outer-content {
+}
+
+.tool-confirmation-message-inner-content {
     background: $background;
+
+    margin: 1;
+    padding: 1;
 }
 
 .tool-confirmation-message-controls {
-    margin-top: 1;
+    margin: 1;
 }

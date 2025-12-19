@@ -139,19 +139,26 @@ class ToolConfirmationControls(tx.Static):
 
 
 class ToolConfirmationMessage(Message):
-    def __init__(self, content: str, fut: asyncio.Future[bool]) -> None:
+    def __init__(
+            self,
+            outer_content: str,
+            inner_content: str,
+            fut: asyncio.Future[bool],
+    ) -> None:
         super().__init__()
 
         self.add_class('tool-confirmation-message')
 
-        self._content = content
+        self._outer_content = outer_content
+        self._inner_content = inner_content
         self._fut = fut
 
     def compose(self) -> tx.ComposeResult:
         with tx.Horizontal(classes='tool-confirmation-message-outer'):
             yield tx.Static('? ', classes='tool-confirmation-message-glyph')
             with tx.Vertical(classes='tool-confirmation-message-inner tool-confirmation-message-inner-open'):
-                yield tx.Static(self._content, classes='tool-confirmation-message-content')
+                yield tx.Static(self._outer_content, classes='tool-confirmation-message-outer-content')
+                yield tx.Static(self._inner_content, classes='tool-confirmation-message-inner-content')
                 yield ToolConfirmationControls(classes='tool-confirmation-message-controls')
 
     @tx.on(ToolConfirmationControls.Allowed)

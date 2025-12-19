@@ -260,10 +260,18 @@ class ChatApp(tx.App):
 
     #
 
-    async def confirm_tool_use(self, message: str) -> bool:
+    async def confirm_tool_use(
+            self,
+            outer_message: str,
+            inner_message: str,
+    ) -> bool:
         fut: asyncio.Future[bool] = asyncio.get_running_loop().create_future()
 
-        tcm = ToolConfirmationMessage(message, fut)
+        tcm = ToolConfirmationMessage(
+            outer_message,
+            inner_message,
+            fut,
+        )
 
         async def inner() -> None:
             await self._mount_messages(tcm)

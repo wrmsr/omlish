@@ -31,7 +31,8 @@ class ChatAppToolExecutionConfirmation(ToolExecutionConfirmation):
             # spec=msh.marshal(tce.spec),
         )
 
-        msg = f'Execute requested tool?\n\n{json.dumps_pretty(tr_dct)}'  # noqa
-
-        if not await (await self._app()).confirm_tool_use(msg):
+        if not await (await self._app()).confirm_tool_use(
+                'Execute requested tool?',
+                json.dumps_pretty(tr_dct),
+        ):
             raise ToolExecutionRequestDeniedError
