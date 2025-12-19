@@ -41,8 +41,8 @@ ROWID type
 import dataclasses as dc
 import enum
 
-from .. import lang
-from .params import ParamStyle
+from ... import lang
+from ..params import ParamStyle
 
 
 ##

@@ -1,7 +1,7 @@
 import typing as ta
 
 from ... import check
-from .. import abc as dbapi_abc
+from ..dbapi import abc as dbapi_abc
 from .base import Adapter
 from .base import Conn
 from .base import Db

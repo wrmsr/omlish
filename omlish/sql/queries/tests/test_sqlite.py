@@ -2,7 +2,7 @@ import contextlib
 import sqlite3
 import typing as ta
 
-from ...abc import DbapiColumnDescription_
+from ...dbapi.abc import DbapiColumnDescription_
 from .. import Q
 from .. import render
 

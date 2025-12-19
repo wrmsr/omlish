@@ -7,19 +7,11 @@ with _lang.auto_proxy_init(globals()):
 
     from . import api  # noqa
 
+    from . import dbapi  # noqa
+
     from . import queries  # noqa
 
     #
-
-    from .abc import (  # noqa
-        DbapiTypeCode,
-        DbapiColumnDescription,
-        DbapiColumnDescription_,
-        DbapiConnection,
-        DbapiCursor,
-        DbapiThreadSafety,
-        DbapiModule,
-    )
 
     from .dbs import (  # noqa
         DbType,
