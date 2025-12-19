@@ -9,7 +9,10 @@ from omlish import lang
 
 
 class Message(tx.Static, lang.Abstract):
-    pass
+    def __init__(self, *args: ta.Any, **kwargs: ta.Any) -> None:
+        super().__init__(*args, **kwargs)
+
+        self.add_class('message')
 
 
 ##

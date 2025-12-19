@@ -61,8 +61,7 @@ class ChatApp(tx.App):
     #
 
     def compose(self) -> tx.ComposeResult:
-        with tx.VerticalScroll(id='messages-scroll'):
-            yield tx.Static(id='messages-container')
+        yield tx.VerticalScroll(id='messages-container')
 
         yield InputOuter(id='input-outer')
 
@@ -71,22 +70,19 @@ class ChatApp(tx.App):
     def _get_input_text_area(self) -> InputTextArea:
         return self.query_one('#input', InputTextArea)
 
-    def _get_messages_scroll(self) -> tx.VerticalScroll:
-        return self.query_one('#messages-scroll', tx.VerticalScroll)
-
-    def _get_messages_container(self) -> tx.Static:
-        return self.query_one('#messages-container', tx.Static)
+    def _get_messages_container(self) -> tx.VerticalScroll:
+        return self.query_one('#messages-container', tx.VerticalScroll)
 
     #
 
     def _is_messages_at_bottom(self, threshold: int = 3) -> bool:
-        return (ms := self._get_messages_scroll()).scroll_y >= (ms.max_scroll_y - threshold)
+        return (ms := self._get_messages_container()).scroll_y >= (ms.max_scroll_y - threshold)
 
     def _scroll_messages_to_bottom(self) -> None:
-        self._get_messages_scroll().scroll_end(animate=False)
+        self._get_messages_container().scroll_end(animate=False)
 
     def _anchor_messages(self) -> None:
-        if (ms := self._get_messages_scroll()).max_scroll_y:
+        if (ms := self._get_messages_container()).max_scroll_y:
             ms.anchor()
 
     #
@@ -114,7 +110,7 @@ class ChatApp(tx.App):
 
             await sam.append_content(content)
 
-            self.call_after_refresh(lambda: self._get_messages_container().scroll_end(animate=False))
+            self.call_after_refresh(self._scroll_messages_to_bottom)
 
             if was_at_bottom:
                 self.call_after_refresh(self._anchor_messages)
@@ -139,7 +135,7 @@ class ChatApp(tx.App):
 
         self._pending_mount_messages = None
 
-        self.call_after_refresh(lambda: msg_ctr.scroll_end(animate=False))
+        self.call_after_refresh(self._scroll_messages_to_bottom)
 
         if was_at_bottom:
             self.call_after_refresh(self._anchor_messages)

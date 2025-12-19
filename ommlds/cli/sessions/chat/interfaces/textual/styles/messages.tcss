@@ -1,31 +1,39 @@
 /* Container */
 
-#messages-scroll {
+#messages-container {
     width: 100%;
     height: 1fr;
 
-    padding: 0 1 0 0;
+    scrollbar-gutter: stable;
 
     background: $background-darken-3;
+
+    text-align: left;
+
+    scrollbar-size: 1 1;
 }
 
-#messages-container {
-    width: 100%;
+
+/* Base */
+
+.message {
+    width: 1fr;
     height: auto;
 
+    margin: 1 1 0 0;
+
+    padding-right: 1;
+
     layout: stream;
-    text-align: left;
 }
 
 
 /* Welcome */
 
 .welcome-message {
-    margin: 1;
+    padding: 1 2 1 1;
 
     border: round;
-
-    padding: 1;
 
     text-align: center;
 }
@@ -34,10 +42,6 @@
 /* User */
 
 .user-message {
-    width: 100%;
-    height: auto;
-
-    margin-top: 1;
 }
 
 .user-message-outer {
@@ -64,10 +68,6 @@
 /* Ai */
 
 .ai-message {
-    width: 100%;
-    height: auto;
-
-    margin-top: 1;
 }
 
 .ai-message-outer {
@@ -106,10 +106,6 @@
 /* Tool Confirmation */
 
 .tool-confirmation-message {
-    width: 100%;
-    height: auto;
-
-    margin-top: 1;
 }
 
 .tool-confirmation-message-outer {
@@ -134,7 +130,7 @@
     height: auto;
 
     padding: 1;
-    margin-right: 3;
+    margin-right: 2;
 }
 
 .tool-confirmation-message-inner-open {
