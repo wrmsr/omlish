@@ -167,5 +167,6 @@ class ToolConfirmationMessage(Message):
         await inner.query_one(ToolConfirmationControls).remove()
         inner.remove_class('tool-confirmation-message-inner-open')
         inner.add_class('tool-confirmation-message-inner-closed')
+        inner.query_one('.tool-confirmation-message-outer-content', tx.Static).update('Tool use confirmed.')
 
         self._fut.set_result(True)

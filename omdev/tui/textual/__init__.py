@@ -232,7 +232,9 @@ with _lang.auto_proxy_init(globals()):
     ##
 
     from . devtools import (  # noqa
-        setup_app_devtools,
+        DevtoolsAppMixin,
+
+        connect_devtools,
 
         DevtoolsLoggingHandler,
     )

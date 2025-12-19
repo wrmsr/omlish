@@ -3,9 +3,14 @@ import typing as ta
 from textual.app import App as App_
 from textual.binding import BindingType  # noqa
 
+from .devtools import DevtoolsAppMixin
+
 
 ##
 
 
-class App(App_):
+class App(
+    DevtoolsAppMixin,
+    App_,
+):
     BINDINGS: ta.ClassVar[ta.Sequence[BindingType]] = App_.BINDINGS  # type: ignore[assignment]

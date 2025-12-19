@@ -2,8 +2,6 @@ import inspect
 import logging
 import typing as ta
 
-from textual.app import App
-
 from omlish import check
 from omlish import lang
 
@@ -17,31 +15,60 @@ with lang.auto_proxy_import(globals()):
 ##
 
 
-def setup_app_devtools(
-        app: App,
+class DevtoolsAppMixin:
+    devtools: ta.Optional['tx_dev_client.DevtoolsClient'] = None
+
+    _skip_devtools_management: bool = False
+
+    def _install_devtools(self, devtools: 'tx_dev_client.DevtoolsClient') -> None:
+        check.none(self.devtools)
+        check.none(self._devtools_redirector)  # type: ignore
+
+        # https://github.com/Textualize/textual/blob/676045381b7178c3bc94b86901f20764e08aca49/src/textual/app.py#L730-L741
+        self.devtools = devtools
+        self._devtools_redirector = StdoutRedirector(self.devtools)  # type: ignore
+
+        self._skip_devtools_management = True
+
+    async def _init_devtools(self) -> None:
+        if self._skip_devtools_management:
+            return
+
+        await super()._init_devtools()  # type: ignore  # noqa
+
+    async def _disconnect_devtools(self) -> None:
+        if self._skip_devtools_management:
+            return
+
+        await super()._disconnect_devtools()  # type: ignore  # noqa
+
+
+##
+
+
+async def connect_devtools(
         host: str = '127.0.0.1',
         port: int | None = None,
-) -> bool:
-    if app.devtools is not None:
-        return False
-
-    check.none(app._devtools_redirector)  # noqa
-
+) -> ta.Optional['tx_dev_client.DevtoolsClient']:
     try:
         from textual_dev.client import DevtoolsClient  # noqa
-        from textual_dev.redirect_output import StdoutRedirector  # noqa
     except ImportError:
         # Dev dependencies not installed
-        return False
+        return None
 
-    app.devtools = DevtoolsClient(
+    devtools = DevtoolsClient(
         host,
         port,
     )
 
-    app._devtools_redirector = StdoutRedirector(app.devtools)  # noqa
+    from textual_dev.client import DevtoolsConnectionError
 
-    return True
+    try:
+        await devtools.connect()
+    except DevtoolsConnectionError as e:  # noqa
+        return None
+
+    return devtools
 
 
 ##
