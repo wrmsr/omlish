@@ -3,6 +3,7 @@ import typing as ta
 
 from omdev.tui import textual as tx
 from omlish import check
+from omlish import dataclasses as dc
 from omlish import lang
 from omlish.logs import all as logs
 
@@ -10,6 +11,7 @@ from ...... import minichain as mc
 from ...drivers.driver import ChatDriver
 from ...drivers.events.types import AiDeltaChatEvent
 from ...drivers.events.types import AiMessagesChatEvent
+from ...facades.facade import ChatFacade
 from .styles import read_app_css
 from .widgets.input import InputOuter
 from .widgets.input import InputTextArea
@@ -27,7 +29,7 @@ log, alog = logs.get_module_loggers(globals())
 ##
 
 
-ChatDriverEventQueue = ta.NewType('ChatDriverEventQueue', asyncio.Queue)
+ChatEventQueue = ta.NewType('ChatEventQueue', asyncio.Queue)
 
 
 ##
@@ -43,17 +45,19 @@ class ChatApp(tx.App):
     def __init__(
             self,
             *,
+            chat_facade: ChatFacade,
             chat_driver: ChatDriver,
-            chat_driver_event_queue: ChatDriverEventQueue,
+            chat_event_queue: ChatEventQueue,
     ) -> None:
         super().__init__()
 
         tx.setup_app_devtools(self, port=41932)
 
+        self._chat_facade = chat_facade
         self._chat_driver = chat_driver
-        self._chat_driver_event_queue = chat_driver_event_queue
+        self._chat_event_queue = chat_event_queue
 
-        self._chat_driver_action_queue: asyncio.Queue[ta.Any] = asyncio.Queue()
+        self._chat_action_queue: asyncio.Queue[ta.Any] = asyncio.Queue()
 
     def get_driver_class(self) -> type[tx.Driver]:
         return tx.get_pending_writes_driver_class(super().get_driver_class())
@@ -144,16 +148,16 @@ class ChatApp(tx.App):
 
     #
 
-    _chat_driver_event_task: asyncio.Task[None] | None = None
+    _chat_event_task: asyncio.Task[None] | None = None
 
     @logs.async_exception_logging(alog)
-    async def _chat_driver_event_task_main(self) -> None:
+    async def _chat_event_task_main(self) -> None:
         while True:
-            ev = await self._chat_driver_event_queue.get()
+            ev = await self._chat_event_queue.get()
             if ev is None:
                 break
 
-            await alog.debug(lambda: f'Got chat driver event: {ev!r}')
+            await alog.debug(lambda: f'Got chat event: {ev!r}')
 
             if isinstance(ev, AiMessagesChatEvent):
                 wx: list[tx.Widget] = []
@@ -181,20 +185,24 @@ class ChatApp(tx.App):
 
     #
 
-    _chat_driver_action_task: asyncio.Task[None] | None = None
+    @dc.dataclass(frozen=True)
+    class UserInput:
+        text: str
+
+    _chat_action_task: asyncio.Task[None] | None = None
 
     @logs.async_exception_logging(alog)
-    async def _chat_driver_action_task_main(self) -> None:
+    async def _chat_action_task_main(self) -> None:
         while True:
-            ac = await self._chat_driver_action_queue.get()
+            ac = await self._chat_action_queue.get()
             if ac is None:
                 break
 
-            await alog.debug(lambda: f'Got chat driver action: {ac!r}')
+            await alog.debug(lambda: f'Got chat action: {ac!r}')
 
-            if isinstance(ac, mc.UserMessage):
+            if isinstance(ac, ChatApp.UserInput):
                 try:
-                    await self._chat_driver.send_user_messages([ac])
+                    await self._chat_facade.handle_user_input(ac.text)
                 except Exception as e:  # noqa
                     raise
 
@@ -204,13 +212,13 @@ class ChatApp(tx.App):
     #
 
     async def on_mount(self) -> None:
-        check.state(self._chat_driver_event_task is None)
-        self._chat_driver_event_task = asyncio.create_task(self._chat_driver_event_task_main())
+        check.state(self._chat_event_task is None)
+        self._chat_event_task = asyncio.create_task(self._chat_event_task_main())
 
         await self._chat_driver.start()
 
-        check.state(self._chat_driver_action_task is None)
-        self._chat_driver_action_task = asyncio.create_task(self._chat_driver_action_task_main())
+        check.state(self._chat_action_task is None)
+        self._chat_action_task = asyncio.create_task(self._chat_action_task_main())
 
         self._get_input_text_area().focus()
 
@@ -221,14 +229,14 @@ class ChatApp(tx.App):
         )
 
     async def on_unmount(self) -> None:
-        if (cdt := self._chat_driver_event_task) is not None:
-            await self._chat_driver_event_queue.put(None)
+        if (cdt := self._chat_event_task) is not None:
+            await self._chat_event_queue.put(None)
             await cdt
 
         await self._chat_driver.stop()
 
-        if (cet := self._chat_driver_event_task) is not None:
-            await self._chat_driver_event_queue.put(None)
+        if (cet := self._chat_event_task) is not None:
+            await self._chat_event_queue.put(None)
             await cet
 
     @tx.on(InputTextArea.Submitted)
@@ -243,7 +251,7 @@ class ChatApp(tx.App):
             ),
         )
 
-        await self._chat_driver_action_queue.put(mc.UserMessage(event.text))
+        await self._chat_action_queue.put(ChatApp.UserInput(event.text))
 
     #
 

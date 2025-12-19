@@ -38,11 +38,11 @@ def bind_textual(cfg: InterfaceConfig = InterfaceConfig()) -> inj.Elements:
     #
 
     els.extend([
-        inj.bind(_app.ChatDriverEventQueue, to_const=asyncio.Queue()),
+        inj.bind(_app.ChatEventQueue, to_const=asyncio.Queue()),
 
         event_callbacks().bind_item(to_fn=inj.KwargsTarget.of(
             lambda eq: lambda ev: eq.put(ev),
-            eq=_app.ChatDriverEventQueue,
+            eq=_app.ChatEventQueue,
         )),
     ])
 

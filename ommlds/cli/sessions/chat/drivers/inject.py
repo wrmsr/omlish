@@ -27,7 +27,7 @@ with lang.auto_proxy_import(globals()):
 ##
 
 
-def bind_driver(cfg: DriverConfig) -> inj.Elements:
+def bind_driver(cfg: DriverConfig = DriverConfig()) -> inj.Elements:
     els: list[inj.Elemental] = []
 
     #
