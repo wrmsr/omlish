@@ -6,6 +6,8 @@ from .. import dataclasses as dc
 from .. import lang
 from .base import AsyncLifecycle
 from .base import Lifecycle
+from .states import LifecycleState
+from .states import LifecycleStates
 
 
 LifecycleManagedT = ta.TypeVar('LifecycleManagedT', bound='LifecycleManaged')
@@ -36,6 +38,9 @@ class LifecycleManaged(lang.Abstract):
     ):
         obj: LifecycleManagedT
 
+        def lifecycle_state(self, state: LifecycleState) -> None:
+            self.obj._lifecycle_state_ = state
+
         def lifecycle_construct(self) -> None:
             self.obj._lifecycle_construct()  # noqa
 
@@ -52,6 +57,12 @@ class LifecycleManaged(lang.Abstract):
     @cached.property
     def _lifecycle(self) -> _Lifecycle[ta.Self]:
         return LifecycleManaged._Lifecycle(self)
+
+    _lifecycle_state_: LifecycleState = LifecycleStates.NEW
+
+    @property
+    def _lifecycle_state(self) -> LifecycleState:
+        return self._lifecycle_state_
 
     def _lifecycle_construct(self) -> None:
         pass
@@ -84,6 +95,9 @@ class AsyncLifecycleManaged(lang.Abstract):
     ):
         obj: AsyncLifecycleManagedT
 
+        async def lifecycle_state(self, state: LifecycleState) -> None:
+            self.obj._lifecycle_state_ = state
+
         async def lifecycle_construct(self) -> None:
             await self.obj._lifecycle_construct()  # noqa
 
@@ -100,6 +114,12 @@ class AsyncLifecycleManaged(lang.Abstract):
     @cached.property
     def _lifecycle(self) -> _Lifecycle[ta.Self]:
         return AsyncLifecycleManaged._Lifecycle(self)
+
+    _lifecycle_state_: LifecycleState = LifecycleStates.NEW
+
+    @property
+    def _lifecycle_state(self) -> LifecycleState:
+        return self._lifecycle_state_
 
     async def _lifecycle_construct(self) -> None:
         pass
