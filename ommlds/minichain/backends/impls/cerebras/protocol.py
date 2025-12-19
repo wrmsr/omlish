@@ -16,7 +16,7 @@ from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
 from ....chat.stream.types import AiDelta
 from ....chat.stream.types import ContentAiDelta
-from ....chat.stream.types import ToolUseAiDelta
+from ....chat.stream.types import PartialToolUseAiDelta
 from ....chat.tools.types import Tool
 from ....content.prepare import prepare_content_str
 from ....tools.jsonschema import build_tool_spec_params_json_schema
@@ -128,10 +128,10 @@ def build_mc_ai_choice_deltas(delta: pt.ChatCompletionChunk.Choice.Delta) -> AiC
 
         for tc in delta.tool_calls or []:
             tc_fn = check.not_none(tc.function)
-            lst.append(ToolUseAiDelta(
+            lst.append(PartialToolUseAiDelta(
                 id=tc.id,
-                name=check.not_none(tc_fn.name),
-                args=json.loads(tc_fn.arguments or '{}'),
+                name=tc_fn.name,
+                raw_args=tc_fn.arguments,
             ))
 
         return AiChoiceDeltas(lst)
