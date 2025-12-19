@@ -5,20 +5,20 @@ TODO:
 import contextlib
 import typing as ta
 
-from .. import lang
-from .binder import bind
-from .elements import Elemental
-from .impl.inspect import build_kwargs_target
+from ... import lang
+from ..binder import bind
+from ..elements import Elemental
+from ..impl.inspect import build_kwargs_target
 
 
 if ta.TYPE_CHECKING:
-    from . import injector as _injector
-    from . import maysync as _maysync
-    from . import sync as _sync
+    from .. import injector as _injector
+    from .. import maysync as _maysync
+    from .. import sync as _sync
 else:
-    _injector = lang.proxy_import('.injector', __package__)
-    _maysync = lang.proxy_import('.maysync', __package__)
-    _sync = lang.proxy_import('.sync', __package__)
+    _injector = lang.proxy_import('..injector', __package__)
+    _maysync = lang.proxy_import('..maysync', __package__)
+    _sync = lang.proxy_import('..sync', __package__)
 
 
 T = ta.TypeVar('T')

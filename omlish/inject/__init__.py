@@ -35,6 +35,17 @@ with _lang.auto_proxy_init(globals()):
         bind_async_late,
     )
 
+    from .helpers.managed import (  # noqa
+        create_async_managed_injector,
+        make_async_managed_provider,
+
+        create_managed_injector,
+        make_managed_provider,
+
+        create_maysync_managed_injector,
+        make_maysync_managed_provider,
+    )
+
     from .helpers.multis import (  # noqa
         bind_map_entry_const,
         bind_set_entry_const,
@@ -104,17 +115,6 @@ with _lang.auto_proxy_init(globals()):
         ProvisionListener,
         ProvisionListenerBinding,
         bind_provision_listener,
-    )
-
-    from .managed import (  # noqa
-        create_async_managed_injector,
-        make_async_managed_provider,
-
-        create_managed_injector,
-        make_managed_provider,
-
-        create_maysync_managed_injector,
-        make_maysync_managed_provider,
     )
 
     from .maysync import (  # noqa
