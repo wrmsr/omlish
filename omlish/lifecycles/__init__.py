@@ -31,6 +31,9 @@ from .contextmanagers import (  # noqa
 
     LifecycleContextManager,
     AsyncLifecycleContextManager,
+
+    context_manage_lifecycle,
+    async_context_manage_lifecycle,
 )
 
 from .controller import (  # noqa
@@ -90,4 +93,7 @@ with _lang.auto_proxy_init(globals()):
     from .injection import (  # noqa
         bind_lifecycle_registrar,
         bind_async_lifecycle_registrar,
+
+        bind_managed_lifecycle_manager,
+        bind_async_managed_lifecycle_manager,
     )

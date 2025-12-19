@@ -117,7 +117,10 @@ def bind(
     elif _is_fn(obj) and not has_to:
         sig = _inspect.signature(obj)
         ty = rfl.type_(sig.return_annotation)
-        to_fn = obj
+        if inspect.iscoroutinefunction(obj):
+            to_async_fn = obj
+        else:
+            to_fn = obj
         key = Key(ty)
     else:
         if to_const is not None:

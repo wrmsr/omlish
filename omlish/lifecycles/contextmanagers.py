@@ -1,6 +1,8 @@
+import contextlib
 import types
 import typing as ta
 
+from .. import check
 from .. import dataclasses as dc
 from .. import lang
 from .base import AsyncLifecycle
@@ -9,7 +11,11 @@ from .controller import AsyncLifecycleController
 from .controller import LifecycleController
 from .states import LifecycleState
 from .states import LifecycleStates
+from .unwrap import unwrap_async_lifecycle
+from .unwrap import unwrap_lifecycle
 
+
+T = ta.TypeVar('T')
 
 ContextManagerT = ta.TypeVar('ContextManagerT', bound=ta.ContextManager)
 AsyncContextManagerT = ta.TypeVar('AsyncContextManagerT', bound=ta.AsyncContextManager)
@@ -78,14 +84,14 @@ class LifecycleContextManager(lang.Final, ta.Generic[LifecycleT]):
 
     #
 
-    def __enter__(self) -> ta.Self:
+    def __enter__(self) -> LifecycleT:
         try:
             self._controller.lifecycle_construct()
             self._controller.lifecycle_start()
         except Exception:
             self._controller.lifecycle_destroy()
             raise
-        return self
+        return self._lifecycle
 
     def __exit__(
             self,
@@ -130,14 +136,14 @@ class AsyncLifecycleContextManager(lang.Final, ta.Generic[AsyncLifecycleT]):
 
     #
 
-    async def __aenter__(self) -> ta.Self:
+    async def __aenter__(self) -> AsyncLifecycleT:
         try:
             await self._controller.lifecycle_construct()
             await self._controller.lifecycle_start()
         except Exception:
             await self._controller.lifecycle_destroy()
             raise
-        return self
+        return self._lifecycle
 
     async def __aexit__(
             self,
@@ -154,3 +160,26 @@ class AsyncLifecycleContextManager(lang.Final, ta.Generic[AsyncLifecycleT]):
         else:
             await self._controller.lifecycle_destroy()
         return None
+
+
+##
+
+
+def context_manage_lifecycle(obj: T) -> ta.ContextManager[T]:
+    @contextlib.contextmanager
+    def inner():
+        lc = check.not_none(unwrap_lifecycle(obj))
+        with LifecycleContextManager(lc):
+            yield obj
+
+    return inner()
+
+
+def async_context_manage_lifecycle(obj: T) -> ta.AsyncContextManager[T]:
+    @contextlib.asynccontextmanager
+    async def inner():
+        lc = check.not_none(unwrap_async_lifecycle(obj))
+        async with AsyncLifecycleContextManager(lc):
+            yield obj
+
+    return inner()
