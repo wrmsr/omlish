@@ -42,7 +42,6 @@
 }
 
 .welcome-message-content {
-    text-align: center;
 }
 
 

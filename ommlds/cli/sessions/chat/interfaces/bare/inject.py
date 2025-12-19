@@ -2,7 +2,7 @@ from omlish import inject as inj
 from omlish import lang
 
 from ..base import ChatInterface
-from ..configs import InterfaceConfig
+from .configs import BareInterfaceConfig
 
 
 with lang.auto_proxy_import(globals()):
@@ -17,7 +17,7 @@ with lang.auto_proxy_import(globals()):
 ##
 
 
-def bind_bare(cfg: InterfaceConfig = InterfaceConfig()) -> inj.Elements:
+def bind_bare(cfg: BareInterfaceConfig = BareInterfaceConfig()) -> inj.Elements:
     els: list[inj.Elemental] = []
 
     #

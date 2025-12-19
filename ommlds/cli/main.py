@@ -19,6 +19,9 @@ from .inject import bind_main
 from .secrets import install_secrets
 from .sessions.base import Session
 from .sessions.chat.configs import ChatConfig
+from .sessions.chat.interfaces.bare.configs import BareInterfaceConfig
+from .sessions.chat.interfaces.configs import InterfaceConfig
+from .sessions.chat.interfaces.textual.configs import TextualInterfaceConfig
 from .sessions.completion.configs import CompletionConfig
 from .sessions.embedding.configs import EmbeddingConfig
 
@@ -94,12 +97,13 @@ class ChatProfile(Profile):
             raise NotImplementedError
 
         if self._args.textual:
+            check.isinstance(cfg.interface, BareInterfaceConfig)
             cfg = dc.replace(
                 cfg,
-                interface=dc.replace(
-                    cfg.interface,
-                    use_textual=True,
-                ),
+                interface=TextualInterfaceConfig(**{
+                    f.name: getattr(cfg.interface, f.name)
+                    for f in dc.fields(InterfaceConfig)
+                }),
             )
 
         else:
@@ -113,7 +117,7 @@ class ChatProfile(Profile):
                     ),
                 ),
                 interface=dc.replace(
-                    cfg.interface,
+                    check.isinstance(cfg.interface, BareInterfaceConfig),
                     interactive=self._args.interactive,
                 ),
             )

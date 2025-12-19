@@ -52,7 +52,6 @@ def bind_driver(cfg: DriverConfig = DriverConfig()) -> inj.Elements:
 
     els.extend([
         inj.bind(_driver.ChatDriver, singleton=True),
-
         inj.bind_async_late(_driver.ChatDriver, _driver.ChatDriverGetter),
     ])
 

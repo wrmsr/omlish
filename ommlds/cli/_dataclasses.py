@@ -330,6 +330,191 @@ def _process_dataclass__fa5665ecddac4bdf52a6a47db3b5b5362a8b3c7a():
 
 @_register(
     plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('enable_tools', 'dangerous_no_tool_confirmation', 'interactive', 'use_readline')),"
+        " EqPlan(fields=('enable_tools', 'dangerous_no_tool_confirmation', 'interactive', 'use_readline')), FrozenPlan("
+        "fields=('enable_tools', 'dangerous_no_tool_confirmation', 'interactive', 'use_readline'), allow_dynamic_dunder"
+        "_attrs=False), HashPlan(action='add', fields=('enable_tools', 'dangerous_no_tool_confirmation', 'interactive',"
+        " 'use_readline'), cache=False), InitPlan(fields=(InitPlan.Field(name='enable_tools', annotation=OpRef(name='in"
+        "it.fields.0.annotation'), default=OpRef(name='init.fields.0.default'), default_factory=None, init=True, overri"
+        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='da"
+        "ngerous_no_tool_confirmation', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fie"
+        "lds.1.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, "
+        "validate=None, check_type=None), InitPlan.Field(name='interactive', annotation=OpRef(name='init.fields.2.annot"
+        "ation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=False, field_t"
+        "ype=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='use_readline', anno"
+        "tation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory=No"
+        "ne, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), s"
+        "elf_param='self', std_params=(), kw_only_params=('enable_tools', 'dangerous_no_tool_confirmation', 'interactiv"
+        "e', 'use_readline'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan("
+        "fields=(ReprPlan.Field(name='enable_tools', kw_only=True, fn=None), ReprPlan.Field(name='dangerous_no_tool_con"
+        "firmation', kw_only=True, fn=None), ReprPlan.Field(name='interactive', kw_only=True, fn=None), ReprPlan.Field("
+        "name='use_readline', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+    ),
+    plan_repr_sha1='9e8c99e7d2eb01a6861d3003bd95e38b3c3fe9ae',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__0__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+    ),
+    cls_names=(
+        ('ommlds.cli.main', 'BareInterfaceConfig'),
+    ),
+)
+def _process_dataclass__9e8c99e7d2eb01a6861d3003bd95e38b3c3fe9ae():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__0__default,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__1__default,
+        __dataclass__init__fields__2__annotation,
+        __dataclass__init__fields__2__default,
+        __dataclass__init__fields__3__annotation,
+        __dataclass__init__fields__3__default,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                enable_tools=self.enable_tools,
+                dangerous_no_tool_confirmation=self.dangerous_no_tool_confirmation,
+                interactive=self.interactive,
+                use_readline=self.use_readline,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.enable_tools == other.enable_tools and
+                self.dangerous_no_tool_confirmation == other.dangerous_no_tool_confirmation and
+                self.interactive == other.interactive and
+                self.use_readline == other.use_readline
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            'enable_tools',
+            'dangerous_no_tool_confirmation',
+            'interactive',
+            'use_readline',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                 or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'enable_tools',
+            'dangerous_no_tool_confirmation',
+            'interactive',
+            'use_readline',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                 or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.enable_tools,
+                self.dangerous_no_tool_confirmation,
+                self.interactive,
+                self.use_readline,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            *,
+            enable_tools: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
+            dangerous_no_tool_confirmation: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
+            interactive: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+            use_readline: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'enable_tools', enable_tools)
+            __dataclass__object_setattr(self, 'dangerous_no_tool_confirmation', dangerous_no_tool_confirmation)
+            __dataclass__object_setattr(self, 'interactive', interactive)
+            __dataclass__object_setattr(self, 'use_readline', use_readline)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"enable_tools={self.enable_tools!r}")
+            parts.append(f"dangerous_no_tool_confirmation={self.dangerous_no_tool_confirmation!r}")
+            parts.append(f"interactive={self.interactive!r}")
+            parts.append(f"use_readline={self.use_readline!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
         "Plans(tup=(CopyPlan(fields=('driver', 'facade', 'interface', 'rendering')), EqPlan(fields=('driver', 'facade',"
         " 'interface', 'rendering')), FrozenPlan(fields=('driver', 'facade', 'interface', 'rendering'), allow_dynamic_d"
         "under_attrs=False), HashPlan(action='add', fields=('driver', 'facade', 'interface', 'rendering'), cache=False)"
@@ -975,48 +1160,32 @@ def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('interactive', 'use_textual', 'use_readline', 'enable_tools', 'dangerous_no_tool_c"
-        "onfirmation')), EqPlan(fields=('interactive', 'use_textual', 'use_readline', 'enable_tools', 'dangerous_no_too"
-        "l_confirmation')), FrozenPlan(fields=('interactive', 'use_textual', 'use_readline', 'enable_tools', 'dangerous"
-        "_no_tool_confirmation'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('interactive', 'use"
-        "_textual', 'use_readline', 'enable_tools', 'dangerous_no_tool_confirmation'), cache=False), InitPlan(fields=(I"
-        "nitPlan.Field(name='interactive', annotation=OpRef(name='init.fields.0.annotation'), default=OpRef(name='init."
-        "fields.0.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=Non"
-        "e, validate=None, check_type=None), InitPlan.Field(name='use_textual', annotation=OpRef(name='init.fields.1.an"
-        "notation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False, fiel"
-        "d_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='use_readline', a"
-        "nnotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory"
-        "=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),"
-        " InitPlan.Field(name='enable_tools', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='in"
-        "it.fields.3.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
-        "None, validate=None, check_type=None), InitPlan.Field(name='dangerous_no_tool_confirmation', annotation=OpRef("
-        "name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, init=True"
-        ", override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='se"
-        "lf', std_params=(), kw_only_params=('interactive', 'use_textual', 'use_readline', 'enable_tools', 'dangerous_n"
-        "o_tool_confirmation'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPla"
-        "n(fields=(ReprPlan.Field(name='interactive', kw_only=True, fn=None), ReprPlan.Field(name='use_textual', kw_onl"
-        "y=True, fn=None), ReprPlan.Field(name='use_readline', kw_only=True, fn=None), ReprPlan.Field(name='enable_tool"
-        "s', kw_only=True, fn=None), ReprPlan.Field(name='dangerous_no_tool_confirmation', kw_only=True, fn=None)), id="
-        "False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('enable_tools', 'dangerous_no_tool_confirmation')), EqPlan(fields=('enable_tools',"
+        " 'dangerous_no_tool_confirmation')), FrozenPlan(fields=('enable_tools', 'dangerous_no_tool_confirmation'), all"
+        "ow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('enable_tools', 'dangerous_no_tool_confirmation"
+        "'), cache=False), InitPlan(fields=(InitPlan.Field(name='enable_tools', annotation=OpRef(name='init.fields.0.an"
+        "notation'), default=OpRef(name='init.fields.0.default'), default_factory=None, init=True, override=False, fiel"
+        "d_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='dangerous_no_too"
+        "l_confirmation', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'"
+        "), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None,"
+        " check_type=None)), self_param='self', std_params=(), kw_only_params=('enable_tools', 'dangerous_no_tool_confi"
+        "rmation'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(Re"
+        "prPlan.Field(name='enable_tools', kw_only=True, fn=None), ReprPlan.Field(name='dangerous_no_tool_confirmation'"
+        ", kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='2ac54f7b23a3729b83684d53c78e05f4c2d354f2',
+    plan_repr_sha1='d65d18393f357ae0fb02bb80268c6f1473462613',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
     ),
     cls_names=(
         ('ommlds.cli.main', 'InterfaceConfig'),
+        ('ommlds.cli.main', 'TextualInterfaceConfig'),
     ),
 )
-def _process_dataclass__2ac54f7b23a3729b83684d53c78e05f4c2d354f2():
+def _process_dataclass__d65d18393f357ae0fb02bb80268c6f1473462613():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -1024,12 +1193,6 @@ def _process_dataclass__2ac54f7b23a3729b83684d53c78e05f4c2d354f2():
         __dataclass__init__fields__0__default,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -1048,9 +1211,6 @@ def _process_dataclass__2ac54f7b23a3729b83684d53c78e05f4c2d354f2():
             if self.__class__ is not __dataclass__cls:
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
-                interactive=self.interactive,
-                use_textual=self.use_textual,
-                use_readline=self.use_readline,
                 enable_tools=self.enable_tools,
                 dangerous_no_tool_confirmation=self.dangerous_no_tool_confirmation,
             )
@@ -1066,9 +1226,6 @@ def _process_dataclass__2ac54f7b23a3729b83684d53c78e05f4c2d354f2():
             if self.__class__ is not other.__class__:
                 return NotImplemented
             return (
-                self.interactive == other.interactive and
-                self.use_textual == other.use_textual and
-                self.use_readline == other.use_readline and
                 self.enable_tools == other.enable_tools and
                 self.dangerous_no_tool_confirmation == other.dangerous_no_tool_confirmation
             )
@@ -1079,9 +1236,6 @@ def _process_dataclass__2ac54f7b23a3729b83684d53c78e05f4c2d354f2():
         setattr(__dataclass__cls, '__eq__', __eq__)
 
         __dataclass___setattr_frozen_fields = {
-            'interactive',
-            'use_textual',
-            'use_readline',
             'enable_tools',
             'dangerous_no_tool_confirmation',
         }
@@ -1100,9 +1254,6 @@ def _process_dataclass__2ac54f7b23a3729b83684d53c78e05f4c2d354f2():
         setattr(__dataclass__cls, '__setattr__', __setattr__)
 
         __dataclass___delattr_frozen_fields = {
-            'interactive',
-            'use_textual',
-            'use_readline',
             'enable_tools',
             'dangerous_no_tool_confirmation',
         }
@@ -1122,9 +1273,6 @@ def _process_dataclass__2ac54f7b23a3729b83684d53c78e05f4c2d354f2():
 
         def __hash__(self):
             return hash((
-                self.interactive,
-                self.use_textual,
-                self.use_readline,
                 self.enable_tools,
                 self.dangerous_no_tool_confirmation,
             ))
@@ -1135,15 +1283,9 @@ def _process_dataclass__2ac54f7b23a3729b83684d53c78e05f4c2d354f2():
         def __init__(
             self,
             *,
-            interactive: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
-            use_textual: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            use_readline: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            enable_tools: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            dangerous_no_tool_confirmation: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
+            enable_tools: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
+            dangerous_no_tool_confirmation: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
         ) -> __dataclass__None:
-            __dataclass__object_setattr(self, 'interactive', interactive)
-            __dataclass__object_setattr(self, 'use_textual', use_textual)
-            __dataclass__object_setattr(self, 'use_readline', use_readline)
             __dataclass__object_setattr(self, 'enable_tools', enable_tools)
             __dataclass__object_setattr(self, 'dangerous_no_tool_confirmation', dangerous_no_tool_confirmation)
 
@@ -1155,9 +1297,6 @@ def _process_dataclass__2ac54f7b23a3729b83684d53c78e05f4c2d354f2():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"interactive={self.interactive!r}")
-            parts.append(f"use_textual={self.use_textual!r}")
-            parts.append(f"use_readline={self.use_readline!r}")
             parts.append(f"enable_tools={self.enable_tools!r}")
             parts.append(f"dangerous_no_tool_confirmation={self.dangerous_no_tool_confirmation!r}")
             return (

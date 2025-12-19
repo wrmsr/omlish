@@ -9,7 +9,7 @@ from omlish import lang
 
 from ...drivers.events.injection import event_callbacks
 from ..base import ChatInterface
-from ..configs import InterfaceConfig
+from .configs import TextualInterfaceConfig
 
 
 with lang.auto_proxy_import(globals()):
@@ -22,7 +22,7 @@ with lang.auto_proxy_import(globals()):
 ##
 
 
-def bind_textual(cfg: InterfaceConfig = InterfaceConfig()) -> inj.Elements:
+def bind_textual(cfg: TextualInterfaceConfig = TextualInterfaceConfig()) -> inj.Elements:
     els: list[inj.Elemental] = [
         inj.bind(ChatInterface, to_ctor=_interface.TextualChatInterface, singleton=True),
     ]
@@ -31,7 +31,6 @@ def bind_textual(cfg: InterfaceConfig = InterfaceConfig()) -> inj.Elements:
 
     els.extend([
         inj.bind(_app.ChatApp, singleton=True),
-
         inj.bind_async_late(_app.ChatApp, _app.ChatAppGetter),
     ])
 
