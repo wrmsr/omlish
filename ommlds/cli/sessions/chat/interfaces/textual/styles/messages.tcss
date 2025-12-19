@@ -152,6 +152,4 @@
 
 .tool-confirmation-message-controls {
     margin-top: 1;
-
-    background: $background-darken-3;
 }
