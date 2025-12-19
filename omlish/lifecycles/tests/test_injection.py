@@ -8,7 +8,9 @@ from ..base import Lifecycle
 from ..contextmanagers import AsyncLifecycleContextManager
 from ..contextmanagers import LifecycleContextManager
 from ..injection import bind_async_lifecycle_registrar
+from ..injection import bind_async_managed_lifecycle_manager
 from ..injection import bind_lifecycle_registrar
+from ..injection import bind_managed_lifecycle_manager
 from ..managed import AsyncLifecycleManaged
 from ..managed import LifecycleManaged
 from ..manager import AsyncLifecycleManager
@@ -66,21 +68,32 @@ class ServiceD(LifecycleManaged):
 
 
 def test_inject():
-    with inj.create_managed_injector(
+    svcs: list = [
+        inj.bind(Db, singleton=True),
+        inj.bind(ServiceA, singleton=True),
+        inj.bind(ServiceB, singleton=True),
+        inj.bind(ServiceC, singleton=True, eager=True),
+        inj.bind(ServiceD, singleton=True, eager=True),
+
+        inj.bind(420),
+    ]
+
+    i = inj.create_injector(
         bind_lifecycle_registrar(),
-            inj.bind(LifecycleManager, singleton=True, eager=True),
+        inj.bind(LifecycleManager, singleton=True, eager=True),
+        *svcs,
+    )
+    print()
+    with LifecycleContextManager(check.not_none(unwrap_lifecycle(i[LifecycleManager]))):
+        print(i[ServiceC])
 
-            inj.bind(Db, singleton=True),
-            inj.bind(ServiceA, singleton=True),
-            inj.bind(ServiceB, singleton=True),
-            inj.bind(ServiceC, singleton=True, eager=True),
-            inj.bind(ServiceD, singleton=True, eager=True),
-
-            inj.bind(420),
-    ) as i:  # noqa
+    with inj.create_managed_injector(
+            bind_lifecycle_registrar(),
+            bind_managed_lifecycle_manager(),
+            *svcs,
+    ) as mi:
         print()
-        with LifecycleContextManager(check.not_none(unwrap_lifecycle(i[LifecycleManager]))):
-            print(i[ServiceC])
+        print(mi[ServiceC])
 
 
 ##
@@ -133,18 +146,29 @@ class AsyncServiceD(AsyncLifecycleManaged):
 
 @pytest.mark.asyncs('asyncio')
 async def test_async_inject():
+    svcs: list = [
+        inj.bind(AsyncDb, singleton=True),
+        inj.bind(AsyncServiceA, singleton=True),
+        inj.bind(AsyncServiceB, singleton=True),
+        inj.bind(AsyncServiceC, singleton=True, eager=True),
+        inj.bind(AsyncServiceD, singleton=True, eager=True),
+
+        inj.bind(420),
+    ]
+
+    i = await inj.create_async_injector(
+        bind_async_lifecycle_registrar(),
+        inj.bind(AsyncLifecycleManager, singleton=True, eager=True),
+        *svcs,
+    )
+    print()
+    async with AsyncLifecycleContextManager(check.not_none(unwrap_async_lifecycle(await i[AsyncLifecycleManager]))):
+        print(await i[AsyncServiceC])
+
     async with inj.create_async_managed_injector(
             bind_async_lifecycle_registrar(),
-            inj.bind(AsyncLifecycleManager, singleton=True, eager=True),
-
-            inj.bind(AsyncDb, singleton=True),
-            inj.bind(AsyncServiceA, singleton=True),
-            inj.bind(AsyncServiceB, singleton=True),
-            inj.bind(AsyncServiceC, singleton=True, eager=True),
-            inj.bind(AsyncServiceD, singleton=True, eager=True),
-
-            inj.bind(420),
-    ) as i:  # noqa
+            bind_async_managed_lifecycle_manager(),
+            *svcs,
+    ) as mi:  # noqa
         print()
-        async with AsyncLifecycleContextManager(check.not_none(unwrap_async_lifecycle(await i[AsyncLifecycleManager]))):
-            print(await i[AsyncServiceC])
+        print(await mi[AsyncServiceC])
