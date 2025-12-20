@@ -1,6 +1,7 @@
+from omdev.tui import textual as tx
+
 from ..base import ChatInterface
 from .app import ChatApp
-from .logging import set_root_logger_to_devtools
 
 
 ##
@@ -17,6 +18,7 @@ class TextualChatInterface(ChatInterface):
         self._app = app
 
     async def run(self) -> None:
-        set_root_logger_to_devtools(self._app.devtools)
+        # FIXME: move lol
+        tx.set_root_logger_to_devtools(self._app.devtools)
 
         await self._app.run_async()

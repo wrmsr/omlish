@@ -51,11 +51,12 @@ class ChatApp(tx.App):
             chat_driver: ChatDriver,
             chat_event_queue: ChatEventQueue,
             backend_name: BackendName | None = None,
+            devtools_setup: tx.DevtoolsSetup | None = None,
     ) -> None:
         super().__init__()
 
-        # FIXME: lol
-        tx.setup_app_devtools(self, port=41932)
+        if devtools_setup is not None:
+            devtools_setup(self)
 
         self._chat_facade = chat_facade
         self._chat_driver = chat_driver

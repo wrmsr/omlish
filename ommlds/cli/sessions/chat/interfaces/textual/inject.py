@@ -3,6 +3,7 @@ FIXME:
  - too lazy to lazy import guts like every other proper inject module lol >_<
 """
 import asyncio
+import contextlib
 
 from omlish import inject as inj
 from omlish import lang
@@ -13,6 +14,8 @@ from .configs import TextualInterfaceConfig
 
 
 with lang.auto_proxy_import(globals()):
+    from omdev.tui import textual as tx
+
     from ...drivers.tools import confirmation as _tools_confirmation
     from . import app as _app
     from . import interface as _interface
@@ -61,6 +64,27 @@ def bind_textual(cfg: TextualInterfaceConfig = TextualInterfaceConfig()) -> inj.
                 to_ctor=_tools.ChatAppToolExecutionConfirmation,
                 singleton=True,
             ))
+
+    #
+
+    els.extend([
+        inj.bind(tx.DevtoolsConfig(port=41932)),  # FIXME: lol
+
+        inj.bind(
+            tx.DevtoolsManager,
+            singleton=True,
+            to_async_fn=inj.make_async_managed_provider(
+                tx.DevtoolsManager,
+                contextlib.aclosing,
+            ),
+        ),
+
+        inj.bind(
+            tx.DevtoolsSetup,
+            to_async_fn=inj.KwargsTarget.of(lambda mgr: mgr.get_setup(), mgr=tx.DevtoolsManager),
+            singleton=True,
+        ),
+    ])
 
     #
 
