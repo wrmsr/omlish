@@ -56,9 +56,30 @@ def bind_backends(cfg: BackendConfig = BackendConfig()) -> inj.Elements:
     for bp_iface, bp_impl in backend_provider_pairs:
         bp_stack = inj.wrapper_binder_helper(bp_iface)
 
-        lst.append(bp_stack.push_bind(to_ctor=bp_impl, singleton=True))
-
         if bp_iface is _types.ChatChoicesServiceBackendProvider:
+            fiw_ben_lst: list[str] = [
+                # 'openai',
+                # 'anthropic',
+                # 'groq',
+                # 'cerebras',
+            ]
+
+            if fiw_ben_lst:
+                for ben in fiw_ben_lst:
+                    ben_bp_key: inj.Key = inj.Key(bp_impl, tag=ben)
+                    lst.extend([
+                        inj.private(
+                            inj.bind(_types.BackendName, to_const=ben),
+                            inj.bind(ben_bp_key, to_ctor=bp_impl, singleton=True),
+                            inj.bind(bp_iface, to_key=ben_bp_key),
+                            inj.expose(ben_bp_key),
+                        ),
+                        bp_stack.push_bind(to_key=ben_bp_key),
+                    ])
+
+            else:
+                lst.append(bp_stack.push_bind(to_ctor=bp_impl, singleton=True))
+
             fiw_key: inj.Key = inj.Key(_meta.FirstInWinsBackendProvider, tag=bp_iface)
             lst.extend([
                 inj.private(
@@ -68,6 +89,9 @@ def bind_backends(cfg: BackendConfig = BackendConfig()) -> inj.Elements:
                 ),
                 bp_stack.push_bind(to_key=fiw_key),
             ])
+
+        else:
+            lst.append(bp_stack.push_bind(to_ctor=bp_impl, singleton=True))
 
         lst.append(inj.bind(bp_iface, to_key=bp_stack.top))
 

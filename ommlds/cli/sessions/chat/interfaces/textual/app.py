@@ -1,6 +1,7 @@
 import asyncio
 import os
 import typing as ta
+import weakref
 
 from omdev.tui import textual as tx
 from omlish import check
@@ -66,6 +67,8 @@ class ChatApp(tx.App):
         self._backend_name = backend_name
 
         self._chat_action_queue: asyncio.Queue[ta.Any] = asyncio.Queue()
+
+        self._input_focused_key_events: weakref.WeakSet[tx.Key] = weakref.WeakSet()
 
     def get_driver_class(self) -> type[tx.Driver]:
         return tx.get_pending_writes_driver_class(super().get_driver_class())
@@ -264,9 +267,14 @@ class ChatApp(tx.App):
 
     @tx.on(tx.Key)
     async def on_key(self, event: tx.Key) -> None:
+        if event in self._input_focused_key_events:
+            return
+
         chat_input = self._get_input_text_area()
 
         if not chat_input.has_focus:
+            self._input_focused_key_events.add(event)
+
             chat_input.focus()
 
             self.screen.post_message(tx.Key(event.key, event.character))
