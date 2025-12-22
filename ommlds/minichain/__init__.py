@@ -391,6 +391,14 @@ with _lang.auto_proxy_init(
         tool_context,
     )
 
+    from .tools.execution.errorhandling import (  # noqa
+        ErrorHandlingToolExecutor,
+    )
+
+    from .tools.execution.errors import (  # noqa
+        ToolExecutionError,
+    )
+
     from .tools.execution.executors import (  # noqa
         ToolExecutor,
 
@@ -401,10 +409,6 @@ with _lang.auto_proxy_init(
 
     from .tools.execution.reflect import (  # noqa
         reflect_tool_catalog_entry,
-    )
-
-    from .tools.execution.errors import (  # noqa
-        ToolExecutionError,
     )
 
     from .tools.fns import (  # noqa
