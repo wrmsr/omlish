@@ -37,6 +37,10 @@ class Elements(lang.Final):
             for c in self.cs:
                 yield from c
 
+    @property
+    def debug(self) -> ta.Sequence[Element]:
+        return list(self)
+
 
 Elemental: ta.TypeAlias = ta.Union[  # noqa
     Element,

@@ -21,6 +21,7 @@ ORIGIN_BASE_OFS = 2
 ORIGIN_IGNORED_PACKAGES = frozenset([
     __package__,
     __package__.rpartition('.')[0],
+    __package__.rpartition('.')[0] + '.helpers',
 
     lang.__name__,
     lang.functions.__name__,
