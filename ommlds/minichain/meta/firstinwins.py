@@ -34,6 +34,13 @@ class FirstInWinsServiceExceptionGroup(ExceptionGroup):
     pass
 
 
+@dc.dataclass(frozen=True)
+class FirstInWinsServiceOutput(Output):
+    first_in_wins_service: 'FirstInWinsService'
+    response_service: Service
+    service_exceptions: ta.Mapping[Service, Exception] | None = None
+
+
 class FirstInWinsService(
     lang.Abstract,
     ta.Generic[
@@ -73,12 +80,14 @@ class AsyncioFirstInWinsService(
     ],
 ):
     async def invoke(self, request: Request[RequestV, OptionT]) -> Response[ResponseV, OutputT]:
-        tasks: list = [
-            asyncio.create_task(svc.invoke(request))  # type: ignore[arg-type]
-            for svc in self._services
-        ]
+        tasks: list = []
+        services_by_task: dict = {}
+        for svc in self._services:
+            task: asyncio.Task = asyncio.create_task(svc.invoke(request))  # type: ignore[arg-type]
+            tasks.append(task)
+            services_by_task[task] = svc
 
-        failures: list[Exception] = []
+        failures_by_service: dict[Service, Exception] = {}
 
         try:
             pending = set(tasks)
@@ -87,13 +96,15 @@ class AsyncioFirstInWinsService(
                 done, pending = await asyncio.wait(pending, return_when=asyncio.FIRST_COMPLETED)
 
                 for t in done:
+                    svc = services_by_task[t]
+
                     try:
-                        result = t.result()
+                        response = t.result()
                     except asyncio.CancelledError as exc:
-                        failures.append(FirstInWinsServiceCancelledError(exc))
+                        failures_by_service[svc] = FirstInWinsServiceCancelledError(exc)
                         continue
                     except Exception as exc:  # noqa
-                        failures.append(exc)
+                        failures_by_service[svc] = exc
                         continue
 
                     for p in pending:
@@ -101,9 +112,16 @@ class AsyncioFirstInWinsService(
 
                     await asyncio.gather(*pending, return_exceptions=True)
 
-                    return result
+                    return response.with_outputs(FirstInWinsServiceOutput(
+                        self,
+                        svc,
+                        failures_by_service,
+                    ))
 
-            raise FirstInWinsServiceExceptionGroup('All service calls failed', failures)
+            raise FirstInWinsServiceExceptionGroup(
+                'All service calls failed',
+                list(failures_by_service.values()),
+            )
 
         finally:
             for t in tasks:
