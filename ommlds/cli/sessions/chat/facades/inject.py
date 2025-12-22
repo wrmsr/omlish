@@ -6,6 +6,7 @@ from .configs import FacadeConfig
 
 with lang.auto_proxy_import(globals()):
     from . import facade as _facade
+    from .commands import inject as _commands
 
 
 ##
@@ -13,6 +14,12 @@ with lang.auto_proxy_import(globals()):
 
 def bind_facade(cfg: FacadeConfig = FacadeConfig()) -> inj.Elements:
     els: list[inj.Elemental] = []
+
+    #
+
+    els.extend([
+        _commands.bind_commands(cfg.commands),
+    ])
 
     #
 

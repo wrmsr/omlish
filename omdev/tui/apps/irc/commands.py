@@ -13,7 +13,7 @@ if ta.TYPE_CHECKING:
 ##
 
 
-class IrcCommand(abc.ABC):
+class IrcCommand(lang.Abstract):
     """Abstract base class for IRC commands."""
 
     def __init__(self) -> None:
