@@ -12,6 +12,7 @@ from .injection import backend_configs
 with lang.auto_proxy_import(globals()):
     from ...minichain.backends.impls.huggingface import repos as hf_repos
     from . import catalog as _catalog
+    from . import meta as _meta
     from . import types as _types
 
 
@@ -45,12 +46,30 @@ def bind_backends(cfg: BackendConfig = BackendConfig()) -> inj.Elements:
     else:
         lst.append(inj.bind(_types.BackendName, to_fn=inj.KwargsTarget.of(lambda dbn: dbn, dbn=_types.DefaultBackendName)))  # noqa
 
-    lst.extend([
-        inj.bind(_types.ChatChoicesServiceBackendProvider, to_ctor=_catalog.CatalogChatChoicesServiceBackendProvider, singleton=True),  # noqa
-        inj.bind(_types.ChatChoicesStreamServiceBackendProvider, to_ctor=_catalog.CatalogChatChoicesStreamServiceBackendProvider, singleton=True),  # noqa
-        inj.bind(_types.CompletionServiceBackendProvider, to_ctor=_catalog.CatalogCompletionServiceBackendProvider, singleton=True),  # noqa
-        inj.bind(_types.EmbeddingServiceBackendProvider, to_ctor=_catalog.CatalogEmbeddingServiceBackendProvider, singleton=True),  # noqa
-    ])
+    backend_provider_pairs: list = [
+        (_types.ChatChoicesServiceBackendProvider, _catalog.CatalogChatChoicesServiceBackendProvider),
+        (_types.ChatChoicesStreamServiceBackendProvider, _catalog.CatalogChatChoicesStreamServiceBackendProvider),
+        (_types.CompletionServiceBackendProvider, _catalog.CatalogCompletionServiceBackendProvider),
+        (_types.EmbeddingServiceBackendProvider, _catalog.CatalogEmbeddingServiceBackendProvider),
+    ]
+
+    for bp_iface, bp_impl in backend_provider_pairs:
+        bp_stack = inj.wrapper_binder_helper(bp_iface)
+
+        lst.append(bp_stack.push_bind(to_ctor=bp_impl, singleton=True))
+
+        if bp_iface is _types.ChatChoicesServiceBackendProvider:
+            fiw_key: inj.Key = inj.Key(_meta.FirstInWinsBackendProvider, tag=bp_iface)
+            lst.extend([
+                inj.private(
+                    inj.set_binder[_types.BackendProvider]().bind(bp_stack.top),
+                    inj.bind(fiw_key, to_ctor=_meta.FirstInWinsBackendProvider, singleton=True),
+                    inj.expose(fiw_key),
+                ),
+                bp_stack.push_bind(to_key=fiw_key),
+            ])
+
+        lst.append(inj.bind(bp_iface, to_key=bp_stack.top))
 
     #
 

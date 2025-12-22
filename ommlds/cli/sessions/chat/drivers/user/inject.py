@@ -9,7 +9,7 @@ from .configs import UserConfig
 
 
 with lang.auto_proxy_import(globals()):
-    from .. import driver as _driver
+    from .. import types as _driver
     from ..state import types as _state
 
 
