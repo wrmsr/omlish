@@ -1,5 +1,5 @@
 from ..... import minichain as mc
-from ..drivers.driver import ChatDriver
+from ..drivers.types import ChatDriver
 from .commands.manager import CommandsManager
 
 

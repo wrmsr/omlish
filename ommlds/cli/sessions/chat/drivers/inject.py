@@ -14,7 +14,7 @@ from .configs import DriverConfig
 
 with lang.auto_proxy_import(globals()):
     from ....backends import inject as _backends
-    from . import driver as _driver
+    from . import impl as _impl
     from . import types as _types
     from .ai import inject as _ai
     from .events import inject as _events
@@ -51,8 +51,10 @@ def bind_driver(cfg: DriverConfig = DriverConfig()) -> inj.Elements:
     #
 
     els.extend([
-        inj.bind(_driver.ChatDriver, singleton=True),
-        inj.bind_async_late(_driver.ChatDriver, _driver.ChatDriverGetter),
+        inj.bind(_impl.ChatDriverImpl, singleton=True),
+        inj.bind(_types.ChatDriver, to_key=_impl.ChatDriverImpl),
+
+        inj.bind_async_late(_types.ChatDriver, _types.ChatDriverGetter),
     ])
 
     #

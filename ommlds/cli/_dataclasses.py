@@ -2062,7 +2062,7 @@ def _process_dataclass__55eb2b38eb7d4e32f3a9306577040632e1c376fb():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.cli.sessions.chat.drivers.driver', 'AiDeltaChatEvent'),
+        ('ommlds.cli.sessions.chat.drivers.impl', 'AiDeltaChatEvent'),
     ),
 )
 def _process_dataclass__aff24d9a92d53ba94dacb7fb303b9eb4ebd0763f():
@@ -2196,8 +2196,8 @@ def _process_dataclass__aff24d9a92d53ba94dacb7fb303b9eb4ebd0763f():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.cli.sessions.chat.drivers.driver', 'AiMessagesChatEvent'),
-        ('ommlds.cli.sessions.chat.drivers.driver', 'UserMessagesChatEvent'),
+        ('ommlds.cli.sessions.chat.drivers.impl', 'AiMessagesChatEvent'),
+        ('ommlds.cli.sessions.chat.drivers.impl', 'UserMessagesChatEvent'),
     ),
 )
 def _process_dataclass__b211fde543b7c2c533cdcf9f21b47d2f7f76e5c9():
@@ -2330,9 +2330,9 @@ def _process_dataclass__b211fde543b7c2c533cdcf9f21b47d2f7f76e5c9():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.cli.sessions.chat.drivers.driver', 'ChatId'),
+        ('ommlds.cli.sessions.chat.drivers.impl', 'ChatDriverId'),
+        ('ommlds.cli.sessions.chat.drivers.impl', 'ChatId'),
         ('ommlds.cli.sessions.chat.drivers.state.ids', 'ChatStateStorageKey'),
-        ('ommlds.cli.sessions.chat.drivers.types', 'ChatDriverId'),
     ),
 )
 def _process_dataclass__3576262424b3ef8ff20966fa3744e5dba9a2ae7d():
@@ -2471,7 +2471,7 @@ def _process_dataclass__3576262424b3ef8ff20966fa3744e5dba9a2ae7d():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ommlds.cli.sessions.chat.drivers.driver', 'ChatPhaseCallback'),
+        ('ommlds.cli.sessions.chat.drivers.impl', 'ChatPhaseCallback'),
     ),
 )
 def _process_dataclass__927265170439340895560333250bc087fa726eff():
@@ -2639,7 +2639,7 @@ def _process_dataclass__927265170439340895560333250bc087fa726eff():
         '__dataclass__init__fields__3__default',
     ),
     cls_names=(
-        ('ommlds.cli.sessions.chat.drivers.driver', 'ChatState'),
+        ('ommlds.cli.sessions.chat.drivers.impl', 'ChatState'),
     ),
 )
 def _process_dataclass__9f7e26a87dd163b610f38caa1ce9b3c6356e632a():

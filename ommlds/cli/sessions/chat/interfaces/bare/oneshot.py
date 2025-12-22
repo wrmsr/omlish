@@ -1,4 +1,4 @@
-from ...drivers.driver import ChatDriver
+from ...drivers.types import ChatDriver
 from ..base import ChatInterface
 
 

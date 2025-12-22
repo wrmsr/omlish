@@ -10,9 +10,9 @@ from omlish.logs import all as logs
 
 from ...... import minichain as mc
 from .....backends.types import BackendName
-from ...drivers.driver import ChatDriver
 from ...drivers.events.types import AiDeltaChatEvent
 from ...drivers.events.types import AiMessagesChatEvent
+from ...drivers.types import ChatDriver
 from ...facades.facade import ChatFacade
 from .styles import read_app_css
 from .widgets.input import InputOuter

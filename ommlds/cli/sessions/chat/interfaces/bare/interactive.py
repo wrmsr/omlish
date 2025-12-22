@@ -3,7 +3,7 @@ import typing as ta
 from .....inputs.asyncs import AsyncStringInput
 from .....inputs.asyncs import SyncAsyncStringInput
 from .....inputs.sync import InputSyncStringInput
-from ...drivers.driver import ChatDriver
+from ...drivers.types import ChatDriver
 from ...facades.facade import ChatFacade
 from ..base import ChatInterface
 

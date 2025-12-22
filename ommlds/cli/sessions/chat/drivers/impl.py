@@ -3,10 +3,6 @@ TODO:
  - lifecycles
  - StreamService
 """
-import typing as ta
-
-from omlish import lang
-
 from ..... import minichain as mc
 from .ai.types import AiChatGenerator
 from .events.manager import ChatEventsManager
@@ -14,16 +10,13 @@ from .events.types import UserMessagesChatEvent
 from .phases.manager import ChatPhaseManager
 from .phases.types import ChatPhase
 from .state.types import ChatStateManager
+from .types import ChatDriver
 
 
 ##
 
 
-class ChatDriverGetter(lang.Func0[ta.Awaitable['ChatDriver']]):
-    pass
-
-
-class ChatDriver:
+class ChatDriverImpl(ChatDriver):
     def __init__(
             self,
             *,

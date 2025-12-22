@@ -12,8 +12,8 @@ from ....state.storage import InMemoryStateStorage
 from ....state.storage import StateStorage
 from ..configs import ChatConfig
 from ..drivers.configs import DriverConfig
-from ..drivers.driver import ChatDriver
 from ..drivers.state.configs import StateConfig
+from ..drivers.types import ChatDriver
 from ..drivers.user.configs import UserConfig
 from ..inject import bind_chat
 
