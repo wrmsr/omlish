@@ -60,8 +60,12 @@ class Command(lang.Abstract):
 
     #
 
+    @dc.dataclass(frozen=True, kw_only=True)
+    class Context:
+        print: ta.Callable[[str], ta.Awaitable[None]]
+
     @ta.final
-    async def run(self, argv: list[str]) -> None:
+    async def run(self, ctx: Context, argv: list[str]) -> None:
         try:
             args = self.__parser.parse_args(argv)
         except argparse.ArgumentError as ae:
@@ -72,8 +76,8 @@ class Command(lang.Abstract):
                 ae,
             ) from ae
 
-        await self._run_args(args)
+        await self._run_args(ctx, args)
 
     @abc.abstractmethod
-    def _run_args(self, args: argparse.Namespace) -> ta.Awaitable[None]:
+    def _run_args(self, ctx: Context, args: argparse.Namespace) -> ta.Awaitable[None]:
         raise NotImplementedError
