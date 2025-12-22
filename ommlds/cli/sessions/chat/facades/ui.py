@@ -21,3 +21,14 @@ class NopUiMessageDisplayer(UiMessageDisplayer):
 class PrintMessageDisplayer(UiMessageDisplayer):
     async def display_ui_message(self, content: str) -> None:
         print(content)
+
+
+##
+
+
+class UiQuitSignal(lang.Func0[ta.Awaitable[None]]):
+    pass
+
+
+async def raise_system_exit_ui_quit_signal() -> None:
+    raise SystemExit

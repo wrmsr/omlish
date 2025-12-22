@@ -1,8 +1,6 @@
-import typing as ta
-
-from omlish import lang
 from omlish.argparse import all as argparse
 
+from ..ui import UiQuitSignal
 from .base import Command
 
 
@@ -22,15 +20,11 @@ class EchoCommand(Command):
 ##
 
 
-class QuitSignal(lang.Func0[ta.Awaitable[None]]):
-    pass
-
-
 class QuitCommand(Command):
     def __init__(
             self,
             *,
-            quit_signal: QuitSignal,
+            quit_signal: UiQuitSignal,
     ) -> None:
         super().__init__()
 

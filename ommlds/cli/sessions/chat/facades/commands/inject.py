@@ -32,8 +32,6 @@ def bind_commands(cfg: CommandsConfig = CommandsConfig()) -> inj.Elements:
         inj.bind(_simple.EchoCommand, singleton=True),
         commands().bind_item(to_key=_simple.EchoCommand),
 
-        inj.bind(_simple.QuitSignal, to_const=lang.as_async(lambda: None)),  # type: ignore  # FIXME: lol
-
         inj.bind(_simple.QuitCommand, singleton=True),
         commands().bind_item(to_key=_simple.QuitCommand),
     ])
