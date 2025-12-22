@@ -9,6 +9,13 @@ from omlish import lang
 ##
 
 
+class MessagesContainer(tx.VerticalScroll):
+    pass
+
+
+##
+
+
 class Message(tx.Static, lang.Abstract):
     def __init__(self, *args: ta.Any, **kwargs: ta.Any) -> None:
         super().__init__(*args, **kwargs)
@@ -16,7 +23,7 @@ class Message(tx.Static, lang.Abstract):
         self.add_class('message')
 
 
-##
+#
 
 
 class WelcomeMessage(Message):
@@ -32,7 +39,7 @@ class WelcomeMessage(Message):
             yield tx.Static(self._content, classes='welcome-message-content')
 
 
-##
+#
 
 
 class UserMessage(Message):
@@ -50,7 +57,7 @@ class UserMessage(Message):
                 yield tx.Static(self._content)
 
 
-##
+#
 
 
 class AiMessage(Message, lang.Abstract):
@@ -124,7 +131,7 @@ class StreamAiMessage(AiMessage):
         self._stream_ = None
 
 
-##
+#
 
 
 class ToolConfirmationControls(tx.Static):
@@ -172,7 +179,7 @@ class ToolConfirmationMessage(Message):
         self._fut.set_result(True)
 
 
-##
+#
 
 
 class UiMessage(Message):

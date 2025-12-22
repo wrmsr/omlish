@@ -18,6 +18,7 @@ from .styles import read_app_css
 from .widgets.input import InputOuter
 from .widgets.input import InputTextArea
 from .widgets.messages import AiMessage
+from .widgets.messages import MessagesContainer
 from .widgets.messages import StaticAiMessage
 from .widgets.messages import StreamAiMessage
 from .widgets.messages import ToolConfirmationMessage
@@ -74,7 +75,7 @@ class ChatApp(tx.App):
     #
 
     def compose(self) -> tx.ComposeResult:
-        yield tx.VerticalScroll(id='messages-container')
+        yield MessagesContainer(id='messages-container')
 
         yield InputOuter(id='input-outer')
 
@@ -84,7 +85,7 @@ class ChatApp(tx.App):
         return self.query_one('#input', InputTextArea)
 
     def _get_messages_container(self) -> tx.VerticalScroll:
-        return self.query_one('#messages-container', tx.VerticalScroll)
+        return self.query_one('#messages-container', MessagesContainer)
 
     #
 
@@ -260,6 +261,15 @@ class ChatApp(tx.App):
         )
 
         await self._chat_action_queue.put(ChatApp.UserInput(event.text))
+
+    @tx.on(tx.Key)
+    async def on_key(self, event: tx.Key) -> None:
+        chat_input = self._get_input_text_area()
+
+        if not chat_input.has_focus:
+            chat_input.focus()
+
+            self.screen.post_message(tx.Key(event.key, event.character))
 
     #
 
