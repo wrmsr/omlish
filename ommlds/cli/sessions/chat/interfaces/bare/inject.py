@@ -12,6 +12,7 @@ with lang.auto_proxy_import(globals()):
     from . import interactive as _interactive
     from . import oneshot as _oneshot
     from . import tools as _tools
+    from ...facades import ui as _facades_ui
 
 
 ##
@@ -55,6 +56,13 @@ def bind_bare(cfg: BareInterfaceConfig = BareInterfaceConfig()) -> inj.Elements:
                 to_ctor=_tools.InteractiveToolExecutionConfirmation,
                 singleton=True,
             ))
+
+    #
+
+    els.extend([
+        inj.bind(_facades_ui.PrintMessageDisplayer, singleton=True),
+        inj.bind(_facades_ui.UiMessageDisplayer, to_key=_facades_ui.PrintMessageDisplayer),
+    ])
 
     #
 

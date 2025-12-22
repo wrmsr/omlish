@@ -27,6 +27,23 @@
     layout: stream;
 }
 
+.message-glyph {
+    width: auto;
+    height: auto;
+
+    background: transparent;
+    color: $primary;
+
+    text-style: bold;
+}
+
+.message-outer {
+    width: 1fr;
+    height: auto;
+
+    align: left top;
+}
+
 
 /* Welcome */
 
@@ -37,8 +54,6 @@
 }
 
 .welcome-message-outer {
-    width: 1fr;
-    height: auto;
 }
 
 .welcome-message-content {
@@ -51,18 +66,9 @@
 }
 
 .user-message-outer {
-    width: 1fr;
-    height: auto;
 }
 
 .user-message-glyph {
-    width: auto;
-    height: auto;
-
-    background: transparent;
-    color: $primary;
-
-    text-style: bold;
 }
 
 .user-message-inner {
@@ -77,20 +83,9 @@
 }
 
 .ai-message-outer {
-    width: 1fr;
-    height: auto;
-
-    align: left top;
 }
 
 .ai-message-glyph {
-    width: auto;
-    height: auto;
-
-    background: transparent;
-    color: $primary;
-
-    text-style: bold;
 }
 
 .ai-message-inner {
@@ -115,20 +110,9 @@
 }
 
 .tool-confirmation-message-outer {
-    width: 1fr;
-    height: auto;
-
-    align: left top;
 }
 
 .tool-confirmation-message-glyph {
-    width: auto;
-    height: auto;
-
-    background: transparent;
-    color: $primary;
-
-    text-style: bold;
 }
 
 .tool-confirmation-message-inner {
@@ -155,4 +139,21 @@
 
 .tool-confirmation-message-controls {
     margin: 1;
+}
+
+
+/* Ui */
+
+.ui-message {
+}
+
+.ui-message-glyph {
+}
+
+.ui-message-outer {
+}
+
+.ui-message-inner {
+    width: 1fr;
+    height: auto;
 }

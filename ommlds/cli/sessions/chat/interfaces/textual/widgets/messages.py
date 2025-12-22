@@ -28,7 +28,7 @@ class WelcomeMessage(Message):
         self._content = content
 
     def compose(self) -> tx.ComposeResult:
-        with tx.Vertical(classes='welcome-message-outer'):
+        with tx.Vertical(classes='welcome-message-outer message-outer'):
             yield tx.Static(self._content, classes='welcome-message-content')
 
 
@@ -44,8 +44,8 @@ class UserMessage(Message):
         self._content = content
 
     def compose(self) -> tx.ComposeResult:
-        with tx.Horizontal(classes='user-message-outer'):
-            yield tx.Static('> ', classes='user-message-glyph')
+        with tx.Horizontal(classes='user-message-outer message-outer'):
+            yield tx.Static('> ', classes='user-message-glyph message-glyph')
             with tx.Vertical(classes='user-message-inner'):
                 yield tx.Static(self._content)
 
@@ -60,8 +60,8 @@ class AiMessage(Message, lang.Abstract):
         self.add_class('ai-message')
 
     def compose(self) -> tx.ComposeResult:
-        with tx.Horizontal(classes='ai-message-outer'):
-            yield tx.Static('< ', classes='ai-message-glyph')
+        with tx.Horizontal(classes='ai-message-outer message-outer'):
+            yield tx.Static('< ', classes='ai-message-glyph message-glyph')
             with tx.Vertical(classes='ai-message-inner'):
                 yield from self._compose_content()
 
@@ -154,8 +154,8 @@ class ToolConfirmationMessage(Message):
         self._fut = fut
 
     def compose(self) -> tx.ComposeResult:
-        with tx.Horizontal(classes='tool-confirmation-message-outer'):
-            yield tx.Static('? ', classes='tool-confirmation-message-glyph')
+        with tx.Horizontal(classes='tool-confirmation-message-outer message-outer'):
+            yield tx.Static('? ', classes='tool-confirmation-message-glyph message-glyph')
             with tx.Vertical(classes='tool-confirmation-message-inner tool-confirmation-message-inner-open'):
                 yield tx.Static(self._outer_content, classes='tool-confirmation-message-outer-content')
                 yield tx.Static(self._inner_content, classes='tool-confirmation-message-inner-content')
@@ -170,3 +170,21 @@ class ToolConfirmationMessage(Message):
         inner.query_one('.tool-confirmation-message-outer-content', tx.Static).update('Tool use confirmed.')
 
         self._fut.set_result(True)
+
+
+##
+
+
+class UiMessage(Message):
+    def __init__(self, content: str) -> None:
+        super().__init__()
+
+        self.add_class('ui-message')
+
+        self._content = content
+
+    def compose(self) -> tx.ComposeResult:
+        with tx.Horizontal(classes='ui-message-outer message-outer'):
+            yield tx.Static('~ ', classes='ui-message-glyph message-glyph')
+            with tx.Vertical(classes='ui-message-inner'):
+                yield tx.Static(self._content)

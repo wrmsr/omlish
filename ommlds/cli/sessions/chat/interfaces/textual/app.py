@@ -21,6 +21,7 @@ from .widgets.messages import AiMessage
 from .widgets.messages import StaticAiMessage
 from .widgets.messages import StreamAiMessage
 from .widgets.messages import ToolConfirmationMessage
+from .widgets.messages import UiMessage
 from .widgets.messages import UserMessage
 from .widgets.messages import WelcomeMessage
 
@@ -283,3 +284,9 @@ class ChatApp(tx.App):
         ret = await fut
 
         return ret
+
+    async def display_ui_message(
+            self,
+            content: str,
+    ) -> None:
+        await self._mount_messages(UiMessage(content))
