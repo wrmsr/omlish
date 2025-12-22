@@ -46,7 +46,7 @@ class UserMessage(Message):
     def compose(self) -> tx.ComposeResult:
         with tx.Horizontal(classes='user-message-outer message-outer'):
             yield tx.Static('> ', classes='user-message-glyph message-glyph')
-            with tx.Vertical(classes='user-message-inner'):
+            with tx.Vertical(classes='user-message-inner message-inner'):
                 yield tx.Static(self._content)
 
 
@@ -62,7 +62,7 @@ class AiMessage(Message, lang.Abstract):
     def compose(self) -> tx.ComposeResult:
         with tx.Horizontal(classes='ai-message-outer message-outer'):
             yield tx.Static('< ', classes='ai-message-glyph message-glyph')
-            with tx.Vertical(classes='ai-message-inner'):
+            with tx.Vertical(classes='ai-message-inner message-inner'):
                 yield from self._compose_content()
 
     @abc.abstractmethod
@@ -156,7 +156,7 @@ class ToolConfirmationMessage(Message):
     def compose(self) -> tx.ComposeResult:
         with tx.Horizontal(classes='tool-confirmation-message-outer message-outer'):
             yield tx.Static('? ', classes='tool-confirmation-message-glyph message-glyph')
-            with tx.Vertical(classes='tool-confirmation-message-inner tool-confirmation-message-inner-open'):
+            with tx.Vertical(classes='tool-confirmation-message-inner tool-confirmation-message-inner-open message-inner'):  # noqa
                 yield tx.Static(self._outer_content, classes='tool-confirmation-message-outer-content')
                 yield tx.Static(self._inner_content, classes='tool-confirmation-message-inner-content')
                 yield ToolConfirmationControls(classes='tool-confirmation-message-controls')
@@ -186,5 +186,5 @@ class UiMessage(Message):
     def compose(self) -> tx.ComposeResult:
         with tx.Horizontal(classes='ui-message-outer message-outer'):
             yield tx.Static('~ ', classes='ui-message-glyph message-glyph')
-            with tx.Vertical(classes='ui-message-inner'):
+            with tx.Vertical(classes='ui-message-inner message-inner'):
                 yield tx.Static(self._content)

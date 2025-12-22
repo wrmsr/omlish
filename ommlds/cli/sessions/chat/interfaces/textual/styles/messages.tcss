@@ -44,6 +44,11 @@
     align: left top;
 }
 
+.message-inner {
+    width: 1fr;
+    height: auto;
+}
+
 
 /* Welcome */
 
@@ -72,8 +77,6 @@
 }
 
 .user-message-inner {
-    width: 1fr;
-    height: auto;
 }
 
 
@@ -89,9 +92,6 @@
 }
 
 .ai-message-inner {
-    width: 1fr;
-    height: auto;
-
     padding: 0;
 
     Markdown {
@@ -116,8 +116,6 @@
 }
 
 .tool-confirmation-message-inner {
-    width: 1fr;
-    height: auto;
 }
 
 .tool-confirmation-message-inner-open {
@@ -154,6 +152,4 @@
 }
 
 .ui-message-inner {
-    width: 1fr;
-    height: auto;
 }

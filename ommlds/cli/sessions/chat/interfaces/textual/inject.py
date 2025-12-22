@@ -16,12 +16,12 @@ from .configs import TextualInterfaceConfig
 with lang.auto_proxy_import(globals()):
     from omdev.tui import textual as tx
 
+    from ...drivers.tools import confirmation as _tools_confirmation
+    from ...facades import ui as _facades_ui
     from . import app as _app
     from . import facades as _facades
     from . import interface as _interface
     from . import tools as _tools
-    from ...drivers.tools import confirmation as _tools_confirmation
-    from ...facades import ui as _facades_ui
 
 
 ##

@@ -9,10 +9,10 @@ with lang.auto_proxy_import(globals()):
     from .....inputs import asyncs as _inputs_asyncs
     from .....inputs import sync as _inputs_sync
     from ...drivers.tools import confirmation as _tools_confirmation
+    from ...facades import ui as _facades_ui
     from . import interactive as _interactive
     from . import oneshot as _oneshot
     from . import tools as _tools
-    from ...facades import ui as _facades_ui
 
 
 ##

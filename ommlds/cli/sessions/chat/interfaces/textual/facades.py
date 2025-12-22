@@ -1,5 +1,5 @@
-from .app import ChatAppGetter
 from ...facades.ui import UiMessageDisplayer
+from .app import ChatAppGetter
 
 
 ##
