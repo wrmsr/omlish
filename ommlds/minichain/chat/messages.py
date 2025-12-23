@@ -9,7 +9,7 @@ from omlish import marshal as msh
 from omlish import typedvalues as tv
 
 from .._typedvalues import _tv_field_metadata
-from ..content.materialize import CanContent
+from ..content.cancontent import CanContent
 from ..content.transforms.base import ContentTransform
 from ..content.types import Content
 from ..metadata import MetadataContainer

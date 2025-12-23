@@ -11,7 +11,7 @@ from omlish import lang
 from omlish import marshal as msh
 from omlish import reflect as rfl
 
-from ..content.materialize import CanContent
+from ..content.cancontent import CanContent
 from ..content.transforms.base import ContentTransform
 from ..content.types import Content
 

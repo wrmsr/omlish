@@ -2,42 +2,19 @@
 TODO:
  - ExtendedCanContent
 """
-import dataclasses as dc
 import typing as ta
 
 from omlish import check
+from omlish import dataclasses as dc
 from omlish import dispatch
 from omlish.text import templating as tpl
 
+from .cancontent import CanContent
 from .namespaces import ContentNamespace
 from .placeholders import ContentPlaceholder
 from .placeholders import ContentPlaceholderMarker
 from .types import Content
 from .types import ExtendedContent
-
-
-##
-
-
-_InnerCanContent: ta.TypeAlias = ta.Union[  # noqa
-    str,
-    ExtendedContent,
-
-    ContentPlaceholder,
-    type[ContentPlaceholderMarker],
-
-    type[ContentNamespace],
-
-    tpl.Templater,
-]
-
-CanContent: ta.TypeAlias = ta.Union[  # noqa
-    ta.Iterable['CanContent'],
-
-    None,
-
-    _InnerCanContent,
-]
 
 
 ##

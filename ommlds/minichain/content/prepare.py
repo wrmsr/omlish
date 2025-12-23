@@ -1,14 +1,14 @@
 """
 TODO:
- - re-softwrap
+ - re-docwrap
 """
 import abc
-import dataclasses as dc
 import typing as ta
 
+from omlish import dataclasses as dc
 from omlish import lang
 
-from .materialize import CanContent
+from .cancontent import CanContent
 from .materialize import materialize_content
 from .transforms.interleave import interleave_content
 from .transforms.squeeze import squeeze_content

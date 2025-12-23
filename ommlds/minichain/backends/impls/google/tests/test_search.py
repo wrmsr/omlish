@@ -1,3 +1,5 @@
+import pytest
+
 from omlish import lang
 from omlish.http import all as http
 from omlish.secrets.tests.harness import HarnessSecrets
@@ -6,6 +8,7 @@ from .....services import Request
 from ..search import CseSearchService
 
 
+@pytest.mark.online
 def test_search(harness):
     sec = harness[HarnessSecrets]
     cse_id = sec.get_or_skip('google_cse_id')

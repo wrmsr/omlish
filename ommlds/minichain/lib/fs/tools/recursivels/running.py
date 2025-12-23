@@ -1,8 +1,8 @@
-import dataclasses as dc
 import os.path
 import typing as ta
 
 from omlish import check
+from omlish import dataclasses as dc
 from omlish import lang
 
 

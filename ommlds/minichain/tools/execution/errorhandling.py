@@ -1,7 +1,6 @@
 import typing as ta
 
-from omlish import check
-
+from ...content.materialize import ContentMaterializer
 from ...content.types import Content
 from .context import ToolContext
 from .errors import ToolExecutionError
@@ -16,10 +15,12 @@ class ErrorHandlingToolExecutor(ToolExecutor):
             self,
             *,
             wrapped: ToolExecutor,
+            content_materializer: ContentMaterializer = ContentMaterializer(),
     ) -> None:
         super().__init__()
 
         self._wrapped = wrapped
+        self._content_materializer = content_materializer
 
     async def execute_tool(
             self,
@@ -31,4 +32,4 @@ class ErrorHandlingToolExecutor(ToolExecutor):
             return await self._wrapped.execute_tool(ctx, name, args)
 
         except ToolExecutionError as txe:
-            return check.isinstance(txe.content, str)  # FIXME
+            return self._content_materializer.materialize(txe.content)

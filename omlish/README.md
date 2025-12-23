@@ -139,8 +139,8 @@ dependencies of any kind**.
   - **[plugins](https://github.com/wrmsr/omlish/blob/master/omlish/testing/pytest/plugins)** - Various other plugins.
 
 - **[typedvalues](https://github.com/wrmsr/omlish/blob/master/omlish/typedvalues)** - A little toolkit around 'boxed'
-  values, whose 'box' types convey more information than the bare values themselves. A rebellion against kwargs and env
-  vars: instead of `foo(bar=1, baz=2)`, you do `foo(Bar(1), Baz(2))`.
+  values, whose 'box' types convey more information than the bare values themselves. A rebellion against kwargs / env
+  vars / giant config objects: instead of `foo(bar=1, baz=2)`, you do `foo(Bar(1), Baz(2))`.
 
 - **[lite](https://github.com/wrmsr/omlish/blob/master/omlish/lite)** - The standard library of 'lite' code. This is the
   only package beneath `lang`, and parts of it are re-exported by it for deduplication. On top of miscellaneous

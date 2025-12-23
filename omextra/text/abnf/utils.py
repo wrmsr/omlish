@@ -67,7 +67,7 @@ def parse_rules(
 ##
 
 
-def fix_grammar_ws(s: str) -> str:
+def fix_ws(s: str) -> str:
     return (
         textwrap.dedent(s)
         .rstrip()

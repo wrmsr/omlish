@@ -169,7 +169,14 @@ class Repeat(Parser):
                 check.state(self.max >= self.min)
 
         def __repr__(self) -> str:
-            return f'{self.__class__.__name__}({self.min}{f", {self.max!r}" if self.max is not None else ""})'
+            if self.min:
+                if self.max is not None:
+                    s = f'{self.min}-{self.max}'
+                else:
+                    s = f'{self.min}+'
+            else:
+                s = '?'
+            return f'{self.__class__.__name__}({s})'
 
     def __init__(self, times: Times, child: Parser) -> None:
         super().__init__()

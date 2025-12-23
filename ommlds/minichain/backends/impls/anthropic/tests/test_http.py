@@ -15,6 +15,7 @@ from .....standard import ApiKey
 from ..chat import AnthropicChatChoicesService
 
 
+@pytest.mark.online
 @pytest.mark.parametrize('cli_cls', [http.UrllibHttpClient, http.HttpxHttpClient])
 def test_anthropic_http(harness, cli_cls):
     key = harness[HarnessSecrets].get_or_skip('anthropic_api_key')
@@ -40,6 +41,7 @@ def test_anthropic_http(harness, cli_cls):
         )).data)
 
 
+@pytest.mark.online
 def test_anthropic_chat(harness):
     key = harness[HarnessSecrets].get_or_skip('anthropic_api_key')
     svc = AnthropicChatChoicesService(
@@ -50,6 +52,7 @@ def test_anthropic_chat(harness):
     print(resp.v)
 
 
+@pytest.mark.online
 def test_anthropic_chat_model_name(harness):
     key = harness[HarnessSecrets].get_or_skip('anthropic_api_key')
     svc = AnthropicChatChoicesService(

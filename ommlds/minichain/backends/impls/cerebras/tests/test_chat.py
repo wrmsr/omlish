@@ -1,3 +1,5 @@
+import pytest
+
 from omlish import lang
 from omlish import marshal as msh
 from omlish.http import all as http
@@ -9,6 +11,7 @@ from .....standard import ApiKey
 from ..chat import CerebrasChatChoicesService
 
 
+@pytest.mark.online
 def test_cerebras(harness):
     llm = CerebrasChatChoicesService(
         ApiKey(harness[HarnessSecrets].get_or_skip('cerebras_api_key').reveal()),

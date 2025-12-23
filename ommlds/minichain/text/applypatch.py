@@ -20,10 +20,11 @@
 A self-contained **pure-Python 3.9+** utility for applying human-readable "pseudo-diff" patch files to a collection of
 text files.
 """
-import dataclasses as dc
 import enum
 import pathlib
 import typing as ta
+
+from omlish import dataclasses as dc
 
 
 ##

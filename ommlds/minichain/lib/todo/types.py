@@ -3,9 +3,9 @@ TODO:
  - enums lol
   - * with ToolParam-like desc metadata somehow *
 """
-import dataclasses as dc
 import typing as ta
 
+from omlish import dataclasses as dc
 from omlish import lang
 
 from ...tools.reflect import tool_param_metadata

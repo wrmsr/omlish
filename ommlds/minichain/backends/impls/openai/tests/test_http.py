@@ -63,6 +63,7 @@ class HttpOpenaiChatCompletionResponse:
     usage: ta.Any | None = None
 
 
+@pytest.mark.online
 @pytest.mark.parametrize('cli_cls', [hu.UrllibHttpClient, hu.HttpxHttpClient])
 def test_openai_http(harness, cli_cls):
     key = harness[HarnessSecrets].get_or_skip('openai_api_key')
@@ -92,6 +93,7 @@ def test_openai_http(harness, cli_cls):
         )).data)
 
 
+@pytest.mark.online
 @pytest.mark.parametrize('cli_cls', [hu.UrllibHttpClient, hu.HttpxHttpClient])
 def test_openai_http_stream(harness, cli_cls):
     key = harness[HarnessSecrets].get_or_skip('openai_api_key')

@@ -1,5 +1,7 @@
 import typing as ta
 
+import pytest
+
 from omlish import check
 from omlish import lang
 from omlish import marshal as msh
@@ -25,6 +27,7 @@ from .....tools.types import ToolUseResult
 from ..chat import OpenaiChatChoicesService
 
 
+@pytest.mark.online
 def test_openai(harness):
     llm = OpenaiChatChoicesService(
         ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
@@ -49,6 +52,7 @@ def test_openai(harness):
     assert resp.v
 
 
+@pytest.mark.online
 def test_openai_content(harness):
     llm = OpenaiChatChoicesService(
         ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
@@ -73,6 +77,7 @@ def test_openai_content(harness):
     assert resp.v
 
 
+@pytest.mark.online
 def test_openai_tools(harness):
     llm = OpenaiChatChoicesService(
         ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
@@ -134,6 +139,7 @@ def test_openai_tools(harness):
     assert resp.v
 
 
+@pytest.mark.online
 def test_openai_chat_promote(harness):
     llm: ChatChoicesService = ta.cast(ChatChoicesService, OpenaiChatChoicesService(
         ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),
@@ -144,6 +150,7 @@ def test_openai_chat_promote(harness):
     assert lang.sync_await(llm.invoke(ChatChoicesRequest([UserMessage('Hi!')]))).v
 
 
+@pytest.mark.online
 def test_default_options(harness):
     llm: ChatChoicesService = ta.cast(ChatChoicesService, OpenaiChatChoicesService(
         ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),

@@ -20,7 +20,7 @@ from .parsers import literal
 from .parsers import option
 from .parsers import repeat
 from .parsers import rule
-from .utils import fix_grammar_ws
+from .utils import fix_ws
 from .utils import parse_rules
 from .visitors import RuleVisitor
 
@@ -125,7 +125,8 @@ META_GRAMMAR_RULES: ta.Sequence[Rule] = [
                 either(
                     rule('WSP'),
                     rule('VCHAR'),
-                )),
+                ),
+            ),
             rule('CRLF'),
         ),
     ),
@@ -561,7 +562,7 @@ def parse_grammar(
         root: str | None = None,
         **kwargs: ta.Any,
 ) -> Grammar:
-    source = fix_grammar_ws(source)
+    source = fix_ws(source)
 
     if (mg_m := parse_rules(
             META_GRAMMAR,

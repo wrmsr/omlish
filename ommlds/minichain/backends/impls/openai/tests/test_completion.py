@@ -1,3 +1,5 @@
+import pytest
+
 from omlish import lang
 from omlish import marshal as msh
 from omlish.http import all as http
@@ -8,6 +10,7 @@ from .....standard import ApiKey
 from ..completion import OpenaiCompletionService
 
 
+@pytest.mark.online
 def test_openai(harness):
     llm = OpenaiCompletionService(
         ApiKey(harness[HarnessSecrets].get_or_skip('openai_api_key').reveal()),

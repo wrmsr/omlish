@@ -1,3 +1,5 @@
+import pytest
+
 from omlish import lang
 from omlish.http import all as http
 from omlish.secrets.tests.harness import HarnessSecrets
@@ -11,6 +13,7 @@ from ....services import ServiceFacade
 from ....standard import ApiKey
 
 
+@pytest.mark.online
 def test_new_backend_openai(harness):
     llm: ChatChoicesService = registry_new(
         ChatChoicesService,
@@ -23,6 +26,7 @@ def test_new_backend_openai(harness):
     print(resp.v)
 
 
+@pytest.mark.online
 def test_new_backend_openai2(harness):
     llm = ServiceFacade(registry_of[ChatChoicesService].new(
         'openai',

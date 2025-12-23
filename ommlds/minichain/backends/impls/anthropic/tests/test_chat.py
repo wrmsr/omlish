@@ -1,3 +1,5 @@
+import pytest
+
 from omlish import lang
 from omlish import marshal as msh
 from omlish.http import all as http
@@ -10,6 +12,7 @@ from .....standard import ApiKey
 from ..chat import AnthropicChatChoicesService
 
 
+@pytest.mark.online
 def test_anthropic(harness):
     llm = AnthropicChatChoicesService(
         ApiKey(harness[HarnessSecrets].get_or_skip('anthropic_api_key').reveal()),

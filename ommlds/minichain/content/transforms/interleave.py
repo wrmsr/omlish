@@ -4,9 +4,11 @@ from omlish import dataclasses as dc
 from omlish import dispatch
 from omlish import lang
 
+from ..cancontent import CanContent
 from ..sequence import BlockContent
 from ..sequence import InlineContent
 from ..types import Content
+from ..types import ExtendedContent
 
 
 ##
@@ -27,15 +29,15 @@ class ContentInterleaver:
         self._inline_separator = inline_separator if inline_separator is not None else separator
         self._block_separator = block_separator if block_separator is not None else separator
 
-    def _interleave(self, l: ta.Iterable[Content], separator: Content | None) -> ta.Sequence[Content]:
+    def _interleave(self, l: ta.Iterable[CanContent], separator: Content | None) -> ta.Sequence[Content]:
         cs: ta.Iterable[Content] = map(self.interleave, l)
         if separator is not None:
             cs = lang.interleave(cs, separator)
         return list(cs)
 
     @dispatch.method()
-    def interleave(self, c: Content) -> Content:
-        return c
+    def interleave(self, c: CanContent) -> Content:
+        raise TypeError(c)
 
     @interleave.register
     def interleave_str(self, c: str) -> Content:
@@ -44,6 +46,11 @@ class ContentInterleaver:
     @interleave.register
     def interleave_sequence(self, c: ta.Sequence) -> Content:
         return self._interleave(c, self._sequence_separator)
+
+    @interleave.register
+    def interleave_extended_content(self, c: ExtendedContent) -> Content:
+        # FIXME:
+        return c
 
     @interleave.register
     def interleave_inline_content(self, c: InlineContent) -> Content:

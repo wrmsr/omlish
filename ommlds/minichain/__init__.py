@@ -227,6 +227,10 @@ with _lang.auto_proxy_init(
 
     ##
 
+    from .content.cancontent import (  # noqa
+        CanContent,
+    )
+
     from .content.images import (  # noqa
         ImageContent,
     )
@@ -236,8 +240,6 @@ with _lang.auto_proxy_init(
     )
 
     from .content.materialize import (  # noqa
-        CanContent,
-
         materialize_content,
     )
 
@@ -273,6 +275,10 @@ with _lang.auto_proxy_init(
         BlockContent,
         InlineContent,
         SequenceContent,
+    )
+
+    from .content.tag import (  # noqa
+        TagContent,
     )
 
     from .content.text import (  # noqa

@@ -1,18 +1,19 @@
 import collections.abc
-import dataclasses as dc
 import typing as ta
 
 from omlish import check
+from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
 from omlish import reflect as rfl
 
+from .cancontent import CanContent
+from .cancontent import _InnerCanContent
 from .images import ImageContent  # noqa
 from .json import JsonContent  # noqa
-from .materialize import CanContent
-from .materialize import _InnerCanContent
 from .sequence import BlockContent  # noqa
 from .sequence import InlineContent  # noqa
+from .tag import TagContent  # noqa
 from .text import TextContent  # noqa
 from .types import CONTENT_RUNTIME_TYPES
 from .types import Content
@@ -161,10 +162,11 @@ def _install_standard_marshaling() -> None:
     extended_content_poly = msh.Polymorphism(
         ExtendedContent,
         [
-            msh.Impl(InlineContent, 'inline'),
             msh.Impl(BlockContent, 'block'),
             msh.Impl(ImageContent, 'image'),
+            msh.Impl(InlineContent, 'inline'),
             msh.Impl(JsonContent, 'json'),
+            msh.Impl(TagContent, 'tag'),
             msh.Impl(TextContent, 'text'),
         ],
     )

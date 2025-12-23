@@ -1,7 +1,7 @@
-import dataclasses as dc
 import typing as ta
 
 from omlish import check
+from omlish import dataclasses as dc
 from omlish import lang
 
 from .types import NonSpecialToken

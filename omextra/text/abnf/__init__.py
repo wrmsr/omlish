@@ -17,6 +17,16 @@ TODO:
  - error reporting
  - codegen
 """
+from omlish import dataclasses as _dc  # noqa
+
+
+_dc.init_package(
+    globals(),
+    codegen=True,
+)
+
+
+##
 
 
 from .base import (  # noqa
@@ -75,5 +85,5 @@ from .utils import (  # noqa
 
     parse_rules,
 
-    fix_grammar_ws,
+    fix_ws,
 )

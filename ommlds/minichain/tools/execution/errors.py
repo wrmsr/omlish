@@ -2,7 +2,7 @@ import abc
 
 from omlish import lang
 
-from ...content.materialize import CanContent
+from ...content.cancontent import CanContent
 
 
 ##

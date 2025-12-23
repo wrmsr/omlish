@@ -1,3 +1,5 @@
+import pytest
+
 from omlish import lang
 from omlish.http import all as http
 from omlish.secrets.tests.harness import HarnessSecrets
@@ -8,6 +10,7 @@ from ..mistral import MistralChatChoicesService
 from ..mistral import TooManyRequestsMistralError
 
 
+@pytest.mark.online
 def test_mistral_chat(harness):
     key = harness[HarnessSecrets].get_or_skip('mistral_api_key')
     svc = MistralChatChoicesService(

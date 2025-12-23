@@ -2,10 +2,10 @@
 TODO:
  - serialize as base64 bytes? at least support deserializing as it
 """
-import dataclasses as dc
 import typing as ta
 
 from omlish import check
+from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
 from omlish import reflect as rfl

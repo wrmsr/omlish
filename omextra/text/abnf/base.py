@@ -168,6 +168,7 @@ class Grammar(lang.Final):
             check.not_in(gr._name, rules_by_name)  # noqa
             check.not_in(gr._name_f, rules_by_name_f)  # noqa
             check.not_in(gr._parser, rules_by_parser)  # noqa
+            rules_set.add(gr)
             rules_by_name[gr._name] = gr  # noqa
             rules_by_name_f[gr._name_f] = gr  # noqa
             rules_by_parser[gr._parser] = gr  # noqa
