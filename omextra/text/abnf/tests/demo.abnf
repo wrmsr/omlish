@@ -11,7 +11,7 @@ config = *WSP header *(CRLF *WSP statement) [CRLF] *WSP
        ; concatenation, repetition, options, CRLF
 
 header         = directive-line / comment-line
-directive-line = %i"config" 1*WSP version CRLF
+directive-line = %i"config" 1*WSP version
                ; %i = case-insensitive literal (RFC 7405)
                ; default "config" would already be case-insensitive in RFC 5234,
                ; shown explicitly here with %i.
@@ -50,11 +50,11 @@ keyword-stmt = %s"ENABLE" / %s"DISABLE" / %i"debug"
              ; %i = case-insensitive, so any case of "debug" matches.
 
 ; Bytes statement: shows numeric terminals, ranges, sequences, and prose-val
-bytes-stmt = %i"bytes" *WSP "=" *WSP ( hex-bytes / dec-bytes / bin-bytes / ascii-demo )
+bytes-stmt = %i"bytes" *WSP "=" *WSP ( hex-bytes / dec-bytes / ascii-demo )
 hex-bytes  = 1*(%x00-FF)  ; %x range over a single octet (00-FF)
 dec-bytes  = 1*(%d0-255)  ; %d decimal range
 ascii-demo = %x41.42.43   ; %x sequences with '.' -> "ABC"
-           /  %d65.66.67  ; decimal sequence -> "ABC"
+           / %d65.66.67   ; decimal sequence -> "ABC"
 
 ; --- Lexical pieces --------------------------------------------------
 ; Names: start ALPHA or "_", then 2*5 of (ALPHA / DIGIT / "_")

@@ -16,6 +16,9 @@ TODO:
   - greedily compile regexes
  - error reporting
  - codegen
+ - fix_ws problem
+  - auto? no, need to keep lines / offsets accurate for errors
+  - relax CRLF rule by default?
 """
 from omlish import dataclasses as _dc  # noqa
 
@@ -69,8 +72,8 @@ from .parsers import (  # noqa
     concat,
 
     Repeat,
-    Option,
     repeat,
+    option,
 
     Either,
     either,

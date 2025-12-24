@@ -169,13 +169,14 @@ class Repeat(Parser):
                 check.state(self.max >= self.min)
 
         def __repr__(self) -> str:
-            if self.min:
-                if self.max is not None:
-                    s = f'{self.min}-{self.max}'
-                else:
-                    s = f'{self.min}+'
-            else:
+            if not self.min and self.max is None:
+                s = '*'
+            elif not self.min and self.max == 1:
                 s = '?'
+            elif self.min and self.max is None:
+                s = f'{self.min}+'
+            else:
+                s = f'{self.min}-{self.max!r}'
             return f'{self.__class__.__name__}({s})'
 
     def __init__(self, times: Times, child: Parser) -> None:
@@ -215,17 +216,6 @@ class Repeat(Parser):
             return
         for mt in sorted(match_tup_set or [()], key=len, reverse=True):
             yield Match(self, start, mt[-1].end if mt else start, mt)  # noqa
-
-
-class Option(Repeat):
-    def __init__(self, child: Parser) -> None:
-        super().__init__(Repeat.Times(0, 1), child)
-
-    def __repr__(self) -> str:
-        return f'{self.__class__.__name__}@{id(self):x}({self._child!r})'
-
-
-option = Option
 
 
 @ta.overload
@@ -268,17 +258,20 @@ def repeat(*args):
         else:
             min, max = ti, None  # noqa
 
-    if (min, max) == (0, 1):
-        return Option(check.isinstance(child, Parser))
+    return Repeat(
+        Repeat.Times(
+            check.isinstance(min, int),
+            check.isinstance(max, (int, None)),
+        ),
+        check.isinstance(child, Parser),
+    )
 
-    else:
-        return Repeat(
-            Repeat.Times(
-                check.isinstance(min, int),
-                check.isinstance(max, (int, None)),
-            ),
-            check.isinstance(child, Parser),
-        )
+
+ZERO_OR_ONE_TIMES = Repeat.Times(0, 1)
+
+
+def option(child: Parser) -> Repeat:
+    return Repeat(ZERO_OR_ONE_TIMES, check.isinstance(child, Parser))
 
 
 ##

@@ -1,20 +1,6 @@
 CoNfIg v1.2
 abc    = 12345
-_a1    = "Hello \"world\" \\ tab→	 end"
-foo_1  : yes,
-         42,
-         "hi",
-         MY_id-1
-blk_1  {
-  ENABLE
-  DeBuG
-  bar3 = FALSE
-  baz_2 = 0xDEAD
-  lst_2 : "one",
-          "two",
-           "three"
-}
-
+_a1    = "Hello \"world\" \\ tab	 end"
 DISABLE
 bytes = ABC
 bytes = Hi

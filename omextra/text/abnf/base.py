@@ -7,6 +7,7 @@ from omlish import check
 from omlish import lang
 
 from .errors import AbnfError
+from .errors import AbnfIncompleteParseError
 
 
 with lang.auto_proxy_import(globals()):
@@ -42,9 +43,9 @@ class Match(ta.NamedTuple):
             write: ta.Callable[[str], ta.Any],
             *,
             indent: int | None = None,
-            _level: int = 0,
+            _depth: int = 0,
     ) -> None:
-        ix: str | None = (' ' * (indent * _level)) if indent is not None else None
+        ix: str | None = (' ' * (indent * _depth)) if indent is not None else None
         if ix:
             write(ix)
         p = self.parser
@@ -63,7 +64,7 @@ class Match(ta.NamedTuple):
                 for i, c in enumerate(self.children):
                     if i and ix is None:
                         write(', ')
-                    c.render_to(write, indent=indent, _level=_level + 1)
+                    c.render_to(write, indent=indent, _depth=_depth + 1)
                     if ix is not None:
                         write(',\n')
                 if ix:
@@ -194,7 +195,7 @@ class Grammar(lang.Final):
             root: Rule | str | None = None,
             *,
             start: int = 0,
-            debug: bool = False,
+            debug: int = 0,
     ) -> ta.Iterator[Match]:
         if root is None:
             if (root := self._root) is None:
@@ -205,12 +206,11 @@ class Grammar(lang.Final):
             else:
                 root = check.in_(check.isinstance(root, Rule), self._rules)
 
-        ctx_cls: type[_Context]
+        ctx: _Context
         if debug:
-            ctx_cls = _DebugContext
+            ctx = _DebugContext(self, source, debug)
         else:
-            ctx_cls = _Context
-        ctx = ctx_cls(self, source)
+            ctx = _Context(self, source)
 
         return ctx.iter_parse(root._parser, start)  # noqa
 
@@ -220,14 +220,21 @@ class Grammar(lang.Final):
             root: str | None = None,
             *,
             start: int = 0,
-            debug: bool = False,
+            complete: bool = False,
+            debug: int = 0,
     ) -> Match | None:
-        return longest_match(self.iter_parse(
+        if (match := longest_match(self.iter_parse(
             source,
             root,
             start=start,
             debug=debug,
-        ))
+        ))) is None:
+            return None
+
+        if complete and (match.start, match.end) != (start, len(source)):
+            raise AbnfIncompleteParseError
+
+        return match
 
 
 ##
@@ -257,18 +264,65 @@ class _Context:
 
 
 class _DebugContext(_Context):
-    _level: int = 0
+    def __init__(
+            self,
+            grammar: Grammar,
+            source: str,
+            level: int = 1,
+            *,
+            write: ta.Callable[[str], None] | None = None,
+    ) -> None:
+        super().__init__(grammar, source)
+
+        self._level = level
+        if write is None:
+            write = print
+        self._write = write
+
+        self._parser_strs: dict[Parser, str] = {}
+
+    def _parser_str(self, parser: Parser) -> str:
+        try:
+            return self._parser_strs[parser]
+        except KeyError:
+            pass
+        ps = self._parser_strs[parser] = str(parser)
+        return ps
+
+    _depth: int = 0
 
     def iter_parse(self, parser: Parser, start: int) -> ta.Iterator[Match]:
-        print(f'{"  " * self._level}enter: {parser=} {start=}')
+        if self._level < 2 and not isinstance(parser, parsers.RuleRef):
+            yield from super().iter_parse(parser, start)
+            return
+
+        ws = f'{"  " * self._depth} '
+
+        if self._level < 2:
+            ps = check.isinstance(parser, parsers.RuleRef).name
+        else:
+            ps = self._parser_str(parser)
+        body = f'{start}:{self._source[start]!r} {ps}'
+
+        if self._level > 2:
+            self._write(f'{ws}+ {body}')
+        else:
+            self._write(f'{ws}{body}')
+
         try:
-            self._level += 1
+            self._depth += 1
+
             for m in super().iter_parse(parser, start):  # noqa
-                # print(f'{"  " * (self._level - 1)}match: {parser=} {start=}')
+                if self._level > 3:
+                    self._write(f'{ws}! {m.start}-{m.end}:{self._source[m.start:m.end]!r}')
+
                 yield m
+
         finally:
-            self._level -= 1
-            print(f'{"  " * self._level}exit: {parser=} {start=}')
+            self._depth -= 1
+
+            if self._level > 3:
+                self._write(f'{ws}- {body}')
 
 
 ##

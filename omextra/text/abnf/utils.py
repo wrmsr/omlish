@@ -6,7 +6,6 @@ from omlish import check
 
 from .base import Grammar
 from .base import Match
-from .errors import AbnfIncompleteParseError
 from .parsers import RuleRef
 
 
@@ -44,7 +43,6 @@ def parse_rules(
         root: str | None = None,
         *,
         start: int = 0,
-        complete: bool = False,
         **kwargs: ta.Any,
 ) -> Match | None:
     if (match := grammar.parse(
@@ -54,9 +52,6 @@ def parse_rules(
             **kwargs,
     )) is None:
         return None
-
-    if complete and (match.start, match.end) != (start, len(source)):
-        raise AbnfIncompleteParseError
 
     match = only_match_rules(match)
     match = strip_insignificant_match_rules(match, grammar)
