@@ -77,18 +77,18 @@ def bind_backends(cfg: BackendConfig = BackendConfig()) -> inj.Elements:
                         bp_stack.push_bind(to_key=ben_bp_key),
                     ])
 
+                fiw_key: inj.Key = inj.Key(_meta.FirstInWinsBackendProvider, tag=bp_iface)
+                lst.extend([
+                    inj.private(
+                        inj.set_binder[_types.BackendProvider]().bind(bp_stack.top),
+                        inj.bind(fiw_key, to_ctor=_meta.FirstInWinsBackendProvider, singleton=True),
+                        inj.expose(fiw_key),
+                    ),
+                    bp_stack.push_bind(to_key=fiw_key),
+                ])
+
             else:
                 lst.append(bp_stack.push_bind(to_ctor=bp_impl, singleton=True))
-
-            fiw_key: inj.Key = inj.Key(_meta.FirstInWinsBackendProvider, tag=bp_iface)
-            lst.extend([
-                inj.private(
-                    inj.set_binder[_types.BackendProvider]().bind(bp_stack.top),
-                    inj.bind(fiw_key, to_ctor=_meta.FirstInWinsBackendProvider, singleton=True),
-                    inj.expose(fiw_key),
-                ),
-                bp_stack.push_bind(to_key=fiw_key),
-            ])
 
         else:
             lst.append(bp_stack.push_bind(to_ctor=bp_impl, singleton=True))
