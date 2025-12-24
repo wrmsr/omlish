@@ -1,6 +1,7 @@
 from ..prepare import prepare_content_str
 from ..sequence import BlockContent
 from ..sequence import InlineContent
+from ..tag import TagContent  # noqa
 
 
 def test_materialize_sequences():
@@ -13,6 +14,10 @@ def test_materialize_sequences():
             'block 2 item 1 ',
             'block 2 item 2',
         ]),
+        # TagContent('tag1', BlockContent([
+        #     'block 3 item 1 ',
+        #     'block 3 item 2',
+        # ])),
     ])
 
     print(prepare_content_str(c))
