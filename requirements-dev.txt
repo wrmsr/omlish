@@ -17,6 +17,7 @@ flake8==7.3.0
 flake8-pyproject==1.2.4
 ruff==0.14.10
 
+botocore-stubs>=1.42.16
 docutils-stubs==0.0.22
 lxml-stubs==0.5.1
 types-boto3>=1.42.16
@@ -39,7 +40,7 @@ objgraph==3.6.2
 ipython==9.8.0
 
 litecli==1.15.0  # @omlish-venv  # FIXME: MAKE LLM DEP OPTIONAL
-mycli==1.29.2  # @omlish-venv !13t !13dt !14t  # FIXME: duckduckgo-search -> click
+mycli==1.42.0  # @omlish-venv !13t !13dt !14t
 pgcli==4.3.0  # @omlish-venv !13t !13dt !14t
 
 # pydevd-pycharm==241.18034.82
@@ -105,6 +106,7 @@ numpy>=1.26
 rich==14.2.0
 textual[syntax]==6.11.0
 textual-dev==1.8.0
+textual-speedups==0.2.1
 
 snowflake-connector-python[secure-local-storage]==4.1.1  # @omlish-venv !13t !13dt  # cffi
 # snowflake-sqlalchemy==1.7.7  # @omlish-venv !13t !13dt  # cffi

@@ -60,7 +60,7 @@ class Project(ProjectBase):
             'asttokens ~= 3.0',
             'executing ~= 2.2',
 
-            'psutil ~= 7.1',
+            'psutil ~= 7.2',
         ],
 
         'formats': [

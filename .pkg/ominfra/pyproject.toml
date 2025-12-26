@@ -31,14 +31,14 @@ dependencies = [
 all = [
     'omdev == 0.0.0.dev495',
     'paramiko ~= 4.0',
-    'asyncssh ~= 2.21',
+    'asyncssh ~= 2.22',
 ]
 omdev = [
     'omdev == 0.0.0.dev495',
 ]
 ssh = [
     'paramiko ~= 4.0',
-    'asyncssh ~= 2.21',
+    'asyncssh ~= 2.22',
 ]
 
 [project.entry-points]

@@ -46,6 +46,7 @@ class Project(ProjectBase):
             'rich ~= 14.2',
             'textual ~= 6.11',  # [syntax]
             'textual-dev ~= 1.8',
+            'textual-speedups ~= 0.2',
         ],
     }
 

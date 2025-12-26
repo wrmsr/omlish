@@ -19,7 +19,7 @@ class Project(ProjectBase):
         'ssh': [
             'paramiko ~= 4.0',  # !! LGPL
 
-            'asyncssh ~= 2.21',  # cffi
+            'asyncssh ~= 2.22',  # cffi
         ],
     }
 
