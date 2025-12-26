@@ -48,7 +48,7 @@ class PrivateInjectorProviderImpl(ProviderImpl, lang.Final):
         return ()
 
     async def provide(self, injector: AsyncInjector) -> ta.Any:
-        return create_async_injector(self.ec, injector)
+        return await create_async_injector(self.ec, injector)
 
 
 ##
