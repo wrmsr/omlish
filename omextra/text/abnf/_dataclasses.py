@@ -37,8 +37,8 @@ def _register(**kwargs):
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('omextra.text.abnf', 'MetaGrammarRuleVisitor.QuotedString'),
-        ('omextra.text.abnf', 'MetaGrammarRuleVisitor.RuleName'),
+        ('omextra.text.abnf', 'MetaGrammarRuleMatchVisitor.QuotedString'),
+        ('omextra.text.abnf', 'MetaGrammarRuleMatchVisitor.RuleName'),
     ),
 )
 def _process_dataclass__30a5dd74853303d917aae5f67d4e7189615d1440():

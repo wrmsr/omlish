@@ -22,7 +22,7 @@ from .ops import repeat
 from .ops import rule
 from .utils import fix_ws
 from .utils import parse_rules
-from .visitors import RuleVisitor
+from .visitors import RuleMatchVisitor
 
 
 ##
@@ -419,7 +419,7 @@ META_GRAMMAR = Grammar(
 ##
 
 
-class MetaGrammarRuleVisitor(RuleVisitor[ta.Any]):
+class MetaGrammarRuleMatchVisitor(RuleMatchVisitor[ta.Any]):
     def __init__(self, source: str) -> None:
         super().__init__()
 
@@ -433,36 +433,36 @@ class MetaGrammarRuleVisitor(RuleVisitor[ta.Any]):
     class QuotedString(lang.Final):
         s: str
 
-    @RuleVisitor.register('rule')
+    @RuleMatchVisitor.register('rule')
     def visit_rule_rule(self, m: Match) -> ta.Any:
         rn_m, _, el_m = m.children
         rn = check.isinstance(self.visit_match(rn_m), self.RuleName).s
         el = self.visit_match(el_m)
         return Rule(rn, el)
 
-    @RuleVisitor.register('rulename')
+    @RuleMatchVisitor.register('rulename')
     def visit_rulename_rule(self, m: Match) -> ta.Any:
         return self.RuleName(self._source[m.start:m.end])
 
-    @RuleVisitor.register('elements')
+    @RuleMatchVisitor.register('elements')
     def visit_elements_rule(self, m: Match) -> ta.Any:
         return self.visit_match(check.single(m.children))
 
-    @RuleVisitor.register('alternation')
+    @RuleMatchVisitor.register('alternation')
     def visit_alternation_rule(self, m: Match) -> ta.Any:
         if len(m.children) == 1:
             return self.visit_match(m.children[0])
         else:
             return either(*map(self.visit_match, m.children))
 
-    @RuleVisitor.register('concatenation')
+    @RuleMatchVisitor.register('concatenation')
     def visit_concatenation_rule(self, m: Match) -> ta.Any:
         if len(m.children) == 1:
             return self.visit_match(m.children[0])
         else:
             return concat(*map(self.visit_match, m.children))
 
-    @RuleVisitor.register('repetition')
+    @RuleMatchVisitor.register('repetition')
     def visit_repetition_rule(self, m: Match) -> ta.Any:
         if len(m.children) == 2:
             ti_m, el_m = m.children
@@ -474,7 +474,7 @@ class MetaGrammarRuleVisitor(RuleVisitor[ta.Any]):
         else:
             raise ValueError(m)
 
-    @RuleVisitor.register('repeat')
+    @RuleMatchVisitor.register('repeat')
     def visit_repeat_rule(self, m: Match) -> ta.Any:
         s = check.non_empty_str(self._source[m.start:m.end])
         if s == '*':
@@ -489,7 +489,7 @@ class MetaGrammarRuleVisitor(RuleVisitor[ta.Any]):
         else:
             return Repeat.Times(n := int(s), n)
 
-    @RuleVisitor.register('element')
+    @RuleMatchVisitor.register('element')
     def visit_element_rule(self, m: Match) -> ta.Any:
         c = self.visit_match(check.single(m.children))
         if isinstance(c, Op):
@@ -499,16 +499,16 @@ class MetaGrammarRuleVisitor(RuleVisitor[ta.Any]):
         else:
             raise TypeError(c)
 
-    @RuleVisitor.register('group')
+    @RuleMatchVisitor.register('group')
     def visit_group_rule(self, m: Match) -> ta.Any:
         return self.visit_match(check.single(m.children))
 
-    @RuleVisitor.register('option')
+    @RuleMatchVisitor.register('option')
     def visit_option_rule(self, m: Match) -> ta.Any:
         c = self.visit_match(check.single(m.children))
         return option(check.isinstance(c, Op))
 
-    @RuleVisitor.register('num-val')
+    @RuleMatchVisitor.register('num-val')
     def visit_num_val_rule(self, m: Match) -> ta.Any:
         return self.visit_match(check.single(m.children))
 
@@ -525,29 +525,29 @@ class MetaGrammarRuleVisitor(RuleVisitor[ta.Any]):
             c = chr(int(s, base))
             return literal(c, c)
 
-    @RuleVisitor.register('dec-val')
+    @RuleMatchVisitor.register('dec-val')
     def visit_dec_val_rule(self, m: Match) -> ta.Any:
         return self._parse_num_val(self._source[m.start + 1:m.end], 10)
 
-    @RuleVisitor.register('hex-val')
+    @RuleMatchVisitor.register('hex-val')
     def visit_hex_val_rule(self, m: Match) -> ta.Any:
         return self._parse_num_val(self._source[m.start + 1:m.end], 16)
 
-    @RuleVisitor.register('char-val')
+    @RuleMatchVisitor.register('char-val')
     def visit_char_val_rule(self, m: Match) -> ta.Any:
         return self.visit_match(check.single(m.children))
 
-    @RuleVisitor.register('case-sensitive-string')
+    @RuleMatchVisitor.register('case-sensitive-string')
     def visit_case_sensitive_string_rule(self, m: Match) -> ta.Any:
         c = self.visit_match(check.single(m.children))
         return literal(check.isinstance(c, self.QuotedString).s, case_sensitive=True)
 
-    @RuleVisitor.register('case-insensitive-string')
+    @RuleMatchVisitor.register('case-insensitive-string')
     def visit_case_insensitive_string_rule(self, m: Match) -> ta.Any:
         c = self.visit_match(check.single(m.children))
         return literal(check.isinstance(c, self.QuotedString).s, case_sensitive=False)
 
-    @RuleVisitor.register('quoted-string')
+    @RuleMatchVisitor.register('quoted-string')
     def visit_quoted_string_rule(self, m: Match) -> ta.Any:
         check.state(m.end - m.start > 2)
         check.state(self._source[m.start] == '"')
@@ -574,7 +574,7 @@ def parse_grammar(
 
     check.isinstance(mg_m.op, Repeat)
 
-    mg_rv = MetaGrammarRuleVisitor(source)
+    mg_rv = MetaGrammarRuleMatchVisitor(source)
     rules = [mg_rv.visit_match(gg_cm) for gg_cm in mg_m.children]
 
     return Grammar(

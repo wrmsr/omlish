@@ -5,6 +5,7 @@ from omlish import check
 from .base import Grammar
 from .base import Match
 from .base import Op
+from .internal import Regex
 from .ops import CaseInsensitiveStringLiteral
 from .ops import Concat
 from .ops import Either
@@ -36,6 +37,7 @@ class _Parser:
             Repeat: self._iter_parse_repeat,
             Either: self._iter_parse_either,
             RuleRef: self._iter_parse_rule_ref,
+            Regex: self._iter_parse_regex,
         }
 
     def _iter_parse_string_literal(self, op: StringLiteral, start: int) -> ta.Iterator[Match]:
@@ -110,6 +112,9 @@ class _Parser:
         cp = self._grammar._rules_by_name_f[op._name_f].op  # noqa
         for cm in self.iter_parse(cp, start):
             yield Match(op, cm.start, cm.end, (cm,))
+
+    def _iter_parse_regex(self, op: Regex, start: int) -> ta.Iterator[Match]:
+        raise NotImplementedError
 
     def iter_parse(self, op: Op, start: int) -> ta.Iterator[Match]:
         return self._dispatch[op.__class__](op, start)

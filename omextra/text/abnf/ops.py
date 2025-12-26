@@ -4,18 +4,20 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 
+from .base import LeafOp
 from .base import Op
 
 
 ##
 
 
-class Literal(Op, lang.Abstract):
+class Literal(LeafOp, lang.Abstract):
     def _match_repr(self) -> str:
         return repr(self)
 
 
-class StringLiteral(Literal):
+@ta.final
+class StringLiteral(Literal, lang.Final):
     def __init__(self, value: str) -> None:
         super().__init__()
 
@@ -29,7 +31,8 @@ class StringLiteral(Literal):
         return f'{self.__class__.__name__}@{id(self):x}({self._value!r})'
 
 
-class CaseInsensitiveStringLiteral(Literal):
+@ta.final
+class CaseInsensitiveStringLiteral(Literal, lang.Final):
     def __init__(self, value: str) -> None:
         super().__init__()
 
@@ -43,7 +46,8 @@ class CaseInsensitiveStringLiteral(Literal):
         return f'{self.__class__.__name__}@{id(self):x}({self._value!r})'
 
 
-class RangeLiteral(Literal):
+@ta.final
+class RangeLiteral(Literal, lang.Final):
     @dc.dataclass(frozen=True)
     class Range:
         lo: str
@@ -96,7 +100,8 @@ def literal(*args, case_sensitive=None):
 ##
 
 
-class Concat(Op):
+@ta.final
+class Concat(Op, lang.Final):
     def __init__(self, *children: Op) -> None:
         super().__init__()
 
@@ -118,7 +123,8 @@ concat = Concat
 ##
 
 
-class Repeat(Op):
+@ta.final
+class Repeat(Op, lang.Final):
     @dc.dataclass(frozen=True)
     class Times:
         min: int = 0
@@ -216,7 +222,8 @@ def option(child: Op) -> Repeat:
 ##
 
 
-class Either(Op):
+@ta.final
+class Either(Op, lang.Final):
     def __init__(self, *children: Op, first_match: bool = False) -> None:
         super().__init__()
 
@@ -247,7 +254,8 @@ either = Either
 ##
 
 
-class RuleRef(Op):
+@ta.final
+class RuleRef(Op, lang.Final):
     def __init__(self, name: str) -> None:
         super().__init__()
 

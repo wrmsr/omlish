@@ -110,6 +110,10 @@ class Op(lang.Abstract, lang.PackageSealed):
         return f'{self.__class__.__name__}@{id(self):x}'
 
 
+class LeafOp(Op, lang.Abstract):
+    pass
+
+
 ##
 
 

@@ -16,7 +16,7 @@ T = ta.TypeVar('T')
 ##
 
 
-class OpVisitor(lang.Abstract, ta.Generic[T]):
+class OpMatchVisitor(lang.Abstract, ta.Generic[T]):
     @dispatch.method()
     def visit_op(self, o: Op, m: Match) -> T:
         raise TypeError(o)
@@ -30,7 +30,7 @@ class OpVisitor(lang.Abstract, ta.Generic[T]):
 ##
 
 
-class RuleVisitor(lang.Abstract, ta.Generic[T]):
+class RuleMatchVisitor(lang.Abstract, ta.Generic[T]):
     _registry = col.AttrRegistry[ta.Callable, str]()
 
     @classmethod
