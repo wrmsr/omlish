@@ -1,6 +1,17 @@
 import typing as ta
 
+from omlish import check
+
+from .base import Grammar
 from .base import Match
+from .base import Op
+from .ops import CaseInsensitiveStringLiteral
+from .ops import Concat
+from .ops import Either
+from .ops import RangeLiteral
+from .ops import Repeat
+from .ops import RuleRef
+from .ops import StringLiteral
 
 
 ##
@@ -26,7 +37,7 @@ class _Context:
         return self._source
 
     def iter_parse(self, op: Op, start: int) -> ta.Iterator[Match]:
-        return parser._iter_parse(self, start)  # noqa
+        return op._iter_parse(self, start)  # noqa
 
 
 class _DebugContext(_Context):
@@ -45,29 +56,29 @@ class _DebugContext(_Context):
             write = print
         self._write = write
 
-        self._parser_strs: dict[Parser, str] = {}
+        self._op_strs: dict[Op, str] = {}
 
-    def _parser_str(self, parser: Parser) -> str:
+    def _op_str(self, op: Op) -> str:
         try:
-            return self._parser_strs[parser]
+            return self._op_strs[op]
         except KeyError:
             pass
-        ps = self._parser_strs[parser] = str(parser)
+        ps = self._op_strs[op] = str(op)
         return ps
 
     _depth: int = 0
 
-    def iter_parse(self, parser: Parser, start: int) -> ta.Iterator[Match]:
-        if self._level < 2 and not isinstance(parser, ops.RuleRef):
-            yield from super().iter_parse(parser, start)
+    def iter_parse(self, op: Op, start: int) -> ta.Iterator[Match]:
+        if self._level < 2 and not isinstance(op, RuleRef):
+            yield from super().iter_parse(op, start)
             return
 
         ws = f'{"  " * self._depth} '
 
         if self._level < 2:
-            ps = check.isinstance(parser, ops.RuleRef).name
+            ps = check.isinstance(op, RuleRef).name
         else:
-            ps = self._parser_str(parser)
+            ps = self._op_str(op)
         body = f'{start}:{self._source[start]!r} {ps}'
 
         if self._level > 2:
@@ -78,7 +89,7 @@ class _DebugContext(_Context):
         try:
             self._depth += 1
 
-            for m in super().iter_parse(parser, start):  # noqa
+            for m in super().iter_parse(op, start):  # noqa
                 if self._level > 3:
                     self._write(f'{ws}! {m.start}-{m.end}:{self._source[m.start:m.end]!r}')
 
@@ -94,81 +105,33 @@ class _DebugContext(_Context):
 ##
 
 
-def iter_parse(
-        obj: Grammar | Rule | Parser,
-        src: str,
-        *,
-        root: str | None = None,
-        start: int = 0,
-) -> ta.Iterator[Match]:
-    if isinstance(obj, Grammar):
-        gram = obj
-    elif isinstance(obj, Rule):
-        check.none(root)
-        gram = Grammar(obj, root=obj)
-    elif isinstance(obj, Parser):
-        check.none(root)
-        gram = Grammar(Rule('root', obj), root='root')
-    else:
-        raise TypeError(obj)
-
-    return gram.iter_parse(
-        src,
-        root,
-        start=start,
-    )
-
-
-def parse(
-        obj: Grammar | Rule | Parser,
-        src: str,
-        *,
-        root: str | None = None,
-        start: int = 0,
-) -> Match | None:
-    return longest_match(iter_parse(
-        obj,
-        src,
-        root=root,
-        start=start,
-    ))
-
-
-##
-
-
-class _StringLiteral:
-    def _iter_parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
+class _Parser:
+    def _iter_parse_string_literal(self, op: StringLiteral, ctx: _Context, start: int) -> ta.Iterator[Match]:
         if start < len(ctx._source):  # noqa
-            source = ctx._source[start : start + len(self._value)]  # noqa
-            if source == self._value:
-                yield Match(self, start, start + len(source), ())
+            source = ctx._source[start : start + len(op._value)]  # noqa
+            if source == op._value:  # noqa
+                yield Match(op, start, start + len(source), ())
 
 
-class _CaseInsensitiveStringLiteral:
-    def _iter_parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
+    def _iter_parse_case_insensitive_string_literal(self, op: CaseInsensitiveStringLiteral, ctx: _Context, start: int) -> ta.Iterator[Match]:
         if start < len(ctx._source):  # noqa
-            source = ctx._source[start : start + len(self._value)].casefold()  # noqa
-            if source == self._value:
-                yield Match(self, start, start + len(source), ())
+            source = ctx._source[start : start + len(op._value)].casefold()  # noqa
+            if source == op._value:  # noqa
+                yield Match(op, start, start + len(source), ())
 
-
-class _RangeLiteral:
-    def _iter_parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
+    def _iter_parse_range_literal(self, op: RangeLiteral, ctx: _Context, start: int) -> ta.Iterator[Match]:
         try:
             source = ctx._source[start]  # noqa
         except IndexError:
             return
         # ranges are always case-sensitive
-        if (value := self._value).lo <= source <= value.hi:
-            yield Match(self, start, start + 1, ())
+        if (value := op._value).lo <= source <= value.hi:  # noqa
+            yield Match(op, start, start + 1, ())
 
-
-class _Concat:
-    def _iter_parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
+    def _iter_parse_concat(self, op: Concat, ctx: _Context, start: int) -> ta.Iterator[Match]:
         i = 0
         match_tups: list[tuple[Match, ...]] = [()]
-        for cp in self._children:
+        for cp in op._children:  # noqa
             next_match_tups: list[tuple[Match, ...]] = []
             for mt in match_tups:
                 for cm in ctx.iter_parse(cp, mt[-1].end if mt else start):
@@ -180,44 +143,58 @@ class _Concat:
         if not i:
             return
         for mt in sorted(match_tups, key=len, reverse=True):
-            yield Match(self, start, mt[-1].end if mt else start, mt)
+            yield Match(op, start, mt[-1].end if mt else start, mt)
 
-
-class _Repeat:
-    def _iter_parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
+    def _iter_parse_repeat(self, op: Repeat, ctx: _Context, start: int) -> ta.Iterator[Match]:
         match_tup_set: set[tuple[Match, ...]] = set()
         last_match_tup_set: set[tuple[Match, ...]] = {()}
         i = 0
         while True:
-            if self._times.max is not None and i == self._times.max:
+            if op._times.max is not None and i == op._times.max:  # noqa
                 break
             next_match_tup_set: set[tuple[Match, ...]] = set()
             for mt in last_match_tup_set:
-                for cm in ctx.iter_parse(self._child, mt[-1].end if mt else start):
+                for cm in ctx.iter_parse(op._child, mt[-1].end if mt else start):  # noqa
                     next_match_tup_set.add((*mt, cm))
             if not next_match_tup_set or next_match_tup_set < match_tup_set:
                 break
             i += 1
             match_tup_set |= next_match_tup_set
             last_match_tup_set = next_match_tup_set
-        if i < self._times.min:
+        if i < op._times.min:  # noqa
             return
         for mt in sorted(match_tup_set or [()], key=len, reverse=True):
             yield Match(self, start, mt[-1].end if mt else start, mt)  # noqa
 
-
-class _Either:
-    def _iter_parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
-        for cp in self._children:
+    def _iter_parse_either(self, op: Either, ctx: _Context, start: int) -> ta.Iterator[Match]:
+        for cp in op._children:  # noqa
             found = False
             for cm in ctx.iter_parse(cp, start):
                 found = True
-                yield Match(self, start, cm.end, (cm,))
-            if found and self._first_match:
+                yield Match(op, start, cm.end, (cm,))
+            if found and op._first_match:  # noqa
                 return
 
-class _RuleRef:
-    def _iter_parse(self, ctx: _Context, start: int) -> ta.Iterator[Match]:
-        cp = ctx._grammar._rules_by_name_f[self._name_f].parser  # noqa
+    def _iter_parse_rule_ref(self, op: RuleRef, ctx: _Context, start: int) -> ta.Iterator[Match]:
+        cp = ctx._grammar._rules_by_name_f[op._name_f].op  # noqa
         for cm in ctx.iter_parse(cp, start):
-            yield Match(self, cm.start, cm.end, (cm,))
+            yield Match(op, cm.start, cm.end, (cm,))
+
+
+##
+
+
+def _iter_parse(
+        grammar: Grammar,
+        source: str,
+        op: Op,
+        start: int,
+        *,
+        debug: int = 0,
+) -> ta.Iterator[Match]:
+    ctx: _Context
+    if debug:
+        ctx = _DebugContext(grammar, source, debug)
+    else:
+        ctx = _Context(grammar, source)
+

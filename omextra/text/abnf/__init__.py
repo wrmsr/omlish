@@ -61,7 +61,7 @@ from .meta import (  # noqa
     parse_grammar,
 )
 
-from .parsers import (  # noqa
+from .ops import (  # noqa
     Literal,
     StringLiteral,
     CaseInsensitiveStringLiteral,

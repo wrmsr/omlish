@@ -1,4 +1,3 @@
-import abc
 import io
 import itertools
 import typing as ta
@@ -12,6 +11,7 @@ from .errors import AbnfIncompleteParseError
 
 with lang.auto_proxy_import(globals()):
     from . import ops
+    from . import parsing
 
 
 ##
@@ -107,7 +107,7 @@ def longest_match(ms: ta.Iterable[Match]) -> Match | None:
 
 class Op(lang.Abstract, lang.PackageSealed):
     def _match_repr(self) -> str:
-        return f'{self.__class__.__name__}@{id(self)}'
+        return f'{self.__class__.__name__}@{id(self):x}'
 
 
 ##
@@ -202,13 +202,13 @@ class Grammar(lang.Final):
             else:
                 root = check.in_(check.isinstance(root, Rule), self._rules)
 
-        ctx: _Context
-        if debug:
-            ctx = _DebugContext(self, source, debug)
-        else:
-            ctx = _Context(self, source)
-
-        return ctx.iter_parse(root._op, start)  # noqa
+        return parsing._iter_parse(  # noqa
+            self,
+            source,
+            root._op,  # noqa
+            start,
+            debug=debug,
+        )
 
     def parse(
             self,
@@ -231,3 +231,46 @@ class Grammar(lang.Final):
             raise AbnfIncompleteParseError
 
         return match
+
+
+##
+
+
+def iter_parse(
+        obj: Grammar | Rule | Op,
+        src: str,
+        *,
+        root: str | None = None,
+        start: int = 0,
+) -> ta.Iterator[Match]:
+    if isinstance(obj, Grammar):
+        gram = obj
+    elif isinstance(obj, Rule):
+        check.none(root)
+        gram = Grammar(obj, root=obj)
+    elif isinstance(obj, Op):
+        check.none(root)
+        gram = Grammar(Rule('root', obj), root='root')
+    else:
+        raise TypeError(obj)
+
+    return gram.iter_parse(
+        src,
+        root,
+        start=start,
+    )
+
+
+def parse(
+        obj: Grammar | Rule | Op,
+        src: str,
+        *,
+        root: str | None = None,
+        start: int = 0,
+) -> Match | None:
+    return longest_match(iter_parse(
+        obj,
+        src,
+        root=root,
+        start=start,
+    ))
