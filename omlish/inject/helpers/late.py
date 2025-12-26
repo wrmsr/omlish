@@ -53,7 +53,7 @@ def _bind_late(
     if outer is None:
         inner_ann = rfl.to_annotation(inner_key.ty)
         outer_ann = late_cls[inner_ann]
-        outer_key = Key(rfl.type_(outer_ann))
+        outer_key = Key(rfl.type_(outer_ann), tag=inner_key.tag)
         outer_fac = lang.identity
     else:
         outer_key = as_key(outer)

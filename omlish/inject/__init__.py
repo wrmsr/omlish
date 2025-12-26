@@ -104,6 +104,7 @@ with _lang.auto_proxy_init(globals()):
         KwargsTarget,
         build_kwargs_target,
         tag,
+        target,
     )
 
     from .keys import (  # noqa

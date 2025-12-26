@@ -27,14 +27,16 @@ T = ta.TypeVar('T')
 ##
 
 
-@contextlib.asynccontextmanager
-async def create_async_managed_injector(*args: Elemental) -> ta.AsyncGenerator['_injector.AsyncInjector']:
-    ai = await _injector.create_async_injector(
-        bind(contextlib.AsyncExitStack, singleton=True, eager=True),
-        *args,
-    )
-    async with (await ai[contextlib.AsyncExitStack]):
-        yield ai
+def create_async_managed_injector(*args: Elemental) -> ta.AsyncContextManager['_injector.AsyncInjector']:
+    @contextlib.asynccontextmanager
+    async def inner():
+        ai = await _injector.create_async_injector(
+            bind(contextlib.AsyncExitStack, singleton=True, eager=True),
+            *args,
+        )
+        async with (await ai[contextlib.AsyncExitStack]):
+            yield ai
+    return inner()
 
 
 def make_async_managed_provider(
@@ -61,14 +63,16 @@ def make_async_managed_provider(
 ##
 
 
-@contextlib.contextmanager
-def create_managed_injector(*args: Elemental) -> ta.Generator['_sync.Injector']:
-    i = _sync.create_injector(
-        bind(contextlib.ExitStack, singleton=True, eager=True),
-        *args,
-    )
-    with i[contextlib.ExitStack]:
-        yield i
+def create_managed_injector(*args: Elemental) -> ta.ContextManager['_sync.Injector']:
+    @contextlib.contextmanager
+    def inner():
+        i = _sync.create_injector(
+            bind(contextlib.ExitStack, singleton=True, eager=True),
+            *args,
+        )
+        with i[contextlib.ExitStack]:
+            yield i
+    return inner()
 
 
 def make_managed_provider(
@@ -95,14 +99,16 @@ def make_managed_provider(
 ##
 
 
-@contextlib.contextmanager
-def create_maysync_managed_injector(*args: Elemental) -> ta.Generator['_maysync.MaysyncInjector']:
-    i = _maysync.create_maysync_injector(
-        bind(contextlib.ExitStack, singleton=True, eager=True),
-        *args,
-    )
-    with i[contextlib.ExitStack]:
-        yield i
+def create_maysync_managed_injector(*args: Elemental) -> ta.ContextManager['_maysync.MaysyncInjector']:
+    @contextlib.contextmanager
+    def inner():
+        i = _maysync.create_maysync_injector(
+            bind(contextlib.ExitStack, singleton=True, eager=True),
+            *args,
+        )
+        with i[contextlib.ExitStack]:
+            yield i
+    return inner()
 
 
 def make_maysync_managed_provider(

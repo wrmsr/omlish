@@ -89,14 +89,16 @@ def bind_scope_seed(k: ta.Any, ss: SeededScope) -> Element:
 ##
 
 
-@contextlib.asynccontextmanager
-async def async_enter_seeded_scope(
+def async_enter_seeded_scope(
         i: '_injector.AsyncInjector',
         ss: SeededScope,
         keys: ta.Mapping[Key, ta.Any],
-) -> ta.AsyncGenerator[None]:
-    async with (await i.provide(Key(SeededScope.Manager, tag=ss)))(keys):
-        yield
+) -> ta.AsyncContextManager[None]:
+    @contextlib.asynccontextmanager
+    async def inner():
+        async with (await i.provide(Key(SeededScope.Manager, tag=ss)))(keys):
+            yield
+    return inner()
 
 
 def enter_seeded_scope(

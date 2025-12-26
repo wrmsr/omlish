@@ -154,18 +154,20 @@ class SeededScopeImpl(ScopeImpl):
             self._ii = check.isinstance(i, _injector.AsyncInjectorImpl)
             self._ssi = check.isinstance(self._ii.get_scope_impl(self._ss), SeededScopeImpl)
 
-        @contextlib.asynccontextmanager
-        async def __call__(self, seeds: ta.Mapping[Key, ta.Any]) -> ta.AsyncGenerator[None]:
-            try:
-                if self._ssi._st is not None:  # noqa
-                    raise ScopeAlreadyOpenError(self._ss)
-                self._ssi._st = SeededScopeImpl.State(dict(seeds))  # noqa
-                await self._ii._instantiate_eagers(self._ss)  # noqa
-                yield
-            finally:
-                if self._ssi._st is None:  # noqa
-                    raise ScopeNotOpenError(self._ss)
-                self._ssi._st = None  # noqa
+        def __call__(self, seeds: ta.Mapping[Key, ta.Any]) -> ta.AsyncContextManager[None]:
+            @contextlib.asynccontextmanager
+            async def inner():
+                try:
+                    if self._ssi._st is not None:  # noqa
+                        raise ScopeAlreadyOpenError(self._ss)
+                    self._ssi._st = SeededScopeImpl.State(dict(seeds))  # noqa
+                    await self._ii._instantiate_eagers(self._ss)  # noqa
+                    yield
+                finally:
+                    if self._ssi._st is None:  # noqa
+                        raise ScopeNotOpenError(self._ss)
+                    self._ssi._st = None  # noqa
+            return inner()
 
     def auto_elements(self) -> Elements:
         return as_elements(

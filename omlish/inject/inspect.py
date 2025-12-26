@@ -68,3 +68,12 @@ def tag(obj: T, **kwargs: ta.Any) -> T:
 
 def build_kwargs_target(obj: ta.Any, **kwargs: ta.Any) -> KwargsTarget:
     return _inspect.build_kwargs_target(obj, **kwargs)
+
+
+##
+
+
+def target(**kwargs: ta.Any) -> ta.Callable[[ta.Any], KwargsTarget]:
+    def inner(obj: ta.Any) -> KwargsTarget:
+        return KwargsTarget.of(obj, **kwargs)
+    return inner
