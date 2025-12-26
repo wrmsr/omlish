@@ -112,7 +112,6 @@ class Concat(Op):
         return f'{self.__class__.__name__}@{id(self):x}({", ".join(map(repr, self._children))})'
 
 
-
 concat = Concat
 
 
@@ -156,7 +155,6 @@ class Repeat(Op):
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}@{id(self):x}({self._times}, {self._child!r})'
-
 
 
 @ta.overload
@@ -243,7 +241,6 @@ class Either(Op):
         )
 
 
-
 either = Either
 
 
@@ -266,7 +263,6 @@ class RuleRef(Op):
 
     def _match_repr(self) -> str:
         return repr(self)
-
 
 
 rule = RuleRef

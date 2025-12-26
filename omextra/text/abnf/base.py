@@ -49,14 +49,14 @@ class Match(ta.NamedTuple):
         if ix:
             write(ix)
         o = self.op
-        if isinstance(p, (ops.StringLiteral, ops.CaseInsensitiveStringLiteral)):
-            write(f'literal<{self.start}-{self.end}>({p.value!r})')
-        elif isinstance(p, ops.RangeLiteral):
-            write(f'literal<{self.start}-{self.end}>({p.value.lo!r}-{p.value.hi!r})')
+        if isinstance(o, (ops.StringLiteral, ops.CaseInsensitiveStringLiteral)):
+            write(f'literal<{self.start}-{self.end}>({o.value!r})')
+        elif isinstance(o, ops.RangeLiteral):
+            write(f'literal<{self.start}-{self.end}>({o.value.lo!r}-{o.value.hi!r})')
         else:
-            write(f'{p.__class__.__name__.lower()}<{self.start}-{self.end}>')
-            if isinstance(p, ops.RuleRef):
-                write(f':{p.name}')
+            write(f'{o.__class__.__name__.lower()}<{self.start}-{self.end}>')
+            if isinstance(o, ops.RuleRef):
+                write(f':{o.name}')
             if self.children:
                 write('(')
                 if ix is not None:
