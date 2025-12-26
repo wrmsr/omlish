@@ -70,9 +70,8 @@ def bind_backends(cfg: BackendConfig = BackendConfig()) -> inj.Elements:
                     lst.extend([
                         inj.private(
                             inj.bind(_types.BackendName, to_const=ben),
-                            inj.bind(ben_bp_key, to_ctor=bp_impl, singleton=True),
+                            inj.bind(ben_bp_key, to_ctor=bp_impl, singleton=True, expose=True),
                             inj.bind(bp_iface, to_key=ben_bp_key),
-                            inj.expose(ben_bp_key),
                         ),
                         bp_stack.push_bind(to_key=ben_bp_key),
                     ])
@@ -81,8 +80,7 @@ def bind_backends(cfg: BackendConfig = BackendConfig()) -> inj.Elements:
                 lst.extend([
                     inj.private(
                         inj.set_binder[_types.BackendProvider]().bind(bp_stack.top),
-                        inj.bind(fiw_key, to_ctor=_meta.FirstInWinsBackendProvider, singleton=True),
-                        inj.expose(fiw_key),
+                        inj.bind(fiw_key, to_ctor=_meta.FirstInWinsBackendProvider, singleton=True, expose=True),
                     ),
                     bp_stack.push_bind(to_key=fiw_key),
                 ])
