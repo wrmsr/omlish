@@ -15,6 +15,11 @@ TODO:
  - https://github.com/7mind/izumi-chibi-ts
   - Axis tagging for conditional bindings (e.g., dev vs prod implementations)
   - Fail-fast validation with circular and missing dependency detection
+ - * ta.Annotated as alternative to tag *
+  - need to pre-collect all tags (/type pairs?) in CollectedElements, scan for only those, strip Annotated otherwise
+   - KwargsTarget cache needs an additional weak key dimension of Annotated type set
+ - pre-generate, or cache, KT -> provision / injection action graph
+  - move towards efficient RequestScope usecase
 """
 import contextlib
 import functools
@@ -96,6 +101,9 @@ class AsyncInjectorImpl(AsyncInjector, lang.Final):
             )
         }
 
+        if self._p is not None:
+            self._p._add_child(self)  # noqa
+
     _cs: weakref.WeakSet['AsyncInjectorImpl'] | None = None  # noqa
 
     __cur_req: ta.Optional['AsyncInjectorImpl._Request'] = None
@@ -126,8 +134,8 @@ class AsyncInjectorImpl(AsyncInjector, lang.Final):
     def get_scope_impl(self, sc: Scope) -> ScopeImpl:
         return self._scopes[sc]
 
-    def create_child(self, ec: ElementCollection) -> AsyncInjector:
-        c = AsyncInjectorImpl(ec, self)
+    def _add_child(self, c: 'AsyncInjectorImpl') -> AsyncInjector:
+        check.isinstance(c, AsyncInjectorImpl)
         if self._cs is None:
             self._cs = weakref.WeakSet()
         self._cs.add(c)
@@ -260,7 +268,7 @@ class AsyncInjectorImpl(AsyncInjector, lang.Final):
         return obj(**kws)
 
 
-async def create_async_injector(ce: CollectedElements) -> AsyncInjector:
-    i = AsyncInjectorImpl(ce)
+async def create_async_injector(ce: CollectedElements, p: AsyncInjector | None = None) -> AsyncInjector:
+    i = AsyncInjectorImpl(ce, check.isinstance(p, (AsyncInjectorImpl, None)))
     await i._init()  # noqa
     return i

@@ -44,10 +44,7 @@ def bind_textual(cfg: TextualInterfaceConfig = TextualInterfaceConfig()) -> inj.
     els.extend([
         inj.bind(_app.ChatEventQueue, to_const=asyncio.Queue()),
 
-        event_callbacks().bind_item(to_fn=inj.KwargsTarget.of(
-            lambda eq: lambda ev: eq.put(ev),
-            eq=_app.ChatEventQueue,
-        )),
+        event_callbacks().bind_item(to_fn=inj.target(eq=_app.ChatEventQueue)(lambda eq: lambda ev: eq.put(ev))),
     ])
 
     #
@@ -83,7 +80,7 @@ def bind_textual(cfg: TextualInterfaceConfig = TextualInterfaceConfig()) -> inj.
 
         inj.bind(
             tx.DevtoolsSetup,
-            to_async_fn=inj.KwargsTarget.of(lambda mgr: mgr.get_setup(), mgr=tx.DevtoolsManager),
+            to_async_fn=inj.target(mgr=tx.DevtoolsManager)(lambda mgr: mgr.get_setup()),
             singleton=True,
         ),
     ])

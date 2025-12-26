@@ -6,7 +6,6 @@ import itertools
 import typing as ta
 
 from ... import cached
-from ... import check
 from ... import dataclasses as dc
 from ... import lang
 from ..bindings import Binding
@@ -20,6 +19,7 @@ from ..providers import Provider
 from ..scopes import Singleton
 from .elements import ElementCollection
 from .injector import AsyncInjectorImpl
+from .injector import create_async_injector
 from .providers import InternalProvider
 from .providers import ProviderImpl
 
@@ -48,7 +48,7 @@ class PrivateInjectorProviderImpl(ProviderImpl, lang.Final):
         return ()
 
     async def provide(self, injector: AsyncInjector) -> ta.Any:
-        return check.isinstance(injector, AsyncInjectorImpl).create_child(self.ec)
+        return create_async_injector(self.ec, injector)
 
 
 ##

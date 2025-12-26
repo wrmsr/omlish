@@ -29,10 +29,10 @@ def tool_context_providers() -> 'inj.ItemsBinderHelper[_execution.ToolContextPro
 
 
 def bind_tool_context_provider_to_key(key: ta.Any) -> inj.Elements:
-    return tool_context_providers().bind_item(to_fn=inj.KwargsTarget.of(
-        lambda v: _execution.ToolContextProvider(lambda: [v]),
-        v=key,
-    ), singleton=True)
+    return tool_context_providers().bind_item(
+        to_fn=inj.target(v=key)(lambda v: _execution.ToolContextProvider(lambda: [v])),
+        singleton=True,
+    )
 
 
 ##

@@ -24,7 +24,7 @@ def bind_main(
 
     els.extend([
         lc.bind_async_lifecycle_registrar(),
-        lc.bind_async_managed_lifecycle_manager(),
+        lc.bind_async_managed_lifecycle_manager(eager=True),
     ])
 
     #

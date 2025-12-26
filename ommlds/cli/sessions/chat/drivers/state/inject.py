@@ -59,11 +59,10 @@ def bind_state(cfg: StateConfig = StateConfig()) -> inj.Elements:
         els.extend([
             inj.bind(_ids.LastChatIdManager, singleton=True),
 
-            phase_callbacks().bind_item(to_fn=inj.KwargsTarget.of(
-                lambda lcim, cid: ChatPhaseCallback(ChatPhase.STARTED, lambda: lcim.set_last_chat_id(cid)),
+            phase_callbacks().bind_item(to_fn=inj.target(
                 lcim=_ids.LastChatIdManager,
                 cid=_types.ChatId,
-            )),
+            )(lambda lcim, cid: ChatPhaseCallback(ChatPhase.STARTED, lambda: lcim.set_last_chat_id(cid)))),
         ])
 
     elif cfg.state == 'ephemeral':

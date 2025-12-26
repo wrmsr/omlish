@@ -89,7 +89,7 @@ def test_inject():
 
     with inj.create_managed_injector(
             bind_lifecycle_registrar(),
-            bind_managed_lifecycle_manager(),
+            bind_managed_lifecycle_manager(eager=True),
             *svcs,
     ) as mi:
         print()
@@ -167,7 +167,7 @@ async def test_async_inject():
 
     async with inj.create_async_managed_injector(
             bind_async_lifecycle_registrar(),
-            bind_async_managed_lifecycle_manager(),
+            bind_async_managed_lifecycle_manager(eager=True),
             *svcs,
     ) as mi:  # noqa
         print()

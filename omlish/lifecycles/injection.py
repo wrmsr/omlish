@@ -123,21 +123,21 @@ def bind_async_lifecycle_registrar() -> inj.Elements:
 ##
 
 
-def bind_managed_lifecycle_manager() -> inj.Elements:
+def bind_managed_lifecycle_manager(*, eager: bool | int = False) -> inj.Elements:
     # FIXME: lock?
     def inner(es: contextlib.ExitStack) -> LifecycleManager:
         return es.enter_context(lifecycle_context_manage(LifecycleManager()))
 
     return inj.as_elements(
-        inj.bind(inner, singleton=True, eager=True),
+        inj.bind(inner, singleton=True, eager=eager),
     )
 
 
-def bind_async_managed_lifecycle_manager() -> inj.Elements:
+def bind_async_managed_lifecycle_manager(*, eager: bool | int = False) -> inj.Elements:
     # FIXME: lock?
     async def inner(aes: contextlib.AsyncExitStack) -> AsyncLifecycleManager:
         return await aes.enter_async_context(async_lifecycle_context_manage(AsyncLifecycleManager()))
 
     return inj.as_elements(
-        inj.bind(inner, singleton=True, eager=True),
+        inj.bind(inner, singleton=True, eager=eager),
     )
