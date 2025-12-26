@@ -1,11 +1,11 @@
 from .. import base as ba
-from .. import parsers as pa
+from .. import ops
 
 
 def test_parsers() -> None:
     for p, s in [
-        (pa.Concat(pa.StringLiteral('foo'), pa.StringLiteral('bar')), 'foobar'),
-        (pa.Repeat(pa.Repeat.Times(3), pa.StringLiteral('ab')), 'ababab'),
+        (ops.Concat(ops.StringLiteral('foo'), ops.StringLiteral('bar')), 'foobar'),
+        (ops.Repeat(ops.Repeat.Times(3), ops.StringLiteral('ab')), 'ababab'),
     ]:
         print(p)
         print(repr(s))

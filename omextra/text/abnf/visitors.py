@@ -6,8 +6,8 @@ from omlish import dispatch
 from omlish import lang
 
 from .base import Match
-from .base import Parser
-from .parsers import RuleRef
+from .base import Op
+from .ops import RuleRef
 
 
 T = ta.TypeVar('T')
@@ -16,15 +16,15 @@ T = ta.TypeVar('T')
 ##
 
 
-class ParserVisitor(lang.Abstract, ta.Generic[T]):
+class OpVisitor(lang.Abstract, ta.Generic[T]):
     @dispatch.method()
-    def visit_parser(self, p: Parser, m: Match) -> T:
-        raise TypeError(p)
+    def visit_op(self, o: Op, m: Match) -> T:
+        raise TypeError(o)
 
     #
 
     def visit_match(self, m: Match) -> T:
-        return self.visit_parser(m.parser, m)
+        return self.visit_op(m.op, m)
 
 
 ##
@@ -52,4 +52,4 @@ class RuleVisitor(lang.Abstract, ta.Generic[T]):
     #
 
     def visit_match(self, m: Match) -> T:
-        return self.visit_rule(check.isinstance(m.parser, RuleRef).name, m)
+        return self.visit_rule(check.isinstance(m.op, RuleRef).name, m)

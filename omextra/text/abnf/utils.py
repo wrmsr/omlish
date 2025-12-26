@@ -6,7 +6,7 @@ from omlish import check
 
 from .base import Grammar
 from .base import Match
-from .parsers import RuleRef
+from .ops import RuleRef
 
 
 ##
@@ -17,7 +17,7 @@ def strip_insignificant_match_rules(m: Match, g: Grammar) -> Match:
         return c.flat_map_children(
             lambda x: (
                 (rec(x),) if not (
-                    isinstance((xp := x.parser), RuleRef) and
+                    isinstance((xp := x.op), RuleRef) and
                     check.not_none(g.rule(xp.name)).insignificant
                 ) else ()
             ),
@@ -27,7 +27,7 @@ def strip_insignificant_match_rules(m: Match, g: Grammar) -> Match:
 
 def only_match_rules(m: Match) -> Match:
     def rec(c: Match) -> ta.Iterable[Match]:
-        if isinstance(c.parser, RuleRef):
+        if isinstance(c.op, RuleRef):
             return (c.flat_map_children(rec),)
         else:
             return itertools.chain.from_iterable(map(rec, c.children))

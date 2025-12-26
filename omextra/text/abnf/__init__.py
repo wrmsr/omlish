@@ -36,7 +36,7 @@ from .base import (  # noqa
     Match,
     longest_match,
 
-    Parser,
+    Op,
 
     Rule,
     Grammar,

@@ -11,7 +11,7 @@ from .errors import AbnfIncompleteParseError
 
 
 with lang.auto_proxy_import(globals()):
-    from . import parsers
+    from . import ops
 
 
 ##
@@ -19,7 +19,7 @@ with lang.auto_proxy_import(globals()):
 
 @ta.final
 class Match(ta.NamedTuple):
-    parser: 'Parser'
+    op: 'Op'
     start: int
     end: int
     children: tuple['Match', ...]
@@ -33,7 +33,7 @@ class Match(ta.NamedTuple):
     def __repr__(self) -> str:
         return (
             f'{self.__class__.__name__}('
-            f'{self.parser._match_repr()}, '  # noqa
+            f'{self.op._match_repr()}, '  # noqa
             f'{self.start}, {self.end}'
             f'{f", {self.children!r}" if self.children else ""})'
         )
@@ -48,14 +48,14 @@ class Match(ta.NamedTuple):
         ix: str | None = (' ' * (indent * _depth)) if indent is not None else None
         if ix:
             write(ix)
-        p = self.parser
-        if isinstance(p, (parsers.StringLiteral, parsers.CaseInsensitiveStringLiteral)):
+        o = self.op
+        if isinstance(p, (ops.StringLiteral, ops.CaseInsensitiveStringLiteral)):
             write(f'literal<{self.start}-{self.end}>({p.value!r})')
-        elif isinstance(p, parsers.RangeLiteral):
+        elif isinstance(p, ops.RangeLiteral):
             write(f'literal<{self.start}-{self.end}>({p.value.lo!r}-{p.value.hi!r})')
         else:
             write(f'{p.__class__.__name__.lower()}<{self.start}-{self.end}>')
-            if isinstance(p, parsers.RuleRef):
+            if isinstance(p, ops.RuleRef):
                 write(f':{p.name}')
             if self.children:
                 write('(')
@@ -105,13 +105,9 @@ def longest_match(ms: ta.Iterable[Match]) -> Match | None:
 ##
 
 
-class Parser(lang.Abstract, lang.PackageSealed):
+class Op(lang.Abstract, lang.PackageSealed):
     def _match_repr(self) -> str:
         return f'{self.__class__.__name__}@{id(self)}'
-
-    @abc.abstractmethod
-    def _iter_parse(self, ctx: '_Context', start: int) -> ta.Iterator[Match]:
-        raise NotImplementedError
 
 
 ##
@@ -121,7 +117,7 @@ class Rule(lang.Final):
     def __init__(
             self,
             name: str,
-            parser: Parser,
+            op: Op,
             *,
             insignificant: bool = False,
     ) -> None:
@@ -129,7 +125,7 @@ class Rule(lang.Final):
 
         self._name = check.non_empty_str(name)
         self._name_f = name.casefold()
-        self._parser = check.isinstance(parser, Parser)
+        self._op = check.isinstance(op, Op)
         self._insignificant = insignificant
 
     def __repr__(self) -> str:
@@ -144,8 +140,8 @@ class Rule(lang.Final):
         return self._name_f
 
     @property
-    def parser(self) -> Parser:
-        return self._parser
+    def op(self) -> Op:
+        return self._op
 
     @property
     def insignificant(self) -> bool:
@@ -163,20 +159,20 @@ class Grammar(lang.Final):
         rules_set: set[Rule] = set()
         rules_by_name: dict[str, Rule] = {}
         rules_by_name_f: dict[str, Rule] = {}
-        rules_by_parser: dict[Parser, Rule] = {}
+        rules_by_op: dict[Op, Rule] = {}
         for gr in rules:
             check.not_in(gr, rules_set)
             check.not_in(gr._name, rules_by_name)  # noqa
             check.not_in(gr._name_f, rules_by_name_f)  # noqa
-            check.not_in(gr._parser, rules_by_parser)  # noqa
+            check.not_in(gr._op, rules_by_op)  # noqa
             rules_set.add(gr)
             rules_by_name[gr._name] = gr  # noqa
             rules_by_name_f[gr._name_f] = gr  # noqa
-            rules_by_parser[gr._parser] = gr  # noqa
+            rules_by_op[gr._op] = gr  # noqa
         self._rules = rules_set
         self._rules_by_name: ta.Mapping[str, Rule] = rules_by_name
         self._rules_by_name_f: ta.Mapping[str, Rule] = rules_by_name_f
-        self._rules_by_parser: ta.Mapping[Parser, Rule] = rules_by_parser
+        self._rules_by_op: ta.Mapping[Op, Rule] = rules_by_op
 
         if isinstance(root, str):
             root = rules_by_name_f[root.casefold()]
@@ -212,7 +208,7 @@ class Grammar(lang.Final):
         else:
             ctx = _Context(self, source)
 
-        return ctx.iter_parse(root._parser, start)  # noqa
+        return ctx.iter_parse(root._op, start)  # noqa
 
     def parse(
             self,
@@ -235,134 +231,3 @@ class Grammar(lang.Final):
             raise AbnfIncompleteParseError
 
         return match
-
-
-##
-
-
-class _Context:
-    def __init__(
-            self,
-            grammar: Grammar,
-            source: str,
-    ) -> None:
-        super().__init__()
-
-        self._grammar = grammar
-        self._source = source
-
-    @property
-    def grammar(self) -> Grammar:
-        return self._grammar
-
-    @property
-    def source(self) -> str:
-        return self._source
-
-    def iter_parse(self, parser: Parser, start: int) -> ta.Iterator[Match]:
-        return parser._iter_parse(self, start)  # noqa
-
-
-class _DebugContext(_Context):
-    def __init__(
-            self,
-            grammar: Grammar,
-            source: str,
-            level: int = 1,
-            *,
-            write: ta.Callable[[str], None] | None = None,
-    ) -> None:
-        super().__init__(grammar, source)
-
-        self._level = level
-        if write is None:
-            write = print
-        self._write = write
-
-        self._parser_strs: dict[Parser, str] = {}
-
-    def _parser_str(self, parser: Parser) -> str:
-        try:
-            return self._parser_strs[parser]
-        except KeyError:
-            pass
-        ps = self._parser_strs[parser] = str(parser)
-        return ps
-
-    _depth: int = 0
-
-    def iter_parse(self, parser: Parser, start: int) -> ta.Iterator[Match]:
-        if self._level < 2 and not isinstance(parser, parsers.RuleRef):
-            yield from super().iter_parse(parser, start)
-            return
-
-        ws = f'{"  " * self._depth} '
-
-        if self._level < 2:
-            ps = check.isinstance(parser, parsers.RuleRef).name
-        else:
-            ps = self._parser_str(parser)
-        body = f'{start}:{self._source[start]!r} {ps}'
-
-        if self._level > 2:
-            self._write(f'{ws}+ {body}')
-        else:
-            self._write(f'{ws}{body}')
-
-        try:
-            self._depth += 1
-
-            for m in super().iter_parse(parser, start):  # noqa
-                if self._level > 3:
-                    self._write(f'{ws}! {m.start}-{m.end}:{self._source[m.start:m.end]!r}')
-
-                yield m
-
-        finally:
-            self._depth -= 1
-
-            if self._level > 3:
-                self._write(f'{ws}- {body}')
-
-
-##
-
-
-def iter_parse(
-        obj: Grammar | Rule | Parser,
-        src: str,
-        *,
-        root: str | None = None,
-        start: int = 0,
-) -> ta.Iterator[Match]:
-    if isinstance(obj, Grammar):
-        gram = obj
-    elif isinstance(obj, Rule):
-        check.none(root)
-        gram = Grammar(obj, root=obj)
-    elif isinstance(obj, Parser):
-        check.none(root)
-        gram = Grammar(Rule('root', obj), root='root')
-    else:
-        raise TypeError(obj)
-
-    return gram.iter_parse(
-        src,
-        root,
-        start=start,
-    )
-
-
-def parse(
-        obj: Grammar | Rule | Parser,
-        src: str,
-        *,
-        root: str | None = None,
-        start: int = 0,
-) -> Match | None:
-    return longest_match(iter_parse(
-        obj,
-        src,
-        root=root,
-        start=start,
-    ))

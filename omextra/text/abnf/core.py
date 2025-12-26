@@ -5,11 +5,11 @@ import typing as ta
 
 from .base import Grammar
 from .base import Rule
-from .parsers import concat
-from .parsers import either
-from .parsers import literal
-from .parsers import repeat
-from .parsers import rule
+from .ops import concat
+from .ops import either
+from .ops import literal
+from .ops import repeat
+from .ops import rule
 
 
 ##

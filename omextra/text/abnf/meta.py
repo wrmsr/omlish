@@ -9,17 +9,17 @@ from omlish import lang
 
 from .base import Grammar
 from .base import Match
-from .base import Parser
+from .base import Op
 from .base import Rule
 from .core import CORE_RULES
 from .errors import AbnfGrammarParseError
-from .parsers import Repeat
-from .parsers import concat
-from .parsers import either
-from .parsers import literal
-from .parsers import option
-from .parsers import repeat
-from .parsers import rule
+from .ops import Repeat
+from .ops import concat
+from .ops import either
+from .ops import literal
+from .ops import option
+from .ops import repeat
+from .ops import rule
 from .utils import fix_ws
 from .utils import parse_rules
 from .visitors import RuleVisitor
@@ -492,7 +492,7 @@ class MetaGrammarRuleVisitor(RuleVisitor[ta.Any]):
     @RuleVisitor.register('element')
     def visit_element_rule(self, m: Match) -> ta.Any:
         c = self.visit_match(check.single(m.children))
-        if isinstance(c, Parser):
+        if isinstance(c, Op):
             return c
         elif isinstance(c, self.RuleName):
             return rule(c.s)
@@ -506,13 +506,13 @@ class MetaGrammarRuleVisitor(RuleVisitor[ta.Any]):
     @RuleVisitor.register('option')
     def visit_option_rule(self, m: Match) -> ta.Any:
         c = self.visit_match(check.single(m.children))
-        return option(check.isinstance(c, Parser))
+        return option(check.isinstance(c, Op))
 
     @RuleVisitor.register('num-val')
     def visit_num_val_rule(self, m: Match) -> ta.Any:
         return self.visit_match(check.single(m.children))
 
-    def _parse_num_val(self, s: str, base: int) -> Parser:
+    def _parse_num_val(self, s: str, base: int) -> Op:
         if '-' in s:
             check.not_in('.', s)
             lo, hi = [chr(int(p, base)) for p in s.split('-')]
@@ -572,7 +572,7 @@ def parse_grammar(
     )) is None:
         raise AbnfGrammarParseError(source)
 
-    check.isinstance(mg_m.parser, Repeat)
+    check.isinstance(mg_m.op, Repeat)
 
     mg_rv = MetaGrammarRuleVisitor(source)
     rules = [mg_rv.visit_match(gg_cm) for gg_cm in mg_m.children]
