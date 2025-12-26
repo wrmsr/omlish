@@ -574,8 +574,8 @@ def parse_grammar(
 
     check.isinstance(mg_m.op, Repeat)
 
-    mg_rv = MetaGrammarRuleMatchVisitor(source)
-    rules = [mg_rv.visit_match(gg_cm) for gg_cm in mg_m.children]
+    mg_rmv = MetaGrammarRuleMatchVisitor(source)
+    rules = [mg_rmv.visit_match(gg_cm) for gg_cm in mg_m.children]
 
     return Grammar(
         *rules,
