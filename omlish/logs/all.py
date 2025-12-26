@@ -53,6 +53,8 @@ with _lang.auto_proxy_init(globals()):
     )
 
     from .base import (  # noqa
+        LoggingMsgFn,
+
         AnyLogger,
         Logger,
         AsyncLogger,
@@ -62,8 +64,17 @@ with _lang.auto_proxy_init(globals()):
         AsyncNopLogger,
     )
 
+    from .bisync import (  # noqa
+        BisyncLogger,
+        BisyncAsyncLogger,
+        make_bisync_logger,
+    )
+
     from .contexts import (  # noqa
         LoggingContext,
+        SimpleLoggingContext,
+
+        CaptureLoggingContext,
     )
 
     from .formatters import (  # noqa

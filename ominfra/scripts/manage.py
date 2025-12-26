@@ -142,7 +142,7 @@ def __omlish_amalg__():  # noqa
             dict(path='commands/types.py', sha1='10b88571981b9964287f30f27abf6d09400b51c6'),
             dict(path='deploy/paths/paths.py', sha1='bf7794e998caa1611277ac5809eb7ec91a76d1e8'),
             dict(path='deploy/specs.py', sha1='b3a411b32b47f81f5ad673d8b0338970a6eb6ff9'),
-            dict(path='../../omlish/logs/base.py', sha1='9772b763a04c1687a36b7eaa152d29648c193db6'),
+            dict(path='../../omlish/logs/base.py', sha1='8d06faee05fead6b1dd98c9035a5b042af4aebb1'),
             dict(path='../../omlish/logs/std/records.py', sha1='8bbf6ef9eccb3a012c6ca416ddf3969450fd8fc9'),
             dict(path='../../omlish/subprocesses/base.py', sha1='cb9f668be5422fecb27222caabb67daac6c1bab9'),
             dict(path='../../omdev/interp/resolvers.py', sha1='817b8e76401cd7a19eb43ca54d65272e4c8a4b0e'),
@@ -11515,7 +11515,7 @@ class AnyLogger(Abstract, ta.Generic[T]):
     # This will be 1 for [Sync]Logger and 0 for AsyncLogger - in sync loggers these methods remain present on the stack,
     # in async loggers they return a coroutine to be awaited and thus aren't actually present when said coroutine is
     # awaited.
-    _level_proxy_method_stack_offset: ta.ClassVar[int]
+    _level_proxy_method_stack_offset: int
 
     @ta.overload
     def log(self, level: LogLevel, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
@@ -11705,7 +11705,7 @@ class AnyLogger(Abstract, ta.Generic[T]):
 
 
 class Logger(AnyLogger[None], Abstract):
-    _level_proxy_method_stack_offset: ta.ClassVar[int] = 1
+    _level_proxy_method_stack_offset: int = 1
 
     @abc.abstractmethod
     def _log(
@@ -11719,7 +11719,7 @@ class Logger(AnyLogger[None], Abstract):
 
 
 class AsyncLogger(AnyLogger[ta.Awaitable[None]], Abstract):
-    _level_proxy_method_stack_offset: ta.ClassVar[int] = 0
+    _level_proxy_method_stack_offset: int = 0
 
     @abc.abstractmethod
     def _log(
