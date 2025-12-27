@@ -4,12 +4,11 @@ from omlish import dataclasses as dc
 from omlish import marshal as msh
 
 from ...metadata import Uuid
-from .._marshal import MarshalCanContent
 from .._marshal import MarshalContent
-from ..materialize import CanContent
 from ..sequence import InlineContent
 from ..text import TextContent
 from ..types import Content
+from ..raw import SingleRawContent
 
 
 @dc.dataclass(frozen=True)
@@ -30,17 +29,32 @@ def test_marshal():
 
 
 @dc.dataclass(frozen=True)
-class CcFoo:
-    c: CanContent
+class SingleRawFoo:
+    c: SingleRawContent
 
 
-def test_cc_marshal():
-    assert msh.marshal('hi', MarshalCanContent) == 'hi'
-    assert msh.marshal('hi', CanContent) == 'hi'
-    assert msh.marshal(CcFoo('hi')) == {'c': 'hi'}
+def test_single_raw_marshal():
+    assert msh.marshal('hi', SingleRawContent) == 'hi'
+    assert msh.marshal(SingleRawFoo('hi')) == {'c': 'hi'}
 
-    assert msh.marshal(TextContent('hi'), CanContent) == {'text': {'s': 'hi'}}
-    assert msh.marshal(InlineContent(['hi', [TextContent('bye')]]), CanContent) == {'inline': {'l': ['hi', [{'text': {'s': 'bye'}}]]}}  # noqa
+    assert msh.marshal(TextContent('hi'), SingleRawContent) == {'text': {'s': 'hi'}}
 
     u = uuid.uuid4()
-    assert msh.marshal(TextContent('hi').with_metadata(Uuid(u)), CanContent) == {'text': {'s': 'hi', 'metadata': [{'uuid': str(u)}]}}  # noqa
+    assert msh.marshal(TextContent('hi').with_metadata(Uuid(u)), SingleRawContent) == {'text': {'s': 'hi', 'metadata': [{'uuid': str(u)}]}}  # noqa
+
+
+# @dc.dataclass(frozen=True)
+# class RawFoo:
+#     c: RawContent
+#
+#
+# def test_cc_marshal():
+#     assert msh.marshal('hi', MarshalCanContent) == 'hi'
+#     assert msh.marshal('hi', CanContent) == 'hi'
+#     assert msh.marshal(CcFoo('hi')) == {'c': 'hi'}
+#
+#     assert msh.marshal(TextContent('hi'), CanContent) == {'text': {'s': 'hi'}}
+#     assert msh.marshal(InlineContent(['hi', [TextContent('bye')]]), CanContent) == {'inline': {'l': ['hi', [{'text': {'s': 'bye'}}]]}}  # noqa
+#
+#     u = uuid.uuid4()
+#     assert msh.marshal(TextContent('hi').with_metadata(Uuid(u)), CanContent) == {'text': {'s': 'hi', 'metadata': [{'uuid': str(u)}]}}  # noqa

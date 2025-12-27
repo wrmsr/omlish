@@ -7,16 +7,22 @@ from omlish import lang
 from omlish import marshal as msh
 from omlish import reflect as rfl
 
-from .raw import RawContent
-from .materialization.types import _InnerCanContent  # noqa
+from .dynamic import DynamicContent  # noqa
 from .images import ImageContent  # noqa
+from .indent import IndentContent  # noqa
 from .json import JsonContent  # noqa
+from .raw import RawContent  # noqa
+from .raw import SingleRawContent  # noqa
+from .section import SectionContent  # noqa
 from .sequence import BlockContent  # noqa
 from .sequence import InlineContent  # noqa
+from .sequence import ItemListContent  # noqa
 from .tag import TagContent  # noqa
 from .text import TextContent  # noqa
-from .types import CONTENT_TYPES
 from .types import BaseContent
+from .raw import NON_STR_SINGLE_RAW_CONTENT_TYPES
+from .raw import NonStrSingleRawContent
+from .types import CONTENT_TYPES  # noqa
 from .types import Content
 
 
@@ -85,47 +91,87 @@ class _ContentUnmarshalerFactory(msh.UnmarshalerFactory):
 ##
 
 
-class MarshalCanContent(lang.NotInstantiable, lang.Final):
+class MarshalSingleRawContent(lang.NotInstantiable, lang.Final):
     pass
 
 
-MarshalCanContentUnion: ta.TypeAlias = ta.Union[  # noqa
-    ta.Iterable[MarshalCanContent],
-    _InnerCanContent,
-]
-
-
-_MARSHAL_CAN_CONTENT_UNION_RTY = rfl.type_(MarshalCanContentUnion)
+_SINGLE_RAW_CONTENT_UNION_RTY = rfl.type_(SingleRawContent)
 
 
 @dc.dataclass(frozen=True)
-class _CanContentMarshaler(msh.Marshaler):
-    c: msh.Marshaler
+class _SingleRawContentMarshaler(msh.Marshaler):
+    et: msh.Marshaler
 
     def marshal(self, ctx: msh.MarshalContext, o: ta.Any) -> msh.Value:
-        return self.c.marshal(ctx, check.isinstance(o, CONTENT_TYPES))
+        if isinstance(o, str):
+            return o
+        elif isinstance(o, NON_STR_SINGLE_RAW_CONTENT_TYPES):
+            return self.et.marshal(ctx, o)
+        else:
+            raise TypeError(o)
 
 
-class _CanContentMarshalerFactory(msh.MarshalerFactory):
+class _SingleRawContentMarshalerFactory(msh.MarshalerFactory):
     def make_marshaler(self, ctx: msh.MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
-        if not (rty is MarshalCanContent or rty == _MARSHAL_CAN_CONTENT_UNION_RTY):
+        if not (rty is MarshalSingleRawContent or rty == _SINGLE_RAW_CONTENT_UNION_RTY):
             return None
-        return lambda: _CanContentMarshaler(ctx.make_marshaler(Content))
+        return lambda: _SingleRawContentMarshaler(ctx.make_marshaler(NonStrSingleRawContent))
 
 
 @dc.dataclass(frozen=True)
-class _CanContentUnmarshaler(msh.Unmarshaler):
-    c: msh.Unmarshaler
+class _SingleRawContentUnmarshaler(msh.Unmarshaler):
+    et: msh.Unmarshaler
 
     def unmarshal(self, ctx: msh.UnmarshalContext, v: msh.Value) -> ta.Any:
-        return self.c.unmarshal(ctx, v)
+        if isinstance(v, str):
+            return v
+        elif isinstance(v, collections.abc.Mapping):
+            return self.et.unmarshal(ctx, v)  # noqa
+        else:
+            raise TypeError(v)
 
 
-class _CanContentUnmarshalerFactory(msh.UnmarshalerFactory):
+class _SingleRawContentUnmarshalerFactory(msh.UnmarshalerFactory):
     def make_unmarshaler(self, ctx: msh.UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:  # noqa
-        if not (rty is MarshalCanContent or rty == _MARSHAL_CAN_CONTENT_UNION_RTY):
+        if not (rty is MarshalSingleRawContent or rty == _MARSHAL_CONTENT_UNION_RTY):
             return None
-        return lambda: _CanContentUnmarshaler(ctx.make_unmarshaler(Content))
+        return lambda: _SingleRawContentUnmarshaler(ctx.make_unmarshaler(NonStrSingleRawContent))
+
+
+##
+
+
+# _MARSHAL_RAW_CONTENT_UNION_RTY = rfl.type_(MarshalRawContentUnion)
+#
+#
+# @dc.dataclass(frozen=True)
+# class _RawContentMarshaler(msh.Marshaler):
+#     c: msh.Marshaler
+#
+#     def marshal(self, ctx: msh.MarshalContext, o: ta.Any) -> msh.Value:
+#         return self.c.marshal(ctx, check.isinstance(o, CONTENT_TYPES))
+#
+#
+# class _RawContentMarshalerFactory(msh.MarshalerFactory):
+#     def make_marshaler(self, ctx: msh.MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
+#         if not (rty is MarshalRawContent or rty == _MARSHAL_RAW_CONTENT_UNION_RTY):
+#             return None
+#         return lambda: _RawContentMarshaler(ctx.make_marshaler(Content))
+#
+#
+# @dc.dataclass(frozen=True)
+# class _RawContentUnmarshaler(msh.Unmarshaler):
+#     c: msh.Unmarshaler
+#
+#     def unmarshal(self, ctx: msh.UnmarshalContext, v: msh.Value) -> ta.Any:
+#         return self.c.unmarshal(ctx, v)
+#
+#
+# class _RawContentUnmarshalerFactory(msh.UnmarshalerFactory):
+#     def make_unmarshaler(self, ctx: msh.UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:  # noqa
+#         if not (rty is MarshalRawContent or rty == _MARSHAL_RAW_CONTENT_UNION_RTY):
+#             return None
+#         return lambda: _RawContentUnmarshaler(ctx.make_unmarshaler(Content))
 
 
 ##
@@ -162,33 +208,38 @@ def _install_standard_marshaling() -> None:
     base_content_poly = msh.Polymorphism(
         BaseContent,
         [
-            msh.Impl(BlockContent, 'block'),
+
             msh.Impl(ImageContent, 'image'),
-            msh.Impl(InlineContent, 'inline'),
+
+            msh.Impl(IndentContent, 'indent'),
+
             msh.Impl(JsonContent, 'json'),
+
+            msh.Impl(SectionContent, 'section'),
+
+            msh.Impl(BlockContent, 'block'),
+            msh.Impl(InlineContent, 'inline'),
+            msh.Impl(ItemListContent, 'item_list'),
+
             msh.Impl(TagContent, 'tag'),
+
             msh.Impl(TextContent, 'text'),
+
         ],
     )
 
     msh.install_standard_factories(
-        msh.PolymorphismMarshalerFactory(base_content_poly),
-        msh.TypeMapMarshalerFactory({
-            ImageContent: _ImageContentMarshaler(),
-            JsonContent: _JsonContentMarshaler(),
-        }),
-        _ContentMarshalerFactory(),
-        _CanContentMarshalerFactory(),
+        *msh.standard_polymorphism_factories(
+            base_content_poly,
+            unions='partial',
+        ),
     )
 
+    #
+
     msh.install_standard_factories(
-        msh.PolymorphismUnmarshalerFactory(base_content_poly),
-        msh.TypeMapUnmarshalerFactory({
-            ImageContent: _ImageContentUnmarshaler(),
-            JsonContent: _JsonContentUnmarshaler(),
-        }),
+        _ContentMarshalerFactory(),
         _ContentUnmarshalerFactory(),
-        _CanContentUnmarshalerFactory(),
     )
 
     msh.register_global_config(
@@ -197,8 +248,28 @@ def _install_standard_marshaling() -> None:
         identity=True,
     )
 
+    #
+
+    msh.install_standard_factories(
+        _SingleRawContentMarshalerFactory(),
+        _SingleRawContentUnmarshalerFactory(),
+    )
+
     msh.register_global_config(
-        CanContent,
-        msh.ReflectOverride(MarshalCanContent),
+        SingleRawContent,
+        msh.ReflectOverride(MarshalSingleRawContent),
         identity=True,
+    )
+
+    #
+
+    msh.install_standard_factories(
+        msh.TypeMapMarshalerFactory({
+            ImageContent: _ImageContentMarshaler(),
+            JsonContent: _JsonContentMarshaler(),
+        }),
+        msh.TypeMapUnmarshalerFactory({
+            ImageContent: _ImageContentUnmarshaler(),
+            JsonContent: _JsonContentUnmarshaler(),
+        }),
     )

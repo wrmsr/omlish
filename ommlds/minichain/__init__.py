@@ -287,6 +287,9 @@ with _lang.auto_proxy_init(
     )
 
     from .content.raw import (  # noqa
+        NonStrSingleRawContent,
+        NON_STR_SINGLE_RAW_CONTENT_TYPES,
+
         SingleRawContent,
         SINGLE_RAW_CONTENT_TYPES,
 

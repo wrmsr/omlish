@@ -7,17 +7,31 @@ from .text import TextContent
 ##
 
 
-SingleRawContent: ta.TypeAlias = ta.Union[  # noqa
-    str,
+NonStrSingleRawContent: ta.TypeAlias = ta.Union[  # noqa
     TextContent,
     ImageContent,
 ]
 
 
-SINGLE_RAW_CONTENT_TYPES: tuple[type, ...] = (
-    str,
+NON_STR_SINGLE_RAW_CONTENT_TYPES: tuple[type, ...] = (
     TextContent,
     ImageContent,
+)
+
+
+#
+
+
+SingleRawContent: ta.TypeAlias = ta.Union[  # noqa
+    str,
+    NonStrSingleRawContent,
+]
+
+
+
+SINGLE_RAW_CONTENT_TYPES: tuple[type, ...] = (
+    str,
+    *NON_STR_SINGLE_RAW_CONTENT_TYPES,
 )
 
 
@@ -31,8 +45,6 @@ RawContent: ta.TypeAlias = ta.Union[  # noqa
 
 
 RAW_CONTENT_TYPES: tuple[type, ...] = (
-    str,
-    TextContent,
-    ImageContent,
+    *SINGLE_RAW_CONTENT_TYPES,
     ta.Sequence,
 )
