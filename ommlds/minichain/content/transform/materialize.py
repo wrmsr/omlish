@@ -2,13 +2,12 @@ import typing as ta
 
 from omlish import check
 from omlish import dataclasses as dc
-from omlish import dispatch
 from omlish.text import templating as tpl
 
 from ..namespaces import ContentNamespace
-from ..placeholders import ContentPlaceholder
+from ..namespaces import NamespaceContent
 from ..placeholders import PlaceholderContent
-from ..types import BaseContent
+from ..placeholders import PlaceholderContentKey
 from ..types import Content
 from .base import ContentTransform
 
@@ -16,7 +15,6 @@ from .base import ContentTransform
 ##
 
 
-PlaceholderContentKey: ta.TypeAlias = str | type[ContentPlaceholder]
 PlaceholderContentMap: ta.TypeAlias = ta.Mapping[PlaceholderContentKey, Content]
 PlaceholderContentFn: ta.TypeAlias = ta.Callable[[PlaceholderContentKey], Content]
 PlaceholderContents: ta.TypeAlias = PlaceholderContentMap | PlaceholderContentFn
@@ -58,7 +56,7 @@ class ContentDepthExceededError(Exception):
 
 
 class ContentMaterializer(ContentTransform):
-    DEFAULT_MAX_DEPTH: int = 100
+    DEFAULT_MAX_DEPTH: int = 8
 
     def __init__(
             self,
@@ -75,86 +73,29 @@ class ContentMaterializer(ContentTransform):
 
         self._cur_depth = 0
 
-    def materialize(self, o: Content) -> Content:
+    def recurse(self, o: Content) -> Content:
         if self._cur_depth >= self._max_depth:
             raise ContentDepthExceededError
 
         self._cur_depth += 1
         try:
-            return self._materialize(o)
+            return self.apply(o)
         finally:
             self._cur_depth -= 1
 
-    @dispatch.method()
-    def _materialize(self, o: Content) -> Content:
-        raise TypeError(o)
-
-    #
-
-    @_materialize.register
-    def _materialize_str(self, o: str) -> Content:
-        return o
-
-    @_materialize.register
-    def _materialize_base_content(self, o: BaseContent) -> Content:
-        return o
-
-    #
-
-    @_materialize.register
-    def _materialize_iterable(self, o: ta.Iterable) -> Content:
-        # `collections.abc.Iterable` appears as a virtual base in the dispatch c3.mro for ContentNamespace before `type`
-        # does (due to NamespaceMeta having `__iter__`), so handle that here too.
-        if isinstance(o, type) and issubclass(o, ContentNamespace):
-            return self._materialize_namespace_type(o)
-
-        else:
-            return [self.materialize(e) for e in o]
-
-    @_materialize.register
-    def _materialize_none(self, o: None) -> Content:
-        return []
-
-    #
-
-    @_materialize.register
-    def _materialize_placeholder(self, o: PlaceholderContent) -> Content:
-        return self.materialize(self._placeholder_content_fn(o))
-
-    def _materialize_placeholder_marker_type(self, o: type[ContentPlaceholder]) -> Content:
-        check.issubclass(o, ContentPlaceholder)
-        return self.materialize(self._placeholder_content_fn(o))
-
-    #
-
-    def _materialize_namespace_type(self, o: type[ContentNamespace]) -> Content:
+    @ContentTransform.apply.register
+    def apply_namespace_content(self, c: NamespaceContent) -> Content:
         check.issubclass(o, ContentNamespace)
-
         out: list[Content] = []
-        for n, e in o:
+        for n, e in c.ns:
             if n.startswith('_'):
                 continue
-            out.append(self.materialize(e))
+            out.append(self.recurse(e))
         return out
 
-    #
-
-    @_materialize.register
-    def _materialize_type(self, o: type) -> Content:
-        if issubclass(o, ContentPlaceholder):
-            return self._materialize_placeholder_marker_type(o)
-
-        elif issubclass(o, ContentNamespace):
-            return self._materialize_namespace_type(o)
-
-        else:
-            raise TypeError(o)
-
-    #
-
-    @_materialize.register
-    def _materialize_templater(self, o: tpl.Templater) -> Content:
-        return o.render(check.not_none(self._templater_context))
+    @ContentTransform.apply.register
+    def apply_placeholder_content(self, c: PlaceholderContent) -> Content:
+        return self.recurse(self._placeholder_content_fn(c.k))
 
 
 def materialize_content(
@@ -166,4 +107,4 @@ def materialize_content(
     return ContentMaterializer(
         placeholder_contents=placeholder_contents,
         templater_context=templater_context,
-    ).materialize(o)
+    ).apply(o)

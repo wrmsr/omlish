@@ -1,3 +1,5 @@
+import typing as ta
+
 from omlish import dataclasses as dc
 from omlish import lang
 
@@ -12,6 +14,9 @@ class ContentPlaceholder(lang.Marker):
     pass
 
 
+PlaceholderContentKey: ta.TypeAlias = str | type[ContentPlaceholder]
+
+
 @dc.dataclass(frozen=True)
 class PlaceholderContent(DynamicContent, LeafContent, lang.Final):
-    ph: str | type[ContentPlaceholder]
+    k: PlaceholderContentKey

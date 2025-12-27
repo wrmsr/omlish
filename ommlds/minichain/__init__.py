@@ -283,6 +283,7 @@ with _lang.auto_proxy_init(
 
     from .content.placeholders import (  # noqa
         ContentPlaceholder,
+        PlaceholderContentKey,
         PlaceholderContent,
     )
 
