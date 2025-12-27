@@ -30,15 +30,15 @@ def replace_if(
     dct: dict[str, ta.Any] = {}
     for k, v in kwargs.items():
         if fn(getattr(o, k), v):
-            dct[k] = v
+            dct[k] = v  # noqa
     if not dct:
         return o
-    return dc.replace(o, **dct)
+    return dc.replace(o, **dct)  # type: ignore
 
 
-def replace_ne(o, **kwargs: ta.Any) -> T:
+def replace_ne(o: T, **kwargs: ta.Any) -> T:
     return replace_if(o, operator.ne, **kwargs)
 
 
-def replace_is_not(o, **kwargs: ta.Any) -> T:
+def replace_is_not(o: T, **kwargs: ta.Any) -> T:
     return replace_if(o, operator.is_not, **kwargs)
