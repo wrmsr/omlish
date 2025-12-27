@@ -1,19 +1,13 @@
-import typing as ta
 
-from omlish import dataclasses as dc
-from omlish import dispatch
-from omlish import lang
 
-from ..sequence import BlockContent
-from ..sequence import InlineContent
-from ..types import BaseContent
 from ..types import Content
+from .base import ContentTransform
 
 
 ##
 
 
-class ContentInterleaver:
+class ContentInterleaver(ContentTransform):
     def __init__(
             self,
             *,
@@ -28,36 +22,36 @@ class ContentInterleaver:
         self._inline_separator = inline_separator if inline_separator is not None else separator
         self._block_separator = block_separator if block_separator is not None else separator
 
-    def _interleave(self, l: ta.Iterable[Content], separator: Content | None) -> ta.Sequence[Content]:
-        cs: ta.Iterable[Content] = map(self.interleave, l)
-        if separator is not None:
-            cs = lang.interleave(cs, separator)
-        return list(cs)
+    # def _interleave(self, l: ta.Iterable[Content], separator: Content | None) -> ta.Sequence[Content]:
+    #     cs: ta.Iterable[Content] = map(self.interleave, l)
+    #     if separator is not None:
+    #         cs = lang.interleave(cs, separator)
+    #     return list(cs)
 
-    @dispatch.method()
-    def interleave(self, c: Content) -> Content:
-        raise TypeError(c)
+    # @dispatch.method()
+    # def interleave(self, c: Content) -> Content:
+    #     raise TypeError(c)
 
-    @interleave.register
-    def interleave_str(self, c: str) -> Content:
-        return c
+    # @interleave.register
+    # def interleave_str(self, c: str) -> Content:
+    #     return c
 
-    @interleave.register
-    def interleave_sequence(self, c: ta.Sequence) -> Content:
-        return self._interleave(c, self._sequence_separator)
+    # @interleave.register
+    # def interleave_sequence(self, c: ta.Sequence) -> Content:
+    #     return self._interleave(c, self._sequence_separator)
 
-    @interleave.register
-    def interleave_extended_content(self, c: BaseContent) -> Content:
-        # FIXME:
-        return c
+    # @interleave.register
+    # def interleave_extended_content(self, c: BaseContent) -> Content:
+    #     # FIXME:
+    #     return c
 
-    @interleave.register
-    def interleave_inline_content(self, c: InlineContent) -> Content:
-        return dc.replace(c, l=self._interleave(c.l, self._inline_separator))
+    # @interleave.register
+    # def interleave_inline_content(self, c: InlineContent) -> Content:
+    #     return dc.replace(c, l=self._interleave(c.l, self._inline_separator))
 
-    @interleave.register
-    def interleave_block_content(self, c: BlockContent) -> Content:
-        return dc.replace(c, l=self._interleave(c.l, self._block_separator))
+    # @interleave.register
+    # def interleave_block_content(self, c: BlockContent) -> Content:
+    #     return dc.replace(c, l=self._interleave(c.l, self._block_separator))
 
 
 def interleave_content(
@@ -73,4 +67,4 @@ def interleave_content(
         sequence_separator=sequence_separator,
         inline_separator=inline_separator,
         block_separator=block_separator,
-    ).interleave(c)
+    ).apply(c)

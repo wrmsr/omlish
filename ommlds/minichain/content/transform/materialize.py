@@ -85,7 +85,7 @@ class ContentMaterializer(ContentTransform):
 
     @ContentTransform.apply.register
     def apply_namespace_content(self, c: NamespaceContent) -> Content:
-        check.issubclass(o, ContentNamespace)
+        check.issubclass(c.ns, ContentNamespace)
         out: list[Content] = []
         for n, e in c.ns:
             if n.startswith('_'):

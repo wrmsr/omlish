@@ -1,4 +1,5 @@
 import dataclasses as dc
+import operator
 import typing as ta
 
 
@@ -15,3 +16,29 @@ def deep_replace(o: T, *args: str | ta.Callable[[ta.Any], ta.Mapping[str, ta.Any
         return dc.replace(o, **args[0](o))  # type: ignore
     else:
         return dc.replace(o, **{args[0]: deep_replace(getattr(o, args[0]), *args[1:])})  # type: ignore
+
+
+##
+
+
+def replace_if(
+        o: T,
+        fn: ta.Callable[[ta.Any, ta.Any], bool] = operator.eq,
+        /,
+        **kwargs: ta.Any,
+) -> T:
+    dct: dict[str, ta.Any] = {}
+    for k, v in kwargs.items():
+        if fn(getattr(o, k), v):
+            dct[k] = v
+    if not dct:
+        return o
+    return dc.replace(o, **dct)
+
+
+def replace_ne(o, **kwargs: ta.Any) -> T:
+    return replace_if(o, operator.ne, **kwargs)
+
+
+def replace_is_not(o, **kwargs: ta.Any) -> T:
+    return replace_if(o, operator.is_not, **kwargs)

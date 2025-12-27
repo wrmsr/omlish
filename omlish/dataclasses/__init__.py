@@ -138,6 +138,10 @@ with _lang.auto_proxy_init(globals()) as _api_cap:
 
     from .tools.replace import (  # noqa
         deep_replace,
+
+        replace_if,
+        replace_ne,
+        replace_is_not,
     )
 
     from .tools.repr import (  # noqa

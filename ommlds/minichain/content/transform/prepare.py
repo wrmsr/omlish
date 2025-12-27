@@ -8,12 +8,11 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
-from .materialization.materialize import materialize_content
-from .materialization.types import CanContent
-from .transforms.interleave import interleave_content
-from .transforms.squeeze import squeeze_content
-from .transforms.stringify import stringify_content
-from .types import Content
+from ..types import Content
+from .interleave import interleave_content
+from .materialize import materialize_content
+from .squeeze import squeeze_content
+from .stringify import stringify_content
 
 
 ##
@@ -21,13 +20,13 @@ from .types import Content
 
 class ContentPreparer(lang.Abstract):
     @abc.abstractmethod
-    def prepare(self, c: CanContent) -> Content:
+    def prepare(self, c: Content) -> Content:
         raise NotImplementedError
 
 
 class ContentStrPreparer(lang.Abstract):
     @abc.abstractmethod
-    def prepare_str(self, c: CanContent) -> str:
+    def prepare_str(self, c: Content) -> str:
         raise NotImplementedError
 
 
@@ -44,7 +43,7 @@ class DefaultContentPreparer(ContentPreparer):
     strip_strings: bool = True
     block_separator: Content = DEFAULT_BLOCK_SEPARATOR
 
-    def prepare(self, c: CanContent) -> Content:
+    def prepare(self, c: Content) -> Content:
         c = materialize_content(c)
         c = squeeze_content(c, strip_strings=self.strip_strings)
         c = interleave_content(c, block_separator=self.block_separator)
@@ -55,7 +54,7 @@ class DefaultContentPreparer(ContentPreparer):
 class DefaultContentStrPreparer(ContentStrPreparer):
     content_preparer: ContentPreparer
 
-    def prepare_str(self, c: CanContent) -> str:
+    def prepare_str(self, c: Content) -> str:
         return stringify_content(self.content_preparer.prepare(c))
 
 
@@ -70,9 +69,9 @@ def default_content_str_preparer(**kwargs: ta.Any) -> ContentStrPreparer:
     return DefaultContentStrPreparer(DefaultContentPreparer(**kwargs))
 
 
-def prepare_content(c: CanContent, **kwargs: ta.Any) -> Content:
+def prepare_content(c: Content, **kwargs: ta.Any) -> Content:
     return default_content_preparer(**kwargs).prepare(c)
 
 
-def prepare_content_str(c: CanContent, **kwargs: ta.Any) -> str:
+def prepare_content_str(c: Content, **kwargs: ta.Any) -> str:
     return default_content_str_preparer(**kwargs).prepare_str(c)
