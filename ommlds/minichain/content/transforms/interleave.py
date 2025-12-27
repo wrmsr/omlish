@@ -7,8 +7,8 @@ from omlish import lang
 from ..cancontent import CanContent
 from ..sequence import BlockContent
 from ..sequence import InlineContent
+from ..types import BaseContent
 from ..types import Content
-from ..types import ExtendedContent
 
 
 ##
@@ -48,7 +48,7 @@ class ContentInterleaver:
         return self._interleave(c, self._sequence_separator)
 
     @interleave.register
-    def interleave_extended_content(self, c: ExtendedContent) -> Content:
+    def interleave_extended_content(self, c: BaseContent) -> Content:
         # FIXME:
         return c
 

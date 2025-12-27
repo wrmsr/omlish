@@ -13,6 +13,7 @@ from . import (  # noqa
     images as _images,
     materialize as _materialize,
     sequence as _sequence,
+    tag as _tag,
     text as _text,
     types as _types,
 )

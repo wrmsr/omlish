@@ -6,7 +6,6 @@ from omlish import dispatch
 from ..sequence import SequenceContent
 from ..text import TextContent
 from ..types import Content
-from ..types import SingleContent
 
 
 ##
@@ -23,13 +22,13 @@ class ContentSqueezer:
         self._strip_strings = strip_strings
 
     @dispatch.method()
-    def squeeze(self, c: Content) -> ta.Iterable[SingleContent]:
+    def squeeze(self, c: Content) -> ta.Iterable[Content]:
         raise TypeError(c)
 
     #
 
     @squeeze.register
-    def squeeze_str(self, c: str) -> ta.Iterable[SingleContent]:
+    def squeeze_str(self, c: str) -> ta.Iterable[Content]:
         if self._strip_strings:
             c = c.strip()
 
@@ -37,18 +36,18 @@ class ContentSqueezer:
             yield c
 
     @squeeze.register
-    def squeeze_sequence(self, c: ta.Sequence) -> ta.Iterable[SingleContent]:
+    def squeeze_sequence(self, c: ta.Sequence) -> ta.Iterable[Content]:
         for e in c:
             yield from self.squeeze(e)
 
     #
 
-    @squeeze.register
-    def squeeze_single_content(self, c: SingleContent) -> ta.Iterable[SingleContent]:
-        return [c]
+    # @squeeze.register
+    # def squeeze_single_content(self, c: Content) -> ta.Iterable[Content]:
+    #     return [c]
 
     @squeeze.register
-    def squeeze_text_content(self, c: TextContent) -> ta.Iterable[SingleContent]:
+    def squeeze_text_content(self, c: TextContent) -> ta.Iterable[Content]:
         if self._strip_strings:
             if (ss := c.s.strip()) != c.s:
                 c = dc.replace(c, s=ss)
@@ -57,7 +56,7 @@ class ContentSqueezer:
             yield c.s
 
     @squeeze.register
-    def squeeze_sequence_content(self, c: SequenceContent) -> ta.Iterable[SingleContent]:
+    def squeeze_sequence_content(self, c: SequenceContent) -> ta.Iterable[Content]:
         for e in c.l:
             yield from self.squeeze(e)
 
@@ -66,7 +65,7 @@ def squeeze_content(
         c: Content,
         *,
         strip_strings: bool = False,
-) -> ta.Sequence[SingleContent]:
+) -> ta.Sequence[Content]:
     return list(ContentSqueezer(
         strip_strings=strip_strings,
     ).squeeze(c))

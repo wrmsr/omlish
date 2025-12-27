@@ -9,14 +9,14 @@ from omlish import dataclasses as dc
 from omlish import lang
 
 from .cancontent import CanContent
-from .simple import SimpleExtendedContent
+from .standard import StandardContent
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class SequenceContent(SimpleExtendedContent, lang.Abstract):
+class SequenceContent(StandardContent, lang.Abstract):
     l: ta.Sequence[CanContent]
 
 

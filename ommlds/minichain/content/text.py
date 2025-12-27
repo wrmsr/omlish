@@ -1,12 +1,12 @@
 from omlish import dataclasses as dc
 from omlish import lang
 
-from .simple import SimpleSingleExtendedContent
+from .standard import StandardContent
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class TextContent(SimpleSingleExtendedContent, lang.Final):
+class TextContent(StandardContent, lang.Final):
     s: str

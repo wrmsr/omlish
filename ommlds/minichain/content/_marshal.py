@@ -16,8 +16,8 @@ from .sequence import InlineContent  # noqa
 from .tag import TagContent  # noqa
 from .text import TextContent  # noqa
 from .types import CONTENT_RUNTIME_TYPES
+from .types import BaseContent
 from .types import Content
-from .types import ExtendedContent
 
 
 ##
@@ -30,7 +30,7 @@ class MarshalContent(lang.NotInstantiable, lang.Final):
 
 MarshalContentUnion: ta.TypeAlias = ta.Union[  # noqa
     str,
-    ExtendedContent,
+    BaseContent,
     ta.Sequence[MarshalContent],
 ]
 
@@ -47,7 +47,7 @@ class _ContentMarshaler(msh.Marshaler):
             return o
         elif isinstance(o, ta.Sequence):
             return [self.marshal(ctx, e) for e in o]
-        elif isinstance(o, ExtendedContent):
+        elif isinstance(o, BaseContent):
             return self.et.marshal(ctx, o)
         else:
             raise TypeError(o)
@@ -57,7 +57,7 @@ class _ContentMarshalerFactory(msh.MarshalerFactory):
     def make_marshaler(self, ctx: msh.MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Marshaler] | None:
         if not (rty is MarshalContent or rty == _MARSHAL_CONTENT_UNION_RTY):
             return None
-        return lambda: _ContentMarshaler(ctx.make_marshaler(ExtendedContent))
+        return lambda: _ContentMarshaler(ctx.make_marshaler(BaseContent))
 
 
 @dc.dataclass(frozen=True)
@@ -79,7 +79,7 @@ class _ContentUnmarshalerFactory(msh.UnmarshalerFactory):
     def make_unmarshaler(self, ctx: msh.UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], msh.Unmarshaler] | None:  # noqa
         if not (rty is MarshalContent or rty == _MARSHAL_CONTENT_UNION_RTY):
             return None
-        return lambda: _ContentUnmarshaler(ctx.make_unmarshaler(ExtendedContent))
+        return lambda: _ContentUnmarshaler(ctx.make_unmarshaler(BaseContent))
 
 
 ##
@@ -159,8 +159,8 @@ class _JsonContentUnmarshaler(msh.Unmarshaler):
 
 @lang.static_init
 def _install_standard_marshaling() -> None:
-    extended_content_poly = msh.Polymorphism(
-        ExtendedContent,
+    base_content_poly = msh.Polymorphism(
+        BaseContent,
         [
             msh.Impl(BlockContent, 'block'),
             msh.Impl(ImageContent, 'image'),
@@ -172,7 +172,7 @@ def _install_standard_marshaling() -> None:
     )
 
     msh.install_standard_factories(
-        msh.PolymorphismMarshalerFactory(extended_content_poly),
+        msh.PolymorphismMarshalerFactory(base_content_poly),
         msh.TypeMapMarshalerFactory({
             ImageContent: _ImageContentMarshaler(),
             JsonContent: _JsonContentMarshaler(),
@@ -182,7 +182,7 @@ def _install_standard_marshaling() -> None:
     )
 
     msh.install_standard_factories(
-        msh.PolymorphismUnmarshalerFactory(extended_content_poly),
+        msh.PolymorphismUnmarshalerFactory(base_content_poly),
         msh.TypeMapUnmarshalerFactory({
             ImageContent: _ImageContentUnmarshaler(),
             JsonContent: _JsonContentUnmarshaler(),

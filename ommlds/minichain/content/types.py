@@ -6,11 +6,7 @@ from omlish import lang
 ##
 
 
-class ExtendedContent(lang.Abstract, lang.PackageSealed):
-    pass
-
-
-class SingleExtendedContent(ExtendedContent, lang.Abstract):
+class BaseContent(lang.Abstract, lang.PackageSealed):
     pass
 
 
@@ -19,7 +15,7 @@ class SingleExtendedContent(ExtendedContent, lang.Abstract):
 
 Content: ta.TypeAlias = ta.Union[  # noqa
     str,
-    ExtendedContent,
+    BaseContent,
     ta.Sequence['Content'],
 ]
 
@@ -27,17 +23,5 @@ Content: ta.TypeAlias = ta.Union[  # noqa
 CONTENT_RUNTIME_TYPES: tuple[type, ...] = (
     str,
     ta.Sequence,
-    ExtendedContent,
-)
-
-#
-
-SingleContent: ta.TypeAlias = ta.Union[  # noqa
-    str,
-    SingleExtendedContent,
-]
-
-SINGLE_CONTENT_RUNTIME_TYPES: tuple[type, ...] = (
-    str,
-    SingleExtendedContent,
+    BaseContent,
 )

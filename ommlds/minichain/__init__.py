@@ -291,9 +291,7 @@ with _lang.auto_proxy_init(
 
     from .content.types import (  # noqa
         Content,
-        ExtendedContent,
-        SingleContent,
-        SingleExtendedContent,
+        BaseContent,
     )
 
     from .content.transforms.strings import (  # noqa

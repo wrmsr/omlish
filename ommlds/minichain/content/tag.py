@@ -7,13 +7,13 @@ from omlish import dataclasses as dc
 from omlish import lang
 
 from .cancontent import CanContent
-from .simple import SimpleExtendedContent
+from .standard import StandardContent
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class TagContent(SimpleExtendedContent, lang.Final):
+class TagContent(StandardContent, lang.Final):
     tag: str
     body: CanContent

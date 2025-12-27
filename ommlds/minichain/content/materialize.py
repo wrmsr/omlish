@@ -1,7 +1,3 @@
-"""
-TODO:
- - ExtendedCanContent
-"""
 import typing as ta
 
 from omlish import check
@@ -13,8 +9,8 @@ from .cancontent import CanContent
 from .namespaces import ContentNamespace
 from .placeholders import ContentPlaceholder
 from .placeholders import ContentPlaceholderMarker
+from .types import BaseContent
 from .types import Content
-from .types import ExtendedContent
 
 
 ##
@@ -100,7 +96,7 @@ class ContentMaterializer:
         return o
 
     @_materialize.register
-    def _materialize_extended_content(self, o: ExtendedContent) -> Content:
+    def _materialize_base_content(self, o: BaseContent) -> Content:
         return o
 
     #

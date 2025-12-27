@@ -5,7 +5,7 @@ from omlish.text import templating as tpl
 from .namespaces import ContentNamespace
 from .placeholders import ContentPlaceholder
 from .placeholders import ContentPlaceholderMarker
-from .types import ExtendedContent
+from .types import BaseContent
 
 
 ##
@@ -13,7 +13,7 @@ from .types import ExtendedContent
 
 _InnerCanContent: ta.TypeAlias = ta.Union[  # noqa
     str,
-    ExtendedContent,
+    BaseContent,
 
     ContentPlaceholder,
     type[ContentPlaceholderMarker],
