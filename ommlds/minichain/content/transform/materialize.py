@@ -7,38 +7,38 @@ from omlish.text import templating as tpl
 
 from ..namespaces import ContentNamespace
 from ..placeholders import ContentPlaceholder
+from ..placeholders import PlaceholderContent
 from ..types import BaseContent
 from ..types import Content
-from .types import CanContent
 
 
 ##
 
 
-ContentPlaceholderKey: ta.TypeAlias = str | type[ContentPlaceholderMarker]
-ContentPlaceholderMap: ta.TypeAlias = ta.Mapping[ContentPlaceholderKey, CanContent]
-ContentPlaceholderFn: ta.TypeAlias = ta.Callable[[ContentPlaceholderKey], CanContent]
-ContentPlaceholders: ta.TypeAlias = ContentPlaceholderMap | ContentPlaceholderFn
+PlaceholderContentKey: ta.TypeAlias = str | type[ContentPlaceholder]
+PlaceholderContentMap: ta.TypeAlias = ta.Mapping[PlaceholderContentKey, Content]
+PlaceholderContentFn: ta.TypeAlias = ta.Callable[[PlaceholderContentKey], Content]
+PlaceholderContents: ta.TypeAlias = PlaceholderContentMap | PlaceholderContentFn
 
 
 @dc.dataclass()
-class ContentPlaceholderMissingError(Exception):
-    key: ContentPlaceholderKey
+class PlaceholderContentMissingError(Exception):
+    key: PlaceholderContentKey
 
 
-def _make_content_placeholder_fn(cps: ContentPlaceholders | None = None) -> ContentPlaceholderFn:
+def _make_content_placeholder_fn(cps: PlaceholderContents | None = None) -> PlaceholderContentFn:
     if cps is None:
-        def none_fn(cpk: ContentPlaceholderKey) -> CanContent:
-            raise ContentPlaceholderMissingError(cpk)
+        def none_fn(cpk: PlaceholderContentKey) -> Content:
+            raise PlaceholderContentMissingError(cpk)
 
         return none_fn
 
     elif isinstance(cps, ta.Mapping):
-        def mapping_fn(cpk: ContentPlaceholderKey) -> CanContent:
+        def mapping_fn(cpk: PlaceholderContentKey) -> Content:
             try:
                 return cps[cpk]
             except KeyError:
-                raise ContentPlaceholderMissingError(cpk) from None
+                raise PlaceholderContentMissingError(cpk) from None
 
         return mapping_fn
 
@@ -62,7 +62,7 @@ class ContentMaterializer:
     def __init__(
             self,
             *,
-            content_placeholders: ContentPlaceholders | None = None,
+            content_placeholders: PlaceholderContents | None = None,
             templater_context: tpl.Templater.Context | None = None,
             max_depth: int = DEFAULT_MAX_DEPTH,
     ) -> None:
@@ -74,7 +74,7 @@ class ContentMaterializer:
 
         self._cur_depth = 0
 
-    def materialize(self, o: CanContent) -> Content:
+    def materialize(self, o: Content) -> Content:
         if self._cur_depth >= self._max_depth:
             raise ContentDepthExceededError
 
@@ -85,7 +85,7 @@ class ContentMaterializer:
             self._cur_depth -= 1
 
     @dispatch.method()
-    def _materialize(self, o: CanContent) -> Content:
+    def _materialize(self, o: Content) -> Content:
         raise TypeError(o)
 
     #
@@ -117,11 +117,11 @@ class ContentMaterializer:
     #
 
     @_materialize.register
-    def _materialize_placeholder(self, o: ContentPlaceholder) -> Content:
+    def _materialize_placeholder(self, o: PlaceholderContent) -> Content:
         return self.materialize(self._content_placeholders_fn(o))
 
-    def _materialize_placeholder_marker_type(self, o: type[ContentPlaceholderMarker]) -> Content:
-        check.issubclass(o, ContentPlaceholderMarker)
+    def _materialize_placeholder_marker_type(self, o: type[ContentPlaceholder]) -> Content:
+        check.issubclass(o, ContentPlaceholder)
         return self.materialize(self._content_placeholders_fn(o))
 
     #
@@ -140,7 +140,7 @@ class ContentMaterializer:
 
     @_materialize.register
     def _materialize_type(self, o: type) -> Content:
-        if issubclass(o, ContentPlaceholderMarker):
+        if issubclass(o, ContentPlaceholder):
             return self._materialize_placeholder_marker_type(o)
 
         elif issubclass(o, ContentNamespace):
@@ -157,9 +157,9 @@ class ContentMaterializer:
 
 
 def materialize_content(
-        o: CanContent,
+        o: Content,
         *,
-        content_placeholders: ContentPlaceholders | None = None,
+        content_placeholders: PlaceholderContents | None = None,
         templater_context: tpl.Templater.Context | None = None,
 ) -> Content:
     return ContentMaterializer(
