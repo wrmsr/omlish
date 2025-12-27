@@ -20,7 +20,7 @@ Content: ta.TypeAlias = ta.Union[  # noqa
 ]
 
 
-CONTENT_RUNTIME_TYPES: tuple[type, ...] = (
+CONTENT_TYPES: tuple[type, ...] = (
     str,
     ta.Sequence,
     BaseContent,

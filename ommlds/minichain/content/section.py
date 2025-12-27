@@ -1,8 +1,3 @@
-"""
-TODO:
- - track BlockContent nesting depth?
- - section names? dedicated 'section' content with header and body?
-"""
 from omlish import dataclasses as dc
 from omlish import lang
 
@@ -14,6 +9,6 @@ from .standard import StandardContent
 
 
 @dc.dataclass(frozen=True)
-class TagContent(StandardContent, lang.Final):
-    tag: str
+class SectionContent(StandardContent, lang.Final):
+    header: str
     body: Content

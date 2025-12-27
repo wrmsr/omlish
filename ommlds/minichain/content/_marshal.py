@@ -7,15 +7,15 @@ from omlish import lang
 from omlish import marshal as msh
 from omlish import reflect as rfl
 
-from .cancontent import CanContent
-from .cancontent import _InnerCanContent
+from .materialization.types import CanContent
+from .materialization.types import _InnerCanContent  # noqa
 from .images import ImageContent  # noqa
 from .json import JsonContent  # noqa
 from .sequence import BlockContent  # noqa
 from .sequence import InlineContent  # noqa
 from .tag import TagContent  # noqa
 from .text import TextContent  # noqa
-from .types import CONTENT_RUNTIME_TYPES
+from .types import CONTENT_TYPES
 from .types import BaseContent
 from .types import Content
 
@@ -103,7 +103,7 @@ class _CanContentMarshaler(msh.Marshaler):
     c: msh.Marshaler
 
     def marshal(self, ctx: msh.MarshalContext, o: ta.Any) -> msh.Value:
-        return self.c.marshal(ctx, check.isinstance(o, CONTENT_RUNTIME_TYPES))
+        return self.c.marshal(ctx, check.isinstance(o, CONTENT_TYPES))
 
 
 class _CanContentMarshalerFactory(msh.MarshalerFactory):

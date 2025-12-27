@@ -8,7 +8,7 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
-from .cancontent import CanContent
+from .types import Content
 from .standard import StandardContent
 
 
@@ -17,7 +17,7 @@ from .standard import StandardContent
 
 @dc.dataclass(frozen=True)
 class SequenceContent(StandardContent, lang.Abstract):
-    l: ta.Sequence[CanContent]
+    l: ta.Sequence[Content]
 
 
 @dc.dataclass(frozen=True)
