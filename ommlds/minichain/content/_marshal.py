@@ -23,8 +23,8 @@ from .sequence import InlineContent  # noqa
 from .sequence import ItemListContent  # noqa
 from .tag import TagContent  # noqa
 from .text import TextContent  # noqa
-from .types import BaseContent
 from .types import CONTENT_TYPES  # noqa
+from .types import BaseContent
 from .types import Content
 
 

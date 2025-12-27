@@ -5,11 +5,10 @@ from omlish import dataclasses as dc
 from omlish import dispatch
 from omlish.text import templating as tpl
 
-from ..types import BaseContent
-from ..types import Content
 from ..namespaces import ContentNamespace
 from ..placeholders import ContentPlaceholder
-from ..placeholders import PlaceholderContent
+from ..types import BaseContent
+from ..types import Content
 from .types import CanContent
 
 
