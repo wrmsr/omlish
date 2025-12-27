@@ -5,13 +5,13 @@ from omlish import marshal as msh
 
 from ...metadata import Uuid
 from .._marshal import MarshalContent
-from .._marshal import MarshalSingleRawContent
 from .._marshal import MarshalRawContent
+from .._marshal import MarshalSingleRawContent
+from ..raw import RawContent
+from ..raw import SingleRawContent
 from ..sequence import InlineContent
 from ..text import TextContent
 from ..types import Content
-from ..raw import SingleRawContent
-from ..raw import RawContent
 
 
 @dc.dataclass(frozen=True)

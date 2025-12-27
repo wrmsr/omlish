@@ -8,8 +8,8 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
-from .materialization.types import CanContent
 from .materialization.materialize import materialize_content
+from .materialization.types import CanContent
 from .transforms.interleave import interleave_content
 from .transforms.squeeze import squeeze_content
 from .transforms.stringify import stringify_content

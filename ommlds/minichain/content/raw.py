@@ -28,7 +28,6 @@ SingleRawContent: ta.TypeAlias = ta.Union[  # noqa
 ]
 
 
-
 SINGLE_RAW_CONTENT_TYPES: tuple[type, ...] = (
     str,
     *NON_STR_SINGLE_RAW_CONTENT_TYPES,

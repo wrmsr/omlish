@@ -11,6 +11,8 @@ from .dynamic import DynamicContent  # noqa
 from .images import ImageContent  # noqa
 from .indent import IndentContent  # noqa
 from .json import JsonContent  # noqa
+from .raw import NON_STR_SINGLE_RAW_CONTENT_TYPES
+from .raw import NonStrSingleRawContent
 from .raw import RawContent  # noqa
 from .raw import SingleRawContent  # noqa
 from .section import SectionContent  # noqa
@@ -19,10 +21,8 @@ from .sequence import InlineContent  # noqa
 from .sequence import ItemListContent  # noqa
 from .tag import TagContent  # noqa
 from .text import TextContent  # noqa
-from .types import BaseContent
-from .raw import NON_STR_SINGLE_RAW_CONTENT_TYPES
-from .raw import NonStrSingleRawContent
 from .types import CONTENT_TYPES  # noqa
+from .types import BaseContent
 from .types import Content
 
 
