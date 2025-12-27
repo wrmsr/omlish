@@ -7,16 +7,16 @@ from omlish.text import templating as tpl
 
 from ..types import BaseContent
 from ..types import Content
-from .namespaces import ContentNamespace
-from .placeholders import ContentPlaceholder
-from .placeholders import ContentPlaceholderMarker
+from ..namespaces import ContentNamespace
+from ..placeholders import ContentPlaceholder
+from ..placeholders import PlaceholderContent
 from .types import CanContent
 
 
 ##
 
 
-ContentPlaceholderKey: ta.TypeAlias = ContentPlaceholder | type[ContentPlaceholderMarker]
+ContentPlaceholderKey: ta.TypeAlias = str | type[ContentPlaceholderMarker]
 ContentPlaceholderMap: ta.TypeAlias = ta.Mapping[ContentPlaceholderKey, CanContent]
 ContentPlaceholderFn: ta.TypeAlias = ta.Callable[[ContentPlaceholderKey], CanContent]
 ContentPlaceholders: ta.TypeAlias = ContentPlaceholderMap | ContentPlaceholderFn

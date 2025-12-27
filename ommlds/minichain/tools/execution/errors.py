@@ -2,7 +2,7 @@ import abc
 
 from omlish import lang
 
-from ...content.cancontent import CanContent
+from ...content.types import Content
 
 
 ##
@@ -11,5 +11,5 @@ from ...content.cancontent import CanContent
 class ToolExecutionError(Exception, lang.Abstract):
     @property
     @abc.abstractmethod
-    def content(self) -> CanContent:
+    def content(self) -> Content:
         raise NotImplementedError

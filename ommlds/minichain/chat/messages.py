@@ -9,8 +9,7 @@ from omlish import marshal as msh
 from omlish import typedvalues as tv
 
 from .._typedvalues import _tv_field_metadata
-from ..content.cancontent import CanContent
-from ..content.transforms.base import ContentTransform
+from ..content.transform.base import ContentTransform
 from ..content.types import Content
 from ..metadata import MetadataContainer
 from ..tools.types import ToolUse
@@ -90,7 +89,7 @@ def check_ai_chat(chat: Chat) -> AiChat:
 
 @dc.dataclass(frozen=True)
 class SystemMessage(AnyUserMessage, lang.Final):
-    c: CanContent
+    c: Content
 
 
 #
@@ -99,7 +98,7 @@ class SystemMessage(AnyUserMessage, lang.Final):
 @dc.dataclass(frozen=True)
 @msh.update_fields_metadata(['name'], omit_if=operator.not_)
 class UserMessage(AnyUserMessage, lang.Final):
-    c: CanContent
+    c: Content
 
     name: str | None = dc.xfield(None, repr_fn=dc.opt_repr)
 

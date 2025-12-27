@@ -23,7 +23,7 @@ from omlish import metadata as md
 from omlish import reflect as rfl
 from omlish.lite.cached import cached_nullary
 
-from ..content.cancontent import CanContent
+from ..content.types import Content
 from .types import EnumToolDtype
 from .types import MappingToolDtype
 from .types import NullableToolDtype
@@ -159,7 +159,7 @@ class ToolReflector:
 
     #
 
-    def _prepare_desc(self, s: CanContent) -> CanContent:
+    def _prepare_desc(self, s: Content) -> Content:
         if s is None:
             return None
         if not self._raw_descs and isinstance(s, str):
@@ -240,7 +240,7 @@ class ToolReflector:
                 ds_p = ds_p_dct.get(pn)
                 sig_p = sig_p_dct.get(pn)
 
-                p_desc: CanContent
+                p_desc: Content
                 if (p_desc := ovr_p.get('desc')) is None:
                     if ds_p is not None:
                         p_desc = ds_p.description

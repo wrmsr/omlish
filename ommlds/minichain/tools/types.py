@@ -11,8 +11,7 @@ from omlish import lang
 from omlish import marshal as msh
 from omlish import reflect as rfl
 
-from ..content.cancontent import CanContent
-from ..content.transforms.base import ContentTransform
+from ..content.transform.base import ContentTransform
 from ..content.types import Content
 
 
@@ -150,7 +149,7 @@ class ToolParam:
 
     _: dc.KW_ONLY
 
-    desc: CanContent = None
+    desc: Content | None = None
 
     type: ToolDtype | None = None
 
@@ -168,12 +167,12 @@ class ToolSpec:
 
     _: dc.KW_ONLY
 
-    desc: CanContent = None
+    desc: Content | None = None
 
     params: ta.Sequence[ToolParam] | None = None
     allow_additional_params: bool | None = None
 
-    returns_desc: CanContent = None
+    returns_desc: Content | None = None
     returns_type: ToolDtype | None = None
 
     @cached.property
