@@ -28,3 +28,11 @@ RawContent: ta.TypeAlias = ta.Union[  # noqa
     SingleRawContent,
     ta.Sequence[SingleRawContent],
 ]
+
+
+RAW_CONTENT_TYPES: tuple[type, ...] = (
+    str,
+    TextContent,
+    ImageContent,
+    ta.Sequence,
+)

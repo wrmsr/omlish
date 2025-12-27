@@ -11,13 +11,14 @@ _msh.register_global_module_import('._marshal', __package__)
 # This is everything _marshal.py references - it must all be imported before the conditional import.
 
 from . import (  # noqa
+    dynamic as _dynamic,
     images as _images,
+    indent as _indent,
+    json as _json,
+    raw as _raw,
+    section as _section,
     sequence as _sequence,
     tag as _tag,
+    templates as _templates,
     text as _text,
-    types as _types,
-)
-
-from .materialization import (  # noqa
-    types as _materialize_types,
 )

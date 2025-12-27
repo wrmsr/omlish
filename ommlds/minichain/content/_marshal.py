@@ -7,7 +7,7 @@ from omlish import lang
 from omlish import marshal as msh
 from omlish import reflect as rfl
 
-from .materialization.types import CanContent
+from .raw import RawContent
 from .materialization.types import _InnerCanContent  # noqa
 from .images import ImageContent  # noqa
 from .json import JsonContent  # noqa

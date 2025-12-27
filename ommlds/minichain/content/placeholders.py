@@ -7,10 +7,10 @@ from .dynamic import DynamicContent
 ##
 
 
-class ContentPlaceholderMarker(lang.Marker):
+class ContentPlaceholder(lang.Marker):
     pass
 
 
 @dc.dataclass(frozen=True)
 class PlaceholderContent(DynamicContent, lang.Final):
-    ph: str | type[ContentPlaceholderMarker]
+    ph: str | type[ContentPlaceholder]

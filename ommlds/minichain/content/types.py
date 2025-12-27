@@ -22,6 +22,6 @@ Content: ta.TypeAlias = ta.Union[  # noqa
 
 CONTENT_TYPES: tuple[type, ...] = (
     str,
-    ta.Sequence,
     BaseContent,
+    ta.Sequence,
 )
