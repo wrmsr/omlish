@@ -10,6 +10,7 @@ from ..placeholders import ContentPlaceholder
 from ..placeholders import PlaceholderContent
 from ..types import BaseContent
 from ..types import Content
+from .base import ContentTransform
 
 
 ##
@@ -26,7 +27,7 @@ class PlaceholderContentMissingError(Exception):
     key: PlaceholderContentKey
 
 
-def _make_content_placeholder_fn(cps: PlaceholderContents | None = None) -> PlaceholderContentFn:
+def _make_placeholder_content_fn(cps: PlaceholderContents | None = None) -> PlaceholderContentFn:
     if cps is None:
         def none_fn(cpk: PlaceholderContentKey) -> Content:
             raise PlaceholderContentMissingError(cpk)
@@ -56,20 +57,20 @@ class ContentDepthExceededError(Exception):
     pass
 
 
-class ContentMaterializer:
+class ContentMaterializer(ContentTransform):
     DEFAULT_MAX_DEPTH: int = 100
 
     def __init__(
             self,
             *,
-            content_placeholders: PlaceholderContents | None = None,
+            placeholder_contents: PlaceholderContents | None = None,
             templater_context: tpl.Templater.Context | None = None,
             max_depth: int = DEFAULT_MAX_DEPTH,
     ) -> None:
         super().__init__()
 
         self._templater_context = templater_context
-        self._content_placeholders_fn = _make_content_placeholder_fn(content_placeholders)
+        self._placeholder_content_fn = _make_placeholder_content_fn(placeholder_contents)
         self._max_depth = max_depth
 
         self._cur_depth = 0
@@ -118,11 +119,11 @@ class ContentMaterializer:
 
     @_materialize.register
     def _materialize_placeholder(self, o: PlaceholderContent) -> Content:
-        return self.materialize(self._content_placeholders_fn(o))
+        return self.materialize(self._placeholder_content_fn(o))
 
     def _materialize_placeholder_marker_type(self, o: type[ContentPlaceholder]) -> Content:
         check.issubclass(o, ContentPlaceholder)
-        return self.materialize(self._content_placeholders_fn(o))
+        return self.materialize(self._placeholder_content_fn(o))
 
     #
 
@@ -159,10 +160,10 @@ class ContentMaterializer:
 def materialize_content(
         o: Content,
         *,
-        content_placeholders: PlaceholderContents | None = None,
+        placeholder_contents: PlaceholderContents | None = None,
         templater_context: tpl.Templater.Context | None = None,
 ) -> Content:
     return ContentMaterializer(
-        content_placeholders=content_placeholders,
+        placeholder_contents=placeholder_contents,
         templater_context=templater_context,
     ).materialize(o)
