@@ -1,24 +1,23 @@
 import collections.abc
-import typing as ta
 
 from omlish import dataclasses as dc
 from omlish import dispatch
 from omlish import lang
 
-from ..images import ImageContent
+from ..quote import QuoteContent
+from ..section import SectionContent
 from ..sequence import SequenceContent
-from ..text import TextContent
-
-
-T = ta.TypeVar('T')
+from ..types import Content
+from ..types import LeafContent
+from ..tag import TagContent
 
 
 ##
 
 
 class ContentTransform(lang.Abstract):
-    @dispatch.method(installable=True)
-    def apply(self, o: T) -> T:
+    @dispatch.method()
+    def apply(self, o: Content) -> Content:
         raise TypeError(o)
 
     #
@@ -28,19 +27,27 @@ class ContentTransform(lang.Abstract):
         return s
 
     @apply.register  # noqa
-    def apply_sequence(self, l: collections.abc.Sequence[T]) -> collections.abc.Sequence[T]:
+    def apply_sequence(self, l: collections.abc.Sequence[Content]) -> collections.abc.Sequence[Content]:
         return [self.apply(e) for e in l]
 
     #
 
     @apply.register
-    def apply_image_content(self, c: ImageContent) -> ImageContent:
+    def apply_leaf_content(self, c: LeafContent) -> LeafContent:
         return c
+
+    @apply.register
+    def apply_quote_content(self, c: QuoteContent) -> QuoteContent:
+        return dc.replace(c, l=self.apply(c.body))
+
+    @apply.register
+    def apply_section_content(self, c: SectionContent) -> SectionContent:
+        return dc.replace(c, l=self.apply(c.body))
 
     @apply.register
     def apply_sequence_content(self, c: SequenceContent) -> SequenceContent:
         return dc.replace(c, l=self.apply(c.l))
 
     @apply.register
-    def apply_text_content(self, c: TextContent) -> TextContent:
-        return dc.replace(c, s=self.apply(c.s))
+    def apply_tag_content(self, c: TagContent) -> TagContent:
+        return dc.replace(c, c=self.apply(c.body))

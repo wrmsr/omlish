@@ -10,7 +10,6 @@ from omlish import reflect as rfl
 from .code import CodeContent  # noqa
 from .dynamic import DynamicContent  # noqa
 from .images import ImageContent  # noqa
-from .indent import IndentContent  # noqa
 from .json import JsonContent  # noqa
 from .quote import QuoteContent  # noqa
 from .raw import NON_STR_SINGLE_RAW_CONTENT_TYPES
@@ -238,8 +237,6 @@ def _install_standard_marshaling() -> None:
             msh.Impl(CodeContent, 'code'),
 
             msh.Impl(ImageContent, 'image'),
-
-            msh.Impl(IndentContent, 'indent'),
 
             msh.Impl(JsonContent, 'json'),
 

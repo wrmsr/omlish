@@ -9,6 +9,7 @@ from omlish import dataclasses as dc
 from omlish import lang
 
 from .standard import StandardContent
+from .types import LeafContent
 
 
 if ta.TYPE_CHECKING:
@@ -21,5 +22,5 @@ else:
 
 
 @dc.dataclass(frozen=True)
-class ImageContent(StandardContent, lang.Final):
+class ImageContent(StandardContent, LeafContent, lang.Final):
     i: 'pimg.Image' = dc.field()

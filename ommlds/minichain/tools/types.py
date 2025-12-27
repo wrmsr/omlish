@@ -6,12 +6,10 @@ from omlish import cached
 from omlish import check
 from omlish import collections as col
 from omlish import dataclasses as dc
-from omlish import dispatch
 from omlish import lang
 from omlish import marshal as msh
 from omlish import reflect as rfl
 
-from ..content.transform.base import ContentTransform
 from ..content.types import Content
 
 
@@ -206,11 +204,11 @@ class ToolUseResult(lang.Final):
 ##
 
 
-class _ToolUseContentTransform(ContentTransform, lang.Final, lang.NotInstantiable):
-    @dispatch.install_method(ContentTransform.apply)
-    def apply_tool_use(self, tu: ToolUse) -> ToolUse:
-        return tu  # TODO: args are Content
-
-    @dispatch.install_method(ContentTransform.apply)
-    def apply_tool_use_result(self, tur: ToolUseResult) -> ToolUseResult:
-        return dc.replace(tur, c=self.apply(tur.c))  # noqa
+# class _ToolUseContentTransform(ContentTransform, lang.Final, lang.NotInstantiable):
+#     @dispatch.install_method(ContentTransform.apply)
+#     def apply_tool_use(self, tu: ToolUse) -> ToolUse:
+#         return tu  # TODO: args are Content
+#
+#     @dispatch.install_method(ContentTransform.apply)
+#     def apply_tool_use_result(self, tur: ToolUseResult) -> ToolUseResult:
+#         return dc.replace(tur, c=self.apply(tur.c))  # noqa

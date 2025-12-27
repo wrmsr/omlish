@@ -267,10 +267,6 @@ with _lang.auto_proxy_init(
         ImageContent,
     )
 
-    from .content.indent import (  # noqa
-        IndentContent,
-    )
-
     from .content.json import (  # noqa
         JsonContent,
     )
@@ -334,6 +330,7 @@ with _lang.auto_proxy_init(
 
     from .content.types import (  # noqa
         BaseContent,
+        LeafContent,
 
         Content,
         CONTENT_TYPES,

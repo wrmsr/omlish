@@ -3,13 +3,11 @@ import typing as ta
 
 from omlish import check
 from omlish import dataclasses as dc
-from omlish import dispatch
 from omlish import lang
 from omlish import marshal as msh
 from omlish import typedvalues as tv
 
 from .._typedvalues import _tv_field_metadata
-from ..content.transform.base import ContentTransform
 from ..content.types import Content
 from ..metadata import MetadataContainer
 from ..tools.types import ToolUse
@@ -127,23 +125,23 @@ class ToolUseResultMessage(AnyUserMessage, lang.Final):
 ##
 
 
-class _MessageContentTransform(ContentTransform, lang.Final, lang.NotInstantiable):
-    @dispatch.install_method(ContentTransform.apply)
-    def apply_system_message(self, m: SystemMessage) -> SystemMessage:
-        return dc.replace(m, c=self.apply(m.c))
-
-    @dispatch.install_method(ContentTransform.apply)
-    def apply_user_message(self, m: UserMessage) -> UserMessage:
-        return dc.replace(m, c=self.apply(m.c))
-
-    @dispatch.install_method(ContentTransform.apply)
-    def apply_ai_message(self, m: AiMessage) -> AiMessage:
-        return dc.replace(m, c=self.apply(m.c))
-
-    @dispatch.install_method(ContentTransform.apply)
-    def apply_tool_use_message(self, m: ToolUseMessage) -> ToolUseMessage:
-        return dc.replace(m, tu=self.apply(m.tu))
-
-    @dispatch.install_method(ContentTransform.apply)
-    def apply_tool_use_result_message(self, m: ToolUseResultMessage) -> ToolUseResultMessage:
-        return dc.replace(m, tur=self.apply(m.tur))
+# class _MessageContentTransform(ContentTransform, lang.Final, lang.NotInstantiable):
+#     @dispatch.install_method(ContentTransform.apply)
+#     def apply_system_message(self, m: SystemMessage) -> SystemMessage:
+#         return dc.replace(m, c=self.apply(m.c))
+#
+#     @dispatch.install_method(ContentTransform.apply)
+#     def apply_user_message(self, m: UserMessage) -> UserMessage:
+#         return dc.replace(m, c=self.apply(m.c))
+#
+#     @dispatch.install_method(ContentTransform.apply)
+#     def apply_ai_message(self, m: AiMessage) -> AiMessage:
+#         return dc.replace(m, c=self.apply(m.c))
+#
+#     @dispatch.install_method(ContentTransform.apply)
+#     def apply_tool_use_message(self, m: ToolUseMessage) -> ToolUseMessage:
+#         return dc.replace(m, tu=self.apply(m.tu))
+#
+#     @dispatch.install_method(ContentTransform.apply)
+#     def apply_tool_use_result_message(self, m: ToolUseResultMessage) -> ToolUseResultMessage:
+#         return dc.replace(m, tur=self.apply(m.tur))
