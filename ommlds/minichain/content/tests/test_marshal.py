@@ -52,12 +52,13 @@ class RawFoo:
     c: RawContent
 
 
-def test_cc_marshal():
+def test_raw_marshal():
     assert msh.marshal('hi', MarshalRawContent) == 'hi'
     assert msh.marshal('hi', RawContent) == 'hi'
     assert msh.marshal(RawFoo('hi')) == {'c': 'hi'}
 
     assert msh.marshal(TextContent('hi'), RawContent) == {'text': {'s': 'hi'}}
+    assert msh.marshal([TextContent('hi'), 'bye'], RawContent) == [{'text': {'s': 'hi'}}, 'bye']
 
     u = uuid.uuid4()
     assert msh.marshal(TextContent('hi').with_metadata(Uuid(u)), RawContent) == {'text': {'s': 'hi', 'metadata': [{'uuid': str(u)}]}}  # noqa
