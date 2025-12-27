@@ -28,3 +28,8 @@ class InlineContent(SequenceContent, lang.Final):
 @dc.dataclass(frozen=True)
 class BlockContent(SequenceContent, lang.Final):
     pass
+
+
+@dc.dataclass(frozen=True)
+class ItemListContent(SequenceContent, lang.Final):
+    pass
