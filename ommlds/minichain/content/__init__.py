@@ -11,10 +11,12 @@ _msh.register_global_module_import('._marshal', __package__)
 # This is everything _marshal.py references - it must all be imported before the conditional import.
 
 from . import (  # noqa
+    code as _code,
     dynamic as _dynamic,
     images as _images,
     indent as _indent,
     json as _json,
+    quote as _quote,
     raw as _raw,
     section as _section,
     sequence as _sequence,

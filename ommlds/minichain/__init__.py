@@ -255,6 +255,10 @@ with _lang.auto_proxy_init(
 
     ##
 
+    from .content.code import (  # noqa
+        CodeContent,
+    )
+
     from .content.dynamic import (  # noqa
         DynamicContent,
     )
@@ -284,6 +288,10 @@ with _lang.auto_proxy_init(
     from .content.placeholders import (  # noqa
         ContentPlaceholder,
         PlaceholderContent,
+    )
+
+    from .content.quote import (  # noqa
+        QuoteContent,
     )
 
     from .content.raw import (  # noqa

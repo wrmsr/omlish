@@ -7,10 +7,12 @@ from omlish import lang
 from omlish import marshal as msh
 from omlish import reflect as rfl
 
+from .code import CodeContent  # noqa
 from .dynamic import DynamicContent  # noqa
 from .images import ImageContent  # noqa
 from .indent import IndentContent  # noqa
 from .json import JsonContent  # noqa
+from .quote import QuoteContent  # noqa
 from .raw import NON_STR_SINGLE_RAW_CONTENT_TYPES
 from .raw import NonStrSingleRawContent
 from .raw import RawContent  # noqa
@@ -21,8 +23,8 @@ from .sequence import InlineContent  # noqa
 from .sequence import ItemListContent  # noqa
 from .tag import TagContent  # noqa
 from .text import TextContent  # noqa
-from .types import CONTENT_TYPES  # noqa
 from .types import BaseContent
+from .types import CONTENT_TYPES  # noqa
 from .types import Content
 
 
@@ -233,11 +235,15 @@ def _install_standard_marshaling() -> None:
         BaseContent,
         [
 
+            msh.Impl(CodeContent, 'code'),
+
             msh.Impl(ImageContent, 'image'),
 
             msh.Impl(IndentContent, 'indent'),
 
             msh.Impl(JsonContent, 'json'),
+
+            msh.Impl(QuoteContent, 'quote'),
 
             msh.Impl(SectionContent, 'section'),
 
