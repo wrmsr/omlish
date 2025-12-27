@@ -5,10 +5,13 @@ from omlish import marshal as msh
 
 from ...metadata import Uuid
 from .._marshal import MarshalContent
+from .._marshal import MarshalSingleRawContent
+from .._marshal import MarshalRawContent
 from ..sequence import InlineContent
 from ..text import TextContent
 from ..types import Content
 from ..raw import SingleRawContent
+from ..raw import RawContent
 
 
 @dc.dataclass(frozen=True)
@@ -34,6 +37,7 @@ class SingleRawFoo:
 
 
 def test_single_raw_marshal():
+    assert msh.marshal('hi', MarshalSingleRawContent) == 'hi'
     assert msh.marshal('hi', SingleRawContent) == 'hi'
     assert msh.marshal(SingleRawFoo('hi')) == {'c': 'hi'}
 
@@ -43,18 +47,17 @@ def test_single_raw_marshal():
     assert msh.marshal(TextContent('hi').with_metadata(Uuid(u)), SingleRawContent) == {'text': {'s': 'hi', 'metadata': [{'uuid': str(u)}]}}  # noqa
 
 
-# @dc.dataclass(frozen=True)
-# class RawFoo:
-#     c: RawContent
-#
-#
-# def test_cc_marshal():
-#     assert msh.marshal('hi', MarshalCanContent) == 'hi'
-#     assert msh.marshal('hi', CanContent) == 'hi'
-#     assert msh.marshal(CcFoo('hi')) == {'c': 'hi'}
-#
-#     assert msh.marshal(TextContent('hi'), CanContent) == {'text': {'s': 'hi'}}
-#     assert msh.marshal(InlineContent(['hi', [TextContent('bye')]]), CanContent) == {'inline': {'l': ['hi', [{'text': {'s': 'bye'}}]]}}  # noqa
-#
-#     u = uuid.uuid4()
-#     assert msh.marshal(TextContent('hi').with_metadata(Uuid(u)), CanContent) == {'text': {'s': 'hi', 'metadata': [{'uuid': str(u)}]}}  # noqa
+@dc.dataclass(frozen=True)
+class RawFoo:
+    c: RawContent
+
+
+def test_cc_marshal():
+    assert msh.marshal('hi', MarshalRawContent) == 'hi'
+    assert msh.marshal('hi', RawContent) == 'hi'
+    assert msh.marshal(RawFoo('hi')) == {'c': 'hi'}
+
+    assert msh.marshal(TextContent('hi'), RawContent) == {'text': {'s': 'hi'}}
+
+    u = uuid.uuid4()
+    assert msh.marshal(TextContent('hi').with_metadata(Uuid(u)), RawContent) == {'text': {'s': 'hi', 'metadata': [{'uuid': str(u)}]}}  # noqa
