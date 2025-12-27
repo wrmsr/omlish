@@ -7,9 +7,9 @@ from omlish import lang
 from ..quote import QuoteContent
 from ..section import SectionContent
 from ..sequence import SequenceContent
+from ..tag import TagContent
 from ..types import Content
 from ..types import LeafContent
-from ..tag import TagContent
 
 
 ##
