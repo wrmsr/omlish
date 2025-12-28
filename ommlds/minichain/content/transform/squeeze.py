@@ -53,7 +53,7 @@ def squeeze_content(
         c: Content,
         *,
         strip_strings: bool = False,
-) -> ta.Sequence[Content]:
-    return list(ContentSqueezer(
+) -> Content:
+    return ContentSqueezer(
         strip_strings=strip_strings,
-    ).apply(c))
+    ).apply(c)

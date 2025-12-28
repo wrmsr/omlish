@@ -332,7 +332,9 @@ types-greenlet==3.3.0.20251206
 types-paramiko==4.0.0.20250822
 types-psutil==7.1.3.20251211
 types-PyYAML==6.0.12.20250915
+types-regex==2025.11.3.20251106
 types-s3transfer==0.16.0
+types-setuptools==80.9.0.20251223
 types-ujson==5.10.0.20250822
 typing_extensions==4.15.0
 tzdata==2025.3
