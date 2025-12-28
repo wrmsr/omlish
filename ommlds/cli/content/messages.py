@@ -19,7 +19,7 @@ class MessageContentExtractor(lang.Abstract):
 class MessageContentExtractorImpl(MessageContentExtractor):
     def extract_message_content(self, message: 'mc.Message') -> ta.Optional['mc.Content']:
         if isinstance(message, (mc.SystemMessage, mc.UserMessage, mc.AiMessage)):
-            if message.c is not None:
+            if message.c:
                 return check.isinstance(message.c, str)
             else:
                 return None

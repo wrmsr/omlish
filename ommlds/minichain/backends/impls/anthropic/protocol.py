@@ -12,7 +12,7 @@ from ....chat.messages import ToolUseMessage
 from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
 from ....chat.tools.types import Tool
-from ....content.prepare import prepare_content_str
+from ....content.transform.prepare import prepare_content_str
 from ....tools.jsonschema import build_tool_spec_params_json_schema
 
 
@@ -104,6 +104,6 @@ def build_protocol_chat_messages(msgs: ta.Iterable[Message]) -> BuiltChatMessage
 def build_protocol_tool(t: Tool) -> pt.ToolSpec:
     return pt.ToolSpec(
         name=check.not_none(t.spec.name),
-        description=prepare_content_str(t.spec.desc),
+        description=prepare_content_str(t.spec.desc) if t.spec.desc is not None else '',
         input_schema=build_tool_spec_params_json_schema(t.spec),
     )

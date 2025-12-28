@@ -43,7 +43,7 @@ if ta.TYPE_CHECKING:
     import tinygrad.nn as tg_nn
     import tinygrad.tensor as tg_tensor
 
-    from examples import stable_diffusion as sd
+    from examples import stable_diffusion as sd  # type: ignore
     from PIL import Image as pi  # noqa
 
 else:

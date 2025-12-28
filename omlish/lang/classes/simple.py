@@ -3,6 +3,7 @@ import functools
 import threading
 import typing as ta
 
+from ...lite.abstract import Abstract
 from .restrict import Final
 from .restrict import NotInstantiable
 
@@ -40,7 +41,7 @@ class _MarkerMeta(abc.ABCMeta):
         else:
             if set(namespace) - _MARKER_NAMESPACE_KEYS:
                 raise TypeError('Markers must not include contents. Did you mean to use Namespace?')
-            if Final not in bases:
+            if Final not in bases and Abstract not in bases:
                 bases += (Final,)
 
         return super().__new__(mcls, name, bases, namespace)

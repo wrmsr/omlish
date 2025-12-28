@@ -7,8 +7,8 @@ from omlish import check
 from omlish import dataclasses as dc
 
 from .....backends.google.protocol import types as pt
-from ....content.prepare import ContentStrPreparer
-from ....content.prepare import default_content_str_preparer
+from ....content.transform.prepare import ContentStrPreparer
+from ....content.transform.prepare import default_content_str_preparer
 from ....tools.types import EnumToolDtype
 from ....tools.types import MappingToolDtype
 from ....tools.types import NullableToolDtype

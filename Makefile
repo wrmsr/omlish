@@ -218,13 +218,20 @@ RUFF_FIX_CODES:=\
 fix: venv
 	${PYTHON} -m ruff check --select $(shell echo "$(RUFF_FIX_CODES)" | tr ' ' ',') --fix ${SRCS}
 
+MYPY_OPTS=\
+	--check-untyped-defs \
+
 .PHONY: mypy
 mypy: venv
-	${PYTHON} -m mypy --check-untyped-defs ${SRCS}
+	${PYTHON} -m mypy ${MYPY_OPTS} ${SRCS}
+
+.PHONY: mypy-nocache
+mypy-nocache: venv
+	${PYTHON} -m mypy ${MYPY_OPTS} --no-incremental ${SRCS}
 
 .PHONY: mypy-stats
 mypy-stats: venv
-	${PYTHON} -m omdev.mypy.report --check-untyped-defs ${SRCS}
+	${PYTHON} -m omdev.mypy.report ${MYPY_OPTS} ${SRCS}
 
 .PHONY: precheck
 precheck: venv

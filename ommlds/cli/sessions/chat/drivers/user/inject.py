@@ -1,3 +1,4 @@
+from omlish import check
 from omlish import inject as inj
 from omlish import lang
 
@@ -21,7 +22,7 @@ def bind_user(cfg: UserConfig = UserConfig()) -> inj.Elements:
 
     if cfg.initial_system_content is not None:
         async def add_initial_system_content(cm: '_state.ChatStateManager') -> None:
-            await cm.extend_chat([mc.SystemMessage(cfg.initial_system_content)])
+            await cm.extend_chat([mc.SystemMessage(check.not_none(cfg.initial_system_content))])
 
         els.append(phase_callbacks().bind_item(to_fn=inj.KwargsTarget.of(
             lambda cm: ChatPhaseCallback(ChatPhase.STARTED, lambda: add_initial_system_content(cm)),
@@ -30,7 +31,7 @@ def bind_user(cfg: UserConfig = UserConfig()) -> inj.Elements:
 
     if cfg.initial_user_content is not None:
         async def add_initial_user_content(cdg: '_driver.ChatDriverGetter') -> None:
-            await (await cdg()).send_user_messages([mc.UserMessage(cfg.initial_user_content)])
+            await (await cdg()).send_user_messages([mc.UserMessage(check.not_none(cfg.initial_user_content))])
 
         els.append(phase_callbacks().bind_item(to_fn=inj.KwargsTarget.of(
             lambda cdg: ChatPhaseCallback(ChatPhase.STARTED, lambda: add_initial_user_content(cdg)),

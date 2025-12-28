@@ -11,7 +11,7 @@ def get_recursion_depth():
     """
 
     try:
-        import _testinternalcapi
+        import _testinternalcapi  # type: ignore
         depth = _testinternalcapi.get_recursion_depth()
     except (ImportError, RecursionError) as exc:  # noqa
         # sys._getframe() + frame.f_back implementation.

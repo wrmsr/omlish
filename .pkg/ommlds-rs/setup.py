@@ -25,7 +25,7 @@ def _patch_sdist():
     # `sdist.add_defaults` as an unbound function, not a bound method:
     # https://github.com/pypa/setuptools/blob/9c4d383631d3951fcae0afd73b5d08ff5a262976/setuptools/command/egg_info.py#L581
     from setuptools.command.sdist import sdist  # noqa
-    sdist.add_defaults = (lambda old: lambda sdist: _sdist_add_defaults(old, sdist))(sdist.add_defaults)  # noqa
+    setattr(sdist, 'add_defaults', (lambda old: lambda sdist: _sdist_add_defaults(old, sdist))(sdist.add_defaults))  # noqa
 
 _patch_sdist()
 

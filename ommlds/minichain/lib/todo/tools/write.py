@@ -8,6 +8,7 @@ from omlish import lang
 from omlish import marshal as msh
 
 from ....content.namespaces import ContentNamespace
+from ....content.namespaces import NamespaceContent
 from ....tools.execution.catalog import ToolCatalogEntry
 from ....tools.execution.reflect import reflect_tool_catalog_entry
 from ....tools.reflect import tool_spec_override
@@ -311,7 +312,7 @@ class TodoWriteDescriptionChunks(ContentNamespace):
 
 
 @tool_spec_override(
-    desc=TodoWriteDescriptionChunks,
+    desc=NamespaceContent(TodoWriteDescriptionChunks),
 )
 def execute_todo_write_tool(todo_items: ta.Sequence[TodoItem]) -> ta.Sequence[TodoItem]:
     if todo_items:

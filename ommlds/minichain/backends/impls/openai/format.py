@@ -22,7 +22,7 @@ from ....chat.stream.types import ContentAiDelta
 from ....chat.stream.types import PartialToolUseAiDelta
 from ....chat.tools.types import Tool
 from ....content.json import JsonContent
-from ....content.prepare import prepare_content_str
+from ....content.transform.prepare import prepare_content_str
 from ....llms.types import MaxCompletionTokens
 from ....llms.types import MaxTokens
 from ....llms.types import Temperature
@@ -216,7 +216,7 @@ class OpenaiChatRequestHandler:
             pt.ChatCompletionRequestTool(
                 function=pt.ChatCompletionRequestTool.Function(
                     name=check.not_none(ts.name),
-                    description=prepare_content_str(ts.desc),
+                    description=prepare_content_str(ts.desc) if ts.desc is not None else None,
                     parameters=build_tool_spec_params_json_schema(ts),
                 ),
             )

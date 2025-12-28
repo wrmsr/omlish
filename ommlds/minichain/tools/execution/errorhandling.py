@@ -1,6 +1,6 @@
 import typing as ta
 
-from ...content.materialize import ContentMaterializer
+from ...content.transform.materialize import ContentMaterializer
 from ...content.types import Content
 from .context import ToolContext
 from .errors import ToolExecutionError
@@ -32,4 +32,4 @@ class ErrorHandlingToolExecutor(ToolExecutor):
             return await self._wrapped.execute_tool(ctx, name, args)
 
         except ToolExecutionError as txe:
-            return self._content_materializer.materialize(txe.content)
+            return self._content_materializer.apply(txe.content)

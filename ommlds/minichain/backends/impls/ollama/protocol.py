@@ -17,7 +17,7 @@ from ....chat.stream.types import AiDelta
 from ....chat.stream.types import ContentAiDelta
 from ....chat.stream.types import ToolUseAiDelta
 from ....chat.tools.types import Tool
-from ....content.prepare import prepare_content_str
+from ....content.transform.prepare import prepare_content_str
 from ....tools.jsonschema import build_tool_spec_params_json_schema
 from ....tools.types import ToolUse
 
@@ -92,7 +92,7 @@ def build_ol_request_tool(t: Tool) -> pt.Tool:
     return pt.Tool(
         function=pt.Tool.Function(
             name=check.not_none(t.spec.name),
-            description=prepare_content_str(t.spec.desc),
+            description=prepare_content_str(t.spec.desc) if t.spec.desc is not None else None,
             parameters=build_tool_spec_params_json_schema(t.spec),
         ),
     )

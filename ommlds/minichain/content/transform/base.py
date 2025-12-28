@@ -28,7 +28,9 @@ class ContentTransform(lang.Abstract):
         return s
 
     @apply.register  # noqa
-    def apply_sequence(self, l: collections.abc.Sequence[Content]) -> collections.abc.Sequence[Content]:
+    def apply_sequence(self, l: collections.abc.Sequence) -> collections.abc.Sequence:
+        # FIXME: this should be `Sequence[Content] -> Sequence[Content]` but omlish.reflect can't handle recursive
+        #   ForwardRef's yet
         r = [self.apply(e) for e in l]
         if len(r) == len(l) and all(le is re for le, re in zip(l, r)):
             return l

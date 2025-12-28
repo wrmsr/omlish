@@ -1,7 +1,7 @@
+from ...sequence import BlockContent
+from ...sequence import InlineContent
+from ...tag import TagContent  # noqa
 from ..prepare import prepare_content_str
-from ..sequence import BlockContent
-from ..sequence import InlineContent
-from ..tag import TagContent  # noqa
 
 
 def test_materialize_sequences():

@@ -159,7 +159,7 @@ class ToolReflector:
 
     #
 
-    def _prepare_desc(self, s: Content) -> Content:
+    def _prepare_desc(self, s: Content | None) -> Content | None:
         if s is None:
             return None
         if not self._raw_descs and isinstance(s, str):
@@ -240,7 +240,7 @@ class ToolReflector:
                 ds_p = ds_p_dct.get(pn)
                 sig_p = sig_p_dct.get(pn)
 
-                p_desc: Content
+                p_desc: Content | None
                 if (p_desc := ovr_p.get('desc')) is None:
                     if ds_p is not None:
                         p_desc = ds_p.description

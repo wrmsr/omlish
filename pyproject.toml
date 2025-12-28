@@ -121,7 +121,7 @@ requires = ['-rrequirements.txt']
 # mypy
 
 [tool.mypy]
-ignore_missing_imports = true
+# ignore_missing_imports = true
 no_implicit_optional = true
 warn_redundant_casts = true
 warn_unreachable = true
@@ -136,6 +136,57 @@ show_traceback = true
 
 check_untyped_defs = true
 
+[[tool.mypy.overrides]]
+module = [
+
+    ##
+    # omdev
+
+    'pgcli',
+    'pgcli.*',
+
+    ##
+    # omlish
+
+    'annotationlib',
+
+    'brotli',
+    'cloudpickle',
+    'lz4',
+    'lz4.*',
+    'pg8000',
+    'snappy',
+    'sqlean',
+    'sqlite_vec',
+    'trio_asyncio',
+    'trio_asyncio.*',
+
+    'flask',
+
+    '_pydev_bundle',
+    'pydevd',
+    'pydevd_nest_asyncio',
+    'pydevd_pycharm',
+
+    ##
+    # ommlds
+
+    'tinygrad',
+    'tinygrad.*',
+
+    'datasets',
+    'pytesseract',
+    'rapidocr_onnxruntime',
+    'sentencepiece',
+    'tokenizers',
+    'tokenizers.*',
+    'torchvision',
+    'torchvision.*',
+    'wikitextparser',
+
+]
+ignore_missing_imports = true
+disable_error_code = ['import-untyped']
 
 ##
 # pytest

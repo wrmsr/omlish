@@ -21,7 +21,6 @@ def _main() -> None:
     new_builtins = {**old_builtins, '__import__': new_import}
 
     if _capture._set_frame_builtins(frame, old_builtins, new_builtins):  # noqa
-        import barf  # noqa
         print(_capture._set_frame_builtins(frame, new_builtins, old_builtins))  # noqa
 
 

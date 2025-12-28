@@ -1,5 +1,3 @@
-
-
 from ..types import Content
 from .base import ContentTransform
 

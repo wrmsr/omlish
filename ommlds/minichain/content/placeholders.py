@@ -10,7 +10,7 @@ from .types import LeafContent
 ##
 
 
-class ContentPlaceholder(lang.Marker):
+class ContentPlaceholder(lang.Marker, lang.Abstract):
     pass
 
 

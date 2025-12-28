@@ -146,7 +146,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../interp/providers/system.py', sha1='9638a154475ca98775159d27739563ac7fb2eb16'),
             dict(path='../interp/pyenv/install.py', sha1='4a10a19717364b4ba9f3b8bf1d12621cf21ba8b8'),
             dict(path='../interp/uv/provider.py', sha1='3c3980878ad2b9fd2cd02172f9424954759c7f06'),
-            dict(path='pkg.py', sha1='a7b64fcf267ba385442393b90c9711af08ba9ac3'),
+            dict(path='pkg.py', sha1='e2acb40b17d75b6deb78056e6726d114a7aef2e4'),
             dict(path='../interp/providers/inject.py', sha1='7cc9ebf58cf2ec09545321456bd9da9f9a3a79fb'),
             dict(path='../interp/pyenv/provider.py', sha1='377542ce01a35849e2a5b4a4dbafedc26882f983'),
             dict(path='../interp/uv/inject.py', sha1='e95d058c2340baa5a3155ec3440f311d1daa10a8'),
@@ -11843,7 +11843,7 @@ class _PyprojectRsPackageGenerator(_PyprojectExtensionPackageGenerator):
             # `sdist.add_defaults` as an unbound function, not a bound method:
             # https://github.com/pypa/setuptools/blob/9c4d383631d3951fcae0afd73b5d08ff5a262976/setuptools/command/egg_info.py#L581
             from setuptools.command.sdist import sdist  # noqa
-            sdist.add_defaults = (lambda old: lambda sdist: _sdist_add_defaults(old, sdist))(sdist.add_defaults)  # noqa
+            setattr(sdist, 'add_defaults', (lambda old: lambda sdist: _sdist_add_defaults(old, sdist))(sdist.add_defaults))  # noqa
 
         _patch_sdist()
 
