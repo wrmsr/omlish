@@ -1,3 +1,4 @@
+import abc
 import io
 import itertools
 import typing as ta
@@ -110,8 +111,28 @@ class Op(lang.Abstract, lang.PackageSealed):
         return f'{self.__class__.__name__}@{id(self):x}'
 
 
+class CompositeOp(Op, lang.Abstract):
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        try:
+            leaf_op_cls = LeafOp
+        except NameError:
+            pass
+        else:
+            check.not_issubclass(cls, leaf_op_cls)
+
+    @property
+    @abc.abstractmethod
+    def children(self) -> ta.Sequence[Op]:
+        raise NotImplementedError
+
+
 class LeafOp(Op, lang.Abstract):
-    pass
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        check.not_issubclass(cls, CompositeOp)
 
 
 ##

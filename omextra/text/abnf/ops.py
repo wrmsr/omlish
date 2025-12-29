@@ -4,6 +4,7 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 
+from .base import CompositeOp
 from .base import LeafOp
 from .base import Op
 
@@ -101,7 +102,7 @@ def literal(*args, case_sensitive=None):
 
 
 @ta.final
-class Concat(Op, lang.Final):
+class Concat(CompositeOp, lang.Final):
     def __init__(self, *children: Op) -> None:
         super().__init__()
 
@@ -124,7 +125,7 @@ concat = Concat
 
 
 @ta.final
-class Repeat(Op, lang.Final):
+class Repeat(CompositeOp, lang.Final):
     @dc.dataclass(frozen=True)
     class Times:
         min: int = 0
@@ -158,6 +159,10 @@ class Repeat(Op, lang.Final):
     @property
     def child(self) -> Op:
         return self._child
+
+    @property
+    def children(self) -> ta.Sequence[Op]:
+        return (self._child,)
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}@{id(self):x}({self._times}, {self._child!r})'
@@ -223,7 +228,7 @@ def option(child: Op) -> Repeat:
 
 
 @ta.final
-class Either(Op, lang.Final):
+class Either(CompositeOp, lang.Final):
     def __init__(self, *children: Op, first_match: bool = False) -> None:
         super().__init__()
 
