@@ -280,6 +280,24 @@ class Cli(ap.Cli):
 
     # Lazy helpers
 
+    def _make_git_message_generator(
+            self,
+            *,
+            name: str | None = None,
+            cwd: str | None = None,
+    ) -> GitMessageGenerator:
+        cls: type[GitMessageGenerator] = TimestampGitMessageGenerator
+
+        if name is None:
+            if cwd is None:
+                cwd = os.getcwd()
+            name = self.load_config(cwd).default_message_generator
+
+        if name is not None:
+            cls = load_message_generator_manifests_map()[name].load_cls()
+
+        return cls()
+
     @ap.cmd(
         ap.arg('-g', '--message-generator', nargs='?'),
         ap.arg('dir', nargs='*'),
@@ -292,12 +310,10 @@ class Cli(ap.Cli):
             if not (st.has_staged or st.has_dirty):
                 return
 
-            mg_cls: type[GitMessageGenerator] = TimestampGitMessageGenerator
-            if (mg_name := self.args.message_generator) is None:
-                mg_name = self.load_config(cwd).default_message_generator
-            if mg_name is not None:
-                mg_cls = load_message_generator_manifests_map()[mg_name].load_cls()
-            mg = mg_cls()
+            mg = self._make_git_message_generator(
+                name=self.args.message_generator,
+                cwd=cwd,
+            )
 
             mgr = mg.generate_commit_message(GitMessageGenerator.GenerateCommitMessageArgs(
                 cwd=cwd,
@@ -338,12 +354,10 @@ class Cli(ap.Cli):
                     msg = self.args.message
 
                 else:
-                    mg_cls: type[GitMessageGenerator] = TimestampGitMessageGenerator
-                    if (mg_name := self.args.message_generator) is None:
-                        mg_name = self.load_config(cwd).default_message_generator
-                    if mg_name is not None:
-                        mg_cls = load_message_generator_manifests_map()[mg_name].load_cls()
-                    mg = mg_cls()
+                    mg = self._make_git_message_generator(
+                        name=self.args.message_generator,
+                        cwd=cwd,
+                    )
 
                     mgr = mg.generate_commit_message(GitMessageGenerator.GenerateCommitMessageArgs(
                         cwd=cwd,
