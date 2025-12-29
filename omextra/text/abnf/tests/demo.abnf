@@ -7,8 +7,7 @@
 ; ===============================
 
 ; --- Entry point -----------------------------------------------------
-config = *WSP header *(CRLF *WSP statement) [CRLF] *WSP
-       ; concatenation, repetition, options, CRLF
+config = *WSP header *(CRLF *WSP stmt) [CRLF] *WSP
 
 header         = directive-line / comment-line
 directive-line = %i"config" 1*WSP version
@@ -21,14 +20,14 @@ version = "v" 1*DIGIT ["." 1*DIGIT]
 
 comment-line = *WSP ";" *VCHAR CRLF
              ; ABNF comments (;) are out-of-band, but here we treat a line starting
-             ; with ';' as an in-grammar "statement" comment.
+             ; with ';' as an in-grammar "stmt" comment.
 
 ; --- Statements (demonstrates incremental alternatives =/) -----------
-statement = set-stmt
-          / list-stmt
-          / block-stmt
-          / bytes-stmt
-          / keyword-stmt
+stmt = set-stmt
+     / list-stmt
+     / block-stmt
+     / bytes-stmt
+     / keyword-stmt
 
 ; Set statement: name = value
 set-stmt = name *WSP "=" *WSP value
@@ -36,21 +35,20 @@ set-stmt = name *WSP "=" *WSP value
 ; List statement: items separated by commas, allowing line folding
 list-stmt = name *WSP ":" *WSP value *(list-sep value)
 list-sep  = *WSP "," *WSP
-          / *(WSP / (CRLF 1*WSP)) "," *(WSP / (CRLF 1*WSP))
-          ; Shows list separator that tolerates folded whitespace (c-wsp idea)
+          / *(WSP / (CRLF 1*WSP)) "," *(WSP / (CRLF 1*WSP))  ; Shows list separator that tolerates folded whitespace (c-wsp idea)
 
 ; Block statement: braces around zero or more inner statements
-block-stmt = name *WSP "{" *(list-wsp statement) *list-wsp "}"
-list-wsp   = *(WSP / (CRLF 1*WSP))
-           ; c-wsp-like folding: allow line breaks where whitespace is permitted
+block-stmt = name *WSP "{" *(*WSP CRLF *WSP stmt) *WSP CRLF *WSP "}"
 
 ; Keyword statement: demonstrates case-sensitive vs insensitive tokens
-keyword-stmt = %s"ENABLE" / %s"DISABLE" / %i"debug"
-             ; %s = case-sensitive, so only uppercase ENABLE/DISABLE match exactly.
-             ; %i = case-insensitive, so any case of "debug" matches.
+keyword-stmt = %s"ENABLE"   ; %s = case-sensitive, so only uppercase ENABLE/DISABLE match exactly.
+             / %s"DISABLE"
+             / %i"debug"    ; %i = case-insensitive, so any case of "debug" matches.
 
 ; Bytes statement: shows numeric terminals, ranges, sequences, and prose-val
-bytes-stmt = %i"bytes" *WSP "=" *WSP ( hex-bytes / dec-bytes / ascii-demo )
+bytes-stmt = %i"bytes" *WSP
+             "=" *WSP
+             ( hex-bytes / dec-bytes / ascii-demo )
 hex-bytes  = 1*(%x00-FF)  ; %x range over a single octet (00-FF)
 dec-bytes  = 1*(%d0-255)  ; %d decimal range
 ascii-demo = %x41.42.43   ; %x sequences with '.' -> "ABC"
@@ -59,8 +57,7 @@ ascii-demo = %x41.42.43   ; %x sequences with '.' -> "ABC"
 ; --- Lexical pieces --------------------------------------------------
 ; Names: start ALPHA or "_", then 2*5 of (ALPHA / DIGIT / "_")
 ; demonstrates exact repetition n*m, bare n, max-limited *m, and grouping
-name = (ALPHA / "_") 2*5(ALPHA / DIGIT / "_")
-     ; at least 2 and at most 5 additional characters
+name = (ALPHA / "_") 2*5(ALPHA / DIGIT / "_")  ; at least 2 and at most 5 additional characters
 
 ; Values: alternation + grouping + optionals
 value = number

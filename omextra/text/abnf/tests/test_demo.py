@@ -1,34 +1,25 @@
 import os.path
 
-import pytest  # noqa
+import pytest
 
 from omlish import check
 
-from ..base import Grammar
-from ..meta import parse_grammar
 from ..utils import fix_ws
-
-
-def parse_demo_grammar() -> Grammar:
-    with open(os.path.join(os.path.dirname(__file__), 'demo.abnf')) as f:
-        gram_src = f.read()
-
-    return parse_grammar(
-        gram_src,
-        root='config',
-        # debug=True,
-    )
+from .demo import parse_demo_grammar
 
 
 def test_demo_grammar():
     parse_demo_grammar()
 
 
-# @pytest.mark.skip_unless_alone
-def test_demo():
+@pytest.mark.parametrize('fn', [
+    'demo.txt',
+    'demo2.txt',
+])
+def test_demo(fn):
     gram = parse_demo_grammar()
 
-    with open(os.path.join(os.path.dirname(__file__), 'demo.txt')) as f:
+    with open(os.path.join(os.path.dirname(__file__), fn)) as f:
         ast_src = f.read()
 
     ast_src = fix_ws(ast_src)

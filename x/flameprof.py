@@ -23,9 +23,9 @@ TODO:
 
 ====
 
-flameprof --format=log prof.pstats | flamegraph.pl > prof.svg && open prof.svg
+./python -m x.flameprof --format=log prof.pstats | ~/src/brendangregg/FlameGraph/flamegraph.pl > prof.svg && open prof.svg
 
-flameprof --format=svg prof.pstats > prof.svg && open prof.svg
+./python -m x.flameprof --format=svg prof.pstats > prof.svg && open prof.pstats.svg
 """
 import argparse
 import collections

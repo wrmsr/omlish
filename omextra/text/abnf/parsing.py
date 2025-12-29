@@ -19,15 +19,21 @@ from .ops import StringLiteral
 
 
 class _Parser:
+    class MaxStepsExceededError(Exception):
+        pass
+
     def __init__(
             self,
             grammar: Grammar,
             source: str,
+            *,
+            max_steps: int | None = None,
     ) -> None:
         super().__init__()
 
         self._grammar = grammar
         self._source = source
+        self._max_steps = max_steps
 
         self._dispatch: dict[type[Op], ta.Any] = {
             StringLiteral: self._iter_parse_string_literal,
@@ -39,6 +45,10 @@ class _Parser:
             RuleRef: self._iter_parse_rule_ref,
             Regex: self._iter_parse_regex,
         }
+
+        self._memo: dict[tuple[Op, int], tuple[Match, ...]] = {}
+
+        self._cur_step = 0
 
     def _iter_parse_string_literal(self, op: StringLiteral, start: int) -> ta.Iterator[Match]:
         if start < len(self._source):  # noqa
@@ -62,49 +72,90 @@ class _Parser:
             yield Match(op, start, start + 1, ())
 
     def _iter_parse_concat(self, op: Concat, start: int) -> ta.Iterator[Match]:
-        i = 0
         match_tups: list[tuple[Match, ...]] = [()]
+
+        i = 0
         for cp in op._children:  # noqa
             next_match_tups: list[tuple[Match, ...]] = []
+
             for mt in match_tups:
                 for cm in self.iter_parse(cp, mt[-1].end if mt else start):
                     next_match_tups.append((*mt, cm))
                     i += 1
+
             if not next_match_tups:
                 return
+
             match_tups = next_match_tups
+
         if not i:
             return
+
         for mt in sorted(match_tups, key=len, reverse=True):
             yield Match(op, start, mt[-1].end if mt else start, mt)
 
     def _iter_parse_repeat(self, op: Repeat, start: int) -> ta.Iterator[Match]:
-        match_tup_set: set[tuple[Match, ...]] = set()
-        last_match_tup_set: set[tuple[Match, ...]] = {()}
+        # Map from (repetition_count, end_position) to longest match tuple
+        matches_by_count_pos: dict[tuple[int, int], tuple[Match, ...]] = {(0, start): ()}
+        max_end_by_count: dict[int, int] = {0: start}
+
         i = 0
         while True:
             if op._times.max is not None and i == op._times.max:  # noqa
                 break
-            next_match_tup_set: set[tuple[Match, ...]] = set()
-            for mt in last_match_tup_set:
-                for cm in self.iter_parse(op._child, mt[-1].end if mt else start):  # noqa
-                    next_match_tup_set.add((*mt, cm))
-            if not next_match_tup_set or next_match_tup_set < match_tup_set:
+
+            if self._max_steps is not None and self._cur_step > self._max_steps:
+                raise _Parser.MaxStepsExceededError(self._cur_step)
+            self._cur_step += 1
+
+            next_matches: dict[tuple[int, int], tuple[Match, ...]] = {}
+            next_max_end = max_end_by_count.get(i, -1)
+
+            for (count, end_pos), mt in matches_by_count_pos.items():
+                if count != i:
+                    continue
+
+                for cm in self.iter_parse(op._child, end_pos):  # noqa
+                    next_mt = (*mt, cm)
+                    next_key = (i + 1, cm.end)
+
+                    # Keep only the longest match tuple for each (count, position)
+                    if next_key not in next_matches or len(next_mt) > len(next_matches[next_key]):
+                        next_matches[next_key] = next_mt
+                        if cm.end > next_max_end:
+                            next_max_end = cm.end
+
+            if not next_matches:
                 break
+
+            # Check if we made progress (reached new positions)
+            if next_max_end <= max_end_by_count.get(i, -1):
+                break
+
             i += 1
-            match_tup_set |= next_match_tup_set
-            last_match_tup_set = next_match_tup_set
+            matches_by_count_pos.update(next_matches)
+            max_end_by_count[i] = next_max_end
+
         if i < op._times.min:  # noqa
             return
-        for mt in sorted(match_tup_set or [()], key=len, reverse=True):
-            yield Match(op, start, mt[-1].end if mt else start, mt)  # noqa
+
+        # Collect valid matches and sort by (end_position, repetition_count) descending
+        valid_matches: list[tuple[int, int, tuple[Match, ...]]] = []
+        for (count, end_pos), mt in matches_by_count_pos.items():
+            if op._times.min <= count <= (op._times.max if op._times.max is not None else i):  # noqa
+                valid_matches.append((end_pos, count, mt))
+
+        for end_pos, _, mt in sorted(valid_matches, key=lambda x: (x[0], x[1]), reverse=True):
+            yield Match(op, start, end_pos, mt)
 
     def _iter_parse_either(self, op: Either, start: int) -> ta.Iterator[Match]:
         for cp in op._children:  # noqa
             found = False
+
             for cm in self.iter_parse(cp, start):
                 found = True
                 yield Match(op, start, cm.end, (cm,))
+
             if found and op._first_match:  # noqa
                 return
 
@@ -117,7 +168,17 @@ class _Parser:
         raise NotImplementedError
 
     def iter_parse(self, op: Op, start: int) -> ta.Iterator[Match]:
-        return self._dispatch[op.__class__](op, start)
+        if (key := (op, start)) in self._memo:
+            yield from self._memo[key]
+            return
+
+        if self._max_steps is not None and self._cur_step >= self._max_steps:
+            raise _Parser.MaxStepsExceededError(self._cur_step)
+        self._cur_step += 1
+
+        matches = tuple(self._dispatch[op.__class__](op, start))
+        self._memo[key] = matches
+        yield from matches
 
 
 ##
@@ -131,8 +192,9 @@ class _DebugParser(_Parser):
             level: int = 1,
             *,
             write: ta.Callable[[str], None] | None = None,
+            **kwargs: ta.Any,
     ) -> None:
-        super().__init__(grammar, source)
+        super().__init__(grammar, source, **kwargs)
 
         self._level = level
         if write is None:
@@ -195,18 +257,21 @@ def _iter_parse(
         start: int,
         *,
         debug: int = 0,
+        max_steps: int | None = None,
 ) -> ta.Iterator[Match]:
     parser: _Parser
     if debug:
         parser = _DebugParser(
             grammar,
             source,
+            max_steps=max_steps,
             level=debug,
         )
     else:
         parser = _Parser(
             grammar,
             source,
+            max_steps=max_steps,
         )
 
     return parser.iter_parse(op, start)

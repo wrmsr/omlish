@@ -196,6 +196,7 @@ class Grammar(lang.Final):
             *,
             start: int = 0,
             debug: int = 0,
+            **kwargs: ta.Any,
     ) -> ta.Iterator[Match]:
         if root is None:
             if (root := self._root) is None:
@@ -212,6 +213,7 @@ class Grammar(lang.Final):
             root._op,  # noqa
             start,
             debug=debug,
+            **kwargs,
         )
 
     def parse(
@@ -222,12 +224,14 @@ class Grammar(lang.Final):
             start: int = 0,
             complete: bool = False,
             debug: int = 0,
+            **kwargs: ta.Any,
     ) -> Match | None:
         if (match := longest_match(self.iter_parse(
             source,
             root,
             start=start,
             debug=debug,
+            **kwargs,
         ))) is None:
             return None
 
