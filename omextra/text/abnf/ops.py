@@ -314,9 +314,24 @@ class RuleRef(Op, lang.Final):
 
         self._name_f = name.casefold()
 
+    def coalesce(self, other: Op) -> Op:
+        """
+        Op nodes are compared by identity, and transformations return identical node instances when nothing has changed.
+        This method assists with that, preserving RuleRef node identity if the given node is otherwise equal.
+        """
+
+        if isinstance(other, RuleRef) and other.name_f == self.name_f:
+            return self
+
+        return other
+
     @property
     def name(self) -> str:
         return self._name
+
+    @property
+    def name_f(self) -> str:
+        return self._name_f
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}@{id(self):x}({self._name!r})'

@@ -170,7 +170,7 @@ class Grammar(lang.Final):
 
         return Grammar(
             rc,
-            root=self._root,
+            root=self._root.name if self._root is not None else None,
         )
 
     #

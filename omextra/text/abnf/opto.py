@@ -9,6 +9,7 @@ from omlish import lang
 from .base import CompositeOp
 from .base import Op
 from .grammars import Grammar
+from .grammars import Rule
 from .internal import Regex
 from .ops import CaseInsensitiveStringLiteral
 from .ops import Concat
@@ -65,10 +66,13 @@ class _RegexOpOptimizer:
     def _op_to_item(self, op: Op) -> _Item | None:
         if isinstance(op, StringLiteral):
             return _RegexOpOptimizer._StringLiteral(op.value)
+
         elif isinstance(op, CaseInsensitiveStringLiteral):
             return _RegexOpOptimizer._CaseInsensitiveStringLiteral(op.value)
+
         elif isinstance(op, Regex):
             return _RegexOpOptimizer._Regex(op.pat.pattern)
+
         else:
             return None
 
@@ -143,7 +147,8 @@ class _RegexOpOptimizer:
             raise TypeError(op)
 
     def _analyze_op(self, o: Op) -> None:
-        check.not_in(o, self._dct)
+        if o in self._dct:
+            return
 
         if isinstance(o, CompositeOp):
             for child in o.children:
@@ -204,7 +209,40 @@ def optimize_op(op: Op) -> Op:
 
 
 def _inline_insignificant_rules(gram: Grammar) -> Grammar:
-    return gram
+    cur_rule: Rule
+    inlined_rules: dict[str, Op] = {}
+
+    def rec_op(op: Op) -> Op:
+        if isinstance(op, RuleRef):
+            if op.name_f == cur_rule.name_f:
+                return op
+
+            if (r := gram.rule(op.name)) is None or not r.insignificant:
+                return op
+
+            try:
+                return inlined_rules[r.name]
+            except KeyError:
+                pass
+
+            inlined_rules[op.name] = op
+            i_op = rec_op(r.op)
+            inlined_rules[op.name] = i_op
+
+            return op.coalesce(i_op)
+
+        elif isinstance(op, CompositeOp):
+            return op.replace_children(*map(rec_op, op.children))
+
+        else:
+            return op
+
+    new_rules: list[Rule] = []
+    for rule in gram.rules:
+        cur_rule = rule
+        new_rules.append(rule.replace_op(rec_op(rule.op)))
+
+    return gram.replace_rules(*new_rules)
 
 
 ##
