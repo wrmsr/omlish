@@ -71,6 +71,7 @@ class _Parser:
             source = self._source[start]  # noqa
         except IndexError:
             return
+
         # ranges are always case-sensitive
         if (value := op._value).lo <= source <= value.hi:  # noqa
             yield Match(op, start, start + 1, ())
