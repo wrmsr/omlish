@@ -416,8 +416,8 @@ RAW_META_GRAMMAR = Grammar(
     root='rulelist',
 )
 
-# META_GRAMMAR = optimize_grammar(RAW_META_GRAMMAR)
-META_GRAMMAR = RAW_META_GRAMMAR
+META_GRAMMAR = optimize_grammar(RAW_META_GRAMMAR)
+# META_GRAMMAR = RAW_META_GRAMMAR
 
 
 ##
