@@ -1,18 +1,13 @@
 import os.path
 import tempfile
 
-import pytest
-
 from omlish.secrets.tests.harness import HarnessSecrets
 from omlish.subprocesses.sync import subprocesses
-from omlish.testing import pytest as ptu
 
-from ...backends import huggingface as hfu
 from ..git import AiGitMessageGenerator
 from ..git import GitAiBackend
 from ..git import GitMessageGenerator
-from ..git import MlxGitAiBackend
-from ..git import OpenaiGitAiBackend
+from ..git import StandardGitAiBackend
 
 
 def _test_git_message_generator(backend: GitAiBackend) -> None:
@@ -40,21 +35,21 @@ def _test_git_message_generator(backend: GitAiBackend) -> None:
 
 def test_git_message_generator_openai(harness):
     harness[HarnessSecrets].get_or_skip('openai_api_key')
-    _test_git_message_generator(OpenaiGitAiBackend())
+    _test_git_message_generator(StandardGitAiBackend())
 
 
-@pytest.mark.not_docker_guest
-@pytest.mark.high_mem
-@ptu.skip.if_cant_import('mlx_lm')
-def test_git_message_generator_mlxlm():
-    bg_cfg = MlxGitAiBackend.Config()
-
-    try:
-        import huggingface_hub  # noqa
-    except ImportError:
-        pytest.skip('no huggingface_hub')
-
-    if not hfu.is_repo_cached(mdl := bg_cfg.model):
-        pytest.skip(f'no model: {mdl}')
-
-    _test_git_message_generator(MlxGitAiBackend(bg_cfg))
+# @pytest.mark.not_docker_guest
+# @pytest.mark.high_mem
+# @ptu.skip.if_cant_import('mlx_lm')
+# def test_git_message_generator_mlxlm():
+#     bg_cfg = MlxGitAiBackend.Config()
+#
+#     try:
+#         import huggingface_hub  # noqa
+#     except ImportError:
+#         pytest.skip('no huggingface_hub')
+#
+#     if not hfu.is_repo_cached(mdl := bg_cfg.model):
+#         pytest.skip(f'no model: {mdl}')
+#
+#     _test_git_message_generator(MlxGitAiBackend(bg_cfg))

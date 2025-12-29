@@ -929,7 +929,7 @@
     "module": ".tools.git",
     "attr": null,
     "file": "ommlds/tools/git.py",
-    "line": 190,
+    "line": 196,
     "value": {
       "!omdev.tools.git.messages.GitMessageGeneratorManifest": {
         "module": "ommlds.tools.git",

@@ -16,7 +16,7 @@ from omlish.argparse import all as ap
 from omlish.logs import all as logs
 
 from .inject import bind_main
-from .secrets import install_secrets
+from .secrets import install_env_secrets
 from .sessions.base import Session
 from .sessions.chat.configs import ChatConfig
 from .sessions.chat.interfaces.bare.configs import BareInterfaceConfig
@@ -387,7 +387,7 @@ async def _a_main(argv: ta.Any = None) -> None:
 
     _process_main_extra_args(args)
 
-    install_secrets()
+    install_env_secrets()
 
     profile_cls = PROFILE_TYPES[args.profile]
     profile = profile_cls()

@@ -3,15 +3,12 @@ TODO:
  - move omit magic to omdev lol
 """
 import abc
-import concurrent.futures as cf
 import dataclasses as dc
-import os.path
 import re
 import typing as ta
 import urllib.request
 
 from omdev.git.magic import GIT_DIFF_OMIT_MAGIC_COMMENT
-from omdev.home.secrets import load_secrets
 from omdev.py.srcheaders import get_py_header_lines
 from omdev.tools.git.messages import GitMessageGenerator
 from omlish import check
@@ -21,12 +18,8 @@ from omlish.http import all as http
 from omlish.subprocesses.sync import subprocesses
 
 from .. import minichain as mc
-from ..minichain.backends.impls.openai.chat import OpenaiChatChoicesService
+from ..cli.secrets import install_env_secrets
 from ..server.client import McServerClient
-
-
-with lang.auto_proxy_import(globals()):
-    from ..minichain.backends.impls.mlx import chat as mc_mlx_chat
 
 
 GitAiBackendConfigT = ta.TypeVar('GitAiBackendConfigT', bound='GitAiBackend.Config')
@@ -36,7 +29,7 @@ GitAiBackendConfigT = ta.TypeVar('GitAiBackendConfigT', bound='GitAiBackend.Conf
 
 
 class GitAiBackend(Configurable[GitAiBackendConfigT], lang.Abstract):
-    @dc.dataclass(frozen=True)
+    @dc.dataclass(frozen=True, kw_only=True)
     class Config(Configurable.Config):
         max_tokens: int | None = 128
 
@@ -64,22 +57,35 @@ def _get_single_ai_message_str(resp: mc.ChatChoicesResponse) -> str:
 #
 
 
-class OpenaiGitAiBackend(GitAiBackend['OpenaiGitAiBackend.Config']):
-    @dc.dataclass(frozen=True)
+class StandardGitAiBackend(GitAiBackend['StandardGitAiBackend.Config']):
+    @dc.dataclass(frozen=True, kw_only=True)
     class Config(GitAiBackend.Config):
-        pass
+        backend: str | None = None
 
-    def __init__(self, config: Config = Config()) -> None:
+    DEFAULT_BACKEND_NAME: str = 'openai'
+
+    def __init__(
+            self,
+            config: Config = Config(),
+            *,
+            backend_catalog: ta.Optional['mc.BackendCatalog'] = None,
+    ) -> None:
         super().__init__(config)
 
-    def run_prompt(self, prompt: str) -> str:
-        # FIXME:
-        for key in ['OPENAI_API_KEY']:
-            if (sec := load_secrets().try_get(key.lower())) is not None:
-                os.environ[key] = sec.reveal()
+        if backend_catalog is None:
+            backend_catalog = mc.BackendStringBackendCatalog()
+        self._backend_catalog = backend_catalog
 
-        llm = OpenaiChatChoicesService(
-            http_client=http.SyncAsyncHttpClient(http.client()),
+    def run_prompt(self, prompt: str) -> str:
+        install_env_secrets()  # FIXME
+
+        be = self._backend_catalog.get_backend(
+            mc.ChatChoicesService,  # type: ignore[type-abstract]
+            self._config.backend or self.DEFAULT_BACKEND_NAME,
+        )
+
+        llm = be.factory(
+            http_client=http.SyncAsyncHttpClient(http.client()),  # FIXME
         )
 
         resp = lang.sync_await(llm.invoke(mc.ChatChoicesRequest(
@@ -98,51 +104,51 @@ def _strip_markdown_code_block(text: str) -> str:
     return match.group(1)
 
 
-class MlxGitAiBackend(GitAiBackend['MlxGitAiBackend.Config']):
-    @dc.dataclass(frozen=True)
-    class Config(GitAiBackend.Config):
-        model: str = 'mlx-community/Qwen2.5-Coder-32B-Instruct-8bit'
-
-        run_in_subprocess: bool = True
-        subprocess_timeout: float | None = 60.
-
-    def __init__(self, config: Config = Config()) -> None:
-        super().__init__(config)
-
-    def _run_prompt(self, prompt: str) -> str:
-        with mc_mlx_chat.MlxChatChoicesService(mc.ModelRepo.parse(self._config.model)) as llm:
-            resp = lang.sync_await(llm.invoke(mc.ChatChoicesRequest(
-                [mc.UserMessage(prompt)],
-                # FIXME: *((MaxTokens(self._config.max_tokens),) if self._config.max_tokens is not None else ()),
-            )))
-            text = _get_single_ai_message_str(resp)
-
-            text = _strip_markdown_code_block(text)
-
-            return text
-
-    def run_prompt(self, prompt: str) -> str:
-        if self._config.run_in_subprocess:
-            # tokenizers installs a pthread_atfork callback at *import* time:
-            #   https://github.com/huggingface/tokenizers/blob/4f1a810aa258d287e6936315e63fbf58bde2a980/bindings/python/src/lib.rs#L57
-            # then complains about `TOKENIZERS_PARALLELISM` at the next fork (which presumably will happen immediately
-            # after this to `git commit`, despite it being conceptually just a fork/exe).
-            # TODO: a generic subprocessing minichain service wrapper?
-            with cf.ProcessPoolExecutor() as exe:
-                return exe.submit(
-                    self._run_prompt,
-                    prompt,
-                ).result(timeout=self._config.subprocess_timeout)
-
-        else:
-            return self._run_prompt(prompt)
+# class MlxGitAiBackend(GitAiBackend['MlxGitAiBackend.Config']):
+#     @dc.dataclass(frozen=True, kw_only=True)
+#     class Config(GitAiBackend.Config):
+#         model: str = 'mlx-community/Qwen2.5-Coder-32B-Instruct-8bit'
+#
+#         run_in_subprocess: bool = True
+#         subprocess_timeout: float | None = 60.
+#
+#     def __init__(self, config: Config = Config()) -> None:
+#         super().__init__(config)
+#
+#     def _run_prompt(self, prompt: str) -> str:
+#         with mc_mlx_chat.MlxChatChoicesService(mc.ModelRepo.parse(self._config.model)) as llm:
+#             resp = lang.sync_await(llm.invoke(mc.ChatChoicesRequest(
+#                 [mc.UserMessage(prompt)],
+#                 # FIXME: *((MaxTokens(self._config.max_tokens),) if self._config.max_tokens is not None else ()),
+#             )))
+#             text = _get_single_ai_message_str(resp)
+#
+#             text = _strip_markdown_code_block(text)
+#
+#             return text
+#
+#     def run_prompt(self, prompt: str) -> str:
+#         if self._config.run_in_subprocess:
+#             # tokenizers installs a pthread_atfork callback at *import* time:
+#             #   https://github.com/huggingface/tokenizers/blob/4f1a810aa258d287e6936315e63fbf58bde2a980/bindings/python/src/lib.rs#L57  # noqa
+#             # then complains about `TOKENIZERS_PARALLELISM` at the next fork (which presumably will happen immediately
+#             # after this to `git commit`, despite it being conceptually just a fork/exe).
+#             # TODO: a generic subprocessing minichain service wrapper?
+#             with cf.ProcessPoolExecutor() as exe:
+#                 return exe.submit(
+#                     self._run_prompt,
+#                     prompt,
+#                 ).result(timeout=self._config.subprocess_timeout)
+#
+#         else:
+#             return self._run_prompt(prompt)
 
 
 #
 
 
 class LocalhostHttpPostGitAiBackend(GitAiBackend['LocalhostHttpPostGitAiBackend.Config']):
-    @dc.dataclass(frozen=True)
+    @dc.dataclass(frozen=True, kw_only=True)
     class Config(GitAiBackend.Config):
         port: int = 5067
         path: str = ''
@@ -166,7 +172,7 @@ class LocalhostHttpPostGitAiBackend(GitAiBackend['LocalhostHttpPostGitAiBackend.
 
 
 class McServerGitAiBackend(GitAiBackend['McServerGitAiBackend.Config']):
-    @dc.dataclass(frozen=True)
+    @dc.dataclass(frozen=True, kw_only=True)
     class Config(GitAiBackend.Config):
         pass
 
@@ -192,18 +198,23 @@ class AiGitMessageGenerator(GitMessageGenerator):
     def __init__(
             self,
             *,
-            backend: GitAiBackend | None = None,
+            backend: GitAiBackend | str | None = None,
     ) -> None:
         super().__init__()
 
         if backend is None:
             backend = self.DEFAULT_BACKEND
-        self._backend = backend
+        elif isinstance(backend, str):
+            backend = StandardGitAiBackend(
+                config=StandardGitAiBackend.Config(
+                    backend=backend,
+                ),
+            )
+        self._backend = check.isinstance(backend, GitAiBackend)
 
     DEFAULT_BACKEND: ta.ClassVar[GitAiBackend] = (
-        OpenaiGitAiBackend()
+        StandardGitAiBackend()
         # LocalhostHttpPostGitAiBackend()
-        # MlxGitAiBackend()
         # McServerGitAiBackend()
     )
 

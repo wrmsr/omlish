@@ -6,7 +6,7 @@ from omdev.home.secrets import load_secrets
 ##
 
 
-def install_secrets() -> None:
+def install_env_secrets() -> None:
     # FIXME: lol garbage
     for key in [
         'ANTHROPIC_API_KEY',

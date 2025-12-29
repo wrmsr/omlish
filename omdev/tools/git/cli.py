@@ -90,7 +90,12 @@ def get_first_commit_of_day(rev: str) -> str | None:
 class Cli(ap.Cli):
     @dc.dataclass(frozen=True, kw_only=True)
     class Config:
-        default_message_generator: str | None = None
+        @dc.dataclass(frozen=True, kw_only=True)
+        class MessageGenerator:
+            name: str
+            config: ta.Mapping[str, ta.Any] | None = None
+
+        message_generator: str | MessageGenerator | None = None
 
     _config_file_path_arg: ta.Optional[str] = ap.arg_('-c', '--config-file-path', nargs='?')
 
@@ -287,16 +292,27 @@ class Cli(ap.Cli):
             cwd: str | None = None,
     ) -> GitMessageGenerator:
         cls: type[GitMessageGenerator] = TimestampGitMessageGenerator
+        kw: dict[str, ta.Any] = {}
 
         if name is None:
             if cwd is None:
                 cwd = os.getcwd()
-            name = self.load_config(cwd).default_message_generator
+
+            cfg = self.load_config(cwd).message_generator
+            if cfg is None:
+                pass
+            elif isinstance(cfg, str):
+                name = cfg
+            elif isinstance(cfg, Cli.Config.MessageGenerator):
+                name = cfg.name
+                kw.update(cfg.config or {})
+            else:
+                raise TypeError(cfg)
 
         if name is not None:
             cls = load_message_generator_manifests_map()[name].load_cls()
 
-        return cls()
+        return cls(**kw)
 
     @ap.cmd(
         ap.arg('-g', '--message-generator', nargs='?'),
