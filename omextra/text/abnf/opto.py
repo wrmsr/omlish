@@ -1,13 +1,16 @@
+import abc
 import re
 import typing as ta
 
 from omlish import check
 from omlish import dataclasses as dc
+from omlish import lang
 
 from .base import Op
 from .internal import Regex
 from .ops import CaseInsensitiveStringLiteral
-from .ops import CompositeOp
+from .base import CompositeOp
+from .ops import concat
 from .ops import Concat
 from .ops import Either
 from .ops import RangeLiteral
@@ -20,22 +23,6 @@ from .ops import StringLiteral
 
 
 class _RegexOpOptimizer:
-    @dc.dataclass(frozen=True)
-    class _Item:
-        k: ta.Literal['literal', 'case_insensitive_literal', 'regex']
-        s: str
-
-        @property
-        def pat(self) -> str:
-            if self.k == 'literal':
-                return re.escape(self.s)
-            elif self.k == 'case_insensitive_literal':
-                return f'(?i:{re.escape(self.s)})'
-            elif self.k == 'regex':
-                return self.s
-            else:
-                raise ValueError(self.s)
-
     def __init__(self) -> None:
         super().__init__()
 
@@ -43,35 +30,75 @@ class _RegexOpOptimizer:
 
     #
 
-    def _analyze_single_op(self, op: Op) -> _Item | None:
-        if isinstance(op, StringLiteral):
-            return _RegexOpOptimizer._Item('literal', op.value)
+    @dc.dataclass(frozen=True)
+    class _Item(lang.Abstract):
+        @property
+        @abc.abstractmethod
+        def pat(self) -> str:
+            raise NotImplementedError
 
+    @dc.dataclass(frozen=True)
+    class _StringLiteral(_Item, lang.Final):
+        s: str
+
+        @property
+        def pat(self) -> str:
+            return re.escape(self.s)
+
+    @dc.dataclass(frozen=True)
+    class _CaseInsensitiveStringLiteral(_Item, lang.Final):
+        s: str
+
+        @property
+        def pat(self) -> str:
+            return f'(?i:{re.escape(self.s)})'
+
+    @dc.dataclass(frozen=True)
+    class _Regex(_Item, lang.Final):
+        ps: str
+
+        @property
+        def pat(self) -> str:
+            return self.ps
+
+    def _op_to_item(self, op: Op) -> _Item | None:
+        if isinstance(op, StringLiteral):
+            return _RegexOpOptimizer._StringLiteral(op.value)
         elif isinstance(op, CaseInsensitiveStringLiteral):
-            return _RegexOpOptimizer._Item('case_insensitive_literal', op.value)
+            return _RegexOpOptimizer._CaseInsensitiveStringLiteral(op.value)
+        elif isinstance(op, Regex):
+            return _RegexOpOptimizer._Regex(op.pat)
+        else:
+            return None
+
+    #
+
+    def _analyze_single_op(self, op: Op) -> _Item | None:
+        if isinstance(op, (StringLiteral, CaseInsensitiveStringLiteral, Regex)):
+            return None
 
         elif isinstance(op, RangeLiteral):
             lo = re.escape(op.value.lo)
             hi = re.escape(op.value.hi)
-            return _RegexOpOptimizer._Item('regex', f'[{lo}-{hi}]')
+            return _RegexOpOptimizer._Regex(f'[{lo}-{hi}]')
 
         elif isinstance(op, RuleRef):
             return None
 
-        elif isinstance(op, Regex):
-            return op.pat.pattern
-
         elif isinstance(op, Concat):
-            # FIXME: merge adjacent
             children = [self._dct[child] for child in op.children]
             if not all(ca is not None for ca in children):
+                # FIXME: merge adjacent
+                # if any(ca is not None for ca in children):
+                #     breakpoint()
                 return None
 
-            return _RegexOpOptimizer._Item('regex', ''.join(check.not_none(ca).pat for ca in children))
+            return _RegexOpOptimizer._Regex(''.join(check.not_none(ca).pat for ca in children))
 
         elif isinstance(op, Repeat):
             if (child := self._dct[op.child]) is None:
-                return None
+                if (child := self._op_to_item(op.child)) is None:
+                    return None
 
             # Wrap the child pattern in a non-capturing group if needed to ensure correct quantification. A pattern
             # needs wrapping if it contains multiple elements or operators (e.g., 'ab', 'a|b'). Single character classes
@@ -96,7 +123,7 @@ class _RegexOpOptimizer:
             else:
                 quantifier = f'{{{times.min},{times.max}}}'
 
-            return _RegexOpOptimizer._Item('regex', child_pat + quantifier)
+            return _RegexOpOptimizer._Regex(child_pat + quantifier)
 
         elif isinstance(op, Either):
             # Only convert Either if first_match is True, as regex alternation uses first-match semantics. ABNF Either
@@ -109,7 +136,7 @@ class _RegexOpOptimizer:
                 return None
 
             # Build regex alternation. Use a capturing group for the alternation
-            return _RegexOpOptimizer._Item('regex', f'({"|".join(ca.pat for ca in ta.cast("ta.Sequence[_RegexOpOptimizer._Item]", children))})')  # noqa
+            return _RegexOpOptimizer._Regex(f'({"|".join(ca.pat for ca in ta.cast("ta.Sequence[_RegexOpOptimizer._Item]", children))})')  # noqa
 
         else:
             raise TypeError(op)
@@ -139,7 +166,7 @@ class _RegexOpOptimizer:
             if new_children == op.children:
                 return op
 
-            return Concat(*new_children)
+            return concat(*new_children)
 
         elif isinstance(op, Repeat):
             new_child = self._transform_single_op(op.child)

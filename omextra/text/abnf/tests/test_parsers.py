@@ -4,7 +4,7 @@ from .. import parsing
 
 def test_parsers() -> None:
     for p, s in [
-        (ops.Concat(ops.StringLiteral('foo'), ops.StringLiteral('bar')), 'foobar'),
+        (ops.concat(ops.StringLiteral('foo'), ops.StringLiteral('bar')), 'foobar'),
         (ops.Repeat(ops.Repeat.Times(3), ops.StringLiteral('ab')), 'ababab'),
     ]:
         print(p)

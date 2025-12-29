@@ -7,6 +7,7 @@ from omlish import lang
 from .base import CompositeOp
 from .base import LeafOp
 from .base import Op
+from .base import OpTuple
 
 
 ##
@@ -106,19 +107,50 @@ class Concat(CompositeOp, lang.Final):
     def __init__(self, *children: Op) -> None:
         super().__init__()
 
-        for c in check.not_empty(children):
+        check.arg(len(children) > 1)
+        for i, c in enumerate(children):
             check.isinstance(c, Op)
+            if i:
+                check.state(not (isinstance(c, Concat) and isinstance(children[i - 1], Concat)))
         self._children = children
 
     @property
-    def children(self) -> tuple[Op, ...]:
+    def children(self) -> OpTuple:
         return self._children
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}@{id(self):x}({", ".join(map(repr, self._children))})'
 
+    def replace_children(self, *children: Op) -> Op:
+        if children == self._children:
+            return self
+        return concat(*children)
 
-concat = Concat
+
+def concat(*children: Op) -> Op:
+    if len(children) == 1:
+        return children[0]
+
+    check.not_empty(children)
+
+    lst: list[Op | list[Op]] = []
+    for c in children:
+        if (
+                lst and
+                isinstance(c, Concat) and
+                isinstance(ll := lst[-1], (Concat, list))
+        ):
+            if isinstance(ll, list):
+                ll.extend(c.children)
+            else:
+                lst.append([*lst.pop(), *c.children])
+        else:
+            lst.append(c)
+
+    if len(lst) == 1:
+        return Concat(*e) if isinstance(e := lst[0], list) else e
+
+    return Concat(*[Concat(*e) if isinstance(e, list) else e for e in lst])
 
 
 ##
@@ -161,11 +193,17 @@ class Repeat(CompositeOp, lang.Final):
         return self._child
 
     @property
-    def children(self) -> tuple[Op, ...]:
+    def children(self) -> OpTuple:
         return (self._child,)
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}@{id(self):x}({self._times}, {self._child!r})'
+
+    def replace_children(self, *children: Op) -> Op:
+        child = check.single(children)
+        if child == self._child:
+            return self
+        return Repeat(self._times, child)
 
 
 @ta.overload
@@ -238,7 +276,7 @@ class Either(CompositeOp, lang.Final):
         self._first_match = first_match
 
     @property
-    def children(self) -> tuple[Op, ...]:
+    def children(self) -> OpTuple:
         return self._children
 
     @property
@@ -251,6 +289,11 @@ class Either(CompositeOp, lang.Final):
             f'{", ".join(map(repr, self._children))}'
             f'{", first_match=True" if self._first_match else ""})'
         )
+
+    def replace_children(self, *children: Op) -> Op:
+        if children == self._children:
+            return self
+        return Repeat(*children, first_match=self._first_match)
 
 
 either = Either
@@ -265,6 +308,7 @@ class RuleRef(Op, lang.Final):
         super().__init__()
 
         self._name = check.non_empty_str(name)
+
         self._name_f = name.casefold()
 
     @property

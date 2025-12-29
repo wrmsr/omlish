@@ -5,6 +5,9 @@ from omlish import check
 from omlish import lang
 
 
+OpTuple: ta.TypeAlias = tuple['Op', ...]
+
+
 ##
 
 
@@ -26,7 +29,11 @@ class CompositeOp(Op, lang.Abstract):
 
     @property
     @abc.abstractmethod
-    def children(self) -> tuple[Op, ...]:
+    def children(self) -> OpTuple:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def replace_children(self, *children: Op) -> Op:
         raise NotImplementedError
 
 

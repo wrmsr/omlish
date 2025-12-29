@@ -33,7 +33,7 @@ def test_optimize_range_literal():
 def test_optimize_concat():
     """Test that a concat of literals is converted to a single Regex."""
 
-    op = ops.Concat(
+    op = ops.concat(
         ops.StringLiteral('hello'),
         ops.StringLiteral(' '),
         ops.StringLiteral('world'),
@@ -73,7 +73,7 @@ def test_optimize_repeat_complex():
 
     op = ops.Repeat(
         ops.Repeat.Times(0, None),
-        ops.Concat(
+        ops.concat(
             ops.StringLiteral('ab'),
             ops.StringLiteral('cd'),
         ),
@@ -128,7 +128,7 @@ def test_optimize_rule_ref_barrier():
 def test_optimize_concat_with_rule_ref():
     """Test that a concat containing a RuleRef is partially optimized."""
 
-    op = ops.Concat(
+    op = ops.concat(
         ops.StringLiteral('prefix'),
         ops.RuleRef('some-rule'),
         ops.StringLiteral('suffix'),
@@ -162,7 +162,7 @@ def test_optimize_already_regex():
 def test_optimize_nested():
     """Test a complex nested structure."""
 
-    op = ops.Concat(
+    op = ops.concat(
         ops.Repeat(
             ops.Repeat.Times(1, None),
             ops.RangeLiteral(ops.RangeLiteral.Range('a', 'z')),
@@ -185,7 +185,7 @@ def test_optimization_preserves_semantics():
     from ..parsing import parse
 
     # Create an op and its optimized version
-    op = ops.Concat(
+    op = ops.concat(
         ops.Repeat(
             ops.Repeat.Times(1, None),
             ops.CaseInsensitiveStringLiteral('ab'),
