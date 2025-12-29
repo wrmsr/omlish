@@ -5,20 +5,18 @@ Originally based on library by Charles Yeomans (see LICENSE file):
 
   https://github.com/declaresub/abnf/tree/561ced67c0a8afc869ad0de5b39dbe4f6e71b0d8/src/abnf
 
-It has however been nearly entirely rewritten.
+It has however been entirely rewritten.
 
 ====
 
 TODO:
- - cache lol
- - get greedier
- - match-powered optimizer
-  - greedily compile regexes
+ - opto
  - error reporting
- - codegen
+ - codegen?
  - fix_ws problem
   - auto? no, need to keep lines / offsets accurate for errors
   - relax CRLF rule by default?
+  - grammar transform? helper kwarg?
 """
 from omlish import dataclasses as _dc  # noqa
 
@@ -80,6 +78,10 @@ from .ops import (  # noqa
 
     RuleRef,
     rule,
+)
+
+from .opto import (  # noqa
+    optimize_op,
 )
 
 from .utils import (  # noqa

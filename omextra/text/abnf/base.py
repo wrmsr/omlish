@@ -128,12 +128,20 @@ class Rule(lang.Final):
         super().__init__()
 
         self._name = check.non_empty_str(name)
-        self._name_f = name.casefold()
         self._op = check.isinstance(op, Op)
         self._insignificant = insignificant
 
+        self._name_f = name.casefold()
+
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self._name!r})'
+
+    def replace_op(self, op: Op) -> 'Rule':
+        return Rule(
+            self._name,
+            op,
+            insignificant=self._insignificant,
+        )
 
     @property
     def name(self) -> str:
@@ -165,6 +173,7 @@ class Grammar(lang.Final):
         rules_by_name_f: dict[str, Rule] = {}
         rules_by_op: dict[Op, Rule] = {}
         for gr in rules:
+            check.isinstance(gr, Rule)
             check.not_in(gr, rules_set)
             check.not_in(gr._name, rules_by_name)  # noqa
             check.not_in(gr._name_f, rules_by_name_f)  # noqa

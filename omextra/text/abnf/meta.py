@@ -20,6 +20,7 @@ from .ops import literal
 from .ops import option
 from .ops import repeat
 from .ops import rule
+from .opto import optimize_op
 from .utils import fix_ws
 from .utils import parse_rules
 from .visitors import RuleMatchVisitor
@@ -558,8 +559,9 @@ class MetaGrammarRuleMatchVisitor(RuleMatchVisitor[ta.Any]):
 def parse_grammar(
         source: str,
         *,
-        no_core_rules: bool = False,
         root: str | None = None,
+        no_core_rules: bool = False,
+        no_optimize: bool = False,
         **kwargs: ta.Any,
 ) -> Grammar:
     source = fix_ws(source)
@@ -575,7 +577,16 @@ def parse_grammar(
     check.isinstance(mg_m.op, Repeat)
 
     mg_rmv = MetaGrammarRuleMatchVisitor(source)
-    rules = [mg_rmv.visit_match(gg_cm) for gg_cm in mg_m.children]
+    rules = [
+        check.isinstance(mg_rmv.visit_match(gg_cm), Rule)
+        for gg_cm in mg_m.children
+    ]
+
+    if not no_optimize:
+        rules = [
+            r.replace_op(optimize_op(r.op))
+            for r in rules
+        ]
 
     return Grammar(
         *rules,
