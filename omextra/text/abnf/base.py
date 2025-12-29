@@ -127,7 +127,7 @@ class CompositeOp(Op, lang.Abstract):
 
     @property
     @abc.abstractmethod
-    def children(self) -> ta.Sequence[Op]:
+    def children(self) -> tuple[Op, ...]:
         raise NotImplementedError
 
 

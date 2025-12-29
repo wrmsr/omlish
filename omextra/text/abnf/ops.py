@@ -111,7 +111,7 @@ class Concat(CompositeOp, lang.Final):
         self._children = children
 
     @property
-    def children(self) -> ta.Sequence[Op]:
+    def children(self) -> tuple[Op, ...]:
         return self._children
 
     def __repr__(self) -> str:
@@ -161,7 +161,7 @@ class Repeat(CompositeOp, lang.Final):
         return self._child
 
     @property
-    def children(self) -> ta.Sequence[Op]:
+    def children(self) -> tuple[Op, ...]:
         return (self._child,)
 
     def __repr__(self) -> str:
@@ -238,7 +238,7 @@ class Either(CompositeOp, lang.Final):
         self._first_match = first_match
 
     @property
-    def children(self) -> ta.Sequence[Op]:
+    def children(self) -> tuple[Op, ...]:
         return self._children
 
     @property

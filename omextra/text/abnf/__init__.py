@@ -17,6 +17,7 @@ TODO:
   - auto? no, need to keep lines / offsets accurate for errors
   - relax CRLF rule by default?
   - grammar transform? helper kwarg?
+ - kwarg to mark uppercase rules insignificant
 """
 from omlish import dataclasses as _dc  # noqa
 
