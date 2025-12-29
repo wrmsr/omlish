@@ -10,6 +10,7 @@ from .ops import either
 from .ops import literal
 from .ops import repeat
 from .ops import rule
+from .opto import optimize_grammar
 
 
 ##
@@ -138,4 +139,5 @@ CORE_RULES: ta.Sequence[Rule] = [
 ]
 
 
-CORE_GRAMMAR = Grammar(*CORE_RULES)
+RAW_CORE_GRAMMAR = Grammar(*CORE_RULES)
+CORE_GRAMMAR = optimize_grammar(RAW_CORE_GRAMMAR)

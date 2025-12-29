@@ -410,11 +410,14 @@ META_GRAMMAR_RULES: ta.Sequence[Rule] = [
 ]
 
 
-META_GRAMMAR = Grammar(
+RAW_META_GRAMMAR = Grammar(
     *CORE_RULES,
     *META_GRAMMAR_RULES,
     root='rulelist',
 )
+
+# META_GRAMMAR = optimize_grammar(RAW_META_GRAMMAR)
+META_GRAMMAR = RAW_META_GRAMMAR
 
 
 ##

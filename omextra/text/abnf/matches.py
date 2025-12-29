@@ -83,11 +83,17 @@ class Match(ta.NamedTuple):
 
     #
 
+    def replace_children(self, *children: 'Match') -> 'Match':
+        if len(children) == len(self.children) and all(l is r for l, r in zip(self.children, children)):
+            return self
+
+        return self._replace(children=children)
+
     def map_children(self, fn: ta.Callable[['Match'], 'Match']) -> 'Match':
-        return self._replace(children=tuple(map(fn, self.children)))
+        return self.replace_children(*map(fn, self.children))
 
     def flat_map_children(self, fn: ta.Callable[['Match'], ta.Iterable['Match']]) -> 'Match':
-        return self._replace(children=tuple(itertools.chain.from_iterable(map(fn, self.children))))
+        return self.replace_children(*itertools.chain.from_iterable(map(fn, self.children)))
 
 
 def longest_match(ms: ta.Iterable[Match]) -> Match | None:

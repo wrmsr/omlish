@@ -97,7 +97,7 @@ class _RegexRegexItem(_RegexItem, lang.Final):
         return self.ps
 
 
-def _regex_transform_op_(op: Op) -> _RegexItem | None:
+def _regex_item_transform_op(op: Op) -> _RegexItem | None:
     if isinstance(op, (StringLiteral, CaseInsensitiveStringLiteral, Regex)):
         return None
 
@@ -110,17 +110,15 @@ def _regex_transform_op_(op: Op) -> _RegexItem | None:
         return None
 
     elif isinstance(op, Concat):
-        children = [self._dct[child] for child in op.children]
+        # FIXME: merge adjacent
+        children = [_regex_item_transform_op(child) or _RegexItem.of(child) for child in op.children]
         if not all(ca is not None for ca in children):
-            # FIXME: merge adjacent
-            # if any(ca is not None for ca in children):
-            #     breakpoint()
             return None
 
-        return _RegexOpOptimizer._Regex(''.join(check.not_none(ca).pat for ca in children))
+        return _RegexRegexItem(''.join(check.not_none(ca).pat for ca in children))
 
     elif isinstance(op, Repeat):
-        child = _RegexItem.of(_regex_transform_single_op(op.child))
+        child = _RegexItem.of(_regex_item_transform_op(op.child))
         if child is None:
             return None
 
@@ -155,7 +153,8 @@ def _regex_transform_op_(op: Op) -> _RegexItem | None:
         if not op.first_match:
             return None
 
-        children = [self._dct[child] for child in op.children]
+        # FIXME: merge adjacent
+        children = [_regex_item_transform_op(child) or _RegexItem.of(child) for child in op.children]
         if not all(ca is not None for ca in children):
             return None
 
@@ -166,13 +165,12 @@ def _regex_transform_op_(op: Op) -> _RegexItem | None:
             ')',
         ]))
 
-
     else:
         raise TypeError(op)
 
 
 def _regex_transform_op(op: Op) -> Op:
-    v = _regex_transform_op_(op)
+    v = _regex_item_transform_op(op)
 
     if v is None:
         return op

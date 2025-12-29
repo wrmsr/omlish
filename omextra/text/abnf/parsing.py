@@ -230,7 +230,7 @@ class _DebugParser(_Parser):
             ps = check.isinstance(op, RuleRef).name
         else:
             ps = self._op_str(op)
-        body = f'{start}:{self._source[start]!r} {ps}'
+        body = f'{start}:{self._source[start] if start < len(self._source) else ""!r} {ps}'
 
         if self._level > 2:
             self._write(f'{ws}+ {body}')

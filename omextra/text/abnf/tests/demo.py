@@ -16,7 +16,7 @@ def parse_demo_grammar() -> Grammar:
     return parse_grammar(
         gram_src,
         root='config',
-        # debug=True,
+        debug=True,
     )
 
 
