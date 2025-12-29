@@ -7,12 +7,12 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 
-from .base import Grammar
-from .base import Match
 from .base import Op
-from .base import Rule
 from .core import CORE_RULES
 from .errors import AbnfGrammarParseError
+from .grammars import Grammar
+from .grammars import Rule
+from .matches import Match
 from .ops import Repeat
 from .ops import concat
 from .ops import either

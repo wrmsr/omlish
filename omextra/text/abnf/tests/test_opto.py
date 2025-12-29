@@ -182,7 +182,7 @@ def test_optimize_nested():
 def test_optimization_preserves_semantics():
     """Test that optimization preserves matching semantics."""
 
-    from ..base import parse
+    from ..parsing import parse
 
     # Create an op and its optimized version
     op = ops.Concat(

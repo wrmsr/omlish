@@ -32,16 +32,7 @@ _dc.init_package(
 
 
 from .base import (  # noqa
-    Match,
-    longest_match,
-
     Op,
-
-    Rule,
-    Grammar,
-
-    iter_parse,
-    parse,
 )
 
 from .core import (  # noqa
@@ -51,6 +42,17 @@ from .core import (  # noqa
 from .errors import (  # noqa
     AbnfError,
     AbnfGrammarParseError,
+)
+
+from .grammars import (  # noqa
+    Rule,
+    Grammar,
+)
+
+from .matches import (  # noqa
+    Match,
+
+    longest_match,
 )
 
 from .meta import (  # noqa
@@ -83,6 +85,11 @@ from .ops import (  # noqa
 
 from .opto import (  # noqa
     optimize_op,
+)
+
+from .parsing import (  # noqa
+    iter_parse,
+    parse,
 )
 
 from .utils import (  # noqa

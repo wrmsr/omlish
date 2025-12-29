@@ -3,7 +3,7 @@ import os.path
 from omlish import check
 from omlish import lang
 
-from ..base import Grammar
+from ..grammars import Grammar
 from ..meta import parse_grammar
 from ..utils import fix_ws
 

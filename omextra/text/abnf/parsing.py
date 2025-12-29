@@ -2,10 +2,12 @@ import typing as ta
 
 from omlish import check
 
-from .base import Grammar
-from .base import Match
 from .base import Op
+from .grammars import Grammar
+from .grammars import Rule
 from .internal import Regex
+from .matches import Match
+from .matches import longest_match
 from .ops import CaseInsensitiveStringLiteral
 from .ops import Concat
 from .ops import Either
@@ -248,7 +250,7 @@ class _DebugParser(_Parser):
                 self._write(f'{ws}- {body}')
 
 
-##
+#
 
 
 def _iter_parse(
@@ -276,3 +278,46 @@ def _iter_parse(
         )
 
     return parser.iter_parse(op, start)
+
+
+##
+
+
+def iter_parse(
+        obj: Grammar | Rule | Op,
+        src: str,
+        *,
+        root: str | None = None,
+        start: int = 0,
+) -> ta.Iterator[Match]:
+    if isinstance(obj, Grammar):
+        gram = obj
+    elif isinstance(obj, Rule):
+        check.none(root)
+        gram = Grammar(obj, root=obj)
+    elif isinstance(obj, Op):
+        check.none(root)
+        gram = Grammar(Rule('root', obj), root='root')
+    else:
+        raise TypeError(obj)
+
+    return gram.iter_parse(
+        src,
+        root,
+        start=start,
+    )
+
+
+def parse(
+        obj: Grammar | Rule | Op,
+        src: str,
+        *,
+        root: str | None = None,
+        start: int = 0,
+) -> Match | None:
+    return longest_match(iter_parse(
+        obj,
+        src,
+        root=root,
+        start=start,
+    ))

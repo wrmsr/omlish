@@ -4,8 +4,8 @@ import typing as ta
 
 from omlish import check
 
-from .base import Grammar
-from .base import Match
+from .grammars import Grammar
+from .matches import Match
 from .ops import RuleRef
 
 

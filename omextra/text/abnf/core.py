@@ -3,8 +3,8 @@ https://datatracker.ietf.org/doc/html/rfc5234
 """
 import typing as ta
 
-from .base import Grammar
-from .base import Rule
+from .grammars import Grammar
+from .grammars import Rule
 from .ops import concat
 from .ops import either
 from .ops import literal

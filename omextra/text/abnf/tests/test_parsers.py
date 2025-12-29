@@ -1,5 +1,5 @@
-from .. import base as ba
 from .. import ops
+from .. import parsing
 
 
 def test_parsers() -> None:
@@ -9,5 +9,5 @@ def test_parsers() -> None:
     ]:
         print(p)
         print(repr(s))
-        print(ba.parse(p, s))
+        print(parsing.parse(p, s))
         print()

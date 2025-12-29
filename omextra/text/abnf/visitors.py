@@ -5,8 +5,8 @@ from omlish import collections as col
 from omlish import dispatch
 from omlish import lang
 
-from .base import Match
 from .base import Op
+from .matches import Match
 from .ops import RuleRef
 
 
