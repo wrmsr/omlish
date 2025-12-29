@@ -60,43 +60,120 @@ class Rule(lang.Final):
         return self._insignificant
 
 
-class Grammar(lang.Final):
-    def __init__(
-            self,
-            *rules: Rule,
-            root: Rule | str | None = None,
-    ) -> None:
+#
+
+
+class RulesCollection(lang.Final, ta.Collection[Rule]):
+    def __init__(self, *rules: ta.Union[Rule, 'RulesCollection']) -> None:
         super().__init__()
 
         rules_set: set[Rule] = set()
         rules_by_name: dict[str, Rule] = {}
         rules_by_name_f: dict[str, Rule] = {}
         rules_by_op: dict[Op, Rule] = {}
-        for gr in rules:
+
+        def add(gr: Rule) -> None:
             check.isinstance(gr, Rule)
+
             check.not_in(gr, rules_set)
             check.not_in(gr._name, rules_by_name)  # noqa
             check.not_in(gr._name_f, rules_by_name_f)  # noqa
             check.not_in(gr._op, rules_by_op)  # noqa
+
             rules_set.add(gr)
             rules_by_name[gr._name] = gr  # noqa
             rules_by_name_f[gr._name_f] = gr  # noqa
             rules_by_op[gr._op] = gr  # noqa
-        self._rules = rules_set
+
+        for e in rules:
+            if isinstance(e, RulesCollection):
+                for c in e:
+                    add(c)
+            else:
+                add(e)
+
+        self._rules_set = rules_set
         self._rules_by_name: ta.Mapping[str, Rule] = rules_by_name
         self._rules_by_name_f: ta.Mapping[str, Rule] = rules_by_name_f
         self._rules_by_op: ta.Mapping[Op, Rule] = rules_by_op
 
+    @property
+    def rules_set(self) -> ta.AbstractSet[Rule]:
+        return self._rules_set
+
+    @property
+    def rules_by_name(self) -> ta.Mapping[str, Rule]:
+        return self._rules_by_name
+
+    @property
+    def rules_by_name_f(self) -> ta.Mapping[str, Rule]:
+        return self._rules_by_name_f
+
+    @property
+    def rules_by_op(self) -> ta.Mapping[Op, Rule]:
+        return self._rules_by_op
+
+    #
+
+    def __len__(self) -> int:
+        return len(self._rules_set)
+
+    def __iter__(self) -> ta.Iterator[Rule]:
+        return iter(self._rules_set)
+
+    def __contains__(self, item: Rule) -> bool:  # type: ignore[override]
+        return item in self._rules_set
+
+    #
+
+    def rule(self, name: str) -> Rule | None:
+        return self._rules_by_name_f.get(name.casefold())
+
+
+##
+
+
+class Grammar(lang.Final):
+    def __init__(
+            self,
+            *rules: Rule | RulesCollection,
+            root: Rule | str | None = None,
+    ) -> None:
+        super().__init__()
+
+        if len(rules) == 1 and isinstance(r0 := rules[0], RulesCollection):
+            self._rules = r0
+        else:
+            self._rules = RulesCollection(*rules)
+
         if isinstance(root, str):
-            root = rules_by_name_f[root.casefold()]
+            root = self._rules.rules_by_name_f[root.casefold()]
         self._root = root
+
+    @property
+    def rules(self) -> RulesCollection:
+        return self._rules
 
     @property
     def root(self) -> Rule | None:
         return self._root
 
+    #
+
     def rule(self, name: str) -> Rule | None:
-        return self._rules_by_name_f.get(name.casefold())
+        return self._rules.rule(name)
+
+    def replace_rules(self, *rules: Rule) -> 'Grammar':
+        rc = RulesCollection(*rules)
+        if rc.rules_set == self._rules.rules_set:
+            return self
+
+        return Grammar(
+            rc,
+            root=self._root,
+        )
+
+    #
 
     def iter_parse(
             self,
@@ -112,7 +189,7 @@ class Grammar(lang.Final):
                 raise AbnfError('No root or default root specified')
         else:
             if isinstance(root, str):
-                root = self._rules_by_name_f[root.casefold()]
+                root = self._rules.rules_by_name_f[root.casefold()]
             else:
                 root = check.in_(check.isinstance(root, Rule), self._rules)
 

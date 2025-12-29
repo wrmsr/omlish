@@ -20,7 +20,7 @@ from .ops import literal
 from .ops import option
 from .ops import repeat
 from .ops import rule
-from .opto import optimize_op
+from .opto import optimize_grammar
 from .utils import fix_ws
 from .utils import parse_rules
 from .visitors import RuleMatchVisitor
@@ -582,14 +582,13 @@ def parse_grammar(
         for gg_cm in mg_m.children
     ]
 
-    if not no_optimize:
-        rules = [
-            r.replace_op(optimize_op(r.op))
-            for r in rules
-        ]
-
-    return Grammar(
+    gram = Grammar(
         *rules,
         *(CORE_RULES if not no_core_rules else []),
         root=root,
     )
+
+    if not no_optimize:
+        gram = optimize_grammar(gram)
+
+    return gram

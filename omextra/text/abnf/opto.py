@@ -6,17 +6,18 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 
+from .base import CompositeOp
 from .base import Op
+from .grammars import Grammar
 from .internal import Regex
 from .ops import CaseInsensitiveStringLiteral
-from .base import CompositeOp
-from .ops import concat
 from .ops import Concat
 from .ops import Either
 from .ops import RangeLiteral
 from .ops import Repeat
 from .ops import RuleRef
 from .ops import StringLiteral
+from .ops import concat
 
 
 ##
@@ -67,7 +68,7 @@ class _RegexOpOptimizer:
         elif isinstance(op, CaseInsensitiveStringLiteral):
             return _RegexOpOptimizer._CaseInsensitiveStringLiteral(op.value)
         elif isinstance(op, Regex):
-            return _RegexOpOptimizer._Regex(op.pat)
+            return _RegexOpOptimizer._Regex(op.pat.pattern)
         else:
             return None
 
@@ -197,3 +198,24 @@ def optimize_op(op: Op) -> Op:
     op = _RegexOpOptimizer().transform_op(op)
 
     return op
+
+
+##
+
+
+def _inline_insignificant_rules(gram: Grammar) -> Grammar:
+    return gram
+
+
+##
+
+
+def optimize_grammar(gram: Grammar) -> Grammar:
+    gram = _inline_insignificant_rules(gram)
+
+    gram = gram.replace_rules(*[
+        r.replace_op(optimize_op(r.op))
+        for r in gram.rules
+    ])
+
+    return gram

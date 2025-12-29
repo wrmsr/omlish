@@ -124,6 +124,7 @@ class Concat(CompositeOp, lang.Final):
     def replace_children(self, *children: Op) -> Op:
         if children == self._children:
             return self
+
         return concat(*children)
 
 
@@ -143,7 +144,7 @@ def concat(*children: Op) -> Op:
             if isinstance(ll, list):
                 ll.extend(c.children)
             else:
-                lst.append([*lst.pop(), *c.children])
+                lst.append([*ta.cast(list, lst.pop()), *c.children])
         else:
             lst.append(c)
 
@@ -203,6 +204,7 @@ class Repeat(CompositeOp, lang.Final):
         child = check.single(children)
         if child == self._child:
             return self
+
         return Repeat(self._times, child)
 
 
@@ -293,7 +295,8 @@ class Either(CompositeOp, lang.Final):
     def replace_children(self, *children: Op) -> Op:
         if children == self._children:
             return self
-        return Repeat(*children, first_match=self._first_match)
+
+        return Either(*children, first_match=self._first_match)
 
 
 either = Either

@@ -46,6 +46,8 @@ from .errors import (  # noqa
 
 from .grammars import (  # noqa
     Rule,
+    RulesCollection,
+
     Grammar,
 )
 
@@ -81,10 +83,6 @@ from .ops import (  # noqa
 
     RuleRef,
     rule,
-)
-
-from .opto import (  # noqa
-    optimize_op,
 )
 
 from .parsing import (  # noqa

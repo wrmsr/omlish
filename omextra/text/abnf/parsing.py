@@ -37,6 +37,8 @@ class _Parser:
         self._source = source
         self._max_steps = max_steps
 
+        self._rules = self._grammar._rules  # Noqa
+
         self._dispatch: dict[type[Op], ta.Any] = {
             StringLiteral: self._iter_parse_string_literal,
             CaseInsensitiveStringLiteral: self._iter_parse_case_insensitive_string_literal,
@@ -162,7 +164,7 @@ class _Parser:
                 return
 
     def _iter_parse_rule_ref(self, op: RuleRef, start: int) -> ta.Iterator[Match]:
-        cp = self._grammar._rules_by_name_f[op._name_f].op  # noqa
+        cp = self._rules._rules_by_name_f[op._name_f].op  # noqa
         for cm in self.iter_parse(cp, start):
             yield Match(op, cm.start, cm.end, (cm,))
 
