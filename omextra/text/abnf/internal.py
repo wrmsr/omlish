@@ -29,4 +29,4 @@ class Regex(InternalOp, LeafOp, lang.Final):
         return self._pat
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}@{id(self):x}({self._pat!r})'
+        return f'{self.__class__.__name__}@{id(self):x}({self._pat.pattern!r})'

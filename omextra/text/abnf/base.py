@@ -11,6 +11,7 @@ from .errors import AbnfIncompleteParseError
 
 
 with lang.auto_proxy_import(globals()):
+    from . import internal
     from . import ops
     from . import parsing
 
@@ -54,6 +55,8 @@ class Match(ta.NamedTuple):
             write(f'literal<{self.start}-{self.end}>({o.value!r})')
         elif isinstance(o, ops.RangeLiteral):
             write(f'literal<{self.start}-{self.end}>({o.value.lo!r}-{o.value.hi!r})')
+        elif isinstance(o, internal.Regex):
+            write(f'regex<{self.start}-{self.end}>({o.pat.pattern!r})')
         else:
             write(f'{o.__class__.__name__.lower()}<{self.start}-{self.end}>')
             if isinstance(o, ops.RuleRef):

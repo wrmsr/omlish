@@ -165,7 +165,8 @@ class _Parser:
             yield Match(op, cm.start, cm.end, (cm,))
 
     def _iter_parse_regex(self, op: Regex, start: int) -> ta.Iterator[Match]:
-        raise NotImplementedError
+        if (m := op._pat.match(self._source, start)) is not None:  # noqa
+            yield Match(op, start, m.end(), ())
 
     def iter_parse(self, op: Op, start: int) -> ta.Iterator[Match]:
         if (key := (op, start)) in self._memo:

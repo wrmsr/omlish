@@ -55,8 +55,8 @@ class RangeLiteral(Literal, lang.Final):
         hi: str
 
         def __post_init__(self) -> None:
-            check.non_empty_str(self.lo)
-            check.non_empty_str(self.hi)
+            for c in (self.lo, self.hi):
+                check.equal(len(check.non_empty_str(c)), 1)
             check.state(self.hi >= self.lo)
 
     def __init__(self, value: Range) -> None:
