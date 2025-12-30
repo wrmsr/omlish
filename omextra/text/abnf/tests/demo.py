@@ -3,12 +3,12 @@ import os.path
 from omlish import check
 from omlish import lang
 
+from ..grammars import Channel
 from ..grammars import Grammar
 from ..meta import parse_grammar
+from ..utils import filter_match_channels
 from ..utils import fix_ws
 from ..utils import only_match_rules
-from ..utils import filter_match_channels
-from ..grammars import Channel
 
 
 @lang.cached_function

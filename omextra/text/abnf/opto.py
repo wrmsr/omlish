@@ -111,9 +111,9 @@ def _regex_item_transform_op(op: Op) -> _RegexItem | None:
         return None
 
     elif isinstance(op, Concat):
-        # FIXME: merge adjacent
         children = [_regex_item_transform_op(child) or _RegexItem.of(child) for child in op.children]
         if not all(ca is not None for ca in children):
+            # FIXME: merge adjacent
             return None
 
         return _RegexRegexItem(''.join(check.not_none(ca).pat for ca in children))
@@ -154,9 +154,9 @@ def _regex_item_transform_op(op: Op) -> _RegexItem | None:
         if not op.first_match:
             return None
 
-        # FIXME: merge adjacent
         children = [_regex_item_transform_op(child) or _RegexItem.of(child) for child in op.children]
         if not all(ca is not None for ca in children):
+            # FIXME: merge adjacent
             return None
 
         # Build regex alternation. Use a capturing group for the alternation
