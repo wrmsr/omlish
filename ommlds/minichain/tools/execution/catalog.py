@@ -4,7 +4,7 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 
-from ...content.types import Content
+from ...content.content import Content
 from ..fns import ToolFn
 from ..types import ToolSpec
 from .context import ToolContext

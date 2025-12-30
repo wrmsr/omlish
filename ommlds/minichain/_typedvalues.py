@@ -23,14 +23,21 @@ def _tv_field_coercer(
 ) -> ta.Callable[[ta.Sequence], tv.TypedValues]:
     if isinstance(tvc, tuple):
         check.arg(all(issubclass(e, tv.TypedValue) for e in tvc))
+
     else:
         check.issubclass(tvc, tv.TypedValue)
 
     def inner(seq):
-        return tv.TypedValues(*[
-            check.isinstance(e, tvc)
-            for e in check.isinstance(seq, ta.Sequence)
-        ])
+        if isinstance(seq, tv.TypedValues):
+            for e in seq:
+                check.isinstance(e, tvc)
+            return seq
+
+        else:
+            return tv.TypedValues(*[
+                check.isinstance(e, tvc)
+                for e in check.isinstance(seq, ta.Sequence)
+            ])
 
     return inner
 

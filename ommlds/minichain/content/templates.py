@@ -2,8 +2,8 @@ from omlish import dataclasses as dc
 from omlish import lang
 from omlish.text import templating as tpl
 
+from .content import LeafContent
 from .dynamic import DynamicContent
-from .types import LeafContent
 
 
 ##

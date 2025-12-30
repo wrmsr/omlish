@@ -1,10 +1,10 @@
 from omlish import check
 from omlish.text import templating as tpl
 
+from ..content import Content
 from ..metadata import ContentOriginal
 from ..templates import TemplateContent
 from ..text import TextContent
-from ..types import Content
 from .base import ContentTransform
 
 

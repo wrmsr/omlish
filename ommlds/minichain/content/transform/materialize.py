@@ -3,7 +3,7 @@ import abc
 from omlish import lang
 from omlish.text import templating as tpl
 
-from ..types import Content
+from ..content import Content
 from .recursive import PlaceholderContents
 from .recursive import RecursiveContentMaterializer
 from .templates import TemplateContentMaterializer

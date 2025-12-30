@@ -1,8 +1,8 @@
 from omlish import dataclasses as dc
 from omlish import lang
 
+from .content import Content
 from .standard import StandardContent
-from .types import Content
 
 
 ##

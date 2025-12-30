@@ -8,7 +8,7 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
-from ...content.types import Content
+from ...content.content import Content
 from ..fns import ToolFn
 from ..fns import execute_tool_fn
 from .context import ToolContext

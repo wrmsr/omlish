@@ -7,11 +7,11 @@ from ...metadata import Uuid
 from .._marshal import MarshalContent
 from .._marshal import MarshalRawContent
 from .._marshal import MarshalSingleRawContent
+from ..content import Content
 from ..raw import RawContent
 from ..raw import SingleRawContent
 from ..sequence import InlineContent
 from ..text import TextContent
-from ..types import Content
 
 
 @dc.dataclass(frozen=True)

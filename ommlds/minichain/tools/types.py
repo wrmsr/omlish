@@ -10,7 +10,7 @@ from omlish import lang
 from omlish import marshal as msh
 from omlish import reflect as rfl
 
-from ..content.types import Content
+from ..content.content import Content
 
 
 msh.register_global_module_import('._marshal', __package__)

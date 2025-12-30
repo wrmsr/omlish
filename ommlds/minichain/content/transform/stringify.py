@@ -3,8 +3,8 @@ import typing as ta
 
 from omlish import dispatch
 
+from ..content import Content
 from ..text import TextContent
-from ..types import Content
 
 
 ##

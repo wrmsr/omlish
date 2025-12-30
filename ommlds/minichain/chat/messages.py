@@ -1,3 +1,7 @@
+"""
+TODO:
+ - channel? reasoning / thinking?
+"""
 import operator
 import typing as ta
 
@@ -8,10 +12,11 @@ from omlish import marshal as msh
 from omlish import typedvalues as tv
 
 from .._typedvalues import _tv_field_metadata
-from ..content.types import Content
+from ..content.content import Content
 from ..metadata import MetadataContainer
 from ..tools.types import ToolUse
 from ..tools.types import ToolUseResult
+from .metadata import MessageMetadata
 from .metadata import MessageMetadatas
 
 
@@ -42,10 +47,26 @@ class Message(  # noqa
         return check.isinstance(self._metadata, tv.TypedValues)
 
     def with_metadata(self, *mds: MessageMetadatas, override: bool = False) -> ta.Self:
-        return dc.replace(self, _metadata=tv.TypedValues(*self._metadata, *mds, override=override))
+        nmd = (md := self.metadata).update(*mds, override=override)
+        if nmd is md:
+            return self
+        return dc.replace(self, _metadata=nmd)
+
+    def replace(self, **kwargs: ta.Any) -> ta.Self:
+        if (n := dc.replace_is_not(self, **kwargs)) is self:
+            return self
+        return n.with_metadata(MessageOriginal(self), override=True)
 
 
 Chat: ta.TypeAlias = ta.Sequence[Message]
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class MessageOriginal(MessageMetadata, lang.Final):
+    c: Message
 
 
 ##

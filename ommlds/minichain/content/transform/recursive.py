@@ -3,12 +3,12 @@ import typing as ta
 from omlish import check
 from omlish import dataclasses as dc
 
+from ..content import Content
 from ..namespaces import ContentNamespace
 from ..namespaces import NamespaceContent
 from ..placeholders import PlaceholderContent
 from ..placeholders import PlaceholderContentKey
 from ..recursive import RecursiveContent
-from ..types import Content
 from .base import ContentTransform
 
 

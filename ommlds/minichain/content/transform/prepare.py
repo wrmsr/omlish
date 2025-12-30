@@ -8,7 +8,7 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
-from ..types import Content
+from ..content import Content
 from .materialize import materialize_content
 from .stringify import stringify_content
 

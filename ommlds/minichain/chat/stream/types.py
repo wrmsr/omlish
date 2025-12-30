@@ -4,7 +4,7 @@ from omlish import dataclasses as dc
 from omlish import lang
 from omlish import marshal as msh
 
-from ...content.types import Content
+from ...content.content import Content
 from ...stream.services import StreamOptions
 from ...types import Option
 from ...types import Output

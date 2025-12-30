@@ -23,7 +23,7 @@ from omlish import metadata as md
 from omlish import reflect as rfl
 from omlish.lite.cached import cached_nullary
 
-from ..content.types import Content
+from ..content.content import Content
 from .types import EnumToolDtype
 from .types import MappingToolDtype
 from .types import NullableToolDtype

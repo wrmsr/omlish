@@ -10,8 +10,8 @@ from omlish import lang
 from omlish import marshal as msh
 from omlish import reflect as rfl
 
+from ..content.content import Content
 from ..content.json import JsonContent
-from ..content.types import Content
 
 
 D = ta.TypeVar('D')

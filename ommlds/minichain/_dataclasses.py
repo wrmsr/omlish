@@ -3411,6 +3411,7 @@ def _process_dataclass__8a0c9fe2c4d9f2351ede8bd96b873d4507e2617b():
     cls_names=(
         ('ommlds.minichain.backends.impls.anthropic.stream', 'ContentAiDelta'),
         ('ommlds.minichain.backends.impls.mistral', 'ContentOriginal'),
+        ('ommlds.minichain.backends.impls.mistral', 'MessageOriginal'),
     ),
 )
 def _process_dataclass__236614658d6f97131f18c84f79eabfe1f3abcc04():

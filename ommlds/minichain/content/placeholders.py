@@ -3,8 +3,8 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
+from .content import LeafContent
 from .dynamic import DynamicContent
-from .types import LeafContent
 
 
 ##

@@ -262,6 +262,14 @@ with _lang.auto_proxy_init(
         CodeContent,
     )
 
+    from .content.content import (  # noqa
+        BaseContent,
+        LeafContent,
+
+        Content,
+        CONTENT_TYPES,
+    )
+
     from .content.dynamic import (  # noqa
         DynamicContent,
     )
@@ -340,14 +348,6 @@ with _lang.auto_proxy_init(
 
     from .content.text import (  # noqa
         TextContent,
-    )
-
-    from .content.types import (  # noqa
-        BaseContent,
-        LeafContent,
-
-        Content,
-        CONTENT_TYPES,
     )
 
     ##

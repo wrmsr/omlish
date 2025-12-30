@@ -2,7 +2,7 @@ import abc
 
 from omlish import lang
 
-from ...content.types import Content
+from ...content.content import Content
 
 
 ##

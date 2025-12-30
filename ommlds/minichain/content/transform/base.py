@@ -3,13 +3,13 @@ import collections.abc
 from omlish import dispatch
 from omlish import lang
 
+from ..content import Content
+from ..content import LeafContent
 from ..quote import QuoteContent
 from ..section import SectionContent
 from ..sequence import SequenceContent
 from ..tag import TagContent
 from ..text import TextContent
-from ..types import Content
-from ..types import LeafContent
 
 
 ##

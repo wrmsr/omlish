@@ -5,7 +5,7 @@ from omlish import lang
 
 from ..metadata import CommonMetadata
 from ..metadata import Metadata
-from .types import Content
+from .content import Content
 
 
 ##

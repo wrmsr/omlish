@@ -1,8 +1,8 @@
 import typing as ta
 
+from ...content.content import Content
 from ...content.transform.materialize import ContentMaterializer
 from ...content.transform.materialize import DefaultContentMaterializer
-from ...content.types import Content
 from .context import ToolContext
 from .errors import ToolExecutionError
 from .executors import ToolExecutor

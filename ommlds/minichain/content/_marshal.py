@@ -8,6 +8,9 @@ from omlish import marshal as msh
 from omlish import reflect as rfl
 
 from .code import CodeContent  # noqa
+from .content import CONTENT_TYPES  # noqa
+from .content import BaseContent
+from .content import Content
 from .dynamic import DynamicContent  # noqa
 from .images import ImageContent  # noqa
 from .json import JsonContent  # noqa
@@ -23,9 +26,6 @@ from .sequence import InlineContent  # noqa
 from .sequence import ItemListContent  # noqa
 from .tag import TagContent  # noqa
 from .text import TextContent  # noqa
-from .types import CONTENT_TYPES  # noqa
-from .types import BaseContent
-from .types import Content
 
 
 ##
