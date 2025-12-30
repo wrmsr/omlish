@@ -45,6 +45,7 @@ from .errors import (  # noqa
 )
 
 from .grammars import (  # noqa
+    Channel,
     Rule,
     RulesCollection,
 

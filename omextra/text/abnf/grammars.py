@@ -1,3 +1,4 @@
+import enum
 import typing as ta
 
 from omlish import check
@@ -17,30 +18,37 @@ with lang.auto_proxy_import(globals()):
 ##
 
 
+class Channel(enum.Enum):
+    STRUCTURE = enum.auto()
+    CONTENT = enum.auto()
+    COMMENT = enum.auto()
+    SPACE = enum.auto()
+
+
 class Rule(lang.Final):
     def __init__(
             self,
             name: str,
             op: Op,
             *,
-            insignificant: bool = False,
+            channel: Channel = Channel.STRUCTURE,
     ) -> None:
         super().__init__()
 
         self._name = check.non_empty_str(name)
         self._op = check.isinstance(op, Op)
-        self._insignificant = insignificant
+        self._channel = channel
 
         self._name_f = name.casefold()
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({self._name!r})'
+        return f'{self.__class__.__name__}({self._name!r}, channel={self._channel.name})'
 
     def replace_op(self, op: Op) -> 'Rule':
         return Rule(
             self._name,
             op,
-            insignificant=self._insignificant,
+            channel=self._channel,
         )
 
     @property
@@ -56,8 +64,8 @@ class Rule(lang.Final):
         return self._op
 
     @property
-    def insignificant(self) -> bool:
-        return self._insignificant
+    def channel(self) -> Channel:
+        return self._channel
 
 
 #

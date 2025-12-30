@@ -13,6 +13,7 @@ from .errors import AbnfGrammarParseError
 from .grammars import Grammar
 from .ops import RuleRef
 from .grammars import Rule
+from .grammars import Channel
 from .matches import Match
 from .ops import Repeat
 from .ops import concat
@@ -108,7 +109,7 @@ META_GRAMMAR_RULES: ta.Sequence[Rule] = [
                 rule('WSP'),
             ),
         ),
-        insignificant=True,
+        channel=Channel.SPACE,
     ),
 
     Rule(
@@ -117,7 +118,7 @@ META_GRAMMAR_RULES: ta.Sequence[Rule] = [
             rule('comment'),
             rule('CRLF'),
         ),
-        insignificant=True,
+        channel=Channel.SPACE,
     ),
 
     Rule(
@@ -132,6 +133,7 @@ META_GRAMMAR_RULES: ta.Sequence[Rule] = [
             ),
             rule('CRLF'),
         ),
+        channel=Channel.COMMENT,
     ),
 
     Rule(
