@@ -7,26 +7,25 @@ from omlish import lang
 from omlish import marshal as msh
 from omlish import reflect as rfl
 
-from .code import BlockCodeContent  # noqa
-from .code import InlineCodeContent  # noqa
-from .content import CONTENT_TYPES  # noqa
+from .code import BlockCodeContent
+from .code import InlineCodeContent
 from .content import BaseContent
 from .content import Content
-from .dynamic import DynamicContent  # noqa
-from .images import ImageContent  # noqa
-from .json import JsonContent  # noqa
-from .markdown import MarkdownContent  # noqa
-from .quote import QuoteContent  # noqa
+from .images import ImageContent
+from .json import JsonContent
+from .link import LinkContent
+from .markdown import MarkdownContent
+from .quote import QuoteContent
 from .raw import NON_STR_SINGLE_RAW_CONTENT_TYPES
 from .raw import NonStrSingleRawContent
-from .raw import RawContent  # noqa
-from .raw import SingleRawContent  # noqa
-from .section import SectionContent  # noqa
-from .sequence import BlockContent  # noqa
-from .sequence import InlineContent  # noqa
-from .sequence import ItemListContent  # noqa
-from .tag import TagContent  # noqa
-from .text import TextContent  # noqa
+from .raw import RawContent
+from .raw import SingleRawContent
+from .section import SectionContent
+from .sequence import BlockContent
+from .sequence import InlineContent
+from .sequence import ItemListContent
+from .tag import TagContent
+from .text import TextContent
 
 
 ##
@@ -242,6 +241,8 @@ def _install_standard_marshaling() -> None:
             msh.Impl(ImageContent, 'image'),
 
             msh.Impl(JsonContent, 'json'),
+
+            msh.Impl(LinkContent, 'link'),
 
             msh.Impl(MarkdownContent, 'markdown'),
 

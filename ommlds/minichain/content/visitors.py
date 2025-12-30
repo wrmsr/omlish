@@ -14,6 +14,7 @@ from .content import Content
 from .dynamic import DynamicContent
 from .images import ImageContent
 from .json import JsonContent
+from .link import LinkContent
 from .markdown import MarkdownContent
 from .namespaces import NamespaceContent
 from .placeholders import PlaceholderContent
@@ -88,6 +89,9 @@ class ContentVisitor(lang.Abstract, ta.Generic[C, R]):
         return self.visit_standard_content(c, ctx)
 
     def visit_json_content(self, c: JsonContent, ctx: C) -> R:
+        return self.visit_standard_content(c, ctx)
+
+    def visit_link_content(self, c: LinkContent, ctx: C) -> R:
         return self.visit_standard_content(c, ctx)
 
     def visit_markdown_content(self, c: MarkdownContent, ctx: C) -> R:

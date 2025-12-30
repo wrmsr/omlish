@@ -17,6 +17,7 @@ from . import (  # noqa
     dynamic as _dynamic,
     images as _images,
     json as _json,
+    link as _link,
     markdown as _markdown,
     namespaces as _namespaces,
     placeholders as _placeholders,

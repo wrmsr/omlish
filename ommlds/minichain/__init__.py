@@ -283,6 +283,10 @@ with _lang.auto_proxy_init(
         JsonContent,
     )
 
+    from .content.link import (  # noqa
+        LinkContent,
+    )
+
     from .content.markdown import (  # noqa
         MarkdownContent,
     )
