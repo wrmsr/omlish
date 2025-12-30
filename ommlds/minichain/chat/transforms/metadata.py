@@ -26,7 +26,7 @@ class UuidAddingMessageTransform(MessageTransform):
 
     def transform_message(self, m: Message) -> Chat:
         if Uuid not in m.metadata:
-            m = m.with_metadata(Uuid(self.uuid_factory()))
+            m = m.update_metadata(Uuid(self.uuid_factory()))
         return [m]
 
 
@@ -36,7 +36,7 @@ class CreatedAtAddingMessageTransform(MessageTransform):
 
     def transform_message(self, m: Message) -> Chat:
         if CreatedAt not in m.metadata:
-            m = m.with_metadata(CreatedAt(self.clock()))
+            m = m.update_metadata(CreatedAt(self.clock()))
         return [m]
 
 
@@ -54,6 +54,6 @@ class OriginAddingMessageTransform(MessageTransform):
 
     def transform_message(self, m: Message) -> Chat:
         return [
-            o.with_metadata(TransformedMessageOrigin(m)) if TransformedMessageOrigin not in o.metadata else m
+            o.update_metadata(TransformedMessageOrigin(m)) if TransformedMessageOrigin not in o.metadata else m
             for o in self.child.transform_message(m)
         ]

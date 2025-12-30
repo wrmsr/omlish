@@ -23,4 +23,4 @@ class TemplateContentMaterializer(ContentTransform):
     @ContentTransform.apply.register
     def apply_template_content(self, c: TemplateContent) -> Content:
         s = c.t.render(check.not_none(self._templater_context))
-        return TextContent(s).with_metadata(ContentOriginal(c))
+        return TextContent(s).update_metadata(ContentOriginal(c))

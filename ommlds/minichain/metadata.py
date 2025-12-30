@@ -3,8 +3,12 @@ import datetime
 import typing as ta
 import uuid
 
+from omlish import check
+from omlish import dataclasses as dc
 from omlish import lang
 from omlish import typedvalues as tv
+
+from ._typedvalues import _tv_field_metadata
 
 
 ##
@@ -31,8 +35,42 @@ class MetadataContainer(
         raise NotImplementedError
 
     @abc.abstractmethod
-    def with_metadata(self, *mds: MetadataT, override: bool = False) -> ta.Self:
+    def update_metadata(self, *mds: MetadataT, override: bool = False) -> ta.Self:
         raise NotImplementedError
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class MetadataContainerDataclass(  # noqa
+    MetadataContainer[MetadataT],
+    lang.Abstract,
+):
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        check.state(hasattr(cls, '_metadata'))
+
+    @staticmethod
+    def _configure_metadata_field(md_fld, md_cls):
+        dc.set_field_metadata(
+            check.isinstance(md_fld, dc.Field),
+            _tv_field_metadata(
+                check.not_none(md_cls),
+                marshal_name='metadata',
+            ),
+        )
+
+    @property
+    def metadata(self) -> tv.TypedValues[MetadataT]:
+        return check.isinstance(getattr(self, '_metadata'), tv.TypedValues)
+
+    def update_metadata(self, *mds: MetadataT, override: bool = False) -> ta.Self:
+        nmd = (md := self.metadata).update(*mds, override=override)
+        if nmd is md:
+            return self
+        return dc.replace(self, _metadata=nmd)  # type: ignore[call-arg]  # noqa
 
 
 ##

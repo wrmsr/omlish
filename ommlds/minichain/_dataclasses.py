@@ -1156,6 +1156,7 @@ def _process_dataclass__b4a9277b8c9559fb4e325a8c35bc504f30ab2294():
         ('ommlds.minichain.chat.tools.execution', 'ToolFn.Output'),
         ('ommlds.minichain.chat.tools.execution', 'ToolFn.RawKwargsInput'),
         ('ommlds.minichain.chat.tools.execution', 'ToolFn.RawStringOutput'),
+        ('ommlds.minichain.metadata', 'MetadataContainerDataclass'),
     ),
 )
 def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():

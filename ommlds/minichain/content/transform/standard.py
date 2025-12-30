@@ -44,7 +44,7 @@ class LiftToStandardContentTransform(ContentTransform):
 
     @ContentTransform.apply.register
     def apply_str(self, s: str) -> Content:
-        return TextContent(s).with_metadata(ContentOriginal(s))
+        return TextContent(s).update_metadata(ContentOriginal(s))
 
     @ContentTransform.apply.register
     def apply_sequence(self, l: collections.abc.Sequence) -> Content:
@@ -56,4 +56,4 @@ class LiftToStandardContentTransform(ContentTransform):
                 c = InlineContent(l)
             case _:
                 raise ValueError(self._sequence_mode)
-        return c.with_metadata(ContentOriginal(l))
+        return c.update_metadata(ContentOriginal(l))

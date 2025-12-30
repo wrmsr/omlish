@@ -28,7 +28,7 @@ def test_marshal():
     assert msh.marshal(InlineContent(['hi', [TextContent('bye')]]), Content) == {'inline': {'l': ['hi', [{'text': {'s': 'bye'}}]]}}  # noqa
 
     u = uuid.uuid4()
-    assert msh.marshal(TextContent('hi').with_metadata(Uuid(u)), Content) == {'text': {'s': 'hi', 'metadata': [{'uuid': str(u)}]}}  # noqa
+    assert msh.marshal(TextContent('hi').update_metadata(Uuid(u)), Content) == {'text': {'s': 'hi', 'metadata': [{'uuid': str(u)}]}}  # noqa
 
 
 @dc.dataclass(frozen=True)
@@ -44,7 +44,7 @@ def test_single_raw_marshal():
     assert msh.marshal(TextContent('hi'), SingleRawContent) == {'text': {'s': 'hi'}}
 
     u = uuid.uuid4()
-    assert msh.marshal(TextContent('hi').with_metadata(Uuid(u)), SingleRawContent) == {'text': {'s': 'hi', 'metadata': [{'uuid': str(u)}]}}  # noqa
+    assert msh.marshal(TextContent('hi').update_metadata(Uuid(u)), SingleRawContent) == {'text': {'s': 'hi', 'metadata': [{'uuid': str(u)}]}}  # noqa
 
 
 @dc.dataclass(frozen=True)
@@ -61,4 +61,4 @@ def test_raw_marshal():
     assert msh.marshal([TextContent('hi'), 'bye'], RawContent) == [{'text': {'s': 'hi'}}, 'bye']
 
     u = uuid.uuid4()
-    assert msh.marshal(TextContent('hi').with_metadata(Uuid(u)), RawContent) == {'text': {'s': 'hi', 'metadata': [{'uuid': str(u)}]}}  # noqa
+    assert msh.marshal(TextContent('hi').update_metadata(Uuid(u)), RawContent) == {'text': {'s': 'hi', 'metadata': [{'uuid': str(u)}]}}  # noqa
