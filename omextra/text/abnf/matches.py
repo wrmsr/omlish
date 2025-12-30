@@ -44,29 +44,41 @@ class Match(ta.NamedTuple):
         ix: str | None = (' ' * (indent * _depth)) if indent is not None else None
         if ix:
             write(ix)
+
         o = self.op
+
         if isinstance(o, (StringLiteral, CaseInsensitiveStringLiteral)):
             write(f'literal<{self.start}-{self.end}>({o.value!r})')
+
         elif isinstance(o, RangeLiteral):
             write(f'literal<{self.start}-{self.end}>({o.value.lo!r}-{o.value.hi!r})')
+
         elif isinstance(o, Regex):
             write(f'regex<{self.start}-{self.end}>({o.pat.pattern!r})')
+
         else:
             write(f'{o.__class__.__name__.lower()}<{self.start}-{self.end}>')
+
             if isinstance(o, RuleRef):
                 write(f':{o.name}')
+
             if self.children:
                 write('(')
                 if ix is not None:
                     write('\n')
+
                 for i, c in enumerate(self.children):
                     if i and ix is None:
                         write(', ')
+
                     c.render_to(write, indent=indent, _depth=_depth + 1)
+
                     if ix is not None:
                         write(',\n')
+
                 if ix:
                     write(ix)
+
                 write(')')
 
     def render(

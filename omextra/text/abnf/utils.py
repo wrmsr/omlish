@@ -1,4 +1,3 @@
-import itertools
 import textwrap
 import typing as ta
 
@@ -13,39 +12,59 @@ from .ops import RuleRef
 ##
 
 
+def filter_matches(
+        fn: ta.Callable[[Match], bool],
+        m: Match,
+        *,
+        keep_children: bool = False,
+) -> Match:
+    def inner(x: Match) -> ta.Iterable[Match]:
+        if fn(x):
+            return (rec(x),)
+
+        elif keep_children:
+            return lang.flatten(inner(c) for c in x.children)
+
+        else:
+            return ()
+
+    def rec(c: Match) -> Match:
+        return c.flat_map_children(inner)
+
+    return rec(m)
+
+
 def strip_insignificant_match_rules(
         m: Match,
         g: Grammar,
         *,
-        remove_children: bool = False,
+        keep_children: bool = False,
 ) -> Match:
-    def fn(x: Match) -> ta.Iterable[Match]:
-        if not (
+    return filter_matches(
+        lambda x: not (
                 isinstance((xp := x.op), RuleRef) and
                 check.not_none(g.rule(xp.name)).insignificant
-        ):
-            return (rec(x),)
+        ),
+        m,
+        keep_children=keep_children,
+    )
 
-        elif remove_children:
-            return ()
+
+#
+
+
+def only_match_rules(m: Match) -> Match:
+    def fn(x: Match) -> ta.Iterable[Match]:
+        if isinstance(x.op, RuleRef):
+            return (only_match_rules(x),)
 
         else:
-            return lang.flatten(rec(c) for c in x.children)
+            return lang.flatmap(fn, x.children)
 
     def rec(c: Match) -> Match:
         return c.flat_map_children(fn)
 
     return rec(m)
-
-
-def only_match_rules(m: Match) -> Match:
-    def rec(c: Match) -> ta.Iterable[Match]:
-        if isinstance(c.op, RuleRef):
-            return (c.flat_map_children(rec),)
-        else:
-            return itertools.chain.from_iterable(map(rec, c.children))
-
-    return m.flat_map_children(rec)
 
 
 #
@@ -68,9 +87,7 @@ def parse_rules(
         return None
 
     match = only_match_rules(match)
-    match = strip_insignificant_match_rules(match, grammar)
-
-    print(match.render(indent=2))
+    match = strip_insignificant_match_rules(match, grammar, keep_children=True)
 
     return match
 

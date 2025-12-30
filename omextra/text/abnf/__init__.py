@@ -91,6 +91,7 @@ from .parsing import (  # noqa
 )
 
 from .utils import (  # noqa
+    filter_matches,
     strip_insignificant_match_rules,
     only_match_rules,
 

@@ -11,6 +11,7 @@ from .base import Op
 from .core import CORE_RULES
 from .errors import AbnfGrammarParseError
 from .grammars import Grammar
+from .ops import RuleRef
 from .grammars import Rule
 from .matches import Match
 from .ops import Repeat
@@ -24,6 +25,7 @@ from .opto import optimize_grammar
 from .utils import fix_ws
 from .utils import parse_rules
 from .visitors import RuleMatchVisitor
+from .utils import filter_matches
 
 
 ##
@@ -416,8 +418,8 @@ RAW_META_GRAMMAR = Grammar(
     root='rulelist',
 )
 
-META_GRAMMAR = optimize_grammar(RAW_META_GRAMMAR)
-# META_GRAMMAR = RAW_META_GRAMMAR
+# META_GRAMMAR = optimize_grammar(RAW_META_GRAMMAR)
+META_GRAMMAR = RAW_META_GRAMMAR
 
 
 ##
@@ -576,6 +578,11 @@ def parse_grammar(
             **kwargs,
     )) is None:
         raise AbnfGrammarParseError(source)
+
+    mg_m = filter_matches(
+        lambda x: not (isinstance(x.op, RuleRef) and x.op.name == 'comment'),
+        mg_m,
+    )
 
     check.isinstance(mg_m.op, Repeat)
 
