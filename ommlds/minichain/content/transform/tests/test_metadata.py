@@ -1,13 +1,12 @@
-import pytest
-
+from ...content import Content
 from ...metadata import ContentOriginal
 from ...text import TextContent
-from ..metadata import MetadataStrippingContentTransform
+from ..metadata import strip_content_original_metadata
 
 
-@pytest.mark.skip('FIXME')
 def test_metadata():
     s = 'hi'
-    tc = TextContent(s).update_metadata(ContentOriginal(s))
-    xc = MetadataStrippingContentTransform().visit(tc, None)
+    c: Content = TextContent(s).update_metadata(ContentOriginal(s))
+
+    xc = strip_content_original_metadata(c)
     print(xc)
