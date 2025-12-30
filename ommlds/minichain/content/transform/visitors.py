@@ -5,9 +5,9 @@ import typing as ta
 from omlish import lang
 
 from ..code import CodeContent
+from ..composite import CompositeContent
 from ..content import BaseContent
 from ..content import Content
-from ..composite import CompositeContent
 from ..dynamic import DynamicContent
 from ..images import ImageContent
 from ..json import JsonContent
@@ -39,7 +39,7 @@ class ContentVisitor(lang.Abstract, ta.Generic[C, R]):
 
     def visit(self, c: Content, ctx: C) -> R:
         if isinstance(c, str):
-            return self.visit_str(c)
+            return self.visit_str(c, ctx)
 
         if isinstance(c, collections.abc.Sequence):
             return self.visit_sequence(c, ctx)
@@ -47,7 +47,7 @@ class ContentVisitor(lang.Abstract, ta.Generic[C, R]):
         try:
             a = self._visit_method_map[type(c)]
         except KeyError:
-            raise TypeError(c)
+            raise TypeError(c) from None
 
         return getattr(self, a)(c, ctx)
 
@@ -111,7 +111,6 @@ class ContentVisitor(lang.Abstract, ta.Generic[C, R]):
 
     def visit_tag_content(self, c: TagContent, ctx: C) -> R:
         return self.visit_composite_content(c, ctx)
-
 
     ##
     # DynamicContent

@@ -8,8 +8,8 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
-from .content import Content
 from .composite import CompositeContent
+from .content import Content
 
 
 ##
@@ -21,6 +21,9 @@ class SequenceContent(CompositeContent, lang.Abstract):
 
     def child_content(self) -> ta.Sequence[Content]:
         return self.l
+
+    def _replace_child_content(self, new_child_content: ta.Sequence[Content]) -> ta.Self:
+        return self.replace(l=new_child_content)
 
 
 @dc.dataclass(frozen=True)
