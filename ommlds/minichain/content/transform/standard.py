@@ -1,4 +1,7 @@
+import collections.abc
 import typing as ta
+
+from omlish import check
 
 from ..content import Content
 from ..metadata import ContentOriginal
@@ -26,15 +29,15 @@ class LiftToStandardContentTransform(ContentTransform[None]):
         return TextContent(s).update_metadata(ContentOriginal(s))
 
     def visit_sequence(self, c: ta.Sequence[Content], ctx: None) -> Content:
-        cc = super().visit_sequence(c, ctx)
+        cc = check.isinstance(super().visit_sequence(c, ctx), collections.abc.Sequence)
 
-        c: SequenceContent
+        nc: SequenceContent
         match self._sequence_mode:
             case 'block':
-                c = BlockContent(cc)
+                nc = BlockContent(cc)
             case 'inline':
-                c = InlineContent(cc)
+                nc = InlineContent(cc)
             case _:
                 raise ValueError(self._sequence_mode)
 
-        return c.update_metadata(ContentOriginal(c))
+        return nc.update_metadata(ContentOriginal(c))

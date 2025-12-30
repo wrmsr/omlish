@@ -2,6 +2,7 @@ import typing as ta
 
 from omlish import dataclasses as dc
 
+from ..content import Content
 from ..metadata import ContentOriginal
 from ..text import TextContent
 from ..visitors import ContentTransform
@@ -24,5 +25,5 @@ class StringFnContentTransform(ContentTransform[None]):
         return c.replace(s=self.fn(c.s))
 
 
-def transform_content_strings(fn: ta.Callable[[str], str], o: T) -> T:
+def transform_content_strings(fn: ta.Callable[[str], str], o: Content) -> Content:
     return StringFnContentTransform(fn).visit(o, None)

@@ -10,9 +10,9 @@ from omlish import dataclasses as dc
 from omlish import lang
 from omlish.text import templating as tpl
 
-from ..content.transform.strings import transform_content_strings
 from ..envs import Env
 from ..envs import EnvKey
+from .content import transform_message_content_strings
 from .messages import Chat
 from .messages import Message
 
@@ -81,7 +81,7 @@ class ChatTemplater:
                 t = self.d[s]
                 return t.render(tpl.Templater.Context(env))
 
-            return [transform_content_strings(render_content_str, self.m)]
+            return [transform_message_content_strings(render_content_str, self.m)]
 
     @dc.dataclass(frozen=True)
     class _PlaceholderStep(_Step):
@@ -110,7 +110,7 @@ class ChatTemplater:
                 content_strs.add(s)
                 return s
 
-            transform_content_strings(visit_content_str, p.v)
+            transform_message_content_strings(visit_content_str, p.v)
 
             d: dict[str, tpl.Templater] = {
                 s: self._template_factory(s)

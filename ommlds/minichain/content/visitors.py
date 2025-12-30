@@ -2,6 +2,7 @@ import collections.abc
 import inspect
 import typing as ta
 
+from omlish import check
 from omlish import lang
 
 from .code import CodeContent
@@ -183,14 +184,14 @@ class StaticContentVisitor(ContentVisitor[C, R], lang.Abstract):
 
 
 class ContentTransform(ContentVisitor[C, Content], lang.Abstract):
-    def visit_content(self, c: Content, ctx: C) -> R:
+    def visit_content(self, c: Content, ctx: C) -> Content:
         return c
 
-    def visit_sequence(self, c: ta.Sequence[Content], ctx: C) -> R:
+    def visit_sequence(self, c: ta.Sequence[Content], ctx: C) -> Content:
         return [self.visit(cc, ctx) for cc in c]
 
-    def visit_composite_content(self, c: CompositeContent, ctx: C) -> R:
+    def visit_composite_content(self, c: CompositeContent, ctx: C) -> Content:
         cc = c.child_content()
         ncc = self.visit_sequence(cc, ctx)
-        nc = c.replace_child_content(ncc)
+        nc = c.replace_child_content(check.isinstance(ncc, collections.abc.Sequence))
         return super().visit_composite_content(nc, ctx)
