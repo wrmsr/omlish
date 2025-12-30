@@ -2,6 +2,8 @@ import io
 import itertools
 import typing as ta
 
+from omlish import lang
+
 from .internal import Regex
 from .ops import CaseInsensitiveStringLiteral
 from .ops import Op
@@ -108,6 +110,9 @@ class Match(ta.NamedTuple):
         return self.replace_children(*itertools.chain.from_iterable(map(fn, self.children)))
 
 
+##
+
+
 def longest_match(ms: ta.Iterable[Match]) -> Match | None:
     bm: Match | None = None
     bl = 0
@@ -116,3 +121,25 @@ def longest_match(ms: ta.Iterable[Match]) -> Match | None:
         if bm is None or l > bl:
             bm, bl = m, l
     return bm
+
+
+def filter_matches(
+        fn: ta.Callable[[Match], bool],
+        m: Match,
+        *,
+        keep_children: bool = False,
+) -> Match:
+    def inner(x: Match) -> ta.Iterable[Match]:
+        if fn(x):
+            return (rec(x),)
+
+        elif keep_children:
+            return lang.flatten(inner(c) for c in x.children)
+
+        else:
+            return ()
+
+    def rec(c: Match) -> Match:
+        return c.flat_map_children(inner)
+
+    return rec(m)

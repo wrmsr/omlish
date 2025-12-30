@@ -2,39 +2,15 @@ import textwrap
 import typing as ta
 
 from omlish import check
-from omlish import lang
 
 from .grammars import Grammar
+from .grammars import Channel
 from .matches import Match
+from .matches import filter_matches
 from .ops import RuleRef
 
 
 ##
-
-
-def filter_matches(
-        fn: ta.Callable[[Match], bool],
-        m: Match,
-        *,
-        keep_children: bool = False,
-) -> Match:
-    def inner(x: Match) -> ta.Iterable[Match]:
-        if fn(x):
-            return (rec(x),)
-
-        elif keep_children:
-            return lang.flatten(inner(c) for c in x.children)
-
-        else:
-            return ()
-
-    def rec(c: Match) -> Match:
-        return c.flat_map_children(inner)
-
-    return rec(m)
-
-
-#
 
 
 def strip_insignificant_match_rules(
@@ -46,7 +22,7 @@ def strip_insignificant_match_rules(
     return filter_matches(
         lambda x: not (
                 isinstance((xp := x.op), RuleRef) and
-                check.not_none(g.rule(xp.name)).insignificant
+                check.not_none(g.rule(xp.name)).channel == Channel.SPACE
         ),
         m,
         keep_children=keep_children,
@@ -64,7 +40,7 @@ def only_match_rules(m: Match) -> Match:
     )
 
 
-#
+##
 
 
 def parse_rules(

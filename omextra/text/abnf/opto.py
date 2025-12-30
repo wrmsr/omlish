@@ -14,6 +14,7 @@ from omlish import lang
 
 from .base import CompositeOp
 from .base import Op
+from .grammars import Channel
 from .grammars import Grammar
 from .grammars import Rule
 from .internal import Regex
@@ -194,7 +195,7 @@ def optimize_op(op: Op) -> Op:
 ##
 
 
-def _inline_insignificant_rules(gram: Grammar) -> Grammar:
+def _inline_rules(fn: ta.Callable[[Rule], bool], gram: Grammar) -> Grammar:
     cur_rule: Rule
     inlined_rules: dict[str, Op] = {}
 
@@ -203,7 +204,7 @@ def _inline_insignificant_rules(gram: Grammar) -> Grammar:
             if op.name_f == cur_rule.name_f:
                 return op
 
-            if (r := gram.rule(op.name)) is None or not r.insignificant:
+            if (r := gram.rule(op.name)) is None or not fn(r):
                 return op
 
             try:
@@ -229,6 +230,10 @@ def _inline_insignificant_rules(gram: Grammar) -> Grammar:
         new_rules.append(rule.replace_op(rec_op(rule.op)))
 
     return gram.replace_rules(*new_rules)
+
+
+def _inline_insignificant_rules(gram: Grammar) -> Grammar:
+    return _inline_rules(lambda r: r.channel == Channel.SPACE, gram)
 
 
 ##

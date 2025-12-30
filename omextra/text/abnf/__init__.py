@@ -56,6 +56,7 @@ from .matches import (  # noqa
     Match,
 
     longest_match,
+    filter_matches,
 )
 
 from .meta import (  # noqa
@@ -92,8 +93,6 @@ from .parsing import (  # noqa
 )
 
 from .utils import (  # noqa
-    filter_matches,
-    strip_insignificant_match_rules,
     only_match_rules,
 
     parse_rules,
