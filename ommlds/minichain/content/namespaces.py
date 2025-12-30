@@ -2,7 +2,7 @@ from omlish import dataclasses as dc
 from omlish import lang
 
 from .content import LeafContent
-from .dynamic import DynamicContent
+from .recursive import RecursiveContent
 
 
 ##
@@ -13,5 +13,5 @@ class ContentNamespace(lang.Namespace, lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
-class NamespaceContent(DynamicContent, LeafContent, lang.Final):
+class NamespaceContent(RecursiveContent, LeafContent, lang.Final):
     ns: type[ContentNamespace]
