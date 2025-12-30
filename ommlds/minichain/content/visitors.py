@@ -5,7 +5,9 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
+from .code import BlockCodeContent
 from .code import CodeContent
+from .code import InlineCodeContent
 from .composite import CompositeContent
 from .content import BaseContent
 from .content import Content
@@ -82,9 +84,6 @@ class ContentVisitor(lang.Abstract, ta.Generic[C, R]):
     ##
     # leaf StandardContent
 
-    def visit_code_content(self, c: CodeContent, ctx: C) -> R:
-        return self.visit_standard_content(c, ctx)
-
     def visit_image_content(self, c: ImageContent, ctx: C) -> R:
         return self.visit_standard_content(c, ctx)
 
@@ -111,6 +110,18 @@ class ContentVisitor(lang.Abstract, ta.Generic[C, R]):
 
     def visit_tag_content(self, c: TagContent, ctx: C) -> R:
         return self.visit_composite_content(c, ctx)
+
+    ##
+    # CodeContent
+
+    def visit_code_content(self, c: CodeContent, ctx: C) -> R:
+        return self.visit_standard_content(c, ctx)
+
+    def visit_inline_code_content(self, c: InlineCodeContent, ctx: C) -> R:
+        return self.visit_code_content(c, ctx)
+
+    def visit_block_code_content(self, c: BlockCodeContent, ctx: C) -> R:
+        return self.visit_code_content(c, ctx)
 
     ##
     # DynamicContent

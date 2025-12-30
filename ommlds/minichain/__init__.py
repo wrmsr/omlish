@@ -256,6 +256,8 @@ with _lang.auto_proxy_init(
 
     from .content.code import (  # noqa
         CodeContent,
+        InlineCodeContent,
+        BlockCodeContent,
     )
 
     from .content.composite import (  # noqa
@@ -351,6 +353,12 @@ with _lang.auto_proxy_init(
 
     from .content.visitors import (  # noqa
         ContentVisitor,
+
+        StandardContentVisitorTypeError,
+        StandardContentVisitor,
+
+        StaticContentVisitorTypeError,
+        StaticContentVisitor,
 
         ContentTransform,
     )

@@ -1,5 +1,6 @@
 """
 TODO:
+ - ... does inline have *any* separator? generic whitespace when content is stripped?
  - track BlockContent nesting depth?
  - section names? dedicated 'section' content with header and body?
 """

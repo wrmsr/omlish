@@ -7,7 +7,8 @@ from omlish import lang
 from omlish import marshal as msh
 from omlish import reflect as rfl
 
-from .code import CodeContent  # noqa
+from .code import BlockCodeContent  # noqa
+from .code import InlineCodeContent  # noqa
 from .content import CONTENT_TYPES  # noqa
 from .content import BaseContent
 from .content import Content
@@ -235,7 +236,8 @@ def _install_standard_marshaling() -> None:
         BaseContent,
         [
 
-            msh.Impl(CodeContent, 'code'),
+            msh.Impl(InlineCodeContent, 'inline_code'),
+            msh.Impl(BlockCodeContent, 'block_code'),
 
             msh.Impl(ImageContent, 'image'),
 

@@ -29,4 +29,4 @@ class StandardContent(  # noqa
     def replace(self, **kwargs: ta.Any) -> ta.Self:
         if (n := dc.replace_is_not(self, **kwargs)) is self:
             return self
-        return n.update_metadata(ContentOriginal(self), override=True)
+        return n.update_metadata(ContentOriginal(self), discard=[ContentOriginal], override=True)

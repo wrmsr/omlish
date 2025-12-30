@@ -13,8 +13,11 @@ from .content import Content
 
 @dc.dataclass(frozen=True)
 class SectionContent(CompositeContent, lang.Final):
-    header: str
     body: Content
+
+    _: dc.KW_ONLY
+
+    header: str | None
 
     def child_content(self) -> ta.Sequence[Content]:
         return [self.body]

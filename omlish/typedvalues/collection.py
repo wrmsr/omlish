@@ -97,25 +97,39 @@ class TypedValues(
 
     def without(self, *tys: type) -> ta.Iterator[TypedValueT]:
         for o in self._tup:
-            if isinstance(o, tys):
+            if tys and isinstance(o, tys):
                 continue
             yield o
 
     #
 
-    def update(self, *tvs, override: bool = False) -> 'TypedValues':
-        if not tvs:
-            return self
-        n = TypedValues(*self._tup, *tvs, override=override)
-        if lang.seqs_identical(self._tup, n._tup):
-            return self
-        return n
-
     def discard(self, *tys: type) -> 'TypedValues':
         nl = list(self.without(*tys))
+
         if len(nl) == len(self._tup):
             return self
+
         return TypedValues(*self.without(*tys))
+
+    def update(
+            self,
+            *tvs,
+            discard: ta.Iterable[type] | None = None,
+            override: bool = False,
+    ) -> 'TypedValues':
+        if not tvs:
+            return self
+
+        n = TypedValues(
+            *(self.discard(*discard) if discard else self._tup),
+            *tvs,
+            override=override,
+        )
+
+        if lang.seqs_identical(self._tup, n._tup):
+            return self
+
+        return n
 
     #
 
