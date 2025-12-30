@@ -4,7 +4,7 @@ build>=1.2.2
 twine>=6.2.0
 wheel>=0.45.1
 
-uv>=0.9.17
+uv>=0.9.20
 
 pytest==9.0.2
 pytest-benchmark==5.2.3
@@ -17,10 +17,10 @@ flake8==7.3.0
 flake8-pyproject==1.2.4
 ruff==0.14.10
 
-botocore-stubs>=1.42.17
+botocore-stubs>=1.42.18
 docutils-stubs==0.0.22
 lxml-stubs==0.5.1
-types-boto3>=1.42.17
+types-boto3>=1.42.18
 types-greenlet==3.3.0.20251206
 types-paramiko==4.0.0.20250822  # @omlish-venv !13t !13dt  # cffi ????
 types-psutil==7.2.0.20251228
@@ -134,7 +134,7 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.42.17
+boto3>=1.42.18
 
 antlr4-python3-runtime==4.13.2
 

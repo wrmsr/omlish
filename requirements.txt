@@ -43,7 +43,7 @@ pymysql==1.1.2
 
 ### diag:
 
-psutil==7.2.0
+psutil==7.2.1
 
 
 ### serde:
