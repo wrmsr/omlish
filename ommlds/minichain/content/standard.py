@@ -23,6 +23,7 @@ class StandardContent(  # noqa
     _metadata: ta.Sequence[ContentMetadatas] = dc.field(
         default=(),
         kw_only=True,
+        repr=False,
         metadata=_tv_field_metadata(
             ContentMetadatas,
             marshal_name='metadata',

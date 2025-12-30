@@ -466,6 +466,10 @@ with _auto_proxy_init(globals(), update_exports=True):
         iterslice,
         iterrange,
 
+        seqs_all,
+        seqs_equal,
+        seqs_identical,
+
         SeqView,
     )
 

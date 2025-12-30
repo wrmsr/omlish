@@ -9,9 +9,7 @@ from omlish import dataclasses as dc
 from omlish import lang
 
 from ..types import Content
-from .interleave import interleave_content
 from .materialize import materialize_content
-from .squeeze import squeeze_content
 from .stringify import stringify_content
 
 
@@ -45,8 +43,6 @@ class DefaultContentPreparer(ContentPreparer):
 
     def prepare(self, c: Content) -> Content:
         c = materialize_content(c)
-        c = squeeze_content(c, strip_strings=self.strip_strings)
-        c = interleave_content(c, block_separator=self.block_separator)
         return c
 
 

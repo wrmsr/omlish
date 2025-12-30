@@ -98,7 +98,7 @@ class Match(ta.NamedTuple):
     #
 
     def replace_children(self, *children: 'Match') -> 'Match':
-        if len(children) == len(self.children) and all(l is r for l, r in zip(self.children, children)):
+        if lang.seqs_identical(children, self.children):
             return self
 
         return self._replace(children=children)

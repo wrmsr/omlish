@@ -11,6 +11,7 @@ from .code import CodeContent  # noqa
 from .dynamic import DynamicContent  # noqa
 from .images import ImageContent  # noqa
 from .json import JsonContent  # noqa
+from .markdown import MarkdownContent  # noqa
 from .quote import QuoteContent  # noqa
 from .raw import NON_STR_SINGLE_RAW_CONTENT_TYPES
 from .raw import NonStrSingleRawContent
@@ -239,6 +240,8 @@ def _install_standard_marshaling() -> None:
             msh.Impl(ImageContent, 'image'),
 
             msh.Impl(JsonContent, 'json'),
+
+            msh.Impl(MarkdownContent, 'markdown'),
 
             msh.Impl(QuoteContent, 'quote'),
 

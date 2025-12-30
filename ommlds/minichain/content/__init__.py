@@ -15,6 +15,7 @@ from . import (  # noqa
     dynamic as _dynamic,
     images as _images,
     json as _json,
+    markdown as _markdown,
     quote as _quote,
     raw as _raw,
     section as _section,

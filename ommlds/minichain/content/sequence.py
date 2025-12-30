@@ -32,4 +32,6 @@ class BlockContent(SequenceContent, lang.Final):
 
 @dc.dataclass(frozen=True)
 class ItemListContent(SequenceContent, lang.Final):
-    pass
+    _: dc.KW_ONLY
+
+    style: ta.Literal['-', '#'] = '-'

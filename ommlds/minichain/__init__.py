@@ -232,6 +232,9 @@ with _lang.auto_proxy_init(
     )
 
     from .content.transform.materialize import (  # noqa
+        ContentMaterializer,
+
+        StandardContentMaterializer,
         materialize_content,
     )
 
@@ -271,9 +274,15 @@ with _lang.auto_proxy_init(
         JsonContent,
     )
 
+    from .content.markdown import (  # noqa
+        MarkdownContent,
+    )
+
     from .content.metadata import (  # noqa
         ContentMetadata,
         ContentMetadatas,
+
+        ContentOriginal,
     )
 
     from .content.namespaces import (  # noqa

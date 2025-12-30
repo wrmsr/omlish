@@ -29,10 +29,10 @@ class ContentTransform(lang.Abstract):
 
     @apply.register  # noqa
     def apply_sequence(self, l: collections.abc.Sequence) -> collections.abc.Sequence:
-        # FIXME: this should be `Sequence[Content] -> Sequence[Content]` but omlish.reflect can't handle recursive
-        #   ForwardRef's yet
+        # FIXME: this sig should be `Sequence[Content] -> Sequence[Content]` but omlish.reflect can't handle recursive
+        #        ForwardRef's yet
         r = [self.apply(e) for e in l]
-        if len(r) == len(l) and all(le is re for le, re in zip(l, r)):
+        if lang.seqs_identical(l, r):
             return l
         return r
 

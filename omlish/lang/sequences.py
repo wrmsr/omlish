@@ -8,6 +8,7 @@ TODO:
  - shorter repr if __len__ > some threshold
   - use materialize()?
 """
+import operator
 import typing as ta
 
 
@@ -31,6 +32,38 @@ def iterrange(
         step: int | None = None,
 ) -> ta.Iterator[T]:
     return iterslice(seq, slice(start, stop, step))
+
+
+##
+
+
+def seqs_all(
+        fn: ta.Callable[[T, T], bool],
+        l_seq: ta.Sequence[T],
+        *r_seqs: ta.Sequence[T],
+) -> bool:
+    if not all(len(r_seq) == len(l_seq) for r_seq in r_seqs):
+        return False
+
+    return all(
+        fn(l, r)
+        for r_seq in r_seqs
+        for l, r in zip(l_seq, r_seq, strict=True)
+    )
+
+
+def seqs_equal(
+        l_seq: ta.Sequence[T],
+        *r_seqs: ta.Sequence[T],
+) -> bool:
+    return seqs_all(operator.eq, l_seq, *r_seqs)
+
+
+def seqs_identical(
+        l_seq: ta.Sequence[T],
+        *r_seqs: ta.Sequence[T],
+) -> bool:
+    return seqs_all(operator.is_, l_seq, *r_seqs)
 
 
 ##
