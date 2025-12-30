@@ -275,6 +275,12 @@ with _lang.auto_proxy_init(
         DynamicContent,
     )
 
+    from .content.emphasis import (  # noqa
+        BoldContent,
+        ItalicContent,
+        BoldItalicContent,
+    )
+
     from .content.images import (  # noqa
         ImageContent,
     )

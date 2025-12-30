@@ -15,6 +15,7 @@ from . import (  # noqa
     composite as _composite,
     content as _content,
     dynamic as _dynamic,
+    emphasis as _emphasis,
     images as _images,
     json as _json,
     link as _link,

@@ -3,6 +3,7 @@ import typing as ta
 from omlish import dataclasses as dc
 
 from ..content import Content
+from ..emphasis import EmphasisContent
 from ..metadata import ContentOriginal
 from ..text import TextContent
 from ..visitors import ContentTransform
@@ -22,6 +23,9 @@ class StringFnContentTransform(ContentTransform[None]):
         return TextContent(self.fn(c)).update_metadata(ContentOriginal(c))
 
     def visit_text_content(self, c: TextContent, ctx: None) -> TextContent:
+        return c.replace(s=self.fn(c.s))
+
+    def visit_emphasis_content(self, c: EmphasisContent, ctx: None) -> EmphasisContent:
         return c.replace(s=self.fn(c.s))
 
 

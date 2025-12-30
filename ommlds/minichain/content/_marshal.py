@@ -11,6 +11,9 @@ from .code import BlockCodeContent
 from .code import InlineCodeContent
 from .content import BaseContent
 from .content import Content
+from .emphasis import BoldContent
+from .emphasis import BoldItalicContent
+from .emphasis import ItalicContent
 from .images import ImageContent
 from .json import JsonContent
 from .link import LinkContent
@@ -237,6 +240,10 @@ def _install_standard_marshaling() -> None:
 
             msh.Impl(InlineCodeContent, 'inline_code'),
             msh.Impl(BlockCodeContent, 'block_code'),
+
+            msh.Impl(BoldContent, 'bold'),
+            msh.Impl(ItalicContent, 'italic'),
+            msh.Impl(BoldItalicContent, 'bold_italic'),
 
             msh.Impl(ImageContent, 'image'),
 

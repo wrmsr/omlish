@@ -12,6 +12,10 @@ from .composite import CompositeContent
 from .content import BaseContent
 from .content import Content
 from .dynamic import DynamicContent
+from .emphasis import BoldContent
+from .emphasis import BoldItalicContent
+from .emphasis import EmphasisContent
+from .emphasis import ItalicContent
 from .images import ImageContent
 from .json import JsonContent
 from .link import LinkContent
@@ -144,6 +148,21 @@ class ContentVisitor(lang.Abstract, ta.Generic[C, R]):
 
     def visit_template_content(self, c: TemplateContent, ctx: C) -> R:
         return self.visit_dynamic_content(c, ctx)
+
+    ##
+    # EmphasisContent
+
+    def visit_emphasis_content(self, c: EmphasisContent, ctx: C) -> R:
+        return self.visit_standard_content(c, ctx)
+
+    def visit_bold_content(self, c: BoldContent, ctx: C) -> R:
+        return self.visit_emphasis_content(c, ctx)
+
+    def visit_italic_content(self, c: ItalicContent, ctx: C) -> R:
+        return self.visit_emphasis_content(c, ctx)
+
+    def visit_bold_italic_content(self, c: BoldItalicContent, ctx: C) -> R:
+        return self.visit_emphasis_content(c, ctx)
 
     ##
     # SequenceContent
