@@ -15,7 +15,6 @@ from .grammars import Grammar
 from .grammars import Rule
 from .matches import Match
 from .ops import Repeat
-from .ops import RuleRef
 from .ops import concat
 from .ops import either
 from .ops import literal
@@ -23,9 +22,9 @@ from .ops import option
 from .ops import repeat
 from .ops import rule
 from .opto import optimize_grammar
-from .utils import filter_matches
+from .utils import filter_match_channels
 from .utils import fix_ws
-from .utils import parse_rules
+from .utils import only_match_rules
 from .visitors import RuleMatchVisitor
 
 
@@ -420,7 +419,14 @@ RAW_META_GRAMMAR = Grammar(
     root='rulelist',
 )
 
-META_GRAMMAR = optimize_grammar(RAW_META_GRAMMAR)
+META_GRAMMAR = optimize_grammar(
+    RAW_META_GRAMMAR,
+    inline_channels=(
+        Channel.CONTENT,
+        Channel.COMMENT,
+        Channel.SPACE,
+    ),
+)
 
 
 ##
@@ -562,6 +568,9 @@ class MetaGrammarRuleMatchVisitor(RuleMatchVisitor[ta.Any]):
         return self.QuotedString(self._source[m.start + 1:m.end - 1])
 
 
+##
+
+
 def parse_grammar(
         source: str,
         *,
@@ -572,17 +581,20 @@ def parse_grammar(
 ) -> Grammar:
     source = fix_ws(source)
 
-    if (mg_m := parse_rules(
-            META_GRAMMAR,
+    if (mg_m := META_GRAMMAR.parse(
             source,
             complete=True,
             **kwargs,
     )) is None:
         raise AbnfGrammarParseError(source)
 
-    mg_m = filter_matches(
-        lambda x: not (isinstance(x.op, RuleRef) and x.op.name == 'comment'),
+    mg_m = only_match_rules(mg_m)
+
+    mg_m = filter_match_channels(
         mg_m,
+        META_GRAMMAR,
+        keep=(Channel.STRUCTURE,),
+        keep_children=True,
     )
 
     check.isinstance(mg_m.op, Repeat)

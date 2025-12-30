@@ -59,32 +59,6 @@ def only_match_rules(m: Match) -> Match:
 ##
 
 
-def parse_rules(
-        grammar: Grammar,
-        source: str,
-        root: str | None = None,
-        *,
-        start: int = 0,
-        **kwargs: ta.Any,
-) -> Match | None:
-    if (match := grammar.parse(
-            source,
-            root,
-            start=start,
-            **kwargs,
-    )) is None:
-        return None
-
-    match = only_match_rules(match)
-
-    match = filter_match_channels(
-        match,
-        grammar,
-        keep=(Channel.STRUCTURE,),
-        keep_children=True,
-    )
-
-    return match
 
 
 ##

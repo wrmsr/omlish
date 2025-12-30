@@ -235,8 +235,13 @@ def _inline_rules(fn: ta.Callable[[Rule], bool], gram: Grammar) -> Grammar:
 ##
 
 
-def optimize_grammar(gram: Grammar) -> Grammar:
-    gram = _inline_rules(lambda r: r.channel == Channel.SPACE, gram)
+def optimize_grammar(
+        gram: Grammar,
+        *,
+        inline_channels: ta.Container[Channel] | None = (Channel.SPACE,),
+) -> Grammar:
+    if inline_channels:
+        gram = _inline_rules(lambda r: r.channel in inline_channels, gram)
 
     gram = gram.replace_rules(*[
         r.replace_op(optimize_op(r.op))

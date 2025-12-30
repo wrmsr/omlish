@@ -95,7 +95,5 @@ from .parsing import (  # noqa
 from .utils import (  # noqa
     only_match_rules,
 
-    parse_rules,
-
     fix_ws,
 )

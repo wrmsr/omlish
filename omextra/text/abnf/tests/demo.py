@@ -6,6 +6,9 @@ from omlish import lang
 from ..grammars import Grammar
 from ..meta import parse_grammar
 from ..utils import fix_ws
+from ..utils import only_match_rules
+from ..utils import filter_match_channels
+from ..grammars import Channel
 
 
 @lang.cached_function
@@ -41,6 +44,18 @@ def _main() -> None:
         # debug=True,
         max_steps=args.max_steps,
     ))
+
+    print(m.render(indent=2))
+
+    m = only_match_rules(m)
+
+    m = filter_match_channels(
+        m,
+        gram,
+        keep=(Channel.STRUCTURE,),
+        keep_children=True,
+    )
+
     print(m.render(indent=2))
 
 
