@@ -1,3 +1,4 @@
+import inspect
 import typing as ta
 
 from omlish import lang
@@ -33,6 +34,8 @@ R = ta.TypeVar('R')
 
 
 class ContentVisitor(lang.Abstract, ta.Generic[C, R]):
+    _visit_method_map: ta.ClassVar[ta.Mapping[ta.Any, str]]
+
     def visit_content(self, c: Content, ctx: C) -> R:
         raise TypeError(c)
 
@@ -122,3 +125,10 @@ class ContentVisitor(lang.Abstract, ta.Generic[C, R]):
 
     def visit_item_list_content(self, c: ItemListContent, ctx: C) -> R:
         return self.visit_sequence_content(c, ctx)
+
+
+ContentVisitor._visit_method_map = {  # noqa
+    list(inspect.signature(o).parameters.values())[1].annotation: a
+    for a, o in ContentVisitor.__dict__.items()
+    if a.startswith('visit_')
+}
