@@ -4,27 +4,27 @@ import typing as ta
 
 from omlish import lang
 
-from ..code import CodeContent
-from ..composite import CompositeContent
-from ..content import BaseContent
-from ..content import Content
-from ..dynamic import DynamicContent
-from ..images import ImageContent
-from ..json import JsonContent
-from ..markdown import MarkdownContent
-from ..namespaces import NamespaceContent
-from ..placeholders import PlaceholderContent
-from ..quote import QuoteContent
-from ..recursive import RecursiveContent
-from ..section import SectionContent
-from ..sequence import BlockContent
-from ..sequence import InlineContent
-from ..sequence import ItemListContent
-from ..sequence import SequenceContent
-from ..standard import StandardContent
-from ..tag import TagContent
-from ..templates import TemplateContent
-from ..text import TextContent
+from .code import CodeContent
+from .composite import CompositeContent
+from .content import BaseContent
+from .content import Content
+from .dynamic import DynamicContent
+from .images import ImageContent
+from .json import JsonContent
+from .markdown import MarkdownContent
+from .namespaces import NamespaceContent
+from .placeholders import PlaceholderContent
+from .quote import QuoteContent
+from .recursive import RecursiveContent
+from .section import SectionContent
+from .sequence import BlockContent
+from .sequence import InlineContent
+from .sequence import ItemListContent
+from .sequence import SequenceContent
+from .standard import StandardContent
+from .tag import TagContent
+from .templates import TemplateContent
+from .text import TextContent
 
 
 C = ta.TypeVar('C')
@@ -100,7 +100,6 @@ class ContentVisitor(lang.Abstract, ta.Generic[C, R]):
         return self.visit_standard_content(c, ctx)
 
     ##
-
     # CompositeContent
 
     def visit_composite_content(self, c: CompositeContent, ctx: C) -> R:
@@ -151,3 +150,47 @@ ContentVisitor._visit_method_map = {  # noqa
     for a, o in ContentVisitor.__dict__.items()
     if a.startswith('visit_')
 }
+
+
+##
+
+
+class StandardContentVisitorTypeError(TypeError):
+    pass
+
+
+class StandardContentVisitor(ContentVisitor[C, R], lang.Abstract):
+    def visit_str(self, c: str, ctx: C) -> R:
+        raise StandardContentVisitorTypeError(c)
+
+    def visit_sequence(self, c: ta.Sequence[Content], ctx: C) -> R:
+        raise StandardContentVisitorTypeError(c)
+
+
+##
+
+
+class StaticContentVisitorTypeError(TypeError):
+    pass
+
+
+class StaticContentVisitor(ContentVisitor[C, R], lang.Abstract):
+    def visit_dynamic_content(self, c: DynamicContent, ctx: C) -> R:
+        raise StaticContentVisitorTypeError(c)
+
+
+##
+
+
+class ContentTransform(ContentVisitor[C, Content], lang.Abstract):
+    def visit_content(self, c: Content, ctx: C) -> R:
+        return c
+
+    def visit_sequence(self, c: ta.Sequence[Content], ctx: C) -> R:
+        return [self.visit(cc, ctx) for cc in c]
+
+    def visit_composite_content(self, c: CompositeContent, ctx: C) -> R:
+        cc = c.child_content()
+        ncc = self.visit_sequence(cc, ctx)
+        nc = c.replace_child_content(ncc)
+        return super().visit_composite_content(nc, ctx)

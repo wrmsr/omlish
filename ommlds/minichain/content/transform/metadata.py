@@ -1,11 +1,10 @@
 from ..standard import StandardContent
-from .base import ContentTransform
+from ..visitors import ContentTransform
 
 
 ##
 
 
-class MetadataStrippingContentTransform(ContentTransform):
-    @ContentTransform.apply.register
-    def apply_standard_content(self, c: StandardContent) -> StandardContent:
+class MetadataStrippingContentTransform(ContentTransform[None]):
+    def visit_standard_content(self, c: StandardContent, ctx: None) -> StandardContent:
         raise NotImplementedError

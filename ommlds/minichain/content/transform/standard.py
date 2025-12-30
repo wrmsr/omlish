@@ -1,38 +1,18 @@
-import collections.abc
 import typing as ta
 
-from omlish import lang
-
+from ..content import Content
 from ..metadata import ContentOriginal
 from ..sequence import BlockContent
 from ..sequence import InlineContent
 from ..sequence import SequenceContent
 from ..text import TextContent
-from .base import Content
-from .base import ContentTransform
+from ..visitors import ContentTransform
 
 
 ##
 
 
-class StandardContentTransformTypeError(TypeError):
-    pass
-
-
-class StandardContentTransform(ContentTransform, lang.Abstract):
-    @ContentTransform.apply.register
-    def apply_str(self, s: str) -> str:
-        raise StandardContentTransformTypeError(s)
-
-    @ContentTransform.apply.register
-    def apply_sequence(self, l: collections.abc.Sequence) -> collections.abc.Sequence:
-        raise StandardContentTransformTypeError(l)
-
-
-##
-
-
-class LiftToStandardContentTransform(ContentTransform):
+class LiftToStandardContentTransform(ContentTransform[None]):
     def __init__(
             self,
             *,
@@ -42,18 +22,19 @@ class LiftToStandardContentTransform(ContentTransform):
 
         self._sequence_mode = sequence_mode
 
-    @ContentTransform.apply.register
-    def apply_str(self, s: str) -> Content:
+    def visit_str(self, s: str, ctx: None) -> Content:
         return TextContent(s).update_metadata(ContentOriginal(s))
 
-    @ContentTransform.apply.register
-    def apply_sequence(self, l: collections.abc.Sequence) -> Content:
+    def visit_sequence(self, c: ta.Sequence[Content], ctx: None) -> Content:
+        cc = super().visit_sequence(c, ctx)
+
         c: SequenceContent
         match self._sequence_mode:
             case 'block':
-                c = BlockContent(l)
+                c = BlockContent(cc)
             case 'inline':
-                c = InlineContent(l)
+                c = InlineContent(cc)
             case _:
                 raise ValueError(self._sequence_mode)
-        return c.update_metadata(ContentOriginal(l))
+
+        return c.update_metadata(ContentOriginal(c))

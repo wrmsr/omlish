@@ -2,7 +2,9 @@ import typing as ta
 
 from omlish import dataclasses as dc
 
-from .base import ContentTransform
+from ..metadata import ContentOriginal
+from ..text import TextContent
+from ..visitors import ContentTransform
 
 
 T = ta.TypeVar('T')
@@ -12,13 +14,15 @@ T = ta.TypeVar('T')
 
 
 @dc.dataclass(frozen=True)
-class StringFnContentTransform(ContentTransform):
+class StringFnContentTransform(ContentTransform[None]):
     fn: ta.Callable[[str], str]
 
-    @ContentTransform.apply.register
-    def apply_str(self, s: str) -> str:
-        return self.fn(s)
+    def visit_str(self, c: str, ctx: None) -> TextContent:
+        return TextContent(self.fn(c)).update_metadata(ContentOriginal(c))
+
+    def visit_text_content(self, c: TextContent, ctx: None) -> TextContent:
+        return c.replace(s=self.fn(c.s))
 
 
 def transform_content_strings(fn: ta.Callable[[str], str], o: T) -> T:
-    return StringFnContentTransform(fn).apply(o)
+    return StringFnContentTransform(fn).visit(o, None)

@@ -9,7 +9,7 @@ from ..namespaces import NamespaceContent
 from ..placeholders import PlaceholderContent
 from ..placeholders import PlaceholderContentKey
 from ..recursive import RecursiveContent
-from .base import ContentTransform
+from ..visitors import ContentTransform
 
 
 ##
@@ -55,7 +55,7 @@ class RecursiveContentDepthExceededError(Exception):
     pass
 
 
-class RecursiveContentMaterializer(ContentTransform):
+class RecursiveContentMaterializer(ContentTransform[None]):
     DEFAULT_MAX_DEPTH: int = 8
 
     def __init__(
@@ -71,30 +71,27 @@ class RecursiveContentMaterializer(ContentTransform):
 
         self._cur_depth = 0
 
-    def recurse(self, o: Content) -> Content:
+    def recurse(self, o: Content, ctx: None) -> Content:
         if self._cur_depth >= self._max_depth:
             raise RecursiveContentDepthExceededError
 
         self._cur_depth += 1
         try:
-            return self.apply(o)
+            return self.visit(o, ctx)
         finally:
             self._cur_depth -= 1
 
-    @ContentTransform.apply.register
-    def apply_recursive_content(self, c: RecursiveContent) -> Content:
+    def visit_recursive_content(self, c: RecursiveContent, ctx: None) -> Content:
         raise TypeError(c)
 
-    @ContentTransform.apply.register
-    def apply_namespace_content(self, c: NamespaceContent) -> Content:
+    def visit_namespace_content(self, c: NamespaceContent, ctx: None) -> Content:
         check.issubclass(c.ns, ContentNamespace)
         out: list[Content] = []
         for n, e in c.ns:
             if n.startswith('_'):
                 continue
-            out.append(self.recurse(e))
+            out.append(self.recurse(e, ctx))
         return out
 
-    @ContentTransform.apply.register
-    def apply_placeholder_content(self, c: PlaceholderContent) -> Content:
-        return self.recurse(self._placeholder_content_fn(c.k))
+    def visit_placeholder_content(self, c: PlaceholderContent, ctx: None) -> Content:
+        return self.recurse(self._placeholder_content_fn(c.k), ctx)

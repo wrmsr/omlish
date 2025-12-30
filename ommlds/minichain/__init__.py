@@ -227,10 +227,6 @@ with _lang.auto_proxy_init(
 
     ##
 
-    from .content.transform.base import (  # noqa
-        ContentTransform,
-    )
-
     from .content.transform.materialize import (  # noqa
         ContentMaterializer,
 
@@ -351,6 +347,12 @@ with _lang.auto_proxy_init(
 
     from .content.text import (  # noqa
         TextContent,
+    )
+
+    from .content.visitors import (  # noqa
+        ContentVisitor,
+
+        ContentTransform,
     )
 
     ##

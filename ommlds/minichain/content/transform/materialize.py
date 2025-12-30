@@ -34,8 +34,8 @@ class DefaultContentMaterializer(ContentMaterializer):
         self._templater_context = templater_context
 
     def apply(self, c: Content) -> Content:
-        c = RecursiveContentMaterializer(self._placeholder_contents).apply(c)
-        c = TemplateContentMaterializer(self._templater_context).apply(c)
+        c = RecursiveContentMaterializer(self._placeholder_contents).visit(c, None)
+        c = TemplateContentMaterializer(self._templater_context).visit(c, None)
         return c
 
 

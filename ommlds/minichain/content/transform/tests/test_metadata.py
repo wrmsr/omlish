@@ -9,5 +9,5 @@ from ..metadata import MetadataStrippingContentTransform
 def test_metadata():
     s = 'hi'
     tc = TextContent(s).update_metadata(ContentOriginal(s))
-    xc = MetadataStrippingContentTransform().apply(tc)
+    xc = MetadataStrippingContentTransform().visit(tc, None)
     print(xc)
