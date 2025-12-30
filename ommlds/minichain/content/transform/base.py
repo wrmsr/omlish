@@ -1,6 +1,5 @@
 import collections.abc
 
-from omlish import dataclasses as dc
 from omlish import dispatch
 from omlish import lang
 
@@ -44,20 +43,20 @@ class ContentTransform(lang.Abstract):
 
     @apply.register
     def apply_quote_content(self, c: QuoteContent) -> QuoteContent:
-        return dc.replace_is_not(c, l=self.apply(c.body))
+        return c.replace(l=self.apply(c.body))
 
     @apply.register
     def apply_section_content(self, c: SectionContent) -> SectionContent:
-        return dc.replace_is_not(c, l=self.apply(c.body))
+        return c.replace(l=self.apply(c.body))
 
     @apply.register
     def apply_sequence_content(self, c: SequenceContent) -> SequenceContent:
-        return dc.replace_is_not(c, l=self.apply(c.l))
+        return c.replace(l=self.apply(c.l))
 
     @apply.register
     def apply_tag_content(self, c: TagContent) -> TagContent:
-        return dc.replace_is_not(c, c=self.apply(c.body))
+        return c.replace(c=self.apply(c.body))
 
     @apply.register
     def apply_text_content(self, c: TextContent) -> TextContent:
-        return dc.replace_is_not(c, s=self.apply(c.s))
+        return c.replace(s=self.apply(c.s))

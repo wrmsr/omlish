@@ -7,6 +7,7 @@ from ..namespaces import ContentNamespace
 from ..namespaces import NamespaceContent
 from ..placeholders import PlaceholderContent
 from ..placeholders import PlaceholderContentKey
+from ..recursive import RecursiveContent
 from ..types import Content
 from .base import ContentTransform
 
@@ -50,11 +51,11 @@ def _make_placeholder_content_fn(cps: PlaceholderContents | None = None) -> Plac
 ##
 
 
-class PlaceholderContentDepthExceededError(Exception):
+class RecursiveContentDepthExceededError(Exception):
     pass
 
 
-class PlaceholderContentMaterializer(ContentTransform):
+class RecursiveContentMaterializer(ContentTransform):
     DEFAULT_MAX_DEPTH: int = 8
 
     def __init__(
@@ -72,13 +73,17 @@ class PlaceholderContentMaterializer(ContentTransform):
 
     def recurse(self, o: Content) -> Content:
         if self._cur_depth >= self._max_depth:
-            raise PlaceholderContentDepthExceededError
+            raise RecursiveContentDepthExceededError
 
         self._cur_depth += 1
         try:
             return self.apply(o)
         finally:
             self._cur_depth -= 1
+
+    @ContentTransform.apply.register
+    def apply_recursive_content(self, c: RecursiveContent) -> Content:
+        raise TypeError(c)
 
     @ContentTransform.apply.register
     def apply_namespace_content(self, c: NamespaceContent) -> Content:

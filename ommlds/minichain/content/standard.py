@@ -8,6 +8,7 @@ from omlish import typedvalues as tv
 from .._typedvalues import _tv_field_metadata
 from ..metadata import MetadataContainer
 from .metadata import ContentMetadatas
+from .metadata import ContentOriginal
 from .types import BaseContent
 
 
@@ -36,3 +37,8 @@ class StandardContent(  # noqa
 
     def with_metadata(self, *mds: ContentMetadatas, override: bool = False) -> ta.Self:
         return dc.replace(self, _metadata=tv.TypedValues(*self._metadata, *mds, override=override))
+
+    def replace(self, **kwargs: ta.Any) -> ta.Self:
+        if (n := dc.replace_is_not(self, **kwargs)) is self:
+            return self
+        return n.with_metadata(ContentOriginal(self), override=True)

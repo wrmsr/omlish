@@ -4,8 +4,8 @@ from omlish import lang
 from omlish.text import templating as tpl
 
 from ..types import Content
-from .placeholders import PlaceholderContentMaterializer
-from .placeholders import PlaceholderContents
+from .recursive import PlaceholderContents
+from .recursive import RecursiveContentMaterializer
 from .templates import TemplateContentMaterializer
 
 
@@ -34,7 +34,7 @@ class StandardContentMaterializer(ContentMaterializer):
         self._templater_context = templater_context
 
     def apply(self, c: Content) -> Content:
-        c = PlaceholderContentMaterializer(self._placeholder_contents).apply(c)
+        c = RecursiveContentMaterializer(self._placeholder_contents).apply(c)
         c = TemplateContentMaterializer(self._templater_context).apply(c)
         return c
 

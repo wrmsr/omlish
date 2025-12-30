@@ -311,6 +311,10 @@ with _lang.auto_proxy_init(
         RAW_CONTENT_TYPES,
     )
 
+    from .content.recursive import (  # noqa
+        RecursiveContent,
+    )
+
     from .content.section import (  # noqa
         SectionContent,
     )
