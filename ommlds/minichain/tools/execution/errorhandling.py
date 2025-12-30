@@ -1,7 +1,7 @@
 import typing as ta
 
 from ...content.transform.materialize import ContentMaterializer
-from ...content.transform.materialize import StandardContentMaterializer
+from ...content.transform.materialize import DefaultContentMaterializer
 from ...content.types import Content
 from .context import ToolContext
 from .errors import ToolExecutionError
@@ -16,7 +16,7 @@ class ErrorHandlingToolExecutor(ToolExecutor):
             self,
             *,
             wrapped: ToolExecutor,
-            content_materializer: ContentMaterializer = StandardContentMaterializer(),
+            content_materializer: ContentMaterializer = DefaultContentMaterializer(),
     ) -> None:
         super().__init__()
 

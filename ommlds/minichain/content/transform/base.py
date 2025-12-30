@@ -22,12 +22,12 @@ class ContentTransform(lang.Abstract):
 
     #
 
-    @apply.register  # noqa
-    def apply_str(self, s: str) -> str:
+    @apply.register
+    def apply_str(self, s: str) -> Content:
         return s
 
-    @apply.register  # noqa
-    def apply_sequence(self, l: collections.abc.Sequence) -> collections.abc.Sequence:
+    @apply.register
+    def apply_sequence(self, l: collections.abc.Sequence) -> Content:
         # FIXME: this sig should be `Sequence[Content] -> Sequence[Content]` but omlish.reflect can't handle recursive
         #        ForwardRef's yet
         r = [self.apply(e) for e in l]

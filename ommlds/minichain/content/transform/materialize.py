@@ -21,7 +21,7 @@ class ContentMaterializer(lang.Abstract):
 ##
 
 
-class StandardContentMaterializer(ContentMaterializer):
+class DefaultContentMaterializer(ContentMaterializer):
     def __init__(
             self,
             *,
@@ -45,7 +45,7 @@ def materialize_content(
         placeholder_contents: PlaceholderContents | None = None,
         templater_context: tpl.Templater.Context | None = None,
 ) -> Content:
-    return StandardContentMaterializer(
+    return DefaultContentMaterializer(
         placeholder_contents=placeholder_contents,
         templater_context=templater_context,
     ).apply(c)

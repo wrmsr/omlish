@@ -20,6 +20,30 @@ TODO:
   - relax CRLF rule by default?
   - grammar transform? helper kwarg?
  - kwarg to mark uppercase rules insignificant
+ - ebnf mode?
+ - peg / lalr engines?
+  - must always keep true abnf mode
+ - optionally separate lexing step
+
+====
+
+| Feature                   | EBNF           | ABNF             |
+| ------------------------- | -------------- | ---------------- |
+| Rule terminator           | `;`            | none             |
+| Alternation               | `|`            | `/`              |
+| Optional                  | `[a]` or `a?`  | `[a]`            |
+| Zero or more              | `a*`           | `*a`             |
+| One or more               | `a+`           | `1*a`            |
+| Bounded repetition        | `1..5 a`       | `1*5a`           |
+| Character ranges          | sometimes:     | `%xNN-NN`        |
+|                           | `"0" .. "9"`   |                  |
+| Literal chars             | `'a'` or `"a"` | `"a"` only       |
+| Case-insensitive literals | no             | `%i"..."`        |
+| Comments                  | `(* *)` or     | `;`              |
+|                           | `/* */` or     |                  |
+|                           | `-- `          |                  |
+| Rule names                | case-sensitive | case-insensitive |
+
 """
 from omlish import dataclasses as _dc  # noqa
 

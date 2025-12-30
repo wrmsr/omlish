@@ -15,7 +15,7 @@ T = ta.TypeVar('T')
 class StringFnContentTransform(ContentTransform):
     fn: ta.Callable[[str], str]
 
-    @ContentTransform.apply.register  # noqa
+    @ContentTransform.apply.register
     def apply_str(self, s: str) -> str:
         return self.fn(s)
 

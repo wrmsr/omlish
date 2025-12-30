@@ -234,7 +234,7 @@ with _lang.auto_proxy_init(
     from .content.transform.materialize import (  # noqa
         ContentMaterializer,
 
-        StandardContentMaterializer,
+        DefaultContentMaterializer,
         materialize_content,
     )
 

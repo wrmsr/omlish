@@ -13,21 +13,32 @@ class BarContentPlaceholder(ContentPlaceholder):
 
 
 def test_materialize():
-    print(materialize_content('hi'))
-    print(materialize_content(
-        TemplateContent(tpl.format_templater('{hi}')),
-        templater_context=tpl.templater_context(dict(hi='yes')),
-    ))
-    print(materialize_content([
-        'abc',
-        PlaceholderContent('foo'),
-        'def',
-    ], placeholder_contents={'foo': 'bar'}))
-    print(materialize_content([
-        'abc',
-        PlaceholderContent(BarContentPlaceholder),
-        'def',
-    ], placeholder_contents={'foo': 'bar', BarContentPlaceholder: PlaceholderContent('foo')}))
+    for c, kw in [
+        ('hi', {}),
+        (
+            TemplateContent(tpl.format_templater('{hi}')),
+            dict(templater_context=tpl.templater_context(dict(hi='yes'))),
+        ),
+        (
+            [
+                'abc',
+                PlaceholderContent('foo'),
+                'def',
+            ],
+            dict(placeholder_contents={'foo': 'bar'}),
+        ),
+        (
+            [
+                'abc',
+                PlaceholderContent(BarContentPlaceholder),
+                'def',
+            ],
+            dict(placeholder_contents={'foo': 'bar', BarContentPlaceholder: PlaceholderContent('foo')}),
+        ),
+    ]:
+        print(c)
+        nc = materialize_content(c, **kw)  # type: ignore
+        print(nc)
 
 
 def test_materialize_namespace():
