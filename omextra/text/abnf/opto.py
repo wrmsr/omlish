@@ -112,11 +112,14 @@ def _regex_item_transform_op(op: Op) -> _RegexItem | None:
 
     elif isinstance(op, Concat):
         children = [_regex_item_transform_op(child) or _RegexItem.of(child) for child in op.children]
-        if not all(ca is not None for ca in children):
-            # FIXME: merge adjacent
+        if all(ca is not None for ca in children):
+            return _RegexRegexItem(''.join(check.not_none(ca).pat for ca in children))
+
+        if not any(ca is not None for ca in children):
             return None
 
-        return _RegexRegexItem(''.join(check.not_none(ca).pat for ca in children))
+        # FIXME: merge adjacent
+        return None
 
     elif isinstance(op, Repeat):
         child = _RegexItem.of(_regex_item_transform_op(op.child))
@@ -155,16 +158,19 @@ def _regex_item_transform_op(op: Op) -> _RegexItem | None:
             return None
 
         children = [_regex_item_transform_op(child) or _RegexItem.of(child) for child in op.children]
-        if not all(ca is not None for ca in children):
-            # FIXME: merge adjacent
+        if all(ca is not None for ca in children):
+            # Build regex alternation. Use a capturing group for the alternation
+            return _RegexRegexItem(''.join([
+                '(',
+                '|'.join(check.not_none(ca).pat for ca in children),
+                ')',
+            ]))
+
+        if not any(ca is not None for ca in children):
             return None
 
-        # Build regex alternation. Use a capturing group for the alternation
-        return _RegexRegexItem(''.join([
-            '(',
-            '|'.join(check.not_none(ca).pat for ca in children),
-            ')',
-        ]))
+        # FIXME: merge adjacent
+        return None
 
     else:
         raise TypeError(op)
