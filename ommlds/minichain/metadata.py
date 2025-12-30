@@ -72,6 +72,12 @@ class MetadataContainerDataclass(  # noqa
             return self
         return dc.replace(self, _metadata=nmd)  # type: ignore[call-arg]  # noqa
 
+    def discard_metadata(self, *tys: type) -> ta.Self:
+        nmd = (md := self.metadata).discard(*tys)
+        if nmd is md:
+            return self
+        return dc.replace(self, _metadata=nmd)  # type: ignore[call-arg]  # noqa
+
 
 ##
 
