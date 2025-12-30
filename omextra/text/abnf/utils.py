@@ -34,6 +34,9 @@ def filter_matches(
     return rec(m)
 
 
+#
+
+
 def strip_insignificant_match_rules(
         m: Match,
         g: Grammar,
@@ -54,17 +57,11 @@ def strip_insignificant_match_rules(
 
 
 def only_match_rules(m: Match) -> Match:
-    def fn(x: Match) -> ta.Iterable[Match]:
-        if isinstance(x.op, RuleRef):
-            return (only_match_rules(x),)
-
-        else:
-            return lang.flatmap(fn, x.children)
-
-    def rec(c: Match) -> Match:
-        return c.flat_map_children(fn)
-
-    return rec(m)
+    return filter_matches(
+        lambda x: isinstance(x.op, RuleRef),
+        m,
+        keep_children=True,
+    )
 
 
 #
