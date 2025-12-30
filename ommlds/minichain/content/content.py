@@ -10,10 +10,6 @@ class BaseContent(lang.Abstract, lang.PackageSealed):
     pass
 
 
-class LeafContent(BaseContent, lang.Abstract):
-    pass
-
-
 ##
 
 

@@ -1,19 +1,18 @@
+import abc
 import typing as ta
 
 from omlish import dataclasses as dc
 from omlish import lang
 
+from .standard import StandardContent
 from .content import Content
-from .composite import CompositeContent
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class SectionContent(CompositeContent, lang.Final):
-    header: str
-    body: Content
-
+class CompositeContent(StandardContent, lang.Abstract):
+    @abc.abstractmethod
     def child_content(self) -> ta.Sequence[Content]:
-        return [self.body]
+        raise NotImplementedError

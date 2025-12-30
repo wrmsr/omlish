@@ -262,9 +262,12 @@ with _lang.auto_proxy_init(
         CodeContent,
     )
 
+    from .content.composite import (  # noqa
+        CompositeContent,
+    )
+
     from .content.content import (  # noqa
         BaseContent,
-        LeafContent,
 
         Content,
         CONTENT_TYPES,

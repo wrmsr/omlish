@@ -1,3 +1,4 @@
+import collections.abc
 import inspect
 import typing as ta
 
@@ -6,7 +7,7 @@ from omlish import lang
 from ..code import CodeContent
 from ..content import BaseContent
 from ..content import Content
-from ..content import LeafContent
+from ..composite import CompositeContent
 from ..dynamic import DynamicContent
 from ..images import ImageContent
 from ..json import JsonContent
@@ -36,6 +37,23 @@ R = ta.TypeVar('R')
 class ContentVisitor(lang.Abstract, ta.Generic[C, R]):
     _visit_method_map: ta.ClassVar[ta.Mapping[ta.Any, str]]
 
+    def visit(self, c: Content, ctx: C) -> R:
+        if isinstance(c, str):
+            return self.visit_str(c)
+
+        if isinstance(c, collections.abc.Sequence):
+            return self.visit_sequence(c, ctx)
+
+        try:
+            a = self._visit_method_map[type(c)]
+        except KeyError:
+            raise TypeError(c)
+
+        return getattr(self, a)(c, ctx)
+
+    ##
+    # per-type visit methods
+
     def visit_content(self, c: Content, ctx: C) -> R:
         raise TypeError(c)
 
@@ -54,20 +72,14 @@ class ContentVisitor(lang.Abstract, ta.Generic[C, R]):
     def visit_base_content(self, c: BaseContent, ctx: C) -> R:
         return self.visit_content(c, ctx)
 
-    def visit_leaf_content(self, c: LeafContent, ctx: C) -> R:
-        return self.visit_base_content(c, ctx)
-
     ##
     # StandardContent
 
     def visit_standard_content(self, c: StandardContent, ctx: C) -> R:
-        if isinstance(c, LeafContent):
-            return self.visit_leaf_content(c, ctx)
-        else:
-            return self.visit_base_content(c, ctx)
+        return self.visit_base_content(c, ctx)
 
     ##
-    # final StandardContent
+    # leaf StandardContent
 
     def visit_code_content(self, c: CodeContent, ctx: C) -> R:
         return self.visit_standard_content(c, ctx)
@@ -84,14 +96,22 @@ class ContentVisitor(lang.Abstract, ta.Generic[C, R]):
     def visit_quote_content(self, c: QuoteContent, ctx: C) -> R:
         return self.visit_standard_content(c, ctx)
 
-    def visit_section_content(self, c: SectionContent, ctx: C) -> R:
-        return self.visit_standard_content(c, ctx)
-
-    def visit_tag_content(self, c: TagContent, ctx: C) -> R:
-        return self.visit_standard_content(c, ctx)
-
     def visit_text_content(self, c: TextContent, ctx: C) -> R:
         return self.visit_standard_content(c, ctx)
+
+    ##
+
+    # CompositeContent
+
+    def visit_composite_content(self, c: CompositeContent, ctx: C) -> R:
+        return self.visit_standard_content(c, ctx)
+
+    def visit_section_content(self, c: SectionContent, ctx: C) -> R:
+        return self.visit_composite_content(c, ctx)
+
+    def visit_tag_content(self, c: TagContent, ctx: C) -> R:
+        return self.visit_composite_content(c, ctx)
+
 
     ##
     # DynamicContent
@@ -115,7 +135,7 @@ class ContentVisitor(lang.Abstract, ta.Generic[C, R]):
     # SequenceContent
 
     def visit_sequence_content(self, c: SequenceContent, ctx: C) -> R:
-        return self.visit_standard_content(c, ctx)
+        return self.visit_composite_content(c, ctx)
 
     def visit_inline_content(self, c: InlineContent, ctx: C) -> R:
         return self.visit_sequence_content(c, ctx)

@@ -2,16 +2,21 @@
 TODO:
  - attribution
 """
+import typing as ta
+
 from omlish import dataclasses as dc
 from omlish import lang
 
 from .content import Content
-from .standard import StandardContent
+from .composite import CompositeContent
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class QuoteContent(StandardContent, lang.Final):
+class QuoteContent(CompositeContent, lang.Final):
     body: Content
+
+    def child_content(self) -> ta.Sequence[Content]:
+        return [self.body]
