@@ -104,9 +104,17 @@ class TypedValues(
     #
 
     def update(self, *tvs, override: bool = False) -> 'TypedValues':
-        return TypedValues(*self._tup, *tvs, override=override)
+        if not tvs:
+            return self
+        n = TypedValues(*self._tup, *tvs, override=override)
+        if lang.seqs_identical(self._tup, n._tup):
+            return self
+        return n
 
     def discard(self, *tys: type) -> 'TypedValues':
+        nl = list(self.without(*tys))
+        if len(nl) == len(self._tup):
+            return self
         return TypedValues(*self.without(*tys))
 
     #
