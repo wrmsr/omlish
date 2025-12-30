@@ -30,18 +30,18 @@ def _main() -> None:
 
     gram = parse_demo_grammar()
 
-    # with open(os.path.join(os.path.dirname(__file__), args.file_name)) as f:
-    #     ast_src = f.read()
-    #
-    # ast_src = fix_ws(ast_src)
-    #
-    # m = check.not_none(gram.parse(
-    #     ast_src,
-    #     complete=True,
-    #     # debug=True,
-    #     max_steps=args.max_steps,
-    # ))
-    # print(m.render(indent=2))
+    with open(os.path.join(os.path.dirname(__file__), args.file_name)) as f:
+        ast_src = f.read()
+
+    ast_src = fix_ws(ast_src)
+
+    m = check.not_none(gram.parse(
+        ast_src,
+        complete=True,
+        # debug=True,
+        max_steps=args.max_steps,
+    ))
+    print(m.render(indent=2))
 
 
 if __name__ == '__main__':

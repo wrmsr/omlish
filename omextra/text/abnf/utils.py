@@ -3,8 +3,8 @@ import typing as ta
 
 from omlish import check
 
-from .grammars import Grammar
 from .grammars import Channel
+from .grammars import Grammar
 from .matches import Match
 from .matches import filter_matches
 from .ops import RuleRef
@@ -34,7 +34,7 @@ def filter_match_channels(
             return False
 
         if remove is not None and r.channel in remove:
-           return False
+            return False
 
         return True
 
@@ -77,7 +77,12 @@ def parse_rules(
 
     match = only_match_rules(match)
 
-    match = filter_match_channels(match, grammar, remove=(Channel.SPACE,), keep_children=True)
+    match = filter_match_channels(
+        match,
+        grammar,
+        keep=(Channel.STRUCTURE,),
+        keep_children=True,
+    )
 
     return match
 

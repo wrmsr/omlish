@@ -1,7 +1,7 @@
-from ..meta import parse_grammar
-from ..utils import only_match_rules
-from ..utils import filter_match_channels
 from ..grammars import Channel
+from ..meta import parse_grammar
+from ..utils import filter_match_channels
+from ..utils import only_match_rules
 
 
 def test_meta() -> None:

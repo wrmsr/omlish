@@ -10,12 +10,12 @@ from omlish import lang
 from .base import Op
 from .core import CORE_RULES
 from .errors import AbnfGrammarParseError
-from .grammars import Grammar
-from .ops import RuleRef
-from .grammars import Rule
 from .grammars import Channel
+from .grammars import Grammar
+from .grammars import Rule
 from .matches import Match
 from .ops import Repeat
+from .ops import RuleRef
 from .ops import concat
 from .ops import either
 from .ops import literal
@@ -23,10 +23,10 @@ from .ops import option
 from .ops import repeat
 from .ops import rule
 from .opto import optimize_grammar
+from .utils import filter_matches
 from .utils import fix_ws
 from .utils import parse_rules
 from .visitors import RuleMatchVisitor
-from .utils import filter_matches
 
 
 ##
@@ -420,8 +420,7 @@ RAW_META_GRAMMAR = Grammar(
     root='rulelist',
 )
 
-# META_GRAMMAR = optimize_grammar(RAW_META_GRAMMAR)
-META_GRAMMAR = RAW_META_GRAMMAR
+META_GRAMMAR = optimize_grammar(RAW_META_GRAMMAR)
 
 
 ##

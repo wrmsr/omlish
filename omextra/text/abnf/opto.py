@@ -123,9 +123,9 @@ def _regex_item_transform_op(op: Op) -> _RegexItem | None:
         if child is None:
             return None
 
-        # Wrap the child pattern in a non-capturing group if needed to ensure correct quantification. A pattern
-        # needs wrapping if it contains multiple elements or operators (e.g., 'ab', 'a|b'). Single character classes
-        # [a-z] and# single escaped chars don't need wrapping.
+        # Wrap the child pattern in a non-capturing group if needed to ensure correct quantification. A pattern needs
+        # wrapping if it contains multiple elements or operators (e.g., 'ab', 'a|b'). Single character classes [a-z] and
+        # single escaped chars don't need wrapping.
         if (
                 len(child_pat := child.pat) > 1 and
                 not (child_pat.startswith('[') and child_pat.endswith(']'))
@@ -149,8 +149,8 @@ def _regex_item_transform_op(op: Op) -> _RegexItem | None:
         return _RegexRegexItem(child_pat + quantifier)
 
     elif isinstance(op, Either):
-        # Only convert Either if first_match is True, as regex alternation uses first-match semantics. ABNF Either
-        # with first_match=False uses longest-match semantics, which differs from regex.
+        # Only convert Either if first_match is True, as regex alternation uses first-match semantics. ABNF Either with
+        # first_match=False uses longest-match semantics, which differs from regex.
         if not op.first_match:
             return None
 
@@ -232,15 +232,11 @@ def _inline_rules(fn: ta.Callable[[Rule], bool], gram: Grammar) -> Grammar:
     return gram.replace_rules(*new_rules)
 
 
-def _inline_insignificant_rules(gram: Grammar) -> Grammar:
-    return _inline_rules(lambda r: r.channel == Channel.SPACE, gram)
-
-
 ##
 
 
 def optimize_grammar(gram: Grammar) -> Grammar:
-    gram = _inline_insignificant_rules(gram)
+    gram = _inline_rules(lambda r: r.channel == Channel.SPACE, gram)
 
     gram = gram.replace_rules(*[
         r.replace_op(optimize_op(r.op))
