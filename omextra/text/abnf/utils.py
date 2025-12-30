@@ -13,17 +13,33 @@ from .ops import RuleRef
 ##
 
 
-def strip_insignificant_match_rules(
+def filter_match_channels(
         m: Match,
         g: Grammar,
         *,
+        keep: ta.Container[Channel] | None = None,
+        remove: ta.Container[Channel] | None = None,
         keep_children: bool = False,
 ) -> Match:
+    if keep is None and remove is None:
+        return m
+
+    def fn(x: Match) -> bool:
+        if not isinstance((rr := x.op), RuleRef):
+            return False
+
+        r = check.not_none(g.rule(rr.name))
+
+        if keep is not None and r.channel not in keep:
+            return False
+
+        if remove is not None and r.channel in remove:
+           return False
+
+        return True
+
     return filter_matches(
-        lambda x: not (
-                isinstance((xp := x.op), RuleRef) and
-                check.not_none(g.rule(xp.name)).channel == Channel.SPACE
-        ),
+        fn,
         m,
         keep_children=keep_children,
     )
@@ -60,7 +76,8 @@ def parse_rules(
         return None
 
     match = only_match_rules(match)
-    match = strip_insignificant_match_rules(match, grammar, keep_children=True)
+
+    match = filter_match_channels(match, grammar, remove=(Channel.SPACE,), keep_children=True)
 
     return match
 

@@ -1,6 +1,7 @@
 from ..meta import parse_grammar
 from ..utils import only_match_rules
-from ..utils import strip_insignificant_match_rules
+from ..utils import filter_match_channels
+from ..grammars import Channel
 
 
 def test_meta() -> None:
@@ -26,7 +27,7 @@ def test_meta() -> None:
     rfc_m = rfc_gram.parse('Mon, 02 Jun 1982 00:00:00 GMT', 'HTTP-date')
     assert rfc_m is not None
     rfc_m = only_match_rules(rfc_m)
-    rfc_m = strip_insignificant_match_rules(rfc_m, rfc_gram)
+    rfc_m = filter_match_channels(rfc_m, rfc_gram, remove=(Channel.SPACE,))
     print(rfc_m.render(indent=2))
 
     # g = Grammar(
