@@ -1,25 +1,26 @@
+"""
+TODO:
+ - stream lol
+  - take first open vs take first chunk
+"""
 import typing as ta
 
-from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 
-from ..services.requests import Request
-from ..services.responses import Response
 from ..services.services import Service
-from ..types import Option
 from ..types import Output
+from .services import MultiWrapperService
+from .services import WrappedOptionT
+from .services import WrappedOutputT
+from .services import WrappedRequest
+from .services import WrappedRequestV
+from .services import WrappedResponse
+from .services import WrappedResponseV
 
 
 with lang.auto_proxy_import(globals()):
     import asyncio
-
-
-RequestV = ta.TypeVar('RequestV')
-OptionT = ta.TypeVar('OptionT', bound=Option)
-
-ResponseV = ta.TypeVar('ResponseV')
-OutputT = ta.TypeVar('OutputT', bound=Output)
 
 
 ##
@@ -42,30 +43,15 @@ class FirstInWinsServiceOutput(Output):
 
 
 class FirstInWinsService(
-    lang.Abstract,
-    ta.Generic[
-        RequestV,
-        OptionT,
-        ResponseV,
-        OutputT,
+    MultiWrapperService[
+        WrappedRequestV,
+        WrappedOptionT,
+        WrappedResponseV,
+        WrappedOutputT,
     ],
+    lang.Abstract,
 ):
-    def __init__(
-            self,
-            *services: Service[
-                Request[
-                    RequestV,
-                    OptionT,
-                ],
-                Response[
-                    ResponseV,
-                    OutputT,
-                ],
-            ],
-    ) -> None:
-        super().__init__()
-
-        self._services = check.not_empty(services)
+    pass
 
 
 ##
@@ -73,13 +59,13 @@ class FirstInWinsService(
 
 class AsyncioFirstInWinsService(
     FirstInWinsService[
-        RequestV,
-        OptionT,
-        ResponseV,
-        OutputT,
+        WrappedRequestV,
+        WrappedOptionT,
+        WrappedResponseV,
+        WrappedOutputT,
     ],
 ):
-    async def invoke(self, request: Request[RequestV, OptionT]) -> Response[ResponseV, OutputT]:
+    async def invoke(self, request: WrappedRequest) -> WrappedResponse:
         tasks: list = []
         services_by_task: dict = {}
         for svc in self._services:

@@ -23,7 +23,7 @@ class FirstInWinsBackendProvider(BackendProvider[ServiceT]):
     def provide_backend(self) -> ta.AsyncContextManager[ServiceT]:
         @contextlib.asynccontextmanager
         async def inner():
-            from ...minichain.meta.firstinwins import AsyncioFirstInWinsService
+            from ...minichain.wrappers.firstinwins import AsyncioFirstInWinsService
 
             async with contextlib.AsyncExitStack() as aes:
                 svcs = [
