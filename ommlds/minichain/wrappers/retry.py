@@ -25,6 +25,7 @@ from .services import WrappedService
 from .services import WrapperService
 from .stream import WrappedStreamOutputT
 from .stream import WrappedStreamResponse
+from .stream import WrappedStreamService
 from .stream import WrapperStreamService
 
 
@@ -107,5 +108,40 @@ class RetryStreamService(
         WrappedStreamOutputT,
     ],
 ):
+    DEFAULT_MAX_RETRIES: ta.ClassVar[int] = 3
+
+    def __init__(
+            self,
+            service: WrappedStreamService,
+            *,
+            max_retries: int | None = None,
+    ) -> None:
+        super().__init__(service)
+
+        if max_retries is None:
+            max_retries = self.DEFAULT_MAX_RETRIES
+        self._max_retries = max_retries
+
     async def invoke(self, request: WrappedRequest) -> WrappedStreamResponse:
-        raise NotImplementedError
+        n = 0
+
+        while True:
+            try:
+                resp = await self._service.invoke(request)
+
+            except Exception as e:  # noqa
+                if n < self._max_retries:
+                    n += 1
+                    continue
+
+                raise RetryServiceMaxRetriesExceededError from e
+
+            # FIXME: lol no:
+            #  - async def inner(sink: StreamResponseSink[...]) -> ta.Sequence[...Outputs] | None:
+            #   - async with resp.v as st_resp:
+            return resp.with_outputs(RetryServiceOutput(
+                retry_service=self,
+                num_retries=n,
+            ))
+
+        raise RuntimeError  # unreachable
