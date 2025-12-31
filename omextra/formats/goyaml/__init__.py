@@ -21,7 +21,7 @@ The primary reasons for.. doing this.. are as follows:
    manipulate them with full, perfect preservation of all stylistic choices, whitespace, comments, etc. This is already
    partially done here by wrapping pyyaml nodes, but it's not complete and very fragile.
 
-It should remain symmetry with the go-yaml codebase to allow for backporting of updates. Specifically:
+It should remain symmetrical with the go-yaml codebase to allow for backporting of updates. Specifically:
  - The layout of the code in the source files, down to the order of their contents, is nearly identical
  - Its code is 'go-flavored' - for example it returns 'YamlErrorOr' rather than raises exceptions
 

@@ -132,14 +132,21 @@
     with an `add_user` method such that it actually stores the added user in a dictionary on the instance.
 
 - Runtime
+  - Do basically no 'work' in module body.
+    - Do *NOT* eagerly do any IO - wrap any such things in a `@lang.cached_function`.
   - Unless forced to through interaction with external code, do not use environment variables for anything.
     Configuration should be injected, usually as keyword-only class constructor arguments, and usually in the form of
     dataclasses or `ta.NewType`s.
+  - Outside of test code, *NEVER* use `__file__` - never assume python code is running in `.py` files on a filesystem.
+    (In general, do not even assume to have a readable filesystem). Write code compatible with zipfile python dists and
+    pyoxidizer in which there is no `__file__`. Access resources via `lang.get_package_resources` /
+    `lang.get_relative_resources`.
 
 - C Extensions
   - C extensions use C11 and C++ extensions use C++20.
   - In general prefer to write native extensions in C++.
-  - Use the C++ standard library liberally, but write more 'C-style' code when interfacing with CPython.
+  - Use the C++ standard library liberally, but not 'excessively' lol. Write more 'C-style' code when interfacing with
+    CPython.
   - C++ source files use the `.cc` extension, and C++ header files use the `.hh` extension.
   - Native extensions *must* use PEP-489 style multi-phase extension initialization (`PyModuleDef_Init`).
   - Modules should mark themselves `Py_MOD_GIL_NOT_USED` and `Py_MOD_MULTIPLE_INTERPRETERS_SUPPORTED` as applicable.
