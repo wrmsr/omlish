@@ -139,7 +139,8 @@
 - C Extensions
   - C extensions use C11 and C++ extensions use C++20.
   - In general prefer to write native extensions in C++.
-  - Use the C++ standard library liberally, but write more 'C-style' code when interfacing with CPython.
+  - Use the C++ standard library liberally, but not 'excessively' lol. Write more 'C-style' code when interfacing with
+    CPython.
   - C++ source files use the `.cc` extension, and C++ header files use the `.hh` extension.
   - Native extensions *must* use PEP-489 style multi-phase extension initialization (`PyModuleDef_Init`).
   - Modules should mark themselves `Py_MOD_GIL_NOT_USED` and `Py_MOD_MULTIPLE_INTERPRETERS_SUPPORTED` as applicable.
