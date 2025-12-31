@@ -133,7 +133,13 @@
 
 - Runtime
   - Do basically no 'work' in module body.
-    - Do *NOT* eagerly do any IO - wrap any such things in a `@lang.cached_function`.
+    - *NEVER* eagerly do any IO in module body - wrap any such things in a `@lang.cached_function`. 
+    - *NEVER* write dumb python 'scripts'. Modules intended as entrypoints are great, but *ALWAYS* make them importable
+      side-effect-free, and *ALWAYS* have an `if __name__ == '__main__'` guard at the bottom. And almost always have
+      that just call a `def _main() -> None:` or `async def _a_main() -> None:`. Don't pollute module globals with state
+      even if the module is running as entrypoint.
+    - Always use relative imports even in python modules intended to be directly executed. All python invocations will
+      always be done via `python -m`.
   - Unless forced to through interaction with external code, do not use environment variables for anything.
     Configuration should be injected, usually as keyword-only class constructor arguments, and usually in the form of
     dataclasses or `ta.NewType`s.
