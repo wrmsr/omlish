@@ -4,6 +4,11 @@ TODO:
   - exception filter
   - sleep
    - jitter
+ - stream retry:
+  - failed to open
+  - failed during stream
+   - buffer and replay??
+  - accept death mid-stream?
 """
 import typing as ta
 
@@ -18,6 +23,15 @@ from .services import WrappedResponse
 from .services import WrappedResponseV
 from .services import WrappedService
 from .services import WrapperService
+from .stream import WrappedStreamOutputT
+from .stream import WrappedStreamResponse
+from .stream import WrapperStreamService
+
+
+AnyRetryService: ta.TypeAlias = ta.Union[
+    'RetryService',
+    'RetryStreamService',
+]
 
 
 ##
@@ -30,8 +44,11 @@ class RetryServiceMaxRetriesExceededError(Exception):
 
 @dc.dataclass(frozen=True)
 class RetryServiceOutput(Output):
-    retry_service: 'RetryService'
+    retry_service: AnyRetryService
     num_retries: int
+
+
+##
 
 
 class RetryService(
@@ -76,3 +93,19 @@ class RetryService(
             ))
 
         raise RuntimeError  # unreachable
+
+
+##
+
+
+class RetryStreamService(
+    WrapperStreamService[
+        WrappedRequestV,
+        WrappedOptionT,
+        WrappedResponseV,
+        WrappedOutputT,
+        WrappedStreamOutputT,
+    ],
+):
+    async def invoke(self, request: WrappedRequest) -> WrappedStreamResponse:
+        raise NotImplementedError

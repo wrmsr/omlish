@@ -17,10 +17,18 @@ from .services import WrappedRequest
 from .services import WrappedRequestV
 from .services import WrappedResponse
 from .services import WrappedResponseV
+from .stream import WrappedStreamOutputT
+from .stream import WrapperStreamService
 
 
 with lang.auto_proxy_import(globals()):
     import asyncio
+
+
+AnyFirstInWinsService: ta.TypeAlias = ta.Union[
+    'FirstInWinsService',
+    'FirstInWinsStreamService',
+]
 
 
 ##
@@ -37,9 +45,12 @@ class FirstInWinsServiceExceptionGroup(ExceptionGroup):
 
 @dc.dataclass(frozen=True)
 class FirstInWinsServiceOutput(Output):
-    first_in_wins_service: 'FirstInWinsService'
+    first_in_wins_service: AnyFirstInWinsService
     response_service: Service
     service_exceptions: ta.Mapping[Service, Exception] | None = None
+
+
+##
 
 
 class FirstInWinsService(
@@ -48,6 +59,22 @@ class FirstInWinsService(
         WrappedOptionT,
         WrappedResponseV,
         WrappedOutputT,
+    ],
+    lang.Abstract,
+):
+    pass
+
+
+##
+
+
+class FirstInWinsStreamService(
+    WrapperStreamService[
+        WrappedRequestV,
+        WrappedOptionT,
+        WrappedResponseV,
+        WrappedOutputT,
+        WrappedStreamOutputT,
     ],
     lang.Abstract,
 ):
