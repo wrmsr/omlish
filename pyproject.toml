@@ -184,6 +184,9 @@ module = [
     'torchvision.*',
     'wikitextparser',
 
+    'mlx.*',
+    'mlx_lm.*',
+
 ]
 ignore_missing_imports = true
 disable_error_code = ['import-untyped']

@@ -56,6 +56,8 @@ class AnthropicSseDecoderEvents(lang.Namespace):
         delta: Delta
         usage: Usage
 
+        context_management: ta.Mapping[str, ta.Any] | None = None
+
     @dc.dataclass(frozen=True)
     class MessageStop(MessageEvent):
         pass
