@@ -75,13 +75,14 @@ def try_(
         exc: type[Exception] | ta.Iterable[type[Exception]] = Exception,
         default: T | None = None,
 ) -> ta.Callable[P, T]:
+    exct = (exc,) if isinstance(exc, type) else tuple(exc)
+
     def inner(*args, **kwargs):
         try:
             return fn(*args, **kwargs)
         except exct:
             return default
 
-    exct = (exc,) if isinstance(exc, type) else tuple(exc)
     return inner
 
 

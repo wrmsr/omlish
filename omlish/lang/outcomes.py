@@ -214,7 +214,7 @@ class Value(Outcome[ValueT_co], ta.Generic[ValueT_co]):
 
     @property
     def is_error(self) -> bool:
-        return True
+        return False
 
     def value(self) -> ValueT_co:
         return self._value

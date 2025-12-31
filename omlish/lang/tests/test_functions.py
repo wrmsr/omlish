@@ -18,6 +18,33 @@ def test_try():
     assert try_(foo, FooError, 5)() == 5
 
 
+def test_try_with_multiple_exceptions():
+    """Regression test: try_ should work with multiple exception types."""
+
+    class BarError(Exception):
+        pass
+
+    def raise_foo():
+        raise FooError('foo')
+
+    def raise_bar():
+        raise BarError('bar')
+
+    def raise_value():
+        raise ValueError('value')
+
+    # Test with iterable of exception types
+    wrapped_foo = try_(raise_foo, [FooError, BarError], default='caught')
+    assert wrapped_foo() == 'caught'
+
+    wrapped_bar = try_(raise_bar, [FooError, BarError], default='caught')
+    assert wrapped_bar() == 'caught'
+
+    wrapped_value = try_(raise_value, [FooError, BarError], default='caught')
+    with pytest.raises(ValueError):
+        wrapped_value()
+
+
 def test_finally():
     c = 0
 

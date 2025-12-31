@@ -65,7 +65,7 @@ def recursion_limiting_context(key: ta.Any, limit: int | None) -> ta.Iterator[in
     except KeyError:
         pd = None
     else:
-        if not isinstance(pd, int) and pd > 0:  # type: ignore[operator]
+        if not isinstance(pd, int) or pd <= 0:
             raise RuntimeError
 
     if pd is not None and pd >= limit:

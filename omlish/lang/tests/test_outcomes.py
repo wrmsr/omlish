@@ -74,6 +74,15 @@ def test_outcome():
         e.send(it)
 
 
+def test_is_error_property():
+    """Regression test: Value.is_error should return False, Error.is_error should return True."""
+    v = outcomes.Value(42)
+    assert v.is_error is False, "Value.is_error should be False"
+
+    e = outcomes.Error(ValueError('test'))
+    assert e.is_error is True, "Error.is_error should be True"
+
+
 def test_outcome_eq_hash():
     v1 = outcomes.Value(['hello'])
     v2 = outcomes.Value(['hello'])
