@@ -1,0 +1,76 @@
+import pytest
+
+from ...services.requests import Request
+from ...services.responses import Response
+from ...types import Option
+from ...types import Output
+from ..retry import RetryService
+from ..retry import RetryServiceMaxRetriesExceededError
+from ..retry import RetryServiceOutput
+
+
+class SuccessService:
+    async def invoke(self, request: Request[int, Option]) -> Response[str, Output]:
+        return Response(f'success({request.v})')
+
+
+class FailNTimesServiceError(Exception):
+    pass
+
+
+class FailNTimesService:
+    def __init__(self, fail_count: int):
+        self._fail_count = fail_count
+        self._attempt = 0
+
+    async def invoke(self, request: Request[int, Option]) -> Response[str, Output]:
+        if self._attempt < self._fail_count:
+            self._attempt += 1
+            raise FailNTimesServiceError(f'fail_attempt_{self._attempt}({request.v})')
+        return Response(f'success_after_{self._fail_count}_retries({request.v})')
+
+
+class AlwaysFailService:
+    async def invoke(self, request: Request[int, Option]) -> Response[str, Output]:
+        raise FailNTimesServiceError('always_fail')
+
+
+@pytest.mark.asyncs('asyncio')
+async def test_retry_success_first_try():
+    r = await RetryService(SuccessService()).invoke(Request(42))
+    assert r.v == 'success(42)'
+
+    # Check that num_retries is 0 for successful first attempt
+    retry_output = next(o for o in r.outputs if isinstance(o, RetryServiceOutput))
+    assert retry_output.num_retries == 0
+
+
+@pytest.mark.asyncs('asyncio')
+async def test_retry_success_after_failures():
+    # Should succeed after 2 retries (fails twice, succeeds on third attempt)
+    r = await RetryService(FailNTimesService(2)).invoke(Request(42))
+    assert r.v == 'success_after_2_retries(42)'
+
+    retry_output = next(o for o in r.outputs if isinstance(o, RetryServiceOutput))
+    assert retry_output.num_retries == 2
+
+
+@pytest.mark.asyncs('asyncio')
+async def test_retry_max_retries_exceeded():
+    # Default max_retries is 3, so should fail after 3 retries (4 total attempts)
+    with pytest.raises(RetryServiceMaxRetriesExceededError):
+        await RetryService(AlwaysFailService()).invoke(Request(42))
+
+
+@pytest.mark.asyncs('asyncio')
+async def test_retry_custom_max_retries():
+    # Custom max_retries of 5
+    r = await RetryService(FailNTimesService(5), max_retries=5).invoke(Request(42))
+    assert r.v == 'success_after_5_retries(42)'
+
+    retry_output = next(o for o in r.outputs if isinstance(o, RetryServiceOutput))
+    assert retry_output.num_retries == 5
+
+    # Should fail with max_retries=1 when service fails twice
+    with pytest.raises(RetryServiceMaxRetriesExceededError):
+        await RetryService(FailNTimesService(2), max_retries=1).invoke(Request(42))

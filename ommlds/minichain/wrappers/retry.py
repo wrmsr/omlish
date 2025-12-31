@@ -2,6 +2,8 @@
 TODO:
  - tenacity shit
   - exception filter
+  - sleep
+   - jitter
 """
 import typing as ta
 
