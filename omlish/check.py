@@ -26,6 +26,17 @@ _callable = callable
 ##
 
 
+try:
+    from . import _check  # type: ignore
+except ImportError:
+    pass
+else:
+    setattr(Checks, '_unpack_isinstance_spec', _check.unpack_isinstance_spec)
+
+
+##
+
+
 def register_on_raise(fn: OnRaiseFn) -> None:
     check.register_on_raise(fn)
 
