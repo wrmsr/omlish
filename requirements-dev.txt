@@ -106,7 +106,8 @@ asttokens==3.0.1
 numpy>=1.26
 
 rich==14.2.0
-textual[syntax]==7.0.0
+textual==7.0.0  # @omlish-venv 13t 13dt 14t
+textual[syntax]==7.0.0  # @omlish-venv !13t !13dt !14t
 textual-dev==1.8.0
 textual-speedups==0.2.1
 

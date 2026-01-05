@@ -53,13 +53,14 @@ class RequirementsRewriter:
                 if self.VENV_MAGIC in l:
                     lp, _, rp = l.partition(self.VENV_MAGIC)
                     rp = rp.partition('#')[0]
-                    for v in rp.split():
-                        if v[0] == '!':
-                            if self._venv is not None and self._venv == v[1:]:
-                                omit = True
-                                break
-                        else:
-                            raise NotImplementedError
+                    vs = set(rp.split())
+                    nvs = {v[1:] for v in vs if v.startswith('!')}
+                    pvs = {v for v in vs if not v.startswith('!')}
+                    if (
+                            (nvs and self._venv in nvs) or
+                            (pvs and self._venv not in pvs)
+                    ):
+                        omit = True
 
                 if (
                         not omit and

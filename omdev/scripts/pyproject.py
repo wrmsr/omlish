@@ -141,7 +141,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../interp/pyenv/pyenv.py', sha1='d1f6e657c671c1b1a5b0e627284df656fe2d10d3'),
             dict(path='../interp/uv/uv.py', sha1='8c6515cd6755efab3972da92a285e94ccb255515'),
             dict(path='../packaging/revisions.py', sha1='9ba90e4a93b1bfcc93f6ca65dbaaf38f79929677'),
-            dict(path='reqs.py', sha1='822e265b0d2e6d9548ee24d3ac60c81066e40ee8'),
+            dict(path='reqs.py', sha1='65ac743653c455a5015a1a0ce2317ee5372a0c7c'),
             dict(path='../interp/providers/running.py', sha1='85c9cc69ff6fbd6c8cf78ed6262619a30856c2f1'),
             dict(path='../interp/providers/system.py', sha1='9638a154475ca98775159d27739563ac7fb2eb16'),
             dict(path='../interp/pyenv/install.py', sha1='4a10a19717364b4ba9f3b8bf1d12621cf21ba8b8'),
@@ -10735,13 +10735,14 @@ class RequirementsRewriter:
                 if self.VENV_MAGIC in l:
                     lp, _, rp = l.partition(self.VENV_MAGIC)
                     rp = rp.partition('#')[0]
-                    for v in rp.split():
-                        if v[0] == '!':
-                            if self._venv is not None and self._venv == v[1:]:
-                                omit = True
-                                break
-                        else:
-                            raise NotImplementedError
+                    vs = set(rp.split())
+                    nvs = {v[1:] for v in vs if v.startswith('!')}
+                    pvs = {v for v in vs if not v.startswith('!')}
+                    if (
+                            (nvs and self._venv in nvs) or
+                            (pvs and self._venv not in pvs)
+                    ):
+                        omit = True
 
                 if (
                         not omit and

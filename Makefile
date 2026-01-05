@@ -7,6 +7,11 @@
 SHELL:=/bin/bash
 
 
+### All
+
+all: dep-refresh dep-freeze fix gen check test
+
+
 ### Clean
 
 .PHONY: clean-venv
