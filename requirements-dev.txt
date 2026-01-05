@@ -106,7 +106,7 @@ asttokens==3.0.1
 numpy>=1.26
 
 rich==14.2.0
-textual[syntax]==6.11.0
+textual[syntax]==7.0.0
 textual-dev==1.8.0
 textual-speedups==0.2.1
 
@@ -127,7 +127,7 @@ sentence-transformers==5.2.0  # @omlish-venv !14t !14dt
 
 sentencepiece==0.2.1
 tiktoken==0.12.0
-tokenizers==0.22.1  # @omlish-venv !14t !14dt
+tokenizers==0.22.2  # @omlish-venv !14t !14dt
 
 llama-cpp-python; sys_platform == "darwin"
 

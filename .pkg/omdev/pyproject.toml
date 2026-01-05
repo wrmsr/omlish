@@ -40,7 +40,7 @@ all = [
     'gprof2dot ~= 2025.4',
     'segno ~= 1.6',
     'rich ~= 14.2',
-    'textual ~= 6.11',
+    'textual ~= 7.0',
     'textual-dev ~= 1.8',
     'textual-speedups ~= 0.2',
 ]
@@ -68,7 +68,7 @@ qr = [
 ]
 tui = [
     'rich ~= 14.2',
-    'textual ~= 6.11',
+    'textual ~= 7.0',
     'textual-dev ~= 1.8',
     'textual-speedups ~= 0.2',
 ]
