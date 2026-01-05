@@ -52,7 +52,7 @@ tree-sitter-python==0.25.0
 watchdog==6.0.0
 
 pyright[nodejs]==1.1.407
-basedpyright==1.36.2
+basedpyright==1.37.0
 
 blobfile==3.1.0
 
@@ -61,7 +61,7 @@ blobfile==3.1.0
 # diag
 
 yappi==1.7.3  # @omlish-venv !14
-pyinstrument==5.1.1
+pyinstrument==5.1.2
 
 debugpy==1.8.19
 

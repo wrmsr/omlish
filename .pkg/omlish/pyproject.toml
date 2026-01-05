@@ -41,7 +41,7 @@ all = [
     'orjson ~= 3.11',
     'ujson ~= 5.11',
     'pyyaml ~= 6.0',
-    'cbor2 ~= 5.7',
+    'cbor2 ~= 5.8',
     'cloudpickle ~= 3.1',
     'httpx[http2] ~= 0.28',
     'wrapt ~= 2.0',
@@ -88,7 +88,7 @@ formats = [
     'orjson ~= 3.11',
     'ujson ~= 5.11',
     'pyyaml ~= 6.0',
-    'cbor2 ~= 5.7',
+    'cbor2 ~= 5.8',
     'cloudpickle ~= 3.1',
 ]
 http = [

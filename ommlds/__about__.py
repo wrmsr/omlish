@@ -59,7 +59,7 @@ class Project(ProjectBase):
         ],
 
         'pillow': [
-            'pillow ~= 12.0',
+            'pillow ~= 12.1',
         ],
 
         'search': [
