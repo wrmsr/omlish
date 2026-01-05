@@ -28,3 +28,23 @@ def test_groq_chat_stream_model(harness):
             for o in lang.sync_aiter(it):
                 print(o)
             print(it.outputs)
+
+
+@pytest.mark.online
+@pytest.mark.asyncs('asyncio')
+async def test_groq_chat_stream_model_async(harness):
+    llm = GroqChatChoicesStreamService(
+        ApiKey(harness[HarnessSecrets].get_or_skip('groq_api_key').reveal()),
+    )
+
+    foo_req: ChatChoicesStreamRequest
+    for foo_req in [
+        ChatChoicesStreamRequest([UserMessage('Is water dry?')]),
+        ChatChoicesStreamRequest([UserMessage('Is air wet?')]),
+    ]:
+        print(foo_req)
+
+        async with (await llm.invoke(foo_req)).v as it:
+            async for o in it:
+                print(o)
+            print(it.outputs)

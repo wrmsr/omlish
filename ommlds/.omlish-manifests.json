@@ -252,7 +252,7 @@
     "module": ".minichain.backends.impls.groq.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/groq/chat.py",
-    "line": 26,
+    "line": 27,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.groq.chat",
@@ -291,7 +291,7 @@
     "module": ".minichain.backends.impls.groq.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/groq/stream.py",
-    "line": 33,
+    "line": 34,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.groq.stream",

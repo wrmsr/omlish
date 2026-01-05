@@ -9,6 +9,7 @@ from omlish.http import sse
 from omlish.io.buffers import DelimitingBuffer
 
 from .....backends.groq import protocol as pt
+from .....backends.groq.clients import REQUIRED_HTTP_HEADERS
 from ....chat.choices.services import ChatChoicesOutputs
 from ....chat.choices.stream.services import ChatChoicesStreamRequest
 from ....chat.choices.stream.services import ChatChoicesStreamResponse
@@ -72,6 +73,7 @@ class GroqChatChoicesStreamService:
             headers={
                 http.consts.HEADER_CONTENT_TYPE: http.consts.CONTENT_TYPE_JSON,
                 http.consts.HEADER_AUTH: http.consts.format_bearer_auth_header(check.not_none(self._api_key).reveal()),
+                **REQUIRED_HTTP_HEADERS,
             },
             data=json.dumps(raw_request).encode('utf-8'),
         )

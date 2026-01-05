@@ -9,7 +9,7 @@ SHELL:=/bin/bash
 
 ### All
 
-all: dep-refresh dep-freeze fix gen check test
+all: fix gen check test
 
 
 ### Clean

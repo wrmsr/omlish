@@ -7,6 +7,7 @@ from omlish.formats import json
 from omlish.http import all as http
 
 from .....backends.groq import protocol as pt
+from .....backends.groq.clients import REQUIRED_HTTP_HEADERS
 from ....chat.choices.services import ChatChoicesRequest
 from ....chat.choices.services import ChatChoicesResponse
 from ....chat.choices.services import static_check_is_chat_choices_service
@@ -65,6 +66,7 @@ class GroqChatChoicesService:
             headers={
                 http.consts.HEADER_CONTENT_TYPE: http.consts.CONTENT_TYPE_JSON,
                 http.consts.HEADER_AUTH: http.consts.format_bearer_auth_header(check.not_none(self._api_key).reveal()),
+                **REQUIRED_HTTP_HEADERS,
             },
             data=json.dumps(raw_request).encode('utf-8'),
             client=self._http_client,
