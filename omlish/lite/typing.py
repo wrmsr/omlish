@@ -78,6 +78,21 @@ class CachedFunc0(ta.Generic[T]):
         return value
 
 
+@dc.dataclass(frozen=True)
+class AsyncCachedFunc0(ta.Generic[T]):
+    fn: ta.Callable[[], ta.Awaitable[T]]
+
+    async def __call__(self) -> T:
+        try:
+            return object.__getattribute__(self, '_value')
+        except AttributeError:
+            pass
+
+        value = await self.fn()
+        object.__setattr__(self, '_value', value)
+        return value
+
+
 ##
 
 

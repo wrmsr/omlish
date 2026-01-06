@@ -63,8 +63,9 @@ def test_late_inj_helper_explicit():
 
     tg = injector[ThingyGetter]
     assert isinstance(tg, ThingyGetter)
-    assert isinstance(t := tg(), Thingy)
-    assert t.i == 42
+    for _ in range(3):
+        assert isinstance(t := tg(), Thingy)
+        assert t.i == 42
 
 
 ##
@@ -104,10 +105,11 @@ def test_async_late_inj_helper():
     ))
 
     a = lang.sync_await(injector[AsyncServiceA])
-    assert lang.sync_await(a.foo())['b.c.a()'] is a
+    for _ in range(3):
+        assert lang.sync_await(a.foo())['b.c.a()'] is a
 
 
-class AsyncThingyGetter(lang.CachedFunc0[ta.Awaitable[Thingy]]):
+class AsyncThingyGetter(lang.AsyncCachedFunc0[Thingy]):
     pass
 
 
@@ -121,5 +123,6 @@ def test_async_late_inj_helper_explicit():
 
     tg = lang.sync_await(injector[AsyncThingyGetter])
     assert isinstance(tg, AsyncThingyGetter)
-    assert isinstance(t := lang.sync_await(tg()), Thingy)
-    assert t.i == 42
+    for _ in range(3):
+        assert isinstance(t := lang.sync_await(tg()), Thingy)
+        assert t.i == 42

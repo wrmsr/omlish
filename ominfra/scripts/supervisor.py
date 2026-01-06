@@ -125,7 +125,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
             dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='../../omlish/lite/strings.py', sha1='89831ecbc34ad80e118a865eceb390ed399dc4d6'),
-            dict(path='../../omlish/lite/typing.py', sha1='c501ff8f9ed08202e8016eaa098526d4deede834'),
+            dict(path='../../omlish/lite/typing.py', sha1='048bb5fb8ecad5be101516f8f3b7996707f5bc42'),
             dict(path='../../omlish/logs/levels.py', sha1='91405563d082a5eba874da82aac89d83ce7b6152'),
             dict(path='../../omlish/logs/std/filters.py', sha1='f36aab646d84d31e295b33aaaaa6f8b67ff38b3d'),
             dict(path='../../omlish/logs/std/proxy.py', sha1='3e7301a2aa351127f9c85f61b2f85dcc3f15aafb'),
@@ -3509,6 +3509,21 @@ class CachedFunc0(ta.Generic[T]):
             pass
 
         value = self.fn()
+        object.__setattr__(self, '_value', value)
+        return value
+
+
+@dc.dataclass(frozen=True)
+class AsyncCachedFunc0(ta.Generic[T]):
+    fn: ta.Callable[[], ta.Awaitable[T]]
+
+    async def __call__(self) -> T:
+        try:
+            return object.__getattribute__(self, '_value')
+        except AttributeError:
+            pass
+
+        value = await self.fn()
         object.__setattr__(self, '_value', value)
         return value
 

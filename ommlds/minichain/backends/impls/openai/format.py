@@ -145,7 +145,7 @@ def build_mc_ai_delta(delta: pt.ChatCompletionChunkChoiceDelta) -> AiDelta:
         )
 
     else:
-        raise ValueError(delta)
+        return ContentAiDelta('')
 
 
 ##

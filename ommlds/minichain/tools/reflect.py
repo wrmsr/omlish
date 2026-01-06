@@ -178,14 +178,14 @@ class ToolReflector:
         for o in md.get_object_metadata(fn, type=_ToolSpecOverride):
             ts_ovr.update({
                 k: v
-                for k, v in dc.asdict(o).items()
+                for k, v in dc.shallow_asdict(o).items()
                 if k != 'params'
                 and v is not None
             })
             for op in (o.params or []):
                 p_ovr_dct.setdefault(check.non_empty_str(op.name), {}).update({
                     k: v
-                    for k, v in dc.asdict(op).items()
+                    for k, v in dc.shallow_asdict(op).items()
                     if v is not None
                 })
 
@@ -286,7 +286,7 @@ class ToolReflector:
             if md_tp is not None:
                 tp_kw.update({
                     k: v
-                    for k, v in dc.asdict(md_tp).items()
+                    for k, v in dc.shallow_asdict(md_tp).items()
                     if v is not None
                 })
 

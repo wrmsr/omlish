@@ -22,8 +22,9 @@ class AiDeltaJoiner:
     def __init__(self) -> None:
         super().__init__()
 
-        self._deltas: list[AiDelta] = []
-        self._messages: list[AnyAiMessage] = []
+        self._all: list[AiDelta] = []
+        self._queue: list[AiDelta] = []
+        self._out: list[AnyAiMessage] = []
 
     def _build_joined(self, deltas: ta.Sequence[AiDelta]) -> AnyAiMessage:
         dty = check.single(set(map(type, check.not_empty(deltas))))
@@ -43,6 +44,9 @@ class AiDeltaJoiner:
 
             ra = ''.join(filter(None, (td.raw_args for td in tds)))
 
+            if not ra:
+                ra = '{}'
+
             return ToolUseMessage(ToolUse(
                 id=tds[0].id,
                 name=check.non_empty_str(tds[0].name),
@@ -53,19 +57,39 @@ class AiDeltaJoiner:
         else:
             raise TypeError(dty)
 
-    def _maybe_join(self) -> None:
-        if not self._deltas:
+    def _join(self) -> None:
+        if not self._queue:
             return
 
-        self._messages.append(self._build_joined(self._deltas))
-        self._deltas.clear()
+        self._out.append(self._build_joined(self._queue))
+        self._queue.clear()
+
+    def _should_join(self, *, new: AiDelta | None = None) -> bool:
+        if not self._queue:
+            return False
+
+        if new is not None and type(self._queue[0]) is not type(new):
+            return True
+
+        if (
+                isinstance(d0 := self._queue[0], PartialToolUseAiDelta) and
+                isinstance(new, PartialToolUseAiDelta) and
+                d0.id is not None and
+                new.id is not None and
+                d0.id != new.id
+        ):
+            return True
+
+        return False
 
     def _add_one(self, d: AiDelta) -> None:
-        if self._deltas and type(self._deltas[0]) is not type(d):
-            self._maybe_join()
+        if self._should_join(new=d):
+            self._join()
+
+        self._all.append(d)
 
         if isinstance(d, ToolUseAiDelta):
-            self._messages.append(ToolUseMessage(ToolUse(
+            self._out.append(ToolUseMessage(ToolUse(
                 id=d.id,
                 name=check.not_none(d.name),
                 args=d.args or {},
@@ -73,13 +97,13 @@ class AiDeltaJoiner:
             )))
 
         else:
-            self._deltas.append(d)
+            self._queue.append(d)
 
     def add(self, deltas: AiDeltas) -> None:
         for d in deltas:
             self._add_one(d)
 
     def build(self) -> AiChat:
-        self._maybe_join()
+        self._join()
 
-        return list(self._messages)
+        return list(self._out)

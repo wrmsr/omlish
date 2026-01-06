@@ -40,7 +40,7 @@ ChatEventQueue = ta.NewType('ChatEventQueue', asyncio.Queue)
 ##
 
 
-class ChatAppGetter(lang.CachedFunc0[ta.Awaitable['ChatApp']]):
+class ChatAppGetter(lang.AsyncCachedFunc0['ChatApp']):
     pass
 
 

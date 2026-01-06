@@ -9,7 +9,9 @@ SHELL:=/bin/bash
 
 ### All
 
-all: fix gen check test
+all: fgc test
+
+fgc: fix gen check
 
 
 ### Clean
