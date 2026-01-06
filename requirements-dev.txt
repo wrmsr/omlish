@@ -41,9 +41,9 @@ objgraph==3.6.2
 
 ipython==9.9.0
 
-litecli==1.15.0  # @omlish-venv  # FIXME: MAKE LLM DEP OPTIONAL
-mycli==1.42.0  # @omlish-venv !13t !13dt !14t
-pgcli==4.3.0  # @omlish-venv !13t !13dt !14t
+# litecli==1.15.0  # @omlish-venv  # FIXME: MAKE LLM DEP OPTIONAL
+# mycli==1.42.0  # @omlish-venv !13t !13dt !14t
+# pgcli==4.3.0  # @omlish-venv !13t !13dt !14t
 
 # pydevd-pycharm==241.18034.82
 
