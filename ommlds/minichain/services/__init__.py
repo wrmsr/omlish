@@ -2,30 +2,31 @@
 """
 The core service abstraction. In general, Services are intended to encapsulate non-trivial, resourceful, effectful
 operations, which are likely to have various implementations, each having their own specific capabilities in addition
-to their common interface, in which wrapping and adapting and transforming them in a uniform manner is desirable.
+to their common interface, and where wrapping, adapting, and transforming them in a uniform manner is desirable.
 
 For example:
  - A ChatService is passed a Request with a Chat value and returns a Response with an AiChat value.
  - A ChatChoicesService is passed a Request with a Chat and returns a Response with a list of AiChoices.
- - A ChatChoicesServiceChatService is a simple adapter taking a ChatChoicesService and simply expecting to see a single
-   AiChoice value and will return its AiChat in its Response - thus acting as a ChatService.
+ - A ChatChoicesServiceChatService is a simple adapter taking a ChatChoicesService which it will invoke with its given
+   Request, expect a single AiChoice value in that Response, and return that single AiChat as its Response - thus acting
+   as a ChatService.
    - Thus, all chat backends that return choices can be adapted to code expecting a single chat as output.
  - A ChatStreamService is passed a Request with a Chat value and returns a Response with a value from which AiDeltas
    may be streamed.
  - A ChatChoicesStreamService is passed a Request with a Chat value and returns a Response with a value from which
    AiChoicesDeltas may be streamed.
  - A ChatChoicesStreamServiceChatChoicesService is an adapter taking a ChatChoicesStreamService and aggregating the
-   AiChoicesDeltas into AiChoices.
+   AiChoicesDeltas into joined, non-delta AiChoices.
    - This may then be wrapped in a ChatChoicesServiceChatService to act as a ChatService.
    - In practice however there are usually dedicated streaming and non-streaming implementations if possible as
      non-streaming will usually have less overhead.
  - An OpenaiChatChoicesService can act as a ChatChoicesService, and will accept all generic ChatOptions, in addition to
-   any OpenaiChatOptions unapplicable to any other backend. It may also produce all generic ChatOutputs, in addition to
+   any OpenaiChatOptions inapplicable to any other backend. It may also produce all generic ChatOutputs, in addition to
    OpenaiChatOutputs that will not be produced by other backends.
  - Beyond chat, a VectorSearchService is passed a Request with a VectorSearch value and returns a Response with a
    VectorHits value.
  - A RetryService wraps any other Service and will attempt to re-invoke it on failure.
- - A FirstInWinsService wraps any number of other Service and will return the first non-error Response it receives.
+ - A FirstInWinsService wraps any number of other Services and will return the first non-error Response it receives.
 
 The service abstraction consists of 3 interrelated generic types:
  - Request, an immutable final generic class containing a single value and any number of options.
@@ -51,7 +52,7 @@ The variance of the type parameters of the 3 classes is central:
 
 And to understand this, it's important to understand how Option and Output subtypes are intended to be arranged:
  - These types are *not* intended to form a deep type hierarchy:
-   - A RemoteChatOption is *not* intended to inherit from a ChatOption: a ChatOption (beit a base class or union alias)
+   - A RemoteChatOption is *not* intended to inherit from a ChatOption: a ChatOption (be it a base class or union alias)
      represents an option that *any* ChatService can accept, whereas a RemoteChatOption represents an option that *only*
      applies to a RemoteChatService.
    - If RemoteChatOption inherited from a base ChatOption, then it would have to apply to *all* ChatService
@@ -63,7 +64,6 @@ And to understand this, it's important to understand how Option and Output subty
    RemoteChatService.
  - These 2 types are intended to form flat, disjoint, unrelated families of subtypes, and Request and Response are
    intended to be parameterized by the unions of all such families they may contain.
-   -
  - Because of this, one's visual intuition regarding types and subtypes may be reversed: `int` is effectively a subtype
    of `int | str` despite `int` being a visually shorter, less complex type.
    - `int` is a *MORE SPECIFIC* / *STRICT SUBSET* subtype of `int | str`, the *LESS SPECIFIC* / *STRICT SUPERSET*
@@ -96,7 +96,7 @@ Below is a representative illustration of these types and their relationships. N
      RemoteChatOutput classes.
    - Without any common base classes (besides the lowest level Output and Option classes), the local section treats them
      as each distinct and bespoke, and the pluralized LocalChatOptions and LocalChatOutputs type aliases aggregate them
-     each by name.
+     by explicitly listing them.
    - With the common RemoteChatOption and RemoteChatOutput base classes, the remote section treats them as a related
      family that any 'RemoteChat'-like service should accept and produce.
 
