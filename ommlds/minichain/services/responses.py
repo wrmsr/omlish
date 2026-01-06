@@ -31,6 +31,7 @@ ResponseMetadatas: ta.TypeAlias = ResponseMetadata | CommonMetadata
 ##
 
 
+@ta.final
 @dc.dataclass(frozen=True)
 @dc.extra_class_params(
     allow_dynamic_dunder_attrs=True,
@@ -42,7 +43,16 @@ class Response(  # type: ignore[type-var]  # FIXME: _TypedValues param is invari
     lang.Final,
     ta.Generic[V_co, OutputT_contra],
 ):
+    """Universal Service response."""
+
+    #
+
     v: V_co  # type: ignore[misc]  # FIXME: Cannot use a covariant type variable as a parameter
+
+    def with_v(self, v: V_co) -> ta.Self:  # type: ignore[misc]
+        return confer_orig_class(self, dc.replace(self, v=v))
+
+    #
 
     _outputs: ta.Sequence[OutputT_contra] = dc.field(
         default=(),
@@ -54,6 +64,10 @@ class Response(  # type: ignore[type-var]  # FIXME: _TypedValues param is invari
 
     @property
     def outputs(self) -> tv.TypedValues[OutputT_contra]:
+        return check.isinstance(self._outputs, tv.TypedValues)
+
+    @property
+    def _typed_values(self) -> tv.TypedValues[OutputT_contra]:
         return check.isinstance(self._outputs, tv.TypedValues)
 
     def with_outputs(
@@ -73,13 +87,7 @@ class Response(  # type: ignore[type-var]  # FIXME: _TypedValues param is invari
 
         return confer_orig_class(self, dc.replace(self, _outputs=new))
 
-    @property
-    def _typed_values(self) -> tv.TypedValues[OutputT_contra]:
-        return check.isinstance(self._outputs, tv.TypedValues)
-
-    def validate(self) -> ta.Self:
-        self._check_typed_values()
-        return self
+    #
 
     _metadata: ta.Sequence[ResponseMetadatas] = dc.field(
         default=(),
@@ -96,6 +104,12 @@ class Response(  # type: ignore[type-var]  # FIXME: _TypedValues param is invari
             override: bool = False,
     ) -> ta.Self:
         return confer_orig_class(self, super().with_metadata(*add, discard=discard, override=override))
+
+    #
+
+    def validate(self) -> ta.Self:
+        self._check_typed_values()
+        return self
 
 
 ResponseT_co = ta.TypeVar('ResponseT_co', bound=Response, covariant=True)

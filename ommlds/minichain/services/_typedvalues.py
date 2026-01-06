@@ -45,14 +45,19 @@ class _TypedValues(
     lang.Abstract,
     ta.Generic[TypedValueT],
 ):
-    __typed_values_class__: ta.ClassVar[type[tv.TypedValue]]
+    """
+    The reason this is so complicated compared to any other TypedValues field (like metadata) is that the real set of
+    TypedValue types it accepts is known only via __orig_class__.
+    """
+
+    __typed_values_base__: ta.ClassVar[type[tv.TypedValue]]
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 
         tvt = _get_typed_values_type_arg(cls)
         tvct = rfl.get_concrete_type(tvt, use_type_var_bound=True)
-        cls.__typed_values_class__ = check.issubclass(check.isinstance(tvct, type), tv.TypedValue)
+        cls.__typed_values_base__ = check.issubclass(check.isinstance(tvct, type), tv.TypedValue)
 
     #
 
@@ -77,7 +82,7 @@ class _TypedValues(
 
         tv_types_set = frozenset(tv.reflect_typed_values_impls(tvt))
         tv_types = tuple(sorted(
-            [check.issubclass(c, self.__typed_values_class__) for c in tv_types_set],
+            [check.issubclass(c, self.__typed_values_base__) for c in tv_types_set],
             key=lambda c: c.__qualname__,
         ))
 

@@ -33,6 +33,7 @@ RequestMetadatas: ta.TypeAlias = RequestMetadata | CommonMetadata
 ##
 
 
+@ta.final
 @dc.dataclass(frozen=True)
 @dc.extra_class_params(
     allow_dynamic_dunder_attrs=True,
@@ -44,7 +45,16 @@ class Request(  # type: ignore[type-var]  # FIXME: _TypedValues param is invaria
     lang.Final,
     ta.Generic[V_co, OptionT_co],
 ):
+    """Universal Service request."""
+
+    #
+
     v: V_co  # type: ignore[misc]  # FIXME: Cannot use a covariant type variable as a parameter
+
+    def with_v(self, v: V_co) -> ta.Self:  # type: ignore[misc]
+        return confer_orig_class(self, dc.replace(self, v=v))
+
+    #
 
     _options: ta.Sequence[OptionT_co] = dc.field(
         default=(),
@@ -56,6 +66,10 @@ class Request(  # type: ignore[type-var]  # FIXME: _TypedValues param is invaria
 
     @property
     def options(self) -> tv.TypedValues[OptionT_co]:
+        return check.isinstance(self._options, tv.TypedValues)
+
+    @property
+    def _typed_values(self) -> tv.TypedValues[OptionT_co]:
         return check.isinstance(self._options, tv.TypedValues)
 
     def with_options(
@@ -75,13 +89,7 @@ class Request(  # type: ignore[type-var]  # FIXME: _TypedValues param is invaria
 
         return confer_orig_class(self, dc.replace(self, _options=new))
 
-    @property
-    def _typed_values(self) -> tv.TypedValues[OptionT_co]:
-        return check.isinstance(self._options, tv.TypedValues)
-
-    def validate(self) -> ta.Self:
-        self._check_typed_values()
-        return self
+    #
 
     _metadata: ta.Sequence[RequestMetadatas] = dc.field(
         default=(),
@@ -98,6 +106,12 @@ class Request(  # type: ignore[type-var]  # FIXME: _TypedValues param is invaria
             override: bool = False,
     ) -> ta.Self:
         return confer_orig_class(self, super().with_metadata(*add, discard=discard, override=override))
+
+    #
+
+    def validate(self) -> ta.Self:
+        self._check_typed_values()
+        return self
 
 
 RequestT_contra = ta.TypeVar('RequestT_contra', bound=Request, contravariant=True)
