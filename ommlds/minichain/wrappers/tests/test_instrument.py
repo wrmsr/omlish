@@ -12,6 +12,7 @@ from ...types import Option
 from ...types import Output
 from ..instrument import InstrumentedService
 from ..instrument import ListInstrumentedServiceEventSink
+from ..services import wrap_service
 
 
 FooRequest: ta.TypeAlias = Request[str, Option]
@@ -39,10 +40,8 @@ def test_instrument():
     with pytest.raises(FooError):
         lang.sync_await(svc.invoke(FooRequest('fail')))
 
-    # FIXME: def wrap_service?
     lst = ListInstrumentedServiceEventSink()
-    isvc: InstrumentedService[str, Option, str, Output] = InstrumentedService(svc, lst)
-    svc = isvc
+    svc = wrap_service(svc, InstrumentedService, lst)
 
     assert lang.sync_await(svc.invoke(FooRequest('bar'))) == FooResponse(f'foo(bar)')
     ev0, ev1 = lst.events

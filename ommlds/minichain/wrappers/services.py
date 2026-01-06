@@ -10,6 +10,9 @@ from ..types import Option
 from ..types import Output
 
 
+P = ta.ParamSpec('P')
+
+
 WrappedRequestV = ta.TypeVar('WrappedRequestV')
 WrappedOptionT = ta.TypeVar('WrappedOptionT', bound=Option)
 
@@ -70,3 +73,26 @@ class MultiWrapperService(
         super().__init__()
 
         self._services = check.not_empty(services)
+
+
+##
+
+
+def wrap_service(
+        wrapped: WrappedService,
+        wrapper: ta.Callable[
+            ta.Concatenate[
+                WrappedService,
+                P,
+            ],
+            WrapperService[
+                WrappedRequestV,
+                WrappedOptionT,
+                WrappedResponseV,
+                WrappedOutputT,
+            ],
+        ],
+        *args: P.args,
+        **kwargs: P.kwargs,
+) -> WrappedService:
+    return ta.cast(ta.Any, wrapper(wrapped, *args, **kwargs))

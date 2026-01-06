@@ -55,8 +55,6 @@ Regarding type variance:
   - Code that calls a ChatService and is given a ChatResponse must be prepared to handle (usually by simply ignoring)
     outputs not necessarily produced by a base ChatService.
 
-Consider the following representative illustration:
-
 ```
 # Common chat
 
