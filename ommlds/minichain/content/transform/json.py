@@ -52,4 +52,4 @@ class JsonContentRenderer(ContentTransform[None]):
             case _:
                 raise ValueError(self._code)
 
-        return nc.update_metadata(ContentOriginal(c))
+        return nc.with_metadata(ContentOriginal(c))

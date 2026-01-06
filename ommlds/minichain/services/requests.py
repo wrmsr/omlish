@@ -43,8 +43,22 @@ class Request(  # type: ignore[type-var]  # FIXME: _TypedValues param is invaria
     def options(self) -> tv.TypedValues[OptionT_co]:
         return check.isinstance(self._options, tv.TypedValues)
 
-    def with_options(self, *options: OptionU, override: bool = False) -> 'Request[V_co, OptionT_co | OptionU]':
-        return dc.replace(self, _options=self.options.update(*options, override=override))
+    def with_options(
+            self,
+            *add: OptionU,
+            discard: ta.Iterable[type] | None = None,
+            override: bool = False,
+    ) -> 'Request[V_co, OptionT_co | OptionU]':
+        new = (old := self.options).update(
+            *add,
+            discard=discard,
+            override=override,
+        )
+
+        if new is old:
+            return self
+
+        return dc.replace(self, _options=new)
 
     @property
     def _typed_values(self) -> tv.TypedValues[OptionT_co]:

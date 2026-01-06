@@ -26,7 +26,7 @@ class LiftToStandardContentTransform(ContentTransform[None]):
         self._sequence_mode = sequence_mode
 
     def visit_str(self, s: str, ctx: None) -> Content:
-        return TextContent(s).update_metadata(ContentOriginal(s))
+        return TextContent(s).with_metadata(ContentOriginal(s))
 
     def visit_sequence(self, c: ta.Sequence[Content], ctx: None) -> Content:
         cc = check.isinstance(super().visit_sequence(c, ctx), collections.abc.Sequence)
@@ -40,4 +40,4 @@ class LiftToStandardContentTransform(ContentTransform[None]):
             case _:
                 raise ValueError(self._sequence_mode)
 
-        return nc.update_metadata(ContentOriginal(c))
+        return nc.with_metadata(ContentOriginal(c))

@@ -20,7 +20,7 @@ class StringFnContentTransform(ContentTransform[None]):
     fn: ta.Callable[[str], str]
 
     def visit_str(self, c: str, ctx: None) -> TextContent:
-        return TextContent(self.fn(c)).update_metadata(ContentOriginal(c))
+        return TextContent(self.fn(c)).with_metadata(ContentOriginal(c))
 
     def visit_text_content(self, c: TextContent, ctx: None) -> TextContent:
         return c.replace(s=self.fn(c.s))

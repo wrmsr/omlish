@@ -9,7 +9,7 @@ from ..visitors import ContentTransform
 
 class OriginalMetadataStrippingContentTransform(ContentTransform[None]):
     def visit_standard_content(self, c: StandardContent, ctx: None) -> StandardContent:
-        return c.discard_metadata(ContentOriginal)
+        return c.with_metadata(discard=[ContentOriginal])
 
 
 def strip_content_original_metadata(c: Content) -> Content:

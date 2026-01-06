@@ -23,7 +23,7 @@ def test_marshal_messages():
     assert m2 == um
 
     u = uuid.uuid4()
-    um = UserMessage('hi').update_metadata(Uuid(u))
+    um = UserMessage('hi').with_metadata(Uuid(u))
 
     mv = msh.marshal(um, Message)
     assert mv == {'user': {'c': 'hi', 'metadata': [{'uuid': str(u)}]}}

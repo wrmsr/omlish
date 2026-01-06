@@ -35,7 +35,12 @@ class MetadataContainer(
         raise NotImplementedError
 
     @abc.abstractmethod
-    def update_metadata(self, *mds: MetadataT, override: bool = False) -> ta.Self:
+    def with_metadata(
+            self,
+            *add: MetadataT,
+            discard: ta.Iterable[type] | None = None,
+            override: bool = False,
+    ) -> ta.Self:
         raise NotImplementedError
 
 
@@ -66,30 +71,22 @@ class MetadataContainerDataclass(  # noqa
     def metadata(self) -> tv.TypedValues[MetadataT]:
         return check.isinstance(getattr(self, '_metadata'), tv.TypedValues)
 
-    def discard_metadata(self, *tys: type) -> ta.Self:
-        nmd = (md := self.metadata).discard(*tys)
-
-        if nmd is md:
-            return self
-
-        return dc.replace(self, _metadata=nmd)  # type: ignore[call-arg]  # noqa
-
-    def update_metadata(
+    def with_metadata(
             self,
-            *mds: MetadataT,
+            *add: MetadataT,
             discard: ta.Iterable[type] | None = None,
             override: bool = False,
     ) -> ta.Self:
-        nmd = (md := self.metadata).update(
-            *mds,
+        new = (old := self.metadata).update(
+            *add,
             discard=discard,
             override=override,
         )
 
-        if nmd is md:
+        if new is old:
             return self
 
-        return dc.replace(self, _metadata=nmd)  # type: ignore[call-arg]  # noqa
+        return dc.replace(self, _metadata=new)  # type: ignore[call-arg]  # noqa
 
 
 ##

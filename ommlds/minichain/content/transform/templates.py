@@ -22,4 +22,4 @@ class TemplateContentMaterializer(ContentTransform[None]):
 
     def visit_template_content(self, c: TemplateContent, ctx: None) -> Content:
         s = c.t.render(check.not_none(self._templater_context))
-        return TextContent(s).update_metadata(ContentOriginal(c))
+        return TextContent(s).with_metadata(ContentOriginal(c))

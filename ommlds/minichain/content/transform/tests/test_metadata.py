@@ -6,7 +6,7 @@ from ..metadata import strip_content_original_metadata
 
 def test_metadata():
     s = 'hi'
-    c: Content = TextContent(s).update_metadata(ContentOriginal(s))
+    c: Content = TextContent(s).with_metadata(ContentOriginal(s))
 
     xc = strip_content_original_metadata(c)
     print(xc)

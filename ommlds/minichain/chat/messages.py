@@ -41,7 +41,7 @@ class Message(  # noqa
     def replace(self, **kwargs: ta.Any) -> ta.Self:
         if (n := dc.replace_is_not(self, **kwargs)) is self:
             return self
-        return n.update_metadata(MessageOriginal(self), discard=[MessageOriginal], override=True)
+        return n.with_metadata(MessageOriginal(self), discard=[MessageOriginal], override=True)
 
 
 Chat: ta.TypeAlias = ta.Sequence[Message]
