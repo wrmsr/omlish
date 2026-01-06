@@ -83,9 +83,9 @@ class LogPath(Output, tv.ScalarTypedValue[str]):
     pass
 
 
-LocalChatOutput: ta.TypeAlias = ChatOutput | LogPath
+LocalChatOutputs: ta.TypeAlias = ChatOutput | LogPath
 
-LocalChatResponse: ta.TypeAlias = Response[Message, LocalChatOutput]
+LocalChatResponse: ta.TypeAlias = Response[Message, LocalChatOutputs]
 
 
 #

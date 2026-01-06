@@ -7,7 +7,7 @@ from .chat import Chat
 from .chat import ChatRequest
 from .chat import ChatResponse
 from .chat import LocalChatOptions
-from .chat import LocalChatOutput
+from .chat import LocalChatOutputs
 from .chat import LocalChatRequest
 from .chat import LocalChatResponse  # noqa
 from .chat import LocalChatService  # noqa
@@ -33,7 +33,7 @@ def test_facade():
         Chat,
         LocalChatOptions,
         Message,
-        LocalChatOutput,
+        LocalChatOutputs,
     ](local_chat_service_impl)
     # ta.reveal_type(local_chat_service2)
 
