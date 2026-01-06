@@ -28,6 +28,7 @@ from .stream import WrapperStreamService
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+@dc.extra_class_params(default_repr_fn=lang.opt_or_just_repr)
 class InstrumentedServiceEvent:
     dt: datetime.datetime = dc.field(default_factory=lang.utcnow)
 
@@ -50,6 +51,10 @@ class ListInstrumentedServiceEventSink:
         if lst is None:
             lst = []
         self._lst = lst
+
+    @property
+    def events(self) -> ta.Sequence[InstrumentedServiceEvent]:
+        return self._lst
 
     async def __call__(self, ev: InstrumentedServiceEvent) -> None:
         self._lst.append(ev)

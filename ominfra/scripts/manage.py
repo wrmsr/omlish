@@ -113,7 +113,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/argparse/cli.py', sha1='f4dc3cd353d14386b5da0306768700e396afd2b3'),
             dict(path='../../omlish/configs/formats.py', sha1='9bc4f953b4b8700f6f109e6f49e2d70f8e48ce7c'),
             dict(path='../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
-            dict(path='../../omlish/lite/maybes.py', sha1='bdf5136654ccd14b6a072588cad228925bdfbabd'),
+            dict(path='../../omlish/lite/maybes.py', sha1='04d2fcbea17028a5e6b8e7a7fb742375495ed233'),
             dict(path='../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
             dict(path='../../omlish/lite/timeouts.py', sha1='a0f673033a6943f242e35848d78a41892b9c62a1'),
             dict(path='../../omlish/logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
@@ -7670,6 +7670,13 @@ class Maybe(ta.Generic[T]):
             return self.must()
         else:
             return other
+
+    @ta.final
+    def or_none(self) -> ta.Optional[T]:
+        if self.present:
+            return self.must()
+        else:
+            return None
 
     @ta.final
     def or_else_get(self, supplier: ta.Callable[[], ta.Union[T, U]]) -> ta.Union[T, U]:

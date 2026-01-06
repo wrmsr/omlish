@@ -101,6 +101,13 @@ class Maybe(ta.Generic[T]):
             return other
 
     @ta.final
+    def or_none(self) -> ta.Optional[T]:
+        if self.present:
+            return self.must()
+        else:
+            return None
+
+    @ta.final
     def or_else_get(self, supplier: ta.Callable[[], ta.Union[T, U]]) -> ta.Union[T, U]:
         if self.present:
             return self.must()

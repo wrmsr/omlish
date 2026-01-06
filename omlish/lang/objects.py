@@ -2,6 +2,7 @@ import types
 import typing as ta
 import weakref
 
+from ..lite.maybes import Maybe
 from .classes.abstract import is_abstract_class
 
 
@@ -22,6 +23,18 @@ def opt_repr(obj: ta.Any) -> str | None:
     if obj is None:
         return None
     return repr(obj)
+
+
+def just_repr(obj: Maybe) -> str | None:
+    return obj.map(repr).or_none()
+
+
+def opt_or_just_repr(obj: ta.Any) -> str | None:
+    if isinstance(obj, Maybe):
+        if obj.present:
+            return repr(obj)
+        return None
+    return opt_repr(obj)
 
 
 ##

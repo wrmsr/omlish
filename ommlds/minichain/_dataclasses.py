@@ -19973,9 +19973,10 @@ def _process_dataclass__338ef6c7e8d95c07d43101aa3fb2e5001c70b0ab():
         "sp', 'exc', 'stream_v'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprP"
         "lan(fields=(ReprPlan.Field(name='dt', kw_only=True, fn=None), ReprPlan.Field(name='req', kw_only=True, fn=None"
         "), ReprPlan.Field(name='resp', kw_only=True, fn=None), ReprPlan.Field(name='exc', kw_only=True, fn=None), Repr"
-        "Plan.Field(name='stream_v', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plan.Field(name='stream_v', kw_only=True, fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.defaul"
+        "t_fn'))))"
     ),
-    plan_repr_sha1='abf624f74a56d463ffeab216d4dcdda9a184e5f2',
+    plan_repr_sha1='e4d635c950acb2270f4d7755e6070d0ab79058e5',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default_factory',
@@ -19987,12 +19988,13 @@ def _process_dataclass__338ef6c7e8d95c07d43101aa3fb2e5001c70b0ab():
         '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('ommlds.minichain.wrappers.instrument', 'InstrumentedServiceEvent'),
     ),
 )
-def _process_dataclass__abf624f74a56d463ffeab216d4dcdda9a184e5f2():
+def _process_dataclass__e4d635c950acb2270f4d7755e6070d0ab79058e5():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -20006,6 +20008,7 @@ def _process_dataclass__abf624f74a56d463ffeab216d4dcdda9a184e5f2():
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -20133,11 +20136,16 @@ def _process_dataclass__abf624f74a56d463ffeab216d4dcdda9a184e5f2():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"dt={self.dt!r}")
-            parts.append(f"req={self.req!r}")
-            parts.append(f"resp={self.resp!r}")
-            parts.append(f"exc={self.exc!r}")
-            parts.append(f"stream_v={self.stream_v!r}")
+            if (s := __dataclass__repr__default_fn(self.dt)) is not None:
+                parts.append(f"dt={s}")
+            if (s := __dataclass__repr__default_fn(self.req)) is not None:
+                parts.append(f"req={s}")
+            if (s := __dataclass__repr__default_fn(self.resp)) is not None:
+                parts.append(f"resp={s}")
+            if (s := __dataclass__repr__default_fn(self.exc)) is not None:
+                parts.append(f"exc={s}")
+            if (s := __dataclass__repr__default_fn(self.stream_v)) is not None:
+                parts.append(f"stream_v={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

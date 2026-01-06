@@ -34,7 +34,7 @@ def __omlish_amalg__():  # noqa
             dict(path='abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='check.py', sha1='bb6b6b63333699b84462951a854d99ae83195b94'),
             dict(path='reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
-            dict(path='maybes.py', sha1='bdf5136654ccd14b6a072588cad228925bdfbabd'),
+            dict(path='maybes.py', sha1='04d2fcbea17028a5e6b8e7a7fb742375495ed233'),
             dict(path='inject.py', sha1='6f097e3170019a34ff6834d36fcc9cbeed3a7ab4'),
         ],
     )
@@ -883,6 +883,13 @@ class Maybe(ta.Generic[T]):
             return self.must()
         else:
             return other
+
+    @ta.final
+    def or_none(self) -> ta.Optional[T]:
+        if self.present:
+            return self.must()
+        else:
+            return None
 
     @ta.final
     def or_else_get(self, supplier: ta.Callable[[], ta.Union[T, U]]) -> ta.Union[T, U]:
