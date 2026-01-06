@@ -6,7 +6,7 @@ from .chat import ApiKey
 from .chat import Chat
 from .chat import ChatRequest
 from .chat import ChatResponse
-from .chat import LocalChatOption
+from .chat import LocalChatOptions
 from .chat import LocalChatOutput
 from .chat import LocalChatRequest
 from .chat import LocalChatResponse  # noqa
@@ -31,7 +31,7 @@ def test_facade():
 
     local_chat_service2 = ServiceFacade[
         Chat,
-        LocalChatOption,
+        LocalChatOptions,
         Message,
         LocalChatOutput,
     ](local_chat_service_impl)

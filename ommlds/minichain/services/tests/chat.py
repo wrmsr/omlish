@@ -71,9 +71,9 @@ class ModelPath(Option, tv.ScalarTypedValue[str]):
     pass
 
 
-LocalChatOption: ta.TypeAlias = ChatOption | ModelPath
+LocalChatOptions: ta.TypeAlias = ChatOption | ModelPath
 
-LocalChatRequest: ta.TypeAlias = Request[Chat, LocalChatOption]
+LocalChatRequest: ta.TypeAlias = Request[Chat, LocalChatOptions]
 
 
 #
@@ -102,9 +102,9 @@ class ApiKey(Option, tv.ScalarTypedValue[str]):
     pass
 
 
-RemoteChatOption: ta.TypeAlias = ChatOption | ApiKey
+RemoteChatOptions: ta.TypeAlias = ChatOption | ApiKey
 
-RemoteChatRequest: ta.TypeAlias = Request[Chat, RemoteChatOption]
+RemoteChatRequest: ta.TypeAlias = Request[Chat, RemoteChatOptions]
 
 
 #

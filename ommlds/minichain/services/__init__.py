@@ -1,8 +1,8 @@
 # ruff: noqa: I001
 """
 The core service abstraction, consisting of 3 interrelated generic types:
- - Request, a final generic class containing a single value and any number of options.
- - Response, a final generic class containing a single value and any number of outputs.
+ - Request, an immutable final generic class containing a single value and any number of options.
+ - Response, an immutable final generic class containing a single value and any number of outputs.
  - Service, a generic protocol consisting of a single method `invoke`, taking a request and returning a response.
 
 There are 2 related abstract base classes in the parent package:
@@ -28,6 +28,8 @@ And to understand this, it's important to understand how Option and Output subty
    accept, whereas a RemoteChatOption represents an option that *only* applies to a RemoteChatService.
    - If RemoteChatOption inherited from a base ChatOption, then it would have to apply to *all* ChatService
      implementations.
+   - For example: were ApiKey to inherit from ChatOption, then it would have to apply to all ChatServices, including
+     LocalChatService, which has no concept of an api key.
  - Similarly, a RemoteChatOutput is *not* intended to inherit from a ChatOutput: a ChatOutput represents an output that
    *any* ChatService can produce, whereas a RemoteChatOutput represents an output that *only* applies to a
    RemoteChatService.
@@ -42,13 +44,16 @@ Regarding type variance:
  - Service has the classic setup of contravariant input and covariant output:
   - A RemoteChatService *is a* ChatService.
   - A RemoteChatService may accept less specific requests than a ChatService.
-  - A RemoteChatService may return more specific requests than a ChatService.
+  - A RemoteChatService may return more specific responses than a ChatService.
  - Request is covariant on its options:
   - Recall, a RemoteChatOption *is not a* ChatOption.
   - A ChatRequest *is a* RemoteChatRequest as it will not contain options RemoteChatService cannot accept.
  - Response is contravariant on its outputs:
   - Recall, a RemoteChatOutput *is not a* ChatOutput.
-  - A RemoteChatResponse *is a* ChatResponse as it may contain outputs another ChatService cannot produce.
+  - A RemoteChatResponse *is a* ChatResponse even though it may contain additional output variants not produced by every
+    ChatService.
+  - Code that calls a ChatService and is given a ChatResponse must be prepared to handle (usually by simply ignoring)
+    outputs not necessarily produced by a base ChatService.
 
 Consider the following representative illustration:
 
@@ -78,8 +83,8 @@ LocalChatRequest: ta.TypeAlias = Request[Chat, LocalChatOption]
 
 class LogPath(Output, tv.ScalarTypedValue[str]): pass
 
-LocalChatOutput: ta.TypeAlias = ChatOutput | LogPath
-LocalChatResponse: ta.TypeAlias = Response[Message, LocalChatOutput]
+LocalChatOutputs: ta.TypeAlias = ChatOutput | LogPath
+LocalChatResponse: ta.TypeAlias = Response[Message, LocalChatOutputs]
 
 LocalChatService: ta.TypeAlias = Service[LocalChatRequest, LocalChatResponse]
 
@@ -87,8 +92,8 @@ LocalChatService: ta.TypeAlias = Service[LocalChatRequest, LocalChatResponse]
 
 class ApiKey(Option, tv.ScalarTypedValue[str]): pass
 
-RemoteChatOption: ta.TypeAlias = ChatOption | ApiKey
-RemoteChatRequest: ta.TypeAlias = Request[Chat, RemoteChatOption]
+RemoteChatOptions: ta.TypeAlias = ChatOption | ApiKey
+RemoteChatRequest: ta.TypeAlias = Request[Chat, RemoteChatOptions]
 
 class BilledCostInUsd(Output, tv.UniqueScalarTypedValue[float]): pass
 
