@@ -145,7 +145,7 @@ class ReplRunner(lang.Abstract):
             if self._args.dbcli_version is not None:
                 uv_arg += f'@{self._args.dbcli_version}'
 
-            return ReplRunner.Exe([uv_exe, 'run', uv_arg], True)
+            return ReplRunner.Exe([uv_exe, 'tool', 'run', uv_arg], True)
 
         return default()
 
