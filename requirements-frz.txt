@@ -84,7 +84,7 @@ gprof2dot==2025.4.14
 greenlet==3.3.0
 grpcio==1.76.0
 grpcio-status==1.76.0
-guppy3==3.1.5
+guppy3==3.1.6
 h11==0.16.0
 h2==4.3.0
 hf-xet==1.2.0
@@ -185,7 +185,7 @@ pandas==2.3.3
 pandocfilters==1.5.1
 paramiko==4.0.0
 parso==0.8.5
-pathspec==0.12.1
+pathspec==1.0.1
 pcpp==1.30
 pexpect==4.9.0
 pg8000==1.31.5
@@ -345,7 +345,7 @@ uritemplate==4.2.0
 urllib3==2.6.2
 urwid==3.0.3
 urwid_readline==0.15.1
-uv==0.9.21
+uv==0.9.22
 watchdog==6.0.0
 wcwidth==0.2.14
 webcolors==25.10.0

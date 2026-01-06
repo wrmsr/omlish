@@ -1,3 +1,10 @@
+"""
+TODO:
+ - sqlite
+ - unify-ish with omlish.sql
+"""
+import abc
+import configparser
 import dataclasses as dc
 import os.path
 import shutil
@@ -76,104 +83,197 @@ def spec_from_cfg(cfg: ta.Mapping[str, ta.Any], prefix: str) -> ServerSpec:
     )
 
 
-@lang.cached_function
-def _maybe_warn_pgcli_keyring() -> None:
-    import pgcli.config
+##
 
-    c = pgcli.config.get_config()
-    if c['main'].as_bool('keyring'):
+
+@dc.dataclass(frozen=True)
+class ReplArgs:
+    spec: ServerSpec
+    extra_args: ta.Sequence[str] | None = None  # noqa
+
+    _: dc.KW_ONLY
+
+    exe: ta.Sequence[str] | None = None
+
+    no_dbcli: bool = False
+    no_import: bool = False
+    no_uv: bool = False
+    dbcli_version: str | None = None
+
+
+class ReplRunner(lang.Abstract):
+    def __init__(self, args: ReplArgs) -> None:
+        super().__init__()
+
+        self._args = args
+
+    exe_name: ta.ClassVar[str]
+    dbcli_name: ta.ClassVar[str | None] = None
+
+    #
+
+    class Exe(ta.NamedTuple):
+        args: ta.Sequence[str]
+        is_dbcli: bool
+
+    @lang.cached_function
+    def exe(self) -> Exe:
+        if self._args.exe is not None:
+            if isinstance(self._args.exe, str):
+                return ReplRunner.Exe([self._args.exe], False)
+            else:
+                return ReplRunner.Exe(list(self._args.exe), False)
+
+        def default():
+            return ReplRunner.Exe([check.not_none(shutil.which(self.exe_name))], False)
+
+        if self._args.no_dbcli or self.dbcli_name is None:
+            return default()
+
+        if not self._args.no_import:
+            main_mod = self.dbcli_name + '.main'
+
+            try:
+                __import__(main_mod)
+            except ImportError:
+                pass
+            else:
+                return ReplRunner.Exe([sys.executable, '-m', main_mod], True)
+
+        if not self._args.no_uv and (uv_exe := shutil.which('uv')) is not None:
+            uv_arg = self.dbcli_name
+            if self._args.dbcli_version is not None:
+                uv_arg += f'@{self._args.dbcli_version}'
+
+            return ReplRunner.Exe([uv_exe, 'run', uv_arg], True)
+
+        return default()
+
+    #
+
+    @abc.abstractmethod
+    def build_args(self) -> ta.Sequence[str]:
+        raise NotImplementedError
+
+    def pre_exec(self) -> None:
+        pass
+
+    #
+
+    def run(self) -> ta.NoReturn:
+        lst: list[str] = [
+            *self.exe().args,
+            *self.build_args(),
+        ]
+
+        self.pre_exec()
+
+        os.execvp(lst[0], lst)
+
+
+class MysqlReplRunner(ReplRunner):
+    dbcli_name = 'mycli'
+    exe_name = 'mysql'
+
+    def build_args(self) -> ta.Sequence[str]:
+        lst: list[str] = []
+
+        if self._args.spec.username:
+            lst.extend(['--user', self._args.spec.username])
+
+        lst.extend(['--host', self._args.spec.host])
+        if not self.exe().is_dbcli:
+            lst.append('--protocol=TCP')
+        if self._args.spec.port:
+            lst.extend(['--port', str(self._args.spec.port)])
+
+        if self._args.spec.db:
+            lst.append(self._args.spec.db)
+
+        lst.extend(self._args.extra_args or [])
+
+        return lst
+
+    def pre_exec(self) -> None:
+        super().pre_exec()
+
+        if self._args.spec.password:
+            os.environ['MYSQL_PWD'] = self._args.spec.password
+
+
+class PostgresReplRunner(ReplRunner):
+    dbcli_name = 'pgcli'
+    exe_name = 'psql'
+
+    def build_args(self) -> ta.Sequence[str]:
+        lst: list[str] = []
+
+        if self._args.spec.username:
+            lst.extend(['--username', self._args.spec.username])
+
+        if self._args.spec.host:
+            lst.extend(['--host', self._args.spec.host])
+        if self._args.spec.port:
+            lst.extend(['--port', str(self._args.spec.port)])
+
+        if self._args.spec.db:
+            lst.append(self._args.spec.db)
+
+        lst.extend(self._args.extra_args or [])
+
+        return lst
+
+    def _maybe_warn_keyring(self) -> None:
+        if 'XDG_CONFIG_HOME' in os.environ:
+            cfg_dir = f'{os.path.expanduser(os.environ["XDG_CONFIG_HOME"])}/pgcli/'
+        else:
+            cfg_dir = os.path.expanduser('~/.config/pgcli/')
+        cfg_path = os.path.join(cfg_dir, 'config')
+
+        if os.path.exists(cfg_path):
+            cfg = configparser.ConfigParser()
+            cfg.read(cfg_path)
+
+            if cfg.has_section('main') and not cfg.getboolean('main', 'keyring', fallback=True):
+                return
+
         warnings.warn(
             'pgcli keyring is not disabled, it will try to store credentials. '
-            'set `keyring = False` in ~/.config/pgcli/config',
+            'set `[main] keyring = False` in ~/.config/pgcli/config',
         )
 
+    def pre_exec(self) -> None:
+        super().pre_exec()
 
-def _dbcli_or_fallback_exe(dbcli_mod: str | None, default_exe: str) -> tuple[ta.Sequence[str], bool]:
-    if dbcli_mod is not None:
-        main_mod = dbcli_mod + '.main'
-        try:
-            __import__(main_mod)
-        except ImportError:
-            pass
-        else:
-            if dbcli_mod == 'pgcli':
-                _maybe_warn_pgcli_keyring()
-            return [sys.executable, '-m', main_mod], True
-    return [check.not_none(shutil.which(default_exe))], False
+        self._maybe_warn_keyring()
+
+        if self._args.spec.password:
+            os.environ['PGPASSWORD'] = self._args.spec.password
 
 
-def exec_mysql_cli(
-        spec: ServerSpec,
-        *extra_args: str,
-        exe: ta.Iterable[str] | None = None,
-        no_dbcli: bool = False,
-) -> ta.NoReturn:
-    if exe is not None:
-        args, is_dbcli = list(exe), False
-    else:
-        argsx, is_dbcli = _dbcli_or_fallback_exe(
-            'mycli' if not no_dbcli else None,
-            'mysql',
-        )
-        args = list(argsx)
-    if spec.username:
-        args.extend(['--user', spec.username])
-    if spec.password:
-        os.environ['MYSQL_PWD'] = spec.password
-    args.extend(['--host', spec.host])
-    if not is_dbcli:
-        args.append('--protocol=TCP')
-    if spec.port:
-        args.extend(['--port', str(spec.port)])
-    if spec.db:
-        args.append(spec.db)
-    args.extend(extra_args)
-    os.execvp(args[0], args)
-
-
-def exec_postgres_cli(
-        spec: ServerSpec,
-        *extra_args: str,
-        exe: ta.Iterable[str] | None = None,
-        no_dbcli: bool = False,
-) -> ta.NoReturn:
-    if exe is not None:
-        args, is_dbcli = list(exe), False
-    else:
-        argsx, is_dbcli = _dbcli_or_fallback_exe(
-            'pgcli' if not no_dbcli else None,
-            'psql',
-        )
-        args = list(argsx)
-    if spec.username:
-        args.extend(['--username', spec.username])
-    if spec.password:
-        os.environ['PGPASSWORD'] = spec.password
-    if spec.host:
-        args.extend(['--host', spec.host])
-    if spec.port:
-        args.extend(['--port', str(spec.port)])
-    if spec.db:
-        args.append(spec.db)
-    args.extend(extra_args)
-    os.execvp(args[0], args)
+##
 
 
 class Cli(ap.Cli):
     @ap.cmd(
-        ap.arg('--no-dbcli', action='store_true'),
         ap.arg('dialect'),
         ap.arg('target'),
         ap.arg('args', nargs='*'),
+        ap.arg('--no-dbcli', action='store_true'),
+        ap.arg('--no-import', action='store_true'),
+        ap.arg('--no-uv', action='store_true'),
     )
     def repl(self) -> None:
         l, _, r = (target := self.args.target).partition(':')
         _, lf = os.path.dirname(l), os.path.basename(l)
         if not lf.endswith('.yml'):
             raise Exception(f'unhandled target: {target=}')
+
         with open(l) as f:
             cfg = yaml.safe_load(f.read())
+
         dialect = self.args.dialect
+
         if lf == 'compose.yml':
             svc = cfg['services'][r]
             if dialect == 'mysql':
@@ -185,12 +285,23 @@ class Cli(ap.Cli):
         else:
             spec = spec_from_cfg(cfg, r)
 
+        repl_args = ReplArgs(
+            spec,
+            self.args.args,
+            no_dbcli=self.args.no_dbcli,
+            no_import=self.args.no_import,
+            no_uv=self.args.no_uv,
+        )
+
+        repl_run: ReplRunner
         if dialect == 'mysql':
-            exec_mysql_cli(spec, *self.args.args, no_dbcli=self.args.no_dbcli)
+            repl_run = MysqlReplRunner(repl_args)
         elif dialect == 'postgres':
-            exec_postgres_cli(spec, *self.args.args, no_dbcli=self.args.no_dbcli)
+            repl_run = PostgresReplRunner(repl_args)
         else:
             raise Exception(f'unhandled dialect: {dialect=}')
+
+        repl_run.run()
 
 
 # @omlish-manifest
