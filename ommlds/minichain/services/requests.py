@@ -45,7 +45,18 @@ class Request(  # type: ignore[type-var]  # FIXME: _TypedValues param is invaria
     lang.Final,
     ta.Generic[V_co, OptionT_co],
 ):
-    """Universal Service request."""
+    """
+    Universal service request, comprised of:
+     - a value of type `V_co`
+     - a sequence of options of type `OptionT_co`
+     - metadata of type `RequestMetadatas`
+
+    Refer to the package docstring for an explanation of its type var variance.
+
+    This class is final, but each instance's `__orig_class__` (if present) is significant. It is encouraged to construct
+    these through a pre-parameterized type alias, and the provided `with_` methods should be used rather than
+    `dc.replace` (as they will propagate `__orig_class__`).
+    """
 
     #
 

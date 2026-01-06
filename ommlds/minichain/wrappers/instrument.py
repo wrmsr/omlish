@@ -28,7 +28,7 @@ from .stream import WrapperStreamService
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class RecordServiceEvent:
+class InstrumentedServiceEvent:
     dt: datetime.datetime = dc.field(default_factory=lang.utcnow)
 
     req: Request | None = None
@@ -39,10 +39,26 @@ class RecordServiceEvent:
     stream_v: lang.Maybe[ta.Any] = lang.empty()
 
 
+class InstrumentedServiceEventSink(ta.Protocol):
+    def __call__(self, ev: InstrumentedServiceEvent) -> ta.Awaitable[None]: ...
+
+
+class ListInstrumentedServiceEventSink:
+    def __init__(self, lst: list[InstrumentedServiceEvent] | None = None) -> None:
+        super().__init__()
+
+        if lst is None:
+            lst = []
+        self._lst = lst
+
+    async def __call__(self, ev: InstrumentedServiceEvent) -> None:
+        self._lst.append(ev)
+
+
 ##
 
 
-class RecordService(
+class InstrumentedService(
     WrapperService[
         WrappedRequestV,
         WrappedOptionT,
@@ -53,23 +69,26 @@ class RecordService(
     def __init__(
             self,
             service: WrappedService,
+            sink: InstrumentedServiceEventSink | None = None,
     ) -> None:
         super().__init__(service)
 
-        self._events: list[RecordServiceEvent] = []
+        if sink is None:
+            sink = ListInstrumentedServiceEventSink()
+        self._sink = sink
 
     async def invoke(self, request: WrappedRequest) -> WrappedResponse:
-        self._events.append(RecordServiceEvent(req=request))
+        await self._sink(InstrumentedServiceEvent(req=request))
 
         try:
             resp = await self._service.invoke(request)
 
         except Exception as e:  # noqa
-            self._events.append(RecordServiceEvent(req=request, exc=e))
+            await self._sink(InstrumentedServiceEvent(req=request, exc=e))
 
             raise
 
-        self._events.append(RecordServiceEvent(req=request, resp=resp))
+        await self._sink(InstrumentedServiceEvent(req=request, resp=resp))
 
         return resp
 
@@ -77,7 +96,7 @@ class RecordService(
 ##
 
 
-class RecordStreamService(
+class InstrumentedStreamService(
     WrapperStreamService[
         WrappedRequestV,
         WrappedOptionT,
@@ -89,31 +108,34 @@ class RecordStreamService(
     def __init__(
             self,
             service: WrappedStreamService,
+            sink: InstrumentedServiceEventSink | None = None,
     ) -> None:
         super().__init__(service)
 
-        self._events: list[RecordServiceEvent] = []
+        if sink is None:
+            sink = ListInstrumentedServiceEventSink()
+        self._sink = sink
 
     async def invoke(self, request: WrappedRequest) -> WrappedStreamResponse:
-        self._events.append(RecordServiceEvent(req=request))
+        await self._sink(InstrumentedServiceEvent(req=request))
 
         try:
             resp = await self._service.invoke(request)
 
         except Exception as e:  # noqa
-            self._events.append(RecordServiceEvent(req=request, exc=e))
+            await self._sink(InstrumentedServiceEvent(req=request, exc=e))
 
             raise
 
-        self._events.append(RecordServiceEvent(req=request, resp=resp))
+        await self._sink(InstrumentedServiceEvent(req=request, resp=resp))
 
         async def inner(sink):  # noqa
             async with resp.v as st:
                 async for v in st:
-                    self._events.append(RecordServiceEvent(req=request, resp=resp, stream_v=v))
+                    await self._sink(InstrumentedServiceEvent(req=request, resp=resp, stream_v=v))
 
                     await sink(v)
 
-        # return dc.replace(resp, v=inner())
+        # return resp.with_v(inner())
 
         raise NotImplementedError

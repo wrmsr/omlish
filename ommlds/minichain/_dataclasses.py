@@ -19989,7 +19989,7 @@ def _process_dataclass__338ef6c7e8d95c07d43101aa3fb2e5001c70b0ab():
         '__dataclass__init__fields__4__default',
     ),
     cls_names=(
-        ('ommlds.minichain.wrappers.record', 'RecordServiceEvent'),
+        ('ommlds.minichain.wrappers.instrument', 'InstrumentedServiceEvent'),
     ),
 )
 def _process_dataclass__abf624f74a56d463ffeab216d4dcdda9a184e5f2():
