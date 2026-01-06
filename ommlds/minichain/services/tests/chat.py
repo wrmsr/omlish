@@ -36,9 +36,9 @@ class Temperature(Option, tv.UniqueScalarTypedValue[float]):
     pass
 
 
-ChatOption: ta.TypeAlias = MaxTokens | Temperature
+ChatOptions: ta.TypeAlias = MaxTokens | Temperature
 
-ChatRequest: ta.TypeAlias = Request[Chat, ChatOption]
+ChatRequest: ta.TypeAlias = Request[Chat, ChatOptions]
 
 
 #
@@ -71,7 +71,7 @@ class ModelPath(Option, tv.ScalarTypedValue[str]):
     pass
 
 
-LocalChatOptions: ta.TypeAlias = ChatOption | ModelPath
+LocalChatOptions: ta.TypeAlias = ChatOptions | ModelPath
 
 LocalChatRequest: ta.TypeAlias = Request[Chat, LocalChatOptions]
 
@@ -98,11 +98,15 @@ LocalChatService: ta.TypeAlias = Service[LocalChatRequest, LocalChatResponse]
 # remote
 
 
-class ApiKey(Option, tv.ScalarTypedValue[str]):
+class RemoteChatOption(Option, lang.Abstract):
     pass
 
 
-RemoteChatOptions: ta.TypeAlias = ChatOption | ApiKey
+class ApiKey(RemoteChatOption, tv.ScalarTypedValue[str]):
+    pass
+
+
+RemoteChatOptions: ta.TypeAlias = ChatOptions | RemoteChatOption
 
 RemoteChatRequest: ta.TypeAlias = Request[Chat, RemoteChatOptions]
 
@@ -110,13 +114,17 @@ RemoteChatRequest: ta.TypeAlias = Request[Chat, RemoteChatOptions]
 #
 
 
-class BilledCostInUsd(Output, tv.UniqueScalarTypedValue[float]):
+class RemoteChatOutput(Output, lang.Abstract):
     pass
 
 
-RemoteChatOutput: ta.TypeAlias = ChatOutput | BilledCostInUsd
+class BilledCostInUsd(RemoteChatOutput, tv.UniqueScalarTypedValue[float]):
+    pass
 
-RemoteChatResponse: ta.TypeAlias = Response[Message, RemoteChatOutput]
+
+RemoteChatOutputs: ta.TypeAlias = ChatOutput | RemoteChatOutput
+
+RemoteChatResponse: ta.TypeAlias = Response[Message, RemoteChatOutputs]
 
 
 #

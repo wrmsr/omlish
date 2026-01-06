@@ -1,6 +1,33 @@
 # ruff: noqa: I001
 """
-The core service abstraction, consisting of 3 interrelated generic types:
+The core service abstraction. In general, Services are intended to encapsulate non-trivial, resourceful, effectful
+operations, which are likely to have various implementations, each having their own specific capabilities in addition
+to their common interface, in which wrapping and adapting and transforming them in a uniform manner is desirable.
+
+For example:
+ - A ChatService is passed a Request with a Chat value and returns a Response with an AiChat value.
+ - A ChatChoicesService is passed a Request with a Chat and returns a Response with a list of AiChoices.
+ - A ChatChoicesServiceChatService is a simple adapter taking a ChatChoicesService and simply expecting to see a single
+   AiChoice value and will return its AiChat in its Response - thus acting as a ChatService.
+   - Thus, all chat backends that return choices can be adapted to code expecting a single chat as output.
+ - A ChatStreamService is passed a Request with a Chat value and returns a Response with a value from which AiDeltas
+   may be streamed.
+ - A ChatChoicesStreamService is passed a Request with a Chat value and returns a Response with a value from which
+   AiChoicesDeltas may be streamed.
+ - A ChatChoicesStreamServiceChatChoicesService is an adapter taking a ChatChoicesStreamService and aggregating the
+   AiChoicesDeltas into AiChoices.
+   - This may then be wrapped in a ChatChoicesServiceChatService to act as a ChatService.
+   - In practice however there are usually dedicated streaming and non-streaming implementations if possible as
+     non-streaming will usually have less overhead.
+ - An OpenaiChatChoicesService can act as a ChatChoicesService, and will accept all generic ChatOptions, in addition to
+   any OpenaiChatOptions unapplicable to any other backend. It may also produce all generic ChatOutputs, in addition to
+   OpenaiChatOutputs that will not be produced by other backends.
+ - Beyond chat, a VectorSearchService is passed a Request with a VectorSearch value and returns a Response with a
+   VectorHits value.
+ - A RetryService wraps any other Service and will attempt to re-invoke it on failure.
+ - A FirstInWinsService wraps any number of other Service and will return the first non-error Response it receives.
+
+The service abstraction consists of 3 interrelated generic types:
  - Request, an immutable final generic class containing a single value and any number of options.
  - Response, an immutable final generic class containing a single value and any number of outputs.
  - Service, a generic protocol consisting of a single method `invoke`, taking a request and returning a response.
@@ -23,9 +50,10 @@ The variance of the type parameters of the 3 classes is central:
  - `Service[RequestT_contra, ResponseT_co]`
 
 And to understand this, it's important to understand how Option and Output subtypes are intended to be arranged:
- - These types are *not* intended to form a mutli-level type hierarchy: a RemoteChatOption is *not* intended to inherit
-   from a ChatOption: a ChatOption (beit a base class or union alias) represents an option that *any* ChatService can
-   accept, whereas a RemoteChatOption represents an option that *only* applies to a RemoteChatService.
+ - These types are *not* intended to form a deep type hierarchy:
+   - A RemoteChatOption is *not* intended to inherit from a ChatOption: a ChatOption (beit a base class or union alias)
+     represents an option that *any* ChatService can accept, whereas a RemoteChatOption represents an option that *only*
+     applies to a RemoteChatService.
    - If RemoteChatOption inherited from a base ChatOption, then it would have to apply to *all* ChatService
      implementations.
    - For example: were ApiKey to inherit from ChatOption, then it would have to apply to all ChatServices, including
@@ -35,6 +63,7 @@ And to understand this, it's important to understand how Option and Output subty
    RemoteChatService.
  - These 2 types are intended to form flat, disjoint, unrelated families of subtypes, and Request and Response are
    intended to be parameterized by the unions of all such families they may contain.
+   -
  - Because of this, one's visual intuition regarding types and subtypes may be reversed: `int` is effectively a subtype
    of `int | str` despite `int` being a visually shorter, less complex type.
    - `int` is a *MORE SPECIFIC* / *STRICT SUBSET* subtype of `int | str`, the *LESS SPECIFIC* / *STRICT SUPERSET*
@@ -42,18 +71,34 @@ And to understand this, it's important to understand how Option and Output subty
 
 Regarding type variance:
  - Service has the classic setup of contravariant input and covariant output:
-  - A RemoteChatService *is a* ChatService.
-  - A RemoteChatService may accept less specific requests than a ChatService.
-  - A RemoteChatService may return more specific responses than a ChatService.
+   - A RemoteChatService *is a* ChatService.
+   - A RemoteChatService may accept less specific requests than a ChatService.
+   - A RemoteChatService may return more specific responses than a ChatService.
  - Request is covariant on its options:
-  - Recall, a RemoteChatOption *is not a* ChatOption.
-  - A ChatRequest *is a* RemoteChatRequest as it will not contain options RemoteChatService cannot accept.
+   - Recall, a RemoteChatOption *is not a* ChatOption.
+   - A ChatRequest *is a* RemoteChatRequest as it will not contain options RemoteChatService cannot accept.
  - Response is contravariant on its outputs:
-  - Recall, a RemoteChatOutput *is not a* ChatOutput.
-  - A RemoteChatResponse *is a* ChatResponse even though it may contain additional output variants not produced by every
-    ChatService.
-  - Code that calls a ChatService and is given a ChatResponse must be prepared to handle (usually by simply ignoring)
-    outputs not necessarily produced by a base ChatService.
+   - Recall, a RemoteChatOutput *is not a* ChatOutput.
+   - A RemoteChatResponse *is a* ChatResponse even though it may contain additional output variants not produced by
+     every ChatService.
+   - Code that calls a ChatService and is given a ChatResponse must be prepared to handle (usually by simply ignoring)
+     outputs not necessarily produced by a base ChatService.
+
+Below is a representative illustration of these types and their relationships. Note how:
+ - There is no subclassing of Request, Response, or Service - just type aliasing.
+ - There is no deep, shared subclassing of Option or Output.
+ - The type args passed to Request and Response are unions of all the Option and Output subtypes they may contain.
+   - These unions are kept in pluralized type aliases for convenience.
+ - There is no base ChatOption or ChatOutput class - were there, it would not be included in the base classes of any
+   local or remote only option or output.
+ - The local and remote sections take different but equivalent approaches:
+   - There are no base LocalChatOption or LocalChatOutput classes, but there *are* base RemoteChatOption and
+     RemoteChatOutput classes.
+   - Without any common base classes (besides the lowest level Output and Option classes), the local section treats them
+     as each distinct and bespoke, and the pluralized LocalChatOptions and LocalChatOutputs type aliases aggregate them
+     each by name.
+   - With the common RemoteChatOption and RemoteChatOutput base classes, the remote section treats them as a related
+     family that any 'RemoteChat'-like service should accept and produce.
 
 ```
 # Common chat
@@ -61,8 +106,8 @@ Regarding type variance:
 class MaxTokens(Option, tv.UniqueScalarTypedValue[int]): pass
 class Temperature(Option, tv.UniqueScalarTypedValue[float]): pass
 
-ChatOption: ta.TypeAlias = MaxTokens | Temperature
-ChatRequest: ta.TypeAlias = Request[Chat, ChatOption]
+ChatOptions: ta.TypeAlias = MaxTokens | Temperature
+ChatRequest: ta.TypeAlias = Request[Chat, ChatOptions]
 
 class TokenUsage(Output, tv.UniqueScalarTypedValue[int]): pass
 class ElapsedTime(Output, tv.UniqueScalarTypedValue[float]): pass
@@ -76,8 +121,8 @@ ChatService: ta.TypeAlias = Service[ChatRequest, ChatResponse]
 
 class ModelPath(Option, tv.ScalarTypedValue[str]): pass
 
-LocalChatOption: ta.TypeAlias = ChatOption | ModelPath
-LocalChatRequest: ta.TypeAlias = Request[Chat, LocalChatOption]
+LocalChatOptions: ta.TypeAlias = ChatOptions | ModelPath
+LocalChatRequest: ta.TypeAlias = Request[Chat, LocalChatOptions]
 
 class LogPath(Output, tv.ScalarTypedValue[str]): pass
 
@@ -88,15 +133,17 @@ LocalChatService: ta.TypeAlias = Service[LocalChatRequest, LocalChatResponse]
 
 # Remote chat
 
-class ApiKey(Option, tv.ScalarTypedValue[str]): pass
+class RemoteChatOption(Option, lang.Abstract): pass
+class ApiKey(RemoteChatOption, tv.ScalarTypedValue[str]): pass
 
-RemoteChatOptions: ta.TypeAlias = ChatOption | ApiKey
+RemoteChatOptions: ta.TypeAlias = ChatOptions | RemoteChatOption
 RemoteChatRequest: ta.TypeAlias = Request[Chat, RemoteChatOptions]
 
-class BilledCostInUsd(Output, tv.UniqueScalarTypedValue[float]): pass
+class RemoteChatOutput(Output, lang.Abstract): pass
+class BilledCostInUsd(RemoteChatOutput, tv.UniqueScalarTypedValue[float]): pass
 
-RemoteChatOutput: ta.TypeAlias = ChatOutput | BilledCostInUsd
-RemoteChatResponse: ta.TypeAlias = Response[Message, RemoteChatOutput]
+RemoteChatOutputs: ta.TypeAlias = ChatOutput | RemoteChatOutput
+RemoteChatResponse: ta.TypeAlias = Response[Message, RemoteChatOutputs]
 
 RemoteChatService: ta.TypeAlias = Service[RemoteChatRequest, RemoteChatResponse]
 ```
