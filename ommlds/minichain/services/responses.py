@@ -11,6 +11,7 @@ from ..metadata import Metadata
 from ..metadata import MetadataContainerDataclass
 from ..types import Output
 from ..types import OutputT_contra
+from ._origclasses import confer_orig_class
 from ._typedvalues import _TypedValues
 
 
@@ -70,7 +71,7 @@ class Response(  # type: ignore[type-var]  # FIXME: _TypedValues param is invari
         if new is old:
             return self
 
-        return dc.replace(self, _outputs=new)
+        return confer_orig_class(self, dc.replace(self, _outputs=new))
 
     @property
     def _typed_values(self) -> tv.TypedValues[OutputT_contra]:
@@ -87,6 +88,14 @@ class Response(  # type: ignore[type-var]  # FIXME: _TypedValues param is invari
     )
 
     MetadataContainerDataclass._configure_metadata_field(_metadata, ResponseMetadatas)  # noqa
+
+    def with_metadata(
+            self,
+            *add: ResponseMetadatas,
+            discard: ta.Iterable[type] | None = None,
+            override: bool = False,
+    ) -> ta.Self:
+        return confer_orig_class(self, super().with_metadata(*add, discard=discard, override=override))
 
 
 ResponseT_co = ta.TypeVar('ResponseT_co', bound=Response, covariant=True)

@@ -43,3 +43,14 @@ class _OrigClassCapture:
         """Enforces that __orig_class__ has only been set once."""
 
         return check.single(object.__getattribute__(self, '__captured_orig_classes__'))
+
+
+def confer_orig_class(src, dst):
+    if src is not dst:
+        try:
+            oc = src.__orig_class__
+        except AttributeError:
+            pass
+        else:
+            dst.__orig_class__ = oc
+    return dst

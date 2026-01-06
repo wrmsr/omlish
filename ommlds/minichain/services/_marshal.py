@@ -1,6 +1,7 @@
 """
 FIXME:
- - metadata lol
+ - everything lol
+ - can this just do what metadata does
 """
 import typing as ta
 
@@ -66,9 +67,14 @@ class _RequestResponseMarshaler(msh.Marshaler):
         else:
             v_v = self.v_m.marshal(ctx, o.v)
 
+        md_fmd = self.rr_flds.md.metadata[msh.FieldMetadata]
+        md_m = md_fmd.marshaler_factory.make_marshaler(ctx.marshal_factory_context, self.rr_flds.md.type)()  # FIXME
+        md_v = md_m.marshal(ctx, o._metadata)  # noqa
+
         return {
             'v': v_v,
             **({lang.strip_prefix(self.rr_flds.tv.name, '_'): tv_v} if tv_v else {}),
+            **({'metadata': md_v} if md_v else {}),
         }
 
 
@@ -107,12 +113,18 @@ class _RequestResponseUnmarshaler(msh.Unmarshaler):
     rr_flds: _RrFlds
     v_u: msh.Unmarshaler
     tv_u: msh.Unmarshaler
+    md_u: msh.Unmarshaler
 
     def unmarshal(self, ctx: msh.UnmarshalContext, v: msh.Value) -> ta.Any:
         dct = dict(check.isinstance(v, ta.Mapping))
 
         v_v = dct.pop('v')
         v = self.v_u.unmarshal(ctx, v_v)
+
+        if md_v := dct.pop('metadata', None):
+            md = self.md_u.unmarshal(ctx, md_v)
+        else:
+            md = []
 
         tvs: ta.Any
         if dct:
@@ -124,7 +136,7 @@ class _RequestResponseUnmarshaler(msh.Unmarshaler):
         check.empty(dct)
 
         cty = rfl.get_concrete_type(self.rty)
-        return cty(v, tvs)  # type: ignore
+        return cty(v, tvs, _metadata=md)  # type: ignore
 
 
 class _RequestResponseUnmarshalerFactory(msh.UnmarshalerFactory):
@@ -138,15 +150,24 @@ class _RequestResponseUnmarshalerFactory(msh.UnmarshalerFactory):
             else:
                 # FIXME: ...
                 raise TypeError(rty)
+
+            rr_flds = _get_rr_flds(rty)
+
             tv_types_set = check.isinstance(tv_rty, rfl.Union).args
             tv_ta = tv.TypedValues[ta.Union[*tv_types_set]]  # type: ignore
             tv_u = ctx.make_unmarshaler(tv_ta)
+
             v_u = ctx.make_unmarshaler(v_rty)
+
+            md_fmd = rr_flds.md.metadata[msh.FieldMetadata]
+            md_u = md_fmd.unmarshaler_factory.make_unmarshaler(ctx, rr_flds.md.type)()  # FIXME
+
             return _RequestResponseUnmarshaler(
                 rty,
                 _get_rr_flds(rty),
                 v_u,
                 tv_u,
+                md_u,
             )
 
         return inner

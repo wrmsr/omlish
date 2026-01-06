@@ -25,9 +25,9 @@ MetadataT = ta.TypeVar('MetadataT', bound=Metadata)
 
 
 class MetadataContainer(
-    tv.TypedValueGeneric[MetadataT],
     lang.Abstract,
     lang.PackageSealed,
+    ta.Generic[MetadataT],
 ):
     @property
     @abc.abstractmethod

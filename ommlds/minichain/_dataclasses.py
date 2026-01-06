@@ -17946,20 +17946,20 @@ def _process_dataclass__c5ebc75df7787604091e8a5696458c845a88b433():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('rty', 'tv_fld', 'v_m')), EqPlan(fields=('rty', 'tv_fld', 'v_m')), FrozenPlan(fiel"
-        "ds=('rty', 'tv_fld', 'v_m'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('rty', 'tv_fld'"
-        ", 'v_m'), cache=False), InitPlan(fields=(InitPlan.Field(name='rty', annotation=OpRef(name='init.fields.0.annot"
-        "ation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
-        "None, validate=None, check_type=None), InitPlan.Field(name='tv_fld', annotation=OpRef(name='init.fields.1.anno"
-        "tation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce"
-        "=None, validate=None, check_type=None), InitPlan.Field(name='v_m', annotation=OpRef(name='init.fields.2.annota"
-        "tion'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=N"
-        "one, validate=None, check_type=None)), self_param='self', std_params=('rty', 'tv_fld', 'v_m'), kw_only_params="
-        "(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan."
-        "Field(name='rty', kw_only=False, fn=None), ReprPlan.Field(name='tv_fld', kw_only=False, fn=None), ReprPlan.Fie"
-        "ld(name='v_m', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('rty', 'rr_flds', 'v_m')), EqPlan(fields=('rty', 'rr_flds', 'v_m')), FrozenPlan(fi"
+        "elds=('rty', 'rr_flds', 'v_m'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('rty', 'rr_f"
+        "lds', 'v_m'), cache=False), InitPlan(fields=(InitPlan.Field(name='rty', annotation=OpRef(name='init.fields.0.a"
+        "nnotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
+        "rce=None, validate=None, check_type=None), InitPlan.Field(name='rr_flds', annotation=OpRef(name='init.fields.1"
+        ".annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, c"
+        "oerce=None, validate=None, check_type=None), InitPlan.Field(name='v_m', annotation=OpRef(name='init.fields.2.a"
+        "nnotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
+        "rce=None, validate=None, check_type=None)), self_param='self', std_params=('rty', 'rr_flds', 'v_m'), kw_only_p"
+        "arams=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(Rep"
+        "rPlan.Field(name='rty', kw_only=False, fn=None), ReprPlan.Field(name='rr_flds', kw_only=False, fn=None), ReprP"
+        "lan.Field(name='v_m', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='3351f2836d3548cfa09118e14f4aabcde84625f4',
+    plan_repr_sha1='c125868d27a1b2e29aef80e41118485a9e3fb492',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
@@ -17969,7 +17969,7 @@ def _process_dataclass__c5ebc75df7787604091e8a5696458c845a88b433():
         ('ommlds.minichain.services._marshal', '_RequestResponseMarshaler'),
     ),
 )
-def _process_dataclass__3351f2836d3548cfa09118e14f4aabcde84625f4():
+def _process_dataclass__c125868d27a1b2e29aef80e41118485a9e3fb492():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -17995,7 +17995,7 @@ def _process_dataclass__3351f2836d3548cfa09118e14f4aabcde84625f4():
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
                 rty=self.rty,
-                tv_fld=self.tv_fld,
+                rr_flds=self.rr_flds,
                 v_m=self.v_m,
             )
 
@@ -18011,7 +18011,7 @@ def _process_dataclass__3351f2836d3548cfa09118e14f4aabcde84625f4():
                 return NotImplemented
             return (
                 self.rty == other.rty and
-                self.tv_fld == other.tv_fld and
+                self.rr_flds == other.rr_flds and
                 self.v_m == other.v_m
             )
 
@@ -18022,7 +18022,7 @@ def _process_dataclass__3351f2836d3548cfa09118e14f4aabcde84625f4():
 
         __dataclass___setattr_frozen_fields = {
             'rty',
-            'tv_fld',
+            'rr_flds',
             'v_m',
         }
 
@@ -18041,7 +18041,7 @@ def _process_dataclass__3351f2836d3548cfa09118e14f4aabcde84625f4():
 
         __dataclass___delattr_frozen_fields = {
             'rty',
-            'tv_fld',
+            'rr_flds',
             'v_m',
         }
 
@@ -18061,7 +18061,7 @@ def _process_dataclass__3351f2836d3548cfa09118e14f4aabcde84625f4():
         def __hash__(self):
             return hash((
                 self.rty,
-                self.tv_fld,
+                self.rr_flds,
                 self.v_m,
             ))
 
@@ -18071,11 +18071,11 @@ def _process_dataclass__3351f2836d3548cfa09118e14f4aabcde84625f4():
         def __init__(
             self,
             rty: __dataclass__init__fields__0__annotation,
-            tv_fld: __dataclass__init__fields__1__annotation,
+            rr_flds: __dataclass__init__fields__1__annotation,
             v_m: __dataclass__init__fields__2__annotation,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'rty', rty)
-            __dataclass__object_setattr(self, 'tv_fld', tv_fld)
+            __dataclass__object_setattr(self, 'rr_flds', rr_flds)
             __dataclass__object_setattr(self, 'v_m', v_m)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
@@ -18087,7 +18087,7 @@ def _process_dataclass__3351f2836d3548cfa09118e14f4aabcde84625f4():
         def __repr__(self):
             parts = []
             parts.append(f"rty={self.rty!r}")
-            parts.append(f"tv_fld={self.tv_fld!r}")
+            parts.append(f"rr_flds={self.rr_flds!r}")
             parts.append(f"v_m={self.v_m!r}")
             return (
                 f"{self.__class__.__qualname__}("
@@ -18105,34 +18105,38 @@ def _process_dataclass__3351f2836d3548cfa09118e14f4aabcde84625f4():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('rty', 'tv_fld', 'v_u', 'tv_u')), EqPlan(fields=('rty', 'tv_fld', 'v_u', 'tv_u')),"
-        " FrozenPlan(fields=('rty', 'tv_fld', 'v_u', 'tv_u'), allow_dynamic_dunder_attrs=False), HashPlan(action='add',"
-        " fields=('rty', 'tv_fld', 'v_u', 'tv_u'), cache=False), InitPlan(fields=(InitPlan.Field(name='rty', annotation"
-        "=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, override=False, field_"
-        "type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='tv_fld', annotatio"
-        "n=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init=True, override=False, field"
-        "_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='v_u', annotation="
-        "OpRef(name='init.fields.2.annotation'), default=None, default_factory=None, init=True, override=False, field_t"
-        "ype=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='tv_u', annotation=O"
-        "pRef(name='init.fields.3.annotation'), default=None, default_factory=None, init=True, override=False, field_ty"
-        "pe=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=('rty', 't"
-        "v_fld', 'v_u', 'tv_u'), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), valid"
-        "ate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='rty', kw_only=False, fn=None), ReprPlan.Field(name='tv_fld'"
-        ", kw_only=False, fn=None), ReprPlan.Field(name='v_u', kw_only=False, fn=None), ReprPlan.Field(name='tv_u', kw_"
-        "only=False, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('rty', 'rr_flds', 'v_u', 'tv_u', 'md_u')), EqPlan(fields=('rty', 'rr_flds', 'v_u',"
+        " 'tv_u', 'md_u')), FrozenPlan(fields=('rty', 'rr_flds', 'v_u', 'tv_u', 'md_u'), allow_dynamic_dunder_attrs=Fal"
+        "se), HashPlan(action='add', fields=('rty', 'rr_flds', 'v_u', 'tv_u', 'md_u'), cache=False), InitPlan(fields=(I"
+        "nitPlan.Field(name='rty', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=Non"
+        "e, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Ini"
+        "tPlan.Field(name='rr_flds', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=N"
+        "one, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), I"
+        "nitPlan.Field(name='v_u', annotation=OpRef(name='init.fields.2.annotation'), default=None, default_factory=Non"
+        "e, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Ini"
+        "tPlan.Field(name='tv_u', annotation=OpRef(name='init.fields.3.annotation'), default=None, default_factory=None"
+        ", init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Init"
+        "Plan.Field(name='md_u', annotation=OpRef(name='init.fields.4.annotation'), default=None, default_factory=None,"
+        " init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self"
+        "_param='self', std_params=('rty', 'rr_flds', 'v_u', 'tv_u', 'md_u'), kw_only_params=(), frozen=True, slots=Fal"
+        "se, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='rty', kw_only="
+        "False, fn=None), ReprPlan.Field(name='rr_flds', kw_only=False, fn=None), ReprPlan.Field(name='v_u', kw_only=Fa"
+        "lse, fn=None), ReprPlan.Field(name='tv_u', kw_only=False, fn=None), ReprPlan.Field(name='md_u', kw_only=False,"
+        " fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='48fce044c70087260e75d4a7c33663b383fb8b2a',
+    plan_repr_sha1='c4fcb2b1f1cadf2a1ca803a56157e3f9b7cd6e1a',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__4__annotation',
     ),
     cls_names=(
         ('ommlds.minichain.services._marshal', '_RequestResponseUnmarshaler'),
     ),
 )
-def _process_dataclass__48fce044c70087260e75d4a7c33663b383fb8b2a():
+def _process_dataclass__c4fcb2b1f1cadf2a1ca803a56157e3f9b7cd6e1a():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -18140,6 +18144,7 @@ def _process_dataclass__48fce044c70087260e75d4a7c33663b383fb8b2a():
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__3__annotation,
+        __dataclass__init__fields__4__annotation,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -18159,9 +18164,10 @@ def _process_dataclass__48fce044c70087260e75d4a7c33663b383fb8b2a():
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
                 rty=self.rty,
-                tv_fld=self.tv_fld,
+                rr_flds=self.rr_flds,
                 v_u=self.v_u,
                 tv_u=self.tv_u,
+                md_u=self.md_u,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -18176,9 +18182,10 @@ def _process_dataclass__48fce044c70087260e75d4a7c33663b383fb8b2a():
                 return NotImplemented
             return (
                 self.rty == other.rty and
-                self.tv_fld == other.tv_fld and
+                self.rr_flds == other.rr_flds and
                 self.v_u == other.v_u and
-                self.tv_u == other.tv_u
+                self.tv_u == other.tv_u and
+                self.md_u == other.md_u
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -18188,9 +18195,10 @@ def _process_dataclass__48fce044c70087260e75d4a7c33663b383fb8b2a():
 
         __dataclass___setattr_frozen_fields = {
             'rty',
-            'tv_fld',
+            'rr_flds',
             'v_u',
             'tv_u',
+            'md_u',
         }
 
         def __setattr__(self, name, value):
@@ -18208,9 +18216,10 @@ def _process_dataclass__48fce044c70087260e75d4a7c33663b383fb8b2a():
 
         __dataclass___delattr_frozen_fields = {
             'rty',
-            'tv_fld',
+            'rr_flds',
             'v_u',
             'tv_u',
+            'md_u',
         }
 
         def __delattr__(self, name):
@@ -18229,9 +18238,10 @@ def _process_dataclass__48fce044c70087260e75d4a7c33663b383fb8b2a():
         def __hash__(self):
             return hash((
                 self.rty,
-                self.tv_fld,
+                self.rr_flds,
                 self.v_u,
                 self.tv_u,
+                self.md_u,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -18240,14 +18250,16 @@ def _process_dataclass__48fce044c70087260e75d4a7c33663b383fb8b2a():
         def __init__(
             self,
             rty: __dataclass__init__fields__0__annotation,
-            tv_fld: __dataclass__init__fields__1__annotation,
+            rr_flds: __dataclass__init__fields__1__annotation,
             v_u: __dataclass__init__fields__2__annotation,
             tv_u: __dataclass__init__fields__3__annotation,
+            md_u: __dataclass__init__fields__4__annotation,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'rty', rty)
-            __dataclass__object_setattr(self, 'tv_fld', tv_fld)
+            __dataclass__object_setattr(self, 'rr_flds', rr_flds)
             __dataclass__object_setattr(self, 'v_u', v_u)
             __dataclass__object_setattr(self, 'tv_u', tv_u)
+            __dataclass__object_setattr(self, 'md_u', md_u)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -18258,9 +18270,10 @@ def _process_dataclass__48fce044c70087260e75d4a7c33663b383fb8b2a():
         def __repr__(self):
             parts = []
             parts.append(f"rty={self.rty!r}")
-            parts.append(f"tv_fld={self.tv_fld!r}")
+            parts.append(f"rr_flds={self.rr_flds!r}")
             parts.append(f"v_u={self.v_u!r}")
             parts.append(f"tv_u={self.tv_u!r}")
+            parts.append(f"md_u={self.md_u!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

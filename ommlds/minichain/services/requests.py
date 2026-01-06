@@ -11,6 +11,7 @@ from ..metadata import Metadata
 from ..metadata import MetadataContainerDataclass
 from ..types import Option
 from ..types import OptionT_co
+from ._origclasses import confer_orig_class
 from ._typedvalues import _TypedValues
 
 
@@ -72,7 +73,7 @@ class Request(  # type: ignore[type-var]  # FIXME: _TypedValues param is invaria
         if new is old:
             return self
 
-        return dc.replace(self, _options=new)
+        return confer_orig_class(self, dc.replace(self, _options=new))
 
     @property
     def _typed_values(self) -> tv.TypedValues[OptionT_co]:
@@ -89,6 +90,14 @@ class Request(  # type: ignore[type-var]  # FIXME: _TypedValues param is invaria
     )
 
     MetadataContainerDataclass._configure_metadata_field(_metadata, RequestMetadatas)  # noqa
+
+    def with_metadata(
+            self,
+            *add: RequestMetadatas,
+            discard: ta.Iterable[type] | None = None,
+            override: bool = False,
+    ) -> ta.Self:
+        return confer_orig_class(self, super().with_metadata(*add, discard=discard, override=override))
 
 
 RequestT_contra = ta.TypeVar('RequestT_contra', bound=Request, contravariant=True)
