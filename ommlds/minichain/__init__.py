@@ -427,11 +427,18 @@ with _lang.auto_proxy_init(
     ##
 
     from .services import (  # noqa
-        Request,
-        Response,
-        Service,
         ServiceFacade,
         facade,
+
+        RequestMetadata,
+        RequestMetadatas,
+        Request,
+
+        ResponseMetadata,
+        ResponseMetadatas,
+        Response,
+
+        Service,
     )
 
     ##

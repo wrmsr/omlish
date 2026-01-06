@@ -8,10 +8,16 @@ from .facades import (  # noqa
 )
 
 from .requests import (  # noqa
+    RequestMetadata,
+    RequestMetadatas,
+
     Request,
 )
 
 from .responses import (  # noqa
+    ResponseMetadata,
+    ResponseMetadatas,
+
     Response,
 )
 

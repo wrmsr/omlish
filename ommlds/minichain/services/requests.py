@@ -6,6 +6,9 @@ from omlish import lang
 from omlish import typedvalues as tv
 
 from .._typedvalues import _tv_field_metadata
+from ..metadata import CommonMetadata
+from ..metadata import Metadata
+from ..metadata import MetadataContainerDataclass
 from ..types import Option
 from ..types import OptionT_co
 from ._typedvalues import _TypedValues
@@ -19,6 +22,16 @@ OptionU = ta.TypeVar('OptionU', bound=Option)
 ##
 
 
+class RequestMetadata(Metadata, lang.Abstract):
+    pass
+
+
+RequestMetadatas: ta.TypeAlias = RequestMetadata | CommonMetadata
+
+
+##
+
+
 @dc.dataclass(frozen=True)
 @dc.extra_class_params(
     allow_dynamic_dunder_attrs=True,
@@ -26,6 +39,7 @@ OptionU = ta.TypeVar('OptionU', bound=Option)
 )
 class Request(  # type: ignore[type-var]  # FIXME: _TypedValues param is invariant
     _TypedValues[OptionT_co],
+    MetadataContainerDataclass[RequestMetadatas],
     lang.Final,
     ta.Generic[V_co, OptionT_co],
 ):
@@ -67,6 +81,14 @@ class Request(  # type: ignore[type-var]  # FIXME: _TypedValues param is invaria
     def validate(self) -> ta.Self:
         self._check_typed_values()
         return self
+
+    _metadata: ta.Sequence[RequestMetadatas] = dc.field(
+        default=(),
+        kw_only=True,
+        repr=False,
+    )
+
+    MetadataContainerDataclass._configure_metadata_field(_metadata, RequestMetadatas)  # noqa
 
 
 RequestT_contra = ta.TypeVar('RequestT_contra', bound=Request, contravariant=True)

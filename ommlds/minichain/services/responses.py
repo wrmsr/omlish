@@ -6,12 +6,25 @@ from omlish import lang
 from omlish import typedvalues as tv
 
 from .._typedvalues import _tv_field_metadata
+from ..metadata import CommonMetadata
+from ..metadata import Metadata
+from ..metadata import MetadataContainerDataclass
 from ..types import Output
 from ..types import OutputT_contra
 from ._typedvalues import _TypedValues
 
 
 V_co = ta.TypeVar('V_co', covariant=True)
+
+
+##
+
+
+class ResponseMetadata(Metadata, lang.Abstract):
+    pass
+
+
+ResponseMetadatas: ta.TypeAlias = ResponseMetadata | CommonMetadata
 
 
 ##
@@ -24,6 +37,7 @@ V_co = ta.TypeVar('V_co', covariant=True)
 )
 class Response(  # type: ignore[type-var]  # FIXME: _TypedValues param is invariant
     _TypedValues[OutputT_contra],
+    MetadataContainerDataclass[ResponseMetadatas],
     lang.Final,
     ta.Generic[V_co, OutputT_contra],
 ):
@@ -65,6 +79,14 @@ class Response(  # type: ignore[type-var]  # FIXME: _TypedValues param is invari
     def validate(self) -> ta.Self:
         self._check_typed_values()
         return self
+
+    _metadata: ta.Sequence[ResponseMetadatas] = dc.field(
+        default=(),
+        kw_only=True,
+        repr=False,
+    )
+
+    MetadataContainerDataclass._configure_metadata_field(_metadata, ResponseMetadatas)  # noqa
 
 
 ResponseT_co = ta.TypeVar('ResponseT_co', bound=Response, covariant=True)

@@ -1,3 +1,7 @@
+"""
+FIXME:
+ - metadata lol
+"""
 import typing as ta
 
 from omlish import check
@@ -22,10 +26,21 @@ def _is_rr_rty(rty: rfl.Type) -> bool:
     )
 
 
-def _get_tv_fld(rty: rfl.Type) -> dc.Field:
+class _RrFlds(ta.NamedTuple):
+    v: dc.Field
+    tv: dc.Field
+    md: dc.Field
+
+
+def _get_rr_flds(rty: rfl.Type) -> _RrFlds:
     flds = col.make_map_by(lambda f: f.name, dc.fields(check.not_none(rfl.get_concrete_type(rty))), strict=True)
-    flds.pop('v')
-    return check.single(flds.values())
+    v_fld = flds.pop('v')
+    md_fld = flds.pop('_metadata')
+    return _RrFlds(
+        v=v_fld,
+        tv=check.single(flds.values()),
+        md=md_fld,
+    )
 
 
 ##
@@ -34,7 +49,7 @@ def _get_tv_fld(rty: rfl.Type) -> dc.Field:
 @dc.dataclass(frozen=True)
 class _RequestResponseMarshaler(msh.Marshaler):
     rty: rfl.Type
-    tv_fld: dc.Field
+    rr_flds: _RrFlds
     v_m: msh.Marshaler | None
 
     def marshal(self, ctx: msh.MarshalContext, o: ta.Any) -> msh.Value:
@@ -53,7 +68,7 @@ class _RequestResponseMarshaler(msh.Marshaler):
 
         return {
             'v': v_v,
-            **({lang.strip_prefix(self.tv_fld.name, '_'): tv_v} if tv_v else {}),
+            **({lang.strip_prefix(self.rr_flds.tv.name, '_'): tv_v} if tv_v else {}),
         }
 
 
@@ -76,7 +91,7 @@ class _RequestResponseMarshalerFactory(msh.MarshalerFactory):
                 v_m = ctx.make_marshaler(v_rty)
             return _RequestResponseMarshaler(
                 rty,
-                _get_tv_fld(rty),
+                _get_rr_flds(rty),
                 v_m,
             )
 
@@ -89,7 +104,7 @@ class _RequestResponseMarshalerFactory(msh.MarshalerFactory):
 @dc.dataclass(frozen=True)
 class _RequestResponseUnmarshaler(msh.Unmarshaler):
     rty: rfl.Type
-    tv_fld: dc.Field
+    rr_flds: _RrFlds
     v_u: msh.Unmarshaler
     tv_u: msh.Unmarshaler
 
@@ -101,7 +116,7 @@ class _RequestResponseUnmarshaler(msh.Unmarshaler):
 
         tvs: ta.Any
         if dct:
-            tv_vs = dct.pop(lang.strip_prefix(self.tv_fld.name, '_'))
+            tv_vs = dct.pop(lang.strip_prefix(self.rr_flds.tv.name, '_'))
             tvs = self.tv_u.unmarshal(ctx, tv_vs)
         else:
             tvs = []
@@ -129,7 +144,7 @@ class _RequestResponseUnmarshalerFactory(msh.UnmarshalerFactory):
             v_u = ctx.make_unmarshaler(v_rty)
             return _RequestResponseUnmarshaler(
                 rty,
-                _get_tv_fld(rty),
+                _get_rr_flds(rty),
                 v_u,
                 tv_u,
             )
