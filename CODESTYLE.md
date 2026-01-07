@@ -245,8 +245,12 @@
     integers should probably return a `ta.AbstractSet[int]` rather than a `set[int]`.
   - Don't avoid `ta.Generic` and type parameters where it makes sense, but usually annotating something as a superclass
     will suffice. When present in a class definition, `ta.Generic` should be the last class in the base class list.
-  - Do not use PEP-695 style type parameter syntax yet - continue to declare `ta.TypeVar`'s explicitly at the top of the
-    module.
+  - Do **NOT** use PEP-695 style type parameter syntax yet:
+    - Continue to declare `ta.TypeVar`'s explicitly at the top of the module.
+    - Continue to declare type aliases as global variables (whose own type is annotated as `ta.TypeAlias`). For example,
+      do `IntList: ta.TypeAlias = list[int]`, not `type IntList = list[int]`.
+    - Rationale: the `type` statement produces radically different and incompatible reflective behavior at runtime, and
+      in general tools still struggle with the new syntax.
 
 
 ### Comments
