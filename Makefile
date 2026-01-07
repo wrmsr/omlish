@@ -462,6 +462,10 @@ docker-ports: venv
 docker-updates: venv
 	${PYTHON} -m omdev.tools.docker compose-image-updates
 
+.PHONY: docker-dev-temp-bash
+docker-dev-temp-bash:
+	docker run --rm -it "$$(docker build -q -f docker/dev/Dockerfile .)" bash
+
 
 ### CI
 
