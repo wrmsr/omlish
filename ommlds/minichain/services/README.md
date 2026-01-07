@@ -116,8 +116,8 @@ ChatRequest: ta.TypeAlias = Request[Chat, ChatOptions]
 class TokenUsage(Output, tv.UniqueScalarTypedValue[int]): pass
 class ElapsedTime(Output, tv.UniqueScalarTypedValue[float]): pass
 
-ChatOutput: ta.TypeAlias = TokenUsage | ElapsedTime
-ChatResponse: ta.TypeAlias = Response[Message, ChatOutput]
+ChatOutputs: ta.TypeAlias = TokenUsage | ElapsedTime
+ChatResponse: ta.TypeAlias = Response[Message, ChatOutputs]
 
 ChatService: ta.TypeAlias = Service[ChatRequest, ChatResponse]
 
@@ -130,7 +130,7 @@ LocalChatRequest: ta.TypeAlias = Request[Chat, LocalChatOptions]
 
 class LogPath(Output, tv.ScalarTypedValue[str]): pass
 
-LocalChatOutputs: ta.TypeAlias = ChatOutput | LogPath
+LocalChatOutputs: ta.TypeAlias = ChatOutputs | LogPath
 LocalChatResponse: ta.TypeAlias = Response[Message, LocalChatOutputs]
 
 LocalChatService: ta.TypeAlias = Service[LocalChatRequest, LocalChatResponse]
@@ -146,7 +146,7 @@ RemoteChatRequest: ta.TypeAlias = Request[Chat, RemoteChatOptions]
 class RemoteChatOutput(Output, lang.Abstract): pass
 class BilledCostInUsd(RemoteChatOutput, tv.UniqueScalarTypedValue[float]): pass
 
-RemoteChatOutputs: ta.TypeAlias = ChatOutput | RemoteChatOutput
+RemoteChatOutputs: ta.TypeAlias = ChatOutputs | RemoteChatOutput
 RemoteChatResponse: ta.TypeAlias = Response[Message, RemoteChatOutputs]
 
 RemoteChatService: ta.TypeAlias = Service[RemoteChatRequest, RemoteChatResponse]

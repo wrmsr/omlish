@@ -99,6 +99,8 @@ class Project(ProjectBase):
             # 'mysql-connector-python ~= 9.5',
             # 'mysqlclient ~= 2.2',
 
+            'snowflake-connector-python ~= 4.2',
+
             'aiomysql ~= 0.3',
             'aiosqlite ~= 0.22',
             'asyncpg ~= 0.31',

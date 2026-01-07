@@ -104,12 +104,12 @@ asttokens==3.0.1
 numpy>=1.26
 
 rich==14.2.0
-textual==7.0.0  # @omlish-venv 13t 13dt 14t
-textual[syntax]==7.0.0  # @omlish-venv !13t !13dt !14t
+textual==7.0.1  # @omlish-venv 13t 13dt 14t
+textual[syntax]==7.0.1  # @omlish-venv !13t !13dt !14t
 textual-dev==1.8.0
 textual-speedups==0.2.1
 
-snowflake-connector-python[secure-local-storage]==4.1.1  # @omlish-venv !13t !13dt  # cffi
+snowflake-connector-python[secure-local-storage]==4.2.0  # @omlish-venv !13t !13dt  # cffi
 # snowflake-sqlalchemy==1.7.7  # @omlish-venv !13t !13dt  # cffi
 
 trino==0.336.0  # @omlish-venv !13t !13dt !14t !14dt  # orjson

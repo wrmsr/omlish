@@ -41,8 +41,18 @@
 
 - Modules
   - Avoid global state in general. Constants are however fine.
-  - Avoid code execution in module bodies. If necessary, add a `def _main() -> None:` and conditional
-    `if __name__ == '__main__':` call to it.
+  - Do basically no 'work' in module body:
+    - *NEVER* eagerly do any IO in module body - wrap any such things in a `@lang.cached_function`.
+    - *NEVER* write dumb python 'scripts'. Modules intended as entrypoints are great, but *ALWAYS* make them importable
+      side-effect-free, and *ALWAYS* have an `if __name__ == '__main__'` guard at the bottom. And almost always have
+      that just call a `def _main() -> None:` or `async def _a_main() -> None:`. Don't pollute module globals with state
+      even if the module is running as entrypoint.
+  - Avoid temporary values in module global scope - for example, construction of a global effectively const `Mapping`
+    via a comprehension is fine in module body (as comprehension variables do not leak out to parent scope), but a bare
+    for loop in module body is not okay (as the loop variables and any intermediates in the loop body will be left as
+    globals). Instead, prefer to define and call a module private function which returns the desired global value.
+  - Always use relative imports even in python modules intended to be directly executed. All python invocations will
+    always be done via `python -m`.
 
 - Classes
   - Ensure constructors call `super().__init__()`, even if they don't appear to inherit from anything at their
@@ -126,7 +136,7 @@
   - Substantial packages should have a `README.md` file at the root of the package directory outlining the package's
     purpose, usage, and high level architecture. These files are automatically included in distributions as resources
     for end-users.
-    - This is however a work in progress.
+    - This is however a work in progress ☺️.
 
 - Tests
   - As above, write tests in pytest-style.
@@ -139,14 +149,6 @@
     with an `add_user` method such that it actually stores the added user in a dictionary on the instance.
 
 - Runtime
-  - Do basically no 'work' in module body.
-    - *NEVER* eagerly do any IO in module body - wrap any such things in a `@lang.cached_function`. 
-    - *NEVER* write dumb python 'scripts'. Modules intended as entrypoints are great, but *ALWAYS* make them importable
-      side-effect-free, and *ALWAYS* have an `if __name__ == '__main__'` guard at the bottom. And almost always have
-      that just call a `def _main() -> None:` or `async def _a_main() -> None:`. Don't pollute module globals with state
-      even if the module is running as entrypoint.
-    - Always use relative imports even in python modules intended to be directly executed. All python invocations will
-      always be done via `python -m`.
   - Unless forced to through interaction with external code, do not use environment variables for anything.
     Configuration should be injected, usually as keyword-only class constructor arguments, and usually in the form of
     dataclasses or `ta.NewType`s.

@@ -52,9 +52,9 @@ class ElapsedTime(Output, tv.UniqueScalarTypedValue[float]):
     pass
 
 
-ChatOutput: ta.TypeAlias = TokenUsage | ElapsedTime
+ChatOutputs: ta.TypeAlias = TokenUsage | ElapsedTime
 
-ChatResponse: ta.TypeAlias = Response[Message, ChatOutput]
+ChatResponse: ta.TypeAlias = Response[Message, ChatOutputs]
 
 
 #
@@ -83,7 +83,7 @@ class LogPath(Output, tv.ScalarTypedValue[str]):
     pass
 
 
-LocalChatOutputs: ta.TypeAlias = ChatOutput | LogPath
+LocalChatOutputs: ta.TypeAlias = ChatOutputs | LogPath
 
 LocalChatResponse: ta.TypeAlias = Response[Message, LocalChatOutputs]
 
@@ -122,7 +122,7 @@ class BilledCostInUsd(RemoteChatOutput, tv.UniqueScalarTypedValue[float]):
     pass
 
 
-RemoteChatOutputs: ta.TypeAlias = ChatOutput | RemoteChatOutput
+RemoteChatOutputs: ta.TypeAlias = ChatOutputs | RemoteChatOutput
 
 RemoteChatResponse: ta.TypeAlias = Response[Message, RemoteChatOutputs]
 
