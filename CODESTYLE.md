@@ -1,13 +1,17 @@
-- Environment
+### Environment
+
   - Target cpython 3.13 - use the modern language and library features it includes.
     - \[**lite**\] The exception is 'lite' code, which targets python 3.8.
     - As a reminder, non-\[**lite**\] core is referred to as 'standard' code.
   - Code should run on modern macOS and Linux - Windows support is not necessary, but still prefer things like
     `os.path.join` over `'/'.join` where reasonable.
 
-Dependencies
+
+### Dependencies
+
   - Outside of a few specific subpackages (and test code), there are no external dependencies of any kind to rely on.
     Use the standard library liberally, use `omlish` for everything else.
+
   - All external runtime dependencies are optional, and generally fit into the following categories:
     - Cryptography: `cryptography`. Its use is optional.
     - File formats: `orjson`, `pyyaml`, `cbor2`, `lxml`, `cloudpickle`, etc. Wherever possible, they serve only as
@@ -54,7 +58,9 @@ Dependencies
     - Various specs: `jsonrpc`, `jsonschema`, `openapi`, `mcp`. internal implementations exist.
     - Web frameworks: `flask`, `fastapi`, `starlette`, etc. Equivalent internal patterns exist.
 
-- Structure
+
+### Structure
+
   - In general, strongly prefer clusters of small source files to a single or small number of large ones - a few hundred
     lines of code is a good target maximum, and there is no minimum.
     - Our code is 'type-heavy', and small modules defining nothing but interrelated stateless structures are welcome.
@@ -72,7 +78,9 @@ Dependencies
     > Source code dependencies can only point inwards. Nothing in an inner circle can know anything at all about
       something in an outer circle.
 
-- Naming
+
+### Naming
+
   - Module names should be nouns (usually plural or gerunds), not verbs, so as to not clash with function names. A
     module should be named `parsing.py`, not `parse.py`, so `__init__.py` could `from .parsing import parse` without
     shadowing the module itself.
@@ -85,7 +93,9 @@ Dependencies
     so as to distinguish it from adjacent acronyms. For example, a class to parse ABNF grammars would be `AbnfParser`,
     and a class to parse the JSON ABNF grammar would be `JsonAbnfParser`.
 
-- Imports
+
+### Imports
+
   - **Always** use relative imports within a package. **Never** reference the name of the root package from within
     itself. For example, within the `omlish` package, it's `from . import lang`, not `from omlish import lang`. Within
     the `omlish` root package there should never be an import line containing the word `omlish` - and references to the
@@ -115,7 +125,9 @@ Dependencies
     - Rationale: we have a lazy import mechanism that operates at the module level. Do not attempt to manually
       late-import such libraries, just import them as regular modules.
 
-- Modules
+
+### Modules
+
   - Avoid global state in general. Constants are however fine.
   - Do basically no 'work' in module body:
     - *NEVER* eagerly do any IO in module body - wrap any such things in a `@lang.cached_function`.
@@ -130,7 +142,9 @@ Dependencies
   - Always use relative imports even in python modules intended to be directly executed. All python invocations will
     always be done via `python -m`.
 
-- Classes
+
+### Classes
+
   - Ensure constructors call `super().__init__()`, even if they don't appear to inherit from anything at their
     definition - *except* if the class is `@ta.Final` and there is explicit reason to not. Additionally, a blank line
     should follow the super call if it is the first statement of the method (which it usually is) and there are more
@@ -185,14 +199,18 @@ Dependencies
       - Return a defensive copy of the internal state. For example, a property returning an internal `list[int]` would
         return a copy of the internal list.
 
-- Dataclasses
+
+### Dataclasses
+
   - Do not use bare, un-called `@dc.dataclass` as a decorator - always use `@dc.dataclass()` even if it is given no
     arguments.
   - **Strongly** prefer frozen dataclasses.
   - In standard code, prefer to `from omlish import dataclasses as dc` - not the standard library `dataclasses` module.
     The interface and behavior is the same.
 
-- Exceptions
+
+### Exceptions
+
   - **Never** use the `assert` statement anywhere but test code - rather, check a condition and raise an `Exception` if
     necessary.
     - Prefer to use the 'check' system (`from omlish import check`, or `from omlish.lite.check import check` for lite
@@ -203,7 +221,9 @@ Dependencies
       direct equivalent. For example, a `UserService` `get_user` method should raise a `UserNotFoundError`, not
       `KeyError`, when a given user is not found.
 
-- Type Annotation
+
+### Type Annotation
+
   - Type annotate functions and class fields wherever possible, even if it is simply `ta.Any`, but use the most specific
     annotation feasible.
     - Lack of type annotation is an explicit choice communicating that that particular code cannot or should not be
@@ -228,7 +248,9 @@ Dependencies
   - Do not use PEP-695 style type parameter syntax yet - continue to declare `ta.TypeVar`'s explicitly at the top of the
     module.
 
-- Comments
+
+### Comments
+
   - Avoid unnecessary and frivolous comments. Most semantic meaning should be able to be inferred from package / module
     / type / method / function / parameter names and annotations. For example a function like
     `def add_two_floats(x: float, y: float) -> float:` does not need a docstring or comments.
@@ -241,14 +263,18 @@ Dependencies
     like `self._ensure_user_exists()  # ensure user exists` is worthless, but a comment like
     `self._ensure_user_exists()  # safe because we already hold the user lock` is valuable.
 
-- Documentation
+
+### Documentation
+
   - Documentation should be written in markdown, and should have a general maximum line width of 120 characters.
   - Substantial packages should have a `README.md` file at the root of the package directory outlining the package's
     purpose, usage, and high level architecture. These files are automatically included in distributions as resources
     for end-users.
     - This is however a work in progress ☺️.
 
-- Tests
+
+### Tests
+
   - As above, write tests in pytest-style.
   - Use raw assertions liberally in tests, and use pytest utilities like `pytest.raises`.
   - Use fixtures and other advanced pytest features sparingly. Prefer to simply instantiate test data rather than wrap
@@ -258,7 +284,9 @@ Dependencies
     which a `RemoteUserService` would usually make a remote service call, prefer to implement a `DictUserService` class
     with an `add_user` method such that it actually stores the added user in a dictionary on the instance.
 
-- Runtime
+
+### Runtime
+
   - Unless forced to through interaction with external code, do not use environment variables for anything.
     Configuration should be injected, usually as keyword-only class constructor arguments, and usually in the form of
     dataclasses or `ta.NewType`s.
@@ -267,7 +295,9 @@ Dependencies
     pyoxidizer in which there is no `__file__`. Access resources via `lang.get_package_resources` /
     `lang.get_relative_resources`.
 
-- C Extensions
+
+### C Extensions
+
   - C extensions use C11 and C++ extensions use C++20.
   - In general prefer to write native extensions in C++.
   - Use the C++ standard library liberally, but not 'excessively' lol. Write more 'C-style' code when interfacing with
