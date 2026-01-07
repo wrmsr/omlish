@@ -23,10 +23,10 @@
       fallback if not present in the standard library, but are usually optional at runtime in practice.
     - Database drivers: `pg8000`, `psycopg`, `psycopg2`, `mysql-connecteor-python`, `mysqlclient`, `pymysql`,
       `snowflake-connector-python`, `duckdb`, etc. These also generally have no internal fallback.
-    - Large m̶̡̢̡̢̠̥͎͇̯̥̹̪͇͇͇̺̟͋̓͂̇͝͝a̴̧̛̞̾̊͒̈́̿͗̓̐̊͝t̸̥͖͂̀̆͛́̅́͝͠ȟ̴̢͎͙͍̱̒͂́̆̽̽̈́͝ libraries: `numpy`, `torch`, `mlx`, `tinygrad`, `transformers`, `llama-cpp-python`, `tokenizers`, etc.
-      These tend to have gigantic interface surface areas compared to the previous categories, and all interaction them
-      is heavily quarantined to a single isolated package per dependency. Outside of these isolated packages they
-      absolutely cannot be assumed to be present.
+    - Large <span aria-label="math">m̶̡̢̡̢̠̥͎͇̯̥̹̪͇͇͇̺̟͋̓͂̇͝͝a̴̧̛̞̾̊͒̈́̿͗̓̐̊͝t̸̥͖͂̀̆͛́̅́͝͠ȟ̴̢͎͙͍̱̒͂́̆̽̽̈́͝ </span> libraries: `numpy`, `torch`, `mlx`, `tinygrad`, `transformers`,
+      `llama-cpp-python`, `tokenizers`, etc. These tend to have gigantic interface surface areas compared to the
+      previous categories, and all interaction them is heavily quarantined to a single isolated package per dependency.
+      Outside of these isolated packages they absolutely cannot be assumed to be present.
     - `textual`, specifically - it is the sole chosen TUI library. Almost all terminal functionality is usable without
       it - it only powers a small number of specific, larger TUI apps.
     - Async backends: `trio`, `anyio`, `trio-asyncio`. Except in specific situations (such as under `textual`) async
