@@ -49,7 +49,7 @@ class Response(  # type: ignore[type-var]  # FIXME: _TypedValues param is invari
      - a sequence of outputs of type `OutputT_contra`
      - metadata of type `ResponseMetadatas`
 
-    Refer to the package docstring for an explanation of its type var variance.
+    Refer to the package README.md for an explanation of its type var variance.
 
     This class is final, but each instance's `__orig_class__` (if present) is significant. It is encouraged to construct
     these through a pre-parameterized type alias, and the provided `with_` methods should be used rather than

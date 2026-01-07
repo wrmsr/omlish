@@ -121,6 +121,13 @@
     like `self._ensure_user_exists()  # ensure user exists` is worthless, but a comment like
     `self._ensure_user_exists()  # safe because we already hold the user lock` is valuable.
 
+- Documentation
+  - Documentation should be written in markdown, and should have a general maximum line width of 120 characters.
+  - Substantial packages should have a `README.md` file at the root of the package directory outlining the package's
+    purpose, usage, and high level architecture. These files are automatically included in distributions as resources
+    for end-users.
+    - This is however a work in progress.
+
 - Tests
   - As above, write tests in pytest-style.
   - Use raw assertions liberally in tests, and use pytest utilities like `pytest.raises`.

@@ -15,7 +15,7 @@ class Service(lang.ProtocolForbiddenAsBaseClass, ta.Protocol[RequestT_contra, Re
     Universal service protocol, comprised of a single method `invoke`, accepting a request of type `RequestT_contra` and
     returning a response of type `ResponseT_co`.
 
-    Refer to the package docstring for an explanation of its type var variance.
+    Refer to the package README.md for an explanation of its type var variance.
 
     This class is final, but each instance's `__orig_class__` (if present) is significant.
     """
