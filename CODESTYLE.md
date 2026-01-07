@@ -15,18 +15,18 @@
   - All external runtime dependencies are optional, and generally fit into the following categories:
     - Cryptography: `cryptography`. Its use is optional.
     - File formats: `orjson`, `pyyaml`, `cbor2`, `lxml`, `cloudpickle`, etc. Wherever possible, they serve only as
-      accelerators and their will not block functionality - code should strive to have internal fallbacks that prefer
-      correctness to speed.
+      accelerators and their absence will not block functionality - code should strive to have internal fallbacks that
+      prefer correctness to speed.
     - Text formats: `jinja2`, `markdown-it-py`, etc. Particularly in LLM stuff the full versions of these are
       unavoidable, but simplified internal 'equivalents' exist for simpler usecases.
     - Compression algorithms: `lz4`, `zstandard`, `python-snappy`, `brotli`, etc. These generally have no internal
       fallback if not present in the standard library, but are usually optional at runtime in practice.
     - Database drivers: `pg8000`, `psycopg`, `psycopg2`, `mysql-connecteor-python`, `mysqlclient`, `pymysql`,
       `snowflake-connector-python`, `duckdb`, etc. These also generally have no internal fallback.
-    - Large *~m~a~t~h~* libraries: `numpy`, `torch`, `mlx`, `tinygrad`, `transformers`, `llama-cpp-python`,
-      `tokenizers`, etc. These tend to have gigantic interface surface areas compared to the previous categories, and
-      all interaction them is heavily quarantined to a single isolated package per dependency. Outside of these isolated
-      packages they absolutely cannot be assumed to be present.
+    - Large m̶̡̢̡̢̠̥͎͇̯̥̹̪͇͇͇̺̟͋̓͂̇͝͝a̴̧̛̞̾̊͒̈́̿͗̓̐̊͝t̸̥͖͂̀̆͛́̅́͝͠ȟ̴̢͎͙͍̱̒͂́̆̽̽̈́͝ libraries: `numpy`, `torch`, `mlx`, `tinygrad`, `transformers`, `llama-cpp-python`, `tokenizers`, etc.
+      These tend to have gigantic interface surface areas compared to the previous categories, and all interaction them
+      is heavily quarantined to a single isolated package per dependency. Outside of these isolated packages they
+      absolutely cannot be assumed to be present.
     - `textual`, specifically - it is the sole chosen TUI library. Almost all terminal functionality is usable without
       it - it only powers a small number of specific, larger TUI apps.
     - Async backends: `trio`, `anyio`, `trio-asyncio`. Except in specific situations (such as under `textual`) async
