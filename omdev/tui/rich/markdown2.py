@@ -147,40 +147,44 @@ class IncrementalMarkdownLiveStream(MarkdownLiveStream):
         ip_out = self._inc_parser.feed2(s)
 
         if ip_out.new_stable:
-            # try:
-            #     srs = getattr(self, '_srs')
-            # except AttributeError:
-            #     setattr(self, '_srs', srs := [])
-            # from ...markdown.tokens import token_repr, flatten_tokens
-            # srs.extend(map(token_repr, flatten_tokens(ip_out.new_stable)))
-
+            # Render the stable lines
             stable_lines = self._console_render(markdown_from_tokens(ip_out.new_stable))
-            stable_lines.append(' ')  # FIXME: lame hack
-            self._live.console.print(rich.text.Text.from_ansi('\n'.join(stable_lines), no_wrap=True))
+
+            # [Fix 1] Overlap Detection (Same as before)
+            already_printed_count = min(self._lines_printed_to_scrollback, len(stable_lines))
+
+            if already_printed_count < len(stable_lines):
+                new_stable_lines = stable_lines[already_printed_count:]
+                # [Fix 2] Ensure no_wrap=True is used here to match strict line counting
+                self._live.console.print(rich.text.Text.from_ansi('\n'.join(new_stable_lines), no_wrap=True))
+
+            # Adjust counter
             self._lines_printed_to_scrollback = max(0, self._lines_printed_to_scrollback - len(stable_lines))
 
         unstable_lines = self._console_render(markdown_from_tokens(ip_out.unstable))
 
-        # Calculate how many lines fit in the live window
         available_height = self._console.height - 2
-
-        # Determine which lines overflow and need to be printed to scrollback
         total_lines = len(unstable_lines)
-        if total_lines > available_height:
-            # Lines that should be in scrollback
-            lines_for_scrollback = total_lines - available_height
 
-            # Print any new lines that weren't already printed
+        if total_lines > available_height:
+            # [Fix 3] The "Hold Back" Logic
+            # We calculate lines allowed in scrollback, but we subtract 1.
+            # This ensures the very bottom line (often a transient border) stays in the
+            # Live window and is not committed to history until more content pushes it up.
+            lines_for_scrollback = max(0, total_lines - available_height - 1)
+
             if lines_for_scrollback > self._lines_printed_to_scrollback:
                 new_lines_to_print = unstable_lines[self._lines_printed_to_scrollback:lines_for_scrollback]
-                self._live.console.print(rich.text.Text.from_ansi('\n'.join(new_lines_to_print)))
+
+                # [Fix 2] Ensure no_wrap=True is used here to prevent auto-wrap from
+                # creating "phantom" lines that desync our line counts.
+                self._live.console.print(rich.text.Text.from_ansi('\n'.join(new_lines_to_print), no_wrap=True))
+
                 self._lines_printed_to_scrollback = lines_for_scrollback
 
-            # Show only the bottom portion in the live window
             visible_lines = unstable_lines[-available_height:]
 
         else:
             visible_lines = unstable_lines
 
-        # Update the live display
         self._live.update(rich.text.Text.from_ansi('\n'.join(visible_lines)))
