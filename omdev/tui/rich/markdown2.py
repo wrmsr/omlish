@@ -130,6 +130,8 @@ class NaiveMarkdownLiveStream(MarkdownLiveStream):
 
 
 class IncrementalMarkdownLiveStream(MarkdownLiveStream):
+    # @omlish-llm-author "gemini-3-pro"
+
     def __init__(
             self,
             *,
@@ -190,6 +192,8 @@ class IncrementalMarkdownLiveStream(MarkdownLiveStream):
 
 
 class SteppedIncrementalMarkdownLiveStream(MarkdownLiveStream):
+    # @omlish-llm-author "gemini-3-pro"
+
     def __init__(
             self,
             *,
@@ -262,3 +266,122 @@ class SteppedIncrementalMarkdownLiveStream(MarkdownLiveStream):
         # at the bottom.
         visible_lines = unstable_lines[self._lines_printed_to_scrollback:]
         self._live.update(rich.text.Text.from_ansi('\n'.join(visible_lines)))
+
+
+##
+
+
+class ClaudeIncrementalMarkdownLiveStream(MarkdownLiveStream):
+    # @omlish-llm-author "claude-opus-4-5"
+
+    def __init__(
+            self,
+            *,
+            parser: ta.Optional['md.MarkdownIt'] = None,
+            console: ta.Optional['rich.console.Console'] = None,
+    ) -> None:
+        super().__init__(
+            parser=parser,
+            console=console,
+        )
+
+        from ...markdown.incparse import ClaudeIncrementalMarkdownParser  # noqa
+        self._inc_parser = ClaudeIncrementalMarkdownParser(parser=self._parser)
+        self._last_unstable_line_count = 0
+
+    def _enter_contexts(self) -> None:
+        super()._enter_contexts()
+
+        # Override to configure Live with explicit vertical overflow handling
+        self._live = self._enter_context(rich.live.Live(
+            rich.text.Text(''),
+            console=self._console,
+            refresh_per_second=10,
+            vertical_overflow='crop',
+        ))
+
+    def feed(self, s: str) -> None:
+        ip_out = self._inc_parser.feed2(s)
+
+        if ip_out.new_stable:
+            # Stop live display to commit stable content cleanly
+            self._live.stop()
+
+            # Render and print stable content to true scrollback
+            stable_lines = self._console_render(markdown_from_tokens(ip_out.new_stable))
+            for line in stable_lines:
+                self._console.print(rich.text.Text.from_ansi(line), highlight=False)
+
+            # Reset tracking state since we're starting fresh with new unstable content
+            self._last_unstable_line_count = 0
+            self._lines_printed_to_scrollback = 0
+
+            # Restart live display
+            self._live.start()
+
+        # Render current unstable content
+        unstable_lines = self._console_render(markdown_from_tokens(ip_out.unstable))
+        current_line_count = len(unstable_lines)
+
+        # Calculate available display height
+        available_height = self._console.height - 2
+
+        # Handle content that exceeds available height. Key insight: never commit unstable content to scrollback since
+        # it may change.
+        if current_line_count > available_height:
+            # Only show the bottom portion that fits
+            visible_lines = unstable_lines[-available_height:]
+        else:
+            visible_lines = unstable_lines
+
+        # Handle shrinking content: if we had more lines before and now have fewer, we need to ensure the live region is
+        # properly cleared.
+        if current_line_count < self._last_unstable_line_count:
+            # Pad with empty lines to prevent artifacts from previous longer content. This ensures the live region fully
+            # overwrites its previous state.
+            lines_to_clear = min(
+                self._last_unstable_line_count - current_line_count,
+                available_height - len(visible_lines),
+            )
+            if lines_to_clear > 0:
+                visible_lines = visible_lines + [''] * lines_to_clear
+
+        self._last_unstable_line_count = current_line_count
+
+        # Update the live display
+        display_text = '\n'.join(visible_lines)
+        self._live.update(rich.text.Text.from_ansi(display_text))
+
+
+class GptIncrementalMarkdownLiveStream(MarkdownLiveStream):
+    # @omlish-llm-author "gpt-5.2"
+
+    def __init__(
+            self,
+            *,
+            parser: ta.Optional['md.MarkdownIt'] = None,
+            console: ta.Optional['rich.console.Console'] = None,
+    ) -> None:
+        super().__init__(
+            parser=parser,
+            console=console,
+        )
+
+        from ...markdown.incparse import GptIncrementalMarkdownParser  # noqa
+        self._inc_parser = GptIncrementalMarkdownParser(parser=self._parser)
+
+    def feed(self, s: str) -> None:
+        ip_out = self._inc_parser.feed2(s)
+
+        # Permanently commit only content the parser marked as stable. This avoids *all* "scrollback delta accounting"
+        # and the associated duplication/gap bugs when the rendered tail shrinks / reflows / reinterprets (streaming
+        # markdown is non-monotonic).
+        if ip_out.new_stable:
+            # Print stable renderables directly through Rich (avoid ANSI round-tripping / splitlines). Use end="" so we
+            # don't inject extra blank lines beyond what the markdown renderable produces.
+            self._live.console.print(markdown_from_tokens(ip_out.new_stable), end='')
+
+        # Show the remaining (unstable) tail in the live region. We intentionally do *not* try to "spill overflow of
+        # unstable to scrollback", since those lines are not provably stable and may retroactively change; printing them
+        # would violate correctness.
+        self._live.update(markdown_from_tokens(ip_out.unstable))

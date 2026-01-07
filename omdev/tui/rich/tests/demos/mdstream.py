@@ -23,6 +23,8 @@ def _main() -> None:
     ls: markdown2.MarkdownLiveStream
     if args.incremental:
         ls = markdown2.IncrementalMarkdownLiveStream()
+        # ls = markdown2.ClaudeIncrementalMarkdownLiveStream()
+        # ls = markdown2.GptIncrementalMarkdownLiveStream()
     else:
         ls = markdown2.NaiveMarkdownLiveStream()
 

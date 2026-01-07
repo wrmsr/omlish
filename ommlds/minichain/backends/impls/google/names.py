@@ -16,6 +16,12 @@ from ...strings.manifests import BackendStringsManifest
 MODEL_NAMES = ModelNameCollection(
     default='gemini',
     aliases={
+        'gemini-3-pro-preview': None,
+        'gemini-3-pro': 'gemini-3-pro-preview',
+
+        'gemini-3-flash-preview': None,
+        'gemini-3-flash': 'gemini-3-flash-preview',
+
         'gemini-2.5-pro': None,
         'gemini-2.5-flash': None,
         'gemini-2.5-flash-lite': None,

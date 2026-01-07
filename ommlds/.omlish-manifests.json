@@ -44,9 +44,9 @@
         "model_names": {
           "default": "claude",
           "aliases": {
-            "claude-opus-4-1-20250805": null,
-            "claude-opus-4-1": "claude-opus-4-1-20250805",
-            "claude-opus": "claude-opus-4-1",
+            "claude-opus-4-5-20251101": null,
+            "claude-opus-4-5": "claude-opus-4-5-20251101",
+            "claude-opus": "claude-opus-4-5",
             "claude-sonnet-4-5-20250929": null,
             "claude-sonnet-4-5": "claude-sonnet-4-5-20250929",
             "claude-sonnet": "claude-sonnet-4-5",
@@ -210,7 +210,7 @@
     "module": ".minichain.backends.impls.google.names",
     "attr": "_BACKEND_STRINGS_MANIFEST",
     "file": "ommlds/minichain/backends/impls/google/names.py",
-    "line": 32,
+    "line": 38,
     "value": {
       "!.minichain.backends.strings.manifests.BackendStringsManifest": {
         "service_cls_names": [
@@ -221,6 +221,10 @@
         "model_names": {
           "default": "gemini",
           "aliases": {
+            "gemini-3-pro-preview": null,
+            "gemini-3-pro": "gemini-3-pro-preview",
+            "gemini-3-flash-preview": null,
+            "gemini-3-flash": "gemini-3-flash-preview",
             "gemini-2.5-pro": null,
             "gemini-2.5-flash": null,
             "gemini-2.5-flash-lite": null,
