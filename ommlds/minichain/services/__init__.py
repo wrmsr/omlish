@@ -84,6 +84,12 @@ Regarding type variance:
    - Code that calls a ChatService and is given a ChatResponse must be prepared to handle (usually by simply ignoring)
      outputs not necessarily produced by a base ChatService.
 
+Finally, in addition to a value and either options or outputs, a Request and Response each also contain a collection of
+metadata. Very much unlike the Options and Outputs, the elements of these collections are simply of the types
+`RequestMetadata | CommonMetadata` and `ResponseMetadata | CommonMetadata`, and are not otherwise parameterized. These
+are intended for looser inputs and outputs: a generic unique id, timestamps, metrics, etc., and in general should
+neither affect the behavior of services nor be depended upon by callers.
+
 Below is a representative illustration of these types and their relationships. Note how:
  - There is no subclassing of Request, Response, or Service - just type aliasing.
  - There is no deep, shared subclassing of Option or Output.
