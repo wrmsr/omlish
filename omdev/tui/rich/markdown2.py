@@ -168,16 +168,16 @@ class IncrementalMarkdownLiveStream(MarkdownLiveStream):
 
         if total_lines > available_height:
             # [Fix 3] The "Hold Back" Logic
-            # We calculate lines allowed in scrollback, but we subtract 1.
-            # This ensures the very bottom line (often a transient border) stays in the
-            # Live window and is not committed to history until more content pushes it up.
+            # We calculate lines allowed in scrollback, but we subtract 1. This ensures the very bottom line (often a
+            # transient border) stays in the Live window and is not committed to history until more content pushes it
+            # up.
             lines_for_scrollback = max(0, total_lines - available_height - 1)
 
             if lines_for_scrollback > self._lines_printed_to_scrollback:
                 new_lines_to_print = unstable_lines[self._lines_printed_to_scrollback:lines_for_scrollback]
 
-                # [Fix 2] Ensure no_wrap=True is used here to prevent auto-wrap from
-                # creating "phantom" lines that desync our line counts.
+                # [Fix 2] Ensure no_wrap=True is used here to prevent auto-wrap from creating "phantom" lines that
+                # desync our line counts.
                 self._live.console.print(rich.text.Text.from_ansi('\n'.join(new_lines_to_print), no_wrap=True))
 
                 self._lines_printed_to_scrollback = lines_for_scrollback
