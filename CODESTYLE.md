@@ -55,7 +55,7 @@
     - `rich` (outside of `textual`). Use `omlish.term`, or simple inline escape codes, or just output plain text.
     - `loguru` / `logbook` / `structlog`. Use `omlish.logs` or just stdlib `logging`.
     - `json5`. Use `omlish.formats.json5`.
-    - Various specs: `jsonrpc`, `jsonschema`, `openapi`, `mcp`. internal implementations exist.
+    - Various specs: `jsonrpc`, `jsonschema`, `openapi`, `mcp`. Internal implementations exist.
     - Web frameworks: `flask`, `fastapi`, `starlette`, etc. Equivalent internal patterns exist.
 
 
@@ -302,6 +302,9 @@
   - In general prefer to write native extensions in C++.
   - Use the C++ standard library liberally, but not 'excessively' lol. Write more 'C-style' code when interfacing with
     CPython.
+  - C/C++ extensions should have `// @omlish-cext` as their first line, and will thereafter be automatically built and
+    packaged by existing codebase machinery.
+  - C/C++ extensions should be kept to a single, self-contained source file - do write new header files.
   - C++ source files use the `.cc` extension, and C++ header files use the `.hh` extension.
   - Native extensions *must* use PEP-489 style multi-phase extension initialization (`PyModuleDef_Init`).
   - Modules should mark themselves `Py_MOD_GIL_NOT_USED` and `Py_MOD_MULTIPLE_INTERPRETERS_SUPPORTED` as applicable.
