@@ -20,13 +20,13 @@ def _main() -> None:
     # from .....markdown.tokens import token_repr, flatten_tokens
     # print('\n'.join(map(token_repr, flatten_tokens(configure_markdown_parser().parse(src)))) + '\n')
 
-    ls_cls: type[markdown2.MarkdownLiveStream]
+    ls: markdown2.MarkdownLiveStream
     if args.incremental:
-        ls_cls = markdown2.IncrementalMarkdownLiveStream
+        ls = markdown2.IncrementalMarkdownLiveStream()
     else:
-        ls_cls = markdown2.NaiveMarkdownLiveStream
+        ls = markdown2.NaiveMarkdownLiveStream()
 
-    with ls_cls() as ls:
+    with ls as ls:
         for c in src:
             ls.feed(c)
             time.sleep(.002)
