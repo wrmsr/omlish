@@ -1,3 +1,7 @@
+"""
+TODO:
+ - -> omdev.specs.lsp
+"""
 import dataclasses as dc
 import functools
 import json

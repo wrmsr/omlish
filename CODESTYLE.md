@@ -1,8 +1,76 @@
 - Environment
   - Target cpython 3.13 - use the modern language and library features it includes.
     - \[**lite**\] The exception is 'lite' code, which targets python 3.8.
+    - As a reminder, non-\[**lite**\] core is referred to as 'standard' code.
   - Code should run on modern macOS and Linux - Windows support is not necessary, but still prefer things like
-    `os.path.join` to `'/'.join` where reasonable.
+    `os.path.join` over `'/'.join` where reasonable.
+
+Dependencies
+  - Outside of a few specific subpackages (and test code), there are no external dependencies of any kind to rely on.
+    Use the standard library liberally, use `omlish` for everything else.
+  - All external runtime dependencies are optional, and generally fit into the following categories:
+    - Cryptography: `cryptography`. Its use is optional.
+    - File formats: `orjson`, `pyyaml`, `cbor2`, `lxml`, `cloudpickle`, etc. Wherever possible, they serve only as
+      accelerators and their will not block functionality - code should strive to have internal fallbacks that prefer
+      correctness to speed.
+    - Text formats: `jinja2`, `markdown-it-py`, etc. Particularly in LLM stuff the full versions of these are
+      unavoidable, but simplified internal 'equivalents' exist for simpler usecases.
+    - Compression algorithms: `lz4`, `zstandard`, `python-snappy`, `brotli`, etc. These generally have no internal
+      fallback if not present in the standard library, but are usually optional at runtime in practice.
+    - Database drivers: `pg8000`, `psycopg`, `psycopg2`, `mysql-connecteor-python`, `mysqlclient`, `pymysql`,
+      `snowflake-connector-python`, `duckdb`, etc. These also generally have no internal fallback.
+    - Large *~m~a~t~h~* libraries: `numpy`, `torch`, `mlx`, `tinygrad`, `transformers`, `llama-cpp-python`,
+      `tokenizers`, etc. These tend to have gigantic interface surface areas compared to the previous categories, and
+      all interaction them is heavily quarantined to a single isolated package per dependency. Outside of these isolated
+      packages they absolutely cannot be assumed to be present.
+    - `textual`, specifically - it is the sole chosen TUI library. Almost all terminal functionality is usable without
+      it - it only powers a small number of specific, larger TUI apps.
+    - Async backends: `trio`, `anyio`, `trio-asyncio`. Except in specific situations (such as under `textual`) async
+      code is not assumed to be running under asyncio, and in general async code should use anyio.
+      - **NOTE:** this is in flux.
+    - The 'hyper stack' for production web serving: `h11`, `h2`, `wsproto`. There are simpler inernal http servers for
+      local and development use.
+    - Unique, focused, irreproducible, core utility libraries: `executing` / `asttokens`, `greenlet`, `wrapt`.  In
+      general 'core' utility libraries are either avoided, replaced with an equivalent internal implementation, or in
+      small cases (often for \[**lite**\] code) vendored (preserving licenses, copyrights, and attribution) such as in
+      parts of `omdev.packaging`. However, there is a small number of libraries that do things I have absolutely no
+      interest in attempting or maintaining myself, such as those listed here. As with all other deps these are strictly
+      optional, and fallbacks exist wherever possible.
+    - `httpx` specifically. It is **NOT** required - various internal async http client options exist. It is however an
+      optional integration.
+    - Various other optional backends: `psutil`, `mwparserfromhell`, `regex`, `ddgs`, `tree-sitter`, etc.
+  - Notably absent from this list:
+    - `pydantic`. Use dataclasses.
+    - `click`. Use argparse.
+    - Any 'web client' library: `boto3`, `google-api-python-client`, `openai`, `anthropic`, etc. These are not used,
+      even optionally, in the codebase. All interaction with such api's is done with internal clients, usually via
+      dataclasses.
+      - Note: references to boto exist in code but only for code generation and cross-validation testing. Boto is not
+        used for production aws interaction.
+    - `gitpython`, `docker`, etc. Drive their cli's through a subprocess or talk to the api through the socket.
+    - `rich` (outside of `textual`). Use `omlish.term`, or simple inline escape codes, or just output plain text.
+    - `loguru` / `logbook` / `structlog`. Use `omlish.logs` or just stdlib `logging`.
+    - `json5`. Use `omlish.formats.json5`.
+    - Various specs: `jsonrpc`, `jsonschema`, `openapi`, `mcp`. internal implementations exist.
+    - Web frameworks: `flask`, `fastapi`, `starlette`, etc. Equivalent internal patterns exist.
+
+- Structure
+  - In general, strongly prefer clusters of small source files to a single or small number of large ones - a few hundred
+    lines of code is a good target maximum, and there is no minimum.
+    - Our code is 'type-heavy', and small modules defining nothing but interrelated stateless structures are welcome.
+  - While not necessarily the case, organize packages as if it were to be managed by a guice-style dependency injector,
+    with package-level injector modules that each refer to their child packages' injector modules and so on.
+  - With the exception of root packages (`om*` directories), (relatively) deep package nesting is preferred over large
+    flat packages with many, less tightly related modules.
+  - Structurally quarantine all interaction with any external dependencies.
+    - For small, simple integrations, it may be done within a single module as an optional implementation of an
+      interface (or simple function conforming to a signature)
+    - For intermediate integrations, prefer a separate module dedicated to that integration.
+    - For large, complex integrations, prefer a more root-level package for that integration, whose internal structure
+      mirrors that of the core code it's being integrated with.
+  - In general the structure should mirror a 'Clean' or 'Hexagonal' architecture:
+    > Source code dependencies can only point inwards. Nothing in an inner circle can know anything at all about
+      something in an outer circle.
 
 - Naming
   - Module names should be nouns (usually plural or gerunds), not verbs, so as to not clash with function names. A
@@ -25,19 +93,27 @@
   - Use the following import aliases for the following modules if they are used:
     - `import dataclasses as dc`
     - `import typing as ta`
-  - For standard and external libraries, strongly prefer to import a module or package, rather than importing specific
-    items from it. So for example, use `import typing as ta; fn: ta.Callable ...` as opposed to
+  - For *package-internal* imports, almost always import specific items rather than whole modules or packages.
+    - Here, 'package-internal' is loosely defined as the layer which 'external' users of the code will treat as the
+      'public' interface.
+  - For other imports, strongly prefer to import a module or package, rather than importing specific items from it. So
+    for example, use `import typing as ta; fn: ta.Callable ...` as opposed to
     `from typing import Callable; fn: Callable ...`, and `import dataclasses as dc; @dc.dataclass() ...` as opposed to
     `from dataclasses import dataclass; @dataclass() ...`.
   - Unless instructed or unavoidable, prefer to use only the standard library and the current existing codebase.
     - Notable exceptions include:
       - anyio - In general async code should write to anyio rather than asyncio (or trio) unless it is specifically
         being written for a particular backend.
+        - **NOTE:** this is in flux.
       - pytest - Write tests in pytest-style, and assume it is available.
     - \[**lite**\] 'lite' code can have no external dependencies of any kind, and can only reference other 'lite' code.
       - Lite async code uses only asyncio, and only uses functionality available in python 3.8.
       - Lite tests are written with the unittest package.
-  - Avoid `pathlib` - use `os.path` instead.
+  - Unless forced to for external interoperability, avoid `pathlib` - use `os.path` instead.
+  - For heavy or optional imports, **ALWAYS** import whole modules, **not** individual module contents. For example, use
+    `import torch; t = torch.Tensor(...` rather than `from torch import Tensor; t = Tensor(...`.
+    - Rationale: we have a lazy import mechanism that operates at the module level. Do not attempt to manually
+      late-import such libraries, just import them as regular modules.
 
 - Modules
   - Avoid global state in general. Constants are however fine.
@@ -61,29 +137,63 @@
     statements in the method.
   - Prefer to use dataclasses for even moderately complex usecases - if there are, say, more than a 2-element tuple, a
     dataclass should probably be used.
-  - `ta.NamedTuple` still has usecases, such as replacing a function's return type from an anonymous tuple to a named
-    one (to allow it to be destructured by callers as before), but in general almost always prefer dataclasses.
-  - Don't be shy about creating new classes with methods to reduce the number of arguments being passed around to
-    related functions, even if the class is considered implementation detail and not part of any public api.
-  - For any necessary global state, consider encapsulating it in a class, even if it's only a singleton.
-  - Prefer stateless classes, taking dependencies as constructor arguments and not mutating them once set, and passing
-    around and returning dataclasses for intermediate data.
-  - While not necessarily the case, write code as if it were to be injected by a guice-style dependency injector.
+  - `ta.NamedTuple` still has limited usecases, such as replacing a function's return type from an anonymous tuple to a
+    named one (to allow it to be destructured by callers as before), or as a cache key, but in general almost always
+    prefer dataclasses.
+  - If a number of related functions are passing around a growing number of the common args/kwargs, don't be shy about
+    refactoring them into methods on a common class with shared immutable and mutable state - if the class is considered
+    private implementation detail and not part of any public api.
+  - For any necessary global state involving multiple interrelated variables, consider encapsulating it in a class, even
+    if it's only a private singleton.
+  - If appropriate, lean towards stateless classes, taking dependencies as constructor arguments and not mutating them
+    once set, and passing around and returning dataclasses for intermediate data. If however significant mutable shared
+    state is involved just use regular private class fields.
+    - Such dependencies should not be exposed publicly for other code to lazily piggyback off of: avoid transitive
+      dependencies.
+  - While not necessarily the case, write code as if it were to be managed by a constructor-injecting guice-style
+    dependency injector.
+    - Ideally, classes have their functional dependencies as ctor kwargs, and if possible these have sensible defaults.
+    - In such cases, prefer to have a kwarg default value for primitives and immutable values, otherwise prefer an
+      ` | None = None` kwarg and instantiate the default value in the ctor if necessary.
+  - Strongly prefer composition over inheritance.
   - Prefer relatively fine-grained dependency decomposition.
-  - For situations in which different behaviors are necessary, prefer to define an `abc.ABC` interface with
+  - **STRONGLY** avoid giant, monolithic classes containing _eVeRyThInG_ anyone will ever need. Avoid classes like
+    `AppContext` and `AppConfig` each having large number of fields, *even if* those fields are arbitrarily deeply
+    nested within otherwise well-typed child objects.
+  - For situations in which different behaviors are necessary, prefer to define an interface or abstract class with
     `@abc.abstractmethod` members, and write multiple implementations of them as warranted. Prefer to refer to the
     interface in type annotations unless it must specifically refer to a given implementation.
-  - Abstract methods should always do nothing but `raise NotImplementedError`.
-  - Properties should be free of side-effects. Many utilities eagerly inspect properties at runtime, even private
-    (underscore-prefixed) ones, so they cannot alter state.
+  - Protocols are to be used sparingly where they make sense. In general, nominal typing is a good thing - it is
+    desirable that not all functions that return an `int` are `UserIdProvider`'s.
+  - An abstract class with nothing but abstract (or constant) members is referred to as an interface. In general, prefer
+    pure interfaces as opposed to full abstract classes containing partial implementations at package public interface
+    boundaries.
+  - Do not use `abc.ABC` - in standard code use `lang.Abstract` and in lite code use `omlish.lite.abstract.Abstract`.
+    - Rationale: `abc.ABCMeta` adds extreme overhead to `isinstance` / `issubclass` checks (6x) in order to support
+      virtual base classes, which are almost never needed or desirable.
+  - Abstract methods should always do nothing but `raise NotImplementedError` - but they *must* do that.
+  - Properties should be free of side-effects.
+    - Rationale: Many utilities eagerly inspect properties at runtime, even private (underscore-prefixed) ones, so they
+      cannot alter state.
+  - Outside of rare, specific instances, **DO NOT** expose mutable internal class state.
+    - Keep all mutable state private as single-underscore-prefixed fields.
+    - As necessary for usage, expose internal state via methods or `@property`'s. For such cases do one of the
+      following:
+      - Type-annotate the return type as immutable. For example, a property exposing an internal `list[int]` would be
+        annotated as returning a `ta.Sequence[int]`, and a `dict[int, str]` would be annotated as returning a
+        `ta.Mapping[int, str]`.
+      - Return a defensive copy of the internal state. For example, a property returning an internal `list[int]` would
+        return a copy of the internal list.
 
 - Dataclasses
   - Do not use bare, un-called `@dc.dataclass` as a decorator - always use `@dc.dataclass()` even if it is given no
     arguments.
-  - Prefer frozen dataclasses.
+  - **Strongly** prefer frozen dataclasses.
+  - In standard code, prefer to `from omlish import dataclasses as dc` - not the standard library `dataclasses` module.
+    The interface and behavior is the same.
 
 - Exceptions
-  - Never use the `assert` statement anywhere but test code - rather, check a condition and raise an `Exception` if
+  - **Never** use the `assert` statement anywhere but test code - rather, check a condition and raise an `Exception` if
     necessary.
     - Prefer to use the 'check' system (`from omlish import check`, or `from omlish.lite.check import check` for lite
       code) where `assert` would otherwise be used.
