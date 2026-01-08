@@ -457,10 +457,6 @@ with _lang.auto_proxy_init(
         new_stream_response,
     )
 
-    from .stream.wrap import (  # noqa
-        WrappedStreamService,
-    )
-
     ##
 
     from .tools.execution.catalog import (  # noqa
@@ -599,6 +595,44 @@ with _lang.auto_proxy_init(
     from .vectors.types import (  # noqa
         Vector,
         Vectorable,
+    )
+
+    ##
+
+    from .wrappers.retry import (  # noqa
+        AnyRetryService,
+
+        RetryServiceMaxRetriesExceededError,
+        RetryServiceOutput,
+
+        RetryService,
+
+        RetryStreamService,
+    )
+
+    from .wrappers.services import (  # noqa
+        WrappedRequestV,
+        WrappedOptionT,
+        WrappedResponseV,
+        WrappedOutputT,
+        WrappedRequest,
+        WrappedResponse,
+        WrappedService,
+
+        WrapperService,
+        MultiWrapperService,
+
+        wrap_service,
+    )
+
+    from .wrappers.stream import (  # noqa
+        WrappedStreamOutputT,
+        WrappedStreamOptions,
+        WrappedStreamRequest,
+        WrappedStreamResponse,
+        WrappedStreamService,
+
+        WrapperStreamService,
     )
 
     ##

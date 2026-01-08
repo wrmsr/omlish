@@ -1,6 +1,6 @@
 """
 TODO:
- - final sream outputs
+ - final stream outputs
 """
 import datetime
 import typing as ta

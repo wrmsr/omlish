@@ -9,7 +9,7 @@ TODO:
   - failed during stream
    - buffer and replay??
   - accept death mid-stream?
-  - ** probably **: cannot sanely impose any nontrivial stream retry strat at this layer
+  - ** probably **: cannot sanely impose any nontrivial stream retry strat at this layer -
 """
 import typing as ta
 
