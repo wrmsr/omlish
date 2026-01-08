@@ -245,6 +245,18 @@ precheck: venv
 	${PYTHON} -m omdev.precheck check ${SRCS}
 
 
+## Build
+
+# FIXME: pyproject lol
+.PHONY: build-cext
+build-cext: venv
+	for d in $$(find .pkg -name '*-cext' -maxdepth 1 | sort) ; do \
+		echo ; \
+		echo "$$d" ; \
+		(cd "$$d" && ../../python setup.py build_ext --inplace) || exit 1 ; \
+	done
+
+
 ## pre-commit
 
 # FIXME: update .git/hooks/pre-commit to use *just* git-ish omdev.precheck's
