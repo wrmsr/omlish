@@ -1,3 +1,8 @@
+# ruff: noqa: UP007
+"""
+TODO:
+ - cext _init_typed_values_collection
+"""
 import typing as ta
 
 from .. import check
@@ -19,12 +24,111 @@ UniqueTypedValueT = ta.TypeVar('UniqueTypedValueT', bound='UniqueTypedValue')
 
 
 @dc.dataclass()
-class DuplicateUniqueTypedValueError(Exception, ta.Generic[UniqueTypedValueT]):
-    cls: type[UniqueTypedValueT]
-    new: UniqueTypedValueT
-    old: UniqueTypedValueT
+class DuplicateUniqueTypedValueError(Exception):
+    cls: type
+    new: TypedValue
+    old: TypedValue
 
 
+def _init_typed_values_collection(
+        *tvs: TypedValueT,
+        override: bool = False,
+        check_type: type | tuple[type, ...] | None = None,
+) -> tuple[
+    tuple[TypedValueT, ...],
+    dict[type[TypedValueT], TypedValueT | tuple[TypedValueT, ...]],
+    dict[type[TypedValueT], TypedValueT | tuple[TypedValueT, ...]],
+]:
+    if not tvs:
+        return ((), {}, {})
+
+    # Either a non-unique TypedValue or a tuple of the form (unique_tv_cls, tv, unique_lst, idx_in_unique_lst). Notably,
+    # this intermediate list has the 'opposite' form of the returned collections: where the output dicts have a scalar
+    # tv for unique types and a sequence of tv's for non-unique types, this has scalar values for non-unique types and a
+    # tuple (heterogeneous, however) for unique types.
+    tmp_lst: list[ta.Union[
+        TypedValueT,
+        tuple[
+            type,
+            TypedValueT,
+            list[TypedValueT],
+            int,
+        ],
+    ]] = []
+
+    # When override is False duplicate unique values raises early. When override is True, however, last-in-wins. This
+    # could probably rely on dict insertion order preservation and just overwrite in-place, but it's intentionally done
+    # explicitly: preservation of tv ordering in all aspects is crucial, and retention of some intermediates eases
+    # debugging and error reporting.
+    unique_dct: dict[type, list[TypedValueT]] = {}
+
+    for tv in tvs:
+        if check_type is not None:
+            if not isinstance(tv, check_type):
+                raise TypeError(tv)
+
+        if isinstance(tv, UniqueTypedValue):
+            unique_tv_cls = tv._unique_typed_value_cls  # noqa
+
+            if not override:
+                try:
+                    exu = unique_dct[unique_tv_cls]
+                except KeyError:
+                    pass
+                else:
+                    raise DuplicateUniqueTypedValueError(unique_tv_cls, tv, exu[0])
+
+            unique_lst = unique_dct.setdefault(unique_tv_cls, [])
+            unique_lst.append(tv)
+
+            tmp_lst.append((unique_tv_cls, tv, unique_lst, len(unique_lst)))
+
+        elif isinstance(tv, TypedValue):
+            tmp_lst.append(tv)
+
+        else:
+            raise TypeError(tv)
+
+    # The output list with input order preserved and absent of overridden uniques.
+    lst: list[TypedValueT] = []
+
+    # This dict has the expected form: scalar tv's for unique types, and an accumulating list for non-unique types.
+    tmp_dct: dict[type, TypedValueT | list[TypedValueT]] = {}
+
+    for obj in tmp_lst:
+        # Unique type
+        if isinstance(obj, tuple):
+            unique_tv_cls, tv, unique_lst, idx = obj
+
+            # Last-in-wins
+            if idx == len(unique_lst):
+                lst.append(tv)
+                tmp_dct[unique_tv_cls] = tv
+
+        else:
+            tv = obj
+            lst.append(tv)
+            tmp_dct.setdefault(type(tv), []).append(tv)  # type: ignore[union-attr]
+
+    # This is the 'canonical' output dict: scalar tv's for unique types keyed by their unique type, and homogenous
+    # tuples of tv's keyed by their instance type for non-unique types.
+    dct: dict[type, TypedValueT | tuple[TypedValueT, ...]] = {
+        k: tuple(v) if isinstance(v, list) else v
+        for k, v in tmp_dct.items()
+    }
+
+    # This is the secondary output dict: the contents of previous dict in addition to entries of unique tv's keyed by
+    # their instance type. Notably, for unique tv's in which their unique type *is* their instance type (which is
+    # perfectly fine) this will squash together duplicate (k, v) pairs, which is also perfectly fine.
+    dct2: dict[type, TypedValueT | tuple[TypedValueT, ...]] = {
+        **dct,
+        **{type(v): v for v in dct.values() if isinstance(v, UniqueTypedValue)},
+    }
+
+    return (tuple(lst), dct, dct2)
+
+
+@ta.final
 class TypedValues(
     TypedValuesAccessor[TypedValueT],
     lang.Final,
@@ -36,62 +140,16 @@ class TypedValues(
             override: bool = False,
             check_type: type | tuple[type, ...] | None = None,
     ) -> None:
-        super().__init__()
+        self._tup, self._dct, self._dct2 = _init_typed_values_collection(*tvs, override=override, check_type=check_type)  # noqa
 
-        if tvs:
-            tmp: list = []
-            udct: dict = {}
-            for tv in tvs:
-                if check_type is not None:
-                    check.isinstance(tv, check_type)
-                if isinstance(tv, UniqueTypedValue):
-                    utvc = tv._unique_typed_value_cls  # noqa
-                    if not override:
-                        try:
-                            exu = udct[utvc]
-                        except KeyError:
-                            pass
-                        else:
-                            raise DuplicateUniqueTypedValueError(utvc, tv, check.single(exu))
-                    ulst = udct.setdefault(utvc, [])
-                    ulst.append(tv)
-                    tmp.append((utvc, tv, ulst, len(ulst)))
-                elif isinstance(tv, TypedValue):
-                    tmp.append(tv)
-                else:
-                    raise TypeError(tv)
+    _tup: tuple[TypedValueT, ...]
 
-            lst: list = []
-            dct: dict = {}
-            for obj in tmp:
-                if isinstance(obj, tuple):
-                    utvc, tv, ulst, idx = obj
-                    if idx == len(ulst):
-                        lst.append(tv)
-                        dct[utvc] = tv
-                else:
-                    tv = obj
-                    lst.append(tv)
-                    dct.setdefault(type(tv), []).append(tv)
+    # For non unique types, a map from tv instance type to a tuple of instances of that type. For unique tv types, a map
+    # from tv unique type to the tv for that unique tv type.
+    _dct: dict[type[TypedValueT], TypedValueT | tuple[TypedValueT, ...]]
 
-            tup = tuple(lst)
-            dct = {
-                k: tuple(v) if isinstance(v, list) else v
-                for k, v in dct.items()
-            }
-            dct2 = {
-                **dct,
-                **{type(v): v for v in dct.values() if isinstance(v, UniqueTypedValue)},
-            }
-
-        else:
-            tup = ()
-            dct = {}
-            dct2 = {}
-
-        self._tup: tuple[TypedValueT, ...] = tup
-        self._dct: dict[type[TypedValueT], TypedValueT | tuple[TypedValueT, ...]] = dct
-        self._dct2: dict[type[TypedValueT], TypedValueT | tuple[TypedValueT, ...]] = dct2
+    # The contents of the previous dict in addition to entries from unique tv's keyed by their instance type.
+    _dct2: dict[type[TypedValueT], TypedValueT | tuple[TypedValueT, ...]]
 
     #
 

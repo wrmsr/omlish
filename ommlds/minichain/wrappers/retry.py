@@ -9,12 +9,14 @@ TODO:
   - failed during stream
    - buffer and replay??
   - accept death mid-stream?
+  - ** probably **: cannot sanely impose any nontrivial stream retry strat at this layer
+   - conn dies mid-stream caller may have to rollback a txn, remove ui elements, etc
 """
 import typing as ta
 
 from omlish import dataclasses as dc
 
-from ..resources import UseResources
+from ..resources import Resources
 from ..stream.services import StreamResponseSink
 from ..stream.services import new_stream_response
 from ..types import Output
@@ -130,8 +132,7 @@ class RetryStreamService(
 
         while True:
             try:
-                # FIXME: NO - new resources always, only tack on to outbound on success
-                async with UseResources.or_new(request.options) as rs:
+                async with Resources.new() as rs:
                     in_resp = await self._service.invoke(request)
                     in_vs = await rs.enter_async_context(in_resp.v)
 
@@ -141,16 +142,21 @@ class RetryStreamService(
 
                         return in_vs.outputs
 
+                    outs = [
+                        *in_resp.outputs,
+                        RetryServiceOutput(
+                            retry_service=self,
+                            num_retries=n,
+                        ),
+                    ]
+
+                    # FIXME: ??
+                    # if (ur := tv.as_collection(request.options).get(UseResources)) is not None:
+
                     return await new_stream_response(
                         rs,
                         inner,
-                        [
-                            *in_resp.outputs,
-                            RetryServiceOutput(
-                                retry_service=self,
-                                num_retries=n,
-                            ),
-                        ],
+                        outs,
                     )
 
             except Exception as e:  # noqa

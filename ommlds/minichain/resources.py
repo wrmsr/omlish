@@ -33,6 +33,10 @@ class ResourcesRefNotRegisteredError(Exception):
 
 @ta.final
 class Resources(lang.Final, lang.NotPicklable):
+    """
+    Essentially a reference-tracked AsyncContextManager.
+    """
+
     def __init__(
             self,
             *,
@@ -80,10 +84,14 @@ class Resources(lang.Final, lang.NotPicklable):
         @contextlib.asynccontextmanager
         async def inner():
             init_ref = Resources._InitRef()
+
             res = Resources(init_ref=init_ref, **kwargs)
+
             await res.init()
+
             try:
                 yield res
+
             finally:
                 await res.remove_ref(init_ref)
 
@@ -94,6 +102,7 @@ class Resources(lang.Final, lang.NotPicklable):
     def add_ref(self, ref: ResourcesRef) -> None:
         check.isinstance(ref, ResourcesRef)
         check.state(not self._closed)
+
         self._refs.add(ref)
 
     def has_ref(self, ref: ResourcesRef) -> bool:
@@ -101,10 +110,13 @@ class Resources(lang.Final, lang.NotPicklable):
 
     async def remove_ref(self, ref: ResourcesRef) -> None:
         check.isinstance(ref, ResourcesRef)
+
         try:
             self._refs.remove(ref)
+
         except KeyError:
             raise ResourcesRefNotRegisteredError(ref) from None
+
         if not self._no_autoclose and not self._refs:
             await self.aclose()
 
@@ -112,10 +124,12 @@ class Resources(lang.Final, lang.NotPicklable):
 
     def enter_context(self, cm: ta.ContextManager[T]) -> T:
         check.state(not self._closed)
+
         return self._aes.enter_context(cm)
 
     async def enter_async_context(self, cm: ta.AsyncContextManager[T]) -> T:
         check.state(not self._closed)
+
         return await self._aes.enter_async_context(cm)
 
     #
@@ -150,7 +164,11 @@ class Resources(lang.Final, lang.NotPicklable):
 class ResourceManaged(ResourcesRef, lang.Final, lang.NotPicklable, ta.Generic[T]):
     """
     A class to 'handoff' a ref to a `Resources`, allowing the `Resources` to temporarily survive being passed from
-    instantiation within a callee to being `__aenter__`'d in the caller.
+    instantiation within a callee.
+
+    This class wraps an arbitrary value, likely an object referencing resources managed by the `Resources`, which is
+    accessed by `__aenter__`'ing. However, as the point of this class is handoff of a `Resources`, not necessarily some
+    arbitrary value, the value needn't necessarily be related to the `Resources`, or may even be `None`.
 
     The ref to the `Resources` is allocated in the ctor, so the contract is that an instance of this must be immediately
     `__aenter__`'d before doing anything else with the return value of the call. Failure to do so leaks the `Resources`.
@@ -172,11 +190,13 @@ class ResourceManaged(ResourcesRef, lang.Final, lang.NotPicklable, ta.Generic[T]
     async def __aenter__(self) -> T:
         check.state(self.__state == 'new')
         self.__state = 'entered'
+
         return self.__v
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         check.state(self.__state == 'entered')
         self.__state = 'exited'
+
         await self.__resources.remove_ref(self)
 
     def __del__(self) -> None:
@@ -203,6 +223,7 @@ class UseResources(tv.UniqueScalarTypedValue[Resources], ResourcesOption, lang.F
         if (ur := tv.as_collection(options).get(UseResources)) is not None:
             async with ResourceManaged(ur.v, ur.v) as rs:
                 yield rs
+
         else:
             async with Resources.new() as rs:
                 yield rs

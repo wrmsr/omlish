@@ -22,6 +22,12 @@ _UNIQUE_BASES: set[type[TypedValue]] = set()
 
 
 class UniqueTypedValue(TypedValue, lang.Abstract):
+    """
+    Inheritance of this abstract class forms the root / key of a family of mutually exclusive TypedValues.
+
+    The immediately inheriting class may or not be Abstract or Final.
+    """
+
     _unique_typed_value_cls: ta.ClassVar[type[TypedValue]]
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
