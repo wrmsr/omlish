@@ -8,35 +8,31 @@ from omlish.http import all as http
 from omlish.http import sse
 from omlish.io.buffers import DelimitingBuffer
 
-from .....backends.anthropic.protocol import types as pt
-from .....backends.anthropic.protocol.sse.events import AnthropicSseDecoderEvents
-from ....chat.choices.services import ChatChoicesOutputs
-from ....chat.choices.stream.services import ChatChoicesStreamRequest
-from ....chat.choices.stream.services import ChatChoicesStreamResponse
-from ....chat.choices.stream.services import static_check_is_chat_choices_stream_service
-from ....chat.choices.stream.types import AiChoiceDeltas
-from ....chat.choices.stream.types import AiChoicesDeltas
-from ....chat.stream.types import ContentAiDelta
-from ....chat.stream.types import PartialToolUseAiDelta
-from ....chat.tools.types import Tool
-from ....configs import Config
-from ....resources import UseResources
-from ....standard import ApiKey
-from ....stream.services import StreamResponseSink
-from ....stream.services import new_stream_response
-from .chat import AnthropicChatChoicesService
-from .names import MODEL_NAMES
-from .protocol import build_protocol_chat_messages
-from .protocol import build_protocol_tool
+from ommlds.backends.anthropic.protocol import types as pt
+from ommlds.backends.anthropic.protocol.sse.events import AnthropicSseDecoderEvents
+from ommlds.minichain.chat.choices.services import ChatChoicesOutputs
+from ommlds.minichain.chat.choices.stream.services import ChatChoicesStreamRequest
+from ommlds.minichain.chat.choices.stream.services import ChatChoicesStreamResponse
+from ommlds.minichain.chat.choices.stream.services import static_check_is_chat_choices_stream_service
+from ommlds.minichain.chat.choices.stream.types import AiChoiceDeltas
+from ommlds.minichain.chat.choices.stream.types import AiChoicesDeltas
+from ommlds.minichain.chat.stream.types import ContentAiDelta
+from ommlds.minichain.chat.stream.types import PartialToolUseAiDelta
+from ommlds.minichain.chat.tools.types import Tool
+from ommlds.minichain.configs import Config
+from ommlds.minichain.resources import UseResources
+from ommlds.minichain.standard import ApiKey
+from ommlds.minichain.stream.services import StreamResponseSink
+from ommlds.minichain.stream.services import new_stream_response
+from ommlds.minichain.backends.impls.anthropic.chat import AnthropicChatChoicesService
+from ommlds.minichain.backends.impls.anthropic.names import MODEL_NAMES
+from ommlds.minichain.backends.impls.anthropic.protocol import build_protocol_chat_messages
+from ommlds.minichain.backends.impls.anthropic.protocol import build_protocol_tool
 
 
 ##
 
 
-# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
-#     name='anthropic',
-#     type='ChatChoicesStreamService',
-# )
 @static_check_is_chat_choices_stream_service
 class AnthropicChatChoicesStreamService:
     def __init__(

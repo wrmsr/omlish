@@ -12,25 +12,25 @@ from omlish.http import all as http
 from omlish.http import sse
 from omlish.io.buffers import DelimitingBuffer
 
-from .....backends.openai import protocol as pt
-from ....chat.choices.services import ChatChoicesOutputs
-from ....chat.choices.stream.services import ChatChoicesStreamRequest
-from ....chat.choices.stream.services import ChatChoicesStreamResponse
-from ....chat.choices.stream.services import static_check_is_chat_choices_stream_service
-from ....chat.choices.stream.types import AiChoiceDeltas
-from ....chat.choices.stream.types import AiChoicesDeltas
-from ....chat.choices.stream.types import ChatChoicesStreamOption
-from ....configs import Config
-from ....resources import ResourcesOption
-from ....resources import UseResources
-from ....standard import ApiKey
-from ....stream.services import StreamOption
-from ....stream.services import StreamResponseSink
-from ....stream.services import new_stream_response
-from .chat import OpenaiChatChoicesService
-from .format import OpenaiChatRequestHandler
-from .format import build_mc_ai_delta
-from .names import CHAT_MODEL_NAMES
+from ommlds.backends.openai import protocol as pt
+from ommlds.minichain.chat.choices.services import ChatChoicesOutputs
+from ommlds.minichain.chat.choices.stream.services import ChatChoicesStreamRequest
+from ommlds.minichain.chat.choices.stream.services import ChatChoicesStreamResponse
+from ommlds.minichain.chat.choices.stream.services import static_check_is_chat_choices_stream_service
+from ommlds.minichain.chat.choices.stream.types import AiChoiceDeltas
+from ommlds.minichain.chat.choices.stream.types import AiChoicesDeltas
+from ommlds.minichain.chat.choices.stream.types import ChatChoicesStreamOption
+from ommlds.minichain.configs import Config
+from ommlds.minichain.resources import ResourcesOption
+from ommlds.minichain.resources import UseResources
+from ommlds.minichain.standard import ApiKey
+from ommlds.minichain.stream.services import StreamOption
+from ommlds.minichain.stream.services import StreamResponseSink
+from ommlds.minichain.stream.services import new_stream_response
+from ommlds.minichain.backends.impls.openai.chat import OpenaiChatChoicesService
+from ommlds.minichain.backends.impls.openai.format import OpenaiChatRequestHandler
+from ommlds.minichain.backends.impls.openai.format import build_mc_ai_delta
+from ommlds.minichain.backends.impls.openai.names import CHAT_MODEL_NAMES
 
 
 ##
@@ -42,10 +42,6 @@ class OpenaiChatChoicesStreamServiceError(Exception):
     data: ta.Any | None = None
 
 
-# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
-#     name='openai',
-#     type='ChatChoicesStreamService',
-# )
 @static_check_is_chat_choices_stream_service
 class OpenaiChatChoicesStreamService:
     def __init__(

@@ -8,34 +8,31 @@ from omlish.http import all as http
 from omlish.http import sse
 from omlish.io.buffers import DelimitingBuffer
 
-from .....backends.cerebras import protocol as pt
-from ....chat.choices.services import ChatChoicesOutputs
-from ....chat.choices.stream.services import ChatChoicesStreamRequest
-from ....chat.choices.stream.services import ChatChoicesStreamResponse
-from ....chat.choices.stream.services import static_check_is_chat_choices_stream_service
-from ....chat.choices.stream.types import AiChoicesDeltas
-from ....chat.tools.types import Tool
-from ....configs import Config
-from ....resources import UseResources
-from ....standard import ApiKey
-from ....stream.services import StreamResponseSink
-from ....stream.services import new_stream_response
-from .chat import CerebrasChatChoicesService
-from .names import MODEL_NAMES
-from .protocol import build_cer_request_messages
-from .protocol import build_cer_request_tool
-from .protocol import build_mc_ai_choice_deltas
+from ommlds.backends.groq import protocol as pt
+from ommlds.backends.groq.clients import REQUIRED_HTTP_HEADERS
+from ommlds.minichain.chat.choices.services import ChatChoicesOutputs
+from ommlds.minichain.chat.choices.stream.services import ChatChoicesStreamRequest
+from ommlds.minichain.chat.choices.stream.services import ChatChoicesStreamResponse
+from ommlds.minichain.chat.choices.stream.services import static_check_is_chat_choices_stream_service
+from ommlds.minichain.chat.choices.stream.types import AiChoicesDeltas
+from ommlds.minichain.chat.tools.types import Tool
+from ommlds.minichain.configs import Config
+from ommlds.minichain.resources import UseResources
+from ommlds.minichain.standard import ApiKey
+from ommlds.minichain.stream.services import StreamResponseSink
+from ommlds.minichain.stream.services import new_stream_response
+from ommlds.minichain.backends.impls.groq.chat import GroqChatChoicesService
+from ommlds.minichain.backends.impls.groq.names import MODEL_NAMES
+from ommlds.minichain.backends.impls.groq.protocol import build_gq_request_messages
+from ommlds.minichain.backends.impls.groq.protocol import build_gq_request_tool
+from ommlds.minichain.backends.impls.groq.protocol import build_mc_ai_choice_deltas
 
 
 ##
 
 
-# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
-#     name='cerebras',
-#     type='ChatChoicesStreamService',
-# )
 @static_check_is_chat_choices_stream_service
-class CerebrasChatChoicesStreamService:
+class GroqChatChoicesStreamService:
     def __init__(
             self,
             *configs: Config,
@@ -46,8 +43,8 @@ class CerebrasChatChoicesStreamService:
         self._http_client = http_client
 
         with tv.consume(*configs) as cc:
-            self._model_name = cc.pop(CerebrasChatChoicesService.DEFAULT_MODEL_NAME)
-            self._api_key = ApiKey.pop_secret(cc, env='CEREBRAS_API_KEY')
+            self._model_name = cc.pop(GroqChatChoicesService.DEFAULT_MODEL_NAME)
+            self._api_key = ApiKey.pop_secret(cc, env='GROQ_API_KEY')
 
     READ_CHUNK_SIZE: ta.ClassVar[int] = -1
 
@@ -56,22 +53,23 @@ class CerebrasChatChoicesStreamService:
         with tv.TypedValues(*request.options).consume() as oc:
             t: Tool
             for t in oc.pop(Tool, []):
-                tools.append(build_cer_request_tool(t))
+                tools.append(build_gq_request_tool(t))
 
-        cer_request = pt.ChatCompletionRequest(
-            messages=build_cer_request_messages(request.v),
+        gq_request = pt.ChatCompletionRequest(
+            messages=build_gq_request_messages(request.v),
             model=MODEL_NAMES.resolve(self._model_name.v),
             tools=tools or None,
             stream=True,
         )
 
-        raw_request = msh.marshal(cer_request)
+        raw_request = msh.marshal(gq_request)
 
         http_request = http.HttpRequest(
-            'https://api.cerebras.ai/v1/chat/completions',
+            'https://api.groq.com/openai/v1/chat/completions',
             headers={
                 http.consts.HEADER_CONTENT_TYPE: http.consts.CONTENT_TYPE_JSON,
                 http.consts.HEADER_AUTH: http.consts.format_bearer_auth_header(check.not_none(self._api_key).reveal()),
+                **REQUIRED_HTTP_HEADERS,
             },
             data=json.dumps(raw_request).encode('utf-8'),
         )

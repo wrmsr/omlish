@@ -34,37 +34,25 @@ from omlish.formats import json
 from omlish.http import all as http
 from omlish.io.buffers import DelimitingBuffer
 
-from .....backends.ollama import protocol as pt
-from ....chat.choices.services import ChatChoicesOutputs
-from ....chat.choices.services import ChatChoicesRequest
-from ....chat.choices.services import ChatChoicesResponse
-from ....chat.choices.services import static_check_is_chat_choices_service
-from ....chat.choices.stream.services import ChatChoicesStreamRequest
-from ....chat.choices.stream.services import ChatChoicesStreamResponse
-from ....chat.choices.stream.services import static_check_is_chat_choices_stream_service
-from ....chat.choices.stream.types import AiChoicesDeltas
-from ....chat.tools.types import Tool
-from ....models.configs import ModelName
-from ....resources import UseResources
-from ....standard import ApiUrl
-from ....stream.services import StreamResponseSink
-from ....stream.services import new_stream_response
-from .protocol import build_mc_ai_choice_deltas
-from .protocol import build_mc_choices_response
-from .protocol import build_ol_request_messages
-from .protocol import build_ol_request_tool
-
-
-##
-
-
-# @omlish-manifest $.minichain.backends.strings.manifests.BackendStringsManifest(
-#     [
-#         'ChatChoicesService',
-#         'ChatChoicesStreamService',
-#     ],
-#     'ollama',
-# )
+from ommlds.backends.ollama import protocol as pt
+from ommlds.minichain.chat.choices.services import ChatChoicesOutputs
+from ommlds.minichain.chat.choices.services import ChatChoicesRequest
+from ommlds.minichain.chat.choices.services import ChatChoicesResponse
+from ommlds.minichain.chat.choices.services import static_check_is_chat_choices_service
+from ommlds.minichain.chat.choices.stream.services import ChatChoicesStreamRequest
+from ommlds.minichain.chat.choices.stream.services import ChatChoicesStreamResponse
+from ommlds.minichain.chat.choices.stream.services import static_check_is_chat_choices_stream_service
+from ommlds.minichain.chat.choices.stream.types import AiChoicesDeltas
+from ommlds.minichain.chat.tools.types import Tool
+from ommlds.minichain.models.configs import ModelName
+from ommlds.minichain.resources import UseResources
+from ommlds.minichain.standard import ApiUrl
+from ommlds.minichain.stream.services import StreamResponseSink
+from ommlds.minichain.stream.services import new_stream_response
+from ommlds.minichain.backends.impls.ollama.protocol import build_mc_ai_choice_deltas
+from ommlds.minichain.backends.impls.ollama.protocol import build_mc_choices_response
+from ommlds.minichain.backends.impls.ollama.protocol import build_ol_request_messages
+from ommlds.minichain.backends.impls.ollama.protocol import build_ol_request_tool
 
 
 ##
@@ -91,10 +79,6 @@ class BaseOllamaChatChoicesService(lang.Abstract):
 ##
 
 
-# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
-#     name='ollama',
-#     type='ChatChoicesService',
-# )
 @static_check_is_chat_choices_service
 class OllamaChatChoicesService(BaseOllamaChatChoicesService):
     async def invoke(
@@ -134,10 +118,6 @@ class OllamaChatChoicesService(BaseOllamaChatChoicesService):
 ##
 
 
-# @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
-#     name='ollama',
-#     type='ChatChoicesStreamService',
-# )
 @static_check_is_chat_choices_stream_service
 class OllamaChatChoicesStreamService(BaseOllamaChatChoicesService):
     READ_CHUNK_SIZE: ta.ClassVar[int] = -1
