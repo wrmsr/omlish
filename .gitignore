@@ -63,6 +63,7 @@ cython_debug/
 *.dSYM/
 *.dylib
 *.exe
+*.o
 *.out
 *.so
 
