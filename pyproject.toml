@@ -184,6 +184,9 @@ module = [
     'torchvision.*',
     'wikitextparser',
 
+    'llama_cpp',
+    'llama_cpp.*',
+
     'mlx.*',
     'mlx_lm.*',
 

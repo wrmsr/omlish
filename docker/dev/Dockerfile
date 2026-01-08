@@ -2,6 +2,13 @@ FROM ubuntu:24.04
 COPY docker/.timestamp /
 
 
+## locale
+
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
+
+
 ## deps
 
 RUN \
@@ -12,6 +19,10 @@ RUN \
 \
     export DEBIAN_FRONTEND=noninteractive && \
     apt-get update && \
+\
+    apt-get install -y locales && \
+    locale-gen en_US.UTF-8 && \
+\
     apt-get upgrade -y && \
     apt-get install -y apt-utils && \
 \
@@ -69,6 +80,7 @@ RUN \
         pkg-config \
         postgresql-client \
         protobuf-compiler \
+        ripgrep \
         ruby \
         silversearcher-ag \
         socat \
