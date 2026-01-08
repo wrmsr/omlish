@@ -10,7 +10,6 @@ TODO:
    - buffer and replay??
   - accept death mid-stream?
   - ** probably **: cannot sanely impose any nontrivial stream retry strat at this layer
-   - conn dies mid-stream caller may have to rollback a txn, remove ui elements, etc
 """
 import typing as ta
 
