@@ -14,6 +14,9 @@ import typing as ta
 
 from omlish import dataclasses as dc
 
+from ..resources import UseResources
+from ..stream.services import StreamResponseSink
+from ..stream.services import new_stream_response
 from ..types import Output
 from .services import WrappedOptionT
 from .services import WrappedOutputT
@@ -127,7 +130,28 @@ class RetryStreamService(
 
         while True:
             try:
-                resp = await self._service.invoke(request)
+                # FIXME: NO - new resources always, only tack on to outbound on success
+                async with UseResources.or_new(request.options) as rs:
+                    in_resp = await self._service.invoke(request)
+                    in_vs = await rs.enter_async_context(in_resp.v)
+
+                    async def inner(sink: StreamResponseSink[WrappedResponseV]) -> ta.Sequence[WrappedOutputT] | None:
+                        async for v in in_vs:
+                            await sink.emit(v)
+
+                        return in_vs.outputs
+
+                    return await new_stream_response(
+                        rs,
+                        inner,
+                        [
+                            *in_resp.outputs,
+                            RetryServiceOutput(
+                                retry_service=self,
+                                num_retries=n,
+                            ),
+                        ],
+                    )
 
             except Exception as e:  # noqa
                 if n < self._max_retries:
@@ -135,13 +159,3 @@ class RetryStreamService(
                     continue
 
                 raise RetryServiceMaxRetriesExceededError from e
-
-            # FIXME: lol no:
-            #  - async def inner(sink: StreamResponseSink[...]) -> ta.Sequence[...Outputs] | None:
-            #   - async with resp.v as st_resp:
-            return resp.with_outputs(RetryServiceOutput(
-                retry_service=self,
-                num_retries=n,
-            ))
-
-        raise RuntimeError  # unreachable

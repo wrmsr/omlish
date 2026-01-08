@@ -1,3 +1,7 @@
+"""
+TODO:
+ - new_stream_response carry TypeAlias __orig_type__ somehow
+"""
 import abc
 import itertools
 import types
@@ -104,17 +108,23 @@ class _StreamServiceResponse(StreamResponseIterator[V, OutputT]):
             return _StreamServiceResponse._Emit(self._ssr, item)
 
     _state: ta.Literal['new', 'running', 'closed'] = 'new'
+
     _sink: _Sink[V]
-    _a: ta.Any
+
     _cr: ta.Any
+    _a: ta.Any
+    _g: ta.Any
 
     async def __aenter__(self) -> ta.Self:
         check.state(self._state == 'new')
         self._state = 'running'
+
         self._sink = _StreamServiceResponse._Sink(self)
+
         self._cr = self._fn(self._sink)
         self._a = self._cr.__await__()
         self._g = iter(self._a)
+
         return self
 
     @types.coroutine
@@ -123,8 +133,10 @@ class _StreamServiceResponse(StreamResponseIterator[V, OutputT]):
         self._state = 'closed'
         if old_state != 'running':
             return
+
         if self._cr.cr_running or self._cr.cr_suspended:
             cex = StreamServiceCancelledError()
+
             i = None
             for n in itertools.count():
                 try:
@@ -132,13 +144,18 @@ class _StreamServiceResponse(StreamResponseIterator[V, OutputT]):
                         x = self._g.throw(cex)
                     else:
                         x = self._g.send(i)
+
                 except StreamServiceCancelledError as cex2:
                     if cex2 is cex:
                         break
+
                     raise
+
                 i = yield x
+
         if self._cr.cr_running:
             raise RuntimeError(f'Coroutine {self._cr!r} not terminated')
+
         if self._g is not self._a:
             self._g.close()
         self._a.close()
@@ -156,15 +173,18 @@ class _StreamServiceResponse(StreamResponseIterator[V, OutputT]):
     @types.coroutine
     def _anext(self):
         check.state(self._state == 'running')
+
         i = None
         while True:
             try:
                 x = self._g.send(i)
+
             except StopIteration as e:
                 if e.value is not None:
                     self._outputs = tv.TypedValues(*check.isinstance(e.value, ta.Sequence))
                 else:
                     self._outputs = tv.TypedValues()
+
                 raise StopAsyncIteration from None
 
             if isinstance(x, _StreamServiceResponse._Emit) and x.ssr is self:
@@ -200,11 +220,14 @@ async def new_stream_response(
     ssr = _StreamServiceResponse(fn)
 
     v = rs.new_managed(await rs.enter_async_context(ssr))
+
     try:
         return StreamResponse(v, outputs or [])
+
     except BaseException:  # noqa
         # The StreamResponse ctor can raise - for example in `_tv_field_coercer` - in which case we need to clean up the
         # resources ref we have already allocated before reraising.
         async with v:
             pass
+
         raise
