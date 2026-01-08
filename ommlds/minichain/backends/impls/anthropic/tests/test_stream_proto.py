@@ -31,7 +31,7 @@ def test_assemble():
             for l in db.feed(b):
                 if isinstance(l, DelimitingBuffer.Incomplete):
                     # FIXME: handle
-                    return []
+                    raise TypeError(l)
 
                 # FIXME: https://docs.anthropic.com/en/docs/build-with-claude/streaming
                 for so in sd.process_line(l):

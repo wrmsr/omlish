@@ -34,7 +34,7 @@ AnyFirstInWinsService: ta.TypeAlias = ta.Union[
 ##
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass()
 class FirstInWinsServiceCancelledError(Exception):
     e: BaseException
 

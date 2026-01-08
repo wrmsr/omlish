@@ -15,7 +15,7 @@ pytest-xdist==3.8.0
 
 flake8==7.3.0
 flake8-pyproject==1.2.4
-ruff==0.14.10
+ruff==0.14.11
 
 docutils-stubs==0.0.22
 lxml-stubs==0.5.1

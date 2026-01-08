@@ -179,7 +179,7 @@ class OllamaChatChoicesStreamService(BaseOllamaChatChoicesService):
                     for l in db.feed(b):
                         if isinstance(l, DelimitingBuffer.Incomplete):
                             # FIXME: handle
-                            return []
+                            raise TypeError(l)
 
                         lj = json.loads(l.decode('utf-8'))
                         lp: pt.ChatResponse = msh.unmarshal(lj, pt.ChatResponse)

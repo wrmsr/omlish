@@ -179,7 +179,7 @@ class GoogleChatChoicesStreamService:
                     for bl in db.feed(b):
                         if isinstance(bl, DelimitingBuffer.Incomplete):
                             # FIXME: handle
-                            return []
+                            raise TypeError(bl)
 
                         l = bl.decode('utf-8')
                         if not l:

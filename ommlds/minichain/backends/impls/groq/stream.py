@@ -90,7 +90,7 @@ class GroqChatChoicesStreamService:
                     for l in db.feed(b):
                         if isinstance(l, DelimitingBuffer.Incomplete):
                             # FIXME: handle
-                            return []
+                            raise TypeError(l)
 
                         # FIXME: https://platform.openai.com/docs/guides/function-calling?api-mode=responses#streaming
                         for so in sd.process_line(l):

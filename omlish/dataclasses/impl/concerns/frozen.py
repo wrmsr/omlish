@@ -79,6 +79,9 @@ class FrozenGenerator(Generator[FrozenPlan]):
         if not ctx.cs.frozen:
             return None
 
+        if issubclass(ctx.cls, BaseException):
+            raise TypeError('cannot use frozen=True with subclass of BaseException')
+
         return PlanResult(FrozenPlan(
             fields=tuple(f.name for f in ctx.cs.fields),
             allow_dynamic_dunder_attrs=ctx.cs.allow_dynamic_dunder_attrs,

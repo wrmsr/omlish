@@ -4,6 +4,7 @@ https://platform.openai.com/docs/api-reference/responses-streaming
 import typing as ta
 
 from omlish import check
+from omlish import dataclasses as dc
 from omlish import marshal as msh
 from omlish import typedvalues as tv
 from omlish.formats import json
@@ -33,6 +34,12 @@ from .names import CHAT_MODEL_NAMES
 
 
 ##
+
+
+@dc.dataclass()
+class OpenaiChatChoicesStreamServiceError(Exception):
+    status: int
+    data: ta.Any | None = None
 
 
 # @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
@@ -90,18 +97,43 @@ class OpenaiChatChoicesStreamService:
             http_client = await rs.enter_async_context(http.manage_async_client(self._http_client))
             http_response = await rs.enter_async_context(await http_client.stream_request(http_request))
 
+            if http_response.status != 200:
+                data: ta.Any
+                try:
+                    data = await http_response.stream.readall()
+                except Exception as e:  # noqa
+                    data = e
+                try:
+                    data_obj = json.loads(data.decode())
+                except Exception as e:  # noqa
+                    pass
+                else:
+                    data = data_obj
+                raise OpenaiChatChoicesStreamServiceError(http_response.status, data)
+
             async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ta.Sequence[ChatChoicesOutputs]:
                 db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
                 sd = sse.SseDecoder()
+
+                # bs = []
+                # ls = []
+                # sos = []
+
                 while True:
                     b = await http_response.stream.read1(self.READ_CHUNK_SIZE)
+                    # bs.append(b)
+
                     for l in db.feed(b):
+                        # ls.append(l)
+
                         if isinstance(l, DelimitingBuffer.Incomplete):
                             # FIXME: handle
-                            return []
+                            raise TypeError(l)
 
                         # FIXME: https://platform.openai.com/docs/guides/function-calling?api-mode=responses#streaming
                         for so in sd.process_line(l):
+                            # sos.append(so)
+
                             if isinstance(so, sse.SseEvent) and so.type == b'message':
                                 ss = so.data.decode('utf-8')
                                 if ss == '[DONE]':

@@ -3124,23 +3124,22 @@ def _process_dataclass__0f6d91dd6a878d827836d961e4683d55b1c9095a():
 @_register(
     plan_repr=(
         "Plans(tup=(CopyPlan(fields=('command', 'argv', 'help', 'arg_error')), EqPlan(fields=('command', 'argv', 'help'"
-        ", 'arg_error')), FrozenPlan(fields=('command', 'argv', 'help', 'arg_error'), allow_dynamic_dunder_attrs=False)"
-        ", HashPlan(action='add', fields=('command', 'argv', 'help', 'arg_error'), cache=False), InitPlan(fields=(InitP"
-        "lan.Field(name='command', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=Non"
-        "e, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Ini"
-        "tPlan.Field(name='argv', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None"
-        ", init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Init"
-        "Plan.Field(name='help', annotation=OpRef(name='init.fields.2.annotation'), default=None, default_factory=None,"
-        " init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitP"
-        "lan.Field(name='arg_error', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields"
-        ".3.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
-        "idate=None, check_type=None)), self_param='self', std_params=('command', 'argv', 'help', 'arg_error'), kw_only"
-        "_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(R"
-        "eprPlan.Field(name='command', kw_only=False, fn=None), ReprPlan.Field(name='argv', kw_only=False, fn=None), Re"
-        "prPlan.Field(name='help', kw_only=False, fn=None), ReprPlan.Field(name='arg_error', kw_only=False, fn=None)), "
-        "id=False, terse=False, default_fn=None)))"
+        ", 'arg_error')), HashPlan(action='set_none', fields=None, cache=None), InitPlan(fields=(InitPlan.Field(name='c"
+        "ommand', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, ove"
+        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name="
+        "'argv', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init=True, over"
+        "ride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='"
+        "help', annotation=OpRef(name='init.fields.2.annotation'), default=None, default_factory=None, init=True, overr"
+        "ide=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='a"
+        "rg_error', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'), def"
+        "ault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check"
+        "_type=None)), self_param='self', std_params=('command', 'argv', 'help', 'arg_error'), kw_only_params=(), froze"
+        "n=False, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(na"
+        "me='command', kw_only=False, fn=None), ReprPlan.Field(name='argv', kw_only=False, fn=None), ReprPlan.Field(nam"
+        "e='help', kw_only=False, fn=None), ReprPlan.Field(name='arg_error', kw_only=False, fn=None)), id=False, terse="
+        "False, default_fn=None)))"
     ),
-    plan_repr_sha1='02a8469353c0212e2a85695c052b1bb12a809b51',
+    plan_repr_sha1='0843ef2470048b534567b0a1d3bd52e06d96c21b',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
@@ -3152,7 +3151,7 @@ def _process_dataclass__0f6d91dd6a878d827836d961e4683d55b1c9095a():
         ('ommlds.cli.sessions.chat.facades.facade', 'ArgsCommandError'),
     ),
 )
-def _process_dataclass__02a8469353c0212e2a85695c052b1bb12a809b51():
+def _process_dataclass__0843ef2470048b534567b0a1d3bd52e06d96c21b():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -3207,56 +3206,7 @@ def _process_dataclass__02a8469353c0212e2a85695c052b1bb12a809b51():
             raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
         setattr(__dataclass__cls, '__eq__', __eq__)
 
-        __dataclass___setattr_frozen_fields = {
-            'command',
-            'argv',
-            'help',
-            'arg_error',
-        }
-
-        def __setattr__(self, name, value):
-            if (
-                type(self) is __dataclass__cls
-                 or name in __dataclass___setattr_frozen_fields
-            ):
-                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
-            super(__dataclass__cls, self).__setattr__(name, value)
-
-        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
-        if '__setattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__setattr__', __setattr__)
-
-        __dataclass___delattr_frozen_fields = {
-            'command',
-            'argv',
-            'help',
-            'arg_error',
-        }
-
-        def __delattr__(self, name):
-            if (
-                type(self) is __dataclass__cls
-                 or name in __dataclass___delattr_frozen_fields
-            ):
-                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
-            super(__dataclass__cls, self).__delattr__(name)
-
-        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
-        if '__delattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__delattr__', __delattr__)
-
-        def __hash__(self):
-            return hash((
-                self.command,
-                self.argv,
-                self.help,
-                self.arg_error,
-            ))
-
-        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
-        setattr(__dataclass__cls, '__hash__', __hash__)
+        setattr(__dataclass__cls, '__hash__', None)
 
         def __init__(
             self,
@@ -3265,10 +3215,10 @@ def _process_dataclass__02a8469353c0212e2a85695c052b1bb12a809b51():
             help: __dataclass__init__fields__2__annotation,
             arg_error: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
         ) -> __dataclass__None:
-            __dataclass__object_setattr(self, 'command', command)
-            __dataclass__object_setattr(self, 'argv', argv)
-            __dataclass__object_setattr(self, 'help', help)
-            __dataclass__object_setattr(self, 'arg_error', arg_error)
+            self.command = command
+            self.argv = argv
+            self.help = help
+            self.arg_error = arg_error
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:

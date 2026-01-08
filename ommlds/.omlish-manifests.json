@@ -93,7 +93,7 @@
     "module": ".minichain.backends.impls.cerebras.names",
     "attr": "_BACKEND_STRINGS_MANIFEST",
     "file": "ommlds/minichain/backends/impls/cerebras/names.py",
-    "line": 22,
+    "line": 37,
     "value": {
       "!.minichain.backends.strings.manifests.BackendStringsManifest": {
         "service_cls_names": [
@@ -106,8 +106,15 @@
           "aliases": {
             "llama3.1-8b": null,
             "llama-3.3-70b": null,
+            "llama3": "llama-3.3-70b",
             "gpt-oss-120b": null,
-            "qwen-3-32b": null
+            "gpt-oss": "gpt-oss-120b",
+            "qwen-3-32b": null,
+            "qwen3": "qwen-3-32b",
+            "qwen-3-235b-a22b-instruct-2507": null,
+            "qwen-3-235b": "qwen-3-235b-a22b-instruct-2507",
+            "zai-glm-4.7": null,
+            "glm": "zai-glm-4.7"
           }
         }
       }
@@ -640,7 +647,7 @@
     "module": ".minichain.backends.impls.openai.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/openai/stream.py",
-    "line": 38,
+    "line": 45,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.openai.stream",

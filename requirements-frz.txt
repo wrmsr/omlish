@@ -250,7 +250,7 @@ rfc3987-syntax==1.1.0
 rich==14.2.0
 rpds-py==0.30.0
 rsa==4.9.1
-ruff==0.14.10
+ruff==0.14.11
 s3transfer==0.16.0
 safetensors==0.7.0
 scikit-image==0.26.0

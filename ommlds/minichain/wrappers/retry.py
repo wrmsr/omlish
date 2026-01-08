@@ -1,9 +1,11 @@
 """
 TODO:
  - tenacity shit
-  - exception filter
+  - exception filter - retryable vs not
+   - explicit RetryableError wrapper?
   - sleep
    - jitter
+ - log, on retry / on except callbacks, blah blah
  - stream retry:
   - failed to open
   - failed during stream
@@ -42,7 +44,7 @@ AnyRetryService: ta.TypeAlias = ta.Union[
 ##
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass()
 class RetryServiceMaxRetriesExceededError(Exception):
     pass
 

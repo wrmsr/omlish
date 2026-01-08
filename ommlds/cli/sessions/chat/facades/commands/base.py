@@ -13,7 +13,7 @@ class CommandError(Exception):
     pass
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass()
 class ArgsCommandError(CommandError):
     command: 'Command'
     argv: ta.Sequence[str]
