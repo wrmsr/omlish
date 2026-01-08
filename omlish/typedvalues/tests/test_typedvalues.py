@@ -75,7 +75,7 @@ def test_typed_values():
     foo_tool = ToolSpec('foo', [], desc='foo')
     bar_tool = ToolSpec('bar', [], desc='bar')
 
-    assert list(TypedValues(
+    assert list(TypedValues[GenerativeOption | ChatOption](
         TopK(5),
         TEXT_RESPONSE_FORMAT,
         Tool(foo_tool),
@@ -85,7 +85,7 @@ def test_typed_values():
         Tool(foo_tool),
     ]
 
-    assert list(TypedValues(
+    assert list(TypedValues[GenerativeOption | ChatOption](
         TopK(5),
         Tool(bar_tool),
         TEXT_RESPONSE_FORMAT,
@@ -97,21 +97,18 @@ def test_typed_values():
         Tool(foo_tool),
     ]
 
-    try:
-        TypedValues(
+    with pytest.raises(DuplicateUniqueTypedValueError) as e:
+        TypedValues[GenerativeOption | ChatOption](
             TEXT_RESPONSE_FORMAT,
             JSON_RESPONSE_FORMAT,
         )
-    except DuplicateUniqueTypedValueError as e:
-        assert e == DuplicateUniqueTypedValueError(  # noqa
-            ResponseFormat,
-            JSON_RESPONSE_FORMAT,
-            TEXT_RESPONSE_FORMAT,  # noqa
-        )
-    else:
-        raise Exception('Did not raise!')  # noqa
+    assert e.value == DuplicateUniqueTypedValueError(  # noqa
+        ResponseFormat,
+        JSON_RESPONSE_FORMAT,
+        TEXT_RESPONSE_FORMAT,  # noqa
+    )
 
-    assert list(opts := TypedValues(
+    assert list(opts := TypedValues[GenerativeOption | ChatOption](
         TopK(5),
         TEXT_RESPONSE_FORMAT,
         Tool(foo_tool),

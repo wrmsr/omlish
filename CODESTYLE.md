@@ -32,7 +32,7 @@
     - Async backends: `trio`, `anyio`, `trio-asyncio`. Except in specific situations (such as under `textual`) async
       code is not assumed to be running under asyncio, and in general async code should use anyio.
       - **NOTE:** this is in flux.
-    - The 'hyper stack' for production web serving: `h11`, `h2`, `wsproto`. There are simpler inernal http servers for
+    - The 'hyper stack' for production web serving: `h11`, `h2`, `wsproto`. There are simpler internal http servers for
       local and development use.
     - Unique, focused, irreproducible, core utility libraries: `executing` / `asttokens`, `greenlet`, `wrapt`.  In
       general 'core' utility libraries are either avoided, replaced with an equivalent internal implementation, or in
