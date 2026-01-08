@@ -91,6 +91,26 @@ def bind_backends(cfg: BackendConfig = BackendConfig()) -> inj.Elements:
         else:
             lst.append(bp_stack.push_bind(to_ctor=bp_impl, singleton=True))
 
+        if bp_iface is _types.ChatChoicesServiceBackendProvider:
+            rt_key: inj.Key = inj.Key(_meta.RetryBackendProvider, tag=bp_iface)
+            lst.extend([
+                inj.private(
+                    inj.bind(_types.BackendProvider, to_key=bp_stack.top),
+                    inj.bind(rt_key, to_ctor=_meta.RetryBackendProvider, singleton=True, expose=True),
+                ),
+                bp_stack.push_bind(to_key=rt_key),
+            ])
+
+        elif bp_iface is _types.ChatChoicesStreamServiceBackendProvider:
+            rts_key: inj.Key = inj.Key(_meta.RetryStreamBackendProvider, tag=bp_iface)
+            lst.extend([
+                inj.private(
+                    inj.bind(_types.BackendProvider, to_key=bp_stack.top),
+                    inj.bind(rts_key, to_ctor=_meta.RetryStreamBackendProvider, singleton=True, expose=True),
+                ),
+                bp_stack.push_bind(to_key=rts_key),
+            ])
+
         lst.append(inj.bind(bp_iface, to_key=bp_stack.top))
 
     #
