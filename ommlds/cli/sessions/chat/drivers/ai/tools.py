@@ -24,17 +24,13 @@ class ToolExecutingAiChatGenerator(AiChatGenerator):
         while True:
             new = await self._wrapped.get_next_ai_messages([*chat, *out])
 
-            out.extend(new)
-
             cont = False
 
             for msg in new:
+                out.append(msg)
+
                 if isinstance(msg, mc.ToolUseMessage):
-                    trm = await self._executor.execute_tool_use(
-                        msg.tu,
-                        # fs_tool_context,
-                        # todo_tool_context,  # noqa
-                    )
+                    trm = await self._executor.execute_tool_use(msg.tu)
 
                     out.append(trm)
 

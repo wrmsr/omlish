@@ -2,6 +2,8 @@
 
   - Target cpython 3.13 - use the modern language and library features it includes.
     - \[**lite**\] The exception is 'lite' code, which targets python 3.8.
+    - **A module is declared as being lite by having a `# @omlish-lite` comment at the top of it, or at the top of any
+      `__init__` module in its or any ancestor's package.**
     - As a reminder, non-\[**lite**\] core is referred to as 'standard' code.
   - Code should run on modern macOS and Linux - Windows support is not necessary, but still prefer things like
     `os.path.join` over `'/'.join` where reasonable.

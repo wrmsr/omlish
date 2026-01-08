@@ -145,6 +145,7 @@ def build_mc_ai_delta(delta: pt.ChatCompletionChunkChoiceDelta) -> AiDelta:
         )
 
     else:
+        # FIXME: no
         return ContentAiDelta('')
 
 
