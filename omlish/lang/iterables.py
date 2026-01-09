@@ -26,6 +26,12 @@ def consume(it: ta.Iterable[ta.Any]) -> None:
     collections.deque(it, maxlen=0)
 
 
+def opt_list(it: ta.Iterable[T] | None) -> list[T] | None:
+    if it is None:
+        return None
+    return list(it)
+
+
 def peek(vs: ta.Iterable[T]) -> tuple[T, ta.Iterator[T]]:
     it = iter(vs)
     v = next(it)

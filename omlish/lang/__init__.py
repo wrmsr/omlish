@@ -341,6 +341,7 @@ with _auto_proxy_init(globals(), update_exports=True):
         ilen,
         take,
         consume,
+        opt_list,
         peek,
         chunk,
         interleave,
