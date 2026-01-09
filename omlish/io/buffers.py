@@ -190,16 +190,18 @@ class ReadableListBuffer:
         super().__init__()
 
         self._lst: list[bytes] = []
+        self._len = 0
 
     def __bool__(self) -> ta.NoReturn:
         raise TypeError("Use 'buf is not None' or 'len(buf)'.")
 
     def __len__(self) -> int:
-        return sum(map(len, self._lst))
+        return self._len
 
     def feed(self, d: bytes) -> None:
         if d:
             self._lst.append(d)
+            self._len += len(d)
 
     def _chop(self, i: int, e: int) -> bytes:
         lst = self._lst
@@ -215,6 +217,8 @@ class ReadableListBuffer:
             *lst[i + 1:],
         ]
 
+        self._len -= len(o)
+
         return o
 
     def read(self, n: ta.Optional[int] = None) -> ta.Optional[bytes]:
@@ -224,6 +228,7 @@ class ReadableListBuffer:
 
             o = b''.join(self._lst)
             self._lst = []
+            self._len = 0
             return o
 
         if not (lst := self._lst):
@@ -293,7 +298,12 @@ class ReadableListBuffer:
                 if not (b := self._raw.read1(n)):
                     break
                 self._buf.feed(b)
-            return self._buf.read(n) or b''
+
+            if len(self._buf) >= n:
+                return self._buf.read(n) or b''
+
+            # EOF with a partial buffer: return what we have.
+            return self._buf.read() or b''
 
         def readall(self) -> bytes:
             buf = io.BytesIO()
@@ -343,7 +353,12 @@ class ReadableListBuffer:
                 if not (b := await self._raw.read1(n)):
                     break
                 self._buf.feed(b)
-            return self._buf.read(n) or b''
+
+            if len(self._buf) >= n:
+                return self._buf.read(n) or b''
+
+            # EOF with a partial buffer: return what we have.
+            return self._buf.read() or b''
 
         async def readall(self) -> bytes:
             buf = io.BytesIO()
@@ -396,16 +411,28 @@ class IncrementalWriteBuffer:
 
         t = 0
         for i, d in enumerate(lst):  # noqa
-            n = fn(check.not_empty(d))
+            d = check.not_empty(d)
+            n = fn(d)
             if not n:
                 break
+
+            if n > len(d):
+                raise ValueError(n)
+
             t += n
 
+            if n < len(d):
+                # Short write - keep the remainder of this chunk and stop.
+                self._lst = [
+                    d[n:],
+                    *lst[i + 1:],
+                ]
+                self._pos += t
+                return t
+
         if t:
-            self._lst = [
-                *([d[n:]] if n < len(d) else []),
-                *lst[i + 1:],
-            ]
+            # Only fully-written chunks were consumed.
+            self._lst = lst[i + 1:]
             self._pos += t
 
         return t
