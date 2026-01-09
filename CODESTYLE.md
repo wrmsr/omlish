@@ -251,6 +251,12 @@
     - Continue to declare `ta.TypeVar`'s explicitly at the top of the module.
     - Continue to declare type aliases as global variables (whose own type is annotated as `ta.TypeAlias`). For example,
       do `IntList: ta.TypeAlias = list[int]`, not `type IntList = list[int]`.
+      - Note that in \[**lite**\] code, there is no `ta.TypeAlias` yet (as it was added in 3.10). In lite code, suffix
+        the line with `# ta.TypeAlias`. Additionally, type aliases in lite code **must be kept on a single line**. This
+        restriction does not apply to standard code.
+      - Rationale: lite code is written to be 'amalgamated' - stitched together into a single python file - in which
+        case type aliases are relocated to the top of the file **and globally deduplicated**. As such each line of type
+        alias must be self-contained.
     - Rationale: the `type` statement produces radically different and incompatible reflective behavior at runtime, and
       in general tools still struggle with the new syntax.
 
