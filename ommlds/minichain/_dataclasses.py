@@ -9177,33 +9177,43 @@ def _process_dataclass__78434834a42584e4ebc7f4ae0b50787fc65e4c8e():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('status', 'data')), EqPlan(fields=('status', 'data')), HashPlan(action='set_none',"
-        " fields=None, cache=None), InitPlan(fields=(InitPlan.Field(name='status', annotation=OpRef(name='init.fields.0"
-        ".annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, c"
-        "oerce=None, validate=None, check_type=None), InitPlan.Field(name='data', annotation=OpRef(name='init.fields.1."
-        "annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False, fi"
-        "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=('st"
-        "atus', 'data'), kw_only_params=(), frozen=False, slots=False, post_init_params=None, init_fns=(), validate_fns"
-        "=()), ReprPlan(fields=(ReprPlan.Field(name='status', kw_only=False, fn=None), ReprPlan.Field(name='data', kw_o"
-        "nly=False, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('response', 'data', 'data_exception')), EqPlan(fields=('response', 'data', 'data_e"
+        "xception')), HashPlan(action='set_none', fields=None, cache=None), InitPlan(fields=(InitPlan.Field(name='respo"
+        "nse', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, overri"
+        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='da"
+        "ta', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_f"
+        "actory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type="
+        "None), InitPlan.Field(name='data_exception', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef("
+        "name='init.fields.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE,"
+        " coerce=None, validate=None, check_type=None)), self_param='self', std_params=('response', 'data', 'data_excep"
+        "tion'), kw_only_params=(), frozen=False, slots=False, post_init_params=None, init_fns=(), validate_fns=()), Re"
+        "prPlan(fields=(ReprPlan.Field(name='response', kw_only=False, fn=None), ReprPlan.Field(name='data', kw_only=Fa"
+        "lse, fn=None), ReprPlan.Field(name='data_exception', kw_only=False, fn=None)), id=False, terse=False, default_"
+        "fn=OpRef(name='repr.default_fn'))))"
     ),
-    plan_repr_sha1='413d6ce08934686bb49634229b1fa2a779ae3321',
+    plan_repr_sha1='535cd2aec43091a1f5d8815bce63d1da3e34fe10',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.openai.stream', 'OpenaiChatChoicesStreamServiceError'),
+        ('ommlds.minichain.backends.impls.openai.stream', 'HttpStreamResponseError'),
     ),
 )
-def _process_dataclass__413d6ce08934686bb49634229b1fa2a779ae3321():
+def _process_dataclass__535cd2aec43091a1f5d8815bce63d1da3e34fe10():
     def _process_dataclass(
         *,
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
+        __dataclass__init__fields__2__annotation,
+        __dataclass__init__fields__2__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -9222,8 +9232,9 @@ def _process_dataclass__413d6ce08934686bb49634229b1fa2a779ae3321():
             if self.__class__ is not __dataclass__cls:
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
-                status=self.status,
+                response=self.response,
                 data=self.data,
+                data_exception=self.data_exception,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -9237,8 +9248,9 @@ def _process_dataclass__413d6ce08934686bb49634229b1fa2a779ae3321():
             if self.__class__ is not other.__class__:
                 return NotImplemented
             return (
-                self.status == other.status and
-                self.data == other.data
+                self.response == other.response and
+                self.data == other.data and
+                self.data_exception == other.data_exception
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -9250,11 +9262,13 @@ def _process_dataclass__413d6ce08934686bb49634229b1fa2a779ae3321():
 
         def __init__(
             self,
-            status: __dataclass__init__fields__0__annotation,
+            response: __dataclass__init__fields__0__annotation,
             data: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
+            data_exception: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
         ) -> __dataclass__None:
-            self.status = status
+            self.response = response
             self.data = data
+            self.data_exception = data_exception
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -9264,8 +9278,12 @@ def _process_dataclass__413d6ce08934686bb49634229b1fa2a779ae3321():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"status={self.status!r}")
-            parts.append(f"data={self.data!r}")
+            if (s := __dataclass__repr__default_fn(self.response)) is not None:
+                parts.append(f"response={s}")
+            if (s := __dataclass__repr__default_fn(self.data)) is not None:
+                parts.append(f"data={s}")
+            if (s := __dataclass__repr__default_fn(self.data_exception)) is not None:
+                parts.append(f"data_exception={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -16891,129 +16909,6 @@ def _process_dataclass__41479800d543a13021d10abebe38c460252c0c73():
         def __repr__(self):
             parts = []
             parts.append(f"child={self.child!r}")
-            return (
-                f"{self.__class__.__qualname__}("
-                f"{', '.join(parts)}"
-                f")"
-            )
-
-        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
-        if '__repr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__repr__', __repr__)
-
-    return _process_dataclass
-
-
-@_register(
-    plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('response', 'data', 'data_exception')), EqPlan(fields=('response', 'data', 'data_e"
-        "xception')), HashPlan(action='set_none', fields=None, cache=None), InitPlan(fields=(InitPlan.Field(name='respo"
-        "nse', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, overri"
-        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='da"
-        "ta', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_f"
-        "actory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type="
-        "None), InitPlan.Field(name='data_exception', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef("
-        "name='init.fields.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE,"
-        " coerce=None, validate=None, check_type=None)), self_param='self', std_params=('response', 'data', 'data_excep"
-        "tion'), kw_only_params=(), frozen=False, slots=False, post_init_params=None, init_fns=(), validate_fns=()), Re"
-        "prPlan(fields=(ReprPlan.Field(name='response', kw_only=False, fn=None), ReprPlan.Field(name='data', kw_only=Fa"
-        "lse, fn=None), ReprPlan.Field(name='data_exception', kw_only=False, fn=None)), id=False, terse=False, default_"
-        "fn=OpRef(name='repr.default_fn'))))"
-    ),
-    plan_repr_sha1='535cd2aec43091a1f5d8815bce63d1da3e34fe10',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__repr__default_fn',
-    ),
-    cls_names=(
-        ('ommlds.minichain.http.stream', 'HttpStreamResponseError'),
-    ),
-)
-def _process_dataclass__535cd2aec43091a1f5d8815bce63d1da3e34fe10():
-    def _process_dataclass(
-        *,
-        __dataclass__cls,
-        __dataclass__init__fields__0__annotation,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
-        __dataclass__repr__default_fn,
-        __dataclass__FieldFnValidationError,  # noqa
-        __dataclass__FieldTypeValidationError,  # noqa
-        __dataclass__FnValidationError,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__property=property,  # noqa
-    ):
-        def __copy__(self):
-            if self.__class__ is not __dataclass__cls:
-                raise TypeError(self)
-            return __dataclass__cls(  # noqa
-                response=self.response,
-                data=self.data,
-                data_exception=self.data_exception,
-            )
-
-        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
-        if '__copy__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__copy__', __copy__)
-
-        def __eq__(self, other):
-            if self is other:
-                return True
-            if self.__class__ is not other.__class__:
-                return NotImplemented
-            return (
-                self.response == other.response and
-                self.data == other.data and
-                self.data_exception == other.data_exception
-            )
-
-        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
-        if '__eq__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__eq__', __eq__)
-
-        setattr(__dataclass__cls, '__hash__', None)
-
-        def __init__(
-            self,
-            response: __dataclass__init__fields__0__annotation,
-            data: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            data_exception: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-        ) -> __dataclass__None:
-            self.response = response
-            self.data = data
-            self.data_exception = data_exception
-
-        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
-        if '__init__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__init__', __init__)
-
-        @__dataclass___recursive_repr()
-        def __repr__(self):
-            parts = []
-            if (s := __dataclass__repr__default_fn(self.response)) is not None:
-                parts.append(f"response={s}")
-            if (s := __dataclass__repr__default_fn(self.data)) is not None:
-                parts.append(f"data={s}")
-            if (s := __dataclass__repr__default_fn(self.data_exception)) is not None:
-                parts.append(f"data_exception={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

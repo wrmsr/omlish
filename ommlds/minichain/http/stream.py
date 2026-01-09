@@ -50,7 +50,7 @@ class HttpStreamResponseError(Exception):
 ##
 
 
-class BaseHttpStreamResponseHandler(lang.Abstract):
+class HttpStreamResponseHandler(lang.Abstract):
     def start(self) -> ta.Sequence[Output]:
         return ()
 
@@ -61,16 +61,16 @@ class BaseHttpStreamResponseHandler(lang.Abstract):
 ##
 
 
-class HttpStreamResponseHandler(BaseHttpStreamResponseHandler, lang.Abstract):
+class BytesHttpStreamResponseHandler(HttpStreamResponseHandler, lang.Abstract):
     def process_bytes(self, data: bytes) -> ta.Iterable:
         return ()
 
 
-class HttpStreamResponseBuilder:
+class BytesHttpStreamResponseBuilder:
     def __init__(
             self,
             http_client: http.AsyncHttpClient | None,
-            handling: ta.Callable[[http.AsyncStreamHttpResponse], HttpStreamResponseHandler],
+            handling: ta.Callable[[http.AsyncStreamHttpResponse], BytesHttpStreamResponseHandler],
             *,
             read_chunk_size: int = -1,
     ) -> None:
@@ -94,11 +94,14 @@ class HttpStreamResponseBuilder:
 
             handler = self._handling(http_response)
 
-            async def inner(sink: StreamResponseSink) -> ta.Sequence[Output] | None:
+            async def inner(sink: StreamResponseSink) -> ta.Sequence | None:
                 while True:
                     b = await http_response.stream.read1(self._read_chunk_size)
 
                     for v in handler.process_bytes(b):
+                        if v is None:
+                            break
+
                         await sink.emit(v)
 
                     if not b:
@@ -120,8 +123,11 @@ class LinesHttpStreamResponseHandler(HttpStreamResponseHandler, lang.Abstract):
     def process_line(self, line: bytes) -> ta.Iterable:
         return ()
 
+    def as_bytes(self) -> BytesHttpStreamResponseHandler:
+        return LinesBytesHttpStreamResponseHandler(self)
 
-class ToLinesHttpStreamResponseHandler(HttpStreamResponseHandler):
+
+class LinesBytesHttpStreamResponseHandler(BytesHttpStreamResponseHandler):
     def __init__(self, handler: LinesHttpStreamResponseHandler) -> None:
         super().__init__()
 
@@ -153,8 +159,11 @@ class SseHttpStreamResponseHandler(HttpStreamResponseHandler, lang.Abstract):
     def process_sse(self, so: sse.SseDecoderOutput) -> ta.Iterable:
         return ()
 
+    def as_lines(self) -> LinesHttpStreamResponseHandler:
+        return SseLinesHttpStreamResponseHandler(self)
 
-class ToSseHttpStreamResponseHandler(LinesHttpStreamResponseHandler):
+
+class SseLinesHttpStreamResponseHandler(LinesHttpStreamResponseHandler):
     def __init__(self, handler: SseHttpStreamResponseHandler) -> None:
         super().__init__()
 
@@ -166,7 +175,8 @@ class ToSseHttpStreamResponseHandler(LinesHttpStreamResponseHandler):
         return self._handler.start()
 
     def process_line(self, line: bytes) -> ta.Iterable:
-        yield from self._sd.process_line(line)
+        for so in self._sd.process_line(line):
+            yield from self._handler.process_sse(so)
 
     def finish(self) -> ta.Sequence[Output]:
         return self._handler.finish()

@@ -4,16 +4,13 @@ https://platform.openai.com/docs/api-reference/responses-streaming
 import typing as ta
 
 from omlish import check
-from omlish import dataclasses as dc
 from omlish import marshal as msh
 from omlish import typedvalues as tv
 from omlish.formats import json
 from omlish.http import all as http
 from omlish.http import sse
-from omlish.io.buffers import DelimitingBuffer
 
 from .....backends.openai import protocol as pt
-from ....chat.choices.services import ChatChoicesOutputs
 from ....chat.choices.stream.services import ChatChoicesStreamRequest
 from ....chat.choices.stream.services import ChatChoicesStreamResponse
 from ....chat.choices.stream.services import static_check_is_chat_choices_stream_service
@@ -21,12 +18,11 @@ from ....chat.choices.stream.types import AiChoiceDeltas
 from ....chat.choices.stream.types import AiChoicesDeltas
 from ....chat.choices.stream.types import ChatChoicesStreamOption
 from ....configs import Config
+from ....http.stream import BytesHttpStreamResponseBuilder
+from ....http.stream import SseHttpStreamResponseHandler
 from ....resources import ResourcesOption
-from ....resources import UseResources
 from ....standard import ApiKey
 from ....stream.services import StreamOption
-from ....stream.services import StreamResponseSink
-from ....stream.services import new_stream_response
 from .chat import OpenaiChatChoicesService
 from .format import OpenaiChatRequestHandler
 from .format import build_mc_ai_delta
@@ -34,12 +30,6 @@ from .names import CHAT_MODEL_NAMES
 
 
 ##
-
-
-@dc.dataclass()
-class OpenaiChatChoicesStreamServiceError(Exception):
-    status: int
-    data: ta.Any | None = None
 
 
 # @omlish-manifest $.minichain.registries.manifests.RegistryManifest(
@@ -61,11 +51,44 @@ class OpenaiChatChoicesStreamService:
             self._model_name = cc.pop(OpenaiChatChoicesService.DEFAULT_MODEL_NAME)
             self._api_key = ApiKey.pop_secret(cc, env='OPENAI_API_KEY')
 
+    def _process_sse(self, so: sse.SseDecoderOutput) -> ta.Sequence[AiChoicesDeltas | None]:
+        if not (isinstance(so, sse.SseEvent) and so.type == b'message'):
+            return []
+
+        ss = so.data.decode('utf-8')
+        if ss == '[DONE]':
+            return [None]
+
+        sj = json.loads(ss)  # ChatCompletionChunk
+
+        check.state(sj['object'] == 'chat.completion.chunk')
+
+        ccc = msh.unmarshal(sj, pt.ChatCompletionChunk)
+
+        # FIXME: stop reason
+        if not ccc.choices:
+            return []
+
+        if any(choice.finish_reason for choice in ccc.choices):
+            check.state(all(choice.finish_reason for choice in ccc.choices))
+            return [None]
+
+        return [AiChoicesDeltas([
+            AiChoiceDeltas([build_mc_ai_delta(choice.delta)])
+            for choice in ccc.choices
+        ])]
+
+    @ta.final
+    class _ResponseHandler(SseHttpStreamResponseHandler):
+        def __init__(self, owner: 'OpenaiChatChoicesStreamService') -> None:
+            self._owner = owner
+
+        def process_sse(self, so: sse.SseDecoderOutput) -> ta.Iterable:
+            return self._owner._process_sse(so)  # noqa
+
     READ_CHUNK_SIZE: ta.ClassVar[int] = -1
 
     async def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
-        # check.isinstance(request, ChatRequest)
-
         rh = OpenaiChatRequestHandler(
             request.v,
             *[
@@ -93,75 +116,11 @@ class OpenaiChatChoicesStreamService:
             data=json.dumps(raw_request).encode('utf-8'),
         )
 
-        async with UseResources.or_new(request.options) as rs:
-            http_client = await rs.enter_async_context(http.manage_async_client(self._http_client))
-            http_response = await rs.enter_async_context(await http_client.stream_request(http_request))
-
-            if http_response.status != 200:
-                data: ta.Any
-                try:
-                    data = await http_response.stream.readall()
-                except Exception as e:  # noqa
-                    data = e
-                try:
-                    data_obj = json.loads(data.decode())
-                except Exception as e:  # noqa
-                    pass
-                else:
-                    data = data_obj
-                raise OpenaiChatChoicesStreamServiceError(http_response.status, data)
-
-            async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ta.Sequence[ChatChoicesOutputs]:
-                db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
-                sd = sse.SseDecoder()
-
-                # bs = []
-                # ls = []
-                # sos = []
-
-                while True:
-                    b = await http_response.stream.read1(self.READ_CHUNK_SIZE)
-                    # bs.append(b)
-
-                    for l in db.feed(b):
-                        # ls.append(l)
-
-                        if isinstance(l, DelimitingBuffer.Incomplete):
-                            # FIXME: handle
-                            raise TypeError(l)
-
-                        # FIXME: https://platform.openai.com/docs/guides/function-calling?api-mode=responses#streaming
-                        for so in sd.process_line(l):
-                            # sos.append(so)
-
-                            if isinstance(so, sse.SseEvent) and so.type == b'message':
-                                ss = so.data.decode('utf-8')
-                                if ss == '[DONE]':
-                                    return []
-
-                                sj = json.loads(ss)  # ChatCompletionChunk
-
-                                check.state(sj['object'] == 'chat.completion.chunk')
-
-                                ccc = msh.unmarshal(sj, pt.ChatCompletionChunk)
-
-                                # FIXME: stop reason
-                                if not ccc.choices:
-                                    continue
-
-                                if any(choice.finish_reason for choice in ccc.choices):
-                                    check.state(all(choice.finish_reason for choice in ccc.choices))
-                                    break
-
-                                await sink.emit(AiChoicesDeltas([
-                                    AiChoiceDeltas([build_mc_ai_delta(choice.delta)])
-                                    for choice in ccc.choices
-                                ]))
-
-                    if not b:
-                        return []
-
-            # raw_response = json.loads(check.not_none(http_response.data).decode('utf-8'))
-            # return rh.build_response(raw_response)
-
-            return await new_stream_response(rs, inner)
+        return await BytesHttpStreamResponseBuilder(
+            self._http_client,
+            lambda http_response: self._ResponseHandler(self).as_lines().as_bytes(),
+            read_chunk_size=self.READ_CHUNK_SIZE,
+        ).new_stream_response(
+            http_request,
+            request.options,
+        )
