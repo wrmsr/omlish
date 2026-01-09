@@ -285,10 +285,28 @@
   - Use raw assertions liberally in tests, and use pytest utilities like `pytest.raises`.
   - Use fixtures and other advanced pytest features sparingly. Prefer to simply instantiate test data rather than wrap
     it in a fixture.
+  - In \[**lite**\] test code the `unittest` package must be used instead of `pytest` because lite tests are run in
+    venvs with no external dependencies present.
+    - Be sure async tests are put in a `IsolatedAsyncioTestCase` subclass.
+    - It is equally fine to use both bare `assert` statements and `unittest` assert helpers like `assertCountEqual`.
+  - In general, prefer to write tests in a way that they can be run in parallel.
   - Avoid mocks - prefer to structure code such that a 'simple' but still functioning implementation of an interface can
     be used where a mock would otherwise. For example, for a some `UserService` interface with an `add_user` method, for
     which a `RemoteUserService` would usually make a remote service call, prefer to implement a `DictUserService` class
     with an `add_user` method such that it actually stores the added user in a dictionary on the instance.
+    - In practice these are usually useful to have outside of test code as default implementations anyway!
+    - These are often called 'fakes' but the term is avoided to emphasize their general non-test utility.
+  - Strongly avoid monkeypatching anything. Ideally code should be structured to allow more graceful means of
+    instrumentation and fault injection (e.g. via alternative interface implementations).
+    - Occasional unavoidable exceptions exist, such as being forced to patch an external dep, or when doing fault
+      injection that's too fine-grained to justify interface decomposition.
+  - An ideal to aim for is a test suite reproducing all realistic (or encountered) failures at each individual IO and
+    synchronization point.
+    - With multiple concurrent actors this may be achieved trhough 'lock-step' execution: with for example 2 related
+      actors running concurrently which encounter a shared point of synchronization, run a test twice, once with the
+      first actor running first, and once with the second actor running first.
+  - Do **not** use 'sleep' to simulate lock-step execution, timeouts, or other test conditions. Tests should strive to
+    deterministically complete as quickly as possible via explicit synchronization.
 
 
 ### Runtime
