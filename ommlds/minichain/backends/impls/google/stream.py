@@ -18,12 +18,6 @@ from ....chat.choices.stream.services import static_check_is_chat_choices_stream
 from ....chat.choices.stream.types import AiChoiceDeltas
 from ....chat.choices.stream.types import AiChoicesDeltas
 from ....chat.choices.types import ChatChoicesOutputs
-from ....chat.messages import AiMessage
-from ....chat.messages import Message
-from ....chat.messages import SystemMessage
-from ....chat.messages import ToolUseMessage
-from ....chat.messages import ToolUseResultMessage
-from ....chat.messages import UserMessage
 from ....chat.stream.types import ContentAiDelta
 from ....chat.stream.types import ToolUseAiDelta
 from ....chat.tools.types import Tool
@@ -33,6 +27,8 @@ from ....standard import ApiKey
 from ....stream.services import StreamResponseSink
 from ....stream.services import new_stream_response
 from .names import MODEL_NAMES
+from .protocol import make_msg_content
+from .protocol import pop_system_instructions
 from .tools import build_tool_spec_schema
 
 
@@ -60,71 +56,7 @@ class GoogleChatChoicesStreamService:
             self._model_name = cc.pop(self.DEFAULT_MODEL_NAME)
             self._api_key = ApiKey.pop_secret(cc, env='GEMINI_API_KEY')
 
-    def _make_str_content(
-            self,
-            s: str | None,
-            *,
-            role: pt.ContentRole | None = None,
-    ) -> pt.Content | None:
-        if s is None:
-            return None
-
-        return pt.Content(
-            parts=[pt.Part(
-                text=check.not_none(s),
-            )],
-            role=role,
-        )
-
-    def _make_msg_content(self, m: Message) -> pt.Content:
-        if isinstance(m, (AiMessage, SystemMessage, UserMessage)):
-            return check.not_none(self._make_str_content(
-                check.isinstance(m.c, str),
-                role=self.ROLES_MAP[type(m)],
-            ))
-
-        elif isinstance(m, ToolUseResultMessage):
-            tr_resp_val: pt.Value
-            if m.tur.c is None:
-                tr_resp_val = pt.NullValue()  # type: ignore[unreachable]
-            elif isinstance(m.tur.c, str):
-                tr_resp_val = pt.StringValue(m.tur.c)
-            else:
-                raise TypeError(m.tur.c)
-            return pt.Content(
-                parts=[pt.Part(
-                    function_response=pt.FunctionResponse(
-                        id=m.tur.id,
-                        name=m.tur.name,
-                        response={
-                            'value': tr_resp_val,
-                        },
-                    ),
-                )],
-            )
-
-        elif isinstance(m, ToolUseMessage):
-            return pt.Content(
-                parts=[pt.Part(
-                    function_call=pt.FunctionCall(
-                        id=m.tu.id,
-                        name=m.tu.name,
-                        args=m.tu.args,
-                    ),
-                )],
-                role='model',
-            )
-
-        else:
-            raise TypeError(m)
-
     BASE_URL: ta.ClassVar[str] = 'https://generativelanguage.googleapis.com/v1beta/models'
-
-    ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], pt.ContentRole | None]] = {  # noqa
-        SystemMessage: None,
-        UserMessage: 'user',
-        AiMessage: 'model',
-    }
 
     READ_CHUNK_SIZE: ta.ClassVar[int] = -1
 
@@ -134,13 +66,6 @@ class GoogleChatChoicesStreamService:
     ) -> ChatChoicesStreamResponse:
         key = check.not_none(self._api_key).reveal()
 
-        msgs = list(request.v)
-
-        system_inst: pt.Content | None = None
-        if msgs and isinstance(m0 := msgs[0], SystemMessage):
-            system_inst = self._make_msg_content(m0)
-            msgs.pop(0)
-
         g_tools: list[pt.Tool] = []
         with tv.TypedValues(*request.options).consume() as oc:
             t: Tool
@@ -149,11 +74,15 @@ class GoogleChatChoicesStreamService:
                     function_declarations=[build_tool_spec_schema(t.spec)],
                 ))
 
+        msgs = list(request.v)
+
+        system_inst = pop_system_instructions(msgs)
+
         g_req = pt.GenerateContentRequest(
             contents=[
-                self._make_msg_content(m)
+                make_msg_content(m)
                 for m in msgs
-            ],
+            ] or None,
             tools=g_tools or None,
             system_instruction=system_inst,
         )

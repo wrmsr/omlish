@@ -16,16 +16,14 @@ from ....chat.choices.services import static_check_is_chat_choices_service
 from ....chat.choices.types import AiChoice
 from ....chat.messages import AiMessage
 from ....chat.messages import AnyAiMessage
-from ....chat.messages import Message
-from ....chat.messages import SystemMessage
 from ....chat.messages import ToolUseMessage
-from ....chat.messages import ToolUseResultMessage
-from ....chat.messages import UserMessage
 from ....chat.tools.types import Tool
 from ....models.configs import ModelName
 from ....standard import ApiKey
 from ....tools.types import ToolUse
 from .names import MODEL_NAMES
+from .protocol import make_msg_content
+from .protocol import pop_system_instructions
 from .tools import build_tool_spec_schema
 
 
@@ -53,89 +51,13 @@ class GoogleChatChoicesService:
             self._model_name = cc.pop(self.DEFAULT_MODEL_NAME)
             self._api_key = ApiKey.pop_secret(cc, env='GEMINI_API_KEY')
 
-    def _get_msg_content(self, m: Message) -> str | None:
-        if isinstance(m, AiMessage):
-            return check.isinstance(m.c, str)
-
-        elif isinstance(m, (SystemMessage, UserMessage)):
-            return check.isinstance(m.c, str)
-
-        else:
-            raise TypeError(m)
-
     BASE_URL: ta.ClassVar[str] = 'https://generativelanguage.googleapis.com/v1beta/models'
-
-    ROLES_MAP: ta.ClassVar[ta.Mapping[type[Message], str]] = {
-        UserMessage: 'user',
-        AiMessage: 'model',
-        ToolUseMessage: 'model',
-    }
 
     async def invoke(
             self,
             request: ChatChoicesRequest,
     ) -> ChatChoicesResponse:
         key = check.not_none(self._api_key).reveal()
-
-        g_sys_content: pt.Content | None = None
-        g_contents: list[pt.Content] = []
-        for i, m in enumerate(request.v):
-            if isinstance(m, SystemMessage):
-                check.arg(i == 0)
-                check.none(g_sys_content)
-                g_sys_content = pt.Content(
-                    parts=[pt.Part(
-                        text=check.not_none(self._get_msg_content(m)),
-                    )],
-                )
-
-            elif isinstance(m, ToolUseResultMessage):
-                tr_resp_val: pt.Value
-                if m.tur.c is None:
-                    tr_resp_val = pt.NullValue()  # type: ignore[unreachable]
-                elif isinstance(m.tur.c, str):
-                    tr_resp_val = pt.StringValue(m.tur.c)
-                else:
-                    raise TypeError(m.tur.c)
-                g_contents.append(pt.Content(
-                    parts=[pt.Part(
-                        function_response=pt.FunctionResponse(
-                            id=m.tur.id,
-                            name=m.tur.name,
-                            response={
-                                'value': tr_resp_val,
-                            },
-                        ),
-                    )],
-                ))
-
-            elif isinstance(m, AiMessage):
-                g_contents.append(pt.Content(
-                    parts=[pt.Part(
-                        text=check.not_none(self._get_msg_content(m)),
-                    )],
-                    role='model',
-                ))
-
-            elif isinstance(m, ToolUseMessage):
-                g_contents.append(pt.Content(
-                    parts=[pt.Part(
-                        function_call=pt.FunctionCall(
-                            id=m.tu.id,
-                            name=m.tu.name,
-                            args=m.tu.args,
-                        ),
-                    )],
-                    role='model',
-                ))
-
-            else:
-                g_contents.append(pt.Content(
-                    parts=[pt.Part(
-                        text=check.not_none(self._get_msg_content(m)),
-                    )],
-                    role=self.ROLES_MAP[type(m)],  # type: ignore[arg-type]
-                ))
 
         g_tools: list[pt.Tool] = []
         with tv.TypedValues(*request.options).consume() as oc:
@@ -145,10 +67,17 @@ class GoogleChatChoicesService:
                     function_declarations=[build_tool_spec_schema(t.spec)],
                 ))
 
+        msgs = list(request.v)
+
+        system_inst = pop_system_instructions(msgs)
+
         g_req = pt.GenerateContentRequest(
-            contents=g_contents or None,
+            contents=[
+                make_msg_content(m)
+                for m in msgs
+            ] or None,
             tools=g_tools or None,
-            system_instruction=g_sys_content,
+            system_instruction=system_inst,
         )
 
         req_dct = msh.marshal(g_req)

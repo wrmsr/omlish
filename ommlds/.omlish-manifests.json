@@ -202,7 +202,7 @@
     "module": ".minichain.backends.impls.google.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/google/chat.py",
-    "line": 35,
+    "line": 33,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.google.chat",
@@ -248,7 +248,7 @@
     "module": ".minichain.backends.impls.google.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/google/stream.py",
-    "line": 42,
+    "line": 38,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.google.stream",
