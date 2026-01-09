@@ -18,5 +18,10 @@ st.setup(
             sources=['omlish/lang/imports/_capture.cc'],
             extra_compile_args=['-std=c++20'],
         ),
+        st.Extension(
+            name='omlish.typedvalues._collection',
+            sources=['omlish/typedvalues/_collection.cc'],
+            extra_compile_args=['-std=c++20'],
+        ),
     ],
 )

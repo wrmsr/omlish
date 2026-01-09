@@ -30,6 +30,9 @@ class DuplicateUniqueTypedValueError(Exception):
     old: TypedValue
 
 
+##
+
+
 def _init_typed_values_collection(
         *tvs: TypedValueT,
         override: bool = False,
@@ -126,6 +129,20 @@ def _init_typed_values_collection(
     }
 
     return (tuple(lst), dct, dct2)
+
+
+##
+
+
+try:
+    from . import _collection  # type: ignore
+except ImportError:
+    pass
+else:
+    _init_typed_values_collection = _collection.init_typed_values_collection  # noqa
+
+
+##
 
 
 @ta.final

@@ -1,0 +1,566 @@
+// @omlish-cext
+// @omlish-llm-author "claude-sonnet-4-5-20250929"
+#define PY_SSIZE_T_CLEAN
+#include "Python.h"
+#include "structmember.h"
+
+#include <vector>
+#include <unordered_map>
+
+//
+
+#define _MODULE_NAME "_collection"
+#define _PACKAGE_NAME "omlish.typedvalues"
+#define _MODULE_FULL_NAME _PACKAGE_NAME "." _MODULE_NAME
+
+typedef struct collection_state {
+    PyObject *typed_value_type;
+    PyObject *unique_typed_value_type;
+    PyObject *duplicate_error_type;
+} collection_state;
+
+static inline collection_state * get_collection_state(PyObject *module)
+{
+    void *state = PyModule_GetState(module);
+    assert(state != NULL);
+    return (collection_state *)state;
+}
+
+//
+
+// Helper struct to track unique typed values during processing
+struct UniqueInfo {
+    PyObject *unique_tv_cls;  // The unique class
+    PyObject *tv;             // The typed value
+    std::vector<PyObject*> *unique_lst;  // Pointer to the list in unique_dct
+    size_t idx;               // Index in unique_lst when added
+};
+
+// Temporary list item - either a TypedValue or a UniqueInfo
+struct TmpItem {
+    bool is_unique;
+    union {
+        PyObject *tv;  // Non-unique typed value
+        UniqueInfo *unique_info;  // Unique typed value info
+    };
+
+    TmpItem() : is_unique(false), tv(nullptr) {}
+    ~TmpItem() {
+        if (is_unique && unique_info != nullptr) {
+            delete unique_info;
+        }
+    }
+
+    // Disable copy, enable move
+    TmpItem(const TmpItem&) = delete;
+    TmpItem& operator=(const TmpItem&) = delete;
+
+    TmpItem(TmpItem&& other) noexcept : is_unique(other.is_unique) {
+        if (is_unique) {
+            unique_info = other.unique_info;
+            other.unique_info = nullptr;
+        } else {
+            tv = other.tv;
+        }
+    }
+
+    TmpItem& operator=(TmpItem&& other) noexcept {
+        if (this != &other) {
+            if (is_unique && unique_info != nullptr) {
+                delete unique_info;
+            }
+            is_unique = other.is_unique;
+            if (is_unique) {
+                unique_info = other.unique_info;
+                other.unique_info = nullptr;
+            } else {
+                tv = other.tv;
+            }
+        }
+        return *this;
+    }
+};
+
+PyDoc_STRVAR(init_typed_values_collection_doc,
+"init_typed_values_collection(*tvs, override=False, check_type=None)\n"
+"\n"
+"Initialize a typed values collection.\n"
+"\n"
+"Returns a tuple of (tuple, dict, dict2) where:\n"
+"- tuple: ordered sequence of typed values\n"
+"- dict: mapping of type -> typed value or tuple of typed values\n"
+"- dict2: extended dict including instance types for unique values");
+
+static PyObject * init_typed_values_collection(PyObject *module, PyObject *const *args, Py_ssize_t nargs, PyObject *kwnames)
+{
+    collection_state *state = get_collection_state(module);
+
+    // Parse arguments
+    bool override = false;
+    PyObject *check_type = nullptr;
+
+    // Handle keyword arguments
+    Py_ssize_t nkwargs = kwnames ? PyTuple_GET_SIZE(kwnames) : 0;
+
+    for (Py_ssize_t i = 0; i < nkwargs; i++) {
+        PyObject *key = PyTuple_GET_ITEM(kwnames, i);
+        PyObject *value = args[nargs + i];
+        const char *key_str = PyUnicode_AsUTF8(key);
+
+        if (key_str == nullptr) {
+            return nullptr;
+        }
+
+        if (strcmp(key_str, "override") == 0) {
+            int override_result = PyObject_IsTrue(value);
+            if (override_result == -1) {
+                return nullptr;
+            }
+            override = override_result;
+        } else if (strcmp(key_str, "check_type") == 0) {
+            check_type = value;
+        } else {
+            PyErr_Format(PyExc_TypeError, "unexpected keyword argument: %s", key_str);
+            return nullptr;
+        }
+    }
+
+    // If no positional arguments, return empty tuple and dicts
+    if (nargs == 0) {
+        PyObject *empty_tuple = PyTuple_New(0);
+        if (empty_tuple == nullptr) {
+            return nullptr;
+        }
+
+        PyObject *empty_dict = PyDict_New();
+        if (empty_dict == nullptr) {
+            Py_DECREF(empty_tuple);
+            return nullptr;
+        }
+
+        PyObject *empty_dict2 = PyDict_New();
+        if (empty_dict2 == nullptr) {
+            Py_DECREF(empty_tuple);
+            Py_DECREF(empty_dict);
+            return nullptr;
+        }
+
+        PyObject *result = PyTuple_Pack(3, empty_tuple, empty_dict, empty_dict2);
+        Py_DECREF(empty_tuple);
+        Py_DECREF(empty_dict);
+        Py_DECREF(empty_dict2);
+        return result;
+    }
+
+    // Temporary storage
+    std::vector<TmpItem> tmp_lst;
+    tmp_lst.reserve(nargs);
+
+    // Map from unique type to list of typed values
+    std::unordered_map<PyObject*, std::vector<PyObject*>> unique_dct;
+
+    // Process each typed value
+    for (Py_ssize_t i = 0; i < nargs; i++) {
+        PyObject *tv = args[i];
+
+        // Check type if requested
+        if (check_type != nullptr && check_type != Py_None) {
+            int result = PyObject_IsInstance(tv, check_type);
+            if (result == -1) {
+                return nullptr;
+            }
+            if (!result) {
+                PyErr_SetObject(PyExc_TypeError, tv);
+                return nullptr;
+            }
+        }
+
+        // Check if it's a UniqueTypedValue
+        int is_unique = PyObject_IsInstance(tv, state->unique_typed_value_type);
+        if (is_unique == -1) {
+            return nullptr;
+        }
+
+        if (is_unique) {
+            // Get the _unique_typed_value_cls attribute
+            PyObject *unique_tv_cls = PyObject_GetAttrString(tv, "_unique_typed_value_cls");
+            if (unique_tv_cls == nullptr) {
+                return nullptr;
+            }
+
+            // Check for duplicates if not override
+            if (!override) {
+                auto it = unique_dct.find(unique_tv_cls);
+                if (it != unique_dct.end() && !it->second.empty()) {
+                    // Duplicate found - raise error
+                    PyObject *old_tv = it->second[0];
+
+                    // Create DuplicateUniqueTypedValueError
+                    PyObject *error = PyObject_CallFunction(
+                        state->duplicate_error_type,
+                        "OOO",
+                        unique_tv_cls,
+                        tv,
+                        old_tv
+                    );
+
+                    Py_DECREF(unique_tv_cls);
+
+                    if (error == nullptr) {
+                        return nullptr;
+                    }
+
+                    PyErr_SetObject(state->duplicate_error_type, error);
+                    Py_DECREF(error);
+                    return nullptr;
+                }
+            }
+
+            // Add to unique_dct
+            std::vector<PyObject*> &unique_lst = unique_dct[unique_tv_cls];
+            unique_lst.push_back(tv);
+
+            // Create UniqueInfo
+            UniqueInfo *info = new UniqueInfo{
+                unique_tv_cls,  // Borrowed reference (will be decreffed at end)
+                tv,
+                &unique_lst,
+                unique_lst.size()
+            };
+
+            // Add to tmp_lst
+            TmpItem item;
+            item.is_unique = true;
+            item.unique_info = info;
+            tmp_lst.push_back(std::move(item));
+
+        } else {
+            // Check if it's a TypedValue
+            int is_typed_value = PyObject_IsInstance(tv, state->typed_value_type);
+            if (is_typed_value == -1) {
+                return nullptr;
+            }
+
+            if (!is_typed_value) {
+                PyErr_SetObject(PyExc_TypeError, tv);
+                return nullptr;
+            }
+
+            // Non-unique typed value
+            TmpItem item;
+            item.is_unique = false;
+            item.tv = tv;
+            tmp_lst.push_back(std::move(item));
+        }
+    }
+
+    // Build output structures
+    PyObject *lst = PyList_New(0);
+    if (lst == nullptr) {
+        // Clean up unique_dct keys
+        for (auto &pair : unique_dct) {
+            Py_DECREF(pair.first);
+        }
+        return nullptr;
+    }
+
+    PyObject *tmp_dct = PyDict_New();
+    if (tmp_dct == nullptr) {
+        Py_DECREF(lst);
+        for (auto &pair : unique_dct) {
+            Py_DECREF(pair.first);
+        }
+        return nullptr;
+    }
+
+    // Process tmp_lst to build output list and tmp_dct
+    for (auto &item : tmp_lst) {
+        if (item.is_unique) {
+            UniqueInfo *info = item.unique_info;
+
+            // Last-in-wins: only include if this is the last one
+            if (info->idx == info->unique_lst->size()) {
+                // Add to output list
+                if (PyList_Append(lst, info->tv) == -1) {
+                    Py_DECREF(lst);
+                    Py_DECREF(tmp_dct);
+                    for (auto &pair : unique_dct) {
+                        Py_DECREF(pair.first);
+                    }
+                    return nullptr;
+                }
+
+                // Add to tmp_dct (scalar value for unique types)
+                if (PyDict_SetItem(tmp_dct, info->unique_tv_cls, info->tv) == -1) {
+                    Py_DECREF(lst);
+                    Py_DECREF(tmp_dct);
+                    for (auto &pair : unique_dct) {
+                        Py_DECREF(pair.first);
+                    }
+                    return nullptr;
+                }
+            }
+        } else {
+            PyObject *tv = item.tv;
+
+            // Add to output list
+            if (PyList_Append(lst, tv) == -1) {
+                Py_DECREF(lst);
+                Py_DECREF(tmp_dct);
+                for (auto &pair : unique_dct) {
+                    Py_DECREF(pair.first);
+                }
+                return nullptr;
+            }
+
+            // Add to tmp_dct (accumulating list for non-unique types)
+            PyObject *tv_type = (PyObject *)Py_TYPE(tv);
+            PyObject *existing = PyDict_GetItem(tmp_dct, tv_type);  // Borrowed reference
+
+            if (existing == nullptr) {
+                // Create new list
+                PyObject *new_list = PyList_New(0);
+                if (new_list == nullptr) {
+                    Py_DECREF(lst);
+                    Py_DECREF(tmp_dct);
+                    for (auto &pair : unique_dct) {
+                        Py_DECREF(pair.first);
+                    }
+                    return nullptr;
+                }
+
+                if (PyList_Append(new_list, tv) == -1) {
+                    Py_DECREF(new_list);
+                    Py_DECREF(lst);
+                    Py_DECREF(tmp_dct);
+                    for (auto &pair : unique_dct) {
+                        Py_DECREF(pair.first);
+                    }
+                    return nullptr;
+                }
+
+                if (PyDict_SetItem(tmp_dct, tv_type, new_list) == -1) {
+                    Py_DECREF(new_list);
+                    Py_DECREF(lst);
+                    Py_DECREF(tmp_dct);
+                    for (auto &pair : unique_dct) {
+                        Py_DECREF(pair.first);
+                    }
+                    return nullptr;
+                }
+
+                Py_DECREF(new_list);
+            } else {
+                // Append to existing list
+                if (PyList_Append(existing, tv) == -1) {
+                    Py_DECREF(lst);
+                    Py_DECREF(tmp_dct);
+                    for (auto &pair : unique_dct) {
+                        Py_DECREF(pair.first);
+                    }
+                    return nullptr;
+                }
+            }
+        }
+    }
+
+    // Clean up unique_dct keys
+    for (auto &pair : unique_dct) {
+        Py_DECREF(pair.first);
+    }
+
+    // Convert list to tuple
+    PyObject *result_tuple = PyList_AsTuple(lst);
+    Py_DECREF(lst);
+    if (result_tuple == nullptr) {
+        Py_DECREF(tmp_dct);
+        return nullptr;
+    }
+
+    // Build dct: convert lists to tuples
+    PyObject *dct = PyDict_New();
+    if (dct == nullptr) {
+        Py_DECREF(result_tuple);
+        Py_DECREF(tmp_dct);
+        return nullptr;
+    }
+
+    PyObject *key, *value;
+    Py_ssize_t pos = 0;
+
+    while (PyDict_Next(tmp_dct, &pos, &key, &value)) {
+        if (PyList_Check(value)) {
+            PyObject *tuple_value = PyList_AsTuple(value);
+            if (tuple_value == nullptr) {
+                Py_DECREF(result_tuple);
+                Py_DECREF(tmp_dct);
+                Py_DECREF(dct);
+                return nullptr;
+            }
+
+            if (PyDict_SetItem(dct, key, tuple_value) == -1) {
+                Py_DECREF(tuple_value);
+                Py_DECREF(result_tuple);
+                Py_DECREF(tmp_dct);
+                Py_DECREF(dct);
+                return nullptr;
+            }
+
+            Py_DECREF(tuple_value);
+        } else {
+            // Scalar value (unique type)
+            if (PyDict_SetItem(dct, key, value) == -1) {
+                Py_DECREF(result_tuple);
+                Py_DECREF(tmp_dct);
+                Py_DECREF(dct);
+                return nullptr;
+            }
+        }
+    }
+
+    Py_DECREF(tmp_dct);
+
+    // Build dct2: dct + unique values keyed by instance type
+    PyObject *dct2 = PyDict_Copy(dct);
+    if (dct2 == nullptr) {
+        Py_DECREF(result_tuple);
+        Py_DECREF(dct);
+        return nullptr;
+    }
+
+    // Add unique values by their instance type
+    pos = 0;
+    while (PyDict_Next(dct, &pos, &key, &value)) {
+        // Check if value is a UniqueTypedValue (not a tuple)
+        if (!PyTuple_Check(value)) {
+            int is_unique = PyObject_IsInstance(value, state->unique_typed_value_type);
+            if (is_unique == -1) {
+                Py_DECREF(result_tuple);
+                Py_DECREF(dct);
+                Py_DECREF(dct2);
+                return nullptr;
+            }
+
+            if (is_unique) {
+                PyObject *value_type = (PyObject *)Py_TYPE(value);
+                if (PyDict_SetItem(dct2, value_type, value) == -1) {
+                    Py_DECREF(result_tuple);
+                    Py_DECREF(dct);
+                    Py_DECREF(dct2);
+                    return nullptr;
+                }
+            }
+        }
+    }
+
+    // Build final result
+    PyObject *result = PyTuple_Pack(3, result_tuple, dct, dct2);
+    Py_DECREF(result_tuple);
+    Py_DECREF(dct);
+    Py_DECREF(dct2);
+
+    return result;
+}
+
+//
+
+PyDoc_STRVAR(collection_doc, "Native C++ implementations for omlish.typedvalues.collection");
+
+static int collection_exec(PyObject *module)
+{
+    collection_state *state = get_collection_state(module);
+
+    // Import TypedValue
+    PyObject *values_module = PyImport_ImportModule("omlish.typedvalues.values");
+    if (values_module == nullptr) {
+        return -1;
+    }
+
+    state->typed_value_type = PyObject_GetAttrString(values_module, "TypedValue");
+    Py_DECREF(values_module);
+    if (state->typed_value_type == nullptr) {
+        return -1;
+    }
+
+    // Import UniqueTypedValue
+    values_module = PyImport_ImportModule("omlish.typedvalues.values");
+    if (values_module == nullptr) {
+        return -1;
+    }
+
+    state->unique_typed_value_type = PyObject_GetAttrString(values_module, "UniqueTypedValue");
+    Py_DECREF(values_module);
+    if (state->unique_typed_value_type == nullptr) {
+        return -1;
+    }
+
+    // Import DuplicateUniqueTypedValueError
+    PyObject *collection_module = PyImport_ImportModule("omlish.typedvalues.collection");
+    if (collection_module == nullptr) {
+        return -1;
+    }
+
+    state->duplicate_error_type = PyObject_GetAttrString(collection_module, "DuplicateUniqueTypedValueError");
+    Py_DECREF(collection_module);
+    if (state->duplicate_error_type == nullptr) {
+        return -1;
+    }
+
+    return 0;
+}
+
+static int collection_traverse(PyObject *module, visitproc visit, void *arg)
+{
+    collection_state *state = get_collection_state(module);
+    Py_VISIT(state->typed_value_type);
+    Py_VISIT(state->unique_typed_value_type);
+    Py_VISIT(state->duplicate_error_type);
+    return 0;
+}
+
+static int collection_clear(PyObject *module)
+{
+    collection_state *state = get_collection_state(module);
+    Py_CLEAR(state->typed_value_type);
+    Py_CLEAR(state->unique_typed_value_type);
+    Py_CLEAR(state->duplicate_error_type);
+    return 0;
+}
+
+static void collection_free(void *module)
+{
+    collection_clear((PyObject *)module);
+}
+
+static PyMethodDef collection_methods[] = {
+    {"init_typed_values_collection", (PyCFunction)(void(*)(void))init_typed_values_collection, METH_FASTCALL | METH_KEYWORDS, init_typed_values_collection_doc},
+    {NULL, NULL, 0, NULL}
+};
+
+static struct PyModuleDef_Slot collection_slots[] = {
+    {Py_mod_exec, (void *) collection_exec},
+    {Py_mod_gil, Py_MOD_GIL_NOT_USED},
+    {Py_mod_multiple_interpreters, Py_MOD_MULTIPLE_INTERPRETERS_SUPPORTED},
+    {0, NULL}
+};
+
+static struct PyModuleDef collection_module = {
+    .m_base = PyModuleDef_HEAD_INIT,
+    .m_name = _MODULE_NAME,
+    .m_doc = collection_doc,
+    .m_size = sizeof(collection_state),
+    .m_methods = collection_methods,
+    .m_slots = collection_slots,
+    .m_traverse = collection_traverse,
+    .m_clear = collection_clear,
+    .m_free = collection_free,
+};
+
+extern "C" {
+
+PyMODINIT_FUNC PyInit__collection(void)
+{
+    return PyModuleDef_Init(&collection_module);
+}
+
+}
