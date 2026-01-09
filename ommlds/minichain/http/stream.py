@@ -1,5 +1,10 @@
+"""
+TODO:
+ - better pipeline composition lol
+"""
 import typing as ta
 
+from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish.http import all as http
@@ -45,59 +50,123 @@ class HttpStreamResponseError(Exception):
 ##
 
 
-@ta.final
-@dc.dataclass(frozen=True, kw_only=True)
-class SseHttpStreamResponseHandling(lang.Final):
-    stream_outputs: ta.Sequence[Output] | None = None
-    event_processor: ta.Callable[[sse.SseDecoderOutput], ta.Iterable | None] | None = None
-    finalizer: ta.Callable[[], ta.Iterable[Output] | None] | None = None
+class BaseHttpStreamResponseHandler(lang.Abstract):
+    def start(self) -> ta.Sequence[Output]:
+        return ()
+
+    def finish(self) -> ta.Sequence[Output]:
+        return ()
 
 
-async def new_sse_http_stream_response(
-        http_client: http.AsyncHttpClient | None,
-        http_request: http.HttpRequest,
-        options: ta.Sequence[Option],
-        handler: ta.Callable[[http.AsyncStreamHttpResponse], SseHttpStreamResponseHandling],
-        *,
-        read_chunk_size: int = -1,
-) -> StreamResponse:
-    async with UseResources.or_new(options) as rs:
-        http_client = await rs.enter_async_context(http.manage_async_client(http_client))
-        http_response = await rs.enter_async_context(await http_client.stream_request(http_request))
+##
 
-        if http_response.status != 200:
-            raise await HttpStreamResponseError.from_response(http_response)
 
-        handling = handler(http_response)
+class HttpStreamResponseHandler(BaseHttpStreamResponseHandler, lang.Abstract):
+    def process_bytes(self, data: bytes) -> ta.Iterable:
+        return ()
 
-        async def inner(sink: StreamResponseSink) -> ta.Sequence | None:
-            db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
-            sd = sse.SseDecoder()
 
-            while True:
-                b = await http_response.stream.read1(read_chunk_size)
+class HttpStreamResponseBuilder:
+    def __init__(
+            self,
+            http_client: http.AsyncHttpClient | None,
+            handling: ta.Callable[[http.AsyncStreamHttpResponse], HttpStreamResponseHandler],
+            *,
+            read_chunk_size: int = -1,
+    ) -> None:
+        super().__init__()
 
-                for l in db.feed(b):
-                    if isinstance(l, DelimitingBuffer.Incomplete):
-                        # FIXME: handle
-                        raise TypeError(l)
+        self._http_client = http_client
+        self._handling = handling
+        self._read_chunk_size = read_chunk_size
 
-                    for so in sd.process_line(l):
-                        if handling.event_processor is not None:
-                            if (v_it := handling.event_processor(so)) is not None:
-                                for v in v_it:
-                                    await sink.emit(v)
+    async def new_stream_response(
+            self,
+            http_request: http.HttpRequest,
+            options: ta.Sequence[Option],
+    ) -> StreamResponse:
+        async with UseResources.or_new(options) as rs:
+            http_client = await rs.enter_async_context(http.manage_async_client(self._http_client))
+            http_response = await rs.enter_async_context(await http_client.stream_request(http_request))
 
-                if not b:
-                    break
+            if http_response.status != 200:
+                raise await HttpStreamResponseError.from_response(http_response)
 
-            if handling.finalizer is None:
-                return None
+            handler = self._handling(http_response)
 
-            return lang.opt_list(handling.finalizer())
+            async def inner(sink: StreamResponseSink) -> ta.Sequence[Output] | None:
+                while True:
+                    b = await http_response.stream.read1(self._read_chunk_size)
 
-        return await new_stream_response(
-            rs,
-            inner,
-            handling.stream_outputs,
-        )
+                    for v in handler.process_bytes(b):
+                        await sink.emit(v)
+
+                    if not b:
+                        break
+
+                return handler.finish()
+
+            return await new_stream_response(
+                rs,
+                inner,
+                handler.start(),
+            )
+
+
+##
+
+
+class LinesHttpStreamResponseHandler(HttpStreamResponseHandler, lang.Abstract):
+    def process_line(self, line: bytes) -> ta.Iterable:
+        return ()
+
+
+class ToLinesHttpStreamResponseHandler(HttpStreamResponseHandler):
+    def __init__(self, handler: LinesHttpStreamResponseHandler) -> None:
+        super().__init__()
+
+        self._handler = handler
+
+        self._db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
+
+    def start(self) -> ta.Sequence[Output]:
+        return self._handler.start()
+
+    def process_bytes(self, data: bytes) -> ta.Iterable:
+        for o in self._db.feed(data):
+            if isinstance(o, bytes):
+                yield from self._handler.process_line(o)
+
+            else:
+                raise TypeError(o)
+
+    def finish(self) -> ta.Sequence[Output]:
+        check.state(self._db.is_closed)
+
+        return self._handler.finish()
+
+
+##
+
+
+class SseHttpStreamResponseHandler(HttpStreamResponseHandler, lang.Abstract):
+    def process_sse(self, so: sse.SseDecoderOutput) -> ta.Iterable:
+        return ()
+
+
+class ToSseHttpStreamResponseHandler(LinesHttpStreamResponseHandler):
+    def __init__(self, handler: SseHttpStreamResponseHandler) -> None:
+        super().__init__()
+
+        self._handler = handler
+
+        self._sd = sse.SseDecoder()
+
+    def start(self) -> ta.Sequence[Output]:
+        return self._handler.start()
+
+    def process_line(self, line: bytes) -> ta.Iterable:
+        yield from self._sd.process_line(line)
+
+    def finish(self) -> ta.Sequence[Output]:
+        return self._handler.finish()
