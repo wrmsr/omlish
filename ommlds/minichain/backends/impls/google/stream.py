@@ -8,6 +8,7 @@ from omlish import marshal as msh
 from omlish import typedvalues as tv
 from omlish.formats import json
 from omlish.http import all as http
+from omlish.http import sse
 from omlish.io.buffers import DelimitingBuffer
 
 from .....backends.google.protocol import types as pt
@@ -174,44 +175,42 @@ class GoogleChatChoicesStreamService:
 
             async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ta.Sequence[ChatChoicesOutputs] | None:
                 db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
+                sd = sse.SseDecoder()
                 while True:
                     b = await http_response.stream.read1(self.READ_CHUNK_SIZE)
-                    for bl in db.feed(b):
-                        if isinstance(bl, DelimitingBuffer.Incomplete):
+                    for l in db.feed(b):
+                        if isinstance(l, DelimitingBuffer.Incomplete):
                             # FIXME: handle
-                            raise TypeError(bl)
+                            raise TypeError(l)
 
-                        l = bl.decode('utf-8')
-                        if not l:
-                            continue
+                        for so in sd.process_line(l):
+                            if isinstance(so, sse.SseEvent) and so.type == b'message':
+                                gcr = msh.unmarshal(json.loads(so.data.decode('utf-8')), pt.GenerateContentResponse)  # noqa
+                                cnd = check.single(check.not_none(gcr.candidates))
 
-                        if l.startswith('data: '):
-                            gcr = msh.unmarshal(json.loads(l[6:]), pt.GenerateContentResponse)  # noqa
-                            cnd = check.single(check.not_none(gcr.candidates))
+                                for p in check.not_none(cnd.content).parts or []:
+                                    if (txt := p.text) is not None:
+                                        check.none(p.function_call)
+                                        await sink.emit(AiChoicesDeltas([
+                                            AiChoiceDeltas([
+                                                ContentAiDelta(check.not_none(txt)),
+                                            ]),
+                                        ]))
 
-                            for p in check.not_none(cnd.content).parts or []:
-                                if (txt := p.text) is not None:
-                                    check.none(p.function_call)
-                                    await sink.emit(AiChoicesDeltas([
-                                        AiChoiceDeltas([
-                                            ContentAiDelta(check.not_none(txt)),
-                                        ]),
-                                    ]))
+                                    elif (fc := p.function_call) is not None:
+                                        check.none(p.text)
+                                        await sink.emit(AiChoicesDeltas([
+                                            AiChoiceDeltas([
+                                                ToolUseAiDelta(
+                                                    id=fc.id,
+                                                    name=fc.name,
+                                                    args=fc.args,
+                                                ),
+                                            ]),
+                                        ]))
 
-                                elif (fc := p.function_call) is not None:
-                                    check.none(p.text)
-                                    await sink.emit(AiChoicesDeltas([
-                                        AiChoiceDeltas([
-                                            ToolUseAiDelta(
-                                                id=fc.id,
-                                                name=fc.name,
-                                                args=fc.args,
-                                            ),
-                                        ]),
-                                    ]))
-
-                                else:
-                                    raise ValueError(p)
+                                    else:
+                                        raise ValueError(p)
 
                     if not b:
                         return []
