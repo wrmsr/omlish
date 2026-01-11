@@ -23,7 +23,7 @@ torchvision==0.24.1
 
 diffusers==0.36.0  # @omlish-venv !14t !14dt
 
-scipy==1.16.3
+scipy==1.17.0
 scikit-learn==1.8.0
 scikit-image==0.26.0
 
