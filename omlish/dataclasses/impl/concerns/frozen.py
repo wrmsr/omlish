@@ -121,7 +121,7 @@ class FrozenGenerator(Generator[FrozenPlan]):
                 f'}}',
                 f'',
             ])
-            condition.append(f' or name in {set_ident}')
+            condition.append(f'or name in {set_ident}')
 
         return AddMethodOp(
             f'__{mth}__',

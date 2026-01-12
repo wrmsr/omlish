@@ -6,21 +6,18 @@ from omlish import typedvalues as tv
 from omlish.formats import json
 from omlish.http import all as http
 from omlish.http import sse
-from omlish.io.buffers import DelimitingBuffer
 
 from .....backends.groq import protocol as pt
 from .....backends.groq.clients import REQUIRED_HTTP_HEADERS
-from ....chat.choices.services import ChatChoicesOutputs
 from ....chat.choices.stream.services import ChatChoicesStreamRequest
 from ....chat.choices.stream.services import ChatChoicesStreamResponse
 from ....chat.choices.stream.services import static_check_is_chat_choices_stream_service
 from ....chat.choices.stream.types import AiChoicesDeltas
 from ....chat.tools.types import Tool
 from ....configs import Config
-from ....resources import UseResources
+from ....http.stream import BytesHttpStreamResponseBuilder
+from ....http.stream import SimpleSseLinesHttpStreamResponseHandler
 from ....standard import ApiKey
-from ....stream.services import StreamResponseSink
-from ....stream.services import new_stream_response
 from .chat import GroqChatChoicesService
 from .names import MODEL_NAMES
 from .protocol import build_gq_request_messages
@@ -50,6 +47,35 @@ class GroqChatChoicesStreamService:
             self._model_name = cc.pop(GroqChatChoicesService.DEFAULT_MODEL_NAME)
             self._api_key = ApiKey.pop_secret(cc, env='GROQ_API_KEY')
 
+    URL: ta.ClassVar[str] = 'https://api.groq.com/openai/v1/chat/completions'
+
+    def _process_sse(self, so: sse.SseDecoderOutput) -> ta.Sequence[AiChoicesDeltas | None]:
+        if not (isinstance(so, sse.SseEvent) and so.type == b'message'):
+            return []
+
+        ss = so.data.decode('utf-8')
+        if ss == '[DONE]':
+            return [None]
+
+        sj = json.loads(ss)  # ChatCompletionChunk
+
+        check.state(sj['object'] == 'chat.completion.chunk')
+
+        ccc = msh.unmarshal(sj, pt.ChatCompletionChunk)
+
+        # FIXME: stop reason
+        if not ccc.choices:
+            return []
+
+        if any(choice.finish_reason for choice in ccc.choices):
+            check.state(all(choice.finish_reason for choice in ccc.choices))
+            return [None]
+
+        return [AiChoicesDeltas([
+            build_mc_ai_choice_deltas(choice.delta)
+            for choice in ccc.choices
+        ])]
+
     READ_CHUNK_SIZE: ta.ClassVar[int] = -1
 
     async def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
@@ -69,7 +95,7 @@ class GroqChatChoicesStreamService:
         raw_request = msh.marshal(gq_request)
 
         http_request = http.HttpRequest(
-            'https://api.groq.com/openai/v1/chat/completions',
+            self.URL,
             headers={
                 http.consts.HEADER_CONTENT_TYPE: http.consts.CONTENT_TYPE_JSON,
                 http.consts.HEADER_AUTH: http.consts.format_bearer_auth_header(check.not_none(self._api_key).reveal()),
@@ -78,50 +104,11 @@ class GroqChatChoicesStreamService:
             data=json.dumps(raw_request).encode('utf-8'),
         )
 
-        async with UseResources.or_new(request.options) as rs:
-            http_client = await rs.enter_async_context(http.manage_async_client(self._http_client))
-            http_response = await rs.enter_async_context(await http_client.stream_request(http_request))
-
-            async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ta.Sequence[ChatChoicesOutputs]:
-                db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
-                sd = sse.SseDecoder()
-                while True:
-                    b = await http_response.stream.read1(self.READ_CHUNK_SIZE)
-                    for l in db.feed(b):
-                        if isinstance(l, DelimitingBuffer.Incomplete):
-                            # FIXME: handle
-                            raise TypeError(l)
-
-                        # FIXME: https://platform.openai.com/docs/guides/function-calling?api-mode=responses#streaming
-                        for so in sd.process_line(l):
-                            if isinstance(so, sse.SseEvent) and so.type == b'message':
-                                ss = so.data.decode('utf-8')
-                                if ss == '[DONE]':
-                                    return []
-
-                                sj = json.loads(ss)  # ChatCompletionChunk
-
-                                check.state(sj['object'] == 'chat.completion.chunk')
-
-                                ccc = msh.unmarshal(sj, pt.ChatCompletionChunk)
-
-                                # FIXME: stop reason
-                                if not ccc.choices:
-                                    continue
-
-                                if any(choice.finish_reason for choice in ccc.choices):
-                                    check.state(all(choice.finish_reason for choice in ccc.choices))
-                                    break
-
-                                await sink.emit(AiChoicesDeltas([
-                                    build_mc_ai_choice_deltas(choice.delta)
-                                    for choice in ccc.choices
-                                ]))
-
-                    if not b:
-                        return []
-
-            # raw_response = json.loads(check.not_none(http_response.data).decode('utf-8'))
-            # return rh.build_response(raw_response)
-
-            return await new_stream_response(rs, inner)
+        return await BytesHttpStreamResponseBuilder(
+            self._http_client,
+            lambda http_response: SimpleSseLinesHttpStreamResponseHandler(self._process_sse).as_lines().as_bytes(),
+            read_chunk_size=self.READ_CHUNK_SIZE,
+        ).new_stream_response(
+            http_request,
+            request.options,
+        )

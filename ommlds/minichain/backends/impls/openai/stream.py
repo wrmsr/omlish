@@ -19,7 +19,7 @@ from ....chat.choices.stream.types import AiChoicesDeltas
 from ....chat.choices.stream.types import ChatChoicesStreamOption
 from ....configs import Config
 from ....http.stream import BytesHttpStreamResponseBuilder
-from ....http.stream import SseHttpStreamResponseHandler
+from ....http.stream import SimpleSseLinesHttpStreamResponseHandler
 from ....resources import ResourcesOption
 from ....standard import ApiKey
 from ....stream.services import StreamOption
@@ -51,6 +51,8 @@ class OpenaiChatChoicesStreamService:
             self._model_name = cc.pop(OpenaiChatChoicesService.DEFAULT_MODEL_NAME)
             self._api_key = ApiKey.pop_secret(cc, env='OPENAI_API_KEY')
 
+    URL: ta.ClassVar[str] = 'https://api.openai.com/v1/chat/completions'
+
     def _process_sse(self, so: sse.SseDecoderOutput) -> ta.Sequence[AiChoicesDeltas | None]:
         if not (isinstance(so, sse.SseEvent) and so.type == b'message'):
             return []
@@ -78,14 +80,6 @@ class OpenaiChatChoicesStreamService:
             for choice in ccc.choices
         ])]
 
-    @ta.final
-    class _ResponseHandler(SseHttpStreamResponseHandler):
-        def __init__(self, owner: 'OpenaiChatChoicesStreamService') -> None:
-            self._owner = owner
-
-        def process_sse(self, so: sse.SseDecoderOutput) -> ta.Iterable:
-            return self._owner._process_sse(so)  # noqa
-
     READ_CHUNK_SIZE: ta.ClassVar[int] = -1
 
     async def invoke(self, request: ChatChoicesStreamRequest) -> ChatChoicesStreamResponse:
@@ -108,7 +102,7 @@ class OpenaiChatChoicesStreamService:
         raw_request = msh.marshal(rh.oai_request())
 
         http_request = http.HttpRequest(
-            'https://api.openai.com/v1/chat/completions',
+            self.URL,
             headers={
                 http.consts.HEADER_CONTENT_TYPE: http.consts.CONTENT_TYPE_JSON,
                 http.consts.HEADER_AUTH: http.consts.format_bearer_auth_header(check.not_none(self._api_key).reveal()),
@@ -118,7 +112,7 @@ class OpenaiChatChoicesStreamService:
 
         return await BytesHttpStreamResponseBuilder(
             self._http_client,
-            lambda http_response: self._ResponseHandler(self).as_lines().as_bytes(),
+            lambda http_response: SimpleSseLinesHttpStreamResponseHandler(self._process_sse).as_lines().as_bytes(),
             read_chunk_size=self.READ_CHUNK_SIZE,
         ).new_stream_response(
             http_request,

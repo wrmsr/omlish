@@ -124,7 +124,7 @@
     "module": ".minichain.backends.impls.cerebras.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/cerebras/stream.py",
-    "line": 33,
+    "line": 30,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.cerebras.stream",
@@ -248,7 +248,7 @@
     "module": ".minichain.backends.impls.google.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/google/stream.py",
-    "line": 38,
+    "line": 35,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.google.stream",
@@ -302,7 +302,7 @@
     "module": ".minichain.backends.impls.groq.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/groq/stream.py",
-    "line": 34,
+    "line": 31,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.groq.stream",

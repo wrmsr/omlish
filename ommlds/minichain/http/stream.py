@@ -180,3 +180,16 @@ class SseLinesHttpStreamResponseHandler(LinesHttpStreamResponseHandler):
 
     def finish(self) -> ta.Sequence[Output]:
         return self._handler.finish()
+
+
+#
+
+
+class SimpleSseLinesHttpStreamResponseHandler(SseHttpStreamResponseHandler):
+    def __init__(self, fn: ta.Callable[[sse.SseDecoderOutput], ta.Iterable]) -> None:
+        super().__init__()
+
+        self._fn = fn
+
+    def process_sse(self, so: sse.SseDecoderOutput) -> ta.Iterable:
+        return self._fn(so)
