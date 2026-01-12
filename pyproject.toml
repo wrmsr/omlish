@@ -42,7 +42,6 @@ requires = ['-rrequirements-ext.txt']
 [tool.omlish.pyproject.venvs.debug]
 interp = '@13d'
 inherits = ['_default']
-requires = ['-rrequirements-dev.txt']
 
 [tool.omlish.pyproject.venvs.check]
 inherits = ['_default']
@@ -73,6 +72,17 @@ interp = '@14'
 [tool.omlish.pyproject.venvs.'14t']
 inherits = ['_default']
 interp = '@14t'
+
+[tool.omlish.pyproject.venvs.'15']
+inherits = ['_default']
+requires = []
+interp = '@15'
+
+[tool.omlish.pyproject.venvs.'15t']
+inherits = ['_default']
+requires = []
+interp = '@15t'
+
 
 #
 
