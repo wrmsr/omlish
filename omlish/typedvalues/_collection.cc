@@ -159,6 +159,11 @@ static PyObject * init_typed_values_collection(PyObject *module, PyObject *const
     // Map from unique type to list of typed values
     std::unordered_map<PyObject*, std::vector<PyObject*>> unique_dct;
 
+    struct UniqueKeysCleaner {
+        std::unordered_map<PyObject*, std::vector<PyObject*>> &map;
+        ~UniqueKeysCleaner() { for (auto &pair : map) Py_DECREF(pair.first); }
+    } keys_cleaner{unique_dct};
+
     // Process each typed value
     for (Py_ssize_t i = 0; i < nargs; i++) {
         PyObject *tv = args[i];
@@ -217,7 +222,13 @@ static PyObject * init_typed_values_collection(PyObject *module, PyObject *const
             }
 
             // Add to unique_dct
-            std::vector<PyObject*> &unique_lst = unique_dct[unique_tv_cls];
+            // Use insert to avoid reference leak: if key already exists, we need to decref the new reference
+            auto insertion = unique_dct.insert({unique_tv_cls, std::vector<PyObject*>()});
+            if (!insertion.second) {
+                // Key already existed, decref the newly acquired reference
+                Py_DECREF(unique_tv_cls);
+            }
+            std::vector<PyObject*> &unique_lst = insertion.first->second;
             unique_lst.push_back(tv);
 
             // Create UniqueInfo
@@ -257,19 +268,12 @@ static PyObject * init_typed_values_collection(PyObject *module, PyObject *const
     // Build output structures
     PyObject *lst = PyList_New(0);
     if (lst == nullptr) {
-        // Clean up unique_dct keys
-        for (auto &pair : unique_dct) {
-            Py_DECREF(pair.first);
-        }
         return nullptr;
     }
 
     PyObject *tmp_dct = PyDict_New();
     if (tmp_dct == nullptr) {
         Py_DECREF(lst);
-        for (auto &pair : unique_dct) {
-            Py_DECREF(pair.first);
-        }
         return nullptr;
     }
 
@@ -284,9 +288,6 @@ static PyObject * init_typed_values_collection(PyObject *module, PyObject *const
                 if (PyList_Append(lst, info->tv) == -1) {
                     Py_DECREF(lst);
                     Py_DECREF(tmp_dct);
-                    for (auto &pair : unique_dct) {
-                        Py_DECREF(pair.first);
-                    }
                     return nullptr;
                 }
 
@@ -294,9 +295,6 @@ static PyObject * init_typed_values_collection(PyObject *module, PyObject *const
                 if (PyDict_SetItem(tmp_dct, info->unique_tv_cls, info->tv) == -1) {
                     Py_DECREF(lst);
                     Py_DECREF(tmp_dct);
-                    for (auto &pair : unique_dct) {
-                        Py_DECREF(pair.first);
-                    }
                     return nullptr;
                 }
             }
@@ -307,9 +305,6 @@ static PyObject * init_typed_values_collection(PyObject *module, PyObject *const
             if (PyList_Append(lst, tv) == -1) {
                 Py_DECREF(lst);
                 Py_DECREF(tmp_dct);
-                for (auto &pair : unique_dct) {
-                    Py_DECREF(pair.first);
-                }
                 return nullptr;
             }
 
@@ -318,14 +313,18 @@ static PyObject * init_typed_values_collection(PyObject *module, PyObject *const
             PyObject *existing = PyDict_GetItem(tmp_dct, tv_type);  // Borrowed reference
 
             if (existing == nullptr) {
+                // Check if an error occurred during lookup
+                if (PyErr_Occurred()) {
+                    Py_DECREF(lst);
+                    Py_DECREF(tmp_dct);
+                    return nullptr;
+                }
+
                 // Create new list
                 PyObject *new_list = PyList_New(0);
                 if (new_list == nullptr) {
                     Py_DECREF(lst);
                     Py_DECREF(tmp_dct);
-                    for (auto &pair : unique_dct) {
-                        Py_DECREF(pair.first);
-                    }
                     return nullptr;
                 }
 
@@ -333,9 +332,6 @@ static PyObject * init_typed_values_collection(PyObject *module, PyObject *const
                     Py_DECREF(new_list);
                     Py_DECREF(lst);
                     Py_DECREF(tmp_dct);
-                    for (auto &pair : unique_dct) {
-                        Py_DECREF(pair.first);
-                    }
                     return nullptr;
                 }
 
@@ -343,9 +339,6 @@ static PyObject * init_typed_values_collection(PyObject *module, PyObject *const
                     Py_DECREF(new_list);
                     Py_DECREF(lst);
                     Py_DECREF(tmp_dct);
-                    for (auto &pair : unique_dct) {
-                        Py_DECREF(pair.first);
-                    }
                     return nullptr;
                 }
 
@@ -355,18 +348,10 @@ static PyObject * init_typed_values_collection(PyObject *module, PyObject *const
                 if (PyList_Append(existing, tv) == -1) {
                     Py_DECREF(lst);
                     Py_DECREF(tmp_dct);
-                    for (auto &pair : unique_dct) {
-                        Py_DECREF(pair.first);
-                    }
                     return nullptr;
                 }
             }
         }
-    }
-
-    // Clean up unique_dct keys
-    for (auto &pair : unique_dct) {
-        Py_DECREF(pair.first);
     }
 
     // Convert list to tuple
@@ -477,14 +462,8 @@ static int collection_exec(PyObject *module)
     }
 
     state->typed_value_type = PyObject_GetAttrString(values_module, "TypedValue");
-    Py_DECREF(values_module);
     if (state->typed_value_type == nullptr) {
-        return -1;
-    }
-
-    // Import UniqueTypedValue
-    values_module = PyImport_ImportModule("omlish.typedvalues.values");
-    if (values_module == nullptr) {
+        Py_DECREF(values_module);
         return -1;
     }
 
