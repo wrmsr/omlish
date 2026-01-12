@@ -1,0 +1,1 @@
+- lite prep: flat namespacing - Buffers* suffixes? where do errors go?

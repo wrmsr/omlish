@@ -324,6 +324,9 @@
     (In general, do not even assume to have a readable filesystem). Write code compatible with zipfile python dists and
     pyoxidizer in which there is no `__file__`. Access resources via `lang.get_package_resources` /
     `lang.get_relative_resources`.
+  - In general, with very rare exception, 'everything (that does IO) needs a timeout', but the default may be large
+    enough to never be realistically hit in practice (think 5m for interactive work, 1h for background work).
+    - By default all pytests already run with a standard timeout.
 
 
 ### C Extensions
