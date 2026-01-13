@@ -27,9 +27,9 @@ bitsandbytes==0.49.1
 black==25.12.0
 bleach==6.3.0
 blobfile==3.1.0
-boto3==1.42.25
-botocore==1.42.25
-botocore-stubs==1.42.25
+boto3==1.42.26
+botocore==1.42.26
+botocore-stubs==1.42.26
 brotli==1.2.0
 build==1.4.0
 cachetools==6.2.4
@@ -192,7 +192,7 @@ pluggy==1.6.0
 pprintpp==0.4.0
 primp==0.15.0
 priority==2.0.0
-prometheus_client==0.23.1
+prometheus_client==0.24.0
 prompt_toolkit==3.0.52
 propcache==0.4.1
 proto-plus==1.27.0
@@ -313,7 +313,7 @@ trio==0.32.0
 trio_asyncio==0.15.0
 twine==6.2.0
 types-awscrt==0.31.0
-types-boto3==1.42.25
+types-boto3==1.42.26
 types-greenlet==3.3.0.20251206
 types-paramiko==4.0.0.20250822
 types-psutil==7.2.1.20251231
