@@ -26,12 +26,28 @@ class LinearBytesBuffer:
         (A truly zero-copy split view would require pinning the underlying bytearray against compaction.)
     """
 
-    def __init__(self, *, max_bytes: ta.Optional[int] = None) -> None:
+    def __init__(
+            self,
+            *,
+            max_bytes: ta.Optional[int] = None,
+            initial_capacity: int = 0,
+    ) -> None:
         super().__init__()
 
-        self._ba = bytearray()
-
         self._max_bytes = None if max_bytes is None else int(max_bytes)
+
+        if initial_capacity < 0:
+            raise ValueError(initial_capacity)
+        if self._max_bytes is not None and initial_capacity > self._max_bytes:
+            raise BufferTooLarge('buffer exceeded max_bytes')
+
+        # Pre-size the backing store to encourage fewer resizes/copies on trickle-y writes.
+        # We immediately clear so readable length remains 0.
+        if initial_capacity:
+            self._ba = bytearray(initial_capacity)
+            self._ba.clear()
+        else:
+            self._ba = bytearray()
 
     _rpos = 0
     _wpos = 0

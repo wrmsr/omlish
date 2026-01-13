@@ -38,9 +38,17 @@ from .reading import (  # noqa
     read_u32_le,
 )
 
+from .scanning import (  # noqa
+    ScanningBytesBuffer,
+)
+
 from .segmented import (  # noqa
     SegmentedBytesView,
     SegmentedBytesBuffer,
+)
+
+from .spilling import (  # noqa
+    SpillingBytesBuffer,
 )
 
 from .types import (  # noqa
