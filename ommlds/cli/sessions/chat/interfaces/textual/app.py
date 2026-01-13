@@ -1,3 +1,8 @@
+"""
+TODO:
+ - textual.getters.query_one
+ - AUTO_FOCUS
+"""
 import asyncio
 import os
 import typing as ta
@@ -15,6 +20,7 @@ from ...drivers.events.types import AiDeltaChatEvent
 from ...drivers.events.types import AiMessagesChatEvent
 from ...drivers.types import ChatDriver
 from ...facades.facade import ChatFacade
+from .inputhistory import InputHistoryManager
 from .styles import read_app_css
 from .widgets.input import InputOuter
 from .widgets.input import InputTextArea
@@ -55,6 +61,7 @@ class ChatApp(tx.App):
             chat_event_queue: ChatEventQueue,
             backend_name: BackendName | None = None,
             devtools_setup: tx.DevtoolsSetup | None = None,
+            input_history_manager: InputHistoryManager,
     ) -> None:
         super().__init__()
 
@@ -65,6 +72,7 @@ class ChatApp(tx.App):
         self._chat_driver = chat_driver
         self._chat_event_queue = chat_event_queue
         self._backend_name = backend_name
+        self._input_history_manager = input_history_manager
 
         self._chat_action_queue: asyncio.Queue[ta.Any] = asyncio.Queue()
 
@@ -264,6 +272,14 @@ class ChatApp(tx.App):
         )
 
         await self._chat_action_queue.put(ChatApp.UserInput(event.text))
+
+    @tx.on(InputTextArea.HistoryPrevious)
+    async def on_input_text_area_history_previous(self, event: InputTextArea.HistoryPrevious) -> None:
+        pass
+
+    @tx.on(InputTextArea.HistoryNext)
+    async def on_input_text_area_history_next(self, event: InputTextArea.HistoryNext) -> None:
+        pass
 
     @tx.on(tx.Key)
     async def on_key(self, event: tx.Key) -> None:

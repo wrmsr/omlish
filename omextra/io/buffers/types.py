@@ -9,7 +9,47 @@ BytesLike = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
 ##
 
 
-class BytesView(ta.Protocol):
+class BytesViewLike(ta.Protocol):
+    def __len__(self) -> int:
+        """
+        Return the number of readable bytes.
+
+        This is expected to be O(1). Many drivers and codecs use `len(buf)` in tight loops to decide whether more data
+        is needed before attempting to parse a frame.
+        """
+
+    def peek(self) -> memoryview:
+        """
+        Return a contiguous, read-only `memoryview` of the first available bytes.
+
+        This is the "next chunk" fast-path: for segmented views, the returned memoryview may represent only the first
+        segment (and thus may be shorter than `len(self)`), but it must be non-copying. This is the fast-path for codecs
+        that can parse headers from an initial contiguous region.
+
+        The returned view should be treated as ephemeral: callers must assume it may be invalidated by subsequent buffer
+        mutations (advance/write/reserve/commit), depending on the implementation.
+        """
+
+    def segments(self) -> ta.Sequence[memoryview]:
+        """
+        Return the readable contents as an ordered sequence of non-copying `memoryview` segments.
+
+        This method is required because efficient operations in pure Python typically depend on delegating work to
+        CPython's optimized implementations for searching/slicing within contiguous regions. By exposing
+        already-contiguous segments, the buffer enables implementations of `find/rfind` and higher-level framing to
+        avoid Python-level per-byte iteration.
+
+        The returned segments must:
+          - collectively represent exactly the readable bytes, in order,
+          - be 1-D, byte-oriented views (itemsize 1),
+          - be non-copying views of the underlying storage.
+
+        Callers must assume that the returned views may be invalidated by subsequent mutations of the originating
+        buffer/view (e.g., advancing, writing, reserving, committing), depending on the implementation's rules.
+        """
+
+
+class BytesView(BytesViewLike, ta.Protocol):
     """
     A read-only, possibly non-contiguous view of bytes.
 
@@ -25,34 +65,6 @@ class BytesView(ta.Protocol):
     bytes were concatenated in order.
     """
 
-    def __len__(self) -> int:
-        """Return the number of readable bytes in this view (expected O(1))."""
-
-    def peek(self) -> memoryview:
-        """
-        Return a contiguous, read-only `memoryview` of the first available bytes.
-
-        This is the "next chunk" fast-path: for segmented views, the returned memoryview may represent only the first
-        segment (and thus may be shorter than `len(self)`), but it must be non-copying.
-        """
-
-    def segments(self) -> ta.Sequence[memoryview]:
-        """
-        Return the readable contents as an ordered sequence of non-copying `memoryview` segments.
-
-        This method is required because, in pure Python, protocols and codecs generally cannot afford to re-scan and
-        re-slice byte-by-byte efficiently in Python-space. Exposing already-contiguous segments enables implementations
-        to delegate heavy work (searching, slicing) to CPython's C-accelerated primitives on `bytes`/`bytearray`/views.
-
-        The returned segments must:
-          - collectively represent exactly the readable bytes, in order,
-          - be 1-D, byte-oriented views (itemsize 1),
-          - be non-copying views of the underlying storage.
-
-        Callers must assume that the returned views may be invalidated by subsequent mutations of the originating
-        buffer/view (e.g., advancing, writing, reserving, committing), depending on the implementation's rules.
-        """
-
     def tobytes(self) -> bytes:
         """
         Materialize this view as a contiguous `bytes` object (copying).
@@ -62,7 +74,7 @@ class BytesView(ta.Protocol):
         """
 
 
-class BytesBuffer(ta.Protocol):
+class BytesBuffer(BytesViewLike, ta.Protocol):
     """
     An incremental, consumption-oriented byte accumulator intended for protocol parsing.
 
@@ -91,43 +103,6 @@ class BytesBuffer(ta.Protocol):
       is physically segmented. This is what "stream-correct" means here: results must be correct regardless of how the
       buffered bytes are chunked internally.
     """
-
-    def __len__(self) -> int:
-        """
-        Return the number of currently readable bytes.
-
-        This is expected to be O(1). Many drivers and codecs use `len(buf)` in tight loops to decide whether more data
-        is needed before attempting to parse a frame.
-        """
-
-    def peek(self) -> memoryview:
-        """
-        Return a contiguous `memoryview` of the first available readable bytes (non-copying).
-
-        For segmented buffers, the returned view may represent only the first segment and may be shorter than
-        `len(self)`. This is the fast-path for codecs that can parse headers from an initial contiguous region.
-
-        The returned view should be treated as ephemeral: callers must assume it may be invalidated by subsequent buffer
-        mutations (advance/write/reserve/commit), depending on the implementation.
-        """
-
-    def segments(self) -> ta.Sequence[memoryview]:
-        """
-        Return the readable contents as an ordered sequence of non-copying `memoryview` segments.
-
-        This method is required because efficient operations in pure Python typically depend on delegating work to
-        CPython's optimized implementations for searching/slicing within contiguous regions. By exposing
-        already-contiguous segments, the buffer enables implementations of `find/rfind` and higher-level framing to
-        avoid Python-level per-byte iteration.
-
-        The returned segments must:
-          - collectively represent exactly the readable bytes, in order,
-          - be 1-D, byte-oriented views (itemsize 1),
-          - be non-copying views of the underlying storage.
-
-        Callers must assume the views may be invalidated by subsequent buffer mutations as described by the
-        implementation.
-        """
 
     def advance(self, n: int, /) -> None:
         """

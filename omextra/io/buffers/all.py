@@ -50,3 +50,10 @@ from .types import (  # noqa
     BytesBuffer,
     MutableBytesBuffer,
 )
+
+from .utils import (  # noqa
+    can_bytes,
+    iter_bytes_segments,
+    to_bytes,
+    bytes_len,
+)

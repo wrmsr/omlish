@@ -6,7 +6,7 @@ from .errors import BufferTooLarge
 from .errors import NoOutstandingReserve
 from .errors import OutstandingReserve
 from .types import BytesLike
-from .utils import norm_slice
+from .utils import _norm_slice
 
 
 ##
@@ -23,9 +23,10 @@ class SegmentedBytesView:
         super().__init__()
 
         self._segs = tuple(segs)
-        self._len = 0
         for mv in self._segs:
             self._len += len(mv)
+
+    _len = 0
 
     def __len__(self) -> int:
         return self._len
@@ -58,13 +59,14 @@ class SegmentedBytesBuffer:
         super().__init__()
 
         self._segs: ta.List[ta.Union[bytes, bytearray]] = []
-        self._head_off = 0
-        self._len = 0
-
-        self._reserved: ta.Optional[bytearray] = None
-        self._reserved_len = 0
 
         self._max_bytes = None if max_bytes is None else int(max_bytes)
+
+    _head_off = 0
+    _len = 0
+
+    _reserved: ta.Optional[bytearray] = None
+    _reserved_len = 0
 
     def __len__(self) -> int:
         return self._len
@@ -280,7 +282,7 @@ class SegmentedBytesBuffer:
         return memoryview(self._segs[0])[:n]
 
     def find(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
-        start, end = norm_slice(len(self), start, end)
+        start, end = _norm_slice(len(self), start, end)
 
         m = len(sub)
         if m == 0:
@@ -343,7 +345,7 @@ class SegmentedBytesBuffer:
         return -1
 
     def rfind(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
-        start, end = norm_slice(len(self), start, end)
+        start, end = _norm_slice(len(self), start, end)
 
         m = len(sub)
         if m == 0:

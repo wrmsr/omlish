@@ -131,7 +131,7 @@ class BytesBufferReaderAdapter:
                 raise NeedMoreData
 
             # block
-            if not ta.cast(ta.Callable[[], bool], self._fill)():
+            if not ta.cast('ta.Callable[[], bool]', self._fill)():
                 # EOF
                 if ln == 0:
                     return b''

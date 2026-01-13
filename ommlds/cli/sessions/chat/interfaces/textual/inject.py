@@ -20,6 +20,7 @@ with lang.auto_proxy_import(globals()):
     from ...facades import ui as _facades_ui
     from . import app as _app
     from . import facades as _facades
+    from . import inputhistory as _inputhistory
     from . import interface as _interface
     from . import tools as _tools
 
@@ -90,6 +91,12 @@ def bind_textual(cfg: TextualInterfaceConfig = TextualInterfaceConfig()) -> inj.
     els.extend([
         inj.bind(_facades.ChatAppUiMessageDisplayer, singleton=True),
         inj.bind(_facades_ui.UiMessageDisplayer, to_key=_facades.ChatAppUiMessageDisplayer),
+    ])
+
+    #
+
+    els.extend([
+        inj.bind(_inputhistory.InputHistoryManager, singleton=True),
     ])
 
     #

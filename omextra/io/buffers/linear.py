@@ -7,7 +7,7 @@ from .errors import NoOutstandingReserve
 from .errors import OutstandingReserve
 from .segmented import SegmentedBytesView
 from .types import BytesLike
-from .utils import norm_slice
+from .utils import _norm_slice
 
 
 ##
@@ -30,13 +30,14 @@ class LinearBytesBuffer:
         super().__init__()
 
         self._ba = bytearray()
-        self._rpos = 0
-        self._wpos = 0
-
-        self._resv_start: ta.Optional[int] = None
-        self._resv_len = 0
 
         self._max_bytes = None if max_bytes is None else int(max_bytes)
+
+    _rpos = 0
+    _wpos = 0
+
+    _resv_start: ta.Optional[int] = None
+    _resv_len = 0
 
     _resv_buf: bytearray
 
@@ -159,14 +160,14 @@ class LinearBytesBuffer:
         return SegmentedBytesView((memoryview(b),))
 
     def find(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
-        start, end = norm_slice(len(self), start, end)
+        start, end = _norm_slice(len(self), start, end)
         if len(sub) == 0:
             return start
         i = self._ba.find(sub, self._rpos + start, self._rpos + end)
         return -1 if i < 0 else (i - self._rpos)
 
     def rfind(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
-        start, end = norm_slice(len(self), start, end)
+        start, end = _norm_slice(len(self), start, end)
         if len(sub) == 0:
             return end
         i = self._ba.rfind(sub, self._rpos + start, self._rpos + end)
