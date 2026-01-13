@@ -1,7 +1,3 @@
-"""
-TODO:
- - add origin to Id
-"""
 import itertools
 import typing as ta
 

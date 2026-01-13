@@ -1,26 +1,3 @@
-"""
-TODO:
- - ** can currently bind in a child/private scope shadowing an external parent binding **
- - better source tracking
- - scope bindings, auto in root
- - injector-internal / blacklisted bindings (Injector itself, default scopes) without rebuilding ElementCollection
- - config - proxies, impl select, etc
-  - config is probably shared with ElementCollection... but not 'bound', must be shared everywhere
-  - InjectorRoot object?
- - ** eagers in any scope, on scope init/open
- - unions - raise on ambiguous - usecase: sql.AsyncEngineLike
- - multiple live request scopes on single injector - use private injectors?
- - more listeners - UnboundKeyListener
-  - lazy parent listener chain cache thing
- - https://github.com/7mind/izumi-chibi-ts
-  - Axis tagging for conditional bindings (e.g., dev vs prod implementations)
-  - Fail-fast validation with circular and missing dependency detection
- - * ta.Annotated as alternative to tag *
-  - need to pre-collect all tags (/type pairs?) in CollectedElements, scan for only those, strip Annotated otherwise
-   - KwargsTarget cache needs an additional weak key dimension of Annotated type set
- - pre-generate, or cache, KT -> provision / injection action graph
-  - move towards efficient RequestScope usecase
-"""
 import contextlib
 import functools
 import itertools

@@ -1,7 +1,3 @@
-"""
-TODO:
- - SCOPED - eagers for EACH SCOPE
-"""
 from .. import check
 from .. import dataclasses as dc
 from .. import lang

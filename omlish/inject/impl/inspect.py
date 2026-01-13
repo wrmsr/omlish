@@ -1,11 +1,3 @@
-"""
-TODO:
- - cache kwarg_keys
- - tag annotations? x: ta.Annotated[int, inj.Tag('foo')]
- - tag decorator - @inj.tag(x='foo')
- - *unpack optional here*
- - use ...metadata
-"""
 import dataclasses as dc
 import inspect
 import typing as ta

@@ -1,8 +1,5 @@
 """
 TODO:
- - DynamicSetBinding / DynamicMapBinding ? provider of set[T] / map[K, V] ?
-  - doable not guicey - too much dynamism
- - scopes
 """
 import collections.abc
 import typing as ta
