@@ -215,7 +215,7 @@ class JsonStreamParser(GenMachine[Token, Event]):
         except GeneratorExit:
             raise JsonStreamParseError('Expected object body') from None
 
-        if tok.kind == 'STRING' or (self._allow_trailing_commas and tok.kind == 'IDENT'):
+        if tok.kind == 'STRING' or (self._allow_extended_idents and tok.kind == 'IDENT'):
             k = tok.value
 
             try:

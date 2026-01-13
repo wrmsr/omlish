@@ -338,7 +338,6 @@ class JsonStreamLexer(GenMachine[str, Token]):
             self._line = line
             self._col = col
 
-        last = None
         while True:
             c: str | None = None
 
@@ -358,7 +357,7 @@ class JsonStreamLexer(GenMachine[str, Token]):
                         ofs += skip_to - char_in_str_pos
                         if (np := char_in_str.rfind('\n', char_in_str_pos, skip_to)) >= 0:
                             line += char_in_str.count('\n', char_in_str_pos, skip_to)
-                            col = np - char_in_str_pos
+                            col = skip_to - np - 1
                         else:
                             col += skip_to - char_in_str_pos
                         buf.write(char_in_str[char_in_str_pos:skip_to])
@@ -406,9 +405,18 @@ class JsonStreamLexer(GenMachine[str, Token]):
                 self._raise(f'Unterminated string literal: {buf.getvalue()}')
 
             buf.write(c)
-            if c == q and last != '\\':
-                break
-            last = c
+            if c == q:
+                # Count consecutive backslashes before this quote
+                backslash_count = 0
+                buf_val = buf.getvalue()
+                check_pos = len(buf_val) - 2  # -2 because we just wrote the quote
+                while check_pos >= 0 and buf_val[check_pos] == '\\':
+                    backslash_count += 1
+                    check_pos -= 1
+
+                # Quote is escaped only if preceded by odd number of backslashes
+                if backslash_count % 2 == 0:
+                    break
 
         restore_state()
 
