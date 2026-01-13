@@ -29,7 +29,7 @@ class Project(ProjectBase):
             'tiktoken ~= 0.12',
 
             # 'tinygrad @ git+https://github.com/tinygrad/tinygrad',
-            'tinygrad ~= 0.11',
+            'tinygrad ~= 0.12',
 
             'tokenizers ~= 0.22',
 

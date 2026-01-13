@@ -95,7 +95,14 @@ def bind_textual(cfg: TextualInterfaceConfig = TextualInterfaceConfig()) -> inj.
 
     #
 
+    def _make_input_history_storage() -> _inputhistory.InputHistoryStorage:
+        if cfg.input_history_file is not None:
+            return _inputhistory.FileInputHistoryStorage(path=cfg.input_history_file)
+        else:
+            return _inputhistory.InMemoryInputHistoryStorage()
+
     els.extend([
+        inj.bind(_inputhistory.InputHistoryStorage, to_fn=_make_input_history_storage, singleton=True),
         inj.bind(_inputhistory.InputHistoryManager, singleton=True),
     ])
 
