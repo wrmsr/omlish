@@ -2,6 +2,9 @@
 # @omlish-lite
 import typing as ta
 
+from .types import BytesView
+from .types import BytesViewLike
+
 
 ##
 
@@ -33,41 +36,41 @@ def _norm_slice(length: int, start: int, end: ta.Optional[int]) -> ta.Tuple[int,
 ##
 
 
-def can_bytes(obg: ta.Any) -> bool:
-    return isinstance(obg, (bytes, bytearray, memoryview)) or hasattr(obg, 'segments')
+def can_bytes(obj: ta.Any) -> bool:
+    return isinstance(obj, (bytes, bytearray, memoryview, BytesViewLike))
 
 
-def iter_bytes_segments(obg: ta.Any) -> ta.Iterator[memoryview]:
-    if isinstance(obg, memoryview):
-        yield obg
-    elif isinstance(obg, (bytes, bytearray)):
-        yield memoryview(obg)
-    elif hasattr(obg, 'segments'):
-        yield from ta.cast('ta.Iterable[memoryview]', obg.segments())
+def iter_bytes_segments(obj: ta.Any) -> ta.Iterator[memoryview]:
+    if isinstance(obj, memoryview):
+        yield obj
+    elif isinstance(obj, (bytes, bytearray)):
+        yield memoryview(obj)
+    elif isinstance(obj, BytesViewLike):
+        yield from obj.segments()
     else:
-        raise TypeError(obg)
+        raise TypeError(obj)
 
 
-def to_bytes(obg: ta.Any) -> bytes:
-    if isinstance(obg, bytes):
-        return obg
-    elif isinstance(obg, bytearray):
-        return bytes(obg)
-    elif isinstance(obg, memoryview):
-        return obg.tobytes()
-    elif hasattr(obg, 'tobytes'):
-        return ta.cast(bytes, obg.tobytes())
-    elif hasattr(obg, 'segments'):
-        return b''.join(bytes(mv) for mv in obg.segments())
+def to_bytes(obj: ta.Any) -> bytes:
+    if isinstance(obj, bytes):
+        return obj
+    elif isinstance(obj, bytearray):
+        return bytes(obj)
+    elif isinstance(obj, memoryview):
+        return obj.tobytes()
+    elif isinstance(obj, BytesView):
+        return obj.tobytes()
+    elif isinstance(obj, BytesViewLike):
+        return b''.join(bytes(mv) for mv in obj.segments())
     else:
-        raise TypeError(obg)
+        raise TypeError(obj)
 
 
-def bytes_len(obg: ta.Any) -> int:
-    if isinstance(obg, (bytes, bytearray, memoryview)):
-        return len(obg)
-    elif hasattr(obg, 'segments'):
-        return sum(len(mv) for mv in obg.segments())
+def bytes_len(obj: ta.Any) -> int:
+    if isinstance(obj, (bytes, bytearray, memoryview)):
+        return len(obj)
+    elif isinstance(obj, BytesViewLike):
+        return sum(len(mv) for mv in obj.segments())
     else:
         # Not bytes-like
         return 0

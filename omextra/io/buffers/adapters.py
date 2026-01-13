@@ -7,6 +7,8 @@ import typing as ta
 from .errors import NeedMoreData
 from .segmented import SegmentedBytesView
 from .types import BytesLike
+from .types import BytesView
+from .types import BytesViewLike
 
 
 ##
@@ -26,6 +28,7 @@ class FileLikeRawBytesReader:
 
     def __init__(self, f: ta.Any) -> None:
         super().__init__()
+
         self._f = f
 
     def read1(self, n: int = -1, /) -> bytes:
@@ -175,6 +178,7 @@ class BytesBufferWriterAdapter:
 
     def __init__(self, f: ta.Any) -> None:
         super().__init__()
+
         self._f = f
 
     def write(self, data: ta.Any) -> int:
@@ -184,14 +188,14 @@ class BytesBufferWriterAdapter:
             b = data.tobytes() if isinstance(data, memoryview) else bytes(data)
             return ta.cast(int, f.write(b))
 
-        if hasattr(data, 'segments'):
+        if isinstance(data, BytesViewLike):
             total = 0
             for mv in data.segments():
                 total += ta.cast(int, f.write(bytes(mv)))
             return total
 
-        if hasattr(data, 'tobytes'):
-            b = ta.cast(bytes, data.tobytes())
+        if isinstance(data, BytesView):
+            b = data.tobytes()
             return ta.cast(int, f.write(b))
 
         raise TypeError(data)
@@ -215,6 +219,7 @@ class BytesIoBytesBuffer:
 
     def __init__(self) -> None:
         super().__init__()
+
         self._bio = io.BytesIO()
         self._rpos = 0
 

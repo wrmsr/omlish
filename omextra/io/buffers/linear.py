@@ -7,13 +7,14 @@ from .errors import NoOutstandingReserve
 from .errors import OutstandingReserve
 from .segmented import SegmentedBytesView
 from .types import BytesLike
+from .types import MutableBytesBuffer
 from .utils import _norm_slice
 
 
 ##
 
 
-class LinearBytesBuffer:
+class LinearBytesBuffer(MutableBytesBuffer):
     """
     A simple contiguous (bytearray-backed) MutableBytesBuffer implementation.
 

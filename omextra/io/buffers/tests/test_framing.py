@@ -10,7 +10,6 @@ from ..segmented import SegmentedBytesBuffer
 
 
 def _view_bytes(v: ta.Any) -> bytes:
-    # Support either naming convention if the caller changes it.
     if hasattr(v, 'tobytes'):
         return ta.cast(bytes, v.tobytes())
     # As a fallback, join segments.

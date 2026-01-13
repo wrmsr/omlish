@@ -4,6 +4,7 @@ import typing as ta
 
 from .errors import BufferTooLarge
 from .errors import FrameTooLarge
+from .types import BytesBuffer
 
 
 ##
@@ -65,7 +66,7 @@ class LongestMatchDelimiterFramer:
 
         self._max_delim_len = max(len(d) for d in self._delims)
 
-    def decode(self, buf: ta.Any, *, final: bool = False) -> ta.List[ta.Any]:
+    def decode(self, buf: BytesBuffer, *, final: bool = False) -> ta.List[ta.Any]:
         """
         Consume as many complete frames as possible from `buf` and return them as views.
 
@@ -110,7 +111,7 @@ class LongestMatchDelimiterFramer:
                 out.append(frame)
                 buf.advance(len(delim))
 
-    def _find_next_delim(self, buf: ta.Any) -> ta.Optional[ta.Tuple[int, bytes]]:
+    def _find_next_delim(self, buf: BytesBuffer) -> ta.Optional[ta.Tuple[int, bytes]]:
         """
         Return (pos, delim) for the earliest delimiter occurrence. If multiple delimiters occur at the same position,
         choose the longest matching delimiter.
@@ -152,7 +153,7 @@ class LongestMatchDelimiterFramer:
         # Shouldn't happen: best_pos came from some delimiter occurrence.
         return pos, best_delim
 
-    def _should_defer(self, buf: ta.Any, pos: int, matched: bytes) -> bool:
+    def _should_defer(self, buf: BytesBuffer, pos: int, matched: bytes) -> bool:
         """
         Return True if we must defer because a longer delimiter could still match starting at `pos` but we don't yet
         have enough bytes to decide.

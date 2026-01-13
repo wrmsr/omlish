@@ -2,11 +2,14 @@
 # @omlish-lite
 import typing as ta
 
+from .types import BytesLike
+from .types import MutableBytesBuffer
+
 
 ##
 
 
-class ScanningBytesBuffer:
+class ScanningBytesBuffer(MutableBytesBuffer):
     """
     A MutableBytesBuffer wrapper that caches negative-find progress to avoid repeated rescans in trickle scenarios.
 
@@ -49,6 +52,9 @@ class ScanningBytesBuffer:
         self._adjust_for_consume(n)
         return v
 
+    def coalesce(self, n: int, /) -> memoryview:
+        return self._buf.coalesce(n)
+
     def find(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
         if start != 0 or end is not None:
             return self._buf.find(sub, start, end)
@@ -77,7 +83,7 @@ class ScanningBytesBuffer:
 
     #
 
-    def write(self, data, /) -> None:
+    def write(self, data: BytesLike, /) -> None:
         self._buf.write(data)
 
     def reserve(self, n: int, /) -> memoryview:

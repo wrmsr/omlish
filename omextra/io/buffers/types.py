@@ -1,6 +1,9 @@
 # ruff: noqa: UP007 UP045
 # @omlish-lite
+import abc
 import typing as ta
+
+from omlish.lite.abstract import Abstract
 
 
 BytesLike = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
@@ -9,7 +12,8 @@ BytesLike = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
 ##
 
 
-class BytesViewLike(ta.Protocol):
+class BytesViewLike(Abstract):
+    @abc.abstractmethod
     def __len__(self) -> int:
         """
         Return the number of readable bytes.
@@ -18,6 +22,9 @@ class BytesViewLike(ta.Protocol):
         is needed before attempting to parse a frame.
         """
 
+        raise NotImplementedError
+
+    @abc.abstractmethod
     def peek(self) -> memoryview:
         """
         Return a contiguous, read-only `memoryview` of the first available bytes.
@@ -30,6 +37,9 @@ class BytesViewLike(ta.Protocol):
         mutations (advance/write/reserve/commit), depending on the implementation.
         """
 
+        raise NotImplementedError
+
+    @abc.abstractmethod
     def segments(self) -> ta.Sequence[memoryview]:
         """
         Return the readable contents as an ordered sequence of non-copying `memoryview` segments.
@@ -48,8 +58,10 @@ class BytesViewLike(ta.Protocol):
         buffer/view (e.g., advancing, writing, reserving, committing), depending on the implementation's rules.
         """
 
+        raise NotImplementedError
 
-class BytesView(BytesViewLike, ta.Protocol):
+
+class BytesView(BytesViewLike, Abstract):
     """
     A read-only, possibly non-contiguous view of bytes.
 
@@ -65,6 +77,7 @@ class BytesView(BytesViewLike, ta.Protocol):
     bytes were concatenated in order.
     """
 
+    @abc.abstractmethod
     def tobytes(self) -> bytes:
         """
         Materialize this view as a contiguous `bytes` object (copying).
@@ -73,8 +86,10 @@ class BytesView(BytesViewLike, ta.Protocol):
         feasible, and use `tobytes()` only when a contiguous owned `bytes` is required.
         """
 
+        raise NotImplementedError
 
-class BytesBuffer(BytesViewLike, ta.Protocol):
+
+class BytesBuffer(BytesViewLike, Abstract):
     """
     An incremental, consumption-oriented byte accumulator intended for protocol parsing.
 
@@ -104,6 +119,7 @@ class BytesBuffer(BytesViewLike, ta.Protocol):
       buffered bytes are chunked internally.
     """
 
+    @abc.abstractmethod
     def advance(self, n: int, /) -> None:
         """
         Consume (discard) exactly `n` readable bytes from the front of the buffer.
@@ -114,6 +130,9 @@ class BytesBuffer(BytesViewLike, ta.Protocol):
         Implementations must raise if `n` is negative or greater than `len(self)`.
         """
 
+        raise NotImplementedError
+
+    @abc.abstractmethod
     def split_to(self, n: int, /) -> BytesView:
         """
         Split off and return a read-only view of the first `n` readable bytes, consuming them from this buffer.
@@ -128,6 +147,31 @@ class BytesBuffer(BytesViewLike, ta.Protocol):
         Implementations must raise if `n` is negative or greater than `len(self)`.
         """
 
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def coalesce(self, n: int, /) -> memoryview:
+        """
+        Ensure the first `n` readable bytes are available contiguously and return a view of them.
+
+        Semantics:
+          - Non-consuming: does not advance.
+          - May restructure internal segments (content-preserving) to make the prefix contiguous.
+          - Returns a read-only-ish `memoryview` (callers must not mutate readable bytes).
+
+        Copying behavior:
+          - If `peek()` already exposes >= n contiguous bytes, this is zero-copy.
+          - Otherwise, it copies exactly the first `n` bytes into a new contiguous segment and rewrites the internal
+            segment list so that segment[0] contains that prefix.
+
+        Reserve interaction:
+          - Disallowed while an outstanding reservation exists, since reserve() hands out a view that must not be
+            invalidated by internal reshaping.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
     def find(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
         """
         Find the first occurrence of `sub` within the readable bytes and return its offset, or -1 if not found.
@@ -146,6 +190,9 @@ class BytesBuffer(BytesViewLike, ta.Protocol):
           optimized search within each segment while still providing correct stream semantics.
         """
 
+        raise NotImplementedError
+
+    @abc.abstractmethod
     def rfind(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
         """
         Find the last occurrence of `sub` within the readable bytes and return its offset, or -1 if not found.
@@ -154,8 +201,10 @@ class BytesBuffer(BytesViewLike, ta.Protocol):
         offsets into the readable region of this buffer.
         """
 
+        raise NotImplementedError
 
-class MutableBytesBuffer(BytesBuffer, ta.Protocol):
+
+class MutableBytesBuffer(BytesBuffer, Abstract):
     """
     A writable `BytesBuffer`: supports appending bytes and (optionally) reserving writable space.
 
@@ -166,6 +215,7 @@ class MutableBytesBuffer(BytesBuffer, ta.Protocol):
     Implementations may be linear (single `bytearray` + indices), segmented (multiple chunks), or adaptive.
     """
 
+    @abc.abstractmethod
     def write(self, data: BytesLike, /) -> None:
         """
         Append `data` to the end of the readable region (after any existing unread bytes).
@@ -174,6 +224,9 @@ class MutableBytesBuffer(BytesBuffer, ta.Protocol):
         while linear buffers may copy into a `bytearray`.
         """
 
+        raise NotImplementedError
+
+    @abc.abstractmethod
     def reserve(self, n: int, /) -> memoryview:
         """
         Reserve writable space for at least `n` bytes and return a writable `memoryview` into that space.
@@ -189,6 +242,9 @@ class MutableBytesBuffer(BytesBuffer, ta.Protocol):
           - mutations that would reallocate storage are forbidden while a reservation is outstanding.
         """
 
+        raise NotImplementedError
+
+    @abc.abstractmethod
     def commit(self, n: int, /) -> None:
         """
         Commit `n` bytes from the most recent reservation, making them readable.
@@ -203,3 +259,5 @@ class MutableBytesBuffer(BytesBuffer, ta.Protocol):
         After commit, the reservation is considered consumed; subsequent reads and searches must include the committed
         bytes as part of the readable region.
         """
+
+        raise NotImplementedError

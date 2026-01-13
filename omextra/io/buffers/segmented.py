@@ -6,13 +6,15 @@ from .errors import BufferTooLarge
 from .errors import NoOutstandingReserve
 from .errors import OutstandingReserve
 from .types import BytesLike
+from .types import BytesView
+from .types import MutableBytesBuffer
 from .utils import _norm_slice
 
 
 ##
 
 
-class SegmentedBytesView:
+class SegmentedBytesView(BytesView):
     """
     A read-only, possibly non-contiguous view over a sequence of byte segments.
 
@@ -47,7 +49,7 @@ class SegmentedBytesView:
         return b''.join(bytes(mv) for mv in self._segs)
 
 
-class SegmentedBytesBuffer:
+class SegmentedBytesBuffer(MutableBytesBuffer):
     """
     A segmented, consumption-oriented bytes buffer.
 
