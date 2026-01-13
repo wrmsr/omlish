@@ -174,7 +174,7 @@ class SegmentedBytesBuffer:
 
     def _ensure_active(self) -> bytearray:
         if self._chunk_size <= 0:
-            raise AssertionError('no active chunk without chunk_size')
+            raise RuntimeError('no active chunk without chunk_size')
 
         a = self._active
         if a is None:
@@ -186,15 +186,13 @@ class SegmentedBytesBuffer:
         return a
 
     def _flush_active(self) -> None:
-        a = self._active
-        if a is None:
+        if (a := self._active) is None:
             return
 
         if self._reserved_in_active:
             raise OutstandingReserve('outstanding reserve')
 
-        used = self._active_used
-        if used <= 0:
+        if (used := self._active_used) <= 0:
             if self._segs and self._segs[-1] is a:
                 self._segs.pop()
             self._active = None
@@ -204,14 +202,14 @@ class SegmentedBytesBuffer:
         # If under threshold, always bytes() to avoid pinning.
         if self._chunk_size and (float(used) / float(self._chunk_size)) < self._chunk_compact_threshold:
             if not self._segs or self._segs[-1] is not a:
-                raise AssertionError('active not at tail')
+                raise RuntimeError('active not at tail')
             self._segs[-1] = bytes(memoryview(a)[:used])
 
         else:
-            # Try to shrink in-place to used bytes. If exported views exist, this can BufferError;
-            # fall back to bytes() in that case.
+            # Try to shrink in-place to used bytes. If exported views exist, this can BufferError; fall back to bytes()
+            # in that case.
             if not self._segs or self._segs[-1] is not a:
-                raise AssertionError('active not at tail')
+                raise RuntimeError('active not at tail')
             try:
                 del a[used:]  # may raise BufferError if any exports exist
             except BufferError:
@@ -225,10 +223,10 @@ class SegmentedBytesBuffer:
             return
         if isinstance(data, memoryview):
             data = data.tobytes()
-        elif isinstance(data, bytearray):
-            pass
-        else:
-            pass
+        # elif isinstance(data, bytearray):
+        #     pass
+        # else:
+        #     pass
 
         dl = len(data)
 
@@ -371,7 +369,7 @@ class SegmentedBytesBuffer:
             self._head_off = 0
 
         if n:
-            raise AssertionError(n)
+            raise RuntimeError(n)
 
     def split_to(self, n: int, /) -> SegmentedBytesView:
         if n < 0 or n > self._len:
@@ -384,14 +382,14 @@ class SegmentedBytesBuffer:
 
         while rem:
             if not self._segs:
-                raise AssertionError(rem)
+                raise RuntimeError(rem)
 
             s0 = self._segs[0]
 
             if self._active is not None and s0 is self._active:
                 rl = self._active_readable_len()
                 if self._head_off >= rl:
-                    raise AssertionError(rem)
+                    raise RuntimeError(rem)
                 mv0 = memoryview(s0)[self._head_off:rl]
             else:
                 mv0 = memoryview(s0)
@@ -593,12 +591,14 @@ class SegmentedBytesBuffer:
                 if seg_len >= tail_need:
                     tail = s[off + seg_len - tail_need:off + seg_len]
                     tail_gstart = seg_ge - tail_need
+
                 else:
                     tail_parts = [s[off:off + seg_len]]
                     tail_len = seg_len
                     for sj in range(si - 1, -1, -1):
                         if tail_len >= tail_need:
                             break
+
                         sj_s = self._segs[sj]
                         sj_off = self._head_off if sj == 0 else 0
                         sj_len = len(sj_s) - sj_off
@@ -606,9 +606,11 @@ class SegmentedBytesBuffer:
                             sj_len = self._active_readable_len() - sj_off
                         if sj_len <= 0:
                             continue
+
                         take = min(tail_need - tail_len, sj_len)
                         tail_parts.insert(0, sj_s[sj_off + sj_len - take:sj_off + sj_len])
                         tail_len += take
+
                     tail_combined = b''.join(tail_parts)
                     tail = tail_combined[-(m - 1):] if len(tail_combined) >= m - 1 else tail_combined
                     tail_gstart = seg_ge - len(tail)
