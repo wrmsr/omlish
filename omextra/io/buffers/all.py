@@ -47,10 +47,6 @@ from .segmented import (  # noqa
     SegmentedBytesBuffer,
 )
 
-from .spilling import (  # noqa
-    SpillingBytesBuffer,
-)
-
 from .types import (  # noqa
     BytesLike,
 

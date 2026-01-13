@@ -448,3 +448,116 @@ class TestSegmentedBytesBufferCoalesce(unittest.TestCase):
         self.assertEqual(len(b), 6)
         self.assertEqual(bytes(b.peek()), b'ABCDEF')
         self.assertEqual(b._head_off, 0)  # noqa
+
+
+class TestSegmentedBytesBufferChunking(unittest.TestCase):
+    def test_chunk_disabled_default_behavior(self) -> None:
+        b = SegmentedBytesBuffer(chunk_size=0)
+        b.write(b'a')
+        b.write(b'b')
+        self.assertEqual(len(b), 2)
+        self.assertEqual([mv.tobytes() for mv in b.segments()], [b'a', b'b'])
+
+    def test_small_writes_coalesce_into_active_chunk(self) -> None:
+        b = SegmentedBytesBuffer(chunk_size=16)
+        for _ in range(10):
+            b.write(b'a')
+        self.assertEqual(len(b), 10)
+        segs = b.segments()
+        self.assertEqual(len(segs), 1)
+        self.assertEqual(segs[0].tobytes(), b'a' * 10)
+
+    def test_large_write_flushes_active_and_appends_as_own_segment(self) -> None:
+        b = SegmentedBytesBuffer(chunk_size=16, chunk_compact_threshold=.50)
+        b.write(b'abc')  # active, 3/16 < 0.5 -> should bytes() on flush
+        self.assertIsNotNone(b._active)  # noqa: SLF001
+        b.write(b'x' * 32)  # >= chunk_size flushes active then appends large
+
+        self.assertIsNone(b._active)  # noqa: SLF001
+        self.assertEqual(len(b), 3 + 32)
+
+        segs = b.segments()
+        self.assertEqual(len(segs), 2)
+        self.assertEqual(segs[0].tobytes(), b'abc')
+        self.assertEqual(len(segs[1]), 32)
+
+        # Verify flush compacted the active chunk to bytes (not bytearray) because under threshold.
+        self.assertIsInstance(b._segs[0], bytes)  # noqa: SLF001
+
+    def test_flush_keeps_bytearray_when_full_enough(self) -> None:
+        b = SegmentedBytesBuffer(chunk_size=16, chunk_compact_threshold=.25)
+        b.write(b'a' * 8)  # 8/16 == 0.5 >= 0.25 -> keep bytearray on flush
+        b.write(b'x' * 16)  # flush active
+        self.assertIsInstance(b._segs[0], bytearray)  # noqa: SLF001
+
+    def test_reserve_uses_active_chunk_when_fits(self) -> None:
+        b = SegmentedBytesBuffer(chunk_size=16)
+        b.write(b'hi')
+        mv = b.reserve(4)
+        mv[:] = b'abcd'
+        self.assertEqual(len(b), 2)  # not readable yet
+        b.commit(4)
+        self.assertEqual(len(b), 6)
+        self.assertEqual(b.segments()[0].tobytes(), b'hiabcd')
+
+    def test_reserve_flushes_then_reuses_chunk_when_under_chunk_size(self) -> None:
+        b = SegmentedBytesBuffer(chunk_size=8, chunk_compact_threshold=0.0)
+        b.write(b'xxxxxx')  # 6/8 in active
+        mv = b.reserve(4)   # doesn't fit; flush then new chunk; reserve from it
+        mv[:] = b'abcd'
+        b.commit(4)
+
+        self.assertEqual(len(b), 10)
+        self.assertEqual(b.find(b'xxxxxx'), 0)
+        self.assertEqual(b.find(b'abcd'), 6)
+
+        # After commit from an in-chunk reserve, chunk remains active for future writes.
+        self.assertIsNotNone(b._active)  # noqa: SLF001
+        b.write(b'Z')
+        self.assertEqual(b.find(b'Z'), 10)
+
+    def test_reserve_over_chunk_size_is_closed_on_commit(self) -> None:
+        b = SegmentedBytesBuffer(chunk_size=8)
+        mv = b.reserve(20)
+        mv[:5] = b'hello'
+        b.commit(5)
+
+        self.assertEqual(len(b), 5)
+        self.assertIsNone(b._active)  # noqa: SLF001
+        self.assertEqual(b.segments()[0].tobytes(), b'hello')
+
+    def test_find_ignores_uncommitted_reserved_tail(self) -> None:
+        b = SegmentedBytesBuffer(chunk_size=16)
+        b.write(b'abc')
+        mv = b.reserve(4)
+        mv[:] = b'\r\n\r\n'
+        # Not committed, so should not be visible.
+        self.assertEqual(b.find(b'\r\n\r\n'), -1)
+        b.commit(4)
+        self.assertEqual(b.find(b'\r\n\r\n'), 3)
+
+    def test_segments_with_head_offset_in_active_chunk(self) -> None:
+        """
+        Regression test: segments() should not apply head_off twice when active chunk is the only segment.
+
+        Bug: when the active chunk is both first and last segment, the old code applied head_off twice,
+        resulting in incorrect slicing.
+        """
+
+        b = SegmentedBytesBuffer(chunk_size=16)
+        b.write(b'abcdefghij')  # 10 bytes in active chunk
+        self.assertEqual(len(b.segments()), 1)
+        self.assertIsNotNone(b._active)  # noqa: SLF001
+
+        # Advance past first 3 bytes: head_off=3, readable='defghij' (7 bytes).
+        b.advance(3)
+        self.assertEqual(len(b), 7)
+        self.assertEqual(b._head_off, 3)  # noqa: SLF001
+
+        # segments() should return exactly 'defghij', not apply head_off twice.
+        segs = b.segments()
+        self.assertEqual(len(segs), 1)
+        self.assertEqual(segs[0].tobytes(), b'defghij')
+
+        # Also verify peek() is consistent.
+        self.assertEqual(b.peek().tobytes(), b'defghij')

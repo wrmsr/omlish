@@ -44,8 +44,8 @@ class LongestMatchDelimiterFramer:
             raise ValueError('empty delimiter')
 
         self._delims = tuple(bytes(d) for d in dl)
-        self._keep_ends = bool(keep_ends)
-        self._max_size = max_size if max_size is None else int(max_size)
+        self._keep_ends = keep_ends
+        self._max_size = max_size
 
         # Sort by length descending for "choose longest at same start".
         self._delims_by_len = tuple(sorted(self._delims, key=len, reverse=True))

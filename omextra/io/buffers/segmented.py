@@ -53,57 +53,181 @@ class SegmentedBytesBuffer:
 
     Internally stores a list of `bytes`/`bytearray` segments plus a head offset. Exposes readable data as `memoryview`
     segments without copying.
+
+    Optional "chunked writes":
+      - If chunk_size > 0, small writes are accumulated into a lazily-allocated active bytearray "chunk" up to
+        chunk_size.
+      - Writes >= chunk_size are stored as their own segments (after flushing any active chunk).
+      - On flush, the active chunk is kept as a bytearray segment iff it is at least `chunk_compact_threshold` full;
+        otherwise it is materialized as bytes to avoid pinning a large capacity for tiny content.
+
+    Reserve/commit:
+      - If chunk_size > 0 and reserve(n) fits in the active chunk, the reservation is carved from the active chunk.
+        Reserved bytes are not readable until commit().
+      - If reserve(n) does not fit, the active chunk is flushed first.
+      - If n <= chunk_size after flushing, the reservation is served from a new active chunk (so the remainder becomes
+        the next active chunk).
+      - If n > chunk_size, reserve allocates a dedicated buffer and on commit it is "closed" (it does not become the
+        next active chunk).
+
+    Important exported-view caveat:
+      - reserve() returns a memoryview. As long as any exported memoryview exists, the underlying bytearray must not be
+        resized, or Python will raise BufferError. Therefore the active chunk bytearray is *fixed capacity*
+        (len==chunk_size) and we track "used" bytes separately, writing via slice assignment rather than extend().
     """
 
-    def __init__(self, *, max_bytes: ta.Optional[int] = None) -> None:
+    def __init__(
+            self,
+            *,
+            max_bytes: ta.Optional[int] = None,
+            chunk_size: int = 0,
+            chunk_compact_threshold: float = .25,
+    ) -> None:
         super().__init__()
 
         self._segs: ta.List[ta.Union[bytes, bytearray]] = []
 
         self._max_bytes = None if max_bytes is None else int(max_bytes)
 
+        if chunk_size < 0:
+            raise ValueError(chunk_size)
+        self._chunk_size = chunk_size
+
+        if not (0.0 <= chunk_compact_threshold <= 1.0):
+            raise ValueError(chunk_compact_threshold)
+        self._chunk_compact_threshold = chunk_compact_threshold
+
+        self._active: ta.Optional[bytearray] = None
+        self._active_used = 0
+
     _head_off = 0
     _len = 0
 
     _reserved: ta.Optional[bytearray] = None
     _reserved_len = 0
+    _reserved_in_active = False
 
     def __len__(self) -> int:
         return self._len
 
+    def _active_reserved_tail(self) -> int:
+        if self._reserved_in_active and self._reserved is not None:
+            return self._reserved_len
+        return 0
+
+    def _active_readable_len(self) -> int:
+        if self._active is None:
+            return 0
+        tail = self._active_reserved_tail()
+        rl = self._active_used - tail
+        return rl if rl > 0 else 0
+
     def peek(self) -> memoryview:
         if not self._segs:
             return memoryview(b'')
+
         s0 = self._segs[0]
         mv = memoryview(s0)
         if self._head_off:
             mv = mv[self._head_off:]
+
+        if self._active is not None and s0 is self._active:
+            # Active is only meaningful by _active_used, not len(bytearray).
+            rl = self._active_readable_len()
+            if self._head_off >= rl:
+                return memoryview(b'')
+            mv = memoryview(self._active)[self._head_off:rl]
+            return mv
+
         return mv
 
     def segments(self) -> ta.Sequence[memoryview]:
         if not self._segs:
             return ()
+
         out: ta.List[memoryview] = []
+
+        last_i = len(self._segs) - 1
         for i, s in enumerate(self._segs):
-            mv = memoryview(s)
-            if i == 0 and self._head_off:
-                mv = mv[self._head_off:]
+            if self._active is not None and i == last_i and s is self._active:
+                # Active chunk: create fresh view with readable length.
+                rl = self._active_readable_len()
+                if i == 0:
+                    # Active is also first segment; apply head_off.
+                    if self._head_off >= rl:
+                        continue
+                    mv = memoryview(self._active)[self._head_off:rl]
+                else:
+                    if rl <= 0:
+                        continue
+                    mv = memoryview(self._active)[:rl]
+            else:
+                # Non-active segment.
+                mv = memoryview(s)
+                if i == 0 and self._head_off:
+                    mv = mv[self._head_off:]
+
             if len(mv):
                 out.append(mv)
+
         return tuple(out)
+
+    def _ensure_active(self) -> bytearray:
+        if self._chunk_size <= 0:
+            raise AssertionError('no active chunk without chunk_size')
+
+        a = self._active
+        if a is None:
+            a = bytearray(self._chunk_size)  # fixed capacity
+            self._segs.append(a)
+            self._active = a
+            self._active_used = 0
+
+        return a
+
+    def _flush_active(self) -> None:
+        a = self._active
+        if a is None:
+            return
+
+        if self._reserved_in_active:
+            raise OutstandingReserve('outstanding reserve')
+
+        used = self._active_used
+        if used <= 0:
+            if self._segs and self._segs[-1] is a:
+                self._segs.pop()
+            self._active = None
+            self._active_used = 0
+            return
+
+        # If under threshold, always bytes() to avoid pinning.
+        if self._chunk_size and (float(used) / float(self._chunk_size)) < self._chunk_compact_threshold:
+            if not self._segs or self._segs[-1] is not a:
+                raise AssertionError('active not at tail')
+            self._segs[-1] = bytes(memoryview(a)[:used])
+
+        else:
+            # Try to shrink in-place to used bytes. If exported views exist, this can BufferError;
+            # fall back to bytes() in that case.
+            if not self._segs or self._segs[-1] is not a:
+                raise AssertionError('active not at tail')
+            try:
+                del a[used:]  # may raise BufferError if any exports exist
+            except BufferError:
+                self._segs[-1] = bytes(memoryview(a)[:used])
+
+        self._active = None
+        self._active_used = 0
 
     def write(self, data: BytesLike, /) -> None:
         if not data:
             return
         if isinstance(data, memoryview):
-            # Avoid holding onto a potentially huge exporting object; materialize as bytes. Callers that want zero-copy
-            # should prefer reserve/commit for mutable storage.
             data = data.tobytes()
         elif isinstance(data, bytearray):
-            # Keep as-is; memoryview(bytearray) is a non-copying view for readers.
             pass
         else:
-            # bytes
             pass
 
         dl = len(data)
@@ -111,7 +235,28 @@ class SegmentedBytesBuffer:
         if self._max_bytes is not None and self._len + dl > self._max_bytes:
             raise BufferTooLarge('buffer exceeded max_bytes')
 
-        self._segs.append(data)
+        if self._chunk_size <= 0:
+            self._segs.append(data)
+            self._len += dl
+            return
+
+        if self._reserved_in_active:
+            raise OutstandingReserve('outstanding reserve')
+
+        if dl >= self._chunk_size:
+            self._flush_active()
+            self._segs.append(data)
+            self._len += dl
+            return
+
+        a = self._ensure_active()
+        if self._active_used + dl > self._chunk_size:
+            self._flush_active()
+            a = self._ensure_active()
+
+        # Copy into fixed-capacity buffer; do not resize.
+        memoryview(a)[self._active_used:self._active_used + dl] = data
+        self._active_used += dl
         self._len += dl
 
     def reserve(self, n: int, /) -> memoryview:
@@ -119,10 +264,34 @@ class SegmentedBytesBuffer:
             raise ValueError(n)
         if self._reserved is not None:
             raise OutstandingReserve('outstanding reserve')
-        b = bytearray(n)
-        self._reserved = b
+
+        if self._chunk_size <= 0:
+            b = bytearray(n)
+            self._reserved = b
+            self._reserved_len = n
+            self._reserved_in_active = False
+            return memoryview(b)
+
+        if n > self._chunk_size:
+            self._flush_active()
+            b = bytearray(n)
+            self._reserved = b
+            self._reserved_len = n
+            self._reserved_in_active = False
+            return memoryview(b)
+
+        # Ensure reservation fits in active; otherwise flush then create a new one.
+        if self._active is not None and (self._active_used + n > self._chunk_size):
+            self._flush_active()
+
+        a = self._ensure_active()
+
+        start = self._active_used
+        # Reservation does not change _active_used (not readable until commit).
+        self._reserved = a
         self._reserved_len = n
-        return memoryview(b)
+        self._reserved_in_active = True
+        return memoryview(a)[start:start + n]
 
     def commit(self, n: int, /) -> None:
         if self._reserved is None:
@@ -130,24 +299,41 @@ class SegmentedBytesBuffer:
         if n < 0 or n > self._reserved_len:
             raise ValueError(n)
 
-        if self._max_bytes is not None and self._len + n > self._max_bytes:
-            # Keep reservation state consistent: drop reservation before raising.
+        if self._reserved_in_active:
+            a = self._reserved
             self._reserved = None
             self._reserved_len = 0
-            raise BufferTooLarge('buffer exceeded max_bytes')
+            self._reserved_in_active = False
+
+            if self._max_bytes is not None and self._len + n > self._max_bytes:
+                raise BufferTooLarge('buffer exceeded max_bytes')
+
+            if n:
+                self._active_used += n
+                self._len += n
+
+            # Keep active for reuse.
+            self._active = a
+            return
 
         b = self._reserved
         self._reserved = None
         self._reserved_len = 0
-        if n:
-            if n == len(b):
-                self._segs.append(b)
-                self._len += n
-            else:
-                # Copy only what caller actually wrote; drop unused tail to avoid pinning.
-                bb = bytes(memoryview(b)[:n])
-                self._segs.append(bb)
-                self._len += n
+        self._reserved_in_active = False
+
+        if self._max_bytes is not None and self._len + n > self._max_bytes:
+            raise BufferTooLarge('buffer exceeded max_bytes')
+
+        if not n:
+            return
+
+        if n == len(b):
+            self._segs.append(b)
+            self._len += n
+        else:
+            bb = bytes(memoryview(b)[:n])
+            self._segs.append(bb)
+            self._len += n
 
     def advance(self, n: int, /) -> None:
         if n < 0 or n > self._len:
@@ -159,17 +345,32 @@ class SegmentedBytesBuffer:
 
         while n and self._segs:
             s0 = self._segs[0]
-            avail0 = len(s0) - self._head_off
+
+            if self._active is not None and s0 is self._active:
+                avail0 = self._active_readable_len() - self._head_off
+            else:
+                avail0 = len(s0) - self._head_off
+
+            if avail0 <= 0:
+                popped = self._segs.pop(0)
+                if popped is self._active:
+                    self._active = None
+                    self._active_used = 0
+                self._head_off = 0
+                continue
+
             if n < avail0:
                 self._head_off += n
                 return
 
             n -= avail0
-            self._segs.pop(0)
+            popped = self._segs.pop(0)
+            if popped is self._active:
+                self._active = None
+                self._active_used = 0
             self._head_off = 0
 
         if n:
-            # Should be impossible given bounds check above.
             raise AssertionError(n)
 
     def split_to(self, n: int, /) -> SegmentedBytesView:
@@ -186,9 +387,16 @@ class SegmentedBytesBuffer:
                 raise AssertionError(rem)
 
             s0 = self._segs[0]
-            mv0 = memoryview(s0)
-            if self._head_off:
-                mv0 = mv0[self._head_off:]
+
+            if self._active is not None and s0 is self._active:
+                rl = self._active_readable_len()
+                if self._head_off >= rl:
+                    raise AssertionError(rem)
+                mv0 = memoryview(s0)[self._head_off:rl]
+            else:
+                mv0 = memoryview(s0)
+                if self._head_off:
+                    mv0 = mv0[self._head_off:]
 
             if rem < len(mv0):
                 out.append(mv0[:rem])
@@ -198,31 +406,16 @@ class SegmentedBytesBuffer:
 
             out.append(mv0)
             rem -= len(mv0)
-            self._segs.pop(0)
+            popped = self._segs.pop(0)
+            if popped is self._active:
+                self._active = None
+                self._active_used = 0
             self._head_off = 0
 
         self._len -= n
         return SegmentedBytesView(out)
 
     def coalesce(self, n: int, /) -> memoryview:
-        """
-        Ensure the first `n` readable bytes are available contiguously and return a view of them.
-
-        Semantics:
-          - Non-consuming: does not advance.
-          - May restructure internal segments (content-preserving) to make the prefix contiguous.
-          - Returns a read-only-ish `memoryview` (callers must not mutate readable bytes).
-
-        Copying behavior:
-          - If `peek()` already exposes >= n contiguous bytes, this is zero-copy.
-          - Otherwise, it copies exactly the first `n` bytes into a new contiguous segment and rewrites the internal
-            segment list so that segment[0] contains that prefix.
-
-        Reserve interaction:
-          - Disallowed while an outstanding reservation exists, since reserve() hands out a view that must not be
-            invalidated by internal reshaping.
-        """
-
         if n < 0:
             raise ValueError(n)
         if n > self._len:
@@ -237,7 +430,6 @@ class SegmentedBytesBuffer:
         if len(mv0) >= n:
             return mv0[:n]
 
-        # Copy the minimal prefix required, then rebuild the head of the segment list.
         out = bytearray(n)
         w = 0
 
@@ -247,23 +439,24 @@ class SegmentedBytesBuffer:
         while w < n and seg_i < len(self._segs):
             s = self._segs[seg_i]
             off = self._head_off if seg_i == 0 else 0
-            avail = len(s) - off
-            if avail <= 0:
+
+            seg_len = len(s) - off
+            if self._active is not None and seg_i == (len(self._segs) - 1) and s is self._active:
+                seg_len = self._active_readable_len() - off
+
+            if seg_len <= 0:
                 seg_i += 1
                 continue
 
             take = n - w
-            if take > avail:
-                take = avail
+            if take > seg_len:
+                take = seg_len
 
             out[w:w + take] = memoryview(s)[off:off + take]
             w += take
 
-            if take < avail:
-                # Preserve the remainder of this segment after the coalesced prefix.
-                # Note: for bytes/bytearray, slicing copies. This avoids pinning a huge backing store via offsets, but
-                # could copy a large tail; we may revisit this tradeoff in future backends.
-                rem = s[off + take:off + avail]
+            if take < seg_len:
+                rem = s[off + take:off + seg_len]
                 if rem:
                     new_segs.append(rem)
                 seg_i += 1
@@ -271,13 +464,14 @@ class SegmentedBytesBuffer:
 
             seg_i += 1
 
-        # Append any remaining segments after the portion we consumed into `out`.
         if seg_i < len(self._segs):
             new_segs.extend(self._segs[seg_i:])
 
-        # Rebuild: coalesced prefix becomes the first segment; head offset resets.
         self._segs = [bytes(out), *new_segs]
         self._head_off = 0
+
+        self._active = None
+        self._active_used = 0
 
         return memoryview(self._segs[0])[:n]
 
@@ -290,25 +484,30 @@ class SegmentedBytesBuffer:
         if end - start < m:
             return -1
 
-        limit = end - m  # Last valid start offset for a match
+        limit = end - m
 
-        tail = b''  # Last (m-1) bytes before current segment
-        tail_gstart = 0  # Global start offset of `tail`
+        tail = b''
+        tail_gstart = 0
 
-        gpos = 0  # Global position of start of current segment's readable bytes
+        gpos = 0
+
+        last_i = len(self._segs) - 1
+
         for si, s in enumerate(self._segs):
             off = self._head_off if si == 0 else 0
+
             seg_len = len(s) - off
+            if self._active is not None and si == last_i and s is self._active:
+                seg_len = self._active_readable_len() - off
+
             if seg_len <= 0:
                 continue
 
             seg_gs = gpos
             seg_ge = gpos + seg_len
 
-            # In-segment search window for starts within [start, limit].
             if limit >= seg_gs and start < seg_ge:
                 ls = start - seg_gs if start > seg_gs else 0
-                # end_search ensures any match found starts <= limit
                 max_start_in_seg = limit - seg_gs
                 end_search = max_start_in_seg + m
                 if end_search > seg_len:
@@ -318,7 +517,6 @@ class SegmentedBytesBuffer:
                     if idx != -1:
                         return seg_gs + (idx - off)
 
-            # Boundary-crossing search using small window (tail + head).
             if m > 1 and tail:
                 head_need = m - 1
                 head = s[off:off + head_need]
@@ -329,14 +527,12 @@ class SegmentedBytesBuffer:
                     if start <= cand <= limit:
                         return cand
 
-            # Update rolling tail to last (m-1) bytes ending at seg end.
             if m > 1:
                 take = m - 1
                 if seg_len >= take:
                     tail = s[off + seg_len - take:off + seg_len]
                     tail_gstart = seg_ge - take
                 else:
-                    # Extend tail with entire segment, then keep only last (m-1).
                     tail = (tail + s[off:off + seg_len])[-(m - 1):]
                     tail_gstart = seg_ge - len(tail)
 
@@ -353,29 +549,32 @@ class SegmentedBytesBuffer:
         if end - start < m:
             return -1
 
-        limit = end - m  # Last valid start offset for a match
+        limit = end - m
 
         if not self._segs:
             return -1
 
         best = -1
 
-        # Anchor at the end using self._len and work backwards.
         seg_ge = self._len
         prev_s: ta.Optional[ta.Union[bytes, bytearray]] = None
         prev_off = 0
 
-        # Iterate segments right to left.
+        last_i = len(self._segs) - 1
+
         for si in range(len(self._segs) - 1, -1, -1):
             s = self._segs[si]
             off = self._head_off if si == 0 else 0
+
             seg_len = len(s) - off
+            if self._active is not None and si == last_i and s is self._active:
+                seg_len = self._active_readable_len() - off
+
             if seg_len <= 0:
                 continue
 
             seg_gs = seg_ge - seg_len
 
-            # Within-segment search.
             if limit >= seg_gs and start < seg_ge:
                 ls = start - seg_gs if start > seg_gs else 0
                 max_start_in_seg = limit - seg_gs
@@ -389,16 +588,12 @@ class SegmentedBytesBuffer:
                         if cand > best:
                             best = cand
 
-            # Boundary-crossing search with the previously-processed (rightward) segment.
             if m > 1 and prev_s is not None:
-                # Tail: last (m-1) bytes ending at current segment end. If current segment is too small, lookahead
-                # leftward to gather enough bytes.
                 tail_need = m - 1
                 if seg_len >= tail_need:
                     tail = s[off + seg_len - tail_need:off + seg_len]
                     tail_gstart = seg_ge - tail_need
                 else:
-                    # Segment too small; lookahead to gather tail bytes from left.
                     tail_parts = [s[off:off + seg_len]]
                     tail_len = seg_len
                     for sj in range(si - 1, -1, -1):
@@ -407,9 +602,10 @@ class SegmentedBytesBuffer:
                         sj_s = self._segs[sj]
                         sj_off = self._head_off if sj == 0 else 0
                         sj_len = len(sj_s) - sj_off
+                        if self._active is not None and sj == last_i and sj_s is self._active:
+                            sj_len = self._active_readable_len() - sj_off
                         if sj_len <= 0:
                             continue
-                        # Take bytes from end of segment sj.
                         take = min(tail_need - tail_len, sj_len)
                         tail_parts.insert(0, sj_s[sj_off + sj_len - take:sj_off + sj_len])
                         tail_len += take
@@ -417,24 +613,19 @@ class SegmentedBytesBuffer:
                     tail = tail_combined[-(m - 1):] if len(tail_combined) >= m - 1 else tail_combined
                     tail_gstart = seg_ge - len(tail)
 
-                # Head: first (m-1) bytes of next (right) segment.
                 head_need = m - 1
                 head = prev_s[prev_off:prev_off + head_need]
 
                 comb = tail + head
                 j = comb.rfind(sub)
                 if j != -1 and j < len(tail) < j + m:
-                    # Match crosses boundary.
                     cand = tail_gstart + j
                     if start <= cand <= limit and cand > best:
                         best = cand
 
-            # Early termination: if we found any match at or after the start of this segment, no earlier segment can
-            # contain a better (more rightward) match.
             if best >= seg_gs:
                 return best
 
-            # Save current segment info for next iteration (as the "previous" rightward segment).
             prev_s = s
             prev_off = off
             seg_ge = seg_gs
