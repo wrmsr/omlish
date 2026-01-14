@@ -6,6 +6,7 @@ import typing as ta
 
 from omlish import cached
 from omlish import dataclasses as dc
+from omlish import lang
 from omlish.algorithm.toposort import mut_toposort
 
 
@@ -13,6 +14,7 @@ from omlish.algorithm.toposort import mut_toposort
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+@dc.extra_class_params(default_repr_fn=lang.opt_repr)
 class ModelNameCollection:
     default: str | None = None
 

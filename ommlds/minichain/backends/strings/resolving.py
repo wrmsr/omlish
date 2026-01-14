@@ -97,6 +97,8 @@ class ManifestBackendStringResolver(BackendStringResolver):
             for scn in manifest.service_cls_names
         }
 
+    __repr__ = lang.attr_ops('_manifest').repr
+
     def _resolve_name_model(
             self,
             args: ResolveBackendStringArgs,

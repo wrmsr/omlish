@@ -659,20 +659,22 @@ def _process_dataclass__3576262424b3ef8ff20966fa3744e5dba9a2ae7d():
         "True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param"
         "='self', std_params=(), kw_only_params=('default', 'aliases'), frozen=True, slots=False, post_init_params=None"
         ", init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='default', kw_only=True, fn=None), ReprP"
-        "lan.Field(name='aliases', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "lan.Field(name='aliases', kw_only=True, fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.default_"
+        "fn'))))"
     ),
-    plan_repr_sha1='ac01c4fef98980477efa107b7b5909a6386bef53',
+    plan_repr_sha1='c8c236ef2e6c5a0fc4cdfc450a520f0cc16ee67e',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('ommlds.minichain.backends.catalogs.strings', 'ModelNameCollection'),
     ),
 )
-def _process_dataclass__ac01c4fef98980477efa107b7b5909a6386bef53():
+def _process_dataclass__c8c236ef2e6c5a0fc4cdfc450a520f0cc16ee67e():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -680,6 +682,7 @@ def _process_dataclass__ac01c4fef98980477efa107b7b5909a6386bef53():
         __dataclass__init__fields__0__default,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -784,8 +787,10 @@ def _process_dataclass__ac01c4fef98980477efa107b7b5909a6386bef53():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"default={self.default!r}")
-            parts.append(f"aliases={self.aliases!r}")
+            if (s := __dataclass__repr__default_fn(self.default)) is not None:
+                parts.append(f"default={s}")
+            if (s := __dataclass__repr__default_fn(self.aliases)) is not None:
+                parts.append(f"aliases={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

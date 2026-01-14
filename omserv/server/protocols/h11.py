@@ -129,6 +129,7 @@ class H11Protocol(Protocol):
         if isinstance(event, RawData):
             self.connection.receive_data(event.data)
             await self._handle_events()
+
         elif isinstance(event, Closed):
             if self.stream is not None:
                 await self._close_stream()
@@ -219,9 +220,9 @@ class H11Protocol(Protocol):
 
         connection_tokens = connection_value.lower().split(',')
         if (
-                any(token.strip() == 'upgrade' for token in connection_tokens)
-                and upgrade_value.lower() == 'websocket'
-                and request.method.decode('ascii').upper() == 'GET'
+                any(token.strip() == 'upgrade' for token in connection_tokens) and
+                upgrade_value.lower() == 'websocket' and
+                request.method.decode('ascii').upper() == 'GET'
         ):
             self.stream = WsStream(
                 self.app,
@@ -292,9 +293,9 @@ class H11Protocol(Protocol):
         await self._close_stream()
 
         if (
-                not self.context.terminated.is_set()
-                and self.connection.our_state is h11.DONE
-                and self.connection.their_state is h11.DONE
+                not self.context.terminated.is_set() and
+                self.connection.our_state is h11.DONE and
+                self.connection.their_state is h11.DONE
         ):
             try:
                 self.connection.start_next_cycle()

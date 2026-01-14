@@ -32,10 +32,11 @@ class BackendStringBackendCatalog(BackendCatalog):
 
     def get_backend(self, service_cls: ta.Any, name: str, *args: ta.Any, **kwargs: ta.Any) -> BackendCatalog.Backend:
         ps = parse_backend_string(name)
-        rs = check.not_none(self._string_resolver.resolve_backend_string(ResolveBackendStringArgs(
+        rba = ResolveBackendStringArgs(
             service_cls,
             ps,
-        )))
+        )
+        rs = check.not_none(self._string_resolver.resolve_backend_string(rba))
 
         al: list = list(rs.args or [])
 
