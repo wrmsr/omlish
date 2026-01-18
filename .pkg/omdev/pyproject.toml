@@ -29,7 +29,7 @@ dependencies = [
 
 [project.optional-dependencies]
 all = [
-    'black ~= 25.12',
+    'black ~= 26.1',
     'pycparser ~= 2.23',
     'pcpp ~= 1.30',
     'docutils ~= 0.22',
@@ -40,12 +40,12 @@ all = [
     'gprof2dot ~= 2025.4',
     'segno ~= 1.6',
     'rich ~= 14.2',
-    'textual ~= 7.2',
+    'textual ~= 7.3',
     'textual-dev ~= 1.8',
     'textual-speedups ~= 0.2',
 ]
 black = [
-    'black ~= 25.12',
+    'black ~= 26.1',
 ]
 c = [
     'pycparser ~= 2.23',
@@ -68,7 +68,7 @@ qr = [
 ]
 tui = [
     'rich ~= 14.2',
-    'textual ~= 7.2',
+    'textual ~= 7.3',
     'textual-dev ~= 1.8',
     'textual-speedups ~= 0.2',
 ]

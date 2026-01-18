@@ -940,8 +940,8 @@ def _process_dataclass__d06e7fd09a465a218bf317b3d6b6c4d46dec5ff4():
         "atch_logs_exports', 'processor_features', 'deletion_protection', 'max_allocated_storage', 'enable_customer_own"
         "ed_ip', 'network_type', 'backup_target', 'custom_iam_instance_profile', 'db_system_id', 'ca_certificate_identi"
         "fier', 'manage_master_user_password', 'master_user_secret_kms_key_id', 'multi_tenant', 'dedicated_log_volume',"
-        " 'engine_lifecycle_support', 'tag_specifications', 'master_user_authentication_type', 'additional_storage_volu"
-        "mes')), EqPlan(fields=('db_name', 'db_instance_identifier', 'allocated_storage', 'db_instance_class', 'engine'"
+        " 'engine_lifecycle_support', 'additional_storage_volumes', 'tag_specifications', 'master_user_authentication_t"
+        "ype')), EqPlan(fields=('db_name', 'db_instance_identifier', 'allocated_storage', 'db_instance_class', 'engine'"
         ", 'master_username', 'master_user_password', 'db_security_groups', 'vpc_security_group_ids', 'availability_zon"
         "e', 'db_subnet_group_name', 'preferred_maintenance_window', 'db_parameter_group_name', 'backup_retention_perio"
         "d', 'preferred_backup_window', 'port', 'multi_az', 'engine_version', 'auto_minor_version_upgrade', 'license_mo"
@@ -954,7 +954,7 @@ def _process_dataclass__d06e7fd09a465a218bf317b3d6b6c4d46dec5ff4():
         "logs_exports', 'processor_features', 'deletion_protection', 'max_allocated_storage', 'enable_customer_owned_ip"
         "', 'network_type', 'backup_target', 'custom_iam_instance_profile', 'db_system_id', 'ca_certificate_identifier'"
         ", 'manage_master_user_password', 'master_user_secret_kms_key_id', 'multi_tenant', 'dedicated_log_volume', 'eng"
-        "ine_lifecycle_support', 'tag_specifications', 'master_user_authentication_type', 'additional_storage_volumes')"
+        "ine_lifecycle_support', 'additional_storage_volumes', 'tag_specifications', 'master_user_authentication_type')"
         "), FrozenPlan(fields=('__shape__', 'db_name', 'db_instance_identifier', 'allocated_storage', 'db_instance_clas"
         "s', 'engine', 'master_username', 'master_user_password', 'db_security_groups', 'vpc_security_group_ids', 'avai"
         "lability_zone', 'db_subnet_group_name', 'preferred_maintenance_window', 'db_parameter_group_name', 'backup_ret"
@@ -968,8 +968,8 @@ def _process_dataclass__d06e7fd09a465a218bf317b3d6b6c4d46dec5ff4():
         "_cloudwatch_logs_exports', 'processor_features', 'deletion_protection', 'max_allocated_storage', 'enable_custo"
         "mer_owned_ip', 'network_type', 'backup_target', 'custom_iam_instance_profile', 'db_system_id', 'ca_certificate"
         "_identifier', 'manage_master_user_password', 'master_user_secret_kms_key_id', 'multi_tenant', 'dedicated_log_v"
-        "olume', 'engine_lifecycle_support', 'tag_specifications', 'master_user_authentication_type', 'additional_stora"
-        "ge_volumes'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('db_name', 'db_instance_identi"
+        "olume', 'engine_lifecycle_support', 'additional_storage_volumes', 'tag_specifications', 'master_user_authentic"
+        "ation_type'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('db_name', 'db_instance_identi"
         "fier', 'allocated_storage', 'db_instance_class', 'engine', 'master_username', 'master_user_password', 'db_secu"
         "rity_groups', 'vpc_security_group_ids', 'availability_zone', 'db_subnet_group_name', 'preferred_maintenance_wi"
         "ndow', 'db_parameter_group_name', 'backup_retention_period', 'preferred_backup_window', 'port', 'multi_az', 'e"
@@ -982,8 +982,8 @@ def _process_dataclass__d06e7fd09a465a218bf317b3d6b6c4d46dec5ff4():
         "rformance_insights_retention_period', 'enable_cloudwatch_logs_exports', 'processor_features', 'deletion_protec"
         "tion', 'max_allocated_storage', 'enable_customer_owned_ip', 'network_type', 'backup_target', 'custom_iam_insta"
         "nce_profile', 'db_system_id', 'ca_certificate_identifier', 'manage_master_user_password', 'master_user_secret_"
-        "kms_key_id', 'multi_tenant', 'dedicated_log_volume', 'engine_lifecycle_support', 'tag_specifications', 'master"
-        "_user_authentication_type', 'additional_storage_volumes'), cache=False), InitPlan(fields=(InitPlan.Field(name="
+        "kms_key_id', 'multi_tenant', 'dedicated_log_volume', 'engine_lifecycle_support', 'additional_storage_volumes',"
+        " 'tag_specifications', 'master_user_authentication_type'), cache=False), InitPlan(fields=(InitPlan.Field(name="
         "'__shape__', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True,"
         " override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field("
         "name='db_name', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default')"
@@ -1140,12 +1140,12 @@ def _process_dataclass__d06e7fd09a465a218bf317b3d6b6c4d46dec5ff4():
         "None, validate=None, check_type=None), InitPlan.Field(name='engine_lifecycle_support', annotation=OpRef(name='"
         "init.fields.64.annotation'), default=OpRef(name='init.fields.64.default'), default_factory=None, init=True, ov"
         "erride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name"
-        "='tag_specifications', annotation=OpRef(name='init.fields.65.annotation'), default=OpRef(name='init.fields.65."
-        "default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valida"
-        "te=None, check_type=None), InitPlan.Field(name='master_user_authentication_type', annotation=OpRef(name='init."
-        "fields.66.annotation'), default=OpRef(name='init.fields.66.default'), default_factory=None, init=True, overrid"
-        "e=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='add"
-        "itional_storage_volumes', annotation=OpRef(name='init.fields.67.annotation'), default=OpRef(name='init.fields."
+        "='additional_storage_volumes', annotation=OpRef(name='init.fields.65.annotation'), default=OpRef(name='init.fi"
+        "elds.65.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None"
+        ", validate=None, check_type=None), InitPlan.Field(name='tag_specifications', annotation=OpRef(name='init.field"
+        "s.66.annotation'), default=OpRef(name='init.fields.66.default'), default_factory=None, init=True, override=Fal"
+        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='master_u"
+        "ser_authentication_type', annotation=OpRef(name='init.fields.67.annotation'), default=OpRef(name='init.fields."
         "67.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
         "idate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('db_name', 'db_instance_ident"
         "ifier', 'allocated_storage', 'db_instance_class', 'engine', 'master_username', 'master_user_password', 'db_sec"
@@ -1160,8 +1160,8 @@ def _process_dataclass__d06e7fd09a465a218bf317b3d6b6c4d46dec5ff4():
         "erformance_insights_retention_period', 'enable_cloudwatch_logs_exports', 'processor_features', 'deletion_prote"
         "ction', 'max_allocated_storage', 'enable_customer_owned_ip', 'network_type', 'backup_target', 'custom_iam_inst"
         "ance_profile', 'db_system_id', 'ca_certificate_identifier', 'manage_master_user_password', 'master_user_secret"
-        "_kms_key_id', 'multi_tenant', 'dedicated_log_volume', 'engine_lifecycle_support', 'tag_specifications', 'maste"
-        "r_user_authentication_type', 'additional_storage_volumes'), frozen=True, slots=False, post_init_params=None, i"
+        "_kms_key_id', 'multi_tenant', 'dedicated_log_volume', 'engine_lifecycle_support', 'additional_storage_volumes'"
+        ", 'tag_specifications', 'master_user_authentication_type'), frozen=True, slots=False, post_init_params=None, i"
         "nit_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='db_name', kw_only=True, fn=None), ReprPlan"
         ".Field(name='db_instance_identifier', kw_only=True, fn=None), ReprPlan.Field(name='allocated_storage', kw_only"
         "=True, fn=None), ReprPlan.Field(name='db_instance_class', kw_only=True, fn=None), ReprPlan.Field(name='engine'"
@@ -1201,11 +1201,11 @@ def _process_dataclass__d06e7fd09a465a218bf317b3d6b6c4d46dec5ff4():
         "e='manage_master_user_password', kw_only=True, fn=None), ReprPlan.Field(name='master_user_secret_kms_key_id', "
         "kw_only=True, fn=None), ReprPlan.Field(name='multi_tenant', kw_only=True, fn=None), ReprPlan.Field(name='dedic"
         "ated_log_volume', kw_only=True, fn=None), ReprPlan.Field(name='engine_lifecycle_support', kw_only=True, fn=Non"
-        "e), ReprPlan.Field(name='tag_specifications', kw_only=True, fn=None), ReprPlan.Field(name='master_user_authent"
-        "ication_type', kw_only=True, fn=None), ReprPlan.Field(name='additional_storage_volumes', kw_only=True, fn=None"
+        "e), ReprPlan.Field(name='additional_storage_volumes', kw_only=True, fn=None), ReprPlan.Field(name='tag_specifi"
+        "cations', kw_only=True, fn=None), ReprPlan.Field(name='master_user_authentication_type', kw_only=True, fn=None"
         ")), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='31ff148188ee1c0bf5d5ca29183ea035d0dc7541',
+    plan_repr_sha1='5141af97960c452c5ab6fe79c0b196551c870f7b',
     op_ref_idents=(
         '__dataclass__init__fields__10__annotation',
         '__dataclass__init__fields__10__default',
@@ -1343,7 +1343,7 @@ def _process_dataclass__d06e7fd09a465a218bf317b3d6b6c4d46dec5ff4():
         ('ominfra.clouds.aws.models.services.rds', 'CreateDBInstanceMessage'),
     ),
 )
-def _process_dataclass__31ff148188ee1c0bf5d5ca29183ea035d0dc7541():
+def _process_dataclass__5141af97960c452c5ab6fe79c0b196551c870f7b():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -1560,9 +1560,9 @@ def _process_dataclass__31ff148188ee1c0bf5d5ca29183ea035d0dc7541():
                 multi_tenant=self.multi_tenant,
                 dedicated_log_volume=self.dedicated_log_volume,
                 engine_lifecycle_support=self.engine_lifecycle_support,
+                additional_storage_volumes=self.additional_storage_volumes,
                 tag_specifications=self.tag_specifications,
                 master_user_authentication_type=self.master_user_authentication_type,
-                additional_storage_volumes=self.additional_storage_volumes,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -1640,9 +1640,9 @@ def _process_dataclass__31ff148188ee1c0bf5d5ca29183ea035d0dc7541():
                 self.multi_tenant == other.multi_tenant and
                 self.dedicated_log_volume == other.dedicated_log_volume and
                 self.engine_lifecycle_support == other.engine_lifecycle_support and
+                self.additional_storage_volumes == other.additional_storage_volumes and
                 self.tag_specifications == other.tag_specifications and
-                self.master_user_authentication_type == other.master_user_authentication_type and
-                self.additional_storage_volumes == other.additional_storage_volumes
+                self.master_user_authentication_type == other.master_user_authentication_type
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -1716,9 +1716,9 @@ def _process_dataclass__31ff148188ee1c0bf5d5ca29183ea035d0dc7541():
             'multi_tenant',
             'dedicated_log_volume',
             'engine_lifecycle_support',
+            'additional_storage_volumes',
             'tag_specifications',
             'master_user_authentication_type',
-            'additional_storage_volumes',
         }
 
         def __setattr__(self, name, value):
@@ -1800,9 +1800,9 @@ def _process_dataclass__31ff148188ee1c0bf5d5ca29183ea035d0dc7541():
             'multi_tenant',
             'dedicated_log_volume',
             'engine_lifecycle_support',
+            'additional_storage_volumes',
             'tag_specifications',
             'master_user_authentication_type',
-            'additional_storage_volumes',
         }
 
         def __delattr__(self, name):
@@ -1884,9 +1884,9 @@ def _process_dataclass__31ff148188ee1c0bf5d5ca29183ea035d0dc7541():
                 self.multi_tenant,
                 self.dedicated_log_volume,
                 self.engine_lifecycle_support,
+                self.additional_storage_volumes,
                 self.tag_specifications,
                 self.master_user_authentication_type,
-                self.additional_storage_volumes,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -1959,9 +1959,9 @@ def _process_dataclass__31ff148188ee1c0bf5d5ca29183ea035d0dc7541():
             multi_tenant: __dataclass__init__fields__62__annotation = __dataclass__init__fields__62__default,
             dedicated_log_volume: __dataclass__init__fields__63__annotation = __dataclass__init__fields__63__default,
             engine_lifecycle_support: __dataclass__init__fields__64__annotation = __dataclass__init__fields__64__default,
-            tag_specifications: __dataclass__init__fields__65__annotation = __dataclass__init__fields__65__default,
-            master_user_authentication_type: __dataclass__init__fields__66__annotation = __dataclass__init__fields__66__default,
-            additional_storage_volumes: __dataclass__init__fields__67__annotation = __dataclass__init__fields__67__default,
+            additional_storage_volumes: __dataclass__init__fields__65__annotation = __dataclass__init__fields__65__default,
+            tag_specifications: __dataclass__init__fields__66__annotation = __dataclass__init__fields__66__default,
+            master_user_authentication_type: __dataclass__init__fields__67__annotation = __dataclass__init__fields__67__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'db_name', db_name)
             __dataclass__object_setattr(self, 'db_instance_identifier', db_instance_identifier)
@@ -2027,9 +2027,9 @@ def _process_dataclass__31ff148188ee1c0bf5d5ca29183ea035d0dc7541():
             __dataclass__object_setattr(self, 'multi_tenant', multi_tenant)
             __dataclass__object_setattr(self, 'dedicated_log_volume', dedicated_log_volume)
             __dataclass__object_setattr(self, 'engine_lifecycle_support', engine_lifecycle_support)
+            __dataclass__object_setattr(self, 'additional_storage_volumes', additional_storage_volumes)
             __dataclass__object_setattr(self, 'tag_specifications', tag_specifications)
             __dataclass__object_setattr(self, 'master_user_authentication_type', master_user_authentication_type)
-            __dataclass__object_setattr(self, 'additional_storage_volumes', additional_storage_volumes)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -2103,9 +2103,9 @@ def _process_dataclass__31ff148188ee1c0bf5d5ca29183ea035d0dc7541():
             parts.append(f"multi_tenant={self.multi_tenant!r}")
             parts.append(f"dedicated_log_volume={self.dedicated_log_volume!r}")
             parts.append(f"engine_lifecycle_support={self.engine_lifecycle_support!r}")
+            parts.append(f"additional_storage_volumes={self.additional_storage_volumes!r}")
             parts.append(f"tag_specifications={self.tag_specifications!r}")
             parts.append(f"master_user_authentication_type={self.master_user_authentication_type!r}")
-            parts.append(f"additional_storage_volumes={self.additional_storage_volumes!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

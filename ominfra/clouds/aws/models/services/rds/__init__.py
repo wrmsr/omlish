@@ -1160,6 +1160,12 @@ class CreateDBInstanceMessage(
         shape_name='String',
     ))
 
+    additional_storage_volumes: AdditionalStorageVolumesList | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='AdditionalStorageVolumes',
+        value_type=_base.ListValueType(AdditionalStorageVolume),
+        shape_name='AdditionalStorageVolumesList',
+    ))
+
     tag_specifications: TagSpecificationList | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='TagSpecifications',
         value_type=_base.ListValueType(TagSpecification),
@@ -1169,12 +1175,6 @@ class CreateDBInstanceMessage(
     master_user_authentication_type: MasterUserAuthenticationType | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='MasterUserAuthenticationType',
         shape_name='MasterUserAuthenticationType',
-    ))
-
-    additional_storage_volumes: AdditionalStorageVolumesList | None = _dc.field(default=None, metadata=_base.field_metadata(
-        member_name='AdditionalStorageVolumes',
-        value_type=_base.ListValueType(AdditionalStorageVolume),
-        shape_name='AdditionalStorageVolumesList',
     ))
 
 
