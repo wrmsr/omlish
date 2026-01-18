@@ -4,8 +4,10 @@
 #include "Python.h"
 #include "structmember.h"
 
-#include <vector>
+#include <memory>
 #include <unordered_map>
+#include <variant>
+#include <vector>
 
 //
 
@@ -30,56 +32,12 @@ static inline collection_state * get_collection_state(PyObject *module)
 
 // Helper struct to track unique typed values during processing
 struct UniqueInfo {
-    PyObject *unique_tv_cls;  // The unique class
-    PyObject *tv;             // The typed value
-    std::vector<PyObject*> *unique_lst;  // Pointer to the list in unique_dct
-    size_t idx;               // Index in unique_lst when added
+    PyObject *unique_tv_cls;             // The unique class (borrowed from map key)
+    PyObject *tv;                        // The typed value (borrowed from args)
+    size_t idx;                          // Index in unique_lst when added
 };
 
-// Temporary list item - either a TypedValue or a UniqueInfo
-struct TmpItem {
-    bool is_unique;
-    union {
-        PyObject *tv;  // Non-unique typed value
-        UniqueInfo *unique_info;  // Unique typed value info
-    };
-
-    TmpItem() : is_unique(false), tv(nullptr) {}
-    ~TmpItem() {
-        if (is_unique && unique_info != nullptr) {
-            delete unique_info;
-        }
-    }
-
-    // Disable copy, enable move
-    TmpItem(const TmpItem&) = delete;
-    TmpItem& operator=(const TmpItem&) = delete;
-
-    TmpItem(TmpItem&& other) noexcept : is_unique(other.is_unique) {
-        if (is_unique) {
-            unique_info = other.unique_info;
-            other.unique_info = nullptr;
-        } else {
-            tv = other.tv;
-        }
-    }
-
-    TmpItem& operator=(TmpItem&& other) noexcept {
-        if (this != &other) {
-            if (is_unique && unique_info != nullptr) {
-                delete unique_info;
-            }
-            is_unique = other.is_unique;
-            if (is_unique) {
-                unique_info = other.unique_info;
-                other.unique_info = nullptr;
-            } else {
-                tv = other.tv;
-            }
-        }
-        return *this;
-    }
-};
+using TmpItem = std::variant<PyObject*, std::unique_ptr<UniqueInfo>>;
 
 PyDoc_STRVAR(init_typed_values_collection_doc,
 "init_typed_values_collection(*tvs, override=False, check_type=None)\n"
@@ -231,19 +189,13 @@ static PyObject * init_typed_values_collection(PyObject *module, PyObject *const
             std::vector<PyObject*> &unique_lst = insertion.first->second;
             unique_lst.push_back(tv);
 
-            // Create UniqueInfo
-            UniqueInfo *info = new UniqueInfo{
-                unique_tv_cls,  // Borrowed reference (will be decreffed at end)
+            // Add to tmp_lst using make_unique
+            // unique_ptr automatically handles deletion, variant handles moves
+            tmp_lst.emplace_back(std::make_unique<UniqueInfo>(UniqueInfo{
+                unique_tv_cls,  // Borrowed from map
                 tv,
-                &unique_lst,
                 unique_lst.size()
-            };
-
-            // Add to tmp_lst
-            TmpItem item;
-            item.is_unique = true;
-            item.unique_info = info;
-            tmp_lst.push_back(std::move(item));
+            }));
 
         } else {
             // Check if it's a TypedValue
@@ -258,10 +210,7 @@ static PyObject * init_typed_values_collection(PyObject *module, PyObject *const
             }
 
             // Non-unique typed value
-            TmpItem item;
-            item.is_unique = false;
-            item.tv = tv;
-            tmp_lst.push_back(std::move(item));
+            tmp_lst.emplace_back(tv);
         }
     }
 
@@ -279,11 +228,16 @@ static PyObject * init_typed_values_collection(PyObject *module, PyObject *const
 
     // Process tmp_lst to build output list and tmp_dct
     for (auto &item : tmp_lst) {
-        if (item.is_unique) {
-            UniqueInfo *info = item.unique_info;
+        // Check if item holds unique_ptr<UniqueInfo>
+        if (auto *uniq_ptr_wrapper = std::get_if<std::unique_ptr<UniqueInfo>>(&item)) {
+            UniqueInfo *info = uniq_ptr_wrapper->get();
+
+            // Look up the vector now (after all insertions are done, no more rehashing)
+            auto it = unique_dct.find(info->unique_tv_cls);
+            assert(it != unique_dct.end());
 
             // Last-in-wins: only include if this is the last one
-            if (info->idx == info->unique_lst->size()) {
+            if (info->idx == it->second.size()) {
                 // Add to output list
                 if (PyList_Append(lst, info->tv) == -1) {
                     Py_DECREF(lst);
@@ -299,7 +253,8 @@ static PyObject * init_typed_values_collection(PyObject *module, PyObject *const
                 }
             }
         } else {
-            PyObject *tv = item.tv;
+            // Must be PyObject*
+            PyObject *tv = std::get<PyObject*>(item);
 
             // Add to output list
             if (PyList_Append(lst, tv) == -1) {
