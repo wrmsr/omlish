@@ -629,3 +629,147 @@ def test_interface(enwik8_small):
         ids_reloaded = tok_reloaded.encode(encode_text)
         assert ids_reloaded == ids, 'Reloaded tokenizer should produce same results'
         print('✅ Save/load through temporary directory OK')
+
+
+def test_batch_encode_correctness(enwik8_small):
+    """Quick correctness test for batch_encode()"""
+
+    text = enwik8_small
+    vocab_size = 512
+
+    tokenizer = rustbpe.Tokenizer()
+    tokenizer.train_from_iterator([text], vocab_size)
+
+    # Test with various batch sizes and edge cases
+    test_texts = [
+        'Hello world',
+        'The quick brown fox',
+        'jumps over the lazy dog',
+        '',  # empty string
+        'a',  # single char
+    ]
+
+    # Compare batch vs individual encoding
+    individual = [tokenizer.encode(t) for t in test_texts]
+    batched = tokenizer.batch_encode(test_texts)
+
+    assert individual == batched, 'Batch encoding should match individual encoding'
+    print('✅ batch_encode() correctness verified')
+
+
+def test_vocab_size():
+    """Test the vocab_size property."""
+
+    tokenizer = rustbpe.Tokenizer()
+
+    # New tokenizer should have 256 (byte-level tokens)
+    assert tokenizer.vocab_size == 256, 'New tokenizer should have vocab_size=256'
+
+    # After training, vocab_size should match the requested size
+    tokenizer.train_from_iterator(['hello hello hello', 'world world world'], vocab_size=260)
+    assert tokenizer.vocab_size == 260, f'Expected vocab_size=260, got {tokenizer.vocab_size}'
+
+    print('✅ vocab_size property works correctly')
+
+
+def test_decode_roundtrip(enwik8_small):
+    """Test that encode->decode produces the original text."""
+
+    text = enwik8_small[:1000]  # Use first 1KB for quick test
+    vocab_size = 512
+
+    tokenizer = rustbpe.Tokenizer()
+    tokenizer.train_from_iterator([text], vocab_size)
+
+    # Test various strings
+    test_strings = [
+        'hello world',
+        'The quick brown fox jumps over the lazy dog',
+        '12345',
+        '   spaces   ',
+        'MixedCASE123',
+        '',  # empty string
+    ]
+
+    for s in test_strings:
+        ids = tokenizer.encode(s)
+        decoded = tokenizer.decode(ids)
+        assert decoded == s, f'Roundtrip failed for {s!r}: got {decoded!r}'
+
+    # Test roundtrip on the training text itself
+    ids = tokenizer.encode(text)
+    decoded = tokenizer.decode(ids)
+    assert decoded == text, 'Roundtrip failed on training text'
+
+    print('✅ decode() roundtrip works correctly')
+
+
+def test_decode_invalid_token():
+    """Test that decode raises an error for invalid token IDs."""
+
+    tokenizer = rustbpe.Tokenizer()
+
+    # Token 300 doesn't exist in base vocabulary (only 0-255)
+    with pytest.raises(ValueError) as e:  # noqa
+        tokenizer.decode([300])
+    assert 'Unknown token id' in str(e.value) or 'unknown' in str(e.value).lower()
+
+    print('✅ decode() correctly rejects invalid tokens')
+
+
+@pytest.mark.slow
+def test_batch_encode_performance(enwik8_large):
+    """
+    Benchmark batch_encode() vs sequential encode() loop.
+    Demonstrates parallelization speedup.
+    """
+
+    # Setup
+    text = enwik8_large  # 10MB dataset
+    vocab_size = 2048
+
+    # Train tokenizer
+    print('\nTraining tokenizer...')
+    tokenizer = rustbpe.Tokenizer()
+    tokenizer.train_from_iterator([text], vocab_size)
+
+    # Create test batch: split text into chunks
+    chunk_size = 50_000  # ~50KB per chunk
+    chunks = [text[i:i + chunk_size] for i in range(0, len(text), chunk_size)]
+    chunks = chunks[:20]  # Use first 20 chunks (~1MB total)
+
+    print(f'\nBatch encoding benchmark:')
+    print(f'  Number of texts: {len(chunks)}')
+    print(f'  Avg text length: {sum(len(c) for c in chunks) / len(chunks):.0f} chars')
+
+    # Benchmark 1: Sequential encoding (baseline)
+    print('\n  [1/3] Sequential encode() loop...')
+    sequential_results, sequential_time = time_function(
+        lambda: [tokenizer.encode(chunk) for chunk in chunks],
+    )
+    print(f'    Time: {sequential_time:.4f}s')
+
+    # Benchmark 2: Parallel batch_encode()
+    print('  [2/3] Parallel batch_encode()...')
+    batch_results, batch_time = time_function(
+        tokenizer.batch_encode, chunks,
+    )
+    print(f'    Time: {batch_time:.4f}s')
+
+    # Verify correctness
+    print('  [3/3] Verifying correctness...')
+    assert len(batch_results) == len(sequential_results), 'Result count mismatch'
+    for i, (seq, batch) in enumerate(zip(sequential_results, batch_results)):
+        assert seq == batch, f'Mismatch at index {i}'
+    print('    ✓ All results match')
+
+    # Report speedup
+    speedup = sequential_time / batch_time
+    print(f'\n  Performance Results:')
+    print(f'    Sequential: {sequential_time:.4f}s')
+    print(f'    Batch:      {batch_time:.4f}s')
+    print(f'    Speedup:    {speedup:.2f}x')
+
+    # Warn if speedup is low (can vary by machine/load)
+    # if speedup < 1.5:
+    #     warnings.warn(f"batch_encode() speedup was only {speedup:.2f}x (expected >1.5x)")
