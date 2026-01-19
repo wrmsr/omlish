@@ -1,4 +1,8 @@
 # ruff: noqa: I001
+from .rlock import (  # noqa
+    AsyncioRLock as RLock,
+)
+
 from .utils import (  # noqa
     asyncio_ensure_task as ensure_task,
 
