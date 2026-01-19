@@ -576,8 +576,8 @@ _post-publish:
 
 ### Rust
 
-.PHONY: rust-dep-update
-rust-dep-update:
+.PHONY: dep-update-rs
+dep-update-rs:
 	# cargo install cargo-edit
 	for R in ${SRCS} ; do \
 		for F in $$(find "$$R" -type f -name 'Cargo.toml') ; do \
@@ -586,6 +586,10 @@ rust-dep-update:
 			echo ; \
 		done ; \
 	done
+
+.PHONY: build-rs
+build-rs:
+	${PYTHON} -m omdev.pyproject.tools.buildrs
 
 
 ### Utils

@@ -121,7 +121,7 @@ hf-xet==1.2.0  # @omlish-venv !14t !14dt
 
 datasets==4.5.0; python_version < "3.14"  # !! includes arrow and pandas and shit
 
-transformers==4.57.3  # @omlish-venv !14t !14dt
+transformers==4.57.6  # @omlish-venv !14t !14dt
 sentence-transformers==5.2.0  # @omlish-venv !14t !14dt
 
 sentencepiece==0.2.1

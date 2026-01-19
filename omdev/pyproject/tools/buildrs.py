@@ -1,9 +1,9 @@
 import argparse
 import os.path
+import shlex
 import shutil
 import subprocess
 import sys
-import shlex
 import zipfile
 
 from omlish.lite.check import check
@@ -51,7 +51,8 @@ def _main() -> None:
             env={
                 **os.environ,
                 'OMLISH_PYCHARM_RUNHACK_ENABLED': '0',
-            }
+            },
+            check=True,
         )
 
         dist_dir = os.path.join(rs_pkg_dir, 'dist')
