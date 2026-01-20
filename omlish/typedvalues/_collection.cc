@@ -30,6 +30,34 @@ static inline collection_state * get_collection_state(PyObject *module)
 
 //
 
+// RAII wrapper for PyObject* to manage reference counts automatically
+template<typename T = PyObject>
+class PyRef {
+    T* ptr_;
+public:
+    explicit PyRef(T* ptr = nullptr) : ptr_(ptr) {}
+    ~PyRef() { Py_XDECREF(ptr_); }
+
+    // No copy
+    PyRef(const PyRef&) = delete;
+    PyRef& operator=(const PyRef&) = delete;
+
+    // Move is OK
+    PyRef(PyRef&& other) noexcept : ptr_(other.release()) {}
+    PyRef& operator=(PyRef&& other) noexcept {
+        if (this != &other) {
+            Py_XDECREF(ptr_);
+            ptr_ = other.release();
+        }
+        return *this;
+    }
+
+    T* get() const { return ptr_; }
+    T* release() { T* p = ptr_; ptr_ = nullptr; return p; }
+    operator T*() const { return ptr_; }
+    explicit operator bool() const { return ptr_ != nullptr; }
+};
+
 // Helper struct to track unique typed values during processing
 struct UniqueInfo {
     PyObject *unique_tv_cls;  // The unique class (borrowed from map key)
@@ -85,29 +113,22 @@ static PyObject * init_typed_values_collection(PyObject *module, PyObject *const
 
     // If no positional arguments, return empty tuple and dicts
     if (nargs == 0) {
-        PyObject *empty_tuple = PyTuple_New(0);
-        if (empty_tuple == nullptr) {
+        PyRef empty_tuple(PyTuple_New(0));
+        if (!empty_tuple) {
             return nullptr;
         }
 
-        PyObject *empty_dict = PyDict_New();
-        if (empty_dict == nullptr) {
-            Py_DECREF(empty_tuple);
+        PyRef empty_dict(PyDict_New());
+        if (!empty_dict) {
             return nullptr;
         }
 
-        PyObject *empty_dict2 = PyDict_New();
-        if (empty_dict2 == nullptr) {
-            Py_DECREF(empty_tuple);
-            Py_DECREF(empty_dict);
+        PyRef empty_dict2(PyDict_New());
+        if (!empty_dict2) {
             return nullptr;
         }
 
-        PyObject *result = PyTuple_Pack(3, empty_tuple, empty_dict, empty_dict2);
-        Py_DECREF(empty_tuple);
-        Py_DECREF(empty_dict);
-        Py_DECREF(empty_dict2);
-        return result;
+        return PyTuple_Pack(3, empty_tuple.get(), empty_dict.get(), empty_dict2.get());
     }
 
     // Temporary storage
@@ -146,45 +167,44 @@ static PyObject * init_typed_values_collection(PyObject *module, PyObject *const
 
         if (is_unique) {
             // Get the _unique_typed_value_cls attribute
-            PyObject *unique_tv_cls = PyObject_GetAttrString(tv, "_unique_typed_value_cls");
-            if (unique_tv_cls == nullptr) {
+            PyRef unique_tv_cls(PyObject_GetAttrString(tv, "_unique_typed_value_cls"));
+            if (!unique_tv_cls) {
                 return nullptr;
             }
 
             // Check for duplicates if not override
             if (!override) {
-                auto it = unique_dct.find(unique_tv_cls);
+                auto it = unique_dct.find(unique_tv_cls.get());
                 if (it != unique_dct.end() && !it->second.empty()) {
                     // Duplicate found - raise error
                     PyObject *old_tv = it->second[0];
 
                     // Create DuplicateUniqueTypedValueError
-                    PyObject *error = PyObject_CallFunction(
+                    PyRef error(PyObject_CallFunction(
                         state->duplicate_error_type,
                         "OOO",
-                        unique_tv_cls,
+                        unique_tv_cls.get(),
                         tv,
                         old_tv
-                    );
+                    ));
 
-                    Py_DECREF(unique_tv_cls);
-
-                    if (error == nullptr) {
+                    if (!error) {
                         return nullptr;
                     }
 
-                    PyErr_SetObject(state->duplicate_error_type, error);
-                    Py_DECREF(error);
+                    PyErr_SetObject(state->duplicate_error_type, error.get());
                     return nullptr;
                 }
             }
 
             // Add to unique_dct
             // Use insert to avoid reference leak: if key already exists, we need to decref the new reference
-            auto insertion = unique_dct.insert({unique_tv_cls, std::vector<PyObject*>()});
+            auto insertion = unique_dct.insert({unique_tv_cls.get(), std::vector<PyObject*>()});
             if (!insertion.second) {
-                // Key already existed, decref the newly acquired reference
-                Py_DECREF(unique_tv_cls);
+                // Key already existed, PyRef will automatically decref
+            } else {
+                // Key was inserted, transfer ownership to map
+                unique_tv_cls.release();
             }
             std::vector<PyObject*> &unique_lst = insertion.first->second;
             unique_lst.push_back(tv);
@@ -192,7 +212,7 @@ static PyObject * init_typed_values_collection(PyObject *module, PyObject *const
             // Add to tmp_lst using make_unique
             // unique_ptr automatically handles deletion, variant handles moves
             tmp_lst.emplace_back(std::make_unique<UniqueInfo>(UniqueInfo{
-                unique_tv_cls,  // Borrowed from map
+                insertion.first->first,  // Borrowed from map
                 tv,
                 unique_lst.size()
             }));
@@ -215,14 +235,13 @@ static PyObject * init_typed_values_collection(PyObject *module, PyObject *const
     }
 
     // Build output structures
-    PyObject *lst = PyList_New(0);
-    if (lst == nullptr) {
+    PyRef lst(PyList_New(0));
+    if (!lst) {
         return nullptr;
     }
 
-    PyObject *tmp_dct = PyDict_New();
-    if (tmp_dct == nullptr) {
-        Py_DECREF(lst);
+    PyRef tmp_dct(PyDict_New());
+    if (!tmp_dct) {
         return nullptr;
     }
 
@@ -239,16 +258,12 @@ static PyObject * init_typed_values_collection(PyObject *module, PyObject *const
             // Last-in-wins: only include if this is the last one
             if (info->idx == it->second.size()) {
                 // Add to output list
-                if (PyList_Append(lst, info->tv) == -1) {
-                    Py_DECREF(lst);
-                    Py_DECREF(tmp_dct);
+                if (PyList_Append(lst.get(), info->tv) == -1) {
                     return nullptr;
                 }
 
                 // Add to tmp_dct (scalar value for unique types)
-                if (PyDict_SetItem(tmp_dct, info->unique_tv_cls, info->tv) == -1) {
-                    Py_DECREF(lst);
-                    Py_DECREF(tmp_dct);
+                if (PyDict_SetItem(tmp_dct.get(), info->unique_tv_cls, info->tv) == -1) {
                     return nullptr;
                 }
             }
@@ -257,52 +272,36 @@ static PyObject * init_typed_values_collection(PyObject *module, PyObject *const
             PyObject *tv = std::get<PyObject*>(item);
 
             // Add to output list
-            if (PyList_Append(lst, tv) == -1) {
-                Py_DECREF(lst);
-                Py_DECREF(tmp_dct);
+            if (PyList_Append(lst.get(), tv) == -1) {
                 return nullptr;
             }
 
             // Add to tmp_dct (accumulating list for non-unique types)
             PyObject *tv_type = (PyObject *)Py_TYPE(tv);
-            PyObject *existing = PyDict_GetItem(tmp_dct, tv_type);  // Borrowed reference
+            PyObject *existing = PyDict_GetItem(tmp_dct.get(), tv_type);  // Borrowed reference
 
             if (existing == nullptr) {
                 // Check if an error occurred during lookup
                 if (PyErr_Occurred()) {
-                    Py_DECREF(lst);
-                    Py_DECREF(tmp_dct);
                     return nullptr;
                 }
 
                 // Create new list
-                PyObject *new_list = PyList_New(0);
-                if (new_list == nullptr) {
-                    Py_DECREF(lst);
-                    Py_DECREF(tmp_dct);
+                PyRef new_list(PyList_New(0));
+                if (!new_list) {
                     return nullptr;
                 }
 
-                if (PyList_Append(new_list, tv) == -1) {
-                    Py_DECREF(new_list);
-                    Py_DECREF(lst);
-                    Py_DECREF(tmp_dct);
+                if (PyList_Append(new_list.get(), tv) == -1) {
                     return nullptr;
                 }
 
-                if (PyDict_SetItem(tmp_dct, tv_type, new_list) == -1) {
-                    Py_DECREF(new_list);
-                    Py_DECREF(lst);
-                    Py_DECREF(tmp_dct);
+                if (PyDict_SetItem(tmp_dct.get(), tv_type, new_list.get()) == -1) {
                     return nullptr;
                 }
-
-                Py_DECREF(new_list);
             } else {
                 // Append to existing list
                 if (PyList_Append(existing, tv) == -1) {
-                    Py_DECREF(lst);
-                    Py_DECREF(tmp_dct);
                     return nullptr;
                 }
             }
@@ -310,83 +309,57 @@ static PyObject * init_typed_values_collection(PyObject *module, PyObject *const
     }
 
     // Convert list to tuple
-    PyObject *result_tuple = PyList_AsTuple(lst);
-    Py_DECREF(lst);
-    if (result_tuple == nullptr) {
-        Py_DECREF(tmp_dct);
+    PyRef result_tuple(PyList_AsTuple(lst.get()));
+    if (!result_tuple) {
         return nullptr;
     }
 
     // Build dct: convert lists to tuples
-    PyObject *dct = PyDict_New();
-    if (dct == nullptr) {
-        Py_DECREF(result_tuple);
-        Py_DECREF(tmp_dct);
+    PyRef dct(PyDict_New());
+    if (!dct) {
         return nullptr;
     }
 
     PyObject *key, *value;
     Py_ssize_t pos = 0;
 
-    while (PyDict_Next(tmp_dct, &pos, &key, &value)) {
+    while (PyDict_Next(tmp_dct.get(), &pos, &key, &value)) {
         if (PyList_Check(value)) {
-            PyObject *tuple_value = PyList_AsTuple(value);
-            if (tuple_value == nullptr) {
-                Py_DECREF(result_tuple);
-                Py_DECREF(tmp_dct);
-                Py_DECREF(dct);
+            PyRef tuple_value(PyList_AsTuple(value));
+            if (!tuple_value) {
                 return nullptr;
             }
 
-            if (PyDict_SetItem(dct, key, tuple_value) == -1) {
-                Py_DECREF(tuple_value);
-                Py_DECREF(result_tuple);
-                Py_DECREF(tmp_dct);
-                Py_DECREF(dct);
+            if (PyDict_SetItem(dct.get(), key, tuple_value.get()) == -1) {
                 return nullptr;
             }
-
-            Py_DECREF(tuple_value);
         } else {
             // Scalar value (unique type)
-            if (PyDict_SetItem(dct, key, value) == -1) {
-                Py_DECREF(result_tuple);
-                Py_DECREF(tmp_dct);
-                Py_DECREF(dct);
+            if (PyDict_SetItem(dct.get(), key, value) == -1) {
                 return nullptr;
             }
         }
     }
 
-    Py_DECREF(tmp_dct);
-
     // Build dct2: dct + unique values keyed by instance type
-    PyObject *dct2 = PyDict_Copy(dct);
-    if (dct2 == nullptr) {
-        Py_DECREF(result_tuple);
-        Py_DECREF(dct);
+    PyRef dct2(PyDict_Copy(dct.get()));
+    if (!dct2) {
         return nullptr;
     }
 
     // Add unique values by their instance type
     pos = 0;
-    while (PyDict_Next(dct, &pos, &key, &value)) {
+    while (PyDict_Next(dct.get(), &pos, &key, &value)) {
         // Check if value is a UniqueTypedValue (not a tuple)
         if (!PyTuple_Check(value)) {
             int is_unique = PyObject_IsInstance(value, state->unique_typed_value_type);
             if (is_unique == -1) {
-                Py_DECREF(result_tuple);
-                Py_DECREF(dct);
-                Py_DECREF(dct2);
                 return nullptr;
             }
 
             if (is_unique) {
                 PyObject *value_type = (PyObject *)Py_TYPE(value);
-                if (PyDict_SetItem(dct2, value_type, value) == -1) {
-                    Py_DECREF(result_tuple);
-                    Py_DECREF(dct);
-                    Py_DECREF(dct2);
+                if (PyDict_SetItem(dct2.get(), value_type, value) == -1) {
                     return nullptr;
                 }
             }
@@ -394,12 +367,7 @@ static PyObject * init_typed_values_collection(PyObject *module, PyObject *const
     }
 
     // Build final result
-    PyObject *result = PyTuple_Pack(3, result_tuple, dct, dct2);
-    Py_DECREF(result_tuple);
-    Py_DECREF(dct);
-    Py_DECREF(dct2);
-
-    return result;
+    return PyTuple_Pack(3, result_tuple.get(), dct.get(), dct2.get());
 }
 
 //

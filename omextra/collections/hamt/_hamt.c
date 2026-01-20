@@ -36,7 +36,9 @@
 // 8. By copying, installing or otherwise using Python, Licensee agrees to be bound by the terms and conditions of this
 // License Agreement.
 //
-// https://github.com/python/cpython/commit/aa18fd55d575a04e3aa782fedcd08dced26676e0
+// https://github.com/python/cpython/blob/main/Python/hamt.c
+//
+// original: https://github.com/python/cpython/commit/aa18fd55d575a04e3aa782fedcd08dced26676e0
 //
 #define PY_SSIZE_T_CLEAN
 
