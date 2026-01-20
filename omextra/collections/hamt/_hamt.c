@@ -613,12 +613,16 @@ typedef struct {
     Py_ssize_t a_count;
 } HamtNode_Array;
 
+#define _HamtNode_Array_CAST(op)      ((HamtNode_Array *)(op))
+
 
 typedef struct {
     PyObject_VAR_HEAD
     int32_t c_hash;
     PyObject *c_array[1];
 } HamtNode_Collision;
+
+#define _HamtNode_Collision_CAST(op)  ((HamtNode_Collision *)(op))
 
 
 static HamtObject *
@@ -795,6 +799,8 @@ _hamt_dump_format(_PyUnicodeWriter *writer, const char *format, ...)
 
 #endif  /* Py_DEBUG */
 /////////////////////////////////// Bitmap Node
+
+#define _HamtNode_Bitmap_CAST(op)     ((HamtNode_Bitmap *)(op))
 
 
 static HamtNode *
@@ -1408,13 +1414,12 @@ hamt_node_bitmap_find(HamtNode_Bitmap *self,
 }
 
 static int
-hamt_node_bitmap_traverse(HamtNode_Bitmap *self, visitproc visit, void *arg)
+hamt_node_bitmap_traverse(PyObject *op, visitproc visit, void *arg)
 {
     /* Bitmap's tp_traverse */
 
-    Py_ssize_t i;
-
-    for (i = Py_SIZE(self); --i >= 0; ) {
+    HamtNode_Bitmap *self = _HamtNode_Bitmap_CAST(op);
+    for (Py_ssize_t i = Py_SIZE(self); --i >= 0;) {
         Py_VISIT(self->b_array[i]);
     }
 
@@ -1422,17 +1427,16 @@ hamt_node_bitmap_traverse(HamtNode_Bitmap *self, visitproc visit, void *arg)
 }
 
 static void
-hamt_node_bitmap_dealloc(HamtNode_Bitmap *self)
+hamt_node_bitmap_dealloc(PyObject *self)
 {
     /* Bitmap's tp_dealloc */
 
-    Py_ssize_t len = Py_SIZE(self);
-    Py_ssize_t i;
+    HamtNode_Bitmap *node = _HamtNode_Bitmap_CAST(self);
+    Py_ssize_t i, len = Py_SIZE(self);
 
-    if (Py_SIZE(self) == 0) {
+    if (len == 0) {
         /* The empty node is managed by the module state. */
-        hamt_module_state *state = get_hamt_state_from_obj((PyObject*)self);
-        assert(self == state->empty_bitmap_node);
+        assert(node == get_hamt_state_from_obj(self)->empty_bitmap_node);
 #ifdef Py_DEBUG
         _Py_FatalRefcountError("deallocating the empty hamt node bitmap singleton");
 #else
@@ -1446,11 +1450,11 @@ hamt_node_bitmap_dealloc(HamtNode_Bitmap *self)
     if (len > 0) {
         i = len;
         while (--i >= 0) {
-            Py_XDECREF(self->b_array[i]);
+            Py_XDECREF(node->b_array[i]);
         }
     }
 
-    Py_TYPE(self)->tp_free((PyObject *)self);
+    Py_TYPE(self)->tp_free(self);
     Py_TRASHCAN_END
 }
 
@@ -1826,14 +1830,12 @@ hamt_node_collision_find(HamtNode_Collision *self,
 
 
 static int
-hamt_node_collision_traverse(HamtNode_Collision *self,
-                             visitproc visit, void *arg)
+hamt_node_collision_traverse(PyObject *op, visitproc visit, void *arg)
 {
     /* Collision's tp_traverse */
 
-    Py_ssize_t i;
-
-    for (i = Py_SIZE(self); --i >= 0; ) {
+    HamtNode_Collision *self = _HamtNode_Collision_CAST(op);
+    for (Py_ssize_t i = Py_SIZE(self); --i >= 0; ) {
         Py_VISIT(self->c_array[i]);
     }
 
@@ -1841,7 +1843,7 @@ hamt_node_collision_traverse(HamtNode_Collision *self,
 }
 
 static void
-hamt_node_collision_dealloc(HamtNode_Collision *self)
+hamt_node_collision_dealloc(PyObject *self)
 {
     /* Collision's tp_dealloc */
 
@@ -1851,13 +1853,13 @@ hamt_node_collision_dealloc(HamtNode_Collision *self)
     Py_TRASHCAN_BEGIN(self, hamt_node_collision_dealloc)
 
     if (len > 0) {
-
+        HamtNode_Collision *node = _HamtNode_Collision_CAST(self);
         while (--len >= 0) {
-            Py_XDECREF(self->c_array[len]);
+            Py_XDECREF(node->c_array[len]);
         }
     }
 
-    Py_TYPE(self)->tp_free((PyObject *)self);
+    Py_TYPE(self)->tp_free(self);
     Py_TRASHCAN_END
 }
 
@@ -2209,14 +2211,12 @@ hamt_node_array_find(HamtNode_Array *self,
 }
 
 static int
-hamt_node_array_traverse(HamtNode_Array *self,
-                         visitproc visit, void *arg)
+hamt_node_array_traverse(PyObject *op, visitproc visit, void *arg)
 {
     /* Array's tp_traverse */
 
-    Py_ssize_t i;
-
-    for (i = 0; i < HAMT_ARRAY_NODE_SIZE; i++) {
+    HamtNode_Array *self = _HamtNode_Array_CAST(op);
+    for (Py_ssize_t i = 0; i < HAMT_ARRAY_NODE_SIZE; i++) {
         Py_VISIT(self->a_array[i]);
     }
 
@@ -2224,20 +2224,19 @@ hamt_node_array_traverse(HamtNode_Array *self,
 }
 
 static void
-hamt_node_array_dealloc(HamtNode_Array *self)
+hamt_node_array_dealloc(PyObject *self)
 {
     /* Array's tp_dealloc */
-
-    Py_ssize_t i;
 
     PyObject_GC_UnTrack(self);
     Py_TRASHCAN_BEGIN(self, hamt_node_array_dealloc)
 
-    for (i = 0; i < HAMT_ARRAY_NODE_SIZE; i++) {
-        Py_XDECREF(self->a_array[i]);
+    HamtNode_Array *obj = _HamtNode_Array_CAST(self);
+    for (Py_ssize_t i = 0; i < HAMT_ARRAY_NODE_SIZE; i++) {
+        Py_XDECREF(obj->a_array[i]);
     }
 
-    Py_TYPE(self)->tp_free((PyObject *)self);
+    Py_TYPE(self)->tp_free(self);
     Py_TRASHCAN_END
 }
 
@@ -2786,14 +2785,15 @@ error:
 
 
 static int
-hamt_baseiter_tp_clear(HamtIterator *it)
+hamt_baseiter_tp_clear(PyObject *op)
 {
+    HamtIterator *it = (HamtIterator*)op;
     Py_CLEAR(it->hi_obj);
     return 0;
 }
 
 static void
-hamt_baseiter_tp_dealloc(HamtIterator *it)
+hamt_baseiter_tp_dealloc(PyObject *it)
 {
     PyObject_GC_UnTrack(it);
     (void)hamt_baseiter_tp_clear(it);
@@ -2801,15 +2801,17 @@ hamt_baseiter_tp_dealloc(HamtIterator *it)
 }
 
 static int
-hamt_baseiter_tp_traverse(HamtIterator *it, visitproc visit, void *arg)
+hamt_baseiter_tp_traverse(PyObject *op, visitproc visit, void *arg)
 {
+    HamtIterator *it = (HamtIterator*)op;
     Py_VISIT(it->hi_obj);
     return 0;
 }
 
 static PyObject *
-hamt_baseiter_tp_iternext(HamtIterator *it)
+hamt_baseiter_tp_iternext(PyObject *op)
 {
+    HamtIterator *it = (HamtIterator*)op;
     PyObject *key;
     PyObject *val;
     hamt_iter_t res = hamt_iterator_next(&it->hi_iter, &key, &val);
@@ -2851,16 +2853,16 @@ hamt_baseiter_new(PyTypeObject *type, binaryfunc yield, HamtObject *o)
     return (PyObject*)it;
 }
 
-#define ITERATOR_TYPE_SHARED_SLOTS                              \
-    .tp_basicsize = sizeof(HamtIterator),                     \
-    .tp_itemsize = 0,                                           \
-    .tp_as_mapping = &HamtIterator_as_mapping,                \
-    .tp_dealloc = (destructor)hamt_baseiter_tp_dealloc,         \
-    .tp_getattro = PyObject_GenericGetAttr,                     \
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,        \
-    .tp_traverse = (traverseproc)hamt_baseiter_tp_traverse,     \
-    .tp_clear = (inquiry)hamt_baseiter_tp_clear,                \
-    .tp_iter = PyObject_SelfIter,                               \
+#define ITERATOR_TYPE_SHARED_SLOTS                           \
+    .tp_basicsize = sizeof(HamtIterator),                    \
+    .tp_itemsize = 0,                                        \
+    .tp_as_mapping = &HamtIterator_as_mapping,               \
+    .tp_dealloc = hamt_baseiter_tp_dealloc,                  \
+    .tp_getattro = PyObject_GenericGetAttr,                  \
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,     \
+    .tp_traverse = hamt_baseiter_tp_traverse,                \
+    .tp_clear = hamt_baseiter_tp_clear,                      \
+    .tp_iter = PyObject_SelfIter,                            \
     .tp_iternext = (iternextfunc)hamt_baseiter_tp_iternext,
 
 
@@ -2983,6 +2985,8 @@ static PyObject *
 hamt_dump(HamtObject *self);
 #endif
 
+#define _HamtObject_CAST(op)      ((HamtObject *)(op))
+
 
 static PyObject *
 hamt_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
@@ -2992,25 +2996,28 @@ hamt_tp_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 }
 
 static int
-hamt_tp_clear(HamtObject *self)
+hamt_tp_clear(PyObject *op)
 {
+    HamtObject *self = _HamtObject_CAST(op);
     Py_CLEAR(self->h_root);
     return 0;
 }
 
 
 static int
-hamt_tp_traverse(HamtObject *self, visitproc visit, void *arg)
+hamt_tp_traverse(PyObject *op, visitproc visit, void *arg)
 {
+    HamtObject *self = _HamtObject_CAST(op);
     Py_VISIT(self->h_root);
     return 0;
 }
 
 static void
-hamt_tp_dealloc(HamtObject *self)
+hamt_tp_dealloc(PyObject *self)
 {
-    hamt_module_state *state = get_hamt_state_from_obj((PyObject*)self);
-    if (self == state->empty_hamt) {
+    hamt_module_state *state = get_hamt_state_from_obj(self);
+    HamtObject *obj = _HamtObject_CAST(self);
+    if (obj == state->empty_hamt) {
         /* The empty one is managed by the module state. */
 #ifdef Py_DEBUG
         _Py_FatalRefcountError("deallocating the empty hamt singleton");
@@ -3020,8 +3027,8 @@ hamt_tp_dealloc(HamtObject *self)
     }
 
     PyObject_GC_UnTrack(self);
-    if (self->h_weakreflist != NULL) {
-        PyObject_ClearWeakRefs((PyObject*)self);
+    if (obj->h_weakreflist != NULL) {
+        PyObject_ClearWeakRefs(self);
     }
     (void)hamt_tp_clear(self);
     Py_TYPE(self)->tp_free(self);
@@ -3053,16 +3060,18 @@ hamt_tp_richcompare(PyObject *v, PyObject *w, int op)
 }
 
 static int
-hamt_tp_contains(HamtObject *self, PyObject *key)
+hamt_tp_contains(PyObject *op, PyObject *key)
 {
     PyObject *val;
+    HamtObject *self = _HamtObject_CAST(op);
     return _Hamt_Find(self, key, &val);
 }
 
 static PyObject *
-hamt_tp_subscript(HamtObject *self, PyObject *key)
+hamt_tp_subscript(PyObject *op, PyObject *key)
 {
     PyObject *val;
+    HamtObject *self = _HamtObject_CAST(op);
     hamt_find_t res = hamt_find(self, key, &val);
     switch (res) {
         case F_ERROR:
@@ -3078,19 +3087,21 @@ hamt_tp_subscript(HamtObject *self, PyObject *key)
 }
 
 static Py_ssize_t
-hamt_tp_len(HamtObject *self)
+hamt_tp_len(PyObject *op)
 {
+    HamtObject *self = _HamtObject_CAST(op);
     return _Hamt_Len(self);
 }
 
 static PyObject *
-hamt_tp_iter(HamtObject *self)
+hamt_tp_iter(PyObject *op)
 {
+    HamtObject *self = _HamtObject_CAST(op);
     return _Hamt_NewIterKeys(self);
 }
 
 static PyObject *
-hamt_py_set(HamtObject *self, PyObject *args)
+hamt_py_set(PyObject *op, PyObject *args)
 {
     PyObject *key;
     PyObject *val;
@@ -3099,11 +3110,12 @@ hamt_py_set(HamtObject *self, PyObject *args)
         return NULL;
     }
 
+    HamtObject *self = _HamtObject_CAST(op);
     return (PyObject *)_Hamt_Assoc(self, key, val);
 }
 
 static PyObject *
-hamt_py_get(HamtObject *self, PyObject *args)
+hamt_py_get(PyObject *op, PyObject *args)
 {
     PyObject *key;
     PyObject *def = NULL;
@@ -3113,6 +3125,7 @@ hamt_py_get(HamtObject *self, PyObject *args)
     }
 
     PyObject *val = NULL;
+    HamtObject *self = _HamtObject_CAST(op);
     hamt_find_t res = hamt_find(self, key, &val);
     switch (res) {
         case F_ERROR:
@@ -3130,47 +3143,52 @@ hamt_py_get(HamtObject *self, PyObject *args)
 }
 
 static PyObject *
-hamt_py_delete(HamtObject *self, PyObject *key)
+hamt_py_delete(PyObject *op, PyObject *key)
 {
+    HamtObject *self = _HamtObject_CAST(op);
     return (PyObject *)_Hamt_Without(self, key);
 }
 
 static PyObject *
-hamt_py_items(HamtObject *self, PyObject *args)
+hamt_py_items(PyObject *op, PyObject *args)
 {
+    HamtObject *self = _HamtObject_CAST(op);
     return _Hamt_NewIterItems(self);
 }
 
 static PyObject *
-hamt_py_values(HamtObject *self, PyObject *args)
+hamt_py_values(PyObject *op, PyObject *args)
 {
+    HamtObject *self = _HamtObject_CAST(op);
     return _Hamt_NewIterValues(self);
 }
 
 static PyObject *
-hamt_py_keys(HamtObject *self, PyObject *Py_UNUSED(args))
+hamt_py_keys(PyObject *op, PyObject *Py_UNUSED(args))
 {
+    HamtObject *self = _HamtObject_CAST(op);
     return _Hamt_NewIterKeys(self);
 }
 
 #ifdef Py_DEBUG
 static PyObject *
-hamt_py_dump(HamtObject *self, PyObject *Py_UNUSED(args))
+hamt_py_dump(PyObject *op, PyObject *Py_UNUSED(args))
 {
+    HamtObject *self = _HamtObject_CAST(op);
     return hamt_dump(self);
 }
 #endif
 
 
 static PyMethodDef Hamt_methods[] = {
-    {"set", _PyCFunction_CAST(hamt_py_set), METH_VARARGS, NULL},
-    {"get", _PyCFunction_CAST(hamt_py_get), METH_VARARGS, NULL},
-    {"delete", _PyCFunction_CAST(hamt_py_delete), METH_O, NULL},
-    {"items", _PyCFunction_CAST(hamt_py_items), METH_NOARGS, NULL},
-    {"keys", _PyCFunction_CAST(hamt_py_keys), METH_NOARGS, NULL},
-    {"values", _PyCFunction_CAST(hamt_py_values), METH_NOARGS, NULL},
+    {"set", hamt_py_set, METH_VARARGS, NULL},
+    {"get", hamt_py_get, METH_VARARGS, NULL},
+    {"delete", hamt_py_delete, METH_O, NULL},
+    {"items", hamt_py_items, METH_NOARGS, NULL},
+    {"keys", hamt_py_keys, METH_NOARGS, NULL},
+    {"values", hamt_py_values, METH_NOARGS, NULL},
 #ifdef Py_DEBUG
-    {"__dump__", _PyCFunction_CAST(hamt_py_dump), METH_NOARGS, NULL},
+    {"__dump__", hamt_py_dump, METH_NOARGS, NULL},
 #endif
     {NULL, NULL}
 };
