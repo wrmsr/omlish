@@ -8,6 +8,7 @@ from omlish import lang
 from omlish.argparse import all as ap
 from omlish.formats import json
 from omlish.logs import all as logs
+from omlish.term.confirm import confirm_action
 
 
 with lang.auto_proxy_import(globals()):
@@ -20,6 +21,11 @@ log = logs.get_module_logger(globals())
 
 
 ##
+
+
+def fmt_ts(f: float) -> ta.Any:
+    dt = datetime.datetime.fromtimestamp(f)  # noqa
+    return dt.isoformat()
 
 
 class Cli(ap.Cli):
@@ -53,14 +59,10 @@ class Cli(ap.Cli):
     @ap.cmd(
         ap.arg('--dir'),
     )
-    def scan_cache(self) -> None:
+    def scan(self) -> None:
         hf_cache_info = hf.utils.scan_cache_dir(self.args.dir)
 
-        def fmt_ts(f: float) -> ta.Any:
-            dt = datetime.datetime.fromtimestamp(f)  # noqa
-            return dt.isoformat()
-
-        repos = [
+        repo_dcts = [
             {
                 'repo_id': repo.repo_id,
                 'repo_type': repo.repo_type,
@@ -116,7 +118,73 @@ class Cli(ap.Cli):
             for repo in sorted(hf_cache_info.repos, key=lambda repo: repo.last_accessed)
         ]
 
-        print(json.dumps_pretty(repos))
+        print(json.dumps_pretty(repo_dcts))
+
+    @ap.cmd(
+        ap.arg('--dir'),
+    )
+    def list(self) -> None:
+        hf_cache_info = hf.utils.scan_cache_dir(self.args.dir)
+
+        repos = [repo for repo in hf_cache_info.repos if repo.repo_type == 'model']
+
+        repo_dcts = [
+            {
+                'repo_id': repo.repo_id,
+                'repo_type': repo.repo_type,
+
+                'repo_path': str(repo.repo_path),
+
+                'size_on_disk': repo.size_on_disk,
+                'size_on_disk_str': repo.size_on_disk_str,
+
+                'nb_files': repo.nb_files,
+
+                'last_accessed': fmt_ts(repo.last_accessed),
+                'last_accessed_str': repo.last_accessed_str,
+                'last_modified': fmt_ts(repo.last_modified),
+                'last_modified_str': repo.last_modified_str,
+            }
+            for repo in sorted(repos, key=lambda repo: repo.last_accessed)
+        ]
+
+        print(json.dumps_pretty(repo_dcts))
+
+    @ap.cmd(
+        ap.arg('key', action='append'),
+        ap.arg('--dir'),
+        ap.arg('--dry-run', action='store_true'),
+        ap.arg('--no-confirm', action='store_true'),
+    )
+    def rm(self) -> None:
+        if not self.args.key:
+            raise ValueError('key is required')
+
+        hf_cache_info = hf.utils.scan_cache_dir(self.args.dir)
+
+        repos_by_id = {repo.repo_id: repo for repo in hf_cache_info.repos}
+        repos_by_rev = {rev.commit_hash: repo for repo in hf_cache_info.repos for rev in repo.revisions}
+
+        rm_revs: dict[str, None] = {}
+
+        for key in self.args.key:
+            if key in repos_by_id:
+                rm_revs.update({rev.commit_hash: None for rev in repos_by_id[key].revisions})
+            elif key in repos_by_rev:
+                rm_revs.update({key: None})
+            else:
+                raise ValueError(f'key {key} not found')
+
+        for rm_rev in rm_revs:
+            rm_repo = repos_by_rev[rm_rev]
+
+            if not self.args.no_confirm:
+                if not confirm_action(f'Delete {rm_repo.repo_id}@{rm_rev}?'):
+                    return
+
+            if not self.args.dry_run:
+                strategy = hf_cache_info.delete_revisions(rm_rev)
+                strategy.execute()
 
 
 ##
