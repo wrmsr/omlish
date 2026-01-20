@@ -30,13 +30,12 @@ static inline collection_state * get_collection_state(PyObject *module)
 
 //
 
-// RAII wrapper for PyObject* to manage reference counts automatically
 template<typename T = PyObject>
 class PyRef {
     T* ptr_;
 public:
     explicit PyRef(T* ptr = nullptr) : ptr_(ptr) {}
-    ~PyRef() { Py_XDECREF(ptr_); }
+    ~PyRef() { Py_XDECREF(reinterpret_cast<PyObject*>(ptr_)); }
 
     // No copy
     PyRef(const PyRef&) = delete;
@@ -46,16 +45,29 @@ public:
     PyRef(PyRef&& other) noexcept : ptr_(other.release()) {}
     PyRef& operator=(PyRef&& other) noexcept {
         if (this != &other) {
-            Py_XDECREF(ptr_);
-            ptr_ = other.release();
+            reset(other.release());
         }
         return *this;
     }
 
+    void reset(T* ptr = nullptr) {
+        PyObject* old = reinterpret_cast<PyObject*>(ptr_);
+        ptr_ = ptr;
+        Py_XDECREF(old);
+    }
+
     T* get() const { return ptr_; }
-    T* release() { T* p = ptr_; ptr_ = nullptr; return p; }
-    operator T*() const { return ptr_; }
+
+    // Explicitly give up ownership
+    [[nodiscard]] T* release() {
+        T* p = ptr_;
+        ptr_ = nullptr;
+        return p;
+    }
+
     explicit operator bool() const { return ptr_ != nullptr; }
+
+    operator T*() const = delete;
 };
 
 // Helper struct to track unique typed values during processing
@@ -203,14 +215,13 @@ static PyObject * init_typed_values_collection(PyObject *module, PyObject *const
             if (!insertion.second) {
                 // Key already existed, PyRef will automatically decref
             } else {
-                // Key was inserted, transfer ownership to map
-                unique_tv_cls.release();
+                // Key was inserted, transfer ownership to map using .release()
+                (void)unique_tv_cls.release();
             }
             std::vector<PyObject*> &unique_lst = insertion.first->second;
             unique_lst.push_back(tv);
 
             // Add to tmp_lst using make_unique
-            // unique_ptr automatically handles deletion, variant handles moves
             tmp_lst.emplace_back(std::make_unique<UniqueInfo>(UniqueInfo{
                 insertion.first->first,  // Borrowed from map
                 tv,

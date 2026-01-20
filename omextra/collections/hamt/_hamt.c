@@ -2662,7 +2662,6 @@ hamt_find(HamtObject *o, PyObject *key, PyObject **val)
     return hamt_node_find(o->h_root, 0, key_hash, key, val);
 }
 
-
 int
 _Hamt_Find(HamtObject *o, PyObject *key, PyObject **val)
 {
@@ -2679,7 +2678,6 @@ _Hamt_Find(HamtObject *o, PyObject *key, PyObject **val)
     }
 }
 
-
 int
 _Hamt_Eq(HamtObject *v, HamtObject *w)
 {
@@ -2691,6 +2689,10 @@ _Hamt_Eq(HamtObject *v, HamtObject *w)
         return 0;
     }
 
+    Py_INCREF(v);
+    Py_INCREF(w);
+
+    int res = 1;
     HamtIteratorState iter;
     hamt_iter_t iter_res;
     hamt_find_t find_res;
@@ -2706,25 +2708,38 @@ _Hamt_Eq(HamtObject *v, HamtObject *w)
             find_res = hamt_find(w, v_key, &w_val);
             switch (find_res) {
                 case F_ERROR:
-                    return -1;
+                    res = -1;
+                    goto done;
 
                 case F_NOT_FOUND:
-                    return 0;
+                    res = 0;
+                    goto done;
 
                 case F_FOUND: {
+                    Py_INCREF(v_key);
+                    Py_INCREF(v_val);
+                    Py_INCREF(w_val);
                     int cmp = PyObject_RichCompareBool(v_val, w_val, Py_EQ);
+                    Py_DECREF(v_key);
+                    Py_DECREF(v_val);
+                    Py_DECREF(w_val);
                     if (cmp < 0) {
-                        return -1;
+                        res = -1;
+                        goto done;
                     }
                     if (cmp == 0) {
-                        return 0;
+                        res = 0;
+                        goto done;
                     }
                 }
             }
         }
     } while (iter_res != I_END);
 
-    return 1;
+    done:
+        Py_DECREF(v);
+    Py_DECREF(w);
+    return res;
 }
 
 Py_ssize_t
@@ -2853,17 +2868,17 @@ hamt_baseiter_new(PyTypeObject *type, binaryfunc yield, HamtObject *o)
     return (PyObject*)it;
 }
 
-#define ITERATOR_TYPE_SHARED_SLOTS                           \
-    .tp_basicsize = sizeof(HamtIterator),                    \
-    .tp_itemsize = 0,                                        \
-    .tp_as_mapping = &HamtIterator_as_mapping,               \
-    .tp_dealloc = hamt_baseiter_tp_dealloc,                  \
-    .tp_getattro = PyObject_GenericGetAttr,                  \
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,     \
-    .tp_traverse = hamt_baseiter_tp_traverse,                \
-    .tp_clear = hamt_baseiter_tp_clear,                      \
-    .tp_iter = PyObject_SelfIter,                            \
-    .tp_iternext = (iternextfunc)hamt_baseiter_tp_iternext,
+#define ITERATOR_TYPE_SHARED_SLOTS                       \
+    .tp_basicsize = sizeof(HamtIterator),                \
+    .tp_itemsize = 0,                                    \
+    .tp_as_mapping = &HamtIterator_as_mapping,           \
+    .tp_dealloc = hamt_baseiter_tp_dealloc,              \
+    .tp_getattro = PyObject_GenericGetAttr,              \
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC, \
+    .tp_traverse = hamt_baseiter_tp_traverse,            \
+    .tp_clear = hamt_baseiter_tp_clear,                  \
+    .tp_iter = PyObject_SelfIter,                        \
+    .tp_iternext = hamt_baseiter_tp_iternext,
 
 
 /////////////////////////////////// _HamtItems_Type
