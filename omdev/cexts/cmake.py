@@ -139,6 +139,15 @@ class CmakeProjectGen:
         with open(os.path.join(self.cmake_dir(), '.gitignore'), 'w') as f:
             f.write('\n'.join(sorted(['/cmake-*', '/build'])))
 
+    def add_root_symlinks(self) -> None:
+        for fn in [
+            '.clang-tidy',
+        ]:
+            check.state(os.path.isfile(sfp := os.path.abspath(os.path.join(self._prj_root, fn))))
+            dfp = os.path.join(self.cmake_dir(), fn)
+            rp = os.path.relpath(os.path.abspath(sfp), self.cmake_dir())
+            os.symlink(rp, dfp)
+
     #
 
     @dc.dataclass(frozen=True, kw_only=True)
@@ -339,6 +348,7 @@ class CmakeProjectGen:
 
         self.cmake_dir()
         self.write_git_ignore()
+        self.add_root_symlinks()
 
         out = io.StringIO()
         clg = self._CmakeListsGen(self, out)
