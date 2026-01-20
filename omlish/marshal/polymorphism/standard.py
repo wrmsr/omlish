@@ -3,9 +3,9 @@ import typing as ta
 from ..base.types import MarshalerFactory
 from ..base.types import UnmarshalerFactory
 from .marshal import PolymorphismMarshalerFactory
-from .metadata import Polymorphism
-from .metadata import TypeTagging
-from .metadata import WrapperTypeTagging
+from .types import Polymorphism
+from .types import TypeTagging
+from .types import WrapperTypeTagging
 from .unions import PolymorphismUnionMarshalerFactory
 from .unions import PolymorphismUnionUnmarshalerFactory
 from .unmarshal import PolymorphismUnmarshalerFactory

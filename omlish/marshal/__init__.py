@@ -179,7 +179,7 @@ with _lang.auto_proxy_init(globals()):
         DataclassMarshalerFactory,
         DataclassUnmarshalerFactory,
         get_dataclass_field_infos,
-        get_dataclass_metadata,
+        get_dataclass_options,
     )
 
     from .objects.helpers import (  # noqa
@@ -188,17 +188,19 @@ with _lang.auto_proxy_init(globals()):
         with_field_metadata,
     )
 
+    from .objects.infos import (  # noqa
+        FieldInfo,
+        FieldInfos,
+    )
+
     from .objects.marshal import (  # noqa
         ObjectMarshaler,
         SimpleObjectMarshalerFactory,
     )
 
-    from .objects.metadata import (  # noqa
-        FieldInfo,
-        FieldInfos,
-        FieldMetadata,
+    from .objects.types import (  # noqa
         FieldOptions,
-        ObjectMetadata,
+        ObjectOptions,
         ObjectSpecials,
     )
 
@@ -213,7 +215,7 @@ with _lang.auto_proxy_init(globals()):
         make_polymorphism_marshaler,
     )
 
-    from .polymorphism.metadata import (  # noqa
+    from .polymorphism.types import (  # noqa
         AutoStripSuffix,
         FieldTypeTagging,
         Impl,

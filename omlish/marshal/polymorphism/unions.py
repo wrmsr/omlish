@@ -12,9 +12,9 @@ from ..base.types import MarshalerFactory
 from ..base.types import Unmarshaler
 from ..base.types import UnmarshalerFactory
 from .marshal import make_polymorphism_marshaler
-from .metadata import Impls
-from .metadata import TypeTagging
-from .metadata import WrapperTypeTagging
+from .types import Impls
+from .types import TypeTagging
+from .types import WrapperTypeTagging
 from .unmarshal import make_polymorphism_unmarshaler
 
 

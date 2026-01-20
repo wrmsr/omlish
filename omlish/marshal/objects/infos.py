@@ -3,8 +3,8 @@ import typing as ta
 from ... import cached
 from ... import collections as col
 from ... import dataclasses as dc
-from .options import DEFAULT_FIELD_OPTIONS
-from .options import FieldOptions
+from .types import DEFAULT_FIELD_OPTIONS
+from .types import FieldOptions
 
 
 ##

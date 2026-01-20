@@ -67,7 +67,7 @@ class _RequestResponseMarshaler(msh.Marshaler):
         else:
             v_v = self.v_m.marshal(ctx, o.v)
 
-        md_fmd = self.rr_flds.md.metadata[msh.FieldMetadata]
+        md_fmd = self.rr_flds.md.metadata[msh.FieldOptions]
         md_m = md_fmd.marshaler_factory.make_marshaler(ctx.marshal_factory_context, self.rr_flds.md.type)()  # FIXME
         md_v = md_m.marshal(ctx, o._metadata)  # noqa
 
@@ -159,7 +159,7 @@ class _RequestResponseUnmarshalerFactory(msh.UnmarshalerFactory):
 
             v_u = ctx.make_unmarshaler(v_rty)
 
-            md_fmd = rr_flds.md.metadata[msh.FieldMetadata]
+            md_fmd = rr_flds.md.metadata[msh.FieldOptions]
             md_u = md_fmd.unmarshaler_factory.make_unmarshaler(ctx, rr_flds.md.type)()  # FIXME
 
             return _RequestResponseUnmarshaler(

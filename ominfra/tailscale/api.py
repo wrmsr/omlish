@@ -10,7 +10,7 @@ from omlish import marshal as msh
 
 @dc.dataclass(frozen=True)
 class Device:
-    dc.metadata(msh.ObjectMetadata(
+    dc.metadata(msh.ObjectOptions(
         field_naming=msh.Naming.LOW_CAMEL,
         unknown_field='x',
     ))
@@ -41,7 +41,7 @@ class Device:
 
 @dc.dataclass(frozen=True)
 class CreatedKey:
-    dc.metadata(msh.ObjectMetadata(
+    dc.metadata(msh.ObjectOptions(
         field_naming=msh.Naming.LOW_CAMEL,
         unknown_field='x',
     ))
@@ -58,7 +58,7 @@ class CreatedKey:
 
 @dc.dataclass(frozen=True)
 class ListedKey:
-    dc.metadata(msh.ObjectMetadata(
+    dc.metadata(msh.ObjectOptions(
         field_naming=msh.Naming.LOW_CAMEL,
         unknown_field='x',
     ))

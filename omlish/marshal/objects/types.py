@@ -1,3 +1,8 @@
+"""
+TODO:
+ - use existing dc.replace / merge if not None helper
+ - ObjectOptions.merge
+"""
 import typing as ta
 
 from ... import cached
@@ -82,6 +87,18 @@ DEFAULT_FIELD_OPTIONS = FieldOptions()
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+class ObjectSpecials:
+    """Special field names for an object."""
+
+    unknown: str | None = None
+    source: str | None = None
+
+    @cached.property
+    def set(self) -> frozenset[str]:
+        return frozenset(v for v in dc.asdict(self).values() if v is not None)
+
+
+@dc.dataclass(frozen=True, kw_only=True)
 class ObjectOptions:
     """Object-level marshaling options."""
 
@@ -91,7 +108,7 @@ class ObjectOptions:
     source_field: str | None = None
 
     @cached.property
-    def specials(self) -> 'ObjectSpecials':
+    def specials(self) -> ObjectSpecials:
         return ObjectSpecials(
             unknown=self.unknown_field,
             source=self.source_field,
@@ -102,13 +119,4 @@ class ObjectOptions:
     ignore_unknown: bool = False
 
 
-@dc.dataclass(frozen=True, kw_only=True)
-class ObjectSpecials:
-    """Special field names for an object."""
-
-    unknown: str | None = None
-    source: str | None = None
-
-    @cached.property
-    def set(self) -> frozenset[str]:
-        return frozenset(v for v in dc.asdict(self).values() if v is not None)
+DEFAULT_OBJECT_OPTIONS = ObjectOptions()

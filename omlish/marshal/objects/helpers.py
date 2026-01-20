@@ -1,8 +1,14 @@
+"""
+TODO:
+ - rename to *_options
+ - @lang.copy_type
+"""
 import typing as ta
 
 from ... import dataclasses as dc
-from .metadata import FieldMetadata
-from .metadata import ObjectMetadata
+from .types import DEFAULT_FIELD_OPTIONS
+from .types import FieldOptions
+from .types import ObjectOptions
 
 
 T = ta.TypeVar('T')
@@ -14,9 +20,10 @@ T = ta.TypeVar('T')
 def with_field_metadata(**kwargs: ta.Any) -> dc.field_modifier:
     @dc.field_modifier
     def inner(f: dc.Field) -> dc.Field:
-        return dc.set_field_metadata(f, {
-            FieldMetadata: f.metadata.get(FieldMetadata, FieldMetadata()).update(**kwargs),
-        })
+        existing = f.metadata.get(FieldOptions, DEFAULT_FIELD_OPTIONS)
+        updated = dc.replace(existing, **kwargs)
+        return dc.set_field_metadata(f, {FieldOptions: updated})
+
     return inner
 
 
@@ -25,9 +32,9 @@ def update_fields_metadata(
         **kwargs: ta.Any,
 ) -> ta.Callable[[type[T]], type[T]]:
     def inner(a: str, f: dc.Field) -> dc.Field:
-        return dc.set_field_metadata(f, {
-            FieldMetadata: f.metadata.get(FieldMetadata, FieldMetadata()).update(**kwargs),
-        })
+        existing = f.metadata.get(FieldOptions, DEFAULT_FIELD_OPTIONS)
+        updated = dc.replace(existing, **kwargs)
+        return dc.set_field_metadata(f, {FieldOptions: updated})
 
     return dc.update_fields(inner, fields)
 
@@ -37,7 +44,7 @@ def update_object_metadata(
         **kwargs: ta.Any,
 ):
     def inner(cls):
-        return dc.append_class_metadata(cls, ObjectMetadata(**kwargs))
+        return dc.append_class_metadata(cls, ObjectOptions(**kwargs))
 
     if cls is not None:
         inner(cls)

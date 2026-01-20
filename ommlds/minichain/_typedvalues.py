@@ -75,11 +75,11 @@ def _tv_field_metadata(
             repr_fn=_tv_field_repr,
         ),
 
-        msh.FieldMetadata: msh.FieldMetadata(
+        msh.FieldOptions: msh.FieldOptions(
             name=marshal_name,
-            options=msh.FieldOptions(
-                omit_if=operator.not_,
-            ),
+
+            omit_if=operator.not_,
+
             marshaler_factory=msh.FuncMarshalerFactory(
                 lambda ctx, rty: _marshal._TypedValuesFieldMarshalerFactory(tvs_rty).make_marshaler(ctx, rty),  # noqa
             ),

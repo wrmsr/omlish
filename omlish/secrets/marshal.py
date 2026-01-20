@@ -45,8 +45,8 @@ def marshal_secret_field(f: dc.Field) -> dc.Field:
     """Mostly obsolete with auto-registration below."""
 
     return dc.set_field_metadata(f, {
-        msh.FieldMetadata: dc.replace(
-            f.metadata.get(msh.FieldMetadata, msh.FieldMetadata()),
+        msh.FieldOptions: dc.replace(
+            f.metadata.get(msh.FieldOptions, msh.FieldOptions()),
             marshaler=StrOrSecretRefMarshalerUnmarshaler(),
             unmarshaler=StrOrSecretRefMarshalerUnmarshaler(),
         ),

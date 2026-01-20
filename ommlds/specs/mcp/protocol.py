@@ -40,10 +40,8 @@ def _set_class_marshal_options(cls):
     msh.update_object_metadata(
         cls,
         field_naming=msh.Naming.LOW_CAMEL,
-        field_defaults=msh.FieldMetadata(
-            options=msh.FieldOptions(
-                omit_if=lang.is_none,
-            ),
+        field_defaults=msh.FieldOptions(
+            omit_if=lang.is_none,
         ),
     )
     return cls

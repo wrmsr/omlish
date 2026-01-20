@@ -12,10 +12,9 @@ from ..base.types import Marshaler
 from ..base.types import MarshalerFactory
 from ..base.types import Unmarshaler
 from ..base.types import UnmarshalerFactory
+from .infos import FieldInfo
+from .infos import FieldInfos
 from .marshal import ObjectMarshaler
-from .metadata import FieldInfo
-from .metadata import FieldInfos
-from .metadata import FieldMetadata
 from .unmarshal import ObjectUnmarshaler
 
 
@@ -43,7 +42,6 @@ def get_namedtuple_field_infos(
         ret.append(FieldInfo(
             name=param.name,
             type=param.annotation,
-            metadata=FieldMetadata(),
 
             marshal_name=param.name,
             unmarshal_names=[param.name],
@@ -105,8 +103,8 @@ class NamedtupleUnmarshalerFactory(UnmarshalerFactory):
                         raise KeyError(f'Duplicate fields for name {un!r}: {fi.name!r}, {d[un][0].name!r}')
                     d[un] = tup
 
-                if fi.options.default.present:
-                    defaults[fi.name] = fi.options.default.must()
+                if (dfl := fi.options.default) is not None and dfl.present:
+                    defaults[fi.name] = dfl.must()
 
             return ObjectUnmarshaler(
                 ty,

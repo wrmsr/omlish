@@ -11,11 +11,11 @@ from ..base.contexts import UnmarshalFactoryContext
 from ..base.types import Unmarshaler
 from ..base.types import UnmarshalerFactory
 from ..base.values import Value
-from .metadata import FieldTypeTagging
-from .metadata import Impls
-from .metadata import Polymorphism
-from .metadata import TypeTagging
-from .metadata import WrapperTypeTagging
+from .types import FieldTypeTagging
+from .types import Impls
+from .types import Polymorphism
+from .types import TypeTagging
+from .types import WrapperTypeTagging
 
 
 ##

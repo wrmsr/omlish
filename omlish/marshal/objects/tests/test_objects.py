@@ -13,9 +13,9 @@ from ...standard import new_standard_unmarshaler_factory
 from ...trivial.nop import NOP_MARSHALER_UNMARSHALER
 from ..helpers import update_fields_metadata
 from ..helpers import update_object_metadata
+from ..infos import FieldInfo
 from ..marshal import ObjectMarshaler
-from ..metadata import FieldInfo
-from ..metadata import ObjectSpecials
+from ..types import ObjectSpecials
 from ..unmarshal import ObjectUnmarshaler
 
 

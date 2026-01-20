@@ -18,10 +18,10 @@ from ...objects.dataclasses import DataclassUnmarshalerFactory
 from ...singular.primitives import PRIMITIVE_MARSHALER_FACTORY
 from ...singular.primitives import PRIMITIVE_UNMARSHALER_FACTORY
 from ..marshal import PolymorphismMarshalerFactory
-from ..metadata import FieldTypeTagging
-from ..metadata import Impl
-from ..metadata import Polymorphism
-from ..metadata import WrapperTypeTagging
+from ..types import FieldTypeTagging
+from ..types import Impl
+from ..types import Polymorphism
+from ..types import WrapperTypeTagging
 from ..unmarshal import PolymorphismUnmarshalerFactory
 
 

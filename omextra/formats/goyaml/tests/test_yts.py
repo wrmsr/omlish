@@ -42,7 +42,7 @@ def get_yts_files() -> ta.Sequence[str]:
 class YtsItem:
     name: str | None = None
 
-    from_: str | None = dc.field(default=None, metadata={msh.FieldMetadata: msh.FieldMetadata(name='from')})
+    from_: str | None = dc.field(default=None, metadata={msh.FieldOptions: msh.FieldOptions(name='from')})
     tags: str | None = None
 
     fail: bool = False

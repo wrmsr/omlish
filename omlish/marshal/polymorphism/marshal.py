@@ -9,11 +9,11 @@ from ..base.contexts import MarshalFactoryContext
 from ..base.types import Marshaler
 from ..base.types import MarshalerFactory
 from ..base.values import Value
-from .metadata import FieldTypeTagging
-from .metadata import Impls
-from .metadata import Polymorphism
-from .metadata import TypeTagging
-from .metadata import WrapperTypeTagging
+from .types import FieldTypeTagging
+from .types import Impls
+from .types import Polymorphism
+from .types import TypeTagging
+from .types import WrapperTypeTagging
 
 
 ##

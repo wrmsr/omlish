@@ -1,8 +1,3 @@
-"""
-TODO:
- - clean up yeesh
- - tangled with objects - Field/ObjectMetadata defined over there but unused
-"""
 import typing as ta
 
 from ... import check
@@ -21,139 +16,265 @@ from ..base.types import Unmarshaler
 from ..base.types import UnmarshalerFactory
 from ..naming import Naming
 from ..naming import translate_name
+from .infos import FieldInfo
+from .infos import FieldInfos
 from .marshal import ObjectMarshaler
-from .metadata import DEFAULT_FIELD_OPTIONS
-from .metadata import FIELD_OPTIONS_KWARGS
-from .metadata import FieldInfo
-from .metadata import FieldInfos
-from .metadata import FieldMetadata
-from .metadata import FieldOptions
-from .metadata import ObjectMetadata
+from .types import DEFAULT_FIELD_OPTIONS
+from .types import FieldOptions
+from .types import ObjectOptions
 from .unmarshal import ObjectUnmarshaler
 
 
 ##
 
 
-def get_dataclass_metadata(ty: type) -> ObjectMetadata:
-    return check.single(dc.reflect(ty).spec.metadata_by_type.get(ObjectMetadata) or [ObjectMetadata()])
+def get_dataclass_options(ty: type) -> ObjectOptions:
+    return check.single(dc.reflect(ty).spec.metadata_by_type.get(ObjectOptions) or [ObjectOptions()])
+
+
+# def get_dataclass_field_infos(
+#         ty: type,
+#         opts: col.TypeMap[Option] | None = None,
+# ) -> FieldInfos:
+#     if opts is None:
+#         opts = col.TypeMap()
+#
+#     dc_md = get_dataclass_metadata(ty)
+#     dc_naming = dc_md.field_naming or opts.get(Naming)
+#     dc_rfl = dc.reflect(ty)
+#
+#     fi_defaults = {
+#         k: v
+#         for k, v in dc.asdict(dc_md.field_defaults).items()
+#         if v is not None
+#     }
+#     fo_defaults = {
+#         k: v
+#         for k, v in fi_defaults.pop('options').items()
+#         if v != getattr(DEFAULT_FIELD_OPTIONS, k)
+#     }
+#
+#     type_hints = ta.get_type_hints(ty)
+#
+#     ret: list[FieldInfo] = []
+#     for field in dc_rfl.instance_fields:
+#         if (f_naming := field.metadata.get(Naming, dc_naming)) is not None:
+#             um_name = translate_name(field.name, f_naming)
+#         else:
+#             um_name = field.name
+#
+#         fmd: FieldMetadata | None = field.metadata.get(FieldMetadata)
+#
+#         f_ty: ta.Any
+#         if (
+#                 dc_rfl.spec.generic_init or
+#                 (fmd is not None and fmd.options.generic_replace)
+#         ):
+#             f_ty = rfl.to_annotation(dc_rfl.fields_inspection.generic_replaced_field_type(field.name))
+#         else:
+#             f_ty = type_hints[field.name]
+#
+#         fi_kw = dict(fi_defaults)
+#         fo_kw = dict(fo_defaults)
+#
+#         fi_kw.update(
+#             name=field.name,
+#             type=f_ty,
+#             metadata=FieldMetadata(),
+#
+#             marshal_name=um_name,
+#             unmarshal_names=[um_name],
+#         )
+#
+#         has_set_name = False
+#         if fmd is not None:
+#             fi_kw.update(
+#                 metadata=fmd,
+#             )
+#
+#             for fo_k in FIELD_OPTIONS_KWARGS:
+#                 if (fo_v := getattr(fmd.options, fo_k)) != getattr(DEFAULT_FIELD_OPTIONS, fo_k):
+#                     fo_kw[fo_k] = fo_v
+#
+#             if fmd.name is not None:
+#                 has_set_name = True
+#                 fi_kw.update(
+#                     marshal_name=fmd.name,
+#                     unmarshal_names=col.unique([fmd.name, *(fmd.alts or ())]),
+#                 )
+#
+#         else:
+#             try:
+#                 lfk = field.metadata[lm.OBJ_MARSHALER_FIELD_KEY]
+#             except KeyError:
+#                 pass
+#             else:
+#                 if lfk is not None:
+#                     check.non_empty_str(lfk)
+#                     has_set_name = True
+#                     fi_kw.update(
+#                         marshal_name=lfk,
+#                         unmarshal_names=[lfk],
+#                     )
+#                 else:
+#                     fo_kw.update(
+#                         no_marshal=True,
+#                         no_unmarshal=True,
+#                     )
+#
+#             if (lon := field.metadata.get(lm.OBJ_MARSHALER_OMIT_IF_NONE)) is not None:
+#                 if check.isinstance(lon, bool):
+#                     fo_kw.update(
+#                         omit_if=lang.is_none,
+#                     )
+#
+#         if fo_kw.get('embed') and not has_set_name:
+#             fi_kw.update(
+#                 marshal_name=fi_kw['marshal_name'] + '_',
+#                 unmarshal_names=[n + '_' for n in fi_kw['unmarshal_names']],
+#             )
+#
+#         if fo_kw.get('no_marshal'):
+#             fi_kw.update(
+#                 marshal_name=None,
+#             )
+#         if fo_kw.get('no_unmarshal'):
+#             fi_kw.update(
+#                 unmarshal_names=(),
+#             )
+#
+#         ret.append(
+#             FieldInfo(
+#                 options=FieldOptions(**fo_kw),
+#                 **fi_kw,
+#             ),
+#         )
+#
+#     return FieldInfos(ret)
 
 
 def get_dataclass_field_infos(
         ty: type,
         opts: col.TypeMap[Option] | None = None,
 ) -> FieldInfos:
+    """
+    Extract field information from a dataclass type.
+
+    Merges configuration from multiple sources in this order (later = higher precedence):
+    1. Empty baseline
+    2. Class-level field_defaults (from ObjectMetadata)
+    3. Field-level FieldMetadata (from field.metadata)
+    4. Lite marshal compatibility overrides (OBJ_MARSHALER_FIELD_KEY, etc.)
+
+    Then computes marshal/unmarshal names based on the merged configuration.
+    """
+
     if opts is None:
         opts = col.TypeMap()
 
-    dc_md = get_dataclass_metadata(ty)
-    dc_naming = dc_md.field_naming or opts.get(Naming)
+    obj_md = get_dataclass_options(ty)
+    class_naming = obj_md.field_naming or opts.get(Naming)
     dc_rfl = dc.reflect(ty)
-
-    fi_defaults = {
-        k: v
-        for k, v in dc.asdict(dc_md.field_defaults).items()
-        if v is not None
-    }
-    fo_defaults = {
-        k: v
-        for k, v in fi_defaults.pop('options').items()
-        if v != getattr(DEFAULT_FIELD_OPTIONS, k)
-    }
-
     type_hints = ta.get_type_hints(ty)
 
     ret: list[FieldInfo] = []
+
     for field in dc_rfl.instance_fields:
-        if (f_naming := field.metadata.get(Naming, dc_naming)) is not None:
-            um_name = translate_name(field.name, f_naming)
-        else:
-            um_name = field.name
+        ##
+        # Start with baseline (empty) and merge class-level defaults
 
-        fmd: FieldMetadata | None = field.metadata.get(FieldMetadata)
+        merged_md = DEFAULT_FIELD_OPTIONS.merge(obj_md.field_defaults)
 
-        f_ty: ta.Any
-        if (
-                dc_rfl.spec.generic_init or
-                (fmd is not None and fmd.options.generic_replace)
-        ):
+        ##
+        # Merge field-level FieldMetadata if present
+
+        field_md = field.metadata.get(FieldOptions)
+        if field_md is not None:
+            merged_md = merged_md.merge(field_md)
+
+        ##
+        # Lite marshal compatibility - build override metadata
+
+        lite_override_kw: dict[str, ta.Any] = {}
+
+        # Handle OBJ_MARSHALER_FIELD_KEY
+        if lm.OBJ_MARSHALER_FIELD_KEY in field.metadata:
+            lfk = field.metadata[lm.OBJ_MARSHALER_FIELD_KEY]
+            if lfk is not None:
+                check.non_empty_str(lfk)
+                lite_override_kw['name'] = lfk
+            else:
+                lite_override_kw['no_marshal'] = True
+                lite_override_kw['no_unmarshal'] = True
+
+        # Handle OBJ_MARSHALER_OMIT_IF_NONE
+        if (lon := field.metadata.get(lm.OBJ_MARSHALER_OMIT_IF_NONE)) is not None:
+            if check.isinstance(lon, bool):
+                lite_override_kw['omit_if'] = lang.is_none
+
+        # Merge lite overrides if any
+        if lite_override_kw:
+            merged_md = merged_md.merge(FieldOptions(**lite_override_kw))
+
+        ##
+        # Determine field type (with generic replacement if needed)
+
+        if dc_rfl.spec.generic_init or merged_md.generic_replace:
             f_ty = rfl.to_annotation(dc_rfl.fields_inspection.generic_replaced_field_type(field.name))
         else:
             f_ty = type_hints[field.name]
 
-        fi_kw = dict(fi_defaults)
-        fo_kw = dict(fo_defaults)
+        ##
+        # Compute marshal/unmarshal names based on merged metadata
 
-        fi_kw.update(
-            name=field.name,
-            type=f_ty,
-            metadata=FieldMetadata(),
+        has_explicit_name = merged_md.name is not None
 
-            marshal_name=um_name,
-            unmarshal_names=[um_name],
-        )
+        marshal_name: str | None
+        unmarshal_names: ta.Sequence[str]
 
-        has_set_name = False
-        if fmd is not None:
-            fi_kw.update(
-                metadata=fmd,
-            )
-
-            for fo_k in FIELD_OPTIONS_KWARGS:
-                if (fo_v := getattr(fmd.options, fo_k)) != getattr(DEFAULT_FIELD_OPTIONS, fo_k):
-                    fo_kw[fo_k] = fo_v
-
-            if fmd.name is not None:
-                has_set_name = True
-                fi_kw.update(
-                    marshal_name=fmd.name,
-                    unmarshal_names=col.unique([fmd.name, *(fmd.alts or ())]),
-                )
-
+        if has_explicit_name:
+            # Explicitly set name takes precedence
+            # Type narrow: we know merged_md.name is not None here
+            explicit_name = check.not_none(merged_md.name)
+            marshal_name = explicit_name
+            unmarshal_names = col.unique([explicit_name, *(merged_md.alts or ())])
         else:
-            try:
-                lfk = field.metadata[lm.OBJ_MARSHALER_FIELD_KEY]
-            except KeyError:
-                pass
+            # Use naming convention if available, otherwise field name
+            field_naming = field.metadata.get(Naming, class_naming)
+            if field_naming is not None:
+                base_name = translate_name(field.name, field_naming)
             else:
-                if lfk is not None:
-                    check.non_empty_str(lfk)
-                    has_set_name = True
-                    fi_kw.update(
-                        marshal_name=lfk,
-                        unmarshal_names=[lfk],
-                    )
-                else:
-                    fo_kw.update(
-                        no_marshal=True,
-                        no_unmarshal=True,
-                    )
+                base_name = field.name
 
-            if (lon := field.metadata.get(lm.OBJ_MARSHALER_OMIT_IF_NONE)) is not None:
-                if check.isinstance(lon, bool):
-                    fo_kw.update(
-                        omit_if=lang.is_none,
-                    )
+            marshal_name = base_name
+            unmarshal_names = [base_name]
 
-        if fo_kw.get('embed') and not has_set_name:
-            fi_kw.update(
-                marshal_name=fi_kw['marshal_name'] + '_',
-                unmarshal_names=[n + '_' for n in fi_kw['unmarshal_names']],
-            )
+        ##
+        # Handle embed suffix (only if name wasn't explicitly set)
 
-        if fo_kw.get('no_marshal'):
-            fi_kw.update(
-                marshal_name=None,
-            )
-        if fo_kw.get('no_unmarshal'):
-            fi_kw.update(
-                unmarshal_names=(),
-            )
+        if merged_md.embed and not has_explicit_name:
+            # At this point marshal_name is guaranteed to be str (not None)
+            marshal_name = check.not_none(marshal_name) + '_'
+            unmarshal_names = [n + '_' for n in unmarshal_names]
+
+        ##
+        # Handle no_marshal/no_unmarshal
+
+        if merged_md.no_marshal:
+            marshal_name = None
+        if merged_md.no_unmarshal:
+            unmarshal_names = []
+
+        ##
+        # Create FieldInfo with computed values
 
         ret.append(
             FieldInfo(
-                options=FieldOptions(**fo_kw),
-                **fi_kw,
+                name=field.name,
+                type=f_ty,
+                marshal_name=marshal_name,
+                unmarshal_names=unmarshal_names,
+                options=merged_md,
             ),
         )
 
@@ -192,12 +313,13 @@ def _make_field_unmarshal_obj(
         return m()
     return ctx.make_unmarshaler(ty)
 
+
 ##
 
 
 class AbstractDataclassFactory(lang.Abstract):
-    def _get_metadata(self, ty: type) -> ObjectMetadata:
-        return get_dataclass_metadata(ty)
+    def _get_options(self, ty: type) -> ObjectOptions:
+        return get_dataclass_options(ty)
 
     def _get_field_infos(
             self,
@@ -233,7 +355,7 @@ class DataclassMarshalerFactory(AbstractDataclassFactory, MarshalerFactory):
             check.state(dc.is_dataclass(ty))
             check.state(not lang.is_abstract_class(ty))
 
-            dc_md = self._get_metadata(ty)
+            dc_md = self._get_options(ty)
             fis = self._get_field_infos(ty, ctx.options)
 
             fields = [
@@ -242,8 +364,8 @@ class DataclassMarshalerFactory(AbstractDataclassFactory, MarshalerFactory):
                     _make_field_marshal_obj(
                         ctx,
                         fi.type,
-                        fi.metadata.marshaler,
-                        fi.metadata.marshaler_factory,
+                        fi.options.marshaler,
+                        fi.options.marshaler_factory,
                     ),
                 )
                 for fi in fis
@@ -275,7 +397,7 @@ class DataclassUnmarshalerFactory(AbstractDataclassFactory, UnmarshalerFactory):
             check.state(dc.is_dataclass(ty))
             check.state(not lang.is_abstract_class(ty))
 
-            dc_md = self._get_metadata(ty)
+            dc_md = self._get_options(ty)
             fis = self._get_field_infos(ty, ctx.options)
 
             d: dict[str, tuple[FieldInfo, Unmarshaler]] = {}
@@ -289,7 +411,7 @@ class DataclassUnmarshalerFactory(AbstractDataclassFactory, UnmarshalerFactory):
                 if fi.options.embed:
                     e_ty = check.isinstance(fi.type, type)
                     check.state(dc.is_dataclass(e_ty))
-                    e_dc_md = get_dataclass_metadata(e_ty)
+                    e_dc_md = get_dataclass_options(e_ty)
                     if e_dc_md.specials.set:
                         raise Exception(f'Embedded fields cannot have specials: {e_ty}')
 
@@ -305,8 +427,8 @@ class DataclassUnmarshalerFactory(AbstractDataclassFactory, UnmarshalerFactory):
                         _make_field_unmarshal_obj(
                             ctx,
                             fi.type,
-                            fi.metadata.unmarshaler,
-                            fi.metadata.unmarshaler_factory,
+                            fi.options.unmarshaler,
+                            fi.options.unmarshaler_factory,
                         ),
                     )
 
@@ -318,8 +440,8 @@ class DataclassUnmarshalerFactory(AbstractDataclassFactory, UnmarshalerFactory):
                             d[un] = tup
                             ret.append(un)
 
-                    if fi.options.default.present:
-                        defaults[fi.name] = fi.options.default.must()
+                    if (dfl := fi.options.default) is not None and dfl.present:
+                        defaults[fi.name] = dfl.must()
 
                 return ret
 

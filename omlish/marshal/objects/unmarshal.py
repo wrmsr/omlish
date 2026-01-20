@@ -9,9 +9,9 @@ from ..base.contexts import UnmarshalFactoryContext
 from ..base.types import Unmarshaler
 from ..base.types import UnmarshalerFactory
 from ..base.values import Value
-from .metadata import FieldInfo
-from .metadata import FieldInfos
-from .metadata import ObjectSpecials
+from .infos import FieldInfo
+from .infos import FieldInfos
+from .types import ObjectSpecials
 
 
 ##
@@ -48,9 +48,9 @@ class ObjectUnmarshaler(Unmarshaler):
         }
 
         defaults = {
-            fi.name: fi.options.default.must()
+            fi.name: dfl.must()
             for fi in fis
-            if fi.options.default.present
+            if (dfl := fi.options.default) is not None and dfl.present
         }
 
         return cls(

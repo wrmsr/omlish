@@ -9,9 +9,9 @@ from ..base.contexts import MarshalFactoryContext
 from ..base.types import Marshaler
 from ..base.types import MarshalerFactory
 from ..base.values import Value
-from .metadata import FieldInfo
-from .metadata import FieldInfos
-from .metadata import ObjectSpecials
+from .infos import FieldInfo
+from .infos import FieldInfos
+from .types import ObjectSpecials
 
 
 ##
