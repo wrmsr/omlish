@@ -218,7 +218,8 @@
     - Prefer to use the 'check' system (`from omlish import check`, or `from omlish.lite.check import check` for lite
       code) where `assert` would otherwise be used.
   - Outside of `TypeError`, `ValueError`, and `RuntimeError`, prefer to create custom subclasses of `Exception` for more
-    specific errors. Use inheritance where beneficial to communicate subtypes of errors.
+    specific errors. Use inheritance where beneficial to communicate subtypes of errors. Semantically meaningful error
+    types are usually more important than human readable error messages.
     - `KeyError` should however not be raised except in the specific and rare case of implementing a `ta.Mapping` or
       direct equivalent. For example, a `UserService` `get_user` method should raise a `UserNotFoundError`, not
       `KeyError`, when a given user is not found.

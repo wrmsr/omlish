@@ -163,3 +163,31 @@ def test_get_any():
 def test_bool():
     with pytest.raises(TypeError):  # noqa
         bool(TopK(0))  # noqa
+
+
+def test_a_ton():
+    tv_cls_lst: list = []
+    tv_lst: list = []
+
+    class UniqueFoo(UniqueTypedValue, lang.Abstract):
+        pass
+
+    for i in range(1500):
+        bcs: list
+        match i % 3:
+            case 0:
+                bcs = [ScalarTypedValue[int], UniqueFoo]
+            case 1:
+                bcs = [ScalarTypedValue[int]]
+            case _:
+                bcs = [TypedValue]
+        tv_cls = lang.new_type(f'Foo{i}', tuple(bcs), {})  # noqa
+        tv_cls_lst.append(tv_cls)
+        if issubclass(tv_cls, ScalarTypedValue):
+            tv_lst.append(tv_cls(i))
+        else:
+            tv_lst.append(tv_cls())
+
+    tvc = TypedValues(*tv_lst, override=True)
+    assert len(tvc) == 1001
+    assert tvc[UniqueFoo] == tv_cls_lst[1497](1497)
