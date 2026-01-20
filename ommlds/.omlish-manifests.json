@@ -1,5 +1,17 @@
 [
   {
+    "module": ".backends.huggingface.cli",
+    "attr": "_CLI_MODULE",
+    "file": "ommlds/backends/huggingface/cli.py",
+    "line": 51,
+    "value": {
+      "!omdev.cli.types.CliModule": {
+        "name": "hf",
+        "module": "ommlds.backends.huggingface.cli"
+      }
+    }
+  },
+  {
     "module": ".cli.__main__",
     "attr": null,
     "file": "ommlds/cli/__main__.py",

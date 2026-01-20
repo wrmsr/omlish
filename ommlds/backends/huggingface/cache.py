@@ -11,15 +11,10 @@ from omlish import check
 from omlish import lang
 
 
-if ta.TYPE_CHECKING:
+with lang.auto_proxy_import(globals()):
     import huggingface_hub as hf
     import huggingface_hub.errors  # noqa
     import huggingface_hub.utils  # noqa
-else:
-    hf = lang.proxy_import('huggingface_hub', extras=[
-        'errors',
-        'utils',
-    ])
 
 
 ##
