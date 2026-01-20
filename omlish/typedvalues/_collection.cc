@@ -32,9 +32,9 @@ static inline collection_state * get_collection_state(PyObject *module)
 
 // Helper struct to track unique typed values during processing
 struct UniqueInfo {
-    PyObject *unique_tv_cls;             // The unique class (borrowed from map key)
-    PyObject *tv;                        // The typed value (borrowed from args)
-    size_t idx;                          // Index in unique_lst when added
+    PyObject *unique_tv_cls;  // The unique class (borrowed from map key)
+    PyObject *tv;             // The typed value (borrowed from args)
+    size_t idx;               // Index in unique_lst when added
 };
 
 using TmpItem = std::variant<PyObject*, std::unique_ptr<UniqueInfo>>;
