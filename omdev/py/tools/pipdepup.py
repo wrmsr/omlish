@@ -327,6 +327,10 @@ class Package:
     unfiltered_candidates: ta.Sequence[Candidate] | None = None
     candidates: ta.Sequence[Candidate] | None = None
 
+    @cached.function
+    def candidates_by_version(self) -> ta.Mapping[Version, ta.Sequence[Candidate]]:
+        return col.multi_map_by(lambda c: c.version, check.not_none(self.candidates))
+
     latest_candidate: Candidate | None = None
     suggested_candidate: Candidate | None = None
 
@@ -511,7 +515,9 @@ def format_for_columns(pkgs: ta.Sequence[Package]) -> tuple[list[list[str]], lis
 
     header = [
         'Package',
+
         'Current',
+        'Age',
 
         'Suggested',
         'Age',
@@ -543,8 +549,18 @@ def format_for_columns(pkgs: ta.Sequence[Package]) -> tuple[list[list[str]], lis
 
         row = [
             pkg.dist.raw_name,
+
             pkg.dist.raw_version,
         ]
+
+        if (
+                (cs := pkg.candidates_by_version().get(pkg.dist.version)) and
+                # FIXME: lame and wrong lol
+                (c_ut := cs[0].upload_time()) is not None
+        ):
+            row.append(human_round_td(now_utc() - c_ut))
+        else:
+            row.append('')
 
         def add_c(c):
             if c is None:
