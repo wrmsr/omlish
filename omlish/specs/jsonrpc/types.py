@@ -55,8 +55,8 @@ def check_not_not_specified(v: T | type[NotSpecified]) -> T:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_fields_metadata(['id'], omit_if=is_not_specified, default=lang.just(NotSpecified))
-@msh.update_fields_metadata(['params'], omit_if=operator.not_)
+@msh.update_fields_options(['id'], omit_if=is_not_specified, default=lang.just(NotSpecified))
+@msh.update_fields_options(['params'], omit_if=operator.not_)
 class Request(lang.Final):
     id: Id | type[NotSpecified]
 
@@ -87,7 +87,7 @@ def notification(method: str, params: Object | None = None) -> Request:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_fields_metadata(['result', 'error'], omit_if=is_not_specified)
+@msh.update_fields_options(['result', 'error'], omit_if=is_not_specified)
 class Response(lang.Final):
     id: Id
     dc.validate(lambda self: self.id is not NotSpecified)
@@ -122,7 +122,7 @@ def result(id: Id, result: ta.Any) -> Response:  # noqa
 
 
 @dc.dataclass(frozen=True)
-@msh.update_fields_metadata(['data'], omit_if=is_not_specified)
+@msh.update_fields_options(['data'], omit_if=is_not_specified)
 class Error(lang.Final):
     code: int
     message: str

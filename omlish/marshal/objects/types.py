@@ -1,8 +1,3 @@
-"""
-TODO:
- - use existing dc.replace / merge if not None helper
- - ObjectOptions.merge
-"""
 import typing as ta
 
 from ... import cached
@@ -61,17 +56,19 @@ class FieldOptions:
     # Merging
 
     def merge(self, *overrides: ta.Optional['FieldOptions']) -> 'FieldOptions':
-        kw: dict[str, ta.Any] = {
-            fld.name: fv
-            for obj in [self, *overrides]
-            if obj is not None
-            for fld in _field_options_fields()
-            if (fv := getattr(obj, fld.name)) is not None
-        }
+        kw: dict[str, ta.Any] = {}
+        for obj in [self, *overrides]:
+            if obj is None:
+                continue
+
+            for fld in _field_options_fields():
+                if (fv := getattr(obj, fld.name)) is None:
+                    continue
+
+                kw[fld.name] = fv
 
         if not kw:
             return self
-
         return FieldOptions(**kw)
 
 
@@ -87,6 +84,7 @@ DEFAULT_FIELD_OPTIONS = FieldOptions()
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+@dc.extra_class_params(default_repr_fn=lang.opt_repr)
 class ObjectSpecials:
     """Special field names for an object."""
 
@@ -99,10 +97,22 @@ class ObjectSpecials:
 
 
 @dc.dataclass(frozen=True, kw_only=True)
+@dc.extra_class_params(default_repr_fn=lang.opt_repr)
 class ObjectOptions:
     """Object-level marshaling options."""
 
+    ##
+    # Naming
+
     field_naming: Naming | None = None
+
+    ##
+    # Behavior options
+
+    ignore_unknown: bool = False
+
+    ##
+    # Special fields
 
     unknown_field: str | None = None
     source_field: str | None = None
@@ -114,9 +124,37 @@ class ObjectOptions:
             source=self.source_field,
         )
 
+    ##
+    # Field defaults
+
     field_defaults: FieldOptions = DEFAULT_FIELD_OPTIONS
 
-    ignore_unknown: bool = False
+    ##
+    # Merging
+
+    def merge(self, *overrides: ta.Optional['ObjectOptions']) -> 'ObjectOptions':
+        kw: dict[str, ta.Any] = {}
+        for obj in [self, *overrides]:
+            if obj is None:
+                continue
+
+            for fld in _object_options_fields():
+                if (fv := getattr(obj, fld.name)) is None:
+                    continue
+
+                if fld.type is FieldOptions:
+                    fv = kw.get(fld.name, DEFAULT_FIELD_OPTIONS).merge(fv)
+
+                kw[fld.name] = fv
+
+        if not kw:
+            return self
+        return ObjectOptions(**kw)
+
+
+@lang.cached_function
+def _object_options_fields() -> ta.Sequence[dc.Field]:
+    return dc.fields(ObjectOptions)
 
 
 DEFAULT_OBJECT_OPTIONS = ObjectOptions()

@@ -38,7 +38,7 @@ def get_yts_files() -> ta.Sequence[str]:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(unknown_field='x')
+@msh.update_object_options(unknown_field='x')
 class YtsItem:
     name: str | None = None
 

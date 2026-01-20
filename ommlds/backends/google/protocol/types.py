@@ -12,7 +12,7 @@ from omlish import marshal as msh
 
 
 def _set_class_marshal_options(cls):
-    msh.update_object_metadata(
+    msh.update_object_options(
         cls,
         field_naming=msh.Naming.LOW_CAMEL,
         field_defaults=msh.FieldOptions(
@@ -25,7 +25,7 @@ def _set_class_marshal_options(cls):
 
 @dc.dataclass(frozen=True, kw_only=True)
 @_set_class_marshal_options
-@msh.update_fields_metadata(
+@msh.update_fields_options(
     ['data'],
     marshaler=msh.Base64MarshalerUnmarshaler(bytes),
     unmarshaler=msh.Base64MarshalerUnmarshaler(bytes),
@@ -123,7 +123,7 @@ class VideoMetadata(lang.Final):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@msh.update_fields_metadata(
+@msh.update_fields_options(
     ['thought_signature'],
     marshaler=msh.OptionalMarshaler(msh.Base64MarshalerUnmarshaler(bytes)),
     unmarshaler=msh.OptionalUnmarshaler(msh.Base64MarshalerUnmarshaler(bytes)),
@@ -195,7 +195,7 @@ class Value(lang.Abstract, lang.Sealed):
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL)
 class NullValue(Value, lang.Final):
     null_value: None = None
 

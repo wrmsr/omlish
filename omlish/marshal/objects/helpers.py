@@ -1,6 +1,5 @@
 """
 TODO:
- - rename to *_options
  - @lang.copy_type
 """
 import typing as ta
@@ -17,7 +16,7 @@ T = ta.TypeVar('T')
 ##
 
 
-def with_field_metadata(**kwargs: ta.Any) -> dc.field_modifier:
+def with_field_options(**kwargs: ta.Any) -> dc.field_modifier:
     @dc.field_modifier
     def inner(f: dc.Field) -> dc.Field:
         existing = f.metadata.get(FieldOptions, DEFAULT_FIELD_OPTIONS)
@@ -27,7 +26,7 @@ def with_field_metadata(**kwargs: ta.Any) -> dc.field_modifier:
     return inner
 
 
-def update_fields_metadata(
+def update_fields_options(
         fields: ta.Iterable[str] | None = None,
         **kwargs: ta.Any,
 ) -> ta.Callable[[type[T]], type[T]]:
@@ -39,7 +38,7 @@ def update_fields_metadata(
     return dc.update_fields(inner, fields)
 
 
-def update_object_metadata(
+def update_object_options(
         cls: type | None = None,
         **kwargs: ta.Any,
 ):

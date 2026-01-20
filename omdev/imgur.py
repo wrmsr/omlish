@@ -40,7 +40,7 @@ from .home.secrets import load_secrets
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(unknown_field='x')
+@msh.update_object_options(unknown_field='x')
 class ImageUploadData:
     id: str
     deletehash: str  # noqa
@@ -66,7 +66,7 @@ class ImageUploadData:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(unknown_field='x')
+@msh.update_object_options(unknown_field='x')
 class ImageUploadResponse:
     status: int
     success: bool

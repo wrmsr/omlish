@@ -38,7 +38,7 @@ Content: ta.TypeAlias = ta.Sequence[ContentNode]
 
 
 @dc.dataclass(frozen=True)
-@msh.update_fields_metadata(['body'], omit_if=operator.not_)
+@msh.update_fields_options(['body'], omit_if=operator.not_)
 class Doc(Node):
     body: Content = ()
 
@@ -49,14 +49,14 @@ class Text(ContentNode):
 
 
 @dc.dataclass(frozen=True)
-@msh.update_fields_metadata(['title', 'text'], omit_if=operator.not_)
+@msh.update_fields_options(['title', 'text'], omit_if=operator.not_)
 class WikiLink(ContentNode):
     title: Content = ()
     text: Content = ()
 
 
 @dc.dataclass(frozen=True)
-@msh.update_fields_metadata(['title', 'url'], omit_if=operator.not_)
+@msh.update_fields_options(['title', 'url'], omit_if=operator.not_)
 class ExternalLink(ContentNode):
     title: Content = ()
     url: Content = ()
@@ -73,28 +73,28 @@ class Comment(ContentNode):
 
 
 @dc.dataclass(frozen=True)
-@msh.update_fields_metadata(['name', 'value'], omit_if=operator.not_)
+@msh.update_fields_options(['name', 'value'], omit_if=operator.not_)
 class Parameter(Node):
     name: Content = ()
     value: Content = ()
 
 
 @dc.dataclass(frozen=True)
-@msh.update_fields_metadata(['name', 'params'], omit_if=operator.not_)
+@msh.update_fields_options(['name', 'params'], omit_if=operator.not_)
 class Template(ContentNode):
     name: Content = ()
     params: ta.Sequence[Parameter] = ()
 
 
 @dc.dataclass(frozen=True)
-@msh.update_fields_metadata(['name', 'value'], omit_if=operator.not_)
+@msh.update_fields_options(['name', 'value'], omit_if=operator.not_)
 class Attribute(Node):
     name: Content = ()
     value: Content = ()
 
 
 @dc.dataclass(frozen=True)
-@msh.update_fields_metadata(['l', 'atts', 'body', 'r'], omit_if=operator.not_)
+@msh.update_fields_options(['l', 'atts', 'body', 'r'], omit_if=operator.not_)
 class Tag(ContentNode):
     l: Content = ()
     atts: ta.Sequence[Attribute] = ()
@@ -103,14 +103,14 @@ class Tag(ContentNode):
 
 
 @dc.dataclass(frozen=True)
-@msh.update_fields_metadata(['title'], omit_if=operator.not_)
+@msh.update_fields_options(['title'], omit_if=operator.not_)
 class Heading(ContentNode):
     title: Content = ()
     level: int = 0
 
 
 @dc.dataclass(frozen=True)
-@msh.update_fields_metadata(['name', 'default'], omit_if=operator.not_)
+@msh.update_fields_options(['name', 'default'], omit_if=operator.not_)
 class Argument(ContentNode):
     name: Content = ()
     default: Content = ()

@@ -11,8 +11,8 @@ from ...globals import marshal
 from ...globals import unmarshal
 from ...standard import new_standard_unmarshaler_factory
 from ...trivial.nop import NOP_MARSHALER_UNMARSHALER
-from ..helpers import update_fields_metadata
-from ..helpers import update_object_metadata
+from ..helpers import update_fields_options
+from ..helpers import update_object_options
 from ..infos import FieldInfo
 from ..marshal import ObjectMarshaler
 from ..types import ObjectSpecials
@@ -62,7 +62,7 @@ def test_unknown_fields():
 
 def test_decorated_unknown_field():
     @dc.dataclass(frozen=True)
-    @update_object_metadata(unknown_field='x')
+    @update_object_options(unknown_field='x')
     class ImageUploadResponse:
         status: int
         success: bool
@@ -146,8 +146,8 @@ class E2:
 
 
 @dc.dataclass()
-@update_fields_metadata(['e1'], embed=True)
-@update_fields_metadata(['e2'], embed=True, name='')
+@update_fields_options(['e1'], embed=True)
+@update_fields_options(['e2'], embed=True, name='')
 class E3:
     e0: E0
     e1: E1

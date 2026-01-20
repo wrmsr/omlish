@@ -18,7 +18,7 @@ SecurityRequirement: ta.TypeAlias = ta.Mapping[str, ta.Sequence[str]]
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL)
 class OauthFlow:
     """https://swagger.io/specification/#oauth-flow-object"""
 
@@ -29,7 +29,7 @@ class OauthFlow:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL)
 class OauthFlows:
     """https://swagger.io/specification/#oauth-flows-object"""
 
@@ -40,8 +40,8 @@ class OauthFlows:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
-@msh.update_fields_metadata(['in_'], name='in')
+@msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_fields_options(['in_'], name='in')
 class SecurityScheme:
     """https://swagger.io/specification/#security-scheme-object"""
 
@@ -56,7 +56,7 @@ class SecurityScheme:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL)
 class Xml:
     """https://swagger.io/specification/#xml-object"""
 
@@ -68,7 +68,7 @@ class Xml:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL)
 class Discriminator:
     """https://swagger.io/specification/#discriminator-object"""
 
@@ -89,8 +89,8 @@ class Schema:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
-@msh.update_fields_metadata(['ref'], name='$ref')
+@msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_fields_options(['ref'], name='$ref')
 class Reference:
     """https://swagger.io/specification/#reference-object"""
 
@@ -100,7 +100,7 @@ class Reference:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL)
 class Tag:
     """https://swagger.io/specification/#tag-object"""
 
@@ -110,8 +110,8 @@ class Tag:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
-@msh.update_fields_metadata(['common'], embed=True, name='')
+@msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_fields_options(['common'], embed=True, name='')
 class Header:
     """https://swagger.io/specification/#header-object"""
 
@@ -120,7 +120,7 @@ class Header:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL)
 class Link:
     """https://swagger.io/specification/#link-object"""
 
@@ -133,7 +133,7 @@ class Link:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL)
 class Example:
     """https://swagger.io/specification/#example-object"""
 
@@ -148,7 +148,7 @@ Callback: ta.TypeAlias = ta.Mapping[str, ta.Union['PathItem', Reference]]
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL)
 class Response:
     """https://swagger.io/specification/#response-object"""
 
@@ -163,7 +163,7 @@ Responses: ta.TypeAlias = ta.Mapping[str, Response | Reference]
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL)
 class Encoding:
     """https://swagger.io/specification/#encoding-object"""
 
@@ -175,7 +175,7 @@ class Encoding:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL)
 class MediaType:
     """https://swagger.io/specification/#media-type-object"""
 
@@ -186,7 +186,7 @@ class MediaType:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL)
 class RequestBody:
     """https://swagger.io/specification/#request-body-object"""
 
@@ -196,7 +196,7 @@ class RequestBody:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL)
 class ParameterCommon:
     description: str | None = None
     required: bool | None = None
@@ -223,9 +223,9 @@ class ParameterCommon:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
-@msh.update_fields_metadata(['in_'], name='in')
-@msh.update_fields_metadata(['common'], embed=True, name='')
+@msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_fields_options(['in_'], name='in')
+@msh.update_fields_options(['common'], embed=True, name='')
 class Parameter:
     """https://swagger.io/specification/#parameter-object"""
 
@@ -236,7 +236,7 @@ class Parameter:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL)
 class ExternalDocumentation:
     """https://swagger.io/specification/#external-documentation-object"""
 
@@ -245,7 +245,7 @@ class ExternalDocumentation:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL, unknown_field='x')
+@msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL, unknown_field='x')
 class Operation:
     """https://swagger.io/specification/#operation-object"""
 
@@ -273,8 +273,8 @@ class Operation:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
-@msh.update_fields_metadata(['ref'], name='$ref')
+@msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_fields_options(['ref'], name='$ref')
 class PathItem:
     """https://swagger.io/specification/#path-item-object"""
 
@@ -298,7 +298,7 @@ Paths: ta.TypeAlias = ta.Mapping[str, PathItem]
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL)
 class Components:
     """https://swagger.io/specification/#components-object"""
 
@@ -315,7 +315,7 @@ class Components:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL)
 class ServerVariable:
     """https://swagger.io/specification/#server-variable-object"""
 
@@ -325,7 +325,7 @@ class ServerVariable:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL)
 class Server:
     """https://swagger.io/specification/#server-object"""
 
@@ -335,7 +335,7 @@ class Server:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL)
 class License:
     """https://swagger.io/specification/#license-object"""
 
@@ -345,7 +345,7 @@ class License:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL)
 class Contact:
     """https://swagger.io/specification/#contact-object"""
 
@@ -355,7 +355,7 @@ class Contact:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL)
+@msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL)
 class Info:
     """https://swagger.io/specification/#info-object"""
 
@@ -369,7 +369,7 @@ class Info:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_object_metadata(field_naming=msh.Naming.LOW_CAMEL, unknown_field='x')
+@msh.update_object_options(field_naming=msh.Naming.LOW_CAMEL, unknown_field='x')
 class Openapi:
     """https://swagger.io/specification/#openapi-object"""
 

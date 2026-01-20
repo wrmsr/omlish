@@ -22,7 +22,7 @@ from ...singular.primitives import PRIMITIVE_MARSHALER_FACTORY
 from ...singular.primitives import PRIMITIVE_UNMARSHALER_FACTORY
 from ..dataclasses import DataclassMarshalerFactory
 from ..dataclasses import DataclassUnmarshalerFactory
-from ..helpers import update_object_metadata
+from ..helpers import update_object_options
 from ..namedtuples import NamedtupleMarshalerFactory
 from ..namedtuples import NamedtupleUnmarshalerFactory
 from ..types import FieldOptions
@@ -111,7 +111,7 @@ def test_field_defaults():
     """Test class-level field defaults."""
 
     @dc.dataclass(frozen=True)
-    @update_object_metadata(
+    @update_object_options(
         field_defaults=FieldOptions(
             omit_if=lang.is_none,
         ),

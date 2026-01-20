@@ -1,3 +1,7 @@
+"""
+TODO:
+ - use lang.metadata?
+"""
 import typing as ta
 
 from ... import check
@@ -20,6 +24,7 @@ from .infos import FieldInfo
 from .infos import FieldInfos
 from .marshal import ObjectMarshaler
 from .types import DEFAULT_FIELD_OPTIONS
+from .types import DEFAULT_OBJECT_OPTIONS
 from .types import FieldOptions
 from .types import ObjectOptions
 from .unmarshal import ObjectUnmarshaler
@@ -29,7 +34,7 @@ from .unmarshal import ObjectUnmarshaler
 
 
 def get_dataclass_options(ty: type) -> ObjectOptions:
-    return check.single(dc.reflect(ty).spec.metadata_by_type.get(ObjectOptions) or [ObjectOptions()])
+    return DEFAULT_OBJECT_OPTIONS.merge(*(dc.reflect(ty).spec.metadata_by_type.get(ObjectOptions, [])))
 
 
 class _FieldInfoBuilder:

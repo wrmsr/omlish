@@ -1340,30 +1340,30 @@ def _process_dataclass__8efaa231a8242879f7cbb39c769901e1908abe12():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('field_naming', 'unknown_field', 'source_field', 'field_defaults', 'ignore_unknown"
-        "')), EqPlan(fields=('field_naming', 'unknown_field', 'source_field', 'field_defaults', 'ignore_unknown')), Fro"
-        "zenPlan(fields=('field_naming', 'unknown_field', 'source_field', 'field_defaults', 'ignore_unknown'), allow_dy"
-        "namic_dunder_attrs=False), HashPlan(action='add', fields=('field_naming', 'unknown_field', 'source_field', 'fi"
-        "eld_defaults', 'ignore_unknown'), cache=False), InitPlan(fields=(InitPlan.Field(name='field_naming', annotatio"
+        "Plans(tup=(CopyPlan(fields=('field_naming', 'ignore_unknown', 'unknown_field', 'source_field', 'field_defaults"
+        "')), EqPlan(fields=('field_naming', 'ignore_unknown', 'unknown_field', 'source_field', 'field_defaults')), Fro"
+        "zenPlan(fields=('field_naming', 'ignore_unknown', 'unknown_field', 'source_field', 'field_defaults'), allow_dy"
+        "namic_dunder_attrs=False), HashPlan(action='add', fields=('field_naming', 'ignore_unknown', 'unknown_field', '"
+        "source_field', 'field_defaults'), cache=False), InitPlan(fields=(InitPlan.Field(name='field_naming', annotatio"
         "n=OpRef(name='init.fields.0.annotation'), default=OpRef(name='init.fields.0.default'), default_factory=None, i"
         "nit=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPla"
-        "n.Field(name='unknown_field', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fiel"
-        "ds.1.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, v"
-        "alidate=None, check_type=None), InitPlan.Field(name='source_field', annotation=OpRef(name='init.fields.2.annot"
-        "ation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=False, field_t"
-        "ype=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='field_defaults', an"
+        "n.Field(name='ignore_unknown', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fie"
+        "lds.1.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, "
+        "validate=None, check_type=None), InitPlan.Field(name='unknown_field', annotation=OpRef(name='init.fields.2.ann"
+        "otation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=False, field"
+        "_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='source_field', an"
         "notation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory="
         "None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), "
-        "InitPlan.Field(name='ignore_unknown', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='i"
+        "InitPlan.Field(name='field_defaults', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='i"
         "nit.fields.4.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce"
-        "=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('field_naming', 'un"
-        "known_field', 'source_field', 'field_defaults', 'ignore_unknown'), frozen=True, slots=False, post_init_params="
+        "=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('field_naming', 'ig"
+        "nore_unknown', 'unknown_field', 'source_field', 'field_defaults'), frozen=True, slots=False, post_init_params="
         "None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='field_naming', kw_only=True, fn=Non"
-        "e), ReprPlan.Field(name='unknown_field', kw_only=True, fn=None), ReprPlan.Field(name='source_field', kw_only=T"
-        "rue, fn=None), ReprPlan.Field(name='field_defaults', kw_only=True, fn=None), ReprPlan.Field(name='ignore_unkno"
-        "wn', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "e), ReprPlan.Field(name='ignore_unknown', kw_only=True, fn=None), ReprPlan.Field(name='unknown_field', kw_only"
+        "=True, fn=None), ReprPlan.Field(name='source_field', kw_only=True, fn=None), ReprPlan.Field(name='field_defaul"
+        "ts', kw_only=True, fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
-    plan_repr_sha1='3a02ae2ce08461319189d2ccea7ecf32459e24c3',
+    plan_repr_sha1='1c5fa974e20246bb1a1798c64edb2f0c0d0c89af',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
@@ -1375,12 +1375,13 @@ def _process_dataclass__8efaa231a8242879f7cbb39c769901e1908abe12():
         '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.marshal.standard', 'ObjectOptions'),
     ),
 )
-def _process_dataclass__3a02ae2ce08461319189d2ccea7ecf32459e24c3():
+def _process_dataclass__1c5fa974e20246bb1a1798c64edb2f0c0d0c89af():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -1394,6 +1395,7 @@ def _process_dataclass__3a02ae2ce08461319189d2ccea7ecf32459e24c3():
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -1413,10 +1415,10 @@ def _process_dataclass__3a02ae2ce08461319189d2ccea7ecf32459e24c3():
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
                 field_naming=self.field_naming,
+                ignore_unknown=self.ignore_unknown,
                 unknown_field=self.unknown_field,
                 source_field=self.source_field,
                 field_defaults=self.field_defaults,
-                ignore_unknown=self.ignore_unknown,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -1431,10 +1433,10 @@ def _process_dataclass__3a02ae2ce08461319189d2ccea7ecf32459e24c3():
                 return NotImplemented
             return (
                 self.field_naming == other.field_naming and
+                self.ignore_unknown == other.ignore_unknown and
                 self.unknown_field == other.unknown_field and
                 self.source_field == other.source_field and
-                self.field_defaults == other.field_defaults and
-                self.ignore_unknown == other.ignore_unknown
+                self.field_defaults == other.field_defaults
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -1444,10 +1446,10 @@ def _process_dataclass__3a02ae2ce08461319189d2ccea7ecf32459e24c3():
 
         __dataclass___setattr_frozen_fields = {
             'field_naming',
+            'ignore_unknown',
             'unknown_field',
             'source_field',
             'field_defaults',
-            'ignore_unknown',
         }
 
         def __setattr__(self, name, value):
@@ -1465,10 +1467,10 @@ def _process_dataclass__3a02ae2ce08461319189d2ccea7ecf32459e24c3():
 
         __dataclass___delattr_frozen_fields = {
             'field_naming',
+            'ignore_unknown',
             'unknown_field',
             'source_field',
             'field_defaults',
-            'ignore_unknown',
         }
 
         def __delattr__(self, name):
@@ -1487,10 +1489,10 @@ def _process_dataclass__3a02ae2ce08461319189d2ccea7ecf32459e24c3():
         def __hash__(self):
             return hash((
                 self.field_naming,
+                self.ignore_unknown,
                 self.unknown_field,
                 self.source_field,
                 self.field_defaults,
-                self.ignore_unknown,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -1500,16 +1502,16 @@ def _process_dataclass__3a02ae2ce08461319189d2ccea7ecf32459e24c3():
             self,
             *,
             field_naming: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
-            unknown_field: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            source_field: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            field_defaults: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            ignore_unknown: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
+            ignore_unknown: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
+            unknown_field: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+            source_field: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
+            field_defaults: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'field_naming', field_naming)
+            __dataclass__object_setattr(self, 'ignore_unknown', ignore_unknown)
             __dataclass__object_setattr(self, 'unknown_field', unknown_field)
             __dataclass__object_setattr(self, 'source_field', source_field)
             __dataclass__object_setattr(self, 'field_defaults', field_defaults)
-            __dataclass__object_setattr(self, 'ignore_unknown', ignore_unknown)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -1519,11 +1521,16 @@ def _process_dataclass__3a02ae2ce08461319189d2ccea7ecf32459e24c3():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"field_naming={self.field_naming!r}")
-            parts.append(f"unknown_field={self.unknown_field!r}")
-            parts.append(f"source_field={self.source_field!r}")
-            parts.append(f"field_defaults={self.field_defaults!r}")
-            parts.append(f"ignore_unknown={self.ignore_unknown!r}")
+            if (s := __dataclass__repr__default_fn(self.field_naming)) is not None:
+                parts.append(f"field_naming={s}")
+            if (s := __dataclass__repr__default_fn(self.ignore_unknown)) is not None:
+                parts.append(f"ignore_unknown={s}")
+            if (s := __dataclass__repr__default_fn(self.unknown_field)) is not None:
+                parts.append(f"unknown_field={s}")
+            if (s := __dataclass__repr__default_fn(self.source_field)) is not None:
+                parts.append(f"source_field={s}")
+            if (s := __dataclass__repr__default_fn(self.field_defaults)) is not None:
+                parts.append(f"field_defaults={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -1549,20 +1556,21 @@ def _process_dataclass__3a02ae2ce08461319189d2ccea7ecf32459e24c3():
         " override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='sel"
         "f', std_params=(), kw_only_params=('unknown', 'source'), frozen=True, slots=False, post_init_params=None, init"
         "_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='unknown', kw_only=True, fn=None), ReprPlan.Fi"
-        "eld(name='source', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "eld(name='source', kw_only=True, fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
     ),
-    plan_repr_sha1='ffbfe43830279fbce3d0d2196bd9c1e581bc796f',
+    plan_repr_sha1='faca2b0ec501eeb3a89fe8e7b578b35b4a4c5ea2',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
+        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.marshal.standard', 'ObjectSpecials'),
     ),
 )
-def _process_dataclass__ffbfe43830279fbce3d0d2196bd9c1e581bc796f():
+def _process_dataclass__faca2b0ec501eeb3a89fe8e7b578b35b4a4c5ea2():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -1570,6 +1578,7 @@ def _process_dataclass__ffbfe43830279fbce3d0d2196bd9c1e581bc796f():
         __dataclass__init__fields__0__default,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
+        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -1674,8 +1683,10 @@ def _process_dataclass__ffbfe43830279fbce3d0d2196bd9c1e581bc796f():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"unknown={self.unknown!r}")
-            parts.append(f"source={self.source!r}")
+            if (s := __dataclass__repr__default_fn(self.unknown)) is not None:
+                parts.append(f"unknown={s}")
+            if (s := __dataclass__repr__default_fn(self.source)) is not None:
+                parts.append(f"source={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

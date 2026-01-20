@@ -51,7 +51,7 @@ class Redirect:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_fields_metadata([
+@msh.update_fields_options([
     'username',
     'id',
     'ip',
@@ -78,7 +78,7 @@ class RevisionText:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_fields_metadata([
+@msh.update_fields_options([
     'parentid',
     'timestamp',
     'contributors',
@@ -108,7 +108,7 @@ class Revision:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_fields_metadata([
+@msh.update_fields_options([
     'timestamp',
     'contributor',
     'comment',
@@ -129,7 +129,7 @@ class Upload:
 
 
 @dc.dataclass(frozen=True)
-@msh.update_fields_metadata([
+@msh.update_fields_options([
     'redirect',
     'restrictions',
     'revisions',

@@ -37,7 +37,7 @@ msh.register_global_module_import('._marshal', __package__)
 
 
 def _set_class_marshal_options(cls):
-    msh.update_object_metadata(
+    msh.update_object_options(
         cls,
         field_naming=msh.Naming.LOW_CAMEL,
         field_defaults=msh.FieldOptions(
@@ -92,7 +92,7 @@ class Notification(Message, lang.Abstract):
 
 @dc.dataclass(frozen=True, kw_only=True)
 class WithMeta(lang.Sealed, lang.Abstract):
-    meta_: ta.Mapping[str, ta.Any] | None = dc.field(default=None) | msh.with_field_metadata(name='_meta')
+    meta_: ta.Mapping[str, ta.Any] | None = dc.field(default=None) | msh.with_field_options(name='_meta')
 
 
 ##
