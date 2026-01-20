@@ -31,7 +31,7 @@ SseEventId: ta.TypeAlias = bytes
 class SseEvent(SseDecoderOutput, lang.Final):
     type: bytes
     data: bytes
-    last_id: SseEventId = dc.xfield(b'', repr_fn=dc.truthy_repr)
+    last_id: SseEventId = dc.xfield(b'', repr_fn=lang.truthy_repr)
 
 
 _DIGIT_BYTES = string.digits.encode('ascii')

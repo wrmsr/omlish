@@ -1,6 +1,7 @@
 import typing as ta
 
 from ... import dataclasses as dc
+from ... import lang
 from ..types import Tag
 
 
@@ -18,5 +19,5 @@ class Id:
         default=None,
         kw_only=True,
         validate=lambda o: not isinstance(o, Tag),
-        repr_fn=dc.opt_repr,
+        repr_fn=lang.opt_repr,
     )

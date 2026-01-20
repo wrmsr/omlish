@@ -27,7 +27,7 @@ class AllSelectItem(SelectItem, lang.Final):
 
 class ExprSelectItem(SelectItem, lang.Final):
     v: Expr
-    a: Ident | None = dc.xfield(None, repr_fn=dc.opt_repr) | msh.with_field_metadata(omit_if=lang.is_none)
+    a: Ident | None = dc.xfield(None, repr_fn=lang.opt_repr) | msh.with_field_metadata(omit_if=lang.is_none)
 
 
 ##
@@ -35,8 +35,8 @@ class ExprSelectItem(SelectItem, lang.Final):
 
 class Select(Stmt, lang.Final):
     items: ta.Sequence[SelectItem] = dc.xfield(coerce=tuple)
-    from_: Relation | None = dc.xfield(None, repr_fn=dc.opt_repr) | msh.with_field_metadata(name='from', omit_if=lang.is_none)  # noqa
-    where: Expr | None = dc.xfield(None, repr_fn=dc.opt_repr) | msh.with_field_metadata(omit_if=lang.is_none)
+    from_: Relation | None = dc.xfield(None, repr_fn=lang.opt_repr) | msh.with_field_metadata(name='from', omit_if=lang.is_none)  # noqa
+    where: Expr | None = dc.xfield(None, repr_fn=lang.opt_repr) | msh.with_field_metadata(omit_if=lang.is_none)
 
 
 CanSelectItem: ta.TypeAlias = SelectItem | CanExpr

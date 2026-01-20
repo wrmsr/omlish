@@ -20,9 +20,11 @@ def arg_repr(*args: ta.Any, **kwargs: ta.Any) -> str:
 
 
 def opt_repr(obj: ta.Any) -> str | None:
-    if obj is None:
-        return None
-    return repr(obj)
+    return repr(obj) if obj is not None else None
+
+
+def truthy_repr(o: ta.Any) -> str | None:
+    return repr(o) if o else None
 
 
 def just_repr(obj: Maybe) -> str | None:

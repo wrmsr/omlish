@@ -144,11 +144,6 @@ with _lang.auto_proxy_init(globals()) as _api_cap:
         replace_is_not,
     )
 
-    from .tools.repr import (  # noqa
-        opt_repr,
-        truthy_repr,
-    )
-
     from .tools.static import (  # noqa
         Static,
     )

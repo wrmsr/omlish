@@ -37,5 +37,5 @@ class ModelRepo(ModelSpecifier):
 
     _: dc.KW_ONLY
 
-    tag: str | None = dc.xfield(None, repr_fn=dc.opt_repr)
-    path: str | None = dc.xfield(None, repr_fn=dc.opt_repr)
+    tag: str | None = dc.xfield(None, repr_fn=lang.opt_repr)
+    path: str | None = dc.xfield(None, repr_fn=lang.opt_repr)

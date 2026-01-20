@@ -66,15 +66,21 @@ def get_dataclass_field_infos(
     ret: list[FieldInfo] = []
 
     for field in dc_rfl.instance_fields:
-        # Step 1: Start with baseline (empty) and merge class-level defaults
+        ##
+        # Start with baseline (empty) and merge class-level defaults
+
         merged_md = DEFAULT_FIELD_METADATA.merge(obj_md.field_defaults)
 
-        # Step 2: Merge field-level FieldMetadata if present
+        ##
+        # Merge field-level FieldMetadata if present
+
         field_md = field.metadata.get(FieldMetadata)
         if field_md is not None:
             merged_md = merged_md.merge(field_md)
 
-        # Step 3: Lite marshal compatibility - build override metadata
+        ##
+        # Lite marshal compatibility - build override metadata
+
         lite_override_kw: dict[str, ta.Any] = {}
 
         # Handle OBJ_MARSHALER_FIELD_KEY
@@ -96,13 +102,17 @@ def get_dataclass_field_infos(
         if lite_override_kw:
             merged_md = merged_md.merge(FieldMetadata(**lite_override_kw))
 
+        ##
         # Determine field type (with generic replacement if needed)
+
         if dc_rfl.spec.generic_init or merged_md.generic_replace:
             f_ty = rfl.to_annotation(dc_rfl.fields_inspection.generic_replaced_field_type(field.name))
         else:
             f_ty = type_hints[field.name]
 
+        ##
         # Compute marshal/unmarshal names based on merged metadata
+
         has_explicit_name = merged_md.name is not None
 
         marshal_name: str | None
@@ -125,19 +135,25 @@ def get_dataclass_field_infos(
             marshal_name = base_name
             unmarshal_names = [base_name]
 
+        ##
         # Handle embed suffix (only if name wasn't explicitly set)
+
         if merged_md.embed and not has_explicit_name:
             # At this point marshal_name is guaranteed to be str (not None)
             marshal_name = check.not_none(marshal_name) + '_'
             unmarshal_names = [n + '_' for n in unmarshal_names]
 
+        ##
         # Handle no_marshal/no_unmarshal
+
         if merged_md.no_marshal:
             marshal_name = None
         if merged_md.no_unmarshal:
             unmarshal_names = []
 
+        ##
         # Create FieldInfo with computed values
+
         ret.append(
             FieldInfo(
                 name=field.name,
@@ -182,6 +198,7 @@ def _make_field_unmarshal_obj(
             raise UnhandledTypeError(ty)
         return m()
     return ctx.make_unmarshaler(ty)
+
 
 ##
 

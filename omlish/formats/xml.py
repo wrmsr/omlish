@@ -65,8 +65,8 @@ def yield_root_children(
 @dc.dataclass(frozen=True)
 class SimpleElement:
     tag: str
-    attrs: ta.Mapping[str, str] | None = dc.xfield(default=None, repr_fn=dc.truthy_repr)
-    body: ta.Sequence[ta.Union['SimpleElement', str]] | None = dc.xfield(default=None, repr_fn=dc.truthy_repr)
+    attrs: ta.Mapping[str, str] | None = dc.xfield(default=None, repr_fn=lang.truthy_repr)
+    body: ta.Sequence[ta.Union['SimpleElement', str]] | None = dc.xfield(default=None, repr_fn=lang.truthy_repr)
 
     #
 

@@ -382,6 +382,7 @@ with _auto_proxy_init(globals(), update_exports=True):
     from .objects import (  # noqa
         arg_repr,
         opt_repr,
+        truthy_repr,
         just_repr,
         opt_or_just_repr,
 

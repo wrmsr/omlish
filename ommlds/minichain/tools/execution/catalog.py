@@ -22,7 +22,7 @@ class ToolCatalogEntry(lang.Final):
 
     _: dc.KW_ONLY
 
-    name_override: str | None = dc.xfield(default=None, repr_fn=dc.opt_repr)
+    name_override: str | None = dc.xfield(default=None, repr_fn=lang.opt_repr)
 
     @property
     def name(self) -> str:

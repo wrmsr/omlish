@@ -11,7 +11,7 @@ from omlish import lang
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@dc.extra_class_params(default_repr_fn=dc.opt_repr)
+@dc.extra_class_params(default_repr_fn=lang.opt_repr)
 class Options:
     # loading
     numa: bool | None = None
@@ -72,7 +72,7 @@ class BaseGenerateRequest(BaseStreamableRequest, lang.Abstract):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@dc.extra_class_params(default_repr_fn=dc.opt_repr)
+@dc.extra_class_params(default_repr_fn=lang.opt_repr)
 class GenerateRequest(BaseGenerateRequest):
     prompt: str | None = None
     suffix: str | None = None
@@ -102,7 +102,7 @@ class BaseGenerateResponse(lang.Abstract):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@dc.extra_class_params(default_repr_fn=dc.opt_repr)
+@dc.extra_class_params(default_repr_fn=lang.opt_repr)
 class GenerateResponse(BaseGenerateResponse):
     response: str
     thinking: str | None = None
@@ -121,7 +121,7 @@ Role: ta.TypeAlias = ta.Literal[
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@dc.extra_class_params(default_repr_fn=dc.opt_repr)
+@dc.extra_class_params(default_repr_fn=lang.opt_repr)
 class Message:
     role: Role
     content: str | None = None
@@ -145,12 +145,12 @@ class Message:
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@dc.extra_class_params(default_repr_fn=dc.opt_repr)
+@dc.extra_class_params(default_repr_fn=lang.opt_repr)
 class Tool:
     type: str | None = 'function'
 
     @dc.dataclass(frozen=True, kw_only=True)
-    @dc.extra_class_params(default_repr_fn=dc.opt_repr)
+    @dc.extra_class_params(default_repr_fn=lang.opt_repr)
     class Function:
         name: str | None = None
         description: str | None = None
@@ -160,7 +160,7 @@ class Tool:
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@dc.extra_class_params(default_repr_fn=dc.opt_repr)
+@dc.extra_class_params(default_repr_fn=lang.opt_repr)
 class ChatRequest(BaseGenerateRequest):
     messages: ta.Sequence[Message] | None = None
     tools: ta.Sequence[Tool] | None = None
@@ -168,6 +168,6 @@ class ChatRequest(BaseGenerateRequest):
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-@dc.extra_class_params(default_repr_fn=dc.opt_repr)
+@dc.extra_class_params(default_repr_fn=lang.opt_repr)
 class ChatResponse(BaseGenerateResponse):
     message: Message

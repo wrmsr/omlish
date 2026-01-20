@@ -33,7 +33,7 @@ class MemoryStats:
 
 @dc.dataclass(frozen=True, kw_only=True)
 class AggregateMemoryStats(MemoryStats):
-    by_device: ta.Mapping[ta.Any, MemoryStats] | None = dc.xfield(repr_fn=dc.opt_repr)
+    by_device: ta.Mapping[ta.Any, MemoryStats] | None = dc.xfield(repr_fn=lang.opt_repr)
 
 
 ##

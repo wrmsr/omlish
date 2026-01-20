@@ -105,7 +105,7 @@ class SystemMessage(AnyUserMessage, lang.Final):
 class UserMessage(AnyUserMessage, lang.Final):
     c: Content
 
-    name: str | None = dc.xfield(None, repr_fn=dc.opt_repr)
+    name: str | None = dc.xfield(None, repr_fn=lang.opt_repr)
 
 
 #
@@ -113,7 +113,7 @@ class UserMessage(AnyUserMessage, lang.Final):
 
 @dc.dataclass(frozen=True)
 class AiMessage(AnyAiMessage, lang.Final):
-    c: Content = dc.xfield(None, repr_fn=dc.opt_repr)  # TODO: non-null?
+    c: Content = dc.xfield(None, repr_fn=lang.opt_repr)  # TODO: non-null?
 
 
 #
