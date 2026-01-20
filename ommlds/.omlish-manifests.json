@@ -12,6 +12,18 @@
     }
   },
   {
+    "module": ".backends.ollama.cli",
+    "attr": "_CLI_MODULE",
+    "file": "ommlds/backends/ollama/cli.py",
+    "line": 31,
+    "value": {
+      "!omdev.cli.types.CliModule": {
+        "name": "ollama",
+        "module": "ommlds.backends.ollama.cli"
+      }
+    }
+  },
+  {
     "module": ".cli.__main__",
     "attr": null,
     "file": "ommlds/cli/__main__.py",

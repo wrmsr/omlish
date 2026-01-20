@@ -2010,6 +2010,249 @@ def _process_dataclass__d4de027591ccf1da84a98a2734b94a36c6340c4b():
 
 @_register(
     plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('name', 'model', 'remote_model', 'remote_host', 'modified_at', 'size', 'digest', '"
+        "details')), EqPlan(fields=('name', 'model', 'remote_model', 'remote_host', 'modified_at', 'size', 'digest', 'd"
+        "etails')), FrozenPlan(fields=('name', 'model', 'remote_model', 'remote_host', 'modified_at', 'size', 'digest',"
+        " 'details'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('name', 'model', 'remote_model'"
+        ", 'remote_host', 'modified_at', 'size', 'digest', 'details'), cache=False), InitPlan(fields=(InitPlan.Field(na"
+        "me='name', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, o"
+        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(nam"
+        "e='model', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init=True, o"
+        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(nam"
+        "e='remote_model', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default"
+        "'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None"
+        ", check_type=None), InitPlan.Field(name='remote_host', annotation=OpRef(name='init.fields.3.annotation'), defa"
+        "ult=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, field_type=FieldType"
+        ".INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='modified_at', annotation=OpRef(n"
+        "ame='init.fields.4.annotation'), default=None, default_factory=None, init=True, override=False, field_type=Fie"
+        "ldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='size', annotation=OpRef(na"
+        "me='init.fields.5.annotation'), default=None, default_factory=None, init=True, override=False, field_type=Fiel"
+        "dType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='digest', annotation=OpRef(n"
+        "ame='init.fields.6.annotation'), default=None, default_factory=None, init=True, override=False, field_type=Fie"
+        "ldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='details', annotation=OpRef"
+        "(name='init.fields.7.annotation'), default=OpRef(name='init.fields.7.default'), default_factory=None, init=Tru"
+        "e, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='s"
+        "elf', std_params=(), kw_only_params=('name', 'model', 'remote_model', 'remote_host', 'modified_at', 'size', 'd"
+        "igest', 'details'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(f"
+        "ields=(ReprPlan.Field(name='name', kw_only=True, fn=None), ReprPlan.Field(name='model', kw_only=True, fn=None)"
+        ", ReprPlan.Field(name='remote_model', kw_only=True, fn=None), ReprPlan.Field(name='remote_host', kw_only=True,"
+        " fn=None), ReprPlan.Field(name='modified_at', kw_only=True, fn=None), ReprPlan.Field(name='size', kw_only=True"
+        ", fn=None), ReprPlan.Field(name='digest', kw_only=True, fn=None), ReprPlan.Field(name='details', kw_only=True,"
+        " fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
+    ),
+    plan_repr_sha1='39f7bcef98c1ad6b9fc898613abfef167e9b916f',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__repr__default_fn',
+    ),
+    cls_names=(
+        ('ommlds.backends.ollama.protocol', 'ListModelResponse'),
+    ),
+)
+def _process_dataclass__39f7bcef98c1ad6b9fc898613abfef167e9b916f():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__2__annotation,
+        __dataclass__init__fields__2__default,
+        __dataclass__init__fields__3__annotation,
+        __dataclass__init__fields__3__default,
+        __dataclass__init__fields__4__annotation,
+        __dataclass__init__fields__5__annotation,
+        __dataclass__init__fields__6__annotation,
+        __dataclass__init__fields__7__annotation,
+        __dataclass__init__fields__7__default,
+        __dataclass__repr__default_fn,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                name=self.name,
+                model=self.model,
+                remote_model=self.remote_model,
+                remote_host=self.remote_host,
+                modified_at=self.modified_at,
+                size=self.size,
+                digest=self.digest,
+                details=self.details,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.name == other.name and
+                self.model == other.model and
+                self.remote_model == other.remote_model and
+                self.remote_host == other.remote_host and
+                self.modified_at == other.modified_at and
+                self.size == other.size and
+                self.digest == other.digest and
+                self.details == other.details
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            'name',
+            'model',
+            'remote_model',
+            'remote_host',
+            'modified_at',
+            'size',
+            'digest',
+            'details',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'name',
+            'model',
+            'remote_model',
+            'remote_host',
+            'modified_at',
+            'size',
+            'digest',
+            'details',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.name,
+                self.model,
+                self.remote_model,
+                self.remote_host,
+                self.modified_at,
+                self.size,
+                self.digest,
+                self.details,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            *,
+            name: __dataclass__init__fields__0__annotation,
+            model: __dataclass__init__fields__1__annotation,
+            remote_model: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+            remote_host: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
+            modified_at: __dataclass__init__fields__4__annotation,
+            size: __dataclass__init__fields__5__annotation,
+            digest: __dataclass__init__fields__6__annotation,
+            details: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'name', name)
+            __dataclass__object_setattr(self, 'model', model)
+            __dataclass__object_setattr(self, 'remote_model', remote_model)
+            __dataclass__object_setattr(self, 'remote_host', remote_host)
+            __dataclass__object_setattr(self, 'modified_at', modified_at)
+            __dataclass__object_setattr(self, 'size', size)
+            __dataclass__object_setattr(self, 'digest', digest)
+            __dataclass__object_setattr(self, 'details', details)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            if (s := __dataclass__repr__default_fn(self.name)) is not None:
+                parts.append(f"name={s}")
+            if (s := __dataclass__repr__default_fn(self.model)) is not None:
+                parts.append(f"model={s}")
+            if (s := __dataclass__repr__default_fn(self.remote_model)) is not None:
+                parts.append(f"remote_model={s}")
+            if (s := __dataclass__repr__default_fn(self.remote_host)) is not None:
+                parts.append(f"remote_host={s}")
+            if (s := __dataclass__repr__default_fn(self.modified_at)) is not None:
+                parts.append(f"modified_at={s}")
+            if (s := __dataclass__repr__default_fn(self.size)) is not None:
+                parts.append(f"size={s}")
+            if (s := __dataclass__repr__default_fn(self.digest)) is not None:
+                parts.append(f"digest={s}")
+            if (s := __dataclass__repr__default_fn(self.details)) is not None:
+                parts.append(f"details={s}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
         "Plans(tup=(CopyPlan(fields=('role', 'content', 'thinking', 'images', 'tool_name', 'tool_calls')), EqPlan(field"
         "s=('role', 'content', 'thinking', 'images', 'tool_name', 'tool_calls')), FrozenPlan(fields=('role', 'content',"
         " 'thinking', 'images', 'tool_name', 'tool_calls'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', f"
@@ -2527,6 +2770,215 @@ def _process_dataclass__c679b8dd972a245826381e3200fe81df0cd736c1():
             parts.append(f"name={self.name!r}")
             parts.append(f"arguments={self.arguments!r}")
             parts.append(f"index={self.index!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('parent_model', 'format', 'family', 'families', 'parameter_size', 'quantization_le"
+        "vel')), EqPlan(fields=('parent_model', 'format', 'family', 'families', 'parameter_size', 'quantization_level')"
+        "), FrozenPlan(fields=('parent_model', 'format', 'family', 'families', 'parameter_size', 'quantization_level'),"
+        " allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('parent_model', 'format', 'family', 'famili"
+        "es', 'parameter_size', 'quantization_level'), cache=False), InitPlan(fields=(InitPlan.Field(name='parent_model"
+        "', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, override="
+        "False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='forma"
+        "t', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init=True, override"
+        "=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='fami"
+        "ly', annotation=OpRef(name='init.fields.2.annotation'), default=None, default_factory=None, init=True, overrid"
+        "e=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='fam"
+        "ilies', annotation=OpRef(name='init.fields.3.annotation'), default=None, default_factory=None, init=True, over"
+        "ride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='"
+        "parameter_size', annotation=OpRef(name='init.fields.4.annotation'), default=None, default_factory=None, init=T"
+        "rue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fie"
+        "ld(name='quantization_level', annotation=OpRef(name='init.fields.5.annotation'), default=None, default_factory"
+        "=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None))"
+        ", self_param='self', std_params=(), kw_only_params=('parent_model', 'format', 'family', 'families', 'parameter"
+        "_size', 'quantization_level'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()),"
+        " ReprPlan(fields=(ReprPlan.Field(name='parent_model', kw_only=True, fn=None), ReprPlan.Field(name='format', kw"
+        "_only=True, fn=None), ReprPlan.Field(name='family', kw_only=True, fn=None), ReprPlan.Field(name='families', kw"
+        "_only=True, fn=None), ReprPlan.Field(name='parameter_size', kw_only=True, fn=None), ReprPlan.Field(name='quant"
+        "ization_level', kw_only=True, fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
+    ),
+    plan_repr_sha1='6d086e850feb59746e721b8edda1c8a1d7256381',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__repr__default_fn',
+    ),
+    cls_names=(
+        ('ommlds.backends.ollama.protocol', 'ModelDetails'),
+    ),
+)
+def _process_dataclass__6d086e850feb59746e721b8edda1c8a1d7256381():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__2__annotation,
+        __dataclass__init__fields__3__annotation,
+        __dataclass__init__fields__4__annotation,
+        __dataclass__init__fields__5__annotation,
+        __dataclass__repr__default_fn,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                parent_model=self.parent_model,
+                format=self.format,
+                family=self.family,
+                families=self.families,
+                parameter_size=self.parameter_size,
+                quantization_level=self.quantization_level,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.parent_model == other.parent_model and
+                self.format == other.format and
+                self.family == other.family and
+                self.families == other.families and
+                self.parameter_size == other.parameter_size and
+                self.quantization_level == other.quantization_level
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            'parent_model',
+            'format',
+            'family',
+            'families',
+            'parameter_size',
+            'quantization_level',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'parent_model',
+            'format',
+            'family',
+            'families',
+            'parameter_size',
+            'quantization_level',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.parent_model,
+                self.format,
+                self.family,
+                self.families,
+                self.parameter_size,
+                self.quantization_level,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            *,
+            parent_model: __dataclass__init__fields__0__annotation,
+            format: __dataclass__init__fields__1__annotation,
+            family: __dataclass__init__fields__2__annotation,
+            families: __dataclass__init__fields__3__annotation,
+            parameter_size: __dataclass__init__fields__4__annotation,
+            quantization_level: __dataclass__init__fields__5__annotation,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'parent_model', parent_model)
+            __dataclass__object_setattr(self, 'format', format)
+            __dataclass__object_setattr(self, 'family', family)
+            __dataclass__object_setattr(self, 'families', families)
+            __dataclass__object_setattr(self, 'parameter_size', parameter_size)
+            __dataclass__object_setattr(self, 'quantization_level', quantization_level)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            if (s := __dataclass__repr__default_fn(self.parent_model)) is not None:
+                parts.append(f"parent_model={s}")
+            if (s := __dataclass__repr__default_fn(self.format)) is not None:
+                parts.append(f"format={s}")
+            if (s := __dataclass__repr__default_fn(self.family)) is not None:
+                parts.append(f"family={s}")
+            if (s := __dataclass__repr__default_fn(self.families)) is not None:
+                parts.append(f"families={s}")
+            if (s := __dataclass__repr__default_fn(self.parameter_size)) is not None:
+                parts.append(f"parameter_size={s}")
+            if (s := __dataclass__repr__default_fn(self.quantization_level)) is not None:
+                parts.append(f"quantization_level={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

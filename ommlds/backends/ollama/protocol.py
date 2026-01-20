@@ -1,6 +1,7 @@
 """
 https://docs.ollama.com/api
 """
+import datetime
 import typing as ta
 
 from omlish import dataclasses as dc
@@ -171,3 +172,30 @@ class ChatRequest(BaseGenerateRequest):
 @dc.extra_class_params(default_repr_fn=lang.opt_repr)
 class ChatResponse(BaseGenerateResponse):
     message: Message
+
+
+##
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+@dc.extra_class_params(default_repr_fn=lang.opt_repr)
+class ModelDetails:
+    parent_model: str
+    format: str
+    family: str
+    families: ta.Sequence[str]
+    parameter_size: str
+    quantization_level: str
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+@dc.extra_class_params(default_repr_fn=lang.opt_repr)
+class ListModelResponse:
+    name: str
+    model: str
+    remote_model: str | None = None
+    remote_host: str | None = None
+    modified_at: datetime.datetime
+    size: int
+    digest: str
+    details: ModelDetails | None = None
