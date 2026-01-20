@@ -55,6 +55,33 @@ log = logs.get_module_logger(globals())
 ##
 
 
+CLANG_TIDY_COMMAND_TEMPLATE = """
+find_program(CLANG_TIDY_EXE NAMES clang-tidy)
+
+if(CLANG_TIDY_EXE)
+    add_custom_target(tidy
+        COMMAND ${CLANG_TIDY_EXE}
+            -p ${CMAKE_BINARY_DIR}
+            ${ALL_SOURCE_FILES}
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        COMMENT "Running clang-tidy on all source files"
+    )
+
+    add_custom_target(tidy-fix
+        COMMAND ${CLANG_TIDY_EXE}
+            -p ${CMAKE_BINARY_DIR}
+            -fix
+            ${ALL_SOURCE_FILES}
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        COMMENT "Running clang-tidy with automatic fixes"
+    )
+endif()
+"""
+
+
+##
+
+
 def _sep_str_grps(*ls: ta.Sequence[str]) -> list[str]:
     o = []
     for i, l in enumerate(ls):
@@ -218,7 +245,7 @@ class CmakeProjectGen:
                         ['TARGET', ext_name, 'POST_BUILD'],
                         [
                             ' '.join([
-                                'COMMAND ${CMAKE_COMMAND} -E ',
+                                'COMMAND ${CMAKE_COMMAND} -E',
                                 f'copy $<TARGET_FILE_NAME:{ext_name}> ../../../{os.path.dirname(ext_src)}/{so_name}',
                             ]),
                             'COMMAND_EXPAND_LISTS',
@@ -233,6 +260,9 @@ class CmakeProjectGen:
             self.g.write('')
 
             self.g.write(f'project({self.p.prj_name()})')
+            self.g.write('')
+
+            self.g.write('set(CMAKE_EXPORT_COMPILE_COMMANDS ON)')
             self.g.write('')
 
             self.g.write_var(cmake.Var(
