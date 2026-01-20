@@ -91,10 +91,10 @@ class Cli(ap.Cli):
                                 'size_on_disk': file.size_on_disk,
                                 'size_on_disk_str': file.size_on_disk_str,
 
-                                'blob_last_accessed': fmt_ts(file.blob_last_accessed),
-                                'blob_last_accessed_str': file.blob_last_accessed_str,
                                 'blob_last_modified': fmt_ts(file.blob_last_modified),
                                 'blob_last_modified_str': file.blob_last_modified_str,
+                                'blob_last_accessed': fmt_ts(file.blob_last_accessed),
+                                'blob_last_accessed_str': file.blob_last_accessed_str,
                             }
                             for file in sorted(rev.files, key=lambda file: file.blob_last_accessed)
                         ],
@@ -108,10 +108,10 @@ class Cli(ap.Cli):
                     for rev in sorted(repo.revisions, key=lambda rev: rev.last_modified)
                 ],
 
-                'last_accessed': fmt_ts(repo.last_accessed),
-                'last_accessed_str': repo.last_accessed_str,
                 'last_modified': fmt_ts(repo.last_modified),
                 'last_modified_str': repo.last_modified_str,
+                'last_accessed': fmt_ts(repo.last_accessed),
+                'last_accessed_str': repo.last_accessed_str,
 
                 'refs': sorted(repo.refs),
             }
@@ -126,7 +126,12 @@ class Cli(ap.Cli):
     def list(self) -> None:
         hf_cache_info = hf.utils.scan_cache_dir(self.args.dir)
 
-        repos = [repo for repo in hf_cache_info.repos if repo.repo_type == 'model']
+        repos = [
+            repo
+            for repo in hf_cache_info.repos
+            if repo.repo_type == 'model'
+            and repo.nb_files
+        ]
 
         repo_dcts = [
             {
@@ -140,10 +145,10 @@ class Cli(ap.Cli):
 
                 'nb_files': repo.nb_files,
 
-                'last_accessed': fmt_ts(repo.last_accessed),
-                'last_accessed_str': repo.last_accessed_str,
                 'last_modified': fmt_ts(repo.last_modified),
                 'last_modified_str': repo.last_modified_str,
+                'last_accessed': fmt_ts(repo.last_accessed),
+                'last_accessed_str': repo.last_accessed_str,
             }
             for repo in sorted(repos, key=lambda repo: repo.last_accessed)
         ]
