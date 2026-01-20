@@ -3,7 +3,7 @@
     "module": ".backends.huggingface.cli",
     "attr": "_CLI_MODULE",
     "file": "ommlds/backends/huggingface/cli.py",
-    "line": 51,
+    "line": 130,
     "value": {
       "!omdev.cli.types.CliModule": {
         "name": "hf",
