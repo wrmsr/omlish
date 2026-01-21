@@ -4,6 +4,7 @@ from ...namespaces import ContentNamespace
 from ...namespaces import NamespaceContent
 from ...placeholders import ContentPlaceholder
 from ...placeholders import PlaceholderContent
+from ...resources import resource_content
 from ...templates import TemplateContent
 from ..materialize import materialize_content
 
@@ -34,6 +35,10 @@ def test_materialize():
                 'def',
             ],
             dict(placeholder_contents={'foo': 'bar', BarContentPlaceholder: PlaceholderContent('foo')}),
+        ),
+        (
+            resource_content(__package__, 'foo.md'),
+            {},
         ),
     ]:
         print(c)

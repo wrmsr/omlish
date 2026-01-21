@@ -3,6 +3,7 @@ import inspect
 import typing as ta
 
 from omlish import check
+from omlish import collections as col
 from omlish import lang
 
 from .code import BlockCodeContent
@@ -24,6 +25,7 @@ from .namespaces import NamespaceContent
 from .placeholders import PlaceholderContent
 from .quote import QuoteContent
 from .recursive import RecursiveContent
+from .resources import ResourceContent
 from .section import SectionContent
 from .sequence import BlockContent
 from .sequence import InlineContent
@@ -146,6 +148,9 @@ class ContentVisitor(lang.Abstract, ta.Generic[C, R]):
     def visit_placeholder_content(self, c: PlaceholderContent, ctx: C) -> R:
         return self.visit_recursive_content(c, ctx)
 
+    def visit_resource_content(self, c: ResourceContent, ctx: C) -> R:
+        return self.visit_dynamic_content(c, ctx)
+
     def visit_template_content(self, c: TemplateContent, ctx: C) -> R:
         return self.visit_dynamic_content(c, ctx)
 
@@ -180,11 +185,11 @@ class ContentVisitor(lang.Abstract, ta.Generic[C, R]):
         return self.visit_sequence_content(c, ctx)
 
 
-ContentVisitor._visit_method_map = {  # noqa
-    list(inspect.signature(o).parameters.values())[1].annotation: a
+ContentVisitor._visit_method_map = col.make_map([  # noqa
+    (list(inspect.signature(o).parameters.values())[1].annotation, a)
     for a, o in ContentVisitor.__dict__.items()
     if a.startswith('visit_')
-}
+], strict=True)
 
 
 ##

@@ -25,6 +25,7 @@ from . import (  # noqa
     quote as _quote,
     raw as _raw,
     recursive as _recursive,
+    resources as _resources,
     section as _section,
     sequence as _sequence,
     standard as _standard,

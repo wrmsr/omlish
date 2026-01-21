@@ -6,6 +6,7 @@ from omlish.text import templating as tpl
 from ..content import Content
 from .recursive import PlaceholderContents
 from .recursive import RecursiveContentMaterializer
+from .resources import ResourceContentMaterializer
 from .templates import TemplateContentMaterializer
 
 
@@ -35,6 +36,7 @@ class DefaultContentMaterializer(ContentMaterializer):
 
     def apply(self, c: Content) -> Content:
         c = RecursiveContentMaterializer(self._placeholder_contents).visit(c, None)
+        c = ResourceContentMaterializer().visit(c, None)
         c = TemplateContentMaterializer(self._templater_context).visit(c, None)
         return c
 

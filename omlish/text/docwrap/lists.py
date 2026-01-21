@@ -1,6 +1,6 @@
 """
 TODO:
- - numeric lettered lists (even unordered) (with separator - `1)` / `1:` / ...)
+ - numeric lettered lists (even unordered) (with separator - `1)` / `1:` / `1.` / ...)
 """
 import typing as ta
 

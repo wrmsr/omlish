@@ -334,6 +334,11 @@ with _lang.auto_proxy_init(
         RecursiveContent,
     )
 
+    from .content.resources import (  # noqa
+        ResourceContent,
+        resource_content,
+    )
+
     from .content.section import (  # noqa
         SectionContent,
     )

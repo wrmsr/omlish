@@ -3,6 +3,7 @@ Usable as a jetbrains external tool:
   `om docwrap -i "$FilePath$" -s "$SelectionStartLine$" -e "$SelectionEndLine$"`
 
 TODO:
+ - fix 'stealing trailing line'
  - -> omdev.tools
  - at least file extension awareness, preserve say # prefixes in py comment blocks
   - maybe treesitter? or just special case py
