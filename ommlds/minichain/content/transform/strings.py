@@ -6,7 +6,7 @@ from ..content import Content
 from ..emphasis import EmphasisContent
 from ..metadata import ContentOriginal
 from ..text import TextContent
-from ..visitors import ContentTransform
+from .visitors import VisitorContentTransform
 
 
 T = ta.TypeVar('T')
@@ -16,7 +16,7 @@ T = ta.TypeVar('T')
 
 
 @dc.dataclass(frozen=True)
-class StringFnContentTransform(ContentTransform[None]):
+class StringFnContentTransform(VisitorContentTransform[None]):
     fn: ta.Callable[[str], str]
 
     def visit_str(self, c: str, ctx: None) -> TextContent:
@@ -30,4 +30,4 @@ class StringFnContentTransform(ContentTransform[None]):
 
 
 def transform_content_strings(fn: ta.Callable[[str], str], o: Content) -> Content:
-    return StringFnContentTransform(fn).visit(o, None)
+    return StringFnContentTransform(fn).transform(o, None)

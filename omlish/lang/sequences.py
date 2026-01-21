@@ -66,6 +66,20 @@ def seqs_identical(
     return seqs_all(operator.is_, l_seq, *r_seqs)
 
 
+#
+
+
+def map_preserve(
+        fn: ta.Callable[[T], ta.Any],
+        seq: ta.Sequence[T],
+        cmp: ta.Callable[[ta.Any, ta.Any], bool] = operator.is_,
+) -> ta.Sequence[T]:
+    res = list(map(fn, seq))
+    if seqs_all(cmp, res, seq):
+        return seq
+    return res
+
+
 ##
 
 

@@ -5,4 +5,4 @@
 #
 #
 # class MarkdownContentTransform(ContentTransform):
-#     def apply(self, ):
+#     def transform(self, ):

@@ -5,13 +5,13 @@ from ..content import Content
 from ..metadata import ContentOriginal
 from ..templates import TemplateContent
 from ..text import TextContent
-from ..visitors import ContentTransform
+from .visitors import VisitorContentTransform
 
 
 ##
 
 
-class TemplateContentMaterializer(ContentTransform[None]):
+class TemplateContentMaterializer(VisitorContentTransform[None]):
     def __init__(
             self,
             templater_context: tpl.Templater.Context | None = None,

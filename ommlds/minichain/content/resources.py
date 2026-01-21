@@ -2,14 +2,14 @@ from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 
-from .dynamic import DynamicContent
+from .recursive import RecursiveContent
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class ResourceContent(DynamicContent, lang.Final):
+class ResourceContent(RecursiveContent, lang.Final):
     package: str
     file: str
 

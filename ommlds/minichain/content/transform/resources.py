@@ -5,7 +5,7 @@ from ..metadata import ContentOriginal
 from ..resources import ResourceContent
 from ..standard import StandardContent
 from ..text import TextContent
-from ..visitors import ContentTransform
+from .visitors import VisitorContentTransform
 
 
 ##
@@ -42,7 +42,7 @@ RESOURCE_CONTENT_CACHE = ResourceContentCache()
 ##
 
 
-class ResourceContentMaterializer(ContentTransform[None]):
+class ResourceContentMaterializer(VisitorContentTransform[None]):
     def __init__(
             self,
             content_cache: ResourceContentCache | None = None,

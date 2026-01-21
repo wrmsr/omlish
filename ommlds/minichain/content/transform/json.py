@@ -8,13 +8,13 @@ from ..json import JsonContent
 from ..metadata import ContentOriginal
 from ..standard import StandardContent
 from ..text import TextContent
-from ..visitors import ContentTransform
+from .visitors import VisitorContentTransform
 
 
 ##
 
 
-class JsonContentRenderer(ContentTransform[None]):
+class JsonContentRenderer(VisitorContentTransform[None]):
     def __init__(
             self,
             *,

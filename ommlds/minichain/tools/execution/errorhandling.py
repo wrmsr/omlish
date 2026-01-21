@@ -33,4 +33,4 @@ class ErrorHandlingToolExecutor(ToolExecutor):
             return await self._wrapped.execute_tool(ctx, name, args)
 
         except ToolExecutionError as txe:
-            return self._content_materializer.apply(txe.content)
+            return self._content_materializer.materialize(txe.content)

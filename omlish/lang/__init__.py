@@ -474,6 +474,8 @@ with _auto_proxy_init(globals(), update_exports=True):
         seqs_equal,
         seqs_identical,
 
+        map_preserve,
+
         SeqView,
     )
 

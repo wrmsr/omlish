@@ -252,6 +252,14 @@ with _lang.auto_proxy_init(
         transform_content_strings,
     )
 
+    from .content.transform.types import (  # noqa
+        ContentTransform,
+    )
+
+    from .content.transform.visitors import (  # noqa
+        VisitorContentTransform,
+    )
+
     ##
 
     from .content.code import (  # noqa
@@ -374,8 +382,6 @@ with _lang.auto_proxy_init(
 
         StaticContentVisitorTypeError,
         StaticContentVisitor,
-
-        ContentTransform,
     )
 
     ##

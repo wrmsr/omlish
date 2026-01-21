@@ -2,7 +2,6 @@ import collections.abc
 import inspect
 import typing as ta
 
-from omlish import check
 from omlish import collections as col
 from omlish import lang
 
@@ -149,7 +148,7 @@ class ContentVisitor(lang.Abstract, ta.Generic[C, R]):
         return self.visit_recursive_content(c, ctx)
 
     def visit_resource_content(self, c: ResourceContent, ctx: C) -> R:
-        return self.visit_dynamic_content(c, ctx)
+        return self.visit_recursive_content(c, ctx)
 
     def visit_template_content(self, c: TemplateContent, ctx: C) -> R:
         return self.visit_dynamic_content(c, ctx)
@@ -217,20 +216,3 @@ class StaticContentVisitorTypeError(TypeError):
 class StaticContentVisitor(ContentVisitor[C, R], lang.Abstract):
     def visit_dynamic_content(self, c: DynamicContent, ctx: C) -> R:
         raise StaticContentVisitorTypeError(c)
-
-
-##
-
-
-class ContentTransform(ContentVisitor[C, Content], lang.Abstract):
-    def visit_content(self, c: Content, ctx: C) -> Content:
-        return c
-
-    def visit_sequence(self, c: ta.Sequence[Content], ctx: C) -> Content:
-        return [self.visit(cc, ctx) for cc in c]
-
-    def visit_composite_content(self, c: CompositeContent, ctx: C) -> Content:
-        cc = c.child_content()
-        ncc = self.visit_sequence(cc, ctx)
-        nc = c.replace_child_content(check.isinstance(ncc, collections.abc.Sequence))
-        return super().visit_composite_content(nc, ctx)

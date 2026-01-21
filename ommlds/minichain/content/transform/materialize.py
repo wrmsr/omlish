@@ -4,7 +4,9 @@ from omlish import lang
 from omlish.text import templating as tpl
 
 from ..content import Content
-from .recursive import PlaceholderContents
+from .namespaces import NamespaceContentMaterializer
+from .placeholders import PlaceholderContentMaterializer
+from .placeholders import PlaceholderContents
 from .recursive import RecursiveContentMaterializer
 from .resources import ResourceContentMaterializer
 from .templates import TemplateContentMaterializer
@@ -15,7 +17,7 @@ from .templates import TemplateContentMaterializer
 
 class ContentMaterializer(lang.Abstract):
     @abc.abstractmethod
-    def apply(self, c: Content) -> Content:
+    def materialize(self, c: Content) -> Content:
         raise NotImplementedError
 
 
@@ -31,13 +33,17 @@ class DefaultContentMaterializer(ContentMaterializer):
     ) -> None:
         super().__init__()
 
-        self._placeholder_contents = placeholder_contents
-        self._templater_context = templater_context
+        self._recursive_materializer = RecursiveContentMaterializer(
+            NamespaceContentMaterializer(),
+            PlaceholderContentMaterializer(placeholder_contents),
+            ResourceContentMaterializer(),
+        )
 
-    def apply(self, c: Content) -> Content:
-        c = RecursiveContentMaterializer(self._placeholder_contents).visit(c, None)
-        c = ResourceContentMaterializer().visit(c, None)
-        c = TemplateContentMaterializer(self._templater_context).visit(c, None)
+        self._template_materializer = TemplateContentMaterializer(templater_context)
+
+    def materialize(self, c: Content) -> Content:
+        c = self._recursive_materializer.transform(c, None)
+        c = self._template_materializer.transform(c, None)
         return c
 
 
@@ -50,4 +56,4 @@ def materialize_content(
     return DefaultContentMaterializer(
         placeholder_contents=placeholder_contents,
         templater_context=templater_context,
-    ).apply(c)
+    ).materialize(c)

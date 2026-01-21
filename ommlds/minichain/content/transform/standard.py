@@ -9,13 +9,13 @@ from ..sequence import BlockContent
 from ..sequence import InlineContent
 from ..sequence import SequenceContent
 from ..text import TextContent
-from ..visitors import ContentTransform
+from .visitors import VisitorContentTransform
 
 
 ##
 
 
-class LiftToStandardContentTransform(ContentTransform[None]):
+class LiftToStandardContentTransform(VisitorContentTransform[None]):
     def __init__(
             self,
             *,
