@@ -30,7 +30,7 @@ dependencies = [
 [project.optional-dependencies]
 all = [
     'black ~= 26.1',
-    'pycparser ~= 2.23',
+    'pycparser ~= 3.0',
     'pcpp ~= 1.30',
     'docutils ~= 0.22',
     'markdown-it-py ~= 4.0',
@@ -48,7 +48,7 @@ black = [
     'black ~= 26.1',
 ]
 c = [
-    'pycparser ~= 2.23',
+    'pycparser ~= 3.0',
     'pcpp ~= 1.30',
 ]
 doc = [

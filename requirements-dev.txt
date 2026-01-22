@@ -82,7 +82,7 @@ sqlean.py==3.50.4.5
 
 duckdb==1.4.3
 
-pycparser==2.23
+pycparser==3.0
 pcpp==1.30
 
 # !! LGPL

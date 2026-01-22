@@ -208,7 +208,7 @@ pyasn1==0.6.2
 pyasn1_modules==0.4.2
 pyclipper==1.4.0
 pycodestyle==2.14.0
-pycparser==2.23
+pycparser==3.0
 pycryptodomex==3.23.0
 pyflakes==3.4.0
 pygls==2.0.0
