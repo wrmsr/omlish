@@ -17,8 +17,8 @@ google-cloud-compute==1.42.0
 
 matplotlib==3.10.8
 
-torch==2.9.1
-torchvision==0.24.1
+torch==2.10.0
+torchvision==0.25.0
 # torchcodec==0.7.0
 
 diffusers==0.36.0  # @omlish-venv !14t !14dt

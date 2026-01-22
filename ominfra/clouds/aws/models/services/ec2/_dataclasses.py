@@ -7955,56 +7955,60 @@ def _process_dataclass__0e4d14f08b2bf721ea85332e6840f6f9f2badb03():
     plan_repr=(
         "Plans(tup=(CopyPlan(fields=('delete_on_termination', 'iops', 'snapshot_id', 'volume_size', 'volume_type', 'kms"
         "_key_id', 'throughput', 'outpost_arn', 'availability_zone', 'encrypted', 'volume_initialization_rate', 'availa"
-        "bility_zone_id')), EqPlan(fields=('delete_on_termination', 'iops', 'snapshot_id', 'volume_size', 'volume_type'"
-        ", 'kms_key_id', 'throughput', 'outpost_arn', 'availability_zone', 'encrypted', 'volume_initialization_rate', '"
-        "availability_zone_id')), FrozenPlan(fields=('__shape__', 'delete_on_termination', 'iops', 'snapshot_id', 'volu"
+        "bility_zone_id', 'ebs_card_index')), EqPlan(fields=('delete_on_termination', 'iops', 'snapshot_id', 'volume_si"
+        "ze', 'volume_type', 'kms_key_id', 'throughput', 'outpost_arn', 'availability_zone', 'encrypted', 'volume_initi"
+        "alization_rate', 'availability_zone_id', 'ebs_card_index')), FrozenPlan(fields=('__shape__', 'delete_on_termin"
+        "ation', 'iops', 'snapshot_id', 'volume_size', 'volume_type', 'kms_key_id', 'throughput', 'outpost_arn', 'avail"
+        "ability_zone', 'encrypted', 'volume_initialization_rate', 'availability_zone_id', 'ebs_card_index'), allow_dyn"
+        "amic_dunder_attrs=False), HashPlan(action='add', fields=('delete_on_termination', 'iops', 'snapshot_id', 'volu"
         "me_size', 'volume_type', 'kms_key_id', 'throughput', 'outpost_arn', 'availability_zone', 'encrypted', 'volume_"
-        "initialization_rate', 'availability_zone_id'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', field"
-        "s=('delete_on_termination', 'iops', 'snapshot_id', 'volume_size', 'volume_type', 'kms_key_id', 'throughput', '"
-        "outpost_arn', 'availability_zone', 'encrypted', 'volume_initialization_rate', 'availability_zone_id'), cache=F"
-        "alse), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.0.annotation'), de"
-        "fault=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, vali"
-        "date=None, check_type=None), InitPlan.Field(name='delete_on_termination', annotation=OpRef(name='init.fields.1"
-        ".annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False, f"
-        "ield_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='iops', annota"
-        "tion=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None"
-        ", init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Init"
-        "Plan.Field(name='snapshot_id', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fie"
-        "lds.3.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, "
-        "validate=None, check_type=None), InitPlan.Field(name='volume_size', annotation=OpRef(name='init.fields.4.annot"
-        "ation'), default=OpRef(name='init.fields.4.default'), default_factory=None, init=True, override=False, field_t"
-        "ype=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='volume_type', annot"
-        "ation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init.fields.5.default'), default_factory=Non"
-        "e, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Ini"
-        "tPlan.Field(name='kms_key_id', annotation=OpRef(name='init.fields.6.annotation'), default=OpRef(name='init.fie"
-        "lds.6.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, "
-        "validate=None, check_type=None), InitPlan.Field(name='throughput', annotation=OpRef(name='init.fields.7.annota"
-        "tion'), default=OpRef(name='init.fields.7.default'), default_factory=None, init=True, override=False, field_ty"
-        "pe=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='outpost_arn', annota"
-        "tion=OpRef(name='init.fields.8.annotation'), default=OpRef(name='init.fields.8.default'), default_factory=None"
-        ", init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Init"
-        "Plan.Field(name='availability_zone', annotation=OpRef(name='init.fields.9.annotation'), default=OpRef(name='in"
-        "it.fields.9.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
-        "None, validate=None, check_type=None), InitPlan.Field(name='encrypted', annotation=OpRef(name='init.fields.10."
-        "annotation'), default=OpRef(name='init.fields.10.default'), default_factory=None, init=True, override=False, f"
-        "ield_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='volume_initia"
-        "lization_rate', annotation=OpRef(name='init.fields.11.annotation'), default=OpRef(name='init.fields.11.default"
-        "'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None"
-        ", check_type=None), InitPlan.Field(name='availability_zone_id', annotation=OpRef(name='init.fields.12.annotati"
-        "on'), default=OpRef(name='init.fields.12.default'), default_factory=None, init=True, override=False, field_typ"
-        "e=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only"
-        "_params=('delete_on_termination', 'iops', 'snapshot_id', 'volume_size', 'volume_type', 'kms_key_id', 'throughp"
-        "ut', 'outpost_arn', 'availability_zone', 'encrypted', 'volume_initialization_rate', 'availability_zone_id'), f"
-        "rozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field"
-        "(name='delete_on_termination', kw_only=True, fn=None), ReprPlan.Field(name='iops', kw_only=True, fn=None), Rep"
-        "rPlan.Field(name='snapshot_id', kw_only=True, fn=None), ReprPlan.Field(name='volume_size', kw_only=True, fn=No"
-        "ne), ReprPlan.Field(name='volume_type', kw_only=True, fn=None), ReprPlan.Field(name='kms_key_id', kw_only=True"
-        ", fn=None), ReprPlan.Field(name='throughput', kw_only=True, fn=None), ReprPlan.Field(name='outpost_arn', kw_on"
-        "ly=True, fn=None), ReprPlan.Field(name='availability_zone', kw_only=True, fn=None), ReprPlan.Field(name='encry"
-        "pted', kw_only=True, fn=None), ReprPlan.Field(name='volume_initialization_rate', kw_only=True, fn=None), ReprP"
-        "lan.Field(name='availability_zone_id', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "initialization_rate', 'availability_zone_id', 'ebs_card_index'), cache=False), InitPlan(fields=(InitPlan.Field"
+        "(name='__shape__', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init"
+        "=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan."
+        "Field(name='delete_on_termination', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='ini"
+        "t.fields.1.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=N"
+        "one, validate=None, check_type=None), InitPlan.Field(name='iops', annotation=OpRef(name='init.fields.2.annotat"
+        "ion'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=False, field_typ"
+        "e=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='snapshot_id', annotat"
+        "ion=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory=None,"
+        " init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitP"
+        "lan.Field(name='volume_size', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fiel"
+        "ds.4.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, v"
+        "alidate=None, check_type=None), InitPlan.Field(name='volume_type', annotation=OpRef(name='init.fields.5.annota"
+        "tion'), default=OpRef(name='init.fields.5.default'), default_factory=None, init=True, override=False, field_ty"
+        "pe=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='kms_key_id', annotat"
+        "ion=OpRef(name='init.fields.6.annotation'), default=OpRef(name='init.fields.6.default'), default_factory=None,"
+        " init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitP"
+        "lan.Field(name='throughput', annotation=OpRef(name='init.fields.7.annotation'), default=OpRef(name='init.field"
+        "s.7.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
+        "lidate=None, check_type=None), InitPlan.Field(name='outpost_arn', annotation=OpRef(name='init.fields.8.annotat"
+        "ion'), default=OpRef(name='init.fields.8.default'), default_factory=None, init=True, override=False, field_typ"
+        "e=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='availability_zone', a"
+        "nnotation=OpRef(name='init.fields.9.annotation'), default=OpRef(name='init.fields.9.default'), default_factory"
+        "=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),"
+        " InitPlan.Field(name='encrypted', annotation=OpRef(name='init.fields.10.annotation'), default=OpRef(name='init"
+        ".fields.10.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=N"
+        "one, validate=None, check_type=None), InitPlan.Field(name='volume_initialization_rate', annotation=OpRef(name="
+        "'init.fields.11.annotation'), default=OpRef(name='init.fields.11.default'), default_factory=None, init=True, o"
+        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(nam"
+        "e='availability_zone_id', annotation=OpRef(name='init.fields.12.annotation'), default=OpRef(name='init.fields."
+        "12.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
+        "idate=None, check_type=None), InitPlan.Field(name='ebs_card_index', annotation=OpRef(name='init.fields.13.anno"
+        "tation'), default=OpRef(name='init.fields.13.default'), default_factory=None, init=True, override=False, field"
+        "_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_"
+        "only_params=('delete_on_termination', 'iops', 'snapshot_id', 'volume_size', 'volume_type', 'kms_key_id', 'thro"
+        "ughput', 'outpost_arn', 'availability_zone', 'encrypted', 'volume_initialization_rate', 'availability_zone_id'"
+        ", 'ebs_card_index'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan("
+        "fields=(ReprPlan.Field(name='delete_on_termination', kw_only=True, fn=None), ReprPlan.Field(name='iops', kw_on"
+        "ly=True, fn=None), ReprPlan.Field(name='snapshot_id', kw_only=True, fn=None), ReprPlan.Field(name='volume_size"
+        "', kw_only=True, fn=None), ReprPlan.Field(name='volume_type', kw_only=True, fn=None), ReprPlan.Field(name='kms"
+        "_key_id', kw_only=True, fn=None), ReprPlan.Field(name='throughput', kw_only=True, fn=None), ReprPlan.Field(nam"
+        "e='outpost_arn', kw_only=True, fn=None), ReprPlan.Field(name='availability_zone', kw_only=True, fn=None), Repr"
+        "Plan.Field(name='encrypted', kw_only=True, fn=None), ReprPlan.Field(name='volume_initialization_rate', kw_only"
+        "=True, fn=None), ReprPlan.Field(name='availability_zone_id', kw_only=True, fn=None), ReprPlan.Field(name='ebs_"
+        "card_index', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='16c0b384718e3d82c8fe94582190fd670ad7af6e',
+    plan_repr_sha1='ae5b1f8101abb83f483e9c8b7aa73c895d34d4aa',
     op_ref_idents=(
         '__dataclass__init__fields__10__annotation',
         '__dataclass__init__fields__10__default',
@@ -8012,6 +8016,8 @@ def _process_dataclass__0e4d14f08b2bf721ea85332e6840f6f9f2badb03():
         '__dataclass__init__fields__11__default',
         '__dataclass__init__fields__12__annotation',
         '__dataclass__init__fields__12__default',
+        '__dataclass__init__fields__13__annotation',
+        '__dataclass__init__fields__13__default',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
         '__dataclass__init__fields__2__annotation',
@@ -8035,7 +8041,7 @@ def _process_dataclass__0e4d14f08b2bf721ea85332e6840f6f9f2badb03():
         ('ominfra.clouds.aws.models.services.ec2', 'EbsBlockDevice'),
     ),
 )
-def _process_dataclass__16c0b384718e3d82c8fe94582190fd670ad7af6e():
+def _process_dataclass__ae5b1f8101abb83f483e9c8b7aa73c895d34d4aa():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -8045,6 +8051,8 @@ def _process_dataclass__16c0b384718e3d82c8fe94582190fd670ad7af6e():
         __dataclass__init__fields__11__default,
         __dataclass__init__fields__12__annotation,
         __dataclass__init__fields__12__default,
+        __dataclass__init__fields__13__annotation,
+        __dataclass__init__fields__13__default,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
         __dataclass__init__fields__2__annotation,
@@ -8093,6 +8101,7 @@ def _process_dataclass__16c0b384718e3d82c8fe94582190fd670ad7af6e():
                 encrypted=self.encrypted,
                 volume_initialization_rate=self.volume_initialization_rate,
                 availability_zone_id=self.availability_zone_id,
+                ebs_card_index=self.ebs_card_index,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -8117,7 +8126,8 @@ def _process_dataclass__16c0b384718e3d82c8fe94582190fd670ad7af6e():
                 self.availability_zone == other.availability_zone and
                 self.encrypted == other.encrypted and
                 self.volume_initialization_rate == other.volume_initialization_rate and
-                self.availability_zone_id == other.availability_zone_id
+                self.availability_zone_id == other.availability_zone_id and
+                self.ebs_card_index == other.ebs_card_index
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -8139,6 +8149,7 @@ def _process_dataclass__16c0b384718e3d82c8fe94582190fd670ad7af6e():
             'encrypted',
             'volume_initialization_rate',
             'availability_zone_id',
+            'ebs_card_index',
         }
 
         def __setattr__(self, name, value):
@@ -8168,6 +8179,7 @@ def _process_dataclass__16c0b384718e3d82c8fe94582190fd670ad7af6e():
             'encrypted',
             'volume_initialization_rate',
             'availability_zone_id',
+            'ebs_card_index',
         }
 
         def __delattr__(self, name):
@@ -8197,6 +8209,7 @@ def _process_dataclass__16c0b384718e3d82c8fe94582190fd670ad7af6e():
                 self.encrypted,
                 self.volume_initialization_rate,
                 self.availability_zone_id,
+                self.ebs_card_index,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -8217,6 +8230,7 @@ def _process_dataclass__16c0b384718e3d82c8fe94582190fd670ad7af6e():
             encrypted: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
             volume_initialization_rate: __dataclass__init__fields__11__annotation = __dataclass__init__fields__11__default,
             availability_zone_id: __dataclass__init__fields__12__annotation = __dataclass__init__fields__12__default,
+            ebs_card_index: __dataclass__init__fields__13__annotation = __dataclass__init__fields__13__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'delete_on_termination', delete_on_termination)
             __dataclass__object_setattr(self, 'iops', iops)
@@ -8230,6 +8244,7 @@ def _process_dataclass__16c0b384718e3d82c8fe94582190fd670ad7af6e():
             __dataclass__object_setattr(self, 'encrypted', encrypted)
             __dataclass__object_setattr(self, 'volume_initialization_rate', volume_initialization_rate)
             __dataclass__object_setattr(self, 'availability_zone_id', availability_zone_id)
+            __dataclass__object_setattr(self, 'ebs_card_index', ebs_card_index)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -8251,6 +8266,7 @@ def _process_dataclass__16c0b384718e3d82c8fe94582190fd670ad7af6e():
             parts.append(f"encrypted={self.encrypted!r}")
             parts.append(f"volume_initialization_rate={self.volume_initialization_rate!r}")
             parts.append(f"availability_zone_id={self.availability_zone_id!r}")
+            parts.append(f"ebs_card_index={self.ebs_card_index!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -8267,262 +8283,43 @@ def _process_dataclass__16c0b384718e3d82c8fe94582190fd670ad7af6e():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('ebs_optimized_support', 'encryption_support', 'ebs_optimized_info', 'nvme_support"
-        "', 'maximum_ebs_attachments', 'attachment_limit_type')), EqPlan(fields=('ebs_optimized_support', 'encryption_s"
-        "upport', 'ebs_optimized_info', 'nvme_support', 'maximum_ebs_attachments', 'attachment_limit_type')), FrozenPla"
-        "n(fields=('__shape__', 'ebs_optimized_support', 'encryption_support', 'ebs_optimized_info', 'nvme_support', 'm"
-        "aximum_ebs_attachments', 'attachment_limit_type'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', f"
-        "ields=('ebs_optimized_support', 'encryption_support', 'ebs_optimized_info', 'nvme_support', 'maximum_ebs_attac"
-        "hments', 'attachment_limit_type'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation="
-        "OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, override=False, field_t"
-        "ype=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ebs_optimized_supp"
-        "ort', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_"
-        "factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type"
-        "=None), InitPlan.Field(name='encryption_support', annotation=OpRef(name='init.fields.2.annotation'), default=O"
-        "pRef(name='init.fields.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INST"
-        "ANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ebs_optimized_info', annotation=OpRef"
-        "(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=Tru"
-        "e, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field"
-        "(name='nvme_support', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.def"
-        "ault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate="
-        "None, check_type=None), InitPlan.Field(name='maximum_ebs_attachments', annotation=OpRef(name='init.fields.5.an"
-        "notation'), default=OpRef(name='init.fields.5.default'), default_factory=None, init=True, override=False, fiel"
-        "d_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='attachment_limit"
-        "_type', annotation=OpRef(name='init.fields.6.annotation'), default=OpRef(name='init.fields.6.default'), defaul"
-        "t_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_ty"
-        "pe=None)), self_param='self', std_params=(), kw_only_params=('ebs_optimized_support', 'encryption_support', 'e"
-        "bs_optimized_info', 'nvme_support', 'maximum_ebs_attachments', 'attachment_limit_type'), frozen=True, slots=Fa"
-        "lse, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='ebs_optimized"
-        "_support', kw_only=True, fn=None), ReprPlan.Field(name='encryption_support', kw_only=True, fn=None), ReprPlan."
-        "Field(name='ebs_optimized_info', kw_only=True, fn=None), ReprPlan.Field(name='nvme_support', kw_only=True, fn="
-        "None), ReprPlan.Field(name='maximum_ebs_attachments', kw_only=True, fn=None), ReprPlan.Field(name='attachment_"
-        "limit_type', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('ebs_card_index', 'baseline_bandwidth_in_mbips', 'baseline_throughput_in_mbps', 'b"
+        "aseline_iops', 'maximum_bandwidth_in_mbips', 'maximum_throughput_in_mbps', 'maximum_iops')), EqPlan(fields=('e"
+        "bs_card_index', 'baseline_bandwidth_in_mbips', 'baseline_throughput_in_mbps', 'baseline_iops', 'maximum_bandwi"
+        "dth_in_mbips', 'maximum_throughput_in_mbps', 'maximum_iops')), FrozenPlan(fields=('__shape__', 'ebs_card_index"
+        "', 'baseline_bandwidth_in_mbips', 'baseline_throughput_in_mbps', 'baseline_iops', 'maximum_bandwidth_in_mbips'"
+        ", 'maximum_throughput_in_mbps', 'maximum_iops'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fie"
+        "lds=('ebs_card_index', 'baseline_bandwidth_in_mbips', 'baseline_throughput_in_mbps', 'baseline_iops', 'maximum"
+        "_bandwidth_in_mbips', 'maximum_throughput_in_mbps', 'maximum_iops'), cache=False), InitPlan(fields=(InitPlan.F"
+        "ield(name='__shape__', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, "
+        "init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitP"
+        "lan.Field(name='ebs_card_index', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.f"
+        "ields.1.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None"
+        ", validate=None, check_type=None), InitPlan.Field(name='baseline_bandwidth_in_mbips', annotation=OpRef(name='i"
+        "nit.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, overr"
+        "ide=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='b"
+        "aseline_throughput_in_mbps', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.field"
+        "s.3.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
+        "lidate=None, check_type=None), InitPlan.Field(name='baseline_iops', annotation=OpRef(name='init.fields.4.annot"
+        "ation'), default=OpRef(name='init.fields.4.default'), default_factory=None, init=True, override=False, field_t"
+        "ype=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='maximum_bandwidth_i"
+        "n_mbips', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init.fields.5.default'), defa"
+        "ult_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_"
+        "type=None), InitPlan.Field(name='maximum_throughput_in_mbps', annotation=OpRef(name='init.fields.6.annotation'"
+        "), default=OpRef(name='init.fields.6.default'), default_factory=None, init=True, override=False, field_type=Fi"
+        "eldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='maximum_iops', annotation"
+        "=OpRef(name='init.fields.7.annotation'), default=OpRef(name='init.fields.7.default'), default_factory=None, in"
+        "it=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_pa"
+        "ram='self', std_params=(), kw_only_params=('ebs_card_index', 'baseline_bandwidth_in_mbips', 'baseline_throughp"
+        "ut_in_mbps', 'baseline_iops', 'maximum_bandwidth_in_mbips', 'maximum_throughput_in_mbps', 'maximum_iops'), fro"
+        "zen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(n"
+        "ame='ebs_card_index', kw_only=True, fn=None), ReprPlan.Field(name='baseline_bandwidth_in_mbips', kw_only=True,"
+        " fn=None), ReprPlan.Field(name='baseline_throughput_in_mbps', kw_only=True, fn=None), ReprPlan.Field(name='bas"
+        "eline_iops', kw_only=True, fn=None), ReprPlan.Field(name='maximum_bandwidth_in_mbips', kw_only=True, fn=None),"
+        " ReprPlan.Field(name='maximum_throughput_in_mbps', kw_only=True, fn=None), ReprPlan.Field(name='maximum_iops',"
+        " kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='537a23d4158e2fdeb7190c4a89f243a4bde76bb6',
-    op_ref_idents=(
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__default',
-        '__dataclass__init__fields__4__annotation',
-        '__dataclass__init__fields__4__default',
-        '__dataclass__init__fields__5__annotation',
-        '__dataclass__init__fields__5__default',
-        '__dataclass__init__fields__6__annotation',
-        '__dataclass__init__fields__6__default',
-    ),
-    cls_names=(
-        ('ominfra.clouds.aws.models.services.ec2', 'EbsInfo'),
-    ),
-)
-def _process_dataclass__537a23d4158e2fdeb7190c4a89f243a4bde76bb6():
-    def _process_dataclass(
-        *,
-        __dataclass__cls,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
-        __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__default,
-        __dataclass__init__fields__4__annotation,
-        __dataclass__init__fields__4__default,
-        __dataclass__init__fields__5__annotation,
-        __dataclass__init__fields__5__default,
-        __dataclass__init__fields__6__annotation,
-        __dataclass__init__fields__6__default,
-        __dataclass__FieldFnValidationError,  # noqa
-        __dataclass__FieldTypeValidationError,  # noqa
-        __dataclass__FnValidationError,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__property=property,  # noqa
-    ):
-        def __copy__(self):
-            if self.__class__ is not __dataclass__cls:
-                raise TypeError(self)
-            return __dataclass__cls(  # noqa
-                ebs_optimized_support=self.ebs_optimized_support,
-                encryption_support=self.encryption_support,
-                ebs_optimized_info=self.ebs_optimized_info,
-                nvme_support=self.nvme_support,
-                maximum_ebs_attachments=self.maximum_ebs_attachments,
-                attachment_limit_type=self.attachment_limit_type,
-            )
-
-        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
-        if '__copy__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__copy__', __copy__)
-
-        def __eq__(self, other):
-            if self is other:
-                return True
-            if self.__class__ is not other.__class__:
-                return NotImplemented
-            return (
-                self.ebs_optimized_support == other.ebs_optimized_support and
-                self.encryption_support == other.encryption_support and
-                self.ebs_optimized_info == other.ebs_optimized_info and
-                self.nvme_support == other.nvme_support and
-                self.maximum_ebs_attachments == other.maximum_ebs_attachments and
-                self.attachment_limit_type == other.attachment_limit_type
-            )
-
-        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
-        if '__eq__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__eq__', __eq__)
-
-        __dataclass___setattr_frozen_fields = {
-            '__shape__',
-            'ebs_optimized_support',
-            'encryption_support',
-            'ebs_optimized_info',
-            'nvme_support',
-            'maximum_ebs_attachments',
-            'attachment_limit_type',
-        }
-
-        def __setattr__(self, name, value):
-            if (
-                type(self) is __dataclass__cls
-                or name in __dataclass___setattr_frozen_fields
-            ):
-                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
-            super(__dataclass__cls, self).__setattr__(name, value)
-
-        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
-        if '__setattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__setattr__', __setattr__)
-
-        __dataclass___delattr_frozen_fields = {
-            '__shape__',
-            'ebs_optimized_support',
-            'encryption_support',
-            'ebs_optimized_info',
-            'nvme_support',
-            'maximum_ebs_attachments',
-            'attachment_limit_type',
-        }
-
-        def __delattr__(self, name):
-            if (
-                type(self) is __dataclass__cls
-                or name in __dataclass___delattr_frozen_fields
-            ):
-                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
-            super(__dataclass__cls, self).__delattr__(name)
-
-        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
-        if '__delattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__delattr__', __delattr__)
-
-        def __hash__(self):
-            return hash((
-                self.ebs_optimized_support,
-                self.encryption_support,
-                self.ebs_optimized_info,
-                self.nvme_support,
-                self.maximum_ebs_attachments,
-                self.attachment_limit_type,
-            ))
-
-        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
-        setattr(__dataclass__cls, '__hash__', __hash__)
-
-        def __init__(
-            self,
-            *,
-            ebs_optimized_support: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            encryption_support: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
-            ebs_optimized_info: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            nvme_support: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            maximum_ebs_attachments: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            attachment_limit_type: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-        ) -> __dataclass__None:
-            __dataclass__object_setattr(self, 'ebs_optimized_support', ebs_optimized_support)
-            __dataclass__object_setattr(self, 'encryption_support', encryption_support)
-            __dataclass__object_setattr(self, 'ebs_optimized_info', ebs_optimized_info)
-            __dataclass__object_setattr(self, 'nvme_support', nvme_support)
-            __dataclass__object_setattr(self, 'maximum_ebs_attachments', maximum_ebs_attachments)
-            __dataclass__object_setattr(self, 'attachment_limit_type', attachment_limit_type)
-
-        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
-        if '__init__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__init__', __init__)
-
-        @__dataclass___recursive_repr()
-        def __repr__(self):
-            parts = []
-            parts.append(f"ebs_optimized_support={self.ebs_optimized_support!r}")
-            parts.append(f"encryption_support={self.encryption_support!r}")
-            parts.append(f"ebs_optimized_info={self.ebs_optimized_info!r}")
-            parts.append(f"nvme_support={self.nvme_support!r}")
-            parts.append(f"maximum_ebs_attachments={self.maximum_ebs_attachments!r}")
-            parts.append(f"attachment_limit_type={self.attachment_limit_type!r}")
-            return (
-                f"{self.__class__.__qualname__}("
-                f"{', '.join(parts)}"
-                f")"
-            )
-
-        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
-        if '__repr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__repr__', __repr__)
-
-    return _process_dataclass
-
-
-@_register(
-    plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('attach_time', 'delete_on_termination', 'status', 'volume_id', 'associated_resourc"
-        "e', 'volume_owner_id', 'operator')), EqPlan(fields=('attach_time', 'delete_on_termination', 'status', 'volume_"
-        "id', 'associated_resource', 'volume_owner_id', 'operator')), FrozenPlan(fields=('__shape__', 'attach_time', 'd"
-        "elete_on_termination', 'status', 'volume_id', 'associated_resource', 'volume_owner_id', 'operator'), allow_dyn"
-        "amic_dunder_attrs=False), HashPlan(action='add', fields=('attach_time', 'delete_on_termination', 'status', 'vo"
-        "lume_id', 'associated_resource', 'volume_owner_id', 'operator'), cache=False), InitPlan(fields=(InitPlan.Field"
-        "(name='__shape__', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init"
-        "=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan."
-        "Field(name='attach_time', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1"
-        ".default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valid"
-        "ate=None, check_type=None), InitPlan.Field(name='delete_on_termination', annotation=OpRef(name='init.fields.2."
-        "annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=False, fi"
-        "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='status', annot"
-        "ation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory=Non"
-        "e, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Ini"
-        "tPlan.Field(name='volume_id', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fiel"
-        "ds.4.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, v"
-        "alidate=None, check_type=None), InitPlan.Field(name='associated_resource', annotation=OpRef(name='init.fields."
-        "5.annotation'), default=OpRef(name='init.fields.5.default'), default_factory=None, init=True, override=False, "
-        "field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='volume_owner"
-        "_id', annotation=OpRef(name='init.fields.6.annotation'), default=OpRef(name='init.fields.6.default'), default_"
-        "factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type"
-        "=None), InitPlan.Field(name='operator', annotation=OpRef(name='init.fields.7.annotation'), default=OpRef(name="
-        "'init.fields.7.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coer"
-        "ce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('attach_time', 'd"
-        "elete_on_termination', 'status', 'volume_id', 'associated_resource', 'volume_owner_id', 'operator'), frozen=Tr"
-        "ue, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='a"
-        "ttach_time', kw_only=True, fn=None), ReprPlan.Field(name='delete_on_termination', kw_only=True, fn=None), Repr"
-        "Plan.Field(name='status', kw_only=True, fn=None), ReprPlan.Field(name='volume_id', kw_only=True, fn=None), Rep"
-        "rPlan.Field(name='associated_resource', kw_only=True, fn=None), ReprPlan.Field(name='volume_owner_id', kw_only"
-        "=True, fn=None), ReprPlan.Field(name='operator', kw_only=True, fn=None)), id=False, terse=False, default_fn=No"
-        "ne)))"
-    ),
-    plan_repr_sha1='efd31e877496bbd3d9214c4b87b5775f30e0bd24',
+    plan_repr_sha1='409e4a7b01e38af5617e43696efa802b58ef4c69',
     op_ref_idents=(
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
@@ -8540,10 +8337,10 @@ def _process_dataclass__537a23d4158e2fdeb7190c4a89f243a4bde76bb6():
         '__dataclass__init__fields__7__default',
     ),
     cls_names=(
-        ('ominfra.clouds.aws.models.services.ec2', 'EbsInstanceBlockDevice'),
+        ('ominfra.clouds.aws.models.services.ec2', 'EbsCardInfo'),
     ),
 )
-def _process_dataclass__efd31e877496bbd3d9214c4b87b5775f30e0bd24():
+def _process_dataclass__409e4a7b01e38af5617e43696efa802b58ef4c69():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -8579,6 +8376,503 @@ def _process_dataclass__efd31e877496bbd3d9214c4b87b5775f30e0bd24():
             if self.__class__ is not __dataclass__cls:
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
+                ebs_card_index=self.ebs_card_index,
+                baseline_bandwidth_in_mbips=self.baseline_bandwidth_in_mbips,
+                baseline_throughput_in_mbps=self.baseline_throughput_in_mbps,
+                baseline_iops=self.baseline_iops,
+                maximum_bandwidth_in_mbips=self.maximum_bandwidth_in_mbips,
+                maximum_throughput_in_mbps=self.maximum_throughput_in_mbps,
+                maximum_iops=self.maximum_iops,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.ebs_card_index == other.ebs_card_index and
+                self.baseline_bandwidth_in_mbips == other.baseline_bandwidth_in_mbips and
+                self.baseline_throughput_in_mbps == other.baseline_throughput_in_mbps and
+                self.baseline_iops == other.baseline_iops and
+                self.maximum_bandwidth_in_mbips == other.maximum_bandwidth_in_mbips and
+                self.maximum_throughput_in_mbps == other.maximum_throughput_in_mbps and
+                self.maximum_iops == other.maximum_iops
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            '__shape__',
+            'ebs_card_index',
+            'baseline_bandwidth_in_mbips',
+            'baseline_throughput_in_mbps',
+            'baseline_iops',
+            'maximum_bandwidth_in_mbips',
+            'maximum_throughput_in_mbps',
+            'maximum_iops',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            '__shape__',
+            'ebs_card_index',
+            'baseline_bandwidth_in_mbips',
+            'baseline_throughput_in_mbps',
+            'baseline_iops',
+            'maximum_bandwidth_in_mbips',
+            'maximum_throughput_in_mbps',
+            'maximum_iops',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.ebs_card_index,
+                self.baseline_bandwidth_in_mbips,
+                self.baseline_throughput_in_mbps,
+                self.baseline_iops,
+                self.maximum_bandwidth_in_mbips,
+                self.maximum_throughput_in_mbps,
+                self.maximum_iops,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            *,
+            ebs_card_index: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
+            baseline_bandwidth_in_mbips: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+            baseline_throughput_in_mbps: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
+            baseline_iops: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
+            maximum_bandwidth_in_mbips: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
+            maximum_throughput_in_mbps: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
+            maximum_iops: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'ebs_card_index', ebs_card_index)
+            __dataclass__object_setattr(self, 'baseline_bandwidth_in_mbips', baseline_bandwidth_in_mbips)
+            __dataclass__object_setattr(self, 'baseline_throughput_in_mbps', baseline_throughput_in_mbps)
+            __dataclass__object_setattr(self, 'baseline_iops', baseline_iops)
+            __dataclass__object_setattr(self, 'maximum_bandwidth_in_mbips', maximum_bandwidth_in_mbips)
+            __dataclass__object_setattr(self, 'maximum_throughput_in_mbps', maximum_throughput_in_mbps)
+            __dataclass__object_setattr(self, 'maximum_iops', maximum_iops)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"ebs_card_index={self.ebs_card_index!r}")
+            parts.append(f"baseline_bandwidth_in_mbips={self.baseline_bandwidth_in_mbips!r}")
+            parts.append(f"baseline_throughput_in_mbps={self.baseline_throughput_in_mbps!r}")
+            parts.append(f"baseline_iops={self.baseline_iops!r}")
+            parts.append(f"maximum_bandwidth_in_mbips={self.maximum_bandwidth_in_mbips!r}")
+            parts.append(f"maximum_throughput_in_mbps={self.maximum_throughput_in_mbps!r}")
+            parts.append(f"maximum_iops={self.maximum_iops!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('ebs_optimized_support', 'encryption_support', 'ebs_optimized_info', 'nvme_support"
+        "', 'maximum_ebs_attachments', 'attachment_limit_type', 'maximum_ebs_cards', 'ebs_cards')), EqPlan(fields=('ebs"
+        "_optimized_support', 'encryption_support', 'ebs_optimized_info', 'nvme_support', 'maximum_ebs_attachments', 'a"
+        "ttachment_limit_type', 'maximum_ebs_cards', 'ebs_cards')), FrozenPlan(fields=('__shape__', 'ebs_optimized_supp"
+        "ort', 'encryption_support', 'ebs_optimized_info', 'nvme_support', 'maximum_ebs_attachments', 'attachment_limit"
+        "_type', 'maximum_ebs_cards', 'ebs_cards'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('"
+        "ebs_optimized_support', 'encryption_support', 'ebs_optimized_info', 'nvme_support', 'maximum_ebs_attachments',"
+        " 'attachment_limit_type', 'maximum_ebs_cards', 'ebs_cards'), cache=False), InitPlan(fields=(InitPlan.Field(nam"
+        "e='__shape__', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=Tru"
+        "e, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Fiel"
+        "d(name='ebs_optimized_support', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fi"
+        "elds.1.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None,"
+        " validate=None, check_type=None), InitPlan.Field(name='encryption_support', annotation=OpRef(name='init.fields"
+        ".2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=False,"
+        " field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ebs_optimiz"
+        "ed_info', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'), defa"
+        "ult_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_"
+        "type=None), InitPlan.Field(name='nvme_support', annotation=OpRef(name='init.fields.4.annotation'), default=OpR"
+        "ef(name='init.fields.4.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTAN"
+        "CE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='maximum_ebs_attachments', annotation=Op"
+        "Ref(name='init.fields.5.annotation'), default=OpRef(name='init.fields.5.default'), default_factory=None, init="
+        "True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fi"
+        "eld(name='attachment_limit_type', annotation=OpRef(name='init.fields.6.annotation'), default=OpRef(name='init."
+        "fields.6.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=Non"
+        "e, validate=None, check_type=None), InitPlan.Field(name='maximum_ebs_cards', annotation=OpRef(name='init.field"
+        "s.7.annotation'), default=OpRef(name='init.fields.7.default'), default_factory=None, init=True, override=False"
+        ", field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ebs_cards'"
+        ", annotation=OpRef(name='init.fields.8.annotation'), default=OpRef(name='init.fields.8.default'), default_fact"
+        "ory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=Non"
+        "e)), self_param='self', std_params=(), kw_only_params=('ebs_optimized_support', 'encryption_support', 'ebs_opt"
+        "imized_info', 'nvme_support', 'maximum_ebs_attachments', 'attachment_limit_type', 'maximum_ebs_cards', 'ebs_ca"
+        "rds'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPl"
+        "an.Field(name='ebs_optimized_support', kw_only=True, fn=None), ReprPlan.Field(name='encryption_support', kw_on"
+        "ly=True, fn=None), ReprPlan.Field(name='ebs_optimized_info', kw_only=True, fn=None), ReprPlan.Field(name='nvme"
+        "_support', kw_only=True, fn=None), ReprPlan.Field(name='maximum_ebs_attachments', kw_only=True, fn=None), Repr"
+        "Plan.Field(name='attachment_limit_type', kw_only=True, fn=None), ReprPlan.Field(name='maximum_ebs_cards', kw_o"
+        "nly=True, fn=None), ReprPlan.Field(name='ebs_cards', kw_only=True, fn=None)), id=False, terse=False, default_f"
+        "n=None)))"
+    ),
+    plan_repr_sha1='02e129e096f2bde676fb010771c0dca527c9a043',
+    op_ref_idents=(
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__8__default',
+    ),
+    cls_names=(
+        ('ominfra.clouds.aws.models.services.ec2', 'EbsInfo'),
+    ),
+)
+def _process_dataclass__02e129e096f2bde676fb010771c0dca527c9a043():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__1__default,
+        __dataclass__init__fields__2__annotation,
+        __dataclass__init__fields__2__default,
+        __dataclass__init__fields__3__annotation,
+        __dataclass__init__fields__3__default,
+        __dataclass__init__fields__4__annotation,
+        __dataclass__init__fields__4__default,
+        __dataclass__init__fields__5__annotation,
+        __dataclass__init__fields__5__default,
+        __dataclass__init__fields__6__annotation,
+        __dataclass__init__fields__6__default,
+        __dataclass__init__fields__7__annotation,
+        __dataclass__init__fields__7__default,
+        __dataclass__init__fields__8__annotation,
+        __dataclass__init__fields__8__default,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                ebs_optimized_support=self.ebs_optimized_support,
+                encryption_support=self.encryption_support,
+                ebs_optimized_info=self.ebs_optimized_info,
+                nvme_support=self.nvme_support,
+                maximum_ebs_attachments=self.maximum_ebs_attachments,
+                attachment_limit_type=self.attachment_limit_type,
+                maximum_ebs_cards=self.maximum_ebs_cards,
+                ebs_cards=self.ebs_cards,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.ebs_optimized_support == other.ebs_optimized_support and
+                self.encryption_support == other.encryption_support and
+                self.ebs_optimized_info == other.ebs_optimized_info and
+                self.nvme_support == other.nvme_support and
+                self.maximum_ebs_attachments == other.maximum_ebs_attachments and
+                self.attachment_limit_type == other.attachment_limit_type and
+                self.maximum_ebs_cards == other.maximum_ebs_cards and
+                self.ebs_cards == other.ebs_cards
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            '__shape__',
+            'ebs_optimized_support',
+            'encryption_support',
+            'ebs_optimized_info',
+            'nvme_support',
+            'maximum_ebs_attachments',
+            'attachment_limit_type',
+            'maximum_ebs_cards',
+            'ebs_cards',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            '__shape__',
+            'ebs_optimized_support',
+            'encryption_support',
+            'ebs_optimized_info',
+            'nvme_support',
+            'maximum_ebs_attachments',
+            'attachment_limit_type',
+            'maximum_ebs_cards',
+            'ebs_cards',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.ebs_optimized_support,
+                self.encryption_support,
+                self.ebs_optimized_info,
+                self.nvme_support,
+                self.maximum_ebs_attachments,
+                self.attachment_limit_type,
+                self.maximum_ebs_cards,
+                self.ebs_cards,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            *,
+            ebs_optimized_support: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
+            encryption_support: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+            ebs_optimized_info: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
+            nvme_support: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
+            maximum_ebs_attachments: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
+            attachment_limit_type: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
+            maximum_ebs_cards: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
+            ebs_cards: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'ebs_optimized_support', ebs_optimized_support)
+            __dataclass__object_setattr(self, 'encryption_support', encryption_support)
+            __dataclass__object_setattr(self, 'ebs_optimized_info', ebs_optimized_info)
+            __dataclass__object_setattr(self, 'nvme_support', nvme_support)
+            __dataclass__object_setattr(self, 'maximum_ebs_attachments', maximum_ebs_attachments)
+            __dataclass__object_setattr(self, 'attachment_limit_type', attachment_limit_type)
+            __dataclass__object_setattr(self, 'maximum_ebs_cards', maximum_ebs_cards)
+            __dataclass__object_setattr(self, 'ebs_cards', ebs_cards)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"ebs_optimized_support={self.ebs_optimized_support!r}")
+            parts.append(f"encryption_support={self.encryption_support!r}")
+            parts.append(f"ebs_optimized_info={self.ebs_optimized_info!r}")
+            parts.append(f"nvme_support={self.nvme_support!r}")
+            parts.append(f"maximum_ebs_attachments={self.maximum_ebs_attachments!r}")
+            parts.append(f"attachment_limit_type={self.attachment_limit_type!r}")
+            parts.append(f"maximum_ebs_cards={self.maximum_ebs_cards!r}")
+            parts.append(f"ebs_cards={self.ebs_cards!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('attach_time', 'delete_on_termination', 'status', 'volume_id', 'associated_resourc"
+        "e', 'volume_owner_id', 'operator', 'ebs_card_index')), EqPlan(fields=('attach_time', 'delete_on_termination', "
+        "'status', 'volume_id', 'associated_resource', 'volume_owner_id', 'operator', 'ebs_card_index')), FrozenPlan(fi"
+        "elds=('__shape__', 'attach_time', 'delete_on_termination', 'status', 'volume_id', 'associated_resource', 'volu"
+        "me_owner_id', 'operator', 'ebs_card_index'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields="
+        "('attach_time', 'delete_on_termination', 'status', 'volume_id', 'associated_resource', 'volume_owner_id', 'ope"
+        "rator', 'ebs_card_index'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(na"
+        "me='init.fields.0.annotation'), default=None, default_factory=None, init=True, override=False, field_type=Fiel"
+        "dType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='attach_time', annotation=O"
+        "pRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init"
+        "=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.F"
+        "ield(name='delete_on_termination', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init"
+        ".fields.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=No"
+        "ne, validate=None, check_type=None), InitPlan.Field(name='status', annotation=OpRef(name='init.fields.3.annota"
+        "tion'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, field_ty"
+        "pe=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='volume_id', annotati"
+        "on=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, "
+        "init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPl"
+        "an.Field(name='associated_resource', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='in"
+        "it.fields.5.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
+        "None, validate=None, check_type=None), InitPlan.Field(name='volume_owner_id', annotation=OpRef(name='init.fiel"
+        "ds.6.annotation'), default=OpRef(name='init.fields.6.default'), default_factory=None, init=True, override=Fals"
+        "e, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='operator'"
+        ", annotation=OpRef(name='init.fields.7.annotation'), default=OpRef(name='init.fields.7.default'), default_fact"
+        "ory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=Non"
+        "e), InitPlan.Field(name='ebs_card_index', annotation=OpRef(name='init.fields.8.annotation'), default=OpRef(nam"
+        "e='init.fields.8.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, co"
+        "erce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('attach_time', "
+        "'delete_on_termination', 'status', 'volume_id', 'associated_resource', 'volume_owner_id', 'operator', 'ebs_car"
+        "d_index'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(Re"
+        "prPlan.Field(name='attach_time', kw_only=True, fn=None), ReprPlan.Field(name='delete_on_termination', kw_only="
+        "True, fn=None), ReprPlan.Field(name='status', kw_only=True, fn=None), ReprPlan.Field(name='volume_id', kw_only"
+        "=True, fn=None), ReprPlan.Field(name='associated_resource', kw_only=True, fn=None), ReprPlan.Field(name='volum"
+        "e_owner_id', kw_only=True, fn=None), ReprPlan.Field(name='operator', kw_only=True, fn=None), ReprPlan.Field(na"
+        "me='ebs_card_index', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+    ),
+    plan_repr_sha1='295040b876ab256fe7bd625744ff1be138bcfe57',
+    op_ref_idents=(
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+        '__dataclass__init__fields__8__annotation',
+        '__dataclass__init__fields__8__default',
+    ),
+    cls_names=(
+        ('ominfra.clouds.aws.models.services.ec2', 'EbsInstanceBlockDevice'),
+    ),
+)
+def _process_dataclass__295040b876ab256fe7bd625744ff1be138bcfe57():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__1__default,
+        __dataclass__init__fields__2__annotation,
+        __dataclass__init__fields__2__default,
+        __dataclass__init__fields__3__annotation,
+        __dataclass__init__fields__3__default,
+        __dataclass__init__fields__4__annotation,
+        __dataclass__init__fields__4__default,
+        __dataclass__init__fields__5__annotation,
+        __dataclass__init__fields__5__default,
+        __dataclass__init__fields__6__annotation,
+        __dataclass__init__fields__6__default,
+        __dataclass__init__fields__7__annotation,
+        __dataclass__init__fields__7__default,
+        __dataclass__init__fields__8__annotation,
+        __dataclass__init__fields__8__default,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
                 attach_time=self.attach_time,
                 delete_on_termination=self.delete_on_termination,
                 status=self.status,
@@ -8586,6 +8880,7 @@ def _process_dataclass__efd31e877496bbd3d9214c4b87b5775f30e0bd24():
                 associated_resource=self.associated_resource,
                 volume_owner_id=self.volume_owner_id,
                 operator=self.operator,
+                ebs_card_index=self.ebs_card_index,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -8605,7 +8900,8 @@ def _process_dataclass__efd31e877496bbd3d9214c4b87b5775f30e0bd24():
                 self.volume_id == other.volume_id and
                 self.associated_resource == other.associated_resource and
                 self.volume_owner_id == other.volume_owner_id and
-                self.operator == other.operator
+                self.operator == other.operator and
+                self.ebs_card_index == other.ebs_card_index
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -8622,6 +8918,7 @@ def _process_dataclass__efd31e877496bbd3d9214c4b87b5775f30e0bd24():
             'associated_resource',
             'volume_owner_id',
             'operator',
+            'ebs_card_index',
         }
 
         def __setattr__(self, name, value):
@@ -8646,6 +8943,7 @@ def _process_dataclass__efd31e877496bbd3d9214c4b87b5775f30e0bd24():
             'associated_resource',
             'volume_owner_id',
             'operator',
+            'ebs_card_index',
         }
 
         def __delattr__(self, name):
@@ -8670,6 +8968,7 @@ def _process_dataclass__efd31e877496bbd3d9214c4b87b5775f30e0bd24():
                 self.associated_resource,
                 self.volume_owner_id,
                 self.operator,
+                self.ebs_card_index,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -8685,6 +8984,7 @@ def _process_dataclass__efd31e877496bbd3d9214c4b87b5775f30e0bd24():
             associated_resource: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
             volume_owner_id: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
             operator: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
+            ebs_card_index: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'attach_time', attach_time)
             __dataclass__object_setattr(self, 'delete_on_termination', delete_on_termination)
@@ -8693,6 +8993,7 @@ def _process_dataclass__efd31e877496bbd3d9214c4b87b5775f30e0bd24():
             __dataclass__object_setattr(self, 'associated_resource', associated_resource)
             __dataclass__object_setattr(self, 'volume_owner_id', volume_owner_id)
             __dataclass__object_setattr(self, 'operator', operator)
+            __dataclass__object_setattr(self, 'ebs_card_index', ebs_card_index)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -8709,6 +9010,7 @@ def _process_dataclass__efd31e877496bbd3d9214c4b87b5775f30e0bd24():
             parts.append(f"associated_resource={self.associated_resource!r}")
             parts.append(f"volume_owner_id={self.volume_owner_id!r}")
             parts.append(f"operator={self.operator!r}")
+            parts.append(f"ebs_card_index={self.ebs_card_index!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

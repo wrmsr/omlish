@@ -158,6 +158,9 @@ class DomainType(_enum.Enum):
     STANDARD = 'standard'
 
 
+EbsCardIndex = _ta.NewType('EbsCardIndex', int)
+
+
 class EbsEncryptionSupport(_enum.Enum):
     UNSUPPORTED = 'unsupported'
     SUPPORTED = 'supported'
@@ -1504,6 +1507,8 @@ MaximumBandwidthInMbps = _ta.NewType('MaximumBandwidthInMbps', int)
 
 MaximumEbsAttachments = _ta.NewType('MaximumEbsAttachments', int)
 
+MaximumEbsCards = _ta.NewType('MaximumEbsCards', int)
+
 MaximumEfaInterfaces = _ta.NewType('MaximumEfaInterfaces', int)
 
 MaximumEnaQueueCount = _ta.NewType('MaximumEnaQueueCount', int)
@@ -2561,6 +2566,59 @@ class EbsBlockDevice(
     availability_zone_id: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='AvailabilityZoneId',
         shape_name='String',
+    ))
+
+    ebs_card_index: int | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='EbsCardIndex',
+        shape_name='Integer',
+    ))
+
+
+@_dc.dataclass(frozen=True, kw_only=True)
+class EbsCardInfo(
+    _base.Shape,
+    shape_name='EbsCardInfo',
+):
+    ebs_card_index: EbsCardIndex | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='EbsCardIndex',
+        serialization_name='ebsCardIndex',
+        shape_name='EbsCardIndex',
+    ))
+
+    baseline_bandwidth_in_mbips: BaselineBandwidthInMbps | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='BaselineBandwidthInMbps',
+        serialization_name='baselineBandwidthInMbps',
+        shape_name='BaselineBandwidthInMbps',
+    ))
+
+    baseline_throughput_in_mbps: BaselineThroughputInMBps | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='BaselineThroughputInMBps',
+        serialization_name='baselineThroughputInMBps',
+        shape_name='BaselineThroughputInMBps',
+    ))
+
+    baseline_iops: BaselineIops | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='BaselineIops',
+        serialization_name='baselineIops',
+        shape_name='BaselineIops',
+    ))
+
+    maximum_bandwidth_in_mbips: MaximumBandwidthInMbps | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='MaximumBandwidthInMbps',
+        serialization_name='maximumBandwidthInMbps',
+        shape_name='MaximumBandwidthInMbps',
+    ))
+
+    maximum_throughput_in_mbps: MaximumThroughputInMBps | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='MaximumThroughputInMBps',
+        serialization_name='maximumThroughputInMBps',
+        shape_name='MaximumThroughputInMBps',
+    ))
+
+    maximum_iops: MaximumIops | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='MaximumIops',
+        serialization_name='maximumIops',
+        shape_name='MaximumIops',
     ))
 
 
@@ -4198,47 +4256,7 @@ class CapacityReservationSpecificationResponse(
 
 DiskInfoList: _ta.TypeAlias = _ta.Sequence[DiskInfo]
 
-
-@_dc.dataclass(frozen=True, kw_only=True)
-class EbsInfo(
-    _base.Shape,
-    shape_name='EbsInfo',
-):
-    ebs_optimized_support: EbsOptimizedSupport | None = _dc.field(default=None, metadata=_base.field_metadata(
-        member_name='EbsOptimizedSupport',
-        serialization_name='ebsOptimizedSupport',
-        shape_name='EbsOptimizedSupport',
-    ))
-
-    encryption_support: EbsEncryptionSupport | None = _dc.field(default=None, metadata=_base.field_metadata(
-        member_name='EncryptionSupport',
-        serialization_name='encryptionSupport',
-        shape_name='EbsEncryptionSupport',
-    ))
-
-    ebs_optimized_info: EbsOptimizedInfo | None = _dc.field(default=None, metadata=_base.field_metadata(
-        member_name='EbsOptimizedInfo',
-        serialization_name='ebsOptimizedInfo',
-        shape_name='EbsOptimizedInfo',
-    ))
-
-    nvme_support: EbsNvmeSupport | None = _dc.field(default=None, metadata=_base.field_metadata(
-        member_name='NvmeSupport',
-        serialization_name='nvmeSupport',
-        shape_name='EbsNvmeSupport',
-    ))
-
-    maximum_ebs_attachments: MaximumEbsAttachments | None = _dc.field(default=None, metadata=_base.field_metadata(
-        member_name='MaximumEbsAttachments',
-        serialization_name='maximumEbsAttachments',
-        shape_name='MaximumEbsAttachments',
-    ))
-
-    attachment_limit_type: AttachmentLimitType | None = _dc.field(default=None, metadata=_base.field_metadata(
-        member_name='AttachmentLimitType',
-        serialization_name='attachmentLimitType',
-        shape_name='AttachmentLimitType',
-    ))
+EbsCardInfoList: _ta.TypeAlias = _ta.Sequence[EbsCardInfo]
 
 
 @_dc.dataclass(frozen=True, kw_only=True)
@@ -4286,6 +4304,12 @@ class EbsInstanceBlockDevice(
         member_name='Operator',
         serialization_name='operator',
         shape_name='OperatorResponse',
+    ))
+
+    ebs_card_index: int | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='EbsCardIndex',
+        serialization_name='ebsCardIndex',
+        shape_name='Integer',
     ))
 
 
@@ -5162,6 +5186,61 @@ class DescribeKeyPairsResult(
         serialization_name='keySet',
         value_type=_base.ListValueType(KeyPairInfo),
         shape_name='KeyPairList',
+    ))
+
+
+@_dc.dataclass(frozen=True, kw_only=True)
+class EbsInfo(
+    _base.Shape,
+    shape_name='EbsInfo',
+):
+    ebs_optimized_support: EbsOptimizedSupport | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='EbsOptimizedSupport',
+        serialization_name='ebsOptimizedSupport',
+        shape_name='EbsOptimizedSupport',
+    ))
+
+    encryption_support: EbsEncryptionSupport | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='EncryptionSupport',
+        serialization_name='encryptionSupport',
+        shape_name='EbsEncryptionSupport',
+    ))
+
+    ebs_optimized_info: EbsOptimizedInfo | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='EbsOptimizedInfo',
+        serialization_name='ebsOptimizedInfo',
+        shape_name='EbsOptimizedInfo',
+    ))
+
+    nvme_support: EbsNvmeSupport | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='NvmeSupport',
+        serialization_name='nvmeSupport',
+        shape_name='EbsNvmeSupport',
+    ))
+
+    maximum_ebs_attachments: MaximumEbsAttachments | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='MaximumEbsAttachments',
+        serialization_name='maximumEbsAttachments',
+        shape_name='MaximumEbsAttachments',
+    ))
+
+    attachment_limit_type: AttachmentLimitType | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='AttachmentLimitType',
+        serialization_name='attachmentLimitType',
+        shape_name='AttachmentLimitType',
+    ))
+
+    maximum_ebs_cards: MaximumEbsCards | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='MaximumEbsCards',
+        serialization_name='maximumEbsCards',
+        shape_name='MaximumEbsCards',
+    ))
+
+    ebs_cards: EbsCardInfoList | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='EbsCards',
+        serialization_name='ebsCardSet',
+        value_type=_base.ListValueType(EbsCardInfo),
+        shape_name='EbsCardInfoList',
     ))
 
 
@@ -8335,6 +8414,7 @@ ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
     DescribeVpcsResult,
     DiskInfo,
     EbsBlockDevice,
+    EbsCardInfo,
     EbsInfo,
     EbsInstanceBlockDevice,
     EbsOptimizedInfo,
