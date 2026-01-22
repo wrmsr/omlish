@@ -36,3 +36,9 @@ class AiMessagesChatEvent(ChatEvent, lang.Final):
 @dc.dataclass(frozen=True)
 class AiDeltaChatEvent(ChatEvent, lang.Final):
     delta: 'mc.AiDelta'
+
+
+@dc.dataclass(frozen=True)
+class ErrorChatEvent(ChatEvent, lang.Final):
+    message: str | None = None
+    error: BaseException | None = None

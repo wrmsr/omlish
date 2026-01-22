@@ -223,7 +223,8 @@ class ChatApp(tx.App):
                 try:
                     await self._chat_facade.handle_user_input(ac.text)
                 except Exception as e:  # noqa
-                    raise
+                    # raise
+                    await self.display_ui_message(repr(e))
 
             else:
                 raise TypeError(ac)  # noqa
