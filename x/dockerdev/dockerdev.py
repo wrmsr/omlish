@@ -1,3 +1,4 @@
+"""
 FROM ubuntu:24.04
 COPY docker/.timestamp /
 
@@ -285,3 +286,4 @@ WORKDIR /omlish
 
 ENTRYPOINT ["dumb-init", "--"]
 CMD ["sh", "-c", "echo 'Ready' && sleep infinity"]
+"""
