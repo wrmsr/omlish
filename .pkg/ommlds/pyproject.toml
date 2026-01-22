@@ -36,7 +36,7 @@ all = [
     'tiktoken ~= 0.12',
     'tinygrad ~= 0.12',
     'tokenizers ~= 0.22',
-    'torch ~= 2.9',
+    'torch ~= 2.10',
     'transformers ~= 4.57',
     'sentence-transformers ~= 5.2',
     'huggingface-hub ~= 0.36',
@@ -61,7 +61,7 @@ backends = [
     'tiktoken ~= 0.12',
     'tinygrad ~= 0.12',
     'tokenizers ~= 0.22',
-    'torch ~= 2.9',
+    'torch ~= 2.10',
     'transformers ~= 4.57',
     'sentence-transformers ~= 5.2',
 ]
