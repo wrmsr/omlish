@@ -18,7 +18,7 @@ with lang.auto_proxy_import(globals()):
     import rapidocr_onnxruntime as rapidocr
     from PIL import Image
 
-    from omdev.clipboard import darwin_cf as darwin_clipboard
+    from omdev.clipboard.capi import darwin_cf as darwin_clipboard
 
 
 ##

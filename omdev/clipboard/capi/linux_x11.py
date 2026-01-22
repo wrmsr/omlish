@@ -2,7 +2,7 @@
 # flake8: noqa: E302 E305
 import ctypes as ct
 
-from ..capi.linux import x11
+from ...capi.linux import x11
 
 
 ##

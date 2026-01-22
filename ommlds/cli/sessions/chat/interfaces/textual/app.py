@@ -50,8 +50,23 @@ class ChatAppGetter(lang.AsyncCachedFunc0['ChatApp']):
     pass
 
 
-class ChatApp(tx.App):
+class ChatApp(
+    tx.ClipboardAppMixin,
+    tx.DevtoolsAppMixin,
+    tx.App,
+):
     ENABLE_COMMAND_PALETTE: ta.ClassVar[bool] = False
+
+    BINDINGS: ta.ClassVar[ta.Sequence[tx.BindingType]] = [
+        *tx.App.BINDINGS,
+
+        tx.Binding(
+            'alt+c,ctrl+c,super+c',
+            'screen.copy_text',
+            'Copy selected text',
+            show=False,
+        ),
+    ]
 
     def __init__(
             self,

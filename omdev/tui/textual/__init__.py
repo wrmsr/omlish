@@ -231,6 +231,10 @@ with _lang.auto_proxy_init(globals()):
 
     ##
 
+    from .clipboard import (  # noqa
+        ClipboardAppMixin,
+    )
+
     from . devtools import (  # noqa
         DevtoolsConfig,
         connect_devtools,

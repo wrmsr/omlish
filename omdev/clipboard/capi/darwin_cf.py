@@ -3,12 +3,12 @@ import ctypes as ct
 import dataclasses as dc
 import typing as ta
 
-from ..capi.darwin import aps
-from ..capi.darwin import cf
-from .clipboard import Clipboard
-from .clipboard import ClipboardContents
-from .clipboard import ImageClipboardContents
-from .clipboard import TextClipboardContents
+from ...capi.darwin import aps
+from ...capi.darwin import cf
+from ..types import Clipboard
+from ..types import ClipboardContents
+from ..types import ImageClipboardContents
+from ..types import TextClipboardContents
 
 
 ##

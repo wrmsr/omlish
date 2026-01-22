@@ -1,42 +1,12 @@
-""" https://askubuntu.com/questions/11925/a-command-line-clipboard-copy-and-paste-utility
-"""
 import abc
-import dataclasses as dc
 import subprocess
 import typing as ta
 
 from omlish import lang
 
-
-##
-
-
-@dc.dataclass(frozen=True)
-class ClipboardContents(lang.Abstract):
-    pass
-
-
-@dc.dataclass(frozen=True)
-class TextClipboardContents(ClipboardContents):
-    s: str
-
-
-@dc.dataclass(frozen=True)
-class ImageClipboardContents(ClipboardContents):
-    b: bytes
-
-
-##
-
-
-class Clipboard(lang.Abstract):
-    @abc.abstractmethod
-    def get(self) -> list[ClipboardContents]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def put(self, c: ClipboardContents) -> None:
-        raise NotImplementedError
+from .types import Clipboard
+from .types import ClipboardContents
+from .types import TextClipboardContents
 
 
 ##
@@ -62,6 +32,9 @@ class TextCommandClipboard(Clipboard, lang.Abstract):
             subprocess.run(self._put_cmd, input=c.s.encode(), check=True)
         else:
             raise TypeError(c)
+
+
+#
 
 
 class XclipLinuxClipboard(TextCommandClipboard):
