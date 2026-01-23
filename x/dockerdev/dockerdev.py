@@ -1,4 +1,5 @@
 import functools
+import io
 import typing as ta
 
 from omlish import dataclasses as dc
@@ -14,19 +15,19 @@ class Op(lang.Abstract):
 
 @dc.dataclass(frozen=True)
 class Section(Op):
-    header: str
+    header: str | None
     body: ta.Sequence[Op]
+
+
+@dc.dataclass(frozen=True)
+class Env(Op):
+    items: ta.Iterable[tuple[str, str]]
 
 
 @dc.dataclass(frozen=True, kw_only=True)
 class Copy(Op):
     src: str
     dst: str
-
-
-@dc.dataclass(frozen=True)
-class Env(Op):
-    items: ta.Iterable[tuple[str, str]]
 
 
 @dc.dataclass(frozen=True)
@@ -52,22 +53,41 @@ def render_op(op: Op) -> str:
 
 @render_op.register(Section)
 def render_section(op: Section) -> str:
-    raise TypeError(op)
+    out = io.StringIO()
+    out.write(f'## {op.header or ""}'.strip())
+    for c in op.body:
+        out.write('\n')
+        out.write(render_op(c))
+    return out.getvalue()
+
+
+@render_op.register(Env)
+def render_env(op: Env) -> str:
+    return '\n'.join([
+        f'ENV {k}={v}'
+        for k, v in op.items
+    ])
 
 
 @render_op.register(Copy)
 def render_copy(op: Copy) -> str:
-    raise TypeError(op)
-
-
-@render_op.register(Copy)
-def render_env(op: Env) -> str:
-    raise TypeError(op)
+    raise NotImplementedError
 
 
 @render_op.register(Run)
 def render_run(op: Run) -> str:
-    raise TypeError(op)
+    if isinstance(op.body, str):
+        s = op.body
+    elif isinstance(op.body, Run.Resource):
+        d, _, f = op.body.path.rpartition('/')
+        p = '.'.join(['resources', *d.split('/')])
+        rs = lang.get_relative_resources(p, globals=globals())
+        s = rs[f].read_text()
+    else:
+        raise TypeError(op.body)
+
+    raise NotImplementedError
+
 
 
 ##
@@ -323,7 +343,10 @@ SECTIONS: ta.Sequence[Section] = [
 
 
 def _main() -> None:
-    pass
+    for section in SECTIONS:
+        print(section)
+        print(render_op(section))
+        print()
 
 
 if __name__ == '__main__':
