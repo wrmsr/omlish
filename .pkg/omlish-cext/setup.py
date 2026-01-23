@@ -9,6 +9,11 @@ st.setup(
             extra_compile_args=['-std=c++20'],
         ),
         st.Extension(
+            name='omlish.collections.hamt._hamt',
+            sources=['omlish/collections/hamt/_hamt.c'],
+            extra_compile_args=['-std=c11'],
+        ),
+        st.Extension(
             name='omlish.lang._asyncs',
             sources=['omlish/lang/_asyncs.cc'],
             extra_compile_args=['-std=c++20'],

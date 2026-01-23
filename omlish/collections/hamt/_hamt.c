@@ -126,7 +126,7 @@ typedef struct {
 ////
 
 #define _MODULE_NAME "_hamt"
-#define _PACKAGE_NAME "omextra.collections.hamt"
+#define _PACKAGE_NAME "omlish.collections.hamt"
 #define _MODULE_FULL_NAME _PACKAGE_NAME "." _MODULE_NAME
 
 //
