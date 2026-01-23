@@ -101,7 +101,9 @@ def render_section(op: Section) -> str:
     out = io.StringIO()
     out.write(f'## {op.header or ""}'.strip())
     out.write('\n')
-    for c in op.body:
+    for i, c in enumerate(op.body):
+        if i:
+            out.write('\n')
         out.write('\n')
         out.write(render_op(c))
     return out.getvalue()
