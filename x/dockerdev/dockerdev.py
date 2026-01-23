@@ -5,6 +5,7 @@ TODO:
 """
 import functools
 import io
+import tomllib
 import typing as ta
 
 from omlish import dataclasses as dc
@@ -67,12 +68,32 @@ class Run(Op):
     cache_mounts: ta.Sequence[str] | None = None
 
 
+@dc.dataclass(frozen=True)
+class Workdir(Op):
+    path: str
+
+
+@dc.dataclass(frozen=True)
+class Entrypoint(Op):
+    parts: ta.Sequence[str]
+
+
+@dc.dataclass(frozen=True)
+class Cmd(Op):
+    parts: ta.Sequence[str]
+
+
 ##
 
 
 @functools.singledispatch
 def render_op(op: Op) -> str:
     raise TypeError(op)
+
+
+@render_op.register(From)
+def render_from(op: From) -> str:
+    return f'FROM {op.spec}'
 
 
 @render_op.register(Section)
@@ -96,16 +117,21 @@ def render_env(op: Env) -> str:
 
 @render_op.register(Copy)
 def render_copy(op: Copy) -> str:
-    raise NotImplementedError
+    return f'COPY {op.src} {op.dst}'
 
 
 def get_run_body(body: RunBody) -> str:
     if isinstance(body, str):
         return body
+
     elif isinstance(body, Resource):
         return read_resource(body)
-    else:
+
+    elif isinstance(body, ta.Sequence):
         raise NotImplementedError
+
+    else:
+        raise TypeError(body)
 
 
 @render_op.register(Run)
@@ -129,6 +155,21 @@ def render_run(op: Run) -> str:
         out.write('\n')
     out.write(')')
     return out.getvalue()
+
+
+@render_op.register(Workdir)
+def render_workdir(op: Workdir) -> str:
+    return f'WORKDIR {op.path}'
+
+
+@render_op.register(Entrypoint)
+def render_entrypoint(op: Entrypoint) -> str:
+    return f'ENTRYPOINT {op.parts!r}'  # FIXME: lol
+
+
+@render_op.register(Cmd)
+def render_cmd(op: Cmd) -> str:
+    return f'CMD {op.parts!r}'  # FIXME: lol
 
 
 ##
@@ -241,24 +282,33 @@ COPY \
     /root/
 
 
-## entrypoint
-
-WORKDIR /omlish
-
-ENTRYPOINT ["dumb-init", "--"]
-CMD ["sh", "-c", "echo 'Ready' && sleep infinity"]
 """
 
 
+ENTRYPOINT = Section('entrypoint', [
+    Workdir('/omlish'),
+    Entrypoint(['dumb-init', '--']),
+    Cmd(['sh', '-c', "echo 'Ready' && sleep infinity"]),
+])
+
+
 SECTIONS: ta.Sequence[Section] = [
+    FROM,
+
     LOCALE,
+
     FIREFOX,
+
     DOCKER,
     JDK,
     RUSTUP,
     GO,
     ZIG,
     VCPKG,
+
+    SSHD,
+
+    ENTRYPOINT,
 ]
 
 
@@ -266,6 +316,10 @@ SECTIONS: ta.Sequence[Section] = [
 
 
 def _main() -> None:
+    pds = tomllib.loads(read_resource(Resource('depsets/python.toml')))
+    pds_deps = pds['deps']
+    print(pds_deps)
+
     for section in SECTIONS:
         print(render_op(section))
         print('\n')
