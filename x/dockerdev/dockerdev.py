@@ -30,6 +30,26 @@ def read_resource(r: Resource) -> str:
 ##
 
 
+Content: ta.TypeAlias = str | Resource | ta.Sequence['Content']
+
+
+def render_content(c: Content) -> str:
+    if isinstance(c, str):
+        return c
+
+    elif isinstance(c, Resource):
+        return read_resource(c)
+
+    elif isinstance(c, ta.Sequence):
+        return '\n'.join([render_content(cc) for cc in c])
+
+    else:
+        raise TypeError(c)
+
+
+##
+
+
 class Op(lang.Abstract):
     pass
 
@@ -56,12 +76,9 @@ class Copy(Op):
     dst: str
 
 
-RunBody: ta.TypeAlias = str | Resource | ta.Sequence[str | Resource]
-
-
 @dc.dataclass(frozen=True)
 class Run(Op):
-    body: RunBody
+    body: Content
 
     _: dc.KW_ONLY
 
@@ -122,23 +139,9 @@ def render_copy(op: Copy) -> str:
     return f'COPY {op.src} {op.dst}'
 
 
-def get_run_body(body: RunBody) -> str:
-    if isinstance(body, str):
-        return body
-
-    elif isinstance(body, Resource):
-        return read_resource(body)
-
-    elif isinstance(body, ta.Sequence):
-        raise NotImplementedError
-
-    else:
-        raise TypeError(body)
-
-
 @render_op.register(Run)
 def render_run(op: Run) -> str:
-    s = get_run_body(op.body)
+    s = render_content(op.body)
 
     out = io.StringIO()
 
