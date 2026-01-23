@@ -11,6 +11,12 @@ class Op(lang.Abstract):
     pass
 
 
+@dc.dataclass(frozen=True)
+class Section(Op):
+    header: str
+    body: ta.Sequence[Op]
+
+
 @dc.dataclass(frozen=True, kw_only=True)
 class Copy(Op):
     src: str
@@ -19,31 +25,49 @@ class Copy(Op):
 
 @dc.dataclass(frozen=True)
 class Env(Op):
-    key: str
-    value: str
+    items: ta.Iterable[tuple[str, str]]
 
 
 @dc.dataclass(frozen=True)
 class Run(Op):
-    body: str
+    @dc.dataclass(frozen=True)
+    class Resource:
+        path: str
+
+    body: str | Resource
 
     _: dc.KW_ONLY
 
     cache_mounts: ta.Sequence[str] | None = None
 
 
+# @dc.dataclass(frozen=True)
+
+
+
+APT_CACHE_MOUNTS: ta.Sequence[str] = [
+    '/var/lib/apt/lists',
+    '/var/cache/apt',
+]
+
+
 """
 FROM ubuntu:24.04
+
 Copy(src='docker/.timestamp', dst='/')
+"""
 
 
-## locale
+LOCALE = Section('locale', [
+    Env([
+        ('LANG', 'en_US.UTF-8'),
+        ('LANGUAGE', 'en_US:en'),
+        ('LC_ALL', 'en_US.UTF-8'),
+    ]),
+])
 
-Env('LANG', 'en_US.UTF-8')
-Env('LANGUAGE', 'en_US:en')
-Env('LC_ALL', 'en_US.UTF-8')
 
-
+"""
 ## deps
 
 RUN \
@@ -163,63 +187,32 @@ X11_PACKAGES = [
 ]
 
 
-
-## firefox
-
-RUN \
-    --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
-    --mount=target=/var/cache/apt,type=cache,sharing=locked \
-( \
-    {firefox.sh}
-)
+"""
 
 
-## docker
-
-RUN \
-    --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
-    --mount=target=/var/cache/apt,type=cache,sharing=locked \
-( \
-    {docker.sh}
-)
-
-
-## jdk
-
-RUN \
-    --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
-    --mount=target=/var/cache/apt,type=cache,sharing=locked \
-( \
-    {jdk.sh}
-)
+def fragment_section(
+        name: str,
+        *,
+        apt_cache: bool = False,
+) -> Section:
+    return Section(name, [
+        Run(
+            Run.Resource(f'fragments/{name}.sh'),
+            cache_mounts=APT_CACHE_MOUNTS if apt_cache else None,
+        ),
+    ])
 
 
-## rustup
-
-RUN ( \
-    {rustup.sh}
-)
-
-
-## go
-
-RUN ( \
-    {go.sh}
-)
+FIREFOX = fragment_section('firefox', apt_cache=True)
+DOCKER = fragment_section('docker', apt_cache=True)
+JDK = fragment_section('jdk', apt_cache=True)
+RUSTUP = fragment_section('rustup')
+GO = fragment_section('go')
+ZIG = fragment_section('zig')
+VCPKG = fragment_section('vcpkg')
 
 
-## zig
-
-RUN ( \
-    {zig.sh}
-)
-
-
-## vcpkg
-
-RUN ( \
-    {vcpkg.sh}
-)
+"""
 
 
 ## versions
@@ -258,12 +251,13 @@ COPY \
 
 
 ## sshd
-
-RUN ( \
-    {sshd.sh}
-)
+"""
 
 
+SSHD = fragment_section('sshd')
+
+
+"""
 ## x
 
 RUN touch /root/.Xauthority
