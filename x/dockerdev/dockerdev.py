@@ -77,6 +77,16 @@ class Copy(Op):
 
 
 @dc.dataclass(frozen=True)
+class Write(Op):
+    path: str
+    content: Content
+
+    _: dc.KW_ONLY
+
+    append: bool = False
+
+
+@dc.dataclass(frozen=True)
 class Run(Op):
     body: Content
 
@@ -139,6 +149,16 @@ def render_copy(op: Copy) -> str:
     return f'COPY {op.src} {op.dst}'
 
 
+@render_op.register(Write)
+def render_write(op: Write) -> str:
+    out = io.StringIO()
+    out.write(f'RUN echo
+    return '\n'.join([
+        f'RUN echo'
+
+    ])
+
+
 @render_op.register(Run)
 def render_run(op: Run) -> str:
     s = render_content(op.body)
@@ -158,7 +178,9 @@ def render_run(op: Run) -> str:
         if not l.rstrip().endswith('\\'):
             out.write('\\')
         out.write('\n')
+
     out.write(')')
+
     return out.getvalue()
 
 
@@ -266,9 +288,6 @@ COPY \
     docker/dev/.vimrc \
 \
     /root/
-
-
-## sshd
 """
 
 
@@ -295,6 +314,9 @@ ENTRYPOINT = Section('entrypoint', [
     Entrypoint(['dumb-init', '--']),
     Cmd(['sh', '-c', "echo 'Ready' && sleep infinity"]),
 ])
+
+
+#
 
 
 SECTIONS: ta.Sequence[Section] = [
@@ -324,6 +346,8 @@ def _main() -> None:
     pds = tomllib.loads(read_resource(Resource('depsets/python.toml')))
     pds_deps = pds['deps']
     print(pds_deps)
+
+    print(render_op(Write('.tmux.conf', Resource('configs/.tmux.conf'))))
 
     for section in SECTIONS:
         print(render_op(section))
