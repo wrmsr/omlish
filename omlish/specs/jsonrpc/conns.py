@@ -74,7 +74,7 @@ class JsonrpcConnection:
 
     #
 
-    async def __aenter__(self) -> 'JsonrpcConnection':
+    async def __aenter__(self) -> ta.Self:
         await self._tg.start(self._receive_loop)
         return self
 

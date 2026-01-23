@@ -1,6 +1,8 @@
 import collections
 import typing as ta
 
+from .. import lang
+
 
 T = ta.TypeVar('T')
 
@@ -48,35 +50,45 @@ class PeekIterator(ta.Iterator[T]):
         self._next_item = next(self._it)
         return self._next_item
 
+    def maybe_peek(self) -> lang.Maybe[T]:
+        try:
+            v = self.peek()
+        except StopIteration:
+            return lang.empty()
+        else:
+            return lang.just(v)
+
     def next_peek(self) -> T:
         next(self)
         return self.peek()
 
-    def takewhile(self, fn: ta.Callable[[T], bool]) -> ta.Iterator[T]:
+    #
+
+    def take_while(self, fn: ta.Callable[[T], bool]) -> ta.Iterator[T]:
         while fn(self.peek()):
             yield next(self)
 
-    def skipwhile(self, fn: ta.Callable[[T], bool]) -> None:
+    def skip_while(self, fn: ta.Callable[[T], bool]) -> None:
         while fn(self.peek()):
             next(self)
 
-    def takeuntil(self, fn: ta.Callable[[T], bool]) -> ta.Iterator[T]:
-        return self.takewhile(lambda e: not fn(e))
+    def take_until(self, fn: ta.Callable[[T], bool]) -> ta.Iterator[T]:
+        return self.take_while(lambda e: not fn(e))
 
-    def skipuntil(self, fn: ta.Callable[[T], bool]) -> None:
-        self.skipwhile(lambda e: not fn(e))
+    def skip_until(self, fn: ta.Callable[[T], bool]) -> None:
+        self.skip_while(lambda e: not fn(e))
 
-    def takethrough(self, pos: int) -> ta.Iterator[T]:
-        return self.takewhile(lambda _: self._pos < pos)
+    def take_through(self, pos: int) -> ta.Iterator[T]:
+        return self.take_while(lambda _: self._pos < pos)
 
-    def skipthrough(self, pos: int) -> None:
-        self.skipwhile(lambda _: self._pos < pos)
+    def skip_through(self, pos: int) -> None:
+        self.skip_while(lambda _: self._pos < pos)
 
-    def taketo(self, pos: int) -> ta.Iterator[T]:
-        return self.takethrough(pos - 1)
+    def take_to(self, pos: int) -> ta.Iterator[T]:
+        return self.take_through(pos - 1)
 
-    def skipto(self, pos: int) -> None:
-        self.skipthrough(pos - 1)
+    def skip_to(self, pos: int) -> None:
+        self.skip_through(pos - 1)
 
 
 class ProxyIterator(ta.Iterator[T]):

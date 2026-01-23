@@ -1,5 +1,5 @@
 # @omlish-lite
-# ruff: noqa: UP006 UP007
+# ruff: noqa: PYI034 UP006 UP007
 """
 TODO:
  - handle secrets (but they're strs..)

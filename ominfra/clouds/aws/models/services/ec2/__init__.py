@@ -227,6 +227,8 @@ GpuDeviceMemorySize = _ta.NewType('GpuDeviceMemorySize', int)
 
 GpuDeviceName = _ta.NewType('GpuDeviceName', str)
 
+GpuPartitionSize = _ta.NewType('GpuPartitionSize', float)
+
 HibernationFlag = _ta.NewType('HibernationFlag', bool)
 
 
@@ -1490,6 +1492,8 @@ LaunchTemplateId = _ta.NewType('LaunchTemplateId', str)
 
 LocalGatewayId = _ta.NewType('LocalGatewayId', str)
 
+LogicalGpuCount = _ta.NewType('LogicalGpuCount', int)
+
 
 class MarketType(_enum.Enum):
     SPOT = 'spot'
@@ -1928,6 +1932,8 @@ class VpcState(_enum.Enum):
     PENDING = 'pending'
     AVAILABLE = 'available'
 
+
+Workload = _ta.NewType('Workload', str)
 
 TotalFpgaMemory = _ta.NewType('TotalFpgaMemory', int)
 
@@ -4169,6 +4175,8 @@ class VpcEncryptionControlExclusion(
 
 VpcIdStringList: _ta.TypeAlias = _ta.Sequence[VpcId]
 
+WorkloadsList: _ta.TypeAlias = _ta.Sequence[Workload]
+
 AddressList: _ta.TypeAlias = _ta.Sequence[Address]
 
 
@@ -4407,6 +4415,25 @@ class GpuDeviceInfo(
         member_name='Count',
         serialization_name='count',
         shape_name='GpuDeviceCount',
+    ))
+
+    logical_gpu_count: LogicalGpuCount | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='LogicalGpuCount',
+        serialization_name='logicalGpuCount',
+        shape_name='LogicalGpuCount',
+    ))
+
+    gpu_partition_size: GpuPartitionSize | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='GpuPartitionSize',
+        serialization_name='gpuPartitionSize',
+        shape_name='GpuPartitionSize',
+    ))
+
+    workloads: WorkloadsList | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='Workloads',
+        serialization_name='workloadSet',
+        value_type=_base.ListValueType(Workload),
+        shape_name='WorkloadsList',
     ))
 
     memory_info: GpuDeviceMemoryInfo | None = _dc.field(default=None, metadata=_base.field_metadata(

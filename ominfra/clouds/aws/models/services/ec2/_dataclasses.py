@@ -10403,7 +10403,6 @@ def _process_dataclass__ee43e7a1aa970fe321ca99f2a70e7310b221e1aa():
     ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.ec2', 'FpgaDeviceInfo'),
-        ('ominfra.clouds.aws.models.services.ec2', 'GpuDeviceInfo'),
     ),
 )
 def _process_dataclass__918337ad51941fcd8bd3f26ae88abd374c057231():
@@ -10847,6 +10846,241 @@ def _process_dataclass__b47f98d2dfe23b3a2cf6a92d0f4c034225e81fae():
             parts = []
             parts.append(f"fpgas={self.fpgas!r}")
             parts.append(f"total_fpga_memory_in_mi_b={self.total_fpga_memory_in_mi_b!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('name', 'manufacturer', 'count', 'logical_gpu_count', 'gpu_partition_size', 'workl"
+        "oads', 'memory_info')), EqPlan(fields=('name', 'manufacturer', 'count', 'logical_gpu_count', 'gpu_partition_si"
+        "ze', 'workloads', 'memory_info')), FrozenPlan(fields=('__shape__', 'name', 'manufacturer', 'count', 'logical_g"
+        "pu_count', 'gpu_partition_size', 'workloads', 'memory_info'), allow_dynamic_dunder_attrs=False), HashPlan(acti"
+        "on='add', fields=('name', 'manufacturer', 'count', 'logical_gpu_count', 'gpu_partition_size', 'workloads', 'me"
+        "mory_info'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.field"
+        "s.0.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VA"
+        "R, coerce=None, validate=None, check_type=None), InitPlan.Field(name='name', annotation=OpRef(name='init.field"
+        "s.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False"
+        ", field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='manufactur"
+        "er', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_f"
+        "actory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type="
+        "None), InitPlan.Field(name='count', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='ini"
+        "t.fields.3.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=N"
+        "one, validate=None, check_type=None), InitPlan.Field(name='logical_gpu_count', annotation=OpRef(name='init.fie"
+        "lds.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, init=True, override=Fal"
+        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='gpu_part"
+        "ition_size', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init.fields.5.default'), d"
+        "efault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, che"
+        "ck_type=None), InitPlan.Field(name='workloads', annotation=OpRef(name='init.fields.6.annotation'), default=OpR"
+        "ef(name='init.fields.6.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTAN"
+        "CE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='memory_info', annotation=OpRef(name='in"
+        "it.fields.7.annotation'), default=OpRef(name='init.fields.7.default'), default_factory=None, init=True, overri"
+        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std"
+        "_params=(), kw_only_params=('name', 'manufacturer', 'count', 'logical_gpu_count', 'gpu_partition_size', 'workl"
+        "oads', 'memory_info'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPla"
+        "n(fields=(ReprPlan.Field(name='name', kw_only=True, fn=None), ReprPlan.Field(name='manufacturer', kw_only=True"
+        ", fn=None), ReprPlan.Field(name='count', kw_only=True, fn=None), ReprPlan.Field(name='logical_gpu_count', kw_o"
+        "nly=True, fn=None), ReprPlan.Field(name='gpu_partition_size', kw_only=True, fn=None), ReprPlan.Field(name='wor"
+        "kloads', kw_only=True, fn=None), ReprPlan.Field(name='memory_info', kw_only=True, fn=None)), id=False, terse=F"
+        "alse, default_fn=None)))"
+    ),
+    plan_repr_sha1='f143014e17ae0e4513cf77ae4560ae327bc567e8',
+    op_ref_idents=(
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
+        '__dataclass__init__fields__5__annotation',
+        '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
+        '__dataclass__init__fields__7__annotation',
+        '__dataclass__init__fields__7__default',
+    ),
+    cls_names=(
+        ('ominfra.clouds.aws.models.services.ec2', 'GpuDeviceInfo'),
+    ),
+)
+def _process_dataclass__f143014e17ae0e4513cf77ae4560ae327bc567e8():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__1__default,
+        __dataclass__init__fields__2__annotation,
+        __dataclass__init__fields__2__default,
+        __dataclass__init__fields__3__annotation,
+        __dataclass__init__fields__3__default,
+        __dataclass__init__fields__4__annotation,
+        __dataclass__init__fields__4__default,
+        __dataclass__init__fields__5__annotation,
+        __dataclass__init__fields__5__default,
+        __dataclass__init__fields__6__annotation,
+        __dataclass__init__fields__6__default,
+        __dataclass__init__fields__7__annotation,
+        __dataclass__init__fields__7__default,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                name=self.name,
+                manufacturer=self.manufacturer,
+                count=self.count,
+                logical_gpu_count=self.logical_gpu_count,
+                gpu_partition_size=self.gpu_partition_size,
+                workloads=self.workloads,
+                memory_info=self.memory_info,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.name == other.name and
+                self.manufacturer == other.manufacturer and
+                self.count == other.count and
+                self.logical_gpu_count == other.logical_gpu_count and
+                self.gpu_partition_size == other.gpu_partition_size and
+                self.workloads == other.workloads and
+                self.memory_info == other.memory_info
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            '__shape__',
+            'name',
+            'manufacturer',
+            'count',
+            'logical_gpu_count',
+            'gpu_partition_size',
+            'workloads',
+            'memory_info',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            '__shape__',
+            'name',
+            'manufacturer',
+            'count',
+            'logical_gpu_count',
+            'gpu_partition_size',
+            'workloads',
+            'memory_info',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.name,
+                self.manufacturer,
+                self.count,
+                self.logical_gpu_count,
+                self.gpu_partition_size,
+                self.workloads,
+                self.memory_info,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            *,
+            name: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
+            manufacturer: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+            count: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
+            logical_gpu_count: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
+            gpu_partition_size: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
+            workloads: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
+            memory_info: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'name', name)
+            __dataclass__object_setattr(self, 'manufacturer', manufacturer)
+            __dataclass__object_setattr(self, 'count', count)
+            __dataclass__object_setattr(self, 'logical_gpu_count', logical_gpu_count)
+            __dataclass__object_setattr(self, 'gpu_partition_size', gpu_partition_size)
+            __dataclass__object_setattr(self, 'workloads', workloads)
+            __dataclass__object_setattr(self, 'memory_info', memory_info)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"name={self.name!r}")
+            parts.append(f"manufacturer={self.manufacturer!r}")
+            parts.append(f"count={self.count!r}")
+            parts.append(f"logical_gpu_count={self.logical_gpu_count!r}")
+            parts.append(f"gpu_partition_size={self.gpu_partition_size!r}")
+            parts.append(f"workloads={self.workloads!r}")
+            parts.append(f"memory_info={self.memory_info!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

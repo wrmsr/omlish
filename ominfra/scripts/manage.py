@@ -5,7 +5,7 @@
 # @omlish-generated
 # @omlish-amalg-output ../manage/main.py
 # @omlish-git-diff-omit
-# ruff: noqa: N802 TC003 UP006 UP007 UP036 UP043 UP045 UP046
+# ruff: noqa: N802 PYI034 TC003 UP006 UP007 UP036 UP043 UP045 UP046
 """
 manage.py -s 'docker run -i python:3.13'
 manage.py -s 'ssh -i /foo/bar.pem foo@bar.baz' -q --python=python3.8
@@ -119,7 +119,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
             dict(path='../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
             dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
-            dict(path='../../omlish/os/atomics.py', sha1='ccb62620b95f60ac50561c283d50e5fcfdccb215'),
+            dict(path='../../omlish/os/atomics.py', sha1='4e88b1a207d253811f334cb6dce46e27165513fc'),
             dict(path='../../omlish/text/indent.py', sha1='cc23647bdcd8d26c8afe9e36a0aefb32da58cbb8'),
             dict(path='../../omdev/interp/types.py', sha1='caf068a6e81fb6e221d777b341ac5777d92b8091'),
             dict(path='commands/base.py', sha1='17310f7272b6ac7b6438e32bfd7b24004d284399'),

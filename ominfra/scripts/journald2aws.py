@@ -5,7 +5,7 @@
 # @omlish-generated
 # @omlish-amalg-output ../clouds/aws/journald2aws/main.py
 # @omlish-git-diff-omit
-# ruff: noqa: N802 UP006 UP007 UP036 UP043 UP045 UP046
+# ruff: noqa: N802 PYI034 UP006 UP007 UP036 UP043 UP045 UP046
 import abc
 import argparse
 import base64
@@ -76,7 +76,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../../omlish/logs/std/filters.py', sha1='f36aab646d84d31e295b33aaaaa6f8b67ff38b3d'),
             dict(path='../../../../omlish/logs/std/proxy.py', sha1='3e7301a2aa351127f9c85f61b2f85dcc3f15aafb'),
             dict(path='../../../../omlish/logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
-            dict(path='../../../../omlish/os/pidfiles/pidfile.py', sha1='7c3c6d4674855bfc4f1d7fd77b8fa40f36581535'),
+            dict(path='../../../../omlish/os/pidfiles/pidfile.py', sha1='921946886bee1d808c99d2e30d84766b916bab08'),
             dict(path='../../../../omlish/subprocesses/utils.py', sha1='2210d90ab1bfc75642aa2f4caad662368900aa1c'),
             dict(path='../auth.py', sha1='b1ac1a5e03d4e9e38957a54e346943c6dcc964a1'),
             dict(path='../dataclasses.py', sha1='8e950d7815904588fed284889392cbb0b1002605'),

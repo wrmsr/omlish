@@ -210,7 +210,7 @@ class Mmap:
     def base(self) -> int | None:
         return self._base
 
-    def __enter__(self) -> 'Mmap':
+    def __enter__(self) -> ta.Self:
         base = mmap(
             self._desired_base,
             self._length,

@@ -1,4 +1,4 @@
-# ruff: noqa: UP006 UP007 UP045
+# ruff: noqa: PYI034 UP006 UP007 UP045
 # @omlish-lite
 import functools
 import logging

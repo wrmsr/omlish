@@ -79,7 +79,7 @@ class McpServerConnection:
 
     #
 
-    async def __aenter__(self) -> 'McpServerConnection':
+    async def __aenter__(self) -> ta.Self:
         await self._conn.__aenter__()
         return self
 
