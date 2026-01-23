@@ -1,3 +1,4 @@
+import functools
 import typing as ta
 
 from omlish import dataclasses as dc
@@ -41,14 +42,57 @@ class Run(Op):
     cache_mounts: ta.Sequence[str] | None = None
 
 
-# @dc.dataclass(frozen=True)
+##
 
+
+@functools.singledispatch
+def render_op(op: Op) -> str:
+    raise TypeError(op)
+
+
+@render_op.register(Section)
+def render_section(op: Section) -> str:
+    raise TypeError(op)
+
+
+@render_op.register(Copy)
+def render_copy(op: Copy) -> str:
+    raise TypeError(op)
+
+
+@render_op.register(Copy)
+def render_env(op: Env) -> str:
+    raise TypeError(op)
+
+
+@render_op.register(Run)
+def render_run(op: Run) -> str:
+    raise TypeError(op)
+
+
+##
 
 
 APT_CACHE_MOUNTS: ta.Sequence[str] = [
     '/var/lib/apt/lists',
     '/var/cache/apt',
 ]
+
+
+def fragment_section(
+        name: str,
+        *,
+        apt_cache: bool = False,
+) -> Section:
+    return Section(name, [
+        Run(
+            Run.Resource(f'fragments/{name}.sh'),
+            cache_mounts=APT_CACHE_MOUNTS if apt_cache else None,
+        ),
+    ])
+
+
+##
 
 
 """
@@ -70,9 +114,8 @@ LOCALE = Section('locale', [
 """
 ## deps
 
-RUN \
-    --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
-    --mount=target=/var/cache/apt,type=cache,sharing=locked \
+apt_cache=True:
+
 ( \
     rm -f /etc/apt/apt.conf.d/docker-clean && \
 \
@@ -88,6 +131,8 @@ RUN \
     apt-get install -y \
 \
     ...
+"""
+
 
 TOOL_PACKAGES = [
         'apt-transport-https',
@@ -183,24 +228,8 @@ PYTHON_BUILD_PACKAGES = [
 ]
 
 X11_PACKAGES = [
-        x11-apps \
+        'x11-apps',
 ]
-
-
-"""
-
-
-def fragment_section(
-        name: str,
-        *,
-        apt_cache: bool = False,
-) -> Section:
-    return Section(name, [
-        Run(
-            Run.Resource(f'fragments/{name}.sh'),
-            cache_mounts=APT_CACHE_MOUNTS if apt_cache else None,
-        ),
-    ])
 
 
 FIREFOX = fragment_section('firefox', apt_cache=True)
@@ -276,3 +305,26 @@ WORKDIR /omlish
 ENTRYPOINT ["dumb-init", "--"]
 CMD ["sh", "-c", "echo 'Ready' && sleep infinity"]
 """
+
+
+SECTIONS: ta.Sequence[Section] = [
+    LOCALE,
+    FIREFOX,
+    DOCKER,
+    JDK,
+    RUSTUP,
+    GO,
+    ZIG,
+    VCPKG,
+]
+
+
+##
+
+
+def _main() -> None:
+    pass
+
+
+if __name__ == '__main__':
+    _main()
