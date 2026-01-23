@@ -34,6 +34,11 @@ class Op(lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
+class From(Op):
+    spec: str
+
+
+@dc.dataclass(frozen=True)
 class Section(Op):
     header: str | None
     body: ta.Sequence[Op]
@@ -151,12 +156,9 @@ def fragment_section(
 ##
 
 
-"""
-FROM ubuntu:24.04
+FROM = From('ubuntu:24.04')
 
-Copy(src='docker/.timestamp', dst='/')
-"""
-
+# COPY_TIMESTAMP = Copy(src='docker/.timestamp', dst='/')
 
 LOCALE = Section('locale', [
     Env([
@@ -165,29 +167,6 @@ LOCALE = Section('locale', [
         ('LC_ALL', 'en_US.UTF-8'),
     ]),
 ])
-
-
-"""
-## deps
-
-apt_cache=True:
-
-( \
-    rm -f /etc/apt/apt.conf.d/docker-clean && \
-\
-    export DEBIAN_FRONTEND=noninteractive && \
-    apt-get update && \
-\
-    apt-get install -y locales && \
-    locale-gen en_US.UTF-8 && \
-\
-    apt-get upgrade -y && \
-    apt-get install -y apt-utils && \
-\
-    apt-get install -y \
-\
-    ...
-"""
 
 
 TOOL_PACKAGES = [
@@ -286,6 +265,12 @@ PYTHON_BUILD_PACKAGES = [
 X11_PACKAGES = [
         'x11-apps',
 ]
+
+
+# DEPS = Section('deps', [
+#
+# ])
+# apt-get install -y \
 
 
 FIREFOX = fragment_section('firefox', apt_cache=True)
