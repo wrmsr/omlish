@@ -49,6 +49,8 @@ PYPROJECT_VENV=${PYPROJECT} venv ${VENV}
 PYTHON:=$$(${PYPROJECT_VENV} exe)
 SRCS:=$$(${PYPROJECT_VENV} srcs)
 
+PYTHON_ABS:=$(shell $(PYTHON) -c 'import os, sys; print(os.path.abspath(sys.executable))')
+
 .PHONY: python
 python:
 	@echo "${PYTHON}"
@@ -253,7 +255,7 @@ build-cext: venv
 	for d in $$(find .pkg -name '*-cext' -maxdepth 1 | sort) ; do \
 		echo ; \
 		echo "$$d" ; \
-		(cd "$$d" && ../../python setup.py build_ext --inplace) || exit 1 ; \
+		(cd "$$d" && ${PYTHON_ABS} setup.py build_ext --inplace) || exit 1 ; \
 	done
 
 
