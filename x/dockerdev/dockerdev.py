@@ -96,7 +96,9 @@ INDENT = ' ' * 2
 
 def read_resource(r: Resource) -> str:
     d, _, f = r.path.rpartition('/')
-    p = '.'.join(['resources', *d.split('/')])
+    p = 'resources'
+    if d:
+        p = '.'.join([p, *d.split('/')])
     rs = lang.get_relative_resources(p, globals=globals())
     return rs[f].read_text()
 
@@ -190,17 +192,25 @@ def render_copy(op: Copy) -> str:
 def render_write(op: Write) -> str:
     out = io.StringIO()
 
-    c = render_content(op.content)
+    out.write("RUN echo '\\\n")
 
-    out.write(f'RUN echo')
+    c = render_content(op.content)
+    s = sh_quote(c)[1:-1]
+    for l in s.splitlines(keepends=True):
+        if l.endswith('\n'):
+            out.write(l[:-1])
+            out.write('\\n\\\n')
+        else:
+            out.write(l)
+            out.write('\\\n')
+
+    out.write(f"' {'>>' if op.append else '>'} {op.path}")
 
     return out.getvalue()
 
 
 @render_op.register(Run)
 def render_run(op: Run) -> str:
-    s = render_content(op.body)
-
     out = io.StringIO()
 
     if op.cache_mounts:
@@ -211,6 +221,7 @@ def render_run(op: Run) -> str:
     else:
         out.write('RUN (\\\n')
 
+    s = render_content(op.body)
     for l in s.strip().splitlines():
         out.write(l)
         if not l.rstrip().endswith('\\'):
@@ -262,9 +273,15 @@ def fragment_section(
 ##
 
 
-FROM = From('ubuntu:24.04')
+BASE_IMAGE = 'ubuntu:24.04'
 
-# COPY_TIMESTAMP = Copy(src='docker/.timestamp', dst='/')
+FROM = From(BASE_IMAGE)
+
+
+TIMESTAMP = Section('timestamp', [
+    Copy(src='docker/.timestamp', dst='/')
+])
+
 
 LOCALE = Section('locale', [
     Env([
@@ -315,36 +332,26 @@ RUN \
         PYTHON_BUILD_CACHE_PATH=/root/.pyenv_cache /root/.pyenv/bin/pyenv install -s "$V" ; \
     done \
 )
-
-
-## config files
-
-COPY \
-\
-    docker/dev/.gdbinit \
-    docker/dev/.tmux.conf \
-    docker/dev/.vimrc \
-\
-    /root/
 """
 
 
 SSHD = fragment_section('sshd')
 
 
-"""
-## x
-
-RUN touch /root/.Xauthority
-
-COPY \
-\
-    docker/dev/xu \
-\
-    /root/
+CONFIGS = Section('configs', [
+    Write(f'/root/{n}', Resource(f'configs/{n}'))
+    for n in [
+        '.gdbinit',
+        '.tmux.conf',
+        '.vimrc',
+    ]
+])
 
 
-"""
+X11 = Section('x11', [
+    Run('touch /root/.Xauthority'),
+    Write('/root/xu', Resource('xu')),
+])
 
 
 ENTRYPOINT = Section('entrypoint', [
@@ -360,6 +367,8 @@ ENTRYPOINT = Section('entrypoint', [
 SECTIONS: ta.Sequence[Section] = [
     FROM,
 
+    TIMESTAMP,
+
     LOCALE,
 
     FIREFOX,
@@ -373,6 +382,10 @@ SECTIONS: ta.Sequence[Section] = [
 
     SSHD,
 
+    X11,
+
+    CONFIGS,
+
     ENTRYPOINT,
 ]
 
@@ -381,11 +394,9 @@ SECTIONS: ta.Sequence[Section] = [
 
 
 def _main() -> None:
-    pds = tomllib.loads(read_resource(Resource('depsets/python.toml')))
-    pds_deps = pds['deps']
-    print(pds_deps)
-
-    print(render_op(Write('.tmux.conf', Resource('configs/.tmux.conf'))))
+    # pds = tomllib.loads(read_resource(Resource('depsets/python.toml')))
+    # pds_deps = pds['deps']
+    # print(pds_deps)
 
     for section in SECTIONS:
         print(render_op(section))
