@@ -1,13 +1,47 @@
+import typing as ta
+
+from omlish import dataclasses as dc
+from omlish import lang
+
+
+##
+
+
+class Op(lang.Abstract):
+    pass
+
+
+@dc.dataclass(frozen=True, kw_only=True)
+class Copy(Op):
+    src: str
+    dst: str
+
+
+@dc.dataclass(frozen=True)
+class Env(Op):
+    key: str
+    value: str
+
+
+@dc.dataclass(frozen=True)
+class Run(Op):
+    body: str
+
+    _: dc.KW_ONLY
+
+    cache_mounts: ta.Sequence[str] | None = None
+
+
 """
 FROM ubuntu:24.04
-COPY docker/.timestamp /
+Copy(src='docker/.timestamp', dst='/')
 
 
 ## locale
 
-ENV LANG=en_US.UTF-8
-ENV LANGUAGE=en_US:en
-ENV LC_ALL=en_US.UTF-8
+Env('LANG', 'en_US.UTF-8')
+Env('LANGUAGE', 'en_US:en')
+Env('LC_ALL', 'en_US.UTF-8')
 
 
 ## deps
