@@ -7,6 +7,6 @@ echo "deb [signed-by=/usr/share/keyrings/azul.gpg] https://repos.azul.com/zulu/d
 apt-get update
 apt-get install -y \
 \
-    zulu21-ca-jdk \
-    zulu25-ca-jdk \
+  zulu21-ca-jdk \
+  zulu25-ca-jdk \
 \

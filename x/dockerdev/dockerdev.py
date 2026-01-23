@@ -1,9 +1,29 @@
+"""
+TODO:
+ - GO_VERSION / ZIG_VERSION
+ - .versions file?
+"""
 import functools
 import io
 import typing as ta
 
 from omlish import dataclasses as dc
 from omlish import lang
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class Resource:
+    path: str
+
+
+def read_resource(r: Resource) -> str:
+    d, _, f = r.path.rpartition('/')
+    p = '.'.join(['resources', *d.split('/')])
+    rs = lang.get_relative_resources(p, globals=globals())
+    return rs[f].read_text()
 
 
 ##
@@ -30,13 +50,12 @@ class Copy(Op):
     dst: str
 
 
+RunBody: ta.TypeAlias = str | Resource | ta.Sequence[str | Resource]
+
+
 @dc.dataclass(frozen=True)
 class Run(Op):
-    @dc.dataclass(frozen=True)
-    class Resource:
-        path: str
-
-    body: str | Resource
+    body: RunBody
 
     _: dc.KW_ONLY
 
@@ -55,6 +74,7 @@ def render_op(op: Op) -> str:
 def render_section(op: Section) -> str:
     out = io.StringIO()
     out.write(f'## {op.header or ""}'.strip())
+    out.write('\n')
     for c in op.body:
         out.write('\n')
         out.write(render_op(c))
@@ -74,20 +94,36 @@ def render_copy(op: Copy) -> str:
     raise NotImplementedError
 
 
+def get_run_body(body: RunBody) -> str:
+    if isinstance(body, str):
+        return body
+    elif isinstance(body, Resource):
+        return read_resource(body)
+    else:
+        raise NotImplementedError
+
+
 @render_op.register(Run)
 def render_run(op: Run) -> str:
-    if isinstance(op.body, str):
-        s = op.body
-    elif isinstance(op.body, Run.Resource):
-        d, _, f = op.body.path.rpartition('/')
-        p = '.'.join(['resources', *d.split('/')])
-        rs = lang.get_relative_resources(p, globals=globals())
-        s = rs[f].read_text()
+    s = get_run_body(op.body)
+
+    out = io.StringIO()
+
+    if op.cache_mounts:
+        out.write('RUN \\\n')
+        for cm in op.cache_mounts:
+            out.write(f'    --mount=target={cm},type=cache,sharing=locked \\\n')
+        out.write(') \\\n')
     else:
-        raise TypeError(op.body)
+        out.write('RUN (\\\n')
 
-    raise NotImplementedError
-
+    for l in s.strip().splitlines():
+        out.write(l)
+        if not l.rstrip().endswith('\\'):
+            out.write('\\')
+        out.write('\n')
+    out.write(')')
+    return out.getvalue()
 
 
 ##
@@ -106,7 +142,7 @@ def fragment_section(
 ) -> Section:
     return Section(name, [
         Run(
-            Run.Resource(f'fragments/{name}.sh'),
+            Resource(f'fragments/{name}.sh'),
             cache_mounts=APT_CACHE_MOUNTS if apt_cache else None,
         ),
     ])
@@ -344,9 +380,8 @@ SECTIONS: ta.Sequence[Section] = [
 
 def _main() -> None:
     for section in SECTIONS:
-        print(section)
         print(render_op(section))
-        print()
+        print('\n')
 
 
 if __name__ == '__main__':

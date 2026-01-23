@@ -2,14 +2,14 @@ set -ex
 
 add-apt-repository ppa:mozillateam/ppa
 
-echo "\
-Package: * \n\
-Pin: release o=LP-PPA-mozillateam \n\
-Pin-Priority: 1001 \n\
-\n\
-Package: firefox \n\
-Pin: version 1:1snap1-0ubuntu2 \n\
-Pin-Priority: -1 \n\
+echo "
+Package: *\n
+Pin: release o=LP-PPA-mozillateam\n
+Pin-Priority: 1001\n
+\n
+Package: firefox\n
+Pin: version 1:1snap1-0ubuntu2\n
+Pin-Priority: -1\n
 " | sudo tee /etc/apt/preferences.d/mozilla-firefox
 
 apt-get update
