@@ -5,9 +5,11 @@ TODO:
 """
 import functools
 import io
+import shlex
 import tomllib
 import typing as ta
 
+from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 
@@ -20,34 +22,10 @@ class Resource:
     path: str
 
 
-def read_resource(r: Resource) -> str:
-    d, _, f = r.path.rpartition('/')
-    p = '.'.join(['resources', *d.split('/')])
-    rs = lang.get_relative_resources(p, globals=globals())
-    return rs[f].read_text()
-
-
-##
-
-
 Content: ta.TypeAlias = str | Resource | ta.Sequence['Content']
 
 
-def render_content(c: Content) -> str:
-    if isinstance(c, str):
-        return c
-
-    elif isinstance(c, Resource):
-        return read_resource(c)
-
-    elif isinstance(c, ta.Sequence):
-        return '\n'.join([render_content(cc) for cc in c])
-
-    else:
-        raise TypeError(c)
-
-
-##
+#
 
 
 class Op(lang.Abstract):
@@ -113,6 +91,62 @@ class Cmd(Op):
 ##
 
 
+INDENT = ' ' * 2
+
+
+def read_resource(r: Resource) -> str:
+    d, _, f = r.path.rpartition('/')
+    p = '.'.join(['resources', *d.split('/')])
+    rs = lang.get_relative_resources(p, globals=globals())
+    return rs[f].read_text()
+
+
+def render_content(c: Content) -> str:
+    if isinstance(c, str):
+        return c
+
+    elif isinstance(c, Resource):
+        return read_resource(c)
+
+    elif isinstance(c, ta.Sequence):
+        return '\n'.join([render_content(cc) for cc in c])
+
+    else:
+        raise TypeError(c)
+
+
+def sh_quote(s: str) -> str:
+    if not s:
+        return "''"
+
+    s = shlex.quote(s)
+
+    if not s.startswith("'"):
+        check.not_in("'", s)
+        s = f"'{s}'"
+
+    return s
+
+
+def render_cmd_parts(*parts: str) -> str:
+    out = io.StringIO()
+
+    out.write('[\n')
+    for i, p in enumerate(parts):
+        out.write(INDENT)
+        out.write(sh_quote(p))
+        if i < len(parts) - 1:
+            out.write(',')
+        out.write('\n')
+
+    out.write(']')
+
+    return out.getvalue()
+
+
+##
+
+
 @functools.singledispatch
 def render_op(op: Op) -> str:
     raise TypeError(op)
@@ -126,13 +160,16 @@ def render_from(op: From) -> str:
 @render_op.register(Section)
 def render_section(op: Section) -> str:
     out = io.StringIO()
+
     out.write(f'## {op.header or ""}'.strip())
     out.write('\n')
+
     for i, c in enumerate(op.body):
         if i:
             out.write('\n')
         out.write('\n')
         out.write(render_op(c))
+
     return out.getvalue()
 
 
@@ -152,11 +189,12 @@ def render_copy(op: Copy) -> str:
 @render_op.register(Write)
 def render_write(op: Write) -> str:
     out = io.StringIO()
-    out.write(f'RUN echo
-    return '\n'.join([
-        f'RUN echo'
 
-    ])
+    c = render_content(op.content)
+
+    out.write(f'RUN echo')
+
+    return out.getvalue()
 
 
 @render_op.register(Run)
@@ -168,7 +206,7 @@ def render_run(op: Run) -> str:
     if op.cache_mounts:
         out.write('RUN \\\n')
         for cm in op.cache_mounts:
-            out.write(f'    --mount=target={cm},type=cache,sharing=locked \\\n')
+            out.write(INDENT + f'--mount=target={cm},type=cache,sharing=locked \\\n')
         out.write(') \\\n')
     else:
         out.write('RUN (\\\n')
@@ -191,12 +229,12 @@ def render_workdir(op: Workdir) -> str:
 
 @render_op.register(Entrypoint)
 def render_entrypoint(op: Entrypoint) -> str:
-    return f'ENTRYPOINT {op.parts!r}'  # FIXME: lol
+    return f'ENTRYPOINT {render_cmd_parts(*op.parts)}'
 
 
 @render_op.register(Cmd)
 def render_cmd(op: Cmd) -> str:
-    return f'CMD {op.parts!r}'  # FIXME: lol
+    return f'CMD {render_cmd_parts(*op.parts)}'
 
 
 ##
@@ -312,7 +350,7 @@ COPY \
 ENTRYPOINT = Section('entrypoint', [
     Workdir('/omlish'),
     Entrypoint(['dumb-init', '--']),
-    Cmd(['sh', '-c', "echo 'Ready' && sleep infinity"]),
+    Cmd(['sh', '-c', 'echo "Ready" && sleep infinity']),
 ])
 
 
