@@ -31,17 +31,101 @@ apt-get install -y apt-utils\
 \
 DEPS=""\
 \
-# build\
+# tools\
 \
 DEPS="$DEPS\
-  gcc\
+  apt-transport-https\
+  aria2\
+  bison\
+  bmon\
+  btop\
+  build-essential\
+  ca-certificates\
+  clang\
+  cmake\
+  curl\
+  cvs\
+  dnsutils\
+  dumb-init\
+  emacs\
+  file\
+  flex\
   g++\
+  g++-14\
+  gcc\
+  gcc-14\
+  gdb\
+  git\
+  gnupg\
+  gnupg-agent\
+  graphviz\
+  htop\
+  iputils-ping\
+  iputils-tracepath\
+  irssi\
+  jq\
+  less\
+  libdb-dev\
+  libpq-dev\
+  llvm\
+  lsb-release\
+  lsof\
+  make\
+  man-db\
+  mercurial\
+  moreutils\
+  mosh\
+  nano\
+  ncdu\
+  net-tools\
+  netcat-openbsd\
+  nodejs\
+  npm\
+  openssh-server\
+  perl\
+  pkg-config\
+  postgresql-client\
+  protobuf-compiler\
+  ripgrep\
+  ruby\
+  silversearcher-ag\
+  socat\
+  software-properties-common\
+  strace\
+  subversion\
+  sudo\
+  tcpdump\
+  telnet\
+  tmux\
+  unzip\
+  vim\
+  wget\
+  xsltproc \
+  zip\
+  zsh\
 "\
 \
-# debug\
+# python\
 \
 DEPS="$DEPS\
+  build-essential\
   gdb\
+  lcov\
+  libbz2-dev\
+  libffi-dev\
+  libgdbm-compat-dev\
+  libgdbm-dev\
+  liblzma-dev\
+  libncurses5-dev\
+  libreadline6-dev\
+  libsqlite3-dev\
+  libssl-dev\
+  lzma\
+  lzma-dev\
+  pkg-config\
+  tk-dev\
+  uuid-dev\
+  zlib1g-dev\
 "\
 \
 apt-get install -y $DEPS\

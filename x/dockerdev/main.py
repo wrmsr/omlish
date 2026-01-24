@@ -10,6 +10,7 @@ from .ops import Copy
 from .ops import Entrypoint
 from .ops import Env
 from .ops import From
+from .content import LazyContent
 from .ops import Op
 from .ops import Run
 from .ops import Section
@@ -33,19 +34,6 @@ APT_CACHE_MOUNTS: ta.Sequence[str] = [
 
 
 BASE_IMAGE = 'ubuntu:24.04'
-
-DEP_SECTIONS = [
-
-    ('build', [
-        'gcc',
-        'g++',
-    ]),
-
-    ('debug', [
-        'gdb',
-    ]),
-
-]
 
 ZIG_VERSION = '0.15.2'
 GO_VERSION = '1.25.6'
@@ -73,6 +61,29 @@ WORKDIR = '/omlish'
 #
 
 
+def render_apt_install_deps() -> str:
+    out = io.StringIO()
+
+    dsl: list[tuple[str, ta.Sequence[str]]] = []
+
+    for dsn in [
+        'tools',
+        'python',
+    ]:
+        dso = tomllib.loads(read_resource(Resource(f'depsets/{dsn}.toml')))
+        dsl.append((dsn, dso['deps']))
+
+    out.write(render_var_sections('DEPS', *dsl))
+    out.write('\n')
+
+    out.write('apt-get install -y $DEPS\n')
+
+    return out.getvalue()
+
+
+#
+
+
 FROM = From(BASE_IMAGE)
 
 TIMESTAMP = Section('timestamp', [
@@ -90,8 +101,7 @@ LOCALE = Section('locale', [
 APT = Section('deps', [
     Run([
         Resource('fragments/apt.sh'),
-        render_var_sections('DEPS', *DEP_SECTIONS),
-        'apt-get install -y $DEPS',
+        LazyContent(render_apt_install_deps),
     ]),
 ])
 
@@ -187,16 +197,6 @@ OPS: ta.Sequence[Op] = [
 
 
 def _main() -> None:
-    pds = tomllib.loads(read_resource(Resource('depsets/python.toml')))
-    pds_deps = pds['deps']
-    print(pds_deps)
-
-    print(render_var_sections(
-        'DEPS',
-        ('build', ['gcc', 'g++']),
-        ('debug', ['gdb']),
-    ))
-
     out = io.StringIO()
     for i, section in enumerate(OPS):
         if i:
