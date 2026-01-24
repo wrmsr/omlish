@@ -1,8 +1,3 @@
-"""
-TODO:
- - GO_VERSION / ZIG_VERSION
- - .versions file?
-"""
 import functools
 import io
 import json
@@ -346,11 +341,9 @@ PYENV_VERSIONS: ta.Sequence[str] = [
 
 FROM = From(BASE_IMAGE)
 
-
 TIMESTAMP = Section('timestamp', [
     Copy(src='docker/.timestamp', dst='/')
 ])
-
 
 LOCALE = Section('locale', [
     Env([
@@ -360,12 +353,10 @@ LOCALE = Section('locale', [
     ]),
 ])
 
-
 # DEPS = Section('deps', [
 #
 # ])
 # apt-get install -y \
-
 
 FIREFOX = fragment_section('firefox', apt_cache=True)
 
@@ -397,33 +388,12 @@ PYENV = fragment_section(
     cache_mounts=['/root/.pyenv_cache'],
 )
 
-
-
-"""
-
-
-## python
-
-RUN \
-    --mount=target=/root/.pyenv_cache,type=cache,sharing=locked \
-( \
-    git clone 'https://github.com/pyenv/pyenv' /root/.pyenv && \
-    grep '^PYTHON_' /root/.versions | while read L ; do \
-        K=$(echo "$L" | cut -d= -f1 | cut -d_ -f2-) && \
-        case $K in \
-            8|13|14) true ;; \
-            *) continue ;; \
-        esac && \
-        echo "Installing Python $K" && \
-        V=$(echo "$L" | cut -d= -f2) && \
-        PYTHON_BUILD_CACHE_PATH=/root/.pyenv_cache /root/.pyenv/bin/pyenv install -s "$V" ; \
-    done \
-)
-"""
-
-
 SSHD = fragment_section('sshd')
 
+X11 = Section('x11', [
+    Run('touch /root/.Xauthority'),
+    Write('/root/xu', Resource('xu')),
+])
 
 CONFIGS = Section('configs', [
     Write(f'/root/{n}', Resource(f'configs/{n}'))
@@ -433,13 +403,6 @@ CONFIGS = Section('configs', [
         '.vimrc',
     ]
 ])
-
-
-X11 = Section('x11', [
-    Run('touch /root/.Xauthority'),
-    Write('/root/xu', Resource('xu')),
-])
-
 
 ENTRYPOINT = Section('entrypoint', [
     Workdir('/omlish'),
