@@ -96,18 +96,18 @@ APT = Section('deps', [
 
 FIREFOX = fragment_section(
     'firefox',
-    apt_cache=True,
+    cache_mounts=APT_CACHE_MOUNTS,
 )
 
 DOCKER = fragment_section(
     'docker',
-    apt_cache=True,
+    cache_mounts=APT_CACHE_MOUNTS,
 )
 
 JDK = fragment_section(
     'jdk',
     static_env={'JDKS': JDKS},
-    apt_cache=True,
+    cache_mounts=APT_CACHE_MOUNTS,
 )
 
 RUSTUP = fragment_section('rustup')
