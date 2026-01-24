@@ -1,6 +1,5 @@
 set -ex
 
-export ZIG_VERSION=0.15.2
 curl -fsSL "https://ziglang.org/download/${ZIG_VERSION}/zig-$(uname -m)-linux-${ZIG_VERSION}.tar.xz" | tar -xJ -C "$HOME"
 mv "$HOME/zig-$(uname -m)-linux-${ZIG_VERSION}" "$HOME/.zig"
 

@@ -95,8 +95,7 @@ curl --proto '=https' --tlsv1.2 -sSf 'https://sh.rustup.rs' | sh -s -- -y\
 RUN (\
 set -ex\
 \
-export GO_VERSION=1.25.6\
-curl -fsSL "https://go.dev/dl/go${GO_VERSION}.linux-$(dpkg --print-architecture).tar.gz" | tar -C "$HOME" -xzf -\
+curl -fsSL "https://go.dev/dl/go1.25.6.linux-$(dpkg --print-architecture).tar.gz" | tar -C "$HOME" -xzf -\
 mv "$HOME/go" "$HOME/.go"\
 \
 echo '\n\
@@ -111,9 +110,8 @@ export PATH="$GOROOT/bin:$PATH"\n\
 RUN (\
 set -ex\
 \
-export ZIG_VERSION=0.15.2\
-curl -fsSL "https://ziglang.org/download/${ZIG_VERSION}/zig-$(uname -m)-linux-${ZIG_VERSION}.tar.xz" | tar -xJ -C "$HOME"\
-mv "$HOME/zig-$(uname -m)-linux-${ZIG_VERSION}" "$HOME/.zig"\
+curl -fsSL "https://ziglang.org/download/0.15.2/zig-$(uname -m)-linux-0.15.2.tar.xz" | tar -xJ -C "$HOME"\
+mv "$HOME/zig-$(uname -m)-linux-0.15.2" "$HOME/.zig"\
 \
 echo '\n\
 export PATH="$HOME/.zig:$PATH"\n\

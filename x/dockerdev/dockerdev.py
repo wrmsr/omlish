@@ -24,7 +24,18 @@ class Resource:
     path: str
 
 
-Content: ta.TypeAlias = str | Resource | ta.Sequence['Content']
+@dc.dataclass(frozen=True)
+class WithStaticEnv:
+    body: 'Content'
+    env: ta.Mapping[str, str]
+
+
+Content: ta.TypeAlias = ta.Union[
+    str,
+    Resource,
+    WithStaticEnv,
+    ta.Sequence['Content'],
+]
 
 
 #
@@ -111,6 +122,12 @@ def render_content(c: Content) -> str:
 
     elif isinstance(c, Resource):
         return read_resource(c)
+
+    elif isinstance(c, WithStaticEnv):
+        s = render_content(c.body)
+        for k, v in sorted(c.env.items(), key=lambda kv: (-len(kv[1]), kv[1])):
+            s = s.replace(f'${{{k}}}', v)
+        return s
 
     elif isinstance(c, ta.Sequence):
         return '\n'.join([render_content(cc) for cc in c])
@@ -264,11 +281,26 @@ def fragment_section(
         name: str,
         *,
         apt_cache: bool = False,
+        static_env: ta.Mapping[str, str] | None = None,
 ) -> Section:
+    body: Content = Resource(f'fragments/{name}.sh')
+
+    if static_env is not None:
+        body = WithStaticEnv(body, static_env)
+
+    #
+
+    cache_mounts: list[str] = []
+
+    if apt_cache:
+        cache_mounts.extend(APT_CACHE_MOUNTS)
+
+    #
+
     return Section(name, [
         Run(
-            Resource(f'fragments/{name}.sh'),
-            cache_mounts=APT_CACHE_MOUNTS if apt_cache else None,
+            body,
+            cache_mounts=cache_mounts or None,
         ),
     ])
 
@@ -278,6 +310,8 @@ def fragment_section(
 
 BASE_IMAGE = 'ubuntu:24.04'
 
+ZIG_VERSION = '0.15.2'
+GO_VERSION = '1.25.6'
 
 #
 
@@ -309,8 +343,8 @@ FIREFOX = fragment_section('firefox', apt_cache=True)
 DOCKER = fragment_section('docker', apt_cache=True)
 JDK = fragment_section('jdk', apt_cache=True)
 RUSTUP = fragment_section('rustup')
-GO = fragment_section('go')
-ZIG = fragment_section('zig')
+GO = fragment_section('go', static_env={'GO_VERSION': GO_VERSION})
+ZIG = fragment_section('zig', static_env={'ZIG_VERSION': ZIG_VERSION})
 VCPKG = fragment_section('vcpkg')
 
 
