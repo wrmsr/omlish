@@ -1,3 +1,6 @@
+"""
+docker run --rm -it "$(docker build -q -f x/dockerdev/Dockerfile .)" bash
+"""
 import io
 import os.path
 import tomllib
