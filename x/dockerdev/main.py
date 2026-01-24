@@ -10,6 +10,7 @@ from .ops import Copy
 from .ops import Entrypoint
 from .ops import Env
 from .ops import From
+from .ops import Op
 from .ops import Run
 from .ops import Section
 from .ops import Workdir
@@ -75,7 +76,7 @@ WORKDIR = '/omlish'
 FROM = From(BASE_IMAGE)
 
 TIMESTAMP = Section('timestamp', [
-    Copy(src='docker/.timestamp', dst='/')
+    Copy(src='docker/.timestamp', dst='/'),
 ])
 
 LOCALE = Section('locale', [
@@ -152,7 +153,7 @@ ENTRYPOINT = Section('entrypoint', [
 #
 
 
-SECTIONS: ta.Sequence[Section] = [
+OPS: ta.Sequence[Op] = [
     FROM,
 
     TIMESTAMP,
@@ -197,7 +198,7 @@ def _main() -> None:
     ))
 
     out = io.StringIO()
-    for i, section in enumerate(SECTIONS):
+    for i, section in enumerate(OPS):
         if i:
             out.write('\n\n')
         out.write(render_op(section))

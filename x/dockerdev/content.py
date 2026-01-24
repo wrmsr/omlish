@@ -18,10 +18,16 @@ class WithStaticEnv:
     env: ta.Mapping[str, str | ta.Sequence[str]]
 
 
+@dc.dataclass(frozen=True)
+class LazyContent:
+    fn: ta.Callable[[], 'Content']
+
+
 Content: ta.TypeAlias = ta.Union[
     str,
     Resource,
     WithStaticEnv,
+    LazyContent,
     ta.Sequence['Content'],
 ]
 

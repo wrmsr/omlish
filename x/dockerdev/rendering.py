@@ -1,3 +1,4 @@
+import collections.abc
 import functools
 import io
 import json
@@ -7,6 +8,7 @@ import typing as ta
 from omlish import check
 
 from .content import Content
+from .content import LazyContent
 from .content import Resource
 from .content import WithStaticEnv
 from .content import read_resource
@@ -32,38 +34,51 @@ INDENT = ' ' * 2
 # Content
 
 
+@functools.singledispatch
 def render_content(c: Content) -> str:
-    if isinstance(c, str):
-        return c
+    raise TypeError(c)
 
-    elif isinstance(c, Resource):
-        return read_resource(c)
 
-    elif isinstance(c, WithStaticEnv):
-        out = io.StringIO()
+@render_content.register(str)
+def render_str(c: str) -> str:
+    return c
 
-        if c.env:
-            for k, v in c.env.items():
-                if isinstance(v, str):
-                    pass
-                elif isinstance(v, ta.Sequence):
-                    v = ' '.join(v)
-                else:
-                    raise TypeError(v)
 
-                out.write(f'export {k}={sh_quote(v)}\\\n')
+@render_content.register(Resource)
+def render_resource(c: Resource) -> str:
+    return read_resource(c)
 
-            out.write('\\\n')
 
-        out.write(render_content(c.body))
+@render_content.register(WithStaticEnv)
+def render_with_static_env(c: WithStaticEnv) -> str:
+    out = io.StringIO()
 
-        return out.getvalue()
+    if c.env:
+        for k, v in c.env.items():
+            if isinstance(v, str):
+                pass
+            elif isinstance(v, ta.Sequence):
+                v = ' '.join(v)
+            else:
+                raise TypeError(v)
 
-    elif isinstance(c, ta.Sequence):
-        return '\n'.join([render_content(cc) for cc in c])
+            out.write(f'export {k}={sh_quote(v)}\\\n')
 
-    else:
-        raise TypeError(c)
+        out.write('\\\n')
+
+    out.write(render_content(c.body))
+
+    return out.getvalue()
+
+
+@render_content.register(LazyContent)
+def render_lazy_content(c: LazyContent) -> str:
+    return render_content(c.fn())
+
+
+@render_content.register(collections.abc.Sequence)
+def render_sequence_content(c: ta.Sequence[Content]) -> str:
+    return '\n'.join([render_content(cc) for cc in c])
 
 
 ##
