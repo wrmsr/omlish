@@ -158,15 +158,6 @@ def sh_quote(s: str) -> str:
     return s
 
 
-def render_sh_arg_chunks(*chunks: ta.Sequence[str]) -> str:
-    out = io.StringIO()
-
-    for chunk in chunks:
-        raise NotImplementedError
-
-    return out.getvalue()
-
-
 def render_cmd_parts(*parts: str) -> str:
     out = io.StringIO()
 
@@ -179,6 +170,28 @@ def render_cmd_parts(*parts: str) -> str:
         out.write('\n')
 
     out.write(']')
+
+    return out.getvalue()
+
+
+def render_var_sections(
+        name: str,
+        *dep_sections: tuple[str, ta.Sequence[str]],
+) -> str:
+    out = io.StringIO()
+
+    out.write(f'{name}=""\n\n')
+
+    for i, (n, ds) in enumerate(dep_sections):
+        if i:
+            out.write('\n')
+
+        out.write(f'# {n}\n\n')
+
+        out.write(f'{name}="${name}\n')
+        for d in ds:
+            out.write(f'{INDENT}{d}\n')
+        out.write('"\n')
 
     return out.getvalue()
 
@@ -330,11 +343,17 @@ def fragment_section(
 
 BASE_IMAGE = 'ubuntu:24.04'
 
-DEPS = [
-    [
-        'foo',
-        'bar',
-    ],
+DEP_SECTIONS = [
+
+    ('build', [
+        'gcc',
+        'g++',
+    ]),
+
+    ('debug', [
+        'gdb',
+    ]),
+
 ]
 
 ZIG_VERSION = '0.15.2'
@@ -380,9 +399,8 @@ LOCALE = Section('locale', [
 APT = Section('deps', [
     Run([
         Resource('fragments/apt.sh'),
-        f''
-        'echo hi',
-        # apt-get install -y \
+        render_var_sections('DEPS', *DEP_SECTIONS),
+        'apt-get install -y $DEPS',
     ]),
 ])
 
@@ -475,6 +493,12 @@ def _main() -> None:
     pds = tomllib.loads(read_resource(Resource('depsets/python.toml')))
     pds_deps = pds['deps']
     print(pds_deps)
+
+    print(render_var_sections(
+        'DEPS',
+        ('build', ['gcc', 'g++']),
+        ('debug', ['gdb']),
+    ))
 
     out = io.StringIO()
     for i, section in enumerate(SECTIONS):

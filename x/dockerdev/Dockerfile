@@ -29,7 +29,22 @@ locale-gen en_US.UTF-8\
 apt-get upgrade -y\
 apt-get install -y apt-utils\
 \
-echo hi\
+DEPS=""\
+\
+# build\
+\
+DEPS="$DEPS\
+  gcc\
+  g++\
+"\
+\
+# debug\
+\
+DEPS="$DEPS\
+  gdb\
+"\
+\
+apt-get install -y $DEPS\
 )
 
 
