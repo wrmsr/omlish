@@ -5,6 +5,8 @@ TODO:
 """
 import functools
 import io
+import json
+import os.path
 import shlex
 import tomllib
 import typing as ta
@@ -136,7 +138,7 @@ def render_cmd_parts(*parts: str) -> str:
     out.write('[\n')
     for i, p in enumerate(parts):
         out.write(INDENT)
-        out.write(sh_quote(p))
+        out.write(json.dumps(p))
         if i < len(parts) - 1:
             out.write(',')
         out.write('\n')
@@ -197,6 +199,7 @@ def render_write(op: Write) -> str:
     c = render_content(op.content)
     s = sh_quote(c)[1:-1]
     for l in s.splitlines(keepends=True):
+        l = l.replace('$', '\\$')
         if l.endswith('\n'):
             out.write(l[:-1])
             out.write('\\n\\\n')
@@ -217,7 +220,7 @@ def render_run(op: Run) -> str:
         out.write('RUN \\\n')
         for cm in op.cache_mounts:
             out.write(INDENT + f'--mount=target={cm},type=cache,sharing=locked \\\n')
-        out.write(') \\\n')
+        out.write('( \\\n')
     else:
         out.write('RUN (\\\n')
 
@@ -274,6 +277,10 @@ def fragment_section(
 
 
 BASE_IMAGE = 'ubuntu:24.04'
+
+
+#
+
 
 FROM = From(BASE_IMAGE)
 
@@ -394,13 +401,21 @@ SECTIONS: ta.Sequence[Section] = [
 
 
 def _main() -> None:
-    # pds = tomllib.loads(read_resource(Resource('depsets/python.toml')))
-    # pds_deps = pds['deps']
-    # print(pds_deps)
+    pds = tomllib.loads(read_resource(Resource('depsets/python.toml')))
+    pds_deps = pds['deps']
+    print(pds_deps)
 
-    for section in SECTIONS:
-        print(render_op(section))
-        print('\n')
+    out = io.StringIO()
+    for i, section in enumerate(SECTIONS):
+        if i:
+            out.write('\n\n')
+        out.write(render_op(section))
+        out.write('\n')
+
+    print(out.getvalue())
+
+    with open(os.path.join(os.path.dirname(__file__), 'Dockerfile'), 'w') as f:
+        f.write(out.getvalue())
 
 
 if __name__ == '__main__':
