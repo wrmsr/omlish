@@ -335,6 +335,14 @@ PYENV_VERSIONS: ta.Sequence[str] = [
     '3.14.2',
 ]
 
+CONFIG_FILES: ta.Sequence[str] = [
+    '.gdbinit',
+    '.tmux.conf',
+    '.vimrc',
+]
+
+WORKDIR = '/omlish'
+
 
 #
 
@@ -397,15 +405,11 @@ X11 = Section('x11', [
 
 CONFIGS = Section('configs', [
     Write(f'/root/{n}', Resource(f'configs/{n}'))
-    for n in [
-        '.gdbinit',
-        '.tmux.conf',
-        '.vimrc',
-    ]
+    for n in CONFIG_FILES
 ])
 
 ENTRYPOINT = Section('entrypoint', [
-    Workdir('/omlish'),
+    Workdir(WORKDIR),
     Entrypoint(['dumb-init', '--']),
     Cmd(['sh', '-c', 'echo "Ready" && sleep infinity']),
 ])
