@@ -158,6 +158,15 @@ def sh_quote(s: str) -> str:
     return s
 
 
+def render_sh_arg_chunks(*chunks: ta.Sequence[str]) -> str:
+    out = io.StringIO()
+
+    for chunk in chunks:
+        raise NotImplementedError
+
+    return out.getvalue()
+
+
 def render_cmd_parts(*parts: str) -> str:
     out = io.StringIO()
 
@@ -321,6 +330,13 @@ def fragment_section(
 
 BASE_IMAGE = 'ubuntu:24.04'
 
+DEPS = [
+    [
+        'foo',
+        'bar',
+    ],
+]
+
 ZIG_VERSION = '0.15.2'
 GO_VERSION = '1.25.6'
 
@@ -361,10 +377,14 @@ LOCALE = Section('locale', [
     ]),
 ])
 
-# DEPS = Section('deps', [
-#
-# ])
-# apt-get install -y \
+APT = Section('deps', [
+    Run([
+        Resource('fragments/apt.sh'),
+        f''
+        'echo hi',
+        # apt-get install -y \
+    ]),
+])
 
 FIREFOX = fragment_section('firefox', apt_cache=True)
 
@@ -424,6 +444,8 @@ SECTIONS: ta.Sequence[Section] = [
     TIMESTAMP,
 
     LOCALE,
+
+    APT,
 
     FIREFOX,
 
