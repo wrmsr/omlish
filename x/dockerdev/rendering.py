@@ -101,13 +101,13 @@ def sh_quote(s: str) -> str:
 def render_cmd_parts(*parts: str) -> str:
     out = io.StringIO()
 
-    out.write('[\n')
+    out.write('[ \\\n')
     for i, p in enumerate(parts):
         out.write(INDENT)
         out.write(json.dumps(p))
         if i < len(parts) - 1:
             out.write(',')
-        out.write('\n')
+        out.write(' \\\n')
 
     out.write(']')
 

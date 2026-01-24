@@ -283,9 +283,5 @@ COPY \
 
 WORKDIR /omlish
 
-ENTRYPOINT [
-  "dumb-init",
-  "--"
-]
-
+ENTRYPOINT ["dumb-init", "--"]
 CMD ["sh", "-c", "echo 'Ready' && sleep infinity"]
