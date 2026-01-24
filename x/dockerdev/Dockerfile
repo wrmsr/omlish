@@ -66,6 +66,8 @@ RUN \
   --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
   --mount=target=/var/cache/apt,type=cache,sharing=locked \
 ( \
+export JDKS='zulu21-ca-jdk zulu25-ca-jdk'\
+\
 set -ex\
 \
 sudo apt install gnupg ca-certificates curl\
@@ -73,7 +75,7 @@ curl -s https://repos.azul.com/azul-repo.key | sudo gpg --dearmor -o /usr/share/
 echo "deb [signed-by=/usr/share/keyrings/azul.gpg] https://repos.azul.com/zulu/deb stable main" | sudo tee /etc/apt/sources.list.d/zulu.list\
 \
 apt-get update\
-apt-get install -y zulu21-ca-jdk zulu25-ca-jdk\
+apt-get install -y ${JDKS}\
 )
 
 
@@ -89,9 +91,11 @@ curl --proto '=https' --tlsv1.2 -sSf 'https://sh.rustup.rs' | sh -s -- -y\
 ## go
 
 RUN (\
+export GO_VERSION='1.25.6'\
+\
 set -ex\
 \
-curl -fsSL "https://go.dev/dl/go1.25.6.linux-$(dpkg --print-architecture).tar.gz" | tar -C "$HOME" -xzf -\
+curl -fsSL "https://go.dev/dl/go${GO_VERSION}.linux-$(dpkg --print-architecture).tar.gz" | tar -C "$HOME" -xzf -\
 mv "$HOME/go" "$HOME/.go"\
 \
 echo '\n\
@@ -104,10 +108,12 @@ export PATH="$GOROOT/bin:$PATH"\n\
 ## zig
 
 RUN (\
+export ZIG_VERSION='0.15.2'\
+\
 set -ex\
 \
-curl -fsSL "https://ziglang.org/download/0.15.2/zig-$(uname -m)-linux-0.15.2.tar.xz" | tar -xJ -C "$HOME"\
-mv "$HOME/zig-$(uname -m)-linux-0.15.2" "$HOME/.zig"\
+curl -fsSL "https://ziglang.org/download/${ZIG_VERSION}/zig-$(uname -m)-linux-${ZIG_VERSION}.tar.xz" | tar -xJ -C "$HOME"\
+mv "$HOME/zig-$(uname -m)-linux-${ZIG_VERSION}" "$HOME/.zig"\
 \
 echo '\n\
 export PATH="$HOME/.zig:$PATH"\n\
@@ -126,6 +132,23 @@ git clone 'https://github.com/microsoft/vcpkg' /root/.vcpkg_root\
 echo '\n\
 export VCPKG_ROOT="$HOME/.vcpkg_root"\n\
 ' >> ~/.bashrc\
+)
+
+
+## pyenv
+
+RUN \
+  --mount=target=/root/.pyenv_cache,type=cache,sharing=locked \
+( \
+export PYENV_VERSIONS='3.8.20 3.13.11 3.14.2'\
+\
+set -ex\
+\
+git clone 'https://github.com/pyenv/pyenv' /root/.pyenv\
+\
+for V in ${PYENV_VERSIONS} ; do\
+    PYTHON_BUILD_CACHE_PATH=/root/.pyenv_cache /root/.pyenv/bin/pyenv install -s "$V"\
+done\
 )
 
 

@@ -27,7 +27,7 @@ class Resource:
 @dc.dataclass(frozen=True)
 class WithStaticEnv:
     body: 'Content'
-    env: ta.Mapping[str, str]
+    env: ta.Mapping[str, str | ta.Sequence[str]]
 
 
 Content: ta.TypeAlias = ta.Union[
@@ -124,10 +124,24 @@ def render_content(c: Content) -> str:
         return read_resource(c)
 
     elif isinstance(c, WithStaticEnv):
-        s = render_content(c.body)
-        for k, v in sorted(c.env.items(), key=lambda kv: (-len(kv[1]), kv[1])):
-            s = s.replace(f'${{{k}}}', v)
-        return s
+        out = io.StringIO()
+
+        if c.env:
+            for k, v in c.env.items():
+                if isinstance(v, str):
+                    pass
+                elif isinstance(v, ta.Sequence):
+                    v = ' '.join(v)
+                else:
+                    raise TypeError(v)
+
+                out.write(f'export {k}={sh_quote(v)}\\\n')
+
+            out.write('\\\n')
+
+        out.write(render_content(c.body))
+
+        return out.getvalue()
 
     elif isinstance(c, ta.Sequence):
         return '\n'.join([render_content(cc) for cc in c])
@@ -280,8 +294,9 @@ APT_CACHE_MOUNTS: ta.Sequence[str] = [
 def fragment_section(
         name: str,
         *,
+        static_env: ta.Mapping[str, str | ta.Sequence[str]] | None = None,
+        cache_mounts: ta.Sequence[str] | None = None,
         apt_cache: bool = False,
-        static_env: ta.Mapping[str, str] | None = None,
 ) -> Section:
     body: Content = Resource(f'fragments/{name}.sh')
 
@@ -290,10 +305,11 @@ def fragment_section(
 
     #
 
-    cache_mounts: list[str] = []
+    if cache_mounts is None:
+        cache_mounts = []
 
     if apt_cache:
-        cache_mounts.extend(APT_CACHE_MOUNTS)
+        cache_mounts = [*cache_mounts, *APT_CACHE_MOUNTS]
 
     #
 
@@ -313,9 +329,15 @@ BASE_IMAGE = 'ubuntu:24.04'
 ZIG_VERSION = '0.15.2'
 GO_VERSION = '1.25.6'
 
-JDKS = [
+JDKS: ta.Sequence[str] = [
     'zulu21-ca-jdk',
     'zulu25-ca-jdk',
+]
+
+PYENV_VERSIONS: ta.Sequence[str] = [
+    '3.8.20',
+    '3.13.11',
+    '3.14.2',
 ]
 
 
@@ -346,20 +368,38 @@ LOCALE = Section('locale', [
 
 
 FIREFOX = fragment_section('firefox', apt_cache=True)
+
 DOCKER = fragment_section('docker', apt_cache=True)
-JDK = fragment_section('jdk', apt_cache=True, static_env={'JDKS': ' '.join(JDKS)})
+
+JDK = fragment_section(
+    'jdk',
+    static_env={'JDKS': JDKS},
+    apt_cache=True,
+)
+
 RUSTUP = fragment_section('rustup')
-GO = fragment_section('go', static_env={'GO_VERSION': GO_VERSION})
-ZIG = fragment_section('zig', static_env={'ZIG_VERSION': ZIG_VERSION})
+
+GO = fragment_section(
+    'go',
+    static_env={'GO_VERSION': GO_VERSION},
+)
+
+ZIG = fragment_section(
+    'zig',
+    static_env={'ZIG_VERSION': ZIG_VERSION},
+)
+
 VCPKG = fragment_section('vcpkg')
+
+PYENV = fragment_section(
+    'pyenv',
+    static_env={'PYENV_VERSIONS': PYENV_VERSIONS},
+    cache_mounts=['/root/.pyenv_cache'],
+)
+
 
 
 """
-
-
-## versions
-
-COPY .versions /root/
 
 
 ## python
@@ -426,6 +466,8 @@ SECTIONS: ta.Sequence[Section] = [
     GO,
     ZIG,
     VCPKG,
+
+    PYENV,
 
     SSHD,
 
