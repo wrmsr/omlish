@@ -313,6 +313,12 @@ BASE_IMAGE = 'ubuntu:24.04'
 ZIG_VERSION = '0.15.2'
 GO_VERSION = '1.25.6'
 
+JDKS = [
+    'zulu21-ca-jdk',
+    'zulu25-ca-jdk',
+]
+
+
 #
 
 
@@ -341,7 +347,7 @@ LOCALE = Section('locale', [
 
 FIREFOX = fragment_section('firefox', apt_cache=True)
 DOCKER = fragment_section('docker', apt_cache=True)
-JDK = fragment_section('jdk', apt_cache=True)
+JDK = fragment_section('jdk', apt_cache=True, static_env={'JDKS': ' '.join(JDKS)})
 RUSTUP = fragment_section('rustup')
 GO = fragment_section('go', static_env={'GO_VERSION': GO_VERSION})
 ZIG = fragment_section('zig', static_env={'ZIG_VERSION': ZIG_VERSION})

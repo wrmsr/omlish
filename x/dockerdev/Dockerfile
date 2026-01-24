@@ -73,11 +73,7 @@ curl -s https://repos.azul.com/azul-repo.key | sudo gpg --dearmor -o /usr/share/
 echo "deb [signed-by=/usr/share/keyrings/azul.gpg] https://repos.azul.com/zulu/deb stable main" | sudo tee /etc/apt/sources.list.d/zulu.list\
 \
 apt-get update\
-apt-get install -y \
-\
-  zulu21-ca-jdk \
-  zulu25-ca-jdk \
-\
+apt-get install -y zulu21-ca-jdk zulu25-ca-jdk\
 )
 
 
