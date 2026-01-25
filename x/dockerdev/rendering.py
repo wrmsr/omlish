@@ -62,7 +62,7 @@ def render_with_static_env(c: WithStaticEnv) -> str:
             else:
                 raise TypeError(v)
 
-            out.write(f'export {k}={sh_quote(v)}\\\n')
+            out.write(f'export {k}={sh_quote(v)} ;\\\n')
 
         out.write('\\\n')
 

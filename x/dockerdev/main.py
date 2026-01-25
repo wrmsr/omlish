@@ -74,7 +74,7 @@ def render_apt_install_deps() -> str:
         'python',
     ]:
         dso = tomllib.loads(read_resource(Resource(f'depsets/{dsn}.toml')))
-        dsl.append((dsn, dso['deps']))
+        dsl.append((dsn, sorted(set(dso['deps']))))
 
     out.write(render_var_sections('DEPS', *dsl))
     out.write('\n')

@@ -34,6 +34,8 @@ apt-get install -y apt-utils ;\
 \
 DEPS="" ;\
 \
+# tools\
+\
 DEPS="$DEPS\
   apt-transport-https\
   aria2\
@@ -101,10 +103,12 @@ DEPS="$DEPS\
   unzip\
   vim\
   wget\
-  xsltproc \
+  xsltproc\
   zip\
   zsh\
 " ;\
+\
+# python\
 \
 DEPS="$DEPS\
   build-essential\
@@ -184,7 +188,7 @@ RUN \
   --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
   --mount=target=/var/cache/apt,type=cache,sharing=locked \
 ( \
-export JDKS='zulu21-ca-jdk zulu25-ca-jdk'\
+export JDKS='zulu21-ca-jdk zulu25-ca-jdk' ;\
 \
 set -ex ;\
 \
@@ -209,7 +213,7 @@ curl --proto '=https' --tlsv1.2 -sSf 'https://sh.rustup.rs' | sh -s -- -y ;\
 ## go
 
 RUN (\
-export GO_VERSION='1.25.6'\
+export GO_VERSION='1.25.6' ;\
 \
 set -ex ;\
 \
@@ -226,7 +230,7 @@ export PATH="$GOROOT/bin:$PATH"\n\
 ## zig
 
 RUN (\
-export ZIG_VERSION='0.15.2'\
+export ZIG_VERSION='0.15.2' ;\
 \
 set -ex ;\
 \
@@ -258,7 +262,7 @@ export VCPKG_ROOT="$HOME/.vcpkg_root"\n\
 RUN \
   --mount=target=/root/.pyenv_cache,type=cache,sharing=locked \
 ( \
-export PYENV_VERSIONS='3.8.20 3.13.11 3.14.2'\
+export PYENV_VERSIONS='3.8.20 3.13.11 3.14.2' ;\
 \
 set -ex ;\
 \

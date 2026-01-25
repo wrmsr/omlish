@@ -1,71 +1,98 @@
 deps = [
+  # base system & packaging
   'apt-transport-https',
-  'aria2',
-  'bison',
-  'bmon',
-  'btop',
-  'build-essential',
   'ca-certificates',
-  'clang',
-  'cmake',
-  'curl',
-  'cvs',
-  'dnsutils',
+  'lsb-release',
+  'software-properties-common',
+  'sudo',
   'dumb-init',
-  'emacs',
-  'file',
-  'flex',
-  'g++',
-  'g++-14',
-  'gcc',
-  'gcc-14',
-  'gdb',
-  'git',
-  'gnupg',
-  'gnupg-agent',
-  'graphviz',
-  'htop',
+
+  # networking & network diagnostics
+  'aria2',
+  'bmon',
+  'curl',
+  'dnsutils',
   'iputils-ping',
   'iputils-tracepath',
-  'irssi',
-  'jq',
-  'less',
-  'libdb-dev',
-  'libpq-dev',
-  'llvm',
-  'lsb-release',
-  'lsof',
-  'make',
-  'man-db',
-  'mercurial',
-  'moreutils',
   'mosh',
-  'nano',
-  'ncdu',
   'net-tools',
   'netcat-openbsd',
-  'nodejs',
-  'npm',
   'openssh-server',
-  'perl',
-  'pkg-config',
-  'postgresql-client',
-  'protobuf-compiler',
-  'ripgrep',
-  'ruby',
-  'silversearcher-ag',
   'socat',
-  'software-properties-common',
-  'strace',
-  'subversion',
-  'sudo',
   'tcpdump',
   'telnet',
-  'tmux',
-  'unzip',
-  'vim',
   'wget',
-  'xsltproc ',
+
+  # build essentials & compilers
+  'build-essential',
+  'gcc',
+  'gcc-14',
+  'g++',
+  'g++-14',
+  'clang',
+  'llvm',
+  'make',
+  'cmake',
+  'pkg-config',
+
+  # language toolchains & runtimes
+  'nodejs',
+  'npm',
+  'perl',
+  'ruby',
+
+  # parsers, generators & compiler tooling
+  'bison',
+  'flex',
+  'protobuf-compiler',
+  'xsltproc',
+
+  # version control systems
+  'git',
+  'mercurial',
+  'subversion',
+  'cvs',
+
+  # debugging, tracing & profiling
+  'gdb',
+  'strace',
+  'lsof',
+
+  # databases & data formats
+  'libdb-dev',
+  'libpq-dev',
+  'postgresql-client',
+  'jq',
+
+  # terminal UX & interactive tools
+  'btop',
+  'htop',
+  'less',
+  'moreutils',
+  'ncdu',
+  'ripgrep',
+  'silversearcher-ag',
+  'tmux',
+
+  # editors & shells
+  'vim',
+  'nano',
+  'emacs',
+  'zsh',
+
+  # crypto, auth & trust
+  'gnupg',
+  'gnupg-agent',
+
+  # documentation & introspection
+  'file',
+  'man-db',
+  'graphviz',
+
+  # chat & communication
+  'irssi',
+
+  # archiving & compression
   'zip',
-  'zsh'
+  'unzip',
 ]
