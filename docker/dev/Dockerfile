@@ -103,7 +103,7 @@ DEPS="$DEPS\
   unzip\
   vim\
   wget\
-  xsltproc \
+  xsltproc\
   zip\
   zsh\
 " ;\

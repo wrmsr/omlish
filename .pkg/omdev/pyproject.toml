@@ -39,7 +39,7 @@ all = [
     'mypy ~= 1.19',
     'gprof2dot ~= 2025.4',
     'segno ~= 1.6',
-    'rich ~= 14.2',
+    'rich ~= 14.3',
     'textual ~= 7.3',
     'textual-dev ~= 1.8',
     'textual-speedups ~= 0.2',
@@ -67,7 +67,7 @@ qr = [
     'segno ~= 1.6',
 ]
 tui = [
-    'rich ~= 14.2',
+    'rich ~= 14.3',
     'textual ~= 7.3',
     'textual-dev ~= 1.8',
     'textual-speedups ~= 0.2',

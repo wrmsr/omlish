@@ -103,7 +103,7 @@ asttokens==3.0.1
 
 numpy>=1.26
 
-rich==14.2.0
+rich==14.3.1
 textual==7.3.0  # @omlish-venv 13t 13dt 14t
 textual[syntax]==7.3.0  # @omlish-venv !13t !13dt !14t
 textual-dev==1.8.0
@@ -133,9 +133,9 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.42.33
-botocore-stubs>=1.42.33
-types-boto3>=1.42.33
+boto3>=1.42.34
+botocore-stubs>=1.42.34
+types-boto3>=1.42.34
 
 antlr4-python3-runtime==4.13.2
 
