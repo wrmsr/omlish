@@ -341,7 +341,7 @@
     "module": ".tools.docker",
     "attr": "_CLI_MODULE",
     "file": "omdev/tools/docker.py",
-    "line": 271,
+    "line": 272,
     "value": {
       "!.cli.types.CliModule": {
         "name": "docker",
