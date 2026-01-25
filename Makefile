@@ -148,7 +148,7 @@ dep-about: venv
 ### Gen
 
 .PHONY: gen
-gen: gen-amalg gen-cmake gen-aws gen-manifest gen-dataclass gen-pkg
+gen: gen-amalg gen-docker-dev gen-cmake gen-aws gen-manifest gen-dataclass gen-pkg
 
 .PHONY: gen-amalg
 gen-amalg: venv
@@ -159,6 +159,10 @@ gen-amalg: venv
 		-m omlish \
 		-m omserv \
 		${SRCS}
+
+.PHONY: gen-docker-dev
+gen-docker-dev: venv
+	${PYTHON} -m omdev.dockerdev.main > docker/dev/Dockerfile
 
 .PHONY: gen-cmake
 gen-cmake:

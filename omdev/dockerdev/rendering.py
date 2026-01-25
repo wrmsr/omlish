@@ -54,7 +54,12 @@ def render_with_static_env(c: WithStaticEnv) -> str:
     out = io.StringIO()
 
     if c.env:
-        for k, v in c.env.items():
+        kvs = c.env
+
+        if callable(kvs):
+            kvs = kvs()
+
+        for k, v in kvs.items():
             if isinstance(v, str):
                 pass
             elif isinstance(v, ta.Sequence):
@@ -188,7 +193,7 @@ def render_write(op: Write) -> str:
     c = render_content(op.content)
     s = sh_quote(c)[1:-1]
     for l in s.splitlines(keepends=True):
-        l = l.replace('$', '\\$')
+        # l = l.replace('$', '\\$')
         if l.endswith('\n'):
             out.write(l[:-1])
             out.write('\\n\\\n')
