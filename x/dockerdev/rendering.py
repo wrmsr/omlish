@@ -120,7 +120,7 @@ def render_var_sections(
 ) -> str:
     out = io.StringIO()
 
-    out.write(f'{name}=""\n\n')
+    out.write(f'{name}="" ;\n\n')
 
     for i, (n, ds) in enumerate(dep_sections):
         if i:
@@ -131,7 +131,7 @@ def render_var_sections(
         out.write(f'{name}="${name}\n')
         for d in ds:
             out.write(f'{INDENT}{d}\n')
-        out.write('"\n')
+        out.write('" ;\n')
 
     return out.getvalue()
 

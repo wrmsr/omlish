@@ -15,23 +15,24 @@ ENV LC_ALL=en_US.UTF-8
 
 ## deps
 
-RUN (\
-set -ex\
+RUN \
+  --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
+  --mount=target=/var/cache/apt,type=cache,sharing=locked \
+( \
+set -ex ;\
 \
-rm -f /etc/apt/apt.conf.d/docker-clean\
+rm -f /etc/apt/apt.conf.d/docker-clean ;\
 \
-export DEBIAN_FRONTEND=noninteractive\
-apt-get update\
+export DEBIAN_FRONTEND=noninteractive ;\
+apt-get update ;\
 \
-apt-get install -y locales\
-locale-gen en_US.UTF-8\
+apt-get install -y locales ;\
+locale-gen en_US.UTF-8 ;\
 \
-apt-get upgrade -y\
-apt-get install -y apt-utils\
+apt-get upgrade -y ;\
+apt-get install -y apt-utils ;\
 \
-DEPS=""\
-\
-# tools\
+DEPS="" ;\
 \
 DEPS="$DEPS\
   apt-transport-https\
@@ -103,9 +104,7 @@ DEPS="$DEPS\
   xsltproc \
   zip\
   zsh\
-"\
-\
-# python\
+" ;\
 \
 DEPS="$DEPS\
   build-essential\
@@ -126,7 +125,7 @@ DEPS="$DEPS\
   tk-dev\
   uuid-dev\
   zlib1g-dev\
-"\
+" ;\
 \
 apt-get install -y $DEPS\
 )
@@ -138,9 +137,9 @@ RUN \
   --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
   --mount=target=/var/cache/apt,type=cache,sharing=locked \
 ( \
-set -ex\
+set -ex ;\
 \
-add-apt-repository ppa:mozillateam/ppa\
+add-apt-repository ppa:mozillateam/ppa ;\
 \
 echo "\
 Package: *\n\
@@ -150,13 +149,13 @@ Pin-Priority: 1001\n\
 Package: firefox\n\
 Pin: version 1:1snap1-0ubuntu2\n\
 Pin-Priority: -1\n\
-" | sudo tee /etc/apt/preferences.d/mozilla-firefox\
+" | sudo tee /etc/apt/preferences.d/mozilla-firefox ;\
 \
-apt-get update\
-apt-get install -y firefox\
+apt-get update ;\
+apt-get install -y firefox ;\
 \
 echo 'Unattended-Upgrade::Allowed-Origins:: "LP-PPA-mozillateam:${distro_codename}";' |\
-  sudo tee /etc/apt/apt.conf.d/51unattended-upgrades-firefox\
+  sudo tee /etc/apt/apt.conf.d/51unattended-upgrades-firefox ;\
 )
 
 
@@ -166,16 +165,16 @@ RUN \
   --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
   --mount=target=/var/cache/apt,type=cache,sharing=locked \
 ( \
-set -ex\
+set -ex ;\
 \
-mkdir -p /etc/apt/keyrings\
-curl -fsSL 'https://download.docker.com/linux/ubuntu/gpg' | gpg --dearmor -o /etc/apt/keyrings/docker.gpg\
+mkdir -p /etc/apt/keyrings ;\
+curl -fsSL 'https://download.docker.com/linux/ubuntu/gpg' | gpg --dearmor -o /etc/apt/keyrings/docker.gpg ;\
 echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu\
-  $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null\
+  $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null ;\
 \
-apt-get update\
-apt-get install -y docker-ce-cli\
+apt-get update ;\
+apt-get install -y docker-ce-cli ;\
 )
 
 
@@ -187,23 +186,23 @@ RUN \
 ( \
 export JDKS='zulu21-ca-jdk zulu25-ca-jdk'\
 \
-set -ex\
+set -ex ;\
 \
-sudo apt install gnupg ca-certificates curl\
-curl -s https://repos.azul.com/azul-repo.key | sudo gpg --dearmor -o /usr/share/keyrings/azul.gpg\
-echo "deb [signed-by=/usr/share/keyrings/azul.gpg] https://repos.azul.com/zulu/deb stable main" | sudo tee /etc/apt/sources.list.d/zulu.list\
+sudo apt install gnupg ca-certificates curl ;\
+curl -s https://repos.azul.com/azul-repo.key | sudo gpg --dearmor -o /usr/share/keyrings/azul.gpg ;\
+echo "deb [signed-by=/usr/share/keyrings/azul.gpg] https://repos.azul.com/zulu/deb stable main" | sudo tee /etc/apt/sources.list.d/zulu.list ;\
 \
-apt-get update\
-apt-get install -y ${JDKS}\
+apt-get update ;\
+apt-get install -y ${JDKS} ;\
 )
 
 
 ## rustup
 
 RUN (\
-set -ex\
+set -ex ;\
 \
-curl --proto '=https' --tlsv1.2 -sSf 'https://sh.rustup.rs' | sh -s -- -y\
+curl --proto '=https' --tlsv1.2 -sSf 'https://sh.rustup.rs' | sh -s -- -y ;\
 )
 
 
@@ -212,15 +211,15 @@ curl --proto '=https' --tlsv1.2 -sSf 'https://sh.rustup.rs' | sh -s -- -y\
 RUN (\
 export GO_VERSION='1.25.6'\
 \
-set -ex\
+set -ex ;\
 \
-curl -fsSL "https://go.dev/dl/go${GO_VERSION}.linux-$(dpkg --print-architecture).tar.gz" | tar -C "$HOME" -xzf -\
-mv "$HOME/go" "$HOME/.go"\
+curl -fsSL "https://go.dev/dl/go${GO_VERSION}.linux-$(dpkg --print-architecture).tar.gz" | tar -C "$HOME" -xzf - ;\
+mv "$HOME/go" "$HOME/.go" ;\
 \
 echo '\n\
 export GOROOT="$HOME/.go"\n\
 export PATH="$GOROOT/bin:$PATH"\n\
-' >> ~/.bashrc\
+' >> ~/.bashrc ;\
 )
 
 
@@ -229,28 +228,28 @@ export PATH="$GOROOT/bin:$PATH"\n\
 RUN (\
 export ZIG_VERSION='0.15.2'\
 \
-set -ex\
+set -ex ;\
 \
-curl -fsSL "https://ziglang.org/download/${ZIG_VERSION}/zig-$(uname -m)-linux-${ZIG_VERSION}.tar.xz" | tar -xJ -C "$HOME"\
-mv "$HOME/zig-$(uname -m)-linux-${ZIG_VERSION}" "$HOME/.zig"\
+curl -fsSL "https://ziglang.org/download/${ZIG_VERSION}/zig-$(uname -m)-linux-${ZIG_VERSION}.tar.xz" | tar -xJ -C "$HOME" ;\
+mv "$HOME/zig-$(uname -m)-linux-${ZIG_VERSION}" "$HOME/.zig" ;\
 \
 echo '\n\
 export PATH="$HOME/.zig:$PATH"\n\
-' >> ~/.bashrc\
+' >> ~/.bashrc ;\
 )
 
 
 ## vcpkg
 
 RUN (\
-set -ex\
+set -ex ;\
 \
-git clone 'https://github.com/microsoft/vcpkg' /root/.vcpkg_root\
-(cd /root/.vcpkg_root && ./bootstrap-vcpkg.sh)\
+git clone 'https://github.com/microsoft/vcpkg' /root/.vcpkg_root ;\
+(cd /root/.vcpkg_root && ./bootstrap-vcpkg.sh) ;\
 \
 echo '\n\
 export VCPKG_ROOT="$HOME/.vcpkg_root"\n\
-' >> ~/.bashrc\
+' >> ~/.bashrc ;\
 )
 
 
@@ -261,12 +260,12 @@ RUN \
 ( \
 export PYENV_VERSIONS='3.8.20 3.13.11 3.14.2'\
 \
-set -ex\
+set -ex ;\
 \
-git clone 'https://github.com/pyenv/pyenv' /root/.pyenv\
+git clone 'https://github.com/pyenv/pyenv' /root/.pyenv ;\
 \
 for V in ${PYENV_VERSIONS} ; do\
-    PYTHON_BUILD_CACHE_PATH=/root/.pyenv_cache /root/.pyenv/bin/pyenv install -s "$V"\
+  PYTHON_BUILD_CACHE_PATH=/root/.pyenv_cache /root/.pyenv/bin/pyenv install -s "$V" ;\
 done\
 )
 
@@ -274,13 +273,13 @@ done\
 ## sshd
 
 RUN (\
-set -ex\
+set -ex ;\
 \
-sed -i 's/^#*PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config\
-sed -i 's/^#X11UseLocalhost yes/X11UseLocalhost no/' /etc/ssh/sshd_config\
-sed -i 's/^# Ciphers and keying/Ciphers chacha20-poly1305@openssh.com/' /etc/ssh/sshd_config\
-sed -i 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' /etc/pam.d/sshd\
-mkdir /var/run/sshd\
+sed -i 's/^#*PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config ;\
+sed -i 's/^#X11UseLocalhost yes/X11UseLocalhost no/' /etc/ssh/sshd_config ;\
+sed -i 's/^# Ciphers and keying/Ciphers chacha20-poly1305@openssh.com/' /etc/ssh/sshd_config ;\
+sed -i 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' /etc/pam.d/sshd ;\
+mkdir /var/run/sshd ;\
 )
 
 

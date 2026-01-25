@@ -102,10 +102,13 @@ LOCALE = Section('locale', [
 ])
 
 APT = Section('deps', [
-    Run([
-        Resource('fragments/apt.sh'),
-        LazyContent(render_apt_install_deps),
-    ]),
+    Run(
+        [
+            Resource('fragments/apt.sh'),
+            LazyContent(render_apt_install_deps),
+        ],
+        cache_mounts=APT_CACHE_MOUNTS,
+    ),
 ])
 
 FIREFOX = fragment_section(
