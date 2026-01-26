@@ -28,13 +28,13 @@ from .rendering import render_op
 
 BASE_IMAGE = 'ubuntu:24.04'
 
-ZIG_VERSION = '0.15.2'
-GO_VERSION = '1.25.6'
-
 JDKS: ta.Sequence[str] = [
     'zulu21-ca-jdk',
     'zulu25-ca-jdk',
 ]
+
+GO_VERSION = '1.25.6'
+ZIG_VERSION = '0.15.2'
 
 PYENV_VERSION_KEYS: ta.Sequence[str] = [
     '8',
