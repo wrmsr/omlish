@@ -33,6 +33,9 @@ from ..cli import CliModule
 
 ##
 
+DOCKER_SOCKET_PATH = '/var/run/docker.sock'
+DOCKER_SOCKET_MOUNT = f'{DOCKER_SOCKET_PATH}:{DOCKER_SOCKET_PATH}'
+
 
 @lang.cached_function
 def docker_exe() -> str:
@@ -254,7 +257,7 @@ class Cli(ap.Cli):
             exe := docker_exe(),
             exe,
             'run', '-it', '--rm',
-            '-v', '/var/run/docker.sock:/var/run/docker.sock',
+            '-v', DOCKER_SOCKET_MOUNT,
             'lirantal/dockly',
         )
 
@@ -264,8 +267,21 @@ class Cli(ap.Cli):
             exe := docker_exe(),
             exe,
             'run', '-it', '--rm',
-            '-v', '/var/run/docker.sock:/var/run/docker.sock',
+            '-v', DOCKER_SOCKET_MOUNT,
             'lazyteam/lazydocker',
+        )
+
+    @ap.cmd(
+        ap.arg('args', nargs=ap.REMAINDER),
+    )
+    def dive(self) -> None:
+        os.execl(
+            exe := docker_exe(),
+            exe,
+            'run', '-it', '--rm',
+            '-v', DOCKER_SOCKET_MOUNT,
+            'docker.io/wagoodman/dive',
+            *self.args.args,
         )
 
 
