@@ -1,11 +1,13 @@
 deps = [
-  # base system & packaging
+  # packaging
   'apt-transport-https',
   'ca-certificates',
-  'lsb-release',
   'software-properties-common',
-  'sudo',
+
+  # base system
   'dumb-init',
+  'lsb-release',
+  'sudo',
 
   # networking & network diagnostics
   'aria2',
@@ -25,14 +27,14 @@ deps = [
 
   # build essentials & compilers
   'build-essential',
-  'gcc',
-  'gcc-14',
+  'clang',
+  'cmake',
   'g++',
   'g++-14',
-  'clang',
+  'gcc',
+  'gcc-14',
   'llvm',
   'make',
-  'cmake',
   'pkg-config',
 
   # language toolchains & runtimes
@@ -48,21 +50,23 @@ deps = [
   'xsltproc',
 
   # version control systems
+  'cvs',
   'git',
   'mercurial',
   'subversion',
-  'cvs',
 
   # debugging, tracing & profiling
   'gdb',
-  'strace',
   'lsof',
+  'strace',
 
-  # databases & data formats
+  # data formats
+  'jq',
+
+  # databases
   'libdb-dev',
   'libpq-dev',
   'postgresql-client',
-  'jq',
 
   # terminal UX & interactive tools
   'btop',
@@ -74,11 +78,13 @@ deps = [
   'silversearcher-ag',
   'tmux',
 
-  # editors & shells
-  'vim',
-  'nano',
-  'emacs',
+  # shells
   'zsh',
+
+  # editors & shells
+  'emacs',
+  'nano',
+  'vim',
 
   # crypto, auth & trust
   'gnupg',
