@@ -24,7 +24,7 @@ class Project(ProjectBase):
             'mlx ~= 0.30; sys_platform == "darwin"',
             'mlx-lm ~= 0.29; sys_platform == "darwin"',
 
-            # 'sentencepiece ~= 0.2',  # FIXME: https://github.com/google/sentencepiece/issues/1121
+            'sentencepiece ~= 0.2',
 
             'tiktoken ~= 0.12',
 
