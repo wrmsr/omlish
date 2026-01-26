@@ -80,7 +80,7 @@ redis==7.1.0
 sqlean.py==3.50.4.5
 # git+https://github.com/wrmsr/sqlean.py.git
 
-duckdb==1.4.3
+duckdb==1.4.4
 
 pycparser==3.0
 pcpp==1.30
