@@ -1,3 +1,4 @@
+# ruff: noqa: UP041 UP043
 # @omlish-lite
 import asyncio
 import contextlib

@@ -1,3 +1,4 @@
+# ruff: noqa: UP043
 import contextlib
 import queue
 import typing as ta

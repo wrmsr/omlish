@@ -307,8 +307,10 @@ ignore = [
     'PLR5501',  # collapsible-else-if
     'PLW0603',  # global-statement
     'PLW2901',  # redefined-loop-name
+    'PT009',  # pytest-unittest-assertion (lite tests use unittest)
     'PT016',  # pytest-fail-without-message
     'PT018',  # pytest-composite-assertion
+    'PT027',  # pytest-unittest-raises-assertion (lite tests use unittest)
     'PTH',  # pathlib
     'PYI019',  # custom-type-var-for-self
     'PYI061',  # redundant-none-literal

@@ -25,7 +25,7 @@ class AsyncioAsyncliteSemaphore(AsyncliteSemaphore, AsyncioAsyncliteObject):
             return False
 
         # Manually decrement the internal counter
-        self._u._value -= 1
+        self._u._value -= 1  # noqa
         return True
 
     def release(self) -> None:

@@ -38,4 +38,3 @@ class AnyioAsyncliteSemaphore(AsyncliteSemaphore, AnyioAsyncliteObject):
 class AnyioAsyncliteSemaphores(AsyncliteSemaphores, AnyioAsyncliteApi):
     def make_semaphore(self, value: int = 1) -> AsyncliteSemaphore:
         return AnyioAsyncliteSemaphore(anyio.Semaphore(value))
-

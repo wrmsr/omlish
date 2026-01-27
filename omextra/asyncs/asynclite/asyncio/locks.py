@@ -27,7 +27,7 @@ class AsyncioAsyncliteLock(AsyncliteLock, AsyncioAsyncliteObject):
             return False
 
         # Manually acquire the lock by setting the internal state
-        self._u._locked = True
+        self._u._locked = True  # type: ignore[attr-defined]  # noqa
         return True
 
     def release(self) -> None:

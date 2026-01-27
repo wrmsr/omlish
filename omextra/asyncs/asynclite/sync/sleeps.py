@@ -9,4 +9,4 @@ from ..sleeps import AsyncliteSleeps
 
 class SyncAsyncliteSleeps(AsyncliteSleeps):
     async def sleep(self, delay: float) -> None:
-        time.sleep(delay)
+        time.sleep(delay)  # noqa
