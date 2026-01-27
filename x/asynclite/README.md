@@ -6,7 +6,7 @@ non-async operations despite still having an `async` interface - which allows co
 both sync and async contexts.
 
 Additionally compared to `anyio` it provides far less sophisticated abstractions: it intends only to expose a 'lowest
-common denominator' of functionality provided by and mapping directyl to its backends. It offers none of the higher
+common denominator' of functionality provided by and mapping directly to its backends. It offers none of the higher
 level features of `anyio` (such as structured concurrency).
 
 The code is organized into 'slices' corresponding to primitives exposed by the backends: events, locks, queues, sleeps,
@@ -14,4 +14,6 @@ and so on. For each 'slice' there is a subclass of `AsyncliteApi`, and may or ma
 `AsyncliteObject`. This allows consumers to declare only dependencies on the 'slices' of functionality necessary for
 their operation: code requiring only 'sleep' needn't depend on the entire capability set of the system.
 
-Notably, with the exception of the `anyio` backend, this is `@omlish-lite` code, and runs on python 3.8+.
+Notably, with the exception of the `anyio` backend, this is `@omlish-lite` code, and runs on python 3.8+. Because of
+its dependency on `anyio` that subpackage cannot be `@omlish-lite`, but it is still generally written in that style for
+consistency with the other backends.

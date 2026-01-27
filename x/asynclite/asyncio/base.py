@@ -1,5 +1,6 @@
 # @omlish-lite
 import asyncio
+import contextlib
 import typing as ta
 
 from omlish.lite.abstract import Abstract
@@ -16,12 +17,19 @@ T = ta.TypeVar('T')
 
 class AsyncioAsyncliteBase(Abstract):
     @classmethod
+    @contextlib.contextmanager
+    def _translate_exceptions(cls) -> ta.Generator[None, None, None]:
+        try:
+            yield
+
+        except asyncio.TimeoutError as e:
+            raise TimeoutError from e
+
+    @classmethod
     async def _wait_for(cls, aw: ta.Awaitable[T], *, timeout: float | None = None) -> T:
         if timeout is not None:
-            try:
+            with cls._translate_exceptions():
                 return await asyncio.wait_for(aw, timeout)
-            except TimeoutError:
-                raise TimeoutError from None  # FIXME: 'our' TimeoutError?
 
         else:
             return await aw

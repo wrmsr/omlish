@@ -1,6 +1,6 @@
 import unittest
 
-from ..asyncio.sleeps import AsyncioAsyncliteSleeps
+from ..sleeps import AsyncioAsyncliteSleeps
 
 
 class TestAsyncio(unittest.IsolatedAsyncioTestCase):

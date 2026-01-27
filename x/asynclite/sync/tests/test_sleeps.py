@@ -1,6 +1,6 @@
 import unittest
 
-from ..sync.sleeps import SyncAsyncliteSleeps
+from ..sleeps import SyncAsyncliteSleeps
 
 
 class TestSync(unittest.TestCase):

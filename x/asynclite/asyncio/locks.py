@@ -17,7 +17,8 @@ class AsyncioAsyncliteLock(AsyncliteLock, AsyncioAsyncliteObject):
         self._u = u
 
     async def acquire(self, *, timeout: float | None = None) -> None:
-        await self._wait_for(self._u.acquire(), timeout=timeout)
+        with self._translate_exceptions():
+            await self._wait_for(self._u.acquire(), timeout=timeout)
 
     def release(self) -> None:
         self._u.release()
