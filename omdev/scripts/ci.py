@@ -145,7 +145,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/inject.py', sha1='6f097e3170019a34ff6834d36fcc9cbeed3a7ab4'),
             dict(path='../../omlish/logs/contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
             dict(path='../../omlish/logs/std/standard.py', sha1='5c97c1b9f7ead58d6127d047b873398f708f288d'),
-            dict(path='../../omlish/logs/utils.py', sha1='bbb28f7d1e506e0542e13925128b27c3cfd34759'),
+            dict(path='../../omlish/logs/utils.py', sha1='9b879044cbdc3172fd7282c7f2a4880b81261cdd'),
             dict(path='../../omlish/sockets/server/handlers.py', sha1='6f9adca9fa04774a28a488a4e2a11bb4492c71d0'),
             dict(path='../../omlish/subprocesses/run.py', sha1='8200e48f0c49d164df3503cd0143038d0c4d30aa'),
             dict(path='../../omlish/subprocesses/wrap.py', sha1='8a9b7d2255481fae15c05f5624b0cdc0766f4b3f'),
@@ -8423,13 +8423,13 @@ def configure_standard_logging(
 ##
 
 
-def exception_logging(log):  # noqa
+def exception_logging(log, exc_cls=Exception):  # noqa
     def outer(fn):
         @functools.wraps(fn)
         def inner(*args, **kwargs):
             try:
                 return fn(*args, **kwargs)
-            except Exception as e:  # noqa
+            except exc_cls as e:  # noqa
                 log.exception('Error in %r', fn)
                 raise
 
@@ -8438,13 +8438,13 @@ def exception_logging(log):  # noqa
     return outer
 
 
-def async_exception_logging(alog):  # noqa
+def async_exception_logging(alog, exc_cls=Exception):  # noqa
     def outer(fn):
         @functools.wraps(fn)
         async def inner(*args, **kwargs):
             try:
                 return await fn(*args, **kwargs)
-            except Exception as e:  # noqa
+            except exc_cls as e:  # noqa
                 await alog.exception('Error in %r', fn)
                 raise
 

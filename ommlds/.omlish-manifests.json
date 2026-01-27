@@ -102,7 +102,7 @@
     "module": ".minichain.backends.impls.cerebras.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/cerebras/chat.py",
-    "line": 26,
+    "line": 27,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.cerebras.chat",
@@ -148,7 +148,7 @@
     "module": ".minichain.backends.impls.cerebras.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/cerebras/stream.py",
-    "line": 30,
+    "line": 31,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.cerebras.stream",

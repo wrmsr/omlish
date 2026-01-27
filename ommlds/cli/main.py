@@ -4,6 +4,7 @@ TODO:
 """
 import abc
 import functools
+import sys
 import typing as ta
 
 import anyio
@@ -136,14 +137,28 @@ class ChatProfile(Profile):
             check.arg(not self._args.message)
 
         elif self._args.message:
-            # TODO: '-' -> stdin
+            ps: list[str] = []
+
+            for a in self._args.message:
+                if a == '-':
+                    ps.append(sys.stdin.read())
+
+                elif a.startswith('@'):
+                    with open(a[1:]) as f:
+                        ps.append(f.read())
+
+                else:
+                    ps.append(a)
+
+            c = ' '.join(ps)
+
             cfg = dc.replace(
                 cfg,
                 driver=dc.replace(
                     cfg.driver,
                     user=dc.replace(
                         cfg.driver.user,
-                        initial_user_content=' '.join(self._args.message),
+                        initial_user_content=c,
                     ),
                 ),
             )

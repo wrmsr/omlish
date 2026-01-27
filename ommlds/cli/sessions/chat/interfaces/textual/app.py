@@ -118,14 +118,16 @@ class ChatApp(
 
     CSS: ta.ClassVar[str] = read_app_css()
 
-    #
+    ##
+    # Compose
 
     def compose(self) -> tx.ComposeResult:
         yield MessagesContainer(id='messages-container')
 
         yield InputOuter(id='input-outer')
 
-    #
+    ##
+    # Widget getters
 
     def _get_input_text_area(self) -> InputTextArea:
         return self.query_one('#input', InputTextArea)
@@ -133,7 +135,8 @@ class ChatApp(
     def _get_messages_container(self) -> tx.VerticalScroll:
         return self.query_one('#messages-container', MessagesContainer)
 
-    #
+    ##
+    # Messages
 
     def _is_messages_at_bottom(self, threshold: int = 3) -> bool:
         return (ms := self._get_messages_container()).scroll_y >= (ms.max_scroll_y - threshold)
@@ -209,12 +212,13 @@ class ChatApp(
         if was_at_bottom:
             self.call_after_refresh(self._anchor_messages)
 
-    #
+    ##
+    # Chat events
 
-    _chat_event_task: asyncio.Task[None] | None = None
+    _chat_event_queue_task: asyncio.Task[None] | None = None
 
-    @logs.async_exception_logging(alog)
-    async def _chat_event_task_main(self) -> None:
+    @logs.async_exception_logging(alog, BaseException)
+    async def _chat_event_queue_task_main(self) -> None:
         while True:
             ev = await self._chat_event_queue.get()
             if ev is None:
@@ -246,16 +250,47 @@ class ChatApp(
                 elif isinstance(ev.delta, mc.ToolUseAiDelta):
                     pass
 
-    #
+    ##
+    # Chat actions
 
     @dc.dataclass(frozen=True)
     class UserInput:
         text: str
 
-    _chat_action_task: asyncio.Task[None] | None = None
+    async def _execute_user_input(self, ac: UserInput) -> None:
+        try:
+            await self._chat_facade.handle_user_input(ac.text)
+        except Exception as e:  # noqa
+            # raise
+            await self.display_ui_message(repr(e))
 
-    @logs.async_exception_logging(alog)
-    async def _chat_action_task_main(self) -> None:
+    #
+
+    _cur_chat_action: asyncio.Task[None] | None = None
+
+    async def _execute_chat_action(self, fn: ta.Callable[[], ta.Any]) -> None:
+        check.state(self._cur_chat_action is None)
+
+        self._cur_chat_action = asyncio.create_task(fn())
+
+        try:
+            await self._cur_chat_action
+
+        except asyncio.CancelledError:
+            pass
+
+        except BaseException as e:  # noqa
+            raise
+
+        finally:
+            self._cur_chat_action = None
+
+    #
+
+    _chat_action_queue_task: asyncio.Task[None] | None = None
+
+    @logs.async_exception_logging(alog, BaseException)
+    async def _chat_action_queue_task_main(self) -> None:
         while True:
             ac = await self._chat_action_queue.get()
             if ac is None:
@@ -264,25 +299,22 @@ class ChatApp(
             await alog.debug(lambda: f'Got chat action: {ac!r}')
 
             if isinstance(ac, ChatApp.UserInput):
-                try:
-                    await self._chat_facade.handle_user_input(ac.text)
-                except Exception as e:  # noqa
-                    # raise
-                    await self.display_ui_message(repr(e))
+                await self._execute_chat_action(lambda: self._execute_user_input(ac))
 
             else:
                 raise TypeError(ac)  # noqa
 
-    #
+    ##
+    # Mounting
 
     async def on_mount(self) -> None:
-        check.state(self._chat_event_task is None)
-        self._chat_event_task = asyncio.create_task(self._chat_event_task_main())
+        check.state(self._chat_event_queue_task is None)
+        self._chat_event_queue_task = asyncio.create_task(self._chat_event_queue_task_main())
 
         await self._chat_driver.start()
 
-        check.state(self._chat_action_task is None)
-        self._chat_action_task = asyncio.create_task(self._chat_action_task_main())
+        check.state(self._chat_action_queue_task is None)
+        self._chat_action_queue_task = asyncio.create_task(self._chat_action_queue_task_main())
 
         self._get_input_text_area().focus()
 
@@ -294,15 +326,18 @@ class ChatApp(
         )
 
     async def on_unmount(self) -> None:
-        if (cdt := self._chat_event_task) is not None:
+        if (cat := self._chat_action_queue_task) is not None:
             await self._chat_event_queue.put(None)
-            await cdt
+            await cat
 
         await self._chat_driver.stop()
 
-        if (cet := self._chat_event_task) is not None:
+        if (cet := self._chat_event_queue_task) is not None:
             await self._chat_event_queue.put(None)
             await cet
+
+    ##
+    # Input
 
     @tx.on(InputTextArea.Submitted)
     async def on_input_text_area_submitted(self, event: InputTextArea.Submitted) -> None:
@@ -358,7 +393,8 @@ class ChatApp(
 
             self.screen.post_message(tx.Key(event.key, event.character))
 
-    #
+    ##
+    # User interaction
 
     async def confirm_tool_use(
             self,
@@ -389,4 +425,5 @@ class ChatApp(
         await self._mount_messages(UiMessage(content))
 
     async def action_cancel(self) -> None:
-        pass
+        if (cat := self._cur_chat_action) is not None:
+            cat.cancel()

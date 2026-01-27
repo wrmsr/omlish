@@ -49,7 +49,7 @@ class ChatCompletionRequest(lang.Final):
     class UserMessage(Message, lang.Final):
         content: str | ta.Sequence[str]
         name: str | None = None
-        role: ta.Literal['system'] = 'system'
+        role: ta.Literal['user'] = 'user'
 
     @dc.dataclass(frozen=True, kw_only=True)
     @_set_class_marshal_options

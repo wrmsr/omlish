@@ -11,13 +11,13 @@ from .protocols import LoggerLike
 ##
 
 
-def exception_logging(log):  # noqa
+def exception_logging(log, exc_cls=Exception):  # noqa
     def outer(fn):
         @functools.wraps(fn)
         def inner(*args, **kwargs):
             try:
                 return fn(*args, **kwargs)
-            except Exception as e:  # noqa
+            except exc_cls as e:  # noqa
                 log.exception('Error in %r', fn)
                 raise
 
@@ -26,13 +26,13 @@ def exception_logging(log):  # noqa
     return outer
 
 
-def async_exception_logging(alog):  # noqa
+def async_exception_logging(alog, exc_cls=Exception):  # noqa
     def outer(fn):
         @functools.wraps(fn)
         async def inner(*args, **kwargs):
             try:
                 return await fn(*args, **kwargs)
-            except Exception as e:  # noqa
+            except exc_cls as e:  # noqa
                 await alog.exception('Error in %r', fn)
                 raise
 
