@@ -1,3 +1,4 @@
+# @omlish-lite
 import queue
 
 from omlish.testing.unittest.asyncs import SyncIsolatedAsyncTestCase

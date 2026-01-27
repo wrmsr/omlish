@@ -1,4 +1,3 @@
-
 import anyio
 
 from omlish.testing.unittest.asyncs import AnyioIsolatedAsyncTestCase

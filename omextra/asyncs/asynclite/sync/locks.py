@@ -1,5 +1,7 @@
+# ruff: noqa: UP045
 # @omlish-lite
 import threading
+import typing as ta
 
 from ..locks import AsyncliteLock
 from ..locks import AsyncliteLocks
@@ -16,7 +18,7 @@ class SyncAsyncliteLock(AsyncliteLock, SyncAsyncliteObject):
 
         self._u = u
 
-    async def acquire(self, *, timeout: float | None = None) -> None:
+    async def acquire(self, *, timeout: ta.Optional[float] = None) -> None:
         if timeout is not None and timeout > 0:
             a = self._u.acquire(blocking=False, timeout=timeout)
         else:

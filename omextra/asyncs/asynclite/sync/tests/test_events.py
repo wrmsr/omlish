@@ -1,3 +1,4 @@
+# @omlish-lite
 from omlish.testing.unittest.asyncs import SyncIsolatedAsyncTestCase
 
 from ..events import SyncAsyncliteEvents

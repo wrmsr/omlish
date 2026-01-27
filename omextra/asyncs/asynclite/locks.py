@@ -1,3 +1,4 @@
+# ruff: noqa: UP006 UP045
 # @omlish-lite
 import abc
 import types
@@ -20,14 +21,14 @@ class AsyncliteLock(AsyncliteObject, Abstract):
 
     async def __aexit__(
             self,
-            exc_type: type[BaseException] | None = None,
-            exc_val: BaseException | None = None,
-            exc_tb: types.TracebackType | None = None,
+            exc_type: ta.Optional[ta.Type[BaseException]] = None,
+            exc_val: ta.Optional[BaseException] = None,
+            exc_tb: ta.Optional[types.TracebackType] = None,
     ) -> None:
         self.release()
 
     @abc.abstractmethod
-    def acquire(self, *, timeout: float | None = None) -> ta.Awaitable[None]:
+    def acquire(self, *, timeout: ta.Optional[float] = None) -> ta.Awaitable[None]:
         raise NotImplementedError
 
     @abc.abstractmethod

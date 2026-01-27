@@ -1,3 +1,4 @@
+# ruff: noqa: UP045
 # @omlish-lite
 import abc
 import typing as ta
@@ -28,7 +29,7 @@ class AsyncliteQueue(AsyncliteObject, Abstract, ta.Generic[T]):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def put(self, item: T, *, timeout: float | None = None) -> ta.Awaitable[None]:
+    def put(self, item: T, *, timeout: ta.Optional[float] = None) -> ta.Awaitable[None]:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -36,7 +37,7 @@ class AsyncliteQueue(AsyncliteObject, Abstract, ta.Generic[T]):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get(self, *, timeout: float | None = None) -> ta.Awaitable[T]:
+    def get(self, *, timeout: ta.Optional[float] = None) -> ta.Awaitable[T]:
         raise NotImplementedError
 
     @abc.abstractmethod

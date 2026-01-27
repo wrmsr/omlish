@@ -1,3 +1,6 @@
+# ruff: noqa: UP045
+import typing as ta
+
 import anyio
 
 from ..events import AsyncliteEvent
@@ -21,7 +24,7 @@ class AnyioAsyncliteEvent(AsyncliteEvent, AnyioAsyncliteObject):
     def is_set(self) -> bool:
         return self._u.is_set()
 
-    async def wait(self, *, timeout: float | None = None) -> None:
+    async def wait(self, *, timeout: ta.Optional[float] = None) -> None:
         if timeout is not None:
             with anyio.fail_after(timeout):
                 await self._u.wait()

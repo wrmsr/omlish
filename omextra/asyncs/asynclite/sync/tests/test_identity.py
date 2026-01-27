@@ -1,3 +1,4 @@
+# @omlish-lite
 import threading
 
 from omlish.testing.unittest.asyncs import SyncIsolatedAsyncTestCase

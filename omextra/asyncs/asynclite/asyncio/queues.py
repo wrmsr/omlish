@@ -1,3 +1,4 @@
+# ruff: noqa: UP045
 # @omlish-lite
 import asyncio
 import typing as ta
@@ -15,7 +16,7 @@ T = ta.TypeVar('T')
 
 
 class AsyncioAsyncliteQueue(AsyncliteQueue[T], AsyncioAsyncliteObject):
-    def __init__(self, u: asyncio.Queue[T]) -> None:
+    def __init__(self, u: 'asyncio.Queue[T]') -> None:
         super().__init__()
 
         self._u = u
@@ -29,14 +30,14 @@ class AsyncioAsyncliteQueue(AsyncliteQueue[T], AsyncioAsyncliteObject):
     def full(self) -> bool:
         return self._u.full()
 
-    async def put(self, item: T, *, timeout: float | None = None) -> None:
+    async def put(self, item: T, *, timeout: ta.Optional[float] = None) -> None:
         await self._wait_for(self._u.put(item), timeout=timeout)
 
     def put_nowait(self, item: T) -> None:
         with self._translate_exceptions():
             self._u.put_nowait(item)
 
-    async def get(self, *, timeout: float | None = None) -> T:
+    async def get(self, *, timeout: ta.Optional[float] = None) -> T:
         return await self._wait_for(self._u.get(), timeout=timeout)
 
     def get_nowait(self) -> T:

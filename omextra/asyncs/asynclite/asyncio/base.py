@@ -1,4 +1,4 @@
-# ruff: noqa: UP041 UP043
+# ruff: noqa: UP041 UP043 UP045
 # @omlish-lite
 import asyncio
 import contextlib
@@ -34,7 +34,7 @@ class AsyncioAsyncliteBase(Abstract):
             raise queue.Full from e
 
     @classmethod
-    async def _wait_for(cls, aw: ta.Awaitable[T], *, timeout: float | None = None) -> T:
+    async def _wait_for(cls, aw: ta.Awaitable[T], *, timeout: ta.Optional[float] = None) -> T:
         if timeout is not None:
             with cls._translate_exceptions():
                 return await asyncio.wait_for(aw, timeout)

@@ -242,8 +242,11 @@
     like `__exit__` and `__eq__` may be omitted.
   - An exception to this is test code - in general don't bother type annotating test code, and in fact avoid test
     function parameter annotations due to the dynamic nature of pytest fixtures.
-- Use PEP-585 style annotations for builtin types - use `list[int]` instead of `ta.List[int]`, and `int | None` instead
-  of `ta.Optional[int]`.
+- In standard code, use PEP-585 style annotations for builtin types - use `list[int]` instead of `ta.List[int]`, and
+  `int | None` instead of `ta.Optional[int]`.
+  - Note that \[**lite**\] code must still use pre-PEP-585 annotations like `ta.List[int]` and `ta.Optional[int]` due to
+    PEP-585 not being supported in python 3.8. Note that when doing this source files must `# ruff: noqa: ...` any
+    relevant lint errors - usually things lke UP006, UP007, UP045, ...
 - Use `typing` aliases for non-builtin types - use `ta.Sequence[int]` instead of `collections.abc.Sequence[int]`.
 - Prefer to accept immutable, less-specific types - a function should likely use a `ta.Sequence[int]` parameter rather
   than a `list[int]`. Use `ta.AbstractSet` over `set` and `frozenset`, and use `ta.Mapping` over `dict`, accordingly.

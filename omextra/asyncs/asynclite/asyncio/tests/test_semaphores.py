@@ -1,3 +1,4 @@
+# @omlish-lite
 import asyncio
 
 from omlish.testing.unittest.asyncs import AsyncioIsolatedAsyncTestCase

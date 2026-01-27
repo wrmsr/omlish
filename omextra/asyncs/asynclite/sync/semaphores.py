@@ -1,5 +1,7 @@
+# ruff: noqa: UP045
 # @omlish-lite
 import threading
+import typing as ta
 
 from ..semaphores import AsyncliteSemaphore
 from ..semaphores import AsyncliteSemaphores
@@ -16,7 +18,7 @@ class SyncAsyncliteSemaphore(AsyncliteSemaphore, SyncAsyncliteObject):
 
         self._u = u
 
-    async def acquire(self, *, timeout: float | None = None) -> None:
+    async def acquire(self, *, timeout: ta.Optional[float] = None) -> None:
         if not self._u.acquire(blocking=True, timeout=timeout):
             raise TimeoutError
 

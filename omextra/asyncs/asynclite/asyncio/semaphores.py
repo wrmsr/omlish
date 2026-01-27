@@ -1,5 +1,7 @@
+# ruff: noqa: UP045
 # @omlish-lite
 import asyncio
+import typing as ta
 
 from ..semaphores import AsyncliteSemaphore
 from ..semaphores import AsyncliteSemaphores
@@ -16,7 +18,7 @@ class AsyncioAsyncliteSemaphore(AsyncliteSemaphore, AsyncioAsyncliteObject):
 
         self._u = u
 
-    async def acquire(self, *, timeout: float | None = None) -> None:
+    async def acquire(self, *, timeout: ta.Optional[float] = None) -> None:
         await self._wait_for(self._u.acquire(), timeout=timeout)
 
     def acquire_nowait(self) -> bool:

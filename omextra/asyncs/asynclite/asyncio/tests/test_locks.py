@@ -1,3 +1,4 @@
+# @omlish-lite
 from omlish.testing.unittest.asyncs import AsyncioIsolatedAsyncTestCase
 
 from ..locks import AsyncioAsyncliteLocks

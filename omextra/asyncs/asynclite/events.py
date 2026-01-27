@@ -1,3 +1,4 @@
+# ruff: noqa: UP045
 # @omlish-lite
 import abc
 import typing as ta
@@ -21,7 +22,7 @@ class AsyncliteEvent(AsyncliteObject, Abstract):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def wait(self, *, timeout: float | None = None) -> ta.Awaitable[None]:
+    def wait(self, *, timeout: ta.Optional[float] = None) -> ta.Awaitable[None]:
         raise NotImplementedError
 
 

@@ -1,3 +1,4 @@
+# @omlish-lite
 import unittest
 
 from omlish.lite.asyncs import sync_await

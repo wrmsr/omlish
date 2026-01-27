@@ -1,5 +1,7 @@
+# ruff: noqa: UP045
 # @omlish-lite
 import asyncio
+import typing as ta
 
 from ..locks import AsyncliteLock
 from ..locks import AsyncliteLocks
@@ -16,7 +18,7 @@ class AsyncioAsyncliteLock(AsyncliteLock, AsyncioAsyncliteObject):
 
         self._u = u
 
-    async def acquire(self, *, timeout: float | None = None) -> None:
+    async def acquire(self, *, timeout: ta.Optional[float] = None) -> None:
         with self._translate_exceptions():
             await self._wait_for(self._u.acquire(), timeout=timeout)
 

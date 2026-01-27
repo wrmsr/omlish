@@ -1,3 +1,5 @@
+# ruff: noqa: UP045
+import typing as ta
 
 import anyio
 
@@ -16,7 +18,7 @@ class AnyioAsyncliteLock(AsyncliteLock, AnyioAsyncliteObject):
 
         self._u = u
 
-    async def acquire(self, *, timeout: float | None = None) -> None:
+    async def acquire(self, *, timeout: ta.Optional[float] = None) -> None:
         if timeout is not None:
             with anyio.fail_after(timeout):
                 await self._u.acquire()

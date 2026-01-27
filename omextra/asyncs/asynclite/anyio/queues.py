@@ -1,3 +1,4 @@
+# ruff: noqa: UP045
 import math
 import queue
 import typing as ta
@@ -42,7 +43,7 @@ class AnyioAsyncliteQueue(AsyncliteQueue[T], AnyioAsyncliteObject):
 
         return self.qsize() >= self._maxsize
 
-    async def put(self, item: T, *, timeout: float | None = None) -> None:
+    async def put(self, item: T, *, timeout: ta.Optional[float] = None) -> None:
         if timeout is not None:
             with anyio.fail_after(timeout):
                 await self._send.send(item)
@@ -57,7 +58,7 @@ class AnyioAsyncliteQueue(AsyncliteQueue[T], AnyioAsyncliteObject):
         except anyio.WouldBlock as e:
             raise queue.Full from e
 
-    async def get(self, *, timeout: float | None = None) -> T:
+    async def get(self, *, timeout: ta.Optional[float] = None) -> T:
         if timeout is not None:
             with anyio.fail_after(timeout):
                 return await self._recv.receive()

@@ -4,6 +4,12 @@
 
 - First, read `README.md` and `CODESTYLE.md` to understand the repo.
 
+### DO-NOTS
+
+- Do NOT remove an `@omlish-lite` marker from a source file if one is present. If the file is marked as lite, it is used
+  in a lite context, and must remain lite-compatible.
+
+
 ### Running stuff
 
 - Do not use the system python - use the `python` executable in the project root to run everything - it will take care

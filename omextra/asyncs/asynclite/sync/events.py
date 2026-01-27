@@ -1,5 +1,7 @@
+# ruff: noqa: UP045
 # @omlish-lite
 import threading
+import typing as ta
 
 from ..events import AsyncliteEvent
 from ..events import AsyncliteEvents
@@ -22,7 +24,7 @@ class SyncAsyncliteEvent(AsyncliteEvent, SyncAsyncliteObject):
     def is_set(self) -> bool:
         return self._u.is_set()
 
-    async def wait(self, *, timeout: float | None = None) -> None:
+    async def wait(self, *, timeout: ta.Optional[float] = None) -> None:
         if not self._u.wait(timeout=timeout):
             raise TimeoutError
 

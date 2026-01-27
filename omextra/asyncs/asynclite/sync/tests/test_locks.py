@@ -1,3 +1,4 @@
+# @omlish-lite
 import threading
 
 from omlish.lite.asyncs import sync_await
