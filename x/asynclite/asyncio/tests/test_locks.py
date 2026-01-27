@@ -1,9 +1,9 @@
-import unittest
+from omlish.testing.unittest.asyncs import AsyncioIsolatedAsyncTestCase
 
 from ..locks import AsyncioAsyncliteLocks
 
 
-class TestAsyncioLocks(unittest.IsolatedAsyncioTestCase):
+class TestAsyncioLocks(AsyncioIsolatedAsyncTestCase):
     async def test_basic_lock_unlock(self):
         api = AsyncioAsyncliteLocks()
         lock = api.make_lock()
@@ -90,3 +90,46 @@ class TestAsyncioLocks(unittest.IsolatedAsyncioTestCase):
 
         self.assertFalse(lock1.locked())
         self.assertFalse(lock2.locked())
+
+    async def test_acquire_nowait_succeeds(self):
+        api = AsyncioAsyncliteLocks()
+        lock = api.make_lock()
+
+        self.assertFalse(lock.locked())
+
+        result = lock.acquire_nowait()
+        self.assertTrue(result)
+        self.assertTrue(lock.locked())
+
+        lock.release()
+        self.assertFalse(lock.locked())
+
+    async def test_acquire_nowait_fails_when_locked(self):
+        import asyncio
+
+        api = AsyncioAsyncliteLocks()
+        lock = api.make_lock()
+
+        # Have another task acquire the lock
+        lock_acquired = asyncio.Event()
+        lock_release = asyncio.Event()
+
+        async def holder():
+            await lock.acquire()
+            lock_acquired.set()
+            await lock_release.wait()
+            lock.release()
+
+        task = asyncio.create_task(holder())
+        await lock_acquired.wait()
+
+        # Now try acquire_nowait from this task - should fail
+        self.assertTrue(lock.locked())
+        result = lock.acquire_nowait()
+        self.assertFalse(result)
+        self.assertTrue(lock.locked())
+
+        # Release and verify
+        lock_release.set()
+        await task
+        self.assertFalse(lock.locked())

@@ -1,140 +1,109 @@
 import queue
-import unittest
 
-import anyio
+from omlish.testing.unittest.asyncs import AnyioIsolatedAsyncTestCase
 
 from ..queues import AnyioAsyncliteQueues
 
 
-def run_anyio_test(test_fn):
-    """Helper to run an async test function with anyio."""
+class TestAnyioQueues(AnyioIsolatedAsyncTestCase):
+    async def test_basic_operations(self):
+        api = AnyioAsyncliteQueues()
+        q = api.make_queue(maxsize=2)
 
-    anyio.run(test_fn)
+        self.assertTrue(q.empty())
+        self.assertFalse(q.full())
+        self.assertEqual(q.qsize(), 0)
 
+        await q.put('first')
+        self.assertFalse(q.empty())
+        self.assertFalse(q.full())
+        self.assertEqual(q.qsize(), 1)
 
-class TestAnyioQueues(unittest.TestCase):
-    def test_basic_operations(self):
-        async def _test():
-            api = AnyioAsyncliteQueues()
-            q = api.make_queue(maxsize=2)
+        await q.put('second')
+        self.assertFalse(q.empty())
+        self.assertTrue(q.full())
+        self.assertEqual(q.qsize(), 2)
 
-            self.assertTrue(q.empty())
-            self.assertFalse(q.full())
-            self.assertEqual(q.qsize(), 0)
+    async def test_put_get(self):
+        api = AnyioAsyncliteQueues()
+        q = api.make_queue()
 
-            await q.put('first')
-            self.assertFalse(q.empty())
-            self.assertFalse(q.full())
-            self.assertEqual(q.qsize(), 1)
+        await q.put('hello')
+        await q.put('world')
 
-            await q.put('second')
-            self.assertFalse(q.empty())
-            self.assertTrue(q.full())
-            self.assertEqual(q.qsize(), 2)
+        item1 = await q.get()
+        self.assertEqual(item1, 'hello')
 
-        run_anyio_test(_test)
+        item2 = await q.get()
+        self.assertEqual(item2, 'world')
 
-    def test_put_get(self):
-        async def _test():
-            api = AnyioAsyncliteQueues()
-            q = api.make_queue()
+        self.assertTrue(q.empty())
 
-            await q.put('hello')
-            await q.put('world')
+    async def test_put_get_nowait(self):
+        api = AnyioAsyncliteQueues()
+        q = api.make_queue(maxsize=2)
 
-            item1 = await q.get()
-            self.assertEqual(item1, 'hello')
+        q.put_nowait('first')
+        q.put_nowait('second')
 
-            item2 = await q.get()
-            self.assertEqual(item2, 'world')
+        self.assertEqual(q.qsize(), 2)
+        self.assertTrue(q.full())
 
-            self.assertTrue(q.empty())
+        item1 = q.get_nowait()
+        self.assertEqual(item1, 'first')
 
-        run_anyio_test(_test)
+        item2 = q.get_nowait()
+        self.assertEqual(item2, 'second')
 
-    def test_put_get_nowait(self):
-        async def _test():
-            api = AnyioAsyncliteQueues()
-            q = api.make_queue(maxsize=2)
+        self.assertTrue(q.empty())
 
-            q.put_nowait('first')
-            q.put_nowait('second')
+    async def test_get_nowait_empty(self):
+        api = AnyioAsyncliteQueues()
+        q = api.make_queue()
 
-            self.assertEqual(q.qsize(), 2)
-            self.assertTrue(q.full())
+        with self.assertRaises(queue.Empty):
+            q.get_nowait()
 
-            item1 = q.get_nowait()
-            self.assertEqual(item1, 'first')
+    async def test_put_nowait_full(self):
+        api = AnyioAsyncliteQueues()
+        q = api.make_queue(maxsize=1)
 
-            item2 = q.get_nowait()
-            self.assertEqual(item2, 'second')
+        q.put_nowait('item')
 
-            self.assertTrue(q.empty())
+        with self.assertRaises(queue.Full):
+            q.put_nowait('another')
 
-        run_anyio_test(_test)
+    async def test_put_timeout(self):
+        api = AnyioAsyncliteQueues()
+        q = api.make_queue(maxsize=1)
 
-    def test_get_nowait_empty(self):
-        async def _test():
-            api = AnyioAsyncliteQueues()
-            q = api.make_queue()
+        await q.put('first')
+        self.assertTrue(q.full())
 
-            with self.assertRaises(queue.Empty):
-                q.get_nowait()
+        with self.assertRaises(TimeoutError):
+            await q.put('second', timeout=0.1)
 
-        run_anyio_test(_test)
+    async def test_get_timeout(self):
+        api = AnyioAsyncliteQueues()
+        q = api.make_queue()
 
-    def test_put_nowait_full(self):
-        async def _test():
-            api = AnyioAsyncliteQueues()
-            q = api.make_queue(maxsize=1)
+        self.assertTrue(q.empty())
 
-            q.put_nowait('item')
+        with self.assertRaises(TimeoutError):
+            await q.get(timeout=0.1)
 
-            with self.assertRaises(queue.Full):
-                q.put_nowait('another')
+    async def test_unbounded_queue(self):
+        api = AnyioAsyncliteQueues()
+        q = api.make_queue()
 
-        run_anyio_test(_test)
+        for i in range(100):
+            await q.put(i)
 
-    def test_put_timeout(self):
-        async def _test():
-            api = AnyioAsyncliteQueues()
-            q = api.make_queue(maxsize=1)
+        self.assertEqual(q.qsize(), 100)
+        self.assertFalse(q.full())
 
-            await q.put('first')
-            self.assertTrue(q.full())
+        for i in range(100):
+            item = await q.get()
+            self.assertEqual(item, i)
 
-            with self.assertRaises(TimeoutError):
-                await q.put('second', timeout=0.1)
-
-        run_anyio_test(_test)
-
-    def test_get_timeout(self):
-        async def _test():
-            api = AnyioAsyncliteQueues()
-            q = api.make_queue()
-
-            self.assertTrue(q.empty())
-
-            with self.assertRaises(TimeoutError):
-                await q.get(timeout=0.1)
-
-        run_anyio_test(_test)
-
-    def test_unbounded_queue(self):
-        async def _test():
-            api = AnyioAsyncliteQueues()
-            q = api.make_queue()
-
-            for i in range(100):
-                await q.put(i)
-
-            self.assertEqual(q.qsize(), 100)
-            self.assertFalse(q.full())
-
-            for i in range(100):
-                item = await q.get()
-                self.assertEqual(item, i)
-
-            self.assertTrue(q.empty())
-
-        run_anyio_test(_test)
+        self.assertTrue(q.empty())

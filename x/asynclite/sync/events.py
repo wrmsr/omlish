@@ -3,8 +3,8 @@ import threading
 
 from ..events import AsyncliteEvent
 from ..events import AsyncliteEvents
-from .base import SyncAsyncliteObject
 from .base import SyncAsyncliteApi
+from .base import SyncAsyncliteObject
 
 
 ##

@@ -70,14 +70,17 @@ public:
     operator T*() const = delete;
 };
 
-// Helper struct to track unique typed values during processing
-struct UniqueInfo {
-    PyObject *unique_tv_cls;  // The unique class (borrowed from map key)
-    PyObject *tv;             // The typed value (borrowed from args)
-    size_t idx;               // Index in unique_lst when added
+//
+
+template<typename F>
+struct ScopeGuard {
+    F cleanup;
+    ~ScopeGuard() { cleanup(); }
 };
 
-using TmpItem = std::variant<PyObject*, std::unique_ptr<UniqueInfo>>;
+template<typename F> ScopeGuard(F) -> ScopeGuard<F>;
+
+//
 
 PyDoc_STRVAR(init_typed_values_collection_doc,
 "init_typed_values_collection(*tvs, override=False, check_type=None)\n"
@@ -143,6 +146,15 @@ static PyObject * init_typed_values_collection(PyObject *module, PyObject *const
         return PyTuple_Pack(3, empty_tuple.get(), empty_dict.get(), empty_dict2.get());
     }
 
+    // Helper struct to track unique typed values during processing
+    struct UniqueInfo {
+        PyObject *unique_tv_cls;  // The unique class (borrowed from map key)
+        PyObject *tv;             // The typed value (borrowed from args)
+        size_t idx;               // Index in unique_lst when added
+    };
+
+    using TmpItem = std::variant<PyObject*, std::unique_ptr<UniqueInfo>>;
+
     // Temporary storage
     std::vector<TmpItem> tmp_lst;
     tmp_lst.reserve(nargs);
@@ -150,10 +162,11 @@ static PyObject * init_typed_values_collection(PyObject *module, PyObject *const
     // Map from unique type to list of typed values
     std::unordered_map<PyObject*, std::vector<PyObject*>> unique_dct;
 
-    struct UniqueKeysCleaner {
-        std::unordered_map<PyObject*, std::vector<PyObject*>> &map;
-        ~UniqueKeysCleaner() { for (auto &pair : map) Py_DECREF(pair.first); }
-    } keys_cleaner{unique_dct};
+    ScopeGuard keys_cleaner{[&unique_dct] {
+        for (auto const& [key, _] : unique_dct) {
+            Py_DECREF(key);
+        }
+    }};
 
     // Process each typed value
     for (Py_ssize_t i = 0; i < nargs; i++) {

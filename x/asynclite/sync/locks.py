@@ -3,8 +3,8 @@ import threading
 
 from ..locks import AsyncliteLock
 from ..locks import AsyncliteLocks
-from .base import SyncAsyncliteObject
 from .base import SyncAsyncliteApi
+from .base import SyncAsyncliteObject
 
 
 ##
@@ -24,6 +24,9 @@ class SyncAsyncliteLock(AsyncliteLock, SyncAsyncliteObject):
 
         if not a:
             raise TimeoutError
+
+    def acquire_nowait(self) -> bool:
+        return self._u.acquire(blocking=False)
 
     def release(self) -> None:
         self._u.release()

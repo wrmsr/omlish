@@ -7,8 +7,8 @@ import anyio.streams.memory
 
 from ..queues import AsyncliteQueue
 from ..queues import AsyncliteQueues
-from .base import AnyioAsyncliteObject
 from .base import AnyioAsyncliteApi
+from .base import AnyioAsyncliteObject
 
 
 T = ta.TypeVar('T')

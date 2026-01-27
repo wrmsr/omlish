@@ -1,10 +1,11 @@
 import asyncio
-import unittest
+
+from omlish.testing.unittest.asyncs import AsyncioIsolatedAsyncTestCase
 
 from ..semaphores import AsyncioAsyncliteSemaphores
 
 
-class TestAsyncioSemaphores(unittest.IsolatedAsyncioTestCase):
+class TestAsyncioSemaphores(AsyncioIsolatedAsyncTestCase):
     async def test_basic_acquire_release(self):
         api = AsyncioAsyncliteSemaphores()
         sem = api.make_semaphore(1)

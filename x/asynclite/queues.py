@@ -4,8 +4,8 @@ import typing as ta
 
 from omlish.lite.abstract import Abstract
 
-from .base import AsyncliteObject
 from .base import AsyncliteApi
+from .base import AsyncliteObject
 
 
 T = ta.TypeVar('T')

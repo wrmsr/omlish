@@ -2,8 +2,8 @@ import anyio
 
 from ..semaphores import AsyncliteSemaphore
 from ..semaphores import AsyncliteSemaphores
-from .base import AnyioAsyncliteObject
 from .base import AnyioAsyncliteApi
+from .base import AnyioAsyncliteObject
 
 
 ##

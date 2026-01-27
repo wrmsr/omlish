@@ -4,5 +4,5 @@ from ..sleeps import SyncAsyncliteSleeps
 
 
 class TestSync(unittest.TestCase):
-    def test_sleep(self):
-        SyncAsyncliteSleeps().sleep(.2)
+    async def test_sleep(self):
+        await SyncAsyncliteSleeps().sleep(.2)

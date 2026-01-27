@@ -2,8 +2,8 @@ import anyio
 
 from ..events import AsyncliteEvent
 from ..events import AsyncliteEvents
-from .base import AnyioAsyncliteObject
 from .base import AnyioAsyncliteApi
+from .base import AnyioAsyncliteObject
 
 
 ##

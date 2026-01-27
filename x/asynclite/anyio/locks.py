@@ -1,11 +1,10 @@
-import typing as ta
 
 import anyio
 
 from ..locks import AsyncliteLock
 from ..locks import AsyncliteLocks
-from .base import AnyioAsyncliteObject
 from .base import AnyioAsyncliteApi
+from .base import AnyioAsyncliteObject
 
 
 ##
@@ -24,6 +23,14 @@ class AnyioAsyncliteLock(AsyncliteLock, AnyioAsyncliteObject):
 
         else:
             await self._u.acquire()
+
+    def acquire_nowait(self) -> bool:
+        try:
+            self._u.acquire_nowait()
+            return True
+
+        except anyio.WouldBlock:
+            return False
 
     def release(self) -> None:
         self._u.release()

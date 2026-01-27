@@ -1,10 +1,11 @@
 import queue
-import unittest
+
+from omlish.testing.unittest.asyncs import AsyncioIsolatedAsyncTestCase
 
 from ..queues import AsyncioAsyncliteQueues
 
 
-class TestAsyncioQueues(unittest.IsolatedAsyncioTestCase):
+class TestAsyncioQueues(AsyncioIsolatedAsyncTestCase):
     async def test_basic_operations(self):
         api = AsyncioAsyncliteQueues()
         q = api.make_queue(maxsize=2)

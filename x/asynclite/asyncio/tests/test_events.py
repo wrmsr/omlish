@@ -1,10 +1,11 @@
 import asyncio
-import unittest
+
+from omlish.testing.unittest.asyncs import AsyncioIsolatedAsyncTestCase
 
 from ..events import AsyncioAsyncliteEvents
 
 
-class TestAsyncioEvents(unittest.IsolatedAsyncioTestCase):
+class TestAsyncioEvents(AsyncioIsolatedAsyncTestCase):
     async def test_initial_state(self):
         api = AsyncioAsyncliteEvents()
         event = api.make_event()

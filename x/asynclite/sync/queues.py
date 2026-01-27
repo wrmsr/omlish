@@ -4,8 +4,8 @@ import typing as ta
 
 from ..queues import AsyncliteQueue
 from ..queues import AsyncliteQueues
-from .base import SyncAsyncliteObject
 from .base import SyncAsyncliteApi
+from .base import SyncAsyncliteObject
 
 
 T = ta.TypeVar('T')

@@ -3,8 +3,8 @@ import asyncio
 
 from ..events import AsyncliteEvent
 from ..events import AsyncliteEvents
-from .base import AsyncioAsyncliteObject
 from .base import AsyncioAsyncliteApi
+from .base import AsyncioAsyncliteObject
 
 
 ##

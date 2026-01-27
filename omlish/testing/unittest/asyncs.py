@@ -40,6 +40,7 @@ import typing as ta
 import unittest
 import warnings
 
+from ...lite.asyncs import sync_await
 from ...lite.check import check
 
 
@@ -200,6 +201,28 @@ class AsyncioIsolatedAsyncTestCase(IsolatedAsyncTestCase):
 ##
 
 
+class SyncIsolatedAsyncTestCaseAsyncRunner(IsolatedAsyncTestCaseAsyncRunner):
+    def __init__(self):
+        pass
+
+    def run(self, obj: ta.Any, *, context: ta.Optional[contextvars.Context] = None) -> ta.Any:
+        if context is not None:
+            return context.run(sync_await, obj)
+        else:
+            return sync_await(obj)
+
+    def close(self) -> None:
+        pass
+
+
+class SyncIsolatedAsyncTestCase(IsolatedAsyncTestCase):
+    def _createAsyncRunner(self):
+        return SyncIsolatedAsyncTestCaseAsyncRunner()
+
+
+##
+
+
 class AnyioIsolatedAsyncTestCaseAsyncRunner(IsolatedAsyncTestCaseAsyncRunner):
     def __init__(self, **kwargs):
         import anyio.from_thread
@@ -207,10 +230,13 @@ class AnyioIsolatedAsyncTestCaseAsyncRunner(IsolatedAsyncTestCaseAsyncRunner):
         self._portal = self._cm.__enter__()
 
     def run(self, obj: ta.Any, *, context: ta.Optional[contextvars.Context] = None) -> ta.Any:
+        async def inner():
+            return await obj
+
         if context is not None:
-            return context.run(self._portal.call, obj)
+            return context.run(self._portal.call, inner)
         else:
-            return self._portal.call(obj)
+            return self._portal.call(inner)
 
     def close(self) -> None:
         self._cm.__exit__(None, None, None)

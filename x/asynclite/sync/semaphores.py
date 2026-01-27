@@ -3,8 +3,8 @@ import threading
 
 from ..semaphores import AsyncliteSemaphore
 from ..semaphores import AsyncliteSemaphores
-from .base import SyncAsyncliteObject
 from .base import SyncAsyncliteApi
+from .base import SyncAsyncliteObject
 
 
 ##

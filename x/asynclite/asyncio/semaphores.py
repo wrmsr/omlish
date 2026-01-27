@@ -3,8 +3,8 @@ import asyncio
 
 from ..semaphores import AsyncliteSemaphore
 from ..semaphores import AsyncliteSemaphores
-from .base import AsyncioAsyncliteObject
 from .base import AsyncioAsyncliteApi
+from .base import AsyncioAsyncliteObject
 
 
 ##
