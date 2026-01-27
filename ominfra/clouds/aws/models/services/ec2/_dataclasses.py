@@ -20082,50 +20082,55 @@ def _process_dataclass__a2a4416e2af8714bacfde725575818993950dd57():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('network_card_index', 'network_performance', 'maximum_network_interfaces', 'baseli"
-        "ne_bandwidth_in_gbips', 'peak_bandwidth_in_gbips', 'default_ena_queue_count_per_interface', 'maximum_ena_queue"
-        "_count', 'maximum_ena_queue_count_per_interface')), EqPlan(fields=('network_card_index', 'network_performance'"
-        ", 'maximum_network_interfaces', 'baseline_bandwidth_in_gbips', 'peak_bandwidth_in_gbips', 'default_ena_queue_c"
-        "ount_per_interface', 'maximum_ena_queue_count', 'maximum_ena_queue_count_per_interface')), FrozenPlan(fields=("
-        "'__shape__', 'network_card_index', 'network_performance', 'maximum_network_interfaces', 'baseline_bandwidth_in"
-        "_gbips', 'peak_bandwidth_in_gbips', 'default_ena_queue_count_per_interface', 'maximum_ena_queue_count', 'maxim"
-        "um_ena_queue_count_per_interface'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('network"
-        "_card_index', 'network_performance', 'maximum_network_interfaces', 'baseline_bandwidth_in_gbips', 'peak_bandwi"
-        "dth_in_gbips', 'default_ena_queue_count_per_interface', 'maximum_ena_queue_count', 'maximum_ena_queue_count_pe"
-        "r_interface'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fie"
-        "lds.0.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_"
-        "VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='network_card_index', annotation=OpRef("
-        "name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True"
-        ", override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field("
-        "name='network_performance', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields"
-        ".2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
-        "idate=None, check_type=None), InitPlan.Field(name='maximum_network_interfaces', annotation=OpRef(name='init.fi"
-        "elds.3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=Fa"
-        "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='baselin"
-        "e_bandwidth_in_gbips', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.de"
-        "fault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate"
-        "=None, check_type=None), InitPlan.Field(name='peak_bandwidth_in_gbips', annotation=OpRef(name='init.fields.5.a"
-        "nnotation'), default=OpRef(name='init.fields.5.default'), default_factory=None, init=True, override=False, fie"
-        "ld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='default_ena_que"
-        "ue_count_per_interface', annotation=OpRef(name='init.fields.6.annotation'), default=OpRef(name='init.fields.6."
-        "default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valida"
-        "te=None, check_type=None), InitPlan.Field(name='maximum_ena_queue_count', annotation=OpRef(name='init.fields.7"
-        ".annotation'), default=OpRef(name='init.fields.7.default'), default_factory=None, init=True, override=False, f"
-        "ield_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='maximum_ena_q"
-        "ueue_count_per_interface', annotation=OpRef(name='init.fields.8.annotation'), default=OpRef(name='init.fields."
-        "8.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, vali"
-        "date=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('network_card_index', 'network"
-        "_performance', 'maximum_network_interfaces', 'baseline_bandwidth_in_gbips', 'peak_bandwidth_in_gbips', 'defaul"
-        "t_ena_queue_count_per_interface', 'maximum_ena_queue_count', 'maximum_ena_queue_count_per_interface'), frozen="
-        "True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name="
-        "'network_card_index', kw_only=True, fn=None), ReprPlan.Field(name='network_performance', kw_only=True, fn=None"
-        "), ReprPlan.Field(name='maximum_network_interfaces', kw_only=True, fn=None), ReprPlan.Field(name='baseline_ban"
-        "dwidth_in_gbips', kw_only=True, fn=None), ReprPlan.Field(name='peak_bandwidth_in_gbips', kw_only=True, fn=None"
-        "), ReprPlan.Field(name='default_ena_queue_count_per_interface', kw_only=True, fn=None), ReprPlan.Field(name='m"
-        "aximum_ena_queue_count', kw_only=True, fn=None), ReprPlan.Field(name='maximum_ena_queue_count_per_interface', "
-        "kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('network_card_index', 'network_performance', 'maximum_network_interfaces', 'additi"
+        "onal_flexible_network_interfaces', 'baseline_bandwidth_in_gbips', 'peak_bandwidth_in_gbips', 'default_ena_queu"
+        "e_count_per_interface', 'maximum_ena_queue_count', 'maximum_ena_queue_count_per_interface')), EqPlan(fields=('"
+        "network_card_index', 'network_performance', 'maximum_network_interfaces', 'additional_flexible_network_interfa"
+        "ces', 'baseline_bandwidth_in_gbips', 'peak_bandwidth_in_gbips', 'default_ena_queue_count_per_interface', 'maxi"
+        "mum_ena_queue_count', 'maximum_ena_queue_count_per_interface')), FrozenPlan(fields=('__shape__', 'network_card"
+        "_index', 'network_performance', 'maximum_network_interfaces', 'additional_flexible_network_interfaces', 'basel"
+        "ine_bandwidth_in_gbips', 'peak_bandwidth_in_gbips', 'default_ena_queue_count_per_interface', 'maximum_ena_queu"
+        "e_count', 'maximum_ena_queue_count_per_interface'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', "
+        "fields=('network_card_index', 'network_performance', 'maximum_network_interfaces', 'additional_flexible_networ"
+        "k_interfaces', 'baseline_bandwidth_in_gbips', 'peak_bandwidth_in_gbips', 'default_ena_queue_count_per_interfac"
+        "e', 'maximum_ena_queue_count', 'maximum_ena_queue_count_per_interface'), cache=False), InitPlan(fields=(InitPl"
+        "an.Field(name='__shape__', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=No"
+        "ne, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), I"
+        "nitPlan.Field(name='network_card_index', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name"
+        "='init.fields.1.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
+        "rce=None, validate=None, check_type=None), InitPlan.Field(name='network_performance', annotation=OpRef(name='i"
+        "nit.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, overr"
+        "ide=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='m"
+        "aximum_network_interfaces', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields"
+        ".3.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
+        "idate=None, check_type=None), InitPlan.Field(name='additional_flexible_network_interfaces', annotation=OpRef(n"
+        "ame='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, init=True,"
+        " override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(n"
+        "ame='baseline_bandwidth_in_gbips', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init"
+        ".fields.5.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=No"
+        "ne, validate=None, check_type=None), InitPlan.Field(name='peak_bandwidth_in_gbips', annotation=OpRef(name='ini"
+        "t.fields.6.annotation'), default=OpRef(name='init.fields.6.default'), default_factory=None, init=True, overrid"
+        "e=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='def"
+        "ault_ena_queue_count_per_interface', annotation=OpRef(name='init.fields.7.annotation'), default=OpRef(name='in"
+        "it.fields.7.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
+        "None, validate=None, check_type=None), InitPlan.Field(name='maximum_ena_queue_count', annotation=OpRef(name='i"
+        "nit.fields.8.annotation'), default=OpRef(name='init.fields.8.default'), default_factory=None, init=True, overr"
+        "ide=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='m"
+        "aximum_ena_queue_count_per_interface', annotation=OpRef(name='init.fields.9.annotation'), default=OpRef(name='"
+        "init.fields.9.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
+        "e=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('network_card_inde"
+        "x', 'network_performance', 'maximum_network_interfaces', 'additional_flexible_network_interfaces', 'baseline_b"
+        "andwidth_in_gbips', 'peak_bandwidth_in_gbips', 'default_ena_queue_count_per_interface', 'maximum_ena_queue_cou"
+        "nt', 'maximum_ena_queue_count_per_interface'), frozen=True, slots=False, post_init_params=None, init_fns=(), v"
+        "alidate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='network_card_index', kw_only=True, fn=None), ReprPlan.F"
+        "ield(name='network_performance', kw_only=True, fn=None), ReprPlan.Field(name='maximum_network_interfaces', kw_"
+        "only=True, fn=None), ReprPlan.Field(name='additional_flexible_network_interfaces', kw_only=True, fn=None), Rep"
+        "rPlan.Field(name='baseline_bandwidth_in_gbips', kw_only=True, fn=None), ReprPlan.Field(name='peak_bandwidth_in"
+        "_gbips', kw_only=True, fn=None), ReprPlan.Field(name='default_ena_queue_count_per_interface', kw_only=True, fn"
+        "=None), ReprPlan.Field(name='maximum_ena_queue_count', kw_only=True, fn=None), ReprPlan.Field(name='maximum_en"
+        "a_queue_count_per_interface', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='b3bdb620818515b71cb12c278f10b24b6b186a1d',
+    plan_repr_sha1='d4bb148780d52e5fcca26a2f75b61c893a425fb3',
     op_ref_idents=(
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
@@ -20143,12 +20148,14 @@ def _process_dataclass__a2a4416e2af8714bacfde725575818993950dd57():
         '__dataclass__init__fields__7__default',
         '__dataclass__init__fields__8__annotation',
         '__dataclass__init__fields__8__default',
+        '__dataclass__init__fields__9__annotation',
+        '__dataclass__init__fields__9__default',
     ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.ec2', 'NetworkCardInfo'),
     ),
 )
-def _process_dataclass__b3bdb620818515b71cb12c278f10b24b6b186a1d():
+def _process_dataclass__d4bb148780d52e5fcca26a2f75b61c893a425fb3():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -20168,6 +20175,8 @@ def _process_dataclass__b3bdb620818515b71cb12c278f10b24b6b186a1d():
         __dataclass__init__fields__7__default,
         __dataclass__init__fields__8__annotation,
         __dataclass__init__fields__8__default,
+        __dataclass__init__fields__9__annotation,
+        __dataclass__init__fields__9__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -20189,6 +20198,7 @@ def _process_dataclass__b3bdb620818515b71cb12c278f10b24b6b186a1d():
                 network_card_index=self.network_card_index,
                 network_performance=self.network_performance,
                 maximum_network_interfaces=self.maximum_network_interfaces,
+                additional_flexible_network_interfaces=self.additional_flexible_network_interfaces,
                 baseline_bandwidth_in_gbips=self.baseline_bandwidth_in_gbips,
                 peak_bandwidth_in_gbips=self.peak_bandwidth_in_gbips,
                 default_ena_queue_count_per_interface=self.default_ena_queue_count_per_interface,
@@ -20210,6 +20220,7 @@ def _process_dataclass__b3bdb620818515b71cb12c278f10b24b6b186a1d():
                 self.network_card_index == other.network_card_index and
                 self.network_performance == other.network_performance and
                 self.maximum_network_interfaces == other.maximum_network_interfaces and
+                self.additional_flexible_network_interfaces == other.additional_flexible_network_interfaces and
                 self.baseline_bandwidth_in_gbips == other.baseline_bandwidth_in_gbips and
                 self.peak_bandwidth_in_gbips == other.peak_bandwidth_in_gbips and
                 self.default_ena_queue_count_per_interface == other.default_ena_queue_count_per_interface and
@@ -20227,6 +20238,7 @@ def _process_dataclass__b3bdb620818515b71cb12c278f10b24b6b186a1d():
             'network_card_index',
             'network_performance',
             'maximum_network_interfaces',
+            'additional_flexible_network_interfaces',
             'baseline_bandwidth_in_gbips',
             'peak_bandwidth_in_gbips',
             'default_ena_queue_count_per_interface',
@@ -20252,6 +20264,7 @@ def _process_dataclass__b3bdb620818515b71cb12c278f10b24b6b186a1d():
             'network_card_index',
             'network_performance',
             'maximum_network_interfaces',
+            'additional_flexible_network_interfaces',
             'baseline_bandwidth_in_gbips',
             'peak_bandwidth_in_gbips',
             'default_ena_queue_count_per_interface',
@@ -20277,6 +20290,7 @@ def _process_dataclass__b3bdb620818515b71cb12c278f10b24b6b186a1d():
                 self.network_card_index,
                 self.network_performance,
                 self.maximum_network_interfaces,
+                self.additional_flexible_network_interfaces,
                 self.baseline_bandwidth_in_gbips,
                 self.peak_bandwidth_in_gbips,
                 self.default_ena_queue_count_per_interface,
@@ -20293,15 +20307,17 @@ def _process_dataclass__b3bdb620818515b71cb12c278f10b24b6b186a1d():
             network_card_index: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
             network_performance: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
             maximum_network_interfaces: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
-            baseline_bandwidth_in_gbips: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
-            peak_bandwidth_in_gbips: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
-            default_ena_queue_count_per_interface: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
-            maximum_ena_queue_count: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
-            maximum_ena_queue_count_per_interface: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
+            additional_flexible_network_interfaces: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
+            baseline_bandwidth_in_gbips: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
+            peak_bandwidth_in_gbips: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
+            default_ena_queue_count_per_interface: __dataclass__init__fields__7__annotation = __dataclass__init__fields__7__default,
+            maximum_ena_queue_count: __dataclass__init__fields__8__annotation = __dataclass__init__fields__8__default,
+            maximum_ena_queue_count_per_interface: __dataclass__init__fields__9__annotation = __dataclass__init__fields__9__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'network_card_index', network_card_index)
             __dataclass__object_setattr(self, 'network_performance', network_performance)
             __dataclass__object_setattr(self, 'maximum_network_interfaces', maximum_network_interfaces)
+            __dataclass__object_setattr(self, 'additional_flexible_network_interfaces', additional_flexible_network_interfaces)
             __dataclass__object_setattr(self, 'baseline_bandwidth_in_gbips', baseline_bandwidth_in_gbips)
             __dataclass__object_setattr(self, 'peak_bandwidth_in_gbips', peak_bandwidth_in_gbips)
             __dataclass__object_setattr(self, 'default_ena_queue_count_per_interface', default_ena_queue_count_per_interface)
@@ -20319,6 +20335,7 @@ def _process_dataclass__b3bdb620818515b71cb12c278f10b24b6b186a1d():
             parts.append(f"network_card_index={self.network_card_index!r}")
             parts.append(f"network_performance={self.network_performance!r}")
             parts.append(f"maximum_network_interfaces={self.maximum_network_interfaces!r}")
+            parts.append(f"additional_flexible_network_interfaces={self.additional_flexible_network_interfaces!r}")
             parts.append(f"baseline_bandwidth_in_gbips={self.baseline_bandwidth_in_gbips!r}")
             parts.append(f"peak_bandwidth_in_gbips={self.peak_bandwidth_in_gbips!r}")
             parts.append(f"default_ena_queue_count_per_interface={self.default_ena_queue_count_per_interface!r}")

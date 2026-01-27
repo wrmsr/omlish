@@ -19,6 +19,8 @@ _dc.init_package(
 ##
 
 
+AdditionalFlexibleNetworkInterfaces = _ta.NewType('AdditionalFlexibleNetworkInterfaces', int)
+
 AllocationId = _ta.NewType('AllocationId', str)
 
 
@@ -3422,6 +3424,12 @@ class NetworkCardInfo(
         member_name='MaximumNetworkInterfaces',
         serialization_name='maximumNetworkInterfaces',
         shape_name='MaxNetworkInterfaces',
+    ))
+
+    additional_flexible_network_interfaces: AdditionalFlexibleNetworkInterfaces | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='AdditionalFlexibleNetworkInterfaces',
+        serialization_name='additionalFlexibleNetworkInterfaces',
+        shape_name='AdditionalFlexibleNetworkInterfaces',
     ))
 
     baseline_bandwidth_in_gbips: BaselineBandwidthInGbps | None = _dc.field(default=None, metadata=_base.field_metadata(
