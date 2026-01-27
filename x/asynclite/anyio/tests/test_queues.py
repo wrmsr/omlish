@@ -8,6 +8,7 @@ from ..queues import AnyioAsyncliteQueues
 
 def run_anyio_test(test_fn):
     """Helper to run an async test function with anyio."""
+
     anyio.run(test_fn)
 
 

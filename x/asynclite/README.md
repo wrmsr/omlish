@@ -14,6 +14,13 @@ and so on. For each 'slice' there is a subclass of `AsyncliteApi`, and may or ma
 `AsyncliteObject`. This allows consumers to declare only dependencies on the 'slices' of functionality necessary for
 their operation: code requiring only 'sleep' needn't depend on the entire capability set of the system.
 
+The abstraction layer attempts to convert exceptions raised to builtin/stdlib exceptions where possible - for example:
+`TimeoutError`, `queue.Empty`, etc.
+
+No mechanism of cancellation is currently supported, and due to the existence of the sync backend, probably will never
+be. As in sync contexts, cancellation should generally be done cooperatively, such as by polling an abort event at
+regular intervals, or handling a `None` item coming through as a signal to abort, etc.
+
 Notably, with the exception of the `anyio` backend, this is `@omlish-lite` code, and runs on python 3.8+. Because of
 its dependency on `anyio` that subpackage cannot be `@omlish-lite`, but it is still generally written in that style for
 consistency with the other backends.
