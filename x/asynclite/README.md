@@ -13,3 +13,5 @@ The code is organized into 'slices' corresponding to primitives exposed by the b
 and so on. For each 'slice' there is a subclass of `AsyncliteApi`, and may or may not be subclasses of
 `AsyncliteObject`. This allows consumers to declare only dependencies on the 'slices' of functionality necessary for
 their operation: code requiring only 'sleep' needn't depend on the entire capability set of the system.
+
+Notably, despite having an `anyio` backend, this is `@omlish-lite` code, and runs on python 3.8+.
