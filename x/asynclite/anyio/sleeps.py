@@ -1,4 +1,3 @@
-# @omlish-lite
 import typing as ta
 
 import anyio
