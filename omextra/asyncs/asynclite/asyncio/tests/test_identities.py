@@ -3,12 +3,12 @@ import asyncio
 
 from omlish.testing.unittest.asyncs import AsyncioIsolatedAsyncTestCase
 
-from ..identity import AsyncioAsyncliteIdentity
+from ..identities import AsyncioAsyncliteIdentities
 
 
-class TestAsyncioIdentity(AsyncioIsolatedAsyncTestCase):
+class TestAsyncioIdentities(AsyncioIsolatedAsyncTestCase):
     async def test_current_identity_returns_task(self):
-        api = AsyncioAsyncliteIdentity()
+        api = AsyncioAsyncliteIdentities()
         identity = api.current_identity()
 
         # Should return the current task
@@ -16,7 +16,7 @@ class TestAsyncioIdentity(AsyncioIsolatedAsyncTestCase):
         self.assertIsInstance(identity, asyncio.Task)
 
     async def test_current_identity_is_consistent(self):
-        api = AsyncioAsyncliteIdentity()
+        api = AsyncioAsyncliteIdentities()
 
         identity1 = api.current_identity()
         identity2 = api.current_identity()
@@ -25,7 +25,7 @@ class TestAsyncioIdentity(AsyncioIsolatedAsyncTestCase):
         self.assertIs(identity1, identity2)
 
     async def test_different_tasks_have_different_identities(self):
-        api = AsyncioAsyncliteIdentity()
+        api = AsyncioAsyncliteIdentities()
         identities = []
 
         async def get_identity():

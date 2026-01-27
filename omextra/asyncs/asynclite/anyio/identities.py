@@ -2,12 +2,12 @@ import typing as ta
 
 import anyio
 
-from ..identity import AsyncliteIdentity
+from ..identities import AsyncliteIdentities
 
 
 ##
 
 
-class AnyioAsyncliteIdentity(AsyncliteIdentity):
+class AnyioAsyncliteIdentities(AsyncliteIdentities):
     def current_identity(self) -> ta.Any:
         return anyio.get_current_task()

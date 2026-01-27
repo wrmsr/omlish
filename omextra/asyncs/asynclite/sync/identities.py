@@ -2,12 +2,12 @@
 import threading
 import typing as ta
 
-from ..identity import AsyncliteIdentity
+from ..identities import AsyncliteIdentities
 
 
 ##
 
 
-class SyncAsyncliteIdentity(AsyncliteIdentity):
+class SyncAsyncliteIdentities(AsyncliteIdentities):
     def current_identity(self) -> ta.Any:
         return threading.current_thread()

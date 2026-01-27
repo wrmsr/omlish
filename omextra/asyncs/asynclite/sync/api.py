@@ -1,7 +1,7 @@
 # @omlish-lite
 from ..api import Asynclite
 from .events import SyncAsyncliteEvents
-from .identity import SyncAsyncliteIdentity
+from .identities import SyncAsyncliteIdentities
 from .locks import SyncAsyncliteLocks
 from .queues import SyncAsyncliteQueues
 from .semaphores import SyncAsyncliteSemaphores
@@ -13,7 +13,7 @@ from .sleeps import SyncAsyncliteSleeps
 
 class SyncAsynclite(
     SyncAsyncliteEvents,
-    SyncAsyncliteIdentity,
+    SyncAsyncliteIdentities,
     SyncAsyncliteLocks,
     SyncAsyncliteQueues,
     SyncAsyncliteSemaphores,

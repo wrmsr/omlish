@@ -8,7 +8,7 @@ from omlish.lite.abstract import Abstract
 ##
 
 
-class AsyncliteIdentity(Abstract):
+class AsyncliteIdentities(Abstract):
     """
     Get the identity of the current task/thread.
 

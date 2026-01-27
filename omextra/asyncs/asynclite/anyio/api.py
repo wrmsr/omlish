@@ -1,6 +1,6 @@
 from ..api import Asynclite
 from .events import AnyioAsyncliteEvents
-from .identity import AnyioAsyncliteIdentity
+from .identities import AnyioAsyncliteIdentities
 from .locks import AnyioAsyncliteLocks
 from .queues import AnyioAsyncliteQueues
 from .semaphores import AnyioAsyncliteSemaphores
@@ -12,7 +12,7 @@ from .sleeps import AnyioAsyncliteSleeps
 
 class AnyioAsynclite(
     AnyioAsyncliteEvents,
-    AnyioAsyncliteIdentity,
+    AnyioAsyncliteIdentities,
     AnyioAsyncliteLocks,
     AnyioAsyncliteQueues,
     AnyioAsyncliteSemaphores,

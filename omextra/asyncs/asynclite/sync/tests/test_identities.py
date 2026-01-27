@@ -3,12 +3,12 @@ import threading
 
 from omlish.testing.unittest.asyncs import SyncIsolatedAsyncTestCase
 
-from ..identity import SyncAsyncliteIdentity
+from ..identities import SyncAsyncliteIdentities
 
 
-class TestSyncIdentity(SyncIsolatedAsyncTestCase):
+class TestSyncIdentities(SyncIsolatedAsyncTestCase):
     async def test_current_identity_returns_thread(self):
-        api = SyncAsyncliteIdentity()
+        api = SyncAsyncliteIdentities()
         identity = api.current_identity()
 
         # Should return the current thread
@@ -16,7 +16,7 @@ class TestSyncIdentity(SyncIsolatedAsyncTestCase):
         self.assertIsInstance(identity, threading.Thread)
 
     async def test_current_identity_is_consistent(self):
-        api = SyncAsyncliteIdentity()
+        api = SyncAsyncliteIdentities()
 
         identity1 = api.current_identity()
         identity2 = api.current_identity()
@@ -25,7 +25,7 @@ class TestSyncIdentity(SyncIsolatedAsyncTestCase):
         self.assertIs(identity1, identity2)
 
     async def test_different_threads_have_different_identities(self):
-        api = SyncAsyncliteIdentity()
+        api = SyncAsyncliteIdentities()
         identities = []
         ready = threading.Event()
         done = threading.Event()

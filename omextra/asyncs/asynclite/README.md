@@ -27,3 +27,6 @@ regular intervals, or handling a `None` item coming through as a signal to abort
 Notably, with the exception of the `anyio` backend, this is `@omlish-lite` code, and runs on python 3.8+. Because of
 its dependency on `anyio` that subpackage cannot be `@omlish-lite`, but it is still generally written in that style for
 consistency with the other backends.
+
+As with other lite packages, there's a non-lite `all` module in the base package and each backend package for convenient
+central usage in standard code.

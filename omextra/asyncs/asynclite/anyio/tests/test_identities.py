@@ -2,12 +2,12 @@ import anyio
 
 from omlish.testing.unittest.asyncs import AnyioIsolatedAsyncTestCase
 
-from ..identity import AnyioAsyncliteIdentity
+from ..identities import AnyioAsyncliteIdentities
 
 
-class TestAnyioIdentity(AnyioIsolatedAsyncTestCase):
+class TestAnyioIdentities(AnyioIsolatedAsyncTestCase):
     async def test_current_identity_returns_task_info(self):
-        api = AnyioAsyncliteIdentity()
+        api = AnyioAsyncliteIdentities()
         identity = api.current_identity()
 
         # Should return the current task info
@@ -15,7 +15,7 @@ class TestAnyioIdentity(AnyioIsolatedAsyncTestCase):
         self.assertIsInstance(identity, anyio.TaskInfo)
 
     async def test_current_identity_is_consistent(self):
-        api = AnyioAsyncliteIdentity()
+        api = AnyioAsyncliteIdentities()
 
         identity1 = api.current_identity()
         identity2 = api.current_identity()
@@ -24,7 +24,7 @@ class TestAnyioIdentity(AnyioIsolatedAsyncTestCase):
         self.assertEqual(identity1.id, identity2.id)
 
     async def test_different_tasks_have_different_identities(self):
-        api = AnyioAsyncliteIdentity()
+        api = AnyioAsyncliteIdentities()
         identities = []
 
         async def get_identity():
