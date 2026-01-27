@@ -30,20 +30,16 @@ class SyncAsyncliteQueue(AsyncliteQueue[T], SyncAsyncliteObject):
         return self._u.full()
 
     async def put(self, item: T, *, timeout: float | None = None) -> None:
-        with self._translate_exceptions():
-            self._u.put(item, block=True, timeout=timeout)
+        self._u.put(item, block=True, timeout=timeout)
 
     def put_nowait(self, item: T) -> None:
-        with self._translate_exceptions():
-            self._u.put_nowait(item)
+        self._u.put_nowait(item)
 
     async def get(self, *, timeout: float | None = None) -> T:
-        with self._translate_exceptions():
-            return self._u.get(block=True, timeout=timeout)
+        return self._u.get(block=True, timeout=timeout)
 
     def get_nowait(self) -> T:
-        with self._translate_exceptions():
-            return self._u.get_nowait()
+        return self._u.get_nowait()
 
 
 class SyncAsyncliteQueues(AsyncliteQueues, SyncAsyncliteApi):

@@ -21,6 +21,7 @@ class AnyioAsyncliteLock(AsyncliteLock, AnyioAsyncliteObject):
         if timeout is not None:
             with anyio.fail_after(timeout):
                 await self._u.acquire()
+
         else:
             await self._u.acquire()
 

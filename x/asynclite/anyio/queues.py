@@ -39,18 +39,21 @@ class AnyioAsyncliteQueue(AsyncliteQueue[T], AnyioAsyncliteObject):
     def full(self) -> bool:
         if self._maxsize <= 0:
             return False
+
         return self.qsize() >= self._maxsize
 
     async def put(self, item: T, *, timeout: float | None = None) -> None:
         if timeout is not None:
             with anyio.fail_after(timeout):
                 await self._send.send(item)
+
         else:
             await self._send.send(item)
 
     def put_nowait(self, item: T) -> None:
         try:
             self._send.send_nowait(item)
+
         except anyio.WouldBlock as e:
             raise queue.Full from e
 
@@ -58,12 +61,14 @@ class AnyioAsyncliteQueue(AsyncliteQueue[T], AnyioAsyncliteObject):
         if timeout is not None:
             with anyio.fail_after(timeout):
                 return await self._recv.receive()
+
         else:
             return await self._recv.receive()
 
     def get_nowait(self) -> T:
         try:
             return self._recv.receive_nowait()
+
         except anyio.WouldBlock as e:
             raise queue.Empty from e
 

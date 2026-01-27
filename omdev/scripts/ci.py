@@ -95,7 +95,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/asyncs/asyncio/utils.py', sha1='34691d4d0e5bab68f14e193a6200df040cfd0136'),
             dict(path='../../omlish/docker/ports.py', sha1='a3202c69b85bc4f1034479df3400fddc86130e5c'),
             dict(path='../../omlish/http/urllib.py', sha1='25431c5bdc7dd5cbecfcb8c0bdffaabf8c1691b9'),
-            dict(path='../../omlish/http/versions.py', sha1='197685ffbb62a457a0e8d4047a9df26aebd7dae4'),
+            dict(path='../../omlish/http/versions.py', sha1='a3ec6ac2581e6806de9cdb79976769134c271425'),
             dict(path='../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../omlish/lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
             dict(path='../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
@@ -605,6 +605,10 @@ class HttpProtocolVersion(ta.NamedTuple):
 
     def __str__(self) -> str:
         return f'HTTP/{self.major}.{self.minor}'
+
+    @property
+    def short_str(self) -> str:
+        return '.'.join(map(str, self))
 
 
 class HttpProtocolVersions:

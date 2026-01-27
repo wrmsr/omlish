@@ -13,6 +13,10 @@ class HttpProtocolVersion(ta.NamedTuple):
     def __str__(self) -> str:
         return f'HTTP/{self.major}.{self.minor}'
 
+    @property
+    def short_str(self) -> str:
+        return '.'.join(map(str, self))
+
 
 class HttpProtocolVersions:
     HTTP_0_9 = HttpProtocolVersion(0, 9)

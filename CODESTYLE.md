@@ -227,6 +227,7 @@
   - `KeyError` should however not be raised except in the specific and rare case of implementing a `ta.Mapping` or
     direct equivalent. For example, a `UserService` `get_user` method should raise a `UserNotFoundError`, not
     `KeyError`, when a given user is not found.
+- In general, avoid use of `contextlib.suppress` - prefer to use an explicit `try`/`except` block instead.
 
 
 ### Type Annotation

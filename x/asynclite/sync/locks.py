@@ -21,6 +21,7 @@ class SyncAsyncliteLock(AsyncliteLock, SyncAsyncliteObject):
             a = self._u.acquire(blocking=False, timeout=timeout)
         else:
             a = self._u.acquire(blocking=True)
+
         if not a:
             raise TimeoutError
 
