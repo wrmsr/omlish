@@ -96,6 +96,11 @@
     and a class to parse the JSON ABNF grammar would be `JsonAbnfParser`.
 
 
+### Packages
+
+  - All packages must have an `__init__.py` file, even if empty.
+
+
 ### Imports
 
   - **Always** use relative imports within a package. **Never** reference the name of the root package from within

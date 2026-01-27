@@ -8,9 +8,13 @@ from ..base import AsyncliteApi
 ##
 
 
-class SyncAsyncliteObject(AsyncliteObject, Abstract):
+class SyncAsyncliteBase(Abstract):
     pass
 
 
-class SyncAsyncliteApi(AsyncliteApi, Abstract):
+class SyncAsyncliteObject(AsyncliteObject, SyncAsyncliteBase, Abstract):
+    pass
+
+
+class SyncAsyncliteApi(AsyncliteApi, SyncAsyncliteBase, Abstract):
     pass

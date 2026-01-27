@@ -14,7 +14,7 @@ T = ta.TypeVar('T')
 ##
 
 
-class AsyncioAsyncliteObject(AsyncliteObject, Abstract):
+class AsyncioAsyncliteBase(Abstract):
     @classmethod
     async def _wait_for(cls, aw: ta.Awaitable[T], *, timeout: float | None = None) -> T:
         if timeout is not None:
@@ -27,5 +27,9 @@ class AsyncioAsyncliteObject(AsyncliteObject, Abstract):
             return await aw
 
 
-class AsyncioAsyncliteApi(AsyncliteApi, Abstract):
+class AsyncioAsyncliteObject(AsyncliteObject, AsyncioAsyncliteBase, Abstract):
+    pass
+
+
+class AsyncioAsyncliteApi(AsyncliteApi, AsyncioAsyncliteBase, Abstract):
     pass

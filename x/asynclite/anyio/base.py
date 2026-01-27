@@ -7,9 +7,13 @@ from ..base import AsyncliteApi
 ##
 
 
-class AnyioAsyncliteObject(AsyncliteObject, Abstract):
+class AnyioAsyncliteBase(Abstract):
     pass
 
 
-class AnyioAsyncliteApi(AsyncliteApi, Abstract):
+class AnyioAsyncliteObject(AsyncliteObject, AnyioAsyncliteBase, Abstract):
+    pass
+
+
+class AnyioAsyncliteApi(AsyncliteApi, AnyioAsyncliteBase, Abstract):
     pass
