@@ -1,4 +1,6 @@
 # @omlish-lite
+import asyncio
+
 from ..semaphores import AsyncliteSemaphore
 from ..semaphores import AsyncliteSemaphores
 from .base import AsyncioAsyncliteObject
@@ -9,9 +11,27 @@ from .base import AsyncioAsyncliteApi
 
 
 class AsyncioAsyncliteSemaphore(AsyncliteSemaphore, AsyncioAsyncliteObject):
-    pass
+    def __init__(self, u: asyncio.Semaphore) -> None:
+        super().__init__()
+
+        self._u = u
+
+    async def acquire(self, *, timeout: float | None = None) -> None:
+        await self._wait_for(self._u.acquire(), timeout=timeout)
+
+    def acquire_nowait(self) -> bool:
+        # asyncio.Semaphore doesn't have acquire_nowait, so we check if we can acquire
+        if self._u.locked():
+            return False
+
+        # Manually decrement the internal counter
+        self._u._value -= 1
+        return True
+
+    def release(self) -> None:
+        self._u.release()
 
 
 class AsyncioAsyncliteSemaphores(AsyncliteSemaphores, AsyncioAsyncliteApi):
-    def make_semaphore(self) -> AsyncliteSemaphore:
-        raise NotImplementedError
+    def make_semaphore(self, value: int = 1) -> AsyncliteSemaphore:
+        return AsyncioAsyncliteSemaphore(asyncio.Semaphore(value))
