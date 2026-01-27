@@ -180,7 +180,7 @@ pandas==3.0.0
 pandocfilters==1.5.1
 paramiko==4.0.0
 parso==0.8.5
-pathspec==1.0.3
+pathspec==1.0.4
 pcpp==1.30
 pexpect==4.9.0
 pg8000==1.31.5
@@ -333,7 +333,7 @@ urwid==3.0.3
 urwid_readline==0.15.1
 uv==0.9.27
 watchdog==6.0.0
-wcwidth==0.4.0
+wcwidth==0.5.0
 webcolors==25.10.0
 webencodings==0.5.1
 websocket-client==1.9.0
