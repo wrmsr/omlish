@@ -14,6 +14,9 @@ and so on. For each 'slice' there is a subclass of `AsyncliteApi`, and may or ma
 `AsyncliteObject`. This allows consumers to declare only dependencies on the 'slices' of functionality necessary for
 their operation: code requiring only 'sleep' needn't depend on the entire capability set of the system.
 
+In general, possibly blocking operations attempt to have both a version with an optional timeout *and* a 'nowait'
+version.
+
 The abstraction layer attempts to convert exceptions raised to builtin/stdlib exceptions where possible - for example:
 `TimeoutError`, `queue.Empty`, etc.
 
