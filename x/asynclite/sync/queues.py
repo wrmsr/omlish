@@ -1,11 +1,11 @@
 # @omlish-lite
-import asyncio
+import queue
 import typing as ta
 
 from ..queues import AsyncliteQueue
 from ..queues import AsyncliteQueues
-from .base import AsyncioAsyncliteObject
-from .base import AsyncioAsyncliteApi
+from .base import SyncAsyncliteObject
+from .base import SyncAsyncliteApi
 
 
 T = ta.TypeVar('T')
@@ -14,8 +14,8 @@ T = ta.TypeVar('T')
 ##
 
 
-class AsyncioAsyncliteQueue(AsyncliteQueue[T], AsyncioAsyncliteObject):
-    def __init__(self, u: asyncio.Queue[T]) -> None:
+class SyncAsyncliteQueue(AsyncliteQueue[T], SyncAsyncliteObject):
+    def __init__(self, u: queue.Queue[T]) -> None:
         super().__init__()
 
         self._u = u
@@ -30,20 +30,22 @@ class AsyncioAsyncliteQueue(AsyncliteQueue[T], AsyncioAsyncliteObject):
         return self._u.full()
 
     async def put(self, item: T, *, timeout: float | None = None) -> None:
-        await self._wait_for(self._u.put(item), timeout=timeout)
+        with self._translate_exceptions():
+            self._u.put(item, block=True, timeout=timeout)
 
     def put_nowait(self, item: T) -> None:
         with self._translate_exceptions():
             self._u.put_nowait(item)
 
     async def get(self, *, timeout: float | None = None) -> T:
-        return await self._wait_for(self._u.get(), timeout=timeout)
+        with self._translate_exceptions():
+            return self._u.get(block=True, timeout=timeout)
 
     def get_nowait(self) -> T:
         with self._translate_exceptions():
             return self._u.get_nowait()
 
 
-class AsyncioAsyncliteQueues(AsyncliteQueues, AsyncioAsyncliteApi):
+class SyncAsyncliteQueues(AsyncliteQueues, SyncAsyncliteApi):
     def make_queue(self, maxsize: int = 0) -> AsyncliteQueue:
-        return AsyncioAsyncliteQueue(asyncio.Queue(maxsize))
+        return SyncAsyncliteQueue(queue.Queue(maxsize))

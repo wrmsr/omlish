@@ -138,7 +138,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/configs/formats.py', sha1='9bc4f953b4b8700f6f109e6f49e2d70f8e48ce7c'),
             dict(path='../../omlish/configs/processing/names.py', sha1='3ae4c9e921929eb64cee6150cc86f35fee0f2070'),
             dict(path='../../omlish/http/coro/io.py', sha1='2cdf6529c37a37cc0c1db2e02032157cf906d5d6'),
-            dict(path='../../omlish/http/parsing.py', sha1='3fea28dc6341908ba7c8fad42bf7bbe711f21b82'),
+            dict(path='../../omlish/http/parsing.py', sha1='69de9bc03046b123dfe0d38ce0cf3ea6b38f8457'),
             dict(path='../../omlish/io/buffers.py', sha1='4007189e90aa95da91f05e025e700b175494f9e2'),
             dict(path='../../omlish/io/fdio/handlers.py', sha1='e81356d4d73a670c35a972476a6338d0b737662b'),
             dict(path='../../omlish/io/fdio/pollers.py', sha1='022d5a8a24412764864ca95186a167698b739baf'),
@@ -4922,7 +4922,6 @@ class HttpRequestParser:
             return ParseHttpRequestError(
                 code=http.HTTPStatus.BAD_REQUEST,
                 message='Bad request version (probable TLS handshake)',
-                **result_kwargs(),
             )
 
         # Decode line
@@ -5051,8 +5050,19 @@ class HttpRequestParser:
             **result_kwargs(),
         )
 
-    def parse(self, read_line: ta.Callable[[int], bytes]) -> ParseHttpRequestResult:
+    def parse_line_reader(self, read_line: ta.Callable[[int], bytes]) -> ParseHttpRequestResult:
         return self._run_read_line_coro(self.coro_parse(), read_line)
+
+    def parse(self, s: ta.Union[bytes, bytearray]) -> ta.Tuple[ParseHttpRequestResult, bytes]:
+        buf = io.BytesIO(s)
+        ret = self.parse_line_reader(buf.readline)
+        return ret, buf.read()
+
+    def parse_full(self, s: ta.Union[bytes, bytearray]) -> ParseHttpRequestResult:
+        ret, rest = self.parse(s)
+        if rest:
+            raise ValueError(f'Unparsed bytes: {rest!r}')
+        return ret
 
 
 ########################################

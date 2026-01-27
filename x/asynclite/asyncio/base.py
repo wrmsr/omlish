@@ -1,6 +1,7 @@
 # @omlish-lite
 import asyncio
 import contextlib
+import queue
 import typing as ta
 
 from omlish.lite.abstract import Abstract
@@ -24,6 +25,12 @@ class AsyncioAsyncliteBase(Abstract):
 
         except asyncio.TimeoutError as e:
             raise TimeoutError from e
+
+        except asyncio.QueueEmpty as e:
+            raise queue.Empty from e
+
+        except asyncio.QueueFull as e:
+            raise queue.Full from e
 
     @classmethod
     async def _wait_for(cls, aw: ta.Awaitable[T], *, timeout: float | None = None) -> T:

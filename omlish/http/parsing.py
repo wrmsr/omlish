@@ -292,7 +292,6 @@ class HttpRequestParser:
             return ParseHttpRequestError(
                 code=http.HTTPStatus.BAD_REQUEST,
                 message='Bad request version (probable TLS handshake)',
-                **result_kwargs(),
             )
 
         # Decode line
@@ -421,5 +420,16 @@ class HttpRequestParser:
             **result_kwargs(),
         )
 
-    def parse(self, read_line: ta.Callable[[int], bytes]) -> ParseHttpRequestResult:
+    def parse_line_reader(self, read_line: ta.Callable[[int], bytes]) -> ParseHttpRequestResult:
         return self._run_read_line_coro(self.coro_parse(), read_line)
+
+    def parse(self, s: ta.Union[bytes, bytearray]) -> ta.Tuple[ParseHttpRequestResult, bytes]:
+        buf = io.BytesIO(s)
+        ret = self.parse_line_reader(buf.readline)
+        return ret, buf.read()
+
+    def parse_full(self, s: ta.Union[bytes, bytearray]) -> ParseHttpRequestResult:
+        ret, rest = self.parse(s)
+        if rest:
+            raise ValueError(f'Unparsed bytes: {rest!r}')
+        return ret
