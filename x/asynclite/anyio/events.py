@@ -5,7 +5,7 @@ import anyio
 from ..events import AsyncliteEvent
 from ..events import AsyncliteEvents
 from .base import AnyioAsyncliteObject
-from .base import AnyioAsyncliteObjects
+from .base import AnyioAsyncliteApi
 
 
 ##
@@ -27,6 +27,6 @@ class AnyioAsyncliteEvent(AsyncliteEvent, AnyioAsyncliteObject):
         return self._u.wait()
 
 
-class AnyioAsyncliteEvents(AsyncliteEvents, AnyioAsyncliteObjects):
+class AnyioAsyncliteEvents(AsyncliteEvents, AnyioAsyncliteApi):
     def make_event(self) -> AsyncliteEvent:
         return AnyioAsyncliteEvent(anyio.Event())

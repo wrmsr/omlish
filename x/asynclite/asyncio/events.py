@@ -4,7 +4,7 @@ import asyncio
 from ..events import AsyncliteEvent
 from ..events import AsyncliteEvents
 from .base import AsyncioAsyncliteObject
-from .base import AsyncioAsyncliteObjects
+from .base import AsyncioAsyncliteApi
 
 
 ##
@@ -26,6 +26,6 @@ class AsyncioAsyncliteEvent(AsyncliteEvent, AsyncioAsyncliteObject):
         await self._wait_for(self._u.wait(), timeout=timeout)
 
 
-class AsyncioAsyncliteEvents(AsyncliteEvents, AsyncioAsyncliteObjects):
+class AsyncioAsyncliteEvents(AsyncliteEvents, AsyncioAsyncliteApi):
     def make_event(self) -> AsyncliteEvent:
         return AsyncioAsyncliteEvent(asyncio.Event())

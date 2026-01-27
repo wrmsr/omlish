@@ -9,5 +9,5 @@ class AsyncliteObject(Abstract):
     pass
 
 
-class AsyncliteObjects(Abstract):
+class AsyncliteApi(Abstract):
     pass

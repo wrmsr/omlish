@@ -2,7 +2,7 @@
 from omlish.lite.abstract import Abstract
 
 from ..base import AsyncliteObject
-from ..base import AsyncliteObjects
+from ..base import AsyncliteApi
 
 
 ##
@@ -12,5 +12,5 @@ class SyncAsyncliteObject(AsyncliteObject, Abstract):
     pass
 
 
-class SyncAsyncliteObjects(AsyncliteObjects, Abstract):
+class SyncAsyncliteApi(AsyncliteApi, Abstract):
     pass

@@ -5,7 +5,7 @@ import typing as ta
 from omlish.lite.abstract import Abstract
 
 from .base import AsyncliteObject
-from .base import AsyncliteObjects
+from .base import AsyncliteApi
 
 
 ##
@@ -25,7 +25,7 @@ class AsyncliteEvent(AsyncliteObject, Abstract):
         raise NotImplementedError
 
 
-class AsyncliteEvents(AsyncliteObjects, Abstract):
+class AsyncliteEvents(AsyncliteApi, Abstract):
     @abc.abstractmethod
     def make_event(self) -> AsyncliteEvent:
         raise NotImplementedError

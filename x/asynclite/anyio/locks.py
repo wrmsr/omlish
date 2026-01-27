@@ -5,7 +5,7 @@ import anyio
 from ..locks import AsyncliteLock
 from ..locks import AsyncliteLocks
 from .base import AnyioAsyncliteObject
-from .base import AnyioAsyncliteObjects
+from .base import AnyioAsyncliteApi
 
 
 ##
@@ -30,6 +30,6 @@ class AnyioAsyncliteLock(AsyncliteLock, AnyioAsyncliteObject):
         return self._u.locked()
 
 
-class AnyioAsyncliteLocks(AsyncliteLocks, AnyioAsyncliteObjects):
+class AnyioAsyncliteLocks(AsyncliteLocks, AnyioAsyncliteApi):
     def make_lock(self) -> AsyncliteLock:
         return AnyioAsyncliteLock(anyio.Lock())

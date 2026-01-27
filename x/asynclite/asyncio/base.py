@@ -5,7 +5,7 @@ import typing as ta
 from omlish.lite.abstract import Abstract
 
 from ..base import AsyncliteObject
-from ..base import AsyncliteObjects
+from ..base import AsyncliteApi
 
 
 T = ta.TypeVar('T')
@@ -27,5 +27,5 @@ class AsyncioAsyncliteObject(AsyncliteObject, Abstract):
             return await aw
 
 
-class AsyncioAsyncliteObjects(AsyncliteObjects, Abstract):
+class AsyncioAsyncliteApi(AsyncliteApi, Abstract):
     pass

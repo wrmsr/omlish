@@ -4,7 +4,7 @@ import threading
 from ..events import AsyncliteEvent
 from ..events import AsyncliteEvents
 from .base import SyncAsyncliteObject
-from .base import SyncAsyncliteObjects
+from .base import SyncAsyncliteApi
 
 
 ##
@@ -27,6 +27,6 @@ class SyncAsyncliteEvent(AsyncliteEvent, SyncAsyncliteObject):
             raise TimeoutError
 
 
-class SyncAsyncliteEvents(AsyncliteEvents, SyncAsyncliteObjects):
+class SyncAsyncliteEvents(AsyncliteEvents, SyncAsyncliteApi):
     def make_event(self) -> AsyncliteEvent:
         return SyncAsyncliteEvent(threading.Event())

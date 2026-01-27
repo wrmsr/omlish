@@ -1,7 +1,7 @@
 from omlish.lite.abstract import Abstract
 
 from ..base import AsyncliteObject
-from ..base import AsyncliteObjects
+from ..base import AsyncliteApi
 
 
 ##
@@ -11,5 +11,5 @@ class AnyioAsyncliteObject(AsyncliteObject, Abstract):
     pass
 
 
-class AnyioAsyncliteObjects(AsyncliteObjects, Abstract):
+class AnyioAsyncliteApi(AsyncliteApi, Abstract):
     pass

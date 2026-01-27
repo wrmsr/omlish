@@ -6,7 +6,7 @@ import typing as ta
 from omlish.lite.abstract import Abstract
 
 from .base import AsyncliteObject
-from .base import AsyncliteObjects
+from .base import AsyncliteApi
 
 
 ##
@@ -39,7 +39,7 @@ class AsyncliteLock(AsyncliteObject, Abstract):
         raise NotImplementedError
 
 
-class AsyncliteLocks(AsyncliteObjects, Abstract):
+class AsyncliteLocks(AsyncliteApi, Abstract):
     @abc.abstractmethod
     def make_lock(self) -> AsyncliteLock:
         raise NotImplementedError

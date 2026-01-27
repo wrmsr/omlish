@@ -4,7 +4,7 @@ import asyncio
 from ..locks import AsyncliteLock
 from ..locks import AsyncliteLocks
 from .base import AsyncioAsyncliteObject
-from .base import AsyncioAsyncliteObjects
+from .base import AsyncioAsyncliteApi
 
 
 ##
@@ -26,6 +26,6 @@ class AsyncioAsyncliteLock(AsyncliteLock, AsyncioAsyncliteObject):
         return self._u.locked()
 
 
-class AsyncioAsyncliteLocks(AsyncliteLocks, AsyncioAsyncliteObjects):
+class AsyncioAsyncliteLocks(AsyncliteLocks, AsyncioAsyncliteApi):
     def make_lock(self) -> AsyncliteLock:
         return AsyncioAsyncliteLock(asyncio.Lock())

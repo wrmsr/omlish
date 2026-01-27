@@ -4,7 +4,7 @@ import threading
 from ..locks import AsyncliteLock
 from ..locks import AsyncliteLocks
 from .base import SyncAsyncliteObject
-from .base import SyncAsyncliteObjects
+from .base import SyncAsyncliteApi
 
 
 ##
@@ -31,6 +31,6 @@ class SyncAsyncliteLock(AsyncliteLock, SyncAsyncliteObject):
         return self._u.locked()
 
 
-class SyncAsyncliteLocks(AsyncliteLocks, SyncAsyncliteObjects):
+class SyncAsyncliteLocks(AsyncliteLocks, SyncAsyncliteApi):
     def make_lock(self) -> AsyncliteLock:
         return SyncAsyncliteLock(threading.Lock())
