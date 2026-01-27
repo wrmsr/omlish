@@ -14,7 +14,17 @@
 }
 
 
-/* Base */
+/* Divider */
+
+.message-divider {
+    height: 1;
+    margin: 1 0 0 0;
+
+    border-top: solid $primary;
+}
+
+
+/* Base Message */
 
 .message {
     width: 1fr;
@@ -50,7 +60,7 @@
 }
 
 
-/* Welcome */
+/* Welcome Message */
 
 .welcome-message {
     margin: 0;
@@ -67,7 +77,7 @@
 }
 
 
-/* User */
+/* User Message */
 
 .user-message {
 }
@@ -82,7 +92,7 @@
 }
 
 
-/* Ai */
+/* Ai Message */
 
 .ai-message {
 }
@@ -106,7 +116,7 @@
 }
 
 
-/* Tool Confirmation */
+/* Tool Confirmation Message */
 
 .tool-confirmation-message {
 }
@@ -142,7 +152,7 @@
 }
 
 
-/* Ui */
+/* Ui Message */
 
 .ui-message {
 }

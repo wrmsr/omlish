@@ -161,7 +161,7 @@ with _lang.auto_proxy_init(globals()):
     from textual.reactive import reactive as reactive_  # noqa
     from textual.reactive import var  # noqa
     from textual.screen import ModalScreen  # noqa
-    from textual.screen import Screen  # noqa
+    from textual.screen import Screen as Screen_  # noqa
     from textual.screen import SystemModalScreen  # noqa
     from textual.style import Style  # noqa
     from textual.suggester import SuggestFromList  # noqa
@@ -231,11 +231,22 @@ with _lang.auto_proxy_init(globals()):
 
     ##
 
+    from .app2 import (  # noqa
+        App,
+    )
+
+    from .binding2 import (  # noqa
+        merge_cls_bindings,
+        unbind_map_keys,
+    )
+
     from .clipboard import (  # noqa
         ClipboardAppMixin,
     )
 
-    from . devtools import (  # noqa
+    from . import debug  # noqa
+
+    from .devtools import (  # noqa
         DevtoolsConfig,
         connect_devtools,
 
@@ -248,12 +259,6 @@ with _lang.auto_proxy_init(globals()):
         set_root_logger_to_devtools,
     )
 
-    from . import debug  # noqa
-
-    from .app2 import (  # noqa
-        App,
-    )
-
     from .drivers2 import (  # noqa
         PendingWritesDriverMixin,
         get_pending_writes_driver_class,
@@ -261,6 +266,10 @@ with _lang.auto_proxy_init(globals()):
 
     from .logging2 import (  # noqa
         translate_log_level,
+    )
+
+    from .screen2 import (  # noqa
+        Screen,
     )
 
     from .types import (  # noqa

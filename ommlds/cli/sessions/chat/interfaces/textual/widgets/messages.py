@@ -16,6 +16,16 @@ class MessagesContainer(tx.VerticalScroll):
 ##
 
 
+class MessageDivider(tx.Static):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.add_class('message-divider')
+
+
+##
+
+
 class Message(tx.Static, lang.Abstract):
     def __init__(self, *args: ta.Any, **kwargs: ta.Any) -> None:
         super().__init__(*args, **kwargs)

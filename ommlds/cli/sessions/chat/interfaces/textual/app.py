@@ -25,6 +25,7 @@ from .styles import read_app_css
 from .widgets.input import InputOuter
 from .widgets.input import InputTextArea
 from .widgets.messages import AiMessage
+from .widgets.messages import MessageDivider
 from .widgets.messages import MessagesContainer
 from .widgets.messages import StaticAiMessage
 from .widgets.messages import StreamAiMessage
@@ -50,6 +51,21 @@ class ChatAppGetter(lang.AsyncCachedFunc0['ChatApp']):
     pass
 
 
+class ChatAppScreen(tx.Screen):
+    BINDINGS: ta.ClassVar[ta.Sequence[tx.BindingType]] = [
+        tx.Binding(
+            'alt+c,super+c',
+            'screen.copy_text',
+            'Copy selected text',
+            show=False,
+        ),
+    ]
+
+    @classmethod
+    def _merge_bindings(cls) -> tx.BindingsMap:
+        return tx.unbind_map_keys(super()._merge_bindings(), ['ctrl+c'])
+
+
 class ChatApp(
     tx.ClipboardAppMixin,
     tx.DevtoolsAppMixin,
@@ -61,10 +77,11 @@ class ChatApp(
         *tx.App.BINDINGS,
 
         tx.Binding(
-            'alt+c,ctrl+c,super+c',
-            'screen.copy_text',
-            'Copy selected text',
+            'escape',
+            'cancel',
+            'Cancel current operation',
             show=False,
+            priority=True,
         ),
     ]
 
@@ -96,6 +113,9 @@ class ChatApp(
     def get_driver_class(self) -> type[tx.Driver]:
         return tx.get_pending_writes_driver_class(super().get_driver_class())
 
+    def get_default_screen(self) -> tx.Screen:
+        return ChatAppScreen(id='_default')
+
     CSS: ta.ClassVar[str] = read_app_css()
 
     #
@@ -125,6 +145,10 @@ class ChatApp(
         if (ms := self._get_messages_container()).max_scroll_y:
             ms.anchor()
 
+    def _scroll_messages_to_bottom_and_anchor(self) -> None:
+        self._scroll_messages_to_bottom()
+        self._anchor_messages()
+
     #
 
     _pending_mount_messages: list[tx.Widget] | None = None
@@ -150,13 +174,13 @@ class ChatApp(
 
             await sam.append_content(content)
 
-            self.call_after_refresh(self._scroll_messages_to_bottom)
-
             if was_at_bottom:
-                self.call_after_refresh(self._anchor_messages)
+                self.call_after_refresh(self._scroll_messages_to_bottom_and_anchor)
 
         else:
             await self._mount_messages(StreamAiMessage(content))
+
+    _num_mounted_messages = 0
 
     async def _mount_messages(self, *messages: tx.Widget) -> None:
         was_at_bottom = self._is_messages_at_bottom()
@@ -167,7 +191,12 @@ class ChatApp(
             if isinstance(msg, (AiMessage, ToolConfirmationMessage)):
                 await self._finalize_stream_ai_message()
 
+            if self._num_mounted_messages:
+                await msg_ctr.mount(MessageDivider())
+
             await msg_ctr.mount(msg)
+
+            self._num_mounted_messages += 1
 
             if isinstance(msg, StreamAiMessage):
                 self._stream_ai_message = check.replacing_none(self._stream_ai_message, msg)
@@ -358,3 +387,6 @@ class ChatApp(
             content: str,
     ) -> None:
         await self._mount_messages(UiMessage(content))
+
+    async def action_cancel(self) -> None:
+        pass

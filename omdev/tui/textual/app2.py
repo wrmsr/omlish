@@ -1,7 +1,7 @@
 import typing as ta
 
 from textual.app import App as App_
-from textual.binding import BindingType  # noqa
+from textual.binding import BindingType
 
 
 ##
