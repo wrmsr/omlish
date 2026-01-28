@@ -4,6 +4,8 @@ from .abc import (  # noqa
     DbapiColumnDescription_,
 
     DbapiCursor,
+    HasRowNumberDbapiCursor,
+    HasLastRowIdDbapiCursor,
 
     DbapiConnection,
 

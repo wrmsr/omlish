@@ -51,26 +51,18 @@ class DbapiCursor(ta.Protocol):
     # optional:
     # def callproc(self, procname: str, parameters: Sequence[ta.Any] = ...) -> Sequence[ta.Any]: ...
 
-    # optional:
-    @property
-    def rownumber(self) -> int: ...
-
-    # optional:
-    @property
-    def lastrowid(self) -> ta.Any: ...
-
     def close(self) -> object: ...
 
     def execute(
-            self,
-            operation: str,
-            parameters: ta.Sequence[ta.Any] | ta.Mapping[str, ta.Any] = ...,
+        self,
+        operation: str,
+        parameters: ta.Sequence[ta.Any] | ta.Mapping[str, ta.Any] = ...,
     ) -> object: ...
 
     def executemany(
-            self,
-            operation: str,
-            seq_of_parameters: ta.Sequence[ta.Sequence[ta.Any]],
+        self,
+        operation: str,
+        seq_of_parameters: ta.Sequence[ta.Sequence[ta.Any]],
     ) -> object: ...
 
     def fetchone(self) -> ta.Sequence[ta.Any] | None: ...
@@ -86,6 +78,18 @@ class DbapiCursor(ta.Protocol):
     def setoutputsize(self, size: int, column: int = ...) -> object: ...
 
 
+class HasRowNumberDbapiCursor(DbapiCursor, ta.Protocol):
+    # optional:
+    @property
+    def rownumber(self) -> int: ...
+
+
+class HasLastRowIdDbapiCursor(DbapiCursor, ta.Protocol):
+    # optional:
+    @property
+    def lastrowid(self) -> ta.Any: ...
+
+
 ##
 
 
@@ -98,7 +102,7 @@ class DbapiConnection(ta.Protocol):
     def rollback(self) -> ta.Any: ...
 
     # optional:
-    autocommit: bool
+    autocommit: int
 
     def cursor(self) -> 'DbapiCursor': ...
 

@@ -2,6 +2,7 @@ import typing as ta
 
 from ... import check
 from ..dbapi import abc as dbapi_abc
+from . import funcs
 from .base import Adapter
 from .base import Conn
 from .base import Db
@@ -9,7 +10,6 @@ from .base import Rows
 from .base import Transaction
 from .columns import Column
 from .columns import Columns
-from .funcs import exec
 from .queries import Query
 from .rows import Row
 
@@ -70,17 +70,17 @@ class DbapiTransaction(Transaction):
 
     def _enter(self) -> None:
         check.state(self._state == 'new')
-        exec(self._conn, 'begin')
+        funcs.exec(self._conn, 'begin')
         self._state = 'open'
 
     def _commit_internal(self) -> None:
         check.state(self._state == 'open')
-        exec(self._conn, 'commit')
+        funcs.exec(self._conn, 'commit')
         self._state = 'committed'
 
     def _rollback_internal(self) -> None:
         check.state(self._state == 'open')
-        exec(self._conn, 'rollback')
+        funcs.exec(self._conn, 'rollback')
         self._state = 'aborted'
 
     def _close(self, reason: BaseException | None) -> None:
@@ -129,7 +129,7 @@ class DbapiConn(Conn):
 
         if not self._conn.autocommit:
             self._conn.autocommit = True
-        check.state(self._conn.autocommit)
+        check.state(bool(self._conn.autocommit))
 
     def _close(self, reason: BaseException | None) -> None:
         self._conn.close()
