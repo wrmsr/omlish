@@ -27,6 +27,10 @@ from .tabledefs import (  # noqa
     table_def,
 )
 
+from .values import (  # noqa
+    Now,
+)
+
 
 ##
 

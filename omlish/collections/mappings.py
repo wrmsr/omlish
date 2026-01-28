@@ -111,7 +111,7 @@ class DynamicTypeMap(ta.Generic[V]):
         return self._items
 
     @property
-    def weak(self) -> bool:
+    def is_weak(self) -> bool:
         return self._weak
 
     def __len__(self) -> int:

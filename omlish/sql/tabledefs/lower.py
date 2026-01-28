@@ -1,4 +1,5 @@
 from ... import dataclasses as dc
+from ... import lang
 from .dtypes import Datetime
 from .dtypes import Integer
 from .elements import Column
@@ -11,14 +12,19 @@ from .elements import PrimaryKey
 from .elements import UpdatedAt
 from .elements import UpdatedAtTrigger
 from .tabledefs import TableDef
+from .values import Now
 
 
 ##
 
 
 def lower_table_elements(td: TableDef) -> TableDef:
-    todo: list[Element] = list(td.elements)[::-1]
     out: list[Element] = []
+
+    todo: list[Element] = list(td.elements)[::-1]
+
+    def add_todo(*elements: Element) -> None:
+        todo.extend(reversed(elements))
 
     while todo:
         match (e := todo.pop()):
@@ -32,19 +38,19 @@ def lower_table_elements(td: TableDef) -> TableDef:
                 ])
 
             case CreatedAt():
-                out.append(Column('created_at', Datetime()))
+                out.append(Column('created_at', Datetime(), default=lang.just(Now())))
 
             case UpdatedAt():
                 out.extend([
-                    Column('updated_at', Datetime()),
+                    Column('updated_at', Datetime(), default=lang.just(Now())),
                     UpdatedAtTrigger('updated_at'),
                 ])
 
             case CreatedAtUpdatedAt():
-                todo.extend([
+                add_todo(
                     CreatedAt(),
                     UpdatedAt(),
-                ][::-1])
+                )
 
             case _:
                 raise TypeError(e)
