@@ -21,7 +21,7 @@ class Element(lang.Abstract, lang.Sealed):
 class Column(Element, lang.Final):
     name: str
     type: Dtype
-    not_null: bool = dc.field(default=False, kw_only=True)
+    nullable: bool = dc.field(default=False, kw_only=True)
     default: lang.Maybe[ta.Any] = dc.field(default=lang.empty(), kw_only=True)
 
 
