@@ -20,7 +20,8 @@ from ....apps.routes import RouteHandlerApp
 from ....apps.templates import JinjaTemplates
 from ..users import InMemoryUserStore
 from ..users import UserStore
-from ..usersdb import DbUserStore
+
+# from ..usersdb import DbUserStore
 from .apps import inject as apps_inj
 from .handlers import inject as handlers_inj
 
@@ -36,10 +37,11 @@ def bind_in_memory_user_store() -> inj.Elemental:
 
 
 def bind_db_user_store() -> inj.Elemental:
-    return inj.as_elements(
-        inj.bind(DbUserStore, singleton=True),
-        inj.bind(UserStore, to_key=DbUserStore),
-    )
+    # return inj.as_elements(
+    #     inj.bind(DbUserStore, singleton=True),
+    #     inj.bind(UserStore, to_key=DbUserStore),
+    # )
+    raise NotImplementedError
 
 
 ##

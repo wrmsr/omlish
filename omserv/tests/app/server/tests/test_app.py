@@ -11,7 +11,6 @@ import pytest
 from omlish import check
 from omlish import inject as inj
 from omlish import lang
-from omlish.asyncs import all as au
 from omlish.http import asgi
 from omlish.sockets.ports import get_available_port
 from omlish.testing import pytest as ptu
@@ -38,7 +37,7 @@ def randhex(l: int) -> str:
     # 'trio',
     # 'trio_asyncio',
 )
-@au.with_adapter_loop(wait=True)
+# @au.with_adapter_loop(wait=True)
 async def test_auth(harness):
     # from omlish import logs  # noqa
     # logs.configure_standard_logging('DEBUG')  # noqa
