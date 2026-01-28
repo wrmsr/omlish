@@ -21,6 +21,9 @@ class AsyncioAsyncliteQueue(AsyncliteQueue[T], AsyncioAsyncliteObject):
 
         self._u = u
 
+    async def aclose(self) -> None:
+        pass
+
     def qsize(self) -> int:
         return self._u.qsize()
 

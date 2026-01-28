@@ -31,6 +31,9 @@ class AnyioAsyncliteQueue(AsyncliteQueue[T], AnyioAsyncliteObject):
         self._recv = recv
         self._maxsize = maxsize
 
+    async def aclose(self) -> None:
+        await self._send.aclose()
+
     def qsize(self) -> int:
         return self._recv.statistics().current_buffer_used
 

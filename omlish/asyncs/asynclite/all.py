@@ -14,6 +14,8 @@ from .api import (  # noqa
 from .base import (  # noqa
     AsyncliteObject as Object,
     AsyncliteApi as Api,
+
+    AsyncliteCloseable as Closeable,
 )
 
 from .locks import (  # noqa

@@ -5,6 +5,7 @@ import typing as ta
 
 from ...lite.abstract import Abstract
 from .base import AsyncliteApi
+from .base import AsyncliteCloseable
 from .base import AsyncliteObject
 
 
@@ -14,7 +15,7 @@ T = ta.TypeVar('T')
 ##
 
 
-class AsyncliteQueue(AsyncliteObject, Abstract, ta.Generic[T]):
+class AsyncliteQueue(AsyncliteCloseable, AsyncliteObject, Abstract, ta.Generic[T]):
     @abc.abstractmethod
     def qsize(self) -> int:
         raise NotImplementedError
