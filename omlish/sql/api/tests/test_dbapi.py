@@ -42,6 +42,9 @@ def test_sqlite() -> None:
                 (7.5,),
             ]
 
+            with conn.begin():
+                pass
+
 
 @ptu.skip.if_cant_import('pg8000')
 def test_pg8000(harness) -> None:

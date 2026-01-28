@@ -38,19 +38,31 @@ class Closer(lang.Abstract):
             self.__repr = repr(self)
             self.__traceback = traceback.format_stack()[:-1]
 
+    #
+
     @property
-    def _is_resourceless(self) -> bool:
-        return False
+    def _closed(self) -> bool:
+        return self.__closed
+
+    def _close(self, reason: BaseException | None) -> None:
+        pass
 
     @ta.final
-    def close(self) -> None:
+    def _close_internal(self, reason: BaseException | None) -> None:
         try:
-            self._close()
+            self._close(reason)
         finally:
             self.__closed = True
 
-    def _close(self) -> None:
-        pass
+    @ta.final
+    def close(self) -> None:
+        self._close_internal(None)
+
+    #
+
+    @property
+    def _is_resourceless(self) -> bool:
+        return False
 
     def __del__(self) -> None:
         if (
@@ -110,4 +122,4 @@ class ContextCloser(Closer):
 
     @ta.final
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
+        self._close_internal(exc_val)

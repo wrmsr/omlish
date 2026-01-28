@@ -2,3 +2,4 @@
 - async story (like injector)
   - async core, sync_await bridge
 - injection helpers
+- commit / rollback exception handling, kill conn

@@ -9,6 +9,7 @@ from .base import Rows
 from .base import Transaction
 from .columns import Column
 from .columns import Columns
+from .funcs import exec
 from .queries import Query
 from .rows import Row
 
@@ -42,10 +43,10 @@ class DbapiRows(Rows):
         self._cursor = cursor
         self._columns = columns
 
-    def _close(self) -> None:
+    def _close(self, reason: BaseException | None) -> None:
         self._cursor.close()
 
-        super()._close()
+        super()._close(reason)
 
     @property
     def columns(self) -> Columns:
@@ -60,25 +61,68 @@ class DbapiRows(Rows):
 
 
 class DbapiTransaction(Transaction):
-    @property
-    def adapter(self) -> Adapter:
-        raise NotImplementedError
-
-    def query(self, query: Query) -> Rows:
-        raise NotImplementedError
-
-    def commit(self) -> None:
-        raise NotImplementedError
-
-    def rollback(self) -> None:
-        raise NotImplementedError
-
-
-class DbapiConn(Conn):
-    def __init__(self, conn: dbapi_abc.DbapiConnection) -> None:
+    def __init__(self, conn: 'DbapiConn') -> None:
         super().__init__()
 
         self._conn = conn
+
+    _state: ta.Literal['new', 'open', 'committed', 'aborted'] = 'new'
+
+    def _enter(self) -> None:
+        check.state(self._state == 'new')
+        exec(self._conn, 'begin')
+        self._state = 'open'
+
+    def _commit_internal(self) -> None:
+        check.state(self._state == 'open')
+        exec(self._conn, 'commit')
+        self._state = 'committed'
+
+    def _rollback_internal(self) -> None:
+        check.state(self._state == 'open')
+        exec(self._conn, 'rollback')
+        self._state = 'aborted'
+
+    def _close(self, reason: BaseException | None) -> None:
+        if self._state == 'open':
+            if reason is not None:
+                self._rollback_internal()
+            else:
+                self._commit_internal()
+
+        super()._close(reason)
+
+    @property
+    def adapter(self) -> Adapter:
+        return self._conn.adapter
+
+    def query(self, query: Query) -> Rows:
+        self._check_entered()
+        check.state(self._state == 'open')
+        return self._conn.query(query)
+
+    def commit(self) -> None:
+        self._check_entered()
+        self._commit_internal()
+
+    def rollback(self) -> None:
+        self._check_entered()
+        self._rollback_internal()
+
+
+class DbapiConn(Conn):
+    def __init__(
+            self,
+            conn: dbapi_abc.DbapiConnection,
+            *,
+            adapter: ta.Optional['DbapiAdapter'] = None,
+    ) -> None:
+        super().__init__()
+
+        self._conn = conn
+        if adapter is None:
+            adapter = DEFAULT_DBAPI_ADAPTER
+        self._adapter = adapter
 
     def _enter(self) -> None:
         super()._enter()
@@ -87,14 +131,14 @@ class DbapiConn(Conn):
             self._conn.autocommit = True
         check.state(self._conn.autocommit)
 
-    def _close(self) -> None:
+    def _close(self, reason: BaseException | None) -> None:
         self._conn.close()
 
-        super()._close()
+        super()._close(reason)
 
     @property
     def adapter(self) -> Adapter:
-        raise NotImplementedError
+        return self._adapter
 
     def query(self, query: Query) -> Rows:
         self._check_entered()
@@ -109,7 +153,7 @@ class DbapiConn(Conn):
             raise
 
     def begin(self) -> Transaction:
-        raise NotImplementedError
+        return DbapiTransaction(self)
 
 
 class DbapiDb(Db):
@@ -123,7 +167,7 @@ class DbapiDb(Db):
 
         self._conn_fac = conn_fac
         if adapter is None:
-            adapter = DbapiAdapter()
+            adapter = DEFAULT_DBAPI_ADAPTER
         self._adapter = adapter
 
     def connect(self) -> Conn:
@@ -139,3 +183,6 @@ class DbapiDb(Db):
 class DbapiAdapter(Adapter):
     def scan_type(self, c: Column) -> type:
         raise NotImplementedError
+
+
+DEFAULT_DBAPI_ADAPTER = DbapiAdapter()
