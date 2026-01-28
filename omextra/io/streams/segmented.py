@@ -2,13 +2,13 @@
 # @omlish-lite
 import typing as ta
 
+from .base import BaseByteStreamBuffer
 from .errors import BufferTooLargeByteStreamBufferError
 from .errors import NoOutstandingReserveByteStreamBufferError
 from .errors import OutstandingReserveByteStreamBufferError
 from .types import BytesLike
 from .types import ByteStreamBufferView
 from .types import MutableByteStreamBuffer
-from .utils import _norm_slice
 
 
 ##
@@ -49,7 +49,7 @@ class SegmentedByteStreamBufferView(ByteStreamBufferView):
         return b''.join(bytes(mv) for mv in self._segs)
 
 
-class SegmentedByteStreamBuffer(MutableByteStreamBuffer):
+class SegmentedByteStreamBuffer(MutableByteStreamBuffer, BaseByteStreamBuffer):
     """
     A segmented, consumption-oriented bytes buffer.
 
@@ -476,7 +476,7 @@ class SegmentedByteStreamBuffer(MutableByteStreamBuffer):
         return memoryview(self._segs[0])[:n]
 
     def find(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
-        start, end = _norm_slice(len(self), start, end)
+        start, end = self._norm_slice(start, end)
 
         m = len(sub)
         if m == 0:
@@ -541,7 +541,7 @@ class SegmentedByteStreamBuffer(MutableByteStreamBuffer):
         return -1
 
     def rfind(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
-        start, end = _norm_slice(len(self), start, end)
+        start, end = self._norm_slice(start, end)
 
         m = len(sub)
         if m == 0:

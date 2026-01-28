@@ -2,19 +2,19 @@
 # @omlish-lite
 import typing as ta
 
+from .base import BaseByteStreamBuffer
 from .errors import BufferTooLargeByteStreamBufferError
 from .errors import NoOutstandingReserveByteStreamBufferError
 from .errors import OutstandingReserveByteStreamBufferError
 from .segmented import SegmentedByteStreamBufferView
 from .types import BytesLike
 from .types import MutableByteStreamBuffer
-from .utils import _norm_slice
 
 
 ##
 
 
-class LinearByteStreamBuffer(MutableByteStreamBuffer):
+class LinearByteStreamBuffer(MutableByteStreamBuffer, BaseByteStreamBuffer):
     """
     A simple contiguous (bytearray-backed) MutableByteStreamBuffer implementation.
 
@@ -177,14 +177,14 @@ class LinearByteStreamBuffer(MutableByteStreamBuffer):
         return SegmentedByteStreamBufferView((memoryview(b),))
 
     def find(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
-        start, end = _norm_slice(len(self), start, end)
+        start, end = self._norm_slice(start, end)
         if len(sub) == 0:
             return start
         i = self._ba.find(sub, self._rpos + start, self._rpos + end)
         return -1 if i < 0 else (i - self._rpos)
 
     def rfind(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
-        start, end = _norm_slice(len(self), start, end)
+        start, end = self._norm_slice(start, end)
         if len(sub) == 0:
             return end
         i = self._ba.rfind(sub, self._rpos + start, self._rpos + end)
