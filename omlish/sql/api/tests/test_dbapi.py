@@ -16,7 +16,7 @@ from ..resources import ResourceNotEnteredError
 
 
 def test_sqlite() -> None:
-    with DbapiDb(lambda: sqlite3.connect(':memory:')) as db:
+    with DbapiDb(lambda: sqlite3.connect(':memory:', autocommit=True)) as db:
         with db.connect() as conn:
             for stmt in [
                 'create table "movies" ("title", "year", "score")',  # noqa
@@ -43,7 +43,17 @@ def test_sqlite() -> None:
             ]
 
             with conn.begin():
-                pass
+                assert funcs.query_scalar(conn, 'select count(*) from movies') == 2
+                funcs.exec(conn, "insert into movies (title, year, score) values ('Bad Movie', 1991, 0.1)")
+                assert funcs.query_scalar(conn, 'select count(*) from movies') == 3
+            assert funcs.query_scalar(conn, 'select count(*) from movies') == 3
+
+            with conn.begin() as txn:
+                assert funcs.query_scalar(conn, 'select count(*) from movies') == 3
+                funcs.exec(conn, "insert into movies (title, year, score) values ('Bad Movie 2', 1992, 0.1)")
+                assert funcs.query_scalar(conn, 'select count(*) from movies') == 4
+                txn.rollback()
+            assert funcs.query_scalar(conn, 'select count(*) from movies') == 3
 
 
 @ptu.skip.if_cant_import('pg8000')
