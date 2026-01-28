@@ -2,6 +2,7 @@
 # @omlish-lite
 """
 TODO:
+ - package
  - sync (lol) w/ asyncs.anyio
  - atomics
  - Once poison=False, PoisonedError
