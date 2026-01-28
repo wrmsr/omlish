@@ -59,6 +59,12 @@ class ChatAppScreen(tx.Screen):
             'Copy selected text',
             show=False,
         ),
+
+        tx.Binding(
+            'f10',
+            'app.confirm_all_pending_tool_uses',
+            'Confirms all pending tool uses',
+        ),
     ]
 
     @classmethod
@@ -109,6 +115,8 @@ class ChatApp(
         self._chat_action_queue: asyncio.Queue[ta.Any] = asyncio.Queue()
 
         self._input_focused_key_events: weakref.WeakSet[tx.Key] = weakref.WeakSet()
+
+        self._pending_tool_confirmations: set[ToolConfirmationMessage] = set()
 
     def get_driver_class(self) -> type[tx.Driver]:
         return tx.get_pending_writes_driver_class(super().get_driver_class())
@@ -409,6 +417,10 @@ class ChatApp(
             fut,
         )
 
+        fut.add_done_callback(lambda _: self._pending_tool_confirmations.discard(tcm))
+
+        self._pending_tool_confirmations.add(tcm)
+
         async def inner() -> None:
             await self._mount_messages(tcm)
 
@@ -427,3 +439,13 @@ class ChatApp(
     async def action_cancel(self) -> None:
         if (cat := self._cur_chat_action) is not None:
             cat.cancel()
+
+    async def action_confirm_all_pending_tool_uses(self) -> None:
+        for tcm in list(self._pending_tool_confirmations):
+            if not tcm.has_rendered:
+                continue
+
+            if not tcm.has_confirmed:
+                await tcm.confirm()
+
+            self._pending_tool_confirmations.discard(tcm)

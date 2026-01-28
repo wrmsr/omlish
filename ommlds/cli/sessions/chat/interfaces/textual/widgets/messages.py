@@ -3,6 +3,7 @@ import asyncio
 import typing as ta
 
 from omdev.tui import textual as tx
+from omlish import check
 from omlish import lang
 
 
@@ -145,14 +146,14 @@ class StreamAiMessage(AiMessage):
 
 
 class ToolConfirmationControls(tx.Static):
-    class Allowed(tx.Message):
+    class ClickedAllow(tx.Message):
         pass
 
     def compose(self) -> tx.ComposeResult:
         yield tx.Button('Allow', action='allow')
 
     def action_allow(self) -> None:
-        self.post_message(self.Allowed())
+        self.post_message(self.ClickedAllow())
 
 
 class ToolConfirmationMessage(Message):
@@ -170,23 +171,57 @@ class ToolConfirmationMessage(Message):
         self._inner_content = inner_content
         self._fut = fut
 
-    def compose(self) -> tx.ComposeResult:
-        with tx.Horizontal(classes='tool-confirmation-message-outer message-outer'):
-            yield tx.Static('? ', classes='tool-confirmation-message-glyph message-glyph')
-            with tx.Vertical(classes='tool-confirmation-message-inner tool-confirmation-message-inner-open message-inner'):  # noqa
-                yield tx.Static(self._outer_content, classes='tool-confirmation-message-outer-content')
-                yield tx.Static(self._inner_content, classes='tool-confirmation-message-inner-content')
-                yield ToolConfirmationControls(classes='tool-confirmation-message-controls')
+        self._has_rendered = False
+        self._has_confirmed = False
 
-    @tx.on(ToolConfirmationControls.Allowed)
-    async def on_allowed(self, event: ToolConfirmationControls.Allowed) -> None:
+    @property
+    def has_rendered(self) -> bool:
+        return self._has_rendered
+
+    @property
+    def has_confirmed(self) -> bool:
+        return self._has_confirmed
+
+    async def confirm(self) -> None:
+        check.equal(self._fut.done(), self._has_confirmed)
+
+        if self._has_confirmed:
+            return
+        self._has_confirmed = True
+
         inner = self.query_one(tx.Vertical)
+
         await inner.query_one(ToolConfirmationControls).remove()
+
         inner.remove_class('tool-confirmation-message-inner-open')
         inner.add_class('tool-confirmation-message-inner-closed')
+
         inner.query_one('.tool-confirmation-message-outer-content', tx.Static).update('Tool use confirmed.')
 
         self._fut.set_result(True)
+
+    def compose(self) -> tx.ComposeResult:
+        with tx.Horizontal(classes='tool-confirmation-message-outer message-outer'):
+            yield tx.Static('? ', classes='tool-confirmation-message-glyph message-glyph')
+            with tx.Vertical(classes=' '.join([
+                'tool-confirmation-message-inner',
+                'tool-confirmation-message-inner-open',
+                'message-inner',
+            ])):
+                yield tx.Static(self._outer_content, classes='tool-confirmation-message-outer-content')
+                yield tx.Static(self._inner_content, classes='tool-confirmation-message-inner-content')
+
+                yield ToolConfirmationControls(classes='tool-confirmation-message-controls')
+
+    def on_mount(self) -> None:
+        def inner():
+            self._has_rendered = True
+
+        self.call_after_refresh(inner)
+
+    @tx.on(ToolConfirmationControls.ClickedAllow)
+    async def on_clicked_allow(self, event: ToolConfirmationControls.ClickedAllow) -> None:
+        await self.confirm()
 
 
 #

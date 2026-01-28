@@ -58,6 +58,6 @@ exclude = [
     'LICENSE',
     'LICENSE.txt',
     'AUTHORS',
-    'io/buffers/DESIGN.md',
+    'DESIGN.md',
     'text/abnf/docs/*.txt',
 ]

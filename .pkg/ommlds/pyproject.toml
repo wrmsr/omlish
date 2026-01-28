@@ -124,5 +124,6 @@ exclude = [
     'LICENSE',
     'LICENSE.txt',
     'AUTHORS',
+    'DESIGN.md',
     'cli/sessions/chat/interfaces/textual/styles/*.tcss',
 ]

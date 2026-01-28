@@ -187,6 +187,8 @@ class SetuptoolsBase:
             'LICENSE.txt',
 
             'AUTHORS',
+
+            'DESIGN.md',
         ],
     }
 

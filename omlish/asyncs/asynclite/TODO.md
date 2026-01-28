@@ -2,3 +2,14 @@
 - Tasks
 - Helpers / patterns
 - Intersection types, obviously
+- Slices
+  - CondVar
+  - Tasks
+    - Spawn
+    - Gather
+    - Group?
+  - Cancel
+    - Token?
+  - Checkpoint?
+  - Future
+  - IO? Read/Write

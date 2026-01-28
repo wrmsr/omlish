@@ -102,6 +102,7 @@ exclude = [
     'LICENSE',
     'LICENSE.txt',
     'AUTHORS',
+    'DESIGN.md',
     'cc/cdeps.toml',
     'dockerdev/resources/*',
     'dockerdev/resources/configs/*',
