@@ -52,7 +52,7 @@ def _main(cfg: ServerConfig | None = None) -> None:
     shell.run_shell(
         shell.bind_asgi_server(bind_app()),
 
-        *([shell.bind_node_registrant()] if cfg.node_registry_enabled else []),
+        # *([shell.bind_node_registrant()] if cfg.node_registry_enabled else []),
 
         bind_dbs(),
 

@@ -148,7 +148,7 @@ class DbapiConn(Conn):
             columns = build_dbapi_columns(cursor.description)
             return DbapiRows(cursor, columns)
 
-        except Exception:  # noqa
+        except Exception as e:  # noqa
             cursor.close()
             raise
 

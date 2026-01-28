@@ -3,3 +3,4 @@
   - async core, sync_await bridge
 - injection helpers
 - commit / rollback exception handling, kill conn
+- Db.query - minichain-style Resources group?

@@ -7,9 +7,45 @@ with _lang.auto_proxy_init(globals()):
 
     from . import api  # noqa
 
+    from .api import (  # noqa
+        Querier,
+        Rows,
+        Transaction,
+        Conn,
+        Db,
+        Adapter,
+
+        Column,
+        Columns,
+
+        exec,  # noqa
+
+        query,
+        query_all,
+        query_first,
+        query_opt_first,
+        query_one,
+        query_opt_one,
+        query_scalar,
+        query_maybe_scalar,
+
+        QueryMode,
+        Query,
+
+        Row,
+    )
+
+    #
+
     from . import dbapi  # noqa
 
+    #
+
     from . import queries  # noqa
+
+    from .queries import (  # noqa
+        Q,
+    )
 
     #
 

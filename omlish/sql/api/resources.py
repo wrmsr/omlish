@@ -118,7 +118,7 @@ class ContextCloser(Closer):
         if not self.__entered:
             try:
                 raise ResourceNotEnteredError(self)  # noqa
-            except Exception:
+            except Exception as e:  # noqa
                 self.close()
                 raise
 

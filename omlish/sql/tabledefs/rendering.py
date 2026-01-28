@@ -104,7 +104,7 @@ def render_create_statements(tbl: TableDef) -> list[str]:
                 idx_name = '__'.join([
                     tbl.name,
                     'index',
-                    e.columns,
+                    *e.columns,
                 ])
 
             indexes.append(f'create index {idx_name} on {tbl.name} ({", ".join(e.columns)})')

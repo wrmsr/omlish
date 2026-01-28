@@ -72,8 +72,10 @@ class Db(Querier, lang.Abstract):
         raise NotImplementedError
 
     def query(self, query: Query) -> Rows:
-        with self.connect() as conn:
-            return conn.query(query)
+        # with self.connect() as conn:
+        #     return conn.query(query)
+        # FIXME: need minichain-style Resource group? can't close conn with live Rows
+        raise NotImplementedError
 
 
 ##
