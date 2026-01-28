@@ -23,6 +23,8 @@ class TestAnyioQueues(AnyioIsolatedAsyncTestCase):
         self.assertTrue(q.full())
         self.assertEqual(q.qsize(), 2)
 
+        await q.aclose()
+
     async def test_put_get(self):
         api = AnyioAsyncliteQueues()
         q = api.make_queue()
@@ -37,6 +39,8 @@ class TestAnyioQueues(AnyioIsolatedAsyncTestCase):
         self.assertEqual(item2, 'world')
 
         self.assertTrue(q.empty())
+
+        await q.aclose()
 
     async def test_put_get_nowait(self):
         api = AnyioAsyncliteQueues()
@@ -56,12 +60,16 @@ class TestAnyioQueues(AnyioIsolatedAsyncTestCase):
 
         self.assertTrue(q.empty())
 
+        await q.aclose()
+
     async def test_get_nowait_empty(self):
         api = AnyioAsyncliteQueues()
         q = api.make_queue()
 
         with self.assertRaises(queue.Empty):
             q.get_nowait()
+
+        await q.aclose()
 
     async def test_put_nowait_full(self):
         api = AnyioAsyncliteQueues()
@@ -71,6 +79,8 @@ class TestAnyioQueues(AnyioIsolatedAsyncTestCase):
 
         with self.assertRaises(queue.Full):
             q.put_nowait('another')
+
+        await q.aclose()
 
     async def test_put_timeout(self):
         api = AnyioAsyncliteQueues()
@@ -82,6 +92,8 @@ class TestAnyioQueues(AnyioIsolatedAsyncTestCase):
         with self.assertRaises(TimeoutError):
             await q.put('second', timeout=0.1)
 
+        await q.aclose()
+
     async def test_get_timeout(self):
         api = AnyioAsyncliteQueues()
         q = api.make_queue()
@@ -90,6 +102,8 @@ class TestAnyioQueues(AnyioIsolatedAsyncTestCase):
 
         with self.assertRaises(TimeoutError):
             await q.get(timeout=0.1)
+
+        await q.aclose()
 
     async def test_unbounded_queue(self):
         api = AnyioAsyncliteQueues()
@@ -106,3 +120,5 @@ class TestAnyioQueues(AnyioIsolatedAsyncTestCase):
             self.assertEqual(item, i)
 
         self.assertTrue(q.empty())
+
+        await q.aclose()

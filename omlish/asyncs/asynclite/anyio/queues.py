@@ -33,6 +33,7 @@ class AnyioAsyncliteQueue(AsyncliteQueue[T], AnyioAsyncliteObject):
 
     async def aclose(self) -> None:
         await self._send.aclose()
+        await self._recv.aclose()
 
     def qsize(self) -> int:
         return self._recv.statistics().current_buffer_used
