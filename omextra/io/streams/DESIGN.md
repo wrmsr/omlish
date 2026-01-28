@@ -45,7 +45,7 @@ second-guess its behavior.
 
 ## 3. Core Abstractions
 
-### BytesBuffer (conceptual) A readable byte container with:
+### ByteStreamBuffer (conceptual) A readable byte container with:
 - Logical length (`__len__`)
 - Search (`find`, `rfind`) — *stream-correct*, across internal segmentation
 - Non-consuming inspection (`peek`, `segments`)
@@ -61,7 +61,7 @@ Buffers are **not sequences** and are **not random-access containers** in the ge
 
 ## 4. Two Concrete Buffer Backends
 
-### SegmentedBytesBuffer A list-of-segments design (bytes / bytearray chunks):
+### SegmentedByteStreamBuffer A list-of-segments design (bytes / bytearray chunks):
 
 **Strengths**
 - Avoids pathological “large buffer pinned by tiny tail”
@@ -72,7 +72,7 @@ Buffers are **not sequences** and are **not random-access containers** in the ge
 - Search and coalescing require careful logic
 - Segment count must be managed (coalescing / heuristics)
 
-### LinearBytesBuffer A single `bytearray` + read/write indices:
+### LinearByteStreamBuffer A single `bytearray` + read/write indices:
 
 **Strengths**
 - Fast scanning and header parsing
@@ -89,7 +89,7 @@ These two backends intentionally cover different workload shapes; both conform t
 
 ## 5. Views & Lifetime Rules
 
-### BytesView / SegmentedBytesView Objects returned from `split_to`:
+### ByteStreamBufferView / SegmentedByteStreamBufferView Objects returned from `split_to`:
 - Represent bytes **removed** from the buffer
 - Must remain **stable forever**
 - May internally reference original segments or copies
@@ -149,9 +149,9 @@ This design was informed directly by pitfalls discovered when using `BytesIO.get
 
 ### Core error types
 - `NeedMoreData`: insufficient bytes, retry later
-- `BufferTooLarge`: buffer growth exceeded cap
-- `FrameTooLarge`: single frame exceeded size limit
-- `OutstandingReserve` / `NoOutstandingReserve`: invalid state transitions
+- `BufferTooLargeByteStreamBufferError`: buffer growth exceeded cap
+- `FrameTooLargeByteStreamBufferError`: single frame exceeded size limit
+- `OutstandingReserveByteStreamBufferError` / `NoOutstandingReserveByteStreamBufferError`: invalid state transitions
 
 Design choice:
 - Limit errors subclass `ValueError`

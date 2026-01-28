@@ -12,7 +12,7 @@ BytesLike = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
 ##
 
 
-class BytesViewLike(Abstract):
+class ByteStreamBufferLike(Abstract):
     @abc.abstractmethod
     def __len__(self) -> int:
         """
@@ -61,15 +61,15 @@ class BytesViewLike(Abstract):
         raise NotImplementedError
 
 
-class BytesView(BytesViewLike, Abstract):
+class ByteStreamBufferView(ByteStreamBufferLike, Abstract):
     """
     A read-only, possibly non-contiguous view of bytes.
 
-    This is the result type of operations like `BytesBuffer.split_to()`: it represents a *logical* byte sequence without
-    requiring a copy. A `BytesView` is intentionally minimal: it is not a general-purpose container API, not a
-    random-access sequence, and not intended for arbitrary indexing/slicing-heavy use.
+    This is the result type of operations like `ByteStreamBuffer.split_to()`: it represents a *logical* byte sequence
+    without requiring a copy. A `ByteStreamBufferView` is intentionally minimal: it is not a general-purpose container
+    API, not a random-access sequence, and not intended for arbitrary indexing/slicing-heavy use.
 
-    `BytesView` exists to make copy boundaries explicit:
+    `ByteStreamBufferView` exists to make copy boundaries explicit:
       - Use `segments()` / `peek()` to access data without copying.
       - Use `tobytes()` (or `bytes(view)`) to intentionally materialize a contiguous `bytes` object.
 
@@ -89,11 +89,11 @@ class BytesView(BytesViewLike, Abstract):
         raise NotImplementedError
 
 
-class BytesBuffer(BytesViewLike, Abstract):
+class ByteStreamBuffer(ByteStreamBufferLike, Abstract):
     """
     An incremental, consumption-oriented byte accumulator intended for protocol parsing.
 
-    A `BytesBuffer` is a *stream buffer*: bytes are appended by a driver/transport and then consumed by codecs via
+    A `ByteStreamBuffer` is a *stream buffer*: bytes are appended by a driver/transport and then consumed by codecs via
     peeking, searching, splitting, and advancing-without forcing repeated concatenation or reallocation. It is
     explicitly designed to support segmented storage (to avoid "a huge buffer pinned by a tiny tail") and to enable
     low-copy pipeline-style decoding (Netty/Tokio-inspired).
@@ -108,7 +108,7 @@ class BytesBuffer(BytesViewLike, Abstract):
       - a `collections.abc.Sequence` or random-access container abstraction,
       - arbitrary indexing/slicing-heavy workloads (use `bytes`/`bytearray`/`memoryview` directly).
 
-    `BytesBuffer` deliberately exposes `memoryview` at its boundary. This is foundational: it allows both immutable
+    `ByteStreamBuffer` deliberately exposes `memoryview` at its boundary. This is foundational: it allows both immutable
     (`bytes`) and mutable (`bytearray`) internal storage to be viewed in O(1) without copying. It also avoids relying
     on `io.BytesIO` as a core backing store: while `BytesIO.getbuffer()` can expose a view, exported views pin the
     underlying buffer against resizing, which makes it awkward as a general-purpose buffer substrate.
@@ -133,7 +133,7 @@ class BytesBuffer(BytesViewLike, Abstract):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def split_to(self, n: int, /) -> BytesView:
+    def split_to(self, n: int, /) -> ByteStreamBufferView:
         """
         Split off and return a read-only view of the first `n` readable bytes, consuming them from this buffer.
 
@@ -204,11 +204,11 @@ class BytesBuffer(BytesViewLike, Abstract):
         raise NotImplementedError
 
 
-class MutableBytesBuffer(BytesBuffer, Abstract):
+class MutableByteStreamBuffer(ByteStreamBuffer, Abstract):
     """
-    A writable `BytesBuffer`: supports appending bytes and (optionally) reserving writable space.
+    A writable `ByteStreamBuffer`: supports appending bytes and (optionally) reserving writable space.
 
-    `MutableBytesBuffer` is the primary target for drivers/transports feeding data into protocol pipelines, and for
+    `MutableByteStreamBuffer` is the primary target for drivers/transports feeding data into protocol pipelines, and for
     encoders building outbound byte sequences. It intentionally does not imply any particular I/O model (blocking,
     asyncio, custom reactors); it is simply the mutable byte substrate.
 

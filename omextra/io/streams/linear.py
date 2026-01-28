@@ -2,21 +2,21 @@
 # @omlish-lite
 import typing as ta
 
-from .errors import BufferTooLarge
-from .errors import NoOutstandingReserve
-from .errors import OutstandingReserve
-from .segmented import SegmentedBytesView
+from .errors import BufferTooLargeByteStreamBufferError
+from .errors import NoOutstandingReserveByteStreamBufferError
+from .errors import OutstandingReserveByteStreamBufferError
+from .segmented import SegmentedByteStreamBufferView
 from .types import BytesLike
-from .types import MutableBytesBuffer
+from .types import MutableByteStreamBuffer
 from .utils import _norm_slice
 
 
 ##
 
 
-class LinearBytesBuffer(MutableBytesBuffer):
+class LinearByteStreamBuffer(MutableByteStreamBuffer):
     """
-    A simple contiguous (bytearray-backed) MutableBytesBuffer implementation.
+    A simple contiguous (bytearray-backed) MutableByteStreamBuffer implementation.
 
     Strengths:
       - Fast `find/rfind` and contiguous peeking.
@@ -40,7 +40,7 @@ class LinearBytesBuffer(MutableBytesBuffer):
         if initial_capacity < 0:
             raise ValueError(initial_capacity)
         if self._max_bytes is not None and initial_capacity > self._max_bytes:
-            raise BufferTooLarge('buffer exceeded max_bytes')
+            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_bytes')
 
         # Pre-size the backing store to encourage fewer resizes/copies on trickle-y writes.
         # We immediately clear so readable length remains 0.
@@ -72,7 +72,7 @@ class LinearBytesBuffer(MutableBytesBuffer):
 
     def _check_no_reserve(self) -> None:
         if self._resv_start is not None:
-            raise OutstandingReserve('outstanding reserve')
+            raise OutstandingReserveByteStreamBufferError('outstanding reserve')
 
     def write(self, data: BytesLike, /) -> None:
         self._check_no_reserve()
@@ -86,7 +86,7 @@ class LinearBytesBuffer(MutableBytesBuffer):
         bl = len(data)
 
         if self._max_bytes is not None and len(self) + bl > self._max_bytes:
-            raise BufferTooLarge('buffer exceeded max_bytes')
+            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_bytes')
 
         # Keep backing store "dense": if we've consumed everything, reset.
         if self._rpos == self._wpos and self._rpos:
@@ -101,7 +101,7 @@ class LinearBytesBuffer(MutableBytesBuffer):
         if n < 0:
             raise ValueError(n)
         if self._resv_start is not None:
-            raise OutstandingReserve('outstanding reserve')
+            raise OutstandingReserveByteStreamBufferError('outstanding reserve')
 
         # Important: do NOT reserve by extending the backing bytearray and returning a view into it. A live exported
         # memoryview pins the bytearray against resizing, and commit() would need to shrink unused reservation space (or
@@ -117,7 +117,7 @@ class LinearBytesBuffer(MutableBytesBuffer):
 
     def commit(self, n: int, /) -> None:
         if self._resv_start is None:
-            raise NoOutstandingReserve('no outstanding reserve')
+            raise NoOutstandingReserveByteStreamBufferError('no outstanding reserve')
         if n < 0 or n > self._resv_len:
             raise ValueError(n)
 
@@ -130,7 +130,7 @@ class LinearBytesBuffer(MutableBytesBuffer):
             return
 
         if self._max_bytes is not None and len(self) + n > self._max_bytes:
-            raise BufferTooLarge('buffer exceeded max_bytes')
+            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_bytes')
 
         # Append only what was written.
         self.write(memoryview(b)[:n])
@@ -158,12 +158,12 @@ class LinearBytesBuffer(MutableBytesBuffer):
             self._rpos = 0
             self._wpos = 0
 
-    def split_to(self, n: int, /) -> SegmentedBytesView:
+    def split_to(self, n: int, /) -> SegmentedByteStreamBufferView:
         self._check_no_reserve()
         if n < 0 or n > len(self):
             raise ValueError(n)
         if n == 0:
-            return SegmentedBytesView(())
+            return SegmentedByteStreamBufferView(())
 
         # Copy out the split prefix to keep the view stable even if the underlying buffer compacts.
         b = bytes(memoryview(self._ba)[self._rpos:self._rpos + n])
@@ -174,7 +174,7 @@ class LinearBytesBuffer(MutableBytesBuffer):
             self._rpos = 0
             self._wpos = 0
 
-        return SegmentedBytesView((memoryview(b),))
+        return SegmentedByteStreamBufferView((memoryview(b),))
 
     def find(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
         start, end = _norm_slice(len(self), start, end)

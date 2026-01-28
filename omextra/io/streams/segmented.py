@@ -2,23 +2,23 @@
 # @omlish-lite
 import typing as ta
 
-from .errors import BufferTooLarge
-from .errors import NoOutstandingReserve
-from .errors import OutstandingReserve
+from .errors import BufferTooLargeByteStreamBufferError
+from .errors import NoOutstandingReserveByteStreamBufferError
+from .errors import OutstandingReserveByteStreamBufferError
 from .types import BytesLike
-from .types import BytesView
-from .types import MutableBytesBuffer
+from .types import ByteStreamBufferView
+from .types import MutableByteStreamBuffer
 from .utils import _norm_slice
 
 
 ##
 
 
-class SegmentedBytesView(BytesView):
+class SegmentedByteStreamBufferView(ByteStreamBufferView):
     """
     A read-only, possibly non-contiguous view over a sequence of byte segments.
 
-    This is intended to be produced by `SegmentedBytesBuffer.split_to()` without copying.
+    This is intended to be produced by `SegmentedByteStreamBuffer.split_to()` without copying.
     """
 
     def __init__(self, segs: ta.Sequence[memoryview]) -> None:
@@ -49,7 +49,7 @@ class SegmentedBytesView(BytesView):
         return b''.join(bytes(mv) for mv in self._segs)
 
 
-class SegmentedBytesBuffer(MutableBytesBuffer):
+class SegmentedByteStreamBuffer(MutableByteStreamBuffer):
     """
     A segmented, consumption-oriented bytes buffer.
 
@@ -192,7 +192,7 @@ class SegmentedBytesBuffer(MutableBytesBuffer):
             return
 
         if self._reserved_in_active:
-            raise OutstandingReserve('outstanding reserve')
+            raise OutstandingReserveByteStreamBufferError('outstanding reserve')
 
         if (used := self._active_used) <= 0:
             if self._segs and self._segs[-1] is a:
@@ -233,7 +233,7 @@ class SegmentedBytesBuffer(MutableBytesBuffer):
         dl = len(data)
 
         if self._max_bytes is not None and self._len + dl > self._max_bytes:
-            raise BufferTooLarge('buffer exceeded max_bytes')
+            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_bytes')
 
         if self._chunk_size <= 0:
             self._segs.append(data)
@@ -241,7 +241,7 @@ class SegmentedBytesBuffer(MutableBytesBuffer):
             return
 
         if self._reserved_in_active:
-            raise OutstandingReserve('outstanding reserve')
+            raise OutstandingReserveByteStreamBufferError('outstanding reserve')
 
         if dl >= self._chunk_size:
             self._flush_active()
@@ -263,7 +263,7 @@ class SegmentedBytesBuffer(MutableBytesBuffer):
         if n < 0:
             raise ValueError(n)
         if self._reserved is not None:
-            raise OutstandingReserve('outstanding reserve')
+            raise OutstandingReserveByteStreamBufferError('outstanding reserve')
 
         if self._chunk_size <= 0:
             b = bytearray(n)
@@ -295,7 +295,7 @@ class SegmentedBytesBuffer(MutableBytesBuffer):
 
     def commit(self, n: int, /) -> None:
         if self._reserved is None:
-            raise NoOutstandingReserve('no outstanding reserve')
+            raise NoOutstandingReserveByteStreamBufferError('no outstanding reserve')
         if n < 0 or n > self._reserved_len:
             raise ValueError(n)
 
@@ -306,7 +306,7 @@ class SegmentedBytesBuffer(MutableBytesBuffer):
             self._reserved_in_active = False
 
             if self._max_bytes is not None and self._len + n > self._max_bytes:
-                raise BufferTooLarge('buffer exceeded max_bytes')
+                raise BufferTooLargeByteStreamBufferError('buffer exceeded max_bytes')
 
             if n:
                 self._active_used += n
@@ -322,7 +322,7 @@ class SegmentedBytesBuffer(MutableBytesBuffer):
         self._reserved_in_active = False
 
         if self._max_bytes is not None and self._len + n > self._max_bytes:
-            raise BufferTooLarge('buffer exceeded max_bytes')
+            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_bytes')
 
         if not n:
             return
@@ -373,11 +373,11 @@ class SegmentedBytesBuffer(MutableBytesBuffer):
         if n:
             raise RuntimeError(n)
 
-    def split_to(self, n: int, /) -> SegmentedBytesView:
+    def split_to(self, n: int, /) -> SegmentedByteStreamBufferView:
         if n < 0 or n > self._len:
             raise ValueError(n)
         if n == 0:
-            return SegmentedBytesView(())
+            return SegmentedByteStreamBufferView(())
 
         out: ta.List[memoryview] = []
         rem = n
@@ -402,7 +402,7 @@ class SegmentedBytesBuffer(MutableBytesBuffer):
                 out.append(mv0[:rem])
                 self._head_off += rem
                 self._len -= n
-                return SegmentedBytesView(out)
+                return SegmentedByteStreamBufferView(out)
 
             out.append(mv0)
             rem -= len(mv0)
@@ -413,7 +413,7 @@ class SegmentedBytesBuffer(MutableBytesBuffer):
             self._head_off = 0
 
         self._len -= n
-        return SegmentedBytesView(out)
+        return SegmentedByteStreamBufferView(out)
 
     def coalesce(self, n: int, /) -> memoryview:
         if n < 0:
@@ -424,7 +424,7 @@ class SegmentedBytesBuffer(MutableBytesBuffer):
             return memoryview(b'')
 
         if self._reserved is not None:
-            raise OutstandingReserve('outstanding reserve')
+            raise OutstandingReserveByteStreamBufferError('outstanding reserve')
 
         mv0 = self.peek()
         if len(mv0) >= n:

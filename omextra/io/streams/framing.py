@@ -2,29 +2,29 @@
 # @omlish-lite
 import typing as ta
 
-from .errors import BufferTooLarge
-from .errors import FrameTooLarge
-from .types import BytesBuffer
+from .errors import BufferTooLargeByteStreamBufferError
+from .errors import FrameTooLargeByteStreamBufferError
+from .types import ByteStreamBuffer
 
 
 ##
 
 
-class LongestMatchDelimiterFramer:
+class LongestMatchDelimiterByteStreamFramer:
     """
     A delimiter-based framing codec that supports *overlapping* delimiters with longest-match semantics.
 
-    This is intentionally decoupled from any I/O model: it operates purely on a `BytesBuffer`-like object (providing
-    `__len__`, `find`, `split_to`, `advance`, and `segments`/`peek`).
+    This is intentionally decoupled from any I/O model: it operates purely on a `ByteStreamBuffer`-like object
+    (providing `__len__`, `find`, `split_to`, `advance`, and `segments`/`peek`).
 
     Key property:
       Given overlapping delimiters like [b'\\r', b'\\r\\n'], this codec will *not* emit a frame ending at '\\r' unless
       it can prove the next byte is not '\\n' (or the stream is finalized).
 
     Implementation note:
-      This codec relies on `BytesBuffer.find(...)` being stream-correct and C-accelerated over the buffer's underlying
-      contiguous segments. In pure Python it is usually better to keep searching near the storage layer than to
-      re-implement scanning byte-by-byte in higher-level codecs.
+      This codec relies on `ByteStreamBuffer.find(...)` being stream-correct and C-accelerated over the buffer's
+      underlying contiguous segments. In pure Python it is usually better to keep searching near the storage layer than
+      to re-implement scanning byte-by-byte in higher-level codecs.
     """
 
     def __init__(
@@ -66,7 +66,7 @@ class LongestMatchDelimiterFramer:
 
         self._max_delim_len = max(len(d) for d in self._delims)
 
-    def decode(self, buf: BytesBuffer, *, final: bool = False) -> ta.List[ta.Any]:
+    def decode(self, buf: ByteStreamBuffer, *, final: bool = False) -> ta.List[ta.Any]:
         """
         Consume as many complete frames as possible from `buf` and return them as views.
 
@@ -75,8 +75,8 @@ class LongestMatchDelimiterFramer:
         - If `final=True`, the codec will not defer on overlapping delimiter prefixes at the end of the buffer.
 
         Raises:
-          - BufferTooLarge if no delimiter is present and the buffered prefix exceeds max_size.
-          - FrameTooLarge if the next frame payload (bytes before delimiter) exceeds max_size.
+          - BufferTooLargeByteStreamBufferError if no delimiter is present and the buffered prefix exceeds max_size.
+          - FrameTooLargeByteStreamBufferError if the next frame payload (bytes before delimiter) exceeds max_size.
 
         Note on `max_size`:
           `max_size` is enforced as a limit on the *current* frame (bytes before the next delimiter). If the buffer
@@ -92,13 +92,13 @@ class LongestMatchDelimiterFramer:
             hit = self._find_next_delim(buf)
             if hit is None:
                 if self._max_size is not None and len(buf) > self._max_size and not out:
-                    raise BufferTooLarge('buffer exceeded max_size without delimiter')
+                    raise BufferTooLargeByteStreamBufferError('buffer exceeded max_size without delimiter')
                 return out
 
             pos, delim = hit
 
             if self._max_size is not None and pos > self._max_size:
-                raise FrameTooLarge('frame exceeded max_size')
+                raise FrameTooLargeByteStreamBufferError('frame exceeded max_size')
 
             if not final and self._should_defer(buf, pos, delim):
                 return out
@@ -111,7 +111,7 @@ class LongestMatchDelimiterFramer:
                 out.append(frame)
                 buf.advance(len(delim))
 
-    def _find_next_delim(self, buf: BytesBuffer) -> ta.Optional[ta.Tuple[int, bytes]]:
+    def _find_next_delim(self, buf: ByteStreamBuffer) -> ta.Optional[ta.Tuple[int, bytes]]:
         """
         Return (pos, delim) for the earliest delimiter occurrence. If multiple delimiters occur at the same position,
         choose the longest matching delimiter.
@@ -153,7 +153,7 @@ class LongestMatchDelimiterFramer:
         # Shouldn't happen: best_pos came from some delimiter occurrence.
         return pos, best_delim
 
-    def _should_defer(self, buf: BytesBuffer, pos: int, matched: bytes) -> bool:
+    def _should_defer(self, buf: ByteStreamBuffer, pos: int, matched: bytes) -> bool:
         """
         Return True if we must defer because a longer delimiter could still match starting at `pos` but we don't yet
         have enough bytes to decide.

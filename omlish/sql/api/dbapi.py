@@ -170,14 +170,20 @@ class DbapiDb(Db):
             adapter = DEFAULT_DBAPI_ADAPTER
         self._adapter = adapter
 
+    @property
+    def adapter(self) -> Adapter:
+        return self._adapter
+
     def connect(self) -> Conn:
         self._check_entered()
         dbapi_conn = self._conn_fac()
         return DbapiConn(dbapi_conn)
 
-    @property
-    def adapter(self) -> Adapter:
-        return self._adapter
+    def query(self, query: Query) -> Rows:
+        # with self.connect() as conn:
+        #     return conn.query(query)
+        # FIXME: need minichain-style Resource group? can't close conn with live Rows
+        raise NotImplementedError
 
 
 class DbapiAdapter(Adapter):

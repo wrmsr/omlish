@@ -2,8 +2,8 @@
 # @omlish-lite
 import typing as ta
 
-from .types import BytesView
-from .types import BytesViewLike
+from .types import ByteStreamBufferLike
+from .types import ByteStreamBufferView
 
 
 ##
@@ -37,7 +37,7 @@ def _norm_slice(length: int, start: int, end: ta.Optional[int]) -> ta.Tuple[int,
 
 
 def can_bytes(obj: ta.Any) -> bool:
-    return isinstance(obj, (bytes, bytearray, memoryview, BytesViewLike))
+    return isinstance(obj, (bytes, bytearray, memoryview, ByteStreamBufferLike))
 
 
 def iter_bytes_segments(obj: ta.Any) -> ta.Iterator[memoryview]:
@@ -45,7 +45,7 @@ def iter_bytes_segments(obj: ta.Any) -> ta.Iterator[memoryview]:
         yield obj
     elif isinstance(obj, (bytes, bytearray)):
         yield memoryview(obj)
-    elif isinstance(obj, BytesViewLike):
+    elif isinstance(obj, ByteStreamBufferLike):
         yield from obj.segments()
     else:
         raise TypeError(obj)
@@ -58,9 +58,9 @@ def to_bytes(obj: ta.Any) -> bytes:
         return bytes(obj)
     elif isinstance(obj, memoryview):
         return obj.tobytes()
-    elif isinstance(obj, BytesView):
+    elif isinstance(obj, ByteStreamBufferView):
         return obj.tobytes()
-    elif isinstance(obj, BytesViewLike):
+    elif isinstance(obj, ByteStreamBufferLike):
         return b''.join(bytes(mv) for mv in obj.segments())
     else:
         raise TypeError(obj)
@@ -69,7 +69,7 @@ def to_bytes(obj: ta.Any) -> bytes:
 def bytes_len(obj: ta.Any) -> int:
     if isinstance(obj, (bytes, bytearray, memoryview)):
         return len(obj)
-    elif isinstance(obj, BytesViewLike):
+    elif isinstance(obj, ByteStreamBufferLike):
         return sum(len(mv) for mv in obj.segments())
     else:
         # Not bytes-like

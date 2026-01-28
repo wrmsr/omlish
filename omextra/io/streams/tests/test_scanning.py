@@ -3,17 +3,17 @@
 import typing as ta
 import unittest
 
-from ..scanning import ScanningBytesBuffer
-from ..segmented import SegmentedBytesBuffer
+from ..scanning import ScanningByteStreamBuffer
+from ..segmented import SegmentedByteStreamBuffer
 
 
-class _SpyFindSegmentedBytesBuffer:
-    """Test helper: wraps a SegmentedBytesBuffer and records find() calls."""
+class _SpyFindSegmentedByteStreamBuffer:
+    """Test helper: wraps a SegmentedByteStreamBuffer and records find() calls."""
 
     def __init__(self) -> None:
         super().__init__()
 
-        self._buf = SegmentedBytesBuffer()
+        self._buf = SegmentedByteStreamBuffer()
         self.find_calls: list[tuple[bytes, int, ta.Optional[int]]] = []
 
     def __len__(self) -> int:
@@ -48,10 +48,10 @@ class _SpyFindSegmentedBytesBuffer:
         self._buf.commit(n)
 
 
-class TestScanningBytesBuffer(unittest.TestCase):
+class TestScanningByteStreamBuffer(unittest.TestCase):
     def test_negative_find_progress_caches_scan_start(self) -> None:
-        spy = _SpyFindSegmentedBytesBuffer()
-        fb = ScanningBytesBuffer(spy)
+        spy = _SpyFindSegmentedByteStreamBuffer()
+        fb = ScanningByteStreamBuffer(spy)
 
         needle = b'\r\n\r\n'
 
@@ -77,8 +77,8 @@ class TestScanningBytesBuffer(unittest.TestCase):
             self.assertLessEqual(a, b)
 
     def test_boundary_overlap_find(self) -> None:
-        spy = _SpyFindSegmentedBytesBuffer()
-        fb = ScanningBytesBuffer(spy)
+        spy = _SpyFindSegmentedByteStreamBuffer()
+        fb = ScanningByteStreamBuffer(spy)
 
         needle = b'\r\n\r\n'
 
@@ -109,8 +109,8 @@ class TestScanningBytesBuffer(unittest.TestCase):
         self.assertEqual(j, 5)
 
     def test_non_default_range_does_not_cache(self) -> None:
-        spy = _SpyFindSegmentedBytesBuffer()
-        fb = ScanningBytesBuffer(spy)
+        spy = _SpyFindSegmentedByteStreamBuffer()
+        fb = ScanningByteStreamBuffer(spy)
 
         fb.write(b'abcabcabc')
         self.assertEqual(fb.find(b'abc', 3, None), 3)

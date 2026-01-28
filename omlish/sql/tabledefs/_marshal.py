@@ -2,6 +2,7 @@ from ... import lang
 from ... import marshal as msh
 from .dtypes import Dtype
 from .elements import Element
+from .values import SpecialValue
 
 
 ##
@@ -19,3 +20,4 @@ def _install_poly(cls: type) -> None:
 def _install_standard_marshaling() -> None:
     _install_poly(Dtype)
     _install_poly(Element)
+    _install_poly(SpecialValue)

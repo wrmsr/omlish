@@ -3,15 +3,15 @@
 import typing as ta
 
 from .types import BytesLike
-from .types import MutableBytesBuffer
+from .types import MutableByteStreamBuffer
 
 
 ##
 
 
-class ScanningBytesBuffer(MutableBytesBuffer):
+class ScanningByteStreamBuffer(MutableByteStreamBuffer):
     """
-    A MutableBytesBuffer wrapper that caches negative-find progress to avoid repeated rescans in trickle scenarios.
+    A MutableByteStreamBuffer wrapper that caches negative-find progress to avoid repeated rescans in trickle scenarios.
 
     It is intentionally conservative:
       - It only caches progress for the default find range (start==0, end is None).

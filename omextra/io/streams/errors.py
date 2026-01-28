@@ -4,11 +4,14 @@
 ##
 
 
-class BuffersError(Exception):
+class ByteStreamBufferError(Exception):
     pass
 
 
-class NeedMoreData(BuffersError):  # noqa
+#
+
+
+class NeedMoreDataByteStreamBufferError(ByteStreamBufferError):
     """
     Raised when an operation cannot complete because insufficient bytes are currently buffered.
 
@@ -16,7 +19,10 @@ class NeedMoreData(BuffersError):  # noqa
     """
 
 
-class BufferLimitError(ValueError, BuffersError):  # noqa
+#
+
+
+class LimitByteStreamBufferError(ValueError, ByteStreamBufferError):
     """
     Base class for buffer/framing limit violations.
 
@@ -24,7 +30,7 @@ class BufferLimitError(ValueError, BuffersError):  # noqa
     """
 
 
-class BufferTooLarge(BufferLimitError):  # noqa
+class BufferTooLargeByteStreamBufferError(LimitByteStreamBufferError):
     """
     Buffered data exceeded a configured cap without finding a boundary that would allow progress.
 
@@ -32,13 +38,14 @@ class BufferTooLarge(BufferLimitError):  # noqa
     """
 
 
-class FrameTooLarge(BufferLimitError):  # noqa
-    """
-    A single decoded frame (payload before its boundary delimiter/length) exceeded a configured max size.
-    """
+class FrameTooLargeByteStreamBufferError(LimitByteStreamBufferError):
+    """A single decoded frame (payload before its boundary delimiter/length) exceeded a configured max size."""
 
 
-class BufferStateError(RuntimeError, BuffersError):  # noqa
+#
+
+
+class StateByteStreamBufferError(RuntimeError, ByteStreamBufferError):
     """
     Base class for invalid buffer state transitions (e.g., coalescing while a reservation is outstanding).
 
@@ -46,9 +53,9 @@ class BufferStateError(RuntimeError, BuffersError):  # noqa
     """
 
 
-class OutstandingReserve(BufferStateError):  # noqa
+class OutstandingReserveByteStreamBufferError(StateByteStreamBufferError):
     """A reserve() is outstanding; an operation requiring stable storage cannot proceed."""
 
 
-class NoOutstandingReserve(BufferStateError):  # noqa
+class NoOutstandingReserveByteStreamBufferError(StateByteStreamBufferError):
     """commit() was called without a preceding reserve()."""

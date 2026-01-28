@@ -5,6 +5,7 @@ from ... import collections as col
 from ... import dataclasses as dc
 from ... import lang
 from .dtypes import Dtype
+from .values import SimpleValue
 
 
 ##
@@ -22,7 +23,7 @@ class Column(Element, lang.Final):
     name: str
     type: Dtype
     nullable: bool = dc.field(default=False, kw_only=True)
-    default: lang.Maybe[ta.Any] = dc.field(default=lang.empty(), kw_only=True)
+    default: lang.Maybe[SimpleValue] = dc.field(default=lang.empty(), kw_only=True)
 
 
 @dc.dataclass(frozen=True)

@@ -101,6 +101,10 @@ class SqlalchemyApiDb(SqlalchemyApiWrapper[sa.engine.Engine], api.Db):
     def adapter(self) -> api.Adapter:
         raise NotImplementedError
 
+    def query(self, query: api.Query) -> api.Rows:
+        with self.connect() as conn:
+            return conn.query(query)
+
 
 class SqlalchemyApiAdapter(api.Adapter):
     def scan_type(self, c: api.Column) -> type:

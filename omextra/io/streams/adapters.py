@@ -4,11 +4,11 @@ import io
 import time
 import typing as ta
 
-from .errors import NeedMoreData
-from .segmented import SegmentedBytesView
+from .errors import NeedMoreDataByteStreamBufferError
+from .segmented import SegmentedByteStreamBufferView
 from .types import BytesLike
-from .types import BytesView
-from .types import BytesViewLike
+from .types import ByteStreamBufferLike
+from .types import ByteStreamBufferView
 
 
 ##
@@ -57,21 +57,21 @@ class FileLikeBufferedBytesReader(FileLikeRawBytesReader):
         return ta.cast(bytes, f.read())
 
 
-class BytesBufferReaderAdapter:
+class ByteStreamBufferReaderAdapter:
     """
-    Adapter: BytesBuffer -> file-like reader methods (`read1`, `read`, `readall`).
+    Adapter: ByteStreamBuffer -> file-like reader methods (`read1`, `read`, `readall`).
 
     This adapter is policy-driven for how it behaves when insufficient bytes are available. The core buffer is
     intentionally non-blocking; blocking behavior (if desired) must be provided via a `fill` callback that supplies more
     bytes into the buffer.
 
     `policy`:
-      - 'raise': raise NeedMoreData if fewer than `n` bytes are available (for n >= 0).
+      - 'raise': raise NeedMoreDataByteStreamBufferError if fewer than `n` bytes are available (for n >= 0).
       - 'return_partial': return whatever is available (possibly b'') up to `n`.
       - 'block': repeatedly call `fill()` until satisfied or until `fill()` signals EOF.
 
     `fill`:
-      - Callable that writes more bytes into the underlying MutableBytesBuffer and returns:
+      - Callable that writes more bytes into the underlying MutableByteStreamBuffer and returns:
           * True  -> made progress / more data may be available
           * False -> EOF / no more data will arrive
       - Only used when policy == 'block'.
@@ -131,7 +131,7 @@ class BytesBufferReaderAdapter:
                 return ta.cast(bytes, v.tobytes())
 
             if self._policy == 'raise':
-                raise NeedMoreData
+                raise NeedMoreDataByteStreamBufferError
 
             # block
             if not ta.cast('ta.Callable[[], bool]', self._fill)():
@@ -165,14 +165,14 @@ class BytesBufferReaderAdapter:
         return b''.join(parts)
 
 
-class BytesBufferWriterAdapter:
+class ByteStreamBufferWriterAdapter:
     """
-    Adapter: file-like writer sink <- BytesBuffer / bytes-like.
+    Adapter: file-like writer sink <- ByteStreamBuffer / bytes-like.
 
     This is intentionally small and dumb: it exists to bridge into code expecting a `.write(...)`
     method on an object.
 
-    If given a BytesView-like object, it writes segment-by-segment to avoid materializing copies
+    If given a ByteStreamBufferView-like object, it writes segment-by-segment to avoid materializing copies
     when the sink can accept multiple writes efficiently.
     """
 
@@ -188,22 +188,22 @@ class BytesBufferWriterAdapter:
             b = data.tobytes() if isinstance(data, memoryview) else bytes(data)
             return ta.cast(int, f.write(b))
 
-        if isinstance(data, BytesViewLike):
+        if isinstance(data, ByteStreamBufferLike):
             total = 0
             for mv in data.segments():
                 total += ta.cast(int, f.write(bytes(mv)))
             return total
 
-        if isinstance(data, BytesView):
+        if isinstance(data, ByteStreamBufferView):
             b = data.tobytes()
             return ta.cast(int, f.write(b))
 
         raise TypeError(data)
 
 
-class BytesIoBytesBuffer:
+class BytesIoByteStreamBuffer:
     """
-    BytesBuffer/MutableBytesBuffer implementation backed by `io.BytesIO`, using `getbuffer()`.
+    ByteStreamBuffer/MutableByteStreamBuffer implementation backed by `io.BytesIO`, using `getbuffer()`.
 
     This exists primarily for interoperability with code that already produces/consumes `BytesIO`,
     and to demonstrate how `getbuffer()` can expose a non-copying `memoryview` of internal storage.
@@ -253,13 +253,13 @@ class BytesIoBytesBuffer:
             except BufferError as e:
                 raise RuntimeError('BytesIO buffer is pinned by an exported view') from e
 
-    def split_to(self, n: int, /) -> SegmentedBytesView:
+    def split_to(self, n: int, /) -> SegmentedByteStreamBufferView:
         if n < 0 or n > len(self):
             raise ValueError(n)
         mv = self._bio.getbuffer()
         out = mv[self._rpos:self._rpos + n]
         self._rpos += n
-        return SegmentedBytesView((out,))
+        return SegmentedByteStreamBufferView((out,))
 
     def write(self, data: BytesLike, /) -> None:
         if not data:
