@@ -1,11 +1,4 @@
 """
-TODO:
- - QualifiedName
- - hybrid dataclass scheme
- - sqlite without sqlalchemy
-
-==
-
 @td.tableclass([
     IdIntegerPrimaryKey(),
     CreatedAtUpdatedAt(),
@@ -40,6 +33,7 @@ class User(BaseTable, lang.Final):
 """
 from ... import dataclasses as dc
 from ... import lang
+from .elements import Element
 from .elements import Elements
 
 
@@ -50,3 +44,13 @@ from .elements import Elements
 class TableDef(lang.Final):
     name: str
     elements: Elements
+
+
+def table_def(
+        name: str,
+        *elements: Element,
+) -> TableDef:
+    return TableDef(
+        name,
+        Elements(elements),
+    )

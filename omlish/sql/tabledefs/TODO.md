@@ -1,0 +1,8 @@
+- dtypes:
+  - uuid
+  - jsonb
+  - string len?
+- QualifiedName
+- hybrid dataclass scheme
+- sqlite without sqlalchemy
+- declarative lol

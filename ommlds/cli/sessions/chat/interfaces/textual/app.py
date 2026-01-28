@@ -359,7 +359,7 @@ class ChatApp(
             ),
         )
 
-        self._input_history_manager.add(event.text)
+        await self._input_history_manager.add(event.text)
 
         await self._chat_action_queue.put(ChatApp.UserInput(event.text))
 
@@ -371,12 +371,14 @@ class ChatApp(
 
     @tx.on(InputTextArea.HistoryPrevious)
     async def on_input_text_area_history_previous(self, event: InputTextArea.HistoryPrevious) -> None:
+        await self._input_history_manager.load_if_necessary()
         if (entry := self._input_history_manager.get_previous(event.text)) is not None:
             self._get_input_text_area().text = entry
             self._move_input_cursor_to_end()
 
     @tx.on(InputTextArea.HistoryNext)
     async def on_input_text_area_history_next(self, event: InputTextArea.HistoryNext) -> None:
+        await self._input_history_manager.load_if_necessary()
         if (entry := self._input_history_manager.get_next(event.text)) is not None:
             ita = self._get_input_text_area()
             ita.text = entry

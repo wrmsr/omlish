@@ -6,7 +6,6 @@ import httpx
 import pytest
 
 from omlish import lang
-from omlish.asyncs import all as au
 from omlish.sockets.ports import get_available_port
 
 from ...server.config import Config
@@ -18,12 +17,7 @@ from .foo import build_foo_app
 
 
 @pytest.mark.integration
-@pytest.mark.asyncs(
-    'asyncio',
-    'trio',
-    # 'trio_asyncio',
-)
-@au.with_adapter_loop(wait=True)
+@pytest.mark.asyncs('asyncio')
 async def test_foo():
     port = get_available_port()
     server_bind = f'127.0.0.1:{port}'

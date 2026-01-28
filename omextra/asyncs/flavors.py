@@ -10,9 +10,9 @@ import enum
 import functools
 import typing as ta
 
-from .. import lang
-from .trio_asyncio import check_trio_asyncio
-from .trio_asyncio import with_trio_asyncio_loop
+from omlish import lang
+from omlish.asyncs.trio_asyncio import check_trio_asyncio
+from omlish.asyncs.trio_asyncio import with_trio_asyncio_loop
 
 
 if ta.TYPE_CHECKING:

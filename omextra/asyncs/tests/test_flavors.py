@@ -6,8 +6,9 @@ import pytest
 import sniffio
 import trio
 
-from ... import lang
-from ...testing import pytest as ptu
+from omlish import lang
+from omlish.testing import pytest as ptu
+
 from .. import flavors
 
 

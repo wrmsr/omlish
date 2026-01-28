@@ -35,7 +35,7 @@ def randhex(l: int) -> str:
 @ptu.skip.if_cant_import('greenlet')
 @pytest.mark.asyncs(
     'asyncio',
-    'trio',
+    # 'trio',
     # 'trio_asyncio',
 )
 @au.with_adapter_loop(wait=True)

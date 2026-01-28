@@ -9,7 +9,6 @@ import sqlalchemy as sa
 
 from omlish import check
 from omlish import lang
-from omlish.asyncs import all as au
 from omlish.asyncs import anyio as anu
 from omlish.logs import all as logs
 from omlish.sql import alchemy as sau
@@ -62,7 +61,6 @@ class NodeRegistrant:
             extra=extras,
         )
 
-    @au.mark_anyio
     async def run(
             self,
             shutdown: anyio.Event,

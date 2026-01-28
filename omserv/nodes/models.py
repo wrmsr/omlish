@@ -1,10 +1,6 @@
 import typing as ta
 
-import sqlalchemy as sa
-import sqlalchemy.dialects.postgresql as sapg
-import sqlalchemy.orm
-
-from omlish.sql import alchemy as sau
+from omlish.sql import tabledefs as td
 
 from .sql import CREATE_UPDATED_AT_FUNCTION_STATEMENT
 from .sql import IdMixin
@@ -15,8 +11,16 @@ from .sql import install_updated_at_trigger
 ##
 
 
-Metadata = sa.MetaData()
-Base: ta.Any = sa.orm.declarative_base(metadata=Metadata)
+NODE = td.table_def(
+    'nodes',
+
+    td.Column('uuid', td.String()),
+    td.Column('hostname', td.String()),
+
+    td.Column('heartbeat_at', td.Datetime()),
+
+    td.Column('extra', td.String()),
+)
 
 
 class Node(

@@ -6,6 +6,7 @@ import textwrap
 import typing as ta
 
 import sqlalchemy as sa
+import sqlalchemy.event
 import sqlalchemy.ext.compiler
 
 
