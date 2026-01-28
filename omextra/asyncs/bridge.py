@@ -41,7 +41,7 @@ import weakref
 
 from omlish import check
 from omlish import lang
-from omlish import sync
+from omlish.sync import all as sync
 from omlish.concurrent import threadlets
 
 

@@ -3,8 +3,8 @@
 import asyncio
 import typing as ta
 
-from ...sync import SyncBufferRelay
-from ..sync import AsyncBufferRelay
+from ...sync.buffers import SyncBufferRelay
+from ..sync import AsyncSyncBufferRelay
 
 
 T = ta.TypeVar('T')
@@ -14,7 +14,7 @@ T = ta.TypeVar('T')
 
 
 @ta.final
-class AsyncioBufferRelay(AsyncBufferRelay[T]):
+class AsyncioSyncBufferRelay(AsyncSyncBufferRelay[T]):
     def __init__(
             self,
             *,

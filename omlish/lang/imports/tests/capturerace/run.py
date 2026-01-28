@@ -3,7 +3,7 @@ import sys
 import threading
 import time
 
-from ..... import sync
+from .....sync import all as sync
 from ... import capture  # noqa
 from ... import proxy  # noqa
 

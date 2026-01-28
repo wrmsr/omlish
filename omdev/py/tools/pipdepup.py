@@ -49,7 +49,7 @@ from omlish import check
 from omlish import collections as col
 from omlish.concurrent import all as conc
 from omlish.formats import json
-from omlish.sync import ObjectPool
+from omlish.sync.objectpools import ObjectPool
 
 
 ##

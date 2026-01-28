@@ -11,7 +11,7 @@ T = ta.TypeVar('T')
 ##
 
 
-class AsyncBufferRelay(Abstract, ta.Generic[T]):
+class AsyncSyncBufferRelay(Abstract, ta.Generic[T]):
     @abc.abstractmethod
     def push(self, *vs: T) -> None:
         raise NotImplementedError

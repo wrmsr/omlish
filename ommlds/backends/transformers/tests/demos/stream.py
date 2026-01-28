@@ -3,7 +3,7 @@ import threading
 
 import transformers as tfm
 
-from omlish.asyncs.asyncio.sync import AsyncioBufferRelay
+from omlish.asyncs.asyncio.sync import AsyncioSyncBufferRelay
 
 from ...streamers import CancellableTextStreamer
 
@@ -41,7 +41,7 @@ async def _a_main() -> None:
         add_generation_prompt=True,
     )
 
-    relay: AsyncioBufferRelay = AsyncioBufferRelay()
+    relay: AsyncioSyncBufferRelay = AsyncioSyncBufferRelay()
 
     def streamer_callback(text: str, *, stream_end: bool) -> None:
         if text or stream_end:

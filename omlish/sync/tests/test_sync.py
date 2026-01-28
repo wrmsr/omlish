@@ -1,4 +1,4 @@
-from .. import sync
+from ..funcs import SyncLazyFn
 
 
 def test_lazy_fn():
@@ -9,7 +9,7 @@ def test_lazy_fn():
         c += 1
         return 420
 
-    lfn = sync.SyncLazyFn(fn)
+    lfn = SyncLazyFn(fn)
 
     assert c == 0
     assert lfn.get() == 420
