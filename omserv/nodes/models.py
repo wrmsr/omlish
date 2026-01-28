@@ -4,7 +4,7 @@ from omlish.sql import tabledefs as td
 ##
 
 
-NODE = td.table_def(
+NODES = td.table_def(
     'nodes',
 
     td.Column('uuid', td.String()),

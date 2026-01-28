@@ -2,6 +2,7 @@ import traceback
 import typing as ta
 import warnings
 
+from ... import check
 from ... import lang
 
 
@@ -102,6 +103,7 @@ class ContextCloser(Closer):
 
     @ta.final
     def __enter__(self) -> ta.Self:
+        check.state(not self.__entered)
         self.__entered = True
         self._enter()
         return self

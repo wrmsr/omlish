@@ -8,9 +8,13 @@ from .dtypes import Datetime
 from .dtypes import Integer
 from .dtypes import String
 from .elements import Column
+from .elements import Index
 from .elements import PrimaryKey
 from .elements import UpdatedAtTrigger
 from .values import Now
+
+
+##
 
 
 UPDATED_AT_TRIGGER_SRC = """\
@@ -75,6 +79,8 @@ def render_create_statements(tbl: TableDef) -> list[str]:
 
     #
 
+    indexes: list[str] = []
+
     triggers: list[str] = []
 
     for e in tbl.elements:
@@ -92,6 +98,16 @@ def render_create_statements(tbl: TableDef) -> list[str]:
                 table_name=tbl.name,
                 column_name=e.column,
             ))
+
+        elif isinstance(e, Index):
+            if (idx_name := e.name) is None:
+                idx_name = '__'.join([
+                    tbl.name,
+                    'index',
+                    e.columns,
+                ])
+
+            indexes.append(f'create index {idx_name} on {tbl.name} ({", ".join(e.columns)})')
 
         else:
             raise TypeError(e)
@@ -123,6 +139,8 @@ def render_create_statements(tbl: TableDef) -> list[str]:
     #
 
     stmts: list[str] = [cts.getvalue()]
+
+    stmts.extend(indexes)
     stmts.extend(triggers)
 
     return stmts

@@ -11,7 +11,7 @@ from ..resources import set_resource_debug
 def _main() -> None:
     set_resource_debug(True)
 
-    with DbapiDb(lambda: sqlite3.connect(':memory:')) as db:
+    with DbapiDb(lambda: sqlite3.connect(':memory:', autocommit=True)) as db:
         with db.connect() as conn:
             print(funcs.query(conn, 'select 1'))
 

@@ -8,6 +8,7 @@ from .elements import CreatedAtUpdatedAt
 from .elements import Element
 from .elements import Elements
 from .elements import IdIntegerPrimaryKey
+from .elements import Index
 from .elements import PrimaryKey
 from .elements import UpdatedAt
 from .elements import UpdatedAtTrigger
@@ -28,7 +29,7 @@ def lower_table_elements(td: TableDef) -> TableDef:
 
     while todo:
         match (e := todo.pop()):
-            case Column() | PrimaryKey():
+            case Column() | PrimaryKey() | Index():
                 out.append(e)
 
             case IdIntegerPrimaryKey():

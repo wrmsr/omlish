@@ -15,73 +15,76 @@ from ..resources import ResourceNotEnteredError
 ##
 
 
-def test_sqlite() -> None:
-    with DbapiDb(lambda: sqlite3.connect(':memory:', autocommit=True)) as db:
-        with db.connect() as conn:
-            for stmt in [
-                'create table "movies" ("title", "year", "score")',  # noqa
-                '\n'.join([
-                    'insert into "movies" values',  # noqa
-                    "('Monty Python and the Holy Grail', 1975, 8.2),",
-                    "('And Now for Something Completely Different', 1971, 7.5)",
-                ]),
-            ]:
-                funcs.exec(conn, stmt)
+def test_sqlite(exit_stack) -> None:
+    db = exit_stack.enter_context(DbapiDb(lambda: sqlite3.connect(':memory:', autocommit=True)))
+    conn = exit_stack.enter_context(db.connect())
 
-            with funcs.query(
-                    conn,
-                    'select "score" from "movies"',  # noqa
-            ) as rows:
-                vals = []
-                for row in rows:
-                    vals.append(tuple(row.values))
-                    print(row)
+    for stmt in [
+        'create table "movies" ("title", "year", "score")',  # noqa
+        '\n'.join([
+            'insert into "movies" values',  # noqa
+            "('Monty Python and the Holy Grail', 1975, 8.2),",
+            "('And Now for Something Completely Different', 1971, 7.5)",
+        ]),
+    ]:
+        funcs.exec(conn, stmt)
 
-            assert vals == [
-                (8.2,),
-                (7.5,),
-            ]
+    with funcs.query(
+            conn,
+            'select "score" from "movies"',  # noqa
+    ) as rows:
+        vals = []
+        for row in rows:
+            vals.append(tuple(row.values))
+            print(row)
 
-            with conn.begin():
-                assert funcs.query_scalar(conn, 'select count(*) from movies') == 2
-                funcs.exec(conn, "insert into movies (title, year, score) values ('Bad Movie', 1991, 0.1)")
-                assert funcs.query_scalar(conn, 'select count(*) from movies') == 3
-            assert funcs.query_scalar(conn, 'select count(*) from movies') == 3
+    assert vals == [
+        (8.2,),
+        (7.5,),
+    ]
 
-            with conn.begin() as txn:
-                assert funcs.query_scalar(conn, 'select count(*) from movies') == 3
-                funcs.exec(conn, "insert into movies (title, year, score) values ('Bad Movie 2', 1992, 0.1)")
-                assert funcs.query_scalar(conn, 'select count(*) from movies') == 4
-                txn.rollback()
-            assert funcs.query_scalar(conn, 'select count(*) from movies') == 3
+    with conn.begin():
+        assert funcs.query_scalar(conn, 'select count(*) from movies') == 2
+        funcs.exec(conn, "insert into movies (title, year, score) values ('Bad Movie', 1991, 0.1)")
+        assert funcs.query_scalar(conn, 'select count(*) from movies') == 3
+    assert funcs.query_scalar(conn, 'select count(*) from movies') == 3
+
+    with conn.begin() as txn:
+        assert funcs.query_scalar(conn, 'select count(*) from movies') == 3
+        funcs.exec(conn, "insert into movies (title, year, score) values ('Bad Movie 2', 1992, 0.1)")
+        assert funcs.query_scalar(conn, 'select count(*) from movies') == 4
+        txn.rollback()
+    assert funcs.query_scalar(conn, 'select count(*) from movies') == 3
 
 
 @ptu.skip.if_cant_import('pg8000')
-def test_pg8000(harness) -> None:
+def test_pg8000(harness, exit_stack) -> None:
     url = check.isinstance(check.isinstance(harness[HarnessDbs].specs()['postgres'].loc, UrlDbLoc).url, str)
     p_u = urllib.parse.urlparse(url)
 
     import pg8000
 
-    with DbapiDb(lambda: pg8000.connect(
-            p_u.username,
-            host=p_u.hostname,
-            port=p_u.port,
-            password=p_u.password,
-    )) as db:
-        with db.connect() as conn:
-            for q in [
-                'select 1',
-                'select 1 union select 2',
-                # 'select 1, 2 union select 3, 4',
-            ]:
-                with funcs.query(conn, q) as rows:
-                    vals = []
-                    for row in rows:
-                        vals.append(tuple(row.values))
-                        print(row)
+    db = exit_stack.enter_context(DbapiDb(lambda: pg8000.connect(
+        p_u.username,
+        host=p_u.hostname,
+        port=p_u.port,
+        password=p_u.password,
+    )))
 
-                print(vals)
+    conn = exit_stack.enter_context(db.connect())
+
+    for q in [
+        'select 1',
+        'select 1 union select 2',
+        # 'select 1, 2 union select 3, 4',
+    ]:
+        with funcs.query(conn, q) as rows:
+            vals = []
+            for row in rows:
+                vals.append(tuple(row.values))
+                print(row)
+
+        print(vals)
 
 
 def test_queries():
