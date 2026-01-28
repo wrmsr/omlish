@@ -27,9 +27,9 @@ bitsandbytes==0.49.1
 black==26.1.0
 bleach==6.3.0
 blobfile==3.1.0
-boto3==1.42.35
-botocore==1.42.35
-botocore-stubs==1.42.35
+boto3==1.42.36
+botocore==1.42.36
+botocore-stubs==1.42.36
 brotli==1.2.0
 build==1.4.0
 cattrs==25.3.0
@@ -312,7 +312,7 @@ trio==0.32.0
 trio_asyncio==0.15.0
 twine==6.2.0
 types-awscrt==0.31.1
-types-boto3==1.42.35
+types-boto3==1.42.36
 types-greenlet==3.3.0.20251206
 types-paramiko==4.0.0.20250822
 types-psutil==7.2.1.20260116
