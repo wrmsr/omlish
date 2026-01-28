@@ -1,3 +1,4 @@
 - Default providers? sniffio?
 - Tasks
 - Helpers / patterns
+- Intersection types, obviously

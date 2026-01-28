@@ -7,11 +7,6 @@ from .base import (  # noqa
     AnyioAsyncliteApi as Api,
 )
 
-from .locks import (  # noqa
-    AnyioAsyncliteLock as Lock,
-    AnyioAsyncliteLocks as Locks,
-)
-
 from .events import (  # noqa
     AnyioAsyncliteEvent as Event,
     AnyioAsyncliteEvents as Events,

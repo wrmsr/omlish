@@ -18,11 +18,6 @@ from .base import (  # noqa
     AsyncliteCloseable as Closeable,
 )
 
-from .locks import (  # noqa
-    AsyncliteLock as Lock,
-    AsyncliteLocks as Locks,
-)
-
 from .events import (  # noqa
     AsyncliteEvent as Event,
     AsyncliteEvents as Events,

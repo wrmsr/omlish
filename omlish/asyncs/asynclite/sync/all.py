@@ -7,11 +7,6 @@ from .base import (  # noqa
     SyncAsyncliteApi as Api,
 )
 
-from .locks import (  # noqa
-    SyncAsyncliteLock as Lock,
-    SyncAsyncliteLocks as Locks,
-)
-
 from .events import (  # noqa
     SyncAsyncliteEvent as Event,
     SyncAsyncliteEvents as Events,
