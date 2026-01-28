@@ -35,3 +35,7 @@ from .semaphores import (  # noqa
     SyncAsyncliteSemaphore as Semaphore,
     SyncAsyncliteSemaphores as Semaphores,
 )
+
+from .sleeps import (  # noqa
+    SyncAsyncliteSleeps as Sleeps,
+)

@@ -46,3 +46,7 @@ from .semaphores import (  # noqa
     AsyncliteSemaphore as Semaphore,
     AsyncliteSemaphores as Semaphores,
 )
+
+from .sleeps import (  # noqa
+    AsyncliteSleeps as Sleeps,
+)
