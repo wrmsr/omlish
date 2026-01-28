@@ -78,6 +78,11 @@ class ResourceNotEnteredError(Exception):
 
 
 class ContextCloser(Closer):
+    """
+    IMPORTANT: Subclasses must not raise exceptions in constructors or resources will be leaked (given the intended
+               usage ergonomics). Do any validation in `_enter`.
+    """
+
     def __init__(self, *args: ta.Any, **kwargs: ta.Any) -> None:
         super().__init__(*args, **kwargs)
 

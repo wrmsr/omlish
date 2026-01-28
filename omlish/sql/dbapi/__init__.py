@@ -2,8 +2,11 @@ from .abc import (  # noqa
     DbapiTypeCode,
     DbapiColumnDescription,
     DbapiColumnDescription_,
-    DbapiConnection,
+
     DbapiCursor,
+
+    DbapiConnection,
+
     DbapiThreadSafety,
     DbapiModule,
 )

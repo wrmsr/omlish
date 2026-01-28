@@ -38,15 +38,7 @@ class DbapiColumnDescription_(ta.NamedTuple):  # noqa
             return cls(*obj[:len(cls._fields)])
 
 
-class DbapiConnection(ta.Protocol):
-    def close(self) -> object: ...
-
-    def commit(self) -> object: ...
-
-    # optional:
-    # def rollback(self) -> ta.Any: ...
-
-    def cursor(self) -> 'DbapiCursor': ...
+##
 
 
 class DbapiCursor(ta.Protocol):
@@ -59,18 +51,26 @@ class DbapiCursor(ta.Protocol):
     # optional:
     # def callproc(self, procname: str, parameters: Sequence[ta.Any] = ...) -> Sequence[ta.Any]: ...
 
+    # optional:
+    @property
+    def rownumber(self) -> int: ...
+
+    # optional:
+    @property
+    def lastrowid(self) -> ta.Any: ...
+
     def close(self) -> object: ...
 
     def execute(
-        self,
-        operation: str,
-        parameters: ta.Sequence[ta.Any] | ta.Mapping[str, ta.Any] = ...,
+            self,
+            operation: str,
+            parameters: ta.Sequence[ta.Any] | ta.Mapping[str, ta.Any] = ...,
     ) -> object: ...
 
     def executemany(
-        self,
-        operation: str,
-        seq_of_parameters: ta.Sequence[ta.Sequence[ta.Any]],
+            self,
+            operation: str,
+            seq_of_parameters: ta.Sequence[ta.Sequence[ta.Any]],
     ) -> object: ...
 
     def fetchone(self) -> ta.Sequence[ta.Any] | None: ...
@@ -79,14 +79,31 @@ class DbapiCursor(ta.Protocol):
 
     def fetchall(self) -> ta.Sequence[ta.Sequence[ta.Any]]: ...
 
-    # optional:
-    # def nextset(self) -> None | Literal[True]: ...
-
     arraysize: int
 
     def setinputsizes(self, sizes: ta.Sequence[DbapiTypeCode | int | None]) -> object: ...
 
     def setoutputsize(self, size: int, column: int = ...) -> object: ...
+
+
+##
+
+
+class DbapiConnection(ta.Protocol):
+    def close(self) -> object: ...
+
+    def commit(self) -> object: ...
+
+    # optional:
+    def rollback(self) -> ta.Any: ...
+
+    # optional:
+    autocommit: bool
+
+    def cursor(self) -> 'DbapiCursor': ...
+
+
+##
 
 
 class DbapiThreadSafety(enum.IntEnum):

@@ -80,6 +80,13 @@ class DbapiConn(Conn):
 
         self._conn = conn
 
+    def _enter(self) -> None:
+        super()._enter()
+
+        if not self._conn.autocommit:
+            self._conn.autocommit = True
+        check.state(self._conn.autocommit)
+
     def _close(self) -> None:
         self._conn.close()
 
