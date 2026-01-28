@@ -6,6 +6,7 @@ from .base import Adapter
 from .base import Conn
 from .base import Db
 from .base import Rows
+from .base import Transaction
 from .columns import Column
 from .columns import Columns
 from .queries import Query
@@ -58,6 +59,21 @@ class DbapiRows(Rows):
         return Row(self._columns, values)
 
 
+class DbapiTransaction(Transaction):
+    @property
+    def adapter(self) -> Adapter:
+        raise NotImplementedError
+
+    def query(self, query: Query) -> Rows:
+        raise NotImplementedError
+
+    def commit(self) -> None:
+        raise NotImplementedError
+
+    def rollback(self) -> None:
+        raise NotImplementedError
+
+
 class DbapiConn(Conn):
     def __init__(self, conn: dbapi_abc.DbapiConnection) -> None:
         super().__init__()
@@ -84,6 +100,9 @@ class DbapiConn(Conn):
         except Exception:  # noqa
             cursor.close()
             raise
+
+    def begin(self) -> Transaction:
+        raise NotImplementedError
 
 
 class DbapiDb(Db):

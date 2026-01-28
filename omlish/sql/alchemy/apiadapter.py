@@ -57,6 +57,21 @@ class SqlalchemyApiRows(api.Rows):
         return next(self._it)
 
 
+class SqlalchemyTransaction(api.Transaction):
+    @property
+    def adapter(self) -> api.Adapter:
+        raise NotImplementedError
+
+    def query(self, query: api.Query) -> api.Rows:
+        raise NotImplementedError
+
+    def commit(self) -> None:
+        raise NotImplementedError
+
+    def rollback(self) -> None:
+        raise NotImplementedError
+
+
 class SqlalchemyApiConn(SqlalchemyApiWrapper[sa.engine.Connection], api.Conn):
     @property
     def adapter(self) -> api.Adapter:
@@ -73,6 +88,9 @@ class SqlalchemyApiConn(SqlalchemyApiWrapper[sa.engine.Connection], api.Conn):
                 for sa_row in sa_rows
             ]
         return SqlalchemyApiRows(cols, rows)
+
+    def begin(self) -> api.Transaction:
+        raise NotImplementedError
 
 
 class SqlalchemyApiDb(SqlalchemyApiWrapper[sa.engine.Engine], api.Db):

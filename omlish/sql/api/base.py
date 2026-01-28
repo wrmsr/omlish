@@ -1,7 +1,3 @@
-"""
-TODO:
- - sync vs async
-"""
 import abc
 import typing as ta
 
@@ -48,8 +44,23 @@ class Rows(ContextCloser, ta.Iterator[Row], lang.Abstract):
 ##
 
 
+class Transaction(Querier, lang.Abstract):
+    @abc.abstractmethod
+    def commit(self) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def rollback(self) -> None:
+        raise NotImplementedError
+
+
+##
+
+
 class Conn(Querier, lang.Abstract):
-    pass
+    @abc.abstractmethod
+    def begin(self) -> Transaction:
+        raise NotImplementedError
 
 
 ##

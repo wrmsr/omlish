@@ -7,6 +7,7 @@ from .asquery import (  # noqa
 from .base import (  # noqa
     Querier,
     Rows,
+    Transaction,
     Conn,
     Db,
     Adapter,
