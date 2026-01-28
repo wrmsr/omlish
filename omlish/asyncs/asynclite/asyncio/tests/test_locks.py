@@ -16,6 +16,18 @@ class TestAsyncioLocks(AsyncioIsolatedAsyncTestCase):
         lock.release()
         self.assertFalse(lock.locked())
 
+    async def test_basic_lock_unlock_releasing(self):
+        api = AsyncioAsyncliteLocks()
+        lock = api.make_lock()
+
+        self.assertFalse(lock.locked())
+
+        await lock.acquire()
+        with lock.releasing():
+            self.assertTrue(lock.locked())
+
+        self.assertFalse(lock.locked())
+
     async def test_lock_prevents_concurrent_access(self):
         api = AsyncioAsyncliteLocks()
         lock = api.make_lock()

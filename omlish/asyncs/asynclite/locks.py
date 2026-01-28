@@ -38,6 +38,19 @@ class AsyncliteLock(AsyncliteObject, Abstract):
     def release(self) -> None:
         raise NotImplementedError
 
+    class _Releaser:
+        def __init__(self, lock: 'AsyncliteLock') -> None:
+            self._lock = lock
+
+        def __enter__(self) -> None:
+            pass
+
+        def __exit__(self, et, e, tb) -> None:
+            self._lock.release()
+
+    def releasing(self) -> ta.ContextManager[None]:
+        return AsyncliteLock._Releaser(self)
+
     @abc.abstractmethod
     def locked(self) -> bool:
         raise NotImplementedError
