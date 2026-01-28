@@ -1,6 +1,4 @@
 from .adapters import (  # noqa
-    FileLikeRawBytesReader,
-    FileLikeBufferedBytesReader,
     ByteStreamBufferReaderAdapter,
     ByteStreamBufferWriterAdapter,
     BytesIoByteStreamBuffer,
@@ -50,8 +48,24 @@ from .types import (  # noqa
 )
 
 from .utils import (  # noqa
-    can_bytes,
-    iter_bytes_segments,
-    to_bytes,
-    bytes_len,
+    ByteStreamBuffers,
 )
+
+
+##
+
+
+NeedMoreData = NeedMoreDataByteStreamBufferError
+
+BufferTooLarge = BufferTooLargeByteStreamBufferError
+FrameTooLarge = FrameTooLargeByteStreamBufferError
+
+OutstandingReserve = OutstandingReserveByteStreamBufferError
+NoOutstandingReserve = NoOutstandingReserveByteStreamBufferError
+
+#
+
+can_bytes = ByteStreamBuffers.can_bytes
+iter_bytes_segments = ByteStreamBuffers.iter_bytes_segments
+to_bytes = ByteStreamBuffers.to_bytes
+bytes_len = ByteStreamBuffers.bytes_len
