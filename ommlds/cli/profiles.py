@@ -271,15 +271,13 @@ class ChatProfile(AspectProfile[ChatConfig]):
             ap.arg('--enable-test-weather-tool', action='store_true'),
         ]
 
-        def configure(self, ctx: ProfileAspect.ConfigureContext[ChatConfig], cfg: ChatConfig) -> ChatConfig:
-            if not (
-                    ctx.args.enable_fs_tools or
-                    ctx.args.enable_todo_tools or
-                    # ctx.args.enable_unsafe_tools_do_not_use_lol or
-                    ctx.args.enable_test_weather_tool or
-                    ctx.args.code
-            ):
-                return cfg
+        def configure_with_tools(
+                self,
+                ctx: ProfileAspect.ConfigureContext[ChatConfig],
+                cfg: ChatConfig,
+                enabled_tools: ta.Iterable[str],
+        ) -> ChatConfig:
+            check.not_isinstance(enabled_tools, str)
 
             return dc.replace(
                 cfg,
@@ -293,9 +291,7 @@ class ChatProfile(AspectProfile[ChatConfig]):
                         cfg.driver.tools,
                         enabled_tools={  # noqa
                             *(cfg.driver.tools.enabled_tools or []),
-                            *(['fs'] if ctx.args.enable_fs_tools else []),
-                            *(['todo'] if ctx.args.enable_todo_tools else []),
-                            *(['weather'] if ctx.args.enable_test_weather_tool else []),
+                            *enabled_tools,
                         },
                     ),
                 ),
@@ -305,6 +301,21 @@ class ChatProfile(AspectProfile[ChatConfig]):
                 ),
             )
 
+        def configure(self, ctx: ProfileAspect.ConfigureContext[ChatConfig], cfg: ChatConfig) -> ChatConfig:
+            if not (
+                    ctx.args.enable_fs_tools or
+                    ctx.args.enable_todo_tools or
+                    # ctx.args.enable_unsafe_tools_do_not_use_lol or
+                    ctx.args.enable_test_weather_tool
+            ):
+                return cfg
+
+            return self.configure_with_tools(ctx, cfg, {
+                *(['fs'] if ctx.args.enable_fs_tools else []),
+                *(['todo'] if ctx.args.enable_todo_tools else []),
+                *(['weather'] if ctx.args.enable_test_weather_tool else []),
+            })
+
     #
 
     class Code(ProfileAspect[ChatConfig]):
@@ -312,10 +323,7 @@ class ChatProfile(AspectProfile[ChatConfig]):
             ap.arg('-c', '--code', action='store_true'),
         ]
 
-        def configure(self, ctx: ProfileAspect.ConfigureContext[ChatConfig], cfg: ChatConfig) -> ChatConfig:
-            if not ctx.args.code:
-                return cfg
-
+        def configure_for_code(self, ctx: ProfileAspect.ConfigureContext[ChatConfig], cfg: ChatConfig) -> ChatConfig:
             cfg = dc.replace(
                 cfg,
                 driver=dc.replace(
@@ -344,6 +352,12 @@ class ChatProfile(AspectProfile[ChatConfig]):
 
             return cfg
 
+        def configure(self, ctx: ProfileAspect.ConfigureContext[ChatConfig], cfg: ChatConfig) -> ChatConfig:
+            if not ctx.args.code:
+                return cfg
+
+            return self.configure_for_code(ctx, cfg)
+
     #
 
     def _build_aspects(self) -> ta.Sequence[ProfileAspect[ChatConfig]]:
@@ -366,7 +380,20 @@ class ChatProfile(AspectProfile[ChatConfig]):
 
 
 class CodeProfile(ChatProfile):
-    pass
+    class Tools(ChatProfile.Tools):
+        parser_args: ta.ClassVar[ta.Sequence[ap.Arg]] = []
+
+        def configure(self, ctx: ProfileAspect.ConfigureContext[ChatConfig], cfg: ChatConfig) -> ChatConfig:
+            return self.configure_with_tools(ctx, cfg, {
+                'fs',
+                'todo',
+            })
+
+    class Code(ChatProfile.Code):
+        parser_args: ta.ClassVar[ta.Sequence[ap.Arg]] = []
+
+        def configure(self, ctx: ProfileAspect.ConfigureContext[ChatConfig], cfg: ChatConfig) -> ChatConfig:
+            return self.configure_for_code(ctx, cfg)
 
 
 ##

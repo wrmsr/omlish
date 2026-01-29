@@ -55,12 +55,13 @@ async def _run_session_cfg(
 
 MAIN_PROFILE_ARGS: ta.Sequence[ap.Arg] = [
     ap.arg('-p', '--profile', default='chat'),
+    ap.arg('-h', '--help', action='store_true'),
     ap.arg('args', nargs=ap.REMAINDER),
 ]
 
 
 async def _a_main(argv: ta.Any = None) -> None:
-    parser = ap.ArgumentParser()
+    parser = ap.ArgumentParser(add_help=False)
 
     for a in [*MAIN_PROFILE_ARGS, *MAIN_EXTRA_ARGS]:
         parser.add_argument(*a.args, **a.kwargs)
@@ -74,7 +75,11 @@ async def _a_main(argv: ta.Any = None) -> None:
     profile_cls = PROFILE_TYPES[args.profile]
     profile = profile_cls()
 
-    session_cfg = profile.configure([*unk_args, *args.args])
+    session_cfg = profile.configure([
+        *unk_args,
+        *(['--help'] if args.help else []),
+        *args.args,
+    ])
 
     await _run_session_cfg(
         session_cfg,
