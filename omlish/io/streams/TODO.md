@@ -1,2 +1,1 @@
-- lite prep: flat namespacing - Buffers* suffixes? where do errors go?
 - `import bisect` find/rfind initial segment index, `key=len`
