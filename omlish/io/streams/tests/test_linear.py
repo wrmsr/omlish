@@ -101,3 +101,51 @@ class TestLinearByteStreamBuffer(unittest.TestCase):
         b.advance(2)
         b.write(b'de')  # len now 1 + 2 == 3 ok
         self.assertEqual(b.peek().tobytes(), b'cde')
+
+    def test_compact_success(self) -> None:
+        b = LinearByteStreamBuffer(compact_threshold=4)
+        b.write(b'abcdef')
+        b.advance(4)  # leaves "ef", triggers compact heuristics (threshold=4)
+        self.assertEqual(b.peek().tobytes(), b'ef')
+        self.assertEqual(b.compaction_attempts, 1)
+        self.assertEqual(b.compaction_successes, 1)
+        self.assertEqual(b.compaction_skipped_exports, 0)
+
+    def test_compact_skipped_when_exported_view_alive(self) -> None:
+        b = LinearByteStreamBuffer(compact_threshold=4)
+        b.write(b'abcdef')
+        mv = b.peek()  # exported view pins bytearray
+        b.advance(4)   # compaction attempted but must be skipped
+        self.assertEqual(b.peek().tobytes(), b'ef')
+        self.assertEqual(b.compaction_attempts, 1)
+        self.assertEqual(b.compaction_successes, 0)
+        self.assertEqual(b.compaction_skipped_exports, 1)
+        del mv
+
+    def test_compact_force(self) -> None:
+        b = LinearByteStreamBuffer(compact_threshold=999999)
+        b.write(b'abcdef')
+        b.advance(1)
+        # not compacted by heuristics
+        self.assertEqual(b.compaction_attempts, 0)
+        # forced attempt
+        ok = b.compact(force=True)
+        self.assertTrue(ok)
+        self.assertEqual(b.peek().tobytes(), b'bcdef')
+        self.assertEqual(b.compaction_attempts, 1)
+        self.assertEqual(b.compaction_successes, 1)
+
+    def test_compact_disallowed_with_reserve(self) -> None:
+        b = LinearByteStreamBuffer()
+        _ = b.reserve(4)
+        with self.assertRaises(OutstandingReserveByteStreamBufferError):
+            b.compact(force=True)
+
+    def test_empty_reset_best_effort_no_error_with_export(self) -> None:
+        b = LinearByteStreamBuffer(compact_threshold=4)
+        b.write(b'abcd')
+        mv = b.peek()  # exported view
+        b.advance(4)   # becomes empty; clear may be skipped but must not error
+        self.assertEqual(len(b), 0)
+        self.assertEqual(b.peek().tobytes(), b'')
+        del mv

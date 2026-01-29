@@ -174,8 +174,14 @@ class BytesIoByteStreamBuffer:
     default buffer backend for pynetty (segmented/bytearray backends are more predictable).
     """
 
-    def __init__(self) -> None:
+    def __init__(
+            self,
+            *,
+            compaction_threshold: int = 1 << 16,
+    ) -> None:
         super().__init__()
+
+        self._compaction_threshold = compaction_threshold
 
         self._bio = io.BytesIO()
         self._rpos = 0
@@ -202,7 +208,11 @@ class BytesIoByteStreamBuffer:
         self._rpos += n
         # Optional compaction heuristic: if we've consumed a lot, rebuild a smaller BytesIO.
         # This may fail if someone holds a getbuffer() view (BufferError).
-        if self._rpos and self._rpos >= 65536 and self._rpos >= (self._bio.getbuffer().nbytes // 2):
+        if (
+                self._rpos and
+                self._rpos >= self._compaction_threshold and
+                self._rpos >= (self._bio.getbuffer().nbytes // 2)
+        ):
             try:
                 remaining = self._bio.getbuffer()[self._rpos:].tobytes()
                 self._bio = io.BytesIO(remaining)

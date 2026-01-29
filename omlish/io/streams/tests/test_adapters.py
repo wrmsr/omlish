@@ -117,6 +117,3 @@ class TestIoAdapters(unittest.TestCase):
         # Force a resize/grow; should raise RuntimeError due to pinned buffer.
         with self.assertRaises(RuntimeError):
             b.write(b'y' * 1024)
-
-        # Drop view to avoid leaking pinning into later tests.
-        del mv
