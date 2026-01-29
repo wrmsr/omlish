@@ -22,7 +22,7 @@ class Project(ProjectBase):
             'llama-cpp-python ~= 0.3',
 
             'mlx ~= 0.30; sys_platform == "darwin"',
-            'mlx-lm ~= 0.29; sys_platform == "darwin"',
+            'mlx-lm ~= 0.30; sys_platform == "darwin"',
 
             'sentencepiece ~= 0.2',
 
@@ -35,12 +35,12 @@ class Project(ProjectBase):
 
             'torch ~= 2.10',
 
-            'transformers ~= 4.57',
+            'transformers ~= 5.0',
             'sentence-transformers ~= 5.2',
         ],
 
         'huggingface': [
-            'huggingface-hub ~= 0.36',
+            'huggingface-hub ~= 1.3',
             'datasets ~= 4.5',
         ],
 

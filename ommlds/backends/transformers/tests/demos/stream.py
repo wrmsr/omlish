@@ -1,5 +1,6 @@
 import asyncio
 import threading
+import typing as ta
 
 import transformers as tfm
 
@@ -49,7 +50,7 @@ async def _a_main() -> None:
 
     # Set up the streamer for token generation
     streamer = CancellableTextStreamer(
-        tokenizer,
+        ta.cast(CancellableTextStreamer.Tokenizer, tokenizer),  # noqa  # FIXME: get it together transformers..
         streamer_callback,  # noqa
         skip_prompt=True,
         skip_special_tokens=True,

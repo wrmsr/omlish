@@ -3,11 +3,23 @@ import typing as ta
 
 import pytest
 
+from omlish import check
 from omlish import lang
 
 from ..generation import GenerationParams
 from ..generation import generate
 from ..loading import load_model
+
+
+with lang.auto_proxy_import(globals()):
+    import transformers as tfm
+
+
+def fix_tokenizer_output(obj: ta.Any) -> list[int]:
+    if isinstance(obj, tfm.BatchEncoding):
+        return check.isinstance(obj.data['input_ids'], list)
+    else:
+        return check.isinstance(obj, list)
 
 
 @pytest.mark.not_docker_guest
@@ -51,7 +63,7 @@ def test_tools():
     response = generate(
         loaded.model,
         loaded.tokenization,
-        ta.cast(ta.Any, prompt),
+        fix_tokenizer_output(prompt),
         gp,
         # verbose=True,
     )
@@ -76,7 +88,7 @@ def test_tools():
     response = generate(  # noqa
         loaded.model,
         loaded.tokenization,
-        ta.cast(ta.Any, prompt),
+        fix_tokenizer_output(prompt),
         gp,
         # verbose=True,
     )

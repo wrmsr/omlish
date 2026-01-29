@@ -69,13 +69,15 @@ class TransformersTokenizer(tks.BaseTokenizer):
     ) -> list[tks.Token]:
         ts = self._tfm_tokenizer.tokenize(text)
         ids = self._tfm_tokenizer.convert_tokens_to_ids(ts)
-        return ids
+        return ta.cast('list[tks.Token]', ids)
 
     def _decode(
             self,
             tokens: ta.Iterable[tks.Token],
     ) -> str:
-        return self._tfm_tokenizer.decode(tokens)  # type: ignore[arg-type]
+        if not isinstance(tokens, (tuple, list)):  # Yes actually special cased by transformers
+            tokens = list(tokens)
+        return check.isinstance(self._tfm_tokenizer.decode(ta.cast('list[int]', tokens)), str)
 
 
 ##

@@ -12,19 +12,24 @@ P = ta.ParamSpec('P')
 
 
 class CancellableTextStreamer(tfm.TextStreamer):
+    class Tokenizer(ta.Protocol):
+        """Transformers base class still hard deps an AutoTokenizer despite only needing this one method."""
+
+        def decode(self, tokens: ta.Sequence[int], **kwargs: ta.Any) -> str: ...
+
     class Callback(ta.Protocol):
         def __call__(self, text: str, *, stream_end: bool) -> None: ...
 
     def __init__(
             self,
-            tokenizer: tfm.AutoTokenizer,
+            tokenizer: Tokenizer,
             callback: Callback,
             *,
             skip_prompt: bool = False,
             **decode_kwargs: ta.Any,
     ) -> None:
         super().__init__(
-            tokenizer,
+            ta.cast(tfm.AutoTokenizer, tokenizer),  # noqa
             skip_prompt=skip_prompt,
             **decode_kwargs,
         )

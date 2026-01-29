@@ -89,7 +89,7 @@ hpack==4.1.0
 httpcore==1.0.9
 httplib2==0.31.2
 httpx==0.28.1
-huggingface-hub==0.36.0
+huggingface_hub==1.3.5
 humanfriendly==10.0
 hyperframe==6.1.0
 id==1.5.0
@@ -146,9 +146,9 @@ mccabe==0.7.0
 mdit-py-plugins==0.5.0
 mdurl==0.1.2
 mistune==3.2.0
-mlx==0.30.0
-mlx-lm==0.29.1
-mlx-metal==0.30.0
+mlx==0.30.4
+mlx-lm @ git+https://github.com/ml-explore/mlx-lm@7f1b7fe6bcd113d7f611ed2a1e917ef30e117c1a
+mlx-metal==0.30.4
 more-itertools==10.8.0
 mpmath==1.3.0
 msgpack==1.1.2
@@ -258,10 +258,11 @@ scipy==1.17.0
 scramp==1.4.8
 segno==1.6.6
 Send2Trash==2.1.0
-sentence-transformers==5.2.1
+sentence-transformers==5.2.2
 sentencepiece==0.2.1
 setuptools==80.10.2
 shapely==2.1.2
+shellingham==1.5.4
 six==1.17.0
 sniffio==1.3.1
 snowflake-connector-python==4.2.0
@@ -290,7 +291,7 @@ torchvision==0.25.0
 tornado==6.5.4
 tqdm==4.67.1
 traitlets==5.14.3
-transformers==4.57.6
+transformers==5.0.0
 tree-sitter==0.25.2
 tree-sitter-bash==0.25.1
 tree-sitter-css==0.25.0
@@ -311,6 +312,7 @@ trino==0.336.0
 trio==0.32.0
 trio_asyncio==0.15.0
 twine==6.2.0
+typer-slim==0.21.1
 types-awscrt==0.31.1
 types-boto3==1.42.37
 types-greenlet==3.3.0.20251206

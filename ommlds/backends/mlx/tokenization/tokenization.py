@@ -44,7 +44,7 @@ class Tokenization:
         try:
             token_id = int(token)
         except ValueError:
-            token_id = self._tokenizer.convert_tokens_to_ids(token)
+            token_id = check.isinstance(self._tokenizer.convert_tokens_to_ids(check.isinstance(token, str)), int)
 
         if token_id is None:
             raise ValueError(f"'{token}' is not a token for this tokenizer")

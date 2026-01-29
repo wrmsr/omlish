@@ -1,4 +1,4 @@
-import collections
+import collections.abc
 import functools
 import itertools
 import typing as ta
@@ -6,6 +6,7 @@ import typing as ta
 
 T = ta.TypeVar('T')
 R = ta.TypeVar('R')
+SequenceT = ta.TypeVar('SequenceT', bound=collections.abc.Sequence)
 
 
 ##
@@ -24,12 +25,6 @@ def take(n: int, it: ta.Iterable[T]) -> list[T]:
 
 def consume(it: ta.Iterable[ta.Any]) -> None:
     collections.deque(it, maxlen=0)
-
-
-def opt_list(it: ta.Iterable[T] | None) -> list[T] | None:
-    if it is None:
-        return None
-    return list(it)
 
 
 def peek(vs: ta.Iterable[T]) -> tuple[T, ta.Iterator[T]]:
@@ -65,6 +60,85 @@ def renumerate(it: ta.Iterable[T]) -> ta.Iterator[tuple[T, int]]:
 
 def common_prefix_len(*its: ta.Iterable) -> int:
     return ilen(itertools.takewhile(lambda t: all(e == t[0] for e in t[1:]), zip(*its)))
+
+
+#
+
+
+_BUILTIN_SEQUENCE_TYPES: frozenset[type] = frozenset([
+    str,
+    bytes,
+    bytearray,
+    tuple,
+    list,
+])
+
+
+@ta.overload
+def seq(
+        obj: SequenceT,
+        factory: ta.Any = list,
+) -> SequenceT:
+    ...
+
+
+@ta.overload
+def seq(
+        obj: ta.Iterable[T],
+        factory: ta.Callable[[ta.Iterable[T]], ta.Sequence[T]] = list,
+) -> ta.Sequence[T]:
+    ...
+
+
+def seq(obj, factory=list):
+    """Returns given object if already a sequence."""
+
+    if (
+            type(obj) in _BUILTIN_SEQUENCE_TYPES or  # Fast exact checks to avoid slow abc machinery
+            isinstance(obj, collections.abc.Sequence)
+    ):
+        return obj
+    return factory(obj)
+
+
+@ta.overload
+def opt_seq(
+        obj: None,
+        factory: ta.Any = list,
+) -> None:
+    ...
+
+
+@ta.overload
+def opt_seq(
+        obj: SequenceT,
+        factory: ta.Any = list,
+) -> SequenceT:
+    ...
+
+
+@ta.overload
+def opt_seq(
+        obj: ta.Iterable[T],
+        factory: ta.Callable[[ta.Iterable[T]], ta.Sequence[T]] = list,
+) -> ta.Sequence[T]:
+    ...
+
+
+def opt_seq(obj, factory=list):
+    """Returns given object if already a sequence."""
+
+    if obj is None:
+        return None
+    return seq(obj, factory)
+
+
+def opt_list(it: ta.Iterable[T] | None) -> list[T] | None:
+    """Returns new list if not None."""
+
+    if it is None:
+        return None
+    return list(it)
 
 
 ##

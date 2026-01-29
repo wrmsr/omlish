@@ -1,3 +1,5 @@
+from omlish import check
+
 from ..types import Tokenizer
 from .base import BaseStreamingDetokenizer
 
@@ -36,14 +38,14 @@ class NaiveStreamingDetokenizer(BaseStreamingDetokenizer):
         self._tokens.append(token)
 
     def finalize(self) -> None:
-        self._text += self._tokenizer.decode(self._current_tokens)
+        self._text += check.isinstance(self._tokenizer.decode(self._current_tokens), str)
         self._current_tokens = []
         self._current_text = ''
 
     @property
     def text(self) -> str:
         if self._current_tokens:
-            self._current_text = self._tokenizer.decode(self._current_tokens)
+            self._current_text = check.isinstance(self._tokenizer.decode(self._current_tokens), str)
             if self._current_text.endswith('\ufffd') or (
                     self._tokenizer.clean_up_tokenization_spaces and
                     self._current_text and

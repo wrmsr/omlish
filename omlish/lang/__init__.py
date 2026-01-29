@@ -73,12 +73,11 @@ with _auto_proxy_init(globals(), update_exports=True):
     )
 
     from .classes.abstract import (  # noqa
-        is_abstract_method,
-
         is_abstract_class,
         is_abstract,
 
         get_abstracts,
+
         make_abstract,
     )
 
@@ -341,12 +340,15 @@ with _auto_proxy_init(globals(), update_exports=True):
         ilen,
         take,
         consume,
-        opt_list,
         peek,
         chunk,
         interleave,
         renumerate,
         common_prefix_len,
+
+        seq,
+        opt_seq,
+        opt_list,
 
         readiter,
 

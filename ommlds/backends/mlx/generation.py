@@ -238,7 +238,7 @@ class GenerationOutput:
 def stream_generate(
         model: 'mlx_nn.Module',
         tokenization: Tokenization,
-        prompt: ta.Union[str, 'mx.array'],
+        prompt: ta.Union[str, ta.Sequence[int], 'mx.array'],
         params: GenerationParams = GenerationParams(),
 ) -> ta.Generator[GenerationOutput]:
     if not isinstance(prompt, mx.array):
@@ -312,7 +312,7 @@ def stream_generate(
 def generate(
         model: 'mlx_nn.Module',
         tokenization: Tokenization,
-        prompt: ta.Union[str, 'mx.array'],
+        prompt: ta.Union[str, ta.Sequence[int], 'mx.array'],
         params: GenerationParams = GenerationParams(),
         *,
         verbose: bool = False,
