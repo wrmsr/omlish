@@ -27,9 +27,9 @@ bitsandbytes==0.49.1
 black==26.1.0
 bleach==6.3.0
 blobfile==3.1.0
-boto3==1.42.36
-botocore==1.42.36
-botocore-stubs==1.42.36
+boto3==1.42.37
+botocore==1.42.37
+botocore-stubs==1.42.37
 brotli==1.2.0
 build==1.4.0
 cattrs==25.3.0
@@ -43,7 +43,7 @@ coloredlogs==15.0.1
 comm==0.2.3
 contourpy==1.3.3
 cramjam==2.11.0
-cryptography==46.0.3
+cryptography==46.0.4
 cycler==0.12.1
 Cython==3.2.4
 datasets==4.5.0
@@ -196,7 +196,7 @@ prompt_toolkit==3.0.52
 propcache==0.4.1
 proto-plus==1.27.0
 protobuf==6.33.4
-psutil==7.2.1
+psutil==7.2.2
 psycopg==3.3.2
 psycopg2==2.9.11
 ptyprocess==0.7.0
@@ -273,7 +273,7 @@ sqlean.py==3.50.4.5
 sqlite-vec==0.1.6
 stack-data==0.6.3
 sympy==1.14.0
-tavily-python==0.7.19
+tavily-python==0.7.20
 terminado==0.18.1
 textual==7.4.0
 textual-dev==1.8.0
@@ -312,7 +312,7 @@ trio==0.32.0
 trio_asyncio==0.15.0
 twine==6.2.0
 types-awscrt==0.31.1
-types-boto3==1.42.36
+types-boto3==1.42.37
 types-greenlet==3.3.0.20251206
 types-paramiko==4.0.0.20250822
 types-psutil==7.2.1.20260116
