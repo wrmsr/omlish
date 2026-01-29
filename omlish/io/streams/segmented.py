@@ -109,6 +109,8 @@ class SegmentedByteStreamBuffer(MutableByteStreamBuffer, BaseByteStreamBuffer):
     _reserved_len = 0
     _reserved_in_active = False
 
+    #
+
     def __len__(self) -> int:
         return self._len
 
@@ -131,7 +133,7 @@ class SegmentedByteStreamBuffer(MutableByteStreamBuffer, BaseByteStreamBuffer):
         if self._head_off:
             mv = mv[self._head_off:]
 
-        if self._active is not None and s0 is self._active:
+        if s0 is self._active:
             # Active is only meaningful by _active_used, not len(bytearray).
             rl = self._active_readable_len()
             if self._head_off >= rl:
@@ -149,7 +151,7 @@ class SegmentedByteStreamBuffer(MutableByteStreamBuffer, BaseByteStreamBuffer):
 
         last_i = len(self._segs) - 1
         for i, s in enumerate(self._segs):
-            if self._active is not None and i == last_i and s is self._active:
+            if s is self._active and i == last_i:
                 # Active chunk: create fresh view with readable length.
                 rl = self._active_readable_len()
                 if i == 0:
@@ -171,6 +173,8 @@ class SegmentedByteStreamBuffer(MutableByteStreamBuffer, BaseByteStreamBuffer):
                 out.append(mv)
 
         return tuple(out)
+
+    #
 
     def _ensure_active(self) -> bytearray:
         if self._chunk_size <= 0:
@@ -333,6 +337,8 @@ class SegmentedByteStreamBuffer(MutableByteStreamBuffer, BaseByteStreamBuffer):
             self._segs.append(bb)
             self._len += n
 
+    #
+
     def advance(self, n: int, /) -> None:
         if n < 0 or n > self._len:
             raise ValueError(n)
@@ -344,7 +350,7 @@ class SegmentedByteStreamBuffer(MutableByteStreamBuffer, BaseByteStreamBuffer):
         while n and self._segs:
             s0 = self._segs[0]
 
-            if self._active is not None and s0 is self._active:
+            if s0 is self._active:
                 avail0 = self._active_readable_len() - self._head_off
             else:
                 avail0 = len(s0) - self._head_off
@@ -386,7 +392,7 @@ class SegmentedByteStreamBuffer(MutableByteStreamBuffer, BaseByteStreamBuffer):
 
             s0 = self._segs[0]
 
-            if self._active is not None and s0 is self._active:
+            if s0 is self._active:
                 rl = self._active_readable_len()
                 if self._head_off >= rl:
                     raise RuntimeError(rem)
@@ -439,7 +445,7 @@ class SegmentedByteStreamBuffer(MutableByteStreamBuffer, BaseByteStreamBuffer):
             off = self._head_off if seg_i == 0 else 0
 
             seg_len = len(s) - off
-            if self._active is not None and seg_i == (len(self._segs) - 1) and s is self._active:
+            if s is self._active and seg_i == (len(self._segs) - 1):
                 seg_len = self._active_readable_len() - off
 
             if seg_len <= 0:
@@ -473,6 +479,70 @@ class SegmentedByteStreamBuffer(MutableByteStreamBuffer, BaseByteStreamBuffer):
 
         return memoryview(self._segs[0])[:n]
 
+    def _seg_readable_slice(
+            self,
+            si: int,
+            s: ta.Union[bytes, bytearray],
+            last_i: int,
+    ) -> ta.Tuple[int, int]:
+        """
+        Compute the readable offset and length for segment at index si.
+
+        Returns (offset, readable_len) where:
+          - offset: byte offset into segment (head_off for si==0, else 0)
+          - readable_len: number of readable bytes from offset (0 if segment empty/consumed)
+
+        Handles head offset for first segment and active chunk readable length for last segment.
+        """
+
+        off = self._head_off if si == 0 else 0
+        seg_len = len(s) - off
+        if s is self._active and si == last_i:
+            seg_len = self._active_readable_len() - off
+        return off, max(0, seg_len)
+
+    def _seg_search_range(
+            self,
+            start: int,
+            limit: int,
+            m: int,
+            seg_gs: int,
+            seg_ge: int,
+            seg_len: int,
+    ) -> ta.Optional[ta.Tuple[int, int]]:
+        """
+        Compute local search range within a segment.
+
+        Args:
+            start: global start position (user-provided)
+            limit: global limit (end - m, last valid position where match can start)
+            m: pattern length
+            seg_gs: segment global start position
+            seg_ge: segment global end position
+            seg_len: segment readable length
+
+        Returns (local_start, local_end) if segment overlaps search range, else None.
+          - local_start: offset within segment to start searching
+          - local_end: offset within segment to end searching (exclusive)
+        """
+
+        # Check if segment overlaps search range
+        if limit < seg_gs or start >= seg_ge:
+            return None
+
+        # Compute local start within segment
+        ls = max(0, start - seg_gs)
+
+        # Compute local end: can start match anywhere up to limit, need m bytes
+        max_start_in_seg = limit - seg_gs
+        end_search = min(max_start_in_seg + m, seg_len)
+
+        # Validate range
+        if ls >= end_search:
+            return None
+
+        return ls, end_search
+
     def find(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
         start, end = self._norm_slice(start, end)
 
@@ -492,28 +562,20 @@ class SegmentedByteStreamBuffer(MutableByteStreamBuffer, BaseByteStreamBuffer):
         last_i = len(self._segs) - 1
 
         for si, s in enumerate(self._segs):
-            off = self._head_off if si == 0 else 0
-
-            seg_len = len(s) - off
-            if self._active is not None and si == last_i and s is self._active:
-                seg_len = self._active_readable_len() - off
-
+            off, seg_len = self._seg_readable_slice(si, s, last_i)
             if seg_len <= 0:
                 continue
 
             seg_gs = gpos
             seg_ge = gpos + seg_len
 
-            if limit >= seg_gs and start < seg_ge:
-                ls = start - seg_gs if start > seg_gs else 0
-                max_start_in_seg = limit - seg_gs
-                end_search = max_start_in_seg + m
-                if end_search > seg_len:
-                    end_search = seg_len
-                if ls < end_search:
-                    idx = s.find(sub, off + ls, off + end_search)
-                    if idx != -1:
-                        return seg_gs + (idx - off)
+            # Within-segment search
+            search_range = self._seg_search_range(start, limit, m, seg_gs, seg_ge, seg_len)
+            if search_range is not None:
+                ls, end_search = search_range
+                idx = s.find(sub, off + ls, off + end_search)
+                if idx != -1:
+                    return seg_gs + (idx - off)
 
             if m > 1 and tail:
                 head_need = m - 1
@@ -567,29 +629,21 @@ class SegmentedByteStreamBuffer(MutableByteStreamBuffer, BaseByteStreamBuffer):
 
         for si in range(len(self._segs) - 1, -1, -1):
             s = self._segs[si]
-            off = self._head_off if si == 0 else 0
-
-            seg_len = len(s) - off
-            if self._active is not None and si == last_i and s is self._active:
-                seg_len = self._active_readable_len() - off
-
+            off, seg_len = self._seg_readable_slice(si, s, last_i)
             if seg_len <= 0:
                 continue
 
             seg_gs = seg_ge - seg_len
 
-            if limit >= seg_gs and start < seg_ge:
-                ls = start - seg_gs if start > seg_gs else 0
-                max_start_in_seg = limit - seg_gs
-                end_search = max_start_in_seg + m
-                if end_search > seg_len:
-                    end_search = seg_len
-                if ls < end_search:
-                    idx = s.rfind(sub, off + ls, off + end_search)
-                    if idx != -1:
-                        cand = seg_gs + (idx - off)
-                        if cand > best:
-                            best = cand
+            # Within-segment search
+            search_range = self._seg_search_range(start, limit, m, seg_gs, seg_ge, seg_len)
+            if search_range is not None:
+                ls, end_search = search_range
+                idx = s.rfind(sub, off + ls, off + end_search)
+                if idx != -1:
+                    cand = seg_gs + (idx - off)
+                    if cand > best:
+                        best = cand
 
             if m > 1 and prev_s is not None:
                 tail_need = m - 1
@@ -605,10 +659,7 @@ class SegmentedByteStreamBuffer(MutableByteStreamBuffer, BaseByteStreamBuffer):
                             break
 
                         sj_s = self._segs[sj]
-                        sj_off = self._head_off if sj == 0 else 0
-                        sj_len = len(sj_s) - sj_off
-                        if self._active is not None and sj == last_i and sj_s is self._active:
-                            sj_len = self._active_readable_len() - sj_off
+                        sj_off, sj_len = self._seg_readable_slice(sj, sj_s, last_i)
                         if sj_len <= 0:
                             continue
 
