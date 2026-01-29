@@ -1523,6 +1523,12 @@ class InstanceType(_enum.Enum):
     X8I_METAL_48XL = 'x8i.metal-48xl'
     X8I_METAL_96XL = 'x8i.metal-96xl'
     MAC_M4MAX_METAL = 'mac-m4max.metal'
+    G7E_2XLARGE = 'g7e.2xlarge'
+    G7E_4XLARGE = 'g7e.4xlarge'
+    G7E_8XLARGE = 'g7e.8xlarge'
+    G7E_12XLARGE = 'g7e.12xlarge'
+    G7E_24XLARGE = 'g7e.24xlarge'
+    G7E_48XLARGE = 'g7e.48xlarge'
 
 
 class InstanceTypeHypervisor(_enum.Enum):

@@ -27,9 +27,9 @@ bitsandbytes==0.49.1
 black==26.1.0
 bleach==6.3.0
 blobfile==3.1.0
-boto3==1.42.37
-botocore==1.42.37
-botocore-stubs==1.42.37
+boto3==1.42.38
+botocore==1.42.38
+botocore-stubs==1.42.38
 brotli==1.2.0
 build==1.4.0
 cattrs==25.3.0
@@ -195,7 +195,7 @@ prometheus_client==0.24.1
 prompt_toolkit==3.0.52
 propcache==0.4.1
 proto-plus==1.27.0
-protobuf==6.33.4
+protobuf==6.33.5
 psutil==7.2.2
 psycopg==3.3.2
 psycopg2==2.9.11
@@ -314,7 +314,7 @@ trio_asyncio==0.15.0
 twine==6.2.0
 typer-slim==0.21.1
 types-awscrt==0.31.1
-types-boto3==1.42.37
+types-boto3==1.42.38
 types-greenlet==3.3.0.20251206
 types-paramiko==4.0.0.20250822
 types-psutil==7.2.1.20260116
@@ -333,9 +333,9 @@ uritemplate==4.2.0
 urllib3==2.6.3
 urwid==3.0.3
 urwid_readline==0.15.1
-uv==0.9.27
+uv==0.9.28
 watchdog==6.0.0
-wcwidth==0.5.0
+wcwidth==0.5.2
 webcolors==25.10.0
 webencodings==0.5.1
 websocket-client==1.9.0
