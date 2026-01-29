@@ -11,7 +11,6 @@ from .helpers import fragment_section
 from .helpers import read_versions_file_versions
 from .helpers import render_apt_install_deps
 from .ops import Cmd
-from .ops import Copy
 from .ops import Entrypoint
 from .ops import Env
 from .ops import From
@@ -57,9 +56,9 @@ WORKDIR = '/omlish'
 OPS: ta.Sequence[Op] = [
     From(BASE_IMAGE),
 
-    Section('timestamp', [
-        Copy(src='docker/.timestamp', dst='/'),
-    ]),
+    # Section('timestamp', [
+    #     Copy(src='docker/.timestamp', dst='/'),
+    # ]),
 
     Section('locale', [
         Env([

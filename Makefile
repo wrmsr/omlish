@@ -466,10 +466,6 @@ docker-reup: docker-rebuild
 docker-reup-lite: docker-rebuild
 	${DOCKER_COMPOSE} up --attach-dependencies ${DOCKER_LITE_CONTAINERS}
 
-.PHONY: docker-invalidate
-docker-invalidate:
-	date +%s > docker/.timestamp
-
 DOCKER_BASE_PORT=35220
 
 .PHONY: docker-ports

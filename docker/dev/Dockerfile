@@ -1,11 +1,6 @@
 FROM ubuntu:24.04
 
 
-## timestamp
-
-COPY docker/.timestamp /
-
-
 ## locale
 
 ENV LANG=en_US.UTF-8
