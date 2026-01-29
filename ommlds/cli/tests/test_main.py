@@ -1,7 +1,7 @@
 import pytest
 
-from ..main import ChatProfile
 from ..main import _run_session_cfg
+from ..profiles import ChatProfile
 
 
 @pytest.mark.asyncs('asyncio')
