@@ -2,8 +2,7 @@
 # @omlish-lite
 import typing as ta
 
-from omlish.lite.abstract import Abstract
-
+from ...lite.abstract import Abstract
 from .types import ByteStreamBuffer
 
 

@@ -3,7 +3,7 @@
 import abc
 import typing as ta
 
-from omlish.lite.abstract import Abstract
+from ...lite.abstract import Abstract
 
 
 BytesLike = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
