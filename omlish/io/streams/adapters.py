@@ -7,8 +7,10 @@ import typing as ta
 from .direct import DirectByteStreamBufferView
 from .errors import NeedMoreDataByteStreamBufferError
 from .types import BytesLike
+from .types import ByteStreamBuffer
 from .types import ByteStreamBufferLike
 from .types import ByteStreamBufferView
+from .types import MutableByteStreamBuffer
 
 
 ##
@@ -39,7 +41,7 @@ class ByteStreamBufferReaderAdapter:
 
     def __init__(
             self,
-            buf: ta.Any,
+            buf: ByteStreamBuffer,
             *,
             policy: ta.Literal['raise', 'return_partial', 'block'] = 'raise',
             fill: ta.Optional[ta.Callable[[], bool]] = None,
@@ -79,13 +81,13 @@ class ByteStreamBufferReaderAdapter:
             ln = len(buf)
             if ln >= n:
                 v = buf.split_to(n)
-                return ta.cast(bytes, v.tobytes())
+                return v.tobytes()
 
             if self._policy == 'return_partial':
                 if not ln:
                     return b''
                 v = buf.split_to(ln)
-                return ta.cast(bytes, v.tobytes())
+                return v.tobytes()
 
             if self._policy == 'raise':
                 raise NeedMoreDataByteStreamBufferError
@@ -96,7 +98,7 @@ class ByteStreamBufferReaderAdapter:
                 if not ln:
                     return b''
                 v = buf.split_to(ln)
-                return ta.cast(bytes, v.tobytes())
+                return v.tobytes()
 
             self._on_block()
 
@@ -108,7 +110,7 @@ class ByteStreamBufferReaderAdapter:
             ln = len(buf)
             if ln:
                 v = buf.split_to(ln)
-                parts.append(ta.cast(bytes, v.tobytes()))
+                parts.append(v.tobytes())
                 continue
 
             if self._policy == 'block':
@@ -122,15 +124,17 @@ class ByteStreamBufferReaderAdapter:
         return b''.join(parts)
 
 
+##
+
+
 class ByteStreamBufferWriterAdapter:
     """
     Adapter: file-like writer sink <- ByteStreamBuffer / bytes-like.
 
-    This is intentionally small and dumb: it exists to bridge into code expecting a `.write(...)`
-    method on an object.
+    This is intentionally small and dumb: it exists to bridge into code expecting a `.write(...)` method on an object.
 
-    If given a ByteStreamBufferView-like object, it writes segment-by-segment to avoid materializing copies
-    when the sink can accept multiple writes efficiently.
+    If given a ByteStreamBufferView-like object, it writes segment-by-segment to avoid materializing copies when the
+    sink can accept multiple writes efficiently.
     """
 
     def __init__(self, f: ta.Any) -> None:
@@ -158,20 +162,22 @@ class ByteStreamBufferWriterAdapter:
         raise TypeError(data)
 
 
-class BytesIoByteStreamBuffer:
+##
+
+
+class BytesIoByteStreamBuffer(MutableByteStreamBuffer):
     """
     ByteStreamBuffer/MutableByteStreamBuffer implementation backed by `io.BytesIO`, using `getbuffer()`.
 
-    This exists primarily for interoperability with code that already produces/consumes `BytesIO`,
-    and to demonstrate how `getbuffer()` can expose a non-copying `memoryview` of internal storage.
+    This exists primarily for interoperability with code that already produces/consumes `BytesIO`, and to demonstrate
+    how `getbuffer()` can expose a non-copying `memoryview` of internal storage.
 
     Caveat (important):
       - Any exported `memoryview` from `BytesIO.getbuffer()` can pin the BytesIO against resizing.
-      - If a caller holds onto a view and we attempt to grow/resize internally, `BytesIO` may raise
-        `BufferError`. We surface that as a RuntimeError.
+      - If a caller holds onto a view and we attempt to grow/resize internally, `BytesIO` may raise `BufferError`.
 
-    This backing is therefore best suited for controlled scenarios; it is *not* the recommended
-    default buffer backend for pynetty (segmented/bytearray backends are more predictable).
+    This backing is therefore best suited for controlled scenarios; it is *not* the recommended default buffer backend
+    for applications (segmented/bytearray backends are more predictable).
     """
 
     def __init__(
@@ -217,8 +223,8 @@ class BytesIoByteStreamBuffer:
                 remaining = self._bio.getbuffer()[self._rpos:].tobytes()
                 self._bio = io.BytesIO(remaining)
                 self._rpos = 0
-            except BufferError as e:
-                raise RuntimeError('BytesIO buffer is pinned by an exported view') from e
+            except BufferError as e:  # noqa
+                raise
 
     def split_to(self, n: int, /) -> ByteStreamBufferView:
         if n < 0 or n > len(self):
@@ -235,9 +241,9 @@ class BytesIoByteStreamBuffer:
             data = data.tobytes()
         try:
             self._bio.seek(0, io.SEEK_END)
-            self._bio.write(ta.cast(bytes, data))
-        except BufferError as e:
-            raise RuntimeError('BytesIO buffer is pinned by an exported view') from e
+            self._bio.write(data)
+        except BufferError as e:  # noqa
+            raise
 
     def reserve(self, n: int, /) -> memoryview:
         if n < 0:
@@ -259,3 +265,12 @@ class BytesIoByteStreamBuffer:
         self._resv_len = 0
         if n:
             self.write(memoryview(b)[:n])
+
+    def coalesce(self, n: int, /) -> memoryview:
+        raise NotImplementedError
+
+    def find(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
+        raise NotImplementedError
+
+    def rfind(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
+        raise NotImplementedError

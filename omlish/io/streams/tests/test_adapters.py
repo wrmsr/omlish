@@ -114,6 +114,6 @@ class TestIoAdapters(unittest.TestCase):
         mv = b.peek()  # exported view pins BytesIO against resizing
         self.assertEqual(len(mv), 4)
 
-        # Force a resize/grow; should raise RuntimeError due to pinned buffer.
-        with self.assertRaises(RuntimeError):
+        # Force a resize/grow; should raise BufferError due to pinned buffer.
+        with self.assertRaises(BufferError):
             b.write(b'y' * 1024)
