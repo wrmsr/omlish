@@ -335,7 +335,7 @@ class ChatApp(
 
     async def on_unmount(self) -> None:
         if (cat := self._chat_action_queue_task) is not None:
-            await self._chat_event_queue.put(None)
+            await self._chat_action_queue.put(None)
             await cat
 
         await self._chat_driver.stop()
