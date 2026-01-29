@@ -2,7 +2,7 @@
 # @omlish-lite
 import typing as ta
 
-from .base import BaseByteStreamBuffer
+from .base import BaseByteStreamBufferLike
 from .errors import BufferTooLargeByteStreamBufferError
 from .errors import NoOutstandingReserveByteStreamBufferError
 from .errors import OutstandingReserveByteStreamBufferError
@@ -14,7 +14,7 @@ from .types import MutableByteStreamBuffer
 ##
 
 
-class LinearByteStreamBuffer(MutableByteStreamBuffer, BaseByteStreamBuffer):
+class LinearByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
     """
     A simple contiguous (bytearray-backed) MutableByteStreamBuffer implementation.
 
@@ -178,14 +178,14 @@ class LinearByteStreamBuffer(MutableByteStreamBuffer, BaseByteStreamBuffer):
 
     def find(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
         start, end = self._norm_slice(start, end)
-        if len(sub) == 0:
+        if not sub:
             return start
         i = self._ba.find(sub, self._rpos + start, self._rpos + end)
         return -1 if i < 0 else (i - self._rpos)
 
     def rfind(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
         start, end = self._norm_slice(start, end)
-        if len(sub) == 0:
+        if not sub:
             return end
         i = self._ba.rfind(sub, self._rpos + start, self._rpos + end)
         return -1 if i < 0 else (i - self._rpos)

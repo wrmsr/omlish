@@ -2,14 +2,16 @@
 # @omlish-lite
 import typing as ta
 
+from .base import BaseByteStreamBufferLike
 from .types import BytesLike
+from .types import ByteStreamBufferView
 from .types import MutableByteStreamBuffer
 
 
 ##
 
 
-class ScanningByteStreamBuffer(MutableByteStreamBuffer):
+class ScanningByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
     """
     A MutableByteStreamBuffer wrapper that caches negative-find progress to avoid repeated rescans in trickle scenarios.
 
@@ -47,7 +49,7 @@ class ScanningByteStreamBuffer(MutableByteStreamBuffer):
         self._buf.advance(n)
         self._adjust_for_consume(n)
 
-    def split_to(self, n: int, /):
+    def split_to(self, n: int, /) -> ByteStreamBufferView:
         v = self._buf.split_to(n)
         self._adjust_for_consume(n)
         return v

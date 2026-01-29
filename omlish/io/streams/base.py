@@ -3,13 +3,13 @@
 import typing as ta
 
 from ...lite.abstract import Abstract
-from .types import ByteStreamBuffer
+from .types import ByteStreamBufferLike
 
 
 ##
 
 
-class BaseByteStreamBuffer(ByteStreamBuffer, Abstract):
+class BaseByteStreamBufferLike(ByteStreamBufferLike, Abstract):
     def _norm_slice(self, start: int, end: ta.Optional[int]) -> ta.Tuple[int, int]:
         s, e, _ = slice(start, end, 1).indices(len(self))
         if e < s:

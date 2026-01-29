@@ -2,15 +2,54 @@
 # @omlish-lite
 import typing as ta
 
-from .base import BaseByteStreamBuffer
+from ...lite.abstract import Abstract
+from .base import BaseByteStreamBufferLike
 from .segmented import SegmentedByteStreamBufferView
 from .types import BytesLike
+from .types import ByteStreamBuffer
+from .types import ByteStreamBufferView
 
 
 ##
 
 
-class DirectByteStreamBuffer(BaseByteStreamBuffer):
+class BaseDirectByteStreamBufferLike(BaseByteStreamBufferLike, Abstract):
+    def __init__(self, data: BytesLike) -> None:
+        super().__init__()
+
+        if isinstance(data, memoryview):
+            self._mv_ = data
+        else:
+            self._b_ = data
+
+    _mv_: memoryview
+    _b_: ta.Union[bytes, bytearray]
+
+    def _mv(self) -> memoryview:
+        try:
+            return self._mv_
+        except AttributeError:
+            pass
+
+        self._mv_ = mv = memoryview(self._b_)
+        return mv
+
+    def _b(self) -> ta.Union[bytes, bytearray]:
+        try:
+            return self._b_
+        except AttributeError:
+            pass
+
+        obj = self._mv_.obj
+        if isinstance(obj, (bytes, bytearray)):
+            b = obj
+        else:
+            b = bytes(obj)
+        self._b_ = b
+        return b
+
+
+class DirectByteStreamBuffer(BaseDirectByteStreamBufferLike, ByteStreamBuffer):
     """
     A read-only ByteStreamBuffer that wraps existing bytes without copying.
 
@@ -44,41 +83,9 @@ class DirectByteStreamBuffer(BaseByteStreamBuffer):
     """
 
     def __init__(self, data: BytesLike) -> None:
-        super().__init__()
-
-        # Normalize to memoryview for uniform handling of bytes/bytearray/memoryview
-        if isinstance(data, memoryview):
-            self._mv_ = data
-        else:
-            self._b_ = data
+        super().__init__(data)
 
         self._rpos = 0
-
-    _mv_: memoryview
-    _b_: ta.Union[bytes, bytearray]
-
-    def _mv(self) -> memoryview:
-        try:
-            return self._mv_
-        except AttributeError:
-            pass
-
-        self._mv_ = mv = memoryview(self._b_)
-        return mv
-
-    def _b(self) -> ta.Union[bytes, bytearray]:
-        try:
-            return self._b_
-        except AttributeError:
-            pass
-
-        obj = self._mv_.obj
-        if isinstance(obj, (bytes, bytearray)):
-            b = obj
-        else:
-            b = bytes(obj)
-        self._b_ = b
-        return b
 
     def __len__(self) -> int:
         mv = self._mv()
@@ -99,7 +106,7 @@ class DirectByteStreamBuffer(BaseByteStreamBuffer):
             raise ValueError(n)
         self._rpos += n
 
-    def split_to(self, n: int, /) -> SegmentedByteStreamBufferView:
+    def split_to(self, n: int, /) -> ByteStreamBufferView:
         if n < 0 or n > len(self):
             raise ValueError(n)
         if n == 0:
@@ -113,7 +120,7 @@ class DirectByteStreamBuffer(BaseByteStreamBuffer):
     def find(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
         start, end = self._norm_slice(start, end)
 
-        if len(sub) == 0:
+        if not sub:
             return start
 
         b = self._b()
@@ -123,7 +130,7 @@ class DirectByteStreamBuffer(BaseByteStreamBuffer):
     def rfind(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
         start, end = self._norm_slice(start, end)
 
-        if len(sub) == 0:
+        if not sub:
             return end
 
         b = self._b()

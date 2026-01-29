@@ -2,7 +2,7 @@
 # @omlish-lite
 import typing as ta
 
-from .base import BaseByteStreamBuffer
+from .base import BaseByteStreamBufferLike
 from .errors import BufferTooLargeByteStreamBufferError
 from .errors import NoOutstandingReserveByteStreamBufferError
 from .errors import OutstandingReserveByteStreamBufferError
@@ -14,7 +14,7 @@ from .types import MutableByteStreamBuffer
 ##
 
 
-class SegmentedByteStreamBufferView(ByteStreamBufferView):
+class SegmentedByteStreamBufferView(BaseByteStreamBufferLike, ByteStreamBufferView):
     """
     A read-only, possibly non-contiguous view over a sequence of byte segments.
 
@@ -49,7 +49,7 @@ class SegmentedByteStreamBufferView(ByteStreamBufferView):
         return b''.join(bytes(mv) for mv in self._segs)
 
 
-class SegmentedByteStreamBuffer(MutableByteStreamBuffer, BaseByteStreamBuffer):
+class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
     """
     A segmented, consumption-oriented bytes buffer.
 

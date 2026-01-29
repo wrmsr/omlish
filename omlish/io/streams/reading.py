@@ -1,8 +1,7 @@
 # @omlish-lite
-import typing as ta
-
 from .errors import NeedMoreDataByteStreamBufferError
 from .types import ByteStreamBuffer
+from .types import ByteStreamBufferView
 
 
 ##
@@ -118,7 +117,7 @@ class ByteStreamBufferReader:
             raise NeedMoreDataByteStreamBufferError
         return mv[:n]
 
-    def take(self, n: int, /) -> ta.Any:
+    def take(self, n: int, /) -> ByteStreamBufferView:
         """
         Consume and return a `ByteStreamBufferView`-like object representing exactly `n` bytes.
 
@@ -139,4 +138,4 @@ class ByteStreamBufferReader:
         """
 
         v = self.take(n)
-        return ta.cast(bytes, v.tobytes())
+        return v.tobytes()

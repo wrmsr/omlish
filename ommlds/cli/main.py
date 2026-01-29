@@ -28,6 +28,10 @@ from .sessions.configs import SessionConfig
 from .sessions.embedding.configs import EmbeddingConfig
 
 
+SessionConfigT = ta.TypeVar('SessionConfigT', bound=SessionConfig)
+SessionConfigU = ta.TypeVar('SessionConfigU', bound=SessionConfig)
+
+
 ##
 
 
@@ -48,279 +52,350 @@ def _process_main_extra_args(args: ap.Namespace) -> None:
 ##
 
 
-class Profile(lang.Abstract):
+class Profile(lang.Abstract, ta.Generic[SessionConfigT]):
     @abc.abstractmethod
-    def configure(self, argv: ta.Sequence[str]) -> SessionConfig:
+    def configure(self, argv: ta.Sequence[str]) -> SessionConfigT:
         raise NotImplementedError
 
 
 ##
 
 
-# class ChatAspect(lang.Abstract):
-#     def get_parser_args(self) -> ta.Sequence[ap.Arg]: ...
-#     def set_args(self, args: ap.Namespace) -> None: ...
-#     def configure(self, cfg: ChatConfig) -> ChatConfig: ...
+class ProfileAspect(lang.Abstract, ta.Generic[SessionConfigT]):
+    @property
+    def name(self) -> str:
+        return lang.low_camel_case(type(self).__name__)
+
+    @property
+    def default_parser_arg_group(self) -> str | None:
+        return self.name
+
+    @property
+    def parser_args(self) -> ta.Sequence[ap.Arg]:
+        return []
+
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class ConfigureContext(ta.Generic[SessionConfigU]):
+        profile: 'Profile[SessionConfigU]'
+        args: ap.Namespace
+
+    @abc.abstractmethod
+    def configure(self, ctx: ConfigureContext[SessionConfigT], cfg: SessionConfigT) -> SessionConfigT:
+        raise NotImplementedError
 
 
-class ChatProfile(Profile):
-    _args: ap.Namespace
+class AspectProfile(Profile[SessionConfigT], lang.Abstract):
+    @abc.abstractmethod
+    def _build_aspects(self) -> ta.Sequence[ProfileAspect[SessionConfigT]]:
+        return []
+
+    __aspects: ta.Sequence[ProfileAspect[SessionConfigT]]
+
+    @ta.final
+    @property
+    def aspects(self) -> ta.Sequence[ProfileAspect[SessionConfigT]]:
+        try:
+            return self.__aspects
+        except AttributeError:
+            pass
+        self.__aspects = aspects = tuple(self._build_aspects())
+        return aspects
 
     #
 
-    BACKEND_ARGS: ta.ClassVar[ta.Sequence[ap.Arg]] = [
-        ap.arg('-b', '--backend', group='backend'),
-    ]
+    @abc.abstractmethod
+    def initial_config(self) -> SessionConfigT:
+        raise NotImplementedError
 
-    def configure_backend(self, cfg: ChatConfig) -> ChatConfig:
-        return dc.replace(
-            cfg,
-            driver=dc.replace(
-                cfg.driver,
-                backend=dc.replace(
-                    cfg.driver.backend,
-                    backend=self._args.backend,
-                ),
-            ),
+    #
+
+    def configure(self, argv: ta.Sequence[str]) -> SessionConfigT:
+        parser = ap.ArgumentParser()
+
+        pa_grps: dict[str, ta.Any] = {}
+        for a in self.aspects:
+            for pa in a.parser_args:
+                if (pa_gn := lang.opt_coalesce(pa.group, a.default_parser_arg_group)) is not None:
+                    check.non_empty_str(pa_gn)
+                    try:
+                        pa_grp = pa_grps[pa_gn]
+                    except KeyError:
+                        pa_grps[pa_gn] = pa_grp = parser.add_argument_group(pa_gn)
+                    pa_grp.add_argument(*pa.args, **pa.kwargs)
+                else:
+                    parser.add_argument(*pa.args, **pa.kwargs)
+
+        args = parser.parse_args(argv)
+
+        cfg_ctx = ProfileAspect.ConfigureContext(
+            self,
+            args,
         )
+        cfg = self.initial_config()
+        for a in self.aspects:
+            cfg = a.configure(cfg_ctx, cfg)
 
-    #
+        return cfg
 
-    INTERFACE_ARGS: ta.ClassVar[ta.Sequence[ap.Arg]] = [
-        ap.arg('-i', '--interactive', action='store_true', group='interface'),
-        ap.arg('-T', '--textual', action='store_true', group='interface'),
-        ap.arg('-e', '--editor', action='store_true', group='interface'),
-    ]
 
-    def configure_interface(self, cfg: ChatConfig) -> ChatConfig:
-        if self._args.editor:
-            check.arg(not self._args.interactive)
-            check.arg(not self._args.message)
-            raise NotImplementedError
+##
 
-        if self._args.textual:
-            check.isinstance(cfg.interface, BareInterfaceConfig)
-            cfg = dc.replace(
+
+class ChatProfile(AspectProfile[ChatConfig]):
+    class Backend(ProfileAspect[ChatConfig]):
+        parser_args: ta.ClassVar[ta.Sequence[ap.Arg]] = [
+            ap.arg('-b', '--backend'),
+        ]
+
+        def configure(self, ctx: ProfileAspect.ConfigureContext[ChatConfig], cfg: ChatConfig) -> ChatConfig:
+            return dc.replace(
                 cfg,
-                interface=TextualInterfaceConfig(**{
-                    f.name: getattr(cfg.interface, f.name)
-                    for f in dc.fields(InterfaceConfig)
-                }),
+                driver=dc.replace(
+                    cfg.driver,
+                    backend=dc.replace(
+                        cfg.driver.backend,
+                        backend=ctx.args.backend,
+                    ),
+                ),
             )
 
-        else:
+    #
+
+    class Interface(ProfileAspect[ChatConfig]):
+        parser_args: ta.ClassVar[ta.Sequence[ap.Arg]] = [
+            ap.arg('-i', '--interactive', action='store_true'),
+            ap.arg('-T', '--textual', action='store_true'),
+            ap.arg('-e', '--editor', action='store_true'),
+        ]
+
+        def configure(self, ctx: ProfileAspect.ConfigureContext[ChatConfig], cfg: ChatConfig) -> ChatConfig:
+            if ctx.args.editor:
+                check.arg(not ctx.args.interactive)
+                check.arg(not ctx.args.message)
+                raise NotImplementedError
+
+            if ctx.args.textual:
+                check.isinstance(cfg.interface, BareInterfaceConfig)
+                cfg = dc.replace(
+                    cfg,
+                    interface=TextualInterfaceConfig(**{
+                        f.name: getattr(cfg.interface, f.name)
+                        for f in dc.fields(InterfaceConfig)
+                    }),
+                )
+
+            else:
+                cfg = dc.replace(
+                    cfg,
+                    driver=dc.replace(
+                        cfg.driver,
+                        ai=dc.replace(
+                            cfg.driver.ai,
+                            verbose=True,
+                        ),
+                    ),
+                    interface=dc.replace(
+                        check.isinstance(cfg.interface, BareInterfaceConfig),
+                        interactive=ctx.args.interactive,
+                    ),
+                )
+
+            return cfg
+
+    #
+
+    class Input(ProfileAspect[ChatConfig]):
+        parser_args: ta.ClassVar[ta.Sequence[ap.Arg]] = [
+            ap.arg('message', nargs='*'),
+        ]
+
+        def configure(self, ctx: ProfileAspect.ConfigureContext[ChatConfig], cfg: ChatConfig) -> ChatConfig:
+            if ctx.args.interactive or ctx.args.textual:
+                check.arg(not ctx.args.message)
+
+            elif ctx.args.message:
+                ps: list[str] = []
+
+                for a in ctx.args.message:
+                    if a == '-':
+                        ps.append(sys.stdin.read())
+
+                    elif a.startswith('@'):
+                        with open(a[1:]) as f:
+                            ps.append(f.read())
+
+                    else:
+                        ps.append(a)
+
+                c = ' '.join(ps)
+
+                cfg = dc.replace(
+                    cfg,
+                    driver=dc.replace(
+                        cfg.driver,
+                        user=dc.replace(
+                            cfg.driver.user,
+                            initial_user_content=c,
+                        ),
+                    ),
+                )
+
+            else:
+                raise ValueError('Must specify input')
+
+            return cfg
+
+    #
+
+    class State(ProfileAspect[ChatConfig]):
+        parser_args: ta.ClassVar[ta.Sequence[ap.Arg]] = [
+            ap.arg('-n', '--new', action='store_true'),
+            ap.arg('--ephemeral', action='store_true'),
+        ]
+
+        def configure(self, ctx: ProfileAspect.ConfigureContext[ChatConfig], cfg: ChatConfig) -> ChatConfig:
+            return dc.replace(
+                cfg,
+                driver=dc.replace(
+                    cfg.driver,
+                    state=dc.replace(
+                        cfg.driver.state,
+                        state='ephemeral' if ctx.args.ephemeral else 'new' if ctx.args.new else 'continue',
+                    ),
+                ),
+            )
+
+    #
+
+    class Output(ProfileAspect[ChatConfig]):
+        parser_args: ta.ClassVar[ta.Sequence[ap.Arg]] = [
+            ap.arg('-s', '--stream', action='store_true'),
+            ap.arg('-M', '--markdown', action='store_true'),
+        ]
+
+        def configure(self, ctx: ProfileAspect.ConfigureContext[ChatConfig], cfg: ChatConfig) -> ChatConfig:
+            return dc.replace(
+                cfg,
+                driver=dc.replace(
+                    cfg.driver,
+                    ai=dc.replace(
+                        cfg.driver.ai,
+                        stream=bool(ctx.args.stream),
+                    ),
+                ),
+                rendering=dc.replace(
+                    cfg.rendering,
+                    markdown=bool(ctx.args.markdown),
+                ),
+            )
+
+    #
+
+    class Tools(ProfileAspect[ChatConfig]):
+        parser_args: ta.ClassVar[ta.Sequence[ap.Arg]] = [
+            ap.arg('--enable-fs-tools', action='store_true'),
+            ap.arg('--enable-todo-tools', action='store_true'),
+            # ap.arg('--enable-unsafe-tools-do-not-use-lol', action='store_true'),
+            ap.arg('--enable-test-weather-tool', action='store_true'),
+        ]
+
+        def configure(self, ctx: ProfileAspect.ConfigureContext[ChatConfig], cfg: ChatConfig) -> ChatConfig:
+            if not (
+                    ctx.args.enable_fs_tools or
+                    ctx.args.enable_todo_tools or
+                    # ctx.args.enable_unsafe_tools_do_not_use_lol or
+                    ctx.args.enable_test_weather_tool or
+                    ctx.args.code
+            ):
+                return cfg
+
+            return dc.replace(
+                cfg,
+                driver=dc.replace(
+                    cfg.driver,
+                    ai=dc.replace(
+                        cfg.driver.ai,
+                        enable_tools=True,
+                    ),
+                    tools=dc.replace(
+                        cfg.driver.tools,
+                        enabled_tools={  # noqa
+                            *(cfg.driver.tools.enabled_tools or []),
+                            *(['fs'] if ctx.args.enable_fs_tools else []),
+                            *(['todo'] if ctx.args.enable_todo_tools else []),
+                            *(['weather'] if ctx.args.enable_test_weather_tool else []),
+                        },
+                    ),
+                ),
+                interface=dc.replace(
+                    cfg.interface,
+                    enable_tools=True,
+                ),
+            )
+
+    #
+
+    class Code(ProfileAspect[ChatConfig]):
+        parser_config: ta.ClassVar[ta.Sequence[ap.Arg]] = [
+            ap.arg('-c', '--code', action='store_true'),
+        ]
+
+        def configure(self, ctx: ProfileAspect.ConfigureContext[ChatConfig], cfg: ChatConfig) -> ChatConfig:
+            if not ctx.args.code:
+                return cfg
+
             cfg = dc.replace(
                 cfg,
                 driver=dc.replace(
                     cfg.driver,
                     ai=dc.replace(
                         cfg.driver.ai,
-                        verbose=True,
-                    ),
-                ),
-                interface=dc.replace(
-                    check.isinstance(cfg.interface, BareInterfaceConfig),
-                    interactive=self._args.interactive,
-                ),
-            )
-
-        return cfg
-
-    #
-
-    INPUT_ARGS: ta.ClassVar[ta.Sequence[ap.Arg]] = [
-        ap.arg('message', nargs='*', group='input'),
-    ]
-
-    def configure_input(self, cfg: ChatConfig) -> ChatConfig:
-        if self._args.interactive or self._args.textual:
-            check.arg(not self._args.message)
-
-        elif self._args.message:
-            ps: list[str] = []
-
-            for a in self._args.message:
-                if a == '-':
-                    ps.append(sys.stdin.read())
-
-                elif a.startswith('@'):
-                    with open(a[1:]) as f:
-                        ps.append(f.read())
-
-                else:
-                    ps.append(a)
-
-            c = ' '.join(ps)
-
-            cfg = dc.replace(
-                cfg,
-                driver=dc.replace(
-                    cfg.driver,
-                    user=dc.replace(
-                        cfg.driver.user,
-                        initial_user_content=c,
+                        enable_tools=True,
                     ),
                 ),
             )
 
-        else:
-            raise ValueError('Must specify input')
+            if ctx.args.new or ctx.args.ephemeral:
+                from ..minichain.lib.code.prompts import CODE_AGENT_SYSTEM_PROMPT
+                system_content = CODE_AGENT_SYSTEM_PROMPT
 
-        return cfg
+                cfg = dc.replace(
+                    cfg,
+                    driver=dc.replace(
+                        cfg.driver,
+                        user=dc.replace(
+                            cfg.driver.user,
+                            initial_system_content=system_content,
+                        ),
+                    ),
+                )
 
-    #
-
-    STATE_ARGS: ta.ClassVar[ta.Sequence[ap.Arg]] = [
-        ap.arg('-n', '--new', action='store_true', group='state'),
-        ap.arg('--ephemeral', action='store_true', group='state'),
-    ]
-
-    def configure_state(self, cfg: ChatConfig) -> ChatConfig:
-        return dc.replace(
-            cfg,
-            driver=dc.replace(
-                cfg.driver,
-                state=dc.replace(
-                    cfg.driver.state,
-                    state='ephemeral' if self._args.ephemeral else 'new' if self._args.new else 'continue',
-                ),
-            ),
-        )
-
-    #
-
-    OUTPUT_ARGS: ta.ClassVar[ta.Sequence[ap.Arg]] = [
-        ap.arg('-s', '--stream', action='store_true', group='output'),
-        ap.arg('-M', '--markdown', action='store_true', group='output'),
-    ]
-
-    def configure_output(self, cfg: ChatConfig) -> ChatConfig:
-        return dc.replace(
-            cfg,
-            driver=dc.replace(
-                cfg.driver,
-                ai=dc.replace(
-                    cfg.driver.ai,
-                    stream=bool(self._args.stream),
-                ),
-            ),
-            rendering=dc.replace(
-                cfg.rendering,
-                markdown=bool(self._args.markdown),
-            ),
-        )
-
-    #
-
-    TOOLS_ARGS: ta.ClassVar[ta.Sequence[ap.Arg]] = [
-        ap.arg('--enable-fs-tools', action='store_true', group='tools'),
-        ap.arg('--enable-todo-tools', action='store_true', group='tools'),
-        # ap.arg('--enable-unsafe-tools-do-not-use-lol', action='store_true', group='tools'),
-        ap.arg('--enable-test-weather-tool', action='store_true', group='tools'),
-    ]
-
-    def configure_tools(self, cfg: ChatConfig) -> ChatConfig:
-        if not (
-                self._args.enable_fs_tools or
-                self._args.enable_todo_tools or
-                # self._args.enable_unsafe_tools_do_not_use_lol or
-                self._args.enable_test_weather_tool or
-                self._args.code
-        ):
             return cfg
 
-        return dc.replace(
-            cfg,
-            driver=dc.replace(
-                cfg.driver,
-                ai=dc.replace(
-                    cfg.driver.ai,
-                    enable_tools=True,
-                ),
-                tools=dc.replace(
-                    cfg.driver.tools,
-                    enabled_tools={  # noqa
-                        *(cfg.driver.tools.enabled_tools or []),
-                        *(['fs'] if self._args.enable_fs_tools else []),
-                        *(['todo'] if self._args.enable_todo_tools else []),
-                        *(['weather'] if self._args.enable_test_weather_tool else []),
-                    },
-                ),
-            ),
-            interface=dc.replace(
-                cfg.interface,
-                enable_tools=True,
-            ),
-        )
-
     #
 
-    CODE_CONFIG: ta.ClassVar[ta.Sequence[ap.Arg]] = [
-        ap.arg('-c', '--code', action='store_true', group='code'),
-    ]
+    def _build_aspects(self) -> ta.Sequence[ProfileAspect[ChatConfig]]:
+        return [
+            *super()._build_aspects(),
+            self.Backend(),
+            self.Interface(),
+            self.Input(),
+            self.State(),
+            self.Output(),
+            self.Tools(),
+            self.Code(),
+        ]
 
-    def configure_code(self, cfg: ChatConfig) -> ChatConfig:
-        if not self._args.code:
-            return cfg
+    def initial_config(self) -> ChatConfig:
+        return ChatConfig()
 
-        cfg = dc.replace(
-            cfg,
-            driver=dc.replace(
-                cfg.driver,
-                ai=dc.replace(
-                    cfg.driver.ai,
-                    enable_tools=True,
-                ),
-            ),
-        )
 
-        if self._args.new or self._args.ephemeral:
-            from ..minichain.lib.code.prompts import CODE_AGENT_SYSTEM_PROMPT
-            system_content = CODE_AGENT_SYSTEM_PROMPT
+#
 
-            cfg = dc.replace(
-                cfg,
-                driver=dc.replace(
-                    cfg.driver,
-                    user=dc.replace(
-                        cfg.driver.user,
-                        initial_system_content=system_content,
-                    ),
-                ),
-            )
 
-        return cfg
-
-    #
-
-    def configure(self, argv: ta.Sequence[str]) -> SessionConfig:
-        parser = ap.ArgumentParser()
-
-        for grp_name, grp_args in [
-            ('backend', self.BACKEND_ARGS),
-            ('interface', self.INTERFACE_ARGS),
-            ('input', self.INPUT_ARGS),
-            ('state', self.STATE_ARGS),
-            ('output', self.OUTPUT_ARGS),
-            ('tools', self.TOOLS_ARGS),
-            ('code', self.CODE_CONFIG),
-        ]:
-            grp = parser.add_argument_group(grp_name)
-            for a in grp_args:
-                grp.add_argument(*a.args, **a.kwargs)
-
-        self._args = parser.parse_args(argv)
-
-        cfg = ChatConfig()
-        cfg = self.configure_backend(cfg)
-        cfg = self.configure_interface(cfg)
-        cfg = self.configure_input(cfg)
-        cfg = self.configure_state(cfg)
-        cfg = self.configure_output(cfg)
-        cfg = self.configure_tools(cfg)
-        cfg = self.configure_code(cfg)
-
-        return cfg
+class CodeProfile(ChatProfile):
+    pass
 
 
 ##
@@ -368,7 +443,10 @@ class EmbedProfile(Profile):
 
 PROFILE_TYPES: ta.Mapping[str, type[Profile]] = {
     'chat': ChatProfile,
+    'code': CodeProfile,
+
     'complete': CompletionProfile,
+
     'embed': EmbedProfile,
 }
 
