@@ -61,7 +61,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../../omlish/formats/ini/sections.py', sha1='731c92cce82e183d1d4bdc23fc781fad62187394'),
             dict(path='../../../../omlish/formats/toml/parser.py', sha1='73dac82289350ab951c4bcdbfe61167fa221f26f'),
             dict(path='../../../../omlish/formats/toml/writer.py', sha1='6ea41d7e724bb1dcf6bd84b88993ff4e8798e021'),
-            dict(path='../../../../omlish/io/readers.py', sha1='4b19ab4a87f2fa2a6f6c3cad7e1f3892b7cbd3a4'),
+            dict(path='../../../../omlish/io/readers.py', sha1='30de386d499d2cec695d2c151a97deb9cab4cbb8'),
             dict(path='../../../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../../../omlish/lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
             dict(path='../../../../omlish/lite/attrops.py', sha1='c1ebfb8573d766d34593c452a2377208d02726dc'),
@@ -1281,6 +1281,52 @@ class AsyncBufferedBytesReader(AsyncRawBytesReader, ta.Protocol):
     def read(self, n: int = -1, /) -> ta.Awaitable[bytes]: ...
 
     def readall(self) -> ta.Awaitable[bytes]: ...
+
+
+##
+
+
+class FileLikeRawBytesReader:
+    """
+    Adapter: file-like object -> RawBytesReader-style `read1`.
+
+    This is intentionally permissive: it duck-types common file-like APIs.
+
+    Notes:
+      - If the object has `read1`, we use it.
+      - Otherwise we fall back to `read`.
+      - This is a *raw* reader: it makes no buffering guarantees beyond what the wrapped object provides.
+    """
+
+    def __init__(self, f: ta.Any) -> None:
+        super().__init__()
+
+        self._f = f
+
+    def read1(self, n: int = -1, /) -> bytes:
+        f = self._f
+        if hasattr(f, 'read1'):
+            return ta.cast(bytes, f.read1(n))
+        return ta.cast(bytes, f.read(n))
+
+
+class FileLikeBufferedBytesReader(FileLikeRawBytesReader):
+    """
+    Adapter: file-like object -> BufferedBytesReader-style `read/readall`.
+
+    Notes:
+      - Uses `readall` if present; otherwise uses `read()` with `-1`.
+      - Does not impose additional buffering; it reflects the wrapped object's behavior.
+    """
+
+    def read(self, n: int = -1, /) -> bytes:
+        return ta.cast(bytes, self._f.read(n))
+
+    def readall(self) -> bytes:
+        f = self._f
+        if hasattr(f, 'readall'):
+            return ta.cast(bytes, f.readall())
+        return ta.cast(bytes, f.read())
 
 
 ########################################

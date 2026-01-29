@@ -1,7 +1,3 @@
-from .globals import (  # noqa
-    get_scheduled_runner,
-)
-
 from .heapq import (  # noqa
     HeapqScheduledRunner,
 )
