@@ -4,8 +4,8 @@ import io
 import time
 import typing as ta
 
+from .direct import DirectByteStreamBufferView
 from .errors import NeedMoreDataByteStreamBufferError
-from .segmented import SegmentedByteStreamBufferView
 from .types import BytesLike
 from .types import ByteStreamBufferLike
 from .types import ByteStreamBufferView
@@ -72,7 +72,7 @@ class ByteStreamBufferReaderAdapter:
         if n is None or n < 0:
             return self.readall()
 
-        if n == 0:
+        if not n:
             return b''
 
         while True:
@@ -82,7 +82,7 @@ class ByteStreamBufferReaderAdapter:
                 return ta.cast(bytes, v.tobytes())
 
             if self._policy == 'return_partial':
-                if ln == 0:
+                if not ln:
                     return b''
                 v = buf.split_to(ln)
                 return ta.cast(bytes, v.tobytes())
@@ -93,7 +93,7 @@ class ByteStreamBufferReaderAdapter:
             # block
             if not ta.cast('ta.Callable[[], bool]', self._fill)():
                 # EOF
-                if ln == 0:
+                if not ln:
                     return b''
                 v = buf.split_to(ln)
                 return ta.cast(bytes, v.tobytes())
@@ -210,13 +210,13 @@ class BytesIoByteStreamBuffer:
             except BufferError as e:
                 raise RuntimeError('BytesIO buffer is pinned by an exported view') from e
 
-    def split_to(self, n: int, /) -> SegmentedByteStreamBufferView:
+    def split_to(self, n: int, /) -> ByteStreamBufferView:
         if n < 0 or n > len(self):
             raise ValueError(n)
         mv = self._bio.getbuffer()
         out = mv[self._rpos:self._rpos + n]
         self._rpos += n
-        return SegmentedByteStreamBufferView((out,))
+        return DirectByteStreamBufferView(out)
 
     def write(self, data: BytesLike, /) -> None:
         if not data:

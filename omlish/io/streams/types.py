@@ -13,6 +13,10 @@ BytesLike = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
 
 
 class ByteStreamBufferLike(Abstract):
+    @ta.final
+    def __bool__(self) -> bool:
+        raise TypeError('Do not use bool() for ByteStreamBufferLike, use len().')
+
     @abc.abstractmethod
     def __len__(self) -> int:
         """
@@ -50,9 +54,10 @@ class ByteStreamBufferLike(Abstract):
         avoid Python-level per-byte iteration.
 
         The returned segments must:
-          - collectively represent exactly the readable bytes, in order,
-          - be 1-D, byte-oriented views (itemsize 1),
-          - be non-copying views of the underlying storage.
+          - collectively represent exactly the readable bytes, in order
+          - be 1-D, byte-oriented views (itemsize 1)
+          - be non-copying views of the underlying storage
+          - be non-empty - lack of data is represented by returning no segments, not a empty segments
 
         Callers must assume that the returned views may be invalidated by subsequent mutations of the originating
         buffer/view (e.g., advancing, writing, reserving, committing), depending on the implementation's rules.

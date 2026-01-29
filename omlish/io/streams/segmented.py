@@ -3,6 +3,8 @@
 import typing as ta
 
 from .base import BaseByteStreamBufferLike
+from .direct import _EMPTY_DIRECT_BYTE_STREAM_BUFFER_VIEW
+from .direct import DirectByteStreamBufferView
 from .errors import BufferTooLargeByteStreamBufferError
 from .errors import NoOutstandingReserveByteStreamBufferError
 from .errors import OutstandingReserveByteStreamBufferError
@@ -154,7 +156,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
             if s is self._active and i == last_i:
                 # Active chunk: create fresh view with readable length.
                 rl = self._active_readable_len()
-                if i == 0:
+                if not i:
                     # Active is also first segment; apply head_off.
                     if self._head_off >= rl:
                         continue
@@ -166,7 +168,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
             else:
                 # Non-active segment.
                 mv = memoryview(s)
-                if i == 0 and self._head_off:
+                if not i and self._head_off:
                     mv = mv[self._head_off:]
 
             if len(mv):
@@ -342,7 +344,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
     def advance(self, n: int, /) -> None:
         if n < 0 or n > self._len:
             raise ValueError(n)
-        if n == 0:
+        if not n:
             return
 
         self._len -= n
@@ -377,11 +379,11 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         if n:
             raise RuntimeError(n)
 
-    def split_to(self, n: int, /) -> SegmentedByteStreamBufferView:
+    def split_to(self, n: int, /) -> ByteStreamBufferView:
         if n < 0 or n > self._len:
             raise ValueError(n)
-        if n == 0:
-            return SegmentedByteStreamBufferView(())
+        if not n:
+            return _EMPTY_DIRECT_BYTE_STREAM_BUFFER_VIEW
 
         out: ta.List[memoryview] = []
         rem = n
@@ -406,7 +408,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
                 out.append(mv0[:rem])
                 self._head_off += rem
                 self._len -= n
-                return SegmentedByteStreamBufferView(out)
+                return byte_stream_buffer_view_from_segments(out)
 
             out.append(mv0)
             rem -= len(mv0)
@@ -417,14 +419,14 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
             self._head_off = 0
 
         self._len -= n
-        return SegmentedByteStreamBufferView(out)
+        return byte_stream_buffer_view_from_segments(out)
 
     def coalesce(self, n: int, /) -> memoryview:
         if n < 0:
             raise ValueError(n)
         if n > self._len:
             raise ValueError(n)
-        if n == 0:
+        if not n:
             return memoryview(b'')
 
         if self._reserved is not None:
@@ -442,7 +444,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         seg_i = 0
         while w < n and seg_i < len(self._segs):
             s = self._segs[seg_i]
-            off = self._head_off if seg_i == 0 else 0
+            off = self._head_off if not seg_i else 0
 
             seg_len = len(s) - off
             if s is self._active and seg_i == (len(self._segs) - 1):
@@ -495,7 +497,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         Handles head offset for first segment and active chunk readable length for last segment.
         """
 
-        off = self._head_off if si == 0 else 0
+        off = self._head_off if not si else 0
         seg_len = len(s) - off
         if s is self._active and si == last_i:
             seg_len = self._active_readable_len() - off
@@ -696,3 +698,15 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
             seg_ge = seg_gs
 
         return best
+
+
+##
+
+
+def byte_stream_buffer_view_from_segments(mvs: ta.Sequence[memoryview]) -> ByteStreamBufferView:
+    if not mvs:
+        return _EMPTY_DIRECT_BYTE_STREAM_BUFFER_VIEW
+    elif len(mvs) == 1:
+        return DirectByteStreamBufferView(mvs[0])
+    else:
+        return SegmentedByteStreamBufferView(mvs)

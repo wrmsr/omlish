@@ -3,11 +3,13 @@
 import typing as ta
 
 from .base import BaseByteStreamBufferLike
+from .direct import _EMPTY_DIRECT_BYTE_STREAM_BUFFER_VIEW
+from .direct import DirectByteStreamBufferView
 from .errors import BufferTooLargeByteStreamBufferError
 from .errors import NoOutstandingReserveByteStreamBufferError
 from .errors import OutstandingReserveByteStreamBufferError
-from .segmented import SegmentedByteStreamBufferView
 from .types import BytesLike
+from .types import ByteStreamBufferView
 from .types import MutableByteStreamBuffer
 
 
@@ -139,7 +141,7 @@ class LinearByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
         self._check_no_reserve()
         if n < 0 or n > len(self):
             raise ValueError(n)
-        if n == 0:
+        if not n:
             return
 
         self._rpos += n
@@ -158,12 +160,12 @@ class LinearByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
             self._rpos = 0
             self._wpos = 0
 
-    def split_to(self, n: int, /) -> SegmentedByteStreamBufferView:
+    def split_to(self, n: int, /) -> ByteStreamBufferView:
         self._check_no_reserve()
         if n < 0 or n > len(self):
             raise ValueError(n)
-        if n == 0:
-            return SegmentedByteStreamBufferView(())
+        if not n:
+            return _EMPTY_DIRECT_BYTE_STREAM_BUFFER_VIEW
 
         # Copy out the split prefix to keep the view stable even if the underlying buffer compacts.
         b = bytes(memoryview(self._ba)[self._rpos:self._rpos + n])
@@ -174,7 +176,7 @@ class LinearByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
             self._rpos = 0
             self._wpos = 0
 
-        return SegmentedByteStreamBufferView((memoryview(b),))
+        return DirectByteStreamBufferView(memoryview(b))
 
     def find(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
         start, end = self._norm_slice(start, end)
@@ -196,7 +198,7 @@ class LinearByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
             raise ValueError(n)
         if n > len(self):
             raise ValueError(n)
-        if n == 0:
+        if not n:
             return memoryview(b'')
         # Always contiguous for the readable prefix.
         return memoryview(self._ba)[self._rpos:self._rpos + n]

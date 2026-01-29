@@ -42,7 +42,7 @@ class LongestMatchDelimiterByteStreamFramer:
             raise ValueError('no delimiters')
         if any(not isinstance(d, (bytes, bytearray)) for d in dl):
             raise TypeError(delims)
-        if any(len(d) == 0 for d in dl):
+        if any(not d for d in dl):
             raise ValueError('empty delimiter')
 
         self._delims = tuple(bytes(d) for d in dl)
@@ -148,7 +148,7 @@ class LongestMatchDelimiterByteStreamFramer:
         """
 
         ln = len(buf)
-        if ln == 0:
+        if not ln:
             return None
 
         best_pos = None  # type: ta.Optional[int]
@@ -162,7 +162,7 @@ class LongestMatchDelimiterByteStreamFramer:
             if best_pos is None or i < best_pos:
                 best_pos = i
                 best_delim = d
-                if best_pos == 0:
+                if not best_pos:
                     # Can't beat position 0; still need to choose longest at this position.
                     pass
             elif i == best_pos and best_delim is not None and len(d) > len(best_delim):

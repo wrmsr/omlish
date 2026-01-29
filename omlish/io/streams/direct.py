@@ -4,7 +4,6 @@ import typing as ta
 
 from ...lite.abstract import Abstract
 from .base import BaseByteStreamBufferLike
-from .segmented import SegmentedByteStreamBufferView
 from .types import BytesLike
 from .types import ByteStreamBuffer
 from .types import ByteStreamBufferView
@@ -17,6 +16,7 @@ class BaseDirectByteStreamBufferLike(BaseByteStreamBufferLike, Abstract):
     def __init__(self, data: BytesLike) -> None:
         super().__init__()
 
+        self._data = data
         if isinstance(data, memoryview):
             self._mv_ = data
         else:
@@ -40,13 +40,30 @@ class BaseDirectByteStreamBufferLike(BaseByteStreamBufferLike, Abstract):
         except AttributeError:
             pass
 
-        obj = self._mv_.obj
-        if isinstance(obj, (bytes, bytearray)):
+        mv = self._mv_
+        obj = mv.obj
+        if isinstance(obj, (bytes, bytearray)) and len(mv) == len(obj):
             b = obj
         else:
-            b = bytes(obj)
+            b = bytes(mv)
         self._b_ = b
         return b
+
+
+class DirectByteStreamBufferView(BaseDirectByteStreamBufferLike, ByteStreamBufferView):
+    def __len__(self) -> int:
+        return len(self._data)
+
+    def peek(self) -> memoryview:
+        return self._mv()
+
+    def segments(self) -> ta.Sequence[memoryview]:
+        return (self._mv(),) if len(self._data) else ()
+
+    def tobytes(self) -> bytes:
+        if type(b := self._b()) is bytes:
+            return b
+        return bytes(b)
 
 
 class DirectByteStreamBuffer(BaseDirectByteStreamBufferLike, ByteStreamBuffer):
@@ -88,8 +105,7 @@ class DirectByteStreamBuffer(BaseDirectByteStreamBufferLike, ByteStreamBuffer):
         self._rpos = 0
 
     def __len__(self) -> int:
-        mv = self._mv()
-        return len(mv) - self._rpos
+        return len(self._data) - self._rpos
 
     def peek(self) -> memoryview:
         mv = self._mv()
@@ -109,13 +125,17 @@ class DirectByteStreamBuffer(BaseDirectByteStreamBufferLike, ByteStreamBuffer):
     def split_to(self, n: int, /) -> ByteStreamBufferView:
         if n < 0 or n > len(self):
             raise ValueError(n)
-        if n == 0:
-            return SegmentedByteStreamBufferView(())
+        if not n:
+            return _EMPTY_DIRECT_BYTE_STREAM_BUFFER_VIEW
+
+        if not self._rpos and n == len(self._data):
+            self._rpos += n
+            return DirectByteStreamBufferView(self._data)
 
         mv = self._mv()
         view = mv[self._rpos:self._rpos + n]
         self._rpos += n
-        return SegmentedByteStreamBufferView((view,))
+        return DirectByteStreamBufferView(view)
 
     def find(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
         start, end = self._norm_slice(start, end)
@@ -140,9 +160,19 @@ class DirectByteStreamBuffer(BaseDirectByteStreamBufferLike, ByteStreamBuffer):
     def coalesce(self, n: int, /) -> memoryview:
         if n < 0 or n > len(self):
             raise ValueError(n)
-        if n == 0:
+        if not n:
             return memoryview(b'')
 
         # Always contiguous - just return the requested slice
         mv = self._mv()
         return mv[self._rpos:self._rpos + n]
+
+
+##
+
+
+_EMPTY_DIRECT_BYTE_STREAM_BUFFER_VIEW = DirectByteStreamBufferView(b'')
+
+
+def empty_byte_stream_buffer_view() -> ByteStreamBufferView:
+    return _EMPTY_DIRECT_BYTE_STREAM_BUFFER_VIEW

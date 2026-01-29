@@ -5,7 +5,10 @@ from .adapters import (  # noqa
 )
 
 from .direct import (  # noqa
+    DirectByteStreamBufferView,
     DirectByteStreamBuffer,
+
+    empty_byte_stream_buffer_view,
 )
 
 from .errors import (  # noqa
@@ -41,6 +44,8 @@ from .scanning import (  # noqa
 from .segmented import (  # noqa
     SegmentedByteStreamBufferView,
     SegmentedByteStreamBuffer,
+
+    byte_stream_buffer_view_from_segments,
 )
 
 from .types import (  # noqa
