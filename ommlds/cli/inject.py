@@ -17,6 +17,7 @@ with lang.auto_proxy_import(globals()):
 def bind_main(
         *,
         session_cfg: SessionConfig,
+        profile_name: str | None = None,
 ) -> inj.Elements:
     els: list[inj.Elemental] = []
 
@@ -30,7 +31,10 @@ def bind_main(
     #
 
     els.extend([
-        _sessions.bind_sessions(session_cfg),
+        _sessions.bind_sessions(
+            session_cfg,
+            profile_name=profile_name,
+        ),
 
         _state.bind_state(),
     ])

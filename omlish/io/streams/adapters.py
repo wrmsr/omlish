@@ -124,9 +124,6 @@ class ByteStreamBufferReaderAdapter:
         return b''.join(parts)
 
 
-##
-
-
 class ByteStreamBufferWriterAdapter:
     """
     Adapter: file-like writer sink <- ByteStreamBuffer / bytes-like.
@@ -267,10 +264,38 @@ class BytesIoByteStreamBuffer(MutableByteStreamBuffer):
             self.write(memoryview(b)[:n])
 
     def coalesce(self, n: int, /) -> memoryview:
-        raise NotImplementedError
+        if n < 0 or n > len(self):
+            raise ValueError(n)
+        if not n:
+            return memoryview(b'')
+        # BytesIO is always contiguous, just return the requested slice
+        mv = self._bio.getbuffer()
+        return mv[self._rpos:self._rpos + n]
 
     def find(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
-        raise NotImplementedError
+        # Normalize start/end to valid range
+        s, e, _ = slice(start, end, 1).indices(len(self))
+        if e < s:
+            e = s
+
+        if not sub:
+            return s
+
+        # Convert to bytes for searching (memoryview doesn't have find method)
+        b = bytes(self._bio.getbuffer())
+        idx = b.find(sub, self._rpos + s, self._rpos + e)
+        return (idx - self._rpos) if idx >= 0 else -1
 
     def rfind(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
-        raise NotImplementedError
+        # Normalize start/end to valid range
+        s, e, _ = slice(start, end, 1).indices(len(self))
+        if e < s:
+            e = s
+
+        if not sub:
+            return e
+
+        # Convert to bytes for searching (memoryview doesn't have rfind method)
+        b = bytes(self._bio.getbuffer())
+        idx = b.rfind(sub, self._rpos + s, self._rpos + e)
+        return (idx - self._rpos) if idx >= 0 else -1

@@ -64,7 +64,7 @@ class Profile(lang.Abstract, ta.Generic[SessionConfigT]):
 class ProfileAspect(lang.Abstract, ta.Generic[SessionConfigT]):
     @property
     def name(self) -> str:
-        return lang.low_camel_case(type(self).__name__)
+        return lang.camel_to_snake(type(self).__name__).lower()
 
     @property
     def default_parser_arg_group(self) -> str | None:
@@ -337,7 +337,7 @@ class ChatProfile(AspectProfile[ChatConfig]):
     #
 
     class Code(ProfileAspect[ChatConfig]):
-        parser_config: ta.ClassVar[ta.Sequence[ap.Arg]] = [
+        parser_args: ta.ClassVar[ta.Sequence[ap.Arg]] = [
             ap.arg('-c', '--code', action='store_true'),
         ]
 
@@ -454,9 +454,14 @@ PROFILE_TYPES: ta.Mapping[str, type[Profile]] = {
 ##
 
 
-async def _run_session_cfg(session_cfg: SessionConfig) -> None:
+async def _run_session_cfg(
+        session_cfg: SessionConfig,
+        *,
+        profile_name: str | None = None,
+) -> None:
     async with inj.create_async_managed_injector(bind_main(
             session_cfg=session_cfg,
+            profile_name=profile_name,
     )) as injector:
         await (await injector[Session]).run()
 
@@ -487,7 +492,10 @@ async def _a_main(argv: ta.Any = None) -> None:
 
     session_cfg = profile.configure([*unk_args, *args.args])
 
-    await _run_session_cfg(session_cfg)
+    await _run_session_cfg(
+        session_cfg,
+        profile_name=args.profile,
+    )
 
 
 def _main(args: ta.Any = None) -> None:

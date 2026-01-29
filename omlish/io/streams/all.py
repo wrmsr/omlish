@@ -80,4 +80,4 @@ to_bytes_or_bytearray = ByteStreamBuffers.to_bytes_or_bytearray
 
 bytes_len = ByteStreamBuffers.bytes_len
 
-iter_bytes_segments = ByteStreamBuffers.iter_bytes_segments
+iter_segments = ByteStreamBuffers.iter_segments

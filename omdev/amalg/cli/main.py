@@ -58,6 +58,7 @@ def _gen_one(
     ).gen_amalg()
 
     if output_path is not None:
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
         with open(output_path, 'w') as f:
             f.write(src)
 

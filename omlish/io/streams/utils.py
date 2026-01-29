@@ -87,7 +87,7 @@ class ByteStreamBuffers:
     #
 
     @staticmethod
-    def iter_bytes_segments(obj: ta.Any) -> ta.Iterator[memoryview]:
+    def iter_segments(obj: ta.Any) -> ta.Iterator[memoryview]:
         if isinstance(obj, memoryview):
             yield obj
 

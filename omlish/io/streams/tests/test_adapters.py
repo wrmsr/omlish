@@ -117,3 +117,78 @@ class TestIoAdapters(unittest.TestCase):
         # Force a resize/grow; should raise BufferError due to pinned buffer.
         with self.assertRaises(BufferError):
             b.write(b'y' * 1024)
+
+    def test_bytesiobytesbuffer_find_rfind(self) -> None:
+        b = BytesIoByteStreamBuffer()
+        b.write(b'01234567')
+
+        # Basic find/rfind
+        self.assertEqual(b.find(b'23'), 2)
+        self.assertEqual(b.rfind(b'23'), 2)
+
+        # Find with start/end bounds
+        self.assertEqual(b.find(b'23', 3), -1)
+        self.assertEqual(b.find(b'23', 0, 3), -1)
+        self.assertEqual(b.find(b'45', 4, 7), 4)
+
+        # Empty pattern edge case
+        self.assertEqual(b.find(b''), 0)
+        self.assertEqual(b.rfind(b''), len(b))
+
+        # After advance
+        b.advance(2)  # readable now "234567"
+        self.assertEqual(b.find(b'23'), 0)
+        self.assertEqual(b.find(b'67'), 4)
+        self.assertEqual(b.rfind(b'67'), 4)
+        self.assertEqual(b.rfind(b'23'), 0)
+
+        # Not found
+        self.assertEqual(b.find(b'99'), -1)
+        self.assertEqual(b.rfind(b'99'), -1)
+
+    def test_bytesiobytesbuffer_coalesce(self) -> None:
+        b = BytesIoByteStreamBuffer()
+        b.write(b'abcdef')
+
+        # Coalesce prefix
+        mv = b.coalesce(3)
+        self.assertEqual(mv.tobytes(), b'abc')
+        self.assertEqual(len(b), 6)  # non-consuming
+
+        # Coalesce after advance
+        b.advance(2)
+        mv = b.coalesce(2)
+        self.assertEqual(mv.tobytes(), b'cd')
+        self.assertEqual(len(b), 4)
+
+        # Coalesce all
+        mv = b.coalesce(4)
+        self.assertEqual(mv.tobytes(), b'cdef')
+
+        # Empty coalesce
+        mv = b.coalesce(0)
+        self.assertEqual(len(mv), 0)
+
+    def test_bytesiobytesbuffer_coalesce_errors(self) -> None:
+        b = BytesIoByteStreamBuffer()
+        b.write(b'abc')
+
+        # Negative n
+        with self.assertRaises(ValueError):
+            b.coalesce(-1)
+
+        # n too large
+        with self.assertRaises(ValueError):
+            b.coalesce(10)
+
+    def test_bytesiobytesbuffer_reserve_commit(self) -> None:
+        b = BytesIoByteStreamBuffer()
+        mv = b.reserve(5)
+        mv[:3] = b'xyz'
+        b.commit(3)
+        self.assertEqual(len(b), 3)
+        self.assertEqual(b.peek().tobytes(), b'xyz')
+
+        # Now test find/coalesce work correctly after reserve/commit
+        self.assertEqual(b.find(b'yz'), 1)
+        self.assertEqual(b.coalesce(2).tobytes(), b'xy')

@@ -16,6 +16,7 @@ from omlish.logs import all as logs
 
 from ...... import minichain as mc
 from .....backends.types import BackendName
+from ....types import SessionProfileName
 from ...drivers.events.types import AiDeltaChatEvent
 from ...drivers.events.types import AiMessagesChatEvent
 from ...drivers.types import ChatDriver
@@ -100,6 +101,7 @@ class ChatApp(
             backend_name: BackendName | None = None,
             devtools_setup: tx.DevtoolsSetup | None = None,
             input_history_manager: InputHistoryManager,
+            session_profile_name: SessionProfileName | None = None,
     ) -> None:
         super().__init__()
 
@@ -111,6 +113,7 @@ class ChatApp(
         self._chat_event_queue = chat_event_queue
         self._backend_name = backend_name
         self._input_history_manager = input_history_manager
+        self._session_profile_name = session_profile_name
 
         self._chat_action_queue: asyncio.Queue[ta.Any] = asyncio.Queue()
 
@@ -328,6 +331,7 @@ class ChatApp(
 
         await self._mount_messages(
             WelcomeMessage('\n'.join([
+                *([f'Profile: {self._session_profile_name}'] if self._session_profile_name is not None else []),
                 f'Backend: {self._backend_name or "?"}',
                 f'Dir: {os.getcwd()}',
             ])),
