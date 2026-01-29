@@ -35,6 +35,7 @@
 # License Agreement.
 import abc
 import contextvars
+import functools
 import inspect
 import typing as ta
 import unittest
@@ -52,7 +53,7 @@ class IsolatedAsyncTestCaseAsyncRunner(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def run(self, obj: ta.Any, *, context: ta.Optional[contextvars.Context] = None) -> ta.Any:
+    def run(self, fn: ta.Callable) -> ta.Any:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -131,18 +132,14 @@ class IsolatedAsyncTestCase(unittest.TestCase):
     def _callAsync(self, func, /, *args, **kwargs):
         runner = check.not_none(self._asyncRunner)
         check.state(inspect.iscoroutinefunction(func))
-        return runner.run(
-            func(*args, **kwargs),
-            context=self._asyncTestContext,
-        )
+        if args or kwargs:
+            func = functools.partial(func, *args, **kwargs)
+        func = functools.partial(self._asyncTestContext.run, func)
+        return runner.run(func)
 
     def _callMaybeAsync(self, func, /, *args, **kwargs):
-        runner = check.not_none(self._asyncRunner)
         if inspect.iscoroutinefunction(func):
-            return runner.run(
-                func(*args, **kwargs),
-                context=self._asyncTestContext,
-            )
+            return self._callAsync(func, *args, **kwargs)
         else:
             return self._asyncTestContext.run(func, *args, **kwargs)
 
@@ -155,8 +152,9 @@ class IsolatedAsyncTestCase(unittest.TestCase):
         self._asyncRunner = runner
 
     def _tearDownAsyncRunner(self):
-        runner = check.not_none(self._asyncRunner)
-        runner.close()
+        if (runner := self._asyncRunner) is not None:
+            runner.close()
+            self._asyncRunner = None
 
     def run(self, result=None):
         self._setupAsyncRunner()
@@ -179,18 +177,115 @@ class IsolatedAsyncTestCase(unittest.TestCase):
 
 
 class AsyncioIsolatedAsyncTestCaseAsyncRunner(IsolatedAsyncTestCaseAsyncRunner):
+    # 3.8 has no asyncio.Runner, cannot use :|
+    #
+    # def __init__(self, *, loop_factory=None):
+    #     import asyncio
+    #     self._runner = asyncio.Runner(debug=True, loop_factory=loop_factory)
+    #
+    # def setup(self) -> None:
+    #     self._runner.get_loop()
+    #
+    # def run(self, obj: ta.Any, *, context: ta.Optional[contextvars.Context] = None) -> ta.Any:
+    #     return self._runner.run(obj, context=context)
+    #
+    # def close(self) -> None:
+    #     self._runner.close()
+
     def __init__(self, *, loop_factory=None):
-        import asyncio
-        self._runner = asyncio.Runner(debug=True, loop_factory=loop_factory)
+        pass
+
+    _loop: ta.Any = None
+
+    _task: ta.Any
+    _queue: ta.Any
 
     def setup(self) -> None:
-        self._runner.get_loop()
+        import asyncio
 
-    def run(self, obj: ta.Any, *, context: ta.Optional[contextvars.Context] = None) -> ta.Any:
-        return self._runner.run(obj, context=context)
+        check.none(self._loop)
+
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.set_debug(True)
+        self._loop = loop
+
+        fut = loop.create_future()
+        self._task = loop.create_task(self._runner_main(fut))
+        loop.run_until_complete(fut)
+
+    def run(self, fn: ta.Callable) -> ta.Any:
+        fut = self._loop.create_future()
+        self._queue.put_nowait((fut, fn))
+        return self._loop.run_until_complete(fut)
 
     def close(self) -> None:
-        self._runner.close()
+        import asyncio
+
+        check.not_none(self._loop)
+        loop = self._loop
+        self._loop = None
+
+        self._queue.put_nowait(None)
+        loop.run_until_complete(self._queue.join())
+
+        try:
+            # cancel all tasks
+            to_cancel = asyncio.all_tasks(loop)
+            if not to_cancel:
+                return
+
+            for task in to_cancel:
+                task.cancel()
+
+            loop.run_until_complete(asyncio.gather(*to_cancel, return_exceptions=True))
+
+            for task in to_cancel:
+                if task.cancelled():
+                    continue
+
+                if task.exception() is not None:
+                    loop.call_exception_handler({
+                        'message': 'unhandled exception during test shutdown',
+                        'exception': task.exception(),
+                        'task': task,
+                    })
+
+            # shutdown asyncgens
+            loop.run_until_complete(loop.shutdown_asyncgens())
+
+        finally:
+            asyncio.set_event_loop(None)
+            loop.close()
+
+    async def _runner_main(self, fut):
+        import asyncio
+
+        queue: asyncio.Queue = asyncio.Queue()
+        self._queue = queue
+
+        fut.set_result(None)
+
+        while True:
+            query = await queue.get()
+            queue.task_done()
+
+            if query is None:
+                return
+
+            fut, fn = query
+            try:
+                ret = await fn()
+
+                if not fut.cancelled():
+                    fut.set_result(ret)
+
+            except (SystemExit, KeyboardInterrupt):
+                raise
+
+            except (BaseException, asyncio.CancelledError) as ex:  # noqa
+                if not fut.cancelled():
+                    fut.set_exception(ex)
 
 
 class AsyncioIsolatedAsyncTestCase(IsolatedAsyncTestCase):
@@ -205,11 +300,8 @@ class SyncIsolatedAsyncTestCaseAsyncRunner(IsolatedAsyncTestCaseAsyncRunner):
     def __init__(self):
         pass
 
-    def run(self, obj: ta.Any, *, context: ta.Optional[contextvars.Context] = None) -> ta.Any:
-        if context is not None:
-            return context.run(sync_await, obj)
-        else:
-            return sync_await(obj)
+    def run(self, fn: ta.Callable) -> ta.Any:
+        return sync_await(fn())
 
     def close(self) -> None:
         pass
@@ -229,14 +321,11 @@ class AnyioIsolatedAsyncTestCaseAsyncRunner(IsolatedAsyncTestCaseAsyncRunner):
         self._cm = anyio.from_thread.start_blocking_portal(**kwargs)
         self._portal = self._cm.__enter__()
 
-    def run(self, obj: ta.Any, *, context: ta.Optional[contextvars.Context] = None) -> ta.Any:
+    def run(self, fn: ta.Callable) -> ta.Any:
         async def inner():
-            return await obj
+            return await fn()
 
-        if context is not None:
-            return context.run(self._portal.call, inner)
-        else:
-            return self._portal.call(inner)
+        return self._portal.call(inner)
 
     def close(self) -> None:
         self._cm.__exit__(None, None, None)
