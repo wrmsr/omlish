@@ -1,0 +1,141 @@
+# ruff: noqa: UP006 UP007 UP045
+# @omlish-lite
+import typing as ta
+
+from .base import BaseByteStreamBuffer
+from .segmented import SegmentedByteStreamBufferView
+from .types import BytesLike
+
+
+##
+
+
+class DirectByteStreamBuffer(BaseByteStreamBuffer):
+    """
+    A read-only ByteStreamBuffer that wraps existing bytes without copying.
+
+    This is a lightweight, zero-copy wrapper around bytes/bytearray/memoryview that provides the full
+    ByteStreamBuffer interface (find, rfind, split_to, advance, coalesce) without mutation capabilities.
+
+    Strengths:
+      - Zero-copy construction from existing data
+      - Always contiguous (coalesce is trivial)
+      - Fast find/rfind delegating to optimized bytes methods
+      - Simple implementation with minimal overhead
+
+    Use cases:
+      - Parsing fixed/immutable data (HTTP requests, protocol messages)
+      - Using framers/codecs on data already in memory
+      - Avoiding buffer allocation/copying overhead when mutation isn't needed
+
+    Important notes:
+      - If constructed from a bytearray, the underlying data could still be mutated externally. This is by design -
+        we're wrapping directly, not defensively copying.
+      - This is a read-only buffer - it does not implement MutableByteStreamBuffer (no write/reserve/commit).
+      - All views returned from split_to() remain valid as they reference the original underlying data.
+
+    Example:
+        >>> data = b'GET /path HTTP/1.1\\r\\nHost: example.com\\r\\n\\r\\n'
+        >>> buf = DirectByteStreamBuffer(data)
+        >>> pos = buf.find(b'\\r\\n\\r\\n')
+        >>> headers = buf.split_to(pos)
+        >>> print(headers.tobytes())
+        b'GET /path HTTP/1.1\\r\\nHost: example.com'
+    """
+
+    def __init__(self, data: BytesLike) -> None:
+        super().__init__()
+
+        # Normalize to memoryview for uniform handling of bytes/bytearray/memoryview
+        if isinstance(data, memoryview):
+            self._mv_ = data
+        else:
+            self._b_ = data
+
+        self._rpos = 0
+
+    _mv_: memoryview
+    _b_: ta.Union[bytes, bytearray]
+
+    def _mv(self) -> memoryview:
+        try:
+            return self._mv_
+        except AttributeError:
+            pass
+
+        self._mv_ = mv = memoryview(self._b_)
+        return mv
+
+    def _b(self) -> ta.Union[bytes, bytearray]:
+        try:
+            return self._b_
+        except AttributeError:
+            pass
+
+        obj = self._mv_.obj
+        if isinstance(obj, (bytes, bytearray)):
+            b = obj
+        else:
+            b = bytes(obj)
+        self._b_ = b
+        return b
+
+    def __len__(self) -> int:
+        mv = self._mv()
+        return len(mv) - self._rpos
+
+    def peek(self) -> memoryview:
+        mv = self._mv()
+        if self._rpos >= len(mv):
+            return memoryview(b'')
+        return mv[self._rpos:]
+
+    def segments(self) -> ta.Sequence[memoryview]:
+        mv = self.peek()
+        return (mv,) if len(mv) else ()
+
+    def advance(self, n: int, /) -> None:
+        if n < 0 or n > len(self):
+            raise ValueError(n)
+        self._rpos += n
+
+    def split_to(self, n: int, /) -> SegmentedByteStreamBufferView:
+        if n < 0 or n > len(self):
+            raise ValueError(n)
+        if n == 0:
+            return SegmentedByteStreamBufferView(())
+
+        mv = self._mv()
+        view = mv[self._rpos:self._rpos + n]
+        self._rpos += n
+        return SegmentedByteStreamBufferView((view,))
+
+    def find(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
+        start, end = self._norm_slice(start, end)
+
+        if len(sub) == 0:
+            return start
+
+        b = self._b()
+        idx = b.find(sub, self._rpos + start, self._rpos + end)
+        return (idx - self._rpos) if idx >= 0 else -1
+
+    def rfind(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
+        start, end = self._norm_slice(start, end)
+
+        if len(sub) == 0:
+            return end
+
+        b = self._b()
+        idx = b.rfind(sub, self._rpos + start, self._rpos + end)
+        return (idx - self._rpos) if idx >= 0 else -1
+
+    def coalesce(self, n: int, /) -> memoryview:
+        if n < 0 or n > len(self):
+            raise ValueError(n)
+        if n == 0:
+            return memoryview(b'')
+
+        # Always contiguous - just return the requested slice
+        mv = self._mv()
+        return mv[self._rpos:self._rpos + n]

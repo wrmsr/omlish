@@ -4,6 +4,10 @@ from .adapters import (  # noqa
     BytesIoByteStreamBuffer,
 )
 
+from .direct import (  # noqa
+    DirectByteStreamBuffer,
+)
+
 from .errors import (  # noqa
     ByteStreamBufferError,
 

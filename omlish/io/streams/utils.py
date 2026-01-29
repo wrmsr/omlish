@@ -11,9 +11,11 @@ from .types import ByteStreamBufferView
 
 class ByteStreamBuffers:
 
+    CAN_BYTES_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (bytes, bytearray, memoryview, ByteStreamBufferLike)
+
     @staticmethod
     def can_bytes(obj: ta.Any) -> bool:
-        return isinstance(obj, (bytes, bytearray, memoryview, ByteStreamBufferLike))
+        return isinstance(obj, ByteStreamBuffers.CAN_BYTES_TYPES)
 
     @staticmethod
     def iter_bytes_segments(obj: ta.Any) -> ta.Iterator[memoryview]:

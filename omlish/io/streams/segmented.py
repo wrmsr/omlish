@@ -112,15 +112,13 @@ class SegmentedByteStreamBuffer(MutableByteStreamBuffer, BaseByteStreamBuffer):
     def __len__(self) -> int:
         return self._len
 
-    def _active_reserved_tail(self) -> int:
-        if self._reserved_in_active and self._reserved is not None:
-            return self._reserved_len
-        return 0
-
     def _active_readable_len(self) -> int:
         if self._active is None:
             return 0
-        tail = self._active_reserved_tail()
+        if self._reserved_in_active and self._reserved is not None:
+            tail = self._reserved_len
+        else:
+            tail = 0
         rl = self._active_used - tail
         return rl if rl > 0 else 0
 
@@ -519,8 +517,8 @@ class SegmentedByteStreamBuffer(MutableByteStreamBuffer, BaseByteStreamBuffer):
 
             if m > 1 and tail:
                 head_need = m - 1
-                # Only read as many bytes as are actually available in this segment to avoid reading
-                # uninitialized data from active chunks.
+                # Only read as many bytes as are actually available in this segment to avoid reading uninitialized data
+                # from active chunks.
                 head_avail = min(head_need, seg_len)
                 if head_avail > 0:
                     head = s[off:off + head_avail]
@@ -623,8 +621,8 @@ class SegmentedByteStreamBuffer(MutableByteStreamBuffer, BaseByteStreamBuffer):
                     tail_gstart = seg_ge - len(tail)
 
                 head_need = m - 1
-                # Only read as many bytes as are actually available in prev segment to avoid reading
-                # uninitialized data from active chunks.
+                # Only read as many bytes as are actually available in prev segment to avoid reading uninitialized data
+                # from active chunks.
                 head_avail = min(head_need, prev_seg_len)
                 if head_avail > 0:
                     head = prev_s[prev_off:prev_off + head_avail]
