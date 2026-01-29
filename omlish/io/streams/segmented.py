@@ -519,13 +519,17 @@ class SegmentedByteStreamBuffer(MutableByteStreamBuffer, BaseByteStreamBuffer):
 
             if m > 1 and tail:
                 head_need = m - 1
-                head = s[off:off + head_need]
-                comb = tail + head
-                j = comb.find(sub)
-                if j != -1 and j < len(tail) < j + m:
-                    cand = tail_gstart + j
-                    if start <= cand <= limit:
-                        return cand
+                # Only read as many bytes as are actually available in this segment to avoid reading
+                # uninitialized data from active chunks.
+                head_avail = min(head_need, seg_len)
+                if head_avail > 0:
+                    head = s[off:off + head_avail]
+                    comb = tail + head
+                    j = comb.find(sub)
+                    if j != -1 and j < len(tail) < j + m:
+                        cand = tail_gstart + j
+                        if start <= cand <= limit:
+                            return cand
 
             if m > 1:
                 take = m - 1
@@ -559,6 +563,7 @@ class SegmentedByteStreamBuffer(MutableByteStreamBuffer, BaseByteStreamBuffer):
         seg_ge = self._len
         prev_s: ta.Optional[ta.Union[bytes, bytearray]] = None
         prev_off = 0
+        prev_seg_len = 0
 
         last_i = len(self._segs) - 1
 
@@ -618,7 +623,13 @@ class SegmentedByteStreamBuffer(MutableByteStreamBuffer, BaseByteStreamBuffer):
                     tail_gstart = seg_ge - len(tail)
 
                 head_need = m - 1
-                head = prev_s[prev_off:prev_off + head_need]
+                # Only read as many bytes as are actually available in prev segment to avoid reading
+                # uninitialized data from active chunks.
+                head_avail = min(head_need, prev_seg_len)
+                if head_avail > 0:
+                    head = prev_s[prev_off:prev_off + head_avail]
+                else:
+                    head = b''
 
                 comb = tail + head
                 j = comb.rfind(sub)
@@ -632,6 +643,7 @@ class SegmentedByteStreamBuffer(MutableByteStreamBuffer, BaseByteStreamBuffer):
 
             prev_s = s
             prev_off = off
+            prev_seg_len = seg_len
             seg_ge = seg_gs
 
         return best

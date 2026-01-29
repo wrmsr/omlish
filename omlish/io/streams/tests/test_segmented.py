@@ -561,3 +561,182 @@ class TestSegmentedByteStreamBufferChunking(unittest.TestCase):
 
         # Also verify peek() is consistent.
         self.assertEqual(b.peek().tobytes(), b'defghij')
+
+
+class TestSegmentedByteStreamBufferActiveBoundaryBugs(unittest.TestCase):
+    """
+    Regression tests for bugs where find()/rfind() could read uninitialized bytes from active chunks
+    when searching for patterns that span segment boundaries.
+    """
+
+    def test_find_spanning_into_small_active_chunk(self) -> None:
+        """
+        Test that find() doesn't read uninitialized bytes when pattern spans into active chunk.
+
+        Bug scenario: A multi-byte search pattern spans from a regular segment into an active chunk
+        that has fewer committed bytes than (pattern_length - 1). The cross-boundary matching logic
+        should only read the committed bytes, not the full bytearray capacity.
+        """
+
+        b = SegmentedByteStreamBuffer(chunk_size=16)
+        b.write(b'HELLO')  # First segment (will be flushed when we write large data or reserve)
+
+        # Create an active chunk with only 1 committed byte
+        mv = b.reserve(1)
+        mv[0] = ord('W')
+        b.commit(1)
+
+        # At this point: segments=['HELLO', active_chunk with 'W']
+        # Active chunk has capacity=16 but only 1 byte committed
+
+        # Search for 'LOW' (3 bytes) which would span the boundary
+        # 'LO' is at end of first segment, 'W' is at start of active chunk
+        # The cross-boundary check needs first (3-1)=2 bytes of active chunk
+        # But active chunk only has 1 byte committed
+        # Bug would read s[0:2] getting uninitialized data at s[1]
+        pos = b.find(b'LOW')
+        self.assertEqual(pos, 3, 'Should find \'LOW\' spanning boundary')
+
+        # Verify no false matches from uninitialized data
+        pos = b.find(b'LO\x00')  # If s[1] happened to be 0x00
+        self.assertEqual(pos, -1, 'Should not find pattern with uninitialized byte')
+
+    def test_rfind_spanning_from_small_active_chunk(self) -> None:
+        """
+        Test that rfind() doesn't read uninitialized bytes from active chunks.
+
+        Bug scenario: When searching in reverse and checking cross-boundary matches, rfind() reads
+        from prev_s (previous segment) which might be an active chunk with limited committed bytes.
+        """
+
+        b = SegmentedByteStreamBuffer(chunk_size=16)
+
+        # Create active chunk with only 2 committed bytes
+        mv = b.reserve(2)
+        mv[:2] = b'AB'
+        b.commit(2)
+
+        # Write more data to flush the active chunk and create a new segment
+        b.write(b'CDEFGHIJ')
+
+        # Now buffer has: [bytes('AB'), 'CDEFGHIJ']
+        # The first segment was the active chunk, now closed as bytes
+
+        # Search for 'BCDE' (4 bytes) in reverse
+        # Pattern spans from end of first segment into second
+        # 'B' at first[1], 'CDE' at second[0:3]
+        # When rfind processes second segment and checks boundary:
+        #   - prev_s = first segment (was active chunk, now bytes)
+        #   - head_need = 3
+        #   - Bug would try to read prev_s[0:3] but it only has 2 bytes
+        pos = b.rfind(b'BCDE')
+        self.assertEqual(pos, 1, "Should find 'BCDE' spanning boundary in reverse")
+
+    def test_find_with_multiple_segments_and_active_chunk(self) -> None:
+        """
+        Test find() with a pattern spanning multiple segments ending in a small active chunk.
+        """
+
+        b = SegmentedByteStreamBuffer(chunk_size=8)
+        b.write(b'ABC')   # Segment 1
+        b.write(b'DE')    # Accumulated in active chunk
+        b.write(b'FGH')   # Flushes and creates new active chunk
+
+        # Manually create a very small active chunk
+        b.write(b'I' * 7)  # Fills active chunk to 7/8
+        b.write(b'X' * 8)  # Flushes, creates new segment
+        mv = b.reserve(1)
+        mv[0] = ord('Y')
+        b.commit(1)
+
+        # Buffer now has multiple segments with last being active chunk with 1 byte
+        # Search for pattern that would span into the small active chunk
+        total = b''.join(bytes(mv) for mv in b.segments())
+
+        # Find something that exists
+        pos = b.find(b'XY')
+        self.assertNotEqual(pos, -1, 'Should find pattern spanning into active chunk')
+        self.assertEqual(total[pos:pos + 2], b'XY')
+
+    def test_rfind_with_multiple_segments_and_small_active(self) -> None:
+        """
+        Test rfind() with multiple segments where an earlier segment was a small active chunk.
+        """
+
+        b = SegmentedByteStreamBuffer(chunk_size=8)
+
+        # Create first segment as small active chunk
+        mv = b.reserve(2)
+        mv[:] = b'AB'
+        b.commit(2)
+
+        # Force flush by writing large data
+        b.write(b'C' * 10)
+
+        # Buffer is now: b'AB' + b'CCCCCCCCCC' = b'ABCCCCCCCCCC'
+        # Search in reverse for pattern spanning from small first segment
+        pos = b.rfind(b'ABC')
+        self.assertEqual(pos, 0, 'Should find pattern in reverse spanning from small segment')
+
+    def test_no_false_positives_from_uninitialized_data(self) -> None:
+        """
+        Verify that uninitialized bytes in active chunks don't cause false positive matches.
+        """
+
+        b = SegmentedByteStreamBuffer(chunk_size=16)
+        b.write(b'TEST')
+
+        # Create active chunk with minimal committed data
+        # The uninitialized bytes might contain random data
+        mv = b.reserve(1)
+        mv[0] = ord('X')
+        b.commit(1)
+
+        # Search for patterns that would only match if uninitialized data is read
+        # We can't know what's in uninitialized memory, but we can verify the search
+        # correctly handles the boundary
+        total = b''.join(bytes(mv) for mv in b.segments())
+        self.assertEqual(len(total), 5)  # 'TEST' + 'X'
+
+        # Any pattern longer than what we committed should not be found
+        # (unless it actually exists in the committed data)
+        result = b.find(b'TESTX')
+        self.assertEqual(result, 0)  # This should be found
+
+        result = b.find(b'TESTXY')  # 'Y' would require reading beyond committed
+        self.assertEqual(result, -1)
+
+    def test_find_edge_case_empty_active_chunk(self) -> None:
+        """
+        Test find() when active chunk exists but has 0 committed bytes.
+        """
+
+        b = SegmentedByteStreamBuffer(chunk_size=8)
+        b.write(b'HELLO')
+
+        # Reserve but commit 0 bytes - active chunk exists but is empty
+        _ = b.reserve(4)
+        b.commit(0)
+
+        # Should still be able to search without errors
+        pos = b.find(b'LLO')
+        self.assertEqual(pos, 2)
+
+        pos = b.find(b'LLOWORLD')  # Spans into empty active chunk
+        self.assertEqual(pos, -1)
+
+    def test_rfind_edge_case_empty_previous_segment(self) -> None:
+        """
+        Test rfind() when previous segment was an active chunk with 0 committed bytes.
+        """
+
+        b = SegmentedByteStreamBuffer(chunk_size=8)
+
+        # Create and flush an empty active chunk
+        _ = b.reserve(4)
+        b.commit(0)
+        b.write(b'X' * 10)  # Force flush
+
+        # Should handle the empty previous segment correctly
+        pos = b.rfind(b'XXX')
+        self.assertNotEqual(pos, -1)
