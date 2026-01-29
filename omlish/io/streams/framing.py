@@ -5,6 +5,7 @@ import typing as ta
 from .errors import BufferTooLargeByteStreamBufferError
 from .errors import FrameTooLargeByteStreamBufferError
 from .types import ByteStreamBuffer
+from .types import ByteStreamBufferView
 
 
 ##
@@ -66,7 +67,33 @@ class LongestMatchDelimiterByteStreamFramer:
 
         self._max_delim_len = max(len(d) for d in self._delims)
 
-    def decode(self, buf: ByteStreamBuffer, *, final: bool = False) -> ta.List[ta.Any]:
+    @ta.overload
+    def decode(
+            self,
+            buf: ByteStreamBuffer,
+            *,
+            final: bool = False,
+            include_delims: ta.Literal[True],
+    ) -> ta.List[ta.Tuple[ByteStreamBufferView, bytes]]:
+        ...
+
+    @ta.overload
+    def decode(
+            self,
+            buf: ByteStreamBuffer,
+            *,
+            final: bool = False,
+            include_delims: ta.Literal[False] = False,
+    ) -> ta.List[ByteStreamBufferView]:
+        ...
+
+    def decode(
+            self,
+            buf,
+            *,
+            final=False,
+            include_delims=False,
+    ):
         """
         Consume as many complete frames as possible from `buf` and return them as views.
 
@@ -105,11 +132,14 @@ class LongestMatchDelimiterByteStreamFramer:
 
             if self._keep_ends:
                 frame = buf.split_to(pos + len(delim))
-                out.append(frame)
             else:
                 frame = buf.split_to(pos)
-                out.append(frame)
                 buf.advance(len(delim))
+
+            if include_delims:
+                out.append((frame, delim))
+            else:
+                out.append(frame)
 
     def _find_next_delim(self, buf: ByteStreamBuffer) -> ta.Optional[ta.Tuple[int, bytes]]:
         """
