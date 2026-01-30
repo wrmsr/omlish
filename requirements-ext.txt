@@ -29,7 +29,7 @@ scikit-image==0.26.0
 
 safetensors==0.7.0
 
-tavily-python==0.7.20
+tavily-python==0.7.21
 
 sqlite-vec==0.1.6
 
