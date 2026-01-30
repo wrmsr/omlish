@@ -27,6 +27,7 @@ from .errors import (  # noqa
 
 from .framing import (  # noqa
     LongestMatchDelimiterByteStreamFramer,
+    LengthFieldByteStreamFrameDecoder,
 )
 
 from .linear import (  # noqa

@@ -215,3 +215,123 @@ class LongestMatchDelimiterByteStreamFramer:
                 return True
 
         return False
+
+
+##
+
+
+class LengthFieldByteStreamFrameDecoder:
+    """
+    Decode length-prefixed frames from a BytesBuffer/MutableBytesBuffer.
+
+    This is modeled after the common Netty pattern:
+      total_frame_length = length_field_value + length_adjustment + length_field_end_offset
+    where:
+      length_field_end_offset = length_field_offset + length_field_length
+
+    Parameters:
+      - length_field_offset: byte offset of the length field from the start of the frame
+      - length_field_length: length of the length field in bytes (1, 2, 4, or 8)
+      - byteorder: 'big' or 'little'
+      - length_adjustment: adjustment added to computed frame length (may be negative)
+      - initial_bytes_to_strip: number of leading bytes to drop from the emitted frame (typically used to strip the
+        length field and/or header from the delivered payload)
+      - max_frame_length: maximum allowed total frame length (before stripping)
+
+    Notes:
+      - This decoder operates directly on the provided buffer and consumes bytes as frames are produced.
+      - It relies on `buf.coalesce(n)` for efficient header parsing in pure Python.
+      - It does not require async/await and is suitable for pipeline-style codecs.
+    """
+
+    def __init__(
+            self,
+            *,
+            length_field_offset: int = 0,
+            length_field_length: int = 4,
+            byteorder: ta.Literal['little', 'big'] = 'big',
+            length_adjustment: int = 0,
+            initial_bytes_to_strip: int = 0,
+            max_frame_length: ta.Optional[int] = None,
+    ) -> None:
+        super().__init__()
+
+        if length_field_offset < 0:
+            raise ValueError(length_field_offset)
+        if length_field_length not in (1, 2, 4, 8):
+            raise ValueError(length_field_length)
+        if byteorder not in ('big', 'little'):
+            raise ValueError(byteorder)
+        if initial_bytes_to_strip < 0:
+            raise ValueError(initial_bytes_to_strip)
+        if max_frame_length is not None and max_frame_length < 0:
+            raise ValueError(max_frame_length)
+
+        self._off = int(length_field_offset)
+        self._llen = int(length_field_length)
+        self._byteorder = byteorder
+        self._adj = int(length_adjustment)
+        self._strip = int(initial_bytes_to_strip)
+        self._max = None if max_frame_length is None else int(max_frame_length)
+
+        self._end_off = self._off + self._llen
+
+    def decode(self, buf: ByteStreamBuffer) -> ta.List[ByteStreamBufferView]:
+        """
+        Consume as many complete frames as possible from `buf` and return them as views.
+
+        Returns:
+          - list of BytesView-like objects (from `split_to`) representing each decoded frame
+
+        Raises:
+          - FrameTooLarge if a frame exceeds max_frame_length
+          - BufferTooLarge if max_frame_length is set and the buffered unread prefix grows beyond it without making
+            progress (defensive; rarely hit if upstream caps buffer growth)
+        """
+
+        out: ta.List[ta.Any] = []
+
+        while True:
+            # Need at least enough bytes to read the length field.
+            if len(buf) < self._end_off:
+                return out
+
+            # Read header up through the length field contiguously.
+            # IMPORTANT: don't keep exported memoryviews alive across buffer mutation.
+            mv = buf.coalesce(self._end_off)
+            if len(mv) < self._end_off:
+                # Defensive: coalesce contract.
+                return out
+
+            # Copy just the length field bytes (1/2/4/8) so we can safely mutate the buffer afterward.
+            lf_bytes = bytes(mv[self._off:self._end_off])
+            # del mv
+
+            length_val = int.from_bytes(lf_bytes, self._byteorder, signed=False)
+
+            total_len = length_val + self._adj + self._end_off
+            if total_len < 0:
+                raise ValueError('negative frame length')
+
+            if self._max is not None and total_len > self._max:
+                raise FrameTooLargeByteStreamBufferError('frame exceeded max_frame_length')
+
+            # If we don't have the full frame yet, either wait or (optionally) fail fast if buffering is clearly out of
+            # control.
+            if len(buf) < total_len:
+                if self._max is not None and len(buf) > self._max:
+                    raise BufferTooLargeByteStreamBufferError(
+                        'buffer exceeded max_frame_length without completing a frame',
+                    )
+                return out
+
+            # We have a complete frame available.
+            if self._strip:
+                if self._strip > total_len:
+                    raise ValueError('initial_bytes_to_strip > frame length')
+                buf.advance(self._strip)
+                total_len -= self._strip
+
+            out.append(buf.split_to(total_len))
+
+            # Loop for additional frames
