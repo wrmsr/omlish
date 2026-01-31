@@ -7,7 +7,7 @@ TODO:
   - docker container prune --force --filter "until=720h"
   - docker image prune --all --force --filter "until=720h"
   - docker builder prune --all --force --filter "until=720h"
- - docker run --rm -it "$(docker build -q -f x/dockerdev/Dockerfile .)"
+ - docker run --rm -it "$(docker build -q -f x/dockerdev/Dockerfile .)" bash
 """
 import os
 import re

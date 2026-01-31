@@ -35,6 +35,12 @@ JDKS: ta.Sequence[str] = [
 GO_VERSION = '1.25.6'
 ZIG_VERSION = '0.15.2'
 
+NVM_VERSIONS: ta.Sequence[str] = [
+    '20',
+    '22',
+    '25',
+]
+
 PYENV_VERSION_KEYS: ta.Sequence[str] = [
     '8',
     '13',
@@ -107,6 +113,11 @@ OPS: ta.Sequence[Op] = [
     ),
 
     fragment_section('vcpkg'),
+
+    fragment_section(
+        'nvm',
+        static_env={'NVM_VERSIONS': NVM_VERSIONS},
+    ),
 
     fragment_section(
         'pyenv',
