@@ -122,17 +122,17 @@ class BaseResourceManaged(
     ta.Generic[U, BaseResourcesT],
 ):
     """
-    A class to 'handoff' a ref to a `Resources`, allowing the `Resources` to temporarily survive being passed from
-    instantiation within a callee.
+    A class to 'handoff' a ref to a `BaseResources`, allowing the `BaseResources` to temporarily survive being passed
+    from instantiation within a callee.
 
-    This class wraps an arbitrary value, likely an object referencing resources managed by the `Resources`, which is
-    accessed by `__enter__/__aenter__`'ing. However, as the point of this class is handoff of a `Resources`, not
-    necessarily some arbitrary value, the value needn't necessarily be related to the `Resources`, or may even be
+    This class wraps an arbitrary value, likely an object referencing resources managed by the `BaseResources`, which is
+    accessed by `__enter__/__aenter__`'ing. However, as the point of this class is handoff of a `BaseResources`, not
+    necessarily some arbitrary value, the value needn't necessarily be related to the `BaseResources`, or may even be
     `None`.
 
-    The ref to the `Resources` is allocated in the ctor, so the contract is that an instance of this must be immediately
-    `__enter__/__aenter__`'d before doing anything else with the return value of the call. Failure to do so leaks the
-    `Resources`.
+    The ref to the `BaseResources` is allocated in the ctor, so the contract is that an instance of this must be
+    immediately `__enter__/__aenter__`'d before doing anything else with the return value of the call. Failure to do so
+    leaks the `BaseResources`.
     """
 
     def __init__(self, v: U, resources: BaseResourcesT) -> None:

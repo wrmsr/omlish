@@ -1,3 +1,7 @@
+"""
+TODO:
+ - unify / replace with omlish.resources
+"""
 import traceback
 import typing as ta
 import warnings
