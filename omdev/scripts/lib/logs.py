@@ -40,10 +40,11 @@ def __omlish_amalg__():  # noqa
             dict(path='std/proxy.py', sha1='3e7301a2aa351127f9c85f61b2f85dcc3f15aafb'),
             dict(path='warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
             dict(path='infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
+            dict(path='metrics.py', sha1='4573e0665b4602d42b43e932e6ae0ee5b124efe4'),
             dict(path='std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
             dict(path='std/standard.py', sha1='5c97c1b9f7ead58d6127d047b873398f708f288d'),
-            dict(path='base.py', sha1='c5b13d00b1aab4d36f16b496c618975ab140193b'),
+            dict(path='base.py', sha1='148ae001603bf20369055ffc9f4ecb213d235442'),
             dict(path='std/records.py', sha1='8bbf6ef9eccb3a012c6ca416ddf3969450fd8fc9'),
             dict(path='std/loggers.py', sha1='a569179445d6a8a942b5dcfad1d1f77702868803'),
             dict(path='_amalg.py', sha1='ae5189de25ab155651a5b2f21dd0baf6eb4f3916'),
@@ -839,6 +840,120 @@ _check_logging_start_time()
 
 
 ########################################
+# ../metrics.py
+
+
+##
+
+
+class LoggerMetricUnit(Abstract):
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        try:
+            mut = LOGGER_METRIC_UNIT_TYPES
+        except NameError:
+            pass
+        else:
+            bcs = [bc for bc in mut if issubclass(cls, bc)]
+            if len(bcs) != 1:
+                raise TypeError(f'{cls.__name__} must be a subclass of exactly one of {mut}, got {bcs}.')
+
+        try:
+            mtc = LoggerMetric
+        except NameError:
+            pass
+        else:
+            if issubclass(cls, mtc):
+                mp = cls.__mro__.index(mtc)
+                mup = cls.__mro__.index(LoggerMetricUnit)
+                if mup > mp:
+                    raise TypeError(f'{cls.__name__} must have Metric before MetricUnit in its MRO.')
+
+
+class CountLoggerMetricUnit(LoggerMetricUnit):
+    @classmethod
+    def default_value(cls) -> ta.Optional[float]:
+        return 1
+
+
+class RatioLoggerMetricUnit(LoggerMetricUnit):
+    pass
+
+
+class BytesLoggerMetricUnit(LoggerMetricUnit):
+    pass
+
+
+class SecondsLoggerMetricUnit(LoggerMetricUnit):
+    pass
+
+
+LOGGER_METRIC_UNIT_TYPES: ta.Tuple[ta.Type[LoggerMetricUnit], ...] = (
+    CountLoggerMetricUnit,
+    RatioLoggerMetricUnit,
+    BytesLoggerMetricUnit,
+    SecondsLoggerMetricUnit,
+)
+
+
+##
+
+
+class LoggerMetric(Abstract):
+    @ta.final
+    def __init__(self, value: ta.Optional[float] = None) -> None:
+        if value is None:
+            value = self.default_value()
+        if value is None:
+            raise ValueError(f'{type(self).__name__} has no default value.')
+
+        self.__value = value
+
+    @property
+    def value(self) -> float:
+        return self.__value
+
+    @classmethod
+    def default_value(cls) -> ta.Optional[float]:
+        return None
+
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        try:
+            mtt = LOGGER_METRIC_TYPES
+        except NameError:
+            pass
+        else:
+            bcs = [bc for bc in mtt if issubclass(cls, bc)]
+            if len(bcs) != 1:
+                raise TypeError(f'{cls.__name__} must be a subclass of exactly one of {mtt}, got {bcs}.')
+
+        # if Abstract not in cls.__bases__ and not issubclass(cls, LoggerMetricUnit):
+        #     raise TypeError(f'{cls.__name__} must be a subclass of LoggerMetricUnit.')
+
+
+class CounterLoggerMetric(CountLoggerMetricUnit, LoggerMetric, Abstract):
+    pass
+
+
+class GaugeLoggerMetric(LoggerMetric, Abstract):
+    pass
+
+
+class HistogramLoggerMetric(LoggerMetric, Abstract):
+    pass
+
+
+LOGGER_METRIC_TYPES: ta.Tuple[ta.Type[LoggerMetric], ...] = (
+    CounterLoggerMetric,
+    GaugeLoggerMetric,
+    HistogramLoggerMetric,
+)
+
+
+########################################
 # ../std/json.py
 """
 TODO:
@@ -1408,7 +1523,7 @@ class AnyLogger(Abstract, ta.Generic[T]):
             **kwargs,
         )
 
-    ##
+    #
 
     @abc.abstractmethod
     def _log(
@@ -1418,6 +1533,16 @@ class AnyLogger(Abstract, ta.Generic[T]):
             *args: ta.Any,
             **kwargs: ta.Any,
     ) -> T:
+        raise NotImplementedError
+
+    ##
+
+    @ta.final
+    def metric(self, m: LoggerMetric) -> T:
+        return self._metric(m)
+
+    @abc.abstractmethod
+    def _metric(self, m: LoggerMetric) -> T:
         raise NotImplementedError
 
 
@@ -1434,6 +1559,11 @@ class Logger(AnyLogger[None], Abstract):
     ) -> None:
         raise NotImplementedError
 
+    #
+
+    def _metric(self, m: LoggerMetric) -> None:
+        pass
+
 
 class AsyncLogger(AnyLogger[ta.Awaitable[None]], Abstract):
     _level_proxy_method_stack_offset: int = 0
@@ -1447,6 +1577,11 @@ class AsyncLogger(AnyLogger[ta.Awaitable[None]], Abstract):
             **kwargs: ta.Any,
     ) -> ta.Awaitable[None]:
         raise NotImplementedError
+
+    #
+
+    async def _metric(self, m: LoggerMetric) -> None:
+        pass
 
 
 ##

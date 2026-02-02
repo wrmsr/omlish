@@ -9,6 +9,7 @@ from .contexts import CaptureLoggingContextImpl
 from .contexts import LoggingExcInfoArg
 from .levels import LogLevel
 from .levels import NamedLogLevel
+from .metrics import LoggerMetric
 
 
 T = ta.TypeVar('T')
@@ -237,7 +238,7 @@ class AnyLogger(Abstract, ta.Generic[T]):
             **kwargs,
         )
 
-    ##
+    #
 
     @abc.abstractmethod
     def _log(
@@ -247,6 +248,16 @@ class AnyLogger(Abstract, ta.Generic[T]):
             *args: ta.Any,
             **kwargs: ta.Any,
     ) -> T:
+        raise NotImplementedError
+
+    ##
+
+    @ta.final
+    def metric(self, m: LoggerMetric) -> T:
+        return self._metric(m)
+
+    @abc.abstractmethod
+    def _metric(self, m: LoggerMetric) -> T:
         raise NotImplementedError
 
 
@@ -263,6 +274,11 @@ class Logger(AnyLogger[None], Abstract):
     ) -> None:
         raise NotImplementedError
 
+    #
+
+    def _metric(self, m: LoggerMetric) -> None:
+        pass
+
 
 class AsyncLogger(AnyLogger[ta.Awaitable[None]], Abstract):
     _level_proxy_method_stack_offset: int = 0
@@ -276,6 +292,11 @@ class AsyncLogger(AnyLogger[ta.Awaitable[None]], Abstract):
             **kwargs: ta.Any,
     ) -> ta.Awaitable[None]:
         raise NotImplementedError
+
+    #
+
+    async def _metric(self, m: LoggerMetric) -> None:
+        pass
 
 
 ##
