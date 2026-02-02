@@ -40,7 +40,7 @@ def __omlish_amalg__():  # noqa
             dict(path='std/proxy.py', sha1='3e7301a2aa351127f9c85f61b2f85dcc3f15aafb'),
             dict(path='warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
             dict(path='infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
-            dict(path='metrics/base.py', sha1='bd7369e259e730ed5b100926be6d2abd74f170bc'),
+            dict(path='metrics/base.py', sha1='a942e5ceaade4e69664ab38f1e1cb7832c6f3d08'),
             dict(path='std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
             dict(path='std/standard.py', sha1='5c97c1b9f7ead58d6127d047b873398f708f288d'),
@@ -881,19 +881,19 @@ class RatioLoggerMetricUnit(LoggerMetricUnit):
     pass
 
 
-class BytesLoggerMetricUnit(LoggerMetricUnit):
+class SecondsLoggerMetricUnit(LoggerMetricUnit):
     pass
 
 
-class SecondsLoggerMetricUnit(LoggerMetricUnit):
+class BytesLoggerMetricUnit(LoggerMetricUnit):
     pass
 
 
 LOGGER_METRIC_UNIT_TYPES: ta.Tuple[ta.Type[LoggerMetricUnit], ...] = (
     CountLoggerMetricUnit,
     RatioLoggerMetricUnit,
-    BytesLoggerMetricUnit,
     SecondsLoggerMetricUnit,
+    BytesLoggerMetricUnit,
 )
 
 
@@ -927,8 +927,12 @@ class LoggerMetric(Abstract):
             pass
         else:
             bcs = [bc for bc in mtt if issubclass(cls, bc)]
-            if len(bcs) != 1:
-                raise TypeError(f'{cls.__name__} must be a subclass of exactly one of {mtt}, got {bcs}.')
+            if Abstract in cls.__bases__:
+                if len(bcs) > 1:
+                    raise TypeError(f'{cls.__name__} must be a subclass of at most one of {mtt}, got {bcs}.')
+            else:
+                if len(bcs) != 1:
+                    raise TypeError(f'{cls.__name__} must be a subclass of exactly one of {mtt}, got {bcs}.')
 
         # if Abstract not in cls.__bases__ and not issubclass(cls, LoggerMetricUnit):
         #     raise TypeError(f'{cls.__name__} must be a subclass of LoggerMetricUnit.')

@@ -47,19 +47,19 @@ class RatioLoggerMetricUnit(LoggerMetricUnit):
     pass
 
 
-class BytesLoggerMetricUnit(LoggerMetricUnit):
+class SecondsLoggerMetricUnit(LoggerMetricUnit):
     pass
 
 
-class SecondsLoggerMetricUnit(LoggerMetricUnit):
+class BytesLoggerMetricUnit(LoggerMetricUnit):
     pass
 
 
 LOGGER_METRIC_UNIT_TYPES: ta.Tuple[ta.Type[LoggerMetricUnit], ...] = (
     CountLoggerMetricUnit,
     RatioLoggerMetricUnit,
-    BytesLoggerMetricUnit,
     SecondsLoggerMetricUnit,
+    BytesLoggerMetricUnit,
 )
 
 
@@ -93,8 +93,12 @@ class LoggerMetric(Abstract):
             pass
         else:
             bcs = [bc for bc in mtt if issubclass(cls, bc)]
-            if len(bcs) != 1:
-                raise TypeError(f'{cls.__name__} must be a subclass of exactly one of {mtt}, got {bcs}.')
+            if Abstract in cls.__bases__:
+                if len(bcs) > 1:
+                    raise TypeError(f'{cls.__name__} must be a subclass of at most one of {mtt}, got {bcs}.')
+            else:
+                if len(bcs) != 1:
+                    raise TypeError(f'{cls.__name__} must be a subclass of exactly one of {mtt}, got {bcs}.')
 
         # if Abstract not in cls.__bases__ and not issubclass(cls, LoggerMetricUnit):
         #     raise TypeError(f'{cls.__name__} must be a subclass of LoggerMetricUnit.')

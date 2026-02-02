@@ -27,8 +27,8 @@ bitsandbytes==0.49.1
 black==26.1.0
 bleach==6.3.0
 blobfile==3.1.0
-boto3==1.42.39
-botocore==1.42.39
+boto3==1.42.40
+botocore==1.42.40
 botocore-stubs==1.42.39
 brotli==1.2.0
 build==1.4.0

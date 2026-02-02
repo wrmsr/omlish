@@ -85,7 +85,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
             dict(path='../../../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
             dict(path='../../../../omlish/logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
-            dict(path='../../../../omlish/logs/metrics/base.py', sha1='bd7369e259e730ed5b100926be6d2abd74f170bc'),
+            dict(path='../../../../omlish/logs/metrics/base.py', sha1='a942e5ceaade4e69664ab38f1e1cb7832c6f3d08'),
             dict(path='../../../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='../logs.py', sha1='5a4fad522508bdc1b790f1d5234a87f319c9da2d'),
             dict(path='../../../../omlish/lite/configs.py', sha1='c8602e0e197ef1133e7e8e248935ac745bfd46cb'),
@@ -5803,19 +5803,19 @@ class RatioLoggerMetricUnit(LoggerMetricUnit):
     pass
 
 
-class BytesLoggerMetricUnit(LoggerMetricUnit):
+class SecondsLoggerMetricUnit(LoggerMetricUnit):
     pass
 
 
-class SecondsLoggerMetricUnit(LoggerMetricUnit):
+class BytesLoggerMetricUnit(LoggerMetricUnit):
     pass
 
 
 LOGGER_METRIC_UNIT_TYPES: ta.Tuple[ta.Type[LoggerMetricUnit], ...] = (
     CountLoggerMetricUnit,
     RatioLoggerMetricUnit,
-    BytesLoggerMetricUnit,
     SecondsLoggerMetricUnit,
+    BytesLoggerMetricUnit,
 )
 
 
@@ -5849,8 +5849,12 @@ class LoggerMetric(Abstract):
             pass
         else:
             bcs = [bc for bc in mtt if issubclass(cls, bc)]
-            if len(bcs) != 1:
-                raise TypeError(f'{cls.__name__} must be a subclass of exactly one of {mtt}, got {bcs}.')
+            if Abstract in cls.__bases__:
+                if len(bcs) > 1:
+                    raise TypeError(f'{cls.__name__} must be a subclass of at most one of {mtt}, got {bcs}.')
+            else:
+                if len(bcs) != 1:
+                    raise TypeError(f'{cls.__name__} must be a subclass of exactly one of {mtt}, got {bcs}.')
 
         # if Abstract not in cls.__bases__ and not issubclass(cls, LoggerMetricUnit):
         #     raise TypeError(f'{cls.__name__} must be a subclass of LoggerMetricUnit.')

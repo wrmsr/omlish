@@ -5,6 +5,39 @@ from .. import lang as _lang
 with _lang.auto_proxy_init(globals()):
     ##
 
+    from .metrics.base import (  # noqa
+        LoggerMetricUnit,
+        CountLoggerMetricUnit,
+        RatioLoggerMetricUnit,
+        SecondsLoggerMetricUnit,
+        BytesLoggerMetricUnit,
+        LOGGER_METRIC_UNIT_TYPES,
+
+        LoggerMetric,
+        CounterLoggerMetric,
+        GaugeLoggerMetric,
+        HistogramLoggerMetric,
+        LOGGER_METRIC_TYPES,
+
+        AnyLoggerMetricCollector,
+        LoggerMetricCollector,
+        AsyncLoggerMetricCollector,
+
+        AnyNopLoggerMetricCollector,
+        NopLoggerMetricCollector,
+        AsyncNopLoggerMetricCollector,
+    )
+
+    from .metrics.loggers import (  # noqa
+        MetricCollectingLogger,
+        AsyncMetricCollectingLogger,
+    )
+
+    from .metrics.standard import (  # noqa
+        TimeoutLoggerMetric,
+        LatencyLoggerMetric,
+    )
+
     from .std.filters import (  # noqa
         TidLoggingFilter,
     )
