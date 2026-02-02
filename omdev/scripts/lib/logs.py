@@ -43,7 +43,7 @@ def __omlish_amalg__():  # noqa
             dict(path='std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
             dict(path='std/standard.py', sha1='5c97c1b9f7ead58d6127d047b873398f708f288d'),
-            dict(path='base.py', sha1='8d06faee05fead6b1dd98c9035a5b042af4aebb1'),
+            dict(path='base.py', sha1='c5b13d00b1aab4d36f16b496c618975ab140193b'),
             dict(path='std/records.py', sha1='8bbf6ef9eccb3a012c6ca416ddf3969450fd8fc9'),
             dict(path='std/loggers.py', sha1='a569179445d6a8a942b5dcfad1d1f77702868803'),
             dict(path='_amalg.py', sha1='ae5189de25ab155651a5b2f21dd0baf6eb4f3916'),
@@ -1342,6 +1342,14 @@ class AnyLogger(Abstract, ta.Generic[T]):
     #
 
     @ta.overload
+    def exception(self, exc: BaseException, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def exception(self, *, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
     def exception(self, msg: str, *args: ta.Any, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
         ...
 
@@ -1354,7 +1362,17 @@ class AnyLogger(Abstract, ta.Generic[T]):
         ...
 
     @ta.final
-    def exception(self, *args, exc_info: LoggingExcInfoArg = True, **kwargs):
+    def exception(self, *args, exc_info=True, **kwargs):
+        if not args:
+            if not exc_info:
+                raise TypeError('exc_info=False is not allowed when no args are passed')
+            args = ((),)
+        elif len(args) == 1:
+            if isinstance(arg0 := args[0], BaseException):
+                if exc_info is not True:  # noqa
+                    raise TypeError(f'exc_info={exc_info!r} is not allowed when exc={arg0!r} is passed')
+            args, exc_info = ((),), arg0
+
         return self._log(
             CaptureLoggingContextImpl(
                 NamedLogLevel.ERROR,

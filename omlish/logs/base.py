@@ -171,6 +171,14 @@ class AnyLogger(Abstract, ta.Generic[T]):
     #
 
     @ta.overload
+    def exception(self, exc: BaseException, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def exception(self, *, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
     def exception(self, msg: str, *args: ta.Any, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
         ...
 
@@ -183,7 +191,17 @@ class AnyLogger(Abstract, ta.Generic[T]):
         ...
 
     @ta.final
-    def exception(self, *args, exc_info: LoggingExcInfoArg = True, **kwargs):
+    def exception(self, *args, exc_info=True, **kwargs):
+        if not args:
+            if not exc_info:
+                raise TypeError('exc_info=False is not allowed when no args are passed')
+            args = ((),)
+        elif len(args) == 1:
+            if isinstance(arg0 := args[0], BaseException):
+                if exc_info is not True:  # noqa
+                    raise TypeError(f'exc_info={exc_info!r} is not allowed when exc={arg0!r} is passed')
+            args, exc_info = ((),), arg0
+
         return self._log(
             CaptureLoggingContextImpl(
                 NamedLogLevel.ERROR,

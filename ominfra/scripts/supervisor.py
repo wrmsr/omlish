@@ -161,7 +161,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/std/standard.py', sha1='5c97c1b9f7ead58d6127d047b873398f708f288d'),
             dict(path='types.py', sha1='7ef67f710fb54c3af067aa596cb593f33eafe380'),
             dict(path='../../omlish/http/coro/server/server.py', sha1='c0a980afa8346dbc20570acddb2b3b579bfc1ce0'),
-            dict(path='../../omlish/logs/base.py', sha1='8d06faee05fead6b1dd98c9035a5b042af4aebb1'),
+            dict(path='../../omlish/logs/base.py', sha1='c5b13d00b1aab4d36f16b496c618975ab140193b'),
             dict(path='../../omlish/logs/std/records.py', sha1='8bbf6ef9eccb3a012c6ca416ddf3969450fd8fc9'),
             dict(path='dispatchers.py', sha1='33fe5ae77e33b3cfabb97b1a1c0f06dd0cc54703'),
             dict(path='groupsimpl.py', sha1='4fe587a6eaff7dd874b54450be62f9689283d230'),
@@ -10477,6 +10477,14 @@ class AnyLogger(Abstract, ta.Generic[T]):
     #
 
     @ta.overload
+    def exception(self, exc: BaseException, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def exception(self, *, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
     def exception(self, msg: str, *args: ta.Any, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
         ...
 
@@ -10489,7 +10497,17 @@ class AnyLogger(Abstract, ta.Generic[T]):
         ...
 
     @ta.final
-    def exception(self, *args, exc_info: LoggingExcInfoArg = True, **kwargs):
+    def exception(self, *args, exc_info=True, **kwargs):
+        if not args:
+            if not exc_info:
+                raise TypeError('exc_info=False is not allowed when no args are passed')
+            args = ((),)
+        elif len(args) == 1:
+            if isinstance(arg0 := args[0], BaseException):
+                if exc_info is not True:  # noqa
+                    raise TypeError(f'exc_info={exc_info!r} is not allowed when exc={arg0!r} is passed')
+            args, exc_info = ((),), arg0
+
         return self._log(
             CaptureLoggingContextImpl(
                 NamedLogLevel.ERROR,

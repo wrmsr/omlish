@@ -59,3 +59,11 @@ class TestLogs(unittest.TestCase):
 
         log.debug(lambda: f'{foo()}')
         assert c == 3
+
+    def test_exception(self):
+        log = StdLogger(logging.getLogger(__name__))
+        try:
+            raise ValueError('barf')  # noqa
+        except Exception as ve:  # noqa
+            log.exception()
+            log.exception(ve)  # noqa

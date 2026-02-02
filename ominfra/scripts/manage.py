@@ -142,7 +142,7 @@ def __omlish_amalg__():  # noqa
             dict(path='commands/types.py', sha1='10b88571981b9964287f30f27abf6d09400b51c6'),
             dict(path='deploy/paths/paths.py', sha1='bf7794e998caa1611277ac5809eb7ec91a76d1e8'),
             dict(path='deploy/specs.py', sha1='b3a411b32b47f81f5ad673d8b0338970a6eb6ff9'),
-            dict(path='../../omlish/logs/base.py', sha1='8d06faee05fead6b1dd98c9035a5b042af4aebb1'),
+            dict(path='../../omlish/logs/base.py', sha1='c5b13d00b1aab4d36f16b496c618975ab140193b'),
             dict(path='../../omlish/logs/std/records.py', sha1='8bbf6ef9eccb3a012c6ca416ddf3969450fd8fc9'),
             dict(path='../../omlish/subprocesses/base.py', sha1='cb9f668be5422fecb27222caabb67daac6c1bab9'),
             dict(path='../../omdev/interp/resolvers.py', sha1='817b8e76401cd7a19eb43ca54d65272e4c8a4b0e'),
@@ -11665,6 +11665,14 @@ class AnyLogger(Abstract, ta.Generic[T]):
     #
 
     @ta.overload
+    def exception(self, exc: BaseException, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def exception(self, *, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
     def exception(self, msg: str, *args: ta.Any, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
         ...
 
@@ -11677,7 +11685,17 @@ class AnyLogger(Abstract, ta.Generic[T]):
         ...
 
     @ta.final
-    def exception(self, *args, exc_info: LoggingExcInfoArg = True, **kwargs):
+    def exception(self, *args, exc_info=True, **kwargs):
+        if not args:
+            if not exc_info:
+                raise TypeError('exc_info=False is not allowed when no args are passed')
+            args = ((),)
+        elif len(args) == 1:
+            if isinstance(arg0 := args[0], BaseException):
+                if exc_info is not True:  # noqa
+                    raise TypeError(f'exc_info={exc_info!r} is not allowed when exc={arg0!r} is passed')
+            args, exc_info = ((),), arg0
+
         return self._log(
             CaptureLoggingContextImpl(
                 NamedLogLevel.ERROR,
