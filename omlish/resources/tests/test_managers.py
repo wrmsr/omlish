@@ -3,10 +3,10 @@ import typing as ta
 import pytest
 
 from ... import check
-from ..asyncs import AsyncResourceManaged
-from ..asyncs import AsyncResources
-from ..sync import ResourceManaged
-from ..sync import Resources
+from ..managers import AsyncResourceManaged
+from ..managers import AsyncResourceManager
+from ..managers import ResourceManaged
+from ..managers import ResourceManager
 
 
 ##
@@ -41,13 +41,13 @@ class Arc:
 ##
 
 
-def make_rc(*, resources: Resources | None = None) -> ResourceManaged[Rc]:
-    with Resources.or_new(resources) as resources:  # noqa
+def make_rc(*, resources: ResourceManager | None = None) -> ResourceManaged[Rc]:
+    with ResourceManager.or_new(resources) as resources:  # noqa
         return resources.new_managed(resources.enter_context(Rc()))
 
 
 def test_resources_given():
-    with Resources.new() as resources:  # noqa
+    with ResourceManager.new() as resources:  # noqa
         with (make_rc(resources=resources)) as rc:
             assert isinstance(rc, Rc)
             assert rc.state == 'entered'
@@ -65,19 +65,19 @@ def test_resources_not_given():
 ##
 
 
-async def a_make_arc(*, resources: AsyncResources | None = None) -> AsyncResourceManaged[Arc]:
-    async with AsyncResources.or_new(resources) as resources:  # noqa
+async def a_make_arc(*, resources: AsyncResourceManager | None = None) -> AsyncResourceManaged[Arc]:
+    async with AsyncResourceManager.or_new(resources) as resources:  # noqa
         return resources.new_managed(await resources.enter_async_context(Arc()))
 
 
-async def a_make_rc(*, resources: AsyncResources | None = None) -> AsyncResourceManaged[Rc]:
-    async with AsyncResources.or_new(resources) as resources:  # noqa
+async def a_make_rc(*, resources: AsyncResourceManager | None = None) -> AsyncResourceManaged[Rc]:
+    async with AsyncResourceManager.or_new(resources) as resources:  # noqa
         return resources.new_managed(resources.enter_context(Rc()))
 
 
 @pytest.mark.asyncs('asyncio')
 async def test_async_resources_given():
-    async with AsyncResources.new() as resources:
+    async with AsyncResourceManager.new() as resources:
         async with (await a_make_arc(resources=resources)) as arc:
             assert isinstance(arc, Arc)
             assert arc.state == 'entered'

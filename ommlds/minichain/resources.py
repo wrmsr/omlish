@@ -18,10 +18,10 @@ log = logs.get_module_logger(globals())
 ##
 
 
-ResourcesRef: ta.TypeAlias = _resources.ResourcesRef
-ResourcesRefNotRegisteredError: ta.TypeAlias = _resources.ResourcesRefNotRegisteredError
+ResourcesRef: ta.TypeAlias = _resources.ResourceManagerRef
+ResourcesRefNotRegisteredError: ta.TypeAlias = _resources.ResourceManagerRefNotRegisteredError
 
-Resources: ta.TypeAlias = _resources.AsyncResources
+Resources: ta.TypeAlias = _resources.AsyncResourceManager
 ResourceManaged: ta.TypeAlias = _resources.AsyncResourceManaged
 
 

@@ -1,12 +1,15 @@
-from .asyncs import (  # noqa
-    AsyncResources,
-    AsyncResourceManaged,
-)
+from .managers import (  # noqa
+    ResourceManagerRef,
+    ResourceManagerRefNotRegisteredError,
 
-from .base import (  # noqa
-    ResourcesRef,
-    BaseResources,
+    BaseResourceManager,
     BaseResourceManaged,
+
+    ResourceManager,
+    ResourceManaged,
+
+    AsyncResourceManager,
+    AsyncResourceManaged,
 )
 
 from .debug import (  # noqa
@@ -16,7 +19,6 @@ from .debug import (  # noqa
 
 from .errors import (  # noqa
     ResourceNotEnteredError,
-    ResourcesRefNotRegisteredError,
     UnclosedResourceWarning,
 )
 
@@ -24,9 +26,4 @@ from .simple import (  # noqa
     BaseSimpleResource,
     SimpleResource,
     AsyncSimpleResource,
-)
-
-from .sync import (  # noqa
-    Resources,
-    ResourceManaged,
 )
