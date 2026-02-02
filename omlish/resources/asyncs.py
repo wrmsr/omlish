@@ -16,7 +16,10 @@ U = ta.TypeVar('U')
 
 
 @ta.final
-class AsyncResources(BaseResources[ta.Awaitable[None]], lang.Final):
+class AsyncResources(
+    BaseResources[ta.Awaitable[None]],
+    lang.Final,
+):
     def __init__(
             self,
             *,
@@ -111,7 +114,11 @@ class AsyncResources(BaseResources[ta.Awaitable[None]], lang.Final):
 
 
 @ta.final
-class AsyncResourceManaged(BaseResourceManaged[U, AsyncResources], lang.Final):
+class AsyncResourceManaged(
+    BaseResourceManaged[U, AsyncResources],
+    ta.AsyncContextManager[U],
+    lang.Final,
+):
     async def __aenter__(self) -> U:
         check.state(self._state == 'new')
         self._state = 'entered'

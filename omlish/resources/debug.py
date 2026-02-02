@@ -1,3 +1,23 @@
+"""
+TODO:
+ - ```
+    if (
+            not self._is_resourceless and
+            self.__debug and
+            not self.__closed
+    ):
+        warnings.warn(
+            f'\n\n{(sep := ("=" * 40))}\n'
+            f'{self.__class__.__name__} object {self.__repr} '
+            f'was not properly closed before deletion. Please ensure that `close()` is called before the object is '
+            f'deleted.'
+            f'\n\n'
+            f'{"".join(self.__traceback).rstrip()}'
+            f'\n{sep}\n',
+            UnclosedResourceWarning,
+        )
+   ```
+"""
 import traceback
 
 from .. import lang

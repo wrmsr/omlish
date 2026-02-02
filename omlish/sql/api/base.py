@@ -71,10 +71,6 @@ class Db(Querier, lang.Abstract):
     def connect(self) -> Conn:
         raise NotImplementedError
 
-    @abc.abstractmethod
-    def query(self, query: Query) -> Rows:
-        raise NotImplementedError
-
 
 ##
 

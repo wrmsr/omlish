@@ -16,7 +16,10 @@ U = ta.TypeVar('U')
 
 
 @ta.final
-class Resources(BaseResources[None], lang.Final):
+class Resources(
+    BaseResources[None],
+    lang.Final,
+):
     def __init__(
             self,
             *,
@@ -106,7 +109,11 @@ class Resources(BaseResources[None], lang.Final):
 
 
 @ta.final
-class ResourceManaged(BaseResourceManaged[U, Resources], lang.Final):
+class ResourceManaged(
+    BaseResourceManaged[U, Resources],
+    ta.ContextManager[U],
+    lang.Final,
+):
     def __enter__(self) -> U:
         check.state(self._state == 'new')
         self._state = 'entered'

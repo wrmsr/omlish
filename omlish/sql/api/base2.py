@@ -1,0 +1,80 @@
+# import abc
+# import typing as ta
+#
+# from ... import lang
+# from .columns import Column
+# from .columns import Columns
+# from .queries import Query
+# from .rows import Row
+#
+#
+# ##
+#
+#
+# class Querier(lang.Abstract):
+#     @property
+#     @abc.abstractmethod
+#     def adapter(self) -> 'Adapter':
+#         raise NotImplementedError
+#
+#     @abc.abstractmethod
+#     def query(self, query: Query) -> ta.ContextManager['Rows']:  # ta.Raises[QueryError]
+#         raise NotImplementedError
+#
+#
+# ##
+#
+#
+# class Rows(ta.Iterator[Row], lang.Abstract):
+#     @property
+#     @abc.abstractmethod
+#     def columns(self) -> Columns:
+#         raise NotImplementedError
+#
+#     @ta.final
+#     def __iter__(self) -> ta.Self:
+#         return self
+#
+#     @abc.abstractmethod
+#     def __next__(self) -> Row:  # ta.Raises[StopIteration]
+#         raise NotImplementedError
+#
+#
+# ##
+#
+#
+# class Transaction(Querier, lang.Abstract):
+#     @abc.abstractmethod
+#     def commit(self) -> None:
+#         raise NotImplementedError
+#
+#     @abc.abstractmethod
+#     def rollback(self) -> None:
+#         raise NotImplementedError
+#
+#
+# ##
+#
+#
+# class Conn(Querier, lang.Abstract):
+#     @abc.abstractmethod
+#     def begin(self) -> ta.ContextManager[Transaction]:
+#         raise NotImplementedError
+#
+#
+# ##
+#
+#
+# class Db(Querier, lang.Abstract):
+#     @abc.abstractmethod
+#     def connect(self) -> Conn:
+#         raise NotImplementedError
+#
+#
+# ##
+#
+#
+# class Adapter(lang.Abstract):
+#     @abc.abstractmethod
+#     def scan_type(self, c: Column) -> type:
+#         raise NotImplementedError
