@@ -37,7 +37,7 @@ gprof2dot==2025.4.14
 guppy3==3.1.6; python_version < "3.14"  # @omlish-venv !13t !13dt
 objgraph==3.6.2
 
-ipython==9.9.0
+ipython==9.10.0
 
 # litecli==1.15.0  # @omlish-venv  # FIXME: MAKE LLM DEP OPTIONAL
 # mycli==1.42.0  # @omlish-venv !13t !13dt !14t
@@ -103,7 +103,7 @@ asttokens==3.0.1
 
 numpy>=1.26
 
-rich==14.3.1
+rich==14.3.2
 textual==7.5.0  # @omlish-venv 13t 13dt 14t
 textual[syntax]==7.5.0  # @omlish-venv !13t !13dt !14t
 textual-dev==1.8.0
@@ -114,7 +114,7 @@ snowflake-connector-python[secure-local-storage]==4.2.0  # @omlish-venv !13t !13
 
 trino==0.336.0  # @omlish-venv !13t !13dt !14t !14dt  # orjson
 
-huggingface-hub==1.3.5  # @omlish-venv !14t !14dt
+huggingface-hub==1.3.7  # @omlish-venv !14t !14dt
 hf-xet==1.2.0  # @omlish-venv !14t !14dt
 
 ## NOTE: the following add a full minute to CI just setting up the deps..

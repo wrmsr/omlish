@@ -41,6 +41,7 @@ from pip._internal.index.package_finder import PackageFinder  # noqa
 from pip._internal.metadata import BaseDistribution  # noqa
 from pip._internal.models.candidate import InstallationCandidate  # noqa
 from pip._internal.models.link import Link  # noqa
+from pip._internal.models.release_control import ReleaseControl  # noqa
 from pip._internal.network.session import PipSession  # noqa
 from pip._vendor.packaging.version import Version  # noqa
 
@@ -253,7 +254,7 @@ def build_package_finder(
     from pip._internal.models.selection_prefs import SelectionPreferences  # noqa
     selection_prefs = SelectionPreferences(
         allow_yanked=False,
-        allow_all_prereleases=pre,
+        release_control=ReleaseControl(all_releases={':all'}) if pre else None,
     )
 
     return check.isinstance(MyPackageFinder.create(
