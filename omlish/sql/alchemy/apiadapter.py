@@ -3,6 +3,7 @@ import typing as ta
 import sqlalchemy as sa
 
 from ... import check
+from ...resources import SimpleResource
 from .. import api
 from ..api.dbapi import build_dbapi_columns
 
@@ -13,7 +14,7 @@ T = ta.TypeVar('T')
 ##
 
 
-class SqlalchemyApiWrapper(api.ContextCloser, ta.Generic[T]):
+class SqlalchemyApiWrapper(SimpleResource, ta.Generic[T]):
     def __init__(
             self,
             u: T,
@@ -40,7 +41,7 @@ class SqlalchemyApiWrapper(api.ContextCloser, ta.Generic[T]):
 ##
 
 
-class SqlalchemyApiRows(api.Rows):
+class SqlalchemyApiRows(SimpleResource, api.Rows):
     def __init__(self, columns: api.Columns, rows: ta.Sequence[api.Row]) -> None:
         super().__init__()
 
@@ -57,12 +58,12 @@ class SqlalchemyApiRows(api.Rows):
         return next(self._it)
 
 
-class SqlalchemyTransaction(api.Transaction):
+class SqlalchemyTransaction(SimpleResource, api.Transaction):
     @property
     def adapter(self) -> api.Adapter:
         raise NotImplementedError
 
-    def query(self, query: api.Query) -> api.Rows:
+    def query(self, query: api.Query) -> ta.ContextManager[api.Rows]:
         raise NotImplementedError
 
     def commit(self) -> None:
@@ -77,7 +78,7 @@ class SqlalchemyApiConn(SqlalchemyApiWrapper[sa.engine.Connection], api.Conn):
     def adapter(self) -> api.Adapter:
         raise NotImplementedError
 
-    def query(self, query: api.Query) -> api.Rows:
+    def query(self, query: api.Query) -> ta.ContextManager[api.Rows]:
         check.empty(query.args)
         result: sa.engine.cursor.CursorResult
         with self._u.execute(sa.text(query.text)) as result:
@@ -89,19 +90,19 @@ class SqlalchemyApiConn(SqlalchemyApiWrapper[sa.engine.Connection], api.Conn):
             ]
         return SqlalchemyApiRows(cols, rows)
 
-    def begin(self) -> api.Transaction:
+    def begin(self) -> ta.ContextManager[api.Transaction]:
         raise NotImplementedError
 
 
 class SqlalchemyApiDb(SqlalchemyApiWrapper[sa.engine.Engine], api.Db):
-    def connect(self) -> api.Conn:
+    def connect(self) -> ta.ContextManager[api.Conn]:
         return SqlalchemyApiConn(self._u.connect(), auto_close=True)
 
     @property
     def adapter(self) -> api.Adapter:
         raise NotImplementedError
 
-    def query(self, query: api.Query) -> api.Rows:
+    def query(self, query: api.Query) -> ta.ContextManager[api.Rows]:
         with self.connect() as conn:
             return conn.query(query)
 

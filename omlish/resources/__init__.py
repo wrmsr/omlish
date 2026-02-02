@@ -15,7 +15,15 @@ from .debug import (  # noqa
 )
 
 from .errors import (  # noqa
+    ResourceNotEnteredError,
     ResourcesRefNotRegisteredError,
+    UnclosedResourceWarning,
+)
+
+from .simple import (  # noqa
+    BaseSimpleResource,
+    SimpleResource,
+    AsyncSimpleResource,
 )
 
 from .sync import (  # noqa

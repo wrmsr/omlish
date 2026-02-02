@@ -1,8 +1,8 @@
 import sqlite3
 
+from ....resources import set_resource_debug
 from .. import funcs
 from ..dbapi import DbapiDb
-from ..resources import set_resource_debug
 
 
 ##

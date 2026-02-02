@@ -111,8 +111,8 @@ class Resources(
 @ta.final
 class ResourceManaged(
     BaseResourceManaged[U, Resources],
-    ta.ContextManager[U],
     lang.Final,
+    ta.ContextManager[U],
 ):
     def __enter__(self) -> U:
         check.state(self._state == 'new')

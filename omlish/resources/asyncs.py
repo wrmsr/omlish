@@ -116,8 +116,8 @@ class AsyncResources(
 @ta.final
 class AsyncResourceManaged(
     BaseResourceManaged[U, AsyncResources],
-    ta.AsyncContextManager[U],
     lang.Final,
+    ta.AsyncContextManager[U],
 ):
     async def __aenter__(self) -> U:
         check.state(self._state == 'new')

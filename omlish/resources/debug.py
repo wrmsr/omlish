@@ -1,24 +1,5 @@
-"""
-TODO:
- - ```
-    if (
-            not self._is_resourceless and
-            self.__debug and
-            not self.__closed
-    ):
-        warnings.warn(
-            f'\n\n{(sep := ("=" * 40))}\n'
-            f'{self.__class__.__name__} object {self.__repr} '
-            f'was not properly closed before deletion. Please ensure that `close()` is called before the object is '
-            f'deleted.'
-            f'\n\n'
-            f'{"".join(self.__traceback).rstrip()}'
-            f'\n{sep}\n',
-            UnclosedResourceWarning,
-        )
-   ```
-"""
 import traceback
+import typing as ta
 
 from .. import lang
 
@@ -45,10 +26,14 @@ class _ResourcesDebug(lang.Abstract):
     def __init__(self) -> None:
         super().__init__()
 
-        self.__debug = DEBUG
-        if self.__debug:
-            self.__traceback = traceback.format_stack()[:-1]
+        self._resources_debug = DEBUG
+        if self._resources_debug:
+            self._resources_debug_traceback = traceback.format_stack()[:-1]
+
+    _resources_debug_traceback: ta.Sequence[str]
+
+    _resources_debug_repr: str | None = None
 
     def _init_debug(self) -> None:
-        if self.__debug:
-            self.__repr = repr(self)
+        if self._resources_debug:
+            self._resources_debug_repr = repr(self)

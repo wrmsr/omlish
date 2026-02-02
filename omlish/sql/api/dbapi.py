@@ -1,6 +1,7 @@
 import typing as ta
 
 from ... import check
+from ...resources import SimpleResource
 from ..dbapi import abc as dbapi_abc
 from . import funcs
 from .base import Adapter
@@ -32,7 +33,7 @@ def build_dbapi_columns(desc: ta.Sequence[dbapi_abc.DbapiColumnDescription] | No
     return Columns(*cols)
 
 
-class DbapiRows(Rows):
+class DbapiRows(Rows, SimpleResource):
     def __init__(
             self,
             cursor: dbapi_abc.DbapiCursor,
@@ -60,7 +61,7 @@ class DbapiRows(Rows):
         return Row(self._columns, values)
 
 
-class DbapiTransaction(Transaction):
+class DbapiTransaction(Transaction, SimpleResource):
     def __init__(self, conn: 'DbapiConn') -> None:
         super().__init__()
 
@@ -96,7 +97,7 @@ class DbapiTransaction(Transaction):
     def adapter(self) -> Adapter:
         return self._conn.adapter
 
-    def query(self, query: Query) -> Rows:
+    def query(self, query: Query) -> ta.ContextManager[Rows]:
         self._check_entered()
         check.state(self._state == 'open')
         return self._conn.query(query)
@@ -110,7 +111,7 @@ class DbapiTransaction(Transaction):
         self._rollback_internal()
 
 
-class DbapiConn(Conn):
+class DbapiConn(Conn, SimpleResource):
     def __init__(
             self,
             conn: dbapi_abc.DbapiConnection,
@@ -140,7 +141,7 @@ class DbapiConn(Conn):
     def adapter(self) -> Adapter:
         return self._adapter
 
-    def query(self, query: Query) -> Rows:
+    def query(self, query: Query) -> ta.ContextManager[Rows]:
         self._check_entered()
         cursor = self._conn.cursor()
         try:
@@ -152,11 +153,11 @@ class DbapiConn(Conn):
             cursor.close()
             raise
 
-    def begin(self) -> Transaction:
+    def begin(self) -> ta.ContextManager[Transaction]:
         return DbapiTransaction(self)
 
 
-class DbapiDb(Db):
+class DbapiDb(Db, SimpleResource):
     def __init__(
             self,
             conn_fac: ta.Callable[[], dbapi_abc.DbapiConnection],
@@ -174,12 +175,12 @@ class DbapiDb(Db):
     def adapter(self) -> Adapter:
         return self._adapter
 
-    def connect(self) -> Conn:
+    def connect(self) -> ta.ContextManager[Conn]:
         self._check_entered()
         dbapi_conn = self._conn_fac()
         return DbapiConn(dbapi_conn)
 
-    def query(self, query: Query) -> Rows:
+    def query(self, query: Query) -> ta.ContextManager[Rows]:
         # with self.connect() as conn:
         #     return conn.query(query)
         # FIXME: need minichain-style Resource group? can't close conn with live Rows

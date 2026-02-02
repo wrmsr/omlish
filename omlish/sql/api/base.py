@@ -5,28 +5,27 @@ from ... import lang
 from .columns import Column
 from .columns import Columns
 from .queries import Query
-from .resources import ContextCloser
 from .rows import Row
 
 
 ##
 
 
-class Querier(ContextCloser, lang.Abstract):
+class Querier(lang.Abstract):
     @property
     @abc.abstractmethod
     def adapter(self) -> 'Adapter':
         raise NotImplementedError
 
     @abc.abstractmethod
-    def query(self, query: Query) -> 'Rows':  # ta.Raises[QueryError]
+    def query(self, query: Query) -> ta.ContextManager['Rows']:  # ta.Raises[QueryError]
         raise NotImplementedError
 
 
 ##
 
 
-class Rows(ContextCloser, ta.Iterator[Row], lang.Abstract):
+class Rows(ta.Iterator[Row], lang.Abstract):
     @property
     @abc.abstractmethod
     def columns(self) -> Columns:
@@ -59,7 +58,7 @@ class Transaction(Querier, lang.Abstract):
 
 class Conn(Querier, lang.Abstract):
     @abc.abstractmethod
-    def begin(self) -> Transaction:
+    def begin(self) -> ta.ContextManager[Transaction]:
         raise NotImplementedError
 
 
@@ -68,7 +67,7 @@ class Conn(Querier, lang.Abstract):
 
 class Db(Querier, lang.Abstract):
     @abc.abstractmethod
-    def connect(self) -> Conn:
+    def connect(self) -> ta.ContextManager[Conn]:
         raise NotImplementedError
 
 

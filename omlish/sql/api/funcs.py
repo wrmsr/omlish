@@ -35,7 +35,7 @@ def query(
         querier: Querier,
         obj: ta.Any,
         *args: ta.Any,
-) -> Rows:
+) -> ta.ContextManager[Rows]:
     q = as_query(
         obj,
         *args,

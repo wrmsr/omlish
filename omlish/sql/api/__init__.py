@@ -53,17 +53,6 @@ from .queries import (  # noqa
     Query,
 )
 
-from .resources import (  # noqa
-    get_resource_debug,
-    set_resource_debug,
-
-    UnclosedResourceWarning,
-    Closer,
-
-    ResourceNotEnteredError,
-    ContextCloser,
-)
-
 from .rows import (  # noqa
     Row,
 )
