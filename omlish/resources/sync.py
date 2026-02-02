@@ -1,11 +1,10 @@
 import contextlib
 import typing as ta
 
-from omlish import check
-from omlish import lang
-
-from .base import BaseResources
+from .. import check
+from .. import lang
 from .base import BaseResourceManaged
+from .base import BaseResources
 from .base import ResourcesRef
 from .errors import ResourcesRefNotRegisteredError
 
@@ -42,7 +41,7 @@ class Resources(BaseResources[None], lang.Final):
     def new(cls, **kwargs: ta.Any) -> ta.ContextManager['Resources']:
         @contextlib.contextmanager
         def inner():
-            init_ref = BaseResources._InitRef()
+            init_ref = BaseResources._InitRef()  # noqa
 
             res = Resources(init_ref=init_ref, **kwargs)
 

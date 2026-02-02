@@ -2,12 +2,11 @@ import typing as ta
 
 import pytest
 
-from omlish import check
-
-from ..sync import Resources
-from ..sync import ResourceManaged
-from ..asyncs import AsyncResources
+from ... import check
 from ..asyncs import AsyncResourceManaged
+from ..asyncs import AsyncResources
+from ..sync import ResourceManaged
+from ..sync import Resources
 
 
 ##
@@ -43,12 +42,12 @@ class Arc:
 
 
 def make_rc(*, resources: Resources | None = None) -> ResourceManaged[Rc]:
-    with Resources.or_new(resources) as resources:
+    with Resources.or_new(resources) as resources:  # noqa
         return resources.new_managed(resources.enter_context(Rc()))
 
 
 def test_resources_given():
-    with Resources.new() as resources:
+    with Resources.new() as resources:  # noqa
         with (make_rc(resources=resources)) as rc:
             assert isinstance(rc, Rc)
             assert rc.state == 'entered'
@@ -67,12 +66,12 @@ def test_resources_not_given():
 
 
 async def a_make_arc(*, resources: AsyncResources | None = None) -> AsyncResourceManaged[Arc]:
-    async with AsyncResources.or_new(resources) as resources:
+    async with AsyncResources.or_new(resources) as resources:  # noqa
         return resources.new_managed(await resources.enter_async_context(Arc()))
 
 
 async def a_make_rc(*, resources: AsyncResources | None = None) -> AsyncResourceManaged[Rc]:
-    async with AsyncResources.or_new(resources) as resources:
+    async with AsyncResources.or_new(resources) as resources:  # noqa
         return resources.new_managed(resources.enter_context(Rc()))
 
 

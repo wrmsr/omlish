@@ -1,11 +1,10 @@
 import abc
 import typing as ta
 
-from omlish import check
-from omlish import collections as col
-from omlish import lang
-from omlish.logs import all as logs
-
+from .. import check
+from .. import collections as col
+from .. import lang
+from ..logs import all as logs
 from .debug import _ResourcesDebug
 
 
@@ -127,11 +126,13 @@ class BaseResourceManaged(
     instantiation within a callee.
 
     This class wraps an arbitrary value, likely an object referencing resources managed by the `Resources`, which is
-    accessed by `__aenter__`'ing. However, as the point of this class is handoff of a `Resources`, not necessarily some
-    arbitrary value, the value needn't necessarily be related to the `Resources`, or may even be `None`.
+    accessed by `__enter__/__aenter__`'ing. However, as the point of this class is handoff of a `Resources`, not
+    necessarily some arbitrary value, the value needn't necessarily be related to the `Resources`, or may even be
+    `None`.
 
     The ref to the `Resources` is allocated in the ctor, so the contract is that an instance of this must be immediately
-    `__aenter__`'d before doing anything else with the return value of the call. Failure to do so leaks the `Resources`.
+    `__enter__/__aenter__`'d before doing anything else with the return value of the call. Failure to do so leaks the
+    `Resources`.
     """
 
     def __init__(self, v: U, resources: BaseResourcesT) -> None:

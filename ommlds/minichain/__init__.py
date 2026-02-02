@@ -689,8 +689,8 @@ with _lang.auto_proxy_init(
     from .resources import (  # noqa
         ResourcesRef,
         ResourcesRefNotRegisteredError,
-        Resources,
 
+        Resources,
         ResourceManaged,
 
         ResourcesOption,

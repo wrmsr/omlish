@@ -1,6 +1,6 @@
 import traceback
 
-from omlish import lang
+from .. import lang
 
 
 ##
