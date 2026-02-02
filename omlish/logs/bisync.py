@@ -53,7 +53,7 @@ class _BisyncLoggerImpl(BisyncLogger, lang.Final):
             *args: ta.Any,
             **kwargs: ta.Any,
     ) -> None:
-        return self._u._log(  # noqa
+        self._u._log(  # noqa
             check.isinstance(ctx, CaptureLoggingContextImpl).inc_stack_offset(),
             msg,
             *args,
@@ -83,7 +83,7 @@ class _BisyncAsyncLoggerImpl(BisyncAsyncLogger, lang.Final):
             *args: ta.Any,
             **kwargs: ta.Any,
     ) -> None:
-        return await self._u._log(  # noqa
+        await self._u._log(  # noqa
             check.isinstance(ctx, CaptureLoggingContextImpl).inc_stack_offset(),
             msg,
             *args,

@@ -93,7 +93,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../../omlish/subprocesses/wrap.py', sha1='8a9b7d2255481fae15c05f5624b0cdc0766f4b3f'),
             dict(path='../../../../omlish/logs/base.py', sha1='c5b13d00b1aab4d36f16b496c618975ab140193b'),
             dict(path='../../../../omlish/logs/std/records.py', sha1='8bbf6ef9eccb3a012c6ca416ddf3969450fd8fc9'),
-            dict(path='../../../../omlish/logs/asyncs.py', sha1='ab11b70033d9f2e9a4e70254185aa1c6130c6077'),
+            dict(path='../../../../omlish/logs/asyncs.py', sha1='1aacdc4f3b92a0307b40436903efcdee6c9b3972'),
             dict(path='../../../../omlish/logs/std/loggers.py', sha1='a569179445d6a8a942b5dcfad1d1f77702868803'),
             dict(path='../../../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='cursor.py', sha1='00f1c62e16e4c85b20658eaf33c0bedf22c9e18f'),
@@ -7347,7 +7347,7 @@ class LoggerToAsyncLogger(AsyncLogger):
             *args: ta.Any,
             **kwargs: ta.Any,
     ) -> None:
-        return self._u._log(  # noqa
+        self._u._log(  # noqa
             check.isinstance(ctx, CaptureLoggingContextImpl).inc_stack_offset(),
             msg,
             *args,

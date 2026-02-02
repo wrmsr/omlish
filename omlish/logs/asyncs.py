@@ -65,7 +65,7 @@ class LoggerToAsyncLogger(AsyncLogger):
             *args: ta.Any,
             **kwargs: ta.Any,
     ) -> None:
-        return self._u._log(  # noqa
+        self._u._log(  # noqa
             check.isinstance(ctx, CaptureLoggingContextImpl).inc_stack_offset(),
             msg,
             *args,

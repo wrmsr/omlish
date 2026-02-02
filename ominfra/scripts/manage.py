@@ -149,7 +149,7 @@ def __omlish_amalg__():  # noqa
             dict(path='commands/local.py', sha1='db3c5b0a1f067f54e2133234e36e7db393e4dec3'),
             dict(path='deploy/conf/manager.py', sha1='7450a8616dbc46f6c68387192035a6ea258aebe2'),
             dict(path='deploy/paths/owners.py', sha1='382bcec4824f0fc71dddf083c6e88748b5c62ef2'),
-            dict(path='../../omlish/logs/asyncs.py', sha1='ab11b70033d9f2e9a4e70254185aa1c6130c6077'),
+            dict(path='../../omlish/logs/asyncs.py', sha1='1aacdc4f3b92a0307b40436903efcdee6c9b3972'),
             dict(path='../../omlish/logs/std/loggers.py', sha1='a569179445d6a8a942b5dcfad1d1f77702868803'),
             dict(path='../../omlish/subprocesses/asyncs.py', sha1='bba44d524c24c6ac73168aee6343488414e5bf48'),
             dict(path='../../omlish/subprocesses/sync.py', sha1='8434919eba4da67825773d56918fdc0cb2f1883b'),
@@ -13135,7 +13135,7 @@ class LoggerToAsyncLogger(AsyncLogger):
             *args: ta.Any,
             **kwargs: ta.Any,
     ) -> None:
-        return self._u._log(  # noqa
+        self._u._log(  # noqa
             check.isinstance(ctx, CaptureLoggingContextImpl).inc_stack_offset(),
             msg,
             *args,

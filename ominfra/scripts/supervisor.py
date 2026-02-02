@@ -167,7 +167,7 @@ def __omlish_amalg__():  # noqa
             dict(path='groupsimpl.py', sha1='4fe587a6eaff7dd874b54450be62f9689283d230'),
             dict(path='process.py', sha1='ec0903adbde7552ba8a6aad9030716ef57fc4a6c'),
             dict(path='../../omlish/http/coro/server/fdio.py', sha1='3f1b4865e589a336f942a763dc11ce42fa5c8857'),
-            dict(path='../../omlish/logs/asyncs.py', sha1='ab11b70033d9f2e9a4e70254185aa1c6130c6077'),
+            dict(path='../../omlish/logs/asyncs.py', sha1='1aacdc4f3b92a0307b40436903efcdee6c9b3972'),
             dict(path='../../omlish/logs/std/loggers.py', sha1='a569179445d6a8a942b5dcfad1d1f77702868803'),
             dict(path='groups.py', sha1='a02a602d28793e5c84fbe7bfbcfa6ccce2ee0788'),
             dict(path='spawning.py', sha1='9e65e562395ad04e3f3a314f946b7a4e58a601da'),
@@ -11604,7 +11604,7 @@ class LoggerToAsyncLogger(AsyncLogger):
             *args: ta.Any,
             **kwargs: ta.Any,
     ) -> None:
-        return self._u._log(  # noqa
+        self._u._log(  # noqa
             check.isinstance(ctx, CaptureLoggingContextImpl).inc_stack_offset(),
             msg,
             *args,
