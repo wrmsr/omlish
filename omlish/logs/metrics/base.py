@@ -1,8 +1,12 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
+import abc
 import typing as ta
 
-from ..lite.abstract import Abstract
+from ...lite.abstract import Abstract
+
+
+T = ta.TypeVar('T')
 
 
 ##
@@ -113,3 +117,47 @@ LOGGER_METRIC_TYPES: ta.Tuple[ta.Type[LoggerMetric], ...] = (
     GaugeLoggerMetric,
     HistogramLoggerMetric,
 )
+
+
+##
+
+
+class AnyLoggerMetricCollector(Abstract, ta.Generic[T]):
+    @ta.final
+    def metric(self, m: LoggerMetric) -> T:
+        return self._metric(m)
+
+    @abc.abstractmethod
+    def _metric(self, m: LoggerMetric) -> T:
+        raise NotImplementedError
+
+
+class LoggerMetricCollector(AnyLoggerMetricCollector[None], Abstract):
+    @abc.abstractmethod
+    def _metric(self, m: LoggerMetric) -> None:
+        raise NotImplementedError
+
+
+class AsyncLoggerMetricCollector(AnyLoggerMetricCollector[ta.Awaitable[None]], Abstract):
+    @abc.abstractmethod
+    def _metric(self, m: LoggerMetric) -> ta.Awaitable[None]:
+        raise NotImplementedError
+
+
+##
+
+
+class AnyNopLoggerMetricCollector(AnyLoggerMetricCollector[T], Abstract):
+    pass
+
+
+class NopLoggerMetricCollector(AnyNopLoggerMetricCollector[None], LoggerMetricCollector):
+    @ta.final
+    def _metric(self, m: LoggerMetric) -> None:
+        pass
+
+
+class AsyncNopLoggerMetricCollector(AnyNopLoggerMetricCollector[ta.Awaitable[None]], AsyncLoggerMetricCollector):
+    @ta.final
+    async def _metric(self, m: LoggerMetric) -> None:
+        pass

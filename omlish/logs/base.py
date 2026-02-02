@@ -9,7 +9,13 @@ from .contexts import CaptureLoggingContextImpl
 from .contexts import LoggingExcInfoArg
 from .levels import LogLevel
 from .levels import NamedLogLevel
-from .metrics import LoggerMetric
+from .metrics.base import AnyLoggerMetricCollector
+from .metrics.base import AnyNopLoggerMetricCollector
+from .metrics.base import AsyncLoggerMetricCollector
+from .metrics.base import AsyncNopLoggerMetricCollector
+from .metrics.base import LoggerMetric
+from .metrics.base import LoggerMetricCollector
+from .metrics.base import NopLoggerMetricCollector
 
 
 T = ta.TypeVar('T')
@@ -21,7 +27,7 @@ LoggingMsgFn = ta.Callable[[], ta.Union[str, tuple]]  # ta.TypeAlias
 ##
 
 
-class AnyLogger(Abstract, ta.Generic[T]):
+class AnyLogger(AnyLoggerMetricCollector[T], Abstract, ta.Generic[T]):
     def is_enabled_for(self, level: LogLevel) -> bool:
         return level >= self.get_effective_level()
 
@@ -250,18 +256,8 @@ class AnyLogger(Abstract, ta.Generic[T]):
     ) -> T:
         raise NotImplementedError
 
-    ##
 
-    @ta.final
-    def metric(self, m: LoggerMetric) -> T:
-        return self._metric(m)
-
-    @abc.abstractmethod
-    def _metric(self, m: LoggerMetric) -> T:
-        raise NotImplementedError
-
-
-class Logger(AnyLogger[None], Abstract):
+class Logger(LoggerMetricCollector, AnyLogger[None], Abstract):
     _level_proxy_method_stack_offset: int = 1
 
     @abc.abstractmethod
@@ -276,11 +272,12 @@ class Logger(AnyLogger[None], Abstract):
 
     #
 
+    @abc.abstractmethod
     def _metric(self, m: LoggerMetric) -> None:
-        pass
+        raise NotImplementedError
 
 
-class AsyncLogger(AnyLogger[ta.Awaitable[None]], Abstract):
+class AsyncLogger(AsyncLoggerMetricCollector, AnyLogger[ta.Awaitable[None]], Abstract):
     _level_proxy_method_stack_offset: int = 0
 
     @abc.abstractmethod
@@ -295,21 +292,22 @@ class AsyncLogger(AnyLogger[ta.Awaitable[None]], Abstract):
 
     #
 
-    async def _metric(self, m: LoggerMetric) -> None:
-        pass
+    @abc.abstractmethod
+    def _metric(self, m: LoggerMetric) -> ta.Awaitable[None]:
+        raise NotImplementedError
 
 
 ##
 
 
-class AnyNopLogger(AnyLogger[T], Abstract):
+class AnyNopLogger(AnyNopLoggerMetricCollector[T], AnyLogger[T], Abstract):
     @ta.final
     def get_effective_level(self) -> LogLevel:
         return -999
 
 
-@ta.final
-class NopLogger(AnyNopLogger[None], Logger):
+class NopLogger(NopLoggerMetricCollector, AnyNopLogger[None], Logger):
+    @ta.final
     def _log(
             self,
             ctx: CaptureLoggingContext,
@@ -320,8 +318,8 @@ class NopLogger(AnyNopLogger[None], Logger):
         pass
 
 
-@ta.final
-class AsyncNopLogger(AnyNopLogger[ta.Awaitable[None]], AsyncLogger):
+class AsyncNopLogger(AsyncNopLoggerMetricCollector, AnyNopLogger[ta.Awaitable[None]], AsyncLogger):
+    @ta.final
     async def _log(
             self,
             ctx: CaptureLoggingContext,

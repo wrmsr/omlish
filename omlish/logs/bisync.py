@@ -9,6 +9,7 @@ from .base import LoggingMsgFn
 from .contexts import CaptureLoggingContext
 from .contexts import CaptureLoggingContextImpl
 from .levels import LogLevel
+from .metrics.base import LoggerMetric
 
 
 ##
@@ -60,6 +61,9 @@ class _BisyncLoggerImpl(BisyncLogger, lang.Final):
             **kwargs,
         )
 
+    def _metric(self, m: LoggerMetric) -> None:
+        self._u._metric(m)  # noqa
+
 
 class _BisyncAsyncLoggerImpl(BisyncAsyncLogger, lang.Final):
     def __init__(self, u: 'AsyncLogger') -> None:
@@ -89,6 +93,9 @@ class _BisyncAsyncLoggerImpl(BisyncAsyncLogger, lang.Final):
             *args,
             **kwargs,
         )
+
+    def _metric(self, m: LoggerMetric) -> ta.Awaitable[None]:
+        return self._u._metric(m)  # noqa
 
 
 def make_bisync_logger(log: Logger, alog: AsyncLogger) -> BisyncLogger:

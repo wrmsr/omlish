@@ -8,6 +8,7 @@ from ..base import LoggingMsgFn
 from ..contexts import CaptureLoggingContext
 from ..infos import LoggingContextInfos
 from ..levels import LogLevel
+from ..metrics.base import LoggerMetric
 from .records import LoggingContextLogRecord
 
 
@@ -51,3 +52,6 @@ class StdLogger(Logger):
         rec = LoggingContextLogRecord(_logging_context=ctx)
 
         self._std.handle(rec)
+
+    def _metric(self, m: LoggerMetric) -> None:
+        pass

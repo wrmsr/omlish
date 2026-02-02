@@ -15,6 +15,7 @@ from .infos import LoggingContextInfo
 from .infos import LoggingContextInfos
 from .levels import LogLevel
 from .levels import NamedLogLevel
+from .metrics.base import LoggerMetric
 
 
 T = ta.TypeVar('T')
@@ -55,6 +56,7 @@ class AnyListLogger(AnyLogger[T], Abstract):
         self._level = level
 
         self._entries: ta.List[ListLoggerEntry] = []
+        self._metrics: ta.List[LoggerMetric] = []
 
     @property
     def name(self) -> str:
@@ -65,6 +67,12 @@ class AnyListLogger(AnyLogger[T], Abstract):
         """Intentionally mutable."""
 
         return self._entries
+
+    @property
+    def metrics(self) -> ta.List[LoggerMetric]:
+        """Intentionally mutable."""
+
+        return self._metrics
 
     def set_level(self, level: LogLevel) -> None:
         self._level = level
@@ -108,6 +116,9 @@ class ListLogger(AnyListLogger[None], Logger):
             **kwargs,
         )
 
+    def _metric(self, m: LoggerMetric) -> None:
+        self._metrics.append(m)
+
 
 class ListAsyncLogger(AnyListLogger[ta.Awaitable[None]], AsyncLogger):
     async def _log(
@@ -123,3 +134,6 @@ class ListAsyncLogger(AnyListLogger[ta.Awaitable[None]], AsyncLogger):
             *args,
             **kwargs,
         )
+
+    async def _metric(self, m: LoggerMetric) -> None:
+        self._metrics.append(m)

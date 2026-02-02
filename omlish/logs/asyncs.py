@@ -11,6 +11,7 @@ from .base import LoggingMsgFn
 from .contexts import CaptureLoggingContextImpl
 from .infos import LoggingContextInfos
 from .levels import LogLevel
+from .metrics.base import LoggerMetric
 
 
 ##
@@ -48,6 +49,9 @@ class AsyncLoggerToLogger(Logger):
             ),
         )
 
+    def _metric(self, m: LoggerMetric) -> None:
+        sync_await(self._u._metric(m))  # noqa
+
 
 class LoggerToAsyncLogger(AsyncLogger):
     def __init__(self, u: Logger) -> None:
@@ -71,3 +75,6 @@ class LoggerToAsyncLogger(AsyncLogger):
             *args,
             **kwargs,
         )
+
+    async def _metric(self, m: LoggerMetric) -> None:
+        self._u._metric(m)  # noqa

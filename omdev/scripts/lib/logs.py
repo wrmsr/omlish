@@ -40,13 +40,13 @@ def __omlish_amalg__():  # noqa
             dict(path='std/proxy.py', sha1='3e7301a2aa351127f9c85f61b2f85dcc3f15aafb'),
             dict(path='warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
             dict(path='infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
-            dict(path='metrics.py', sha1='4573e0665b4602d42b43e932e6ae0ee5b124efe4'),
+            dict(path='metrics/base.py', sha1='bd7369e259e730ed5b100926be6d2abd74f170bc'),
             dict(path='std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
             dict(path='std/standard.py', sha1='5c97c1b9f7ead58d6127d047b873398f708f288d'),
-            dict(path='base.py', sha1='148ae001603bf20369055ffc9f4ecb213d235442'),
+            dict(path='base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
             dict(path='std/records.py', sha1='8bbf6ef9eccb3a012c6ca416ddf3969450fd8fc9'),
-            dict(path='std/loggers.py', sha1='a569179445d6a8a942b5dcfad1d1f77702868803'),
+            dict(path='std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='_amalg.py', sha1='ae5189de25ab155651a5b2f21dd0baf6eb4f3916'),
         ],
     )
@@ -840,7 +840,7 @@ _check_logging_start_time()
 
 
 ########################################
-# ../metrics.py
+# ../metrics/base.py
 
 
 ##
@@ -951,6 +951,50 @@ LOGGER_METRIC_TYPES: ta.Tuple[ta.Type[LoggerMetric], ...] = (
     GaugeLoggerMetric,
     HistogramLoggerMetric,
 )
+
+
+##
+
+
+class AnyLoggerMetricCollector(Abstract, ta.Generic[T]):
+    @ta.final
+    def metric(self, m: LoggerMetric) -> T:
+        return self._metric(m)
+
+    @abc.abstractmethod
+    def _metric(self, m: LoggerMetric) -> T:
+        raise NotImplementedError
+
+
+class LoggerMetricCollector(AnyLoggerMetricCollector[None], Abstract):
+    @abc.abstractmethod
+    def _metric(self, m: LoggerMetric) -> None:
+        raise NotImplementedError
+
+
+class AsyncLoggerMetricCollector(AnyLoggerMetricCollector[ta.Awaitable[None]], Abstract):
+    @abc.abstractmethod
+    def _metric(self, m: LoggerMetric) -> ta.Awaitable[None]:
+        raise NotImplementedError
+
+
+##
+
+
+class AnyNopLoggerMetricCollector(AnyLoggerMetricCollector[T], Abstract):
+    pass
+
+
+class NopLoggerMetricCollector(AnyNopLoggerMetricCollector[None], LoggerMetricCollector):
+    @ta.final
+    def _metric(self, m: LoggerMetric) -> None:
+        pass
+
+
+class AsyncNopLoggerMetricCollector(AnyNopLoggerMetricCollector[ta.Awaitable[None]], AsyncLoggerMetricCollector):
+    @ta.final
+    async def _metric(self, m: LoggerMetric) -> None:
+        pass
 
 
 ########################################
@@ -1306,7 +1350,7 @@ def configure_standard_logging(
 ##
 
 
-class AnyLogger(Abstract, ta.Generic[T]):
+class AnyLogger(AnyLoggerMetricCollector[T], Abstract, ta.Generic[T]):
     def is_enabled_for(self, level: LogLevel) -> bool:
         return level >= self.get_effective_level()
 
@@ -1535,18 +1579,8 @@ class AnyLogger(Abstract, ta.Generic[T]):
     ) -> T:
         raise NotImplementedError
 
-    ##
 
-    @ta.final
-    def metric(self, m: LoggerMetric) -> T:
-        return self._metric(m)
-
-    @abc.abstractmethod
-    def _metric(self, m: LoggerMetric) -> T:
-        raise NotImplementedError
-
-
-class Logger(AnyLogger[None], Abstract):
+class Logger(LoggerMetricCollector, AnyLogger[None], Abstract):
     _level_proxy_method_stack_offset: int = 1
 
     @abc.abstractmethod
@@ -1561,11 +1595,12 @@ class Logger(AnyLogger[None], Abstract):
 
     #
 
+    @abc.abstractmethod
     def _metric(self, m: LoggerMetric) -> None:
-        pass
+        raise NotImplementedError
 
 
-class AsyncLogger(AnyLogger[ta.Awaitable[None]], Abstract):
+class AsyncLogger(AsyncLoggerMetricCollector, AnyLogger[ta.Awaitable[None]], Abstract):
     _level_proxy_method_stack_offset: int = 0
 
     @abc.abstractmethod
@@ -1580,21 +1615,22 @@ class AsyncLogger(AnyLogger[ta.Awaitable[None]], Abstract):
 
     #
 
-    async def _metric(self, m: LoggerMetric) -> None:
-        pass
+    @abc.abstractmethod
+    def _metric(self, m: LoggerMetric) -> ta.Awaitable[None]:
+        raise NotImplementedError
 
 
 ##
 
 
-class AnyNopLogger(AnyLogger[T], Abstract):
+class AnyNopLogger(AnyNopLoggerMetricCollector[T], AnyLogger[T], Abstract):
     @ta.final
     def get_effective_level(self) -> LogLevel:
         return -999
 
 
-@ta.final
-class NopLogger(AnyNopLogger[None], Logger):
+class NopLogger(NopLoggerMetricCollector, AnyNopLogger[None], Logger):
+    @ta.final
     def _log(
             self,
             ctx: CaptureLoggingContext,
@@ -1605,8 +1641,8 @@ class NopLogger(AnyNopLogger[None], Logger):
         pass
 
 
-@ta.final
-class AsyncNopLogger(AnyNopLogger[ta.Awaitable[None]], AsyncLogger):
+class AsyncNopLogger(AsyncNopLoggerMetricCollector, AnyNopLogger[ta.Awaitable[None]], AsyncLogger):
+    @ta.final
     async def _log(
             self,
             ctx: CaptureLoggingContext,
@@ -2319,6 +2355,9 @@ class StdLogger(Logger):
         rec = LoggingContextLogRecord(_logging_context=ctx)
 
         self._std.handle(rec)
+
+    def _metric(self, m: LoggerMetric) -> None:
+        pass
 
 
 ########################################
