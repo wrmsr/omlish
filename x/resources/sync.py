@@ -34,6 +34,8 @@ class Resources(BaseResources[None], lang.Final):
     def init(self) -> None:
         self._es.__enter__()
 
+        self._init_debug()
+
     #
 
     @classmethod
@@ -109,6 +111,8 @@ class ResourceManaged(BaseResourceManaged[U, Resources], lang.Final):
     def __enter__(self) -> U:
         check.state(self._state == 'new')
         self._state = 'entered'
+
+        self._init_debug()
 
         return self._v
 

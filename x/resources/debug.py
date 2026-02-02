@@ -28,3 +28,7 @@ class _ResourcesDebug(lang.Abstract):
         self.__debug = DEBUG
         if self.__debug:
             self.__traceback = traceback.format_stack()[:-1]
+
+    def _init_debug(self) -> None:
+        if self.__debug:
+            self.__repr = repr(self)

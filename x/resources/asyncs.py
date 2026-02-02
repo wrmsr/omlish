@@ -34,6 +34,8 @@ class AsyncResources(BaseResources[ta.Awaitable[None]], lang.Final):
     async def init(self) -> None:
         await self._aes.__aenter__()
 
+        self._init_debug()
+
     #
 
     @classmethod
@@ -114,6 +116,8 @@ class AsyncResourceManaged(BaseResourceManaged[U, AsyncResources], lang.Final):
     async def __aenter__(self) -> U:
         check.state(self._state == 'new')
         self._state = 'entered'
+
+        self._init_debug()
 
         return self._v
 

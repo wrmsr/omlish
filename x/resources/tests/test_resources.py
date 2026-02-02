@@ -47,11 +47,18 @@ def make_rc(*, resources: Resources | None = None) -> ResourceManaged[Rc]:
         return resources.new_managed(resources.enter_context(Rc()))
 
 
-def test_resources():
+def test_resources_given():
     with Resources.new() as resources:
         with (make_rc(resources=resources)) as rc:
             assert isinstance(rc, Rc)
             assert rc.state == 'entered'
+        assert rc.state == 'entered'
+    assert rc.state == 'exited'
+
+
+def test_resources_not_given():
+    with make_rc() as rc:
+        assert isinstance(rc, Rc)
         assert rc.state == 'entered'
     assert rc.state == 'exited'
 
@@ -70,7 +77,7 @@ async def a_make_rc(*, resources: AsyncResources | None = None) -> AsyncResource
 
 
 @pytest.mark.asyncs('asyncio')
-async def test_async_resources():
+async def test_async_resources_given():
     async with AsyncResources.new() as resources:
         async with (await a_make_arc(resources=resources)) as arc:
             assert isinstance(arc, Arc)
@@ -82,3 +89,15 @@ async def test_async_resources():
         assert rc.state == 'entered'
     assert arc.state == 'exited'
     assert rc.state == 'exited'  # type: ignore[unreachable]
+
+
+@pytest.mark.asyncs('asyncio')
+async def test_async_resources_not_given():
+    async with (await a_make_arc()) as arc:
+        assert isinstance(arc, Arc)
+        assert arc.state == 'entered'
+    assert arc.state == 'exited'
+    async with (await a_make_rc()) as rc:  # type: ignore[unreachable]
+        assert isinstance(rc, Rc)
+        assert rc.state == 'entered'
+    assert rc.state == 'exited'
