@@ -14,6 +14,10 @@
 ## Vim
 *.swp
 
+## Robots
+
+/.claude/
+
 
 # Languages
 /build/
