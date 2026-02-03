@@ -19,7 +19,6 @@ from ..dbapi import DbapiDb
 
 @pytest.mark.asyncs('asyncio')
 async def test_queries():
-
     with cf.ThreadPoolExecutor(max_workers=1) as exe:
         db = DbapiDb(lambda: contextlib.closing(sqlite3.connect(':memory:')))
         adb = SyncToAsyncDb(ta.cast(ta.Any, lambda: lang.ValueAsyncContextManager(au.ToThread(exe=exe))), db)
