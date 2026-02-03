@@ -1,21 +1,25 @@
+from .adapters import (  # noqa
+    Adapter,
+
+    HasAdapter,
+)
+
 from .asquery import (  # noqa
     AsQueryParams,
     as_query,
     as_query_,
 )
 
-from .base import (  # noqa
-    Querier,
+from .columns import (  # noqa
+    Column,
+    Columns,
+)
+
+from .core import (  # noqa
     Rows,
     Transaction,
     Conn,
     Db,
-    Adapter,
-)
-
-from .columns import (  # noqa
-    Column,
-    Columns,
 )
 
 from .dbapi import (  # noqa
@@ -35,16 +39,47 @@ from .errors import (  # noqa
     QueryError,
 )
 
-from .funcs import (  # noqa
+from .queriers import (  # noqa
+    AnyQuerier,
+    Querier,
+    AsyncQuerier,
+)
+
+from .querierfuncs import (
+    sync_exec,
+    async_exec,
     exec,  # noqa
 
+    sync_query,
+    async_query,
     query,
+
+    sync_query_all,
+    async_query_all,
     query_all,
+
+    sync_query_first,
+    async_query_first,
     query_first,
+
+    sync_query_opt_first,
+    async_query_opt_first,
     query_opt_first,
+
+    sync_query_one,
+    async_query_one,
     query_one,
+
+    sync_query_opt_one,
+    async_query_opt_one,
     query_opt_one,
+
+    sync_query_scalar,
+    async_query_scalar,
     query_scalar,
+
+    sync_query_maybe_scalar,
+    async_query_maybe_scalar,
     query_maybe_scalar,
 )
 
