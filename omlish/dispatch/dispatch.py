@@ -1,5 +1,4 @@
 import abc
-import contextlib
 import typing as ta
 import weakref
 
@@ -20,93 +19,72 @@ class Dispatcher(ta.Generic[T]):
 
         if find_impl is None:
             find_impl = default_find_impl
+        self._find_impl = find_impl
 
-        impls_by_arg_cls: dict[type, T] = {}
-        self._impls_by_arg_cls = impls_by_arg_cls
+        self._impls_by_arg_cls: dict[type, T] = {}
 
-        dispatch_cache: dict[ta.Any, T | None] = {}
-        self._get_dispatch_cache = lambda: dispatch_cache
+        self._cache: Dispatcher._Cache = Dispatcher._Cache(self, None)
 
-        def cache_remove(k, self_ref=weakref.ref(self)):
-            if (ref_self := self_ref()) is not None:
-                cache = ref_self._get_dispatch_cache()  # noqa
-                with contextlib.suppress(KeyError):
-                    del cache[k]
+    class _Cache:
+        def __init__(self, dispatcher: 'Dispatcher', token: ta.Any | None) -> None:
+            self.dispatcher = dispatcher
+            self.token = token
 
-        cache_token: ta.Any = None
-        self._get_cache_token = lambda: cache_token
+            self.dct: dict[weakref.ref[type], ta.Any] = {}
 
-        weakref_ref_ = weakref.ref
+            def dct_remove(k, self_ref=weakref.ref(self)):  # noqa
+                if (ref_self := self_ref()) is not None:
+                    try:
+                        del ref_self.dct[k]
+                    except KeyError:
+                        pass
 
-        def dispatch(cls: type) -> T | None:
-            nonlocal cache_token
+            dct = self.dct
+            impls_by_arg_cls = dispatcher._impls_by_arg_cls  # noqa
+            find_impl = dispatcher._find_impl  # noqa
+            weakref_ref_ = weakref.ref
 
-            if cache_token is not None and (current_token := abc.get_cache_token()) != cache_token:
-                dispatch_cache.clear()
-                cache_token = current_token
+            def dispatch(cls: type) -> ta.Any | None:
+                if token is not None and abc.get_cache_token() != token:
+                    dispatcher._reset_cache_for_token(self)  # noqa
+                    return find_impl(cls, impls_by_arg_cls)
 
-            cls_ref = weakref_ref_(cls)
-            try:
-                return dispatch_cache[cls_ref]
-            except KeyError:
-                pass
-            del cls_ref
+                cls_ref = weakref_ref_(cls)
+                try:
+                    return dct[cls_ref]
+                except KeyError:
+                    pass
+                del cls_ref
 
-            impl: T | None
-            try:
-                impl = impls_by_arg_cls[cls]
-            except KeyError:
-                impl = find_impl(cls, impls_by_arg_cls)
+                impl: ta.Any | None
+                try:
+                    impl = impls_by_arg_cls[cls]
+                except KeyError:
+                    impl = find_impl(cls, impls_by_arg_cls)
 
-            dispatch_cache[weakref_ref_(cls, cache_remove)] = impl
-            return impl
+                dct[weakref_ref_(cls, dct_remove)] = impl
+                return impl
 
-        self.dispatch = dispatch
+            self.dispatch: ta.Callable[[type], ta.Any | None] = dispatch
 
-        def register(impl: T, cls_col: ta.Iterable[type]) -> T:
-            nonlocal cache_token
+    def dispatch(self, cls: type) -> ta.Any | None:
+        return self._cache.dispatch(cls)
 
-            for cls in cls_col:
-                impls_by_arg_cls[cls] = impl
-
-                if cache_token is None and hasattr(cls, '__abstractmethods__'):
-                    cache_token = abc.get_cache_token()
-
-            dispatch_cache.clear()
-            return impl
-
-        self.register = register
-
-    _get_cache_token: ta.Callable[[], int]
-    _get_dispatch_cache: ta.Callable[[], ta.Any]
+    def _reset_cache_for_token(self, prev: _Cache) -> None:
+        if prev is None or self._cache is prev:
+            self._cache = Dispatcher._Cache(self, abc.get_cache_token())
 
     def cache_size(self) -> int:
-        return len(self._get_dispatch_cache())
+        return len(self._cache.dct)
 
-    dispatch: ta.Callable[[type], T | None]
+    def register(self, impl: T, cls_col: ta.Iterable[type]) -> T:
+        has_token = self._cache.token is not None
 
-    register: ta.Callable[[T, ta.Iterable[type]], T]
+        for cls in cls_col:
+            self._impls_by_arg_cls[cls] = impl
 
+            if not has_token and hasattr(cls, '__abstractmethods__'):
+                has_token = True
 
-##
-
-
-# from x.dispatch import _gpto1_2 as _dispatch  # noqa
-#
-#
-# class Dispatcher(ta.Generic[T]):  # noqa
-#     def __init__(self, find_impl: ta.Callable[[type, ta.Mapping[type, T]], T | None] | None = None) -> None:
-#         super().__init__()
-#
-#         if find_impl is None:
-#             find_impl = default_find_impl
-#         self._x = _dispatch.Dispatcher(find_impl)
-#
-#     def cache_size(self) -> int:
-#         return self._x.cache_size()
-#
-#     def dispatch(self, cls: type) -> T | None:
-#         return self._x.dispatch(cls)
-#
-#     def register(self, impl: T, cls_col: ta.Iterable[type]) -> T:
-#         return self._x.register(impl, cls_col)
+        self._cache = Dispatcher._Cache(self, abc.get_cache_token() if has_token else None)
+        return impl

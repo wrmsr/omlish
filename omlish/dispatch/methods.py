@@ -57,7 +57,7 @@ class Method(ta.Generic[P, R]):
             requires_override=requires_override,
         )
 
-        self._cache: col.AttrRegistryCache[ta.Callable, Method._Entry, ta.Callable] = col.AttrRegistryCache(
+        self._registry_cache: col.AttrRegistryCache[ta.Callable, Method._Entry, ta.Callable] = col.AttrRegistryCache(
             self._registry,
             self._prepare,
         )
@@ -157,7 +157,7 @@ class Method(ta.Generic[P, R]):
             except KeyError:
                 pass
 
-        bound = self._cache.get(type(instance)).__get__(instance, owner)  # noqa
+        bound = self._registry_cache.get(type(instance)).__get__(instance, owner)  # noqa
 
         if self._instance_cache:
             instance.__dict__[self._name] = bound

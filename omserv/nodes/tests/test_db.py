@@ -2,6 +2,7 @@ import contextlib
 import sqlite3
 
 from omlish import sql
+from omlish.sql import Q
 
 from ..db import setup_db
 
@@ -15,6 +16,7 @@ def test_sqlite(exit_stack) -> None:
 
     setup_db(conn)
 
-    with sql.query(conn, 'select * from nodes') as rows:
-        for row in rows:
-            print(row)
+    for _ in range(2):
+        with sql.query(conn, Q.select([Q.star], Q.n.nodes)) as rows:
+            for row in rows:
+                print(row)
