@@ -18,8 +18,10 @@ def _sync_async_query_func(sync_fn, async_fn):
         def inner(querier, *args, **kwargs):
             if isinstance(querier, AsyncQuerier):
                 return async_fn(querier, *args, **kwargs)
-            else:
+            elif isinstance(querier, Querier):
                 return sync_fn(querier, *args, **kwargs)
+            else:
+                raise TypeError(querier)
 
         return inner
 

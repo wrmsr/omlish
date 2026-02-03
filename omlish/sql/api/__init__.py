@@ -16,10 +16,21 @@ from .columns import (  # noqa
 )
 
 from .core import (  # noqa
+    AnyRows,
     Rows,
+    AsyncRows,
+
+    AnyTransaction,
     Transaction,
+    AsyncTransaction,
+
+    AnyConn,
     Conn,
+    AsyncConn,
+
+    AnyDb,
     Db,
+    AsyncDb,
 )
 
 from .dbapi import (  # noqa
