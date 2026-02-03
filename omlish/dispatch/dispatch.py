@@ -13,14 +13,15 @@ U_co = ta.TypeVar('U_co', covariant=True)
 ##
 
 
-_build_dispatch_cache_impl: ta.Callable | None = None
+_build_weak_dispatch_cache_impl: ta.Callable | None = None
+_build_strong_dispatch_cache_impl: ta.Callable | None = None
 
-# try:
-#     from . import _dispatch  # type: ignore  # noqa
-# except ImportError:
-#     pass
-# else:
-#     _build_dispatch_cache_impl = _dispatch.build_dispatch_cache
+try:
+    from . import _dispatch  # type: ignore  # noqa
+except ImportError:
+    pass
+else:
+    _build_strong_dispatch_cache_impl = _dispatch.build_strong_dispatch_cache
 
 
 ##
@@ -45,9 +46,12 @@ class Dispatcher(ta.Generic[T]):
         self._impls_by_arg_cls: dict[type, T] = {}
 
         if strong_cache:
-            self._cache_factory = Dispatcher._StrongCache  # noqa
-        elif _build_dispatch_cache_impl is not None:
-            self._cache_factory = _build_dispatch_cache_impl
+            if _build_strong_dispatch_cache_impl is not None:
+                self._cache_factory = _build_strong_dispatch_cache_impl
+            else:
+                self._cache_factory = Dispatcher._StrongCache  # noqa
+        elif _build_weak_dispatch_cache_impl is not None:
+            self._cache_factory = _build_weak_dispatch_cache_impl
         else:
             self._cache_factory = Dispatcher._WeakCache  # noqa
 

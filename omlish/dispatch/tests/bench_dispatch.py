@@ -3,8 +3,8 @@ import time
 from ...dispatch import Dispatcher
 
 
-def _main():
-    disp = Dispatcher()  # type: ignore
+def run(**kwargs):
+    disp = Dispatcher(**kwargs)
     disp.register('object', [object])
     disp.register('str', [str])
     disp_dispatch = disp.dispatch
@@ -19,6 +19,11 @@ def _main():
     total = end - start
     per = total / n
     print(f'{per} ns / it')
+
+
+def _main():
+    run()
+    run(strong_cache=True)
 
 
 if __name__ == '__main__':
