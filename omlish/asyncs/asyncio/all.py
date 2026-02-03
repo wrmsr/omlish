@@ -3,6 +3,10 @@ from .rlock import (  # noqa
     AsyncioRLock as RLock,
 )
 
+from .threads import (  # noqa
+    AsyncioToThread as ToThread,
+)
+
 from .utils import (  # noqa
     asyncio_ensure_task as ensure_task,
 

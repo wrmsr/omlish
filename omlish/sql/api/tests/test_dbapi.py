@@ -1,3 +1,4 @@
+import contextlib
 import sqlite3
 import urllib.parse
 
@@ -13,7 +14,7 @@ from ..dbapi import DbapiDb
 
 
 def test_sqlite(exit_stack) -> None:
-    db = exit_stack.enter_context(DbapiDb(lambda: sqlite3.connect(':memory:', autocommit=True)))
+    db = DbapiDb(lambda: contextlib.closing(sqlite3.connect(':memory:', autocommit=True)))
     conn = exit_stack.enter_context(db.connect())
 
     for stmt in [
@@ -61,7 +62,7 @@ def test_pg8000(harness, exit_stack) -> None:
 
     import pg8000
 
-    db = exit_stack.enter_context(DbapiDb(lambda: pg8000.connect(
+    db = DbapiDb(lambda: contextlib.closing(pg8000.connect(
         p_u.username,
         host=p_u.hostname,
         port=p_u.port,
@@ -87,11 +88,11 @@ def test_pg8000(harness, exit_stack) -> None:
 def test_queries():
     from ...queries import Q
 
-    with DbapiDb(lambda: sqlite3.connect(':memory:')) as db:
-        with db.connect() as conn:
-            print(qf.query_all(conn, Q.select([1])))
+    db = DbapiDb(lambda: contextlib.closing(sqlite3.connect(':memory:')))
+    with db.connect() as conn:
+        print(qf.query_all(conn, Q.select([1])))
 
-        print(qf.query_all(db, Q.select([1])))
+    print(qf.query_all(db, Q.select([1])))
 
 
 # def test_check_entered():

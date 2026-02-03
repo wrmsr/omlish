@@ -1,5 +1,4 @@
 import contextlib
-import sys
 import typing as ta
 
 from ... import lang
@@ -28,11 +27,28 @@ class Runner(ta.Protocol):
     def __call__(self, fn: ta.Callable[P, T], *args: P.args, **kwargs: P.kwargs) -> ta.Awaitable[T]: ...
 
 
-class _RunnerStopIteration(lang.Marker):
-    pass
+@ta.final
+class _RunnerContextManager:
+    def __init__(self, runner: Runner, fn: ta.Callable, wrapper: ta.Any) -> None:
+        self._runner = runner
+        self._fn = fn
+        self._wrapper = wrapper
+
+    _cm: ta.Any
+
+    async def __aenter__(self):
+        self._cm = await self._runner(self._fn)
+        return self._wrapper(self._runner, await self._runner(self._cm.__enter__))
+
+    async def __aexit__(self, et, e, tb):
+        return await self._runner(self._cm.__exit__, et, e, tb)
 
 
 ##
+
+
+class _RunnerStopIteration(lang.Marker):
+    pass
 
 
 class SyncToAsyncRows(AsyncRows):
@@ -77,19 +93,7 @@ class SyncToAsyncTransaction(AsyncTransaction):
         return await self._runner(self._txn.rollback)
 
     def query(self, query: Query) -> ta.AsyncContextManager[AsyncRows]:  # ta.Raises[QueryError]
-        @contextlib.asynccontextmanager
-        async def inner():
-            cm = await self._runner(self._txn.query, query)
-            rows = await self._runner(cm.__enter__)
-            try:
-                yield SyncToAsyncRows(self._runner, rows)
-            except BaseException as e:  # noqa
-                await self._runner(cm.__exit__, *sys.exc_info())
-                raise
-            else:
-                await self._runner(cm.__exit__, None, None, None)
-
-        return inner()
+        return _RunnerContextManager(self._runner, lambda: self._txn.query(query), SyncToAsyncRows)
 
 
 class SyncToAsyncConn(AsyncConn):
@@ -104,34 +108,10 @@ class SyncToAsyncConn(AsyncConn):
         return self._conn.adapter
 
     def begin(self) -> ta.AsyncContextManager[AsyncTransaction]:
-        @contextlib.asynccontextmanager
-        async def inner():
-            cm = await self._runner(self._conn.begin)
-            txn = await self._runner(cm.__enter__)
-            try:
-                yield SyncToAsyncTransaction(self._runner, txn)
-            except BaseException as e:  # noqa
-                await self._runner(cm.__exit__, *sys.exc_info())
-                raise
-            else:
-                await self._runner(cm.__exit__, None, None, None)
-
-        return inner()
+        return _RunnerContextManager(self._runner, self._conn.begin, SyncToAsyncTransaction)
 
     def query(self, query: Query) -> ta.AsyncContextManager[AsyncRows]:  # ta.Raises[QueryError]
-        @contextlib.asynccontextmanager
-        async def inner():
-            cm = await self._runner(self._conn.query, query)
-            rows = await self._runner(cm.__enter__)
-            try:
-                yield SyncToAsyncRows(self._runner, rows)
-            except BaseException as e:  # noqa
-                await self._runner(cm.__exit__, *sys.exc_info())
-                raise
-            else:
-                await self._runner(cm.__exit__, None, None, None)
-
-        return inner()
+        return _RunnerContextManager(self._runner, lambda: self._conn.query(query), SyncToAsyncRows)
 
 
 class SyncToAsyncDb(AsyncDb):
@@ -146,39 +126,13 @@ class SyncToAsyncDb(AsyncDb):
         return self._db.adapter
 
     def connect(self) -> ta.AsyncContextManager[AsyncConn]:
-        @contextlib.asynccontextmanager
-        async def inner():
-            cm = await self._runner(self._db.connect)
-            conn = await self._runner(cm.__enter__)
-            try:
-                yield SyncToAsyncConn(self._runner, conn)
-            except BaseException as e:  # noqa
-                await self._runner(cm.__exit__, *sys.exc_info())
-                raise
-            else:
-                await self._runner(cm.__exit__, None, None, None)
-
-        return inner()
+        return _RunnerContextManager(self._runner, self._db.connect, SyncToAsyncConn)
 
     def query(self, query: Query) -> ta.AsyncContextManager[AsyncRows]:  # ta.Raises[QueryError]
         @contextlib.asynccontextmanager
         async def inner():
-            cm = await self._runner(self._db.connect)
-            conn = await self._runner(cm.__enter__)
-            try:
-                cm2 = await self._runner(conn.query, query)
-                rows = await self._runner(cm2.__enter__)
-                try:
-                    yield SyncToAsyncRows(self._runner, rows)
-                except BaseException as e:  # noqa
-                    await self._runner(cm2.__exit__, *sys.exc_info())
-                    raise
-                else:
-                    await self._runner(cm2.__exit__, None, None, None)
-            except BaseException as e:  # noqa
-                await self._runner(cm.__exit__, *sys.exc_info())
-                raise
-            else:
-                await self._runner(cm.__exit__, None, None, None)
+            async with self.connect() as conn:
+                async with conn.query(query) as rows:
+                    yield rows
 
         return inner()

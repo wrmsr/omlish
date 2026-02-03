@@ -149,16 +149,16 @@ class DbapiConn(Conn):
         return DbapiTransaction(self)
 
 
-class DbapiDb(Db, SimpleResource):
+class DbapiDb(Db):
     def __init__(
             self,
-            conn_fac: ta.Callable[[], dbapi_abc.DbapiConnection],
+            connector: ta.Callable[[], ta.ContextManager[dbapi_abc.DbapiConnection]],
             *,
             adapter: ta.Optional['DbapiAdapter'] = None,
     ) -> None:
         super().__init__()
 
-        self._conn_fac = conn_fac
+        self._connector = connector
         if adapter is None:
             adapter = DEFAULT_DBAPI_ADAPTER
         self._adapter = adapter
@@ -168,16 +168,11 @@ class DbapiDb(Db, SimpleResource):
         return self._adapter
 
     def _connect(self, es: contextlib.ExitStack) -> DbapiConn:
-        dbapi_conn = self._conn_fac()
-        es.enter_context(contextlib.closing(dbapi_conn))
-
-        return DbapiConn(dbapi_conn)
+        return DbapiConn(es.enter_context(self._connector()))
 
     def connect(self) -> ta.ContextManager[Conn]:
         @contextlib.contextmanager
         def inner():
-            self._check_entered()
-
             with contextlib.ExitStack() as es:
                 yield self._connect(es)
 
@@ -186,8 +181,6 @@ class DbapiDb(Db, SimpleResource):
     def query(self, query: Query) -> ta.ContextManager[Rows]:
         @contextlib.contextmanager
         def inner():
-            self._check_entered()
-
             with contextlib.ExitStack() as es:
                 yield self._connect(es)._query(es, query)  # noqa
 
