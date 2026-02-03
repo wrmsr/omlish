@@ -394,7 +394,7 @@ def proxy_init(
     if attrs is None:
         attrs = [None]
 
-    whole_attr = spec.split('.')[-1]
+    whole_attr = spec.split('.', maxsplit=1)[-1]
     al: list[tuple[str | None, str]] = []
     for attr in attrs:
         if attr is None:

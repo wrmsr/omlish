@@ -135,7 +135,7 @@ def __omlish_amalg__():  # noqa
             dict(path='utils/collections.py', sha1='f9c3c8a52e6057e938730746eaa28e48a5b757c6'),
             dict(path='utils/fds.py', sha1='cf9b2a52cc74b2aaebed656ba16888e4322746ec'),
             dict(path='utils/users.py', sha1='d440d9deb2f03b4611bc0eb0ad186f9a994d84f7'),
-            dict(path='../../omlish/configs/formats.py', sha1='9bc4f953b4b8700f6f109e6f49e2d70f8e48ce7c'),
+            dict(path='../../omlish/configs/formats.py', sha1='3074c3e1428f9598cd0591745cb60fb3fe2b309f'),
             dict(path='../../omlish/configs/processing/names.py', sha1='3ae4c9e921929eb64cee6150cc86f35fee0f2070'),
             dict(path='../../omlish/http/coro/io.py', sha1='2cdf6529c37a37cc0c1db2e02032157cf906d5d6'),
             dict(path='../../omlish/http/parsing.py', sha1='69de9bc03046b123dfe0d38ce0cf3ea6b38f8457'),
@@ -150,7 +150,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
             dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='../../omlish/os/journald.py', sha1='7485cad562f8b9b4f71efd41a6177660f7d62e55'),
-            dict(path='configs.py', sha1='61f986fc5c9591194f72c3b4ffa4b018770710ed'),
+            dict(path='configs.py', sha1='5583f7376fa8160fe137fdf43ac6e2a3b8fa577e'),
             dict(path='pipes.py', sha1='ad9315c50bffe81ee204227163d85ab366ce5320'),
             dict(path='setup.py', sha1='4be12354bb45cf7773fd98ad9695aa330ae07fe6'),
             dict(path='utils/os.py', sha1='9f7314f1c0c34a8154e9acf38a5b916b2e310b4d'),
@@ -4436,7 +4436,7 @@ class ConfigLoader(Abstract, ta.Generic[ConfigDataT]):
         return ()
 
     def match_file(self, n: str) -> bool:
-        return '.' in n and n.split('.')[-1] in check.not_isinstance(self.file_exts, str)
+        return '.' in n and n.split('.', maxsplit=1)[-1] in check.not_isinstance(self.file_exts, str)
 
     #
 
@@ -7922,7 +7922,7 @@ class ServerConfig:
             logfile_max_bytes=parse_bytes_size(logfile_max_bytes),
             loglevel=parse_logging_level(loglevel),
             pidfile=check_path_with_existing_dir(pidfile),
-            child_logdir=child_logdir if child_logdir else tempfile.gettempdir(),
+            child_logdir=child_logdir or tempfile.gettempdir(),
             **kwargs,
         )
 

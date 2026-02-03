@@ -305,6 +305,7 @@ ignore = [
     'PLR2004',  # magic-value-comparison
     'PLR2044',  # empty-comment
     'PLR5501',  # collapsible-else-if
+    'PLW0108',  # unnecessary-lambda
     'PLW0603',  # global-statement
     'PLW2901',  # redefined-loop-name
     'PT009',  # pytest-unittest-assertion (lite tests use unittest)
@@ -357,6 +358,7 @@ ignore = [
     'UP040',  # non-pep695-type-alias
 
     # TODO:
+    'ASYNC240',  # blocking-path-method-in-async-function
     'UP046',  # non-pep695-generic-class
     'UP047',  # non-pep695-generic-function
 

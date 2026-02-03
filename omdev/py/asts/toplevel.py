@@ -48,7 +48,7 @@ class _TopLevelModuleVisitor(ast.NodeVisitor):
 
     def visit_Import(self, node: ast.Import) -> None:
         for alias in node.names:
-            name = alias.asname if alias.asname else alias.name
+            name = alias.asname or alias.name
             self.imports[name] = TopLevelImport(
                 spec=alias.name,
                 name=name,
@@ -68,7 +68,7 @@ class _TopLevelModuleVisitor(ast.NodeVisitor):
             module = check.not_none(node.module)
 
         for alias in node.names:
-            name = alias.asname if alias.asname else alias.name
+            name = alias.asname or alias.name
             self.imports[name] = TopLevelImport(
                 spec='.'.join([module, alias.name]),
                 name=name,

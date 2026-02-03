@@ -275,7 +275,7 @@ class ServerConfig:
             logfile_max_bytes=parse_bytes_size(logfile_max_bytes),
             loglevel=parse_logging_level(loglevel),
             pidfile=check_path_with_existing_dir(pidfile),
-            child_logdir=child_logdir if child_logdir else tempfile.gettempdir(),
+            child_logdir=child_logdir or tempfile.gettempdir(),
             **kwargs,
         )
 

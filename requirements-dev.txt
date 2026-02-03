@@ -15,7 +15,7 @@ pytest-xdist==3.8.0
 
 flake8==7.3.0
 flake8-pyproject==1.2.4
-ruff==0.14.14
+ruff==0.15.0
 
 docutils-stubs==0.0.22
 lxml-stubs==0.5.1
@@ -142,8 +142,8 @@ antlr4-python3-runtime==4.13.2
 # mlx==0.30.0; sys_platform == "darwin" and python_version < "3.14"  # @omlish-venv !13t !13dt !14t
 # mlx-lm==0.29.1; sys_platform == "darwin" and python_version < "3.14"  # @omlish-venv !13t !13dt !14t
 
-mlx==0.30.4; sys_platform == "darwin" and python_version < "3.14"  # @omlish-venv !13t !13dt !14t
-git+https://github.com/ml-explore/mlx-lm@7f1b7fe6bcd113d7f611ed2a1e917ef30e117c1a; sys_platform == "darwin" and python_version < "3.14"  # @omlish-venv !13t !13dt !14t
+mlx==0.30.5; sys_platform == "darwin" and python_version < "3.14"  # @omlish-venv !13t !13dt !14t
+git+https://github.com/ml-explore/mlx-lm@ab050d1fac2ef1d7bea6b8d870f1e5717d7f59f5; sys_platform == "darwin" and python_version < "3.14"  # @omlish-venv !13t !13dt !14t
 
 apsw==3.51.2.0
 

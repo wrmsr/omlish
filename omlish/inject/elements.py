@@ -71,8 +71,8 @@ def as_elements(*args: Elemental) -> Elements:
         return next(iter(cs))
 
     return Elements(
-        es if es else None,
-        cs if cs else None,
+        es or None,
+        cs or None,
     )
 
 

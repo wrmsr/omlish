@@ -31,7 +31,7 @@ from omlish import dataclasses as dc
 # Domain objects
 
 
-class ActionType(str, enum.Enum):
+class ActionType(enum.StrEnum):
     ADD = 'add'
     DELETE = 'delete'
     UPDATE = 'update'

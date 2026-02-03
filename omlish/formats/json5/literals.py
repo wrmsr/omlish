@@ -77,7 +77,7 @@ def translate_string_literal(s: str) -> str:
                 if c < e and s[c] == '\n':
                     c += 1
 
-            elif y in 'x':
+            elif y == 'x':
                 _check_state(n < (e - 3))
                 u = int(s[n + 2:n + 4], 16)
                 b.write(f'\\u00{u:02x}')

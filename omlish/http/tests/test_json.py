@@ -58,7 +58,8 @@ def test_duplicate_tag():
         key = ' di'
 
     s = JsonTagger()
-    pytest.raises(KeyError, s.register, TagDict2)
+    with pytest.raises(KeyError):
+        s.register(TagDict2)
     s.register(TagDict2, force=True, index=0)
     assert isinstance(s.tags[' di'], TagDict2)
     assert isinstance(s.order[0], TagDict2)
@@ -88,9 +89,12 @@ def test_custom_tag():
 
 def test_tag_interface():
     t = JsonTag(None)  # type: ignore
-    pytest.raises(NotImplementedError, t.check, None)
-    pytest.raises(NotImplementedError, t.to_json, None)
-    pytest.raises(NotImplementedError, t.to_python, None)
+    with pytest.raises(NotImplementedError):
+        t.check(None)
+    with pytest.raises(NotImplementedError):
+        t.to_json(None)
+    with pytest.raises(NotImplementedError):
+        t.to_python(None)
 
 
 def test_tag_order():

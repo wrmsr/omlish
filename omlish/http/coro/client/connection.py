@@ -294,7 +294,7 @@ class CoroHttpClientConnection:
                 source_address=self._source_address,
                 **(dict(timeout=self._timeout) if self._timeout is not self._NOT_SET else {}),
             ),
-            server_hostname=self._tunnel_host if self._tunnel_host else self._host,
+            server_hostname=self._tunnel_host or self._host,
         )))
 
         self._connected = True

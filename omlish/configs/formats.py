@@ -52,7 +52,7 @@ class ConfigLoader(Abstract, ta.Generic[ConfigDataT]):
         return ()
 
     def match_file(self, n: str) -> bool:
-        return '.' in n and n.split('.')[-1] in check.not_isinstance(self.file_exts, str)
+        return '.' in n and n.split('.', maxsplit=1)[-1] in check.not_isinstance(self.file_exts, str)
 
     #
 

@@ -35,7 +35,7 @@ def test_vllm_style():
     pat = re.compile(r'<tool_call>(.*?)</tool_call>|<tool_call>(.*)', re.DOTALL)
 
     rfcs = [
-        json.loads(m[0] if m[0] else m[1])
+        json.loads(m[0] or m[1])
         for m in pat.findall(MODEL_OUTPUT)
     ]
 

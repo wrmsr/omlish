@@ -254,7 +254,7 @@ def is_union_type(cls: ta.Any) -> bool:
         return ta.get_origin(cls) in {ta.Union, getattr(ta, 'UnionType')}
 
     else:
-        return ta.get_origin(cls) in {ta.Union}
+        return ta.get_origin(cls) == ta.Union
 
 
 def get_orig_bases(obj: ta.Any) -> ta.Any:

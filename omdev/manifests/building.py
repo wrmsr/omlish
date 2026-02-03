@@ -154,7 +154,7 @@ class ManifestBuilder:
 
         mod_name = file.rpartition('.')[0].replace(os.sep, '.')
         mod_base = mod_name.split('.')[0]
-        if mod_base != (first_dir := file.split(os.path.sep)[0]):
+        if mod_base != (first_dir := file.split(os.path.sep, maxsplit=1)[0]):
             raise Exception(f'Unexpected module base: {mod_base=} != {first_dir=}')
 
         return ManifestBuilder.FileModule(

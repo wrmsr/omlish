@@ -168,9 +168,8 @@ def _main() -> None:
         'stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors'
     )
     weights = (
-        args.weights
-        if args.weights
-        else fetch(default_weight_url, 'sd_xl_base_1.0.safetensors')
+        args.weights or
+        fetch(default_weight_url, 'sd_xl_base_1.0.safetensors')
     )
     load_state_dict(model, safe_load(weights), strict=False)
 
