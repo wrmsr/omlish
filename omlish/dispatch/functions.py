@@ -43,13 +43,14 @@ def function(func):  # noqa
         wrapper.dispatch = disp.dispatch  # type: ignore
 
     else:
-        from x.c._dispatch import function_wrapper  # type: ignore
-        wrapper = function_wrapper(
-            disp.dispatch,
-            **{k: getattr(func, k) for k in functools.WRAPPER_ASSIGNMENTS if hasattr(func, k)},
-            __wrapped__=func,
-            register=register,
-            dispatcher=disp,
-        )
+        # from x.c._dispatch import function_wrapper  # type: ignore
+        # wrapper = function_wrapper(
+        #     disp.dispatch,
+        #     **{k: getattr(func, k) for k in functools.WRAPPER_ASSIGNMENTS if hasattr(func, k)},
+        #     __wrapped__=func,
+        #     register=register,
+        #     dispatcher=disp,
+        # )
+        raise NotImplementedError
 
     return wrapper
