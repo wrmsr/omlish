@@ -115,24 +115,39 @@ class SyncToAsyncConn(AsyncConn):
 
 
 class SyncToAsyncDb(AsyncDb):
-    def __init__(self, runner: Runner, db: Db) -> None:
+    def __init__(
+            self,
+            runner_factory: ta.Callable[[], ta.AsyncContextManager[Runner]],
+            db: Db,
+    ) -> None:
         super().__init__()
 
-        self._runner = runner
+        self._runner_factory = runner_factory
         self._db = db
 
     @property
     def adapter(self) -> Adapter:
         return self._db.adapter
 
+    async def _connect(self, aes: contextlib.AsyncExitStack) -> AsyncConn:
+        runner = await aes.enter_async_context(self._runner_factory())
+
+        rcm = _RunnerContextManager(runner, self._db.connect, SyncToAsyncConn)
+        return await aes.enter_async_context(rcm)
+
     def connect(self) -> ta.AsyncContextManager[AsyncConn]:
-        return _RunnerContextManager(self._runner, self._db.connect, SyncToAsyncConn)
+        @contextlib.asynccontextmanager
+        async def inner():
+            async with contextlib.AsyncExitStack() as aes:
+                yield await self._connect(aes)
+
+        return inner()
 
     def query(self, query: Query) -> ta.AsyncContextManager[AsyncRows]:  # ta.Raises[QueryError]
         @contextlib.asynccontextmanager
         async def inner():
-            async with self.connect() as conn:
-                async with conn.query(query) as rows:
-                    yield rows
+            async with contextlib.AsyncExitStack() as aes:
+                conn = await self._connect(aes)
+                yield await aes.enter_async_context(conn.query(query))
 
         return inner()

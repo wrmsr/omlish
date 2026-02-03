@@ -9,6 +9,7 @@ import typing as ta
 
 import pytest
 
+from .... import lang
 from ....asyncs.asyncio import all as au
 from ...queries import Q
 from .. import querierfuncs as qf
@@ -18,9 +19,10 @@ from ..dbapi import DbapiDb
 
 @pytest.mark.asyncs('asyncio')
 async def test_queries():
+
     with cf.ThreadPoolExecutor(max_workers=1) as exe:
         db = DbapiDb(lambda: contextlib.closing(sqlite3.connect(':memory:')))
-        adb = SyncToAsyncDb(ta.cast(ta.Any, au.ToThread(exe=exe)), db)
+        adb = SyncToAsyncDb(ta.cast(ta.Any, lambda: lang.ValueAsyncContextManager(au.ToThread(exe=exe))), db)
 
         async with adb.connect() as conn:
             print(await qf.query_all(conn, Q.select([1])))
