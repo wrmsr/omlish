@@ -24,11 +24,11 @@ P = ta.ParamSpec('P')
 _build_method_dispatch_func_impl: ta.Callable | None = None
 
 try:
-    from . import _dispatch  # type: ignore  # noqa
+    from . import _methods  # type: ignore  # noqa
 except ImportError:
     pass
 else:
-    _build_method_dispatch_func_impl = _dispatch.build_method_dispatch_func
+    _build_method_dispatch_func_impl = _methods.build_method_dispatch_func
 
 
 ##
@@ -141,7 +141,12 @@ class Method(ta.Generic[P, R]):
         func_name = getattr(base_func, '__name__', 'singledispatch method')
 
         if _build_method_dispatch_func_impl is not None:
-            __call__ = _build_method_dispatch_func_impl(dispatch, base_func, func_name)
+            __call__ = _build_method_dispatch_func_impl(  # noqa
+                dispatch,
+                base_func,
+                func_name,
+            )
+
         else:
             type_ = type
             getattr_ = getattr

@@ -5,11 +5,9 @@
 
 //
 
-#define _MODULE_NAME "_dispatch"
+#define _MODULE_NAME "_methods"
 #define _PACKAGE_NAME "omlish.dispatch"
 #define _MODULE_FULL_NAME _PACKAGE_NAME "." _MODULE_NAME
-
-// No module state needed
 
 //
 
@@ -114,15 +112,19 @@ static PyObject * MethodDispatchFunc_call(MethodDispatchFunc *self, PyObject *ar
             Py_DECREF(impl_method);
             Py_DECREF(method_args);
         }
+
     } else {
         Py_DECREF(impl_att);
 
         // base_func.__get__(instance)
-        PyObject *bound_func = PyObject_CallMethodOneArg(
-            self->base_func,
-            PyUnicode_InternFromString("__get__"),
-            instance
-        );
+        PyObject *get = PyObject_GetAttrString(self->base_func, "__get__");  // new ref or NULL
+        if (get == nullptr) {
+            return nullptr;
+        }
+
+        PyObject *owner = (PyObject *)Py_TYPE(instance);  // borrowed
+        PyObject *bound_func = PyObject_CallFunctionObjArgs(get, instance, owner, NULL);
+        Py_DECREF(get);
 
         if (bound_func == nullptr) {
             return nullptr;
@@ -241,9 +243,9 @@ static PyObject * build_method_dispatch_func(PyObject *module, PyObject *args)
 
 //
 
-PyDoc_STRVAR(dispatch_doc, "Native C++ implementations for omlish.dispatch");
+PyDoc_STRVAR(methods_doc, "Native C++ implementations for omlish.dispatch.methods");
 
-static int dispatch_exec(PyObject *module)
+static int methods_exec(PyObject *module)
 {
     // Add the type to the module
     if (PyType_Ready(&MethodDispatchFunc_Type) < 0) {
@@ -253,32 +255,32 @@ static int dispatch_exec(PyObject *module)
     return 0;
 }
 
-static PyMethodDef dispatch_methods[] = {
+static PyMethodDef methods_methods[] = {
     {"build_method_dispatch_func", (PyCFunction)build_method_dispatch_func, METH_VARARGS, build_method_dispatch_func_doc},
     {NULL, NULL, 0, NULL}
 };
 
-static struct PyModuleDef_Slot dispatch_slots[] = {
-    {Py_mod_exec, (void *) dispatch_exec},
+static struct PyModuleDef_Slot methods_slots[] = {
+    {Py_mod_exec, (void *) methods_exec},
     {Py_mod_gil, Py_MOD_GIL_NOT_USED},
     {Py_mod_multiple_interpreters, Py_MOD_MULTIPLE_INTERPRETERS_SUPPORTED},
     {0, NULL}
 };
 
-static struct PyModuleDef dispatch_module = {
+static struct PyModuleDef methods_module = {
     .m_base = PyModuleDef_HEAD_INIT,
     .m_name = _MODULE_NAME,
-    .m_doc = dispatch_doc,
+    .m_doc = methods_doc,
     .m_size = 0,
-    .m_methods = dispatch_methods,
-    .m_slots = dispatch_slots,
+    .m_methods = methods_methods,
+    .m_slots = methods_slots,
 };
 
 extern "C" {
 
-PyMODINIT_FUNC PyInit__dispatch(void)
+PyMODINIT_FUNC PyInit__methods(void)
 {
-    return PyModuleDef_Init(&dispatch_module);
+    return PyModuleDef_Init(&methods_module);
 }
 
 }

@@ -14,8 +14,8 @@ st.setup(
             extra_compile_args=['-std=c11'],
         ),
         st.Extension(
-            name='omlish.dispatch._dispatch',
-            sources=['omlish/dispatch/_dispatch.cc'],
+            name='omlish.dispatch._methods',
+            sources=['omlish/dispatch/_methods.cc'],
             extra_compile_args=['-std=c++20'],
         ),
         st.Extension(

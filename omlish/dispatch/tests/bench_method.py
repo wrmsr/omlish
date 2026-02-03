@@ -6,19 +6,17 @@ import time
 from ...dispatch import method
 
 
-class C:
-    @method()
-    def f(self, x):
-        return 'object'
+def run(**kwargs):
+    class C:
+        @method(**kwargs)
+        def f(self, x):
+            return 'object'
 
+    class D(C):
+        @C.f.register
+        def f_str(self, x: str):
+            return 'str'
 
-class D(C):
-    @C.f.register
-    def f_str(self, x: str):
-        return 'str'
-
-
-def _main():
     d = D()
     d.f('')
 
@@ -32,6 +30,11 @@ def _main():
     total = end - start
     per = total / n
     print(f'{per} ns / it')
+
+
+def _main():
+    run()
+    run(instance_cache=True)
 
 
 if __name__ == '__main__':
