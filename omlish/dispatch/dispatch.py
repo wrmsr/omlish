@@ -23,11 +23,16 @@ class Dispatcher(ta.Generic[T]):
 
         self._impls_by_arg_cls: dict[type, T] = {}
 
-        self._cache: Dispatcher._Cache = Dispatcher._Cache(self, None)
+        self._reset_cache(None)
 
     class _Cache:
-        def __init__(self, dispatcher: 'Dispatcher', token: ta.Any | None) -> None:
-            self.dispatcher = dispatcher
+        def __init__(
+                self,
+                impls_by_arg_cls: dict[type, T],
+                find_impl: ta.Callable[[type, ta.Mapping[type, T]], T | None],
+                reset_cache_for_token: ta.Callable[['Dispatcher._Cache'], None],
+                token: ta.Any | None,
+        ) -> None:
             self.token = token
 
             self.dct: dict[weakref.ref[type], ta.Any] = {}
@@ -40,13 +45,11 @@ class Dispatcher(ta.Generic[T]):
                         pass
 
             dct = self.dct
-            impls_by_arg_cls = dispatcher._impls_by_arg_cls  # noqa
-            find_impl = dispatcher._find_impl  # noqa
             weakref_ref_ = weakref.ref
 
             def dispatch(cls: type) -> ta.Any | None:
                 if token is not None and abc.get_cache_token() != token:
-                    dispatcher._reset_cache_for_token(self)  # noqa
+                    reset_cache_for_token(self)
                     return find_impl(cls, impls_by_arg_cls)
 
                 cls_ref = weakref_ref_(cls)
@@ -67,12 +70,22 @@ class Dispatcher(ta.Generic[T]):
 
             self.dispatch: ta.Callable[[type], ta.Any | None] = dispatch
 
-    def dispatch(self, cls: type) -> ta.Any | None:
-        return self._cache.dispatch(cls)
+    _cache: _Cache
+
+    def _reset_cache(self, token: ta.Any | None) -> None:
+        self._cache = Dispatcher._Cache(
+            self._impls_by_arg_cls,
+            self._find_impl,
+            self._reset_cache_for_token,
+            token,
+        )
 
     def _reset_cache_for_token(self, prev: _Cache) -> None:
         if prev is None or self._cache is prev:
-            self._cache = Dispatcher._Cache(self, abc.get_cache_token())
+            self._reset_cache(abc.get_cache_token())
+
+    def dispatch(self, cls: type) -> ta.Any | None:
+        return self._cache.dispatch(cls)
 
     def cache_size(self) -> int:
         return len(self._cache.dct)
@@ -86,5 +99,5 @@ class Dispatcher(ta.Generic[T]):
             if not has_token and hasattr(cls, '__abstractmethods__'):
                 has_token = True
 
-        self._cache = Dispatcher._Cache(self, abc.get_cache_token() if has_token else None)
+        self._reset_cache(abc.get_cache_token() if has_token else None)
         return impl
