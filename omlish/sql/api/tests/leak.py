@@ -1,7 +1,7 @@
 import sqlite3
 
 from ....resources import set_resource_debug
-from .. import funcs
+from .. import querierfuncs as qf
 from ..dbapi import DbapiDb
 
 
@@ -13,7 +13,7 @@ def _main() -> None:
 
     with DbapiDb(lambda: sqlite3.connect(':memory:', autocommit=True)) as db:
         with db.connect() as conn:
-            print(funcs.query(conn, 'select 1'))
+            print(qf.query(conn, 'select 1'))
 
 
 if __name__ == '__main__':

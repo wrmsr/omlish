@@ -9,7 +9,7 @@ from ....resources import ResourceNotEnteredError
 from ....testing import pytest as ptu
 from ...dbs import UrlDbLoc
 from ...tests.harness import HarnessDbs
-from .. import funcs
+from .. import querierfuncs as qf
 from ..dbapi import DbapiDb
 
 
@@ -28,9 +28,9 @@ def test_sqlite(exit_stack) -> None:
             "('And Now for Something Completely Different', 1971, 7.5)",
         ]),
     ]:
-        funcs.exec(conn, stmt)
+        qf.exec(conn, stmt)
 
-    with funcs.query(
+    with qf.query(
             conn,
             'select "score" from "movies"',  # noqa
     ) as rows:
@@ -45,17 +45,17 @@ def test_sqlite(exit_stack) -> None:
     ]
 
     with conn.begin():
-        assert funcs.query_scalar(conn, 'select count(*) from movies') == 2
-        funcs.exec(conn, "insert into movies (title, year, score) values ('Bad Movie', 1991, 0.1)")
-        assert funcs.query_scalar(conn, 'select count(*) from movies') == 3
-    assert funcs.query_scalar(conn, 'select count(*) from movies') == 3
+        assert qf.query_scalar(conn, 'select count(*) from movies') == 2
+        qf.exec(conn, "insert into movies (title, year, score) values ('Bad Movie', 1991, 0.1)")
+        assert qf.query_scalar(conn, 'select count(*) from movies') == 3
+    assert qf.query_scalar(conn, 'select count(*) from movies') == 3
 
     with conn.begin() as txn:
-        assert funcs.query_scalar(conn, 'select count(*) from movies') == 3
-        funcs.exec(conn, "insert into movies (title, year, score) values ('Bad Movie 2', 1992, 0.1)")
-        assert funcs.query_scalar(conn, 'select count(*) from movies') == 4
+        assert qf.query_scalar(conn, 'select count(*) from movies') == 3
+        qf.exec(conn, "insert into movies (title, year, score) values ('Bad Movie 2', 1992, 0.1)")
+        assert qf.query_scalar(conn, 'select count(*) from movies') == 4
         txn.rollback()
-    assert funcs.query_scalar(conn, 'select count(*) from movies') == 3
+    assert qf.query_scalar(conn, 'select count(*) from movies') == 3
 
 
 @ptu.skip.if_cant_import('pg8000')
@@ -79,7 +79,7 @@ def test_pg8000(harness, exit_stack) -> None:
         'select 1 union select 2',
         # 'select 1, 2 union select 3, 4',
     ]:
-        with funcs.query(conn, q) as rows:
+        with qf.query(conn, q) as rows:
             vals = []
             for row in rows:
                 vals.append(tuple(row.values))
@@ -93,11 +93,11 @@ def test_queries():
 
     with DbapiDb(lambda: sqlite3.connect(':memory:')) as db:
         with db.connect() as conn:
-            print(funcs.query_all(conn, Q.select([1])))
+            print(qf.query_all(conn, Q.select([1])))
 
 
 def test_check_entered():
     with DbapiDb(lambda: sqlite3.connect(':memory:')) as db:
         with db.connect() as conn:
             with pytest.raises(ResourceNotEnteredError):
-                print(list(ta.cast(ta.Any, funcs.query(conn, 'select 1'))))
+                print(list(ta.cast(ta.Any, qf.query(conn, 'select 1'))))

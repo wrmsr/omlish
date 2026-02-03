@@ -22,7 +22,9 @@ ResourcesRef: ta.TypeAlias = _resources.ResourceManagerRef
 ResourcesRefNotRegisteredError: ta.TypeAlias = _resources.ResourceManagerRefNotRegisteredError
 
 Resources: ta.TypeAlias = _resources.AsyncResourceManager
-ResourceManaged: ta.TypeAlias = _resources.AsyncResourceManaged
+
+# Explicitly not marked as `ta.TypeAlias` because it confuses pycharm.
+ResourceManaged = _resources.AsyncResourceManaged
 
 
 ##

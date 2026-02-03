@@ -61,7 +61,7 @@ class SqlalchemyApiRows(SimpleResource, api.Rows):
 class SqlalchemyTransaction(SimpleResource, api.Transaction):
     @property
     def adapter(self) -> api.Adapter:
-        raise NotImplementedError
+        return DEFAULT_SQLALCHEMY_ADAPTER
 
     def query(self, query: api.Query) -> ta.ContextManager[api.Rows]:
         raise NotImplementedError
@@ -76,7 +76,7 @@ class SqlalchemyTransaction(SimpleResource, api.Transaction):
 class SqlalchemyApiConn(SqlalchemyApiWrapper[sa.engine.Connection], api.Conn):
     @property
     def adapter(self) -> api.Adapter:
-        raise NotImplementedError
+        return DEFAULT_SQLALCHEMY_ADAPTER
 
     def query(self, query: api.Query) -> ta.ContextManager[api.Rows]:
         check.empty(query.args)
@@ -100,7 +100,7 @@ class SqlalchemyApiDb(SqlalchemyApiWrapper[sa.engine.Engine], api.Db):
 
     @property
     def adapter(self) -> api.Adapter:
-        raise NotImplementedError
+        return DEFAULT_SQLALCHEMY_ADAPTER
 
     def query(self, query: api.Query) -> ta.ContextManager[api.Rows]:
         with self.connect() as conn:
@@ -110,6 +110,9 @@ class SqlalchemyApiDb(SqlalchemyApiWrapper[sa.engine.Engine], api.Db):
 class SqlalchemyApiAdapter(api.Adapter):
     def scan_type(self, c: api.Column) -> type:
         raise NotImplementedError
+
+
+DEFAULT_SQLALCHEMY_ADAPTER = SqlalchemyApiAdapter()
 
 
 ##

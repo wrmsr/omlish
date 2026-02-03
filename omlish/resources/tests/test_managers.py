@@ -105,8 +105,8 @@ async def test_async_resources_given():
         assert rc.state == 'entered'
 
     assert arc.state == 'exited'
-    assert arc2.state == 'exited'
-    assert rc.state == 'exited'  # type: ignore[unreachable]
+    assert arc2.state == 'exited'  # type: ignore[unreachable]
+    assert rc.state == 'exited'
 
 
 @pytest.mark.asyncs('asyncio')

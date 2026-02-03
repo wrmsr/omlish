@@ -3,24 +3,27 @@ import typing as ta
 from ... import check
 from ... import lang
 from .asquery import as_query
+from .core import Rows
+from .queriers import AsyncQuerier
+from .queriers import Querier
 from .queries import QueryMode
 from .rows import Row
-from .queriers import Querier
-from .queriers import AsyncQuerier
-from .core import Rows
 
 
 ##
 
 
 def _sync_async_query_func(sync_fn, async_fn):
-    def inner(querier, *args, **kwargs):
-        if isinstance(querier, AsyncQuerier):
-            return async_fn(querier, *args, **kwargs)
-        else:
-            return sync_fn(querier, *args, **kwargs)
+    def outer(fn):  # noqa
+        def inner(querier, *args, **kwargs):
+            if isinstance(querier, AsyncQuerier):
+                return async_fn(querier, *args, **kwargs)
+            else:
+                return sync_fn(querier, *args, **kwargs)
 
-    return inner
+        return inner
+
+    return outer
 
 
 ##
@@ -93,13 +96,13 @@ def sync_query(
         obj,
         *args,
         mode=QueryMode.QUERY,
-        querier=querier,
+        adapter=querier.adapter,
     )
 
     return querier.query(q)
 
 
-async def async_query(
+def async_query(
         querier: AsyncQuerier,
         obj: ta.Any,
         *args: ta.Any,
@@ -108,7 +111,7 @@ async def async_query(
         obj,
         *args,
         mode=QueryMode.QUERY,
-        querier=querier,
+        adapter=querier.adapter,
     )
 
     return querier.query(q)
@@ -124,7 +127,7 @@ def query(
 
 
 @ta.overload
-async def query(
+def query(
         querier: AsyncQuerier,
         obj: ta.Any,
         *args: ta.Any,

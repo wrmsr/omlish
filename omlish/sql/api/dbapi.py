@@ -3,14 +3,14 @@ import typing as ta
 from ... import check
 from ...resources import SimpleResource
 from ..dbapi import abc as dbapi_abc
-from . import funcs
-from .base import Adapter
-from .base import Conn
-from .base import Db
-from .base import Rows
-from .base import Transaction
+from . import querierfuncs as qf
+from .adapters import Adapter
 from .columns import Column
 from .columns import Columns
+from .core import Conn
+from .core import Db
+from .core import Rows
+from .core import Transaction
 from .queries import Query
 from .rows import Row
 
@@ -71,17 +71,17 @@ class DbapiTransaction(Transaction, SimpleResource):
 
     def _enter(self) -> None:
         check.state(self._state == 'new')
-        funcs.exec(self._conn, 'begin')
+        qf.exec(self._conn, 'begin')
         self._state = 'open'
 
     def _commit_internal(self) -> None:
         check.state(self._state == 'open')
-        funcs.exec(self._conn, 'commit')
+        qf.exec(self._conn, 'commit')
         self._state = 'committed'
 
     def _rollback_internal(self) -> None:
         check.state(self._state == 'open')
-        funcs.exec(self._conn, 'rollback')
+        qf.exec(self._conn, 'rollback')
         self._state = 'aborted'
 
     def _close(self, reason: BaseException | None) -> None:

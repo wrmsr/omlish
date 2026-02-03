@@ -45,7 +45,7 @@ from .queriers import (  # noqa
     AsyncQuerier,
 )
 
-from .querierfuncs import (
+from .querierfuncs import (  # noqa
     sync_exec,
     async_exec,
     exec,  # noqa
