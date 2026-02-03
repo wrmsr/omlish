@@ -49,7 +49,7 @@ PYPROJECT_VENV=${PYPROJECT} venv ${VENV}
 PYTHON:=$$(${PYPROJECT_VENV} exe)
 SRCS:=$$(${PYPROJECT_VENV} srcs)
 
-PYTHON_ABS:=$(shell $(PYTHON) -c 'import os, sys; print(os.path.abspath(sys.executable))')
+PYTHON_ABS=$(shell $(PYTHON) -c 'import os, sys; print(os.path.abspath(sys.executable))')
 
 .PHONY: python
 python:
