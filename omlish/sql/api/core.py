@@ -84,7 +84,7 @@ class Conn(Querier, AnyConn, lang.Abstract):
 
 class AsyncConn(AsyncQuerier, AnyConn, lang.Abstract):
     @abc.abstractmethod
-    def begin(self) -> ta.AsyncContextManager[Transaction]:
+    def begin(self) -> ta.AsyncContextManager[AsyncTransaction]:
         raise NotImplementedError
 
 
@@ -103,5 +103,5 @@ class Db(Querier, AnyDb, lang.Abstract):
 
 class AsyncDb(AsyncQuerier, AnyDb, lang.Abstract):
     @abc.abstractmethod
-    def connect(self) -> ta.AsyncContextManager[Conn]:
+    def connect(self) -> ta.AsyncContextManager[AsyncConn]:
         raise NotImplementedError

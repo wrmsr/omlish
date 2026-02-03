@@ -29,6 +29,7 @@ class QueryMode(enum.Enum):
             raise TypeError(o)
 
 
+@ta.final
 @dc.dataclass(frozen=True)
 class Query(lang.Final):
     mode: QueryMode

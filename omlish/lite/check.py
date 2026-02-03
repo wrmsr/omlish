@@ -353,6 +353,44 @@ class Checks:
 
         raise RuntimeError  # noqa
 
+    async def async_single(self, obj: ta.AsyncIterable[T], msg: CheckMessage = None) -> T:
+        try:
+            [value] = obj
+        except ValueError:
+            self._raise(
+                ValueError,
+                'Must be single',
+                msg,
+                Checks._ArgsKwargs(obj),
+                render_fmt='%s',
+            )
+
+        $FIXME
+        return value
+
+    async def async_opt_single(self, obj: ta.AsyncIterable[T], msg: CheckMessage = None) -> ta.Optional[T]:
+        it = iter(obj)
+        try:
+            value = next(it)
+        except StopIteration:
+            return None
+
+        try:
+            next(it)
+        except StopIteration:
+            return value  # noqa
+
+        self._raise(
+            ValueError,
+            'Must be empty or single',
+            msg,
+            Checks._ArgsKwargs(obj),
+            render_fmt='%s',
+        )
+
+        $FIXME
+        raise RuntimeError  # noqa
+
     #
 
     def none(self, v: ta.Any, msg: CheckMessage = None) -> None:

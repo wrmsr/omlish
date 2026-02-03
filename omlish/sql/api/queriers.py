@@ -9,6 +9,7 @@ from .queries import Query
 
 if ta.TYPE_CHECKING:
     from .core import Rows
+    from .core import AsyncRows
 
 
 ##
@@ -36,7 +37,7 @@ class Querier(AnyQuerier, lang.Abstract):
 
 class AsyncQuerier(AnyQuerier, lang.Abstract):
     @abc.abstractmethod
-    def query(self, query: Query) -> ta.AsyncContextManager['Rows']:  # ta.Raises[QueryError]
+    def query(self, query: Query) -> ta.AsyncContextManager['AsyncRows']:  # ta.Raises[QueryError]
         raise NotImplementedError
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:

@@ -202,6 +202,16 @@ def opt_single(obj: ta.Iterable[T], msg: Message = None) -> T | None:
     return check.opt_single(obj, msg=msg)
 
 
+@_check_proxy_function
+def async_single(obj: ta.AsyncIterable[T], msg: Message = None) -> ta.Awaitable[T]:
+    return check.async_single(obj, msg=msg)
+
+
+@_check_proxy_function
+def async_opt_single(obj: ta.AsyncIterable[T], msg: Message = None) -> ta.Awaitable[T | None]:
+    return check.async_opt_single(obj, msg=msg)
+
+
 #
 
 

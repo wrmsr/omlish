@@ -3,6 +3,7 @@ import typing as ta
 from ... import check
 from ... import lang
 from .asquery import as_query
+from .core import AsyncRows
 from .core import Rows
 from .queriers import AsyncQuerier
 from .queriers import Querier
@@ -108,7 +109,7 @@ def async_query(
         querier: AsyncQuerier,
         obj: ta.Any,
         *args: ta.Any,
-) -> ta.AsyncContextManager['Rows']:
+) -> ta.AsyncContextManager['AsyncRows']:
     q = as_query(
         obj,
         *args,
@@ -160,7 +161,7 @@ async def async_query_all(
         *args: ta.Any,
 ) -> list[Row]:
     async with async_query(querier, obj, *args) as rows:
-        return list(rows)
+        return await lang.async_list(rows)
 
 
 @ta.overload
@@ -204,7 +205,7 @@ async def async_query_first(
         *args: ta.Any,
 ) -> Row:
     async with async_query(querier, obj, *args) as rows:
-        return next(rows)
+        return await anext(rows)
 
 
 @ta.overload
@@ -248,7 +249,7 @@ async def async_query_opt_first(
         *args: ta.Any,
 ) -> Row | None:
     async with async_query(querier, obj, *args) as rows:
-        return next(rows, None)
+        return await anext(rows, None)
 
 
 @ta.overload
@@ -292,7 +293,7 @@ async def async_query_one(
         *args: ta.Any,
 ) -> Row:
     async with async_query(querier, obj, *args) as rows:
-        return check.single(rows)
+        return await check.async_single(rows)
 
 
 @ta.overload
@@ -336,7 +337,7 @@ async def async_query_opt_one(
         *args: ta.Any,
 ) -> Row | None:
     async with async_query(querier, obj, *args) as rows:
-        return check.opt_single(rows)
+        return await check.async_opt_single(rows)
 
 
 @ta.overload
