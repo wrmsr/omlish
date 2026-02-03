@@ -6,7 +6,7 @@ from .... import lang
 from ... import api
 from ... import queries
 from ...queries import Q
-from ..apiadapter import api_adapt
+from ..api import api_adapt
 
 
 ##

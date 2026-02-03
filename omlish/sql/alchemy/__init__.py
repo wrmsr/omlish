@@ -1,11 +1,9 @@
 # ruff: noqa: I001
-import typing as _ta
-
 from ... import lang as _lang
 
 
-if _ta.TYPE_CHECKING:
-    from .apiadapter import (  # noqa
+with _lang.auto_proxy_init(globals()):
+    from .api import (  # noqa
         SqlalchemyApiWrapper,
 
         SqlalchemyApiRows,
@@ -15,18 +13,6 @@ if _ta.TYPE_CHECKING:
 
         api_adapt,
     )
-
-else:
-    _lang.proxy_init(globals(), '.apiadapter', [
-        'SqlalchemyApiWrapper',
-
-        'SqlalchemyApiRows',
-        'SqlalchemyApiConn',
-        'SqlalchemyApiDb',
-        'SqlalchemyApiAdapter',
-
-        'api_adapt',
-    ])
 
 
 from .exprs import (  # noqa
