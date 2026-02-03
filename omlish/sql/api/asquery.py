@@ -3,7 +3,7 @@ import functools
 import typing as ta
 
 from ... import check
-from .base import Querier
+from .adapters import Adapter
 from .queries import Query
 from .queries import QueryMode
 
@@ -14,21 +14,21 @@ from .queries import QueryMode
 @dc.dataclass(frozen=True, kw_only=True)
 class AsQueryParams:
     mode: QueryMode | str | None = None
-    querier: Querier | None = None
+    adapter: Adapter | None = None
 
 
 def as_query(
         obj: ta.Any,
         *args: ta.Any,
         mode: QueryMode | str | None = None,
-        querier: Querier | None = None,
+        adapter: Adapter | None = None,
 ) -> Query:
     return as_query_(
         obj,
         *args,
         params=AsQueryParams(
             mode=mode,
-            querier=querier,
+            adapter=adapter,
         ),
     )
 

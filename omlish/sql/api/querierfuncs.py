@@ -1,0 +1,241 @@
+import typing as ta
+
+from ... import check
+from ... import lang
+from .asquery import as_query
+from .queries import QueryMode
+from .rows import Row
+from .queriers import Querier
+from .queriers import AsyncQuerier
+from .core import Rows
+
+
+##
+
+
+def _sync_async_query_func(sync_fn, async_fn):
+    def inner(querier, *args, **kwargs):
+        if isinstance(querier, AsyncQuerier):
+            return async_fn(querier, *args, **kwargs)
+        else:
+            return sync_fn(querier, *args, **kwargs)
+
+    return inner
+
+
+##
+
+
+def sync_exec(  # noqa
+        querier: Querier,
+        obj: ta.Any,
+        *args: ta.Any,
+) -> None:
+    q = as_query(
+        obj,
+        *args,
+        mode=QueryMode.EXEC,
+        adapter=querier.adapter,
+    )
+
+    with querier.query(q):
+        pass
+
+
+async def async_exec(  # noqa
+        querier: AsyncQuerier,
+        obj: ta.Any,
+        *args: ta.Any,
+) -> None:
+    q = as_query(
+        obj,
+        *args,
+        mode=QueryMode.EXEC,
+        adapter=querier.adapter,
+    )
+
+    async with querier.query(q):
+        pass
+
+
+@ta.overload
+def exec(  # noqa
+        querier: Querier,
+        obj: ta.Any,
+        *args: ta.Any,
+) -> None:
+    ...
+
+
+@ta.overload
+def exec(  # noqa
+        querier: AsyncQuerier,
+        obj: ta.Any,
+        *args: ta.Any,
+) -> ta.Awaitable[None]:
+    ...
+
+
+@_sync_async_query_func(sync_exec, async_exec)
+def exec(*args, **kwargs):  # noqa
+    raise RuntimeError
+
+
+##
+
+
+def sync_query(
+        querier: Querier,
+        obj: ta.Any,
+        *args: ta.Any,
+) -> ta.ContextManager['Rows']:
+    q = as_query(
+        obj,
+        *args,
+        mode=QueryMode.QUERY,
+        querier=querier,
+    )
+
+    return querier.query(q)
+
+
+async def async_query(
+        querier: AsyncQuerier,
+        obj: ta.Any,
+        *args: ta.Any,
+) -> ta.AsyncContextManager['Rows']:
+    q = as_query(
+        obj,
+        *args,
+        mode=QueryMode.QUERY,
+        querier=querier,
+    )
+
+    return querier.query(q)
+
+
+@ta.overload
+def query(
+        querier: Querier,
+        obj: ta.Any,
+        *args: ta.Any,
+) -> ta.ContextManager['Rows']:
+    ...
+
+
+@ta.overload
+async def query(
+        querier: AsyncQuerier,
+        obj: ta.Any,
+        *args: ta.Any,
+) -> ta.AsyncContextManager['Rows']:
+    ...
+
+
+@_sync_async_query_func(sync_query, async_query)
+def query(*args, **kwargs):
+    raise RuntimeError
+
+
+##
+
+
+def sync_query_all(
+        querier: Querier,
+        obj: ta.Any,
+        *args: ta.Any,
+) -> list[Row]:
+    with query(querier, obj, *args) as rows:
+        return list(rows)
+
+
+async def async_query_all(
+        querier: AsyncQuerier,
+        obj: ta.Any,
+        *args: ta.Any,
+) -> list[Row]:
+    async with query(querier, obj, *args) as rows:
+        return list(rows)
+
+
+@ta.overload
+def query_all(
+        querier: Querier,
+        obj: ta.Any,
+        *args: ta.Any,
+) -> list[Row]:
+    ...
+
+
+@ta.overload
+def query_all(
+        querier: AsyncQuerier,
+        obj: ta.Any,
+        *args: ta.Any,
+) -> ta.Awaitable[list[Row]]:
+    ...
+
+
+@_sync_async_query_func(sync_query_all, async_query_all)
+def query_all(*args, **kwargs):
+    raise RuntimeError
+
+
+#
+
+
+def query_first(
+        querier: Querier,
+        obj: ta.Any,
+        *args: ta.Any,
+) -> Row:
+    with query(querier, obj, *args) as rows:
+        return next(rows)
+
+
+def query_opt_first(
+        querier: Querier,
+        obj: ta.Any,
+        *args: ta.Any,
+) -> Row | None:
+    with query(querier, obj, *args) as rows:
+        return next(rows, None)
+
+
+def query_one(
+        querier: Querier,
+        obj: ta.Any,
+        *args: ta.Any,
+) -> Row:
+    with query(querier, obj, *args) as rows:
+        return check.single(rows)
+
+
+def query_opt_one(
+        querier: Querier,
+        obj: ta.Any,
+        *args: ta.Any,
+) -> Row | None:
+    with query(querier, obj, *args) as rows:
+        return check.opt_single(rows)
+
+
+def query_scalar(
+        querier: Querier,
+        obj: ta.Any,
+        *args: ta.Any,
+) -> ta.Any:
+    row = query_one(querier, obj, *args)
+    return check.single(row.values)
+
+
+def query_maybe_scalar(
+        querier: Querier,
+        obj: ta.Any,
+        *args: ta.Any,
+) -> lang.Maybe[ta.Any]:
+    row = query_opt_one(querier, obj, *args)
+    if row is not None:
+        return lang.just(check.single(row.values))
+    else:
+        return lang.empty()

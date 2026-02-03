@@ -1,25 +1,13 @@
+"""
+This module contains the core resourceful interfaces that must be implemented by any backend.
+"""
 import abc
 import typing as ta
 
 from ... import lang
-from .columns import Column
 from .columns import Columns
-from .queries import Query
+from .queriers import Querier
 from .rows import Row
-
-
-##
-
-
-class Querier(lang.Abstract):
-    @property
-    @abc.abstractmethod
-    def adapter(self) -> 'Adapter':
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def query(self, query: Query) -> ta.ContextManager['Rows']:  # ta.Raises[QueryError]
-        raise NotImplementedError
 
 
 ##
@@ -68,13 +56,4 @@ class Conn(Querier, lang.Abstract):
 class Db(Querier, lang.Abstract):
     @abc.abstractmethod
     def connect(self) -> ta.ContextManager[Conn]:
-        raise NotImplementedError
-
-
-##
-
-
-class Adapter(lang.Abstract):
-    @abc.abstractmethod
-    def scan_type(self, c: Column) -> type:
         raise NotImplementedError
