@@ -29,7 +29,7 @@ apt-get install -y apt-utils ;\
 \
 DEPS="" ;\
 \
-# tools\
+# system\
 \
 DEPS="$DEPS\
   apt-transport-https\
@@ -124,6 +124,12 @@ DEPS="$DEPS\
   tk-dev\
   uuid-dev\
   zlib1g-dev\
+" ;\
+\
+# x11\
+\
+DEPS="$DEPS\
+  x11-apps\
 " ;\
 \
 apt-get install -y $DEPS\

@@ -43,15 +43,12 @@ APT_CACHE_MOUNTS: ta.Sequence[str] = [
 ]
 
 
-def render_apt_install_deps() -> str:
+def render_apt_install_dep_sets(*names: str) -> str:
     out = io.StringIO()
 
     dsl: list[tuple[str, ta.Sequence[str]]] = []
 
-    for dsn in [
-        'tools',
-        'python',
-    ]:
+    for dsn in names:
         dso = tomllib.loads(read_resource(Resource(f'depsets/{dsn}.toml')))
         dsl.append((dsn, sorted(set(dso['deps']))))
 

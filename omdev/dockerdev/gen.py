@@ -9,7 +9,7 @@ from .content import Resource
 from .helpers import APT_CACHE_MOUNTS
 from .helpers import fragment_section
 from .helpers import read_versions_file_versions
-from .helpers import render_apt_install_deps
+from .helpers import render_apt_install_dep_sets
 from .ops import Cmd
 from .ops import Entrypoint
 from .ops import Env
@@ -26,6 +26,12 @@ from .rendering import render_op
 
 
 BASE_IMAGE = 'ubuntu:24.04'
+
+DEP_SETS: ta.Sequence[str] = [
+    'system',
+    'python',
+    'x11',
+]
 
 JDKS: ta.Sequence[str] = [
     'zulu21-ca-jdk',
@@ -78,7 +84,7 @@ OPS: ta.Sequence[Op] = [
         Run(
             [
                 Resource('fragments/apt.sh'),
-                LazyContent(render_apt_install_deps),
+                LazyContent(lambda: render_apt_install_dep_sets(*DEP_SETS)),
             ],
             cache_mounts=APT_CACHE_MOUNTS,
         ),

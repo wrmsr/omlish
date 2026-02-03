@@ -13,12 +13,12 @@ T = ta.TypeVar('T')
 
 _build_dispatch_cache_impl: ta.Callable | None = None
 
-try:
-    from . import _dispatch  # type: ignore  # noqa
-except ImportError:
-    pass
-else:
-    _build_dispatch_cache_impl = _dispatch.build_dispatch_cache
+# try:
+#     from . import _dispatch  # type: ignore  # noqa
+# except ImportError:
+#     pass
+# else:
+#     _build_dispatch_cache_impl = _dispatch.build_dispatch_cache
 
 
 ##

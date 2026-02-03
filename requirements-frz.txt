@@ -27,9 +27,9 @@ bitsandbytes==0.49.1
 black==26.1.0
 bleach==6.3.0
 blobfile==3.1.0
-boto3==1.42.40
-botocore==1.42.40
-botocore-stubs==1.42.40
+boto3==1.42.41
+botocore==1.42.41
+botocore-stubs==1.42.41
 brotli==1.2.0
 build==1.4.0
 cattrs==25.3.0
@@ -72,7 +72,7 @@ frozenlist==1.8.0
 fsspec==2025.10.0
 gguf==0.17.1
 google-api-core==2.29.0
-google-api-python-client==2.188.0
+google-api-python-client==2.189.0
 google-auth==2.48.0
 google-auth-httplib2==0.3.0
 google-cloud-compute==1.43.0
@@ -314,7 +314,7 @@ trio_asyncio==0.15.0
 twine==6.2.0
 typer-slim==0.21.1
 types-awscrt==0.31.1
-types-boto3==1.42.40
+types-boto3==1.42.41
 types-greenlet==3.3.0.20251206
 types-paramiko==4.0.0.20250822
 types-psutil==7.2.2.20260130
@@ -333,7 +333,7 @@ uritemplate==4.2.0
 urllib3==2.6.3
 urwid==3.0.5
 urwid_readline==0.15.1
-uv==0.9.28
+uv==0.9.29
 watchdog==6.0.0
 wcwidth==0.5.3
 webcolors==25.10.0
