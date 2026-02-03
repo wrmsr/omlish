@@ -57,9 +57,10 @@ class BaseSimpleResource(_ResourcesDebug, lang.Abstract):
     @ta.final
     def __del__(self) -> None:
         if (
+                self._entered and
+                not self._closed and
                 not self._is_resourceless and
-                self._resources_debug and
-                not self._closed
+                self._resources_debug
         ):
             warnings.warn(
                 f'\n\n{(sep := ("=" * 40))}\n'

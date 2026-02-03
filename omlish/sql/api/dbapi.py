@@ -1,3 +1,4 @@
+import contextlib
 import typing as ta
 
 from ... import check
@@ -33,7 +34,7 @@ def build_dbapi_columns(desc: ta.Sequence[dbapi_abc.DbapiColumnDescription] | No
     return Columns(*cols)
 
 
-class DbapiRows(Rows, SimpleResource):
+class DbapiRows(Rows):
     def __init__(
             self,
             cursor: dbapi_abc.DbapiCursor,
@@ -44,17 +45,11 @@ class DbapiRows(Rows, SimpleResource):
         self._cursor = cursor
         self._columns = columns
 
-    def _close(self, reason: BaseException | None) -> None:
-        self._cursor.close()
-
-        super()._close(reason)
-
     @property
     def columns(self) -> Columns:
         return self._columns
 
     def __next__(self) -> Row:
-        self._check_entered()
         values = self._cursor.fetchone()
         if values is None:
             raise StopIteration
@@ -111,7 +106,7 @@ class DbapiTransaction(Transaction, SimpleResource):
         self._rollback_internal()
 
 
-class DbapiConn(Conn, SimpleResource):
+class DbapiConn(Conn):
     def __init__(
             self,
             conn: dbapi_abc.DbapiConnection,
@@ -125,33 +120,27 @@ class DbapiConn(Conn, SimpleResource):
             adapter = DEFAULT_DBAPI_ADAPTER
         self._adapter = adapter
 
-    def _enter(self) -> None:
-        super()._enter()
-
         if not self._conn.autocommit:
             self._conn.autocommit = True
         check.state(bool(self._conn.autocommit))
-
-    def _close(self, reason: BaseException | None) -> None:
-        self._conn.close()
-
-        super()._close(reason)
 
     @property
     def adapter(self) -> Adapter:
         return self._adapter
 
     def query(self, query: Query) -> ta.ContextManager[Rows]:
-        self._check_entered()
-        cursor = self._conn.cursor()
-        try:
-            cursor.execute(query.text)
-            columns = build_dbapi_columns(cursor.description)
-            return DbapiRows(cursor, columns)
+        @contextlib.contextmanager
+        def inner():
+            with contextlib.ExitStack() as es:
+                cursor = self._conn.cursor()
+                es.enter_context(contextlib.closing(cursor))
 
-        except Exception as e:  # noqa
-            cursor.close()
-            raise
+                cursor.execute(query.text)
+                columns = build_dbapi_columns(cursor.description)
+
+                yield DbapiRows(cursor, columns)
+
+        return inner()
 
     def begin(self) -> ta.ContextManager[Transaction]:
         return DbapiTransaction(self)
@@ -176,9 +165,16 @@ class DbapiDb(Db, SimpleResource):
         return self._adapter
 
     def connect(self) -> ta.ContextManager[Conn]:
-        self._check_entered()
-        dbapi_conn = self._conn_fac()
-        return DbapiConn(dbapi_conn)
+        @contextlib.contextmanager
+        def inner():
+            self._check_entered()
+            with contextlib.ExitStack() as es:
+                dbapi_conn = self._conn_fac()
+                es.enter_context(contextlib.closing(dbapi_conn))
+
+                yield DbapiConn(dbapi_conn)
+
+        return inner()
 
     def query(self, query: Query) -> ta.ContextManager[Rows]:
         # with self.connect() as conn:

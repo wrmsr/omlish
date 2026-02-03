@@ -1,6 +1,3 @@
-- transactions lol
-- async story (like injector)
-  - async core, sync_await bridge
+- opt-in ahead of time `.close()`
 - injection helpers
-- commit / rollback exception handling, kill conn
-- Db.query - minichain-style Resources group?
+- fix Db.query - omlish.resources.managers?

@@ -1,11 +1,7 @@
 import sqlite3
-import typing as ta
 import urllib.parse
 
-import pytest
-
 from .... import check
-from ....resources import ResourceNotEnteredError
 from ....testing import pytest as ptu
 from ...dbs import UrlDbLoc
 from ...tests.harness import HarnessDbs
@@ -96,8 +92,8 @@ def test_queries():
             print(qf.query_all(conn, Q.select([1])))
 
 
-def test_check_entered():
-    with DbapiDb(lambda: sqlite3.connect(':memory:')) as db:
-        with db.connect() as conn:
-            with pytest.raises(ResourceNotEnteredError):
-                print(list(ta.cast(ta.Any, qf.query(conn, 'select 1'))))
+# def test_check_entered():
+#     with DbapiDb(lambda: sqlite3.connect(':memory:')) as db:
+#         with db.connect() as conn:
+#             with pytest.raises(ResourceNotEnteredError):
+#                 print(list(ta.cast(ta.Any, qf.query(conn, 'select 1'))))
