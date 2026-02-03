@@ -35,6 +35,7 @@ def run(**kwargs):
 def _main():
     run()
     run(instance_cache=True)
+    run(instance_cache=True, strong_dispatch_cache=True)
 
 
 if __name__ == '__main__':

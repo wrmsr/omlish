@@ -10,7 +10,8 @@ with _lang.auto_proxy_init(globals()):
         AttrRegistry,
 
         AttrRegistryCache,
-        SimpleAttrRegistryCache,
+        StrongAttrRegistryCache,
+        WeakAttrRegistryCache,
     )
 
     from .bimap import (  # noqa

@@ -2,6 +2,7 @@
 TODO:
  - lock?
 """
+import abc
 import dataclasses as dc
 import typing as ta
 import weakref
@@ -166,7 +167,7 @@ class AttrRegistry(ta.Generic[K, V]):
 ##
 
 
-class AttrRegistryCache(ta.Generic[K, V, T]):
+class AttrRegistryCache(lang.Abstract, ta.Generic[K, V, T]):
     def __init__(
             self,
             registry: AttrRegistry[K, V],
@@ -179,6 +180,34 @@ class AttrRegistryCache(ta.Generic[K, V, T]):
 
         self._cache: dict[ta.Any, T] = {}
 
+        registry.add_invalidate_callback(self._cache.clear)
+
+    @abc.abstractmethod
+    def get(self, instance_cls: type) -> T:
+        raise NotImplementedError
+
+
+class StrongAttrRegistryCache(AttrRegistryCache[K, V, T]):
+    def get(self, instance_cls: type) -> T:
+        try:
+            return self._cache[instance_cls]
+        except KeyError:
+            pass
+
+        collected = self._registry.collect(instance_cls)
+        out = self._prepare(instance_cls, collected)
+        self._cache[instance_cls] = out
+        return out
+
+
+class WeakAttrRegistryCache(AttrRegistryCache[K, V, T]):
+    def __init__(
+            self,
+            registry: AttrRegistry[K, V],
+            prepare: ta.Callable[[type, dict[str, tuple[K, V]]], T],
+    ) -> None:
+        super().__init__(registry, prepare)
+
         def cache_remove(k, self_ref=weakref.ref(self)):
             if (ref_self := self_ref()) is not None:
                 cache = ref_self._cache  # noqa
@@ -188,8 +217,6 @@ class AttrRegistryCache(ta.Generic[K, V, T]):
                     pass
 
         self._cache_remove = cache_remove
-
-        registry.add_invalidate_callback(self._cache.clear)
 
     def get(self, instance_cls: type) -> T:
         cls_ref = weakref.ref(instance_cls)
@@ -203,8 +230,3 @@ class AttrRegistryCache(ta.Generic[K, V, T]):
         out = self._prepare(instance_cls, collected)
         self._cache[weakref.ref(instance_cls, self._cache_remove)] = out
         return out
-
-
-class SimpleAttrRegistryCache(AttrRegistryCache[K, V, dict[str, tuple[K, V]]], ta.Generic[K, V]):
-    def __init__(self, registry: AttrRegistry[K, V]) -> None:
-        super().__init__(registry, lambda _, dct: dct)

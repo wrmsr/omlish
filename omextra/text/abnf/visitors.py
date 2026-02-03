@@ -43,7 +43,7 @@ class RuleMatchVisitor(lang.Abstract, ta.Generic[T]):
         def prepare(_, dct):
             return col.make_map(((n, a) for a, (_, n) in dct.items()), strict=True)
 
-        return col.AttrRegistryCache(cls._registry, prepare)
+        return col.WeakAttrRegistryCache(cls._registry, prepare)
 
     def visit_rule(self, name: str, m: Match) -> T:
         att = self._registry_cache().get(self.__class__)[name]

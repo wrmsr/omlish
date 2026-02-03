@@ -1,10 +1,17 @@
 import typing as ta
 
+import pytest
+
 from ..attrregistry import AttrRegistry
-from ..attrregistry import AttrRegistryCache
+from ..attrregistry import StrongAttrRegistryCache
+from ..attrregistry import WeakAttrRegistryCache
 
 
-def test_attr_registry():
+@pytest.mark.parametrize('cache_cls', [
+    StrongAttrRegistryCache,
+    WeakAttrRegistryCache,
+])
+def test_attr_registry(cache_cls):
     class A:
         foo = AttrRegistry[ta.Callable, None]()
 
@@ -40,7 +47,7 @@ def test_attr_registry():
     class BC2(B2, BC):
         pass
 
-    foo_cache = AttrRegistryCache[ta.Callable, None, ta.Any](A.foo, lambda _, c: c)
+    foo_cache = cache_cls(A.foo, lambda _, c: c)
 
     expected = {
         B: {'foo_a': (A.foo_a, None), 'foo_b': (B.foo_b, None)},

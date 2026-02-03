@@ -56,6 +56,8 @@ class Method(ta.Generic[P, R]):
             installable: bool = False,
             requires_override: bool = False,
             instance_cache: bool = False,
+            strong_registry_cache: bool = False,
+            strong_dispatch_cache: bool = False,
     ) -> None:
         super().__init__()
 
@@ -65,12 +67,16 @@ class Method(ta.Generic[P, R]):
         self._func = func
         self._installable = installable
         self._instance_cache = instance_cache
+        self._strong_registry_cache = strong_registry_cache
+        self._strong_dispatch_cache = strong_dispatch_cache
 
         self._registry: col.AttrRegistry[ta.Callable, Method._Entry] = col.AttrRegistry(
             requires_override=requires_override,
         )
 
-        self._registry_cache: col.AttrRegistryCache[ta.Callable, Method._Entry, ta.Callable] = col.AttrRegistryCache(
+        self._registry_cache: col.AttrRegistryCache[ta.Callable, Method._Entry, ta.Callable] = (
+            col.StrongAttrRegistryCache if strong_registry_cache else col.WeakAttrRegistryCache
+        )(
             self._registry,
             self._prepare,
         )
@@ -123,7 +129,9 @@ class Method(ta.Generic[P, R]):
         return impl
 
     def _build_dispatcher(self, collected: ta.Mapping[str, tuple[ta.Callable, _Entry]]) -> Dispatcher[str]:
-        disp: Dispatcher[str] = Dispatcher()
+        disp: Dispatcher[str] = Dispatcher(
+            strong_cache=self._strong_dispatch_cache,
+        )
 
         for a, (f, e) in collected.items():
             try:
@@ -206,12 +214,16 @@ def method(
         installable: bool = False,
         requires_override: bool = False,
         instance_cache: bool = False,
+        strong_registry_cache: bool = False,
+        strong_dispatch_cache: bool = False,
 ) -> ta.Callable[[ta.Callable[P, R]], Method[P, R]]:  # noqa
     return functools.partial(
         Method,  # type: ignore[arg-type]
         installable=installable,
         requires_override=requires_override,
         instance_cache=instance_cache,
+        strong_registry_cache=strong_registry_cache,
+        strong_dispatch_cache=strong_dispatch_cache,
     )
 
 

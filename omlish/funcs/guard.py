@@ -110,7 +110,7 @@ class _BaseGuardFnMethod(lang.Abstract, ta.Generic[P, T]):
             requires_override=requires_override,
         )
 
-        self._cache: col.AttrRegistryCache[ta.Callable, None, MultiGuardFn] = col.AttrRegistryCache(
+        self._cache: col.AttrRegistryCache[ta.Callable, None, MultiGuardFn] = col.WeakAttrRegistryCache(
             self._registry,
             self._prepare,
         )
