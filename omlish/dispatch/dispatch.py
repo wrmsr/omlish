@@ -11,6 +11,19 @@ T = ta.TypeVar('T')
 ##
 
 
+_build_dispatch_cache_impl: ta.Callable | None = None
+
+try:
+    from . import _dispatch  # type: ignore  # noqa
+except ImportError:
+    pass
+else:
+    _build_dispatch_cache_impl = _dispatch.build_dispatch_cache
+
+
+##
+
+
 class Dispatcher(ta.Generic[T]):
     """Shared dispatching system for functions and methods. Logic directly mimics `functools.singledispatch`."""
 
@@ -73,12 +86,21 @@ class Dispatcher(ta.Generic[T]):
     _cache: _Cache
 
     def _reset_cache(self, token: ta.Any | None) -> None:
-        self._cache = Dispatcher._Cache(
-            self._impls_by_arg_cls,
-            self._find_impl,
-            self._reset_cache_for_token,
-            token,
-        )
+        if _build_dispatch_cache_impl is not None:
+            self._cache = _build_dispatch_cache_impl(  # noqa
+                self._impls_by_arg_cls,
+                self._find_impl,
+                self._reset_cache_for_token,
+                token,
+            )
+
+        else:
+            self._cache = Dispatcher._Cache(
+                self._impls_by_arg_cls,
+                self._find_impl,
+                self._reset_cache_for_token,
+                token,
+            )
 
     def _reset_cache_for_token(self, prev: _Cache) -> None:
         if prev is None or self._cache is prev:
