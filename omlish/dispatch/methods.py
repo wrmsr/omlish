@@ -21,6 +21,19 @@ P = ta.ParamSpec('P')
 ##
 
 
+_build_method_dispatch_func_impl: ta.Callable | None = None
+
+try:
+    from . import _dispatch  # type: ignore  # noqa
+except ImportError:
+    pass
+else:
+    _build_method_dispatch_func_impl = _dispatch.build_method_dispatch_func
+
+
+##
+
+
 class Method(ta.Generic[P, R]):
     """
     MRO-honoring instancemethod singledispatch. There are many ways to do this, and this one is attr name based: a class
@@ -124,19 +137,23 @@ class Method(ta.Generic[P, R]):
 
     def _build_dispatch_func(self, disp: Dispatcher[str]) -> ta.Callable:
         dispatch = disp.dispatch
-        type_ = type
-        getattr_ = getattr
         base_func = self._func
         func_name = getattr(base_func, '__name__', 'singledispatch method')
 
-        def __call__(self, *args, **kwargs):  # noqa
-            if not args:
-                raise TypeError(f'{func_name} requires at least 1 positional argument')
+        if _build_method_dispatch_func_impl is not None:
+            __call__ = _build_method_dispatch_func_impl(dispatch, base_func, func_name)
+        else:
+            type_ = type
+            getattr_ = getattr
 
-            if (impl_att := dispatch(type_(args[0]))) is not None:
-                return getattr_(self, impl_att)(*args, **kwargs)
+            def __call__(self, *args, **kwargs):  # noqa
+                if not args:
+                    raise TypeError(f'{func_name} requires at least 1 positional argument')
 
-            return base_func.__get__(self)(*args, **kwargs)  # noqa
+                if (impl_att := dispatch(type_(args[0]))) is not None:
+                    return getattr_(self, impl_att)(*args, **kwargs)
+
+                return base_func.__get__(self)(*args, **kwargs)  # noqa
 
         self.update_wrapper(__call__)
         return __call__
