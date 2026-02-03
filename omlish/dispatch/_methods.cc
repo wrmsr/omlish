@@ -9,6 +9,17 @@
 #define _PACKAGE_NAME "omlish.dispatch"
 #define _MODULE_FULL_NAME _PACKAGE_NAME "." _MODULE_NAME
 
+typedef struct {
+    PyTypeObject *MethodDispatchFuncType;
+} methods_state;
+
+static inline methods_state * get_methods_state(PyObject *module)
+{
+    void *state = PyModule_GetState(module);
+    assert(state != NULL);
+    return (methods_state *)state;
+}
+
 //
 
 typedef struct {
@@ -18,16 +29,6 @@ typedef struct {
     PyObject *func_name;
     PyObject *dict;
 } MethodDispatchFunc;
-
-static void MethodDispatchFunc_dealloc(MethodDispatchFunc *self)
-{
-    PyObject_GC_UnTrack(self);
-    Py_XDECREF(self->dispatch_func);
-    Py_XDECREF(self->base_func);
-    Py_XDECREF(self->func_name);
-    Py_XDECREF(self->dict);
-    Py_TYPE(self)->tp_free((PyObject *)self);
-}
 
 static int MethodDispatchFunc_traverse(MethodDispatchFunc *self, visitproc visit, void *arg)
 {
@@ -45,6 +46,13 @@ static int MethodDispatchFunc_clear(MethodDispatchFunc *self)
     Py_CLEAR(self->func_name);
     Py_CLEAR(self->dict);
     return 0;
+}
+
+static void MethodDispatchFunc_dealloc(MethodDispatchFunc *self)
+{
+    PyObject_GC_UnTrack(self);
+    MethodDispatchFunc_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
 static PyObject * MethodDispatchFunc_call(MethodDispatchFunc *self, PyObject *args, PyObject *kwargs)
@@ -173,18 +181,92 @@ static PyObject * MethodDispatchFunc_get(MethodDispatchFunc *self, PyObject *ins
     return PyMethod_New((PyObject *)self, instance);
 }
 
-static PyTypeObject MethodDispatchFunc_Type = {
-    .ob_base = PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = _MODULE_FULL_NAME ".MethodDispatchFunc",
-    .tp_basicsize = sizeof(MethodDispatchFunc),
-    .tp_dealloc = (destructor)MethodDispatchFunc_dealloc,
-    .tp_call = (ternaryfunc)MethodDispatchFunc_call,
-    .tp_descr_get = (descrgetfunc)MethodDispatchFunc_get,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
-    .tp_doc = PyDoc_STR("Fast dispatch function for Method instances"),
-    .tp_traverse = (traverseproc)MethodDispatchFunc_traverse,
-    .tp_clear = (inquiry)MethodDispatchFunc_clear,
-    .tp_dictoffset = offsetof(MethodDispatchFunc, dict),
+static PyObject * MethodDispatchFunc_get_dict(MethodDispatchFunc *self, void *closure)
+{
+    if (self->dict == nullptr) {
+        self->dict = PyDict_New();
+        if (self->dict == nullptr) {
+            return nullptr;
+        }
+    }
+    Py_INCREF(self->dict);
+    return self->dict;
+}
+
+static int MethodDispatchFunc_set_dict(MethodDispatchFunc *self, PyObject *value, void *closure)
+{
+    if (value == nullptr) {
+        PyErr_SetString(PyExc_TypeError, "Cannot delete __dict__");
+        return -1;
+    }
+    if (!PyDict_Check(value)) {
+        PyErr_SetString(PyExc_TypeError, "__dict__ must be a dictionary");
+        return -1;
+    }
+    Py_XSETREF(self->dict, Py_NewRef(value));
+    return 0;
+}
+
+static PyObject * MethodDispatchFunc_getattro(MethodDispatchFunc *self, PyObject *name)
+{
+    // First check instance dict
+    if (self->dict != nullptr) {
+        PyObject *res = PyDict_GetItemWithError(self->dict, name);
+        if (res != nullptr) {
+            Py_INCREF(res);
+            return res;
+        }
+        if (PyErr_Occurred()) {
+            return nullptr;
+        }
+    }
+
+    // Fall back to type's getattro
+    return PyObject_GenericGetAttr((PyObject *)self, name);
+}
+
+static int MethodDispatchFunc_setattro(MethodDispatchFunc *self, PyObject *name, PyObject *value)
+{
+    // Ensure dict exists
+    if (self->dict == nullptr) {
+        self->dict = PyDict_New();
+        if (self->dict == nullptr) {
+            return -1;
+        }
+    }
+
+    // Set in instance dict
+    if (value == nullptr) {
+        return PyDict_DelItem(self->dict, name);
+    } else {
+        return PyDict_SetItem(self->dict, name, value);
+    }
+}
+
+static PyGetSetDef MethodDispatchFunc_getsets[] = {
+    {"__dict__", (getter)MethodDispatchFunc_get_dict, (setter)MethodDispatchFunc_set_dict, nullptr, nullptr},
+    {nullptr}
+};
+
+static PyType_Slot MethodDispatchFunc_slots[] = {
+    {Py_tp_dealloc, (void *)MethodDispatchFunc_dealloc},
+    {Py_tp_call, (void *)MethodDispatchFunc_call},
+    {Py_tp_descr_get, (void *)MethodDispatchFunc_get},
+    {Py_tp_traverse, (void *)MethodDispatchFunc_traverse},
+    {Py_tp_clear, (void *)MethodDispatchFunc_clear},
+    {Py_tp_getattro, (void *)MethodDispatchFunc_getattro},
+    {Py_tp_setattro, (void *)MethodDispatchFunc_setattro},
+    {Py_tp_getset, MethodDispatchFunc_getsets},
+    {Py_tp_doc, (void *)"Fast dispatch function for Method instances"},
+    {0, nullptr}
+};
+
+static PyType_Spec MethodDispatchFunc_spec = {
+    .name = _MODULE_FULL_NAME ".MethodDispatchFunc",
+    .basicsize = sizeof(MethodDispatchFunc),
+    .itemsize = 0,
+    .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
+    .slots = MethodDispatchFunc_slots,
 };
 
 //
@@ -227,7 +309,8 @@ static PyObject * build_method_dispatch_func(PyObject *module, PyObject *args)
         return nullptr;
     }
 
-    MethodDispatchFunc *self = PyObject_GC_New(MethodDispatchFunc, &MethodDispatchFunc_Type);
+    methods_state *state = get_methods_state(module);
+    MethodDispatchFunc *self = PyObject_GC_New(MethodDispatchFunc, state->MethodDispatchFuncType);
     if (self == nullptr) {
         return nullptr;
     }
@@ -247,12 +330,44 @@ PyDoc_STRVAR(methods_doc, "Native C++ implementations for omlish.dispatch.method
 
 static int methods_exec(PyObject *module)
 {
+    methods_state *state = get_methods_state(module);
+
+    // Create the type dynamically
+    state->MethodDispatchFuncType = (PyTypeObject *)PyType_FromModuleAndSpec(
+        module,
+        &MethodDispatchFunc_spec,
+        nullptr
+    );
+    if (state->MethodDispatchFuncType == nullptr) {
+        return -1;
+    }
+
     // Add the type to the module
-    if (PyType_Ready(&MethodDispatchFunc_Type) < 0) {
+    if (PyModule_AddType(module, state->MethodDispatchFuncType) < 0) {
+        Py_CLEAR(state->MethodDispatchFuncType);
         return -1;
     }
 
     return 0;
+}
+
+static int methods_traverse(PyObject *module, visitproc visit, void *arg)
+{
+    methods_state *state = get_methods_state(module);
+    Py_VISIT(state->MethodDispatchFuncType);
+    return 0;
+}
+
+static int methods_clear(PyObject *module)
+{
+    methods_state *state = get_methods_state(module);
+    Py_CLEAR(state->MethodDispatchFuncType);
+    return 0;
+}
+
+static void methods_free(void *module)
+{
+    methods_clear((PyObject *)module);
 }
 
 static PyMethodDef methods_methods[] = {
@@ -271,9 +386,12 @@ static struct PyModuleDef methods_module = {
     .m_base = PyModuleDef_HEAD_INIT,
     .m_name = _MODULE_NAME,
     .m_doc = methods_doc,
-    .m_size = 0,
+    .m_size = sizeof(methods_state),
     .m_methods = methods_methods,
     .m_slots = methods_slots,
+    .m_traverse = methods_traverse,
+    .m_clear = methods_clear,
+    .m_free = methods_free,
 };
 
 extern "C" {
