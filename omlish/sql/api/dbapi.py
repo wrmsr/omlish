@@ -128,17 +128,20 @@ class DbapiConn(Conn):
     def adapter(self) -> Adapter:
         return self._adapter
 
+    def _query(self, es: contextlib.ExitStack, query: Query) -> DbapiRows:
+        cursor = self._conn.cursor()
+        es.enter_context(contextlib.closing(cursor))
+
+        cursor.execute(query.text)
+        columns = build_dbapi_columns(cursor.description)
+
+        return DbapiRows(cursor, columns)
+
     def query(self, query: Query) -> ta.ContextManager[Rows]:
         @contextlib.contextmanager
         def inner():
             with contextlib.ExitStack() as es:
-                cursor = self._conn.cursor()
-                es.enter_context(contextlib.closing(cursor))
-
-                cursor.execute(query.text)
-                columns = build_dbapi_columns(cursor.description)
-
-                yield DbapiRows(cursor, columns)
+                yield self._query(es, query)
 
         return inner()
 
@@ -164,23 +167,31 @@ class DbapiDb(Db, SimpleResource):
     def adapter(self) -> Adapter:
         return self._adapter
 
+    def _connect(self, es: contextlib.ExitStack) -> DbapiConn:
+        dbapi_conn = self._conn_fac()
+        es.enter_context(contextlib.closing(dbapi_conn))
+
+        return DbapiConn(dbapi_conn)
+
     def connect(self) -> ta.ContextManager[Conn]:
         @contextlib.contextmanager
         def inner():
             self._check_entered()
-            with contextlib.ExitStack() as es:
-                dbapi_conn = self._conn_fac()
-                es.enter_context(contextlib.closing(dbapi_conn))
 
-                yield DbapiConn(dbapi_conn)
+            with contextlib.ExitStack() as es:
+                yield self._connect(es)
 
         return inner()
 
     def query(self, query: Query) -> ta.ContextManager[Rows]:
-        # with self.connect() as conn:
-        #     return conn.query(query)
-        # FIXME: need minichain-style Resource group? can't close conn with live Rows
-        raise NotImplementedError
+        @contextlib.contextmanager
+        def inner():
+            self._check_entered()
+
+            with contextlib.ExitStack() as es:
+                yield self._connect(es)._query(es, query)  # noqa
+
+        return inner()
 
 
 class DbapiAdapter(Adapter):

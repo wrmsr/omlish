@@ -91,6 +91,8 @@ def test_queries():
         with db.connect() as conn:
             print(qf.query_all(conn, Q.select([1])))
 
+        print(qf.query_all(db, Q.select([1])))
+
 
 # def test_check_entered():
 #     with DbapiDb(lambda: sqlite3.connect(':memory:')) as db:
