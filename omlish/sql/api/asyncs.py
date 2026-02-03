@@ -55,7 +55,7 @@ class SyncToAsyncConn(AsyncConn):
         self._r = r
         self._u = u
 
-    def begin(self) -> ta.AsyncContextManager[Transaction]:
+    def begin(self) -> ta.AsyncContextManager[AsyncTransaction]:
         raise NotImplementedError
 
     def query(self, query: Query) -> ta.AsyncContextManager[AsyncRows]:  # ta.Raises[QueryError]
@@ -69,7 +69,7 @@ class SyncToAsyncDb(AsyncDb):
         self._r = r
         self._u = u
 
-    def connect(self) -> ta.AsyncContextManager[Conn]:
+    def connect(self) -> ta.AsyncContextManager[AsyncConn]:
         raise NotImplementedError
 
     def query(self, query: Query) -> ta.AsyncContextManager[AsyncRows]:  # ta.Raises[QueryError]

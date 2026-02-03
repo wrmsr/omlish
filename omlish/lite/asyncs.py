@@ -1,5 +1,4 @@
 # ruff: noqa: UP006 UP045
-import collections.abc
 import functools
 import typing as ta
 
@@ -23,42 +22,6 @@ async def async_enumerate(ai: ta.AsyncIterable[T]) -> ta.AsyncIterable[ta.Tuple[
     async for e in ai:
         yield (i, e)
         i += 1
-
-
-##
-
-
-def aiter_(obj: ta.AsyncIterable[T]) -> ta.AsyncIterator[T]:
-    if isinstance(obj, collections.abc.AsyncIterator):
-        return obj
-
-    elif isinstance(obj, collections.abc.AsyncIterable):
-        return obj.__aiter__()
-
-    else:
-        raise TypeError(obj)
-
-
-_NO_ANEXT_DEFAULT = object()
-
-
-async def anext_(obj: ta.AsyncIterator[T], default: ta.Any = _NO_ANEXT_DEFAULT) -> T:
-    try:
-        return await obj.__anext__()
-
-    except StopAsyncIteration:
-        if default is not _NO_ANEXT_DEFAULT:
-            return default
-
-        raise
-
-
-async def aclose_(obj: ta.Any) -> None:
-    if hasattr(obj, '__aclose__'):
-        await obj.__aclose__()
-
-    elif hasattr(obj, 'aclose'):
-        await obj.aclose()
 
 
 ##

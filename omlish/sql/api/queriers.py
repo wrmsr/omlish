@@ -8,8 +8,8 @@ from .queries import Query
 
 
 if ta.TYPE_CHECKING:
-    from .core import Rows
     from .core import AsyncRows
+    from .core import Rows
 
 
 ##

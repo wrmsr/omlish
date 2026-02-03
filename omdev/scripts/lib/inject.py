@@ -32,7 +32,7 @@ def __omlish_amalg__():  # noqa
     return dict(
         src_files=[
             dict(path='abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
-            dict(path='check.py', sha1='bb6b6b63333699b84462951a854d99ae83195b94'),
+            dict(path='check.py', sha1='7996e893097b9318089017b1342c9965d4024eb0'),
             dict(path='reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='maybes.py', sha1='04d2fcbea17028a5e6b8e7a7fb742375495ed233'),
             dict(path='inject.py', sha1='6f097e3170019a34ff6834d36fcc9cbeed3a7ab4'),
@@ -543,6 +543,63 @@ class Checks:
             next(it)
         except StopIteration:
             return value  # noqa
+
+        self._raise(
+            ValueError,
+            'Must be empty or single',
+            msg,
+            Checks._ArgsKwargs(obj),
+            render_fmt='%s',
+        )
+
+        raise RuntimeError  # noqa
+
+    async def async_single(self, obj: ta.AsyncIterable[T], msg: CheckMessage = None) -> T:
+        ait = obj.__aiter__()
+
+        try:
+            try:
+                value = await ait.__anext__()
+            except StopAsyncIteration:
+                pass
+
+            else:
+                try:
+                    await ait.__anext__()
+                except StopAsyncIteration:
+                    return value
+
+        finally:
+            if inspect.isasyncgen(ait):
+                await ait.aclose()
+
+        self._raise(
+            ValueError,
+            'Must be single',
+            msg,
+            Checks._ArgsKwargs(obj),
+            render_fmt='%s',
+        )
+
+        raise RuntimeError  # noqa
+
+    async def async_opt_single(self, obj: ta.AsyncIterable[T], msg: CheckMessage = None) -> ta.Optional[T]:
+        ait = obj.__aiter__()
+
+        try:
+            try:
+                value = await ait.__anext__()
+            except StopAsyncIteration:
+                return None
+
+            try:
+                await ait.__anext__()
+            except StopAsyncIteration:
+                return value  # noqa
+
+        finally:
+            if inspect.isasyncgen(ait):
+                await ait.aclose()
 
         self._raise(
             ValueError,

@@ -6,6 +6,7 @@ TODO:
  - ** class @dataclass Raise - user message should be able to be an exception type or instance or factory
 """
 import collections
+import inspect
 import threading
 import typing as ta
 
@@ -354,31 +355,51 @@ class Checks:
         raise RuntimeError  # noqa
 
     async def async_single(self, obj: ta.AsyncIterable[T], msg: CheckMessage = None) -> T:
-        try:
-            [value] = obj
-        except ValueError:
-            self._raise(
-                ValueError,
-                'Must be single',
-                msg,
-                Checks._ArgsKwargs(obj),
-                render_fmt='%s',
-            )
+        ait = obj.__aiter__()
 
-        $FIXME
-        return value
+        try:
+            try:
+                value = await ait.__anext__()
+            except StopAsyncIteration:
+                pass
+
+            else:
+                try:
+                    await ait.__anext__()
+                except StopAsyncIteration:
+                    return value
+
+        finally:
+            if inspect.isasyncgen(ait):
+                await ait.aclose()
+
+        self._raise(
+            ValueError,
+            'Must be single',
+            msg,
+            Checks._ArgsKwargs(obj),
+            render_fmt='%s',
+        )
+
+        raise RuntimeError  # noqa
 
     async def async_opt_single(self, obj: ta.AsyncIterable[T], msg: CheckMessage = None) -> ta.Optional[T]:
-        it = iter(obj)
-        try:
-            value = next(it)
-        except StopIteration:
-            return None
+        ait = obj.__aiter__()
 
         try:
-            next(it)
-        except StopIteration:
-            return value  # noqa
+            try:
+                value = await ait.__anext__()
+            except StopAsyncIteration:
+                return None
+
+            try:
+                await ait.__anext__()
+            except StopAsyncIteration:
+                return value  # noqa
+
+        finally:
+            if inspect.isasyncgen(ait):
+                await ait.aclose()
 
         self._raise(
             ValueError,
@@ -388,7 +409,6 @@ class Checks:
             render_fmt='%s',
         )
 
-        $FIXME
         raise RuntimeError  # noqa
 
     #
