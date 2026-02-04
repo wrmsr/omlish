@@ -1,7 +1,3 @@
-"""
-TODO:
- - uncache_miss
-"""
 import abc
 import typing as ta
 import weakref
@@ -20,12 +16,12 @@ U_co = ta.TypeVar('U_co', covariant=True)
 _build_weak_dispatch_cache_impl: ta.Callable | None = None
 _build_strong_dispatch_cache_impl: ta.Callable | None = None
 
-try:
-    from . import _dispatch  # type: ignore  # noqa
-except ImportError:
-    pass
-else:
-    _build_strong_dispatch_cache_impl = _dispatch.build_strong_dispatch_cache
+# try:
+#     from . import _dispatch  # type: ignore  # noqa
+# except ImportError:
+#     pass
+# else:
+#     _build_strong_dispatch_cache_impl = _dispatch.build_strong_dispatch_cache
 
 
 ##
@@ -39,6 +35,7 @@ class Dispatcher(ta.Generic[T]):
             find_impl: ta.Callable[[type, ta.Mapping[type, T]], T | None] | None = None,
             *,
             strong_cache: bool = False,
+            uncached_miss: bool = False,
     ) -> None:
         super().__init__()
 
@@ -46,6 +43,7 @@ class Dispatcher(ta.Generic[T]):
             find_impl = default_find_impl
         self._find_impl = find_impl
         self._strong_cache = strong_cache
+        self._uncached_miss = uncached_miss
 
         self._impls_by_arg_cls: dict[type, T] = {}
 
@@ -63,14 +61,12 @@ class Dispatcher(ta.Generic[T]):
 
     #
 
-    class _CacheFactory(ta.Protocol[U]):
-        def __call__(
-            self,
-            impls_by_arg_cls: dict[type, U],
-            find_impl: ta.Callable[[type, ta.Mapping[type, U]], U | None],
-            reset_cache_for_token: ta.Callable[['Dispatcher._Cache[U]'], None],
-            token: ta.Any | None,
-        ) -> 'Dispatcher._Cache[U]': ...
+    class _CacheParams(ta.NamedTuple):
+        impls_by_arg_cls: dict[type, ta.Any]
+        find_impl: ta.Callable[[type, ta.Mapping[type, ta.Any]], ta.Any | None]
+        reset_cache_for_token: ta.Callable[['Dispatcher._Cache[ta.Any]'], None]
+        uncached_miss: bool
+        token: ta.Any | None
 
     class _Cache(ta.Protocol[U_co]):
         @property
@@ -81,29 +77,23 @@ class Dispatcher(ta.Generic[T]):
 
         def dispatch(self, cls: type) -> ta.Any | None: ...
 
-    _cache_factory: _CacheFactory[T]
+    _cache_factory: ta.Callable[[_CacheParams], _Cache[T]]
 
     _cache: _Cache[T]
 
     #
 
     class _StrongCache:
-        def __init__(
-                self,
-                impls_by_arg_cls: dict[type, T],
-                find_impl: ta.Callable[[type, ta.Mapping[type, T]], T | None],
-                reset_cache_for_token: ta.Callable[['Dispatcher._Cache'], None],
-                token: ta.Any | None,
-        ) -> None:
-            self.token = token
+        def __init__(self, params: 'Dispatcher._CacheParams') -> None:
+            token = params.token
+            impls_by_arg_cls = params.impls_by_arg_cls
+            find_impl = params.find_impl
 
-            self.dct: dict[type, ta.Any] = {}
-
-            dct = self.dct
+            dct: dict[type, ta.Any] = {}
 
             def dispatch(cls: type) -> ta.Any | None:
                 if token is not None and abc.get_cache_token() != token:
-                    reset_cache_for_token(self)
+                    params.reset_cache_for_token(self)
                     return find_impl(cls, impls_by_arg_cls)
 
                 try:
@@ -120,19 +110,19 @@ class Dispatcher(ta.Generic[T]):
                 dct[cls] = impl
                 return impl
 
+            self.token = token
+            self.dct = dct
             self.dispatch: ta.Callable[[type], ta.Any | None] = dispatch
 
     class _WeakCache:
-        def __init__(
-                self,
-                impls_by_arg_cls: dict[type, T],
-                find_impl: ta.Callable[[type, ta.Mapping[type, T]], T | None],
-                reset_cache_for_token: ta.Callable[['Dispatcher._Cache'], None],
-                token: ta.Any | None,
-        ) -> None:
-            self.token = token
+        def __init__(self, params: 'Dispatcher._CacheParams') -> None:
+            token = params.token
+            impls_by_arg_cls = params.impls_by_arg_cls
+            find_impl = params.find_impl
 
-            self.dct: dict[weakref.ref[type], ta.Any] = {}
+            dct: dict[weakref.ref[type], ta.Any] = {}
+
+            weakref_ref_ = weakref.ref
 
             def dct_remove(k, self_ref=weakref.ref(self)):  # noqa
                 if (ref_self := self_ref()) is not None:
@@ -141,12 +131,9 @@ class Dispatcher(ta.Generic[T]):
                     except KeyError:
                         pass
 
-            dct = self.dct
-            weakref_ref_ = weakref.ref
-
             def dispatch(cls: type) -> ta.Any | None:
                 if token is not None and abc.get_cache_token() != token:
-                    reset_cache_for_token(self)
+                    params.reset_cache_for_token(self)
                     return find_impl(cls, impls_by_arg_cls)
 
                 cls_ref = weakref_ref_(cls)
@@ -165,17 +152,20 @@ class Dispatcher(ta.Generic[T]):
                 dct[weakref_ref_(cls, dct_remove)] = impl
                 return impl
 
+            self.token = token
+            self.dct = dct
             self.dispatch: ta.Callable[[type], ta.Any | None] = dispatch
 
     #
 
     def _reset_cache(self, token: ta.Any | None) -> None:
-        self._cache = self._cache_factory(  # noqa
+        self._cache = self._cache_factory(Dispatcher._CacheParams(  # noqa
             self._impls_by_arg_cls,
             self._find_impl,
             self._reset_cache_for_token,
+            self._uncached_miss,
             token,
-        )
+        ))
 
     def _reset_cache_for_token(self, prev: _Cache) -> None:
         if prev is None or self._cache is prev:
