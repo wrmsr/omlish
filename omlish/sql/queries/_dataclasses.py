@@ -2138,24 +2138,26 @@ def _process_dataclass__b8c8a3ae58179edee1955035e0736f0a17b6c999():
         "Plans(tup=(CopyPlan(fields=('n',)), FrozenPlan(fields=('n',), allow_dynamic_dunder_attrs=False), InitPlan(fiel"
         "ds=(InitPlan.Field(name='n', annotation=OpRef(name='init.fields.0.annotation'), default=OpRef(name='init.field"
         "s.0.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
-        "lidate=None, check_type=None),), self_param='self', std_params=('n',), kw_only_params=(), frozen=True, slots=F"
-        "alse, post_init_params=None, init_fns=(), validate_fns=())))"
+        "lidate=OpRef(name='init.fields.0.validate'), check_type=None),), self_param='self', std_params=('n',), kw_only"
+        "_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=())))"
     ),
-    plan_repr_sha1='f119cc2384e4e403f7429316518cf9f2a5545cc4',
+    plan_repr_sha1='97c6d2c139b3e6117df6ff1b1518893a288e097b',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
+        '__dataclass__init__fields__0__validate',
     ),
     cls_names=(
         ('omlish.sql.queries', 'Param'),
     ),
 )
-def _process_dataclass__f119cc2384e4e403f7429316518cf9f2a5545cc4():
+def _process_dataclass__97c6d2c139b3e6117df6ff1b1518893a288e097b():
     def _process_dataclass(
         *,
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__0__default,
+        __dataclass__init__fields__0__validate,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -2220,6 +2222,13 @@ def _process_dataclass__f119cc2384e4e403f7429316518cf9f2a5545cc4():
             self,
             n: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
         ) -> __dataclass__None:
+            if not __dataclass__init__fields__0__validate(n): 
+                raise __dataclass__FieldFnValidationError(
+                    obj=self,
+                    fn=__dataclass__init__fields__0__validate,
+                    field='n',
+                    value=n,
+                )
             __dataclass__object_setattr(self, 'n', n)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
@@ -2351,17 +2360,17 @@ def _process_dataclass__5d70b1e70ab35fa9bb3d99658dcd0f5231c19284():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('s', 'args')), EqPlan(fields=('s', 'args')), FrozenPlan(fields=('s', 'args'), allo"
-        "w_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('s', 'args'), cache=False), InitPlan(fields=(Ini"
-        "tPlan.Field(name='s', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, i"
-        "nit=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPla"
-        "n.Field(name='args', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, in"
-        "it=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_pa"
-        "ram='self', std_params=('s', 'args'), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init"
-        "_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='s', kw_only=False, fn=None), ReprPlan.Field(n"
-        "ame='args', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('s', 'params')), EqPlan(fields=('s', 'params')), FrozenPlan(fields=('s', 'params')"
+        ", allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('s', 'params'), cache=False), InitPlan(fie"
+        "lds=(InitPlan.Field(name='s', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory"
+        "=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),"
+        " InitPlan.Field(name='params', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factor"
+        "y=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)"
+        "), self_param='self', std_params=('s', 'params'), kw_only_params=(), frozen=True, slots=False, post_init_param"
+        "s=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='s', kw_only=False, fn=None), Repr"
+        "Plan.Field(name='params', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='44a5a14856f47f088bf1a17323394c12e6cc84df',
+    plan_repr_sha1='6445221c320dcc70a67fdd9a3ce4d8b2bddf1f12',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
@@ -2370,7 +2379,7 @@ def _process_dataclass__5d70b1e70ab35fa9bb3d99658dcd0f5231c19284():
         ('omlish.sql.queries', 'RenderedQuery'),
     ),
 )
-def _process_dataclass__44a5a14856f47f088bf1a17323394c12e6cc84df():
+def _process_dataclass__6445221c320dcc70a67fdd9a3ce4d8b2bddf1f12():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -2395,7 +2404,7 @@ def _process_dataclass__44a5a14856f47f088bf1a17323394c12e6cc84df():
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
                 s=self.s,
-                args=self.args,
+                params=self.params,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -2410,7 +2419,7 @@ def _process_dataclass__44a5a14856f47f088bf1a17323394c12e6cc84df():
                 return NotImplemented
             return (
                 self.s == other.s and
-                self.args == other.args
+                self.params == other.params
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -2420,7 +2429,7 @@ def _process_dataclass__44a5a14856f47f088bf1a17323394c12e6cc84df():
 
         __dataclass___setattr_frozen_fields = {
             's',
-            'args',
+            'params',
         }
 
         def __setattr__(self, name, value):
@@ -2438,7 +2447,7 @@ def _process_dataclass__44a5a14856f47f088bf1a17323394c12e6cc84df():
 
         __dataclass___delattr_frozen_fields = {
             's',
-            'args',
+            'params',
         }
 
         def __delattr__(self, name):
@@ -2457,7 +2466,7 @@ def _process_dataclass__44a5a14856f47f088bf1a17323394c12e6cc84df():
         def __hash__(self):
             return hash((
                 self.s,
-                self.args,
+                self.params,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -2466,10 +2475,10 @@ def _process_dataclass__44a5a14856f47f088bf1a17323394c12e6cc84df():
         def __init__(
             self,
             s: __dataclass__init__fields__0__annotation,
-            args: __dataclass__init__fields__1__annotation,
+            params: __dataclass__init__fields__1__annotation,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 's', s)
-            __dataclass__object_setattr(self, 'args', args)
+            __dataclass__object_setattr(self, 'params', params)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -2480,7 +2489,7 @@ def _process_dataclass__44a5a14856f47f088bf1a17323394c12e6cc84df():
         def __repr__(self):
             parts = []
             parts.append(f"s={self.s!r}")
-            parts.append(f"args={self.args!r}")
+            parts.append(f"params={self.params!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -2497,17 +2506,17 @@ def _process_dataclass__44a5a14856f47f088bf1a17323394c12e6cc84df():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('p', 'args')), EqPlan(fields=('p', 'args')), FrozenPlan(fields=('p', 'args'), allo"
-        "w_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('p', 'args'), cache=False), InitPlan(fields=(Ini"
-        "tPlan.Field(name='p', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, i"
-        "nit=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPla"
-        "n.Field(name='args', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, in"
-        "it=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_pa"
-        "ram='self', std_params=('p', 'args'), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init"
-        "_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='p', kw_only=False, fn=None), ReprPlan.Field(n"
-        "ame='args', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('p', 'params')), EqPlan(fields=('p', 'params')), FrozenPlan(fields=('p', 'params')"
+        ", allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('p', 'params'), cache=False), InitPlan(fie"
+        "lds=(InitPlan.Field(name='p', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory"
+        "=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),"
+        " InitPlan.Field(name='params', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factor"
+        "y=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)"
+        "), self_param='self', std_params=('p', 'params'), kw_only_params=(), frozen=True, slots=False, post_init_param"
+        "s=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='p', kw_only=False, fn=None), Repr"
+        "Plan.Field(name='params', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='4ac357a28366cbe10b8a2b8922f3d5ea3a5d22f7',
+    plan_repr_sha1='e963a32ff542ef2a6c239f4d29d900e3a42f8338',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
@@ -2516,7 +2525,7 @@ def _process_dataclass__44a5a14856f47f088bf1a17323394c12e6cc84df():
         ('omlish.sql.queries', 'RenderedQueryParts'),
     ),
 )
-def _process_dataclass__4ac357a28366cbe10b8a2b8922f3d5ea3a5d22f7():
+def _process_dataclass__e963a32ff542ef2a6c239f4d29d900e3a42f8338():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -2541,7 +2550,7 @@ def _process_dataclass__4ac357a28366cbe10b8a2b8922f3d5ea3a5d22f7():
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
                 p=self.p,
-                args=self.args,
+                params=self.params,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -2556,7 +2565,7 @@ def _process_dataclass__4ac357a28366cbe10b8a2b8922f3d5ea3a5d22f7():
                 return NotImplemented
             return (
                 self.p == other.p and
-                self.args == other.args
+                self.params == other.params
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -2566,7 +2575,7 @@ def _process_dataclass__4ac357a28366cbe10b8a2b8922f3d5ea3a5d22f7():
 
         __dataclass___setattr_frozen_fields = {
             'p',
-            'args',
+            'params',
         }
 
         def __setattr__(self, name, value):
@@ -2584,7 +2593,7 @@ def _process_dataclass__4ac357a28366cbe10b8a2b8922f3d5ea3a5d22f7():
 
         __dataclass___delattr_frozen_fields = {
             'p',
-            'args',
+            'params',
         }
 
         def __delattr__(self, name):
@@ -2603,7 +2612,7 @@ def _process_dataclass__4ac357a28366cbe10b8a2b8922f3d5ea3a5d22f7():
         def __hash__(self):
             return hash((
                 self.p,
-                self.args,
+                self.params,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -2612,10 +2621,10 @@ def _process_dataclass__4ac357a28366cbe10b8a2b8922f3d5ea3a5d22f7():
         def __init__(
             self,
             p: __dataclass__init__fields__0__annotation,
-            args: __dataclass__init__fields__1__annotation,
+            params: __dataclass__init__fields__1__annotation,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'p', p)
-            __dataclass__object_setattr(self, 'args', args)
+            __dataclass__object_setattr(self, 'params', params)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -2626,7 +2635,7 @@ def _process_dataclass__4ac357a28366cbe10b8a2b8922f3d5ea3a5d22f7():
         def __repr__(self):
             parts = []
             parts.append(f"p={self.p!r}")
-            parts.append(f"args={self.args!r}")
+            parts.append(f"params={self.params!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

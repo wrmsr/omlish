@@ -1,4 +1,7 @@
 - upsert
+  ```sql
+  insert into vocabulary(word) values('jovial') on conflict(word) do update set count=count+1;
+  ```
 - subquery relation
 - binary
   - in_

@@ -103,6 +103,7 @@ from .relations import (  # noqa
 
 from .rendering import (  # noqa
     RenderedQuery,
+    RenderedQueryParams,
     RenderedQueryParts,
     Renderer,
     StdRenderer,

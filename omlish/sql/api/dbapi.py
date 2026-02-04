@@ -2,8 +2,10 @@ import contextlib
 import typing as ta
 
 from ... import check
+from ... import lang
 from ...resources import SimpleResource
 from ..dbapi import abc as dbapi_abc
+from ..params import ParamStyle
 from . import querierfuncs as qf
 from .adapters import Adapter
 from .columns import Column
@@ -34,6 +36,9 @@ def build_dbapi_columns(desc: ta.Sequence[dbapi_abc.DbapiColumnDescription] | No
     return Columns(*cols)
 
 
+#
+
+
 class DbapiRows(Rows):
     def __init__(
             self,
@@ -54,6 +59,9 @@ class DbapiRows(Rows):
         if values is None:
             raise StopIteration
         return Row(self._columns, values)
+
+
+#
 
 
 class DbapiTransaction(Transaction, SimpleResource):
@@ -106,6 +114,9 @@ class DbapiTransaction(Transaction, SimpleResource):
         self._rollback_internal()
 
 
+#
+
+
 class DbapiConn(Conn):
     def __init__(
             self,
@@ -149,6 +160,9 @@ class DbapiConn(Conn):
         return DbapiTransaction(self)
 
 
+#
+
+
 class DbapiDb(Db):
     def __init__(
             self,
@@ -187,7 +201,29 @@ class DbapiDb(Db):
         return inner()
 
 
+#
+
+
+class UNSET_PARAM_STYLE(lang.Marker):  # noqa
+    pass
+
+
 class DbapiAdapter(Adapter):
+    def __init__(
+            self,
+            *,
+            param_style: ParamStyle | type[UNSET_PARAM_STYLE] = UNSET_PARAM_STYLE,
+    ) -> None:
+        super().__init__()
+
+        self._param_style = param_style
+
+    @property
+    def param_style(self) -> ParamStyle:
+        if (ps := self._param_style) is UNSET_PARAM_STYLE:
+            raise ValueError('param_style is not set')
+        return ta.cast(ParamStyle, ps)
+
     def scan_type(self, c: Column) -> type:
         raise NotImplementedError
 

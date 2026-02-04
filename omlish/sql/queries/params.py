@@ -10,13 +10,13 @@ from .base import Builder
 
 @dc.dataclass(frozen=True)
 class Param(lang.Final):
-    n: str | None = None
+    n: str | None = dc.xfield(None, validate=lambda s: s is None or s)
 
     def __repr__(self) -> str:
         if self.n is not None:
             return f'{self.__class__.__name__}({self.n!r})'
         else:
-            return f'{self.__class__.__name__}(@{id(self):x})'
+            return f'{self.__class__.__name__}@{id(self):x}()'
 
     def __eq__(self, other):
         if not isinstance(other, Param):
@@ -27,7 +27,7 @@ class Param(lang.Final):
             return self.n == other.n
 
     def __hash__(self):
-        return hash(self.n)
+        return hash(self.n) if self.n is not None else id(self)
 
 
 ##

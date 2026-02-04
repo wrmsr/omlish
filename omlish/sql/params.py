@@ -1,4 +1,5 @@
 import abc
+import collections.abc
 import enum
 import functools
 import typing as ta
@@ -7,10 +8,18 @@ from .. import check
 from .. import lang
 
 
+T = ta.TypeVar('T')
+
+
 ##
 
 
 ParamKey: ta.TypeAlias = str | int
+
+SequencePreparedParams: ta.TypeAlias = ta.Sequence[ParamKey]
+MappingPreparedParams: ta.TypeAlias = ta.Mapping[str, ParamKey]
+
+PreparedParams: ta.TypeAlias = SequencePreparedParams | MappingPreparedParams
 
 
 class ParamsPreparer(lang.Abstract):
@@ -19,11 +28,26 @@ class ParamsPreparer(lang.Abstract):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def prepare(self) -> lang.Args:
+    def prepare(self) -> PreparedParams:
         raise NotImplementedError
 
 
-class LinearParamsPreparer(ParamsPreparer):
+class SequenceParamsPreparer(ParamsPreparer, lang.Abstract):
+    @abc.abstractmethod
+    def prepare(self) -> SequencePreparedParams:
+        raise NotImplementedError
+
+
+class MappingParamsPreparer(ParamsPreparer, lang.Abstract):
+    @abc.abstractmethod
+    def prepare(self) -> MappingPreparedParams:
+        raise NotImplementedError
+
+
+##
+
+
+class LinearParamsPreparer(SequenceParamsPreparer):
     def __init__(self, placeholder: str) -> None:
         super().__init__()
 
@@ -34,11 +58,14 @@ class LinearParamsPreparer(ParamsPreparer):
         self._args.append(k)
         return self._placeholder
 
-    def prepare(self) -> lang.Args:
-        return lang.Args(*self._args)
+    def prepare(self) -> SequencePreparedParams:
+        return self._args
 
 
-class NumericParamsPreparer(ParamsPreparer):
+#
+
+
+class NumericParamsPreparer(SequenceParamsPreparer):
     def __init__(self) -> None:
         super().__init__()
 
@@ -67,11 +94,14 @@ class NumericParamsPreparer(ParamsPreparer):
         ret = self._str_by_key[k] = f':{pos + 1}'
         return ret
 
-    def prepare(self) -> lang.Args:
-        return lang.Args(*self._args)
+    def prepare(self) -> SequencePreparedParams:
+        return self._args
 
 
-class NamedParamsPreparer(ParamsPreparer):
+#
+
+
+class NamedParamsPreparer(MappingParamsPreparer):
     def __init__(
             self,
             render: ta.Callable[[str], str],
@@ -121,8 +151,8 @@ class NamedParamsPreparer(ParamsPreparer):
         ret = self._str_by_key[k] = self._render(kwarg)
         return ret
 
-    def prepare(self) -> lang.Args:
-        return lang.Args(**self._kwargs)
+    def prepare(self) -> MappingPreparedParams:
+        return self._kwargs
 
 
 ##
@@ -161,8 +191,28 @@ def make_params_preparer(style: ParamStyle) -> ParamsPreparer:
 ##
 
 
-def substitute_params(args: lang.Args, values: ta.Mapping[ParamKey, ta.Any]) -> lang.Args:
-    return lang.Args(
-        *[values[a] for a in args.args],
-        **{k: values[v] for k, v in args.kwargs.items()},
-    )
+@ta.overload
+def substitute_prepared_params(
+        params: SequencePreparedParams,
+        values: ta.Mapping[ParamKey, T],
+) -> ta.Sequence[T]:
+    ...
+
+
+@ta.overload
+def substitute_prepared_params(
+        params: MappingPreparedParams,
+        values: ta.Mapping[ParamKey, T],
+) -> ta.Mapping[str, T]:
+    ...
+
+
+def substitute_prepared_params(params, values):
+    if isinstance(params, collections.abc.Mapping):
+        return {k: values[v] for k, v in params.items()}
+
+    elif isinstance(params, collections.abc.Sequence):
+        return [values[a] for a in params]
+
+    else:
+        raise TypeError(params)

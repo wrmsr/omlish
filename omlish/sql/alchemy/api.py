@@ -6,6 +6,7 @@ from ... import check
 from ...resources import SimpleResource
 from .. import api
 from ..api.dbapi import build_dbapi_columns
+from ..params import ParamStyle
 
 
 T = ta.TypeVar('T')
@@ -108,6 +109,10 @@ class SqlalchemyApiDb(SqlalchemyApiWrapper[sa.engine.Engine], api.Db):
 
 
 class SqlalchemyApiAdapter(api.Adapter):
+    @property
+    def param_style(self) -> ParamStyle:
+        return ParamStyle.NAMED
+
     def scan_type(self, c: api.Column) -> type:
         raise NotImplementedError
 

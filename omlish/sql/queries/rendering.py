@@ -1,11 +1,14 @@
 import typing as ta
 
+from ... import collections as col
 from ... import dataclasses as dc
 from ... import dispatch
 from ... import lang
 from ...text import parts as tp
+from ..params import ParamKey
 from ..params import ParamStyle
 from ..params import make_params_preparer
+from ..params import substitute_prepared_params
 from .base import Node
 from .binary import Binary
 from .binary import BinaryOp
@@ -42,16 +45,19 @@ from .updates import Update
 ##
 
 
+RenderedQueryParams: ta.TypeAlias = ta.Sequence[Param] | ta.Mapping[str, Param]
+
+
 @dc.dataclass(frozen=True)
 class RenderedQueryParts(lang.Final):
     p: tp.Part
-    args: lang.Args
+    params: RenderedQueryParams
 
 
 @dc.dataclass(frozen=True)
 class RenderedQuery(lang.Final):
     s: str
-    args: lang.Args
+    params: RenderedQueryParams
 
 
 class Renderer(lang.Abstract):
@@ -66,10 +72,24 @@ class Renderer(lang.Abstract):
 
         self._params_preparer = make_params_preparer(self._param_style)
 
+        self._seen_params: dict[Param, int] = {}
+
+    #
+
     default_param_style: ta.ClassVar[ParamStyle] = ParamStyle.PYFORMAT
 
-    def args(self) -> lang.Args:
-        return self._params_preparer.prepare()
+    def _see_param(self, p: Param) -> None:
+        self._seen_params.setdefault(p, len(self._seen_params))
+
+    def _param_key(self, p: Param) -> ParamKey:
+        return p.n if p.n is not None else id(p)
+
+    def rendered_params(self) -> RenderedQueryParams:
+        prep_params = self._params_preparer.prepare()
+        subst = col.make_map_by(self._param_key, self._seen_params, strict=True)
+        return substitute_prepared_params(prep_params, subst)
+
+    #
 
     @dispatch.method(
         instance_cache=True,
@@ -84,7 +104,7 @@ class Renderer(lang.Abstract):
         r = cls(*args, **kwargs)
         return RenderedQueryParts(
             r.render(o),
-            r.args(),
+            r.rendered_params(),
         )
 
     @classmethod
@@ -92,7 +112,7 @@ class Renderer(lang.Abstract):
         rqp = cls.render_query_parts(o, *args, **kwargs)
         return RenderedQuery(
             tp.render(rqp.p),
-            rqp.args,
+            rqp.params,
         )
 
 
@@ -231,7 +251,8 @@ class StdRenderer(Renderer):
 
     @Renderer.render.register
     def render_param(self, o: Param) -> tp.Part:
-        return self._params_preparer.add(o.n if o.n is not None else id(o))
+        self._see_param(o)
+        return self._params_preparer.add(self._param_key(o))
 
     # relations
 

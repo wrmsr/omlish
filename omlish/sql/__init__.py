@@ -68,7 +68,14 @@ with _lang.auto_proxy_init(globals()):
 
     from .params import (  # noqa
         ParamKey,
+
+        SequencePreparedParams,
+        MappingPreparedParams,
+
         ParamsPreparer,
+        SequenceParamsPreparer,
+        MappingParamsPreparer,
+
         LinearParamsPreparer,
         NumericParamsPreparer,
         NamedParamsPreparer,
@@ -76,7 +83,7 @@ with _lang.auto_proxy_init(globals()):
         ParamStyle,
         make_params_preparer,
 
-        substitute_params,
+        substitute_prepared_params,
     )
 
     from .qualifiedname import (  # noqa

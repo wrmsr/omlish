@@ -1,4 +1,3 @@
-from ... import lang
 from ..params import LinearParamsPreparer
 from ..params import NamedParamsPreparer
 from ..params import NumericParamsPreparer
@@ -12,14 +11,14 @@ def test_linear():
     assert pp.add(2) == '?'
     assert pp.add('foo') == '?'
     assert pp.add('bar') == '?'
-    assert pp.prepare() == lang.Args(
+    assert list(pp.prepare()) == [
         1,
         'foo',
         1,
         2,
         'foo',
         'bar',
-    )
+    ]
 
 
 def test_numeric():
@@ -30,12 +29,12 @@ def test_numeric():
     assert pp.add(2) == ':3'
     assert pp.add('foo') == ':2'
     assert pp.add('bar') == ':4'
-    assert pp.prepare() == lang.Args(
+    assert list(pp.prepare()) == [
         1,
         'foo',
         2,
         'bar',
-    )
+    ]
 
 
 def test_named():
@@ -46,7 +45,7 @@ def test_named():
     assert pp.add(2) == ':_1'
     assert pp.add('foo') == ':foo'
     assert pp.add('bar') == ':bar'
-    assert pp.prepare() == lang.Args(
+    assert pp.prepare() == dict(
         _0=1,
         foo='foo',
         _1=2,

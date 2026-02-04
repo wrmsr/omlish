@@ -1,6 +1,8 @@
 import dataclasses as dc
 import typing as ta
 
+from .maybes import Maybe
+
 
 T = ta.TypeVar('T')
 
@@ -30,6 +32,18 @@ class Args:
                 **self.kwargs,
                 **kwargs,
             },
+        )
+
+    def map(self, fn: ta.Callable[[ta.Any], ta.Any]) -> 'Args':
+        return Args(
+            *[fn(a) for a in self.args],
+            **{k: fn(v) for k, v in self.kwargs.items()},
+        )
+
+    def map_maybe(self, fn: ta.Callable[[ta.Any], Maybe[ta.Any]]) -> 'Args':
+        return Args(
+            *[n for a in self.args if (n := fn(a)).present],
+            **{k: n for k, v in self.kwargs.items() if (n := fn(v)).present},
         )
 
     def __call__(self, fn: ta.Callable[..., T]) -> T:

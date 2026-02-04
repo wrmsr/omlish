@@ -3,6 +3,7 @@ TODO:
  - dialect lol
  - args lol
 """
+from ..params import ParamStyle
 from ..queries import Stmt
 from ..queries.rendering import render
 from .asquery import AsQueryParams
@@ -20,9 +21,16 @@ def _(
         *,
         params: AsQueryParams,
 ) -> Query:
-    rq = render(stmt)
+    ps: ParamStyle | None = None
+    if params.adapter is not None:
+        ps = params.adapter.param_style
 
-    if rq.args:
+    rq = render(
+        stmt,
+        param_style=ps,
+    )
+
+    if rq.params:
         raise NotImplementedError
 
     return Query(
