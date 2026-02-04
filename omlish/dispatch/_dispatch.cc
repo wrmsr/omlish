@@ -24,8 +24,8 @@ static inline dispatch_state * get_dispatch_state(PyObject *module)
 
 typedef struct {
     PyObject_HEAD
-    PyObject *token;
     PyObject *dct;
+    PyObject *token;
     PyObject *impls_by_arg_cls;
     PyObject *find_impl;
     PyObject *reset_cache_for_token;
@@ -34,8 +34,8 @@ typedef struct {
 
 static int StrongCache_traverse(StrongCache *self, visitproc visit, void *arg)
 {
-    Py_VISIT(self->token);
     Py_VISIT(self->dct);
+    Py_VISIT(self->token);
     Py_VISIT(self->impls_by_arg_cls);
     Py_VISIT(self->find_impl);
     Py_VISIT(self->reset_cache_for_token);
@@ -45,8 +45,8 @@ static int StrongCache_traverse(StrongCache *self, visitproc visit, void *arg)
 
 static int StrongCache_clear(StrongCache *self)
 {
-    Py_CLEAR(self->token);
     Py_CLEAR(self->dct);
+    Py_CLEAR(self->token);
     Py_CLEAR(self->impls_by_arg_cls);
     Py_CLEAR(self->find_impl);
     Py_CLEAR(self->reset_cache_for_token);
@@ -143,16 +143,16 @@ static PyObject * StrongCache_dispatch(StrongCache *self, PyObject *cls)
     return impl;
 }
 
-static PyObject * StrongCache_get_token(StrongCache *self, void *closure)
-{
-    Py_INCREF(self->token);
-    return self->token;
-}
-
 static PyObject * StrongCache_get_dct(StrongCache *self, void *closure)
 {
     Py_INCREF(self->dct);
     return self->dct;
+}
+
+static PyObject * StrongCache_get_token(StrongCache *self, void *closure)
+{
+    Py_INCREF(self->token);
+    return self->token;
 }
 
 static PyMethodDef StrongCache_methods[] = {
@@ -161,8 +161,8 @@ static PyMethodDef StrongCache_methods[] = {
 };
 
 static PyGetSetDef StrongCache_getsets[] = {
-    {"token", (getter)StrongCache_get_token, nullptr, nullptr, nullptr},
     {"dct", (getter)StrongCache_get_dct, nullptr, nullptr, nullptr},
+    {"token", (getter)StrongCache_get_token, nullptr, nullptr, nullptr},
     {nullptr}
 };
 
@@ -192,37 +192,16 @@ PyDoc_STRVAR(build_strong_dispatch_cache_doc,
 Create a fast strong cache for dispatcher.\n\
 \n\
 Args:\n\
-    impls_by_arg_cls: Dictionary mapping types to implementations\n\
-    find_impl: Function to find implementation for a type\n\
-    reset_cache_for_token: Function to reset cache when token changes\n\
-    token: Current ABC cache token or None\n\
+    params: Dispatcher._CacheParams object\n\
 \n\
 Returns:\n\
     A StrongCache instance");
 
 static PyObject * build_strong_dispatch_cache(PyObject *module, PyObject *args)
 {
-    PyObject *impls_by_arg_cls;
-    PyObject *find_impl;
-    PyObject *reset_cache_for_token;
-    PyObject *token;
+    PyObject *params;
 
-    if (!PyArg_ParseTuple(args, "OOOO", &impls_by_arg_cls, &find_impl, &reset_cache_for_token, &token)) {
-        return nullptr;
-    }
-
-    if (!PyDict_Check(impls_by_arg_cls)) {
-        PyErr_SetString(PyExc_TypeError, "impls_by_arg_cls must be a dictionary");
-        return nullptr;
-    }
-
-    if (!PyCallable_Check(find_impl)) {
-        PyErr_SetString(PyExc_TypeError, "find_impl must be callable");
-        return nullptr;
-    }
-
-    if (!PyCallable_Check(reset_cache_for_token)) {
-        PyErr_SetString(PyExc_TypeError, "reset_cache_for_token must be callable");
+    if (!PyArg_ParseTuple(args, "O", &params)) {
         return nullptr;
     }
 
@@ -232,23 +211,46 @@ static PyObject * build_strong_dispatch_cache(PyObject *module, PyObject *args)
         return nullptr;
     }
 
-    self->token = nullptr;
     self->dct = nullptr;
+    self->token = nullptr;
     self->impls_by_arg_cls = nullptr;
     self->find_impl = nullptr;
     self->reset_cache_for_token = nullptr;
-    self->abc_get_cache_token = nullptr;
+    self->abc_get_cache_token = Py_NewRef(state->abc_get_cache_token);
 
-    self->token = Py_NewRef(token);
     self->dct = PyDict_New();
     if (self->dct == nullptr) {
         Py_DECREF(self);
         return nullptr;
     }
-    self->impls_by_arg_cls = Py_NewRef(impls_by_arg_cls);
-    self->find_impl = Py_NewRef(find_impl);
-    self->reset_cache_for_token = Py_NewRef(reset_cache_for_token);
-    self->abc_get_cache_token = Py_NewRef(state->abc_get_cache_token);
+
+    self->impls_by_arg_cls = PyObject_GetAttrString(params, "impls_by_arg_cls");
+    if (self->impls_by_arg_cls == nullptr || !PyDict_Check(self->impls_by_arg_cls)) {
+        PyErr_SetString(PyExc_TypeError, "impls_by_arg_cls must be a dictionary");
+        Py_DECREF(self);
+        return nullptr;
+    }
+
+    self->find_impl = PyObject_GetAttrString(params, "find_impl");
+    if (self->find_impl == nullptr || !PyCallable_Check(self->find_impl)) {
+        PyErr_SetString(PyExc_TypeError, "find_impl must be callable");
+        Py_DECREF(self);
+        return nullptr;
+    }
+
+    self->reset_cache_for_token = PyObject_GetAttrString(params, "reset_cache_for_token");
+    if (self->reset_cache_for_token == nullptr || !PyCallable_Check(self->reset_cache_for_token)) {
+        PyErr_SetString(PyExc_TypeError, "reset_cache_for_token must be callable");
+        Py_DECREF(self);
+        return nullptr;
+    }
+
+    self->token = PyObject_GetAttrString(params, "token");
+    if (self->token == nullptr) {
+        PyErr_SetString(PyExc_TypeError, "token is required");
+        Py_DECREF(self);
+        return nullptr;
+    }
 
     PyObject_GC_Track(self);
     return (PyObject *)self;

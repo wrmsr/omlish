@@ -1,5 +1,6 @@
 """
 TODO:
+ - ** store an object on each subclass, proxy to 'origin' for real methods but avoid the weakref in AttrRegCache **
  - .super(instance[_cls], owner)
  - ALT: A.f(super(), ... ? :/
  - classmethod/staticmethod

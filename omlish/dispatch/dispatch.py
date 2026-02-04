@@ -16,12 +16,12 @@ U_co = ta.TypeVar('U_co', covariant=True)
 _build_weak_dispatch_cache_impl: ta.Callable | None = None
 _build_strong_dispatch_cache_impl: ta.Callable | None = None
 
-# try:
-#     from . import _dispatch  # type: ignore  # noqa
-# except ImportError:
-#     pass
-# else:
-#     _build_strong_dispatch_cache_impl = _dispatch.build_strong_dispatch_cache
+try:
+    from . import _dispatch  # type: ignore  # noqa
+except ImportError:
+    pass
+else:
+    _build_strong_dispatch_cache_impl = _dispatch.build_strong_dispatch_cache
 
 
 ##
