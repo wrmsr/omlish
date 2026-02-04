@@ -27,6 +27,11 @@ def test_marshal():
             [Q.star],
             Q.n.barf,
         ),
+
+        # Q.update(
+        #     Q.n.barf,
+        #     {'foo': 123},
+        # ),
     ]:
         j = json.dumps_pretty(msh.marshal(query, Node))
         print(j)

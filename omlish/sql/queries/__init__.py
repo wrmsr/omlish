@@ -25,6 +25,11 @@ from .binary import (  # noqa
     BinaryOps,
 )
 
+from .deletes import (  # noqa
+    Delete,
+    DeleteBuilder,
+)
+
 from .exprs import (  # noqa
     CanExpr,
     CanLiteral,
@@ -33,6 +38,13 @@ from .exprs import (  # noqa
     Literal,
     NameExpr,
     ParamExpr,
+)
+
+from .inserts import (  # noqa
+    CanValues,
+    Insert,
+    InsertBuilder,
+    Values,
 )
 
 from .idents import (  # noqa
@@ -115,6 +127,11 @@ from .unary import (  # noqa
 from .unions import (  # noqa
     Union,
     UnionBuilder,
+)
+
+from .updates import (  # noqa
+    Update,
+    UpdateBuilder,
 )
 
 

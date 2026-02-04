@@ -48,6 +48,11 @@ def test_render():
             Q.select([1]),
             Q.select([2]),
         ),
+
+        # Q.update(
+        #     Q.n.barf,
+        #     {'foo': 123},
+        # ),
     ]:
         print(query)
         print()
