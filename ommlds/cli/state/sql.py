@@ -73,8 +73,8 @@ class SqlStateStorage(MarshalStateStorage):
             self._create_table_if_necessary(db)
 
             with db.begin() as txn:
-                if sql.api.query_scalar(txn, Q.exists(Q.n.states, Q.eq(Q.n.key, key))) is not None:
-                    raise NotImplementedError
+                # if sql.api.query_scalar(txn, Q.exists(Q.n.states, Q.eq(Q.n.key, key))) is not None:
+                #     raise NotImplementedError
 
                 sql.api.exec(txn, Q.insert([Q.i.key, Q.i.value], Q.n.states, [key, obj]))
 

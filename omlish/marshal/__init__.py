@@ -219,6 +219,7 @@ with _lang.auto_proxy_init(globals()):
         AutoStripSuffix,
         FieldTypeTagging,
         Impl,
+        ImplBase,
         Impls,
         Polymorphism,
         TypeTagging,

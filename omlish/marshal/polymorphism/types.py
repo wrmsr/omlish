@@ -28,24 +28,37 @@ class FieldTypeTagging(TypeTagging, lang.Final):
 
 
 @dc.dataclass(frozen=True)
-class Impl:
+class Impl(lang.Final):
     ty: type
     tag: str
     alts: ta.AbstractSet[str] = frozenset()
 
+    def __post_init__(self) -> None:
+        check.state(not lang.is_abstract(self.ty))
 
-class Impls(ta.Sequence[Impl]):
+
+@dc.dataclass(frozen=True)
+class ImplBase(lang.Final):
+    ty: type
+    impls: ta.AbstractSet[str]
+
+    def __post_init__(self) -> None:
+        check.state(lang.is_abstract(self.ty))
+
+
+class Impls(ta.Sequence[Impl], lang.Final):
     def __init__(
             self,
-            lst: ta.Iterable[Impl],
+            impls: ta.Iterable[Impl],
+            bases: ta.Iterable[ImplBase] | None = None,
     ) -> None:
         super().__init__()
 
-        self._lst = list(lst)
+        self._impls = list(impls)
 
         by_ty: dict[type, Impl] = {}
         by_tag: dict[str, Impl] = {}
-        for i in self._lst:
+        for i in self._impls:
             if i.ty in by_ty:
                 raise TypeError(i.ty)
             if i.tag in by_tag:
@@ -60,11 +73,14 @@ class Impls(ta.Sequence[Impl]):
         self._by_ty = by_ty
         self._by_tag = by_tag
 
+        for b in bases or []:
+            raise NotImplementedError
+
     def __iter__(self) -> ta.Iterator[Impl]:
-        return iter(self._lst)
+        return iter(self._impls)
 
     def __len__(self) -> int:
-        return len(self._lst)
+        return len(self._impls)
 
     @ta.overload
     def __getitem__(self, index: int) -> Impl: ...
@@ -73,7 +89,7 @@ class Impls(ta.Sequence[Impl]):
     def __getitem__(self, index: slice) -> ta.Sequence[Impl]: ...
 
     def __getitem__(self, index):
-        return self._lst[index]
+        return self._impls[index]
 
     @property
     def by_ty(self) -> ta.Mapping[type, Impl]:
@@ -89,20 +105,14 @@ class Polymorphism:
             self,
             ty: type,
             impls: ta.Iterable[Impl],
-            *,
-            bases: ta.Mapping[type, ta.AbstractSet[type]] | None = None,
     ) -> None:
         super().__init__()
 
         self._ty = ty
         self._impls = Impls(impls)
-        self._bases = bases
 
         for i in self._impls:
-            check.issubclass(i.ty, ty)
-
-        for b in bases or []:
-            pass
+            check.issubclass(i.ty, ty)  # noqa
 
     @property
     def ty(self) -> type:
@@ -119,16 +129,16 @@ class AutoStripSuffix(lang.Marker):
 
 def polymorphism_from_impls(
         ty: type,
-        impls: ta.Iterable[type],
+        impl_tys: ta.Iterable[type],
         *,
         naming: Naming | None = None,
         strip_suffix: bool | type[AutoStripSuffix] | str = False,
 ) -> Polymorphism:
-    impls = set(impls)
+    impl_tys = set(impl_tys)
 
     ssx: str | None
     if strip_suffix is AutoStripSuffix:
-        strip_suffix = all(c.__name__.endswith(ty.__name__) for c in impls)
+        strip_suffix = all(c.__name__.endswith(ty.__name__) for c in impl_tys)
     if isinstance(strip_suffix, bool):
         ssx = ty.__name__ if strip_suffix else None
     elif isinstance(strip_suffix, str):
@@ -137,7 +147,7 @@ def polymorphism_from_impls(
         raise TypeError(strip_suffix)
 
     dct: dict[str, Impl] = {}
-    for cur in impls:
+    for cur in impl_tys:
         name = cur.__name__
         if ssx is not None:
             name = lang.strip_suffix(name, ssx)
@@ -159,10 +169,17 @@ def polymorphism_from_subclasses(
         *,
         naming: Naming | None = None,
         strip_suffix: bool | type[AutoStripSuffix] | str = False,
+        include_bases: bool = False,
 ) -> Polymorphism:
+    impl_tys: ta.Iterable[type]
+    if include_bases:
+        raise NotImplementedError
+    else:
+        impl_tys = lang.deep_subclasses(ty, concrete_only=True)
+
     return polymorphism_from_impls(
         ty,
-        lang.deep_subclasses(ty, concrete_only=True),
+        impl_tys,
         naming=naming,
         strip_suffix=strip_suffix,
     )
