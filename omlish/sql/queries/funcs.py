@@ -5,6 +5,7 @@ from ... import lang
 from .exprs import CanExpr
 from .exprs import Expr
 from .exprs import ExprBuilder
+from .keywords import Keyword
 from .names import CanName
 from .names import Name
 
@@ -13,13 +14,17 @@ from .names import Name
 
 
 class Func(Expr, lang.Final):
-    name: Name
+    func: Keyword | Name
     args: ta.Sequence[Expr] = dc.xfield(coerce=tuple)
 
 
 class FuncBuilder(ExprBuilder):
-    def func(self, n: CanName, *args: CanExpr) -> Func:
+    def func(
+            self,
+            func: Keyword | CanName,
+            *args: CanExpr,
+    ) -> Func:
         return Func(
-            self.name(n),
-            *map(self.expr, args),
+            func if isinstance(func, Keyword) else self.name(func),
+            tuple(map(self.expr, args)),
         )

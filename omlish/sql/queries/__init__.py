@@ -60,8 +60,10 @@ from .idents import (  # noqa
 )
 
 from .keywords import (  # noqa
+    CanKeyword,
     Keyword,
     KeywordBuilder,
+    LiteralKeyword,
     Star,
 )
 

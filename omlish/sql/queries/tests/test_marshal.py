@@ -37,6 +37,8 @@ def test_marshal():
             Q.n.barf,
             Q.eq(Q.i.foo, 123),
         ),
+
+        Q.select([Q.func('hi')]),
     ]:
         j = json.dumps_pretty(msh.marshal(query, Node))
         print(j)

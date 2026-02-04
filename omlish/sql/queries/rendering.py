@@ -18,6 +18,8 @@ from .funcs import Func
 from .idents import Ident
 from .inserts import Insert
 from .inserts import Values
+from .keywords import LiteralKeyword
+from .keywords import Star
 from .multi import Multi
 from .multi import MultiKind
 from .names import Name
@@ -25,7 +27,6 @@ from .params import Param
 from .relations import Join
 from .relations import JoinKind
 from .relations import Table
-from .keywords import Star
 from .selects import AllSelectItem
 from .selects import ExprSelectItem
 from .selects import Select
@@ -192,6 +193,10 @@ class StdRenderer(Renderer):
         ]
 
     # keywords
+
+    @Renderer.render.register
+    def render_literal_keyword(self, o: LiteralKeyword) -> tp.Part:
+        return o.s
 
     @Renderer.render.register
     def render_star(self, o: Star) -> tp.Part:
