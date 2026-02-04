@@ -54,6 +54,8 @@ def test_sqlite(exit_stack) -> None:
         txn.rollback()
     assert qf.query_scalar(conn, 'select count(*) from movies') == 3
 
+    assert qf.query_scalar(conn, 'select ? + 1', 2) == 3
+
 
 @ptu.skip.if_cant_import('pg8000')
 def test_pg8000(harness, exit_stack) -> None:

@@ -132,7 +132,7 @@ class DbapiConn(Conn):
         cursor = self._conn.cursor()
         es.enter_context(contextlib.closing(cursor))
 
-        cursor.execute(query.text)
+        cursor.execute(query.text, *((query.args,) if query.args else ()))
         columns = build_dbapi_columns(cursor.description)
 
         return DbapiRows(cursor, columns)
