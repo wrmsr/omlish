@@ -32,6 +32,7 @@ class Renderer:
     @dispatch.method(
         instance_cache=True,
         strong_dispatch_cache=True,
+        uncached_dispatch_miss=True,
     )
     def render(self, item: Item) -> None:
         raise TypeError(item)

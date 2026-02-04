@@ -17,15 +17,15 @@ class Env(
     lang.Final,
 ):
     def __init__(self, *args: ta.Any, **kwargs: ta.Any) -> None:
-        super().__init__(*args, **kwargs)
+        super().__init__()
 
         self._dct: ta.Mapping[str, ta.Any] = col.frozendict(*args, **kwargs)
 
-    def __getitem__(self, key, /):
+    def __getitem__(self, key: str, /) -> ta.Any:
         return self._dct[key]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._dct)
 
-    def __iter__(self):
+    def __iter__(self) -> ta.Iterator[str]:
         return iter(self._dct)

@@ -78,6 +78,7 @@ class PartTransform:
     @dispatch.method(
         instance_cache=True,
         strong_dispatch_cache=True,
+        uncached_dispatch_miss=True,
     )
     def _transform(self, part: Part | None) -> Part:
         raise TypeError(part)
@@ -220,6 +221,7 @@ class PartRenderer:
     @dispatch.method(
         instance_cache=True,
         strong_dispatch_cache=True,
+        uncached_dispatch_miss=True,
     )
     def _render(self, part: Part | None) -> None:
         raise TypeError(part)
