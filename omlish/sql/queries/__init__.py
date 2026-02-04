@@ -41,6 +41,7 @@ from .exprs import (  # noqa
 )
 
 from .funcs import (  # noqa
+    FuncArg,
     Func,
     FuncBuilder,
 )

@@ -927,22 +927,22 @@ def _process_dataclass__7e0e049a846197c10dd6eaa0088bb0cfa339c375():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('func', 'args')), FrozenPlan(fields=('__node_fields__', '_hash', 'func', 'args'), "
+        "Plans(tup=(CopyPlan(fields=('name', 'args')), FrozenPlan(fields=('__node_fields__', '_hash', 'name', 'args'), "
         "allow_dynamic_dunder_attrs=False), InitPlan(fields=(InitPlan.Field(name='__node_fields__', annotation=OpRef(na"
         "me='init.fields.0.annotation'), default=None, default_factory=None, init=True, override=False, field_type=Fiel"
         "dType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='_hash', annotation=OpRef(n"
         "ame='init.fields.1.annotation'), default=None, default_factory=None, init=True, override=False, field_type=Fie"
-        "ldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='func', annotation=OpRef(n"
+        "ldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='name', annotation=OpRef(n"
         "ame='init.fields.2.annotation'), default=None, default_factory=None, init=True, override=False, field_type=Fie"
         "ldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='args', annotation=OpRef(na"
         "me='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, "
         "override=False, field_type=FieldType.INSTANCE, coerce=OpRef(name='init.fields.3.coerce'), validate=None, check"
-        "_type=None)), self_param='self', std_params=('func', 'args'), kw_only_params=(), frozen=True, slots=False, pos"
-        "t_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='func', kw_only=False,"
+        "_type=None)), self_param='self', std_params=('name', 'args'), kw_only_params=(), frozen=True, slots=False, pos"
+        "t_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='name', kw_only=False,"
         " fn=None), ReprPlan.Field(name='args', kw_only=False, fn=OpRef(name='repr.fns.3.fn'))), id=False, terse=False,"
         " default_fn=None)))"
     ),
-    plan_repr_sha1='3d4b0abde5f830173635470230e4f5bd1d24e9b9',
+    plan_repr_sha1='c1e8f109b3559d019b8282b53a37b52de4c4df85',
     op_ref_idents=(
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__3__annotation',
@@ -954,7 +954,7 @@ def _process_dataclass__7e0e049a846197c10dd6eaa0088bb0cfa339c375():
         ('omlish.sql.queries', 'Func'),
     ),
 )
-def _process_dataclass__3d4b0abde5f830173635470230e4f5bd1d24e9b9():
+def _process_dataclass__c1e8f109b3559d019b8282b53a37b52de4c4df85():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -981,7 +981,7 @@ def _process_dataclass__3d4b0abde5f830173635470230e4f5bd1d24e9b9():
             if self.__class__ is not __dataclass__cls:
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
-                func=self.func,
+                name=self.name,
                 args=self.args,
             )
 
@@ -993,7 +993,7 @@ def _process_dataclass__3d4b0abde5f830173635470230e4f5bd1d24e9b9():
         __dataclass___setattr_frozen_fields = {
             '__node_fields__',
             '_hash',
-            'func',
+            'name',
             'args',
         }
 
@@ -1013,7 +1013,7 @@ def _process_dataclass__3d4b0abde5f830173635470230e4f5bd1d24e9b9():
         __dataclass___delattr_frozen_fields = {
             '__node_fields__',
             '_hash',
-            'func',
+            'name',
             'args',
         }
 
@@ -1032,11 +1032,11 @@ def _process_dataclass__3d4b0abde5f830173635470230e4f5bd1d24e9b9():
 
         def __init__(
             self,
-            func: __dataclass__init__fields__2__annotation,
+            name: __dataclass__init__fields__2__annotation,
             args: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
         ) -> __dataclass__None:
             args = __dataclass__init__fields__3__coerce(args)
-            __dataclass__object_setattr(self, 'func', func)
+            __dataclass__object_setattr(self, 'name', name)
             __dataclass__object_setattr(self, 'args', args)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
@@ -1047,7 +1047,7 @@ def _process_dataclass__3d4b0abde5f830173635470230e4f5bd1d24e9b9():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"func={self.func!r}")
+            parts.append(f"name={self.name!r}")
             if (s := __dataclass__repr__fns__3__fn(self.args)) is not None:
                 parts.append(f"args={s}")
             return (
@@ -1083,7 +1083,6 @@ def _process_dataclass__3d4b0abde5f830173635470230e4f5bd1d24e9b9():
     ),
     cls_names=(
         ('omlish.sql.queries', 'Ident'),
-        ('omlish.sql.queries', 'LiteralKeyword'),
     ),
 )
 def _process_dataclass__2de74e3f3fd0bdfa3ce205dae3e0c8e501e402b8():
@@ -1589,6 +1588,128 @@ def _process_dataclass__c1ea5ee83a5a052663bfe80e9c01607d559b1406():
         def __repr__(self):
             parts = []
             parts.append(f"v={self.v!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('s',)), FrozenPlan(fields=('__node_fields__', '_hash', 's'), allow_dynamic_dunder_"
+        "attrs=False), InitPlan(fields=(InitPlan.Field(name='__node_fields__', annotation=OpRef(name='init.fields.0.ann"
+        "otation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coer"
+        "ce=None, validate=None, check_type=None), InitPlan.Field(name='_hash', annotation=OpRef(name='init.fields.1.an"
+        "notation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coe"
+        "rce=None, validate=None, check_type=None), InitPlan.Field(name='s', annotation=OpRef(name='init.fields.2.annot"
+        "ation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
+        "OpRef(name='init.fields.2.coerce'), validate=None, check_type=None)), self_param='self', std_params=('s',), kw"
+        "_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fiel"
+        "ds=(ReprPlan.Field(name='s', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
+    ),
+    plan_repr_sha1='bd9ef41fa5cfbd6c9e65b2e25959a41415b18102',
+    op_ref_idents=(
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__coerce',
+    ),
+    cls_names=(
+        ('omlish.sql.queries', 'LiteralKeyword'),
+    ),
+)
+def _process_dataclass__bd9ef41fa5cfbd6c9e65b2e25959a41415b18102():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__2__annotation,
+        __dataclass__init__fields__2__coerce,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                s=self.s,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        __dataclass___setattr_frozen_fields = {
+            '__node_fields__',
+            '_hash',
+            's',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            '__node_fields__',
+            '_hash',
+            's',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __init__(
+            self,
+            s: __dataclass__init__fields__2__annotation,
+        ) -> __dataclass__None:
+            s = __dataclass__init__fields__2__coerce(s)
+            __dataclass__object_setattr(self, 's', s)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"s={self.s!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

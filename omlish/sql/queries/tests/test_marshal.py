@@ -39,6 +39,12 @@ def test_marshal():
         ),
 
         Q.select([Q.func('hi')]),
+
+        Q.select(
+            [Q.func(Q.k.count, Q.star)],
+            Q.n.states,
+            Q.eq(Q.n.key, 420),
+        ),
     ]:
         j = json.dumps_pretty(msh.marshal(query, Node))
         print(j)

@@ -1,3 +1,7 @@
+"""
+TODO:
+ - literal strs, auto-anon-param, ??
+"""
 import typing as ta
 
 from ... import check

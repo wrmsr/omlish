@@ -59,6 +59,12 @@ def test_render():
             Q.n.barf,
             Q.eq(Q.i.foo, 123),
         ),
+
+        Q.select(
+            [Q.func(Q.k.count, Q.star)],
+            Q.n.states,
+            Q.eq(Q.n.key, 420),
+        ),
     ]:
         print(query)
         print()
@@ -91,6 +97,12 @@ def test_render_params():
                 Q.n.some_schema.some_other_table,
                 Q.eq(Q.i.some_id, Q.i.some_other_id),
             ),
+        ),
+
+        Q.select(
+            [Q.func(Q.k.count, Q.star)],
+            Q.n.states,
+            Q.eq(Q.n.key, 420),
         ),
     ]:
         print(query)
