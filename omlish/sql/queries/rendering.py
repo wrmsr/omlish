@@ -27,6 +27,7 @@ from .base import Node
 from .binary import Binary
 from .binary import BinaryOp
 from .binary import BinaryOps
+from .deletes import Delete
 from .exprs import Literal
 from .exprs import NameExpr
 from .exprs import ParamExpr
@@ -47,6 +48,9 @@ from .unary import Unary
 from .unary import UnaryOp
 from .unary import UnaryOps
 from .unions import Union
+from .updates import Field
+from .updates import Fields
+from .updates import Update
 
 
 ##
@@ -147,11 +151,21 @@ class StdRenderer(Renderer):
             self.paren(o.r),
         ]
 
+    # deletes
+
+    @Renderer.render.register
+    def render_delete(self, o: Delete) -> tp.Part:
+        return [
+            'delete from',
+            self.render(o.from_),
+            *(['where', self.render(o.where)] if o.where is not None else []),
+        ]
+
     # exprs
 
     @Renderer.render.register
     def render_literal(self, o: Literal) -> tp.Part:
-        return repr(o.v)
+        return repr(o.v)  # FIXME: lol
 
     @Renderer.render.register
     def render_name_expr(self, o: NameExpr) -> tp.Part:
@@ -286,7 +300,7 @@ class StdRenderer(Renderer):
             sfx,
         ])
 
-    # union
+    # unions
 
     @Renderer.render.register
     def render_union(self, o: Union) -> tp.Part:
@@ -294,6 +308,30 @@ class StdRenderer(Renderer):
             (self.render(s) for s in o.selects),
             'union all' if o.all else 'union',
         ))
+
+    # updates
+
+    @Renderer.render.register
+    def render_field(self, o: Field) -> tp.Part:
+        return [
+            self.render(o.c),
+            '=',
+            self.render(o.v),
+        ]
+
+    @Renderer.render.register
+    def render_fields(self, o: Fields) -> tp.Part:
+        return tp.List([self.render(f) for f in o.fields])
+
+    @Renderer.render.register
+    def render_update(self, o: Update) -> tp.Part:
+        return [
+            'update',
+            self.render(o.into),
+            'set',
+            self.render(o.fields),
+            *(['where', self.render(o.where)] if o.where is not None else []),
+        ]
 
 
 def render_parts(n: Node, **kwargs: ta.Any) -> RenderedQueryParts:

@@ -14,17 +14,17 @@ from .stmts import Stmt
 
 
 class Delete(Stmt, lang.Final):
-    from_: Relation | None = dc.xfield(None, repr_fn=lang.opt_repr) | msh.with_field_options(name='from', omit_if=lang.is_none)  # noqa
+    from_: Relation = dc.xfield() | msh.with_field_options(name='from')  # noqa
     where: Expr | None = dc.xfield(None, repr_fn=lang.opt_repr) | msh.with_field_options(omit_if=lang.is_none)
 
 
 class DeleteBuilder(RelationBuilder, ExprBuilder):
     def delete(
             self,
-            from_: CanRelation | None = None,
+            from_: CanRelation,
             where: CanExpr | None = None,
     ) -> Delete:
         return Delete(
-            from_=self.relation(from_) if from_ is not None else None,
+            from_=self.relation(from_),
             where=self.expr(where) if where is not None else None,
         )

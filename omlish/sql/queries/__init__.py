@@ -130,6 +130,10 @@ from .unions import (  # noqa
 )
 
 from .updates import (  # noqa
+    CanField,
+    CanFields,
+    Field,
+    Fields,
     Update,
     UpdateBuilder,
 )

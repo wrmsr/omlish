@@ -49,10 +49,15 @@ def test_render():
             Q.select([2]),
         ),
 
-        # Q.update(
-        #     Q.n.barf,
-        #     {'foo': 123},
-        # ),
+        Q.update(
+            Q.n.barf,
+            {'foo': 123},
+        ),
+
+        Q.delete(
+            Q.n.barf,
+            Q.eq(Q.i.foo, 123),
+        ),
     ]:
         print(query)
         print()

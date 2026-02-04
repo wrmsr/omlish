@@ -28,10 +28,15 @@ def test_marshal():
             Q.n.barf,
         ),
 
-        # Q.update(
-        #     Q.n.barf,
-        #     {'foo': 123},
-        # ),
+        Q.update(
+            Q.n.barf,
+            {'foo': 123},
+        ),
+
+        Q.delete(
+            Q.n.barf,
+            Q.eq(Q.i.foo, 123),
+        ),
     ]:
         j = json.dumps_pretty(msh.marshal(query, Node))
         print(j)
