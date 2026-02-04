@@ -3,7 +3,6 @@ import typing as ta
 
 from ... import collections as col
 from ... import dataclasses as dc
-from ..tabledefs import TableDef
 from .dtypes import Datetime
 from .dtypes import Integer
 from .dtypes import String
@@ -11,6 +10,7 @@ from .elements import Column
 from .elements import Index
 from .elements import PrimaryKey
 from .elements import UpdatedAtTrigger
+from .tabledefs import TableDef
 from .values import Now
 
 
@@ -39,7 +39,11 @@ class RenderColumn:
     default: str | None = None
 
 
-def render_create_statements(tbl: TableDef) -> list[str]:
+def render_create_statements(
+        tbl: TableDef,
+        *,
+        if_not_exists: bool = False,
+) -> list[str]:
     cols: ta.Mapping[str, Column] = col.make_map_by(
         lambda c: c.name,
         tbl.elements.by_type[Column],
@@ -116,7 +120,11 @@ def render_create_statements(tbl: TableDef) -> list[str]:
 
     cts = io.StringIO()
 
-    cts.write(f'create table {tbl.name} (\n')
+    cts.write(f'create table')
+    if if_not_exists:
+        cts.write(' if not exists')
+    cts.write(f' {tbl.name} (\n')
+
     for i, rc in enumerate(r_cols.values()):
         cts.write(f'  {rc.name} {rc.type}')
 

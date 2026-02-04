@@ -40,6 +40,11 @@ from .exprs import (  # noqa
     ParamExpr,
 )
 
+from .funcs import (  # noqa
+    Func,
+    FuncBuilder,
+)
+
 from .inserts import (  # noqa
     CanValues,
     Insert,
@@ -52,6 +57,12 @@ from .idents import (  # noqa
     Ident,
     IdentBuilder,
     IdentLike,
+)
+
+from .keywords import (  # noqa
+    Keyword,
+    KeywordBuilder,
+    Star,
 )
 
 from .multi import (  # noqa

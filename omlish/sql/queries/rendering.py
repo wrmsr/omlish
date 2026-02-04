@@ -1,20 +1,3 @@
-"""
-TODO:
- - minimal parens
- - text.parts
- - QuoteStyle
- - ParamStyle
-
-==
-
-def needs_parens(self, e: Expr) -> bool:
-    if isinstance(e, (Literal, Ident, Name)):
-        return True
-    elif isinstance(e, Expr):
-        return False
-    else:
-        raise TypeError(e)
-"""
 import typing as ta
 
 from ... import dataclasses as dc
@@ -31,6 +14,7 @@ from .deletes import Delete
 from .exprs import Literal
 from .exprs import NameExpr
 from .exprs import ParamExpr
+from .funcs import Func
 from .idents import Ident
 from .inserts import Insert
 from .inserts import Values
@@ -41,6 +25,7 @@ from .params import Param
 from .relations import Join
 from .relations import JoinKind
 from .relations import Table
+from .keywords import Star
 from .selects import AllSelectItem
 from .selects import ExprSelectItem
 from .selects import Select
@@ -176,6 +161,12 @@ class StdRenderer(Renderer):
     def render_param_expr(self, o: ParamExpr) -> tp.Part:
         return self.render(o.p)
 
+    # funcs
+
+    @Renderer.render.register
+    def render_func(self, o: Func) -> tp.Part:
+        raise NotImplementedError
+
     # idents
 
     @Renderer.render.register
@@ -199,6 +190,12 @@ class StdRenderer(Renderer):
             tp.Wrap(tp.List([self.render(c) for c in o.columns])),
             self.render(o.data),
         ]
+
+    # keywords
+
+    @Renderer.render.register
+    def render_star(self, o: Star) -> tp.Part:
+        return '*'
 
     # multis
 

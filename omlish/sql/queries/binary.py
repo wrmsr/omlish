@@ -1,9 +1,3 @@
-"""
-TODO:
- - in_
- - like
-  - no this is a dedicated node, escape / negation in grammar
-"""
 from ... import check
 from ... import dataclasses as dc
 from ... import lang

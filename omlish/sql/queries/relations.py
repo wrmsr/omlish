@@ -1,7 +1,3 @@
-"""
-TODO:
- - subquery
-"""
 import enum
 import typing as ta
 

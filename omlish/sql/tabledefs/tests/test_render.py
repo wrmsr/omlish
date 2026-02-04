@@ -1,5 +1,4 @@
 import contextlib
-import dataclasses as dc
 import sqlite3
 
 from ..dtypes import String
@@ -10,15 +9,6 @@ from ..elements import IdIntegerPrimaryKey
 from ..lower import lower_table_elements
 from ..rendering import render_create_statements
 from ..tabledefs import TableDef
-
-
-@dc.dataclass()
-class RenderColumn:
-    name: str
-    type: str
-    not_null: bool = False
-    primary_key: bool = False
-    default: str | None = None
 
 
 def test_render_create_table():

@@ -8,6 +8,7 @@ from .exprs import CanExpr
 from .exprs import Expr
 from .exprs import ExprBuilder
 from .idents import Ident
+from .keywords import Star
 from .relations import CanRelation
 from .relations import Relation
 from .relations import RelationBuilder
@@ -39,17 +40,15 @@ class Select(Stmt, lang.Final):
     where: Expr | None = dc.xfield(None, repr_fn=lang.opt_repr) | msh.with_field_options(omit_if=lang.is_none)
 
 
-CanSelectItem: ta.TypeAlias = SelectItem | CanExpr
+CanSelectItem: ta.TypeAlias = SelectItem | Star | CanExpr
 
 
 class SelectBuilder(RelationBuilder, ExprBuilder):
-    @property
-    def star(self) -> AllSelectItem:
-        return AllSelectItem()
-
     def select_item(self, o: CanSelectItem) -> SelectItem:
         if isinstance(o, SelectItem):
             return o
+        elif isinstance(o, Star):
+            return AllSelectItem()
         else:
             return ExprSelectItem(self.expr(o))
 

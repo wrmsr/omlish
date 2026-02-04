@@ -34,6 +34,14 @@ from .elements import (  # noqa
     Elements,
 )
 
+from .lower import (  # noqa
+    lower_table_elements,
+)
+
+from .rendering import (  # noqa
+    render_create_statements,
+)
+
 from .tabledefs import (  # noqa
     TableDef,
     table_def,

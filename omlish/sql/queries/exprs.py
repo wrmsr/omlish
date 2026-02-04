@@ -1,9 +1,3 @@
-"""
-TODO:
- - case
- - cast / ::
- - explicit null? already wrapped in non-null Literal node
-"""
 import typing as ta
 
 from ... import lang
