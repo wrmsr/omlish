@@ -394,6 +394,7 @@ with _auto_proxy_init(globals(), update_exports=True):
         super_meta,
 
         deep_subclasses,
+        deep_subclass_tree,
 
         SimpleProxy,
 

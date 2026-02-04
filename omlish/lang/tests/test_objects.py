@@ -2,6 +2,7 @@ import typing as ta
 
 from ..objects import Identity
 from ..objects import SimpleProxy
+from ..objects import deep_subclass_tree
 
 
 def test_simple_proxy():
@@ -55,3 +56,31 @@ def test_identity_object():
     assert dct[p1] == 1
     assert Identity(p1) not in dct
     assert dct[Identity(p2)] == 20
+
+
+def test_deep_subclass_tree():
+    class A:
+        pass
+
+    class BA(A):
+        pass
+
+    class CBA(BA):
+        pass
+
+    class DA(A):
+        pass
+
+    assert deep_subclass_tree(A) == {
+        A: {BA, DA},
+        BA: {CBA},
+        CBA: set(),
+        DA: set(),
+    }
+
+    assert deep_subclass_tree(A, total=True) == {
+        A: {BA, CBA, DA},
+        BA: {CBA},
+        CBA: set(),
+        DA: set(),
+    }

@@ -36,8 +36,8 @@ def bind_state() -> inj.Elements:
     lst: list[inj.Elemental] = []
 
     lst.append(
-        # inj.bind(_provide_json_file_state_storage, singleton=True),
-        inj.bind(_provide_sql_state_storage, singleton=True),
+        inj.bind(_provide_json_file_state_storage, singleton=True),
+        # inj.bind(_provide_sql_state_storage, singleton=True),
     )
 
     return inj.as_elements(*lst)

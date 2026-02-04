@@ -37,21 +37,8 @@ class Impl(lang.Final):
         check.state(not lang.is_abstract(self.ty))
 
 
-@dc.dataclass(frozen=True)
-class ImplBase(lang.Final):
-    ty: type
-    impls: ta.AbstractSet[str]
-
-    def __post_init__(self) -> None:
-        check.state(lang.is_abstract(self.ty))
-
-
 class Impls(ta.Sequence[Impl], lang.Final):
-    def __init__(
-            self,
-            impls: ta.Iterable[Impl],
-            bases: ta.Iterable[ImplBase] | None = None,
-    ) -> None:
+    def __init__(self, impls: ta.Iterable[Impl]) -> None:
         super().__init__()
 
         self._impls = list(impls)
@@ -72,9 +59,6 @@ class Impls(ta.Sequence[Impl], lang.Final):
                 by_tag[a] = i
         self._by_ty = by_ty
         self._by_tag = by_tag
-
-        for b in bases or []:
-            raise NotImplementedError
 
     def __iter__(self) -> ta.Iterator[Impl]:
         return iter(self._impls)
@@ -100,19 +84,58 @@ class Impls(ta.Sequence[Impl], lang.Final):
         return self._by_tag
 
 
+@dc.dataclass(frozen=True)
+class ImplBase(lang.Final):
+    ty: type
+    impls: ta.AbstractSet[type]
+
+    def __post_init__(self) -> None:
+        for i in self.impls:
+            check.issubclass(i, self.ty)
+
+
+class ImplBases(ta.Sequence[ImplBase], lang.Final):
+    def __init__(self, bases: ta.Iterable[ImplBase]) -> None:
+        super().__init__()
+
+        self._bases = list(bases)
+
+    def __iter__(self) -> ta.Iterator[ImplBase]:
+        return iter(self._bases)
+
+    def __len__(self) -> int:
+        return len(self._bases)
+
+    @ta.overload
+    def __getitem__(self, index: int) -> ImplBase: ...
+
+    @ta.overload
+    def __getitem__(self, index: slice) -> ta.Sequence[ImplBase]: ...
+
+    def __getitem__(self, index):
+        return self._bases[index]
+
+
 class Polymorphism:
     def __init__(
             self,
             ty: type,
-            impls: ta.Iterable[Impl],
+            impls: Impls | ta.Iterable[Impl],
+            *,
+            bases: ImplBases | ta.Iterable[ImplBase] | None = None,
     ) -> None:
         super().__init__()
 
         self._ty = ty
-        self._impls = Impls(impls)
+        self._impls = impls if isinstance(impls, Impls) else Impls(impls)
+        self._bases = bases if isinstance(bases, ImplBases) else ImplBases(bases) if bases is not None else None
 
         for i in self._impls:
             check.issubclass(i.ty, ty)  # noqa
+
+        if self._bases is not None:
+            for b in self._bases:
+                check.issubclass(b.ty, ty)
 
     @property
     def ty(self) -> type:
@@ -121,6 +144,10 @@ class Polymorphism:
     @property
     def impls(self) -> Impls:
         return self._impls
+
+    @property
+    def bases(self) -> ImplBases | None:
+        return self._bases
 
 
 class AutoStripSuffix(lang.Marker):
@@ -131,10 +158,21 @@ def polymorphism_from_impls(
         ty: type,
         impl_tys: ta.Iterable[type],
         *,
+        base_tys: ta.Mapping[type, ta.Iterable[type]] | None = None,
         naming: Naming | None = None,
         strip_suffix: bool | type[AutoStripSuffix] | str = False,
 ) -> Polymorphism:
     impl_tys = set(impl_tys)
+
+    bases: ta.Sequence[ImplBase] | None = None
+    if base_tys is not None:
+        bases = [
+            ImplBase(
+                b_ty,
+                frozenset(b_sub_tys),
+            )
+            for b_ty, b_sub_tys in base_tys.items()
+        ]
 
     ssx: str | None
     if strip_suffix is AutoStripSuffix:
@@ -161,25 +199,33 @@ def polymorphism_from_impls(
             name,
         )
 
-    return Polymorphism(ty, dct.values())
+    return Polymorphism(
+        ty,
+        dct.values(),
+        bases=bases,
+    )
 
 
 def polymorphism_from_subclasses(
         ty: type,
         *,
+        include_bases: bool = False,
         naming: Naming | None = None,
         strip_suffix: bool | type[AutoStripSuffix] | str = False,
-        include_bases: bool = False,
 ) -> Polymorphism:
-    impl_tys: ta.Iterable[type]
+    impl_tys: set[type]
+    base_tys: dict[type, set[type]] | None
     if include_bases:
-        raise NotImplementedError
+        base_tys = lang.deep_subclass_tree(ty, total=True)
+        impl_tys = {sub_ty for sub_ty in base_tys if not lang.is_abstract(sub_ty)}  # type: ignore[var-annotated]
     else:
-        impl_tys = lang.deep_subclasses(ty, concrete_only=True)
+        impl_tys = set(lang.deep_subclasses(ty, concrete_only=True))
+        base_tys = None
 
     return polymorphism_from_impls(
         ty,
         impl_tys,
+        base_tys=base_tys,
         naming=naming,
         strip_suffix=strip_suffix,
     )

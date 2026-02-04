@@ -78,6 +78,7 @@ def _install_standard_marshaling() -> None:
 
     np = msh.polymorphism_from_subclasses(
         Node,
+        include_bases=True,
         naming=msh.Naming.SNAKE,
         strip_suffix=msh.AutoStripSuffix,
     )

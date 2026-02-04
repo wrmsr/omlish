@@ -116,6 +116,62 @@ def deep_subclasses(
         todo.extend(reversed(cur.__subclasses__()))
 
 
+def deep_subclass_tree(
+        cls: type[T],
+        *,
+        total: bool = False,
+        concrete_only: bool = False,
+) -> dict[type[T], set[type[T]]]:
+
+    # Stores the "total" descendants for each class visited
+    memo: dict[type[T], set[type[T]]] = {}
+    # Tracks the current path to detect cycles
+    visiting: set[type[T]] = set()
+
+    def walk(current: type[T]) -> set[type[T]]:
+        if current in memo:
+            return memo[current]
+
+        if current in visiting:
+            # Cycle detected: return empty set to break recursion
+            return set()
+
+        visiting.add(current)
+        all_descendants = set()
+
+        try:
+            for sub in current.__subclasses__():
+                # Add the child and all of the child's descendants
+                all_descendants.add(sub)
+                all_descendants.update(walk(sub))
+        finally:
+            visiting.remove(current)
+
+        memo[current] = all_descendants
+        return all_descendants
+
+    # Execute the traversal
+    walk(cls)
+
+    # Transform memo into the requested output format
+    final_output: dict[type[T], set[type[T]]] = {}
+
+    for klass, descendants in memo.items():
+        # Select base set: total vs immediate
+        source_set = descendants if total else set(klass.__subclasses__())
+
+        # Apply concrete filter if requested
+        if concrete_only:
+            final_output[klass] = {
+                d for d in source_set
+                if not is_abstract_class(d)
+            }
+        else:
+            final_output[klass] = source_set
+
+    return final_output
+
+
 ##
 
 
