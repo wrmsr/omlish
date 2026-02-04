@@ -1,5 +1,6 @@
 import typing as ta
 
+from .. import Polymorphism
 from ... import cached
 from ... import check
 from ... import dataclasses as dc
@@ -23,14 +24,14 @@ from .unmarshal import make_polymorphism_unmarshaler
 
 @dc.dataclass(frozen=True)
 class _BasePolymorphismUnionFactory(lang.Abstract):
-    impls: Impls
+    p: Polymorphism
     tt: TypeTagging = WrapperTypeTagging()
     allow_partial: bool = dc.field(default=False, kw_only=True)
 
     @cached.property
     @dc.init
     def rtys(self) -> frozenset[rfl.Type]:
-        return frozenset(i.ty for i in self.impls)
+        return frozenset(i.ty for i in self.p.impls)
 
     def _guard(self, rty: rfl.Type) -> bool:
         if not isinstance(rty, rfl.Union):
@@ -42,7 +43,7 @@ class _BasePolymorphismUnionFactory(lang.Abstract):
 
     def get_impls(self, rty: rfl.Type) -> Impls:
         uty = check.isinstance(rty, rfl.Union)
-        return Impls([self.impls.by_ty[check.isinstance(a, type)] for a in uty.args])
+        return Impls([self.p.impls.by_ty[check.isinstance(a, type)] for a in uty.args])
 
 
 @dc.dataclass(frozen=True)

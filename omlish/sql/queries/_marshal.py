@@ -76,15 +76,15 @@ def _install_standard_marshaling() -> None:
         msh.TypeMapUnmarshalerFactory({t: LowerEnumMarshaler(t) for t in ets}),
     )
 
-    np = msh.polymorphism_from_subclasses(
+    node_poly = msh.polymorphism_from_subclasses(
         Node,
         include_bases=True,
         naming=msh.Naming.SNAKE,
         strip_suffix=msh.AutoStripSuffix,
     )
     msh.install_standard_factories(
-        msh.PolymorphismMarshalerFactory(np),
-        msh.PolymorphismUnmarshalerFactory(np),
-        msh.PolymorphismUnionMarshalerFactory(np.impls, allow_partial=True),
-        msh.PolymorphismUnionUnmarshalerFactory(np.impls, allow_partial=True),
+        msh.PolymorphismMarshalerFactory(node_poly),
+        msh.PolymorphismUnmarshalerFactory(node_poly),
+        msh.PolymorphismUnionMarshalerFactory(node_poly, allow_partial=True),
+        msh.PolymorphismUnionUnmarshalerFactory(node_poly, allow_partial=True),
     )

@@ -27,8 +27,8 @@ def standard_polymorphism_factories(
 
     if unions:
         out.extend([
-            PolymorphismUnionMarshalerFactory(poly.impls, tt, allow_partial=unions == 'partial'),
-            PolymorphismUnionUnmarshalerFactory(poly.impls, tt, allow_partial=unions == 'partial'),
+            PolymorphismUnionMarshalerFactory(poly, tt, allow_partial=unions == 'partial'),
+            PolymorphismUnionUnmarshalerFactory(poly, tt, allow_partial=unions == 'partial'),
         ])
 
     return out
