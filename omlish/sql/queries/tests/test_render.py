@@ -1,3 +1,4 @@
+from ...params import ParamStyle
 from .. import Q
 from ..rendering import render
 
@@ -62,7 +63,7 @@ def test_render():
         print(query)
         print()
 
-        rq = render(query)
+        rq = render(query, param_style=ParamStyle.PYFORMAT)
         print(rq)
         print()
 
@@ -95,7 +96,7 @@ def test_render_params():
         print(query)
         print()
 
-        rq = render(query)
+        rq = render(query, param_style=ParamStyle.PYFORMAT)
         print(rq)
         print()
 

@@ -2,7 +2,6 @@ import contextlib
 import typing as ta
 
 from ... import check
-from ... import lang
 from ...resources import SimpleResource
 from ..dbapi import abc as dbapi_abc
 from ..params import ParamStyle
@@ -128,7 +127,7 @@ class DbapiConn(Conn):
 
         self._conn = conn
         if adapter is None:
-            adapter = DEFAULT_DBAPI_ADAPTER
+            adapter = DbapiAdapter()
         self._adapter = adapter
 
         if not self._conn.autocommit:
@@ -143,7 +142,7 @@ class DbapiConn(Conn):
         cursor = self._conn.cursor()
         es.enter_context(contextlib.closing(cursor))
 
-        cursor.execute(query.text, *((query.args,) if query.args else ()))
+        cursor.execute(query.text, *query.args)
         columns = build_dbapi_columns(cursor.description)
 
         return DbapiRows(cursor, columns)
@@ -169,12 +168,17 @@ class DbapiDb(Db):
             connector: ta.Callable[[], ta.ContextManager[dbapi_abc.DbapiConnection]],
             *,
             adapter: ta.Optional['DbapiAdapter'] = None,
+            param_style: ParamStyle | None = None,
     ) -> None:
         super().__init__()
 
         self._connector = connector
         if adapter is None:
-            adapter = DEFAULT_DBAPI_ADAPTER
+            adapter = DbapiAdapter(
+                param_style=param_style,
+            )
+        else:
+            check.none(param_style)
         self._adapter = adapter
 
     @property
@@ -182,7 +186,7 @@ class DbapiDb(Db):
         return self._adapter
 
     def _connect(self, es: contextlib.ExitStack) -> DbapiConn:
-        return DbapiConn(es.enter_context(self._connector()))
+        return DbapiConn(es.enter_context(self._connector()), adapter=self._adapter)
 
     def connect(self) -> ta.ContextManager[Conn]:
         @contextlib.contextmanager
@@ -204,28 +208,19 @@ class DbapiDb(Db):
 #
 
 
-class UNSET_PARAM_STYLE(lang.Marker):  # noqa
-    pass
-
-
 class DbapiAdapter(Adapter):
     def __init__(
             self,
             *,
-            param_style: ParamStyle | type[UNSET_PARAM_STYLE] = UNSET_PARAM_STYLE,
+            param_style: ParamStyle | None = None,
     ) -> None:
         super().__init__()
 
         self._param_style = param_style
 
     @property
-    def param_style(self) -> ParamStyle:
-        if (ps := self._param_style) is UNSET_PARAM_STYLE:
-            raise ValueError('param_style is not set')
-        return ta.cast(ParamStyle, ps)
+    def param_style(self) -> ParamStyle | None:
+        return self._param_style
 
     def scan_type(self, c: Column) -> type:
         raise NotImplementedError
-
-
-DEFAULT_DBAPI_ADAPTER = DbapiAdapter()

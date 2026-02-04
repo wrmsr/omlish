@@ -11,7 +11,7 @@ from .columns import Column
 class Adapter(lang.Abstract):
     @property
     @abc.abstractmethod
-    def param_style(self) -> ParamStyle:
+    def param_style(self) -> ParamStyle | None:
         raise NotImplementedError
 
     @abc.abstractmethod

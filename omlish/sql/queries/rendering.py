@@ -1,11 +1,13 @@
 import typing as ta
 
+from ... import check
 from ... import collections as col
 from ... import dataclasses as dc
 from ... import dispatch
 from ... import lang
 from ...text import parts as tp
 from ..params import ParamKey
+from ..params import ParamsPreparer
 from ..params import ParamStyle
 from ..params import make_params_preparer
 from ..params import substitute_prepared_params
@@ -51,13 +53,13 @@ RenderedQueryParams: ta.TypeAlias = ta.Sequence[Param] | ta.Mapping[str, Param]
 @dc.dataclass(frozen=True)
 class RenderedQueryParts(lang.Final):
     p: tp.Part
-    params: RenderedQueryParams
+    params: RenderedQueryParams | None
 
 
 @dc.dataclass(frozen=True)
 class RenderedQuery(lang.Final):
     s: str
-    params: RenderedQueryParams
+    params: RenderedQueryParams | None
 
 
 class Renderer(lang.Abstract):
@@ -68,15 +70,25 @@ class Renderer(lang.Abstract):
     ) -> None:
         super().__init__()
 
-        self._param_style = param_style if param_style is not None else self.default_param_style
-
-        self._params_preparer = make_params_preparer(self._param_style)
+        self._param_style = param_style
 
         self._seen_params: dict[Param, int] = {}
 
     #
 
-    default_param_style: ta.ClassVar[ParamStyle] = ParamStyle.PYFORMAT
+    _params_preparer_: ParamsPreparer
+
+    def _params_preparer(self) -> ParamsPreparer:
+        try:
+            return self._params_preparer_
+        except AttributeError:
+            pass
+
+        if (ps := self._param_style) is None:
+            raise ValueError('param_style is not set')
+
+        self._params_preparer_ = pp = make_params_preparer(ps)
+        return pp
 
     def _see_param(self, p: Param) -> None:
         self._seen_params.setdefault(p, len(self._seen_params))
@@ -84,8 +96,12 @@ class Renderer(lang.Abstract):
     def _param_key(self, p: Param) -> ParamKey:
         return p.n if p.n is not None else id(p)
 
-    def rendered_params(self) -> RenderedQueryParams:
-        prep_params = self._params_preparer.prepare()
+    def rendered_params(self) -> RenderedQueryParams | None:
+        if self._param_style is None:
+            check.empty(self._seen_params)
+            return None
+
+        prep_params = self._params_preparer().prepare()
         subst = col.make_map_by(self._param_key, self._seen_params, strict=True)
         return substitute_prepared_params(prep_params, subst)
 
@@ -252,7 +268,7 @@ class StdRenderer(Renderer):
     @Renderer.render.register
     def render_param(self, o: Param) -> tp.Part:
         self._see_param(o)
-        return self._params_preparer.add(self._param_key(o))
+        return self._params_preparer().add(self._param_key(o))
 
     # relations
 

@@ -19,6 +19,7 @@ class AsQueryParams:
 
 def as_query(
         obj: ta.Any,
+        /,
         *args: ta.Any,
         mode: QueryMode | str | None = None,
         adapter: Adapter | None = None,
@@ -36,6 +37,7 @@ def as_query(
 @functools.singledispatch
 def as_query_(
         obj: ta.Any,
+        /,
         *args: ta.Any,
         params: AsQueryParams,
 ) -> Query:
@@ -45,6 +47,7 @@ def as_query_(
 @as_query_.register
 def _(
         q: Query,
+        /,
         *,
         params: AsQueryParams,
 ) -> Query:
@@ -57,6 +60,7 @@ def _(
 @as_query_.register
 def _(
         s: str,
+        /,
         *args: ta.Any,
         params: AsQueryParams,
 ) -> Query:
