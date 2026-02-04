@@ -88,6 +88,7 @@ class Dispatcher(ta.Generic[T]):
             token = params.token
             impls_by_arg_cls = params.impls_by_arg_cls
             find_impl = params.find_impl
+            uncached_miss = params.uncached_miss
 
             dct: dict[type, ta.Any] = {}
 
@@ -107,7 +108,8 @@ class Dispatcher(ta.Generic[T]):
                 except KeyError:
                     impl = find_impl(cls, impls_by_arg_cls)
 
-                dct[cls] = impl
+                if impl is not None or not uncached_miss:
+                    dct[cls] = impl
                 return impl
 
             self.token = token
@@ -119,6 +121,7 @@ class Dispatcher(ta.Generic[T]):
             token = params.token
             impls_by_arg_cls = params.impls_by_arg_cls
             find_impl = params.find_impl
+            uncached_miss = params.uncached_miss
 
             dct: dict[weakref.ref[type], ta.Any] = {}
 
@@ -149,7 +152,8 @@ class Dispatcher(ta.Generic[T]):
                 except KeyError:
                     impl = find_impl(cls, impls_by_arg_cls)
 
-                dct[weakref_ref_(cls, dct_remove)] = impl
+                if impl is not None or not uncached_miss:
+                    dct[weakref_ref_(cls, dct_remove)] = impl
                 return impl
 
             self.token = token
@@ -160,11 +164,11 @@ class Dispatcher(ta.Generic[T]):
 
     def _reset_cache(self, token: ta.Any | None) -> None:
         self._cache = self._cache_factory(Dispatcher._CacheParams(  # noqa
-            self._impls_by_arg_cls,
-            self._find_impl,
-            self._reset_cache_for_token,
-            self._uncached_miss,
-            token,
+            impls_by_arg_cls=self._impls_by_arg_cls,
+            find_impl=self._find_impl,
+            reset_cache_for_token=self._reset_cache_for_token,
+            uncached_miss=self._uncached_miss,
+            token=token,
         ))
 
     def _reset_cache_for_token(self, prev: _Cache) -> None:

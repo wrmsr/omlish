@@ -192,3 +192,35 @@ def test_requires_override():
             return 'F:int'
 
     assert F().f(0) == 'F:int'
+
+
+@pytest.mark.parametrize('strong_dispatch_cache', [False, True])
+@pytest.mark.parametrize('uncached_dispatch_miss', [False, True])
+def test_uncached_miss(
+        strong_dispatch_cache,
+        uncached_dispatch_miss,
+):
+    class A:
+        @methods.method(
+            strong_dispatch_cache=strong_dispatch_cache,
+            uncached_dispatch_miss=uncached_dispatch_miss,
+            instance_cache=True,
+        )
+        def f(self, o: object):
+            return 'A:object'
+
+        @f.register
+        def f_int(self, o: int):
+            return 'A:int'
+
+        @f.register
+        def f_str(self, o: str):
+            return 'A:str'
+
+    a = A()
+    assert a.f(1) == 'A:int'
+    assert a.f('') == 'A:str'
+    assert a.f(1) == 'A:int'
+    assert a.f('') == 'A:str'
+    assert a.f([]) == 'A:object'
+    assert a.f([]) == 'A:object'

@@ -87,7 +87,6 @@ static PyObject * MethodDispatchFunc_call(MethodDispatchFunc *self, PyObject *ar
 
     // Check if impl_att is not None
     if (impl_att != Py_None) {
-        // Use PyObject_GetAttr directly instead of calling getattr builtin
         PyObject *impl_method = PyObject_GetAttr(instance, impl_att);
         Py_DECREF(impl_att);
 

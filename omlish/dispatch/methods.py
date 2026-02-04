@@ -59,6 +59,7 @@ class Method(ta.Generic[P, R]):
             instance_cache: bool = False,
             strong_registry_cache: bool = False,
             strong_dispatch_cache: bool = False,
+            uncached_dispatch_miss: bool = False,
     ) -> None:
         super().__init__()
 
@@ -70,6 +71,7 @@ class Method(ta.Generic[P, R]):
         self._instance_cache = instance_cache
         self._strong_registry_cache = strong_registry_cache
         self._strong_dispatch_cache = strong_dispatch_cache
+        self._uncached_dispatch_miss = uncached_dispatch_miss
 
         self._registry: col.AttrRegistry[ta.Callable, Method._Entry] = col.AttrRegistry(
             requires_override=requires_override,
@@ -132,6 +134,7 @@ class Method(ta.Generic[P, R]):
     def _build_dispatcher(self, collected: ta.Mapping[str, tuple[ta.Callable, _Entry]]) -> Dispatcher[str]:
         disp: Dispatcher[str] = Dispatcher(
             strong_cache=self._strong_dispatch_cache,
+            uncached_miss=self._uncached_dispatch_miss,
         )
 
         for a, (f, e) in collected.items():
@@ -217,6 +220,7 @@ def method(
         instance_cache: bool = False,
         strong_registry_cache: bool = False,
         strong_dispatch_cache: bool = False,
+        uncached_dispatch_miss: bool = False,
 ) -> ta.Callable[[ta.Callable[P, R]], Method[P, R]]:  # noqa
     return functools.partial(
         Method,  # type: ignore[arg-type]
@@ -225,6 +229,7 @@ def method(
         instance_cache=instance_cache,
         strong_registry_cache=strong_registry_cache,
         strong_dispatch_cache=strong_dispatch_cache,
+        uncached_dispatch_miss=uncached_dispatch_miss,
     )
 
 

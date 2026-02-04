@@ -30,6 +30,7 @@ typedef struct {
     PyObject *find_impl;
     PyObject *reset_cache_for_token;
     PyObject *abc_get_cache_token;
+    bool uncached_miss;
 } StrongCache;
 
 static int StrongCache_traverse(StrongCache *self, visitproc visit, void *arg)
@@ -133,10 +134,13 @@ static PyObject * StrongCache_dispatch(StrongCache *self, PyObject *cls)
         }
     }
 
-    // dct[cls] = impl
-    if (PyDict_SetItem(self->dct, cls, impl) < 0) {
-        Py_DECREF(impl);
-        return nullptr;
+    // if impl is not None or not uncached_miss:
+    //     dct[cls] = impl
+    if (impl != Py_None || !self->uncached_miss) {
+        if (PyDict_SetItem(self->dct, cls, impl) < 0) {
+            Py_DECREF(impl);
+            return nullptr;
+        }
     }
 
     Py_DECREF(impl);
@@ -217,6 +221,7 @@ static PyObject * build_strong_dispatch_cache(PyObject *module, PyObject *args)
     self->find_impl = nullptr;
     self->reset_cache_for_token = nullptr;
     self->abc_get_cache_token = Py_NewRef(state->abc_get_cache_token);
+    self->uncached_miss = false;
 
     self->dct = PyDict_New();
     if (self->dct == nullptr) {
@@ -251,6 +256,20 @@ static PyObject * build_strong_dispatch_cache(PyObject *module, PyObject *args)
         Py_DECREF(self);
         return nullptr;
     }
+
+    PyObject *uncached_miss = PyObject_GetAttrString(params, "uncached_miss");
+    if (uncached_miss == nullptr) {
+        Py_DECREF(self);
+        return nullptr;  // propagate AttributeError etc
+    }
+    if (!PyBool_Check(uncached_miss)) {
+        PyErr_SetString(PyExc_TypeError, "uncached_miss must be a bool");
+        Py_DECREF(uncached_miss);
+        Py_DECREF(self);
+        return nullptr;
+    }
+    self->uncached_miss = (uncached_miss == Py_True);
+    Py_DECREF(uncached_miss);
 
     PyObject_GC_Track(self);
     return (PyObject *)self;
