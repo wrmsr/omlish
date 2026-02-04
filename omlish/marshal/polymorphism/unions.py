@@ -33,15 +33,16 @@ class _BasePolymorphismUnionFactory(lang.Abstract):
     def rtys(self) -> frozenset[rfl.Type]:
         return frozenset(i.ty for i in self.p.impls)
 
-    def _guard(self, rty: rfl.Type) -> bool:
+    def get_impls(self, rty: rfl.Type) -> Impls | None:
         if not isinstance(rty, rfl.Union):
-            return False
-        if self.allow_partial:
-            return not (rty.args - self.rtys)
+            return None
+        elif self.allow_partial:
+            if not (rty.args - self.rtys):
+                return None
         else:
-            return rty.args == self.rtys
+            if not rty.args != self.rtys:
+                return None
 
-    def get_impls(self, rty: rfl.Type) -> Impls:
         uty = check.isinstance(rty, rfl.Union)
         return Impls([self.p.impls.by_ty[check.isinstance(a, type)] for a in uty.args])
 
@@ -49,14 +50,14 @@ class _BasePolymorphismUnionFactory(lang.Abstract):
 @dc.dataclass(frozen=True)
 class PolymorphismUnionMarshalerFactory(_BasePolymorphismUnionFactory, MarshalerFactory):
     def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
-        if not self._guard(rty):
+        if (impls := self.get_impls(rty)) is None:
             return None
-        return lambda: make_polymorphism_marshaler(self.get_impls(rty), self.tt, ctx)
+        return lambda: make_polymorphism_marshaler(impls, self.tt, ctx)
 
 
 @dc.dataclass(frozen=True)
 class PolymorphismUnionUnmarshalerFactory(_BasePolymorphismUnionFactory, UnmarshalerFactory):
     def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
-        if not self._guard(rty):
+        if (impls := self.get_impls(rty)) is None:
             return None
-        return lambda: make_polymorphism_unmarshaler(self.get_impls(rty), self.tt, ctx)
+        return lambda: make_polymorphism_unmarshaler(impls, self.tt, ctx)
