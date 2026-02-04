@@ -14,14 +14,8 @@ from ... import marshal as msh
 from .base import Node
 from .binary import BinaryOp
 from .binary import BinaryOps
-from .exprs import Expr
-from .inserts import Values
 from .multi import MultiKind
 from .relations import JoinKind
-from .relations import Relation
-from .selects import Select
-from .selects import SelectItem
-from .stmts import Stmt
 from .unary import UnaryOp
 from .unary import UnaryOps
 
@@ -82,28 +76,14 @@ def _install_standard_marshaling() -> None:
         msh.TypeMapUnmarshalerFactory({t: LowerEnumMarshaler(t) for t in ets}),
     )
 
-    for cls in [
-        Expr,
+    np = msh.polymorphism_from_subclasses(
         Node,
-        Relation,
-        SelectItem,
-        Stmt,
-    ]:
-        p = msh.polymorphism_from_subclasses(
-            cls,
-            naming=msh.Naming.SNAKE,
-            strip_suffix=msh.AutoStripSuffix,
-        )
-        msh.install_standard_factories(
-            msh.PolymorphismMarshalerFactory(p),
-            msh.PolymorphismUnmarshalerFactory(p),
-        )
-
-    insert_data_impls = msh.Impls([
-        msh.Impl(Values, 'values'),
-        msh.Impl(Select, 'select'),
-    ])
+        naming=msh.Naming.SNAKE,
+        strip_suffix=msh.AutoStripSuffix,
+    )
     msh.install_standard_factories(
-        msh.PolymorphismUnionMarshalerFactory(insert_data_impls),
-        msh.PolymorphismUnionUnmarshalerFactory(insert_data_impls),
+        msh.PolymorphismMarshalerFactory(np),
+        msh.PolymorphismUnmarshalerFactory(np),
+        msh.PolymorphismUnionMarshalerFactory(np.impls, allow_partial=True),
+        msh.PolymorphismUnionUnmarshalerFactory(np.impls, allow_partial=True),
     )

@@ -24,7 +24,7 @@ CanKeyword: ta.TypeAlias = Keyword | str
 
 
 class KeywordBuilder(Builder):
-    def keyword(self, k: str) -> Keyword:
+    def keyword(self, k: CanKeyword) -> Keyword:
         if isinstance(k, Keyword):
             return k
         elif isinstance(k, str):

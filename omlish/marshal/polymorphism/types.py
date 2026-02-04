@@ -1,6 +1,7 @@
 import dataclasses as dc
 import typing as ta
 
+from ... import check
 from ... import lang
 from ..base.configs import Config
 from ..naming import Naming
@@ -88,15 +89,20 @@ class Polymorphism:
             self,
             ty: type,
             impls: ta.Iterable[Impl],
+            *,
+            bases: ta.Mapping[type, ta.AbstractSet[type]] | None = None,
     ) -> None:
         super().__init__()
 
         self._ty = ty
         self._impls = Impls(impls)
+        self._bases = bases
 
         for i in self._impls:
-            if not issubclass(i.ty, ty):
-                raise TypeError(i.ty, ty)
+            check.issubclass(i.ty, ty)
+
+        for b in bases or []:
+            pass
 
     @property
     def ty(self) -> type:

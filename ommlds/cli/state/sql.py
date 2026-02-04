@@ -45,7 +45,7 @@ class SqlStateStorage(MarshalStateStorage):
 
             self._has_created = True
 
-    async def _run_with_db(self, fn: ta.Callable[[sql.api.Querier], T]) -> T:
+    async def _run_with_db(self, fn: ta.Callable[[sql.api.Conn], T]) -> T:
         def inner():
             db = sql.api.DbapiDb(lambda: contextlib.closing(sqlite3.connect(
                 self._config.file or ':memory:',
@@ -62,7 +62,7 @@ class SqlStateStorage(MarshalStateStorage):
 
             return sql.api.query_opt_one(db, Q.select([Q.i.value], Q.n.states, Q.eq(Q.n.key, key)))
 
-        row = await self._run_with_db(inner)  # noqa
+        row = await self._run_with_db(inner)
         if row is None:
             return None
 
@@ -74,8 +74,10 @@ class SqlStateStorage(MarshalStateStorage):
 
             with db.begin() as txn:
                 if sql.api.query_scalar(txn, Q.exists(Q.n.states, Q.eq(Q.n.key, key))) is not None:
+                    raise NotImplementedError
+
                 sql.api.exec(txn, Q.insert([Q.i.key, Q.i.value], Q.n.states, [key, obj]))
 
             raise NotImplementedError
 
-        await self._run_with_db(inner)  # noqa
+        await self._run_with_db(inner)
