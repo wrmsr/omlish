@@ -173,8 +173,10 @@ class Checks:
         ...
 
     def of_isinstance(self, spec, msg=None):
+        spec = self._unpack_isinstance_spec(spec)
+
         def inner(v):
-            return self.isinstance(v, self._unpack_isinstance_spec(spec), msg)
+            return self.isinstance(v, spec, msg)
 
         return inner
 
@@ -208,8 +210,10 @@ class Checks:
         return v
 
     def of_not_isinstance(self, spec: ta.Any, msg: CheckMessage = None) -> ta.Callable[[T], T]:
+        spec = self._unpack_isinstance_spec(spec)
+
         def inner(v):
-            return self.not_isinstance(v, self._unpack_isinstance_spec(spec), msg)
+            return self.not_isinstance(v, spec, msg)
 
         return inner
 

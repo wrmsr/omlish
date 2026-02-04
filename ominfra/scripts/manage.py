@@ -85,7 +85,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
             dict(path='../../omlish/lite/attrops.py', sha1='c1ebfb8573d766d34593c452a2377208d02726dc'),
             dict(path='../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
-            dict(path='../../omlish/lite/check.py', sha1='7996e893097b9318089017b1342c9965d4024eb0'),
+            dict(path='../../omlish/lite/check.py', sha1='0d5908513e452593ec345fe4cb5f8e33f5e5876c'),
             dict(path='../../omlish/lite/contextmanagers.py', sha1='993f5ed96d3410f739a20363f55670d5e5267fa3'),
             dict(path='../../omlish/lite/json.py', sha1='57eeddc4d23a17931e00284ffa5cb6e3ce089486'),
             dict(path='../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
@@ -3497,8 +3497,10 @@ class Checks:
         ...
 
     def of_isinstance(self, spec, msg=None):
+        spec = self._unpack_isinstance_spec(spec)
+
         def inner(v):
-            return self.isinstance(v, self._unpack_isinstance_spec(spec), msg)
+            return self.isinstance(v, spec, msg)
 
         return inner
 
@@ -3532,8 +3534,10 @@ class Checks:
         return v
 
     def of_not_isinstance(self, spec: ta.Any, msg: CheckMessage = None) -> ta.Callable[[T], T]:
+        spec = self._unpack_isinstance_spec(spec)
+
         def inner(v):
-            return self.not_isinstance(v, self._unpack_isinstance_spec(spec), msg)
+            return self.not_isinstance(v, spec, msg)
 
         return inner
 

@@ -33,7 +33,7 @@ def seq(
 ) -> ta.Sequence[T]:
     if isinstance(it, str):
         raise TypeError(it)
-    elif isinstance(it, FrozenList):
+    elif type(it) is FrozenList:
         return it
     else:
         return FrozenList(it)

@@ -18,7 +18,8 @@ class Frozen(ta.Hashable, abc.ABC):
     """Explicitly an abc.ABC, not a lang.Abstract, to support virtual subclassing."""
 
 
-class FrozenDict(ta.Mapping[K, V], Frozen):
+@ta.final
+class FrozenDict(ta.Mapping[K, V], Frozen, lang.Final):
     def __new__(cls, *args: ta.Any, **kwargs: ta.Any) -> 'FrozenDict[K, V]':  # noqa
         if len(args) == 1 and Frozen in type(args[0]).__bases__:
             return args[0]
@@ -64,7 +65,7 @@ class FrozenDict(ta.Mapping[K, V], Frozen):
         return not (self == other)
 
     def __setstate__(self, t):
-        self.__init__(t)  # type: ignore
+        self.__init__(t)
 
     def drop(self, *keys: T) -> 'FrozenDict[K, V]':
         ks = frozenset(keys)
@@ -75,7 +76,8 @@ class FrozenDict(ta.Mapping[K, V], Frozen):
         return type(self)(itertools.chain(self.items(), new.items()))
 
 
-class FrozenList(ta.Sequence[T], Frozen):
+@ta.final
+class FrozenList(ta.Sequence[T], Frozen, lang.Final):
     def __init__(self, it: ta.Iterable[T] | None = None) -> None:
         super().__init__()
 
@@ -90,7 +92,7 @@ class FrozenList(ta.Sequence[T], Frozen):
         return f'([{", ".join(map(repr, self._tup))}])'
 
     def __add__(self, o) -> 'FrozenList[T]':
-        if isinstance(o, FrozenList):
+        if type(o) is FrozenList:
             return FrozenList(self._tup + o._tup)
         elif isinstance(o, collections.abc.Sequence):
             return FrozenList(self._tup + tuple(o))
@@ -101,7 +103,7 @@ class FrozenList(ta.Sequence[T], Frozen):
         return x in self._tup
 
     def __eq__(self, o: object) -> bool:
-        if isinstance(o, FrozenList):
+        if type(o) is FrozenList:
             return self._tup == o._tup
         elif isinstance(o, collections.abc.Sequence):
             return len(self) == len(o) and all(l == r for l, r in zip(self, o))
@@ -129,7 +131,7 @@ class FrozenList(ta.Sequence[T], Frozen):
         return not self.__eq__(o)
 
     def __radd__(self, o) -> 'FrozenList[T]':
-        if isinstance(o, FrozenList):
+        if type(o) is FrozenList:
             return FrozenList(o._tup + self._tup)
         elif isinstance(o, collections.abc.Sequence):
             return FrozenList(tuple(o) + self._tup)
