@@ -83,7 +83,7 @@ with _lang.auto_proxy_init(globals()):
         ParamStyle,
         make_params_preparer,
 
-        substitute_prepared_params,
+        substitute_params,
     )
 
     from .qualifiedname import (  # noqa

@@ -10,7 +10,7 @@ from ..params import ParamKey
 from ..params import ParamsPreparer
 from ..params import ParamStyle
 from ..params import make_params_preparer
-from ..params import substitute_prepared_params
+from ..params import substitute_params
 from .base import Node
 from .binary import Binary
 from .binary import BinaryOp
@@ -103,7 +103,7 @@ class Renderer(lang.Abstract):
 
         prep_params = self._params_preparer().prepare()
         subst = col.make_map_by(self._param_key, self._seen_params, strict=True)
-        return substitute_prepared_params(prep_params, subst)
+        return substitute_params(prep_params, subst, strict=True)
 
     #
 

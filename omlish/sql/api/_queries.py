@@ -8,6 +8,7 @@ import typing as ta
 
 from ... import check
 from ..params import ParamStyle
+from ..params import substitute_params
 from ..queries import Stmt
 from ..queries.params import Param
 from ..queries.rendering import render
@@ -39,8 +40,10 @@ def _(
         param_style=ps,
     )
 
+    args: list[ta.Any] = []
+
     if rq.params:
-        raise NotImplementedError
+        args.append(substitute_params(rq.params, check.not_none(param_values), strict=True))
 
     else:
         check.arg(not param_values)
@@ -48,5 +51,5 @@ def _(
     return Query(
         mode=QueryMode.of(ctx.mode, QueryMode.QUERY),
         text=rq.s,
-        args=[],
+        args=args,
     )

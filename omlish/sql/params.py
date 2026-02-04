@@ -8,7 +8,8 @@ from .. import check
 from .. import lang
 
 
-T = ta.TypeVar('T')
+K = ta.TypeVar('K')
+V = ta.TypeVar('V')
 
 
 ##
@@ -192,26 +193,36 @@ def make_params_preparer(style: ParamStyle) -> ParamsPreparer:
 
 
 @ta.overload
-def substitute_prepared_params(
-        params: SequencePreparedParams,
-        values: ta.Mapping[ParamKey, T],
-) -> ta.Sequence[T]:
+def substitute_params(
+        params: ta.Sequence[K],
+        values: ta.Mapping[K, V],
+        *,
+        strict: bool = False,
+) -> ta.Sequence[V]:
     ...
 
 
 @ta.overload
-def substitute_prepared_params(
-        params: MappingPreparedParams,
-        values: ta.Mapping[ParamKey, T],
-) -> ta.Mapping[str, T]:
+def substitute_params(
+        params: ta.Mapping[str, K],
+        values: ta.Mapping[K, V],
+        *,
+        strict: bool = False,
+) -> ta.Mapping[str, V]:
     ...
 
 
-def substitute_prepared_params(params, values):
+def substitute_params(params, values, *, strict=False):
     if isinstance(params, collections.abc.Mapping):
+        if strict:
+            check.equal(set(values), set(params.values()))
+
         return {k: values[v] for k, v in params.items()}
 
     elif isinstance(params, collections.abc.Sequence):
+        if strict:
+            check.equal(set(values), set(params))
+
         return [values[a] for a in params]
 
     else:
