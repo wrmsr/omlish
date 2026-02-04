@@ -1,8 +1,8 @@
-import dataclasses as dc
 import functools
 import typing as ta
 
 from ... import check
+from ... import dataclasses as dc
 from .adapters import Adapter
 from .queries import Query
 from .queries import QueryMode

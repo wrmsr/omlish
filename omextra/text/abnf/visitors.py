@@ -17,7 +17,10 @@ T = ta.TypeVar('T')
 
 
 class OpMatchVisitor(lang.Abstract, ta.Generic[T]):
-    @dispatch.method()
+    @dispatch.method(
+        instance_cache=True,
+        strong_dispatch_cache=True,
+    )
     def visit_op(self, o: Op, m: Match) -> T:
         raise TypeError(o)
 

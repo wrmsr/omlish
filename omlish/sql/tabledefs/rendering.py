@@ -1,8 +1,8 @@
-import dataclasses as dc
 import io
 import typing as ta
 
 from ... import collections as col
+from ... import dataclasses as dc
 from ..tabledefs import TableDef
 from .dtypes import Datetime
 from .dtypes import Integer

@@ -1,5 +1,6 @@
 import abc
 import enum
+import functools
 import typing as ta
 
 from .. import check
@@ -137,19 +138,24 @@ class ParamStyle(enum.Enum):
     PYFORMAT = 'pyformat'  # Python extended format codes, e.g. ...WHERE name=%(name)s
 
 
+_PARAMS_PREPARER_FACTORIES_BY_STYLE: ta.Mapping[ParamStyle, ta.Callable[[], ParamsPreparer]] = {
+    ParamStyle.QMARK: functools.partial(LinearParamsPreparer, '?'),
+    ParamStyle.FORMAT: functools.partial(LinearParamsPreparer, '%s'),
+
+    ParamStyle.NUMERIC: NumericParamsPreparer,
+
+    ParamStyle.NAMED: functools.partial(NamedParamsPreparer, NamedParamsPreparer.render_named),
+    ParamStyle.PYFORMAT: functools.partial(NamedParamsPreparer, NamedParamsPreparer.render_pyformat),
+}
+
+
 def make_params_preparer(style: ParamStyle) -> ParamsPreparer:
-    if style is ParamStyle.QMARK:
-        return LinearParamsPreparer('?')
-    elif style is ParamStyle.FORMAT:
-        return LinearParamsPreparer('%s')
-    elif style is ParamStyle.NUMERIC:
-        return NumericParamsPreparer()
-    elif style is ParamStyle.NAMED:
-        return NamedParamsPreparer(NamedParamsPreparer.render_named)
-    elif style is ParamStyle.PYFORMAT:
-        return NamedParamsPreparer(NamedParamsPreparer.render_pyformat)
+    try:
+        fac = _PARAMS_PREPARER_FACTORIES_BY_STYLE[style]
+    except KeyError:
+        raise ValueError(style) from None
     else:
-        raise ValueError(style)
+        return fac()
 
 
 ##

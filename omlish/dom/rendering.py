@@ -100,7 +100,10 @@ class Renderer:
 
     #
 
-    @dispatch.method(instance_cache=True)
+    @dispatch.method(
+        instance_cache=True,
+        strong_dispatch_cache=True,
+    )
     def render(self, o: ta.Any) -> None:
         raise TypeError(o)
 

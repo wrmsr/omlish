@@ -75,7 +75,10 @@ class PartTransform:
     def __call__(self, part: Part | None) -> Part:
         return self._transform(part)
 
-    @dispatch.method(instance_cache=True)
+    @dispatch.method(
+        instance_cache=True,
+        strong_dispatch_cache=True,
+    )
     def _transform(self, part: Part | None) -> Part:
         raise TypeError(part)
 
@@ -214,7 +217,10 @@ class PartRenderer:
     def __call__(self, part: Part | None) -> None:
         return self._render(part)
 
-    @dispatch.method()
+    @dispatch.method(
+        instance_cache=True,
+        strong_dispatch_cache=True,
+    )
     def _render(self, part: Part | None) -> None:
         raise TypeError(part)
 

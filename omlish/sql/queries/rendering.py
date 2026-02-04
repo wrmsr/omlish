@@ -15,9 +15,9 @@ def needs_parens(self, e: Expr) -> bool:
     else:
         raise TypeError(e)
 """
-import dataclasses as dc
 import typing as ta
 
+from ... import dataclasses as dc
 from ... import dispatch
 from ... import lang
 from ...text import parts as tp
@@ -81,7 +81,10 @@ class Renderer(lang.Abstract):
     def args(self) -> lang.Args:
         return self._params_preparer.prepare()
 
-    @dispatch.method(instance_cache=True)
+    @dispatch.method(
+        instance_cache=True,
+        strong_dispatch_cache=True,
+    )
     def render(self, o: ta.Any) -> tp.Part:
         raise TypeError(o)
 

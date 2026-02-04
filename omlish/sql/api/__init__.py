@@ -1,3 +1,15 @@
+from ... import dataclasses as _dc
+
+
+_dc.init_package(
+    globals(),
+    codegen=True,
+)
+
+
+##
+
+
 from .adapters import (  # noqa
     Adapter,
 
@@ -107,6 +119,6 @@ from .rows import (  # noqa
 ##
 
 
-from ... import lang as _lang
+from ... import lang as _lang  # noqa
 
 _lang.register_conditional_import('..queries', '._queries', __package__)
