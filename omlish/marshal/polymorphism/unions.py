@@ -36,15 +36,18 @@ class _BasePolymorphismUnionFactory(lang.Abstract):
     def get_impls(self, rty: rfl.Type) -> Impls | None:
         if not isinstance(rty, rfl.Union):
             return None
-        elif self.allow_partial:
+
+        if self.allow_partial:
             if not (rty.args - self.rtys):
                 return None
         else:
             if not rty.args != self.rtys:
                 return None
 
-        uty = check.isinstance(rty, rfl.Union)
-        return Impls([self.p.impls.by_ty[check.isinstance(a, type)] for a in uty.args])
+        return Impls([
+            self.p.impls.by_ty[check.isinstance(a, type)]
+            for a in rty.args
+        ])
 
 
 @dc.dataclass(frozen=True)
