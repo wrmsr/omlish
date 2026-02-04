@@ -1,7 +1,7 @@
-import dataclasses as dc
 import importlib
 import sys
 
+from .... import dataclasses as dc
 from .... import lang
 from ...base.configs import Config
 

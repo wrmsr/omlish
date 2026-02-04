@@ -6,8 +6,6 @@ from .marshal import PolymorphismMarshalerFactory
 from .types import Polymorphism
 from .types import TypeTagging
 from .types import WrapperTypeTagging
-from .unions import PolymorphismUnionMarshalerFactory
-from .unions import PolymorphismUnionUnmarshalerFactory
 from .unmarshal import PolymorphismUnmarshalerFactory
 
 
@@ -17,18 +15,10 @@ from .unmarshal import PolymorphismUnmarshalerFactory
 def standard_polymorphism_factories(
         poly: Polymorphism,
         tt: TypeTagging = WrapperTypeTagging(),
-        *,
-        unions: bool | ta.Literal['partial'] = False,
 ) -> ta.Sequence[MarshalerFactory | UnmarshalerFactory]:
     out: list[MarshalerFactory | UnmarshalerFactory] = [
         PolymorphismMarshalerFactory(poly, tt),
         PolymorphismUnmarshalerFactory(poly, tt),
     ]
-
-    if unions:
-        out.extend([
-            PolymorphismUnionMarshalerFactory(poly, tt, allow_partial=unions == 'partial'),
-            PolymorphismUnionUnmarshalerFactory(poly, tt, allow_partial=unions == 'partial'),
-        ])
 
     return out

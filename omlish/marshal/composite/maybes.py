@@ -2,10 +2,10 @@
 TODO:
  - option to coordinate with objects and omit if empty / render unboxed
 """
-import dataclasses as dc
 import typing as ta
 
 from ... import check
+from ... import dataclasses as dc
 from ... import lang
 from ... import reflect as rfl
 from ..base.contexts import MarshalContext

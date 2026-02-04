@@ -269,10 +269,7 @@ def _install_standard_marshaling() -> None:
     )
 
     msh.install_standard_factories(
-        *msh.standard_polymorphism_factories(
-            base_content_poly,
-            unions='partial',
-        ),
+        *msh.standard_polymorphism_factories(base_content_poly),
     )
 
     #

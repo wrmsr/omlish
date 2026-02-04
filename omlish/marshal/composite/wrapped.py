@@ -1,6 +1,6 @@
-import dataclasses as dc
 import typing as ta
 
+from ... import dataclasses as dc
 from ..base.contexts import MarshalContext
 from ..base.contexts import UnmarshalContext
 from ..base.types import Marshaler

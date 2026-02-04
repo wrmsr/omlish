@@ -1,7 +1,9 @@
+import operator
 import typing as ta
 
 from ... import dataclasses as dc
 from ... import lang
+from ... import marshal as msh
 from .exprs import CanExpr
 from .exprs import Expr
 from .exprs import ExprBuilder
@@ -15,7 +17,7 @@ from .names import Name
 
 class Func(Expr, lang.Final):
     func: Keyword | Name
-    args: ta.Sequence[Expr] = dc.xfield(coerce=tuple)
+    args: ta.Sequence[Expr] = dc.xfield((), coerce=tuple, repr_fn=lang.truthy_repr) | msh.with_field_options(omit_if=operator.not_)  # noqa
 
 
 class FuncBuilder(ExprBuilder):

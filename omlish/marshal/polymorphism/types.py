@@ -1,7 +1,7 @@
-import dataclasses as dc
 import typing as ta
 
 from ... import check
+from ... import dataclasses as dc
 from ... import lang
 from ..base.configs import Config
 from ..naming import Naming
@@ -87,11 +87,13 @@ class Impls(ta.Sequence[Impl], lang.Final):
 @dc.dataclass(frozen=True)
 class ImplBase(lang.Final):
     ty: type
-    impls: ta.AbstractSet[type]
+    impl_tys: ta.AbstractSet[type]
 
     def __post_init__(self) -> None:
-        for i in self.impls:
+        check.not_empty(self.impl_tys)
+        for i in self.impl_tys:
             check.issubclass(i, self.ty)
+            check.state(not lang.is_abstract(i))
 
 
 class ImplBases(ta.Sequence[ImplBase], lang.Final):
@@ -99,6 +101,13 @@ class ImplBases(ta.Sequence[ImplBase], lang.Final):
         super().__init__()
 
         self._bases = list(bases)
+
+        by_ty: dict[type, ImplBase] = {}
+        for i in self._bases:
+            if i.ty in by_ty:
+                raise TypeError(i.ty)
+            by_ty[i.ty] = i
+        self._by_ty = by_ty
 
     def __iter__(self) -> ta.Iterator[ImplBase]:
         return iter(self._bases)
@@ -114,6 +123,10 @@ class ImplBases(ta.Sequence[ImplBase], lang.Final):
 
     def __getitem__(self, index):
         return self._bases[index]
+
+    @property
+    def by_ty(self) -> ta.Mapping[type, ImplBase]:
+        return self._by_ty
 
 
 class Polymorphism:
@@ -216,8 +229,9 @@ def polymorphism_from_subclasses(
     impl_tys: set[type]
     base_tys: dict[type, set[type]] | None
     if include_bases:
-        base_tys = lang.deep_subclass_tree(ty, total=True)
-        impl_tys = {sub_ty for sub_ty in base_tys if not lang.is_abstract(sub_ty)}  # type: ignore[var-annotated]
+        dct: dict = lang.deep_subclass_tree(ty, total=True, concrete_only=True)
+        base_tys = {bt: bts for bt, bts in dct.items() if bts}
+        impl_tys = {sub_ty for sub_ty in dct if not lang.is_abstract(sub_ty)}
     else:
         impl_tys = set(lang.deep_subclasses(ty, concrete_only=True))
         base_tys = None

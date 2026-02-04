@@ -1,7 +1,8 @@
 import abc
-import dataclasses as dc
 import typing as ta
 
+from ... import check
+from ... import dataclasses as dc
 from ... import lang
 from ... import reflect as rfl
 from ..base.contexts import MarshalContext
@@ -9,6 +10,7 @@ from ..base.contexts import MarshalFactoryContext
 from ..base.types import Marshaler
 from ..base.types import MarshalerFactory
 from ..base.values import Value
+from .impls import get_polymorphism_impls
 from .types import FieldTypeTagging
 from .types import Impls
 from .types import Polymorphism
@@ -55,10 +57,13 @@ def make_polymorphism_marshaler(
         tt: TypeTagging,
         ctx: MarshalFactoryContext,
 ) -> Marshaler:
+    check.not_empty(impls)
+
     m = {
         i.ty: (i.tag, ctx.make_marshaler(i.ty))
         for i in impls
     }
+
     if isinstance(tt, WrapperTypeTagging):
         return WrapperPolymorphismMarshaler(m)
     elif isinstance(tt, FieldTypeTagging):
@@ -73,6 +78,6 @@ class PolymorphismMarshalerFactory(MarshalerFactory):
     tt: TypeTagging = WrapperTypeTagging()
 
     def make_marshaler(self, ctx: MarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Marshaler] | None:
-        if rty is not self.p.ty:
+        if (impls := get_polymorphism_impls(rty, self.p)) is None:
             return None
-        return lambda: make_polymorphism_marshaler(self.p.impls, self.tt, ctx)
+        return lambda: make_polymorphism_marshaler(impls, self.tt, ctx)

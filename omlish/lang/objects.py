@@ -122,7 +122,6 @@ def deep_subclass_tree(
         total: bool = False,
         concrete_only: bool = False,
 ) -> dict[type[T], set[type[T]]]:
-
     # Stores the "total" descendants for each class visited
     memo: dict[type[T], set[type[T]]] = {}
     # Tracks the current path to detect cycles
@@ -162,10 +161,7 @@ def deep_subclass_tree(
 
         # Apply concrete filter if requested
         if concrete_only:
-            final_output[klass] = {
-                d for d in source_set
-                if not is_abstract_class(d)
-            }
+            final_output[klass] = {d for d in source_set if not is_abstract_class(d)}
         else:
             final_output[klass] = source_set
 

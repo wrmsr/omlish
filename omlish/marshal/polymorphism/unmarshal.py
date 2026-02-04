@@ -1,9 +1,9 @@
 import abc
 import collections.abc
-import dataclasses as dc
 import typing as ta
 
 from ... import check
+from ... import dataclasses as dc
 from ... import lang
 from ... import reflect as rfl
 from ..base.contexts import UnmarshalContext
@@ -11,6 +11,7 @@ from ..base.contexts import UnmarshalFactoryContext
 from ..base.types import Unmarshaler
 from ..base.types import UnmarshalerFactory
 from ..base.values import Value
+from .impls import get_polymorphism_impls
 from .types import FieldTypeTagging
 from .types import Impls
 from .types import Polymorphism
@@ -61,12 +62,15 @@ def make_polymorphism_unmarshaler(
         tt: TypeTagging,
         ctx: UnmarshalFactoryContext,
 ) -> Unmarshaler:
+    check.not_empty(impls)
+
     m = {
         t: u
         for i in impls
         for u in [ctx.make_unmarshaler(i.ty)]
         for t in [i.tag, *i.alts]
     }
+
     if isinstance(tt, WrapperTypeTagging):
         return WrapperPolymorphismUnmarshaler(m)
     elif isinstance(tt, FieldTypeTagging):
@@ -81,6 +85,6 @@ class PolymorphismUnmarshalerFactory(UnmarshalerFactory):
     tt: TypeTagging = WrapperTypeTagging()
 
     def make_unmarshaler(self, ctx: UnmarshalFactoryContext, rty: rfl.Type) -> ta.Callable[[], Unmarshaler] | None:
-        if rty is not self.p.ty:
+        if (impls := get_polymorphism_impls(rty, self.p)) is None:
             return None
-        return lambda: make_polymorphism_unmarshaler(self.p.impls, self.tt, ctx)
+        return lambda: make_polymorphism_unmarshaler(impls, self.tt, ctx)

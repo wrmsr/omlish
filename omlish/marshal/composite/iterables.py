@@ -3,11 +3,11 @@ TODO:
  - heterogeneous tuples
 """
 import collections.abc
-import dataclasses as dc
 import functools
 import typing as ta
 
 from ... import check
+from ... import dataclasses as dc
 from ... import reflect as rfl
 from ..base.contexts import MarshalContext
 from ..base.contexts import MarshalFactoryContext

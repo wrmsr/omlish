@@ -23,5 +23,4 @@ def _install_standard_marshaling() -> None:
                 strip_suffix=msh.AutoStripSuffix,
             ),
             msh.FieldTypeTagging(tag_field),
-            unions='partial',
         ))

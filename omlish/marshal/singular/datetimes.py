@@ -1,8 +1,8 @@
-import dataclasses as dc
 import datetime
 import typing as ta
 
 from ... import check
+from ... import dataclasses as dc
 from ... import datetimes as dts
 from ..base.contexts import MarshalContext
 from ..base.contexts import UnmarshalContext

@@ -935,29 +935,34 @@ def _process_dataclass__7e0e049a846197c10dd6eaa0088bb0cfa339c375():
         "ldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='func', annotation=OpRef(n"
         "ame='init.fields.2.annotation'), default=None, default_factory=None, init=True, override=False, field_type=Fie"
         "ldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='args', annotation=OpRef(na"
-        "me='init.fields.3.annotation'), default=None, default_factory=None, init=True, override=False, field_type=Fiel"
-        "dType.INSTANCE, coerce=OpRef(name='init.fields.3.coerce'), validate=None, check_type=None)), self_param='self'"
-        ", std_params=('func', 'args'), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=()"
-        ", validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='func', kw_only=False, fn=None), ReprPlan.Field(name="
-        "'args', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
+        "me='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, "
+        "override=False, field_type=FieldType.INSTANCE, coerce=OpRef(name='init.fields.3.coerce'), validate=None, check"
+        "_type=None)), self_param='self', std_params=('func', 'args'), kw_only_params=(), frozen=True, slots=False, pos"
+        "t_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='func', kw_only=False,"
+        " fn=None), ReprPlan.Field(name='args', kw_only=False, fn=OpRef(name='repr.fns.3.fn'))), id=False, terse=False,"
+        " default_fn=None)))"
     ),
-    plan_repr_sha1='1e35dcea5c200b11dd5f853a4108cff648a31b0e',
+    plan_repr_sha1='3d4b0abde5f830173635470230e4f5bd1d24e9b9',
     op_ref_idents=(
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__3__coerce',
+        '__dataclass__init__fields__3__default',
+        '__dataclass__repr__fns__3__fn',
     ),
     cls_names=(
         ('omlish.sql.queries', 'Func'),
     ),
 )
-def _process_dataclass__1e35dcea5c200b11dd5f853a4108cff648a31b0e():
+def _process_dataclass__3d4b0abde5f830173635470230e4f5bd1d24e9b9():
     def _process_dataclass(
         *,
         __dataclass__cls,
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__coerce,
+        __dataclass__init__fields__3__default,
+        __dataclass__repr__fns__3__fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -1028,7 +1033,7 @@ def _process_dataclass__1e35dcea5c200b11dd5f853a4108cff648a31b0e():
         def __init__(
             self,
             func: __dataclass__init__fields__2__annotation,
-            args: __dataclass__init__fields__3__annotation,
+            args: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
         ) -> __dataclass__None:
             args = __dataclass__init__fields__3__coerce(args)
             __dataclass__object_setattr(self, 'func', func)
@@ -1043,7 +1048,8 @@ def _process_dataclass__1e35dcea5c200b11dd5f853a4108cff648a31b0e():
         def __repr__(self):
             parts = []
             parts.append(f"func={self.func!r}")
-            parts.append(f"args={self.args!r}")
+            if (s := __dataclass__repr__fns__3__fn(self.args)) is not None:
+                parts.append(f"args={s}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

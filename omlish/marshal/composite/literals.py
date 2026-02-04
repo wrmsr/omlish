@@ -2,10 +2,10 @@
 TODO:
  - squash literal unions - typing machinery doesn't
 """
-import dataclasses as dc
 import typing as ta
 
 from ... import check
+from ... import dataclasses as dc
 from ... import reflect as rfl
 from ..base.contexts import MarshalContext
 from ..base.contexts import MarshalFactoryContext

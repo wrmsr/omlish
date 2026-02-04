@@ -85,6 +85,4 @@ def _install_standard_marshaling() -> None:
     msh.install_standard_factories(
         msh.PolymorphismMarshalerFactory(node_poly),
         msh.PolymorphismUnmarshalerFactory(node_poly),
-        msh.PolymorphismUnionMarshalerFactory(node_poly, allow_partial=True),
-        msh.PolymorphismUnionUnmarshalerFactory(node_poly, allow_partial=True),
     )

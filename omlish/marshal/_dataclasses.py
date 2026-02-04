@@ -25,46 +25,28 @@ def _register(**kwargs):
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('impls', 'tt', 'allow_partial')), EqPlan(fields=('impls', 'tt', 'allow_partial')),"
-        " FrozenPlan(fields=('impls', 'tt', 'allow_partial'), allow_dynamic_dunder_attrs=False), HashPlan(action='add',"
-        " fields=('impls', 'tt', 'allow_partial'), cache=False), InitPlan(fields=(InitPlan.Field(name='impls', annotati"
-        "on=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, override=False, fiel"
-        "d_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='tt', annotation="
-        "OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, ini"
-        "t=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan."
-        "Field(name='allow_partial', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields"
-        ".2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
-        "idate=None, check_type=None)), self_param='self', std_params=('impls', 'tt'), kw_only_params=('allow_partial',"
-        "), frozen=True, slots=False, post_init_params=None, init_fns=(OpRef(name='init.init_fns.0'),), validate_fns=()"
-        "), ReprPlan(fields=(ReprPlan.Field(name='impls', kw_only=False, fn=None), ReprPlan.Field(name='tt', kw_only=Fa"
-        "lse, fn=None), ReprPlan.Field(name='allow_partial', kw_only=True, fn=None)), id=False, terse=False, default_fn"
-        "=None)))"
+        "Plans(tup=(CopyPlan(fields=('fn',)), EqPlan(fields=('fn',)), FrozenPlan(fields=('fn',), allow_dynamic_dunder_a"
+        "ttrs=False), HashPlan(action='add', fields=('fn',), cache=False), InitPlan(fields=(InitPlan.Field(name='fn', a"
+        "nnotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, override=Fals"
+        "e, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),), self_param='self', std_param"
+        "s=('fn',), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), "
+        "ReprPlan(fields=(ReprPlan.Field(name='fn', kw_only=False, fn=None),), id=False, terse=False, default_fn=None))"
+        ")"
     ),
-    plan_repr_sha1='330f034b24c077e4e7e82f9f8846225a1064a3bf',
+    plan_repr_sha1='9c26f5e7e2496284b4ba1e1072fb3e29dc4e0ec4',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__1__annotation',
-        '__dataclass__init__fields__1__default',
-        '__dataclass__init__fields__2__annotation',
-        '__dataclass__init__fields__2__default',
-        '__dataclass__init__init_fns__0',
     ),
     cls_names=(
-        ('omlish.marshal.polymorphism.standard', 'PolymorphismUnionMarshalerFactory'),
-        ('omlish.marshal.polymorphism.standard', 'PolymorphismUnionUnmarshalerFactory'),
-        ('omlish.marshal.polymorphism.standard', '_BasePolymorphismUnionFactory'),
+        ('omlish.marshal.base.funcs', 'FuncMarshaler'),
+        ('omlish.marshal.base.funcs', 'FuncUnmarshaler'),
     ),
 )
-def _process_dataclass__330f034b24c077e4e7e82f9f8846225a1064a3bf():
+def _process_dataclass__9c26f5e7e2496284b4ba1e1072fb3e29dc4e0ec4():
     def _process_dataclass(
         *,
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__init__fields__1__default,
-        __dataclass__init__fields__2__annotation,
-        __dataclass__init__fields__2__default,
-        __dataclass__init__init_fns__0,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -83,9 +65,7 @@ def _process_dataclass__330f034b24c077e4e7e82f9f8846225a1064a3bf():
             if self.__class__ is not __dataclass__cls:
                 raise TypeError(self)
             return __dataclass__cls(  # noqa
-                impls=self.impls,
-                tt=self.tt,
-                allow_partial=self.allow_partial,
+                fn=self.fn,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -99,9 +79,7 @@ def _process_dataclass__330f034b24c077e4e7e82f9f8846225a1064a3bf():
             if self.__class__ is not other.__class__:
                 return NotImplemented
             return (
-                self.impls == other.impls and
-                self.tt == other.tt and
-                self.allow_partial == other.allow_partial
+                self.fn == other.fn
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -110,9 +88,7 @@ def _process_dataclass__330f034b24c077e4e7e82f9f8846225a1064a3bf():
         setattr(__dataclass__cls, '__eq__', __eq__)
 
         __dataclass___setattr_frozen_fields = {
-            'impls',
-            'tt',
-            'allow_partial',
+            'fn',
         }
 
         def __setattr__(self, name, value):
@@ -129,9 +105,7 @@ def _process_dataclass__330f034b24c077e4e7e82f9f8846225a1064a3bf():
         setattr(__dataclass__cls, '__setattr__', __setattr__)
 
         __dataclass___delattr_frozen_fields = {
-            'impls',
-            'tt',
-            'allow_partial',
+            'fn',
         }
 
         def __delattr__(self, name):
@@ -149,9 +123,7 @@ def _process_dataclass__330f034b24c077e4e7e82f9f8846225a1064a3bf():
 
         def __hash__(self):
             return hash((
-                self.impls,
-                self.tt,
-                self.allow_partial,
+                self.fn,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -159,15 +131,9 @@ def _process_dataclass__330f034b24c077e4e7e82f9f8846225a1064a3bf():
 
         def __init__(
             self,
-            impls: __dataclass__init__fields__0__annotation,
-            tt: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
-            *,
-            allow_partial: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+            fn: __dataclass__init__fields__0__annotation,
         ) -> __dataclass__None:
-            __dataclass__object_setattr(self, 'impls', impls)
-            __dataclass__object_setattr(self, 'tt', tt)
-            __dataclass__object_setattr(self, 'allow_partial', allow_partial)
-            __dataclass__init__init_fns__0(self)
+            __dataclass__object_setattr(self, 'fn', fn)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -177,9 +143,2936 @@ def _process_dataclass__330f034b24c077e4e7e82f9f8846225a1064a3bf():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"impls={self.impls!r}")
+            parts.append(f"fn={self.fn!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('gf',)), EqPlan(fields=('gf',)), FrozenPlan(fields=('gf',), allow_dynamic_dunder_a"
+        "ttrs=False), HashPlan(action='add', fields=('gf',), cache=False), InitPlan(fields=(InitPlan.Field(name='gf', a"
+        "nnotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, override=Fals"
+        "e, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),), self_param='self', std_param"
+        "s=('gf',), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), "
+        "ReprPlan(fields=(ReprPlan.Field(name='gf', kw_only=False, fn=None),), id=False, terse=False, default_fn=None))"
+        ")"
+    ),
+    plan_repr_sha1='776f6d1eb32ee611bd06b85fc8910105047c2325',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+    ),
+    cls_names=(
+        ('omlish.marshal.base.funcs', 'FuncMarshalerFactory'),
+        ('omlish.marshal.base.funcs', 'FuncUnmarshalerFactory'),
+    ),
+)
+def _process_dataclass__776f6d1eb32ee611bd06b85fc8910105047c2325():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                gf=self.gf,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.gf == other.gf
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            'gf',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'gf',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.gf,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            gf: __dataclass__init__fields__0__annotation,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'gf', gf)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"gf={self.gf!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('wrapper', 'm')), EqPlan(fields=('wrapper', 'm')), FrozenPlan(fields=('wrapper', '"
+        "m'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('wrapper', 'm'), cache=False), InitPlan"
+        "(fields=(InitPlan.Field(name='wrapper', annotation=OpRef(name='init.fields.0.annotation'), default=None, defau"
+        "lt_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_t"
+        "ype=None), InitPlan.Field(name='m', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_f"
+        "actory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type="
+        "None)), self_param='self', std_params=('wrapper', 'm'), kw_only_params=(), frozen=True, slots=False, post_init"
+        "_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='wrapper', kw_only=False, fn"
+        "=None), ReprPlan.Field(name='m', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
+    ),
+    plan_repr_sha1='481346cb31a24fcab5d409ddf1e4ae941f7cb769',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__1__annotation',
+    ),
+    cls_names=(
+        ('omlish.marshal.composite.wrapped', 'WrappedMarshaler'),
+    ),
+)
+def _process_dataclass__481346cb31a24fcab5d409ddf1e4ae941f7cb769():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                wrapper=self.wrapper,
+                m=self.m,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.wrapper == other.wrapper and
+                self.m == other.m
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            'wrapper',
+            'm',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'wrapper',
+            'm',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.wrapper,
+                self.m,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            wrapper: __dataclass__init__fields__0__annotation,
+            m: __dataclass__init__fields__1__annotation,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'wrapper', wrapper)
+            __dataclass__object_setattr(self, 'm', m)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"wrapper={self.wrapper!r}")
+            parts.append(f"m={self.m!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('unwrapper', 'u')), EqPlan(fields=('unwrapper', 'u')), FrozenPlan(fields=('unwrapp"
+        "er', 'u'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('unwrapper', 'u'), cache=False), "
+        "InitPlan(fields=(InitPlan.Field(name='unwrapper', annotation=OpRef(name='init.fields.0.annotation'), default=N"
+        "one, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=Non"
+        "e, check_type=None), InitPlan.Field(name='u', annotation=OpRef(name='init.fields.1.annotation'), default=None,"
+        " default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, c"
+        "heck_type=None)), self_param='self', std_params=('unwrapper', 'u'), kw_only_params=(), frozen=True, slots=Fals"
+        "e, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='unwrapper', kw_"
+        "only=False, fn=None), ReprPlan.Field(name='u', kw_only=False, fn=None)), id=False, terse=False, default_fn=Non"
+        "e)))"
+    ),
+    plan_repr_sha1='9412a133cbc3c08550c26c6f21a5b8c6db14a745',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__1__annotation',
+    ),
+    cls_names=(
+        ('omlish.marshal.composite.wrapped', 'WrappedUnmarshaler'),
+    ),
+)
+def _process_dataclass__9412a133cbc3c08550c26c6f21a5b8c6db14a745():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                unwrapper=self.unwrapper,
+                u=self.u,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.unwrapper == other.unwrapper and
+                self.u == other.u
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            'unwrapper',
+            'u',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'unwrapper',
+            'u',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.unwrapper,
+                self.u,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            unwrapper: __dataclass__init__fields__0__annotation,
+            u: __dataclass__init__fields__1__annotation,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'unwrapper', unwrapper)
+            __dataclass__object_setattr(self, 'u', u)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"unwrapper={self.unwrapper!r}")
+            parts.append(f"u={self.u!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('configs', 'options')), EqPlan(fields=('configs', 'options')), FrozenPlan(fields=("
+        "'configs', 'options'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('configs', 'options')"
+        ", cache=False), InitPlan(fields=(InitPlan.Field(name='configs', annotation=OpRef(name='init.fields.0.annotatio"
+        "n'), default=OpRef(name='init.fields.0.default'), default_factory=None, init=True, override=False, field_type="
+        "FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='options', annotation=Op"
+        "Ref(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init="
+        "True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param"
+        "='self', std_params=(), kw_only_params=('configs', 'options'), frozen=True, slots=False, post_init_params=None"
+        ", init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='configs', kw_only=True, fn=None), ReprP"
+        "lan.Field(name='options', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+    ),
+    plan_repr_sha1='1a4453fade52a2a1c210621f9b496dce61959f37',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__0__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+    ),
+    cls_names=(
+        ('omlish.marshal.globals', 'BaseContext'),
+    ),
+)
+def _process_dataclass__1a4453fade52a2a1c210621f9b496dce61959f37():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__0__default,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__1__default,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                configs=self.configs,
+                options=self.options,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.configs == other.configs and
+                self.options == other.options
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            'configs',
+            'options',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'configs',
+            'options',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.configs,
+                self.options,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            *,
+            configs: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
+            options: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'configs', configs)
+            __dataclass__object_setattr(self, 'options', options)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"configs={self.configs!r}")
+            parts.append(f"options={self.options!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('configs', 'options', 'marshal_factory_context')), EqPlan(fields=('configs', 'opti"
+        "ons', 'marshal_factory_context')), FrozenPlan(fields=('configs', 'options', 'marshal_factory_context'), allow_"
+        "dynamic_dunder_attrs=False), HashPlan(action='add', fields=('configs', 'options', 'marshal_factory_context'), "
+        "cache=False), InitPlan(fields=(InitPlan.Field(name='configs', annotation=OpRef(name='init.fields.0.annotation'"
+        "), default=OpRef(name='init.fields.0.default'), default_factory=None, init=True, override=False, field_type=Fi"
+        "eldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='options', annotation=OpRe"
+        "f(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=Tr"
+        "ue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fiel"
+        "d(name='marshal_factory_context', annotation=OpRef(name='init.fields.2.annotation'), default=None, default_fac"
+        "tory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=No"
+        "ne)), self_param='self', std_params=(), kw_only_params=('configs', 'options', 'marshal_factory_context'), froz"
+        "en=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(na"
+        "me='configs', kw_only=True, fn=None), ReprPlan.Field(name='options', kw_only=True, fn=None), ReprPlan.Field(na"
+        "me='marshal_factory_context', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+    ),
+    plan_repr_sha1='558f51143429d9d85ddee9b39ef2acc8b39838e5',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__0__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+    ),
+    cls_names=(
+        ('omlish.marshal.globals', 'MarshalContext'),
+    ),
+)
+def _process_dataclass__558f51143429d9d85ddee9b39ef2acc8b39838e5():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__0__default,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__1__default,
+        __dataclass__init__fields__2__annotation,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                configs=self.configs,
+                options=self.options,
+                marshal_factory_context=self.marshal_factory_context,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.configs == other.configs and
+                self.options == other.options and
+                self.marshal_factory_context == other.marshal_factory_context
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            'configs',
+            'options',
+            'marshal_factory_context',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'configs',
+            'options',
+            'marshal_factory_context',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.configs,
+                self.options,
+                self.marshal_factory_context,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            *,
+            configs: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
+            options: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
+            marshal_factory_context: __dataclass__init__fields__2__annotation,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'configs', configs)
+            __dataclass__object_setattr(self, 'options', options)
+            __dataclass__object_setattr(self, 'marshal_factory_context', marshal_factory_context)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"configs={self.configs!r}")
+            parts.append(f"options={self.options!r}")
+            parts.append(f"marshal_factory_context={self.marshal_factory_context!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('configs', 'options', 'marshaler_factory')), EqPlan(fields=('configs', 'options', "
+        "'marshaler_factory')), FrozenPlan(fields=('configs', 'options', 'marshaler_factory'), allow_dynamic_dunder_att"
+        "rs=False), HashPlan(action='add', fields=('configs', 'options', 'marshaler_factory'), cache=False), InitPlan(f"
+        "ields=(InitPlan.Field(name='configs', annotation=OpRef(name='init.fields.0.annotation'), default=OpRef(name='i"
+        "nit.fields.0.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce"
+        "=None, validate=None, check_type=None), InitPlan.Field(name='options', annotation=OpRef(name='init.fields.1.an"
+        "notation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False, fiel"
+        "d_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='marshaler_factor"
+        "y', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_fa"
+        "ctory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=N"
+        "one)), self_param='self', std_params=(), kw_only_params=('configs', 'options', 'marshaler_factory'), frozen=Tr"
+        "ue, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='c"
+        "onfigs', kw_only=True, fn=None), ReprPlan.Field(name='options', kw_only=True, fn=None), ReprPlan.Field(name='m"
+        "arshaler_factory', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+    ),
+    plan_repr_sha1='1bc4c1f121b1bd96dd5dc02e6ffbccecf923e41c',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__0__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+    ),
+    cls_names=(
+        ('omlish.marshal.globals', 'MarshalFactoryContext'),
+    ),
+)
+def _process_dataclass__1bc4c1f121b1bd96dd5dc02e6ffbccecf923e41c():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__0__default,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__1__default,
+        __dataclass__init__fields__2__annotation,
+        __dataclass__init__fields__2__default,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                configs=self.configs,
+                options=self.options,
+                marshaler_factory=self.marshaler_factory,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.configs == other.configs and
+                self.options == other.options and
+                self.marshaler_factory == other.marshaler_factory
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            'configs',
+            'options',
+            'marshaler_factory',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'configs',
+            'options',
+            'marshaler_factory',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.configs,
+                self.options,
+                self.marshaler_factory,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            *,
+            configs: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
+            options: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
+            marshaler_factory: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'configs', configs)
+            __dataclass__object_setattr(self, 'options', options)
+            __dataclass__object_setattr(self, 'marshaler_factory', marshaler_factory)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"configs={self.configs!r}")
+            parts.append(f"options={self.options!r}")
+            parts.append(f"marshaler_factory={self.marshaler_factory!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('name', 'package')), FrozenPlan(fields=('name', 'package'), allow_dynamic_dunder_a"
+        "ttrs=False), InitPlan(fields=(InitPlan.Field(name='name', annotation=OpRef(name='init.fields.0.annotation'), d"
+        "efault=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, vali"
+        "date=None, check_type=None), InitPlan.Field(name='package', annotation=OpRef(name='init.fields.1.annotation'),"
+        " default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False, field_type=Fiel"
+        "dType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=('name', 'package"
+        "'), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPla"
+        "n(fields=(ReprPlan.Field(name='name', kw_only=False, fn=None), ReprPlan.Field(name='package', kw_only=False, f"
+        "n=None)), id=False, terse=False, default_fn=None)))"
+    ),
+    plan_repr_sha1='d3145d62980413cc3b969306affe9ec408694d2c',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+    ),
+    cls_names=(
+        ('omlish.marshal.globals', 'ModuleImport'),
+    ),
+)
+def _process_dataclass__d3145d62980413cc3b969306affe9ec408694d2c():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__1__default,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                name=self.name,
+                package=self.package,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        __dataclass___setattr_frozen_fields = {
+            'name',
+            'package',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'name',
+            'package',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __init__(
+            self,
+            name: __dataclass__init__fields__0__annotation,
+            package: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'name', name)
+            __dataclass__object_setattr(self, 'package', package)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"name={self.name!r}")
+            parts.append(f"package={self.package!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('marshaler', 'marshaler_factory', 'unmarshaler', 'unmarshaler_factory')), EqPlan(f"
+        "ields=('marshaler', 'marshaler_factory', 'unmarshaler', 'unmarshaler_factory')), FrozenPlan(fields=('marshaler"
+        "', 'marshaler_factory', 'unmarshaler', 'unmarshaler_factory'), allow_dynamic_dunder_attrs=False), HashPlan(act"
+        "ion='add', fields=('marshaler', 'marshaler_factory', 'unmarshaler', 'unmarshaler_factory'), cache=False), Init"
+        "Plan(fields=(InitPlan.Field(name='marshaler', annotation=OpRef(name='init.fields.0.annotation'), default=OpRef"
+        "(name='init.fields.0.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE"
+        ", coerce=None, validate=None, check_type=None), InitPlan.Field(name='marshaler_factory', annotation=OpRef(name"
+        "='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, ov"
+        "erride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name"
+        "='unmarshaler', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default')"
+        ", default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, "
+        "check_type=None), InitPlan.Field(name='unmarshaler_factory', annotation=OpRef(name='init.fields.3.annotation')"
+        ", default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, field_type=Fie"
+        "ldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_para"
+        "ms=('marshaler', 'marshaler_factory', 'unmarshaler', 'unmarshaler_factory'), frozen=True, slots=False, post_in"
+        "it_params=(), init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='marshaler', kw_only=True, f"
+        "n=None), ReprPlan.Field(name='marshaler_factory', kw_only=True, fn=None), ReprPlan.Field(name='unmarshaler', k"
+        "w_only=True, fn=None), ReprPlan.Field(name='unmarshaler_factory', kw_only=True, fn=None)), id=False, terse=Fal"
+        "se, default_fn=None)))"
+    ),
+    plan_repr_sha1='3e83c52ad286e69b36494b1af88a695da57f6ecd',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__0__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default',
+    ),
+    cls_names=(
+        ('omlish.marshal.globals', 'Override'),
+    ),
+)
+def _process_dataclass__3e83c52ad286e69b36494b1af88a695da57f6ecd():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__0__default,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__1__default,
+        __dataclass__init__fields__2__annotation,
+        __dataclass__init__fields__2__default,
+        __dataclass__init__fields__3__annotation,
+        __dataclass__init__fields__3__default,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                marshaler=self.marshaler,
+                marshaler_factory=self.marshaler_factory,
+                unmarshaler=self.unmarshaler,
+                unmarshaler_factory=self.unmarshaler_factory,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.marshaler == other.marshaler and
+                self.marshaler_factory == other.marshaler_factory and
+                self.unmarshaler == other.unmarshaler and
+                self.unmarshaler_factory == other.unmarshaler_factory
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            'marshaler',
+            'marshaler_factory',
+            'unmarshaler',
+            'unmarshaler_factory',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'marshaler',
+            'marshaler_factory',
+            'unmarshaler',
+            'unmarshaler_factory',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.marshaler,
+                self.marshaler_factory,
+                self.unmarshaler,
+                self.unmarshaler_factory,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            *,
+            marshaler: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
+            marshaler_factory: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
+            unmarshaler: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+            unmarshaler_factory: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'marshaler', marshaler)
+            __dataclass__object_setattr(self, 'marshaler_factory', marshaler_factory)
+            __dataclass__object_setattr(self, 'unmarshaler', unmarshaler)
+            __dataclass__object_setattr(self, 'unmarshaler_factory', unmarshaler_factory)
+            self.__post_init__()
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"marshaler={self.marshaler!r}")
+            parts.append(f"marshaler_factory={self.marshaler_factory!r}")
+            parts.append(f"unmarshaler={self.unmarshaler!r}")
+            parts.append(f"unmarshaler_factory={self.unmarshaler_factory!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('rty',)), EqPlan(fields=('rty',)), FrozenPlan(fields=('rty',), allow_dynamic_dunde"
+        "r_attrs=False), HashPlan(action='add', fields=('rty',), cache=False), InitPlan(fields=(InitPlan.Field(name='rt"
+        "y', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, override"
+        "=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),), self_param='self', std_"
+        "params=('rty',), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns"
+        "=()), ReprPlan(fields=(ReprPlan.Field(name='rty', kw_only=False, fn=None),), id=False, terse=False, default_fn"
+        "=None)))"
+    ),
+    plan_repr_sha1='e0d54ba87512abba1f90372a952285f136dc040e',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+    ),
+    cls_names=(
+        ('omlish.marshal.globals', 'ReflectOverride'),
+    ),
+)
+def _process_dataclass__e0d54ba87512abba1f90372a952285f136dc040e():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                rty=self.rty,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.rty == other.rty
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            'rty',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'rty',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.rty,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            rty: __dataclass__init__fields__0__annotation,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'rty', rty)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"rty={self.rty!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('key', 'items', 'item_lists_by_ty')), EqPlan(fields=('key', 'items', 'item_lists_b"
+        "y_ty')), FrozenPlan(fields=('key', 'items', 'item_lists_by_ty'), allow_dynamic_dunder_attrs=False), HashPlan(a"
+        "ction='add', fields=('key', 'items', 'item_lists_by_ty'), cache=False), InitPlan(fields=(InitPlan.Field(name='"
+        "key', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, overri"
+        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='it"
+        "ems', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_"
+        "factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type"
+        "=None), InitPlan.Field(name='item_lists_by_ty', annotation=OpRef(name='init.fields.2.annotation'), default=Non"
+        "e, default_factory=OpRef(name='init.fields.2.default_factory'), init=True, override=False, field_type=FieldTyp"
+        "e.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=('key', 'items', 'ite"
+        "m_lists_by_ty'), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns"
+        "=()), ReprPlan(fields=(ReprPlan.Field(name='key', kw_only=False, fn=None), ReprPlan.Field(name='items', kw_onl"
+        "y=False, fn=None), ReprPlan.Field(name='item_lists_by_ty', kw_only=False, fn=None)), id=False, terse=False, de"
+        "fault_fn=None)))"
+    ),
+    plan_repr_sha1='19653da95f92515f36c7574fec1bac60e3349d73',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default_factory',
+    ),
+    cls_names=(
+        ('omlish.marshal.globals', 'Registry._KeyItems'),
+    ),
+)
+def _process_dataclass__19653da95f92515f36c7574fec1bac60e3349d73():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__1__default,
+        __dataclass__init__fields__2__annotation,
+        __dataclass__init__fields__2__default_factory,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                key=self.key,
+                items=self.items,
+                item_lists_by_ty=self.item_lists_by_ty,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.key == other.key and
+                self.items == other.items and
+                self.item_lists_by_ty == other.item_lists_by_ty
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            'key',
+            'items',
+            'item_lists_by_ty',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'key',
+            'items',
+            'item_lists_by_ty',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.key,
+                self.items,
+                self.item_lists_by_ty,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            key: __dataclass__init__fields__0__annotation,
+            items: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
+            item_lists_by_ty: __dataclass__init__fields__2__annotation = __dataclass__HAS_DEFAULT_FACTORY,
+        ) -> __dataclass__None:
+            if item_lists_by_ty is __dataclass__HAS_DEFAULT_FACTORY:
+                item_lists_by_ty = __dataclass__init__fields__2__default_factory()
+            __dataclass__object_setattr(self, 'key', key)
+            __dataclass__object_setattr(self, 'items', items)
+            __dataclass__object_setattr(self, 'item_lists_by_ty', item_lists_by_ty)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"key={self.key!r}")
+            parts.append(f"items={self.items!r}")
+            parts.append(f"item_lists_by_ty={self.item_lists_by_ty!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('dct', 'id_dct', 'version', '_get_cache', '_get_of_cache')), EqPlan(fields=('dct',"
+        " 'id_dct', 'version', '_get_cache', '_get_of_cache')), FrozenPlan(fields=('dct', 'id_dct', 'version', '_get_ca"
+        "che', '_get_of_cache'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('dct', 'id_dct', 've"
+        "rsion', '_get_cache', '_get_of_cache'), cache=False), InitPlan(fields=(InitPlan.Field(name='dct', annotation=O"
+        "pRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, override=False, field_ty"
+        "pe=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='id_dct', annotation="
+        "OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init=True, override=False, field_t"
+        "ype=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='version', annotatio"
+        "n=OpRef(name='init.fields.2.annotation'), default=None, default_factory=None, init=True, override=False, field"
+        "_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='_get_cache', anno"
+        "tation=OpRef(name='init.fields.3.annotation'), default=None, default_factory=OpRef(name='init.fields.3.default"
+        "_factory'), init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=N"
+        "one), InitPlan.Field(name='_get_of_cache', annotation=OpRef(name='init.fields.4.annotation'), default=None, de"
+        "fault_factory=OpRef(name='init.fields.4.default_factory'), init=True, override=False, field_type=FieldType.INS"
+        "TANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('dct',"
+        " 'id_dct', 'version', '_get_cache', '_get_of_cache'), frozen=True, slots=False, post_init_params=None, init_fn"
+        "s=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='dct', kw_only=True, fn=None), ReprPlan.Field(nam"
+        "e='id_dct', kw_only=True, fn=None), ReprPlan.Field(name='version', kw_only=True, fn=None), ReprPlan.Field(name"
+        "='_get_cache', kw_only=True, fn=None), ReprPlan.Field(name='_get_of_cache', kw_only=True, fn=None)), id=False,"
+        " terse=False, default_fn=None)))"
+    ),
+    plan_repr_sha1='a47e56d2b5a3f57b7dfe8c70c3316e821afb2347',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__3__annotation',
+        '__dataclass__init__fields__3__default_factory',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default_factory',
+    ),
+    cls_names=(
+        ('omlish.marshal.globals', 'Registry._State'),
+    ),
+)
+def _process_dataclass__a47e56d2b5a3f57b7dfe8c70c3316e821afb2347():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__2__annotation,
+        __dataclass__init__fields__3__annotation,
+        __dataclass__init__fields__3__default_factory,
+        __dataclass__init__fields__4__annotation,
+        __dataclass__init__fields__4__default_factory,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                dct=self.dct,
+                id_dct=self.id_dct,
+                version=self.version,
+                _get_cache=self._get_cache,
+                _get_of_cache=self._get_of_cache,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.dct == other.dct and
+                self.id_dct == other.id_dct and
+                self.version == other.version and
+                self._get_cache == other._get_cache and
+                self._get_of_cache == other._get_of_cache
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            'dct',
+            'id_dct',
+            'version',
+            '_get_cache',
+            '_get_of_cache',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'dct',
+            'id_dct',
+            'version',
+            '_get_cache',
+            '_get_of_cache',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.dct,
+                self.id_dct,
+                self.version,
+                self._get_cache,
+                self._get_of_cache,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            *,
+            dct: __dataclass__init__fields__0__annotation,
+            id_dct: __dataclass__init__fields__1__annotation,
+            version: __dataclass__init__fields__2__annotation,
+            _get_cache: __dataclass__init__fields__3__annotation = __dataclass__HAS_DEFAULT_FACTORY,
+            _get_of_cache: __dataclass__init__fields__4__annotation = __dataclass__HAS_DEFAULT_FACTORY,
+        ) -> __dataclass__None:
+            if _get_cache is __dataclass__HAS_DEFAULT_FACTORY:
+                _get_cache = __dataclass__init__fields__3__default_factory()
+            if _get_of_cache is __dataclass__HAS_DEFAULT_FACTORY:
+                _get_of_cache = __dataclass__init__fields__4__default_factory()
+            __dataclass__object_setattr(self, 'dct', dct)
+            __dataclass__object_setattr(self, 'id_dct', id_dct)
+            __dataclass__object_setattr(self, 'version', version)
+            __dataclass__object_setattr(self, '_get_cache', _get_cache)
+            __dataclass__object_setattr(self, '_get_of_cache', _get_of_cache)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"dct={self.dct!r}")
+            parts.append(f"id_dct={self.id_dct!r}")
+            parts.append(f"version={self.version!r}")
+            parts.append(f"_get_cache={self._get_cache!r}")
+            parts.append(f"_get_of_cache={self._get_of_cache!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('configs', 'options', 'unmarshal_factory_context')), EqPlan(fields=('configs', 'op"
+        "tions', 'unmarshal_factory_context')), FrozenPlan(fields=('configs', 'options', 'unmarshal_factory_context'), "
+        "allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('configs', 'options', 'unmarshal_factory_con"
+        "text'), cache=False), InitPlan(fields=(InitPlan.Field(name='configs', annotation=OpRef(name='init.fields.0.ann"
+        "otation'), default=OpRef(name='init.fields.0.default'), default_factory=None, init=True, override=False, field"
+        "_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='options', annotat"
+        "ion=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None,"
+        " init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitP"
+        "lan.Field(name='unmarshal_factory_context', annotation=OpRef(name='init.fields.2.annotation'), default=None, d"
+        "efault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, che"
+        "ck_type=None)), self_param='self', std_params=(), kw_only_params=('configs', 'options', 'unmarshal_factory_con"
+        "text'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprP"
+        "lan.Field(name='configs', kw_only=True, fn=None), ReprPlan.Field(name='options', kw_only=True, fn=None), ReprP"
+        "lan.Field(name='unmarshal_factory_context', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+    ),
+    plan_repr_sha1='6b1acfd65f820adc89ac9d15d077d9bd080e8452',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__0__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+    ),
+    cls_names=(
+        ('omlish.marshal.globals', 'UnmarshalContext'),
+    ),
+)
+def _process_dataclass__6b1acfd65f820adc89ac9d15d077d9bd080e8452():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__0__default,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__1__default,
+        __dataclass__init__fields__2__annotation,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                configs=self.configs,
+                options=self.options,
+                unmarshal_factory_context=self.unmarshal_factory_context,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.configs == other.configs and
+                self.options == other.options and
+                self.unmarshal_factory_context == other.unmarshal_factory_context
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            'configs',
+            'options',
+            'unmarshal_factory_context',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'configs',
+            'options',
+            'unmarshal_factory_context',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.configs,
+                self.options,
+                self.unmarshal_factory_context,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            *,
+            configs: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
+            options: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
+            unmarshal_factory_context: __dataclass__init__fields__2__annotation,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'configs', configs)
+            __dataclass__object_setattr(self, 'options', options)
+            __dataclass__object_setattr(self, 'unmarshal_factory_context', unmarshal_factory_context)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"configs={self.configs!r}")
+            parts.append(f"options={self.options!r}")
+            parts.append(f"unmarshal_factory_context={self.unmarshal_factory_context!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('configs', 'options', 'unmarshaler_factory')), EqPlan(fields=('configs', 'options'"
+        ", 'unmarshaler_factory')), FrozenPlan(fields=('configs', 'options', 'unmarshaler_factory'), allow_dynamic_dund"
+        "er_attrs=False), HashPlan(action='add', fields=('configs', 'options', 'unmarshaler_factory'), cache=False), In"
+        "itPlan(fields=(InitPlan.Field(name='configs', annotation=OpRef(name='init.fields.0.annotation'), default=OpRef"
+        "(name='init.fields.0.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE"
+        ", coerce=None, validate=None, check_type=None), InitPlan.Field(name='options', annotation=OpRef(name='init.fie"
+        "lds.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=Fal"
+        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='unmarsha"
+        "ler_factory', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), "
+        "default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, ch"
+        "eck_type=None)), self_param='self', std_params=(), kw_only_params=('configs', 'options', 'unmarshaler_factory'"
+        "), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.F"
+        "ield(name='configs', kw_only=True, fn=None), ReprPlan.Field(name='options', kw_only=True, fn=None), ReprPlan.F"
+        "ield(name='unmarshaler_factory', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+    ),
+    plan_repr_sha1='ba30e6c1c014d85722e14bc6c64b3d0e439810c5',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__0__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+    ),
+    cls_names=(
+        ('omlish.marshal.globals', 'UnmarshalFactoryContext'),
+    ),
+)
+def _process_dataclass__ba30e6c1c014d85722e14bc6c64b3d0e439810c5():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__0__default,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__1__default,
+        __dataclass__init__fields__2__annotation,
+        __dataclass__init__fields__2__default,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                configs=self.configs,
+                options=self.options,
+                unmarshaler_factory=self.unmarshaler_factory,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.configs == other.configs and
+                self.options == other.options and
+                self.unmarshaler_factory == other.unmarshaler_factory
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            'configs',
+            'options',
+            'unmarshaler_factory',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'configs',
+            'options',
+            'unmarshaler_factory',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.configs,
+                self.options,
+                self.unmarshaler_factory,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            *,
+            configs: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
+            options: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
+            unmarshaler_factory: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'configs', configs)
+            __dataclass__object_setattr(self, 'options', options)
+            __dataclass__object_setattr(self, 'unmarshaler_factory', unmarshaler_factory)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"configs={self.configs!r}")
+            parts.append(f"options={self.options!r}")
+            parts.append(f"unmarshaler_factory={self.unmarshaler_factory!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('field',)), EqPlan(fields=('field',)), FrozenPlan(fields=('field',), allow_dynamic"
+        "_dunder_attrs=False), HashPlan(action='add', fields=('field',), cache=False), InitPlan(fields=(InitPlan.Field("
+        "name='field', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True"
+        ", override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),), self_param='s"
+        "elf', std_params=('field',), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), "
+        "validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='field', kw_only=False, fn=None),), id=False, terse=Fal"
+        "se, default_fn=None)))"
+    ),
+    plan_repr_sha1='de2e0a72776abaed52d59ef73f1233135fa605dc',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+    ),
+    cls_names=(
+        ('omlish.marshal.polymorphism.impls', 'FieldTypeTagging'),
+    ),
+)
+def _process_dataclass__de2e0a72776abaed52d59ef73f1233135fa605dc():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                field=self.field,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.field == other.field
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            'field',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'field',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.field,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            field: __dataclass__init__fields__0__annotation,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'field', field)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"field={self.field!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('ty', 'tag', 'alts')), EqPlan(fields=('ty', 'tag', 'alts')), FrozenPlan(fields=('t"
+        "y', 'tag', 'alts'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('ty', 'tag', 'alts'), ca"
+        "che=False), InitPlan(fields=(InitPlan.Field(name='ty', annotation=OpRef(name='init.fields.0.annotation'), defa"
+        "ult=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
+        "e=None, check_type=None), InitPlan.Field(name='tag', annotation=OpRef(name='init.fields.1.annotation'), defaul"
+        "t=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate="
+        "None, check_type=None), InitPlan.Field(name='alts', annotation=OpRef(name='init.fields.2.annotation'), default"
+        "=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.IN"
+        "STANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=('ty', 'tag', 'alts'), kw"
+        "_only_params=(), frozen=True, slots=False, post_init_params=(), init_fns=(), validate_fns=()), ReprPlan(fields"
+        "=(ReprPlan.Field(name='ty', kw_only=False, fn=None), ReprPlan.Field(name='tag', kw_only=False, fn=None), ReprP"
+        "lan.Field(name='alts', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
+    ),
+    plan_repr_sha1='9eec55fb68988c52a14331e40f899a1ed3098eaa',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+    ),
+    cls_names=(
+        ('omlish.marshal.polymorphism.impls', 'Impl'),
+    ),
+)
+def _process_dataclass__9eec55fb68988c52a14331e40f899a1ed3098eaa():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__2__annotation,
+        __dataclass__init__fields__2__default,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                ty=self.ty,
+                tag=self.tag,
+                alts=self.alts,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.ty == other.ty and
+                self.tag == other.tag and
+                self.alts == other.alts
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            'ty',
+            'tag',
+            'alts',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'ty',
+            'tag',
+            'alts',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.ty,
+                self.tag,
+                self.alts,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            ty: __dataclass__init__fields__0__annotation,
+            tag: __dataclass__init__fields__1__annotation,
+            alts: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'ty', ty)
+            __dataclass__object_setattr(self, 'tag', tag)
+            __dataclass__object_setattr(self, 'alts', alts)
+            self.__post_init__()
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"ty={self.ty!r}")
+            parts.append(f"tag={self.tag!r}")
+            parts.append(f"alts={self.alts!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('ty', 'impl_tys')), EqPlan(fields=('ty', 'impl_tys')), FrozenPlan(fields=('ty', 'i"
+        "mpl_tys'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('ty', 'impl_tys'), cache=False), "
+        "InitPlan(fields=(InitPlan.Field(name='ty', annotation=OpRef(name='init.fields.0.annotation'), default=None, de"
+        "fault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, chec"
+        "k_type=None), InitPlan.Field(name='impl_tys', annotation=OpRef(name='init.fields.1.annotation'), default=None,"
+        " default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, c"
+        "heck_type=None)), self_param='self', std_params=('ty', 'impl_tys'), kw_only_params=(), frozen=True, slots=Fals"
+        "e, post_init_params=(), init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='ty', kw_only=Fals"
+        "e, fn=None), ReprPlan.Field(name='impl_tys', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)"
+        "))"
+    ),
+    plan_repr_sha1='460d1c8e1cc27c586050d7428409e3d84f5674f1',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__1__annotation',
+    ),
+    cls_names=(
+        ('omlish.marshal.polymorphism.impls', 'ImplBase'),
+    ),
+)
+def _process_dataclass__460d1c8e1cc27c586050d7428409e3d84f5674f1():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                ty=self.ty,
+                impl_tys=self.impl_tys,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.ty == other.ty and
+                self.impl_tys == other.impl_tys
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            'ty',
+            'impl_tys',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'ty',
+            'impl_tys',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.ty,
+                self.impl_tys,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            ty: __dataclass__init__fields__0__annotation,
+            impl_tys: __dataclass__init__fields__1__annotation,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'ty', ty)
+            __dataclass__object_setattr(self, 'impl_tys', impl_tys)
+            self.__post_init__()
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"ty={self.ty!r}")
+            parts.append(f"impl_tys={self.impl_tys!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('m', 'tf')), EqPlan(fields=('m', 'tf')), FrozenPlan(fields=('m', 'tf'), allow_dyna"
+        "mic_dunder_attrs=False), HashPlan(action='add', fields=('m', 'tf'), cache=False), InitPlan(fields=(InitPlan.Fi"
+        "eld(name='m', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True"
+        ", override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field("
+        "name='tf', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init=True, o"
+        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self'"
+        ", std_params=('m', 'tf'), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), val"
+        "idate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='m', kw_only=False, fn=None), ReprPlan.Field(name='tf', kw"
+        "_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
+    ),
+    plan_repr_sha1='c42820f4ac475651221b92d47c0db7e1b5c0c775',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__1__annotation',
+    ),
+    cls_names=(
+        ('omlish.marshal.polymorphism.marshal', 'FieldPolymorphismMarshaler'),
+        ('omlish.marshal.polymorphism.standard', 'FieldPolymorphismUnmarshaler'),
+    ),
+)
+def _process_dataclass__c42820f4ac475651221b92d47c0db7e1b5c0c775():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                m=self.m,
+                tf=self.tf,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.m == other.m and
+                self.tf == other.tf
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            'm',
+            'tf',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'm',
+            'tf',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.m,
+                self.tf,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            m: __dataclass__init__fields__0__annotation,
+            tf: __dataclass__init__fields__1__annotation,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'm', m)
+            __dataclass__object_setattr(self, 'tf', tf)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"m={self.m!r}")
+            parts.append(f"tf={self.tf!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('p', 'tt')), EqPlan(fields=('p', 'tt')), FrozenPlan(fields=('p', 'tt'), allow_dyna"
+        "mic_dunder_attrs=False), HashPlan(action='add', fields=('p', 'tt'), cache=False), InitPlan(fields=(InitPlan.Fi"
+        "eld(name='p', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True"
+        ", override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field("
+        "name='tt', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'), def"
+        "ault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check"
+        "_type=None)), self_param='self', std_params=('p', 'tt'), kw_only_params=(), frozen=True, slots=False, post_ini"
+        "t_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='p', kw_only=False, fn=None"
+        "), ReprPlan.Field(name='tt', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
+    ),
+    plan_repr_sha1='80053702e92eaf973a535f396715f88b40d1bb5e',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__1__default',
+    ),
+    cls_names=(
+        ('omlish.marshal.polymorphism.marshal', 'PolymorphismMarshalerFactory'),
+        ('omlish.marshal.polymorphism.standard', 'PolymorphismUnmarshalerFactory'),
+    ),
+)
+def _process_dataclass__80053702e92eaf973a535f396715f88b40d1bb5e():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__1__default,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                p=self.p,
+                tt=self.tt,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.p == other.p and
+                self.tt == other.tt
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            'p',
+            'tt',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'p',
+            'tt',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.p,
+                self.tt,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            p: __dataclass__init__fields__0__annotation,
+            tt: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'p', p)
+            __dataclass__object_setattr(self, 'tt', tt)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"p={self.p!r}")
             parts.append(f"tt={self.tt!r}")
-            parts.append(f"allow_partial={self.allow_partial!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('m',)), EqPlan(fields=('m',)), FrozenPlan(fields=('m',), allow_dynamic_dunder_attr"
+        "s=False), HashPlan(action='add', fields=('m',), cache=False), InitPlan(fields=(InitPlan.Field(name='m', annota"
+        "tion=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, override=False, fi"
+        "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),), self_param='self', std_params=('m"
+        "',), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPl"
+        "an(fields=(ReprPlan.Field(name='m', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
+    ),
+    plan_repr_sha1='00a32d02ca8d7c055f05a95a2073d8d5198c6d97',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+    ),
+    cls_names=(
+        ('omlish.marshal.polymorphism.marshal', 'WrapperPolymorphismMarshaler'),
+        ('omlish.marshal.polymorphism.standard', 'WrapperPolymorphismUnmarshaler'),
+    ),
+)
+def _process_dataclass__00a32d02ca8d7c055f05a95a2073d8d5198c6d97():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                m=self.m,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.m == other.m
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            'm',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'm',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.m,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            m: __dataclass__init__fields__0__annotation,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'm', m)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"m={self.m!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -210,6 +3103,8 @@ def _process_dataclass__330f034b24c077e4e7e82f9f8846225a1064a3bf():
     ),
     cls_names=(
         ('omlish.marshal.singular.base64', 'Base64MarshalerUnmarshaler'),
+        ('omlish.marshal.standard', 'EnumMarshaler'),
+        ('omlish.marshal.standard', 'EnumUnmarshaler'),
         ('omlish.marshal.standard', 'PrimitiveMarshalerUnmarshaler'),
     ),
 )
@@ -315,6 +3210,314 @@ def _process_dataclass__5fb811b6a8837cb3b84359f812a39e560d257d5f():
         def __repr__(self):
             parts = []
             parts.append(f"ty={self.ty!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('cls', 'fmt')), EqPlan(fields=('cls', 'fmt')), FrozenPlan(fields=('cls', 'fmt'), a"
+        "llow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('cls', 'fmt'), cache=False), InitPlan(fields="
+        "(InitPlan.Field(name='cls', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=N"
+        "one, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), I"
+        "nitPlan.Field(name='fmt', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=Non"
+        "e, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), se"
+        "lf_param='self', std_params=('cls', 'fmt'), kw_only_params=(), frozen=True, slots=False, post_init_params=None"
+        ", init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='cls', kw_only=False, fn=None), ReprPlan"
+        ".Field(name='fmt', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
+    ),
+    plan_repr_sha1='68d97e2dd90f34262544e299fb586b11104657a3',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__1__annotation',
+    ),
+    cls_names=(
+        ('omlish.marshal.standard', 'DatetimeMarshaler'),
+    ),
+)
+def _process_dataclass__68d97e2dd90f34262544e299fb586b11104657a3():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                cls=self.cls,
+                fmt=self.fmt,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.cls == other.cls and
+                self.fmt == other.fmt
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            'cls',
+            'fmt',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'cls',
+            'fmt',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.cls,
+                self.fmt,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            cls: __dataclass__init__fields__0__annotation,
+            fmt: __dataclass__init__fields__1__annotation,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'cls', cls)
+            __dataclass__object_setattr(self, 'fmt', fmt)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"cls={self.cls!r}")
+            parts.append(f"fmt={self.fmt!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('cls', 'fmts', 'try_iso')), EqPlan(fields=('cls', 'fmts', 'try_iso')), FrozenPlan("
+        "fields=('cls', 'fmts', 'try_iso'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('cls', 'f"
+        "mts', 'try_iso'), cache=False), InitPlan(fields=(InitPlan.Field(name='cls', annotation=OpRef(name='init.fields"
+        ".0.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE,"
+        " coerce=None, validate=None, check_type=None), InitPlan.Field(name='fmts', annotation=OpRef(name='init.fields."
+        "1.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, "
+        "coerce=None, validate=None, check_type=None), InitPlan.Field(name='try_iso', annotation=OpRef(name='init.field"
+        "s.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=False"
+        ", field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params="
+        "('cls', 'fmts', 'try_iso'), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), v"
+        "alidate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='cls', kw_only=False, fn=None), ReprPlan.Field(name='fmt"
+        "s', kw_only=False, fn=None), ReprPlan.Field(name='try_iso', kw_only=False, fn=None)), id=False, terse=False, d"
+        "efault_fn=None)))"
+    ),
+    plan_repr_sha1='30fca7692a17c304ded88562c547a6b9cb240b0a',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+    ),
+    cls_names=(
+        ('omlish.marshal.standard', 'DatetimeUnmarshaler'),
+    ),
+)
+def _process_dataclass__30fca7692a17c304ded88562c547a6b9cb240b0a():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__2__annotation,
+        __dataclass__init__fields__2__default,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                cls=self.cls,
+                fmts=self.fmts,
+                try_iso=self.try_iso,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.cls == other.cls and
+                self.fmts == other.fmts and
+                self.try_iso == other.try_iso
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            'cls',
+            'fmts',
+            'try_iso',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'cls',
+            'fmts',
+            'try_iso',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.cls,
+                self.fmts,
+                self.try_iso,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            cls: __dataclass__init__fields__0__annotation,
+            fmts: __dataclass__init__fields__1__annotation,
+            try_iso: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'cls', cls)
+            __dataclass__object_setattr(self, 'fmts', fmts)
+            __dataclass__object_setattr(self, 'try_iso', try_iso)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"cls={self.cls!r}")
+            parts.append(f"fmts={self.fmts!r}")
+            parts.append(f"try_iso={self.try_iso!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -1014,6 +4217,436 @@ def _process_dataclass__6cdee7c96a0d5ee28f263ae5d2b2ff932df8e9e0():
 
 @_register(
     plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('e',)), EqPlan(fields=('e',)), FrozenPlan(fields=('e',), allow_dynamic_dunder_attr"
+        "s=False), HashPlan(action='add', fields=('e',), cache=False), InitPlan(fields=(InitPlan.Field(name='e', annota"
+        "tion=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, override=False, fi"
+        "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),), self_param='self', std_params=('e"
+        "',), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPl"
+        "an(fields=(ReprPlan.Field(name='e', kw_only=False, fn=None),), id=False, terse=False, default_fn=None)))"
+    ),
+    plan_repr_sha1='09d620230085f2ec30d46bc47d392ca3f53879f5',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+    ),
+    cls_names=(
+        ('omlish.marshal.standard', 'IterableMarshaler'),
+        ('omlish.marshal.standard', 'MaybeMarshaler'),
+        ('omlish.marshal.standard', 'MaybeUnmarshaler'),
+        ('omlish.marshal.standard', 'OptionalMarshaler'),
+        ('omlish.marshal.standard', 'OptionalUnmarshaler'),
+    ),
+)
+def _process_dataclass__09d620230085f2ec30d46bc47d392ca3f53879f5():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                e=self.e,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.e == other.e
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            'e',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'e',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.e,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            e: __dataclass__init__fields__0__annotation,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'e', e)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"e={self.e!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('ctor', 'e')), EqPlan(fields=('ctor', 'e')), FrozenPlan(fields=('ctor', 'e'), allo"
+        "w_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('ctor', 'e'), cache=False), InitPlan(fields=(Ini"
+        "tPlan.Field(name='ctor', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None"
+        ", init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Init"
+        "Plan.Field(name='e', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, in"
+        "it=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_pa"
+        "ram='self', std_params=('ctor', 'e'), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init"
+        "_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='ctor', kw_only=False, fn=None), ReprPlan.Fiel"
+        "d(name='e', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
+    ),
+    plan_repr_sha1='5aff919b0d188d63797ebb3a8d909d863403960b',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__1__annotation',
+    ),
+    cls_names=(
+        ('omlish.marshal.standard', 'IterableUnmarshaler'),
+    ),
+)
+def _process_dataclass__5aff919b0d188d63797ebb3a8d909d863403960b():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                ctor=self.ctor,
+                e=self.e,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.ctor == other.ctor and
+                self.e == other.e
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            'ctor',
+            'e',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'ctor',
+            'e',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.ctor,
+                self.e,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            ctor: __dataclass__init__fields__0__annotation,
+            e: __dataclass__init__fields__1__annotation,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'ctor', ctor)
+            __dataclass__object_setattr(self, 'e', e)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"ctor={self.ctor!r}")
+            parts.append(f"e={self.e!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('e', 'vs')), EqPlan(fields=('e', 'vs')), FrozenPlan(fields=('e', 'vs'), allow_dyna"
+        "mic_dunder_attrs=False), HashPlan(action='add', fields=('e', 'vs'), cache=False), InitPlan(fields=(InitPlan.Fi"
+        "eld(name='e', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True"
+        ", override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field("
+        "name='vs', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init=True, o"
+        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self'"
+        ", std_params=('e', 'vs'), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), val"
+        "idate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='e', kw_only=False, fn=None), ReprPlan.Field(name='vs', kw"
+        "_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
+    ),
+    plan_repr_sha1='db516f58871ac378fdcad03183f2473027e52577',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__1__annotation',
+    ),
+    cls_names=(
+        ('omlish.marshal.standard', 'LiteralMarshaler'),
+        ('omlish.marshal.standard', 'LiteralUnmarshaler'),
+    ),
+)
+def _process_dataclass__db516f58871ac378fdcad03183f2473027e52577():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                e=self.e,
+                vs=self.vs,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.e == other.e and
+                self.vs == other.vs
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            'e',
+            'vs',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'e',
+            'vs',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.e,
+                self.vs,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            e: __dataclass__init__fields__0__annotation,
+            vs: __dataclass__init__fields__1__annotation,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'e', e)
+            __dataclass__object_setattr(self, 'vs', vs)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"e={self.e!r}")
+            parts.append(f"vs={self.vs!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
         "Plans(tup=(CopyPlan(fields=('v_ty', 'l', 'x')), EqPlan(fields=('v_ty', 'l', 'x')), FrozenPlan(fields=('v_ty', "
         "'l', 'x'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('v_ty', 'l', 'x'), cache=False), "
         "InitPlan(fields=(InitPlan.Field(name='v_ty', annotation=OpRef(name='init.fields.0.annotation'), default=None, "
@@ -1158,6 +4791,311 @@ def _process_dataclass__aa08307883613da816f90047c1bb03f6cdc155a2():
             parts.append(f"v_ty={self.v_ty!r}")
             parts.append(f"l={self.l!r}")
             parts.append(f"x={self.x!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('ke', 've')), EqPlan(fields=('ke', 've')), FrozenPlan(fields=('ke', 've'), allow_d"
+        "ynamic_dunder_attrs=False), HashPlan(action='add', fields=('ke', 've'), cache=False), InitPlan(fields=(InitPla"
+        "n.Field(name='ke', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init"
+        "=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.F"
+        "ield(name='ve', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init=Tr"
+        "ue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='"
+        "self', std_params=('ke', 've'), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=("
+        "), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='ke', kw_only=False, fn=None), ReprPlan.Field(name='"
+        "ve', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)))"
+    ),
+    plan_repr_sha1='31b96e0288616218d19316ded67355ee33bc271d',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__1__annotation',
+    ),
+    cls_names=(
+        ('omlish.marshal.standard', 'MappingMarshaler'),
+    ),
+)
+def _process_dataclass__31b96e0288616218d19316ded67355ee33bc271d():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                ke=self.ke,
+                ve=self.ve,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.ke == other.ke and
+                self.ve == other.ve
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            'ke',
+            've',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'ke',
+            've',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.ke,
+                self.ve,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            ke: __dataclass__init__fields__0__annotation,
+            ve: __dataclass__init__fields__1__annotation,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'ke', ke)
+            __dataclass__object_setattr(self, 've', ve)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"ke={self.ke!r}")
+            parts.append(f"ve={self.ve!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('ctor', 'ke', 've')), EqPlan(fields=('ctor', 'ke', 've')), FrozenPlan(fields=('cto"
+        "r', 'ke', 've'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('ctor', 'ke', 've'), cache="
+        "False), InitPlan(fields=(InitPlan.Field(name='ctor', annotation=OpRef(name='init.fields.0.annotation'), defaul"
+        "t=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate="
+        "None, check_type=None), InitPlan.Field(name='ke', annotation=OpRef(name='init.fields.1.annotation'), default=N"
+        "one, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=Non"
+        "e, check_type=None), InitPlan.Field(name='ve', annotation=OpRef(name='init.fields.2.annotation'), default=None"
+        ", default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, "
+        "check_type=None)), self_param='self', std_params=('ctor', 'ke', 've'), kw_only_params=(), frozen=True, slots=F"
+        "alse, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='ctor', kw_on"
+        "ly=False, fn=None), ReprPlan.Field(name='ke', kw_only=False, fn=None), ReprPlan.Field(name='ve', kw_only=False"
+        ", fn=None)), id=False, terse=False, default_fn=None)))"
+    ),
+    plan_repr_sha1='6107797b5669fee0c7c870a27b62621c7fdd971e',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__2__annotation',
+    ),
+    cls_names=(
+        ('omlish.marshal.standard', 'MappingUnmarshaler'),
+    ),
+)
+def _process_dataclass__6107797b5669fee0c7c870a27b62621c7fdd971e():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__2__annotation,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                ctor=self.ctor,
+                ke=self.ke,
+                ve=self.ve,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.ctor == other.ctor and
+                self.ke == other.ke and
+                self.ve == other.ve
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            'ctor',
+            'ke',
+            've',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'ctor',
+            'ke',
+            've',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.ctor,
+                self.ke,
+                self.ve,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            ctor: __dataclass__init__fields__0__annotation,
+            ke: __dataclass__init__fields__1__annotation,
+            ve: __dataclass__init__fields__2__annotation,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'ctor', ctor)
+            __dataclass__object_setattr(self, 'ke', ke)
+            __dataclass__object_setattr(self, 've', ve)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"ctor={self.ctor!r}")
+            parts.append(f"ke={self.ke!r}")
+            parts.append(f"ve={self.ve!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -2633,6 +6571,140 @@ def _process_dataclass__c94d23c43d187cd3725f98ba417a2d32b630defb():
         def __repr__(self):
             parts = []
             parts.append(f"u={self.u!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('rtys',)), EqPlan(fields=('rtys',)), FrozenPlan(fields=('rtys',), allow_dynamic_du"
+        "nder_attrs=False), HashPlan(action='add', fields=('rtys',), cache=False), InitPlan(fields=(InitPlan.Field(name"
+        "='rtys', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, ove"
+        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),), self_param='self',"
+        " std_params=('rtys',), kw_only_params=(), frozen=True, slots=False, post_init_params=None, init_fns=(), valida"
+        "te_fns=()), ReprPlan(fields=(ReprPlan.Field(name='rtys', kw_only=False, fn=None),), id=False, terse=False, def"
+        "ault_fn=None)))"
+    ),
+    plan_repr_sha1='414809a505ec9965b78a8a29b59757d13b787f5c',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+    ),
+    cls_names=(
+        ('omlish.marshal.trivial.forbidden', 'ForbiddenTypeMarshalerFactoryUnmarshalerFactory'),
+    ),
+)
+def _process_dataclass__414809a505ec9965b78a8a29b59757d13b787f5c():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                rtys=self.rtys,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self.rtys == other.rtys
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            'rtys',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            'rtys',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self.rtys,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            rtys: __dataclass__init__fields__0__annotation,
+        ) -> __dataclass__None:
+            __dataclass__object_setattr(self, 'rtys', rtys)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"rtys={self.rtys!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

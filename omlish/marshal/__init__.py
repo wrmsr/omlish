@@ -233,11 +233,6 @@ with _lang.auto_proxy_init(globals()):
         standard_polymorphism_factories,
     )
 
-    from .polymorphism.unions import (  # noqa
-        PolymorphismUnionMarshalerFactory,
-        PolymorphismUnionUnmarshalerFactory,
-    )
-
     from .polymorphism.unmarshal import (  # noqa
         PolymorphismUnmarshaler,
         PolymorphismUnmarshalerFactory,
