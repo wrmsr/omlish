@@ -17,7 +17,7 @@ from .adapters import (  # noqa
 )
 
 from .asquery import (  # noqa
-    AsQueryParams,
+    AsQueryContext,
     as_query,
     as_query_,
 )

@@ -44,7 +44,7 @@ def _register(**kwargs):
         '__dataclass__init__fields__1__default',
     ),
     cls_names=(
-        ('omlish.sql.api', 'AsQueryParams'),
+        ('omlish.sql.api', 'AsQueryContext'),
     ),
 )
 def _process_dataclass__5ae94c3ed2c354e407c4c2dafde59484b9d0ac88():

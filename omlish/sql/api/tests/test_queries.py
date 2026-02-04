@@ -1,9 +1,9 @@
 import contextlib
 import sqlite3
 
-from .. import querierfuncs as qf
 from ...params import ParamStyle
 from ...queries import Q
+from .. import querierfuncs as qf
 from ..dbapi import DbapiDb
 
 

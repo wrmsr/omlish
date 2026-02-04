@@ -11,7 +11,7 @@ from ..params import ParamStyle
 from ..queries import Stmt
 from ..queries.params import Param
 from ..queries.rendering import render
-from .asquery import AsQueryParams
+from .asquery import AsQueryContext
 from .asquery import as_query_
 from .queries import Query
 from .queries import QueryMode
@@ -26,13 +26,13 @@ def _(
         param_values: ta.Mapping[Param, ta.Any] | None = None,
         /,
         *,
-        params: AsQueryParams,
+        ctx: AsQueryContext,
 ) -> Query:
     check.isinstance(param_values, (collections.abc.Mapping, None))
 
     ps: ParamStyle | None = None
-    if params.adapter is not None:
-        ps = params.adapter.param_style
+    if ctx.adapter is not None:
+        ps = ctx.adapter.param_style
 
     rq = render(
         stmt,
@@ -46,7 +46,7 @@ def _(
         check.arg(not param_values)
 
     return Query(
-        mode=QueryMode.of(params.mode, QueryMode.QUERY),
+        mode=QueryMode.of(ctx.mode, QueryMode.QUERY),
         text=rq.s,
         args=[],
     )

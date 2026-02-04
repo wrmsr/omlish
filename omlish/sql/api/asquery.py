@@ -12,7 +12,7 @@ from .queries import QueryMode
 
 
 @dc.dataclass(frozen=True, kw_only=True)
-class AsQueryParams:
+class AsQueryContext:
     mode: QueryMode | str | None = None
     adapter: Adapter | None = None
 
@@ -27,7 +27,7 @@ def as_query(
     return as_query_(
         obj,
         *args,
-        params=AsQueryParams(
+        ctx=AsQueryContext(
             mode=mode,
             adapter=adapter,
         ),
@@ -39,7 +39,7 @@ def as_query_(
         obj: ta.Any,
         /,
         *args: ta.Any,
-        params: AsQueryParams,
+        ctx: AsQueryContext,
 ) -> Query:
     raise TypeError(obj)
 
@@ -49,10 +49,10 @@ def _(
         q: Query,
         /,
         *,
-        params: AsQueryParams,
+        ctx: AsQueryContext,
 ) -> Query:
-    if params.mode is not None:
-        check.arg(q.mode is QueryMode.of(params.mode))
+    if ctx.mode is not None:
+        check.arg(q.mode is QueryMode.of(ctx.mode))
 
     return q
 
@@ -62,10 +62,10 @@ def _(
         s: str,
         /,
         *args: ta.Any,
-        params: AsQueryParams,
+        ctx: AsQueryContext,
 ) -> Query:
     return Query(
-        mode=QueryMode.of(params.mode, QueryMode.QUERY),
+        mode=QueryMode.of(ctx.mode, QueryMode.QUERY),
         text=s,
         args=args,
     )
