@@ -281,7 +281,7 @@ done\
 RUN \
   --mount=target=/root/.pyenv_cache,type=cache,sharing=locked \
 ( \
-export PYENV_VERSIONS='3.8.20 3.13.11 3.14.2' ;\
+export PYENV_VERSIONS='3.8.20 3.13.12 3.14.3' ;\
 \
 set -ex ;\
 \
