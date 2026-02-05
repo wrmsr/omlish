@@ -73,7 +73,11 @@ class PackageConfigCache:
         n_cfg = NamedPackageConfig(pkg, cfg)
         check.non_empty_str(pkg)
         with self._lock:
-            check.not_in(pkg, self._nodes)
+            if pkg in self._nodes:
+                raise RuntimeError(
+                    f'Package config already registered: {pkg!r}. This is usually caused by a failed previous attempt '
+                    f'to import the package.',
+                )
             parts = pkg.split('.')
             parent = self._navigate(*parts[:-1])
             check.not_in(parts[-1], parent.children)

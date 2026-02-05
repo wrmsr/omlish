@@ -5,6 +5,7 @@ import typing as ta
 
 from omlish import check
 from omlish import dataclasses as dc
+from omlish import lang
 from omlish import sql
 from omlish.formats import json
 from omlish.sql import Q
@@ -69,11 +70,13 @@ class SqlStateStorage(MarshaledStateStorage):
         def inner(db: sql.api.Conn) -> sql.api.Row | None:
             self._create_table_if_necessary(db)
 
-            return sql.api.query_opt_one(db, Q.select(
+            return sql.api.query_opt_one(db, lang.static(lambda: Q.select(
                 [Q.i.value],
                 Q.n.states,
-                Q.eq(Q.n.key, key),
-            ))
+                Q.eq(Q.n.key, Q.p.key),
+            )), {
+                Q.p.key: key,
+            })
 
         row = await self._run_with_db(inner)
         if row is None:
@@ -100,11 +103,13 @@ class SqlStateStorage(MarshaledStateStorage):
                         where=Q.eq(Q.n.key, key),
                     ))
 
-                elif sql.api.query_scalar(txn, Q.select([Q.f.exists(Q.select(
-                    [1],
-                    Q.n.states,
-                    Q.eq(Q.n.key, key),
-                ))])):
+                elif sql.api.query_scalar(txn, Q.select([
+                    Q.f.exists(Q.select(
+                        [1],
+                        Q.n.states,
+                        Q.eq(Q.n.key, key),
+                    )),
+                ])):
                     sql.api.exec(txn, Q.update(
                         Q.n.states,
                         [(Q.i.value, mj)],
