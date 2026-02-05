@@ -29,7 +29,7 @@ def __omlish_amalg__():  # noqa
             dict(path='base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='framing.py', sha1='3b0a684d7f844c99ad116dabc082f2d9bec466a6'),
             dict(path='reading.py', sha1='7631635c46ab4b40bcaeb7c506cf15cb2d529a40'),
-            dict(path='utils.py', sha1='43d4e06a5b60599716a9568013408e10e91b82c8'),
+            dict(path='utils.py', sha1='f29ce425931dda3a1ce1cc3f2a90ae867d790358'),
             dict(path='direct.py', sha1='fbc206bb808ea4603261f35575356998fd27078f'),
             dict(path='scanning.py', sha1='5d4cf0776463a6f675ca74ca87637133b78b51a2'),
             dict(path='adapters.py', sha1='1a6c209490fa78947a607101e20169a5e135847b'),
@@ -1091,7 +1091,7 @@ class ByteStreamBuffers:
         elif ot is bytes or ot is bytearray:
             yield memoryview(obj)
 
-        if isinstance(obj, memoryview):
+        elif isinstance(obj, memoryview):
             yield obj
         elif isinstance(obj, (bytes, bytearray)):
             yield memoryview(obj)
@@ -1106,16 +1106,7 @@ class ByteStreamBuffers:
 
     @staticmethod
     def _memoryview_to_bytes(mv: memoryview) -> bytes:
-        obj = mv.obj
-        ot = type(obj)
-        if (
-            (
-                ot is bytes or
-                ot is bytearray or
-                isinstance(obj, (bytes, bytearray))
-            ) and
-            len(mv) == len(obj)  # type: ignore[arg-type]
-        ):
+        if (((ot := type(obj := mv.obj)) is bytes or ot is bytearray or isinstance(obj, (bytes, bytearray))) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
             return obj  # type: ignore[return-value]
 
         return mv.tobytes()

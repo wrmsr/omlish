@@ -80,7 +80,7 @@ class ByteStreamBuffers:
         elif ot is bytes or ot is bytearray:
             yield memoryview(obj)
 
-        if isinstance(obj, memoryview):
+        elif isinstance(obj, memoryview):
             yield obj
         elif isinstance(obj, (bytes, bytearray)):
             yield memoryview(obj)
@@ -95,16 +95,7 @@ class ByteStreamBuffers:
 
     @staticmethod
     def _memoryview_to_bytes(mv: memoryview) -> bytes:
-        obj = mv.obj
-        ot = type(obj)
-        if (
-            (
-                ot is bytes or
-                ot is bytearray or
-                isinstance(obj, (bytes, bytearray))
-            ) and
-            len(mv) == len(obj)  # type: ignore[arg-type]
-        ):
+        if (((ot := type(obj := mv.obj)) is bytes or ot is bytearray or isinstance(obj, (bytes, bytearray))) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
             return obj  # type: ignore[return-value]
 
         return mv.tobytes()
