@@ -1,11 +1,11 @@
 """
 TODO:
- - drop down to stdlib dataclasses
  - @lang.copy_type
 """
 import typing as ta
 
 from ... import cached
+from ... import check
 from ... import dataclasses as dc
 from ... import lang
 from ..api.naming import Naming
@@ -21,9 +21,9 @@ T = ta.TypeVar('T')
 ##
 
 
+@ta.final
 @dc.dataclass(frozen=True, kw_only=True)
-@dc.extra_class_params(default_repr_fn=lang.opt_repr)
-class FieldOptions:
+class FieldOptions(lang.Final):
     """
     Unified field options - all configuration for a single field's marshaling/unmarshaling.
 
@@ -42,7 +42,7 @@ class FieldOptions:
 
     omit_if: ta.Callable[[ta.Any], bool] | None = None
 
-    default: lang.Maybe[ta.Any] | None = dc.xfield(default=None, check_type=(lang.Maybe, None))
+    default: lang.Maybe[ta.Any] | None = None
 
     embed: bool | None = None
 
@@ -54,11 +54,19 @@ class FieldOptions:
     ##
     # Custom handlers
 
-    marshaler: Marshaler | None = dc.xfield(None, check_type=(Marshaler, None))
+    marshaler: Marshaler | None = None
     marshaler_factory: MarshalerFactory | None = None
 
-    unmarshaler: Unmarshaler | None = dc.xfield(None, check_type=(Unmarshaler, None))
+    unmarshaler: Unmarshaler | None = None
     unmarshaler_factory: UnmarshalerFactory | None = None
+
+    ##
+    # Validation
+
+    def __post_init__(self) -> None:
+        check.isinstance(self.default, (lang.Maybe, None))
+        check.isinstance(self.marshaler, (Marshaler, None))
+        check.isinstance(self.unmarshaler, (Unmarshaler, None))
 
     ##
     # Merging
@@ -91,9 +99,9 @@ DEFAULT_FIELD_OPTIONS = FieldOptions()
 ##
 
 
+@ta.final
 @dc.dataclass(frozen=True, kw_only=True)
-@dc.extra_class_params(default_repr_fn=lang.opt_repr)
-class ObjectSpecials:
+class ObjectSpecials(lang.Final):
     """Special field names for an object."""
 
     unknown: str | None = None
@@ -104,9 +112,9 @@ class ObjectSpecials:
         return frozenset(v for v in dc.asdict(self).values() if v is not None)
 
 
+@ta.final
 @dc.dataclass(frozen=True, kw_only=True)
-@dc.extra_class_params(default_repr_fn=lang.opt_repr)
-class ObjectOptions:
+class ObjectOptions(lang.Final):
     """Object-level marshaling options."""
 
     ##

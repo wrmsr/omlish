@@ -1542,44 +1542,42 @@ def _process_dataclass__d79af82ecd003199ceaa4594c2592f2dbb8ba386():
         "ef(name='init.fields.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTAN"
         "CE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='default', annotation=OpRef(name='init.f"
         "ields.3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=F"
-        "alse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=OpRef(name='init.fields.3.check_ty"
-        "pe')), InitPlan.Field(name='embed', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='ini"
-        "t.fields.4.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=N"
-        "one, validate=None, check_type=None), InitPlan.Field(name='generic_replace', annotation=OpRef(name='init.field"
-        "s.5.annotation'), default=OpRef(name='init.fields.5.default'), default_factory=None, init=True, override=False"
-        ", field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='no_marshal"
-        "', annotation=OpRef(name='init.fields.6.annotation'), default=OpRef(name='init.fields.6.default'), default_fac"
-        "tory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=No"
-        "ne), InitPlan.Field(name='no_unmarshal', annotation=OpRef(name='init.fields.7.annotation'), default=OpRef(name"
-        "='init.fields.7.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
-        "rce=None, validate=None, check_type=None), InitPlan.Field(name='marshaler', annotation=OpRef(name='init.fields"
-        ".8.annotation'), default=OpRef(name='init.fields.8.default'), default_factory=None, init=True, override=False,"
-        " field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=OpRef(name='init.fields.8.check_type'))"
-        ", InitPlan.Field(name='marshaler_factory', annotation=OpRef(name='init.fields.9.annotation'), default=OpRef(na"
-        "me='init.fields.9.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, c"
-        "oerce=None, validate=None, check_type=None), InitPlan.Field(name='unmarshaler', annotation=OpRef(name='init.fi"
-        "elds.10.annotation'), default=OpRef(name='init.fields.10.default'), default_factory=None, init=True, override="
-        "False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=OpRef(name='init.fields.10.check_"
-        "type')), InitPlan.Field(name='unmarshaler_factory', annotation=OpRef(name='init.fields.11.annotation'), defaul"
-        "t=OpRef(name='init.fields.11.default'), default_factory=None, init=True, override=False, field_type=FieldType."
-        "INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('na"
-        "me', 'alts', 'omit_if', 'default', 'embed', 'generic_replace', 'no_marshal', 'no_unmarshal', 'marshaler', 'mar"
-        "shaler_factory', 'unmarshaler', 'unmarshaler_factory'), frozen=True, slots=False, post_init_params=None, init_"
-        "fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='name', kw_only=True, fn=None), ReprPlan.Field("
-        "name='alts', kw_only=True, fn=None), ReprPlan.Field(name='omit_if', kw_only=True, fn=None), ReprPlan.Field(nam"
-        "e='default', kw_only=True, fn=None), ReprPlan.Field(name='embed', kw_only=True, fn=None), ReprPlan.Field(name="
-        "'generic_replace', kw_only=True, fn=None), ReprPlan.Field(name='no_marshal', kw_only=True, fn=None), ReprPlan."
-        "Field(name='no_unmarshal', kw_only=True, fn=None), ReprPlan.Field(name='marshaler', kw_only=True, fn=None), Re"
-        "prPlan.Field(name='marshaler_factory', kw_only=True, fn=None), ReprPlan.Field(name='unmarshaler', kw_only=True"
-        ", fn=None), ReprPlan.Field(name='unmarshaler_factory', kw_only=True, fn=None)), id=False, terse=False, default"
-        "_fn=OpRef(name='repr.default_fn'))))"
+        "alse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='embed'"
+        ", annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_fact"
+        "ory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=Non"
+        "e), InitPlan.Field(name='generic_replace', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(na"
+        "me='init.fields.5.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, c"
+        "oerce=None, validate=None, check_type=None), InitPlan.Field(name='no_marshal', annotation=OpRef(name='init.fie"
+        "lds.6.annotation'), default=OpRef(name='init.fields.6.default'), default_factory=None, init=True, override=Fal"
+        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='no_unmar"
+        "shal', annotation=OpRef(name='init.fields.7.annotation'), default=OpRef(name='init.fields.7.default'), default"
+        "_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_typ"
+        "e=None), InitPlan.Field(name='marshaler', annotation=OpRef(name='init.fields.8.annotation'), default=OpRef(nam"
+        "e='init.fields.8.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, co"
+        "erce=None, validate=None, check_type=None), InitPlan.Field(name='marshaler_factory', annotation=OpRef(name='in"
+        "it.fields.9.annotation'), default=OpRef(name='init.fields.9.default'), default_factory=None, init=True, overri"
+        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='un"
+        "marshaler', annotation=OpRef(name='init.fields.10.annotation'), default=OpRef(name='init.fields.10.default'), "
+        "default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, ch"
+        "eck_type=None), InitPlan.Field(name='unmarshaler_factory', annotation=OpRef(name='init.fields.11.annotation'),"
+        " default=OpRef(name='init.fields.11.default'), default_factory=None, init=True, override=False, field_type=Fie"
+        "ldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_para"
+        "ms=('name', 'alts', 'omit_if', 'default', 'embed', 'generic_replace', 'no_marshal', 'no_unmarshal', 'marshaler"
+        "', 'marshaler_factory', 'unmarshaler', 'unmarshaler_factory'), frozen=True, slots=False, post_init_params=(), "
+        "init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='name', kw_only=True, fn=None), ReprPlan.F"
+        "ield(name='alts', kw_only=True, fn=None), ReprPlan.Field(name='omit_if', kw_only=True, fn=None), ReprPlan.Fiel"
+        "d(name='default', kw_only=True, fn=None), ReprPlan.Field(name='embed', kw_only=True, fn=None), ReprPlan.Field("
+        "name='generic_replace', kw_only=True, fn=None), ReprPlan.Field(name='no_marshal', kw_only=True, fn=None), Repr"
+        "Plan.Field(name='no_unmarshal', kw_only=True, fn=None), ReprPlan.Field(name='marshaler', kw_only=True, fn=None"
+        "), ReprPlan.Field(name='marshaler_factory', kw_only=True, fn=None), ReprPlan.Field(name='unmarshaler', kw_only"
+        "=True, fn=None), ReprPlan.Field(name='unmarshaler_factory', kw_only=True, fn=None)), id=False, terse=False, de"
+        "fault_fn=None)))"
     ),
-    plan_repr_sha1='6cdee7c96a0d5ee28f263ae5d2b2ff932df8e9e0',
+    plan_repr_sha1='dd35b64239d164fa5492ec56c4b322feee283bad',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
         '__dataclass__init__fields__10__annotation',
-        '__dataclass__init__fields__10__check_type',
         '__dataclass__init__fields__10__default',
         '__dataclass__init__fields__11__annotation',
         '__dataclass__init__fields__11__default',
@@ -1588,7 +1586,6 @@ def _process_dataclass__d79af82ecd003199ceaa4594c2592f2dbb8ba386():
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
-        '__dataclass__init__fields__3__check_type',
         '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
@@ -1599,24 +1596,21 @@ def _process_dataclass__d79af82ecd003199ceaa4594c2592f2dbb8ba386():
         '__dataclass__init__fields__7__annotation',
         '__dataclass__init__fields__7__default',
         '__dataclass__init__fields__8__annotation',
-        '__dataclass__init__fields__8__check_type',
         '__dataclass__init__fields__8__default',
         '__dataclass__init__fields__9__annotation',
         '__dataclass__init__fields__9__default',
-        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.marshal.standard', 'FieldOptions'),
     ),
 )
-def _process_dataclass__6cdee7c96a0d5ee28f263ae5d2b2ff932df8e9e0():
+def _process_dataclass__dd35b64239d164fa5492ec56c4b322feee283bad():
     def _process_dataclass(
         *,
         __dataclass__cls,
         __dataclass__init__fields__0__annotation,
         __dataclass__init__fields__0__default,
         __dataclass__init__fields__10__annotation,
-        __dataclass__init__fields__10__check_type,
         __dataclass__init__fields__10__default,
         __dataclass__init__fields__11__annotation,
         __dataclass__init__fields__11__default,
@@ -1625,7 +1619,6 @@ def _process_dataclass__6cdee7c96a0d5ee28f263ae5d2b2ff932df8e9e0():
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
-        __dataclass__init__fields__3__check_type,
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
@@ -1636,11 +1629,9 @@ def _process_dataclass__6cdee7c96a0d5ee28f263ae5d2b2ff932df8e9e0():
         __dataclass__init__fields__7__annotation,
         __dataclass__init__fields__7__default,
         __dataclass__init__fields__8__annotation,
-        __dataclass__init__fields__8__check_type,
         __dataclass__init__fields__8__default,
         __dataclass__init__fields__9__annotation,
         __dataclass__init__fields__9__default,
-        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -1794,27 +1785,6 @@ def _process_dataclass__6cdee7c96a0d5ee28f263ae5d2b2ff932df8e9e0():
             unmarshaler: __dataclass__init__fields__10__annotation = __dataclass__init__fields__10__default,
             unmarshaler_factory: __dataclass__init__fields__11__annotation = __dataclass__init__fields__11__default,
         ) -> __dataclass__None:
-            if not __dataclass__isinstance(default, __dataclass__init__fields__3__check_type): 
-                raise __dataclass__FieldTypeValidationError(
-                    obj=self,
-                    type=__dataclass__init__fields__3__check_type,
-                    field='default',
-                    value=default,
-                )
-            if not __dataclass__isinstance(marshaler, __dataclass__init__fields__8__check_type): 
-                raise __dataclass__FieldTypeValidationError(
-                    obj=self,
-                    type=__dataclass__init__fields__8__check_type,
-                    field='marshaler',
-                    value=marshaler,
-                )
-            if not __dataclass__isinstance(unmarshaler, __dataclass__init__fields__10__check_type): 
-                raise __dataclass__FieldTypeValidationError(
-                    obj=self,
-                    type=__dataclass__init__fields__10__check_type,
-                    field='unmarshaler',
-                    value=unmarshaler,
-                )
             __dataclass__object_setattr(self, 'name', name)
             __dataclass__object_setattr(self, 'alts', alts)
             __dataclass__object_setattr(self, 'omit_if', omit_if)
@@ -1827,6 +1797,7 @@ def _process_dataclass__6cdee7c96a0d5ee28f263ae5d2b2ff932df8e9e0():
             __dataclass__object_setattr(self, 'marshaler_factory', marshaler_factory)
             __dataclass__object_setattr(self, 'unmarshaler', unmarshaler)
             __dataclass__object_setattr(self, 'unmarshaler_factory', unmarshaler_factory)
+            self.__post_init__()
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -1836,30 +1807,18 @@ def _process_dataclass__6cdee7c96a0d5ee28f263ae5d2b2ff932df8e9e0():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            if (s := __dataclass__repr__default_fn(self.name)) is not None:
-                parts.append(f"name={s}")
-            if (s := __dataclass__repr__default_fn(self.alts)) is not None:
-                parts.append(f"alts={s}")
-            if (s := __dataclass__repr__default_fn(self.omit_if)) is not None:
-                parts.append(f"omit_if={s}")
-            if (s := __dataclass__repr__default_fn(self.default)) is not None:
-                parts.append(f"default={s}")
-            if (s := __dataclass__repr__default_fn(self.embed)) is not None:
-                parts.append(f"embed={s}")
-            if (s := __dataclass__repr__default_fn(self.generic_replace)) is not None:
-                parts.append(f"generic_replace={s}")
-            if (s := __dataclass__repr__default_fn(self.no_marshal)) is not None:
-                parts.append(f"no_marshal={s}")
-            if (s := __dataclass__repr__default_fn(self.no_unmarshal)) is not None:
-                parts.append(f"no_unmarshal={s}")
-            if (s := __dataclass__repr__default_fn(self.marshaler)) is not None:
-                parts.append(f"marshaler={s}")
-            if (s := __dataclass__repr__default_fn(self.marshaler_factory)) is not None:
-                parts.append(f"marshaler_factory={s}")
-            if (s := __dataclass__repr__default_fn(self.unmarshaler)) is not None:
-                parts.append(f"unmarshaler={s}")
-            if (s := __dataclass__repr__default_fn(self.unmarshaler_factory)) is not None:
-                parts.append(f"unmarshaler_factory={s}")
+            parts.append(f"name={self.name!r}")
+            parts.append(f"alts={self.alts!r}")
+            parts.append(f"omit_if={self.omit_if!r}")
+            parts.append(f"default={self.default!r}")
+            parts.append(f"embed={self.embed!r}")
+            parts.append(f"generic_replace={self.generic_replace!r}")
+            parts.append(f"no_marshal={self.no_marshal!r}")
+            parts.append(f"no_unmarshal={self.no_unmarshal!r}")
+            parts.append(f"marshaler={self.marshaler!r}")
+            parts.append(f"marshaler_factory={self.marshaler_factory!r}")
+            parts.append(f"unmarshaler={self.unmarshaler!r}")
+            parts.append(f"unmarshaler_factory={self.unmarshaler_factory!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -2958,9 +2917,9 @@ def _process_dataclass__8efaa231a8242879f7cbb39c769901e1908abe12():
         "None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='field_naming', kw_only=True, fn=Non"
         "e), ReprPlan.Field(name='ignore_unknown', kw_only=True, fn=None), ReprPlan.Field(name='unknown_field', kw_only"
         "=True, fn=None), ReprPlan.Field(name='source_field', kw_only=True, fn=None), ReprPlan.Field(name='field_defaul"
-        "ts', kw_only=True, fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
+        "ts', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='1c5fa974e20246bb1a1798c64edb2f0c0d0c89af',
+    plan_repr_sha1='21a61a98a8333422d1a548e9d18448015f413ad0',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
@@ -2972,13 +2931,12 @@ def _process_dataclass__8efaa231a8242879f7cbb39c769901e1908abe12():
         '__dataclass__init__fields__3__default',
         '__dataclass__init__fields__4__annotation',
         '__dataclass__init__fields__4__default',
-        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.marshal.standard', 'ObjectOptions'),
     ),
 )
-def _process_dataclass__1c5fa974e20246bb1a1798c64edb2f0c0d0c89af():
+def _process_dataclass__21a61a98a8333422d1a548e9d18448015f413ad0():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -2992,7 +2950,6 @@ def _process_dataclass__1c5fa974e20246bb1a1798c64edb2f0c0d0c89af():
         __dataclass__init__fields__3__default,
         __dataclass__init__fields__4__annotation,
         __dataclass__init__fields__4__default,
-        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -3118,16 +3075,11 @@ def _process_dataclass__1c5fa974e20246bb1a1798c64edb2f0c0d0c89af():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            if (s := __dataclass__repr__default_fn(self.field_naming)) is not None:
-                parts.append(f"field_naming={s}")
-            if (s := __dataclass__repr__default_fn(self.ignore_unknown)) is not None:
-                parts.append(f"ignore_unknown={s}")
-            if (s := __dataclass__repr__default_fn(self.unknown_field)) is not None:
-                parts.append(f"unknown_field={s}")
-            if (s := __dataclass__repr__default_fn(self.source_field)) is not None:
-                parts.append(f"source_field={s}")
-            if (s := __dataclass__repr__default_fn(self.field_defaults)) is not None:
-                parts.append(f"field_defaults={s}")
+            parts.append(f"field_naming={self.field_naming!r}")
+            parts.append(f"ignore_unknown={self.ignore_unknown!r}")
+            parts.append(f"unknown_field={self.unknown_field!r}")
+            parts.append(f"source_field={self.source_field!r}")
+            parts.append(f"field_defaults={self.field_defaults!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -3153,21 +3105,20 @@ def _process_dataclass__1c5fa974e20246bb1a1798c64edb2f0c0d0c89af():
         " override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='sel"
         "f', std_params=(), kw_only_params=('unknown', 'source'), frozen=True, slots=False, post_init_params=None, init"
         "_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='unknown', kw_only=True, fn=None), ReprPlan.Fi"
-        "eld(name='source', kw_only=True, fn=None)), id=False, terse=False, default_fn=OpRef(name='repr.default_fn'))))"
+        "eld(name='source', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='faca2b0ec501eeb3a89fe8e7b578b35b4a4c5ea2',
+    plan_repr_sha1='ffbfe43830279fbce3d0d2196bd9c1e581bc796f',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
-        '__dataclass__repr__default_fn',
     ),
     cls_names=(
         ('omlish.marshal.standard', 'ObjectSpecials'),
     ),
 )
-def _process_dataclass__faca2b0ec501eeb3a89fe8e7b578b35b4a4c5ea2():
+def _process_dataclass__ffbfe43830279fbce3d0d2196bd9c1e581bc796f():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -3175,7 +3126,6 @@ def _process_dataclass__faca2b0ec501eeb3a89fe8e7b578b35b4a4c5ea2():
         __dataclass__init__fields__0__default,
         __dataclass__init__fields__1__annotation,
         __dataclass__init__fields__1__default,
-        __dataclass__repr__default_fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -3280,10 +3230,8 @@ def _process_dataclass__faca2b0ec501eeb3a89fe8e7b578b35b4a4c5ea2():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            if (s := __dataclass__repr__default_fn(self.unknown)) is not None:
-                parts.append(f"unknown={s}")
-            if (s := __dataclass__repr__default_fn(self.source)) is not None:
-                parts.append(f"source={s}")
+            parts.append(f"unknown={self.unknown!r}")
+            parts.append(f"source={self.source!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
