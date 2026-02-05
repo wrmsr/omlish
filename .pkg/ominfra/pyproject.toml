@@ -74,4 +74,5 @@ exclude = [
     'clouds/aws/instancetypes/cache.json.gz',
     'clouds/aws/models/services/*.toml',
     'manage/targets/bestpython.sh',
+    'nginx/patches/nginx/*.patch',
 ]

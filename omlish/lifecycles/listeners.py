@@ -12,12 +12,7 @@ class LifecycleListener:
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 
-        try:
-            async_lifecycle_listener_cls = AsyncLifecycleListener
-        except NameError:
-            pass
-        else:
-            check.not_issubclass(cls, async_lifecycle_listener_cls)
+        check.not_issubclass_except_nameerror(cls, lambda: AsyncLifecycleListener)
 
     def on_starting(self, obj: Lifecycle) -> None:
         pass

@@ -27,12 +27,7 @@ class Querier(AnyQuerier, lang.Abstract):
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 
-        try:
-            aq = AsyncQuerier
-        except NameError:
-            pass
-        else:
-            check.not_issubclass(cls, aq)
+        check.not_issubclass_except_nameerror(cls, lambda: AsyncQuerier)
 
 
 class AsyncQuerier(AnyQuerier, lang.Abstract):

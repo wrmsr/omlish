@@ -2,8 +2,9 @@ import logging  # noqa
 
 import pytest  # noqa
 
-from ...logs import all as logs  # noqa
-from ...testing import pytest as ptu
+from omlish.logs import all as logs  # noqa
+from omlish.testing import pytest as ptu
+
 from ..threadlets import GreenletThreadlets
 from ..threadlets import Threadlets
 

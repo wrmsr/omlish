@@ -1,14 +1,1 @@
-[
-  {
-    "module": ".nginx.logs",
-    "attr": "_CLI_MODULE",
-    "file": "omserv/nginx/logs.py",
-    "line": 68,
-    "value": {
-      "!omdev.cli.types.CliModule": {
-        "name": "nginxlogs",
-        "module": "omserv.nginx.logs"
-      }
-    }
-  }
-]
+[]

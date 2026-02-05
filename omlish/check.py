@@ -159,6 +159,11 @@ def not_issubclass(v: type[T], spec: ta.Any, msg: Message = None) -> type[T]:
     return check.not_issubclass(v, spec, msg=msg)
 
 
+@_check_proxy_function
+def not_issubclass_except_nameerror(v: type[T], spec: ta.Callable[[], type], msg: Message = None) -> type[T]:
+    return check.not_issubclass_except_nameerror(v, spec, msg=msg)
+
+
 #
 
 

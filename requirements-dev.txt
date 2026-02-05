@@ -121,7 +121,7 @@ hf-xet==1.2.0  # @omlish-venv !14t !14dt
 
 datasets==4.5.0; python_version < "3.14"  # !! includes arrow and pandas and shit
 
-transformers==5.0.0  # @omlish-venv !14t !14dt
+transformers==5.1.0  # @omlish-venv !14t !14dt
 sentence-transformers==5.2.2  # @omlish-venv !14t !14dt
 
 sentencepiece==0.2.1
@@ -139,11 +139,8 @@ types-boto3>=1.42.42
 
 antlr4-python3-runtime==4.13.2
 
-# mlx==0.30.0; sys_platform == "darwin" and python_version < "3.14"  # @omlish-venv !13t !13dt !14t
-# mlx-lm==0.29.1; sys_platform == "darwin" and python_version < "3.14"  # @omlish-venv !13t !13dt !14t
-
 mlx==0.30.5; sys_platform == "darwin" and python_version < "3.14"  # @omlish-venv !13t !13dt !14t
-git+https://github.com/ml-explore/mlx-lm@ab050d1fac2ef1d7bea6b8d870f1e5717d7f59f5; sys_platform == "darwin" and python_version < "3.14"  # @omlish-venv !13t !13dt !14t
+mlx-lm==0.30.6; sys_platform == "darwin" and python_version < "3.14"  # @omlish-venv !13t !13dt !14t
 
 apsw==3.51.2.0
 

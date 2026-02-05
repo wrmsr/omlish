@@ -482,6 +482,10 @@ with _auto_proxy_init(globals(), update_exports=True):
         SeqView,
     )
 
+    from .statics import (  # noqa
+        static,
+    )
+
     from .strings import (  # noqa
         prefix_delimited,
         prefix_lines,

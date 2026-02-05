@@ -32,7 +32,7 @@ def __omlish_amalg__():  # noqa
     return dict(
         src_files=[
             dict(path='abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
-            dict(path='check.py', sha1='0d5908513e452593ec345fe4cb5f8e33f5e5876c'),
+            dict(path='check.py', sha1='0ce40cc68bd1b18604293a0b4924efabb6033766'),
             dict(path='reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='maybes.py', sha1='04d2fcbea17028a5e6b8e7a7fb742375495ed233'),
             dict(path='inject.py', sha1='6f097e3170019a34ff6834d36fcc9cbeed3a7ab4'),
@@ -438,6 +438,23 @@ class Checks:
                 'Must not be subclass',
                 msg,
                 Checks._ArgsKwargs(v, spec),
+                render_fmt='issubclass(%s, %s)',
+            )
+
+        return v
+
+    def not_issubclass_except_nameerror(self, v: ta.Type[T], spec: ta.Callable[[], type], msg: CheckMessage = None) -> ta.Type[T]:  # noqa
+        try:
+            c = spec()
+        except NameError:
+            return v
+
+        if issubclass(v, c):
+            self._raise(
+                TypeError,
+                'Must not be subclass',
+                msg,
+                Checks._ArgsKwargs(v, c),
                 render_fmt='issubclass(%s, %s)',
             )
 

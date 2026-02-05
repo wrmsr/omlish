@@ -243,6 +243,23 @@ class Checks:
 
         return v
 
+    def not_issubclass_except_nameerror(self, v: ta.Type[T], spec: ta.Callable[[], type], msg: CheckMessage = None) -> ta.Type[T]:  # noqa
+        try:
+            c = spec()
+        except NameError:
+            return v
+
+        if issubclass(v, c):
+            self._raise(
+                TypeError,
+                'Must not be subclass',
+                msg,
+                Checks._ArgsKwargs(v, c),
+                render_fmt='issubclass(%s, %s)',
+            )
+
+        return v
+
     #
 
     def in_(self, v: T, c: ta.Container[T], msg: CheckMessage = None) -> T:

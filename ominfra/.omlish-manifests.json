@@ -12,6 +12,18 @@
     }
   },
   {
+    "module": ".nginx.logs",
+    "attr": "_CLI_MODULE",
+    "file": "ominfra/nginx/logs.py",
+    "line": 68,
+    "value": {
+      "!omdev.cli.types.CliModule": {
+        "name": "nginxlogs",
+        "module": "ominfra.nginx.logs"
+      }
+    }
+  },
+  {
     "module": ".tailscale.cli",
     "attr": "_CLI_MODULE",
     "file": "ominfra/tailscale/cli.py",

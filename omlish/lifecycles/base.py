@@ -13,12 +13,7 @@ class Lifecycle(lang.Abstract):
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 
-        try:
-            async_lifecycle_cls = AsyncLifecycle
-        except NameError:
-            pass
-        else:
-            check.not_issubclass(cls, async_lifecycle_cls)
+        check.not_issubclass_except_nameerror(cls, lambda: AsyncLifecycle)
 
     def lifecycle_state(self, state: LifecycleState) -> None:
         """

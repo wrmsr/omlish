@@ -85,7 +85,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
             dict(path='../../omlish/lite/attrops.py', sha1='c1ebfb8573d766d34593c452a2377208d02726dc'),
             dict(path='../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
-            dict(path='../../omlish/lite/check.py', sha1='0d5908513e452593ec345fe4cb5f8e33f5e5876c'),
+            dict(path='../../omlish/lite/check.py', sha1='0ce40cc68bd1b18604293a0b4924efabb6033766'),
             dict(path='../../omlish/lite/contextmanagers.py', sha1='993f5ed96d3410f739a20363f55670d5e5267fa3'),
             dict(path='../../omlish/lite/json.py', sha1='57eeddc4d23a17931e00284ffa5cb6e3ce089486'),
             dict(path='../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
@@ -3562,6 +3562,23 @@ class Checks:
                 'Must not be subclass',
                 msg,
                 Checks._ArgsKwargs(v, spec),
+                render_fmt='issubclass(%s, %s)',
+            )
+
+        return v
+
+    def not_issubclass_except_nameerror(self, v: ta.Type[T], spec: ta.Callable[[], type], msg: CheckMessage = None) -> ta.Type[T]:  # noqa
+        try:
+            c = spec()
+        except NameError:
+            return v
+
+        if issubclass(v, c):
+            self._raise(
+                TypeError,
+                'Must not be subclass',
+                msg,
+                Checks._ArgsKwargs(v, c),
                 render_fmt='issubclass(%s, %s)',
             )
 

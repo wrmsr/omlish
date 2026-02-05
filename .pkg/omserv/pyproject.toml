@@ -75,6 +75,5 @@ exclude = [
     'LICENSE.txt',
     'AUTHORS',
     'DESIGN.md',
-    'nginx/patches/*.patch',
     'server/resources/*.ico',
 ]

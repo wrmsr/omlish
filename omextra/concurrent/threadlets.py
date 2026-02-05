@@ -7,7 +7,7 @@ import abc
 import dataclasses as dc
 import typing as ta
 
-from .. import lang
+from omlish import lang
 
 
 if ta.TYPE_CHECKING:

@@ -17,7 +17,7 @@ from omlish import lang
 ##
 
 
-NGINX_VERSION = '1.29.4'
+NGINX_VERSION = '1.29.5'
 NGINX_SRC_URL = f'https://nginx.org/download/nginx-{NGINX_VERSION}.tar.gz'
 
 NGINX_VTS_VERSION = '0.2.5'
@@ -44,9 +44,8 @@ def build_nginx() -> None:
 
     #
 
-    patch_prefix = f'nginx-{NGINX_VERSION}_'
-    for r in lang.get_relative_resources('patches', globals=globals()).values():
-        if r.is_file and r.name.startswith(patch_prefix) and r.name.endswith('.patch'):
+    for r in lang.get_relative_resources('patches.nginx', globals=globals()).values():
+        if r.is_file and r.name.endswith('.patch'):
             print(r.name)
 
             patch_src = r.read_bytes()

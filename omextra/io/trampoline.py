@@ -5,8 +5,9 @@ import typing as ta
 
 from omlish import check
 from omlish import lang
-from omlish.concurrent import threadlets as tls
 from omlish.sync.conddeque import ConditionDeque
+
+from ..concurrent import threadlets as tls
 
 
 if ta.TYPE_CHECKING:

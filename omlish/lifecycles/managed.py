@@ -22,12 +22,7 @@ class LifecycleManaged(lang.Abstract):
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
 
-        try:
-            async_lifecycle_managed_cls = AsyncLifecycleManaged
-        except NameError:
-            pass
-        else:
-            check.not_issubclass(cls, async_lifecycle_managed_cls)
+        check.not_issubclass_except_nameerror(cls, lambda: AsyncLifecycleManaged)
 
     @ta.final
     @dc.dataclass(frozen=True)
