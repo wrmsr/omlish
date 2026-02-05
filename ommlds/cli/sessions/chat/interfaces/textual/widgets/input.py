@@ -1,7 +1,7 @@
-import dataclasses as dc
 import typing as ta
 
 from omdev.tui import textual as tx
+from omlish import dataclasses as dc
 
 
 ##
