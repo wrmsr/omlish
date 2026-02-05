@@ -88,6 +88,8 @@ class Usage:
 
     service_tier: str | None = None
 
+    inference_geo: str | None = None
+
 
 ##
 

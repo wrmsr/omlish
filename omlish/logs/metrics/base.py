@@ -66,15 +66,23 @@ LOGGER_METRIC_UNIT_TYPES: ta.Tuple[ta.Type[LoggerMetricUnit], ...] = (
 ##
 
 
+class LoggerMetricTag(Abstract):
+    pass
+
+
+##
+
+
 class LoggerMetric(Abstract):
     @ta.final
-    def __init__(self, value: ta.Optional[float] = None) -> None:
+    def __init__(self, value: ta.Optional[float] = None, *tags: LoggerMetricTag) -> None:
         if value is None:
             value = self.default_value()
         if value is None:
             raise ValueError(f'{type(self).__name__} has no default value.')
 
         self.__value = value
+        self.__tags = tags
 
     @property
     def value(self) -> float:
@@ -83,6 +91,13 @@ class LoggerMetric(Abstract):
     @classmethod
     def default_value(cls) -> ta.Optional[float]:
         return None
+
+    @property
+    def tags(self) -> ta.Sequence[LoggerMetricTag]:
+        return self.__tags
+
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({self.value!r}, {", ".join(map(repr, self.tags))})'
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)

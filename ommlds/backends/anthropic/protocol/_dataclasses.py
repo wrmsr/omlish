@@ -1411,34 +1411,38 @@ def _process_dataclass__51ac2f5bc2410c36bb667aa3a8f0ed87eb16813e():
 @_register(
     plan_repr=(
         "Plans(tup=(CopyPlan(fields=('input_tokens', 'output_tokens', 'cache_creation_input_tokens', 'cache_read_input_"
-        "tokens', 'cache_creation', 'service_tier')), EqPlan(fields=('input_tokens', 'output_tokens', 'cache_creation_i"
-        "nput_tokens', 'cache_read_input_tokens', 'cache_creation', 'service_tier')), FrozenPlan(fields=('input_tokens'"
-        ", 'output_tokens', 'cache_creation_input_tokens', 'cache_read_input_tokens', 'cache_creation', 'service_tier')"
-        ", allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('input_tokens', 'output_tokens', 'cache_cr"
-        "eation_input_tokens', 'cache_read_input_tokens', 'cache_creation', 'service_tier'), cache=False), InitPlan(fie"
-        "lds=(InitPlan.Field(name='input_tokens', annotation=OpRef(name='init.fields.0.annotation'), default=OpRef(name"
-        "='init.fields.0.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
-        "rce=None, validate=None, check_type=None), InitPlan.Field(name='output_tokens', annotation=OpRef(name='init.fi"
-        "elds.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=Fa"
-        "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='cache_c"
-        "reation_input_tokens', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.de"
-        "fault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate"
-        "=None, check_type=None), InitPlan.Field(name='cache_read_input_tokens', annotation=OpRef(name='init.fields.3.a"
-        "nnotation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, fie"
-        "ld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='cache_creation'"
-        ", annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_fact"
-        "ory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=Non"
-        "e), InitPlan.Field(name='service_tier', annotation=OpRef(name='init.fields.5.annotation'), default=OpRef(name="
-        "'init.fields.5.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coer"
-        "ce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('input_tokens', '"
-        "output_tokens', 'cache_creation_input_tokens', 'cache_read_input_tokens', 'cache_creation', 'service_tier'), f"
-        "rozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field"
-        "(name='input_tokens', kw_only=True, fn=None), ReprPlan.Field(name='output_tokens', kw_only=True, fn=None), Rep"
-        "rPlan.Field(name='cache_creation_input_tokens', kw_only=True, fn=None), ReprPlan.Field(name='cache_read_input_"
-        "tokens', kw_only=True, fn=None), ReprPlan.Field(name='cache_creation', kw_only=True, fn=None), ReprPlan.Field("
-        "name='service_tier', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
+        "tokens', 'cache_creation', 'service_tier', 'inference_geo')), EqPlan(fields=('input_tokens', 'output_tokens', "
+        "'cache_creation_input_tokens', 'cache_read_input_tokens', 'cache_creation', 'service_tier', 'inference_geo')),"
+        " FrozenPlan(fields=('input_tokens', 'output_tokens', 'cache_creation_input_tokens', 'cache_read_input_tokens',"
+        " 'cache_creation', 'service_tier', 'inference_geo'), allow_dynamic_dunder_attrs=False), HashPlan(action='add',"
+        " fields=('input_tokens', 'output_tokens', 'cache_creation_input_tokens', 'cache_read_input_tokens', 'cache_cre"
+        "ation', 'service_tier', 'inference_geo'), cache=False), InitPlan(fields=(InitPlan.Field(name='input_tokens', a"
+        "nnotation=OpRef(name='init.fields.0.annotation'), default=OpRef(name='init.fields.0.default'), default_factory"
+        "=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),"
+        " InitPlan.Field(name='output_tokens', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='i"
+        "nit.fields.1.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce"
+        "=None, validate=None, check_type=None), InitPlan.Field(name='cache_creation_input_tokens', annotation=OpRef(na"
+        "me='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, "
+        "override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(na"
+        "me='cache_read_input_tokens', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fiel"
+        "ds.3.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, v"
+        "alidate=None, check_type=None), InitPlan.Field(name='cache_creation', annotation=OpRef(name='init.fields.4.ann"
+        "otation'), default=OpRef(name='init.fields.4.default'), default_factory=None, init=True, override=False, field"
+        "_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='service_tier', an"
+        "notation=OpRef(name='init.fields.5.annotation'), default=OpRef(name='init.fields.5.default'), default_factory="
+        "None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), "
+        "InitPlan.Field(name='inference_geo', annotation=OpRef(name='init.fields.6.annotation'), default=OpRef(name='in"
+        "it.fields.6.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
+        "None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('input_tokens', 'out"
+        "put_tokens', 'cache_creation_input_tokens', 'cache_read_input_tokens', 'cache_creation', 'service_tier', 'infe"
+        "rence_geo'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=("
+        "ReprPlan.Field(name='input_tokens', kw_only=True, fn=None), ReprPlan.Field(name='output_tokens', kw_only=True,"
+        " fn=None), ReprPlan.Field(name='cache_creation_input_tokens', kw_only=True, fn=None), ReprPlan.Field(name='cac"
+        "he_read_input_tokens', kw_only=True, fn=None), ReprPlan.Field(name='cache_creation', kw_only=True, fn=None), R"
+        "eprPlan.Field(name='service_tier', kw_only=True, fn=None), ReprPlan.Field(name='inference_geo', kw_only=True, "
+        "fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='a47ab44cf512908b7a879f4d6bafd7aa6de84f97',
+    plan_repr_sha1='39a304bda1d010e0f08c8f0f2555088bfa535ebb',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__default',
@@ -1452,12 +1456,14 @@ def _process_dataclass__51ac2f5bc2410c36bb667aa3a8f0ed87eb16813e():
         '__dataclass__init__fields__4__default',
         '__dataclass__init__fields__5__annotation',
         '__dataclass__init__fields__5__default',
+        '__dataclass__init__fields__6__annotation',
+        '__dataclass__init__fields__6__default',
     ),
     cls_names=(
         ('ommlds.backends.anthropic.protocol', 'Usage'),
     ),
 )
-def _process_dataclass__a47ab44cf512908b7a879f4d6bafd7aa6de84f97():
+def _process_dataclass__39a304bda1d010e0f08c8f0f2555088bfa535ebb():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -1473,6 +1479,8 @@ def _process_dataclass__a47ab44cf512908b7a879f4d6bafd7aa6de84f97():
         __dataclass__init__fields__4__default,
         __dataclass__init__fields__5__annotation,
         __dataclass__init__fields__5__default,
+        __dataclass__init__fields__6__annotation,
+        __dataclass__init__fields__6__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -1497,6 +1505,7 @@ def _process_dataclass__a47ab44cf512908b7a879f4d6bafd7aa6de84f97():
                 cache_read_input_tokens=self.cache_read_input_tokens,
                 cache_creation=self.cache_creation,
                 service_tier=self.service_tier,
+                inference_geo=self.inference_geo,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -1515,7 +1524,8 @@ def _process_dataclass__a47ab44cf512908b7a879f4d6bafd7aa6de84f97():
                 self.cache_creation_input_tokens == other.cache_creation_input_tokens and
                 self.cache_read_input_tokens == other.cache_read_input_tokens and
                 self.cache_creation == other.cache_creation and
-                self.service_tier == other.service_tier
+                self.service_tier == other.service_tier and
+                self.inference_geo == other.inference_geo
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -1530,6 +1540,7 @@ def _process_dataclass__a47ab44cf512908b7a879f4d6bafd7aa6de84f97():
             'cache_read_input_tokens',
             'cache_creation',
             'service_tier',
+            'inference_geo',
         }
 
         def __setattr__(self, name, value):
@@ -1552,6 +1563,7 @@ def _process_dataclass__a47ab44cf512908b7a879f4d6bafd7aa6de84f97():
             'cache_read_input_tokens',
             'cache_creation',
             'service_tier',
+            'inference_geo',
         }
 
         def __delattr__(self, name):
@@ -1575,6 +1587,7 @@ def _process_dataclass__a47ab44cf512908b7a879f4d6bafd7aa6de84f97():
                 self.cache_read_input_tokens,
                 self.cache_creation,
                 self.service_tier,
+                self.inference_geo,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -1589,6 +1602,7 @@ def _process_dataclass__a47ab44cf512908b7a879f4d6bafd7aa6de84f97():
             cache_read_input_tokens: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
             cache_creation: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
             service_tier: __dataclass__init__fields__5__annotation = __dataclass__init__fields__5__default,
+            inference_geo: __dataclass__init__fields__6__annotation = __dataclass__init__fields__6__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'input_tokens', input_tokens)
             __dataclass__object_setattr(self, 'output_tokens', output_tokens)
@@ -1596,6 +1610,7 @@ def _process_dataclass__a47ab44cf512908b7a879f4d6bafd7aa6de84f97():
             __dataclass__object_setattr(self, 'cache_read_input_tokens', cache_read_input_tokens)
             __dataclass__object_setattr(self, 'cache_creation', cache_creation)
             __dataclass__object_setattr(self, 'service_tier', service_tier)
+            __dataclass__object_setattr(self, 'inference_geo', inference_geo)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -1611,6 +1626,7 @@ def _process_dataclass__a47ab44cf512908b7a879f4d6bafd7aa6de84f97():
             parts.append(f"cache_read_input_tokens={self.cache_read_input_tokens!r}")
             parts.append(f"cache_creation={self.cache_creation!r}")
             parts.append(f"service_tier={self.service_tier!r}")
+            parts.append(f"inference_geo={self.inference_geo!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

@@ -40,7 +40,7 @@ def __omlish_amalg__():  # noqa
             dict(path='std/proxy.py', sha1='3e7301a2aa351127f9c85f61b2f85dcc3f15aafb'),
             dict(path='warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
             dict(path='infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
-            dict(path='metrics/base.py', sha1='a942e5ceaade4e69664ab38f1e1cb7832c6f3d08'),
+            dict(path='metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
             dict(path='std/standard.py', sha1='5c97c1b9f7ead58d6127d047b873398f708f288d'),
@@ -900,15 +900,23 @@ LOGGER_METRIC_UNIT_TYPES: ta.Tuple[ta.Type[LoggerMetricUnit], ...] = (
 ##
 
 
+class LoggerMetricTag(Abstract):
+    pass
+
+
+##
+
+
 class LoggerMetric(Abstract):
     @ta.final
-    def __init__(self, value: ta.Optional[float] = None) -> None:
+    def __init__(self, value: ta.Optional[float] = None, *tags: LoggerMetricTag) -> None:
         if value is None:
             value = self.default_value()
         if value is None:
             raise ValueError(f'{type(self).__name__} has no default value.')
 
         self.__value = value
+        self.__tags = tags
 
     @property
     def value(self) -> float:
@@ -917,6 +925,13 @@ class LoggerMetric(Abstract):
     @classmethod
     def default_value(cls) -> ta.Optional[float]:
         return None
+
+    @property
+    def tags(self) -> ta.Sequence[LoggerMetricTag]:
+        return self.__tags
+
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({self.value!r}, {", ".join(map(repr, self.tags))})'
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)

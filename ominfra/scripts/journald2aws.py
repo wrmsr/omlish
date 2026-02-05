@@ -85,7 +85,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
             dict(path='../../../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
             dict(path='../../../../omlish/logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
-            dict(path='../../../../omlish/logs/metrics/base.py', sha1='a942e5ceaade4e69664ab38f1e1cb7832c6f3d08'),
+            dict(path='../../../../omlish/logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='../../../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='../logs.py', sha1='5a4fad522508bdc1b790f1d5234a87f319c9da2d'),
             dict(path='../../../../omlish/lite/configs.py', sha1='c8602e0e197ef1133e7e8e248935ac745bfd46cb'),
@@ -5900,15 +5900,23 @@ LOGGER_METRIC_UNIT_TYPES: ta.Tuple[ta.Type[LoggerMetricUnit], ...] = (
 ##
 
 
+class LoggerMetricTag(Abstract):
+    pass
+
+
+##
+
+
 class LoggerMetric(Abstract):
     @ta.final
-    def __init__(self, value: ta.Optional[float] = None) -> None:
+    def __init__(self, value: ta.Optional[float] = None, *tags: LoggerMetricTag) -> None:
         if value is None:
             value = self.default_value()
         if value is None:
             raise ValueError(f'{type(self).__name__} has no default value.')
 
         self.__value = value
+        self.__tags = tags
 
     @property
     def value(self) -> float:
@@ -5917,6 +5925,13 @@ class LoggerMetric(Abstract):
     @classmethod
     def default_value(cls) -> ta.Optional[float]:
         return None
+
+    @property
+    def tags(self) -> ta.Sequence[LoggerMetricTag]:
+        return self.__tags
+
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({self.value!r}, {", ".join(map(repr, self.tags))})'
 
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
