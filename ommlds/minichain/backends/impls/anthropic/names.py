@@ -14,9 +14,8 @@ from ...strings.manifests import BackendStringsManifest
 MODEL_NAMES = ModelNameCollection(
     default='claude',
     aliases={
-        'claude-opus-4-5-20251101': None,
-        'claude-opus-4-5': 'claude-opus-4-5-20251101',
-        'claude-opus': 'claude-opus-4-5',
+        'claude-opus-4-6': None,
+        'claude-opus': 'claude-opus-4-6',
 
         'claude-sonnet-4-5-20250929': None,
         'claude-sonnet-4-5': 'claude-sonnet-4-5-20250929',

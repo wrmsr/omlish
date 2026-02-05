@@ -57,7 +57,7 @@
     "module": ".minichain.backends.impls.anthropic.names",
     "attr": "_BACKEND_STRINGS_MANIFEST",
     "file": "ommlds/minichain/backends/impls/anthropic/names.py",
-    "line": 34,
+    "line": 33,
     "value": {
       "!.minichain.backends.strings.manifests.BackendStringsManifest": {
         "service_cls_names": [
@@ -68,9 +68,8 @@
         "model_names": {
           "default": "claude",
           "aliases": {
-            "claude-opus-4-5-20251101": null,
-            "claude-opus-4-5": "claude-opus-4-5-20251101",
-            "claude-opus": "claude-opus-4-5",
+            "claude-opus-4-6": null,
+            "claude-opus": "claude-opus-4-6",
             "claude-sonnet-4-5-20250929": null,
             "claude-sonnet-4-5": "claude-sonnet-4-5-20250929",
             "claude-sonnet": "claude-sonnet-4-5",
