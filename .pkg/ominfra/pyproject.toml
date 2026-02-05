@@ -13,7 +13,7 @@ urls = {source = 'https://github.com/wrmsr/omlish'}
 license = 'BSD-3-Clause'
 readme = 'README.md'
 requires-python = '>=3.13'
-version = '0.0.0.dev521'
+version = '0.0.0.dev522'
 classifiers = [
     'Development Status :: 2 - Pre-Alpha',
     'Intended Audience :: Developers',
@@ -24,17 +24,17 @@ classifiers = [
 ]
 description = 'ominfra'
 dependencies = [
-    'omlish == 0.0.0.dev521',
+    'omlish == 0.0.0.dev522',
 ]
 
 [project.optional-dependencies]
 all = [
-    'omdev == 0.0.0.dev521',
+    'omdev == 0.0.0.dev522',
     'paramiko ~= 4.0',
     'asyncssh ~= 2.22',
 ]
 omdev = [
-    'omdev == 0.0.0.dev521',
+    'omdev == 0.0.0.dev522',
 ]
 ssh = [
     'paramiko ~= 4.0',
