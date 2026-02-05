@@ -29,7 +29,7 @@ def __omlish_amalg__():  # noqa
             dict(path='base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='framing.py', sha1='3b0a684d7f844c99ad116dabc082f2d9bec466a6'),
             dict(path='reading.py', sha1='7631635c46ab4b40bcaeb7c506cf15cb2d529a40'),
-            dict(path='utils.py', sha1='d7a9ab6bb08ce3d9d057b2798cbda996ff469009'),
+            dict(path='utils.py', sha1='43d4e06a5b60599716a9568013408e10e91b82c8'),
             dict(path='direct.py', sha1='fbc206bb808ea4603261f35575356998fd27078f'),
             dict(path='scanning.py', sha1='5d4cf0776463a6f675ca74ca87637133b78b51a2'),
             dict(path='adapters.py', sha1='1a6c209490fa78947a607101e20169a5e135847b'),
@@ -1032,11 +1032,11 @@ class ByteStreamBuffers:
 
     @staticmethod
     def can_bytes(obj: ta.Any) -> bool:
-        return obj.__class__ in (cts := ByteStreamBuffers._CAN_CONVERT_TYPES) or isinstance(obj, cts)
+        return type(obj) in (cts := ByteStreamBuffers._CAN_CONVERT_TYPES) or isinstance(obj, cts)
 
     @staticmethod
     def _to_bytes(obj: ta.Any) -> bytes:
-        if isinstance(obj, memoryview):
+        if type(obj) is memoryview or isinstance(obj, memoryview):
             return ByteStreamBuffers._memoryview_to_bytes(obj)
 
         elif isinstance(obj, ByteStreamBufferView):
@@ -1050,9 +1050,13 @@ class ByteStreamBuffers:
 
     @staticmethod
     def to_bytes(obj: ta.Any) -> bytes:
-        if isinstance(obj, bytes):
+        if (ot := type(obj)) is bytes:
             return obj
+        elif ot is bytearray:
+            return bytes(obj)
 
+        elif isinstance(obj, bytes):
+            return obj
         elif isinstance(obj, bytearray):
             return bytes(obj)
 
@@ -1061,25 +1065,11 @@ class ByteStreamBuffers:
 
     @staticmethod
     def to_bytes_or_bytearray(obj: ta.Any) -> ta.Union[bytes, bytearray]:
-        if isinstance(obj, (bytes, bytearray)):
+        if (ot := type(obj)) is bytes or ot is bytearray or isinstance(obj, (bytes, bytearray)):
             return obj
 
         else:
             return ByteStreamBuffers._to_bytes(obj)
-
-    #
-
-    # @staticmethod
-    # def can_byte_stream_buffer(obj: ta.Any) -> bool:
-    #     return isinstance(obj, ByteStreamBuffers._CAN_CONVERT_TYPES)
-
-    # @staticmethod
-    # def to_byte_stream_buffer(obj: ta.Any) -> ByteStreamBuffer:
-    #     if isinstance(obj, ByteStreamBuffer):
-    #         return obj
-    #
-    #     elif isinstance(obj, ByteStreamBufferLike):
-    #         return obj
 
     #
 
@@ -1096,9 +1086,13 @@ class ByteStreamBuffers:
 
     @staticmethod
     def iter_segments(obj: ta.Any) -> ta.Iterator[memoryview]:
+        if (ot := type(obj)) is memoryview:
+            yield obj
+        elif ot is bytes or ot is bytearray:
+            yield memoryview(obj)
+
         if isinstance(obj, memoryview):
             yield obj
-
         elif isinstance(obj, (bytes, bytearray)):
             yield memoryview(obj)
 

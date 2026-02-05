@@ -21,11 +21,11 @@ class ByteStreamBuffers:
 
     @staticmethod
     def can_bytes(obj: ta.Any) -> bool:
-        return obj.__class__ in (cts := ByteStreamBuffers._CAN_CONVERT_TYPES) or isinstance(obj, cts)
+        return type(obj) in (cts := ByteStreamBuffers._CAN_CONVERT_TYPES) or isinstance(obj, cts)
 
     @staticmethod
     def _to_bytes(obj: ta.Any) -> bytes:
-        if isinstance(obj, memoryview):
+        if type(obj) is memoryview or isinstance(obj, memoryview):
             return ByteStreamBuffers._memoryview_to_bytes(obj)
 
         elif isinstance(obj, ByteStreamBufferView):
@@ -39,9 +39,13 @@ class ByteStreamBuffers:
 
     @staticmethod
     def to_bytes(obj: ta.Any) -> bytes:
-        if isinstance(obj, bytes):
+        if (ot := type(obj)) is bytes:
             return obj
+        elif ot is bytearray:
+            return bytes(obj)
 
+        elif isinstance(obj, bytes):
+            return obj
         elif isinstance(obj, bytearray):
             return bytes(obj)
 
@@ -50,25 +54,11 @@ class ByteStreamBuffers:
 
     @staticmethod
     def to_bytes_or_bytearray(obj: ta.Any) -> ta.Union[bytes, bytearray]:
-        if isinstance(obj, (bytes, bytearray)):
+        if (ot := type(obj)) is bytes or ot is bytearray or isinstance(obj, (bytes, bytearray)):
             return obj
 
         else:
             return ByteStreamBuffers._to_bytes(obj)
-
-    #
-
-    # @staticmethod
-    # def can_byte_stream_buffer(obj: ta.Any) -> bool:
-    #     return isinstance(obj, ByteStreamBuffers._CAN_CONVERT_TYPES)
-
-    # @staticmethod
-    # def to_byte_stream_buffer(obj: ta.Any) -> ByteStreamBuffer:
-    #     if isinstance(obj, ByteStreamBuffer):
-    #         return obj
-    #
-    #     elif isinstance(obj, ByteStreamBufferLike):
-    #         return obj
 
     #
 
@@ -85,9 +75,13 @@ class ByteStreamBuffers:
 
     @staticmethod
     def iter_segments(obj: ta.Any) -> ta.Iterator[memoryview]:
+        if (ot := type(obj)) is memoryview:
+            yield obj
+        elif ot is bytes or ot is bytearray:
+            yield memoryview(obj)
+
         if isinstance(obj, memoryview):
             yield obj
-
         elif isinstance(obj, (bytes, bytearray)):
             yield memoryview(obj)
 
