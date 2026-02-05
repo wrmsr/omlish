@@ -5,9 +5,9 @@ TODO:
 """
 import enum
 
-from .. import check
-from .. import lang
-from .base.options import Option
+from ... import check
+from ... import lang
+from .options import Option
 
 
 ##

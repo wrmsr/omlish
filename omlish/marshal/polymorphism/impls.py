@@ -2,8 +2,8 @@ import typing as ta
 
 from ... import lang
 from ... import reflect as rfl
-from .. import Polymorphism
-from .types import Impls
+from .api import Impls
+from .api import Polymorphism
 
 
 ##

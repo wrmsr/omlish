@@ -2,13 +2,13 @@ import threading
 import typing as ta
 
 from .. import lang
-from .base.configs import Config
-from .base.configs import ConfigRegistry
-from .base.types import MarshalerFactory
-from .base.types import Marshaling
-from .base.types import UnmarshalerFactory
-from .base.values import Value
-from .factories.moduleimport.configs import ModuleImport
+from .api.configs import Config
+from .api.configs import ConfigRegistry
+from .api.types import MarshalerFactory
+from .api.types import Marshaling
+from .api.types import UnmarshalerFactory
+from .api.values import Value
+from .factories.moduleimport.api import ModuleImport
 
 
 if ta.TYPE_CHECKING:

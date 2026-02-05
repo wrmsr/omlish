@@ -1,12 +1,12 @@
 import dataclasses as dc
 
-from ...base.configs import ConfigRegistry
-from ...base.contexts import MarshalContext
-from ...base.contexts import MarshalFactoryContext
-from ...base.contexts import UnmarshalContext
-from ...base.contexts import UnmarshalFactoryContext
-from ...base.types import MarshalerFactory
-from ...base.types import UnmarshalerFactory
+from ...api.configs import ConfigRegistry
+from ...api.contexts import MarshalContext
+from ...api.contexts import MarshalFactoryContext
+from ...api.contexts import UnmarshalContext
+from ...api.contexts import UnmarshalFactoryContext
+from ...api.types import MarshalerFactory
+from ...api.types import UnmarshalerFactory
 from ...factories.multi import MultiMarshalerFactory
 from ...factories.multi import MultiUnmarshalerFactory
 from ...factories.recursive import RecursiveMarshalerFactory
@@ -17,11 +17,11 @@ from ...objects.dataclasses import DataclassMarshalerFactory
 from ...objects.dataclasses import DataclassUnmarshalerFactory
 from ...singular.primitives import PRIMITIVE_MARSHALER_FACTORY
 from ...singular.primitives import PRIMITIVE_UNMARSHALER_FACTORY
+from ..api import FieldTypeTagging
+from ..api import Impl
+from ..api import Polymorphism
+from ..api import WrapperTypeTagging
 from ..marshal import PolymorphismMarshalerFactory
-from ..types import FieldTypeTagging
-from ..types import Impl
-from ..types import Polymorphism
-from ..types import WrapperTypeTagging
 from ..unmarshal import PolymorphismUnmarshalerFactory
 
 

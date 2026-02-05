@@ -1,11 +1,11 @@
 import typing as ta
 
-from ..base.types import MarshalerFactory
-from ..base.types import UnmarshalerFactory
+from ..api.types import MarshalerFactory
+from ..api.types import UnmarshalerFactory
+from .api import Polymorphism
+from .api import TypeTagging
+from .api import WrapperTypeTagging
 from .marshal import PolymorphismMarshalerFactory
-from .types import Polymorphism
-from .types import TypeTagging
-from .types import WrapperTypeTagging
 from .unmarshal import PolymorphismUnmarshalerFactory
 
 

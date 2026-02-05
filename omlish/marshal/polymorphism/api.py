@@ -1,11 +1,11 @@
+import dataclasses as dc
 import typing as ta
 
 from ... import check
-from ... import dataclasses as dc
 from ... import lang
-from ..base.configs import Config
-from ..naming import Naming
-from ..naming import translate_name
+from ..api.configs import Config
+from ..api.naming import Naming
+from ..api.naming import translate_name
 
 
 ##

@@ -10,23 +10,23 @@ from ... import dataclasses as dc
 from ... import lang
 from ... import reflect as rfl
 from ...lite import marshal as lm
-from ..base.contexts import MarshalFactoryContext
-from ..base.contexts import UnmarshalFactoryContext
-from ..base.errors import UnhandledTypeError
-from ..base.options import Option
-from ..base.types import Marshaler
-from ..base.types import MarshalerFactory
-from ..base.types import Unmarshaler
-from ..base.types import UnmarshalerFactory
-from ..naming import Naming
-from ..naming import translate_name
+from ..api.contexts import MarshalFactoryContext
+from ..api.contexts import UnmarshalFactoryContext
+from ..api.errors import UnhandledTypeError
+from ..api.naming import Naming
+from ..api.naming import translate_name
+from ..api.options import Option
+from ..api.types import Marshaler
+from ..api.types import MarshalerFactory
+from ..api.types import Unmarshaler
+from ..api.types import UnmarshalerFactory
+from .api import DEFAULT_FIELD_OPTIONS
+from .api import DEFAULT_OBJECT_OPTIONS
+from .api import FieldOptions
+from .api import ObjectOptions
 from .infos import FieldInfo
 from .infos import FieldInfos
 from .marshal import ObjectMarshaler
-from .types import DEFAULT_FIELD_OPTIONS
-from .types import DEFAULT_OBJECT_OPTIONS
-from .types import FieldOptions
-from .types import ObjectOptions
 from .unmarshal import ObjectUnmarshaler
 
 

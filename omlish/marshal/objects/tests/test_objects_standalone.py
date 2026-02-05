@@ -1,9 +1,9 @@
 from .... import dataclasses as dc
 from .... import lang
-from ...base.contexts import MarshalContext
-from ...base.contexts import MarshalFactoryContext
-from ...base.contexts import UnmarshalContext
-from ...base.contexts import UnmarshalFactoryContext
+from ...api.contexts import MarshalContext
+from ...api.contexts import MarshalFactoryContext
+from ...api.contexts import UnmarshalContext
+from ...api.contexts import UnmarshalFactoryContext
 from ...composite.iterables import IterableMarshalerFactory
 from ...composite.iterables import IterableUnmarshalerFactory
 from ...composite.mappings import MappingMarshalerFactory
@@ -20,12 +20,12 @@ from ...singular.enums import EnumMarshalerFactory
 from ...singular.enums import EnumUnmarshalerFactory
 from ...singular.primitives import PRIMITIVE_MARSHALER_FACTORY
 from ...singular.primitives import PRIMITIVE_UNMARSHALER_FACTORY
+from ..api import FieldOptions
 from ..dataclasses import DataclassMarshalerFactory
 from ..dataclasses import DataclassUnmarshalerFactory
 from ..helpers import update_object_options
 from ..namedtuples import NamedtupleMarshalerFactory
 from ..namedtuples import NamedtupleUnmarshalerFactory
-from ..types import FieldOptions
 
 
 def _make_test_marshaler_factory():

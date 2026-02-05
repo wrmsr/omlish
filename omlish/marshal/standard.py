@@ -6,8 +6,8 @@ FIXME:
 import threading
 import typing as ta
 
-from .base.types import MarshalerFactory
-from .base.types import UnmarshalerFactory
+from .api.types import MarshalerFactory
+from .api.types import UnmarshalerFactory
 from .composite.iterables import IterableMarshalerFactory
 from .composite.iterables import IterableUnmarshalerFactory
 from .composite.literals import LiteralMarshalerFactory

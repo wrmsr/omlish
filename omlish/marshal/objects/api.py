@@ -1,13 +1,21 @@
+"""
+TODO:
+ - drop down to stdlib dataclasses
+ - @lang.copy_type
+"""
 import typing as ta
 
 from ... import cached
 from ... import dataclasses as dc
 from ... import lang
-from ..base.types import Marshaler
-from ..base.types import MarshalerFactory
-from ..base.types import Unmarshaler
-from ..base.types import UnmarshalerFactory
-from ..naming import Naming
+from ..api.naming import Naming
+from ..api.types import Marshaler
+from ..api.types import MarshalerFactory
+from ..api.types import Unmarshaler
+from ..api.types import UnmarshalerFactory
+
+
+T = ta.TypeVar('T')
 
 
 ##

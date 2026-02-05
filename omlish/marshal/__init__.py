@@ -47,14 +47,14 @@ from .. import lang as _lang  # noqa
 with _lang.auto_proxy_init(globals()):
     ##
 
-    from .base.configs import (  # noqa
+    from .api.configs import (  # noqa
         Config,
         Configs,
 
         ConfigRegistry,
     )
 
-    from .base.contexts import (  # noqa
+    from .api.contexts import (  # noqa
         BaseContext,
 
         MarshalFactoryContext,
@@ -64,13 +64,13 @@ with _lang.auto_proxy_init(globals()):
         UnmarshalContext,
     )
 
-    from .base.errors import (  # noqa
+    from .api.errors import (  # noqa
         ForbiddenTypeError,
         MarshalError,
         UnhandledTypeError,
     )
 
-    from .base.funcs import (  # noqa
+    from .api.funcs import (  # noqa
         FuncMarshaler,
         FuncUnmarshaler,
 
@@ -78,21 +78,26 @@ with _lang.auto_proxy_init(globals()):
         FuncUnmarshalerFactory,
     )
 
-    from .base.options import (  # noqa
+    from .api.naming import (  # noqa
+        Naming,
+        translate_name,
+    )
+
+    from .api.options import (  # noqa
         Option,
     )
 
-    from .base.overrides import (  # noqa
+    from .api.overrides import (  # noqa
         Override,
         ReflectOverride,
     )
 
-    from .base.registries import (  # noqa
+    from .api.registries import (  # noqa
         RegistrySealedError,
         Registry,
     )
 
-    from .base.types import (  # noqa
+    from .api.types import (  # noqa
         Marshaler,
         Unmarshaler,
 
@@ -105,7 +110,7 @@ with _lang.auto_proxy_init(globals()):
         Marshaling,
     )
 
-    from .base.values import (  # noqa
+    from .api.values import (  # noqa
         Value,
     )
 
@@ -145,7 +150,7 @@ with _lang.auto_proxy_init(globals()):
         UnmarshalerFactoryMethodClass,
     )
 
-    from .factories.moduleimport.configs import (  # noqa
+    from .factories.moduleimport.api import (  # noqa
         ModuleImport,
     )
 
@@ -182,6 +187,12 @@ with _lang.auto_proxy_init(globals()):
         get_dataclass_options,
     )
 
+    from .objects.api import (  # noqa
+        FieldOptions,
+        ObjectOptions,
+        ObjectSpecials,
+    )
+
     from .objects.helpers import (  # noqa
         update_fields_options,
         update_object_options,
@@ -198,24 +209,12 @@ with _lang.auto_proxy_init(globals()):
         SimpleObjectMarshalerFactory,
     )
 
-    from .objects.types import (  # noqa
-        FieldOptions,
-        ObjectOptions,
-        ObjectSpecials,
-    )
-
     from .objects.unmarshal import (  # noqa
         ObjectUnmarshaler,
         SimpleObjectUnmarshalerFactory,
     )
 
-    from .polymorphism.marshal import (  # noqa
-        PolymorphismMarshaler,
-        PolymorphismMarshalerFactory,
-        make_polymorphism_marshaler,
-    )
-
-    from .polymorphism.types import (  # noqa
+    from .polymorphism.api import (  # noqa
         AutoStripSuffix,
         FieldTypeTagging,
         Impl,
@@ -227,6 +226,12 @@ with _lang.auto_proxy_init(globals()):
         WrapperTypeTagging,
         polymorphism_from_impls,
         polymorphism_from_subclasses,
+    )
+
+    from .polymorphism.marshal import (  # noqa
+        PolymorphismMarshaler,
+        PolymorphismMarshalerFactory,
+        make_polymorphism_marshaler,
     )
 
     from .polymorphism.standard import (  # noqa
@@ -271,11 +276,6 @@ with _lang.auto_proxy_init(globals()):
 
         register_global_config,
         register_global_module_import,
-    )
-
-    from .naming import (  # noqa
-        Naming,
-        translate_name,
     )
 
     from .standard import (  # noqa

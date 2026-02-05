@@ -4,10 +4,10 @@ TODO:
   - at least get_any
 """
 import abc
+import dataclasses as dc
 import threading
 import typing as ta
 
-from ... import dataclasses as dc
 from ... import lang
 
 
