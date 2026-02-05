@@ -65,6 +65,12 @@ def test_render():
             Q.n.states,
             Q.eq(Q.n.key, 420),
         ),
+
+        Q.select([Q.f.exists(Q.select(
+            [1],
+            Q.n.states,
+            Q.eq(Q.n.key, 'foo'),
+        ))]),
     ]:
         print(query)
         print()

@@ -118,7 +118,9 @@ from .selects import (  # noqa
     ExprSelectItem,
     Select,
     SelectBuilder,
+    SelectExpr,
     SelectItem,
+    SelectRelation,
 )
 
 from .std import (  # noqa

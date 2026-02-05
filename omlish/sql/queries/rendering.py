@@ -40,6 +40,8 @@ from .relations import Table
 from .selects import AllSelectItem
 from .selects import ExprSelectItem
 from .selects import Select
+from .selects import SelectExpr
+from .selects import SelectRelation
 from .unary import Unary
 from .unary import UnaryOp
 from .unary import UnaryOps
@@ -236,11 +238,15 @@ class StdRenderer(Renderer):
 
     @Renderer.render.register
     def render_func(self, o: Func) -> tp.Part:
+        args: list[tp.Part]
+        if len(o.args) == 1 and isinstance(a0 := o.args[0], SelectExpr):
+            args = [self.render(a0.s)]
+        else:
+            args = [self.render(a) for a in o.args]
+
         return tp.Concat([
             self.render(o.name),
-            '(',
-            [self.render(a) for a in o.args],
-            ')',
+            tp.Wrap(tp.List(args)),
         ])
 
     # idents
@@ -358,6 +364,14 @@ class StdRenderer(Renderer):
             *(['from', self.render(o.from_)] if o.from_ is not None else []),
             *(['where', self.render(o.where)] if o.where is not None else []),
         ]
+
+    @Renderer.render.register
+    def render_select_expr(self, o: SelectExpr) -> tp.Part:
+        return tp.Wrap(self.render(o.s))
+
+    @Renderer.render.register
+    def render_select_relation(self, o: SelectRelation) -> tp.Part:
+        return tp.Wrap(self.render(o.s))
 
     # unary
 

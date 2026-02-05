@@ -4,6 +4,7 @@ from ... import lang
 from .base import Node
 from .base import Value
 from .idents import IdentLike
+from .keywords import KeywordBuilder
 from .names import CanName
 from .names import Name
 from .names import NameBuilder
@@ -11,6 +12,10 @@ from .names import NameLike
 from .params import CanParam
 from .params import Param
 from .params import ParamBuilder
+
+
+with lang.auto_proxy_import(globals()):
+    from . import selects as _selects
 
 
 ##
@@ -45,10 +50,17 @@ class ParamExpr(Expr, lang.Final):
 
 
 CanLiteral: ta.TypeAlias = Literal | Value
-CanExpr: ta.TypeAlias = Expr | CanParam | CanName | CanLiteral
+
+CanExpr: ta.TypeAlias = ta.Union[  # noqa
+    Expr,
+    CanParam,
+    CanName,
+    CanLiteral,
+    '_selects.Select',
+]
 
 
-class ExprBuilder(ParamBuilder, NameBuilder):
+class ExprBuilder(ParamBuilder, KeywordBuilder, NameBuilder):
     def literal(self, o: CanLiteral) -> Literal:
         if isinstance(o, Literal):
             return o
@@ -70,6 +82,8 @@ class ExprBuilder(ParamBuilder, NameBuilder):
             return ParamExpr(o)
         elif isinstance(o, (NameLike, IdentLike)):
             return NameExpr(self.name(o))
+        elif isinstance(o, _selects.Select):
+            return _selects.SelectExpr(o)
         else:
             return self.literal(o)
 

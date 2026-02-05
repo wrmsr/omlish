@@ -53,7 +53,11 @@ def _(s: str) -> Ident:
 ##
 
 
-CanIdent: ta.TypeAlias = IdentLike | Ident | str
+CanIdent: ta.TypeAlias = ta.Union[  # noqa
+    IdentLike,
+    Ident,
+    str,
+]
 
 
 class IdentAccessor(lang.Final):

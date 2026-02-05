@@ -7,6 +7,7 @@ from ... import marshal as msh
 from .exprs import CanExpr
 from .exprs import Expr
 from .exprs import ExprBuilder
+from .keywords import CanKeyword
 from .keywords import Keyword
 from .keywords import Star
 from .names import CanName
@@ -30,6 +31,23 @@ class Func(Expr, lang.Final):
 CanFuncArg: ta.TypeAlias = FuncArg | CanExpr
 
 
+class FuncArgsAccessor:
+    def __init__(self, fb: 'FuncBuilder', k: CanKeyword) -> None:
+        self.__fb = fb
+        self.__k = k
+
+    def __call__(self, *args: CanExpr) -> Func:
+        return self.__fb.func(self.__fb.keyword(self.__k), *args)
+
+
+class FuncAccessor:
+    def __init__(self, fb: 'FuncBuilder') -> None:
+        self.__fb = fb
+
+    def __getattr__(self, k: CanKeyword) -> FuncArgsAccessor:
+        return FuncArgsAccessor(self.__fb, k)
+
+
 class FuncBuilder(ExprBuilder):
     def func_arg(self, o: CanFuncArg) -> FuncArg:
         return o if isinstance(o, Star) else self.expr(o)
@@ -43,3 +61,7 @@ class FuncBuilder(ExprBuilder):
             func if isinstance(func, Keyword) else self.name(func),
             tuple(map(self.func_arg, args)),
         )
+
+    @property
+    def f(self) -> FuncAccessor:
+        return FuncAccessor(self)

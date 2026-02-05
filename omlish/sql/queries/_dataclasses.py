@@ -1083,6 +1083,8 @@ def _process_dataclass__c1e8f109b3559d019b8282b53a37b52de4c4df85():
     ),
     cls_names=(
         ('omlish.sql.queries', 'Ident'),
+        ('omlish.sql.queries', 'SelectExpr'),
+        ('omlish.sql.queries', 'SelectRelation'),
     ),
 )
 def _process_dataclass__2de74e3f3fd0bdfa3ce205dae3e0c8e501e402b8():

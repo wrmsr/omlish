@@ -13,6 +13,10 @@ from .names import CanName
 from .names import Name
 
 
+with lang.auto_proxy_import(globals()):
+    from . import selects as _selects
+
+
 ##
 
 
@@ -53,7 +57,12 @@ class Join(Relation, lang.Final):
 
 
 CanTable: ta.TypeAlias = Table | CanName
-CanRelation: ta.TypeAlias = Relation | CanTable
+
+CanRelation: ta.TypeAlias = ta.Union[
+    Relation,
+    CanTable,
+    '_selects.Select',
+]
 
 
 class RelationBuilder(MultiBuilder):
@@ -105,5 +114,7 @@ class RelationBuilder(MultiBuilder):
     def relation(self, o: CanRelation) -> Relation:
         if isinstance(o, Relation):
             return o
+        elif isinstance(o, _selects.Select):
+            return _selects.SelectRelation(o)
         else:
             return self.table(o)

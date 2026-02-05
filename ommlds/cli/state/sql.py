@@ -100,15 +100,15 @@ class SqlStateStorage(MarshaledStateStorage):
                         where=Q.eq(Q.n.key, key),
                     ))
 
-                elif sql.api.query_scalar(txn, Q.select(
-                    [Q.func(Q.k.count, Q.star)],
+                elif sql.api.query_scalar(txn, Q.select([Q.f.exists(Q.select(
+                    [1],
                     Q.n.states,
                     Q.eq(Q.n.key, key),
-                )):
+                ))])):
                     sql.api.exec(txn, Q.update(
                         Q.n.states,
                         [(Q.i.value, mj)],
-                        where=Q.eq(Q.n.key, key),
+                        where=Q.eq(Q.i.key, key),
                     ))
 
                 else:

@@ -45,6 +45,12 @@ def test_marshal():
             Q.n.states,
             Q.eq(Q.n.key, 420),
         ),
+
+        Q.select([Q.f.exists(Q.select(
+            [1],
+            Q.n.states,
+            Q.eq(Q.n.key, 'foo'),
+        ))]),
     ]:
         j = json.dumps_pretty(msh.marshal(query, Node))
         print(j)

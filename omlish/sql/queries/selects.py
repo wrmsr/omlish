@@ -40,6 +40,17 @@ class Select(Stmt, lang.Final):
     where: Expr | None = dc.xfield(None, repr_fn=lang.opt_repr) | msh.with_field_options(omit_if=lang.is_none)
 
 
+class SelectExpr(Expr, lang.Final):
+    s: Select
+
+
+class SelectRelation(Relation, lang.Final):
+    s: Select
+
+
+##
+
+
 CanSelectItem: ta.TypeAlias = SelectItem | Star | CanExpr
 
 
