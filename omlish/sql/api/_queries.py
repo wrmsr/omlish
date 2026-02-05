@@ -6,6 +6,7 @@ import collections.abc
 import typing as ta
 
 from ... import check
+from ... import lang
 from ..params import ParamStyle
 from ..params import UnconsumedParamsError
 from ..params import substitute_params
@@ -43,9 +44,15 @@ def _(
     args: list[ta.Any] = []
 
     if rq.params:
-        args.append(substitute_params(rq.params, check.not_none(param_values), strict=True))
+        pvs = lang.merge_dicts(
+            param_values or {},
+            rq.literals or {},
+        )
+
+        args.append(substitute_params(rq.params, pvs, strict=True))
 
     elif param_values:
+        check.none(rq.literals)
         raise UnconsumedParamsError(list(param_values))
 
     return Query(

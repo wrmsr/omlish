@@ -2,7 +2,6 @@ import typing as ta
 
 import sqlalchemy as sa
 
-from ... import check
 from ...resources import SimpleResource
 from .. import api
 from ..api.dbapi import build_dbapi_columns
@@ -80,9 +79,11 @@ class SqlalchemyApiConn(SqlalchemyApiWrapper[sa.engine.Connection], api.Conn):
         return DEFAULT_SQLALCHEMY_ADAPTER
 
     def query(self, query: api.Query) -> ta.ContextManager[api.Rows]:
-        check.empty(query.args)
         result: sa.engine.cursor.CursorResult
-        with self._u.execute(sa.text(query.text)) as result:
+        with self._u.execute(
+                sa.text(query.text),
+                *query.args,
+        ) as result:
             cols = build_dbapi_columns(result.cursor.description)
             sa_rows = result.fetchall()
             rows = [

@@ -4,7 +4,6 @@ import sqlalchemy as sa
 
 from .... import lang
 from ... import api
-from ... import queries
 from ...queries import Q
 from ..api import api_adapt
 
@@ -45,7 +44,7 @@ def test_sqlite() -> None:
             Q.i.t1,
             Q.eq(Q.n.name, 'some name 1'),
         )
-        with api.query(db, queries.render(q).s) as rows:
+        with api.query(db, q) as rows:
             lst = list(rows)
 
         assert len(lst) == 1
