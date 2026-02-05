@@ -1,13 +1,13 @@
 """
 TODO:
  - dialect lol
- - args lol
 """
 import collections.abc
 import typing as ta
 
 from ... import check
 from ..params import ParamStyle
+from ..params import UnconsumedParamsError
 from ..params import substitute_params
 from ..queries import Stmt
 from ..queries.params import Param
@@ -45,8 +45,8 @@ def _(
     if rq.params:
         args.append(substitute_params(rq.params, check.not_none(param_values), strict=True))
 
-    else:
-        check.arg(not param_values)
+    elif param_values:
+        raise UnconsumedParamsError(list(param_values))
 
     return Query(
         mode=QueryMode.of(ctx.mode, QueryMode.QUERY),

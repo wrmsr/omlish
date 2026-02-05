@@ -17,8 +17,8 @@ from .values import Now
 ##
 
 
-UPDATED_AT_TRIGGER_SRC = """\
-create trigger {trigger_name}
+CREATE_UPDATED_AT_TRIGGER_SRC = """\
+create trigger {preamble} {trigger_name}
 after update on {table_name}
 for each row
 when new.{column_name} = old.{column_name}
@@ -27,6 +27,11 @@ when new.{column_name} = old.{column_name}
   set {column_name} = current_timestamp
   where rowid = new.rowid;
 end\
+"""
+
+
+CREATE_INDEX_SRC = """\
+create index {preamble} {index_name} on {table_name} ({columns})
 """
 
 
@@ -97,7 +102,8 @@ def render_create_statements(
                 rc.primary_key = True
 
         elif isinstance(e, UpdatedAtTrigger):
-            triggers.append(UPDATED_AT_TRIGGER_SRC.format(
+            triggers.append(CREATE_UPDATED_AT_TRIGGER_SRC.format(
+                preamble='if not exists' if if_not_exists else '',
                 trigger_name=f'{tbl.name}__trigger__updated_at__{e.column}',
                 table_name=tbl.name,
                 column_name=e.column,
@@ -111,7 +117,12 @@ def render_create_statements(
                     *e.columns,
                 ])
 
-            indexes.append(f'create index {idx_name} on {tbl.name} ({", ".join(e.columns)})')
+            indexes.append(CREATE_INDEX_SRC.format(
+                preamble='if not exists' if if_not_exists else '',
+                index_name=idx_name,
+                table_name=tbl.name,
+                columns=', '.join(e.columns),
+            ))
 
         else:
             raise TypeError(e)

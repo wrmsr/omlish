@@ -4,8 +4,11 @@ from omdev.home.paths import get_home_paths
 from omlish import inject as inj
 from omlish import lang
 
+from .configs import StateConfig
+
 
 with lang.auto_proxy_import(globals()):
+    from . import json as _json
     from . import sql as _sql
     from . import storage as _storage
 
@@ -25,19 +28,25 @@ def _ensure_state_dir() -> str:
 def _provide_json_file_state_storage() -> '_storage.StateStorage':
     state_dir = _ensure_state_dir()
     state_file = os.path.join(state_dir, 'state.json')
-    return _storage.JsonFileStateStorage(state_file)
+    return _json.JsonFileStateStorage(state_file)
 
 
 def _provide_sql_state_storage() -> '_storage.StateStorage':
-    return _sql.SqlStateStorage(_sql.SqlStateStorage.Config())
+    state_dir = _ensure_state_dir()
+    state_file = os.path.join(state_dir, 'state.db')
+    return _sql.SqlStateStorage(_sql.SqlStateStorage.Config(
+        file=state_file,
+    ))
 
 
-def bind_state() -> inj.Elements:
+def bind_state(cfg: StateConfig = StateConfig()) -> inj.Elements:
     lst: list[inj.Elemental] = []
 
-    lst.append(
-        inj.bind(_provide_json_file_state_storage, singleton=True),
-        # inj.bind(_provide_sql_state_storage, singleton=True),
-    )
+    if cfg.format == 'json':
+        lst.append(inj.bind(_provide_json_file_state_storage, singleton=True))
+    elif cfg.format == 'sql':
+        lst.append(inj.bind(_provide_sql_state_storage, singleton=True))
+    else:
+        raise ValueError(cfg.format)
 
     return inj.as_elements(*lst)

@@ -192,6 +192,22 @@ def make_params_preparer(style: ParamStyle) -> ParamsPreparer:
 ##
 
 
+class UnconsumedParamsError(Exception):
+    pass
+
+
+def check_params_consumed(expected: ta.Iterable[K], actual: ta.Iterable[K]) -> None:
+    l = set(expected)
+    r = set(actual)
+    d = l ^ r
+    if not d:
+        return
+    raise UnconsumedParamsError(d)
+
+
+##
+
+
 @ta.overload
 def substitute_params(
         params: ta.Sequence[K],
@@ -215,13 +231,13 @@ def substitute_params(
 def substitute_params(params, values, *, strict=False):
     if isinstance(params, collections.abc.Mapping):
         if strict:
-            check.equal(set(values), set(params.values()))
+            check_params_consumed(values, params.values())
 
         return {k: values[v] for k, v in params.items()}
 
     elif isinstance(params, collections.abc.Sequence):
         if strict:
-            check.equal(set(values), set(params))
+            check_params_consumed(values, params)
 
         return [values[a] for a in params]
 

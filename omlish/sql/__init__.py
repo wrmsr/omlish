@@ -83,6 +83,9 @@ with _lang.auto_proxy_init(globals()):
         ParamStyle,
         make_params_preparer,
 
+        UnconsumedParamsError,
+        check_params_consumed,
+
         substitute_params,
     )
 

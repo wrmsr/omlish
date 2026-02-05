@@ -3,12 +3,13 @@ import contextlib
 import sqlite3
 import typing as ta
 
+from omlish import check
 from omlish import dataclasses as dc
 from omlish import sql
 from omlish.formats import json
 from omlish.sql import Q
 
-from .storage import MarshalStateStorage
+from .marshaled import MarshaledStateStorage
 
 
 T = ta.TypeVar('T')
@@ -27,12 +28,12 @@ STATES = sql.td.table_def(
 )
 
 
-class SqlStateStorage(MarshalStateStorage):
+class SqlStateStorage(MarshaledStateStorage):
     @dc.dataclass(frozen=True, kw_only=True)
     class Config:
-        file: str | None = None
+        file: str = dc.xfield(coerce=check.non_empty_str)
 
-    def __init__(self, config: Config = Config()) -> None:
+    def __init__(self, config: Config) -> None:
         super().__init__()
 
         self._config = config
@@ -41,7 +42,10 @@ class SqlStateStorage(MarshalStateStorage):
 
     def _create_table_if_necessary(self, db: sql.api.Querier) -> None:
         if not self._has_created:
-            for stmt in sql.td.render_create_statements(sql.td.lower_table_elements(STATES)):
+            for stmt in sql.td.render_create_statements(
+                    sql.td.lower_table_elements(STATES),
+                    if_not_exists=True,
+            ):
                 sql.api.exec(db, stmt)
 
             self._has_created = True
@@ -50,7 +54,8 @@ class SqlStateStorage(MarshalStateStorage):
         def inner():
             db = sql.api.DbapiDb(
                 lambda: contextlib.closing(sqlite3.connect(
-                    self._config.file or ':memory:',
+                    self._config.file,
+                    autocommit=True,
                 )),
                 param_style=sql.ParamStyle.QMARK,
             )
@@ -64,7 +69,13 @@ class SqlStateStorage(MarshalStateStorage):
         def inner(db: sql.api.Conn) -> sql.api.Row | None:
             self._create_table_if_necessary(db)
 
-            return sql.api.query_opt_one(db, Q.select([Q.i.value], Q.n.states, Q.eq(Q.n.key, key)))
+            return sql.api.query_opt_one(db, Q.select(
+                [Q.i.value],
+                Q.n.states,
+                Q.eq(Q.n.key, Q.p.key),
+            ), {
+                Q.p.key: key,
+            })
 
         row = await self._run_with_db(inner)
         if row is None:
@@ -76,19 +87,36 @@ class SqlStateStorage(MarshalStateStorage):
         return obj
 
     async def save_state(self, key: str, obj: ta.Any | None, ty: type[T] | None) -> None:
-        mv = self._marshal_state(obj, ty)
-        mj = json.dumps(mv)
+        mj: str | None = None
+        if obj is not None:
+            mv = self._marshal_state(obj, ty)
+            mj = json.dumps(mv)
 
         def inner(db: sql.api.Conn) -> None:
             self._create_table_if_necessary(db)
 
             with db.begin() as txn:
-                if sql.api.query_scalar(txn, Q.select(
-                        [Q.func(Q.k.count, Q.star)],
+                if mj is None:
+                    sql.api.exec(txn, Q.delete(
                         Q.n.states,
-                        Q.eq(Q.n.key, key),
+                        where=Q.eq(Q.n.key, Q.p.key),
+                    ), {
+                        Q.p.key: key,
+                    })
+
+                elif sql.api.query_scalar(txn, Q.select(
+                    [Q.func(Q.k.count, Q.star)],
+                    Q.n.states,
+                    Q.eq(Q.n.key, key),
                 )):
-                    raise NotImplementedError
+                    sql.api.exec(txn, Q.update(
+                        Q.n.states,
+                        [(Q.i.value, Q.p.value)],
+                        where=Q.eq(Q.n.key, Q.p.key),
+                    ), {
+                        Q.p.key: key,
+                        Q.p.value: mj,
+                    })
 
                 else:
                     sql.api.exec(txn, Q.insert(
