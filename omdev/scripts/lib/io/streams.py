@@ -29,8 +29,8 @@ def __omlish_amalg__():  # noqa
             dict(path='base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='framing.py', sha1='3b0a684d7f844c99ad116dabc082f2d9bec466a6'),
             dict(path='reading.py', sha1='7631635c46ab4b40bcaeb7c506cf15cb2d529a40'),
-            dict(path='utils.py', sha1='692b8814b341e592145aad4b2146c46b58d5c6f9'),
-            dict(path='direct.py', sha1='6c04ad9249a8536ff1ccf7760e299ea34180502f'),
+            dict(path='utils.py', sha1='d5d9233a2967380dc2d7bcdb3eb02ed737ac1193'),
+            dict(path='direct.py', sha1='fa34fa6ea10267697aaa59c97c3d123d04b1651d'),
             dict(path='scanning.py', sha1='5d4cf0776463a6f675ca74ca87637133b78b51a2'),
             dict(path='adapters.py', sha1='1a6c209490fa78947a607101e20169a5e135847b'),
             dict(path='linear.py', sha1='dbee5a728aabbc22df49e5b31afc71b2b5dac988'),
@@ -1032,7 +1032,7 @@ class ByteStreamBuffers:
 
     @staticmethod
     def can_bytes(obj: ta.Any) -> bool:
-        return isinstance(obj, ByteStreamBuffers._CAN_CONVERT_TYPES)
+        return obj.__class__ in (cts := ByteStreamBuffers._CAN_CONVERT_TYPES) or isinstance(obj, cts)
 
     @staticmethod
     def _to_bytes(obj: ta.Any) -> bytes:
@@ -1085,7 +1085,7 @@ class ByteStreamBuffers:
 
     @staticmethod
     def bytes_len(obj: ta.Any) -> int:
-        if isinstance(obj, (bytes, bytearray, memoryview, ByteStreamBufferLike)):
+        if ByteStreamBuffers.can_bytes(obj):
             return len(obj)
 
         else:
@@ -1146,12 +1146,20 @@ class BaseDirectByteStreamBufferLike(BaseByteStreamBufferLike, Abstract):
 
         mv = self._mv_
         obj = mv.obj
-        if isinstance(obj, (bytes, bytearray)) and len(mv) == len(obj):
+        ot = type(obj)
+        if (
+            (
+                ot is bytes or
+                ot is bytearray or
+                isinstance(obj, (bytes, bytearray))
+            ) and
+            len(mv) == len(obj)  # type: ignore[arg-type]
+        ):
             b = obj
         else:
             b = bytes(mv)
-        self._b_ = b
-        return b
+        self._b_ = b  # type: ignore[assignment]
+        return b  # type: ignore[return-value]
 
 
 class DirectByteStreamBufferView(BaseDirectByteStreamBufferLike, ByteStreamBufferView):

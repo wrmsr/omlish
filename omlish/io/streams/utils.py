@@ -21,7 +21,7 @@ class ByteStreamBuffers:
 
     @staticmethod
     def can_bytes(obj: ta.Any) -> bool:
-        return isinstance(obj, ByteStreamBuffers._CAN_CONVERT_TYPES)
+        return obj.__class__ in (cts := ByteStreamBuffers._CAN_CONVERT_TYPES) or isinstance(obj, cts)
 
     @staticmethod
     def _to_bytes(obj: ta.Any) -> bytes:
@@ -74,7 +74,7 @@ class ByteStreamBuffers:
 
     @staticmethod
     def bytes_len(obj: ta.Any) -> int:
-        if isinstance(obj, (bytes, bytearray, memoryview, ByteStreamBufferLike)):
+        if ByteStreamBuffers.can_bytes(obj):
             return len(obj)
 
         else:

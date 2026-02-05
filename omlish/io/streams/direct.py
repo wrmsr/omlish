@@ -42,12 +42,20 @@ class BaseDirectByteStreamBufferLike(BaseByteStreamBufferLike, Abstract):
 
         mv = self._mv_
         obj = mv.obj
-        if isinstance(obj, (bytes, bytearray)) and len(mv) == len(obj):
+        ot = type(obj)
+        if (
+            (
+                ot is bytes or
+                ot is bytearray or
+                isinstance(obj, (bytes, bytearray))
+            ) and
+            len(mv) == len(obj)  # type: ignore[arg-type]
+        ):
             b = obj
         else:
             b = bytes(mv)
-        self._b_ = b
-        return b
+        self._b_ = b  # type: ignore[assignment]
+        return b  # type: ignore[return-value]
 
 
 class DirectByteStreamBufferView(BaseDirectByteStreamBufferLike, ByteStreamBufferView):
