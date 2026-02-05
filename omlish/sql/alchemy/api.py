@@ -2,6 +2,7 @@ import typing as ta
 
 import sqlalchemy as sa
 
+from ... import check
 from ...resources import SimpleResource
 from .. import api
 from ..api.dbapi import build_dbapi_columns
@@ -63,7 +64,7 @@ class SqlalchemyTransaction(SimpleResource, api.Transaction):
     def adapter(self) -> api.Adapter:
         return DEFAULT_SQLALCHEMY_ADAPTER
 
-    def query(self, query: api.Query) -> ta.ContextManager[api.Rows]:
+    def query(self, query: api.Queryable) -> ta.ContextManager[api.Rows]:
         raise NotImplementedError
 
     def commit(self) -> None:
@@ -78,7 +79,8 @@ class SqlalchemyApiConn(SqlalchemyApiWrapper[sa.engine.Connection], api.Conn):
     def adapter(self) -> api.Adapter:
         return DEFAULT_SQLALCHEMY_ADAPTER
 
-    def query(self, query: api.Query) -> ta.ContextManager[api.Rows]:
+    def query(self, query: api.Queryable) -> ta.ContextManager[api.Rows]:
+        query = check.isinstance(query, api.Query)
         result: sa.engine.cursor.CursorResult
         with self._u.execute(
                 sa.text(query.text),
@@ -104,7 +106,7 @@ class SqlalchemyApiDb(SqlalchemyApiWrapper[sa.engine.Engine], api.Db):
     def adapter(self) -> api.Adapter:
         return DEFAULT_SQLALCHEMY_ADAPTER
 
-    def query(self, query: api.Query) -> ta.ContextManager[api.Rows]:
+    def query(self, query: api.Queryable) -> ta.ContextManager[api.Rows]:
         with self.connect() as conn:
             return conn.query(query)
 

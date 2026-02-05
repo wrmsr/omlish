@@ -29,9 +29,16 @@ class QueryMode(enum.Enum):
             raise TypeError(o)
 
 
+##
+
+
+class Queryable(lang.Sealed, lang.Abstract):
+    pass
+
+
 @ta.final
 @dc.dataclass(frozen=True)
-class Query(lang.Final):
+class Query(Queryable, lang.Final):
     mode: QueryMode
     text: str
     args: ta.Sequence[ta.Any]

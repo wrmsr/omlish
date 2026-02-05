@@ -108,6 +108,8 @@ from .querierfuncs import (  # noqa
 
 from .queries import (  # noqa
     QueryMode,
+
+    Queryable,
     Query,
 )
 

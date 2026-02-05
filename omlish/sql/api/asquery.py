@@ -5,6 +5,7 @@ from ... import check
 from ... import dataclasses as dc
 from .adapters import Adapter
 from .queries import Query
+from .queries import Queryable
 from .queries import QueryMode
 
 
@@ -23,7 +24,7 @@ def as_query(
         *args: ta.Any,
         mode: QueryMode | str | None = None,
         adapter: Adapter | None = None,
-) -> Query:
+) -> Queryable:
     return as_query_(
         obj,
         *args,
@@ -40,18 +41,18 @@ def as_query_(
         /,
         *args: ta.Any,
         ctx: AsQueryContext,
-) -> Query:
+) -> Queryable:
     raise TypeError(obj)
 
 
 @as_query_.register
 def _(
-        q: Query,
+        q: Queryable,
         /,
         *,
         ctx: AsQueryContext,
-) -> Query:
-    if ctx.mode is not None:
+) -> Queryable:
+    if isinstance(q, Query) and ctx.mode is not None:
         check.arg(q.mode is QueryMode.of(ctx.mode))
 
     return q
@@ -63,7 +64,7 @@ def _(
         /,
         *args: ta.Any,
         ctx: AsQueryContext,
-) -> Query:
+) -> Queryable:
     return Query(
         mode=QueryMode.of(ctx.mode, QueryMode.QUERY),
         text=s,

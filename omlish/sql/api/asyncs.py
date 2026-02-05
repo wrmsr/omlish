@@ -12,7 +12,7 @@ from .core import Conn
 from .core import Db
 from .core import Rows
 from .core import Transaction
-from .queries import Query
+from .queries import Queryable
 from .rows import Row
 
 
@@ -92,7 +92,7 @@ class SyncToAsyncTransaction(AsyncTransaction):
     async def rollback(self) -> None:
         return await self._runner(self._txn.rollback)
 
-    def query(self, query: Query) -> ta.AsyncContextManager[AsyncRows]:  # ta.Raises[QueryError]
+    def query(self, query: Queryable) -> ta.AsyncContextManager[AsyncRows]:  # ta.Raises[QueryError]
         return _RunnerContextManager(self._runner, lambda: self._txn.query(query), SyncToAsyncRows)
 
 
@@ -110,7 +110,7 @@ class SyncToAsyncConn(AsyncConn):
     def begin(self) -> ta.AsyncContextManager[AsyncTransaction]:
         return _RunnerContextManager(self._runner, self._conn.begin, SyncToAsyncTransaction)
 
-    def query(self, query: Query) -> ta.AsyncContextManager[AsyncRows]:  # ta.Raises[QueryError]
+    def query(self, query: Queryable) -> ta.AsyncContextManager[AsyncRows]:  # ta.Raises[QueryError]
         return _RunnerContextManager(self._runner, lambda: self._conn.query(query), SyncToAsyncRows)
 
 
@@ -143,7 +143,7 @@ class SyncToAsyncDb(AsyncDb):
 
         return inner()
 
-    def query(self, query: Query) -> ta.AsyncContextManager[AsyncRows]:  # ta.Raises[QueryError]
+    def query(self, query: Queryable) -> ta.AsyncContextManager[AsyncRows]:  # ta.Raises[QueryError]
         @contextlib.asynccontextmanager
         async def inner():
             async with contextlib.AsyncExitStack() as aes:

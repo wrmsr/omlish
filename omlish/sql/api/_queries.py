@@ -16,6 +16,7 @@ from ..queries.rendering import render
 from .asquery import AsQueryContext
 from .asquery import as_query_
 from .queries import Query
+from .queries import Queryable
 from .queries import QueryMode
 
 
@@ -29,7 +30,7 @@ def _(
         /,
         *,
         ctx: AsQueryContext,
-) -> Query:
+) -> Queryable:
     check.isinstance(param_values, (collections.abc.Mapping, None))
 
     ps: ParamStyle | None = None

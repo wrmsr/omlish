@@ -14,6 +14,7 @@ from .core import Db
 from .core import Rows
 from .core import Transaction
 from .queries import Query
+from .queries import Queryable
 from .rows import Row
 
 
@@ -99,7 +100,7 @@ class DbapiTransaction(Transaction, SimpleResource):
     def adapter(self) -> Adapter:
         return self._conn.adapter
 
-    def query(self, query: Query) -> ta.ContextManager[Rows]:
+    def query(self, query: Queryable) -> ta.ContextManager[Rows]:
         self._check_entered()
         check.state(self._state == 'open')
         return self._conn.query(query)
@@ -138,7 +139,9 @@ class DbapiConn(Conn):
     def adapter(self) -> Adapter:
         return self._adapter
 
-    def _query(self, es: contextlib.ExitStack, query: Query) -> DbapiRows:
+    def _query(self, es: contextlib.ExitStack, query: Queryable) -> DbapiRows:
+        query = check.isinstance(query, Query)
+
         cursor = self._conn.cursor()
         es.enter_context(contextlib.closing(cursor))
 
@@ -147,7 +150,7 @@ class DbapiConn(Conn):
 
         return DbapiRows(cursor, columns)
 
-    def query(self, query: Query) -> ta.ContextManager[Rows]:
+    def query(self, query: Queryable) -> ta.ContextManager[Rows]:
         @contextlib.contextmanager
         def inner():
             with contextlib.ExitStack() as es:
@@ -196,7 +199,7 @@ class DbapiDb(Db):
 
         return inner()
 
-    def query(self, query: Query) -> ta.ContextManager[Rows]:
+    def query(self, query: Queryable) -> ta.ContextManager[Rows]:
         @contextlib.contextmanager
         def inner():
             with contextlib.ExitStack() as es:

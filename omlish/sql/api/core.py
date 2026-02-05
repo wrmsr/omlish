@@ -28,7 +28,7 @@ class Rows(AnyRows, ta.Iterator[Row], lang.Abstract):
         return self
 
     @abc.abstractmethod
-    def __next__(self) -> Row:  # ta.Raises[StopIteration]
+    def __next__(self) -> Row:
         raise NotImplementedError
 
 
@@ -38,7 +38,7 @@ class AsyncRows(AnyRows, ta.AsyncIterator[Row], lang.Abstract):
         return self
 
     @abc.abstractmethod
-    def __anext__(self) -> ta.Awaitable[Row]:  # ta.Raises[StopIteration]
+    def __anext__(self) -> ta.Awaitable[Row]:
         raise NotImplementedError
 
 
