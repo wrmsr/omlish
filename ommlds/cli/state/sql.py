@@ -72,10 +72,8 @@ class SqlStateStorage(MarshaledStateStorage):
             return sql.api.query_opt_one(db, Q.select(
                 [Q.i.value],
                 Q.n.states,
-                Q.eq(Q.n.key, Q.p.key),
-            ), {
-                Q.p.key: key,
-            })
+                Q.eq(Q.n.key, key),
+            ))
 
         row = await self._run_with_db(inner)
         if row is None:
@@ -99,10 +97,8 @@ class SqlStateStorage(MarshaledStateStorage):
                 if mj is None:
                     sql.api.exec(txn, Q.delete(
                         Q.n.states,
-                        where=Q.eq(Q.n.key, Q.p.key),
-                    ), {
-                        Q.p.key: key,
-                    })
+                        where=Q.eq(Q.n.key, key),
+                    ))
 
                 elif sql.api.query_scalar(txn, Q.select(
                     [Q.func(Q.k.count, Q.star)],
@@ -111,21 +107,15 @@ class SqlStateStorage(MarshaledStateStorage):
                 )):
                     sql.api.exec(txn, Q.update(
                         Q.n.states,
-                        [(Q.i.value, Q.p.value)],
-                        where=Q.eq(Q.n.key, Q.p.key),
-                    ), {
-                        Q.p.key: key,
-                        Q.p.value: mj,
-                    })
+                        [(Q.i.value, mj)],
+                        where=Q.eq(Q.n.key, key),
+                    ))
 
                 else:
                     sql.api.exec(txn, Q.insert(
                         [Q.i.key, Q.i.value],
                         Q.n.states,
-                        [Q.p.key, Q.p.value],
-                    ), {
-                        Q.p.key: key,
-                        Q.p.value: mj,
-                    })
+                        [key, mj],
+                    ))
 
         await self._run_with_db(inner)
