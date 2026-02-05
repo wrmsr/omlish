@@ -74,11 +74,8 @@ class ByteStreamBuffers:
 
     @staticmethod
     def bytes_len(obj: ta.Any) -> int:
-        if isinstance(obj, (bytes, bytearray, memoryview)):
+        if isinstance(obj, (bytes, bytearray, memoryview, ByteStreamBufferLike)):
             return len(obj)
-
-        elif isinstance(obj, ByteStreamBufferLike):
-            return sum(len(mv) for mv in obj.segments())
 
         else:
             # Not bytes-like

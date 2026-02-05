@@ -29,7 +29,7 @@ def __omlish_amalg__():  # noqa
             dict(path='base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='framing.py', sha1='3b0a684d7f844c99ad116dabc082f2d9bec466a6'),
             dict(path='reading.py', sha1='7631635c46ab4b40bcaeb7c506cf15cb2d529a40'),
-            dict(path='utils.py', sha1='26621e9a464d6ce6e662f457c70288b6ee71aa7b'),
+            dict(path='utils.py', sha1='692b8814b341e592145aad4b2146c46b58d5c6f9'),
             dict(path='direct.py', sha1='6c04ad9249a8536ff1ccf7760e299ea34180502f'),
             dict(path='scanning.py', sha1='5d4cf0776463a6f675ca74ca87637133b78b51a2'),
             dict(path='adapters.py', sha1='1a6c209490fa78947a607101e20169a5e135847b'),
@@ -1085,11 +1085,8 @@ class ByteStreamBuffers:
 
     @staticmethod
     def bytes_len(obj: ta.Any) -> int:
-        if isinstance(obj, (bytes, bytearray, memoryview)):
+        if isinstance(obj, (bytes, bytearray, memoryview, ByteStreamBufferLike)):
             return len(obj)
-
-        elif isinstance(obj, ByteStreamBufferLike):
-            return sum(len(mv) for mv in obj.segments())
 
         else:
             # Not bytes-like
