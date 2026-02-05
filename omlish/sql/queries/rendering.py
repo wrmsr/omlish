@@ -206,7 +206,12 @@ class StdRenderer(Renderer):
 
     @Renderer.render.register
     def render_func(self, o: Func) -> tp.Part:
-        raise NotImplementedError
+        return tp.Concat([
+            self.render(o.name),
+            '(',
+            [self.render(a) for a in o.args],
+            ')',
+        ])
 
     # idents
 

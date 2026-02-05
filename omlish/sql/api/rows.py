@@ -13,6 +13,15 @@ T = ta.TypeVar('T')
 ##
 
 
+@ta.final
+class ColumnAccessor(lang.Final, ta.Generic[T]):
+    def __init__(self, row: 'Row') -> None:
+        self.__row = row
+
+    def __getattr__(self, name: str) -> T:
+        return self.__row[name]
+
+
 @dc.dataclass(frozen=True)
 class Row(lang.Final, ta.Generic[T]):
     columns: Columns
@@ -46,6 +55,10 @@ class Row(lang.Final, ta.Generic[T]):
             return self.values[idx]
         else:
             return None
+
+    @property
+    def c(self) -> ColumnAccessor[T]:
+        return ColumnAccessor(self)
 
     def to_dict(self) -> dict[str, ta.Any]:
         return {c.name: v for c, v in self}

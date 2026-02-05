@@ -5,6 +5,7 @@ import typing as ta
 
 from omlish import dataclasses as dc
 from omlish import sql
+from omlish.formats import json
 from omlish.sql import Q
 
 from .storage import MarshalStateStorage
@@ -47,9 +48,12 @@ class SqlStateStorage(MarshalStateStorage):
 
     async def _run_with_db(self, fn: ta.Callable[[sql.api.Conn], T]) -> T:
         def inner():
-            db = sql.api.DbapiDb(lambda: contextlib.closing(sqlite3.connect(
-                self._config.file or ':memory:',
-            )))
+            db = sql.api.DbapiDb(
+                lambda: contextlib.closing(sqlite3.connect(
+                    self._config.file or ':memory:',
+                )),
+                param_style=sql.ParamStyle.QMARK,
+            )
 
             with db.connect() as conn:
                 return fn(conn)
@@ -66,22 +70,34 @@ class SqlStateStorage(MarshalStateStorage):
         if row is None:
             return None
 
-        raise NotImplementedError
+        mj = row.c.value
+        mv = json.loads(mj)
+        obj = self._unmarshal_state(mv, ty)
+        return obj
 
     async def save_state(self, key: str, obj: ta.Any | None, ty: type[T] | None) -> None:
-        def inner(db: sql.api.Conn) -> sql.api.Row | None:
+        mv = self._marshal_state(obj, ty)
+        mj = json.dumps(mv)
+
+        def inner(db: sql.api.Conn) -> None:
             self._create_table_if_necessary(db)
 
             with db.begin() as txn:
-                if sql.api.query_maybe_scalar(txn, Q.select(
+                if sql.api.query_scalar(txn, Q.select(
                         [Q.func(Q.k.count, Q.star)],
                         Q.n.states,
                         Q.eq(Q.n.key, key),
-                )).present:
+                )):
                     raise NotImplementedError
 
-                sql.api.exec(txn, Q.insert([Q.i.key, Q.i.value], Q.n.states, [key, obj]))
-
-            raise NotImplementedError
+                else:
+                    sql.api.exec(txn, Q.insert(
+                        [Q.i.key, Q.i.value],
+                        Q.n.states,
+                        [Q.p.key, Q.p.value],
+                    ), {
+                        Q.p.key: key,
+                        Q.p.value: mj,
+                    })
 
         await self._run_with_db(inner)
