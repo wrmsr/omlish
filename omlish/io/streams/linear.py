@@ -11,6 +11,7 @@ from .errors import OutstandingReserveByteStreamBufferError
 from .types import BytesLike
 from .types import ByteStreamBufferView
 from .types import MutableByteStreamBuffer
+from .utils import ByteStreamBuffers
 
 
 ##
@@ -93,7 +94,7 @@ class LinearByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
         if not data:
             return
         if isinstance(data, memoryview):
-            data = data.tobytes()
+            data = ByteStreamBuffers._memoryview_to_bytes(data)  # noqa
         elif isinstance(data, bytearray):
             data = bytes(data)
 

@@ -7,6 +7,7 @@ from .base import BaseByteStreamBufferLike
 from .types import BytesLike
 from .types import ByteStreamBuffer
 from .types import ByteStreamBufferView
+from .utils import ByteStreamBuffers
 
 
 ##
@@ -40,22 +41,9 @@ class BaseDirectByteStreamBufferLike(BaseByteStreamBufferLike, Abstract):
         except AttributeError:
             pass
 
-        mv = self._mv_
-        obj = mv.obj
-        ot = type(obj)
-        if (
-            (
-                ot is bytes or
-                ot is bytearray or
-                isinstance(obj, (bytes, bytearray))
-            ) and
-            len(mv) == len(obj)  # type: ignore[arg-type]
-        ):
-            b = obj
-        else:
-            b = bytes(mv)
-        self._b_ = b  # type: ignore[assignment]
-        return b  # type: ignore[return-value]
+        b = ByteStreamBuffers._memoryview_to_bytes(self._mv_)  # noqa
+        self._b_ = b
+        return b
 
 
 class DirectByteStreamBufferView(BaseDirectByteStreamBufferLike, ByteStreamBufferView):

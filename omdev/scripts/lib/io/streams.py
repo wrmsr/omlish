@@ -29,12 +29,12 @@ def __omlish_amalg__():  # noqa
             dict(path='base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='framing.py', sha1='3b0a684d7f844c99ad116dabc082f2d9bec466a6'),
             dict(path='reading.py', sha1='7631635c46ab4b40bcaeb7c506cf15cb2d529a40'),
-            dict(path='utils.py', sha1='d5d9233a2967380dc2d7bcdb3eb02ed737ac1193'),
-            dict(path='direct.py', sha1='fa34fa6ea10267697aaa59c97c3d123d04b1651d'),
+            dict(path='utils.py', sha1='d7a9ab6bb08ce3d9d057b2798cbda996ff469009'),
+            dict(path='direct.py', sha1='fbc206bb808ea4603261f35575356998fd27078f'),
             dict(path='scanning.py', sha1='5d4cf0776463a6f675ca74ca87637133b78b51a2'),
             dict(path='adapters.py', sha1='1a6c209490fa78947a607101e20169a5e135847b'),
-            dict(path='linear.py', sha1='dbee5a728aabbc22df49e5b31afc71b2b5dac988'),
-            dict(path='segmented.py', sha1='5a24346389644caac91c25e9d2ccbe76b26a71a6'),
+            dict(path='linear.py', sha1='c58741a70953bfb53f369782db46e7912af790b3'),
+            dict(path='segmented.py', sha1='69b63fb61953eaaea7e996cbd96555882ba8f6f2'),
             dict(path='_amalg.py', sha1='4511d6a6f9ae80585eea1c68980df5323ef0ef14'),
         ],
     )
@@ -1037,7 +1037,7 @@ class ByteStreamBuffers:
     @staticmethod
     def _to_bytes(obj: ta.Any) -> bytes:
         if isinstance(obj, memoryview):
-            return obj.tobytes()
+            return ByteStreamBuffers._memoryview_to_bytes(obj)
 
         elif isinstance(obj, ByteStreamBufferView):
             return obj.tobytes()
@@ -1108,6 +1108,24 @@ class ByteStreamBuffers:
         else:
             raise TypeError(obj)
 
+    #
+
+    @staticmethod
+    def _memoryview_to_bytes(mv: memoryview) -> bytes:
+        obj = mv.obj
+        ot = type(obj)
+        if (
+            (
+                ot is bytes or
+                ot is bytearray or
+                isinstance(obj, (bytes, bytearray))
+            ) and
+            len(mv) == len(obj)  # type: ignore[arg-type]
+        ):
+            return obj  # type: ignore[return-value]
+
+        return mv.tobytes()
+
 
 ########################################
 # ../direct.py
@@ -1144,22 +1162,9 @@ class BaseDirectByteStreamBufferLike(BaseByteStreamBufferLike, Abstract):
         except AttributeError:
             pass
 
-        mv = self._mv_
-        obj = mv.obj
-        ot = type(obj)
-        if (
-            (
-                ot is bytes or
-                ot is bytearray or
-                isinstance(obj, (bytes, bytearray))
-            ) and
-            len(mv) == len(obj)  # type: ignore[arg-type]
-        ):
-            b = obj
-        else:
-            b = bytes(mv)
-        self._b_ = b  # type: ignore[assignment]
-        return b  # type: ignore[return-value]
+        b = ByteStreamBuffers._memoryview_to_bytes(self._mv_)  # noqa
+        self._b_ = b
+        return b
 
 
 class DirectByteStreamBufferView(BaseDirectByteStreamBufferLike, ByteStreamBufferView):
@@ -1774,7 +1779,7 @@ class LinearByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
         if not data:
             return
         if isinstance(data, memoryview):
-            data = data.tobytes()
+            data = ByteStreamBuffers._memoryview_to_bytes(data)  # noqa
         elif isinstance(data, bytearray):
             data = bytes(data)
 
@@ -2193,7 +2198,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         if not data:
             return
         if isinstance(data, memoryview):
-            data = data.tobytes()
+            data = ByteStreamBuffers._memoryview_to_bytes(data)  # noqa
         # elif isinstance(data, bytearray):
         #     pass
         # else:

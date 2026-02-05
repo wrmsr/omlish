@@ -26,7 +26,7 @@ class ByteStreamBuffers:
     @staticmethod
     def _to_bytes(obj: ta.Any) -> bytes:
         if isinstance(obj, memoryview):
-            return obj.tobytes()
+            return ByteStreamBuffers._memoryview_to_bytes(obj)
 
         elif isinstance(obj, ByteStreamBufferView):
             return obj.tobytes()
@@ -96,3 +96,21 @@ class ByteStreamBuffers:
 
         else:
             raise TypeError(obj)
+
+    #
+
+    @staticmethod
+    def _memoryview_to_bytes(mv: memoryview) -> bytes:
+        obj = mv.obj
+        ot = type(obj)
+        if (
+            (
+                ot is bytes or
+                ot is bytearray or
+                isinstance(obj, (bytes, bytearray))
+            ) and
+            len(mv) == len(obj)  # type: ignore[arg-type]
+        ):
+            return obj  # type: ignore[return-value]
+
+        return mv.tobytes()
