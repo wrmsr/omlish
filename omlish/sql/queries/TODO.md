@@ -25,3 +25,6 @@
   - text.parts
   - QuoteStyle
   - ParamStyle
+- literal rendering
+    - unparameterized style, 'quote style'?
+    - more safe literal types

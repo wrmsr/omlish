@@ -1,6 +1,7 @@
 """
 TODO:
- - literal strs, auto-anon-param, ??
+ - quote mode lol
+  - general 'modes' dc
 """
 import typing as ta
 
@@ -58,12 +59,14 @@ RenderedQueryParams: ta.TypeAlias = ta.Sequence[Param] | ta.Mapping[str, Param]
 class RenderedQueryParts(lang.Final):
     p: tp.Part
     params: RenderedQueryParams | None
+    literals: ta.Mapping[Param, ta.Any] | None = None
 
 
 @dc.dataclass(frozen=True)
 class RenderedQuery(lang.Final):
     s: str
     params: RenderedQueryParams | None
+    literals: ta.Mapping[Param, ta.Any] | None = None
 
 
 class Renderer(lang.Abstract):
@@ -71,12 +74,15 @@ class Renderer(lang.Abstract):
             self,
             *,
             param_style: ParamStyle | None = None,
+            literal_style: ta.Literal['param_all', 'safe_only'] = 'safe_only',
     ) -> None:
         super().__init__()
 
         self._param_style = param_style
+        self._literal_style = literal_style
 
         self._seen_params: dict[Param, int] = {}
+        self._literal_params: dict[Param, ta.Any] = {}
 
     #
 
@@ -109,6 +115,14 @@ class Renderer(lang.Abstract):
         subst = col.make_map_by(self._param_key, self._seen_params, strict=True)
         return substitute_params(prep_params, subst, strict=True)
 
+    def literal_params(self) -> ta.Mapping[Param, ta.Any] | None:
+        return self._literal_params or None
+
+    def _make_literal_param(self, o: ta.Any) -> Param:
+        p = Param()
+        self._literal_params[p] = o
+        return p
+
     #
 
     @dispatch.method(
@@ -125,6 +139,7 @@ class Renderer(lang.Abstract):
         return RenderedQueryParts(
             r.render(o),
             r.rendered_params(),
+            r.literal_params(),
         )
 
     @classmethod
@@ -133,6 +148,7 @@ class Renderer(lang.Abstract):
         return RenderedQuery(
             tp.render(rqp.p),
             rqp.params,
+            rqp.literals,
         )
 
 
@@ -190,9 +206,23 @@ class StdRenderer(Renderer):
 
     # exprs
 
+    SAFE_LITERAL_TYPES: ta.ClassVar[tuple[type, ...]] = (
+        int,
+    )
+
     @Renderer.render.register
     def render_literal(self, o: Literal) -> tp.Part:
-        return repr(o.v)  # FIXME: lol
+        if self._literal_style == 'param_all':
+            pass
+
+        elif self._literal_style == 'safe_only':
+            if isinstance(o.v, self.SAFE_LITERAL_TYPES):
+                return str(o.v)
+
+        else:
+            raise ValueError(self._literal_style)
+
+        return self.render(self._make_literal_param(o.v))
 
     @Renderer.render.register
     def render_name_expr(self, o: NameExpr) -> tp.Part:
