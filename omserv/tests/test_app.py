@@ -14,16 +14,16 @@ from omlish import lang
 from omlish.http import asgi
 from omlish.sockets.ports import get_available_port
 from omlish.testing import pytest as ptu
+from x.app.dbs import bind_dbs
+from x.app.secrets import bind_secrets
+from x.app.server.inject import bind_app
+from x.app.server.inject import bind_in_memory_user_store
 
-from .....server.config import Config
-from .....server.default import serve
-from .....server.tests.utils import get_timeout_s
-from .....server.tests.utils import headers_time_patch  # noqa
-from .....server.types import AsgiWrapper
-from ...dbs import bind_dbs
-from ...secrets import bind_secrets
-from ..inject import bind_app
-from ..inject import bind_in_memory_user_store
+from ..server.config import Config
+from ..server.default import serve
+from ..server.tests.utils import get_timeout_s
+from ..server.tests.utils import headers_time_patch  # noqa
+from ..server.types import AsgiWrapper
 
 
 def randhex(l: int) -> str:
