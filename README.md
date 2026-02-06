@@ -27,8 +27,8 @@ for 3.8+.
   `minichain` (roughly like langchain) and its CLI.
 - **[ominfra](https://github.com/wrmsr/omlish/blob/master/ominfra#readme)** - Infrastructure and cloud code, including
   a boto alternative, a remote management tool, and a [supervisor](https://github.com/Supervisor/supervisor) rebuild.
-- **[omserv](https://github.com/wrmsr/omlish/blob/master/omserv#readme)** - Request serving code, including an internal
-  fork of [hypercorn](https://github.com/pgjones/hypercorn).
+- \[DEPRECATED\] ~~**[omserv](https://github.com/wrmsr/omlish/blob/master/omserv#readme)** - Request serving code,
+  including an internal fork of [hypercorn](https://github.com/pgjones/hypercorn).~~
 
 # Installation
 
