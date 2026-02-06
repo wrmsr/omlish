@@ -1,8 +1,7 @@
 from omlish.http import asgi
-
-from .....apps.routes import Route
-from .....apps.routes import RouteHandlerHolder
-from .....apps.routes import handles
+from omlish.http.apps.routes import Route
+from omlish.http.apps.routes import RouteHandlerHolder
+from omlish.http.apps.routes import handles
 
 
 ##

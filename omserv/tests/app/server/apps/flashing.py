@@ -1,11 +1,11 @@
-from .....apps.sessions import SESSION
-from .....apps.templates import jinja_helper
+from omlish.http.apps.sessions import SESSION
+from omlish.http.apps.templates import default_template_helper
 
 
 ##
 
 
-@jinja_helper
+@default_template_helper
 def get_flashed_messages() -> list[str]:
     session = SESSION.get()
     try:

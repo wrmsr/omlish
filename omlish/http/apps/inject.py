@@ -1,9 +1,8 @@
 import typing as ta
 
-from omlish import inject as inj
-from omlish.http import asgi
-from omlish.http import sessions
-
+from ... import inject as inj
+from .. import asgi
+from .. import sessions
 from .base import SCOPE
 from .markers import AppMarker
 from .markers import AppMarkerProcessor
@@ -15,8 +14,8 @@ from .routes import build_route_handler_map
 from .sessions import SESSION
 from .sessions import _WithSessionAppMarker
 from .sessions import _WithSessionAppMarkerProcessor
-from .templates import JinjaNamespace
-from .templates import JinjaTemplates
+from .templates import TemplateNamespace
+from .templates import Templates
 
 
 ##
@@ -71,14 +70,17 @@ def bind() -> inj.Elemental:
     )
 
 
-def _build_jinja_namespaces(ns: ta.Annotated[ta.Mapping[str, ta.Any], inj.Tag(JinjaNamespace)]) -> JinjaNamespace:
-    return JinjaNamespace(ns)
+def _build_template_namespaces(
+        ns: ta.Annotated[ta.Mapping[str, ta.Any], inj.Tag(TemplateNamespace)],
+) -> TemplateNamespace:
+    return TemplateNamespace(ns)
 
 
-def bind_templates() -> inj.Elemental:
+def bind_templates(impl: type[Templates]) -> inj.Elemental:
     return inj.as_elements(
-        inj.bind(JinjaTemplates, singleton=True),
+        inj.bind(impl, singleton=True),
+        inj.bind(Templates, to_key=impl),
 
-        inj.map_binder[str, ta.Any](tag=JinjaNamespace),
-        inj.bind(_build_jinja_namespaces),
+        inj.map_binder[str, ta.Any](tag=TemplateNamespace),
+        inj.bind(_build_template_namespaces),
     )

@@ -1,11 +1,10 @@
 import contextvars
 import dataclasses as dc
 
-from omlish import lang
-from omlish.http import asgi
-from omlish.http import sessions
-from omlish.logs import all as logs
-
+from ... import lang
+from ...logs import all as logs
+from .. import asgi
+from .. import sessions
 from .markers import AppMarker
 from .markers import AppMarkerProcessor
 from .markers import append_app_marker

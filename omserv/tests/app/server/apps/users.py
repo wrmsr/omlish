@@ -4,13 +4,13 @@ import dataclasses as dc
 from omlish import lang
 from omlish.http import all as hu
 from omlish.http import asgi
+from omlish.http.apps.markers import AppMarker
+from omlish.http.apps.markers import AppMarkerProcessor
+from omlish.http.apps.markers import append_app_marker
+from omlish.http.apps.sessions import SESSION
+from omlish.http.apps.templates import default_template_helper
 from omlish.logs import all as logs
 
-from .....apps.markers import AppMarker
-from .....apps.markers import AppMarkerProcessor
-from .....apps.markers import append_app_marker
-from .....apps.sessions import SESSION
-from .....apps.templates import jinja_helper
 from ...users import User
 from ...users import UserStore
 
@@ -24,7 +24,7 @@ log = logs.get_module_logger(globals())
 USER: contextvars.ContextVar[User | None] = contextvars.ContextVar('user', default=None)
 
 
-@jinja_helper
+@default_template_helper
 def current_user() -> User | None:
     return USER.get()
 

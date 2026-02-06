@@ -1,7 +1,7 @@
 import contextvars
 import typing as ta
 
-from omlish.http import asgi
+from .. import asgi
 
 
 ##

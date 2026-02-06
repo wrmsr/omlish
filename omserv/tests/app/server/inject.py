@@ -14,10 +14,10 @@ import datetime
 from omlish import inject as inj
 from omlish.http import asgi
 from omlish.http import sessions
+from omlish.http.apps.routes import RouteHandlerApp
+from omlish.http.apps.templates import JinjaTemplates
 from omlish.secrets import all as sec
 
-from ....apps.routes import RouteHandlerApp
-from ....apps.templates import JinjaTemplates
 from ..users import InMemoryUserStore
 from ..users import UserStore
 

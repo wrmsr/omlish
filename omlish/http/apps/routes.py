@@ -8,11 +8,10 @@ import dataclasses as dc
 import re
 import typing as ta
 
-from omlish import check
-from omlish import lang
-from omlish.http import asgi
-from omlish.logs import all as logs
-
+from ... import check
+from ... import lang
+from ...logs import all as logs
+from .. import asgi
 from .base import BASE_SERVER_URL
 from .base import SCOPE
 from .base import BaseServerUrl

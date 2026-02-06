@@ -3,10 +3,10 @@ import dataclasses as dc
 from omlish.formats import json
 from omlish.http import all as hu
 from omlish.http import asgi
+from omlish.http.apps.routes import Route
+from omlish.http.apps.routes import RouteHandlerHolder
+from omlish.http.apps.routes import handles
 
-from .....apps.routes import Route
-from .....apps.routes import RouteHandlerHolder
-from .....apps.routes import handles
 from ...users import UserStore
 from ..apps.users import get_auth_user
 

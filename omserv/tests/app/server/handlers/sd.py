@@ -25,12 +25,11 @@ from omlish import lang
 from omlish.formats import json
 from omlish.http import all as hu
 from omlish.http import asgi
+from omlish.http.apps.routes import Route
+from omlish.http.apps.routes import RouteHandlerHolder
+from omlish.http.apps.routes import handles
 from omlish.logs import all as logs
 from omlish.secrets import all as sec
-
-from .....apps.routes import Route
-from .....apps.routes import RouteHandlerHolder
-from .....apps.routes import handles
 
 
 # fmt: off

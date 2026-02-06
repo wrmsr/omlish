@@ -1,11 +1,11 @@
 import abc
 import typing as ta
 
-from omlish import lang
-from omlish.http import asgi
-from omlish.metadata import ObjectMetadata
-from omlish.metadata import append_object_metadata
-from omlish.metadata import get_object_metadata
+from ... import lang
+from ...metadata import ObjectMetadata
+from ...metadata import append_object_metadata
+from ...metadata import get_object_metadata
+from .. import asgi
 
 
 T = ta.TypeVar('T')
