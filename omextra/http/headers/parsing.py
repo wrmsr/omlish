@@ -351,7 +351,7 @@ class HttpHeadParser:
         max_header_length: ta.Optional[int] = 8192
         max_content_length_str_len: ta.Optional[int] = None
 
-    def __init__(self, config: ta.Optional[Config] = Config()) -> None:
+    def __init__(self, config: Config = Config()) -> None:
         super().__init__()
 
         self._config = config
@@ -1790,5 +1790,5 @@ def parse_http_headers(
     :raises HttpParseError: On any parsing violation.
     """
 
-    parser = HttpHeadParser(config=config)
+    parser = HttpHeadParser(**(dict(config=config) if config is not None else {}))
     return parser.parse(data, mode=mode)

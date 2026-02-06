@@ -355,6 +355,8 @@ class PipelineChannel:
 
         return out
 
+    #
+
     def handle_error(self, e: BaseException) -> None:
         self.emit_out(ChannelPipelineEvents.Error(e))
 
