@@ -1,5 +1,9 @@
 # ruff: noqa: UP006 UP045
 # @omlish-lite
+"""
+TODO:
+ - compute dense inbound/outbound index where relevant handler method is not overridden
+"""
 import abc
 import collections
 import dataclasses as dc

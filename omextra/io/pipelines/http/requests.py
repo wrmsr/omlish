@@ -6,9 +6,9 @@ from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.lite.check import check
 
+from ....http.headers.parsing import HttpHeadParser
 from ....http.headers.parsing import ParsedHttpHead
-from ....http.headers.parsing import ParserMode
-from ....http.headers.parsing import parse_http_headers
+from ....http.headers.parsing import parse_http_head
 from ..core import ChannelPipelineEvents
 from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
@@ -118,7 +118,7 @@ class HttpRequestHeadDecoder(ChannelPipelineHandler):
             ctx.feed_in(rem_view)
 
     def _parse_head(self, raw: bytes) -> HttpRequestHead:
-        parsed = parse_http_headers(raw, mode=ParserMode.REQUEST)
+        parsed = parse_http_head(raw, mode=HttpHeadParser.Mode.REQUEST)
         line = check.not_none(parsed.request_line)
 
         return HttpRequestHead(
