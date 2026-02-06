@@ -4,21 +4,21 @@
 [tool.omlish.pyproject]
 pkgs = [
     'omdev',
-    'omextra',
     'ominfra',
     'omlish',
     'ommlds',
     'omserv',
+    'omxtra',
 ]
 
 [tool.omlish.pyproject.srcs]
 main = [
     'omdev',
-    'omextra',
     'ominfra',
     'omlish',
     'ommlds',
     'omserv',
+    'omxtra',
 ]
 
 all = [

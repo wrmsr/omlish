@@ -37,10 +37,10 @@ def _register(**kwargs):
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('omextra.text.abnf', 'MetaGrammarRuleMatchVisitor.QuotedString'),
-        ('omextra.text.abnf', 'MetaGrammarRuleMatchVisitor.RuleName'),
-        ('omextra.text.abnf', '_CaseInsensitiveStringLiteralRegexItem'),
-        ('omextra.text.abnf', '_StringLiteralRegexItem'),
+        ('omxtra.text.abnf', 'MetaGrammarRuleMatchVisitor.QuotedString'),
+        ('omxtra.text.abnf', 'MetaGrammarRuleMatchVisitor.RuleName'),
+        ('omxtra.text.abnf', '_CaseInsensitiveStringLiteralRegexItem'),
+        ('omxtra.text.abnf', '_StringLiteralRegexItem'),
     ),
 )
 def _process_dataclass__30a5dd74853303d917aae5f67d4e7189615d1440():
@@ -177,7 +177,7 @@ def _process_dataclass__30a5dd74853303d917aae5f67d4e7189615d1440():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('omextra.text.abnf', 'RangeLiteral.Range'),
+        ('omxtra.text.abnf', 'RangeLiteral.Range'),
     ),
 )
 def _process_dataclass__9104a51696bc4129d13d616118c0f732322e677c():
@@ -325,7 +325,7 @@ def _process_dataclass__9104a51696bc4129d13d616118c0f732322e677c():
         '__dataclass__init__fields__1__default',
     ),
     cls_names=(
-        ('omextra.text.abnf', 'Repeat.Times'),
+        ('omxtra.text.abnf', 'Repeat.Times'),
     ),
 )
 def _process_dataclass__3dce49e08774c707abbc7a6513e35ccdc43001c9():
@@ -450,7 +450,7 @@ def _process_dataclass__3dce49e08774c707abbc7a6513e35ccdc43001c9():
     plan_repr_sha1='e1f7edfe11f2b721d6a656c46e698fedc95461bb',
     op_ref_idents=(),
     cls_names=(
-        ('omextra.text.abnf', '_RegexItem'),
+        ('omxtra.text.abnf', '_RegexItem'),
     ),
 )
 def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
@@ -565,7 +565,7 @@ def _process_dataclass__e1f7edfe11f2b721d6a656c46e698fedc95461bb():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('omextra.text.abnf', '_RegexRegexItem'),
+        ('omxtra.text.abnf', '_RegexRegexItem'),
     ),
 )
 def _process_dataclass__f7dc3147180d5d4dc248e9c0d94aa0f1e503c4c7():

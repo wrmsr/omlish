@@ -5,7 +5,7 @@ requires = [
 build-backend = 'setuptools.build_meta'
 
 [project]
-name = 'omextra-cext'
+name = 'omxtra'
 authors = [
     {name = 'wrmsr'},
 ]
@@ -22,12 +22,42 @@ classifiers = [
     'Programming Language :: Python :: 3',
     'Programming Language :: Python :: 3.13',
 ]
-description = 'omextra'
+description = 'omxtra'
 dependencies = [
-    'omextra == 0.0.0.dev523',
+    'omlish == 0.0.0.dev523',
 ]
+
+[project.optional-dependencies]
+
+[project.entry-points]
+'omlish.manifests' = {omxtra = 'omxtra'}
 
 [tool.setuptools]
 
 [tool.setuptools.packages.find]
-include = []
+include = [
+    'omxtra',
+    'omxtra.*',
+]
+exclude = [
+    '*.tests',
+    '*.tests.*',
+]
+
+[tool.setuptools.package-data]
+'*' = [
+    '*.c',
+    '*.cc',
+    '*.cu',
+    '*.g4',
+    '*.h',
+    '*.hh',
+    '.omlish-manifests.json',
+    'README',
+    'README.md',
+    'LICENSE',
+    'LICENSE.txt',
+    'AUTHORS',
+    'DESIGN.md',
+    'text/abnf/docs/*.txt',
+]

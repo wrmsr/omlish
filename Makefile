@@ -154,10 +154,10 @@ gen: gen-amalg gen-docker-dev gen-cmake gen-aws gen-manifest gen-dataclass gen-p
 gen-amalg: venv
 	${PYTHON} -m omdev.amalg gen \
 		-m omdev \
-		-m omextra \
 		-m ominfra \
 		-m omlish \
 		-m omserv \
+		-m omxtra \
 		${SRCS}
 
 .PHONY: gen-docker-dev
@@ -190,7 +190,7 @@ gen-pkg:
 
 .PHONY: gen-antlr
 gen-antlr:
-	${PYTHON} -m omextra.text.antlr.cli gen ${SRCS} x
+	${PYTHON} -m omxtra.text.antlr.cli gen ${SRCS} x
 
 
 ### Check

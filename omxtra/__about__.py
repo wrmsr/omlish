@@ -4,8 +4,8 @@ from omlish.__about__ import __version__
 
 
 class Project(ProjectBase):
-    name = 'omextra'
-    description = 'omextra'
+    name = 'omxtra'
+    description = 'omxtra'
 
     dependencies = [
         # FIXME: text.antlr.cli deps omdev.cache.data, yet this lib is 'under' omdev.

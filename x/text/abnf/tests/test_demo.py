@@ -1,6 +1,6 @@
 import pytest
 
-from omextra.text.abnf.utils import fix_ws
+from omxtra.text.abnf.utils import fix_ws
 
 from ..core import GrammarNodeVisitor
 from ..core import GrammarRule
@@ -10,7 +10,7 @@ from ..parsers import Rule
 
 @pytest.mark.skip_unless_alone
 def test_demo():
-    with open('omextra/text/abnf/tests/demo.abnf') as f:
+    with open('omxtra/text/abnf/tests/demo.abnf') as f:
         rule_source = fix_ws(f.read())
 
     grule = GrammarRule('rulelist')
@@ -23,7 +23,7 @@ def test_demo():
 
     rule = visitor.visit(parse_tree)
 
-    with open('omextra/text/abnf/tests/demo.txt') as f:
+    with open('omxtra/text/abnf/tests/demo.txt') as f:
         demo_source = fix_ws(f.read())
 
     print(rule.parse_all(demo_source))

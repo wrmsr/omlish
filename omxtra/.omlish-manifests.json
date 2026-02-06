@@ -2,12 +2,12 @@
   {
     "module": ".text.antlr.cli.__main__",
     "attr": "_CLI_MODULE",
-    "file": "omextra/text/antlr/cli/__main__.py",
+    "file": "omxtra/text/antlr/cli/__main__.py",
     "line": 1,
     "value": {
       "!omdev.cli.types.CliModule": {
         "name": "antlr",
-        "module": "omextra.text.antlr.cli.__main__"
+        "module": "omxtra.text.antlr.cli.__main__"
       }
     }
   }
