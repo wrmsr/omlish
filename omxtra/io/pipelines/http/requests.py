@@ -1,14 +1,15 @@
 import dataclasses as dc
 import typing as ta
 
+from omlish.http.versions import HttpProtocolVersion
 from omlish.io.streams.errors import FrameTooLargeByteStreamBufferError
 from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.lite.check import check
 
-from ....http.headers.parsing import HttpMessageParser
-from ....http.headers.parsing import ParsedHttpMessage
-from ....http.headers.parsing import parse_http_message
+from ....http.parsing import HttpMessageParser
+from ....http.parsing import ParsedHttpMessage
+from ....http.parsing import parse_http_message
 from ..core import ChannelPipelineEvents
 from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
@@ -21,7 +22,7 @@ from ..core import ChannelPipelineHandlerContext
 class HttpRequestHead:
     method: str
     target: str
-    version: str
+    version: HttpProtocolVersion
     headers: dict[str, str]
     parsed: ParsedHttpMessage
 

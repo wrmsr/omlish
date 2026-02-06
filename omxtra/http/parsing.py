@@ -10,6 +10,9 @@ import io
 import re
 import typing as ta
 
+from omlish.http.versions import HttpProtocolVersion
+from omlish.http.versions import HttpProtocolVersions
+
 
 ##
 
@@ -287,13 +290,13 @@ class ParsedHttpMessage:
     class RequestLine:
         method: str
         request_target: bytes
-        http_version: str
+        http_version: HttpProtocolVersion
 
     request_line: ta.Optional[RequestLine]
 
     @dc.dataclass(frozen=True)
     class StatusLine:
-        http_version: str
+        http_version: HttpProtocolVersion
         status_code: int
         reason_phrase: str
 
@@ -397,7 +400,7 @@ class HttpMessageParser:
         http_version = (
             request_line.http_version if request_line else
             status_line.http_version if status_line else
-            'HTTP/1.1'
+            HttpProtocolVersions.HTTP_1_1
         )
 
         # 5. Parse header fields
@@ -765,7 +768,11 @@ class _HttpMessageParseContext:
         # Validate HTTP version
 
         version_str = version_bytes.decode('ascii', errors='replace')
-        if version_str not in ('HTTP/1.0', 'HTTP/1.1'):
+        if version_str == 'HTTP/1.0':
+            version = HttpProtocolVersions.HTTP_1_0
+        elif version_str == 'HTTP/1.1':
+            version = HttpProtocolVersions.HTTP_1_1
+        else:
             raise StartLineError(
                 code=StartLineErrorCode.UNSUPPORTED_HTTP_VERSION,
                 message=f'Unsupported HTTP version: {version_str!r}',
@@ -776,7 +783,7 @@ class _HttpMessageParseContext:
         return ParsedHttpMessage.RequestLine(
             method=method_bytes.decode('ascii'),
             request_target=target_bytes,
-            http_version=version_str,
+            http_version=version,
         )
 
     # reason-phrase: 0+ bytes of HTAB / SP / VCHAR / obs-text
@@ -826,7 +833,11 @@ class _HttpMessageParseContext:
         # Validate HTTP version
 
         version_str = version_bytes.decode('ascii', errors='replace')
-        if version_str not in ('HTTP/1.0', 'HTTP/1.1'):
+        if version_str == 'HTTP/1.0':
+            version = HttpProtocolVersions.HTTP_1_0
+        elif version_str == 'HTTP/1.1':
+            version = HttpProtocolVersions.HTTP_1_1
+        else:
             raise StartLineError(
                 code=StartLineErrorCode.UNSUPPORTED_HTTP_VERSION,
                 message=f'Unsupported HTTP version: {version_str!r}',
@@ -877,7 +888,7 @@ class _HttpMessageParseContext:
                     )
 
         return ParsedHttpMessage.StatusLine(
-            http_version=version_str,
+            http_version=version,
             status_code=status_code,
             reason_phrase=reason_bytes.decode('latin-1'),
         )
@@ -1139,7 +1150,7 @@ class _HttpMessageParseContext:
         self,
         headers: ParsedHttpHeaders,
         kind: ParsedHttpMessage.Kind,
-        http_version: str,
+        http_version: HttpProtocolVersion,
     ) -> PreparedParsedHttpHeaders:
         prepared = PreparedParsedHttpHeaders()
 
@@ -1252,7 +1263,7 @@ class _HttpMessageParseContext:
         headers: ParsedHttpHeaders,
         prepared: PreparedParsedHttpHeaders,
         kind: ParsedHttpMessage.Kind,
-        http_version: str,
+        http_version: HttpProtocolVersion,
     ) -> None:
         if 'transfer-encoding' not in headers:
             return
@@ -1267,7 +1278,7 @@ class _HttpMessageParseContext:
             )
 
         # HTTP/1.0 check
-        if http_version == 'HTTP/1.0' and not self.config.allow_transfer_encoding_http10:
+        if http_version == HttpProtocolVersions.HTTP_1_0 and not self.config.allow_transfer_encoding_http10:
             raise SemanticHeaderError(
                 code=SemanticHeaderErrorCode.TE_IN_HTTP10,
                 message='Transfer-Encoding is not defined for HTTP/1.0',
@@ -1324,11 +1335,11 @@ class _HttpMessageParseContext:
         headers: ParsedHttpHeaders,
         prepared: PreparedParsedHttpHeaders,
         kind: ParsedHttpMessage.Kind,
-        http_version: str,
+        http_version: HttpProtocolVersion,
     ) -> None:
         values = headers.get_all('host')
 
-        if kind == ParsedHttpMessage.Kind.REQUEST and http_version == 'HTTP/1.1':
+        if kind == ParsedHttpMessage.Kind.REQUEST and http_version == HttpProtocolVersions.HTTP_1_1:
             if not values and not self.config.allow_missing_host:
                 raise SemanticHeaderError(
                     code=SemanticHeaderErrorCode.MISSING_HOST_HEADER,
@@ -1394,7 +1405,7 @@ class _HttpMessageParseContext:
         self,
         headers: ParsedHttpHeaders,
         prepared: PreparedParsedHttpHeaders,
-        http_version: str,
+        http_version: HttpProtocolVersion,
     ) -> None:
         if 'connection' in headers:
             tokens = {t.lower() for t in self._parse_comma_list(headers['connection'])}
@@ -1409,7 +1420,7 @@ class _HttpMessageParseContext:
             prepared.keep_alive = True
         else:
             # Default: HTTP/1.1 = keep-alive, HTTP/1.0 = close
-            prepared.keep_alive = (http_version == 'HTTP/1.1')
+            prepared.keep_alive = (http_version == HttpProtocolVersions.HTTP_1_1)
 
     @classmethod
     def _parse_quoted_string(cls, data: str, pos: int) -> ta.Tuple[str, int]:

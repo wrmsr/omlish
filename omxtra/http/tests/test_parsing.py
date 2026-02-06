@@ -27,6 +27,7 @@ import datetime
 import typing as ta
 import unittest
 
+from omlish.http.versions import HttpProtocolVersions
 from omlish.lite.check import check
 
 from .. import parsing as hp
@@ -87,7 +88,7 @@ class TestBasicRequest(unittest.TestCase):
         self.assertIsNone(msg.status_line)
         self.assertEqual(check.not_none(msg.request_line).method, 'GET')
         self.assertEqual(check.not_none(msg.request_line).request_target, b'/')
-        self.assertEqual(check.not_none(msg.request_line).http_version, 'HTTP/1.1')
+        self.assertEqual(check.not_none(msg.request_line).http_version, HttpProtocolVersions.HTTP_1_1)
 
     def test_post_with_body_headers(self) -> None:
         data = _req(
@@ -135,7 +136,7 @@ class TestBasicRequest(unittest.TestCase):
     def test_http10_request(self) -> None:
         data = _req(version='HTTP/1.0')
         msg = hp.parse_http_message(data)
-        self.assertEqual(check.not_none(msg.request_line).http_version, 'HTTP/1.0')
+        self.assertEqual(check.not_none(msg.request_line).http_version, HttpProtocolVersions.HTTP_1_0)
 
     def test_no_headers(self) -> None:
         """HTTP/1.0 request with no headers at all."""
@@ -151,7 +152,7 @@ class TestBasicResponse(unittest.TestCase):
         data = _resp(headers=[('Content-Length', '0')])
         msg = hp.parse_http_message(data)
         self.assertEqual(msg.kind, hp.ParsedHttpMessage.Kind.RESPONSE)
-        self.assertEqual(check.not_none(msg.status_line).http_version, 'HTTP/1.1')
+        self.assertEqual(check.not_none(msg.status_line).http_version, HttpProtocolVersions.HTTP_1_1)
         self.assertEqual(check.not_none(msg.status_line).status_code, 200)
         self.assertEqual(check.not_none(msg.status_line).reason_phrase, 'OK')
 
@@ -175,7 +176,7 @@ class TestBasicResponse(unittest.TestCase):
     def test_http10_response(self) -> None:
         data = _resp(version='HTTP/1.0')
         msg = hp.parse_http_message(data)
-        self.assertEqual(check.not_none(msg.status_line).http_version, 'HTTP/1.0')
+        self.assertEqual(check.not_none(msg.status_line).http_version, HttpProtocolVersions.HTTP_1_0)
 
     def test_no_headers_response(self) -> None:
         data = b'HTTP/1.1 204 No Content\r\n\r\n'
