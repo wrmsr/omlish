@@ -16,17 +16,15 @@ from .core import ChannelPipelineHandlerContext
 class Utf8Decode(ChannelPipelineHandler):
     """bytes/view -> str (UTF-8, replacement)."""
 
-    def __init__(self, *, bytes_flow_control: bool = False) -> None:
+    def __init__(self) -> None:
         super().__init__()
-
-        self._bytes_flow_control = bytes_flow_control
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         if ByteStreamBuffers.can_bytes(msg):
             b = ByteStreamBuffers.to_bytes(msg)
 
-            if self._bytes_flow_control and (fc := ctx.flow_control) is not None:
-                fc.on_consumed(len(b))
+            if (bfc := ctx.bytes_flow_control) is not None:
+                bfc.on_consumed(len(b))
 
             msg = b.decode('utf-8', errors='replace')
 
@@ -55,11 +53,8 @@ class DelimiterFrameDecoder(ChannelPipelineHandler):  # HasChannelPipelineFlowBu
             max_size: int | None = None,
             max_buffer_bytes: int | None = None,
             chunk_size: int = 0x4000,
-            bytes_flow_control: bool = False,
     ) -> None:
         super().__init__()
-
-        self._bytes_flow_control = bytes_flow_control
 
         self._buf = SegmentedByteStreamBuffer(
             max_bytes=max_buffer_bytes,
@@ -97,8 +92,8 @@ class DelimiterFrameDecoder(ChannelPipelineHandler):  # HasChannelPipelineFlowBu
         frames = self._fr.decode(self._buf, final=final)
         after = len(self._buf)
 
-        if self._bytes_flow_control and (fc := ctx.flow_control) is not None:
-            fc.on_consumed(before - after)
+        if (bfc := ctx.bytes_flow_control) is not None:
+            bfc.on_consumed(before - after)
 
         for fr in frames:
             ctx.feed_in(fr)

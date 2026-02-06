@@ -51,7 +51,16 @@ class ChannelPipelineContextInvalidatedError(ChannelPipelineError):
 
 class ChannelPipelineFlowControl(Abstract):
     """
-    Present in core largely just to work around mypy `type-abstract` errors (see https://peps.python.org/pep-0747/ ).
+    Present in core largely just to work around mypy `type-abstract` errors (see https://peps.python.org/pep-0747/ ),
+    but also for the 'special cased' bytes case below.
+
+    ChannelPipelines as a concept and core mechanism are useful independent of the notion of 'bytes', and the core
+    machinery is generally kept pure and generic (including the flow control machinery). In practice though their main
+    usecase *is* bytes in / bytes out, and as such it has this tiny bit of special-cased support in the core. But again,
+    it's really only due to the current `type-abstract` deficiency of mypy.
+
+    Aside from the special BytesChannelPipelineFlowControl case, there may be any number of flow control handlers in a
+    pipeline - other handlers can choose to find and talk to them as they wish.
     """
 
     @abc.abstractmethod
@@ -69,6 +78,14 @@ class ChannelPipelineFlowControl(Abstract):
     @abc.abstractmethod
     def drain_outbound(self, max_cost: ta.Optional[int] = None) -> ta.List[ta.Any]:
         raise NotImplementedError
+
+
+class BytesChannelPipelineFlowControl(ChannelPipelineFlowControl, Abstract):
+    """
+    Special cased flow control specifically for 'external' bytes streams. Many of the decoders will talk to the instance
+    of this (if present) to report the bytes they've consumed as they consume them. If present in a pipeline it must be
+    unique, and should generally be at the outermost position.
+    """
 
 
 ##
@@ -130,8 +147,8 @@ class ChannelPipelineHandlerContext:
     #
 
     @property
-    def flow_control(self) -> ta.Optional[ChannelPipelineFlowControl]:
-        return self._state.get_handler(ChannelPipelineFlowControl)  # type: ignore[type-abstract]
+    def bytes_flow_control(self) -> ta.Optional[BytesChannelPipelineFlowControl]:
+        return self._state.get_handler(BytesChannelPipelineFlowControl)  # type: ignore[type-abstract]
 
 
 class ChannelPipelineHandler(Abstract):
@@ -158,13 +175,13 @@ class ChannelPipeline:
 
         self._channel = channel  # final
 
-        self._handlers = [
+        self.__state = st = self.__new_state([
             ChannelPipeline._Outermost(),
             *handlers,
             ChannelPipeline._Innermost(),
-        ]
+        ])
 
-        for ctx in self._state().ctxs:
+        for ctx in st.ctxs:
             ctx.handler.handler_added(ctx)
 
     class _State:
@@ -174,7 +191,7 @@ class ChannelPipeline:
                 handlers: ta.Sequence[ChannelPipelineHandler],
         ) -> None:
             self.pipeline = pipeline
-            self.handlers = handlers
+            self.handlers = check.not_empty(handlers)
 
             check.isinstance(handlers[0], ChannelPipeline._Outermost)
             check.isinstance(handlers[-1], ChannelPipeline._Innermost)
@@ -192,6 +209,10 @@ class ChannelPipeline:
 
             self._single_handlers_by_type_cache: ta.Dict[type, ta.Optional[ta.Any]] = {}
             self._handlers_by_type_cache: ta.Dict[type, ta.Sequence[ta.Any]] = {}
+
+            # The result of this is discarded - this is done to enforce uniqueness of this special cased handler if it's
+            # present.
+            self.get_handler(BytesChannelPipelineFlowControl)  # type: ignore[type-abstract]
 
         #
 
@@ -237,19 +258,13 @@ class ChannelPipeline:
             ctx = self.ctxs[idx]
             ctx._handler.outbound(ctx, msg)  # noqa
 
-    def __new_state(self) -> _State:
-        return self._State(self, self._handlers)
+    def __new_state(self, handlers: ta.Sequence[ChannelPipelineHandler]) -> _State:
+        return self._State(self, handlers)
 
     __state: _State
 
     def _state(self) -> _State:
-        try:
-            return self.__state
-        except AttributeError:
-            pass
-
-        self.__state = st = self.__new_state()
-        return st
+        return self.__state
 
     #
 

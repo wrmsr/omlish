@@ -1,12 +1,11 @@
 import asyncio
 import typing as ta
 
-from ...asyncio import FlowControlAsyncioStreamDriver
-from ...bytes import BytesChannelPipelineFlowControlAdapter
+from ...asyncio import BytesFlowControlAsyncioStreamDriver
+from ...bytes import BytesFlowControlChannelPipelineHandler
 from ...core import ChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
 from ...core import PipelineChannel
-from ...flow import FlowControlChannelPipelineHandler
 from ...http.requests import HttpRequestHead
 from ...http.requests import HttpRequestHeadDecoder
 
@@ -62,17 +61,14 @@ def build_http_ping_channel(
 ) -> PipelineChannel:
     return PipelineChannel([
 
-        FlowControlChannelPipelineHandler(
-            BytesChannelPipelineFlowControlAdapter(),
-            FlowControlChannelPipelineHandler.Config(
+        BytesFlowControlChannelPipelineHandler(
+            BytesFlowControlChannelPipelineHandler.Config(
                 outbound_capacity=outbound_capacity,
                 outbound_overflow_policy=outbound_overflow_policy,
             ),
         ),
 
-        HttpRequestHeadDecoder(
-            bytes_flow_control=True,
-        ),
+        HttpRequestHeadDecoder(),
 
         PingHandler(),
 
@@ -93,7 +89,7 @@ async def serve_ping(
     """
 
     async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
-        drv = FlowControlAsyncioStreamDriver(
+        drv = BytesFlowControlAsyncioStreamDriver(
             build_http_ping_channel(),
             reader,
             writer,

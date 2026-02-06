@@ -4,8 +4,8 @@ import typing as ta
 from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.lite.check import check
 
+from .core import BytesChannelPipelineFlowControl
 from .core import PipelineChannel
-from .flow import ChannelPipelineFlowControl
 
 
 ##
@@ -92,7 +92,7 @@ class AsyncioStreamDriver:
             pass
 
 
-class FlowControlAsyncioStreamDriver(AsyncioStreamDriver):
+class BytesFlowControlAsyncioStreamDriver(AsyncioStreamDriver):
     def __init__(
             self,
             channel: PipelineChannel,
@@ -119,7 +119,7 @@ class FlowControlAsyncioStreamDriver(AsyncioStreamDriver):
 
         self._backpressure_sleep = backpressure_sleep
 
-        self._flow = check.not_none(self._channel.pipeline.get_handler(ChannelPipelineFlowControl))  # type: ignore[type-abstract]  # noqa
+        self._flow = check.not_none(self._channel.pipeline.get_handler(BytesChannelPipelineFlowControl))  # type: ignore[type-abstract]  # noqa
 
     async def _gate_inbound(self) -> None:
         while not self._flow.want_read():

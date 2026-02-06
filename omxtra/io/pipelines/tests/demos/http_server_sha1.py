@@ -6,12 +6,11 @@ import asyncio
 import hashlib
 import typing as ta
 
-from ...asyncio import FlowControlAsyncioStreamDriver
-from ...bytes import BytesChannelPipelineFlowControlAdapter
+from ...asyncio import BytesFlowControlAsyncioStreamDriver
+from ...bytes import BytesFlowControlChannelPipelineHandler
 from ...core import ChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
 from ...core import PipelineChannel
-from ...flow import FlowControlChannelPipelineHandler
 from ...http.requests import HttpBodyStreamDecoder
 from ...http.requests import HttpContentChunk
 from ...http.requests import HttpRequestAborted
@@ -111,9 +110,8 @@ def build_http_sha1_channel(
 ) -> PipelineChannel:
     return PipelineChannel([
 
-        FlowControlChannelPipelineHandler(
-            BytesChannelPipelineFlowControlAdapter(),
-            FlowControlChannelPipelineHandler.Config(
+        BytesFlowControlChannelPipelineHandler(
+            BytesFlowControlChannelPipelineHandler.Config(
                 outbound_capacity=outbound_capacity,
                 outbound_overflow_policy=outbound_overflow_policy,
             ),
@@ -121,13 +119,11 @@ def build_http_sha1_channel(
 
         HttpRequestHeadDecoder(
             max_head=max_head,
-            bytes_flow_control=True,
         ),
 
         HttpBodyStreamDecoder(
             max_chunk=max_chunk,
             max_buf=max_body_buf,
-            bytes_flow_control=True,
         ),
 
         Sha1Handler(),
@@ -160,7 +156,7 @@ async def serve_sha1(
 
         )
 
-        drv = FlowControlAsyncioStreamDriver(
+        drv = BytesFlowControlAsyncioStreamDriver(
             ch,
             reader,
             writer,

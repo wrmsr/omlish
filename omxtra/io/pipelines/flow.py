@@ -1,10 +1,5 @@
 # ruff: noqa: UP006 UP045
 # @omlish-lite
-"""
-TODO:
- - HasChannelPipelineFlowControlBuffer or whatever..
-  - not even in here probably
-"""
 import abc
 import collections
 import dataclasses as dc
@@ -44,12 +39,6 @@ class ChannelPipelineFlowControlAdapter(Abstract):
     @abc.abstractmethod
     def get_cost(self, msg: ta.Any) -> ta.Optional[int]:
         raise NotImplementedError
-
-
-# class HasChannelPipelineFlowControlBuffer:
-#     @abc.abstractmethod
-#     def buffered_cost(self) -> ta.Optional[int]:
-#         raise NotImplementedError
 
 
 ##

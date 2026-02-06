@@ -1,1 +1,28 @@
 - omlish.metadata
+- streaming?
+- datatypes
+  - redacted
+  - lang.Marker - class name, handle `type[Foo]`
+  - pathlib.Path
+  - decimal.Decimal
+  - datetime.date, datetime.time
+  - ipaddress
+  - numpy types
+- jackson switches
+  - accept_case_insensitive_enums
+  - accept_case_insensitive_properties
+  - accept_case_insensitive_values
+  - allow_coercion_of_scalars
+  - use_base_type_as_default_impl
+- codegen
+- context-local switches
+  - mutable_collections
+- simple lite interop like inj - alt ObjMarshalerManager impl for Context
+
+See:
+- https://github.com/python-attrs/cattrs
+- https://github.com/jcrist/msgspec
+- https://github.com/Fatal1ty/mashumaro
+- https://github.com/Kotlin/kotlinx.serialization/blob/master/docs/serializers.md#custom-serializers
+- https://github.com/yukinarit/pyserde
+- https://github.com/FasterXML/jackson

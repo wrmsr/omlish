@@ -42,11 +42,8 @@ class HttpResponseDecoder(ChannelPipelineHandler):
             self,
             *,
             max_head: int = 64 << 10,
-            bytes_flow_control: bool = False,
     ) -> None:
         super().__init__()
-
-        self._bytes_flow_control = bytes_flow_control
 
         self._buf = SegmentedByteStreamBuffer(
             max_bytes=max_head,
@@ -88,16 +85,16 @@ class HttpResponseDecoder(ChannelPipelineHandler):
         self._got_head = True
 
         after = len(self._buf)
-        if self._bytes_flow_control and (fc := ctx.flow_control) is not None:
-            fc.on_consumed(before - after + (i + 4))
+        if (bfc := ctx.bytes_flow_control) is not None:
+            bfc.on_consumed(before - after + (i + 4))
 
         ctx.feed_in(head)
 
         if len(self._buf):
             before2 = len(self._buf)
             body_view = self._buf.split_to(before2)
-            if self._bytes_flow_control and (fc := ctx.flow_control) is not None:
-                fc.on_consumed(before2)
+            if (bfc := ctx.bytes_flow_control) is not None:
+                bfc.on_consumed(before2)
             ctx.feed_in(body_view)
 
     def _parse_head(self, raw: bytes) -> HttpResponseHead:

@@ -50,12 +50,10 @@ class HttpRequestHeadDecoder(ChannelPipelineHandler):
             self,
             *,
             max_head: int = 64 << 10,
-            bytes_flow_control: bool = False,
     ) -> None:
         super().__init__()
 
         self._max_head = max_head
-        self._bytes_flow_control = bytes_flow_control
 
         self._buf = SegmentedByteStreamBuffer(max_bytes=max_head)
         self._passthrough_body = False
@@ -101,8 +99,8 @@ class HttpRequestHeadDecoder(ChannelPipelineHandler):
         head_view = self._buf.split_to(i + 4)
 
         after = len(self._buf)
-        if self._bytes_flow_control and (fc := ctx.flow_control) is not None:
-            fc.on_consumed(before - after + (i + 4))
+        if (bfc := ctx.bytes_flow_control) is not None:
+            bfc.on_consumed(before - after + (i + 4))
 
         req = self._parse_head(ByteStreamBuffers.to_bytes(head_view))
         ctx.feed_in(req)
@@ -114,8 +112,8 @@ class HttpRequestHeadDecoder(ChannelPipelineHandler):
         if len(self._buf):
             rem = len(self._buf)
             rem_view = self._buf.split_to(rem)
-            if self._bytes_flow_control and (fc := ctx.flow_control) is not None:
-                fc.on_consumed(rem)
+            if (bfc := ctx.bytes_flow_control) is not None:
+                bfc.on_consumed(rem)
             ctx.feed_in(rem_view)
 
     def _parse_head(self, raw: bytes) -> HttpRequestHead:
@@ -163,12 +161,10 @@ class HttpRequestBodyAggregator(ChannelPipelineHandler):
             self,
             *,
             max_body: int | None = 1 << 20,
-            bytes_flow_control: bool = False,
     ) -> None:
         super().__init__()
 
         self._max_body = max_body
-        self._bytes_flow_control = bytes_flow_control
 
         self._cur_head: HttpRequestHead | None = None
         self._want = 0
@@ -241,8 +237,8 @@ class HttpRequestBodyAggregator(ChannelPipelineHandler):
         body_view = self._buf.split_to(self._want)
         after = len(self._buf)
 
-        if self._bytes_flow_control and (fc := ctx.flow_control) is not None:
-            fc.on_consumed(before - after + self._want)
+        if (bfc := ctx.bytes_flow_control) is not None:
+            bfc.on_consumed(before - after + self._want)
 
         body = ByteStreamBuffers.to_bytes(body_view)
 
@@ -297,12 +293,10 @@ class HttpBodyStreamDecoder(ChannelPipelineHandler):
             *,
             max_chunk: int = 1 << 20,
             max_buf: int | None = 1 << 22,
-            bytes_flow_control: bool = False,
     ) -> None:
         super().__init__()
 
         self._max_chunk = max_chunk
-        self._bytes_flow_control = bytes_flow_control
 
         self._buf = SegmentedByteStreamBuffer(max_bytes=max_buf)
 
@@ -389,8 +383,8 @@ class HttpBodyStreamDecoder(ChannelPipelineHandler):
         # our internal buffer grew by (after - before).
         removed = before + added - after
         if removed > 0:
-            if self._bytes_flow_control and (fc := ctx.flow_control) is not None:
-                fc.on_consumed(removed)
+            if (bfc := ctx.bytes_flow_control) is not None:
+                bfc.on_consumed(removed)
 
     def _select_mode(self, head: HttpRequestHead) -> tuple[str, int, int | None]:
         te = (head.header('transfer-encoding') or '').lower()

@@ -1,12 +1,11 @@
 import asyncio
 import typing as ta
 
-from ...asyncio import FlowControlAsyncioStreamDriver
-from ...bytes import BytesChannelPipelineFlowControlAdapter
+from ...asyncio import BytesFlowControlAsyncioStreamDriver
+from ...bytes import BytesFlowControlChannelPipelineHandler
 from ...core import ChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
 from ...core import PipelineChannel
-from ...flow import FlowControlChannelPipelineHandler
 from ...http.requests import HttpRequest
 from ...http.requests import HttpRequestBodyAggregator
 from ...http.requests import HttpRequestHeadDecoder
@@ -126,9 +125,8 @@ def build_http_kv_channel(
 ) -> PipelineChannel:
     return PipelineChannel([
 
-        FlowControlChannelPipelineHandler(
-            BytesChannelPipelineFlowControlAdapter(),
-            FlowControlChannelPipelineHandler.Config(
+        BytesFlowControlChannelPipelineHandler(
+            BytesFlowControlChannelPipelineHandler.Config(
                 outbound_capacity=outbound_capacity,
                 outbound_overflow_policy=outbound_overflow_policy,
             ),
@@ -136,12 +134,10 @@ def build_http_kv_channel(
 
         HttpRequestHeadDecoder(
             max_head=max_head,
-            bytes_flow_control=True,
         ),
 
         HttpRequestBodyAggregator(
             max_body=max_body,
-            bytes_flow_control=True,
         ),
 
         KvStoreHandler(items),
@@ -167,7 +163,7 @@ async def serve_kv(
     items: dict[str, str] = {}
 
     async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
-        drv = FlowControlAsyncioStreamDriver(
+        drv = BytesFlowControlAsyncioStreamDriver(
             build_http_kv_channel(items),
             reader,
             writer,
