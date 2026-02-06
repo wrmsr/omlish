@@ -4,7 +4,11 @@ import typing as ta
 from omlish.io.streams.errors import FrameTooLargeByteStreamBufferError
 from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 from omlish.io.streams.utils import ByteStreamBuffers
+from omlish.lite.check import check
 
+from ....http.headers.parsing import ParsedMessage
+from ....http.headers.parsing import ParserMode
+from ....http.headers.parsing import parse_http_headers
 from ..core import ChannelPipelineEvents
 from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
@@ -19,6 +23,7 @@ class HttpRequestHead:
     target: str
     version: str
     headers: dict[str, str]
+    parsed: ParsedMessage
 
     def header(self, name: str) -> str | None:
         return self.headers.get(name.casefold())
@@ -113,31 +118,15 @@ class HttpRequestHeadDecoder(ChannelPipelineHandler):
             ctx.feed_in(rem_view)
 
     def _parse_head(self, raw: bytes) -> HttpRequestHead:
-        text = raw.decode('iso-8859-1', errors='replace')
-        lines = text.split('\r\n')
-        while lines and lines[-1] == '':
-            lines.pop()
-        if not lines:
-            raise ValueError('bad http request head')
-
-        req_line = lines[0]
-        parts = req_line.split(' ', 2)
-        if len(parts) != 3:
-            raise ValueError('bad http request line')
-        method, target, version = parts[0], parts[1], parts[2]
-
-        headers: dict[str, str] = {}
-        for ln in lines[1:]:
-            if not ln or ':' not in ln:
-                continue
-            k, v = ln.split(':', 1)
-            headers[k.strip().casefold()] = v.lstrip(' \t').strip()
+        parsed = parse_http_headers(raw, mode=ParserMode.REQUEST)
+        line = check.not_none(parsed.request_line)
 
         return HttpRequestHead(
-            method=method,
-            target=target,
-            version=version,
-            headers=headers,
+            method=line.method,
+            target=check.not_none(line.request_target).decode('utf-8'),
+            version=line.http_version,
+            headers=dict(parsed.headers.items()),
+            parsed=parsed,
         )
 
 

@@ -700,6 +700,8 @@ class HttpHeaderParser:
     """
 
     def __init__(self, config: ta.Optional[ParserConfig] = None) -> None:
+        super().__init__()
+
         self._config = config or ParserConfig()
 
     # Public API
