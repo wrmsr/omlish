@@ -1,7 +1,7 @@
 # ruff: noqa: FURB188
 import typing as ta
 
-from omlish.io.streams.framing import LongestMatchDelimiterByteStreamFramer
+from omlish.io.streams.framing import LongestMatchDelimiterByteStreamFrameDecoder
 from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 from omlish.io.streams.utils import ByteStreamBuffers
 
@@ -66,7 +66,7 @@ class DelimiterFrameDecoder(ChannelPipelineHandler):  # HasChannelPipelineFlowBu
             chunk_size=chunk_size,
         )
 
-        self._fr = LongestMatchDelimiterByteStreamFramer(
+        self._fr = LongestMatchDelimiterByteStreamFrameDecoder(
             delims,
             keep_ends=keep_ends,
             max_size=max_size,

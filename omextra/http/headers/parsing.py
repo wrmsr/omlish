@@ -196,6 +196,9 @@ class ParsedHttpHeaders:
     def keys(self) -> ta.List[str]:
         return list(self._order)
 
+    def __iter__(self) -> ta.Iterator[str]:
+        return iter(self._order)
+
     def __len__(self) -> int:
         return len(self._order)
 
@@ -266,8 +269,14 @@ class PreparedParsedHttpHeaders:
 ##
 
 
+@dc.dataclass(frozen=True)
+class RawParsedHttpHeader:
+    name: bytes
+    value: bytes
+
+
 @dc.dataclass()
-class ParsedHttpHead:
+class ParsedHttpMessage:
     class Kind(enum.Enum):
         REQUEST = 'request'
         RESPONSE = 'response'
@@ -290,13 +299,7 @@ class ParsedHttpHead:
 
     status_line: ta.Optional[StatusLine]
 
-    @dc.dataclass(frozen=True)
-    class RawHeader:
-        name: bytes
-        value: bytes
-
-    raw_headers: ta.List[RawHeader]
-
+    raw_headers: ta.List[RawParsedHttpHeader]
     headers: ParsedHttpHeaders
 
     prepared: PreparedParsedHttpHeaders
@@ -305,7 +308,18 @@ class ParsedHttpHead:
 ##
 
 
-class HttpHeadParser:
+@dc.dataclass(frozen=True)
+class ParsedHttpTrailers:
+    """Result of parsing HTTP trailer fields."""
+
+    raw_headers: ta.List[RawParsedHttpHeader]
+    headers: ParsedHttpHeaders
+
+
+##
+
+
+class HttpMessageParser:
     """
     Strict HTTP/1.x message-head parser.
 
@@ -352,11 +366,11 @@ class HttpHeadParser:
         RESPONSE = 'response'
         AUTO = 'auto'
 
-    def parse(self, data: bytes, mode: Mode = Mode.AUTO) -> ParsedHttpHead:
+    def parse(self, data: bytes, mode: Mode = Mode.AUTO) -> ParsedHttpMessage:
         if not isinstance(data, (bytes, bytearray)):
             raise TypeError(f'Expected bytes, got {type(data).__name__}')
 
-        ctx = _HttpHeadParseContext(
+        ctx = _HttpMessageParseContext(
             data=bytes(data),
             config=self._config,
             mode=mode,
@@ -373,9 +387,9 @@ class HttpHeadParser:
         kind = ctx.detect_kind(start_line_bytes)
 
         # 4. Parse start-line
-        request_line: ta.Optional[ParsedHttpHead.RequestLine] = None
-        status_line: ta.Optional[ParsedHttpHead.StatusLine] = None
-        if kind == ParsedHttpHead.Kind.REQUEST:
+        request_line: ta.Optional[ParsedHttpMessage.RequestLine] = None
+        status_line: ta.Optional[ParsedHttpMessage.StatusLine] = None
+        if kind == ParsedHttpMessage.Kind.REQUEST:
             request_line = ctx.parse_request_line(start_line_bytes)
         else:
             status_line = ctx.parse_status_line(start_line_bytes)
@@ -401,7 +415,7 @@ class HttpHeadParser:
         # 7. Build prepared headers
         prepared = ctx.prepare_headers(headers, kind, http_version)
 
-        return ParsedHttpHead(
+        return ParsedHttpMessage(
             kind=kind,
             request_line=request_line,
             status_line=status_line,
@@ -410,13 +424,73 @@ class HttpHeadParser:
             prepared=prepared,
         )
 
+    def parse_trailers(
+        self,
+        data: bytes,
+    ) -> ParsedHttpTrailers:
+        """
+        Parse HTTP/1.x trailer fields from *data*.
 
-class _HttpHeadParseContext:
+        *data* must contain the complete trailer section ending with ``\\r\\n\\r\\n`` (an empty line). No start-line is
+        expected.
+
+        Fields listed in :data:`_FORBIDDEN_TRAILER_FIELDS` (per RFC 7230 §4.1.2) are rejected.
+
+        :param data: Complete trailer section ending with ``\\r\\n\\r\\n``.
+        :param config: Parsing strictness configuration (same knobs as header parsing).
+        :returns: A :class:`ParsedTrailers` with raw and normalized headers.
+        :raises HttpParseError: On any parsing violation.
+        """
+
+        if not isinstance(data, (bytes, bytearray)):
+            raise TypeError(f'Expected bytes, got {type(data).__name__}')
+
+        # Special case: empty trailers (just the terminating empty line, no fields)
+        if data == b'\r\n' or (self._config.allow_bare_lf and data == b'\n'):
+            return ParsedHttpTrailers(
+                raw_headers=[],
+                headers=ParsedHttpHeaders(),
+            )
+
+        ctx = _HttpMessageParseContext(
+            data=bytes(data),
+            config=self._config,
+            mode=HttpMessageParser.Mode.AUTO,
+        )
+
+        # Verify terminator (trailers end with an empty CRLF line, same as headers)
+        ctx.verify_terminator()
+
+        # Parse fields starting at position 0 (no start-line)
+        raw_headers = ctx.parse_header_fields(0)
+
+        # Build normalized headers
+        headers = ParsedHttpHeaders()
+        for rh in raw_headers:
+            name_str = rh.name.decode('ascii').lower()
+            value_str = rh.value.decode('latin-1')
+            headers._add(name_str, value_str)  # noqa
+
+        # Enforce forbidden trailer fields (RFC 7230 §4.1.2)
+        for name in headers:
+            if name in _HttpMessageParseContext._FORBIDDEN_TRAILER_FIELDS:  # noqa
+                raise SemanticHeaderError(
+                    code=SemanticHeaderErrorCode.FORBIDDEN_TRAILER_FIELD,
+                    message=f'Forbidden field in trailers: {name!r}',
+                )
+
+        return ParsedHttpTrailers(
+            raw_headers=raw_headers,
+            headers=headers,
+        )
+
+
+class _HttpMessageParseContext:
     def __init__(
             self,
             data: bytes,
-            config: HttpHeadParser.Config,
-            mode: HttpHeadParser.Mode,
+            config: HttpMessageParser.Config,
+            mode: HttpMessageParser.Mode,
     ) -> None:
         super().__init__()
 
@@ -585,24 +659,24 @@ class _HttpHeadParseContext:
 
     # Kind detection
 
-    def detect_kind(self, start_line: bytes) -> ParsedHttpHead.Kind:
-        if self.mode == HttpHeadParser.Mode.REQUEST:
-            return ParsedHttpHead.Kind.REQUEST
+    def detect_kind(self, start_line: bytes) -> ParsedHttpMessage.Kind:
+        if self.mode == HttpMessageParser.Mode.REQUEST:
+            return ParsedHttpMessage.Kind.REQUEST
 
-        if self.mode == HttpHeadParser.Mode.RESPONSE:
-            return ParsedHttpHead.Kind.RESPONSE
+        if self.mode == HttpMessageParser.Mode.RESPONSE:
+            return ParsedHttpMessage.Kind.RESPONSE
 
         # AUTO: responses start with "HTTP/"
         if start_line.startswith(b'HTTP/'):
-            return ParsedHttpHead.Kind.RESPONSE
+            return ParsedHttpMessage.Kind.RESPONSE
 
-        return ParsedHttpHead.Kind.REQUEST
+        return ParsedHttpMessage.Kind.REQUEST
 
     # Start-line parsing
 
     _REQUEST_TARGET_BYTES: ta.ClassVar[bytes] = bytes(set(_VCHAR_BYTES) | set(range(0x80, 0x100)))
 
-    def parse_request_line(self, line: bytes) -> ParsedHttpHead.RequestLine:
+    def parse_request_line(self, line: bytes) -> ParsedHttpMessage.RequestLine:
         """Parse ``method SP request-target SP HTTP-version``."""
 
         # Must have exactly two SP separators
@@ -699,7 +773,7 @@ class _HttpHeadParseContext:
                 offset=last_sp + 1,
             )
 
-        return ParsedHttpHead.RequestLine(
+        return ParsedHttpMessage.RequestLine(
             method=method_bytes.decode('ascii'),
             request_target=target_bytes,
             http_version=version_str,
@@ -715,7 +789,7 @@ class _HttpHeadParseContext:
         set(_OBS_TEXT),
     )
 
-    def parse_status_line(self, line: bytes) -> ParsedHttpHead.StatusLine:
+    def parse_status_line(self, line: bytes) -> ParsedHttpMessage.StatusLine:
         """Parse ``HTTP-version SP status-code SP reason-phrase``."""
 
         # First SP separates version from status code
@@ -802,7 +876,7 @@ class _HttpHeadParseContext:
                         offset=reason_base_offset + i,
                     )
 
-        return ParsedHttpHead.StatusLine(
+        return ParsedHttpMessage.StatusLine(
             http_version=version_str,
             status_code=status_code,
             reason_phrase=reason_bytes.decode('latin-1'),
@@ -810,10 +884,10 @@ class _HttpHeadParseContext:
 
     # Header field parsing
 
-    def parse_header_fields(self, start: int) -> ta.List[ParsedHttpHead.RawHeader]:
+    def parse_header_fields(self, start: int) -> ta.List[RawParsedHttpHeader]:
         """Parse all header fields from *start* until the empty-line terminator."""
 
-        headers: ta.List[ParsedHttpHead.RawHeader] = []
+        headers: ta.List[RawParsedHttpHeader] = []
         pos = start
         data = self.data
         self.current_line = 1  # line 0 is the start-line
@@ -917,7 +991,7 @@ class _HttpHeadParseContext:
         (True, True):   bytes({_HTAB, _CR, _SP} | set(range(0x21, 0x7F))),  # noqa
     }
 
-    def _parse_one_header(self, line_data: bytes, line_start_offset: int) -> ParsedHttpHead.RawHeader:
+    def _parse_one_header(self, line_data: bytes, line_start_offset: int) -> RawParsedHttpHeader:
         """Parse a single ``field-name: field-value`` line (already unfolded)."""
 
         colon_idx = line_data.find(b':')
@@ -1054,7 +1128,7 @@ class _HttpHeadParseContext:
                         offset=value_base_offset + i,
                     )
 
-        return ParsedHttpHead.RawHeader(
+        return RawParsedHttpHeader(
             name=name_bytes,
             value=value_stripped,
         )
@@ -1064,7 +1138,7 @@ class _HttpHeadParseContext:
     def prepare_headers(
         self,
         headers: ParsedHttpHeaders,
-        kind: ParsedHttpHead.Kind,
+        kind: ParsedHttpMessage.Kind,
         http_version: str,
     ) -> PreparedParsedHttpHeaders:
         prepared = PreparedParsedHttpHeaders()
@@ -1149,8 +1223,10 @@ class _HttpHeadParseContext:
             if not self.config.allow_multiple_content_lengths:
                 raise SemanticHeaderError(
                     code=SemanticHeaderErrorCode.DUPLICATE_CONTENT_LENGTH,
-                    message=f'Multiple Content-Length values (all {parsed_values[0]}); '
-                    f'set allow_multiple_content_lengths to accept',
+                    message=(
+                        f'Multiple Content-Length values (all {parsed_values[0]}); '
+                        f'set allow_multiple_content_lengths to accept'
+                    ),
                 )
 
         val = parsed_values[0]
@@ -1175,7 +1251,7 @@ class _HttpHeadParseContext:
         self,
         headers: ParsedHttpHeaders,
         prepared: PreparedParsedHttpHeaders,
-        kind: ParsedHttpHead.Kind,
+        kind: ParsedHttpMessage.Kind,
         http_version: str,
     ) -> None:
         if 'transfer-encoding' not in headers:
@@ -1222,13 +1298,13 @@ class _HttpHeadParseContext:
 
         else:
             # No chunked present
-            if kind == ParsedHttpHead.Kind.REQUEST:
+            if kind == ParsedHttpMessage.Kind.REQUEST:
                 raise SemanticHeaderError(
                     code=SemanticHeaderErrorCode.TE_WITHOUT_CHUNKED_LAST,
                     message='Transfer-Encoding in a request must include chunked as the last coding',
                 )
 
-            elif kind == ParsedHttpHead.Kind.RESPONSE:
+            elif kind == ParsedHttpMessage.Kind.RESPONSE:
                 if not self.config.allow_te_without_chunked_in_response:
                     raise SemanticHeaderError(
                         code=SemanticHeaderErrorCode.TE_WITHOUT_CHUNKED_LAST,
@@ -1247,12 +1323,12 @@ class _HttpHeadParseContext:
         self,
         headers: ParsedHttpHeaders,
         prepared: PreparedParsedHttpHeaders,
-        kind: ParsedHttpHead.Kind,
+        kind: ParsedHttpMessage.Kind,
         http_version: str,
     ) -> None:
         values = headers.get_all('host')
 
-        if kind == ParsedHttpHead.Kind.REQUEST and http_version == 'HTTP/1.1':
+        if kind == ParsedHttpMessage.Kind.REQUEST and http_version == 'HTTP/1.1':
             if not values and not self.config.allow_missing_host:
                 raise SemanticHeaderError(
                     code=SemanticHeaderErrorCode.MISSING_HOST_HEADER,
@@ -1279,7 +1355,7 @@ class _HttpHeadParseContext:
 
             # Minimal validation: reject any whitespace/control chars. Host is an authority, and
             # allowing OWS creates parsing inconsistencies across components.
-            if not host_val and kind == ParsedHttpHead.Kind.REQUEST:
+            if not host_val and kind == ParsedHttpMessage.Kind.REQUEST:
                 # Empty Host is technically allowed for certain request-targets (authority form, etc.), but let's just
                 # accept it - the URI layer handles that.
                 pass
@@ -1763,11 +1839,11 @@ class _HttpHeadParseContext:
 ##
 
 
-def parse_http_head(
-    data: bytes,
-    mode: HttpHeadParser.Mode = HttpHeadParser.Mode.AUTO,
-    config: ta.Optional[HttpHeadParser.Config] = None,
-) -> ParsedHttpHead:
+def parse_http_message(
+        data: bytes,
+        mode: HttpMessageParser.Mode = HttpMessageParser.Mode.AUTO,
+        config: ta.Optional[HttpMessageParser.Config] = None,
+) -> ParsedHttpMessage:
     """
     Parse an HTTP/1.x message head from *data*.
 
@@ -1780,5 +1856,27 @@ def parse_http_head(
     :raises HttpParseError: On any parsing violation.
     """
 
-    parser = HttpHeadParser(**(dict(config=config) if config is not None else {}))
+    parser = HttpMessageParser(**(dict(config=config) if config is not None else {}))
     return parser.parse(data, mode=mode)
+
+
+def parse_http_trailers(
+        data: bytes,
+        config: ta.Optional[HttpMessageParser.Config] = None,
+) -> ParsedHttpTrailers:
+    """
+    Parse HTTP/1.x trailer fields from *data*.
+
+    *data* must contain the complete trailer section ending with ``\\r\\n\\r\\n`` (an empty line). No start-line is
+    expected.
+
+    Fields listed in :data:`_FORBIDDEN_TRAILER_FIELDS` (per RFC 7230 §4.1.2) are rejected.
+
+    :param data: Complete trailer section ending with ``\\r\\n\\r\\n``.
+    :param config: Parsing strictness configuration (same knobs as header parsing).
+    :returns: A :class:`ParsedTrailers` with raw and normalized headers.
+    :raises HttpParseError: On any parsing violation.
+    """
+
+    parser = HttpMessageParser(**(dict(config=config) if config is not None else {}))
+    return parser.parse_trailers(data)

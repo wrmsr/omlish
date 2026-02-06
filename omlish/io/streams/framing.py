@@ -11,7 +11,7 @@ from .types import ByteStreamBufferView
 ##
 
 
-class LongestMatchDelimiterByteStreamFramer:
+class LongestMatchDelimiterByteStreamFrameDecoder:
     """
     A delimiter-based framing codec that supports *overlapping* delimiters with longest-match semantics.
 

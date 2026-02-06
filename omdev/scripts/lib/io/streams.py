@@ -27,7 +27,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='types.py', sha1='6ae05b5486ac8eb1f2667d415aad0cde3c962df4'),
             dict(path='base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
-            dict(path='framing.py', sha1='3b0a684d7f844c99ad116dabc082f2d9bec466a6'),
+            dict(path='framing.py', sha1='854bb6bbfc713fa47d0293b11cb4db230f51268d'),
             dict(path='reading.py', sha1='7631635c46ab4b40bcaeb7c506cf15cb2d529a40'),
             dict(path='utils.py', sha1='f29ce425931dda3a1ce1cc3f2a90ae867d790358'),
             dict(path='direct.py', sha1='c7a8cf3adb785387e410381cc83be2aad74b8d41'),
@@ -35,7 +35,7 @@ def __omlish_amalg__():  # noqa
             dict(path='adapters.py', sha1='1a6c209490fa78947a607101e20169a5e135847b'),
             dict(path='linear.py', sha1='c58741a70953bfb53f369782db46e7912af790b3'),
             dict(path='segmented.py', sha1='69b63fb61953eaaea7e996cbd96555882ba8f6f2'),
-            dict(path='_amalg.py', sha1='4511d6a6f9ae80585eea1c68980df5323ef0ef14'),
+            dict(path='_amalg.py', sha1='9c88a055447d7b37da1b356e6a1e00b7c4a9a3cb'),
         ],
     )
 
@@ -546,7 +546,7 @@ class BaseByteStreamBufferLike(ByteStreamBufferLike, Abstract):
 ##
 
 
-class LongestMatchDelimiterByteStreamFramer:
+class LongestMatchDelimiterByteStreamFrameDecoder:
     """
     A delimiter-based framing codec that supports *overlapping* delimiters with longest-match semantics.
 

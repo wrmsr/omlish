@@ -6,7 +6,7 @@ import unittest
 from ..errors import BufferTooLargeByteStreamBufferError
 from ..errors import FrameTooLargeByteStreamBufferError
 from ..framing import LengthFieldByteStreamFrameDecoder
-from ..framing import LongestMatchDelimiterByteStreamFramer
+from ..framing import LongestMatchDelimiterByteStreamFrameDecoder
 from ..linear import LinearByteStreamBuffer
 from ..segmented import SegmentedByteStreamBuffer
 
@@ -23,7 +23,7 @@ def _view_bytes(v: ta.Any) -> bytes:
 class TestLongestMatchDelimiterByteStreamFramer(unittest.TestCase):
     def test_overlapping_delims_defers_at_end(self) -> None:
         # delims overlap: '\r' is prefix of '\r\n'
-        f = LongestMatchDelimiterByteStreamFramer([b'\r', b'\r\n'])
+        f = LongestMatchDelimiterByteStreamFrameDecoder([b'\r', b'\r\n'])
         b = SegmentedByteStreamBuffer()
 
         b.write(b'abc\r')
@@ -37,7 +37,7 @@ class TestLongestMatchDelimiterByteStreamFramer(unittest.TestCase):
         self.assertEqual(b''.join(bytes(mv) for mv in b.segments()), b'q')
 
     def test_overlapping_delims_final_allows_short(self) -> None:
-        f = LongestMatchDelimiterByteStreamFramer([b'\r', b'\r\n'])
+        f = LongestMatchDelimiterByteStreamFrameDecoder([b'\r', b'\r\n'])
         b = SegmentedByteStreamBuffer()
         b.write(b'abc\r')
 
@@ -46,7 +46,7 @@ class TestLongestMatchDelimiterByteStreamFramer(unittest.TestCase):
         self.assertEqual(len(b), 0)
 
     def test_longest_match_at_same_position(self) -> None:
-        f = LongestMatchDelimiterByteStreamFramer([b'\n', b'\r\n'])
+        f = LongestMatchDelimiterByteStreamFrameDecoder([b'\n', b'\r\n'])
         b = SegmentedByteStreamBuffer()
         b.write(b'a\r')
         b.write(b'\nb\n')
@@ -56,7 +56,7 @@ class TestLongestMatchDelimiterByteStreamFramer(unittest.TestCase):
         self.assertEqual(len(b), 0)
 
     def test_keep_ends(self) -> None:
-        f = LongestMatchDelimiterByteStreamFramer([b'\n', b'\r\n'], keep_ends=True)
+        f = LongestMatchDelimiterByteStreamFrameDecoder([b'\n', b'\r\n'], keep_ends=True)
         b = SegmentedByteStreamBuffer()
         b.write(b'a\r')
         b.write(b'\nb\n')
@@ -66,7 +66,7 @@ class TestLongestMatchDelimiterByteStreamFramer(unittest.TestCase):
         self.assertEqual(len(b), 0)
 
     def test_max_size(self) -> None:
-        f = LongestMatchDelimiterByteStreamFramer([b'\n'], max_size=3)
+        f = LongestMatchDelimiterByteStreamFrameDecoder([b'\n'], max_size=3)
         b = SegmentedByteStreamBuffer()
         b.write(b'abcd')  # no delimiter, exceeds max_size
         with self.assertRaises(ValueError):
@@ -80,7 +80,7 @@ class TestLongestMatchDelimiterByteStreamFramer(unittest.TestCase):
         self.assertEqual(b''.join(bytes(mv) for mv in b2.segments()), b'xxxx')
 
     def test_longest_match_framer_raises_subclasses(self) -> None:
-        f = LongestMatchDelimiterByteStreamFramer([b'\n'], max_size=3)
+        f = LongestMatchDelimiterByteStreamFrameDecoder([b'\n'], max_size=3)
         b = SegmentedByteStreamBuffer()
         b.write(b'abcd')  # no delimiter, exceeds max_size
         with self.assertRaises(BufferTooLargeByteStreamBufferError):

@@ -3,7 +3,7 @@
 import unittest
 
 from ..direct import DirectByteStreamBuffer
-from ..framing import LongestMatchDelimiterByteStreamFramer
+from ..framing import LongestMatchDelimiterByteStreamFrameDecoder
 
 
 class TestDirectByteStreamBuffer(unittest.TestCase):
@@ -173,7 +173,7 @@ class TestDirectByteStreamBuffer(unittest.TestCase):
         data = b'line1\r\nline2\r\nline3\r\n'
         buf = DirectByteStreamBuffer(data)
 
-        framer = LongestMatchDelimiterByteStreamFramer([b'\r\n'])
+        framer = LongestMatchDelimiterByteStreamFrameDecoder([b'\r\n'])
         frames = framer.decode(buf, final=True)
 
         self.assertEqual(len(frames), 3)
@@ -187,7 +187,7 @@ class TestDirectByteStreamBuffer(unittest.TestCase):
         data = b'line1\r\nline2\r\npartial'
         buf = DirectByteStreamBuffer(data)
 
-        framer = LongestMatchDelimiterByteStreamFramer([b'\r\n'])
+        framer = LongestMatchDelimiterByteStreamFrameDecoder([b'\r\n'])
         frames = framer.decode(buf)
 
         self.assertEqual(len(frames), 2)
