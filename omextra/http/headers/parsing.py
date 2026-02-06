@@ -12,108 +12,6 @@ import typing as ta
 
 
 ##
-# Character set constants
-
-
-# RFC 7230 §3.2.6: token = 1*tchar
-# tchar = "!" / "#" / "$" / "%" / "&" / "'" / "*" / "+" / "-" / "." / "^" / "_" / "`" / "|" / "~" / DIGIT / ALPHA
-_TCHAR_EXTRAS: ta.FrozenSet[int] = frozenset(b"!#$%&'*+-.^_`|~")
-
-_TCHAR: ta.FrozenSet[int] = frozenset(
-    set(range(0x30, 0x3A)) |  # DIGIT 0-9
-    set(range(0x41, 0x5B)) |  # ALPHA A-Z
-    set(range(0x61, 0x7B)) |  # ALPHA a-z
-    _TCHAR_EXTRAS,
-)
-
-# VCHAR = %x21-7E
-_VCHAR: ta.FrozenSet[int] = frozenset(range(0x21, 0x7F))
-
-# obs-text = %x80-FF
-_OBS_TEXT: ta.FrozenSet[int] = frozenset(range(0x80, 0x100))
-
-_SP = 0x20
-_HTAB = 0x09
-_CR = 0x0D
-_LF = 0x0A
-_COLON = 0x3A
-_NUL = 0x00
-
-# OWS = *( SP / HTAB )
-_OWS_CHARS: ta.FrozenSet[int] = frozenset({_SP, _HTAB})
-
-_CRLF = b'\r\n'
-_CRLFCRLF = b'\r\n\r\n'
-
-# reason-phrase = *( HTAB / SP / VCHAR / obs-text )
-_REASON_PHRASE_CHARS: ta.FrozenSet[int] = frozenset(
-    {_HTAB, _SP} |
-    set(_VCHAR) |
-    set(_OBS_TEXT),
-)
-
-# Pre-compiled byte regexes for fast-path validation (avoids Python-level
-# per-byte iteration on valid input).
-
-# token: 1+ tchar bytes
-_RE_TOKEN = re.compile(rb"^[!#$%&'*+\-.^_`|~0-9A-Za-z]+\Z")
-
-# reason-phrase: 0+ bytes of HTAB / SP / VCHAR / obs-text
-_RE_REASON_PHRASE = re.compile(rb'^[\x09\x20\x21-\x7e\x80-\xff]*\Z')
-
-# Host header: reject control chars 0x00-0x1F and SP 0x20. # Operates on str (already latin-1 decoded).
-_RE_HOST_VALID = re.compile(r'^[^\x00-\x20]*\Z')
-
-# Allowed characters as raw bytes for translate()
-_TCHAR_BYTES = bytes(sorted(_TCHAR))
-_VCHAR_BYTES = bytes(range(0x21, 0x7F))
-_REQUEST_TARGET_BYTES = bytes(set(_VCHAR_BYTES) | set(range(0x80, 0x100)))
-
-# Pre-calculate the 4 field-value variants for the translation filter (allow_bare_cr, reject_obs_text)
-_FIELD_VALUE_ALLOWED: ta.Dict[ta.Tuple[bool, bool], bytes] = {
-    (False, False): bytes({_HTAB, _SP}      | set(range(0x21, 0x7F))   | set(range(0x80, 0x100))),  # noqa
-    (False, True):  bytes({_HTAB, _SP}      | set(range(0x21, 0x7F))),  # noqa
-    (True, False):  bytes({_HTAB, _CR, _SP} | set(range(0x21, 0x7F))   | set(range(0x80, 0x100))),  # noqa
-    (True, True):   bytes({_HTAB, _CR, _SP} | set(range(0x21, 0x7F))),  # noqa
-}
-
-# Headers that MUST NOT appear in trailers (RFC 7230 §4.1.2)
-_FORBIDDEN_TRAILER_FIELDS: ta.FrozenSet[str] = frozenset({
-    'transfer-encoding',
-    'content-length',
-    'host',
-    'cache-control',
-    'expect',
-    'max-forwards',
-    'pragma',
-    'range',
-    'te',
-    'authorization',
-    'proxy-authenticate',
-    'proxy-authorization',
-    'www-authenticate',
-    'content-encoding',
-    'content-type',
-    'content-range',
-    'trailer',
-})
-
-_KNOWN_CODINGS: ta.FrozenSet[str] = frozenset([
-    'chunked',
-    'compress',
-    'deflate',
-    'gzip',
-    'x-gzip',
-    'x-compress',
-])
-
-# Headers where duplicate values are comma-combined per RFC 7230 §3.2.2. # Set-Cookie is the notable exception.
-_NO_COMBINE_HEADERS: ta.FrozenSet[str] = frozenset({
-    'set-cookie',
-})
-
-
-##
 # Error codes - one enum per exception category
 
 
@@ -363,10 +261,15 @@ class Headers:
             return False
         return name.lower() in self._entries
 
+    # Headers where duplicate values are comma-combined per RFC 7230 §3.2.2. # Set-Cookie is the notable exception.
+    _NO_COMBINE_HEADERS: ta.ClassVar[ta.FrozenSet[str]] = frozenset({
+        'set-cookie',
+    })
+
     def __getitem__(self, name: str) -> str:
         key = name.lower()
         values = self._entries[key]
-        if key in _NO_COMBINE_HEADERS:
+        if key in self._NO_COMBINE_HEADERS:
             raise MultiValueNoCombineHeaderError(name)
         return ', '.join(values)
 
@@ -383,7 +286,7 @@ class Headers:
         result: ta.List[ta.Tuple[str, str]] = []
         for name in self._order:
             values = self._entries[name]
-            if name in _NO_COMBINE_HEADERS:
+            if name in self._NO_COMBINE_HEADERS:
                 for v in values:
                     result.append((name, v))
             else:
@@ -438,264 +341,18 @@ class ParsedMessage:
 
 
 ##
-# Internal helpers
-
-
-def _is_token(data: bytes) -> bool:
-    """Check if data consists only of valid token characters using C-speed translation."""
-
-    return bool(data) and not data.translate(None, _TCHAR_BYTES)
-
-
-def _is_visible_ascii(data: bytes) -> bool:
-    """Check if data consists only of VCHAR (0x21-0x7E)."""
-
-    return bool(data) and not data.translate(None, _VCHAR_BYTES)
-
-
-def _strip_ows(data: bytes) -> bytes:
-    """Strip leading and trailing optional whitespace (SP / HTAB)."""
-
-    return data.strip(b' \t')
-
-
-def _parse_comma_list(value: str) -> ta.List[str]:
-    """Split a comma-separated header value into trimmed, non-empty tokens."""
-
-    parts: ta.List[str] = []
-    for part in value.split(','):
-        stripped = part.strip()
-        if stripped:
-            parts.append(stripped)
-    return parts
-
-
-def _parse_quoted_string(data: str, pos: int) -> ta.Tuple[str, int]:
-    """
-    Parse a quoted-string starting at *pos* (which must point at the opening DQUOTE). Returns (unescaped_value,
-    position_after_closing_DQUOTE).
-    """
-
-    if pos >= len(data) or data[pos] != '"':
-        raise ValueError('Expected opening double-quote')
-
-    pos += 1  # skip opening "
-
-    result: ta.List[str] = []
-    while pos < len(data):
-        ch = data[pos]
-
-        if ch == '"':
-            return ''.join(result), pos + 1
-
-        if ch == '\\':
-            pos += 1
-            if pos >= len(data):
-                raise ValueError('Backslash at end of quoted-string')
-            result.append(data[pos])
-            pos += 1
-
-        else:
-            result.append(ch)
-            pos += 1
-
-    raise ValueError('Unterminated quoted-string')
-
-
-def _parse_media_type_params(params_str: str) -> ta.Dict[str, str]:
-    """Parse ``;param=value`` segments from a Content-Type or Accept header. Values may be tokens or quoted-strings."""
-
-    params: ta.Dict[str, str] = {}
-
-    remaining = params_str.strip()
-    while remaining:
-        if not remaining.startswith(';'):
-            break
-
-        remaining = remaining[1:].strip()
-        if not remaining:
-            break
-
-        eq_idx = remaining.find('=')
-        if eq_idx < 0:
-            # parameter name without value - skip to next semicolon or end
-            semi_idx = remaining.find(';')
-            if semi_idx < 0:
-                break
-
-            remaining = remaining[semi_idx:]
-            continue
-
-        pname = remaining[:eq_idx].strip().lower()
-        remaining = remaining[eq_idx + 1:].strip()
-
-        if remaining.startswith('"'):
-            try:
-                pvalue, end_pos = _parse_quoted_string(remaining, 0)
-            except ValueError:
-                break
-            remaining = remaining[end_pos:].strip()
-
-        else:
-            semi_idx = remaining.find(';')
-
-            if semi_idx < 0:
-                pvalue = remaining.strip()
-                remaining = ''
-            else:
-                pvalue = remaining[:semi_idx].strip()
-                remaining = remaining[semi_idx:]
-
-        if pname:
-            params[pname] = pvalue
-
-    return params
-
-
-def _split_header_element(element: str) -> ta.Tuple[str, float, ta.Dict[str, str]]:
-    """
-    Split a single header list element like ``"token;q=0.5;param=val"`` into ``(token_lower, q, params_dict)``.
-
-    *token* is lowercased.  ``q`` defaults to ``1.0`` if absent.  The ``q`` key is consumed and **not** included in
-    *params_dict*.  Raises ``ValueError`` on a malformed ``q`` value.
-    """
-
-    semi_idx = element.find(';')
-    if semi_idx < 0:
-        return element.strip().lower(), 1.0, {}
-
-    token = element[:semi_idx].strip().lower()
-    params = _parse_media_type_params(element[semi_idx:])
-
-    q = 1.0
-    q_str = params.pop('q', None)
-    if q_str is not None:
-        q = float(q_str)  # caller wraps ValueError
-
-    return token, q, params
-
-
-# HTTP date parsing
-
-_MONTH_NAMES: ta.Dict[str, int] = {
-    'jan': 1,
-    'feb': 2,
-    'mar': 3,
-    'apr': 4,
-    'may': 5,
-    'jun': 6,
-    'jul': 7,
-    'aug': 8,
-    'sep': 9,
-    'oct': 10,
-    'nov': 11,
-    'dec': 12,
-}
-
-
-def _parse_http_date(value: str) -> datetime.datetime:
-    """
-    Parse an HTTP-date (RFC 7231 §7.1.1.1).
-
-    Supports:
-      - IMF-fixdate:  Sun, 06 Nov 1994 08:49:37 GMT
-      - RFC 850:      Sunday, 06-Nov-94 08:49:37 GMT
-      - asctime:      Sun Nov  6 08:49:37 1994
-    """
-
-    value = value.strip()
-
-    # Try IMF-fixdate: day-name "," SP date1 SP time-of-day SP GMT
-    # date1 = day SP month SP year (4-digit)
-    if ',' in value:
-        after_comma = value.split(',', 1)[1].strip()
-        parts = after_comma.split()
-
-        if len(parts) == 3 and parts[2].upper() == 'GMT' and '-' in parts[0]:
-            # RFC 850: DD-Mon-YY HH:MM:SS GMT
-            date_pieces = parts[0].split('-')
-            if len(date_pieces) != 3:
-                raise ValueError(f'Invalid date component: {parts[0]}')
-
-            day = int(date_pieces[0])
-            month_str = date_pieces[1].lower()
-            year_raw = int(date_pieces[2])
-
-            # Two-digit year: RFC 7231 says interpret >= 50 as 19xx, < 50 as 20xx
-            if year_raw < 100:
-                year = year_raw + 1900 if year_raw >= 50 else year_raw + 2000
-            else:
-                year = year_raw
-
-            time_pieces = parts[1].split(':')
-            if len(time_pieces) != 3:
-                raise ValueError(f'Invalid time component: {parts[1]}')
-
-            hour, minute, second = int(time_pieces[0]), int(time_pieces[1]), int(time_pieces[2])
-
-            month = _MONTH_NAMES.get(month_str)
-            if month is None:
-                raise ValueError(f'Invalid month: {month_str}')
-
-            return datetime.datetime(year, month, day, hour, minute, second, tzinfo=datetime.timezone.utc)  # noqa
-
-        elif len(parts) == 5 and parts[4].upper() == 'GMT':
-            # IMF-fixdate: DD Mon YYYY HH:MM:SS GMT
-            day = int(parts[0])
-            month_str = parts[1].lower()
-            year = int(parts[2])
-
-            time_pieces = parts[3].split(':')
-            if len(time_pieces) != 3:
-                raise ValueError(f'Invalid time component: {parts[3]}')
-
-            hour, minute, second = int(time_pieces[0]), int(time_pieces[1]), int(time_pieces[2])
-
-            month = _MONTH_NAMES.get(month_str)
-            if month is None:
-                raise ValueError(f'Invalid month: {month_str}')
-
-            return datetime.datetime(year, month, day, hour, minute, second, tzinfo=datetime.timezone.utc)  # noqa
-
-        raise ValueError(f'Cannot parse date: {value}')
-
-    else:
-        # asctime: Sun Nov  6 08:49:37 1994 (Strict fixed-width check)
-        # 012345678901234567890123
-        # Sun Nov  6 08:49:37 1994
-        if len(value) != 24:
-            raise ValueError(f'Invalid asctime length: {len(value)}')
-
-        month_str = value[4:7].lower()
-        # Handle the space-padded day (e.g., " 6")
-        day_str = value[8:10].replace(' ', '0')
-        day = int(day_str)
-
-        time_pieces = value[11:19].split(':')
-        if len(time_pieces) != 3:
-            raise ValueError('Invalid time component')
-        hour, minute, second = map(int, time_pieces)
-
-        year = int(value[20:24])
-        month = _MONTH_NAMES.get(month_str)
-        if month is None:
-            raise ValueError(f'Invalid month: {month_str}')
-
-        return datetime.datetime(year, month, day, hour, minute, second, tzinfo=datetime.timezone.utc)  # noqa
-
-##
 # The parser
 
 
-class HttpHeaderParser:
+class HttpHeadParser:
     """
     Strict, zero-dependency HTTP/1.x message-head parser.
 
     Usage::
-        parser = HttpHeaderParser()
+        parser = HttpHeadParser()
         msg = parser.parse(raw_bytes)
         # or with config:
-        parser = HttpHeaderParser(ParserConfig(allow_obs_fold=True))
+        parser = HttpHeadParser(ParserConfig(allow_obs_fold=True))
         msg = parser.parse(raw_bytes, mode=ParserMode.REQUEST)
     """
 
@@ -710,7 +367,7 @@ class HttpHeaderParser:
         if not isinstance(data, (bytes, bytearray)):
             raise TypeError(f'Expected bytes, got {type(data).__name__}')
 
-        ctx = _ParseContext(
+        ctx = _HttpHeadParseContext(
             data=bytes(data),
             config=self._config,
             mode=mode,
@@ -770,7 +427,7 @@ class HttpHeaderParser:
 
 
 @ta.final
-class _ParseContext:
+class _HttpHeadParseContext:
     def __init__(
         self,
         data: bytes,
@@ -782,12 +439,48 @@ class _ParseContext:
         self.mode = mode
         self.current_line = 0  # 0-indexed logical line number
 
+    # Character constants
+
+    # RFC 7230 §3.2.6: token = 1*tchar
+    # tchar = "!" / "#" / "$" / "%" / "&" / "'" / "*" / "+" / "-" / "." / "^" / "_" / "`" / "|" / "~" / DIGIT / ALPHA
+    _TCHAR_EXTRAS: ta.ClassVar[ta.FrozenSet[int]] = frozenset(b"!#$%&'*+-.^_`|~")
+
+    _TCHAR: ta.ClassVar[ta.FrozenSet[int]] = frozenset(
+        set(range(0x30, 0x3A)) |  # DIGIT 0-9
+        set(range(0x41, 0x5B)) |  # ALPHA A-Z
+        set(range(0x61, 0x7B)) |  # ALPHA a-z
+        _TCHAR_EXTRAS,
+    )
+
+    # VCHAR = %x21-7E
+    _VCHAR: ta.ClassVar[ta.FrozenSet[int]] = frozenset(range(0x21, 0x7F))
+
+    # obs-text = %x80-FF
+    _OBS_TEXT: ta.ClassVar[ta.FrozenSet[int]] = frozenset(range(0x80, 0x100))
+
+    _SP = 0x20
+    _HTAB = 0x09
+    _CR = 0x0D
+    _LF = 0x0A
+    _COLON = 0x3A
+    _NUL = 0x00
+
+    # OWS = *( SP / HTAB )
+    _OWS_CHARS: ta.ClassVar[ta.FrozenSet[int]] = frozenset({_SP, _HTAB})
+
+    _CRLF = b'\r\n'
+    _CRLFCRLF = b'\r\n\r\n'
+
+    # Allowed characters as raw bytes for translate()
+    _TCHAR_BYTES = bytes(sorted(_TCHAR))
+    _VCHAR_BYTES = bytes(range(0x21, 0x7F))
+
     # Terminator verification
 
     def verify_terminator(self) -> None:
         data = self.data
 
-        idx = data.find(_CRLFCRLF)
+        idx = data.find(self._CRLFCRLF)
         if idx >= 0:
             after = idx + 4
             if after < len(data):
@@ -863,7 +556,7 @@ class _ParseContext:
 
             # CR: check for CRLF vs bare CR
             if first == cr_at and cr_at <= lf_at:
-                if cr_at + 1 < length and data[cr_at + 1] == _LF:
+                if cr_at + 1 < length and data[cr_at + 1] == self._LF:
                     return cr_at  # CRLF - this is the line ending
 
                 # Bare CR (not followed by LF)
@@ -900,7 +593,7 @@ class _ParseContext:
     def line_ending_len(self, line_end_pos: int) -> int:
         """Return the length of the line ending at *line_end_pos* (1 for LF, 2 for CRLF)."""
 
-        if line_end_pos < len(self.data) and self.data[line_end_pos] == _LF:
+        if line_end_pos < len(self.data) and self.data[line_end_pos] == self._LF:
             return 1  # bare LF
         return 2  # CRLF
 
@@ -920,6 +613,8 @@ class _ParseContext:
         return MessageKind.REQUEST
 
     # Start-line parsing
+
+    _REQUEST_TARGET_BYTES: ta.ClassVar[bytes] = bytes(set(_VCHAR_BYTES) | set(range(0x80, 0x100)))
 
     def parse_request_line(self, line: bytes) -> RequestLine:
         """Parse ``method SP request-target SP HTTP-version``."""
@@ -971,7 +666,7 @@ class _ParseContext:
                 offset=0,
             )
 
-        if method_bytes.translate(None, _TCHAR_BYTES):
+        if method_bytes.translate(None, self._TCHAR_BYTES):
             raise StartLineError(
                 code=StartLineErrorCode.INVALID_METHOD,
                 message=f'Method contains invalid character(s)',
@@ -990,7 +685,7 @@ class _ParseContext:
             )
 
         if self.config.reject_non_visible_ascii_request_target:
-            if target_bytes.translate(None, _VCHAR_BYTES):
+            if target_bytes.translate(None, self._VCHAR_BYTES):
                 raise StartLineError(
                     code=StartLineErrorCode.INVALID_REQUEST_TARGET,
                     message='Request-target contains non-visible-ASCII character(s)',
@@ -999,7 +694,7 @@ class _ParseContext:
                 )
 
         else:
-            if target_bytes.translate(None, _REQUEST_TARGET_BYTES):
+            if target_bytes.translate(None, self._REQUEST_TARGET_BYTES):
                 raise StartLineError(
                     code=StartLineErrorCode.INVALID_REQUEST_TARGET,
                     message='Request-target contains invalid character(s)',
@@ -1023,6 +718,16 @@ class _ParseContext:
             request_target=target_bytes,
             http_version=version_str,
         )
+
+    # reason-phrase: 0+ bytes of HTAB / SP / VCHAR / obs-text
+    _RE_REASON_PHRASE: ta.ClassVar[re.Pattern] = re.compile(rb'^[\x09\x20\x21-\x7e\x80-\xff]*\Z')
+
+    # reason-phrase = *( HTAB / SP / VCHAR / obs-text )
+    _REASON_PHRASE_CHARS: ta.ClassVar[ta.FrozenSet[int]] = frozenset(
+        {_HTAB, _SP} |
+        set(_VCHAR) |
+        set(_OBS_TEXT),
+    )
 
     def parse_status_line(self, line: bytes) -> StatusLine:
         """Parse ``HTTP-version SP status-code SP reason-phrase``."""
@@ -1090,12 +795,12 @@ class _ParseContext:
 
         # Validate reason-phrase characters
 
-        if not _RE_REASON_PHRASE.match(reason_bytes):
+        if not self._RE_REASON_PHRASE.match(reason_bytes):
             # Regex rejected - scan to find the specific bad byte for error reporting
             reason_base_offset = first_sp + 1 + second_sp + 1
 
             for i, b in enumerate(reason_bytes):
-                if b == _NUL:
+                if b == self._NUL:
                     raise HeaderFieldError(
                         code=HeaderFieldErrorCode.NUL_IN_HEADER,
                         message='NUL byte in reason-phrase',
@@ -1103,7 +808,7 @@ class _ParseContext:
                         offset=reason_base_offset + i,
                     )
 
-                if b not in _REASON_PHRASE_CHARS:
+                if b not in self._REASON_PHRASE_CHARS:
                     raise StartLineError(
                         code=StartLineErrorCode.MALFORMED_STATUS_LINE,
                         message=f'Invalid character 0x{b:02x} in reason-phrase',
@@ -1129,11 +834,11 @@ class _ParseContext:
 
         while pos < len(data):
             # Check for the empty line that terminates headers
-            if data[pos] == _CR and pos + 1 < len(data) and data[pos + 1] == _LF:
+            if data[pos] == self._CR and pos + 1 < len(data) and data[pos + 1] == self._LF:
                 # Could be the terminator (\r\n at start of a "line" = empty line)
                 break
 
-            if self.config.allow_bare_lf and data[pos] == _LF:
+            if self.config.allow_bare_lf and data[pos] == self._LF:
                 break
 
             # Max header count check
@@ -1164,7 +869,7 @@ class _ParseContext:
             while next_pos < len(data):
                 next_byte = data[next_pos]
 
-                if next_byte in _OWS_CHARS:
+                if next_byte in self._OWS_CHARS:
                     if not self.config.allow_obs_fold:
                         raise HeaderFieldError(
                             code=HeaderFieldErrorCode.OBS_FOLD_NOT_ALLOWED,
@@ -1209,6 +914,23 @@ class _ParseContext:
 
         return headers
 
+    @classmethod
+    def _strip_ows(cls, data: bytes) -> bytes:
+        """Strip leading and trailing optional whitespace (SP / HTAB)."""
+
+        return data.strip(b' \t')
+
+    # token: 1+ tchar bytes
+    _RE_TOKEN: ta.ClassVar[re.Pattern] = re.compile(rb"^[!#$%&'*+\-.^_`|~0-9A-Za-z]+\Z")
+
+    # Pre-calculate the 4 field-value variants for the translation filter (allow_bare_cr, reject_obs_text)
+    _FIELD_VALUE_ALLOWED: ta.ClassVar[ta.Mapping[ta.Tuple[bool, bool], bytes]] = {
+        (False, False): bytes({_HTAB, _SP}      | set(range(0x21, 0x7F))   | set(range(0x80, 0x100))),  # noqa
+        (False, True):  bytes({_HTAB, _SP}      | set(range(0x21, 0x7F))),  # noqa
+        (True, False):  bytes({_HTAB, _CR, _SP} | set(range(0x21, 0x7F))   | set(range(0x80, 0x100))),  # noqa
+        (True, True):   bytes({_HTAB, _CR, _SP} | set(range(0x21, 0x7F))),  # noqa
+    }
+
     def _parse_one_header(self, line_data: bytes, line_start_offset: int) -> RawHeader:
         """Parse a single ``field-name: field-value`` line (already unfolded)."""
 
@@ -1235,7 +957,7 @@ class _ParseContext:
             )
 
         # Check for space before colon
-        if name_bytes[-1] in _OWS_CHARS:
+        if name_bytes[-1] in self._OWS_CHARS:
             if not self.config.allow_space_before_colon:
                 raise HeaderFieldError(
                     code=HeaderFieldErrorCode.SPACE_BEFORE_COLON,
@@ -1255,9 +977,9 @@ class _ParseContext:
                 )
 
         # Validate name characters (regex fast-path; fallback scan on failure)
-        if not _RE_TOKEN.match(name_bytes):
+        if not self._RE_TOKEN.match(name_bytes):
             for i, b in enumerate(name_bytes):
-                if b == _NUL:
+                if b == self._NUL:
                     raise HeaderFieldError(
                         code=HeaderFieldErrorCode.NUL_IN_HEADER,
                         message='NUL byte in field-name',
@@ -1273,7 +995,7 @@ class _ParseContext:
                         offset=line_start_offset + i,
                     )
 
-                if b not in _TCHAR:
+                if b not in self._TCHAR:
                     raise HeaderFieldError(
                         code=HeaderFieldErrorCode.INVALID_FIELD_NAME,
                         message=f'Invalid character 0x{b:02x} in field-name',
@@ -1284,7 +1006,7 @@ class _ParseContext:
         # Process field-value
 
         # Strip OWS
-        value_stripped = _strip_ows(value_bytes)
+        value_stripped = self._strip_ows(value_bytes)
 
         # Check for empty value
         if not value_stripped and not self.config.allow_empty_header_values:
@@ -1296,7 +1018,7 @@ class _ParseContext:
             )
 
         # Validate value characters (Translation fast-path)
-        allowed_bytes = _FIELD_VALUE_ALLOWED[(
+        allowed_bytes = self._FIELD_VALUE_ALLOWED[(
             self.config.allow_bare_cr_in_value,
             self.config.reject_obs_text,
         )]
@@ -1310,7 +1032,7 @@ class _ParseContext:
             # We only enter this Python loop if we ALREADY found an error.
             # This keeps the "happy path" fast while maintaining detailed error reporting.
             for i, b in enumerate(value_stripped):
-                if b == _NUL:
+                if b == self._NUL:
                     raise HeaderFieldError(
                         code=HeaderFieldErrorCode.NUL_IN_HEADER,
                         message='NUL byte in field-value',
@@ -1318,7 +1040,7 @@ class _ParseContext:
                         offset=value_base_offset + i,
                     )
 
-                if b == _CR:
+                if b == self._CR:
                     if not self.config.allow_bare_cr_in_value:
                         raise HeaderFieldError(
                             code=HeaderFieldErrorCode.BARE_CARRIAGE_RETURN,
@@ -1454,6 +1176,15 @@ class _ParseContext:
 
         prepared.content_length = val
 
+    _KNOWN_CODINGS: ta.ClassVar[ta.FrozenSet[str]] = frozenset([
+        'chunked',
+        'compress',
+        'deflate',
+        'gzip',
+        'x-gzip',
+        'x-compress',
+    ])
+
     def _prepare_transfer_encoding(
         self,
         headers: Headers,
@@ -1483,7 +1214,7 @@ class _ParseContext:
         # Validate known codings
         if not self.config.allow_unknown_transfer_encoding:
             for c in codings:
-                if c not in _KNOWN_CODINGS:
+                if c not in self._KNOWN_CODINGS:
                     raise SemanticHeaderError(
                         code=SemanticHeaderErrorCode.INVALID_TRANSFER_ENCODING,
                         message=f'Unknown transfer-coding: {c!r}',
@@ -1522,6 +1253,9 @@ class _ParseContext:
                     )
 
         prepared.transfer_encoding = codings
+
+    # Host header: reject control chars 0x00-0x1F and SP 0x20. # Operates on str (already latin-1 decoded).
+    _RE_HOST_VALID: ta.ClassVar[re.Pattern] = re.compile(r'^[^\x00-\x20]*\Z')
 
     def _prepare_host(
         self,
@@ -1573,7 +1307,7 @@ class _ParseContext:
 
             # Reject other C0 controls (including NUL) if present (defense in depth). (Host is a str decoded as Latin-1
             # in your Headers container.)
-            if not _RE_HOST_VALID.match(host_val):
+            if not self._RE_HOST_VALID.match(host_val):
                 for i, ch in enumerate(host_val):
                     if ord(ch) < 0x21:  # includes 0x00-0x20; we've already rejected SP/HTAB explicitly
                         raise SemanticHeaderError(
@@ -1583,6 +1317,17 @@ class _ParseContext:
 
             prepared.host = host_val
 
+    @classmethod
+    def _parse_comma_list(cls, value: str) -> ta.List[str]:
+        """Split a comma-separated header value into trimmed, non-empty tokens."""
+
+        parts: ta.List[str] = []
+        for part in value.split(','):
+            stripped = part.strip()
+            if stripped:
+                parts.append(stripped)
+        return parts
+
     def _prepare_connection(
         self,
         headers: Headers,
@@ -1590,7 +1335,7 @@ class _ParseContext:
         http_version: str,
     ) -> None:
         if 'connection' in headers:
-            tokens = {t.lower() for t in _parse_comma_list(headers['connection'])}
+            tokens = {t.lower() for t in self._parse_comma_list(headers['connection'])}
             prepared.connection = frozenset(tokens)
         else:
             prepared.connection = frozenset()
@@ -1603,6 +1348,90 @@ class _ParseContext:
         else:
             # Default: HTTP/1.1 = keep-alive, HTTP/1.0 = close
             prepared.keep_alive = (http_version == 'HTTP/1.1')
+
+    @classmethod
+    def _parse_quoted_string(cls, data: str, pos: int) -> ta.Tuple[str, int]:
+        """
+        Parse a quoted-string starting at *pos* (which must point at the opening DQUOTE). Returns (unescaped_value,
+        position_after_closing_DQUOTE).
+        """
+
+        if pos >= len(data) or data[pos] != '"':
+            raise ValueError('Expected opening double-quote')
+
+        pos += 1  # skip opening "
+
+        result: ta.List[str] = []
+        while pos < len(data):
+            ch = data[pos]
+
+            if ch == '"':
+                return ''.join(result), pos + 1
+
+            if ch == '\\':
+                pos += 1
+                if pos >= len(data):
+                    raise ValueError('Backslash at end of quoted-string')
+                result.append(data[pos])
+                pos += 1
+
+            else:
+                result.append(ch)
+                pos += 1
+
+        raise ValueError('Unterminated quoted-string')
+
+    @classmethod
+    def _parse_media_type_params(cls, params_str: str) -> ta.Dict[str, str]:
+        """
+        Parse ``;param=value`` segments from a Content-Type or Accept header. Values may be tokens or quoted-strings.
+        """
+
+        params: ta.Dict[str, str] = {}
+
+        remaining = params_str.strip()
+        while remaining:
+            if not remaining.startswith(';'):
+                break
+
+            remaining = remaining[1:].strip()
+            if not remaining:
+                break
+
+            eq_idx = remaining.find('=')
+            if eq_idx < 0:
+                # parameter name without value - skip to next semicolon or end
+                semi_idx = remaining.find(';')
+                if semi_idx < 0:
+                    break
+
+                remaining = remaining[semi_idx:]
+                continue
+
+            pname = remaining[:eq_idx].strip().lower()
+            remaining = remaining[eq_idx + 1:].strip()
+
+            if remaining.startswith('"'):
+                try:
+                    pvalue, end_pos = cls._parse_quoted_string(remaining, 0)
+                except ValueError:
+                    break
+                remaining = remaining[end_pos:].strip()
+
+            else:
+                semi_idx = remaining.find(';')
+
+                if semi_idx < 0:
+                    pvalue = remaining.strip()
+                    remaining = ''
+                else:
+                    pvalue = remaining[:semi_idx].strip()
+                    remaining = remaining[semi_idx:]
+
+            if pname:
+                params[pname] = pvalue
+
+        return params
 
     def _prepare_content_type(self, headers: Headers, prepared: PreparedHeaders) -> None:
         if 'content-type' not in headers:
@@ -1617,7 +1446,7 @@ class _ParseContext:
             params: ta.Dict[str, str] = {}
         else:
             media_type = raw[:semi_idx].strip().lower()
-            params = _parse_media_type_params(raw[semi_idx:])
+            params = self._parse_media_type_params(raw[semi_idx:])
 
         if '/' not in media_type:
             raise SemanticHeaderError(
@@ -1637,13 +1466,36 @@ class _ParseContext:
             params=params,
         )
 
+    @classmethod
+    def _split_header_element(cls, element: str) -> ta.Tuple[str, float, ta.Dict[str, str]]:
+        """
+        Split a single header list element like ``"token;q=0.5;param=val"`` into ``(token_lower, q, params_dict)``.
+
+        *token* is lowercased.  ``q`` defaults to ``1.0`` if absent.  The ``q`` key is consumed and **not** included in
+        *params_dict*.  Raises ``ValueError`` on a malformed ``q`` value.
+        """
+
+        semi_idx = element.find(';')
+        if semi_idx < 0:
+            return element.strip().lower(), 1.0, {}
+
+        token = element[:semi_idx].strip().lower()
+        params = cls._parse_media_type_params(element[semi_idx:])
+
+        q = 1.0
+        q_str = params.pop('q', None)
+        if q_str is not None:
+            q = float(q_str)  # caller wraps ValueError
+
+        return token, q, params
+
     def _prepare_te(self, headers: Headers, prepared: PreparedHeaders) -> None:
         if 'te' not in headers:
             return
 
         codings = [
-            _split_header_element(p)[0]
-            for p in _parse_comma_list(headers['te'])
+            self._split_header_element(p)[0]
+            for p in self._parse_comma_list(headers['te'])
         ]
 
         prepared.te = [c for c in codings if c]
@@ -1652,15 +1504,36 @@ class _ParseContext:
         if 'upgrade' not in headers:
             return
 
-        prepared.upgrade = _parse_comma_list(headers['upgrade'])
+        prepared.upgrade = self._parse_comma_list(headers['upgrade'])
+
+    # Headers that MUST NOT appear in trailers (RFC 7230 §4.1.2)
+    _FORBIDDEN_TRAILER_FIELDS: ta.ClassVar[ta.FrozenSet[str]] = frozenset({
+        'transfer-encoding',
+        'content-length',
+        'host',
+        'cache-control',
+        'expect',
+        'max-forwards',
+        'pragma',
+        'range',
+        'te',
+        'authorization',
+        'proxy-authenticate',
+        'proxy-authorization',
+        'www-authenticate',
+        'content-encoding',
+        'content-type',
+        'content-range',
+        'trailer',
+    })
 
     def _prepare_trailer(self, headers: Headers, prepared: PreparedHeaders) -> None:
         if 'trailer' not in headers:
             return
 
-        fields = {f.lower() for f in _parse_comma_list(headers['trailer'])}
+        fields = {f.lower() for f in self._parse_comma_list(headers['trailer'])}
         for f in fields:
-            if f in _FORBIDDEN_TRAILER_FIELDS:
+            if f in self._FORBIDDEN_TRAILER_FIELDS:
                 raise SemanticHeaderError(
                     code=SemanticHeaderErrorCode.FORBIDDEN_TRAILER_FIELD,
                     message=f'Forbidden field in Trailer header: {f!r}',
@@ -1681,13 +1554,119 @@ class _ParseContext:
 
         prepared.expect = raw
 
+    _MONTH_NAMES: ta.ClassVar[ta.Mapping[str, int]] = {
+        'jan': 1,
+        'feb': 2,
+        'mar': 3,
+        'apr': 4,
+        'may': 5,
+        'jun': 6,
+        'jul': 7,
+        'aug': 8,
+        'sep': 9,
+        'oct': 10,
+        'nov': 11,
+        'dec': 12,
+    }
+
+    @classmethod
+    def _parse_http_date(cls, value: str) -> datetime.datetime:
+        """
+        Parse an HTTP-date (RFC 7231 §7.1.1.1).
+
+        Supports:
+          - IMF-fixdate:  Sun, 06 Nov 1994 08:49:37 GMT
+          - RFC 850:      Sunday, 06-Nov-94 08:49:37 GMT
+          - asctime:      Sun Nov  6 08:49:37 1994
+        """
+
+        value = value.strip()
+
+        # Try IMF-fixdate: day-name "," SP date1 SP time-of-day SP GMT
+        # date1 = day SP month SP year (4-digit)
+        if ',' in value:
+            after_comma = value.split(',', 1)[1].strip()
+            parts = after_comma.split()
+
+            if len(parts) == 3 and parts[2].upper() == 'GMT' and '-' in parts[0]:
+                # RFC 850: DD-Mon-YY HH:MM:SS GMT
+                date_pieces = parts[0].split('-')
+                if len(date_pieces) != 3:
+                    raise ValueError(f'Invalid date component: {parts[0]}')
+
+                day = int(date_pieces[0])
+                month_str = date_pieces[1].lower()
+                year_raw = int(date_pieces[2])
+
+                # Two-digit year: RFC 7231 says interpret >= 50 as 19xx, < 50 as 20xx
+                if year_raw < 100:
+                    year = year_raw + 1900 if year_raw >= 50 else year_raw + 2000
+                else:
+                    year = year_raw
+
+                time_pieces = parts[1].split(':')
+                if len(time_pieces) != 3:
+                    raise ValueError(f'Invalid time component: {parts[1]}')
+
+                hour, minute, second = int(time_pieces[0]), int(time_pieces[1]), int(time_pieces[2])
+
+                month = cls._MONTH_NAMES.get(month_str)
+                if month is None:
+                    raise ValueError(f'Invalid month: {month_str}')
+
+                return datetime.datetime(year, month, day, hour, minute, second, tzinfo=datetime.timezone.utc)  # noqa
+
+            elif len(parts) == 5 and parts[4].upper() == 'GMT':
+                # IMF-fixdate: DD Mon YYYY HH:MM:SS GMT
+                day = int(parts[0])
+                month_str = parts[1].lower()
+                year = int(parts[2])
+
+                time_pieces = parts[3].split(':')
+                if len(time_pieces) != 3:
+                    raise ValueError(f'Invalid time component: {parts[3]}')
+
+                hour, minute, second = int(time_pieces[0]), int(time_pieces[1]), int(time_pieces[2])
+
+                month = cls._MONTH_NAMES.get(month_str)
+                if month is None:
+                    raise ValueError(f'Invalid month: {month_str}')
+
+                return datetime.datetime(year, month, day, hour, minute, second, tzinfo=datetime.timezone.utc)  # noqa
+
+            raise ValueError(f'Cannot parse date: {value}')
+
+        else:
+            # asctime: Sun Nov  6 08:49:37 1994 (Strict fixed-width check)
+            # 012345678901234567890123
+            # Sun Nov  6 08:49:37 1994
+            if len(value) != 24:
+                raise ValueError(f'Invalid asctime length: {len(value)}')
+
+            month_str = value[4:7].lower()
+            # Handle the space-padded day (e.g., " 6")
+            day_str = value[8:10].replace(' ', '0')
+            day = int(day_str)
+
+            time_pieces = value[11:19].split(':')
+            if len(time_pieces) != 3:
+                raise ValueError('Invalid time component')
+            hour, minute, second = map(int, time_pieces)
+
+            year = int(value[20:24])
+            month = cls._MONTH_NAMES.get(month_str)
+            if month is None:
+                raise ValueError(f'Invalid month: {month_str}')
+
+            return datetime.datetime(year, month, day, hour, minute, second, tzinfo=datetime.timezone.utc)  # noqa
+
     def _prepare_date(self, headers: Headers, prepared: PreparedHeaders) -> None:
         if 'date' not in headers:
             return
 
         raw = headers['date']
         try:
-            prepared.date = _parse_http_date(raw)
+            prepared.date = self._parse_http_date(raw)
         except (ValueError, IndexError, OverflowError) as e:
             raise SemanticHeaderError(
                 code=SemanticHeaderErrorCode.INVALID_DATE,
@@ -1700,7 +1679,7 @@ class _ParseContext:
 
         directives: ta.Dict[str, ta.Optional[str]] = {}
 
-        for part in _parse_comma_list(headers['cache-control']):
+        for part in self._parse_comma_list(headers['cache-control']):
             eq_idx = part.find('=')
             if eq_idx < 0:
                 directives[part.lower()] = None
@@ -1710,7 +1689,7 @@ class _ParseContext:
             value = part[eq_idx + 1:].strip()
             if value.startswith('"'):
                 try:
-                    value, _ = _parse_quoted_string(value, 0)
+                    value, _ = self._parse_quoted_string(value, 0)
                 except ValueError:
                     raise SemanticHeaderError(
                         code=SemanticHeaderErrorCode.INVALID_CACHE_CONTROL,
@@ -1727,9 +1706,9 @@ class _ParseContext:
 
         items: ta.List[AcceptEncodingItem] = []
 
-        for part in _parse_comma_list(headers['accept-encoding']):
+        for part in self._parse_comma_list(headers['accept-encoding']):
             try:
-                coding, q, _ = _split_header_element(part)
+                coding, q, _ = self._split_header_element(part)
             except ValueError:
                 raise SemanticHeaderError(
                     code=SemanticHeaderErrorCode.INVALID_ACCEPT_ENCODING,
@@ -1750,9 +1729,9 @@ class _ParseContext:
 
         items: ta.List[AcceptItem] = []
 
-        for part in _parse_comma_list(headers['accept']):
+        for part in self._parse_comma_list(headers['accept']):
             try:
-                media_range, q, params = _split_header_element(part)
+                media_range, q, params = self._split_header_element(part)
             except ValueError:
                 raise SemanticHeaderError(
                     code=SemanticHeaderErrorCode.INVALID_ACCEPT,
@@ -1807,7 +1786,7 @@ def parse_http_headers(
     """
     Parse an HTTP/1.x message head from *data*.
 
-    This is a convenience wrapper around :class:`HttpHeaderParser`.
+    This is a convenience wrapper around :class:`HttpHeadParser`.
 
     :param data: Complete message head ending with ``\\r\\n\\r\\n``.
     :param mode: ``REQUEST``, ``RESPONSE``, or ``AUTO`` (detect from start-line).
@@ -1816,5 +1795,5 @@ def parse_http_headers(
     :raises HttpParseError: On any parsing violation.
     """
 
-    parser = HttpHeaderParser(config=config)
+    parser = HttpHeadParser(config=config)
     return parser.parse(data, mode=mode)

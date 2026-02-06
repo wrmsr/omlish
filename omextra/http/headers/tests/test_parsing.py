@@ -435,21 +435,21 @@ class TestRelaxationKnobs(unittest.TestCase):
 
     def test_bare_lf_allows_only_final_terminator(self) -> None:
         data = b'GET / HTTP/1.1\nHost: example.com\n\n'
-        parser = hp.HttpHeaderParser(hp.ParserConfig(allow_bare_lf=True))
+        parser = hp.HttpHeadParser(hp.ParserConfig(allow_bare_lf=True))
         msg = parser.parse(data, mode=hp.ParserMode.REQUEST)
         self.assertEqual(msg.kind.value, 'request')
         self.assertEqual(check.not_none(msg.request_line).method, 'GET')
         self.assertEqual(msg.headers.get('host'), 'example.com')
 
     def test_bare_lf_rejects_trailing_data_after_terminator(self) -> None:
-        parser = hp.HttpHeaderParser(hp.ParserConfig(allow_bare_lf=True))
+        parser = hp.HttpHeadParser(hp.ParserConfig(allow_bare_lf=True))
         data = b'GET / HTTP/1.1\nHost: example.com\n\nGARBAGE'
         with self.assertRaises(hp.HeaderFieldError) as cm:
             parser.parse(data, mode=hp.ParserMode.REQUEST)
         self.assertEqual(cm.exception.code, hp.HeaderFieldErrorCode.MISSING_TERMINATOR)
 
     def test_strict_mode_rejects_bare_lf_even_if_double_lf(self) -> None:
-        parser = hp.HttpHeaderParser(hp.ParserConfig(allow_bare_lf=False))
+        parser = hp.HttpHeadParser(hp.ParserConfig(allow_bare_lf=False))
         data = b'GET / HTTP/1.1\nHost: example.com\n\n'
         with self.assertRaises(hp.HeaderFieldError) as cm:
             parser.parse(data, mode=hp.ParserMode.REQUEST)
@@ -921,7 +921,7 @@ class TestPreparedHost(unittest.TestCase):
             hp.parse_http_headers(data)
 
     def test_host_rejects_whitespace(self) -> None:
-        parser = hp.HttpHeaderParser()
+        parser = hp.HttpHeadParser()
         data = (
             b'GET / HTTP/1.1\r\n'
             b'Host: example.com evil.com\r\n'
@@ -1761,7 +1761,7 @@ class TestMiscEdgeCases(unittest.TestCase):
         self.assertEqual(msg.headers['x-long'], val)
 
     def test_parser_reuse(self) -> None:
-        parser = hp.HttpHeaderParser()
+        parser = hp.HttpHeadParser()
         msg1 = parser.parse(_req(headers=[('Host', 'a.com')]))
         msg2 = parser.parse(_req(headers=[('Host', 'b.com')]))
         self.assertEqual(msg1.prepared.host, 'a.com')
@@ -1769,7 +1769,7 @@ class TestMiscEdgeCases(unittest.TestCase):
 
     def test_parser_config_immutable_between_calls(self) -> None:
         cfg = hp.ParserConfig()
-        parser = hp.HttpHeaderParser(cfg)
+        parser = hp.HttpHeadParser(cfg)
         parser.parse(_req(headers=[('Host', 'x')]))
         self.assertEqual(cfg.allow_obs_fold, False)  # unchanged
 
