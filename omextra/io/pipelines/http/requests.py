@@ -6,7 +6,7 @@ from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.lite.check import check
 
-from ....http.headers.parsing import ParsedMessage
+from ....http.headers.parsing import ParsedHttpHead
 from ....http.headers.parsing import ParserMode
 from ....http.headers.parsing import parse_http_headers
 from ..core import ChannelPipelineEvents
@@ -23,7 +23,7 @@ class HttpRequestHead:
     target: str
     version: str
     headers: dict[str, str]
-    parsed: ParsedMessage
+    parsed: ParsedHttpHead
 
     def header(self, name: str) -> str | None:
         return self.headers.get(name.casefold())

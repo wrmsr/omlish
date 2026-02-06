@@ -135,34 +135,6 @@ class MultiValueNoCombineHeaderError(HttpHeaderError):
 
 
 ##
-# Configuration
-
-
-@dc.dataclass()
-class ParserConfig:
-    """Strictness knobs. Defaults are maximally strict."""
-
-    allow_obs_fold: bool = False
-    allow_space_before_colon: bool = False  # DANGEROUS - upstreams may not handle well
-    allow_multiple_content_lengths: bool = False
-    allow_content_length_with_te: bool = False
-    allow_bare_lf: bool = False
-    allow_missing_host: bool = False
-    allow_multiple_hosts: bool = False
-    allow_unknown_transfer_encoding: bool = False
-    allow_empty_header_values: bool = True
-    allow_bare_cr_in_value: bool = False
-    allow_te_without_chunked_in_response: bool = False
-    allow_transfer_encoding_http10: bool = False
-    reject_multi_value_content_length: bool = False
-    reject_obs_text: bool = False
-    reject_non_visible_ascii_request_target: bool = False
-    max_header_count: int = 128
-    max_header_length: ta.Optional[int] = 8192
-    max_content_length_str_len: ta.Optional[int] = None
-
-
-##
 # Enums
 
 
@@ -235,7 +207,7 @@ class AuthorizationValue:
 
 
 @ta.final
-class Headers:
+class ParsedHttpHeaders:
     """
     Normalized, case-insensitive header mapping.
 
@@ -300,7 +272,7 @@ class Headers:
         return len(self._order)
 
     def __repr__(self) -> str:
-        return f'Headers({dict(self.items())})'
+        return f'ParsedHttpHeaders({dict(self.items())})'
 
 
 ##
@@ -331,12 +303,12 @@ class PreparedHeaders:
 
 
 @dc.dataclass()
-class ParsedMessage:
+class ParsedHttpHead:
     kind: MessageKind
     request_line: ta.Optional[RequestLine]
     status_line: ta.Optional[StatusLine]
     raw_headers: ta.List[RawHeader]
-    headers: Headers
+    headers: ParsedHttpHeaders
     prepared: PreparedHeaders
 
 
@@ -346,24 +318,47 @@ class ParsedMessage:
 
 class HttpHeadParser:
     """
-    Strict, zero-dependency HTTP/1.x message-head parser.
+    Strict HTTP/1.x message-head parser.
 
     Usage::
         parser = HttpHeadParser()
         msg = parser.parse(raw_bytes)
         # or with config:
-        parser = HttpHeadParser(ParserConfig(allow_obs_fold=True))
+        parser = HttpHeadParser(HttpHeadParser.Config(allow_obs_fold=True))
         msg = parser.parse(raw_bytes, mode=ParserMode.REQUEST)
     """
 
-    def __init__(self, config: ta.Optional[ParserConfig] = None) -> None:
+    @dc.dataclass(frozen=True)
+    class Config:
+        """Strictness knobs. Defaults are maximally strict."""
+
+        allow_obs_fold: bool = False
+        allow_space_before_colon: bool = False  # DANGEROUS - upstreams may not handle well
+        allow_multiple_content_lengths: bool = False
+        allow_content_length_with_te: bool = False
+        allow_bare_lf: bool = False
+        allow_missing_host: bool = False
+        allow_multiple_hosts: bool = False
+        allow_unknown_transfer_encoding: bool = False
+        allow_empty_header_values: bool = True
+        allow_bare_cr_in_value: bool = False
+        allow_te_without_chunked_in_response: bool = False
+        allow_transfer_encoding_http10: bool = False
+        reject_multi_value_content_length: bool = False
+        reject_obs_text: bool = False
+        reject_non_visible_ascii_request_target: bool = False
+        max_header_count: int = 128
+        max_header_length: ta.Optional[int] = 8192
+        max_content_length_str_len: ta.Optional[int] = None
+
+    def __init__(self, config: ta.Optional[Config] = Config()) -> None:
         super().__init__()
 
-        self._config = config or ParserConfig()
+        self._config = config
 
     # Public API
 
-    def parse(self, data: bytes, mode: ParserMode = ParserMode.AUTO) -> ParsedMessage:
+    def parse(self, data: bytes, mode: ParserMode = ParserMode.AUTO) -> ParsedHttpHead:
         if not isinstance(data, (bytes, bytearray)):
             raise TypeError(f'Expected bytes, got {type(data).__name__}')
 
@@ -403,7 +398,7 @@ class HttpHeadParser:
         raw_headers = ctx.parse_header_fields(header_start)
 
         # 6. Build normalized headers
-        headers = Headers()
+        headers = ParsedHttpHeaders()
         for rh in raw_headers:
             name_str = rh.name.decode('ascii').lower()
             value_str = rh.value.decode('latin-1')
@@ -412,7 +407,7 @@ class HttpHeadParser:
         # 7. Build prepared headers
         prepared = ctx.prepare_headers(headers, kind, http_version)
 
-        return ParsedMessage(
+        return ParsedHttpHead(
             kind=kind,
             request_line=request_line,
             status_line=status_line,
@@ -431,7 +426,7 @@ class _HttpHeadParseContext:
     def __init__(
         self,
         data: bytes,
-        config: ParserConfig,
+        config: HttpHeadParser.Config,
         mode: ParserMode,
     ) -> None:
         self.data = data
@@ -1077,7 +1072,7 @@ class _HttpHeadParseContext:
 
     def prepare_headers(
         self,
-        headers: Headers,
+        headers: ParsedHttpHeaders,
         kind: MessageKind,
         http_version: str,
     ) -> PreparedHeaders:
@@ -1111,7 +1106,7 @@ class _HttpHeadParseContext:
 
         return prepared
 
-    def _prepare_content_length(self, headers: Headers, prepared: PreparedHeaders) -> None:
+    def _prepare_content_length(self, headers: ParsedHttpHeaders, prepared: PreparedHeaders) -> None:
         values = headers.get_all('content-length')
         if not values:
             return
@@ -1187,7 +1182,7 @@ class _HttpHeadParseContext:
 
     def _prepare_transfer_encoding(
         self,
-        headers: Headers,
+        headers: ParsedHttpHeaders,
         prepared: PreparedHeaders,
         kind: MessageKind,
         http_version: str,
@@ -1259,7 +1254,7 @@ class _HttpHeadParseContext:
 
     def _prepare_host(
         self,
-        headers: Headers,
+        headers: ParsedHttpHeaders,
         prepared: PreparedHeaders,
         kind: MessageKind,
         http_version: str,
@@ -1306,7 +1301,7 @@ class _HttpHeadParseContext:
                 )
 
             # Reject other C0 controls (including NUL) if present (defense in depth). (Host is a str decoded as Latin-1
-            # in your Headers container.)
+            # in your ParsedHttpHeaders container.)
             if not self._RE_HOST_VALID.match(host_val):
                 for i, ch in enumerate(host_val):
                     if ord(ch) < 0x21:  # includes 0x00-0x20; we've already rejected SP/HTAB explicitly
@@ -1330,7 +1325,7 @@ class _HttpHeadParseContext:
 
     def _prepare_connection(
         self,
-        headers: Headers,
+        headers: ParsedHttpHeaders,
         prepared: PreparedHeaders,
         http_version: str,
     ) -> None:
@@ -1433,7 +1428,7 @@ class _HttpHeadParseContext:
 
         return params
 
-    def _prepare_content_type(self, headers: Headers, prepared: PreparedHeaders) -> None:
+    def _prepare_content_type(self, headers: ParsedHttpHeaders, prepared: PreparedHeaders) -> None:
         if 'content-type' not in headers:
             return
 
@@ -1489,7 +1484,7 @@ class _HttpHeadParseContext:
 
         return token, q, params
 
-    def _prepare_te(self, headers: Headers, prepared: PreparedHeaders) -> None:
+    def _prepare_te(self, headers: ParsedHttpHeaders, prepared: PreparedHeaders) -> None:
         if 'te' not in headers:
             return
 
@@ -1500,7 +1495,7 @@ class _HttpHeadParseContext:
 
         prepared.te = [c for c in codings if c]
 
-    def _prepare_upgrade(self, headers: Headers, prepared: PreparedHeaders) -> None:
+    def _prepare_upgrade(self, headers: ParsedHttpHeaders, prepared: PreparedHeaders) -> None:
         if 'upgrade' not in headers:
             return
 
@@ -1527,7 +1522,7 @@ class _HttpHeadParseContext:
         'trailer',
     })
 
-    def _prepare_trailer(self, headers: Headers, prepared: PreparedHeaders) -> None:
+    def _prepare_trailer(self, headers: ParsedHttpHeaders, prepared: PreparedHeaders) -> None:
         if 'trailer' not in headers:
             return
 
@@ -1541,7 +1536,7 @@ class _HttpHeadParseContext:
 
         prepared.trailer = frozenset(fields)
 
-    def _prepare_expect(self, headers: Headers, prepared: PreparedHeaders) -> None:
+    def _prepare_expect(self, headers: ParsedHttpHeaders, prepared: PreparedHeaders) -> None:
         if 'expect' not in headers:
             return
 
@@ -1660,7 +1655,7 @@ class _HttpHeadParseContext:
 
             return datetime.datetime(year, month, day, hour, minute, second, tzinfo=datetime.timezone.utc)  # noqa
 
-    def _prepare_date(self, headers: Headers, prepared: PreparedHeaders) -> None:
+    def _prepare_date(self, headers: ParsedHttpHeaders, prepared: PreparedHeaders) -> None:
         if 'date' not in headers:
             return
 
@@ -1673,7 +1668,7 @@ class _HttpHeadParseContext:
                 message=f'Cannot parse Date header: {e}',
             ) from None
 
-    def _prepare_cache_control(self, headers: Headers, prepared: PreparedHeaders) -> None:
+    def _prepare_cache_control(self, headers: ParsedHttpHeaders, prepared: PreparedHeaders) -> None:
         if 'cache-control' not in headers:
             return
 
@@ -1700,7 +1695,7 @@ class _HttpHeadParseContext:
 
         prepared.cache_control = directives
 
-    def _prepare_accept_encoding(self, headers: Headers, prepared: PreparedHeaders) -> None:
+    def _prepare_accept_encoding(self, headers: ParsedHttpHeaders, prepared: PreparedHeaders) -> None:
         if 'accept-encoding' not in headers:
             return
 
@@ -1723,7 +1718,7 @@ class _HttpHeadParseContext:
 
         prepared.accept_encoding = items
 
-    def _prepare_accept(self, headers: Headers, prepared: PreparedHeaders) -> None:
+    def _prepare_accept(self, headers: ParsedHttpHeaders, prepared: PreparedHeaders) -> None:
         if 'accept' not in headers:
             return
 
@@ -1746,7 +1741,7 @@ class _HttpHeadParseContext:
 
         prepared.accept = items
 
-    def _prepare_authorization(self, headers: Headers, prepared: PreparedHeaders) -> None:
+    def _prepare_authorization(self, headers: ParsedHttpHeaders, prepared: PreparedHeaders) -> None:
         if 'authorization' not in headers:
             return
 
@@ -1781,8 +1776,8 @@ class _HttpHeadParseContext:
 def parse_http_headers(
     data: bytes,
     mode: ParserMode = ParserMode.AUTO,
-    config: ta.Optional[ParserConfig] = None,
-) -> ParsedMessage:
+    config: ta.Optional[HttpHeadParser.Config] = None,
+) -> ParsedHttpHead:
     """
     Parse an HTTP/1.x message head from *data*.
 
@@ -1791,7 +1786,7 @@ def parse_http_headers(
     :param data: Complete message head ending with ``\\r\\n\\r\\n``.
     :param mode: ``REQUEST``, ``RESPONSE``, or ``AUTO`` (detect from start-line).
     :param config: Parsing strictness configuration.
-    :returns: A :class:`ParsedMessage` with raw headers, normalized headers, and prepared values.
+    :returns: A :class:`ParsedHttpHead` with raw headers, normalized headers, and prepared values.
     :raises HttpParseError: On any parsing violation.
     """
 

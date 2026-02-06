@@ -5,7 +5,7 @@ Comprehensive test suite for http_header_parser.
 Covers:
   - Basic happy-path parsing (request + response)
   - Every ErrorCode / exception leaf class
-  - Every ParserConfig relaxation knob (on + off)
+  - Every HttpHeadParser.Config relaxation knob (on + off)
   - Character-set boundary conditions
   - Request smuggling vectors
   - Adversarial / ambiguous inputs
@@ -64,7 +64,7 @@ def _resp(
     return b''.join(parts)
 
 
-STRICT = hp.ParserConfig()
+STRICT = hp.HttpHeadParser.Config()
 
 
 ##
@@ -376,14 +376,14 @@ class TestHeaderFieldErrors(unittest.TestCase):
             hp.parse_http_headers(b'HTTP/1.1 200 OK\r\n\r\nextra')
 
     def test_too_many_headers(self) -> None:
-        cfg = hp.ParserConfig(max_header_count=3)
+        cfg = hp.HttpHeadParser.Config(max_header_count=3)
         hdrs = [(f'X-H{i}', str(i)) for i in range(4)]
         data = _resp(headers=hdrs)
         with self.assertRaises(hp.HeaderFieldError):
             hp.parse_http_headers(data, config=cfg)
 
     def test_obs_text_in_value_rejected_with_flag(self) -> None:
-        cfg = hp.ParserConfig(reject_obs_text=True)
+        cfg = hp.HttpHeadParser.Config(reject_obs_text=True)
         data = b'HTTP/1.1 200 OK\r\nX-Data: caf\xe9\r\n\r\n'
         with self.assertRaises(hp.EncodingError):
             hp.parse_http_headers(data, config=cfg)
@@ -408,7 +408,7 @@ class TestHeaderFieldErrors(unittest.TestCase):
             hp.parse_http_headers(data)
 
     def test_max_header_length(self) -> None:
-        cfg = hp.ParserConfig(max_header_length=14)
+        cfg = hp.HttpHeadParser.Config(max_header_length=14)
         data = b'GET / HTTP/1.1\r\nHost: x\r\nFoo: value1 value2 value3\r\n\r\n'
         with self.assertRaises(hp.HeaderFieldError):
             hp.parse_http_headers(data, config=cfg)
@@ -420,7 +420,7 @@ class TestHeaderFieldErrors(unittest.TestCase):
 
 class TestRelaxationKnobs(unittest.TestCase):
     def test_allow_bare_lf(self) -> None:
-        cfg = hp.ParserConfig(allow_bare_lf=True, allow_missing_host=True)
+        cfg = hp.HttpHeadParser.Config(allow_bare_lf=True, allow_missing_host=True)
         data = b'GET / HTTP/1.1\nHost: x\n\n'
         msg = hp.parse_http_headers(data, config=cfg)
         self.assertEqual(msg.prepared.host, 'x')
@@ -428,28 +428,28 @@ class TestRelaxationKnobs(unittest.TestCase):
     def test_allow_bare_lf_mixed(self) -> None:
         """CRLF and bare LF mixed - some servers do this."""
 
-        cfg = hp.ParserConfig(allow_bare_lf=True, allow_missing_host=True)
+        cfg = hp.HttpHeadParser.Config(allow_bare_lf=True, allow_missing_host=True)
         data = b'GET / HTTP/1.1\nHost: x\r\nFoo: bar\n\n'
         msg = hp.parse_http_headers(data, config=cfg)
         self.assertEqual(msg.headers['foo'], 'bar')
 
     def test_bare_lf_allows_only_final_terminator(self) -> None:
         data = b'GET / HTTP/1.1\nHost: example.com\n\n'
-        parser = hp.HttpHeadParser(hp.ParserConfig(allow_bare_lf=True))
+        parser = hp.HttpHeadParser(hp.HttpHeadParser.Config(allow_bare_lf=True))
         msg = parser.parse(data, mode=hp.ParserMode.REQUEST)
         self.assertEqual(msg.kind.value, 'request')
         self.assertEqual(check.not_none(msg.request_line).method, 'GET')
         self.assertEqual(msg.headers.get('host'), 'example.com')
 
     def test_bare_lf_rejects_trailing_data_after_terminator(self) -> None:
-        parser = hp.HttpHeadParser(hp.ParserConfig(allow_bare_lf=True))
+        parser = hp.HttpHeadParser(hp.HttpHeadParser.Config(allow_bare_lf=True))
         data = b'GET / HTTP/1.1\nHost: example.com\n\nGARBAGE'
         with self.assertRaises(hp.HeaderFieldError) as cm:
             parser.parse(data, mode=hp.ParserMode.REQUEST)
         self.assertEqual(cm.exception.code, hp.HeaderFieldErrorCode.MISSING_TERMINATOR)
 
     def test_strict_mode_rejects_bare_lf_even_if_double_lf(self) -> None:
-        parser = hp.HttpHeadParser(hp.ParserConfig(allow_bare_lf=False))
+        parser = hp.HttpHeadParser(hp.HttpHeadParser.Config(allow_bare_lf=False))
         data = b'GET / HTTP/1.1\nHost: example.com\n\n'
         with self.assertRaises(hp.HeaderFieldError) as cm:
             parser.parse(data, mode=hp.ParserMode.REQUEST)
@@ -457,32 +457,32 @@ class TestRelaxationKnobs(unittest.TestCase):
         self.assertIn(cm.exception.code, {hp.HeaderFieldErrorCode.MISSING_TERMINATOR, hp.HeaderFieldErrorCode.BARE_LF})
 
     def test_allow_obs_fold(self) -> None:
-        cfg = hp.ParserConfig(allow_obs_fold=True)
+        cfg = hp.HttpHeadParser.Config(allow_obs_fold=True)
         data = b'GET / HTTP/1.1\r\nHost: x\r\nFoo: line1\r\n line2\r\n\tline3\r\n\r\n'
         msg = hp.parse_http_headers(data, config=cfg)
         self.assertEqual(msg.headers['foo'], 'line1 line2 line3')
 
     def test_allow_obs_fold_multi_continuation(self) -> None:
-        cfg = hp.ParserConfig(allow_obs_fold=True)
+        cfg = hp.HttpHeadParser.Config(allow_obs_fold=True)
         data = b'GET / HTTP/1.1\r\nHost: x\r\nFoo: a\r\n b\r\n c\r\n d\r\n\r\n'
         msg = hp.parse_http_headers(data, config=cfg)
         self.assertEqual(msg.headers['foo'], 'a b c d')
 
     def test_allow_obs_fold_max_len(self) -> None:
-        cfg = hp.ParserConfig(allow_obs_fold=True, max_header_length=14)
+        cfg = hp.HttpHeadParser.Config(allow_obs_fold=True, max_header_length=14)
         data = b'GET / HTTP/1.1\r\nHost: x\r\nFoo: line1\r\n line2\r\n\tline3\r\n\r\n'
         with self.assertRaises(hp.HeaderFieldError):
             hp.parse_http_headers(data, config=cfg)
 
     def test_reject_target_non_visible_ascii_request_target(self) -> None:
-        cfg = hp.ParserConfig(reject_non_visible_ascii_request_target=True)
+        cfg = hp.HttpHeadParser.Config(reject_non_visible_ascii_request_target=True)
         with self.assertRaises(hp.StartLineError):
             hp.parse_http_headers(b'GET /\xe2\x98\x83path HTTP/1.1\r\n\r\n', config=cfg)
         with self.assertRaises(hp.StartLineError):
             hp.parse_http_headers(b'GET /\x01path HTTP/1.1\r\n\r\n', config=cfg)
 
     def test_allow_space_before_colon(self) -> None:
-        cfg = hp.ParserConfig(allow_space_before_colon=True)
+        cfg = hp.HttpHeadParser.Config(allow_space_before_colon=True)
         data = b'GET / HTTP/1.1\r\nHost : example.com\r\n\r\n'
         msg = hp.parse_http_headers(data, config=cfg)
         self.assertEqual(msg.prepared.host, 'example.com')
@@ -490,7 +490,7 @@ class TestRelaxationKnobs(unittest.TestCase):
     def test_space_before_colon_all_whitespace_name(self) -> None:
         """A line like ': value' (colon at start) produces EmptyFieldName."""
 
-        cfg = hp.ParserConfig(allow_space_before_colon=True)
+        cfg = hp.HttpHeadParser.Config(allow_space_before_colon=True)
         data = b'GET / HTTP/1.1\r\nHost: x\r\n: value\r\n\r\n'
         with self.assertRaises(hp.HeaderFieldError):
             hp.parse_http_headers(data, config=cfg)
@@ -498,20 +498,20 @@ class TestRelaxationKnobs(unittest.TestCase):
     def test_whitespace_line_start_is_obs_fold(self) -> None:
         """A line starting with whitespace is obs-fold, not a whitespace-only name."""
 
-        cfg = hp.ParserConfig(allow_space_before_colon=True)
+        cfg = hp.HttpHeadParser.Config(allow_space_before_colon=True)
         data = b'GET / HTTP/1.1\r\nHost: x\r\n  : value\r\n\r\n'
         # This triggers obs-fold detection, not EmptyFieldName
         with self.assertRaises(hp.HeaderFieldError):
             hp.parse_http_headers(data, config=cfg)
 
     def test_allow_multiple_content_lengths_identical(self) -> None:
-        cfg = hp.ParserConfig(allow_multiple_content_lengths=True)
+        cfg = hp.HttpHeadParser.Config(allow_multiple_content_lengths=True)
         data = _resp(headers=[('Content-Length', '42'), ('Content-Length', '42')])
         msg = hp.parse_http_headers(data, config=cfg)
         self.assertEqual(msg.prepared.content_length, 42)
 
     def test_allow_multiple_content_lengths_comma_form(self) -> None:
-        cfg = hp.ParserConfig(allow_multiple_content_lengths=True)
+        cfg = hp.HttpHeadParser.Config(allow_multiple_content_lengths=True)
         data = _resp(headers=[('Content-Length', '42, 42, 42')])
         msg = hp.parse_http_headers(data, config=cfg)
         self.assertEqual(msg.prepared.content_length, 42)
@@ -522,13 +522,13 @@ class TestRelaxationKnobs(unittest.TestCase):
             hp.parse_http_headers(data)
 
     def test_conflicting_content_lengths_always_rejected(self) -> None:
-        cfg = hp.ParserConfig(allow_multiple_content_lengths=True)
+        cfg = hp.HttpHeadParser.Config(allow_multiple_content_lengths=True)
         data = _resp(headers=[('Content-Length', '42'), ('Content-Length', '99')])
         with self.assertRaises(hp.SemanticHeaderError):
             hp.parse_http_headers(data, config=cfg)
 
     def test_allow_content_length_with_te(self) -> None:
-        cfg = hp.ParserConfig(allow_content_length_with_te=True)
+        cfg = hp.HttpHeadParser.Config(allow_content_length_with_te=True)
         data = _req(headers=[
             ('Host', 'x'),
             ('Content-Length', '42'),
@@ -548,7 +548,7 @@ class TestRelaxationKnobs(unittest.TestCase):
             hp.parse_http_headers(data)
 
     def test_allow_missing_host(self) -> None:
-        cfg = hp.ParserConfig(allow_missing_host=True)
+        cfg = hp.HttpHeadParser.Config(allow_missing_host=True)
         data = _req(headers=[])
         msg = hp.parse_http_headers(data, config=cfg)
         self.assertIsNone(msg.prepared.host)
@@ -563,7 +563,7 @@ class TestRelaxationKnobs(unittest.TestCase):
         self.assertIsNone(msg.prepared.host)
 
     def test_allow_multiple_hosts_identical(self) -> None:
-        cfg = hp.ParserConfig(allow_multiple_hosts=True)
+        cfg = hp.HttpHeadParser.Config(allow_multiple_hosts=True)
         data = _req(headers=[('Host', 'a.com'), ('Host', 'a.com')])
         msg = hp.parse_http_headers(data, config=cfg)
         self.assertEqual(msg.prepared.host, 'a.com')
@@ -574,13 +574,13 @@ class TestRelaxationKnobs(unittest.TestCase):
             hp.parse_http_headers(data)
 
     def test_conflicting_hosts_always_rejected(self) -> None:
-        cfg = hp.ParserConfig(allow_multiple_hosts=True)
+        cfg = hp.HttpHeadParser.Config(allow_multiple_hosts=True)
         data = _req(headers=[('Host', 'a.com'), ('Host', 'b.com')])
         with self.assertRaises(hp.SemanticHeaderError):
             hp.parse_http_headers(data, config=cfg)
 
     def test_allow_bare_cr_in_value(self) -> None:
-        cfg = hp.ParserConfig(allow_bare_cr_in_value=True)
+        cfg = hp.HttpHeadParser.Config(allow_bare_cr_in_value=True)
         data = b'HTTP/1.1 200 OK\r\nFoo: bar\rbaz\r\n\r\n'
         msg = hp.parse_http_headers(data, config=cfg)
         self.assertIn('bar', msg.headers['foo'])
@@ -591,13 +591,13 @@ class TestRelaxationKnobs(unittest.TestCase):
         self.assertEqual(msg.headers['x-empty'], '')
 
     def test_reject_empty_header_values(self) -> None:
-        cfg = hp.ParserConfig(allow_empty_header_values=False)
+        cfg = hp.HttpHeadParser.Config(allow_empty_header_values=False)
         data = _resp(headers=[('X-Empty', '')])
         with self.assertRaises(hp.HeaderFieldError):
             hp.parse_http_headers(data, config=cfg)
 
     def test_allow_te_without_chunked_in_response(self) -> None:
-        cfg = hp.ParserConfig(allow_te_without_chunked_in_response=True)
+        cfg = hp.HttpHeadParser.Config(allow_te_without_chunked_in_response=True)
         data = _resp(headers=[('Transfer-Encoding', 'gzip')])
         msg = hp.parse_http_headers(data, config=cfg)
         self.assertEqual(msg.prepared.transfer_encoding, ['gzip'])
@@ -607,7 +607,7 @@ class TestRelaxationKnobs(unittest.TestCase):
             hp.parse_http_headers(_resp(headers=[('Transfer-Encoding', 'gzip')]))
 
     def test_allow_transfer_encoding_http10(self) -> None:
-        cfg = hp.ParserConfig(allow_transfer_encoding_http10=True)
+        cfg = hp.HttpHeadParser.Config(allow_transfer_encoding_http10=True)
         data = _resp(version='HTTP/1.0', headers=[('Transfer-Encoding', 'chunked')])
         msg = hp.parse_http_headers(data, config=cfg)
         self.assertEqual(msg.prepared.transfer_encoding, ['chunked'])
@@ -620,7 +620,7 @@ class TestRelaxationKnobs(unittest.TestCase):
             ))
 
     def test_allow_unknown_transfer_encoding(self) -> None:
-        cfg = hp.ParserConfig(allow_unknown_transfer_encoding=True)
+        cfg = hp.HttpHeadParser.Config(allow_unknown_transfer_encoding=True)
         data = _req(headers=[('Host', 'x'), ('Transfer-Encoding', 'custom, chunked')])
         msg = hp.parse_http_headers(data, config=cfg)
         self.assertEqual(msg.prepared.transfer_encoding, ['custom', 'chunked'])
@@ -631,25 +631,25 @@ class TestRelaxationKnobs(unittest.TestCase):
             hp.parse_http_headers(data)
 
     def test_reject_obs_text_flag(self) -> None:
-        cfg = hp.ParserConfig(reject_obs_text=True)
+        cfg = hp.HttpHeadParser.Config(reject_obs_text=True)
         data = _resp(headers=[('X-Data', 'hello')])
         msg = hp.parse_http_headers(data, config=cfg)
         self.assertEqual(msg.headers['x-data'], 'hello')
 
     def test_reject_multi_value_content_length(self) -> None:
-        cfg = hp.ParserConfig(reject_multi_value_content_length=True)
+        cfg = hp.HttpHeadParser.Config(reject_multi_value_content_length=True)
         data = _req(headers=[('Content-Length', '42,42')])
         with self.assertRaises(hp.SemanticHeaderError):
             hp.parse_http_headers(data, config=cfg)
 
     def test_max_header_count_at_limit(self) -> None:
-        cfg = hp.ParserConfig(max_header_count=3)
+        cfg = hp.HttpHeadParser.Config(max_header_count=3)
         data = _resp(headers=[('A', '1'), ('B', '2'), ('C', '3')])
         msg = hp.parse_http_headers(data, config=cfg)
         self.assertEqual(len(msg.raw_headers), 3)
 
     def test_max_header_count_exceeded(self) -> None:
-        cfg = hp.ParserConfig(max_header_count=2)
+        cfg = hp.HttpHeadParser.Config(max_header_count=2)
         data = _resp(headers=[('A', '1'), ('B', '2'), ('C', '3')])
         with self.assertRaises(hp.HeaderFieldError):
             hp.parse_http_headers(data, config=cfg)
@@ -801,14 +801,14 @@ class TestPreparedContentLength(unittest.TestCase):
         self.assertEqual(msg.prepared.content_length, 42)
 
     def test_comma_separated_identical(self) -> None:
-        cfg = hp.ParserConfig(allow_multiple_content_lengths=True)
+        cfg = hp.HttpHeadParser.Config(allow_multiple_content_lengths=True)
         for s in ['42,42', '42, 42', '42  ,42,42  ,42']:
             data = _resp(headers=[('Content-Length', s)])
             msg = hp.parse_http_headers(data, config=cfg)
             self.assertEqual(msg.prepared.content_length, 42)
 
     def test_comma_separated_conflicting(self) -> None:
-        cfg = hp.ParserConfig(allow_multiple_content_lengths=True)
+        cfg = hp.HttpHeadParser.Config(allow_multiple_content_lengths=True)
         data = _resp(headers=[('Content-Length', '42, 99')])
         with self.assertRaises(hp.SemanticHeaderError):
             hp.parse_http_headers(data, config=cfg)
@@ -856,7 +856,7 @@ class TestPreparedTransferEncoding(unittest.TestCase):
 
     def test_request_chunked_ok(self) -> None:
         data = _req(headers=[('Host', 'x'), ('Transfer-Encoding', 'chunked')])
-        msg = hp.parse_http_headers(data, config=hp.ParserConfig(allow_content_length_with_te=True))
+        msg = hp.parse_http_headers(data, config=hp.HttpHeadParser.Config(allow_content_length_with_te=True))
         self.assertEqual(msg.prepared.transfer_encoding, ['chunked'])
 
     def test_case_insensitive(self) -> None:
@@ -1050,7 +1050,7 @@ class TestPreparedTrailer(unittest.TestCase):
             ('Trailer', 'X-Checksum, X-Status'),
             ('Transfer-Encoding', 'chunked'),
         ])
-        msg = hp.parse_http_headers(data, config=hp.ParserConfig(allow_content_length_with_te=True))
+        msg = hp.parse_http_headers(data, config=hp.HttpHeadParser.Config(allow_content_length_with_te=True))
         self.assertEqual(msg.prepared.trailer, frozenset({'x-checksum', 'x-status'}))
 
     def test_forbidden_content_length(self) -> None:
@@ -1059,7 +1059,7 @@ class TestPreparedTrailer(unittest.TestCase):
             ('Transfer-Encoding', 'chunked'),
         ])
         with self.assertRaises(hp.SemanticHeaderError):
-            hp.parse_http_headers(data, config=hp.ParserConfig(allow_content_length_with_te=True))
+            hp.parse_http_headers(data, config=hp.HttpHeadParser.Config(allow_content_length_with_te=True))
 
     def test_forbidden_transfer_encoding(self) -> None:
         data = _resp(headers=[
@@ -1067,7 +1067,7 @@ class TestPreparedTrailer(unittest.TestCase):
             ('Transfer-Encoding', 'chunked'),
         ])
         with self.assertRaises(hp.SemanticHeaderError):
-            hp.parse_http_headers(data, config=hp.ParserConfig(allow_content_length_with_te=True))
+            hp.parse_http_headers(data, config=hp.HttpHeadParser.Config(allow_content_length_with_te=True))
 
     def test_forbidden_host(self) -> None:
         data = _resp(headers=[('Trailer', 'Host')])
@@ -1475,7 +1475,7 @@ class TestRequestSmuggling(unittest.TestCase):
             ('Host', 'x'),
             ('Transfer-Encoding', 'chunked'),
         ])
-        msg = hp.parse_http_headers(data, config=hp.ParserConfig(allow_content_length_with_te=True))
+        msg = hp.parse_http_headers(data, config=hp.HttpHeadParser.Config(allow_content_length_with_te=True))
         self.assertEqual(msg.prepared.transfer_encoding, ['chunked'])
 
     def test_te_with_leading_whitespace_in_value(self) -> None:
@@ -1483,7 +1483,7 @@ class TestRequestSmuggling(unittest.TestCase):
 
         data = b'POST / HTTP/1.1\r\nHost: x\r\nTransfer-Encoding:  chunked\r\n\r\n'
         msg = hp.parse_http_headers(
-            data, config=hp.ParserConfig(allow_content_length_with_te=True),
+            data, config=hp.HttpHeadParser.Config(allow_content_length_with_te=True),
         )
         # OWS is stripped, so this should still parse as 'chunked'
         self.assertEqual(msg.prepared.transfer_encoding, ['chunked'])
@@ -1496,7 +1496,7 @@ class TestRequestSmuggling(unittest.TestCase):
             hp.parse_http_headers(data)
 
         # Even with all relaxations
-        cfg = hp.ParserConfig(
+        cfg = hp.HttpHeadParser.Config(
             allow_te_without_chunked_in_response=True,
             allow_unknown_transfer_encoding=True,
             allow_transfer_encoding_http10=True,
@@ -1519,7 +1519,7 @@ class TestRequestSmuggling(unittest.TestCase):
             hp.parse_http_headers(data)
 
         # When allowed, it's folded into previous header value, NOT a new header
-        cfg = hp.ParserConfig(allow_obs_fold=True)
+        cfg = hp.HttpHeadParser.Config(allow_obs_fold=True)
         msg = hp.parse_http_headers(data, config=cfg)
         self.assertNotIn('transfer-encoding', msg.headers)
         self.assertIn('Transfer-Encoding: chunked', msg.headers['x-innocent'])
@@ -1591,7 +1591,7 @@ class TestRequestSmuggling(unittest.TestCase):
 
         data = _resp(headers=[('Content-Length', '99999999999999999999999999999999')])
         with self.assertRaises(hp.SemanticHeaderError):
-            hp.parse_http_headers(data, config=hp.ParserConfig(max_content_length_str_len=16))
+            hp.parse_http_headers(data, config=hp.HttpHeadParser.Config(max_content_length_str_len=16))
 
     def test_content_length_with_trailing_junk(self) -> None:
         data = _resp(headers=[('Content-Length', '42 foo')])
@@ -1612,7 +1612,7 @@ class TestRequestSmuggling(unittest.TestCase):
             ('Transfer-Encoding', 'gzip'),
             ('Transfer-Encoding', 'chunked'),
         ])
-        msg = hp.parse_http_headers(data, config=hp.ParserConfig(allow_content_length_with_te=True))
+        msg = hp.parse_http_headers(data, config=hp.HttpHeadParser.Config(allow_content_length_with_te=True))
         # They get comma-combined: "gzip, chunked"
         self.assertEqual(msg.prepared.transfer_encoding, ['gzip', 'chunked'])
 
@@ -1768,7 +1768,7 @@ class TestMiscEdgeCases(unittest.TestCase):
         self.assertEqual(msg2.prepared.host, 'b.com')
 
     def test_parser_config_immutable_between_calls(self) -> None:
-        cfg = hp.ParserConfig()
+        cfg = hp.HttpHeadParser.Config()
         parser = hp.HttpHeadParser(cfg)
         parser.parse(_req(headers=[('Host', 'x')]))
         self.assertEqual(cfg.allow_obs_fold, False)  # unchanged
@@ -1852,7 +1852,7 @@ class TestPreparedHeaderInteractions(unittest.TestCase):
             hp.parse_http_headers(data)
 
     def test_cl_and_te_allowed_with_config(self) -> None:
-        cfg = hp.ParserConfig(allow_content_length_with_te=True)
+        cfg = hp.HttpHeadParser.Config(allow_content_length_with_te=True)
         data = _req(headers=[
             ('Host', 'x'),
             ('Content-Length', '10'),
@@ -1879,12 +1879,12 @@ class TestPreparedHeaderInteractions(unittest.TestCase):
 
 
 ##
-# 25. ParserConfig defaults
+# 25. HttpHeadParser.Config defaults
 
 
-class TestParserConfigDefaults(unittest.TestCase):
+class TestHttpHeadParserConfigDefaults(unittest.TestCase):
     def test_all_defaults(self) -> None:
-        cfg = hp.ParserConfig()
+        cfg = hp.HttpHeadParser.Config()
         self.assertFalse(cfg.allow_obs_fold)
         self.assertFalse(cfg.allow_space_before_colon)
         self.assertFalse(cfg.allow_multiple_content_lengths)
@@ -1958,7 +1958,7 @@ class TestDataModels(unittest.TestCase):
         self.assertIsNotNone(msg.request_line)
         self.assertIsNone(msg.status_line)
         self.assertIsInstance(msg.raw_headers, list)
-        self.assertIsInstance(msg.headers, hp.Headers)
+        self.assertIsInstance(msg.headers, hp.ParsedHttpHeaders)
         self.assertIsInstance(msg.prepared, hp.PreparedHeaders)
 
 
