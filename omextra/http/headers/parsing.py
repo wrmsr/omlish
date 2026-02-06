@@ -215,7 +215,6 @@ class PreparedParsedHttpHeaders:
     host: ta.Optional[str] = None
 
     connection: ta.Optional[ta.FrozenSet[str]] = None
-
     keep_alive: ta.Optional[bool] = None
 
     @dc.dataclass(frozen=True)
