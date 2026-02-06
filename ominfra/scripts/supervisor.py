@@ -138,7 +138,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/configs/formats.py', sha1='3074c3e1428f9598cd0591745cb60fb3fe2b309f'),
             dict(path='../../omlish/configs/processing/names.py', sha1='3ae4c9e921929eb64cee6150cc86f35fee0f2070'),
             dict(path='../../omlish/http/coro/io.py', sha1='2cdf6529c37a37cc0c1db2e02032157cf906d5d6'),
-            dict(path='../../omlish/http/parsing.py', sha1='b8153825997ff2a9bce38bc1371873db13ded96a'),
+            dict(path='../../omlish/http/parsing.py', sha1='cde2642231a249ab72d2901ca3a321f8d3ffff9b'),
             dict(path='../../omlish/io/buffers.py', sha1='4007189e90aa95da91f05e025e700b175494f9e2'),
             dict(path='../../omlish/io/fdio/handlers.py', sha1='e81356d4d73a670c35a972476a6338d0b737662b'),
             dict(path='../../omlish/io/fdio/pollers.py', sha1='022d5a8a24412764864ca95186a167698b739baf'),
