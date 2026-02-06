@@ -191,12 +191,13 @@ class HttpRequestParser:
             gen: ta.Generator[int, bytes, T],
             read_line: ta.Callable[[int], bytes],
     ) -> T:
-        sz = next(gen)
+        gen_in: ta.Any = None
         while True:
             try:
-                sz = gen.send(read_line(sz))
+                sz = gen.send(gen_in)
             except StopIteration as e:
                 return e.value
+            gen_in = read_line(sz)
 
     #
 
@@ -211,10 +212,13 @@ class HttpRequestParser:
         #   - major and minor numbers MUST be treated as separate integers;
         #   - HTTP/2.4 is a lower version than HTTP/2.13, which in turn is lower than HTTP/12.3;
         #   - Leading zeros MUST be ignored by recipients.
+
         if len(version_number_parts) != 2:
             raise ValueError(version_number_parts)  # noqa
+
         if any(not component.isdigit() for component in version_number_parts):
             raise ValueError('non digit in http version')  # noqa
+
         if any(len(component) > 10 for component in version_number_parts):
             raise ValueError('unreasonable length http version')  # noqa
 
@@ -227,15 +231,19 @@ class HttpRequestParser:
 
     def coro_read_raw_headers(self) -> ta.Generator[int, bytes, ta.List[bytes]]:
         raw_headers: ta.List[bytes] = []
+
         while True:
             line = yield self._max_line + 1
             if len(line) > self._max_line:
                 raise http.client.LineTooLong('header line')
+
             raw_headers.append(line)
             if len(raw_headers) > self._max_headers:
                 raise http.client.HTTPException(f'got more than {self._max_headers} headers')
+
             if line in (b'\r\n', b'\n', b''):
                 break
+
         return raw_headers
 
     def read_raw_headers(self, read_line: ta.Callable[[int], bytes]) -> ta.List[bytes]:
@@ -364,14 +372,14 @@ class HttpRequestParser:
 
         try:
             raw_gen = self.coro_read_raw_headers()
-            raw_sz = next(raw_gen)
+            raw_in: ta.Any = None
             while True:
-                buf = yield raw_sz
                 try:
-                    raw_sz = raw_gen.send(buf)
+                    raw_sz = raw_gen.send(raw_in)
                 except StopIteration as e:
                     raw_headers = e.value
                     break
+                raw_in = yield raw_sz
 
             headers = self.parse_raw_headers(raw_headers)
 

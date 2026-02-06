@@ -1,6 +1,6 @@
 # Overview
 
-Request serving code.
+\[DEPRECATED\] ~~Request serving code.~~
 
 # Notable packages
 

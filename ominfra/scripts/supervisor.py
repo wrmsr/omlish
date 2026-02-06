@@ -138,7 +138,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/configs/formats.py', sha1='3074c3e1428f9598cd0591745cb60fb3fe2b309f'),
             dict(path='../../omlish/configs/processing/names.py', sha1='3ae4c9e921929eb64cee6150cc86f35fee0f2070'),
             dict(path='../../omlish/http/coro/io.py', sha1='2cdf6529c37a37cc0c1db2e02032157cf906d5d6'),
-            dict(path='../../omlish/http/parsing.py', sha1='69de9bc03046b123dfe0d38ce0cf3ea6b38f8457'),
+            dict(path='../../omlish/http/parsing.py', sha1='b8153825997ff2a9bce38bc1371873db13ded96a'),
             dict(path='../../omlish/io/buffers.py', sha1='4007189e90aa95da91f05e025e700b175494f9e2'),
             dict(path='../../omlish/io/fdio/handlers.py', sha1='e81356d4d73a670c35a972476a6338d0b737662b'),
             dict(path='../../omlish/io/fdio/pollers.py', sha1='022d5a8a24412764864ca95186a167698b739baf'),
@@ -161,7 +161,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/logs/contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
             dict(path='../../omlish/logs/std/standard.py', sha1='5c97c1b9f7ead58d6127d047b873398f708f288d'),
             dict(path='types.py', sha1='7ef67f710fb54c3af067aa596cb593f33eafe380'),
-            dict(path='../../omlish/http/coro/server/server.py', sha1='c0a980afa8346dbc20570acddb2b3b579bfc1ce0'),
+            dict(path='../../omlish/http/coro/server/server.py', sha1='f8f1aba3dadfb854359429b51dd7279d54898c0e'),
             dict(path='../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
             dict(path='../../omlish/logs/std/records.py', sha1='8bbf6ef9eccb3a012c6ca416ddf3969450fd8fc9'),
             dict(path='dispatchers.py', sha1='33fe5ae77e33b3cfabb97b1a1c0f06dd0cc54703'),
@@ -4950,12 +4950,13 @@ class HttpRequestParser:
             gen: ta.Generator[int, bytes, T],
             read_line: ta.Callable[[int], bytes],
     ) -> T:
-        sz = next(gen)
+        gen_in: ta.Any = None
         while True:
             try:
-                sz = gen.send(read_line(sz))
+                sz = gen.send(gen_in)
             except StopIteration as e:
                 return e.value
+            gen_in = read_line(sz)
 
     #
 
@@ -4970,10 +4971,13 @@ class HttpRequestParser:
         #   - major and minor numbers MUST be treated as separate integers;
         #   - HTTP/2.4 is a lower version than HTTP/2.13, which in turn is lower than HTTP/12.3;
         #   - Leading zeros MUST be ignored by recipients.
+
         if len(version_number_parts) != 2:
             raise ValueError(version_number_parts)  # noqa
+
         if any(not component.isdigit() for component in version_number_parts):
             raise ValueError('non digit in http version')  # noqa
+
         if any(len(component) > 10 for component in version_number_parts):
             raise ValueError('unreasonable length http version')  # noqa
 
@@ -4986,15 +4990,19 @@ class HttpRequestParser:
 
     def coro_read_raw_headers(self) -> ta.Generator[int, bytes, ta.List[bytes]]:
         raw_headers: ta.List[bytes] = []
+
         while True:
             line = yield self._max_line + 1
             if len(line) > self._max_line:
                 raise http.client.LineTooLong('header line')
+
             raw_headers.append(line)
             if len(raw_headers) > self._max_headers:
                 raise http.client.HTTPException(f'got more than {self._max_headers} headers')
+
             if line in (b'\r\n', b'\n', b''):
                 break
+
         return raw_headers
 
     def read_raw_headers(self, read_line: ta.Callable[[int], bytes]) -> ta.List[bytes]:
@@ -5123,14 +5131,14 @@ class HttpRequestParser:
 
         try:
             raw_gen = self.coro_read_raw_headers()
-            raw_sz = next(raw_gen)
+            raw_in: ta.Any = None
             while True:
-                buf = yield raw_sz
                 try:
-                    raw_sz = raw_gen.send(buf)
+                    raw_sz = raw_gen.send(raw_in)
                 except StopIteration as e:
                     raw_headers = e.value
                     break
+                raw_in = yield raw_sz
 
             headers = self.parse_raw_headers(raw_headers)
 
@@ -10473,14 +10481,14 @@ class CoroHttpServer:
         # Parse request
 
         gen = self._parser.coro_parse()
-        sz = next(gen)
+        gen_in: ta.Any = None
         while True:
             try:
-                line = check.isinstance((yield CoroHttpIo.ReadLineIo(sz)), bytes)
-                sz = gen.send(line)
+                sz = gen.send(gen_in)
             except StopIteration as e:
                 parsed = e.value
                 break
+            gen_in = check.isinstance((yield CoroHttpIo.ReadLineIo(sz)), bytes)
 
         if isinstance(parsed, EmptyParsedHttpResult):
             raise self.Close

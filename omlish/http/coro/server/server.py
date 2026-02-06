@@ -462,14 +462,14 @@ class CoroHttpServer:
         # Parse request
 
         gen = self._parser.coro_parse()
-        sz = next(gen)
+        gen_in: ta.Any = None
         while True:
             try:
-                line = check.isinstance((yield CoroHttpIo.ReadLineIo(sz)), bytes)
-                sz = gen.send(line)
+                sz = gen.send(gen_in)
             except StopIteration as e:
                 parsed = e.value
                 break
+            gen_in = check.isinstance((yield CoroHttpIo.ReadLineIo(sz)), bytes)
 
         if isinstance(parsed, EmptyParsedHttpResult):
             raise self.Close
