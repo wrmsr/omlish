@@ -1,0 +1,94 @@
+# ruff: noqa: FURB188 UP006
+import dataclasses as dc
+import typing as ta
+
+from ..core import ChannelPipelineEvents
+from ..core import ChannelPipelineHandler
+from ..core import ChannelPipelineHandlerContext
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class SseEvent:
+    event: str | None = None
+    data: str = ''
+    id: str | None = None
+    retry: int | None = None
+
+
+##
+
+
+class SseDecoder(ChannelPipelineHandler):
+    """Consumes lines and emits SseEvent objects; ignores comment lines and handles blank-line termination."""
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._event: str | None = None
+        self._data: ta.List[str] = []
+        self._id: str | None = None
+        self._retry: int | None = None
+
+    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, ChannelPipelineEvents.Eof):
+            self._emit_if_any(ctx)
+            ctx.feed_in(msg)
+            return
+
+        if not isinstance(msg, str):
+            ctx.feed_in(msg)
+            return
+
+        line = msg
+
+        if line == '':
+            self._emit_if_any(ctx)
+            return
+
+        if line.startswith(':'):
+            return
+
+        if ':' in line:
+            field, value = line.split(':', 1)
+            if value.startswith(' '):
+                value = value[1:]
+        else:
+            field, value = line, ''
+
+        if field == 'event':
+            self._event = value
+        elif field == 'data':
+            self._data.append(value)
+        elif field == 'id':
+            self._id = value
+        elif field == 'retry':
+            try:
+                self._retry = int(value)
+            except ValueError:
+                pass
+
+    def _emit_if_any(self, ctx: ChannelPipelineHandlerContext) -> None:
+        if (
+                self._event is None and
+                not self._data and
+                self._id is None and
+                self._retry is None
+        ):
+            return
+
+        ev = SseEvent(
+            event=self._event,
+            data='\n'.join(self._data),
+            id=self._id,
+            retry=self._retry,
+        )
+
+        self._event = None
+        self._data.clear()
+        self._id = None
+        self._retry = None
+
+        ctx.feed_in(ev)
