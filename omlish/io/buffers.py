@@ -185,6 +185,8 @@ class DelimitingBuffer:
 
 class ReadableListBuffer:
     # FIXME: merge with PrependableGeneratorReader
+    # FIXME: AND PUSHBACKREADER
+    # FIXME: replace this whole thing with ByteStreamBuffers
 
     def __init__(self) -> None:
         super().__init__()

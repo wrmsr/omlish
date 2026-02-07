@@ -25,9 +25,13 @@ from .tokens import YamlTokenType
 ##
 
 
-ERR_INVALID_TOKEN_TYPE = yaml_error('invalid token type')
-ERR_INVALID_ANCHOR_NAME = yaml_error('invalid anchor name')
-ERR_INVALID_ALIAS_NAME = yaml_error('invalid alias name')
+class YamlAstErrors:
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
+
+    INVALID_TOKEN_TYPE = yaml_error('invalid token type')
+    INVALID_ANCHOR_NAME = yaml_error('invalid anchor name')
+    INVALID_ALIAS_NAME = yaml_error('invalid alias name')
 
 
 class YamlNodeType(enum.Enum):
@@ -236,14 +240,14 @@ class BaseYamlNode(YamlNode, Abstract):
         return None
 
 
-def add_comment_string(base: str, node: 'CommentGroupYamlNode') -> str:
+def add_yaml_comment_string(base: str, node: 'CommentGroupYamlNode') -> str:
     return f'{base} {node.string()}'
 
 
 ##
 
 
-def read_node(p: str, node: YamlNode) -> YamlErrorOr[int]:
+def read_yaml_node(p: str, node: YamlNode) -> YamlErrorOr[int]:
     s = node.string()
     read_len = node.read_len()
     remain = len(s) - read_len
@@ -259,7 +263,7 @@ def read_node(p: str, node: YamlNode) -> YamlErrorOr[int]:
     return size
 
 
-def check_line_break(t: YamlToken) -> bool:
+def check_yaml_line_break(t: YamlToken) -> bool:
     if t.prev is not None:
         lbc = '\n'
         prev = t.prev
@@ -521,7 +525,7 @@ class DocumentYamlNode(BaseYamlNode):
 
     # read implements (io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
-        return read_node(p, self)
+        return read_yaml_node(p, self)
 
     # type returns DocumentNodeType
     def type(self) -> YamlNodeType:
@@ -562,7 +566,7 @@ class NullYamlNode(ScalarYamlNode, BaseYamlNode):
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
-        return read_node(p, self)
+        return read_yaml_node(p, self)
 
     # type returns NullType
     def type(self) -> YamlNodeType:
@@ -587,7 +591,7 @@ class NullYamlNode(ScalarYamlNode, BaseYamlNode):
                 return self.comment.string()
             return ''
         if self.comment is not None:
-            return add_comment_string('null', self.comment)
+            return add_yaml_comment_string('null', self.comment)
         return self.string_without_comment()
 
     def string_without_comment(self) -> str:
@@ -613,7 +617,7 @@ class IntegerYamlNode(ScalarYamlNode, BaseYamlNode):
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
-        return read_node(p, self)
+        return read_yaml_node(p, self)
 
     # type returns IntegerType
     def type(self) -> YamlNodeType:
@@ -634,7 +638,7 @@ class IntegerYamlNode(ScalarYamlNode, BaseYamlNode):
     # String int64 to text
     def string(self) -> str:
         if self.comment is not None:
-            return add_comment_string(self.token.value, self.comment)
+            return add_yaml_comment_string(self.token.value, self.comment)
         return self.string_without_comment()
 
     def string_without_comment(self) -> str:
@@ -661,7 +665,7 @@ class FloatYamlNode(ScalarYamlNode, BaseYamlNode):
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
-        return read_node(p, self)
+        return read_yaml_node(p, self)
 
     # type returns FloatType
     def type(self) -> YamlNodeType:
@@ -682,7 +686,7 @@ class FloatYamlNode(ScalarYamlNode, BaseYamlNode):
     # String float64 to text
     def string(self) -> str:
         if self.comment is not None:
-            return add_comment_string(self.token.value, self.comment)
+            return add_yaml_comment_string(self.token.value, self.comment)
         return self.string_without_comment()
 
     def string_without_comment(self) -> str:
@@ -769,7 +773,7 @@ class StringYamlNode(ScalarYamlNode, BaseYamlNode):
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
-        return read_node(p, self)
+        return read_yaml_node(p, self)
 
     # type returns StringType
     def type(self) -> YamlNodeType:
@@ -796,12 +800,12 @@ class StringYamlNode(ScalarYamlNode, BaseYamlNode):
         if self.token.type == YamlTokenType.SINGLE_QUOTE:
             quoted = escape_single_quote(self.value)
             if self.comment is not None:
-                return add_comment_string(quoted, self.comment)
+                return add_yaml_comment_string(quoted, self.comment)
             return quoted
         elif self.token.type == YamlTokenType.DOUBLE_QUOTE:
             quoted = strconv_quote(self.value)
             if self.comment is not None:
-                return add_comment_string(quoted, self.comment)
+                return add_yaml_comment_string(quoted, self.comment)
             return quoted
 
         lbc = tokens.detect_line_break_char(self.value)
@@ -819,7 +823,7 @@ class StringYamlNode(ScalarYamlNode, BaseYamlNode):
         elif len(self.value) > 0 and (self.value[0] == '{' or self.value[0] == '['):
             return f"'{self.value}'"
         if self.comment is not None:
-            return add_comment_string(self.value, self.comment)
+            return add_yaml_comment_string(self.value, self.comment)
         return self.value
 
     def string_without_comment(self) -> str:
@@ -876,7 +880,7 @@ class LiteralYamlNode(ScalarYamlNode, BaseYamlNode):
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
-        return read_node(p, self)
+        return read_yaml_node(p, self)
 
     # type returns LiteralType
     def type(self) -> YamlNodeType:
@@ -926,7 +930,7 @@ class MergeKeyYamlNode(ScalarYamlNode, BaseYamlNode):
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
-        return read_node(p, self)
+        return read_yaml_node(p, self)
 
     # type returns MergeKeyType
     def type(self) -> YamlNodeType:
@@ -971,7 +975,7 @@ class BoolYamlNode(ScalarYamlNode, BaseYamlNode):
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
-        return read_node(p, self)
+        return read_yaml_node(p, self)
 
     # type returns BoolType
     def type(self) -> YamlNodeType:
@@ -992,7 +996,7 @@ class BoolYamlNode(ScalarYamlNode, BaseYamlNode):
     # String boolean to text
     def string(self) -> str:
         if self.comment is not None:
-            return add_comment_string(self.token.value, self.comment)
+            return add_yaml_comment_string(self.token.value, self.comment)
         return self.string_without_comment()
 
     def string_without_comment(self) -> str:
@@ -1018,7 +1022,7 @@ class InfinityYamlNode(ScalarYamlNode, BaseYamlNode):
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
-        return read_node(p, self)
+        return read_yaml_node(p, self)
 
     # type returns InfinityType
     def type(self) -> YamlNodeType:
@@ -1039,7 +1043,7 @@ class InfinityYamlNode(ScalarYamlNode, BaseYamlNode):
     # String infinity to text
     def string(self) -> str:
         if self.comment is not None:
-            return add_comment_string(self.token.value, self.comment)
+            return add_yaml_comment_string(self.token.value, self.comment)
         return self.string_without_comment()
 
     def string_without_comment(self) -> str:
@@ -1064,7 +1068,7 @@ class NanYamlNode(ScalarYamlNode, BaseYamlNode):
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
-        return read_node(p, self)
+        return read_yaml_node(p, self)
 
     # type returns NanType
     def type(self) -> YamlNodeType:
@@ -1085,7 +1089,7 @@ class NanYamlNode(ScalarYamlNode, BaseYamlNode):
     # String returns .nan
     def string(self) -> str:
         if self.comment is not None:
-            return add_comment_string(self.token.value, self.comment)
+            return add_yaml_comment_string(self.token.value, self.comment)
         return self.string_without_comment()
 
     def string_without_comment(self) -> str:
@@ -1179,7 +1183,7 @@ class MappingYamlNode(BaseYamlNode):
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
-        return read_node(p, self)
+        return read_yaml_node(p, self)
 
     # type returns MappingType
     def type(self) -> YamlNodeType:
@@ -1202,7 +1206,7 @@ class MappingYamlNode(BaseYamlNode):
             values.append(value.string().lstrip(' '))
         map_text = f'{{{", ".join(values)}}}'
         if comment_mode and self.comment is not None:
-            return add_comment_string(map_text, self.comment)
+            return add_yaml_comment_string(map_text, self.comment)
         return map_text
 
     def block_style_string(self, comment_mode: bool) -> str:
@@ -1225,7 +1229,7 @@ class MappingYamlNode(BaseYamlNode):
     def string(self) -> str:
         if len(self.values) == 0:
             if self.comment is not None:
-                return add_comment_string('{}', self.comment)
+                return add_yaml_comment_string('{}', self.comment)
             return '{}'
 
         comment_mode = True
@@ -1257,7 +1261,7 @@ class MappingKeyYamlNode(MapKeyYamlNode, BaseYamlNode):
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
-        return read_node(p, self)
+        return read_yaml_node(p, self)
 
     # type returns MappingKeyType
     def type(self) -> YamlNodeType:
@@ -1316,7 +1320,7 @@ class MappingValueYamlNode(BaseYamlNode):
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
-        return read_node(p, self)
+        return read_yaml_node(p, self)
 
     # type returns MappingValueType
     def type(self) -> YamlNodeType:
@@ -1359,7 +1363,7 @@ class MappingValueYamlNode(BaseYamlNode):
 
     def to_string(self) -> str:
         space = ' ' * (check.not_none(self.key.get_token()).position.column - 1)
-        if check_line_break(check.not_none(self.key.get_token())):
+        if check_yaml_line_break(check.not_none(self.key.get_token())):
             space = f'\n{space}'
 
         key_indent_level = check.not_none(self.key.get_token()).position.indent_level
@@ -1502,7 +1506,7 @@ class SequenceYamlNode(BaseYamlNode, ArrayYamlNode):
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
-        return read_node(p, self)
+        return read_yaml_node(p, self)
 
     # type returns SequenceType
     def type(self) -> YamlNodeType:
@@ -1526,7 +1530,7 @@ class SequenceYamlNode(BaseYamlNode, ArrayYamlNode):
 
         seq_text = f'[{", ".join(values)}]'
         if self.comment is not None:
-            return add_comment_string(seq_text, self.comment)
+            return add_yaml_comment_string(seq_text, self.comment)
 
         return seq_text
 
@@ -1642,7 +1646,7 @@ class SequenceEntryYamlNode(BaseYamlNode):
         return self.string()
 
     def read(self, p: str) -> YamlErrorOr[int]:
-        return read_node(p, self)
+        return read_yaml_node(p, self)
 
 
 # sequence_entry creates SequenceEntryNode instance.
@@ -1697,16 +1701,16 @@ class AnchorYamlNode(ScalarYamlNode, BaseYamlNode):
 
     def set_name(self, name: str) -> ta.Optional[YamlError]:
         if self.name is None:
-            return ERR_INVALID_ANCHOR_NAME
+            return YamlAstErrors.INVALID_ANCHOR_NAME
         s = self.name
         if not isinstance(s, StringYamlNode):
-            return ERR_INVALID_ANCHOR_NAME
+            return YamlAstErrors.INVALID_ANCHOR_NAME
         s.value = name
         return None
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
-        return read_node(p, self)
+        return read_yaml_node(p, self)
 
     # type returns AnchorType
     def type(self) -> YamlNodeType:
@@ -1768,15 +1772,15 @@ class AliasYamlNode(ScalarYamlNode, BaseYamlNode):
 
     def set_name(self, name: str) -> ta.Optional[YamlError]:
         if self.value is None:
-            return ERR_INVALID_ALIAS_NAME
+            return YamlAstErrors.INVALID_ALIAS_NAME
         if not isinstance(self.value, StringYamlNode):
-            return ERR_INVALID_ALIAS_NAME
+            return YamlAstErrors.INVALID_ALIAS_NAME
         self.value.value = name
         return None
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
-        return read_node(p, self)
+        return read_yaml_node(p, self)
 
     # type returns AliasType
     def type(self) -> YamlNodeType:
@@ -1823,7 +1827,7 @@ class DirectiveYamlNode(BaseYamlNode):
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
-        return read_node(p, self)
+        return read_yaml_node(p, self)
 
     # type returns DirectiveType
     def type(self) -> YamlNodeType:
@@ -1872,7 +1876,7 @@ class TagYamlNode(ScalarYamlNode, BaseYamlNode, ArrayYamlNode):
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
-        return read_node(p, self)
+        return read_yaml_node(p, self)
 
     # type returns TagType
     def type(self) -> YamlNodeType:
@@ -1928,7 +1932,7 @@ class CommentYamlNode(BaseYamlNode):
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
-        return read_node(p, self)
+        return read_yaml_node(p, self)
 
     # type returns CommentType
     def type(self) -> YamlNodeType:
@@ -1961,7 +1965,7 @@ class CommentGroupYamlNode(BaseYamlNode):
 
     # read implements(io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
-        return read_node(p, self)
+        return read_yaml_node(p, self)
 
     # type returns CommentType
     def type(self) -> YamlNodeType:
@@ -1990,7 +1994,7 @@ class CommentGroupYamlNode(BaseYamlNode):
         space = ' ' * col
         for comment in self.comments:
             spc = space
-            if check_line_break(check.not_none(comment.token)):
+            if check_yaml_line_break(check.not_none(comment.token)):
                 spc = f'\n{spc}'
             values.append(spc + comment.string())
         return '\n'.join(values)

@@ -81,7 +81,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../auth.py', sha1='b1ac1a5e03d4e9e38957a54e346943c6dcc964a1'),
             dict(path='../dataclasses.py', sha1='8e950d7815904588fed284889392cbb0b1002605'),
             dict(path='../../../../omlish/configs/formats.py', sha1='3074c3e1428f9598cd0591745cb60fb3fe2b309f'),
-            dict(path='../../../../omlish/io/buffers.py', sha1='4007189e90aa95da91f05e025e700b175494f9e2'),
+            dict(path='../../../../omlish/io/buffers.py', sha1='ab4da773b752cf19d5bdcf5997a56972ad11d888'),
             dict(path='../../../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
             dict(path='../../../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
             dict(path='../../../../omlish/logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
@@ -4436,6 +4436,8 @@ class DelimitingBuffer:
 
 class ReadableListBuffer:
     # FIXME: merge with PrependableGeneratorReader
+    # FIXME: AND PUSHBACKREADER
+    # FIXME: replace this whole thing with ByteStreamBuffers
 
     def __init__(self) -> None:
         super().__init__()

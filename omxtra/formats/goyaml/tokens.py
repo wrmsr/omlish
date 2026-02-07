@@ -168,65 +168,68 @@ class YamlIndicator(enum.Enum):
 ##
 
 
-RESERVED_NULL_KEYWORDS = (
-    'null',
-    'Null',
-    'NULL',
-    '~',
-)
+class YamlKeywords:
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
+
+    RESERVED_NULL_KEYWORDS = (
+        'null',
+        'Null',
+        'NULL',
+        '~',
+    )
+
+    RESERVED_BOOL_KEYWORDS = (
+        'true',
+        'True',
+        'TRUE',
+        'false',
+        'False',
+        'FALSE',
+    )
+
+    # For compatibility with other YAML 1.1 parsers.
+    # Note that we use these solely for encoding the bool value with quotes. go-yaml should not treat these as reserved
+    # keywords at parsing time. as go-yaml is supposed to be compliant only with YAML 1.2.
+    RESERVED_LEGACY_BOOL_KEYWORDS = (
+        'y',
+        'Y',
+        'yes',
+        'Yes',
+        'YES',
+        'n',
+        'N',
+        'no',
+        'No',
+        'NO',
+        'on',
+        'On',
+        'ON',
+        'off',
+        'Off',
+        'OFF',
+    )
+
+    RESERVED_INF_KEYWORDS = (
+        '.inf',
+        '.Inf',
+        '.INF',
+        '-.inf',
+        '-.Inf',
+        '-.INF',
+    )
+
+    RESERVED_NAN_KEYWORDS = (
+        '.nan',
+        '.NaN',
+        '.NAN',
+    )
+
+    RESERVED_KEYWORD_MAP: ta.ClassVar[ta.Mapping[str, ta.Callable[[str, str, 'YamlPosition'], 'YamlToken']]]
+    RESERVED_ENC_KEYWORD_MAP: ta.ClassVar[ta.Mapping[str, ta.Callable[[str, str, 'YamlPosition'], 'YamlToken']]]
 
 
-RESERVED_BOOL_KEYWORDS = (
-    'true',
-    'True',
-    'TRUE',
-    'false',
-    'False',
-    'FALSE',
-)
-
-
-# For compatibility with other YAML 1.1 parsers.
-# Note that we use these solely for encoding the bool value with quotes. go-yaml should not treat these as reserved
-# keywords at parsing time. as go-yaml is supposed to be compliant only with YAML 1.2.
-RESERVED_LEGACY_BOOL_KEYWORDS = (
-    'y',
-    'Y',
-    'yes',
-    'Yes',
-    'YES',
-    'n',
-    'N',
-    'no',
-    'No',
-    'NO',
-    'on',
-    'On',
-    'ON',
-    'off',
-    'Off',
-    'OFF',
-)
-
-
-RESERVED_INF_KEYWORDS = (
-    '.inf',
-    '.Inf',
-    '.INF',
-    '-.inf',
-    '-.Inf',
-    '-.INF',
-)
-
-
-RESERVED_NAN_KEYWORDS = (
-    '.nan',
-    '.NaN',
-    '.NAN',
-)
-
-
-def reserved_keyword_token(typ: YamlTokenType, value: str, org: str, pos: 'YamlPosition') -> 'YamlToken':
+def reserved_yaml_keyword_token(typ: YamlTokenType, value: str, org: str, pos: 'YamlPosition') -> 'YamlToken':
     return YamlToken(
         type=typ,
         char_type=YamlCharType.MISCELLANEOUS,
@@ -237,21 +240,21 @@ def reserved_keyword_token(typ: YamlTokenType, value: str, org: str, pos: 'YamlP
     )
 
 
-RESERVED_KEYWORD_MAP: ta.Mapping[str, ta.Callable[[str, str, 'YamlPosition'], 'YamlToken']] = {
-    **{keyword: functools.partial(reserved_keyword_token, YamlTokenType.NULL) for keyword in RESERVED_NULL_KEYWORDS},
-    **{keyword: functools.partial(reserved_keyword_token, YamlTokenType.BOOL) for keyword in RESERVED_BOOL_KEYWORDS},
-    **{keyword: functools.partial(reserved_keyword_token, YamlTokenType.INFINITY) for keyword in RESERVED_INF_KEYWORDS},
-    **{keyword: functools.partial(reserved_keyword_token, YamlTokenType.NAN) for keyword in RESERVED_NAN_KEYWORDS},
+YamlKeywords.RESERVED_KEYWORD_MAP = {
+    **{keyword: functools.partial(reserved_yaml_keyword_token, YamlTokenType.NULL) for keyword in YamlKeywords.RESERVED_NULL_KEYWORDS},  # noqa
+    **{keyword: functools.partial(reserved_yaml_keyword_token, YamlTokenType.BOOL) for keyword in YamlKeywords.RESERVED_BOOL_KEYWORDS},  # noqa
+    **{keyword: functools.partial(reserved_yaml_keyword_token, YamlTokenType.INFINITY) for keyword in YamlKeywords.RESERVED_INF_KEYWORDS},  # noqa
+    **{keyword: functools.partial(reserved_yaml_keyword_token, YamlTokenType.NAN) for keyword in YamlKeywords.RESERVED_NAN_KEYWORDS},  # noqa
 }
 
 
 # RESERVED_ENC_KEYWORD_MAP contains is the keyword map used at encoding time.
 # This is supposed to be a superset of RESERVED_KEYWORD_MAP, and used to quote legacy keywords present in YAML 1.1 or
 # lesser for compatibility reasons, even though this library is supposed to be YAML 1.2-compliant.
-RESERVED_ENC_KEYWORD_MAP: ta.Mapping[str, ta.Callable[[str, str, 'YamlPosition'], 'YamlToken']] = {
-    **{keyword: functools.partial(reserved_keyword_token, YamlTokenType.NULL) for keyword in RESERVED_NULL_KEYWORDS},
-    **{keyword: functools.partial(reserved_keyword_token, YamlTokenType.BOOL) for keyword in RESERVED_BOOL_KEYWORDS},
-    **{keyword: functools.partial(reserved_keyword_token, YamlTokenType.BOOL) for keyword in RESERVED_LEGACY_BOOL_KEYWORDS},  # noqa
+YamlKeywords.RESERVED_ENC_KEYWORD_MAP = {
+    **{keyword: functools.partial(reserved_yaml_keyword_token, YamlTokenType.NULL) for keyword in YamlKeywords.RESERVED_NULL_KEYWORDS},  # noqa
+    **{keyword: functools.partial(reserved_yaml_keyword_token, YamlTokenType.BOOL) for keyword in YamlKeywords.RESERVED_BOOL_KEYWORDS},  # noqa
+    **{keyword: functools.partial(reserved_yaml_keyword_token, YamlTokenType.BOOL) for keyword in YamlKeywords.RESERVED_LEGACY_BOOL_KEYWORDS},  # noqa
 }
 
 
@@ -522,7 +525,7 @@ def is_need_quoted(value: str) -> bool:
     if not value:
         return True
 
-    if value in RESERVED_ENC_KEYWORD_MAP:
+    if value in YamlKeywords.RESERVED_ENC_KEYWORD_MAP:
         return True
 
     if _is_number(value):
@@ -569,7 +572,7 @@ def literal_block_header(value: str) -> str:
 
 # new create reserved keyword token or number token and other string token.
 def new_yaml_token(value: str, org: str, pos: 'YamlPosition') -> 'YamlToken':
-    fn = RESERVED_KEYWORD_MAP.get(value)
+    fn = YamlKeywords.RESERVED_KEYWORD_MAP.get(value)
     if fn is not None:
         return fn(value, org, pos)
 
