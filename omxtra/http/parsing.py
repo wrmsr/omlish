@@ -10,14 +10,14 @@ import io
 import re
 import typing as ta
 
-from omlish.http.versions import HttpProtocolVersion
-from omlish.http.versions import HttpProtocolVersions
+from omlish.http.versions import HttpVersion
+from omlish.http.versions import HttpVersions
 
 
 ##
 
 
-class StartLineErrorCode(enum.Enum):
+class StartLineHttpParseErrorCode(enum.Enum):
     MALFORMED_REQUEST_LINE = enum.auto()
     MALFORMED_STATUS_LINE = enum.auto()
     UNSUPPORTED_HTTP_VERSION = enum.auto()
@@ -26,7 +26,7 @@ class StartLineErrorCode(enum.Enum):
     INVALID_STATUS_CODE = enum.auto()
 
 
-class HeaderFieldErrorCode(enum.Enum):
+class HeaderFieldHttpParseErrorCode(enum.Enum):
     INVALID_FIELD_NAME = enum.auto()
     INVALID_FIELD_VALUE = enum.auto()
     OBS_FOLD_NOT_ALLOWED = enum.auto()
@@ -41,7 +41,7 @@ class HeaderFieldErrorCode(enum.Enum):
     EMPTY_FIELD_NAME = enum.auto()
 
 
-class SemanticHeaderErrorCode(enum.Enum):
+class SemanticHeaderHttpParseErrorCode(enum.Enum):
     DUPLICATE_CONTENT_LENGTH = enum.auto()
     CONFLICTING_CONTENT_LENGTH = enum.auto()
     CONTENT_LENGTH_WITH_TRANSFER_ENCODING = enum.auto()
@@ -63,31 +63,31 @@ class SemanticHeaderErrorCode(enum.Enum):
     TE_IN_HTTP10 = enum.auto()
 
 
-class EncodingErrorCode(enum.Enum):
+class EncodingHttpParseErrorCode(enum.Enum):
     NON_ASCII_IN_FIELD_NAME = enum.auto()
     OBS_TEXT_IN_FIELD_VALUE = enum.auto()
 
 
-ErrorCode = ta.Union[
-    StartLineErrorCode,
-    HeaderFieldErrorCode,
-    SemanticHeaderErrorCode,
-    EncodingErrorCode,
+HttpParseErrorCode = ta.Union[
+    StartLineHttpParseErrorCode,
+    HeaderFieldHttpParseErrorCode,
+    SemanticHeaderHttpParseErrorCode,
+    EncodingHttpParseErrorCode,
 ]
 
 
 ##
 
 
-class HttpHeaderError(Exception):
+class HttpParseError(Exception):
     pass
 
 
 @dc.dataclass()
-class HttpParseError(HttpHeaderError):
+class ErrorCodeHttpParseError(HttpParseError):
     """Base exception for all HTTP header parsing errors."""
 
-    code: ErrorCode
+    code: HttpParseErrorCode
     message: str = ''
     line: int = 0
     offset: int = 0
@@ -100,35 +100,35 @@ class HttpParseError(HttpHeaderError):
 
 
 @dc.dataclass()
-class StartLineError(HttpParseError):
+class StartLineHttpParseError(ErrorCodeHttpParseError):
     """Errors in the request-line or status-line."""
 
-    code: StartLineErrorCode = dc.field(default=StartLineErrorCode.MALFORMED_REQUEST_LINE)
+    code: StartLineHttpParseErrorCode = dc.field(default=StartLineHttpParseErrorCode.MALFORMED_REQUEST_LINE)
 
 
 @dc.dataclass()
-class HeaderFieldError(HttpParseError):
+class HeaderFieldHttpParseError(ErrorCodeHttpParseError):
     """Errors in header field syntax."""
 
-    code: HeaderFieldErrorCode = dc.field(default=HeaderFieldErrorCode.INVALID_FIELD_NAME)
+    code: HeaderFieldHttpParseErrorCode = dc.field(default=HeaderFieldHttpParseErrorCode.INVALID_FIELD_NAME)
 
 
 @dc.dataclass()
-class SemanticHeaderError(HttpParseError):
+class SemanticHeaderHttpParseError(ErrorCodeHttpParseError):
     """Errors in header field semantics / cross-field validation."""
 
-    code: SemanticHeaderErrorCode = dc.field(default=SemanticHeaderErrorCode.INVALID_CONTENT_LENGTH)
+    code: SemanticHeaderHttpParseErrorCode = dc.field(default=SemanticHeaderHttpParseErrorCode.INVALID_CONTENT_LENGTH)
 
 
 @dc.dataclass()
-class EncodingError(HttpParseError):
+class EncodingHttpParseError(ErrorCodeHttpParseError):
     """Errors in character encoding within headers."""
 
-    code: EncodingErrorCode = dc.field(default=EncodingErrorCode.NON_ASCII_IN_FIELD_NAME)
+    code: EncodingHttpParseErrorCode = dc.field(default=EncodingHttpParseErrorCode.NON_ASCII_IN_FIELD_NAME)
 
 
 @dc.dataclass()
-class MultiValueNoCombineHeaderError(HttpHeaderError):
+class NoCombineHeaderHttpParseError(HttpParseError):
     """Errors in headers where duplicate values are not allowed."""
 
     name: str
@@ -173,7 +173,7 @@ class ParsedHttpHeaders:
         key = name.lower()
         values = self._entries[key]
         if key in self._NO_COMBINE_HEADERS:
-            raise MultiValueNoCombineHeaderError(name)
+            raise NoCombineHeaderHttpParseError(name)
         return ', '.join(values)
 
     def get(self, name: str, default: ta.Optional[str] = None) -> ta.Optional[str]:
@@ -207,9 +207,6 @@ class ParsedHttpHeaders:
 
     def __repr__(self) -> str:
         return f'ParsedHttpHeaders({dict(self.items())})'
-
-
-##
 
 
 @dc.dataclass()
@@ -269,9 +266,6 @@ class PreparedParsedHttpHeaders:
     authorization: ta.Optional[AuthorizationValue] = None
 
 
-##
-
-
 @dc.dataclass(frozen=True)
 class RawParsedHttpHeader:
     name: bytes
@@ -290,13 +284,13 @@ class ParsedHttpMessage:
     class RequestLine:
         method: str
         request_target: bytes
-        http_version: HttpProtocolVersion
+        http_version: HttpVersion
 
     request_line: ta.Optional[RequestLine]
 
     @dc.dataclass(frozen=True)
     class StatusLine:
-        http_version: HttpProtocolVersion
+        http_version: HttpVersion
         status_code: int
         reason_phrase: str
 
@@ -306,9 +300,6 @@ class ParsedHttpMessage:
     headers: ParsedHttpHeaders
 
     prepared: PreparedParsedHttpHeaders
-
-
-##
 
 
 @dc.dataclass(frozen=True)
@@ -322,17 +313,8 @@ class ParsedHttpTrailers:
 ##
 
 
-class HttpMessageParser:
-    """
-    Strict HTTP/1.x message-head parser.
-
-    Usage::
-        parser = HttpHeadParser()
-        msg = parser.parse(raw_bytes)
-        # or with config:
-        parser = HttpHeadParser(HttpHeadParser.Config(allow_obs_fold=True))
-        msg = parser.parse(raw_bytes, mode=HttpHeadParser.Mode.REQUEST)
-    """
+class HttpParser:
+    """Strict HTTP/1.x parser."""
 
     @dc.dataclass(frozen=True)
     class Config:
@@ -369,11 +351,11 @@ class HttpMessageParser:
         RESPONSE = 'response'
         AUTO = 'auto'
 
-    def parse(self, data: bytes, mode: Mode = Mode.AUTO) -> ParsedHttpMessage:
+    def parse_message(self, data: bytes, mode: Mode = Mode.AUTO) -> ParsedHttpMessage:
         if not isinstance(data, (bytes, bytearray)):
             raise TypeError(f'Expected bytes, got {type(data).__name__}')
 
-        ctx = _HttpMessageParseContext(
+        ctx = _HttpParseContext(
             data=bytes(data),
             config=self._config,
             mode=mode,
@@ -400,7 +382,7 @@ class HttpMessageParser:
         http_version = (
             request_line.http_version if request_line else
             status_line.http_version if status_line else
-            HttpProtocolVersions.HTTP_1_1
+            HttpVersions.HTTP_1_1
         )
 
         # 5. Parse header fields
@@ -455,10 +437,10 @@ class HttpMessageParser:
                 headers=ParsedHttpHeaders(),
             )
 
-        ctx = _HttpMessageParseContext(
+        ctx = _HttpParseContext(
             data=bytes(data),
             config=self._config,
-            mode=HttpMessageParser.Mode.AUTO,
+            mode=HttpParser.Mode.AUTO,
         )
 
         # Verify terminator (trailers end with an empty CRLF line, same as headers)
@@ -476,9 +458,9 @@ class HttpMessageParser:
 
         # Enforce forbidden trailer fields (RFC 7230 §4.1.2)
         for name in headers:
-            if name in _HttpMessageParseContext._FORBIDDEN_TRAILER_FIELDS:  # noqa
-                raise SemanticHeaderError(
-                    code=SemanticHeaderErrorCode.FORBIDDEN_TRAILER_FIELD,
+            if name in _HttpParseContext._FORBIDDEN_TRAILER_FIELDS:  # noqa
+                raise SemanticHeaderHttpParseError(
+                    code=SemanticHeaderHttpParseErrorCode.FORBIDDEN_TRAILER_FIELD,
                     message=f'Forbidden field in trailers: {name!r}',
                 )
 
@@ -488,12 +470,12 @@ class HttpMessageParser:
         )
 
 
-class _HttpMessageParseContext:
+class _HttpParseContext:
     def __init__(
             self,
             data: bytes,
-            config: HttpMessageParser.Config,
-            mode: HttpMessageParser.Mode,
+            config: HttpParser.Config,
+            mode: HttpParser.Mode,
     ) -> None:
         super().__init__()
 
@@ -547,8 +529,8 @@ class _HttpMessageParseContext:
         if idx >= 0:
             after = idx + 4
             if after < len(data):
-                raise HeaderFieldError(
-                    code=HeaderFieldErrorCode.TRAILING_DATA,
+                raise HeaderFieldHttpParseError(
+                    code=HeaderFieldHttpParseErrorCode.TRAILING_DATA,
                     message=f'Unexpected {len(data) - after} byte(s) after header terminator',
                     line=0,
                     offset=after,
@@ -559,15 +541,15 @@ class _HttpMessageParseContext:
         if self.config.allow_bare_lf:
             if data.endswith(b'\n\n'):
                 return
-            raise HeaderFieldError(
-                code=HeaderFieldErrorCode.MISSING_TERMINATOR,
+            raise HeaderFieldHttpParseError(
+                code=HeaderFieldHttpParseErrorCode.MISSING_TERMINATOR,
                 message='Header block does not end with LFLF',
                 line=0,
                 offset=len(data),
             )
 
-        raise HeaderFieldError(
-            code=HeaderFieldErrorCode.MISSING_TERMINATOR,
+        raise HeaderFieldHttpParseError(
+            code=HeaderFieldHttpParseErrorCode.MISSING_TERMINATOR,
             message='Header block does not end with CRLFCRLF',
             line=0,
             offset=len(data),
@@ -610,8 +592,8 @@ class _HttpMessageParseContext:
 
             # NUL: always an error
             if first == nul_at and nul_at <= cr_at and nul_at <= lf_at:
-                raise HeaderFieldError(
-                    code=HeaderFieldErrorCode.NUL_IN_HEADER,
+                raise HeaderFieldHttpParseError(
+                    code=HeaderFieldHttpParseErrorCode.NUL_IN_HEADER,
                     message='NUL byte in header data',
                     line=self.current_line,
                     offset=nul_at,
@@ -624,8 +606,8 @@ class _HttpMessageParseContext:
 
                 # Bare CR (not followed by LF)
                 if not self.config.allow_bare_cr_in_value:
-                    raise HeaderFieldError(
-                        code=HeaderFieldErrorCode.BARE_CARRIAGE_RETURN,
+                    raise HeaderFieldHttpParseError(
+                        code=HeaderFieldHttpParseErrorCode.BARE_CARRIAGE_RETURN,
                         message='Bare CR not followed by LF',
                         line=self.current_line,
                         offset=cr_at,
@@ -639,15 +621,15 @@ class _HttpMessageParseContext:
             if self.config.allow_bare_lf:
                 return lf_at
 
-            raise HeaderFieldError(
-                code=HeaderFieldErrorCode.BARE_LF,
+            raise HeaderFieldHttpParseError(
+                code=HeaderFieldHttpParseErrorCode.BARE_LF,
                 message='Bare LF without preceding CR',
                 line=self.current_line,
                 offset=lf_at,
             )
 
-        raise HeaderFieldError(
-            code=HeaderFieldErrorCode.MISSING_TERMINATOR,
+        raise HeaderFieldHttpParseError(
+            code=HeaderFieldHttpParseErrorCode.MISSING_TERMINATOR,
             message='Unexpected end of data while scanning for line ending',
             line=self.current_line,
             offset=length,
@@ -663,10 +645,10 @@ class _HttpMessageParseContext:
     # Kind detection
 
     def detect_kind(self, start_line: bytes) -> ParsedHttpMessage.Kind:
-        if self.mode == HttpMessageParser.Mode.REQUEST:
+        if self.mode == HttpParser.Mode.REQUEST:
             return ParsedHttpMessage.Kind.REQUEST
 
-        if self.mode == HttpMessageParser.Mode.RESPONSE:
+        if self.mode == HttpParser.Mode.RESPONSE:
             return ParsedHttpMessage.Kind.RESPONSE
 
         # AUTO: responses start with "HTTP/"
@@ -686,8 +668,8 @@ class _HttpMessageParseContext:
 
         first_sp = line.find(b' ')
         if first_sp < 0:
-            raise StartLineError(
-                code=StartLineErrorCode.MALFORMED_REQUEST_LINE,
+            raise StartLineHttpParseError(
+                code=StartLineHttpParseErrorCode.MALFORMED_REQUEST_LINE,
                 message='No SP found in request-line',
                 line=0,
                 offset=0,
@@ -695,8 +677,8 @@ class _HttpMessageParseContext:
 
         last_sp = line.rfind(b' ')
         if first_sp == last_sp:
-            raise StartLineError(
-                code=StartLineErrorCode.MALFORMED_REQUEST_LINE,
+            raise StartLineHttpParseError(
+                code=StartLineHttpParseErrorCode.MALFORMED_REQUEST_LINE,
                 message='Only one SP found in request-line; expected method SP target SP version',
                 line=0,
                 offset=first_sp,
@@ -712,8 +694,8 @@ class _HttpMessageParseContext:
         # (no SP), and everything in between is the target which is VCHAR (no SP). However, some real URIs... no, VCHAR
         # excludes SP. Let's be strict: Check there are exactly 2 SPs total.
         if line.count(b' ') != 2:
-            raise StartLineError(
-                code=StartLineErrorCode.MALFORMED_REQUEST_LINE,
+            raise StartLineHttpParseError(
+                code=StartLineHttpParseErrorCode.MALFORMED_REQUEST_LINE,
                 message=f'Request-line contains {line.count(b" ")} spaces; expected exactly 2',
                 line=0,
                 offset=0,
@@ -722,16 +704,16 @@ class _HttpMessageParseContext:
         # Validate method
 
         if not method_bytes:
-            raise StartLineError(
-                code=StartLineErrorCode.INVALID_METHOD,
+            raise StartLineHttpParseError(
+                code=StartLineHttpParseErrorCode.INVALID_METHOD,
                 message='Empty method in request-line',
                 line=0,
                 offset=0,
             )
 
         if method_bytes.translate(None, self._TCHAR_BYTES):
-            raise StartLineError(
-                code=StartLineErrorCode.INVALID_METHOD,
+            raise StartLineHttpParseError(
+                code=StartLineHttpParseErrorCode.INVALID_METHOD,
                 message=f'Method contains invalid character(s)',
                 line=0,
                 offset=0,
@@ -740,8 +722,8 @@ class _HttpMessageParseContext:
         # Validate request-target (VCHAR only, non-empty)
 
         if not target_bytes:
-            raise StartLineError(
-                code=StartLineErrorCode.INVALID_REQUEST_TARGET,
+            raise StartLineHttpParseError(
+                code=StartLineHttpParseErrorCode.INVALID_REQUEST_TARGET,
                 message='Empty request-target',
                 line=0,
                 offset=first_sp + 1,
@@ -749,8 +731,8 @@ class _HttpMessageParseContext:
 
         if self.config.reject_non_visible_ascii_request_target:
             if target_bytes.translate(None, self._VCHAR_BYTES):
-                raise StartLineError(
-                    code=StartLineErrorCode.INVALID_REQUEST_TARGET,
+                raise StartLineHttpParseError(
+                    code=StartLineHttpParseErrorCode.INVALID_REQUEST_TARGET,
                     message='Request-target contains non-visible-ASCII character(s)',
                     line=0,
                     offset=first_sp + 1,
@@ -758,8 +740,8 @@ class _HttpMessageParseContext:
 
         else:
             if target_bytes.translate(None, self._REQUEST_TARGET_BYTES):
-                raise StartLineError(
-                    code=StartLineErrorCode.INVALID_REQUEST_TARGET,
+                raise StartLineHttpParseError(
+                    code=StartLineHttpParseErrorCode.INVALID_REQUEST_TARGET,
                     message='Request-target contains invalid character(s)',
                     line=0,
                     offset=first_sp + 1,
@@ -769,12 +751,12 @@ class _HttpMessageParseContext:
 
         version_str = version_bytes.decode('ascii', errors='replace')
         if version_str == 'HTTP/1.0':
-            version = HttpProtocolVersions.HTTP_1_0
+            version = HttpVersions.HTTP_1_0
         elif version_str == 'HTTP/1.1':
-            version = HttpProtocolVersions.HTTP_1_1
+            version = HttpVersions.HTTP_1_1
         else:
-            raise StartLineError(
-                code=StartLineErrorCode.UNSUPPORTED_HTTP_VERSION,
+            raise StartLineHttpParseError(
+                code=StartLineHttpParseErrorCode.UNSUPPORTED_HTTP_VERSION,
                 message=f'Unsupported HTTP version: {version_str!r}',
                 line=0,
                 offset=last_sp + 1,
@@ -803,8 +785,8 @@ class _HttpMessageParseContext:
 
         first_sp = line.find(b' ')
         if first_sp < 0:
-            raise StartLineError(
-                code=StartLineErrorCode.MALFORMED_STATUS_LINE,
+            raise StartLineHttpParseError(
+                code=StartLineHttpParseErrorCode.MALFORMED_STATUS_LINE,
                 message='No SP found in status-line',
                 line=0,
                 offset=0,
@@ -820,8 +802,8 @@ class _HttpMessageParseContext:
             # Per RFC 7230:
             #   `status-line = HTTP-version SP status-code SP reason-phrase`.
             # The SP before reason-phrase is required even if reason-phrase is empty.
-            raise StartLineError(
-                code=StartLineErrorCode.MALFORMED_STATUS_LINE,
+            raise StartLineHttpParseError(
+                code=StartLineHttpParseErrorCode.MALFORMED_STATUS_LINE,
                 message='Missing second SP in status-line (required before reason-phrase)',
                 line=0,
                 offset=first_sp + 1 + len(rest),
@@ -834,12 +816,12 @@ class _HttpMessageParseContext:
 
         version_str = version_bytes.decode('ascii', errors='replace')
         if version_str == 'HTTP/1.0':
-            version = HttpProtocolVersions.HTTP_1_0
+            version = HttpVersions.HTTP_1_0
         elif version_str == 'HTTP/1.1':
-            version = HttpProtocolVersions.HTTP_1_1
+            version = HttpVersions.HTTP_1_1
         else:
-            raise StartLineError(
-                code=StartLineErrorCode.UNSUPPORTED_HTTP_VERSION,
+            raise StartLineHttpParseError(
+                code=StartLineHttpParseErrorCode.UNSUPPORTED_HTTP_VERSION,
                 message=f'Unsupported HTTP version: {version_str!r}',
                 line=0,
                 offset=0,
@@ -848,8 +830,8 @@ class _HttpMessageParseContext:
         # Validate status code: exactly 3 ASCII digits
 
         if len(status_bytes) != 3 or not status_bytes.isdigit():
-            raise StartLineError(
-                code=StartLineErrorCode.INVALID_STATUS_CODE,
+            raise StartLineHttpParseError(
+                code=StartLineHttpParseErrorCode.INVALID_STATUS_CODE,
                 message=f'Status code is not exactly 3 digits: {status_bytes!r}',
                 line=0,
                 offset=first_sp + 1,
@@ -857,8 +839,8 @@ class _HttpMessageParseContext:
 
         status_code = int(status_bytes)
         if not (100 <= status_code <= 599):
-            raise StartLineError(
-                code=StartLineErrorCode.INVALID_STATUS_CODE,
+            raise StartLineHttpParseError(
+                code=StartLineHttpParseErrorCode.INVALID_STATUS_CODE,
                 message=f'Status code {status_code} out of range 100-599',
                 line=0,
                 offset=first_sp + 1,
@@ -872,16 +854,16 @@ class _HttpMessageParseContext:
 
             for i, b in enumerate(reason_bytes):
                 if b == self._NUL:
-                    raise HeaderFieldError(
-                        code=HeaderFieldErrorCode.NUL_IN_HEADER,
+                    raise HeaderFieldHttpParseError(
+                        code=HeaderFieldHttpParseErrorCode.NUL_IN_HEADER,
                         message='NUL byte in reason-phrase',
                         line=0,
                         offset=reason_base_offset + i,
                     )
 
                 if b not in self._REASON_PHRASE_CHARS:
-                    raise StartLineError(
-                        code=StartLineErrorCode.MALFORMED_STATUS_LINE,
+                    raise StartLineHttpParseError(
+                        code=StartLineHttpParseErrorCode.MALFORMED_STATUS_LINE,
                         message=f'Invalid character 0x{b:02x} in reason-phrase',
                         line=0,
                         offset=reason_base_offset + i,
@@ -914,8 +896,8 @@ class _HttpMessageParseContext:
 
             # Max header count check
             if len(headers) >= self.config.max_header_count:
-                raise HeaderFieldError(
-                    code=HeaderFieldErrorCode.TOO_MANY_HEADERS,
+                raise HeaderFieldHttpParseError(
+                    code=HeaderFieldHttpParseErrorCode.TOO_MANY_HEADERS,
                     message=f'Exceeded maximum header count of {self.config.max_header_count}',
                     line=self.current_line,
                     offset=pos,
@@ -927,8 +909,8 @@ class _HttpMessageParseContext:
             next_pos = line_end + self.line_ending_len(line_end)
 
             if self.config.max_header_length is not None and len(line_data) > self.config.max_header_length:
-                raise HeaderFieldError(
-                    code=HeaderFieldErrorCode.INVALID_FIELD_VALUE,
+                raise HeaderFieldHttpParseError(
+                    code=HeaderFieldHttpParseErrorCode.INVALID_FIELD_VALUE,
                     message='Header line exceeds maximum length',
                     line=self.current_line,
                     offset=next_pos,
@@ -942,8 +924,8 @@ class _HttpMessageParseContext:
 
                 if next_byte in self._OWS_CHARS:
                     if not self.config.allow_obs_fold:
-                        raise HeaderFieldError(
-                            code=HeaderFieldErrorCode.OBS_FOLD_NOT_ALLOWED,
+                        raise HeaderFieldHttpParseError(
+                            code=HeaderFieldHttpParseErrorCode.OBS_FOLD_NOT_ALLOWED,
                             message='Obsolete line folding (obs-fold) encountered but not allowed',
                             line=self.current_line,
                             offset=next_pos,
@@ -963,8 +945,8 @@ class _HttpMessageParseContext:
                     next_pos = cont_line_end + self.line_ending_len(cont_line_end)
 
                     if self.config.max_header_length is not None and obs_buf.tell() > self.config.max_header_length:
-                        raise HeaderFieldError(
-                            code=HeaderFieldErrorCode.INVALID_FIELD_VALUE,
+                        raise HeaderFieldHttpParseError(
+                            code=HeaderFieldHttpParseErrorCode.INVALID_FIELD_VALUE,
                             message='Unfolded header line exceeds maximum length',
                             line=self.current_line,
                             offset=next_pos,
@@ -1007,8 +989,8 @@ class _HttpMessageParseContext:
 
         colon_idx = line_data.find(b':')
         if colon_idx < 0:
-            raise HeaderFieldError(
-                code=HeaderFieldErrorCode.MISSING_COLON,
+            raise HeaderFieldHttpParseError(
+                code=HeaderFieldHttpParseErrorCode.MISSING_COLON,
                 message='Header line has no colon separator',
                 line=self.current_line,
                 offset=line_start_offset,
@@ -1020,8 +1002,8 @@ class _HttpMessageParseContext:
         # Validate field-name
 
         if not name_bytes:
-            raise HeaderFieldError(
-                code=HeaderFieldErrorCode.EMPTY_FIELD_NAME,
+            raise HeaderFieldHttpParseError(
+                code=HeaderFieldHttpParseErrorCode.EMPTY_FIELD_NAME,
                 message='Empty field-name before colon',
                 line=self.current_line,
                 offset=line_start_offset,
@@ -1030,8 +1012,8 @@ class _HttpMessageParseContext:
         # Check for space before colon
         if name_bytes[-1] in self._OWS_CHARS:
             if not self.config.allow_space_before_colon:
-                raise HeaderFieldError(
-                    code=HeaderFieldErrorCode.SPACE_BEFORE_COLON,
+                raise HeaderFieldHttpParseError(
+                    code=HeaderFieldHttpParseErrorCode.SPACE_BEFORE_COLON,
                     message='Whitespace between field-name and colon',
                     line=self.current_line,
                     offset=line_start_offset + len(name_bytes) - 1,
@@ -1040,8 +1022,8 @@ class _HttpMessageParseContext:
             # Strip trailing whitespace from name if allowed
             name_bytes = name_bytes.rstrip(b' \t')
             if not name_bytes:
-                raise HeaderFieldError(
-                    code=HeaderFieldErrorCode.EMPTY_FIELD_NAME,
+                raise HeaderFieldHttpParseError(
+                    code=HeaderFieldHttpParseErrorCode.EMPTY_FIELD_NAME,
                     message='Field-name is only whitespace before colon',
                     line=self.current_line,
                     offset=line_start_offset,
@@ -1051,24 +1033,24 @@ class _HttpMessageParseContext:
         if not self._RE_TOKEN.match(name_bytes):
             for i, b in enumerate(name_bytes):
                 if b == self._NUL:
-                    raise HeaderFieldError(
-                        code=HeaderFieldErrorCode.NUL_IN_HEADER,
+                    raise HeaderFieldHttpParseError(
+                        code=HeaderFieldHttpParseErrorCode.NUL_IN_HEADER,
                         message='NUL byte in field-name',
                         line=self.current_line,
                         offset=line_start_offset + i,
                     )
 
                 if b >= 0x80:
-                    raise EncodingError(
-                        code=EncodingErrorCode.NON_ASCII_IN_FIELD_NAME,
+                    raise EncodingHttpParseError(
+                        code=EncodingHttpParseErrorCode.NON_ASCII_IN_FIELD_NAME,
                         message=f'Non-ASCII byte 0x{b:02x} in field-name',
                         line=self.current_line,
                         offset=line_start_offset + i,
                     )
 
                 if b not in self._TCHAR:
-                    raise HeaderFieldError(
-                        code=HeaderFieldErrorCode.INVALID_FIELD_NAME,
+                    raise HeaderFieldHttpParseError(
+                        code=HeaderFieldHttpParseErrorCode.INVALID_FIELD_NAME,
                         message=f'Invalid character 0x{b:02x} in field-name',
                         line=self.current_line,
                         offset=line_start_offset + i,
@@ -1081,8 +1063,8 @@ class _HttpMessageParseContext:
 
         # Check for empty value
         if not value_stripped and not self.config.allow_empty_header_values:
-            raise HeaderFieldError(
-                code=HeaderFieldErrorCode.INVALID_FIELD_VALUE,
+            raise HeaderFieldHttpParseError(
+                code=HeaderFieldHttpParseErrorCode.INVALID_FIELD_VALUE,
                 message='Empty header field value not allowed',
                 line=self.current_line,
                 offset=line_start_offset + colon_idx + 1,
@@ -1104,8 +1086,8 @@ class _HttpMessageParseContext:
             # This keeps the "happy path" fast while maintaining detailed error reporting.
             for i, b in enumerate(value_stripped):
                 if b == self._NUL:
-                    raise HeaderFieldError(
-                        code=HeaderFieldErrorCode.NUL_IN_HEADER,
+                    raise HeaderFieldHttpParseError(
+                        code=HeaderFieldHttpParseErrorCode.NUL_IN_HEADER,
                         message='NUL byte in field-value',
                         line=self.current_line,
                         offset=value_base_offset + i,
@@ -1113,8 +1095,8 @@ class _HttpMessageParseContext:
 
                 if b == self._CR:
                     if not self.config.allow_bare_cr_in_value:
-                        raise HeaderFieldError(
-                            code=HeaderFieldErrorCode.BARE_CARRIAGE_RETURN,
+                        raise HeaderFieldHttpParseError(
+                            code=HeaderFieldHttpParseErrorCode.BARE_CARRIAGE_RETURN,
                             message='Bare CR in field-value',
                             line=self.current_line,
                             offset=value_base_offset + i,
@@ -1124,16 +1106,16 @@ class _HttpMessageParseContext:
                 if b not in allowed_bytes:
                     # Specific error logic for obs-text/bare CR
                     if b >= 0x80 and self.config.reject_obs_text:
-                        raise EncodingError(
-                            code=EncodingErrorCode.OBS_TEXT_IN_FIELD_VALUE,
+                        raise EncodingHttpParseError(
+                            code=EncodingHttpParseErrorCode.OBS_TEXT_IN_FIELD_VALUE,
                             message=f'obs-text byte 0x{b:02x} rejected by config',
                             line=self.current_line,
                             offset=value_base_offset + i,
                         )
 
                     # General character error
-                    raise HeaderFieldError(
-                        code=HeaderFieldErrorCode.INVALID_FIELD_VALUE,
+                    raise HeaderFieldHttpParseError(
+                        code=HeaderFieldHttpParseErrorCode.INVALID_FIELD_VALUE,
                         message=f'Invalid character 0x{b:02x} in field-value',
                         line=self.current_line,
                         offset=value_base_offset + i,
@@ -1150,7 +1132,7 @@ class _HttpMessageParseContext:
         self,
         headers: ParsedHttpHeaders,
         kind: ParsedHttpMessage.Kind,
-        http_version: HttpProtocolVersion,
+        http_version: HttpVersion,
     ) -> PreparedParsedHttpHeaders:
         prepared = PreparedParsedHttpHeaders()
 
@@ -1175,8 +1157,8 @@ class _HttpMessageParseContext:
             prepared.transfer_encoding is not None and
             not self.config.allow_content_length_with_te
         ):
-            raise SemanticHeaderError(
-                code=SemanticHeaderErrorCode.CONTENT_LENGTH_WITH_TRANSFER_ENCODING,
+            raise SemanticHeaderHttpParseError(
+                code=SemanticHeaderHttpParseErrorCode.CONTENT_LENGTH_WITH_TRANSFER_ENCODING,
                 message='Content-Length and Transfer-Encoding are both present',
             )
 
@@ -1192,8 +1174,8 @@ class _HttpMessageParseContext:
             # A single Content-Length header might itself be a comma-separated list (some implementations do this). We
             # parse each element.
             if self.config.reject_multi_value_content_length and ',' in v:
-                raise SemanticHeaderError(
-                    code=SemanticHeaderErrorCode.INVALID_CONTENT_LENGTH,
+                raise SemanticHeaderHttpParseError(
+                    code=SemanticHeaderHttpParseErrorCode.INVALID_CONTENT_LENGTH,
                     message=f'Content-Length with multiple values is forbidden: {v!r}',
                 )
 
@@ -1201,8 +1183,8 @@ class _HttpMessageParseContext:
                 stripped = part.strip()
 
                 if not stripped.isdigit():
-                    raise SemanticHeaderError(
-                        code=SemanticHeaderErrorCode.INVALID_CONTENT_LENGTH,
+                    raise SemanticHeaderHttpParseError(
+                        code=SemanticHeaderHttpParseErrorCode.INVALID_CONTENT_LENGTH,
                         message=f'Content-Length value is not a valid non-negative integer: {stripped!r}',
                     )
 
@@ -1210,30 +1192,30 @@ class _HttpMessageParseContext:
                         self.config.max_content_length_str_len is not None and
                         len(stripped) > self.config.max_content_length_str_len
                 ):
-                    raise SemanticHeaderError(
-                        code=SemanticHeaderErrorCode.INVALID_CONTENT_LENGTH,
+                    raise SemanticHeaderHttpParseError(
+                        code=SemanticHeaderHttpParseErrorCode.INVALID_CONTENT_LENGTH,
                         message=f'Content-Length value string too long: {stripped!r}',
                     )
 
                 parsed_values.append(int(stripped))
 
         if not parsed_values:
-            raise SemanticHeaderError(
-                code=SemanticHeaderErrorCode.INVALID_CONTENT_LENGTH,
+            raise SemanticHeaderHttpParseError(
+                code=SemanticHeaderHttpParseErrorCode.INVALID_CONTENT_LENGTH,
                 message='Content-Length header present but empty',
             )
 
         unique = set(parsed_values)
         if len(unique) > 1:
-            raise SemanticHeaderError(
-                code=SemanticHeaderErrorCode.CONFLICTING_CONTENT_LENGTH,
+            raise SemanticHeaderHttpParseError(
+                code=SemanticHeaderHttpParseErrorCode.CONFLICTING_CONTENT_LENGTH,
                 message=f'Conflicting Content-Length values: {sorted(unique)}',
             )
 
         if len(parsed_values) > 1:
             if not self.config.allow_multiple_content_lengths:
-                raise SemanticHeaderError(
-                    code=SemanticHeaderErrorCode.DUPLICATE_CONTENT_LENGTH,
+                raise SemanticHeaderHttpParseError(
+                    code=SemanticHeaderHttpParseErrorCode.DUPLICATE_CONTENT_LENGTH,
                     message=(
                         f'Multiple Content-Length values (all {parsed_values[0]}); '
                         f'set allow_multiple_content_lengths to accept'
@@ -1242,8 +1224,8 @@ class _HttpMessageParseContext:
 
         val = parsed_values[0]
         if val < 0:
-            raise SemanticHeaderError(
-                code=SemanticHeaderErrorCode.INVALID_CONTENT_LENGTH,
+            raise SemanticHeaderHttpParseError(
+                code=SemanticHeaderHttpParseErrorCode.INVALID_CONTENT_LENGTH,
                 message=f'Content-Length is negative: {val}',
             )
 
@@ -1263,7 +1245,7 @@ class _HttpMessageParseContext:
         headers: ParsedHttpHeaders,
         prepared: PreparedParsedHttpHeaders,
         kind: ParsedHttpMessage.Kind,
-        http_version: HttpProtocolVersion,
+        http_version: HttpVersion,
     ) -> None:
         if 'transfer-encoding' not in headers:
             return
@@ -1272,15 +1254,15 @@ class _HttpMessageParseContext:
         codings = [c.strip().lower() for c in combined.split(',') if c.strip()]
 
         if not codings:
-            raise SemanticHeaderError(
-                code=SemanticHeaderErrorCode.INVALID_TRANSFER_ENCODING,
+            raise SemanticHeaderHttpParseError(
+                code=SemanticHeaderHttpParseErrorCode.INVALID_TRANSFER_ENCODING,
                 message='Transfer-Encoding header present but empty',
             )
 
         # HTTP/1.0 check
-        if http_version == HttpProtocolVersions.HTTP_1_0 and not self.config.allow_transfer_encoding_http10:
-            raise SemanticHeaderError(
-                code=SemanticHeaderErrorCode.TE_IN_HTTP10,
+        if http_version == HttpVersions.HTTP_1_0 and not self.config.allow_transfer_encoding_http10:
+            raise SemanticHeaderHttpParseError(
+                code=SemanticHeaderHttpParseErrorCode.TE_IN_HTTP10,
                 message='Transfer-Encoding is not defined for HTTP/1.0',
             )
 
@@ -1288,37 +1270,37 @@ class _HttpMessageParseContext:
         if not self.config.allow_unknown_transfer_encoding:
             for c in codings:
                 if c not in self._KNOWN_CODINGS:
-                    raise SemanticHeaderError(
-                        code=SemanticHeaderErrorCode.INVALID_TRANSFER_ENCODING,
+                    raise SemanticHeaderHttpParseError(
+                        code=SemanticHeaderHttpParseErrorCode.INVALID_TRANSFER_ENCODING,
                         message=f'Unknown transfer-coding: {c!r}',
                     )
 
         # chunked positioning
         if 'chunked' in codings:
             if codings[-1] != 'chunked':
-                raise SemanticHeaderError(
-                    code=SemanticHeaderErrorCode.TE_WITHOUT_CHUNKED_LAST,
+                raise SemanticHeaderHttpParseError(
+                    code=SemanticHeaderHttpParseErrorCode.TE_WITHOUT_CHUNKED_LAST,
                     message='chunked must be the last (outermost) transfer-coding',
                 )
 
             if codings.count('chunked') > 1:
-                raise SemanticHeaderError(
-                    code=SemanticHeaderErrorCode.INVALID_TRANSFER_ENCODING,
+                raise SemanticHeaderHttpParseError(
+                    code=SemanticHeaderHttpParseErrorCode.INVALID_TRANSFER_ENCODING,
                     message='chunked appears more than once in Transfer-Encoding',
                 )
 
         else:
             # No chunked present
             if kind == ParsedHttpMessage.Kind.REQUEST:
-                raise SemanticHeaderError(
-                    code=SemanticHeaderErrorCode.TE_WITHOUT_CHUNKED_LAST,
+                raise SemanticHeaderHttpParseError(
+                    code=SemanticHeaderHttpParseErrorCode.TE_WITHOUT_CHUNKED_LAST,
                     message='Transfer-Encoding in a request must include chunked as the last coding',
                 )
 
             elif kind == ParsedHttpMessage.Kind.RESPONSE:
                 if not self.config.allow_te_without_chunked_in_response:
-                    raise SemanticHeaderError(
-                        code=SemanticHeaderErrorCode.TE_WITHOUT_CHUNKED_LAST,
+                    raise SemanticHeaderHttpParseError(
+                        code=SemanticHeaderHttpParseErrorCode.TE_WITHOUT_CHUNKED_LAST,
                         message=(
                             'Transfer-Encoding in a response without chunked; '
                             'set allow_te_without_chunked_in_response to accept'
@@ -1335,29 +1317,29 @@ class _HttpMessageParseContext:
         headers: ParsedHttpHeaders,
         prepared: PreparedParsedHttpHeaders,
         kind: ParsedHttpMessage.Kind,
-        http_version: HttpProtocolVersion,
+        http_version: HttpVersion,
     ) -> None:
         values = headers.get_all('host')
 
-        if kind == ParsedHttpMessage.Kind.REQUEST and http_version == HttpProtocolVersions.HTTP_1_1:
+        if kind == ParsedHttpMessage.Kind.REQUEST and http_version == HttpVersions.HTTP_1_1:
             if not values and not self.config.allow_missing_host:
-                raise SemanticHeaderError(
-                    code=SemanticHeaderErrorCode.MISSING_HOST_HEADER,
+                raise SemanticHeaderHttpParseError(
+                    code=SemanticHeaderHttpParseErrorCode.MISSING_HOST_HEADER,
                     message='Host header is required in HTTP/1.1 requests',
                 )
 
         if len(values) > 1:
             if not self.config.allow_multiple_hosts:
-                raise SemanticHeaderError(
-                    code=SemanticHeaderErrorCode.MULTIPLE_HOST_HEADERS,
+                raise SemanticHeaderHttpParseError(
+                    code=SemanticHeaderHttpParseErrorCode.MULTIPLE_HOST_HEADERS,
                     message=f'Multiple Host headers found ({len(values)})',
                 )
 
             # If allowed, all values must be identical
             unique = set(values)
             if len(unique) > 1:
-                raise SemanticHeaderError(
-                    code=SemanticHeaderErrorCode.CONFLICTING_HOST_HEADERS,
+                raise SemanticHeaderHttpParseError(
+                    code=SemanticHeaderHttpParseErrorCode.CONFLICTING_HOST_HEADERS,
                     message=f'Multiple Host headers with different values: {sorted(unique)}',
                 )
 
@@ -1373,8 +1355,8 @@ class _HttpMessageParseContext:
 
             # Reject any SP / HTAB anywhere.
             if ' ' in host_val or '\t' in host_val:
-                raise SemanticHeaderError(
-                    code=SemanticHeaderErrorCode.INVALID_HOST,
+                raise SemanticHeaderHttpParseError(
+                    code=SemanticHeaderHttpParseErrorCode.INVALID_HOST,
                     message='Whitespace not allowed in Host header',
                 )
 
@@ -1383,8 +1365,8 @@ class _HttpMessageParseContext:
             if not self._RE_HOST_VALID.match(host_val):
                 for i, ch in enumerate(host_val):
                     if ord(ch) < 0x21:  # includes 0x00-0x20; we've already rejected SP/HTAB explicitly
-                        raise SemanticHeaderError(
-                            code=SemanticHeaderErrorCode.INVALID_HOST,
+                        raise SemanticHeaderHttpParseError(
+                            code=SemanticHeaderHttpParseErrorCode.INVALID_HOST,
                             message=f'Invalid character in Host header at position {i}',
                         )
 
@@ -1405,7 +1387,7 @@ class _HttpMessageParseContext:
         self,
         headers: ParsedHttpHeaders,
         prepared: PreparedParsedHttpHeaders,
-        http_version: HttpProtocolVersion,
+        http_version: HttpVersion,
     ) -> None:
         if 'connection' in headers:
             tokens = {t.lower() for t in self._parse_comma_list(headers['connection'])}
@@ -1420,7 +1402,7 @@ class _HttpMessageParseContext:
             prepared.keep_alive = True
         else:
             # Default: HTTP/1.1 = keep-alive, HTTP/1.0 = close
-            prepared.keep_alive = (http_version == HttpProtocolVersions.HTTP_1_1)
+            prepared.keep_alive = (http_version == HttpVersions.HTTP_1_1)
 
     @classmethod
     def _parse_quoted_string(cls, data: str, pos: int) -> ta.Tuple[str, int]:
@@ -1522,15 +1504,15 @@ class _HttpMessageParseContext:
             params = self._parse_media_type_params(raw[semi_idx:])
 
         if '/' not in media_type:
-            raise SemanticHeaderError(
-                code=SemanticHeaderErrorCode.INVALID_CONTENT_TYPE,
+            raise SemanticHeaderHttpParseError(
+                code=SemanticHeaderHttpParseErrorCode.INVALID_CONTENT_TYPE,
                 message=f'Content-Type missing "/" in media-type: {media_type!r}',
             )
 
         parts = media_type.split('/', 1)
         if not parts[0] or not parts[1]:
-            raise SemanticHeaderError(
-                code=SemanticHeaderErrorCode.INVALID_CONTENT_TYPE,
+            raise SemanticHeaderHttpParseError(
+                code=SemanticHeaderHttpParseErrorCode.INVALID_CONTENT_TYPE,
                 message=f'Content-Type has empty type or subtype: {media_type!r}',
             )
 
@@ -1607,8 +1589,8 @@ class _HttpMessageParseContext:
         fields = {f.lower() for f in self._parse_comma_list(headers['trailer'])}
         for f in fields:
             if f in self._FORBIDDEN_TRAILER_FIELDS:
-                raise SemanticHeaderError(
-                    code=SemanticHeaderErrorCode.FORBIDDEN_TRAILER_FIELD,
+                raise SemanticHeaderHttpParseError(
+                    code=SemanticHeaderHttpParseErrorCode.FORBIDDEN_TRAILER_FIELD,
                     message=f'Forbidden field in Trailer header: {f!r}',
                 )
 
@@ -1620,8 +1602,8 @@ class _HttpMessageParseContext:
 
         raw = headers['expect'].strip().lower()
         if raw != '100-continue':
-            raise SemanticHeaderError(
-                code=SemanticHeaderErrorCode.INVALID_EXPECT,
+            raise SemanticHeaderHttpParseError(
+                code=SemanticHeaderHttpParseErrorCode.INVALID_EXPECT,
                 message=f'Only "100-continue" is accepted for Expect; got {raw!r}',
             )
 
@@ -1741,8 +1723,8 @@ class _HttpMessageParseContext:
         try:
             prepared.date = self._parse_http_date(raw)
         except (ValueError, IndexError, OverflowError) as e:
-            raise SemanticHeaderError(
-                code=SemanticHeaderErrorCode.INVALID_DATE,
+            raise SemanticHeaderHttpParseError(
+                code=SemanticHeaderHttpParseErrorCode.INVALID_DATE,
                 message=f'Cannot parse Date header: {e}',
             ) from None
 
@@ -1764,8 +1746,8 @@ class _HttpMessageParseContext:
                 try:
                     value, _ = self._parse_quoted_string(value, 0)
                 except ValueError:
-                    raise SemanticHeaderError(
-                        code=SemanticHeaderErrorCode.INVALID_CACHE_CONTROL,
+                    raise SemanticHeaderHttpParseError(
+                        code=SemanticHeaderHttpParseErrorCode.INVALID_CACHE_CONTROL,
                         message=f'Invalid quoted-string in Cache-Control directive: {name}',
                     ) from None
 
@@ -1783,8 +1765,8 @@ class _HttpMessageParseContext:
             try:
                 coding, q, _ = self._split_header_element(part)
             except ValueError:
-                raise SemanticHeaderError(
-                    code=SemanticHeaderErrorCode.INVALID_ACCEPT_ENCODING,
+                raise SemanticHeaderHttpParseError(
+                    code=SemanticHeaderHttpParseErrorCode.INVALID_ACCEPT_ENCODING,
                     message=f'Invalid q-value in Accept-Encoding: {part!r}',
                 ) from None
 
@@ -1806,8 +1788,8 @@ class _HttpMessageParseContext:
             try:
                 media_range, q, params = self._split_header_element(part)
             except ValueError:
-                raise SemanticHeaderError(
-                    code=SemanticHeaderErrorCode.INVALID_ACCEPT,
+                raise SemanticHeaderHttpParseError(
+                    code=SemanticHeaderHttpParseErrorCode.INVALID_ACCEPT,
                     message=f'Invalid q-value in Accept: {part!r}',
                 ) from None
 
@@ -1825,8 +1807,8 @@ class _HttpMessageParseContext:
 
         raw = headers['authorization'].strip()
         if not raw:
-            raise SemanticHeaderError(
-                code=SemanticHeaderErrorCode.INVALID_AUTHORIZATION,
+            raise SemanticHeaderHttpParseError(
+                code=SemanticHeaderHttpParseErrorCode.INVALID_AUTHORIZATION,
                 message='Authorization header is present but empty',
             )
 
@@ -1852,8 +1834,8 @@ class _HttpMessageParseContext:
 
 def parse_http_message(
         data: bytes,
-        mode: HttpMessageParser.Mode = HttpMessageParser.Mode.AUTO,
-        config: ta.Optional[HttpMessageParser.Config] = None,
+        mode: HttpParser.Mode = HttpParser.Mode.AUTO,
+        config: ta.Optional[HttpParser.Config] = None,
 ) -> ParsedHttpMessage:
     """
     Parse an HTTP/1.x message head from *data*.
@@ -1867,13 +1849,13 @@ def parse_http_message(
     :raises HttpParseError: On any parsing violation.
     """
 
-    parser = HttpMessageParser(**(dict(config=config) if config is not None else {}))
-    return parser.parse(data, mode=mode)
+    parser = HttpParser(**(dict(config=config) if config is not None else {}))
+    return parser.parse_message(data, mode=mode)
 
 
 def parse_http_trailers(
         data: bytes,
-        config: ta.Optional[HttpMessageParser.Config] = None,
+        config: ta.Optional[HttpParser.Config] = None,
 ) -> ParsedHttpTrailers:
     """
     Parse HTTP/1.x trailer fields from *data*.
@@ -1889,5 +1871,5 @@ def parse_http_trailers(
     :raises HttpParseError: On any parsing violation.
     """
 
-    parser = HttpMessageParser(**(dict(config=config) if config is not None else {}))
+    parser = HttpParser(**(dict(config=config) if config is not None else {}))
     return parser.parse_trailers(data)

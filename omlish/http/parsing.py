@@ -40,8 +40,8 @@ import io
 import typing as ta
 
 from ..lite.abstract import Abstract
-from .versions import HttpProtocolVersion
-from .versions import HttpProtocolVersions
+from .versions import HttpVersion
+from .versions import HttpVersions
 
 
 T = ta.TypeVar('T')
@@ -66,10 +66,10 @@ class ParseHttpRequestResult(Abstract):
     def __init__(
             self,
             *,
-            server_version: HttpProtocolVersion,
+            server_version: HttpVersion,
             request_line: str,
-            request_version: HttpProtocolVersion,
-            version: HttpProtocolVersion,
+            request_version: HttpVersion,
+            version: HttpVersion,
             headers: ta.Optional[HttpHeaders],
             close_connection: bool,
     ) -> None:
@@ -146,12 +146,12 @@ class ParsedHttpRequest(ParseHttpRequestResult):
 
 
 class HttpRequestParser:
-    DEFAULT_SERVER_VERSION = HttpProtocolVersions.HTTP_1_0
+    DEFAULT_SERVER_VERSION = HttpVersions.HTTP_1_0
 
     # The default request version. This only affects responses up until the point where the request line is parsed, so
     # it mainly decides what the client gets back when sending a malformed request line.
     # Most web servers default to HTTP 0.9, i.e. don't send a status line.
-    DEFAULT_REQUEST_VERSION = HttpProtocolVersions.HTTP_0_9
+    DEFAULT_REQUEST_VERSION = HttpVersions.HTTP_0_9
 
     #
 
@@ -163,14 +163,14 @@ class HttpRequestParser:
     def __init__(
             self,
             *,
-            server_version: HttpProtocolVersion = DEFAULT_SERVER_VERSION,
+            server_version: HttpVersion = DEFAULT_SERVER_VERSION,
 
             max_line: int = DEFAULT_MAX_LINE,
             max_headers: int = DEFAULT_MAX_HEADERS,
     ) -> None:
         super().__init__()
 
-        if server_version >= HttpProtocolVersions.HTTP_2_0:
+        if server_version >= HttpVersions.HTTP_2_0:
             raise ValueError(f'Unsupported protocol version: {server_version}')
         self._server_version = server_version
 
@@ -180,7 +180,7 @@ class HttpRequestParser:
     #
 
     @property
-    def server_version(self) -> HttpProtocolVersion:
+    def server_version(self) -> HttpVersion:
         return self._server_version
 
     #
@@ -200,7 +200,7 @@ class HttpRequestParser:
 
     #
 
-    def parse_request_version(self, version_str: str) -> HttpProtocolVersion:
+    def parse_request_version(self, version_str: str) -> HttpVersion:
         if not version_str.startswith('HTTP/'):
             raise ValueError(version_str)  # noqa
 
@@ -221,7 +221,7 @@ class HttpRequestParser:
         if any(len(component) > 10 for component in version_number_parts):
             raise ValueError('unreasonable length http version')  # noqa
 
-        return HttpProtocolVersion(
+        return HttpVersion(
             int(version_number_parts[0]),
             int(version_number_parts[1]),
         )
@@ -326,8 +326,8 @@ class HttpRequestParser:
                 )
 
             if (
-                    request_version < HttpProtocolVersions.HTTP_0_9 or
-                    request_version >= HttpProtocolVersions.HTTP_2_0
+                    request_version < HttpVersions.HTTP_0_9 or
+                    request_version >= HttpVersions.HTTP_2_0
             ):
                 return ParseHttpRequestError(
                     code=http.HTTPStatus.HTTP_VERSION_NOT_SUPPORTED,
@@ -337,7 +337,7 @@ class HttpRequestParser:
 
             version = min([self._server_version, request_version])
 
-            if version >= HttpProtocolVersions.HTTP_1_1:
+            if version >= HttpVersions.HTTP_1_1:
                 close_connection = False
 
         # Verify word count
@@ -403,7 +403,7 @@ class HttpRequestParser:
             close_connection = True
         elif (
                 conn_type.lower() == 'keep-alive' and
-                version >= HttpProtocolVersions.HTTP_1_1
+                version >= HttpVersions.HTTP_1_1
         ):
             close_connection = False
 
@@ -412,7 +412,7 @@ class HttpRequestParser:
         expect = headers.get('Expect', '')
         if (
                 expect.lower() == '100-continue' and
-                version >= HttpProtocolVersions.HTTP_1_1
+                version >= HttpVersions.HTTP_1_1
         ):
             expects_continue = True
         else:

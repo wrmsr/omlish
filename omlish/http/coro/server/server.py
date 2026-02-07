@@ -72,8 +72,8 @@ from ...parsing import EmptyParsedHttpResult
 from ...parsing import HttpRequestParser
 from ...parsing import ParsedHttpRequest
 from ...parsing import ParseHttpRequestError
-from ...versions import HttpProtocolVersion
-from ...versions import HttpProtocolVersions
+from ...versions import HttpVersion
+from ...versions import HttpVersions
 from ..io import CoroHttpIo
 
 
@@ -172,7 +172,7 @@ class CoroHttpServer:
 
     def _format_status_line(
             self,
-            version: HttpProtocolVersion,
+            version: HttpVersion,
             code: ta.Union[http.HTTPStatus, int],
             message: ta.Optional[str] = None,
     ) -> str:
@@ -188,7 +188,7 @@ class CoroHttpServer:
 
     @dc.dataclass(frozen=True)
     class _Response:
-        version: HttpProtocolVersion
+        version: HttpVersion
         code: http.HTTPStatus
 
         message: ta.Optional[str] = None
@@ -211,7 +211,7 @@ class CoroHttpServer:
     def _build_response_head_bytes(self, a: _Response) -> bytes:
         out = io.BytesIO()
 
-        if a.version >= HttpProtocolVersions.HTTP_1_0:
+        if a.version >= HttpVersions.HTTP_1_0:
             out.write(self._header_encode(self._format_status_line(
                 a.version,
                 a.code,
@@ -276,7 +276,7 @@ class CoroHttpServer:
 
     @dc.dataclass(frozen=True)
     class Error:
-        version: HttpProtocolVersion
+        version: HttpVersion
         code: http.HTTPStatus
         message: str
         explain: str
@@ -289,7 +289,7 @@ class CoroHttpServer:
             message: ta.Optional[str] = None,
             explain: ta.Optional[str] = None,
             *,
-            version: ta.Optional[HttpProtocolVersion] = None,
+            version: ta.Optional[HttpVersion] = None,
             method: ta.Optional[str] = None,
     ) -> Error:
         code = http.HTTPStatus(code)

@@ -1,13 +1,13 @@
 import dataclasses as dc
 import typing as ta
 
-from omlish.http.versions import HttpProtocolVersion
+from omlish.http.versions import HttpVersion
 from omlish.io.streams.errors import FrameTooLargeByteStreamBufferError
 from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.lite.check import check
 
-from ....http.parsing import HttpMessageParser
+from ....http.parsing import HttpParser
 from ....http.parsing import ParsedHttpMessage
 from ....http.parsing import parse_http_message
 from ..core import ChannelPipelineEvents
@@ -22,7 +22,7 @@ from ..core import ChannelPipelineHandlerContext
 class HttpRequestHead:
     method: str
     target: str
-    version: HttpProtocolVersion
+    version: HttpVersion
     headers: dict[str, str]
     parsed: ParsedHttpMessage
 
@@ -117,7 +117,7 @@ class HttpRequestHeadDecoder(ChannelPipelineHandler):
             ctx.feed_in(rem_view)
 
     def _parse_head(self, raw: bytes) -> HttpRequestHead:
-        parsed = parse_http_message(raw, mode=HttpMessageParser.Mode.REQUEST)
+        parsed = parse_http_message(raw, mode=HttpParser.Mode.REQUEST)
         line = check.not_none(parsed.request_line)
 
         return HttpRequestHead(

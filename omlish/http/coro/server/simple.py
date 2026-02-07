@@ -23,8 +23,8 @@ from ....sockets.server.ssl import SslErrorHandlingSocketServerHandler
 from ....sockets.server.threading import ThreadingSocketServerHandler
 from ...handlers import HttpHandler
 from ...parsing import HttpRequestParser
-from ...versions import HttpProtocolVersion
-from ...versions import HttpProtocolVersions
+from ...versions import HttpVersion
+from ...versions import HttpVersions
 from .server import CoroHttpServer
 from .sockets import CoroHttpServerSocketHandler
 
@@ -41,7 +41,7 @@ def make_simple_http_server(
         bind: CanSocketBinder,
         handler: HttpHandler,
         *,
-        server_version: HttpProtocolVersion = HttpProtocolVersions.HTTP_1_1,
+        server_version: HttpVersion = HttpVersions.HTTP_1_1,
         keep_alive: bool = False,
         ssl_context: ta.Optional['ssl.SSLContext'] = None,
         ignore_ssl_errors: bool = False,

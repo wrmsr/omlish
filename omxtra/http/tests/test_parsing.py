@@ -27,7 +27,7 @@ import datetime
 import typing as ta
 import unittest
 
-from omlish.http.versions import HttpProtocolVersions
+from omlish.http.versions import HttpVersions
 from omlish.lite.check import check
 
 from .. import parsing as hp
@@ -73,7 +73,7 @@ def _resp(
     return b''.join(parts)
 
 
-STRICT = hp.HttpMessageParser.Config()
+STRICT = hp.HttpParser.Config()
 
 
 ##
@@ -88,7 +88,7 @@ class TestBasicRequest(unittest.TestCase):
         self.assertIsNone(msg.status_line)
         self.assertEqual(check.not_none(msg.request_line).method, 'GET')
         self.assertEqual(check.not_none(msg.request_line).request_target, b'/')
-        self.assertEqual(check.not_none(msg.request_line).http_version, HttpProtocolVersions.HTTP_1_1)
+        self.assertEqual(check.not_none(msg.request_line).http_version, HttpVersions.HTTP_1_1)
 
     def test_post_with_body_headers(self) -> None:
         data = _req(
@@ -136,7 +136,7 @@ class TestBasicRequest(unittest.TestCase):
     def test_http10_request(self) -> None:
         data = _req(version='HTTP/1.0')
         msg = hp.parse_http_message(data)
-        self.assertEqual(check.not_none(msg.request_line).http_version, HttpProtocolVersions.HTTP_1_0)
+        self.assertEqual(check.not_none(msg.request_line).http_version, HttpVersions.HTTP_1_0)
 
     def test_no_headers(self) -> None:
         """HTTP/1.0 request with no headers at all."""
@@ -152,7 +152,7 @@ class TestBasicResponse(unittest.TestCase):
         data = _resp(headers=[('Content-Length', '0')])
         msg = hp.parse_http_message(data)
         self.assertEqual(msg.kind, hp.ParsedHttpMessage.Kind.RESPONSE)
-        self.assertEqual(check.not_none(msg.status_line).http_version, HttpProtocolVersions.HTTP_1_1)
+        self.assertEqual(check.not_none(msg.status_line).http_version, HttpVersions.HTTP_1_1)
         self.assertEqual(check.not_none(msg.status_line).status_code, 200)
         self.assertEqual(check.not_none(msg.status_line).reason_phrase, 'OK')
 
@@ -176,7 +176,7 @@ class TestBasicResponse(unittest.TestCase):
     def test_http10_response(self) -> None:
         data = _resp(version='HTTP/1.0')
         msg = hp.parse_http_message(data)
-        self.assertEqual(check.not_none(msg.status_line).http_version, HttpProtocolVersions.HTTP_1_0)
+        self.assertEqual(check.not_none(msg.status_line).http_version, HttpVersions.HTTP_1_0)
 
     def test_no_headers_response(self) -> None:
         data = b'HTTP/1.1 204 No Content\r\n\r\n'
@@ -187,22 +187,22 @@ class TestBasicResponse(unittest.TestCase):
 class TestAutoDetection(unittest.TestCase):
     def test_auto_detects_request(self) -> None:
         data = _req(headers=[('Host', 'x')])
-        msg = hp.parse_http_message(data, mode=hp.HttpMessageParser.Mode.AUTO)
+        msg = hp.parse_http_message(data, mode=hp.HttpParser.Mode.AUTO)
         self.assertEqual(msg.kind, hp.ParsedHttpMessage.Kind.REQUEST)
 
     def test_auto_detects_response(self) -> None:
         data = _resp()
-        msg = hp.parse_http_message(data, mode=hp.HttpMessageParser.Mode.AUTO)
+        msg = hp.parse_http_message(data, mode=hp.HttpParser.Mode.AUTO)
         self.assertEqual(msg.kind, hp.ParsedHttpMessage.Kind.RESPONSE)
 
     def test_forced_request_mode(self) -> None:
         data = _req(headers=[('Host', 'x')])
-        msg = hp.parse_http_message(data, mode=hp.HttpMessageParser.Mode.REQUEST)
+        msg = hp.parse_http_message(data, mode=hp.HttpParser.Mode.REQUEST)
         self.assertEqual(msg.kind, hp.ParsedHttpMessage.Kind.REQUEST)
 
     def test_forced_response_mode(self) -> None:
         data = _resp()
-        msg = hp.parse_http_message(data, mode=hp.HttpMessageParser.Mode.RESPONSE)
+        msg = hp.parse_http_message(data, mode=hp.HttpParser.Mode.RESPONSE)
         self.assertEqual(msg.kind, hp.ParsedHttpMessage.Kind.RESPONSE)
 
 
@@ -212,95 +212,95 @@ class TestAutoDetection(unittest.TestCase):
 
 class TestStartLineErrors(unittest.TestCase):
     def test_empty_input(self) -> None:
-        with self.assertRaises(hp.HeaderFieldError):
+        with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(b'')
 
     def test_no_sp_in_request_line(self) -> None:
-        with self.assertRaises(hp.StartLineError):
+        with self.assertRaises(hp.StartLineHttpParseError):
             hp.parse_http_message(b'GETHTTP/1.1\r\n\r\n')
 
     def test_one_sp_in_request_line(self) -> None:
-        with self.assertRaises(hp.StartLineError):
+        with self.assertRaises(hp.StartLineHttpParseError):
             hp.parse_http_message(b'GET /HTTP/1.1\r\n\r\n')
 
     def test_three_sp_in_request_line(self) -> None:
-        with self.assertRaises(hp.StartLineError):
+        with self.assertRaises(hp.StartLineHttpParseError):
             hp.parse_http_message(b'GET / foo HTTP/1.1\r\n\r\n')
 
     def test_empty_method(self) -> None:
-        with self.assertRaises(hp.StartLineError):
+        with self.assertRaises(hp.StartLineHttpParseError):
             # " / HTTP/1.1" - first SP is at index 0 so method is empty
             hp.parse_http_message(b' / HTTP/1.1\r\n\r\n')
 
     def test_invalid_method_chars(self) -> None:
-        with self.assertRaises(hp.StartLineError):
+        with self.assertRaises(hp.StartLineHttpParseError):
             hp.parse_http_message(b'G\x01T / HTTP/1.1\r\n\r\n')
 
     def test_method_with_special_invalid_char(self) -> None:
         # Parentheses are not tchar
-        with self.assertRaises(hp.StartLineError):
+        with self.assertRaises(hp.StartLineHttpParseError):
             hp.parse_http_message(b'GET() / HTTP/1.1\r\n\r\n')
 
     def test_empty_request_target(self) -> None:
-        with self.assertRaises(hp.StartLineError):
+        with self.assertRaises(hp.StartLineHttpParseError):
             # Two adjacent spaces between method and version
             hp.parse_http_message(b'GET  HTTP/1.1\r\n\r\n')
 
     def test_request_target_non_visible_ascii(self) -> None:
-        with self.assertRaises(hp.StartLineError):
+        with self.assertRaises(hp.StartLineHttpParseError):
             hp.parse_http_message(b'GET /\x01path HTTP/1.1\r\n\r\n')
 
     def test_unsupported_http_version_20(self) -> None:
-        with self.assertRaises(hp.StartLineError):
+        with self.assertRaises(hp.StartLineHttpParseError):
             hp.parse_http_message(b'GET / HTTP/2.0\r\n\r\n')
 
     def test_unsupported_http_version_09(self) -> None:
-        with self.assertRaises(hp.StartLineError):
+        with self.assertRaises(hp.StartLineHttpParseError):
             hp.parse_http_message(b'GET / HTTP/0.9\r\n\r\n')
 
     def test_unsupported_http_version_junk(self) -> None:
-        with self.assertRaises(hp.StartLineError):
+        with self.assertRaises(hp.StartLineHttpParseError):
             hp.parse_http_message(b'GET / HTTZ/1.1\r\n\r\n')
 
     def test_status_line_no_sp(self) -> None:
-        with self.assertRaises(hp.StartLineError):
+        with self.assertRaises(hp.StartLineHttpParseError):
             hp.parse_http_message(b'HTTP/1.1200OK\r\n\r\n')
 
     def test_status_line_missing_second_sp(self) -> None:
-        with self.assertRaises(hp.StartLineError):
+        with self.assertRaises(hp.StartLineHttpParseError):
             hp.parse_http_message(b'HTTP/1.1 200\r\n\r\n')
 
     def test_status_code_non_digit(self) -> None:
-        with self.assertRaises(hp.StartLineError):
+        with self.assertRaises(hp.StartLineHttpParseError):
             hp.parse_http_message(b'HTTP/1.1 2xx OK\r\n\r\n')
 
     def test_status_code_two_digits(self) -> None:
-        with self.assertRaises(hp.StartLineError):
+        with self.assertRaises(hp.StartLineHttpParseError):
             hp.parse_http_message(b'HTTP/1.1 20 OK\r\n\r\n')
 
     def test_status_code_four_digits(self) -> None:
-        with self.assertRaises(hp.StartLineError):
+        with self.assertRaises(hp.StartLineHttpParseError):
             hp.parse_http_message(b'HTTP/1.1 2000 OK\r\n\r\n')
 
     def test_status_code_099(self) -> None:
-        with self.assertRaises(hp.StartLineError):
+        with self.assertRaises(hp.StartLineHttpParseError):
             hp.parse_http_message(b'HTTP/1.1 099 Low\r\n\r\n')
 
     def test_status_code_600(self) -> None:
-        with self.assertRaises(hp.StartLineError):
+        with self.assertRaises(hp.StartLineHttpParseError):
             hp.parse_http_message(b'HTTP/1.1 600 High\r\n\r\n')
 
     def test_reason_phrase_nul(self) -> None:
-        with self.assertRaises(hp.HeaderFieldError):
+        with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(b'HTTP/1.1 200 OK\x00X\r\n\r\n')
 
     def test_reason_phrase_invalid_ctl(self) -> None:
         # \x01 is not in reason-phrase chars (not HTAB/SP/VCHAR/obs-text)
-        with self.assertRaises(hp.StartLineError):
+        with self.assertRaises(hp.StartLineHttpParseError):
             hp.parse_http_message(b'HTTP/1.1 200 OK\x01X\r\n\r\n')
 
     def test_response_unsupported_version(self) -> None:
-        with self.assertRaises(hp.StartLineError):
+        with self.assertRaises(hp.StartLineHttpParseError):
             hp.parse_http_message(b'HTTP/3.0 200 OK\r\n\r\n')
 
 
@@ -311,48 +311,48 @@ class TestStartLineErrors(unittest.TestCase):
 class TestHeaderFieldErrors(unittest.TestCase):
     def test_missing_colon(self) -> None:
         data = b'GET / HTTP/1.1\r\nBadLine\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError):
+        with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(data)
 
     def test_empty_field_name(self) -> None:
         data = b'GET / HTTP/1.1\r\n: value\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError):
+        with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(data)
 
     def test_space_before_colon_strict(self) -> None:
         data = b'GET / HTTP/1.1\r\nHost : x\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError):
+        with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(data)
 
     def test_tab_before_colon_strict(self) -> None:
         data = b'GET / HTTP/1.1\r\nHost\t: x\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError):
+        with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(data)
 
     def test_nul_in_field_name(self) -> None:
         data = b'GET / HTTP/1.1\r\nHo\x00st: x\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError):
+        with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(data)
 
     def test_nul_in_field_value(self) -> None:
         data = b'GET / HTTP/1.1\r\nHost: x\x00y\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError):
+        with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(data)
 
     def test_non_ascii_in_field_name(self) -> None:
         data = b'GET / HTTP/1.1\r\nH\xc3\xb6st: x\r\n\r\n'
-        with self.assertRaises(hp.EncodingError):
+        with self.assertRaises(hp.EncodingHttpParseError):
             hp.parse_http_message(data)
 
     def test_invalid_char_in_field_name(self) -> None:
         # '(' is not a tchar
         data = b'GET / HTTP/1.1\r\nFoo(bar): x\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError):
+        with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(data)
 
     def test_space_in_field_name(self) -> None:
         data = b'GET / HTTP/1.1\r\nFoo Bar: x\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError):
+        with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(data)
 
     def test_colon_in_field_name(self) -> None:
@@ -364,7 +364,7 @@ class TestHeaderFieldErrors(unittest.TestCase):
 
     def test_obs_fold_rejected_by_default(self) -> None:
         data = b'GET / HTTP/1.1\r\nHost: x\r\nFoo: bar\r\n baz\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError):
+        with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(data)
 
     def test_bare_lf_rejected_by_default(self) -> None:
@@ -373,28 +373,28 @@ class TestHeaderFieldErrors(unittest.TestCase):
 
     def test_bare_cr_rejected_by_default(self) -> None:
         data = b'GET / HTTP/1.1\r\nHost: x\ronly\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError):
+        with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(data)
 
     def test_missing_terminator(self) -> None:
-        with self.assertRaises(hp.HeaderFieldError):
+        with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(b'GET / HTTP/1.1\r\nHost: x\r\n')
 
     def test_trailing_data(self) -> None:
-        with self.assertRaises(hp.HeaderFieldError):
+        with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(b'HTTP/1.1 200 OK\r\n\r\nextra')
 
     def test_too_many_headers(self) -> None:
-        cfg = hp.HttpMessageParser.Config(max_header_count=3)
+        cfg = hp.HttpParser.Config(max_header_count=3)
         hdrs = [(f'X-H{i}', str(i)) for i in range(4)]
         data = _resp(headers=hdrs)
-        with self.assertRaises(hp.HeaderFieldError):
+        with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(data, config=cfg)
 
     def test_obs_text_in_value_rejected_with_flag(self) -> None:
-        cfg = hp.HttpMessageParser.Config(reject_obs_text=True)
+        cfg = hp.HttpParser.Config(reject_obs_text=True)
         data = b'HTTP/1.1 200 OK\r\nX-Data: caf\xe9\r\n\r\n'
-        with self.assertRaises(hp.EncodingError):
+        with self.assertRaises(hp.EncodingHttpParseError):
             hp.parse_http_message(data, config=cfg)
 
     def test_obs_text_in_value_allowed_by_default(self) -> None:
@@ -406,20 +406,20 @@ class TestHeaderFieldErrors(unittest.TestCase):
         """Control characters (other than HTAB) in field-value should be rejected."""
 
         data = b'GET / HTTP/1.1\r\nHost: x\r\nFoo: bar\x01baz\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError):
+        with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(data)
 
     def test_del_in_field_value(self) -> None:
         """DEL (0x7F) is not VCHAR, not SP, not HTAB, not obs-text."""
 
         data = b'GET / HTTP/1.1\r\nHost: x\r\nFoo: bar\x7fbaz\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError):
+        with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(data)
 
     def test_max_header_length(self) -> None:
-        cfg = hp.HttpMessageParser.Config(max_header_length=14)
+        cfg = hp.HttpParser.Config(max_header_length=14)
         data = b'GET / HTTP/1.1\r\nHost: x\r\nFoo: value1 value2 value3\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError):
+        with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(data, config=cfg)
 
 
@@ -429,7 +429,7 @@ class TestHeaderFieldErrors(unittest.TestCase):
 
 class TestRelaxationKnobs(unittest.TestCase):
     def test_allow_bare_lf(self) -> None:
-        cfg = hp.HttpMessageParser.Config(allow_bare_lf=True, allow_missing_host=True)
+        cfg = hp.HttpParser.Config(allow_bare_lf=True, allow_missing_host=True)
         data = b'GET / HTTP/1.1\nHost: x\n\n'
         msg = hp.parse_http_message(data, config=cfg)
         self.assertEqual(msg.prepared.host, 'x')
@@ -437,61 +437,64 @@ class TestRelaxationKnobs(unittest.TestCase):
     def test_allow_bare_lf_mixed(self) -> None:
         """CRLF and bare LF mixed - some servers do this."""
 
-        cfg = hp.HttpMessageParser.Config(allow_bare_lf=True, allow_missing_host=True)
+        cfg = hp.HttpParser.Config(allow_bare_lf=True, allow_missing_host=True)
         data = b'GET / HTTP/1.1\nHost: x\r\nFoo: bar\n\n'
         msg = hp.parse_http_message(data, config=cfg)
         self.assertEqual(msg.headers['foo'], 'bar')
 
     def test_bare_lf_allows_only_final_terminator(self) -> None:
         data = b'GET / HTTP/1.1\nHost: example.com\n\n'
-        parser = hp.HttpMessageParser(hp.HttpMessageParser.Config(allow_bare_lf=True))
-        msg = parser.parse(data, mode=hp.HttpMessageParser.Mode.REQUEST)
+        parser = hp.HttpParser(hp.HttpParser.Config(allow_bare_lf=True))
+        msg = parser.parse_message(data, mode=hp.HttpParser.Mode.REQUEST)
         self.assertEqual(msg.kind.value, 'request')
         self.assertEqual(check.not_none(msg.request_line).method, 'GET')
         self.assertEqual(msg.headers.get('host'), 'example.com')
 
     def test_bare_lf_rejects_trailing_data_after_terminator(self) -> None:
-        parser = hp.HttpMessageParser(hp.HttpMessageParser.Config(allow_bare_lf=True))
+        parser = hp.HttpParser(hp.HttpParser.Config(allow_bare_lf=True))
         data = b'GET / HTTP/1.1\nHost: example.com\n\nGARBAGE'
-        with self.assertRaises(hp.HeaderFieldError) as cm:
-            parser.parse(data, mode=hp.HttpMessageParser.Mode.REQUEST)
-        self.assertEqual(cm.exception.code, hp.HeaderFieldErrorCode.MISSING_TERMINATOR)
+        with self.assertRaises(hp.HeaderFieldHttpParseError) as cm:
+            parser.parse_message(data, mode=hp.HttpParser.Mode.REQUEST)
+        self.assertEqual(cm.exception.code, hp.HeaderFieldHttpParseErrorCode.MISSING_TERMINATOR)
 
     def test_strict_mode_rejects_bare_lf_even_if_double_lf(self) -> None:
-        parser = hp.HttpMessageParser(hp.HttpMessageParser.Config(allow_bare_lf=False))
+        parser = hp.HttpParser(hp.HttpParser.Config(allow_bare_lf=False))
         data = b'GET / HTTP/1.1\nHost: example.com\n\n'
-        with self.assertRaises(hp.HeaderFieldError) as cm:
-            parser.parse(data, mode=hp.HttpMessageParser.Mode.REQUEST)
+        with self.assertRaises(hp.HeaderFieldHttpParseError) as cm:
+            parser.parse_message(data, mode=hp.HttpParser.Mode.REQUEST)
         # Depending on where it fails in your flow, this can be BARE_LF or MISSING_TERMINATOR.
-        self.assertIn(cm.exception.code, {hp.HeaderFieldErrorCode.MISSING_TERMINATOR, hp.HeaderFieldErrorCode.BARE_LF})
+        self.assertIn(cm.exception.code, {
+            hp.HeaderFieldHttpParseErrorCode.MISSING_TERMINATOR,
+            hp.HeaderFieldHttpParseErrorCode.BARE_LF,
+        })
 
     def test_allow_obs_fold(self) -> None:
-        cfg = hp.HttpMessageParser.Config(allow_obs_fold=True)
+        cfg = hp.HttpParser.Config(allow_obs_fold=True)
         data = b'GET / HTTP/1.1\r\nHost: x\r\nFoo: line1\r\n line2\r\n\tline3\r\n\r\n'
         msg = hp.parse_http_message(data, config=cfg)
         self.assertEqual(msg.headers['foo'], 'line1 line2 line3')
 
     def test_allow_obs_fold_multi_continuation(self) -> None:
-        cfg = hp.HttpMessageParser.Config(allow_obs_fold=True)
+        cfg = hp.HttpParser.Config(allow_obs_fold=True)
         data = b'GET / HTTP/1.1\r\nHost: x\r\nFoo: a\r\n b\r\n c\r\n d\r\n\r\n'
         msg = hp.parse_http_message(data, config=cfg)
         self.assertEqual(msg.headers['foo'], 'a b c d')
 
     def test_allow_obs_fold_max_len(self) -> None:
-        cfg = hp.HttpMessageParser.Config(allow_obs_fold=True, max_header_length=14)
+        cfg = hp.HttpParser.Config(allow_obs_fold=True, max_header_length=14)
         data = b'GET / HTTP/1.1\r\nHost: x\r\nFoo: line1\r\n line2\r\n\tline3\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError):
+        with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(data, config=cfg)
 
     def test_reject_target_non_visible_ascii_request_target(self) -> None:
-        cfg = hp.HttpMessageParser.Config(reject_non_visible_ascii_request_target=True)
-        with self.assertRaises(hp.StartLineError):
+        cfg = hp.HttpParser.Config(reject_non_visible_ascii_request_target=True)
+        with self.assertRaises(hp.StartLineHttpParseError):
             hp.parse_http_message(b'GET /\xe2\x98\x83path HTTP/1.1\r\n\r\n', config=cfg)
-        with self.assertRaises(hp.StartLineError):
+        with self.assertRaises(hp.StartLineHttpParseError):
             hp.parse_http_message(b'GET /\x01path HTTP/1.1\r\n\r\n', config=cfg)
 
     def test_allow_space_before_colon(self) -> None:
-        cfg = hp.HttpMessageParser.Config(allow_space_before_colon=True)
+        cfg = hp.HttpParser.Config(allow_space_before_colon=True)
         data = b'GET / HTTP/1.1\r\nHost : example.com\r\n\r\n'
         msg = hp.parse_http_message(data, config=cfg)
         self.assertEqual(msg.prepared.host, 'example.com')
@@ -499,45 +502,45 @@ class TestRelaxationKnobs(unittest.TestCase):
     def test_space_before_colon_all_whitespace_name(self) -> None:
         """A line like ': value' (colon at start) produces EmptyFieldName."""
 
-        cfg = hp.HttpMessageParser.Config(allow_space_before_colon=True)
+        cfg = hp.HttpParser.Config(allow_space_before_colon=True)
         data = b'GET / HTTP/1.1\r\nHost: x\r\n: value\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError):
+        with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(data, config=cfg)
 
     def test_whitespace_line_start_is_obs_fold(self) -> None:
         """A line starting with whitespace is obs-fold, not a whitespace-only name."""
 
-        cfg = hp.HttpMessageParser.Config(allow_space_before_colon=True)
+        cfg = hp.HttpParser.Config(allow_space_before_colon=True)
         data = b'GET / HTTP/1.1\r\nHost: x\r\n  : value\r\n\r\n'
         # This triggers obs-fold detection, not EmptyFieldName
-        with self.assertRaises(hp.HeaderFieldError):
+        with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(data, config=cfg)
 
     def test_allow_multiple_content_lengths_identical(self) -> None:
-        cfg = hp.HttpMessageParser.Config(allow_multiple_content_lengths=True)
+        cfg = hp.HttpParser.Config(allow_multiple_content_lengths=True)
         data = _resp(headers=[('Content-Length', '42'), ('Content-Length', '42')])
         msg = hp.parse_http_message(data, config=cfg)
         self.assertEqual(msg.prepared.content_length, 42)
 
     def test_allow_multiple_content_lengths_comma_form(self) -> None:
-        cfg = hp.HttpMessageParser.Config(allow_multiple_content_lengths=True)
+        cfg = hp.HttpParser.Config(allow_multiple_content_lengths=True)
         data = _resp(headers=[('Content-Length', '42, 42, 42')])
         msg = hp.parse_http_message(data, config=cfg)
         self.assertEqual(msg.prepared.content_length, 42)
 
     def test_multiple_content_lengths_rejected_by_default(self) -> None:
         data = _resp(headers=[('Content-Length', '42'), ('Content-Length', '42')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
     def test_conflicting_content_lengths_always_rejected(self) -> None:
-        cfg = hp.HttpMessageParser.Config(allow_multiple_content_lengths=True)
+        cfg = hp.HttpParser.Config(allow_multiple_content_lengths=True)
         data = _resp(headers=[('Content-Length', '42'), ('Content-Length', '99')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data, config=cfg)
 
     def test_allow_content_length_with_te(self) -> None:
-        cfg = hp.HttpMessageParser.Config(allow_content_length_with_te=True)
+        cfg = hp.HttpParser.Config(allow_content_length_with_te=True)
         data = _req(headers=[
             ('Host', 'x'),
             ('Content-Length', '42'),
@@ -553,17 +556,17 @@ class TestRelaxationKnobs(unittest.TestCase):
             ('Content-Length', '42'),
             ('Transfer-Encoding', 'chunked'),
         ])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
     def test_allow_missing_host(self) -> None:
-        cfg = hp.HttpMessageParser.Config(allow_missing_host=True)
+        cfg = hp.HttpParser.Config(allow_missing_host=True)
         data = _req(headers=[])
         msg = hp.parse_http_message(data, config=cfg)
         self.assertIsNone(msg.prepared.host)
 
     def test_missing_host_rejected_for_http11(self) -> None:
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(_req(headers=[]))
 
     def test_missing_host_ok_for_http10(self) -> None:
@@ -572,24 +575,24 @@ class TestRelaxationKnobs(unittest.TestCase):
         self.assertIsNone(msg.prepared.host)
 
     def test_allow_multiple_hosts_identical(self) -> None:
-        cfg = hp.HttpMessageParser.Config(allow_multiple_hosts=True)
+        cfg = hp.HttpParser.Config(allow_multiple_hosts=True)
         data = _req(headers=[('Host', 'a.com'), ('Host', 'a.com')])
         msg = hp.parse_http_message(data, config=cfg)
         self.assertEqual(msg.prepared.host, 'a.com')
 
     def test_multiple_hosts_rejected_by_default(self) -> None:
         data = _req(headers=[('Host', 'a.com'), ('Host', 'a.com')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
     def test_conflicting_hosts_always_rejected(self) -> None:
-        cfg = hp.HttpMessageParser.Config(allow_multiple_hosts=True)
+        cfg = hp.HttpParser.Config(allow_multiple_hosts=True)
         data = _req(headers=[('Host', 'a.com'), ('Host', 'b.com')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data, config=cfg)
 
     def test_allow_bare_cr_in_value(self) -> None:
-        cfg = hp.HttpMessageParser.Config(allow_bare_cr_in_value=True)
+        cfg = hp.HttpParser.Config(allow_bare_cr_in_value=True)
         data = b'HTTP/1.1 200 OK\r\nFoo: bar\rbaz\r\n\r\n'
         msg = hp.parse_http_message(data, config=cfg)
         self.assertIn('bar', msg.headers['foo'])
@@ -600,67 +603,67 @@ class TestRelaxationKnobs(unittest.TestCase):
         self.assertEqual(msg.headers['x-empty'], '')
 
     def test_reject_empty_header_values(self) -> None:
-        cfg = hp.HttpMessageParser.Config(allow_empty_header_values=False)
+        cfg = hp.HttpParser.Config(allow_empty_header_values=False)
         data = _resp(headers=[('X-Empty', '')])
-        with self.assertRaises(hp.HeaderFieldError):
+        with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(data, config=cfg)
 
     def test_allow_te_without_chunked_in_response(self) -> None:
-        cfg = hp.HttpMessageParser.Config(allow_te_without_chunked_in_response=True)
+        cfg = hp.HttpParser.Config(allow_te_without_chunked_in_response=True)
         data = _resp(headers=[('Transfer-Encoding', 'gzip')])
         msg = hp.parse_http_message(data, config=cfg)
         self.assertEqual(msg.prepared.transfer_encoding, ['gzip'])
 
     def test_te_without_chunked_in_response_rejected_by_default(self) -> None:
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(_resp(headers=[('Transfer-Encoding', 'gzip')]))
 
     def test_allow_transfer_encoding_http10(self) -> None:
-        cfg = hp.HttpMessageParser.Config(allow_transfer_encoding_http10=True)
+        cfg = hp.HttpParser.Config(allow_transfer_encoding_http10=True)
         data = _resp(version='HTTP/1.0', headers=[('Transfer-Encoding', 'chunked')])
         msg = hp.parse_http_message(data, config=cfg)
         self.assertEqual(msg.prepared.transfer_encoding, ['chunked'])
 
     def test_transfer_encoding_http10_rejected_by_default(self) -> None:
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(_resp(
                 version='HTTP/1.0',
                 headers=[('Transfer-Encoding', 'chunked')],
             ))
 
     def test_allow_unknown_transfer_encoding(self) -> None:
-        cfg = hp.HttpMessageParser.Config(allow_unknown_transfer_encoding=True)
+        cfg = hp.HttpParser.Config(allow_unknown_transfer_encoding=True)
         data = _req(headers=[('Host', 'x'), ('Transfer-Encoding', 'custom, chunked')])
         msg = hp.parse_http_message(data, config=cfg)
         self.assertEqual(msg.prepared.transfer_encoding, ['custom', 'chunked'])
 
     def test_unknown_transfer_encoding_rejected_by_default(self) -> None:
         data = _req(headers=[('Host', 'x'), ('Transfer-Encoding', 'custom, chunked')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
     def test_reject_obs_text_flag(self) -> None:
-        cfg = hp.HttpMessageParser.Config(reject_obs_text=True)
+        cfg = hp.HttpParser.Config(reject_obs_text=True)
         data = _resp(headers=[('X-Data', 'hello')])
         msg = hp.parse_http_message(data, config=cfg)
         self.assertEqual(msg.headers['x-data'], 'hello')
 
     def test_reject_multi_value_content_length(self) -> None:
-        cfg = hp.HttpMessageParser.Config(reject_multi_value_content_length=True)
+        cfg = hp.HttpParser.Config(reject_multi_value_content_length=True)
         data = _req(headers=[('Content-Length', '42,42')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data, config=cfg)
 
     def test_max_header_count_at_limit(self) -> None:
-        cfg = hp.HttpMessageParser.Config(max_header_count=3)
+        cfg = hp.HttpParser.Config(max_header_count=3)
         data = _resp(headers=[('A', '1'), ('B', '2'), ('C', '3')])
         msg = hp.parse_http_message(data, config=cfg)
         self.assertEqual(len(msg.raw_headers), 3)
 
     def test_max_header_count_exceeded(self) -> None:
-        cfg = hp.HttpMessageParser.Config(max_header_count=2)
+        cfg = hp.HttpParser.Config(max_header_count=2)
         data = _resp(headers=[('A', '1'), ('B', '2'), ('C', '3')])
-        with self.assertRaises(hp.HeaderFieldError):
+        with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(data, config=cfg)
 
 
@@ -708,7 +711,7 @@ class TestHeaderNormalization(unittest.TestCase):
         ])
         msg = hp.parse_http_message(data)
         self.assertEqual(msg.headers.get_all('set-cookie'), ['a=1; Path=/', 'b=2; Path=/'])
-        with self.assertRaises(hp.MultiValueNoCombineHeaderError):
+        with self.assertRaises(hp.NoCombineHeaderHttpParseError):
             self.assertEqual(msg.headers['set-cookie'], 'a=1; Path=/')
 
     def test_header_order_preserved(self) -> None:
@@ -782,17 +785,17 @@ class TestPreparedContentLength(unittest.TestCase):
 
     def test_non_numeric(self) -> None:
         data = _resp(headers=[('Content-Length', 'abc')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
     def test_negative(self) -> None:
         data = _resp(headers=[('Content-Length', '-1')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
     def test_float(self) -> None:
         data = _resp(headers=[('Content-Length', '42.5')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
     def test_leading_zeros(self) -> None:
@@ -810,26 +813,26 @@ class TestPreparedContentLength(unittest.TestCase):
         self.assertEqual(msg.prepared.content_length, 42)
 
     def test_comma_separated_identical(self) -> None:
-        cfg = hp.HttpMessageParser.Config(allow_multiple_content_lengths=True)
+        cfg = hp.HttpParser.Config(allow_multiple_content_lengths=True)
         for s in ['42,42', '42, 42', '42  ,42,42  ,42']:
             data = _resp(headers=[('Content-Length', s)])
             msg = hp.parse_http_message(data, config=cfg)
             self.assertEqual(msg.prepared.content_length, 42)
 
     def test_comma_separated_conflicting(self) -> None:
-        cfg = hp.HttpMessageParser.Config(allow_multiple_content_lengths=True)
+        cfg = hp.HttpParser.Config(allow_multiple_content_lengths=True)
         data = _resp(headers=[('Content-Length', '42, 99')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data, config=cfg)
 
     def test_empty_value(self) -> None:
         data = _resp(headers=[('Content-Length', '')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
     def test_hex_value(self) -> None:
         data = _resp(headers=[('Content-Length', '0xff')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
 
@@ -850,22 +853,22 @@ class TestPreparedTransferEncoding(unittest.TestCase):
 
     def test_chunked_not_last(self) -> None:
         data = _resp(headers=[('Transfer-Encoding', 'chunked, gzip')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
     def test_chunked_twice(self) -> None:
         data = _resp(headers=[('Transfer-Encoding', 'chunked, chunked')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
     def test_request_requires_chunked(self) -> None:
         data = _req(headers=[('Host', 'x'), ('Transfer-Encoding', 'gzip')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
     def test_request_chunked_ok(self) -> None:
         data = _req(headers=[('Host', 'x'), ('Transfer-Encoding', 'chunked')])
-        msg = hp.parse_http_message(data, config=hp.HttpMessageParser.Config(allow_content_length_with_te=True))
+        msg = hp.parse_http_message(data, config=hp.HttpParser.Config(allow_content_length_with_te=True))
         self.assertEqual(msg.prepared.transfer_encoding, ['chunked'])
 
     def test_case_insensitive(self) -> None:
@@ -880,7 +883,7 @@ class TestPreparedTransferEncoding(unittest.TestCase):
 
     def test_empty_value(self) -> None:
         data = _resp(headers=[('Transfer-Encoding', '')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
 
@@ -910,7 +913,7 @@ class TestPreparedHost(unittest.TestCase):
         self.assertEqual(msg.prepared.host, '[::1]:8080')
 
     def test_missing_in_http11(self) -> None:
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(_req(headers=[]))
 
     def test_allowed_missing_in_http10(self) -> None:
@@ -926,19 +929,19 @@ class TestPreparedHost(unittest.TestCase):
     def test_host_with_control_char(self) -> None:
         # Control chars are caught during field-value validation, before semantic checks
         data = b'GET / HTTP/1.1\r\nHost: x\x01y\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError):
+        with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(data)
 
     def test_host_rejects_whitespace(self) -> None:
-        parser = hp.HttpMessageParser()
+        parser = hp.HttpParser()
         data = (
             b'GET / HTTP/1.1\r\n'
             b'Host: example.com evil.com\r\n'
             b'\r\n'
         )
-        with self.assertRaises(hp.SemanticHeaderError) as cm:
-            parser.parse(data, mode=hp.HttpMessageParser.Mode.REQUEST)
-        self.assertEqual(cm.exception.code, hp.SemanticHeaderErrorCode.INVALID_HOST)
+        with self.assertRaises(hp.SemanticHeaderHttpParseError) as cm:
+            parser.parse_message(data, mode=hp.HttpParser.Mode.REQUEST)
+        self.assertEqual(cm.exception.code, hp.SemanticHeaderHttpParseErrorCode.INVALID_HOST)
 
 
 ##
@@ -1024,17 +1027,17 @@ class TestPreparedContentType(unittest.TestCase):
 
     def test_missing_slash(self) -> None:
         data = _resp(headers=[('Content-Type', 'texthtml')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
     def test_empty_type(self) -> None:
         data = _resp(headers=[('Content-Type', '/html')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
     def test_empty_subtype(self) -> None:
         data = _resp(headers=[('Content-Type', 'text/')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
     def test_absent(self) -> None:
@@ -1059,7 +1062,7 @@ class TestPreparedTrailer(unittest.TestCase):
             ('Trailer', 'X-Checksum, X-Status'),
             ('Transfer-Encoding', 'chunked'),
         ])
-        msg = hp.parse_http_message(data, config=hp.HttpMessageParser.Config(allow_content_length_with_te=True))
+        msg = hp.parse_http_message(data, config=hp.HttpParser.Config(allow_content_length_with_te=True))
         self.assertEqual(msg.prepared.trailer, frozenset({'x-checksum', 'x-status'}))
 
     def test_forbidden_content_length(self) -> None:
@@ -1067,25 +1070,25 @@ class TestPreparedTrailer(unittest.TestCase):
             ('Trailer', 'Content-Length'),
             ('Transfer-Encoding', 'chunked'),
         ])
-        with self.assertRaises(hp.SemanticHeaderError):
-            hp.parse_http_message(data, config=hp.HttpMessageParser.Config(allow_content_length_with_te=True))
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
+            hp.parse_http_message(data, config=hp.HttpParser.Config(allow_content_length_with_te=True))
 
     def test_forbidden_transfer_encoding(self) -> None:
         data = _resp(headers=[
             ('Trailer', 'Transfer-Encoding'),
             ('Transfer-Encoding', 'chunked'),
         ])
-        with self.assertRaises(hp.SemanticHeaderError):
-            hp.parse_http_message(data, config=hp.HttpMessageParser.Config(allow_content_length_with_te=True))
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
+            hp.parse_http_message(data, config=hp.HttpParser.Config(allow_content_length_with_te=True))
 
     def test_forbidden_host(self) -> None:
         data = _resp(headers=[('Trailer', 'Host')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
     def test_forbidden_authorization(self) -> None:
         data = _resp(headers=[('Trailer', 'Authorization')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
     def test_absent(self) -> None:
@@ -1111,7 +1114,7 @@ class TestPreparedExpect(unittest.TestCase):
 
     def test_invalid_value(self) -> None:
         data = _req(headers=[('Host', 'x'), ('Content-Length', '10'), ('Expect', '102-processing')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
     def test_absent(self) -> None:
@@ -1200,17 +1203,17 @@ class TestPreparedDate(unittest.TestCase):
     def test_asctime_invalid(self):
         # Incorrect length
         data = _resp(headers=[('Date', 'Sun Nov 6 08:49:37 1994')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
     def test_invalid_date(self) -> None:
         data = _resp(headers=[('Date', 'not-a-date')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
     def test_invalid_month(self) -> None:
         data = _resp(headers=[('Date', 'Sun, 06 Foo 1994 08:49:37 GMT')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
     def test_absent(self) -> None:
@@ -1275,7 +1278,7 @@ class TestPreparedAcceptEncoding(unittest.TestCase):
 
     def test_invalid_qvalue(self) -> None:
         data = _req(headers=[('Host', 'x'), ('Accept-Encoding', 'gzip;q=abc')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
     def test_absent(self) -> None:
@@ -1317,7 +1320,7 @@ class TestPreparedAccept(unittest.TestCase):
 
     def test_invalid_qvalue(self) -> None:
         data = _req(headers=[('Host', 'x'), ('Accept', 'text/html;q=xyz')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
     def test_absent(self) -> None:
@@ -1360,7 +1363,7 @@ class TestPreparedAuthorization(unittest.TestCase):
 
     def test_empty_value(self) -> None:
         data = _req(headers=[('Host', 'x'), ('Authorization', '')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
     def test_absent(self) -> None:
@@ -1429,24 +1432,24 @@ class TestCharacterBoundaries(unittest.TestCase):
         """DEL (0x7F) is neither VCHAR, SP, HTAB, nor obs-text."""
 
         data = b'HTTP/1.1 200 OK\r\nX-Data: \x7f\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError):
+        with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(data)
 
     def test_ctl_chars_1_to_8_rejected(self) -> None:
         for b in range(0x01, 0x09):  # 0x09 is HTAB which is allowed
             data = b'HTTP/1.1 200 OK\r\nX-Data: ' + bytes([b]) + b'\r\n\r\n'
-            with self.assertRaises(hp.HeaderFieldError, msg=f'byte 0x{b:02x} should be rejected'):
+            with self.assertRaises(hp.HeaderFieldHttpParseError, msg=f'byte 0x{b:02x} should be rejected'):
                 hp.parse_http_message(data)
 
     def test_ctl_chars_0e_to_1f_rejected(self) -> None:
         for b in range(0x0E, 0x20):  # 0x20 is SP which is allowed
             data = b'HTTP/1.1 200 OK\r\nX-Data: x' + bytes([b]) + b'y\r\n\r\n'
-            with self.assertRaises(hp.HeaderFieldError, msg=f'byte 0x{b:02x} should be rejected'):
+            with self.assertRaises(hp.HeaderFieldHttpParseError, msg=f'byte 0x{b:02x} should be rejected'):
                 hp.parse_http_message(data)
 
     def test_nul_always_rejected(self) -> None:
         data = b'HTTP/1.1 200 OK\r\nX-Data: ab\x00cd\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError):
+        with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(data)
 
 
@@ -1467,14 +1470,14 @@ class TestRequestSmuggling(unittest.TestCase):
             ('Content-Length', '10'),
             ('Transfer-Encoding', 'chunked'),
         ])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
     def test_conflicting_content_lengths(self) -> None:
         """Different CL values - classic desync."""
 
         data = _resp(headers=[('Content-Length', '10'), ('Content-Length', '20')])
-        with self.assertRaises((hp.SemanticHeaderError, hp.SemanticHeaderError)):
+        with self.assertRaises((hp.SemanticHeaderHttpParseError, hp.SemanticHeaderHttpParseError)):
             hp.parse_http_message(data)
 
     def test_te_te_obfuscation_uppercase(self) -> None:
@@ -1484,7 +1487,7 @@ class TestRequestSmuggling(unittest.TestCase):
             ('Host', 'x'),
             ('Transfer-Encoding', 'chunked'),
         ])
-        msg = hp.parse_http_message(data, config=hp.HttpMessageParser.Config(allow_content_length_with_te=True))
+        msg = hp.parse_http_message(data, config=hp.HttpParser.Config(allow_content_length_with_te=True))
         self.assertEqual(msg.prepared.transfer_encoding, ['chunked'])
 
     def test_te_with_leading_whitespace_in_value(self) -> None:
@@ -1492,7 +1495,7 @@ class TestRequestSmuggling(unittest.TestCase):
 
         data = b'POST / HTTP/1.1\r\nHost: x\r\nTransfer-Encoding:  chunked\r\n\r\n'
         msg = hp.parse_http_message(
-            data, config=hp.HttpMessageParser.Config(allow_content_length_with_te=True),
+            data, config=hp.HttpParser.Config(allow_content_length_with_te=True),
         )
         # OWS is stripped, so this should still parse as 'chunked'
         self.assertEqual(msg.prepared.transfer_encoding, ['chunked'])
@@ -1501,16 +1504,16 @@ class TestRequestSmuggling(unittest.TestCase):
         """chunked must be last - no relaxation possible."""
 
         data = _resp(headers=[('Transfer-Encoding', 'chunked, gzip')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
         # Even with all relaxations
-        cfg = hp.HttpMessageParser.Config(
+        cfg = hp.HttpParser.Config(
             allow_te_without_chunked_in_response=True,
             allow_unknown_transfer_encoding=True,
             allow_transfer_encoding_http10=True,
         )
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data, config=cfg)
 
     def test_obs_fold_injection(self) -> None:
@@ -1524,11 +1527,11 @@ class TestRequestSmuggling(unittest.TestCase):
             b'\r\n'
         )
         # By default, obs-fold is rejected
-        with self.assertRaises(hp.HeaderFieldError):
+        with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(data)
 
         # When allowed, it's folded into previous header value, NOT a new header
-        cfg = hp.HttpMessageParser.Config(allow_obs_fold=True)
+        cfg = hp.HttpParser.Config(allow_obs_fold=True)
         msg = hp.parse_http_message(data, config=cfg)
         self.assertNotIn('transfer-encoding', msg.headers)
         self.assertIn('Transfer-Encoding: chunked', msg.headers['x-innocent'])
@@ -1537,7 +1540,7 @@ class TestRequestSmuggling(unittest.TestCase):
         """'Transfer-Encoding : chunked' - some proxies see the header, some don't."""
 
         data = b'POST / HTTP/1.1\r\nHost: x\r\nTransfer-Encoding : chunked\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError):
+        with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(data)
 
     def test_bare_lf_header_injection(self) -> None:
@@ -1551,41 +1554,41 @@ class TestRequestSmuggling(unittest.TestCase):
         """NUL bytes could truncate values in some implementations."""
 
         data = b'GET / HTTP/1.1\r\nHost: evil.com\x00.good.com\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError):
+        with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(data)
 
     def test_cr_only_injection(self) -> None:
         """Bare CR could be used to split headers."""
 
         data = b'GET / HTTP/1.1\r\nHost: x\rInjected: yes\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError):
+        with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(data)
 
     def test_duplicate_host_for_routing_confusion(self) -> None:
         """Two different Host headers could cause routing confusion."""
 
         data = _req(headers=[('Host', 'good.com'), ('Host', 'evil.com')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
     def test_host_with_embedded_null(self) -> None:
         data = b'GET / HTTP/1.1\r\nHost: evil.com\x00.good.com\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError):
+        with self.assertRaises(hp.HeaderFieldHttpParseError):
             hp.parse_http_message(data)
 
     def test_content_length_negative(self) -> None:
         data = _resp(headers=[('Content-Length', '-1')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
     def test_content_length_with_plus_sign(self) -> None:
         data = _resp(headers=[('Content-Length', '+42')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
     def test_content_length_hex(self) -> None:
         data = _resp(headers=[('Content-Length', '0x2A')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
     def test_content_length_overflow_attempt(self) -> None:
@@ -1599,19 +1602,19 @@ class TestRequestSmuggling(unittest.TestCase):
         """Very large CL value with max setting - should raise."""
 
         data = _resp(headers=[('Content-Length', '99999999999999999999999999999999')])
-        with self.assertRaises(hp.SemanticHeaderError):
-            hp.parse_http_message(data, config=hp.HttpMessageParser.Config(max_content_length_str_len=16))
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
+            hp.parse_http_message(data, config=hp.HttpParser.Config(max_content_length_str_len=16))
 
     def test_content_length_with_trailing_junk(self) -> None:
         data = _resp(headers=[('Content-Length', '42 foo')])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
     def test_content_length_comma_different_values(self) -> None:
         """CL: 10, 20 - classic smuggling via comma-separated CL."""
 
         data = _resp(headers=[('Content-Length', '10, 20')])
-        with self.assertRaises((hp.SemanticHeaderError, hp.SemanticHeaderError)):
+        with self.assertRaises((hp.SemanticHeaderHttpParseError, hp.SemanticHeaderHttpParseError)):
             hp.parse_http_message(data)
 
     def test_multiple_te_headers(self) -> None:
@@ -1621,7 +1624,7 @@ class TestRequestSmuggling(unittest.TestCase):
             ('Transfer-Encoding', 'gzip'),
             ('Transfer-Encoding', 'chunked'),
         ])
-        msg = hp.parse_http_message(data, config=hp.HttpMessageParser.Config(allow_content_length_with_te=True))
+        msg = hp.parse_http_message(data, config=hp.HttpParser.Config(allow_content_length_with_te=True))
         # They get comma-combined: "gzip, chunked"
         self.assertEqual(msg.prepared.transfer_encoding, ['gzip', 'chunked'])
 
@@ -1639,8 +1642,8 @@ class TestRequestSmuggling(unittest.TestCase):
         data = _req(headers=[('Host', 'x')])
         # In response mode, 'GET / HTTP/1.1' will be parsed as a status line
         # and fail because 'GET' is not 'HTTP/x.y'
-        with self.assertRaises(hp.StartLineError):
-            hp.parse_http_message(data, mode=hp.HttpMessageParser.Mode.RESPONSE)
+        with self.assertRaises(hp.StartLineHttpParseError):
+            hp.parse_http_message(data, mode=hp.HttpParser.Mode.RESPONSE)
 
 
 ##
@@ -1652,39 +1655,39 @@ class TestErrorModel(unittest.TestCase):
         """Every enum has at least one member and they're all distinct names."""
 
         for enum_cls in (
-                hp.StartLineErrorCode,
-                hp.HeaderFieldErrorCode,
-                hp.SemanticHeaderErrorCode,
-                hp.EncodingErrorCode,
+                hp.StartLineHttpParseErrorCode,
+                hp.HeaderFieldHttpParseErrorCode,
+                hp.SemanticHeaderHttpParseErrorCode,
+                hp.EncodingHttpParseErrorCode,
         ):
             self.assertGreater(len(enum_cls), 0, f'{enum_cls.__name__} is empty')
 
     def test_exception_hierarchy(self) -> None:
-        self.assertTrue(issubclass(hp.StartLineError, hp.HttpParseError))
-        self.assertTrue(issubclass(hp.HeaderFieldError, hp.HttpParseError))
-        self.assertTrue(issubclass(hp.SemanticHeaderError, hp.HttpParseError))
-        self.assertTrue(issubclass(hp.EncodingError, hp.HttpParseError))
+        self.assertTrue(issubclass(hp.StartLineHttpParseError, hp.HttpParseError))
+        self.assertTrue(issubclass(hp.HeaderFieldHttpParseError, hp.HttpParseError))
+        self.assertTrue(issubclass(hp.SemanticHeaderHttpParseError, hp.HttpParseError))
+        self.assertTrue(issubclass(hp.EncodingHttpParseError, hp.HttpParseError))
 
     def test_category_code_types(self) -> None:
         """Each category class carries the right enum type in .code."""
 
-        e1 = hp.StartLineError(code=hp.StartLineErrorCode.MALFORMED_REQUEST_LINE, message='t')
-        self.assertIsInstance(e1.code, hp.StartLineErrorCode)
+        e1 = hp.StartLineHttpParseError(code=hp.StartLineHttpParseErrorCode.MALFORMED_REQUEST_LINE, message='t')
+        self.assertIsInstance(e1.code, hp.StartLineHttpParseErrorCode)
 
-        e2 = hp.HeaderFieldError(code=hp.HeaderFieldErrorCode.MISSING_COLON, message='t')
-        self.assertIsInstance(e2.code, hp.HeaderFieldErrorCode)
+        e2 = hp.HeaderFieldHttpParseError(code=hp.HeaderFieldHttpParseErrorCode.MISSING_COLON, message='t')
+        self.assertIsInstance(e2.code, hp.HeaderFieldHttpParseErrorCode)
 
-        e3 = hp.SemanticHeaderError(code=hp.SemanticHeaderErrorCode.INVALID_CONTENT_LENGTH, message='t')
-        self.assertIsInstance(e3.code, hp.SemanticHeaderErrorCode)
+        e3 = hp.SemanticHeaderHttpParseError(code=hp.SemanticHeaderHttpParseErrorCode.INVALID_CONTENT_LENGTH, message='t')  # noqa
+        self.assertIsInstance(e3.code, hp.SemanticHeaderHttpParseErrorCode)
 
-        e4 = hp.EncodingError(code=hp.EncodingErrorCode.NON_ASCII_IN_FIELD_NAME, message='t')
-        self.assertIsInstance(e4.code, hp.EncodingErrorCode)
+        e4 = hp.EncodingHttpParseError(code=hp.EncodingHttpParseErrorCode.NON_ASCII_IN_FIELD_NAME, message='t')
+        self.assertIsInstance(e4.code, hp.EncodingHttpParseErrorCode)
 
     def test_error_has_line_and_offset(self) -> None:
         try:
             hp.parse_http_message(b'GET / HTTP/1.1\r\nBad\x01Name: val\r\n\r\n')
             self.fail('Should have raised')
-        except hp.HttpParseError as e:
+        except hp.ErrorCodeHttpParseError as e:
             self.assertIsInstance(e.message, str)
             self.assertIsInstance(e.line, int)
             self.assertIsInstance(e.offset, int)
@@ -1694,21 +1697,21 @@ class TestErrorModel(unittest.TestCase):
     def test_error_code_in_exception(self) -> None:
         try:
             hp.parse_http_message(b'GET / HTTP/2.0\r\n\r\n')
-        except hp.StartLineError as e:
-            self.assertEqual(e.code, hp.StartLineErrorCode.UNSUPPORTED_HTTP_VERSION)
+        except hp.StartLineHttpParseError as e:
+            self.assertEqual(e.code, hp.StartLineHttpParseErrorCode.UNSUPPORTED_HTTP_VERSION)
 
     def test_direct_construction(self) -> None:
-        err = hp.HeaderFieldError(
-            code=hp.HeaderFieldErrorCode.MISSING_COLON,
+        err = hp.HeaderFieldHttpParseError(
+            code=hp.HeaderFieldHttpParseErrorCode.MISSING_COLON,
             message='test',
             line=5,
             offset=100,
         )
-        self.assertIsInstance(err, hp.HeaderFieldError)
+        self.assertIsInstance(err, hp.HeaderFieldHttpParseError)
         self.assertIsInstance(err, hp.HttpParseError)
         self.assertEqual(err.line, 5)
         self.assertEqual(err.offset, 100)
-        self.assertEqual(err.code, hp.HeaderFieldErrorCode.MISSING_COLON)
+        self.assertEqual(err.code, hp.HeaderFieldHttpParseErrorCode.MISSING_COLON)
 
     def test_exception_is_catchable_as_exception(self) -> None:
         with self.assertRaises(Exception):  # noqa
@@ -1770,16 +1773,16 @@ class TestMiscEdgeCases(unittest.TestCase):
         self.assertEqual(msg.headers['x-long'], val)
 
     def test_parser_reuse(self) -> None:
-        parser = hp.HttpMessageParser()
-        msg1 = parser.parse(_req(headers=[('Host', 'a.com')]))
-        msg2 = parser.parse(_req(headers=[('Host', 'b.com')]))
+        parser = hp.HttpParser()
+        msg1 = parser.parse_message(_req(headers=[('Host', 'a.com')]))
+        msg2 = parser.parse_message(_req(headers=[('Host', 'b.com')]))
         self.assertEqual(msg1.prepared.host, 'a.com')
         self.assertEqual(msg2.prepared.host, 'b.com')
 
     def test_parser_config_immutable_between_calls(self) -> None:
-        cfg = hp.HttpMessageParser.Config()
-        parser = hp.HttpMessageParser(cfg)
-        parser.parse(_req(headers=[('Host', 'x')]))
+        cfg = hp.HttpParser.Config()
+        parser = hp.HttpParser(cfg)
+        parser.parse_message(_req(headers=[('Host', 'x')]))
         self.assertEqual(cfg.allow_obs_fold, False)  # unchanged
 
     def test_reason_phrase_with_obs_text(self) -> None:
@@ -1857,11 +1860,11 @@ class TestPreparedHeaderInteractions(unittest.TestCase):
             ('Content-Length', '10'),
             ('Transfer-Encoding', 'chunked'),
         ])
-        with self.assertRaises(hp.SemanticHeaderError):
+        with self.assertRaises(hp.SemanticHeaderHttpParseError):
             hp.parse_http_message(data)
 
     def test_cl_and_te_allowed_with_config(self) -> None:
-        cfg = hp.HttpMessageParser.Config(allow_content_length_with_te=True)
+        cfg = hp.HttpParser.Config(allow_content_length_with_te=True)
         data = _req(headers=[
             ('Host', 'x'),
             ('Content-Length', '10'),
@@ -1893,7 +1896,7 @@ class TestPreparedHeaderInteractions(unittest.TestCase):
 
 class TestHttpHeadParserConfigDefaults(unittest.TestCase):
     def test_all_defaults(self) -> None:
-        cfg = hp.HttpMessageParser.Config()
+        cfg = hp.HttpParser.Config()
         self.assertFalse(cfg.allow_obs_fold)
         self.assertFalse(cfg.allow_space_before_colon)
         self.assertFalse(cfg.allow_multiple_content_lengths)
@@ -1956,9 +1959,9 @@ class TestDataModels(unittest.TestCase):
         self.assertEqual(hp.ParsedHttpMessage.Kind.RESPONSE.value, 'response')
 
     def test_parser_mode_enum_values(self) -> None:
-        self.assertEqual(hp.HttpMessageParser.Mode.REQUEST.value, 'request')
-        self.assertEqual(hp.HttpMessageParser.Mode.RESPONSE.value, 'response')
-        self.assertEqual(hp.HttpMessageParser.Mode.AUTO.value, 'auto')
+        self.assertEqual(hp.HttpParser.Mode.REQUEST.value, 'request')
+        self.assertEqual(hp.HttpParser.Mode.RESPONSE.value, 'response')
+        self.assertEqual(hp.HttpParser.Mode.AUTO.value, 'auto')
 
     def test_parsed_message_fields_present(self) -> None:
         data = _req(headers=[('Host', 'x'), ('Content-Length', '0')])
@@ -2070,22 +2073,22 @@ class TestForbiddenFields(unittest.TestCase):
         for field_name in self.FORBIDDEN:
             with self.subTest(field=field_name):
                 data = _trailers([(field_name, 'value')])
-                with self.assertRaises(hp.SemanticHeaderError) as cm:
+                with self.assertRaises(hp.SemanticHeaderHttpParseError) as cm:
                     hp.parse_http_trailers(data)
                 self.assertEqual(
                     cm.exception.code,
-                    hp.SemanticHeaderErrorCode.FORBIDDEN_TRAILER_FIELD,
+                    hp.SemanticHeaderHttpParseErrorCode.FORBIDDEN_TRAILER_FIELD,
                 )
 
     def test_forbidden_field_case_insensitive(self) -> None:
         """Forbidden check should be case-insensitive."""
 
         data = _trailers([('CONTENT-LENGTH', '42')])
-        with self.assertRaises(hp.SemanticHeaderError) as cm:
+        with self.assertRaises(hp.SemanticHeaderHttpParseError) as cm:
             hp.parse_http_trailers(data)
         self.assertEqual(
             cm.exception.code,
-            hp.SemanticHeaderErrorCode.FORBIDDEN_TRAILER_FIELD,
+            hp.SemanticHeaderHttpParseErrorCode.FORBIDDEN_TRAILER_FIELD,
         )
 
     def test_allowed_field_alongside_check(self) -> None:
@@ -2102,51 +2105,51 @@ class TestCharacterValidation(unittest.TestCase):
 
     def test_nul_in_field_name(self) -> None:
         data = b'X-Bad\x00Name: val\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError) as cm:
+        with self.assertRaises(hp.HeaderFieldHttpParseError) as cm:
             hp.parse_http_trailers(data)
-        self.assertEqual(cm.exception.code, hp.HeaderFieldErrorCode.NUL_IN_HEADER)
+        self.assertEqual(cm.exception.code, hp.HeaderFieldHttpParseErrorCode.NUL_IN_HEADER)
 
     def test_nul_in_field_value(self) -> None:
         data = b'X-Name: bad\x00val\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError) as cm:
+        with self.assertRaises(hp.HeaderFieldHttpParseError) as cm:
             hp.parse_http_trailers(data)
-        self.assertEqual(cm.exception.code, hp.HeaderFieldErrorCode.NUL_IN_HEADER)
+        self.assertEqual(cm.exception.code, hp.HeaderFieldHttpParseErrorCode.NUL_IN_HEADER)
 
     def test_control_char_in_value(self) -> None:
         data = b'X-Name: bad\x01val\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError) as cm:
+        with self.assertRaises(hp.HeaderFieldHttpParseError) as cm:
             hp.parse_http_trailers(data)
-        self.assertEqual(cm.exception.code, hp.HeaderFieldErrorCode.INVALID_FIELD_VALUE)
+        self.assertEqual(cm.exception.code, hp.HeaderFieldHttpParseErrorCode.INVALID_FIELD_VALUE)
 
     def test_non_ascii_in_field_name(self) -> None:
         data = b'X-\xc3\xa9: val\r\n\r\n'
-        with self.assertRaises(hp.EncodingError) as cm:
+        with self.assertRaises(hp.EncodingHttpParseError) as cm:
             hp.parse_http_trailers(data)
-        self.assertEqual(cm.exception.code, hp.EncodingErrorCode.NON_ASCII_IN_FIELD_NAME)
+        self.assertEqual(cm.exception.code, hp.EncodingHttpParseErrorCode.NON_ASCII_IN_FIELD_NAME)
 
     def test_invalid_field_name_char(self) -> None:
         data = b'X Name: val\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError) as cm:
+        with self.assertRaises(hp.HeaderFieldHttpParseError) as cm:
             hp.parse_http_trailers(data)
-        self.assertEqual(cm.exception.code, hp.HeaderFieldErrorCode.INVALID_FIELD_NAME)
+        self.assertEqual(cm.exception.code, hp.HeaderFieldHttpParseErrorCode.INVALID_FIELD_NAME)
 
     def test_missing_colon(self) -> None:
         data = b'BadLine\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError) as cm:
+        with self.assertRaises(hp.HeaderFieldHttpParseError) as cm:
             hp.parse_http_trailers(data)
-        self.assertEqual(cm.exception.code, hp.HeaderFieldErrorCode.MISSING_COLON)
+        self.assertEqual(cm.exception.code, hp.HeaderFieldHttpParseErrorCode.MISSING_COLON)
 
     def test_empty_field_name(self) -> None:
         data = b': value\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError) as cm:
+        with self.assertRaises(hp.HeaderFieldHttpParseError) as cm:
             hp.parse_http_trailers(data)
-        self.assertEqual(cm.exception.code, hp.HeaderFieldErrorCode.EMPTY_FIELD_NAME)
+        self.assertEqual(cm.exception.code, hp.HeaderFieldHttpParseErrorCode.EMPTY_FIELD_NAME)
 
     def test_del_in_value(self) -> None:
         data = b'X-Name: val\x7fue\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError) as cm:
+        with self.assertRaises(hp.HeaderFieldHttpParseError) as cm:
             hp.parse_http_trailers(data)
-        self.assertEqual(cm.exception.code, hp.HeaderFieldErrorCode.INVALID_FIELD_VALUE)
+        self.assertEqual(cm.exception.code, hp.HeaderFieldHttpParseErrorCode.INVALID_FIELD_VALUE)
 
 
 class TestConfigPassThrough(unittest.TestCase):
@@ -2155,52 +2158,52 @@ class TestConfigPassThrough(unittest.TestCase):
     def test_bare_lf_rejected_by_default(self) -> None:
         # Data has CRLFCRLF terminator but a bare LF in the first field line
         data = b'X-Name: val\nX-Other: ok\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError) as cm:
+        with self.assertRaises(hp.HeaderFieldHttpParseError) as cm:
             hp.parse_http_trailers(data)
-        self.assertEqual(cm.exception.code, hp.HeaderFieldErrorCode.BARE_LF)
+        self.assertEqual(cm.exception.code, hp.HeaderFieldHttpParseErrorCode.BARE_LF)
 
     def test_bare_lf_allowed(self) -> None:
         data = b'X-Name: val\n\n'
-        cfg = hp.HttpMessageParser.Config(allow_bare_lf=True)
+        cfg = hp.HttpParser.Config(allow_bare_lf=True)
         result = hp.parse_http_trailers(data, config=cfg)
         self.assertEqual(result.headers['x-name'], 'val')
 
     def test_obs_fold_rejected_by_default(self) -> None:
         data = b'X-Name: line1\r\n line2\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError) as cm:
+        with self.assertRaises(hp.HeaderFieldHttpParseError) as cm:
             hp.parse_http_trailers(data)
-        self.assertEqual(cm.exception.code, hp.HeaderFieldErrorCode.OBS_FOLD_NOT_ALLOWED)
+        self.assertEqual(cm.exception.code, hp.HeaderFieldHttpParseErrorCode.OBS_FOLD_NOT_ALLOWED)
 
     def test_obs_fold_allowed(self) -> None:
         data = b'X-Name: line1\r\n line2\r\n\r\n'
-        cfg = hp.HttpMessageParser.Config(allow_obs_fold=True)
+        cfg = hp.HttpParser.Config(allow_obs_fold=True)
         result = hp.parse_http_trailers(data, config=cfg)
         self.assertEqual(result.headers['x-name'], 'line1 line2')
 
     def test_obs_text_rejected_when_configured(self) -> None:
         data = b'X-Val: caf\xe9\r\n\r\n'
-        cfg = hp.HttpMessageParser.Config(reject_obs_text=True)
-        with self.assertRaises(hp.EncodingError) as cm:
+        cfg = hp.HttpParser.Config(reject_obs_text=True)
+        with self.assertRaises(hp.EncodingHttpParseError) as cm:
             hp.parse_http_trailers(data, config=cfg)
-        self.assertEqual(cm.exception.code, hp.EncodingErrorCode.OBS_TEXT_IN_FIELD_VALUE)
+        self.assertEqual(cm.exception.code, hp.EncodingHttpParseErrorCode.OBS_TEXT_IN_FIELD_VALUE)
 
     def test_max_header_count(self) -> None:
         fields = [(f'X-Field-{i}', str(i)) for i in range(5)]
         data = _trailers(fields)
-        cfg = hp.HttpMessageParser.Config(max_header_count=3)
-        with self.assertRaises(hp.HeaderFieldError) as cm:
+        cfg = hp.HttpParser.Config(max_header_count=3)
+        with self.assertRaises(hp.HeaderFieldHttpParseError) as cm:
             hp.parse_http_trailers(data, config=cfg)
-        self.assertEqual(cm.exception.code, hp.HeaderFieldErrorCode.TOO_MANY_HEADERS)
+        self.assertEqual(cm.exception.code, hp.HeaderFieldHttpParseErrorCode.TOO_MANY_HEADERS)
 
     def test_bare_cr_in_value_rejected_by_default(self) -> None:
         data = b'X-Name: a\rb\r\n\r\n'
-        with self.assertRaises(hp.HeaderFieldError) as cm:
+        with self.assertRaises(hp.HeaderFieldHttpParseError) as cm:
             hp.parse_http_trailers(data)
-        self.assertEqual(cm.exception.code, hp.HeaderFieldErrorCode.BARE_CARRIAGE_RETURN)
+        self.assertEqual(cm.exception.code, hp.HeaderFieldHttpParseErrorCode.BARE_CARRIAGE_RETURN)
 
     def test_bare_cr_in_value_allowed(self) -> None:
         data = b'X-Name: a\rb\r\n\r\n'
-        cfg = hp.HttpMessageParser.Config(allow_bare_cr_in_value=True)
+        cfg = hp.HttpParser.Config(allow_bare_cr_in_value=True)
         result = hp.parse_http_trailers(data, config=cfg)
         self.assertIn('\r', result.headers['x-name'])
 
@@ -2211,24 +2214,24 @@ class TestConfigPassThrough(unittest.TestCase):
 
     def test_empty_value_rejected_when_configured(self) -> None:
         data = b'X-Empty:\r\n\r\n'
-        cfg = hp.HttpMessageParser.Config(allow_empty_header_values=False)
-        with self.assertRaises(hp.HeaderFieldError) as cm:
+        cfg = hp.HttpParser.Config(allow_empty_header_values=False)
+        with self.assertRaises(hp.HeaderFieldHttpParseError) as cm:
             hp.parse_http_trailers(data, config=cfg)
-        self.assertEqual(cm.exception.code, hp.HeaderFieldErrorCode.INVALID_FIELD_VALUE)
+        self.assertEqual(cm.exception.code, hp.HeaderFieldHttpParseErrorCode.INVALID_FIELD_VALUE)
 
 
 class TestErrorCases(unittest.TestCase):
     def test_missing_terminator(self) -> None:
         data = b'X-Name: val\r\n'
-        with self.assertRaises(hp.HeaderFieldError) as cm:
+        with self.assertRaises(hp.HeaderFieldHttpParseError) as cm:
             hp.parse_http_trailers(data)
-        self.assertEqual(cm.exception.code, hp.HeaderFieldErrorCode.MISSING_TERMINATOR)
+        self.assertEqual(cm.exception.code, hp.HeaderFieldHttpParseErrorCode.MISSING_TERMINATOR)
 
     def test_trailing_data(self) -> None:
         data = b'X-Name: val\r\n\r\nextra'
-        with self.assertRaises(hp.HeaderFieldError) as cm:
+        with self.assertRaises(hp.HeaderFieldHttpParseError) as cm:
             hp.parse_http_trailers(data)
-        self.assertEqual(cm.exception.code, hp.HeaderFieldErrorCode.TRAILING_DATA)
+        self.assertEqual(cm.exception.code, hp.HeaderFieldHttpParseErrorCode.TRAILING_DATA)
 
     def test_type_error_on_string(self) -> None:
         with self.assertRaises(TypeError):
@@ -2256,11 +2259,11 @@ class TestErrorCases(unittest.TestCase):
         """Forbidden check runs after parsing all fields."""
 
         data = _trailers([('X-Good', 'ok'), ('Content-Length', '42')])
-        with self.assertRaises(hp.SemanticHeaderError) as cm:
+        with self.assertRaises(hp.SemanticHeaderHttpParseError) as cm:
             hp.parse_http_trailers(data)
         self.assertEqual(
             cm.exception.code,
-            hp.SemanticHeaderErrorCode.FORBIDDEN_TRAILER_FIELD,
+            hp.SemanticHeaderHttpParseErrorCode.FORBIDDEN_TRAILER_FIELD,
         )
 
 

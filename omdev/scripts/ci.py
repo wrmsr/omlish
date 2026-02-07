@@ -95,7 +95,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/asyncs/asyncio/utils.py', sha1='34691d4d0e5bab68f14e193a6200df040cfd0136'),
             dict(path='../../omlish/docker/ports.py', sha1='a3202c69b85bc4f1034479df3400fddc86130e5c'),
             dict(path='../../omlish/http/urllib.py', sha1='25431c5bdc7dd5cbecfcb8c0bdffaabf8c1691b9'),
-            dict(path='../../omlish/http/versions.py', sha1='a3ec6ac2581e6806de9cdb79976769134c271425'),
+            dict(path='../../omlish/http/versions.py', sha1='dbd6ee1941150b1143096eac2b02eb29c0396d30'),
             dict(path='../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../omlish/lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
             dict(path='../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
@@ -123,7 +123,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../oci/pack/unpacking.py', sha1='f43dee9a2eee79cbbb90f0721ed234a2bc35daa7'),
             dict(path='../../omlish/argparse/cli.py', sha1='f4dc3cd353d14386b5da0306768700e396afd2b3'),
             dict(path='../../omlish/http/coro/io.py', sha1='2cdf6529c37a37cc0c1db2e02032157cf906d5d6'),
-            dict(path='../../omlish/http/parsing.py', sha1='cde2642231a249ab72d2901ca3a321f8d3ffff9b'),
+            dict(path='../../omlish/http/parsing.py', sha1='7aba2f3ee0ba45f44df5516795079f2bf2d38d2d'),
             dict(path='../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
             dict(path='../../omlish/lite/maybes.py', sha1='04d2fcbea17028a5e6b8e7a7fb742375495ed233'),
             dict(path='../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
@@ -154,7 +154,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../dataserver/routes.py', sha1='0186bb2e84ff4d5c05af2a57c61f6fd605eba790'),
             dict(path='../oci/media.py', sha1='a20324c5b0661c9a9a7679406d019ab3ba4acd98'),
             dict(path='../oci/pack/packing.py', sha1='7585c3dea6b8a62b6ca63fe78968497db915ea57'),
-            dict(path='../../omlish/http/coro/server/server.py', sha1='f8f1aba3dadfb854359429b51dd7279d54898c0e'),
+            dict(path='../../omlish/http/coro/server/server.py', sha1='7c1f1ffda17b130812589c7577075d4b8e5d2cf7'),
             dict(path='../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
             dict(path='../../omlish/logs/std/records.py', sha1='8bbf6ef9eccb3a012c6ca416ddf3969450fd8fc9'),
             dict(path='../../omlish/secrets/tempssl.py', sha1='360d4cd98483357bcf013e156dafd92fd37ed220'),
@@ -175,7 +175,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../dataserver/http.py', sha1='f85ca91015bac434281326ef7885babd9d6d834c'),
             dict(path='../oci/dataserver.py', sha1='dd147b56282b054cef264556a0ff3b3d1719bcee'),
             dict(path='../../omlish/asyncs/asyncio/subprocesses.py', sha1='b6b5f9ae3fd0b9c83593bad2e04a08f726e5904d'),
-            dict(path='../../omlish/http/coro/server/simple.py', sha1='2332079fe29993123c68d7dbc266b47cd44cd6a6'),
+            dict(path='../../omlish/http/coro/server/simple.py', sha1='b80247d4671dc0f07f3b6dff58a95667fe599504'),
             dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='cache.py', sha1='9353e5c3b73bed47258680fd15ac49417113f0ca'),
             dict(path='compose.py', sha1='d2bec1385701979c7ff9913456b72d8c7b31f70b'),
@@ -600,23 +600,90 @@ class NonRaisingUrllibErrorProcessor(urllib.request.HTTPErrorProcessor):
 ##
 
 
-class HttpProtocolVersion(ta.NamedTuple):
-    major: int
-    minor: int
+class UnknownHttpVersionError(Exception):
+    pass
+
+
+@ta.final
+@functools.total_ordering
+class HttpVersion:
+    def __init__(self, major: int, minor: int) -> None:
+        self._major = major
+        self._minor = minor
+
+        self._parts = parts = (major, minor)
+
+        self._hash = hash(parts)
+
+        self._str = f'HTTP/{major}.{minor}'
+        self._short_str = f'{major}.{minor}'
+
+    def __hash__(self) -> int:
+        return self._hash
+
+    def __eq__(self, other: object) -> ta.Any:
+        if not isinstance(other, HttpVersion):
+            return NotImplemented
+        return self._parts == other._parts
+
+    def __lt__(self, other: object) -> ta.Any:
+        if not isinstance(other, HttpVersion):
+            return NotImplemented
+        return self._parts < other._parts
+
+    @property
+    def major(self) -> int:
+        return self._major
+
+    @property
+    def minor(self) -> int:
+        return self._minor
 
     def __str__(self) -> str:
-        return f'HTTP/{self.major}.{self.minor}'
+        return self._str
 
     @property
     def short_str(self) -> str:
-        return '.'.join(map(str, self))
+        return self._short_str
+
+    def __iter__(self) -> ta.Iterator[int]:
+        return iter(self._parts)
 
 
-class HttpProtocolVersions:
-    HTTP_0_9 = HttpProtocolVersion(0, 9)
-    HTTP_1_0 = HttpProtocolVersion(1, 0)
-    HTTP_1_1 = HttpProtocolVersion(1, 1)
-    HTTP_2_0 = HttpProtocolVersion(2, 0)
+@ta.final
+class HttpVersions:
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
+
+    HTTP_0_9 = HttpVersion(0, 9)
+    HTTP_1_0 = HttpVersion(1, 0)
+    HTTP_1_1 = HttpVersion(1, 1)
+    HTTP_2_0 = HttpVersion(2, 0)
+
+    _FROM_STR: ta.ClassVar[ta.Mapping[str, HttpVersion]] = {
+        str(v): v for v in [
+            HTTP_0_9,
+            HTTP_1_0,
+            HTTP_1_1,
+            HTTP_2_0,
+        ]
+    }
+
+    @classmethod
+    def from_str(cls, s: str) -> HttpVersion:
+        try:
+            return cls._FROM_STR[s]
+        except KeyError:
+            raise UnknownHttpVersionError(s) from None
+
+    @classmethod
+    def of(cls, o: ta.Union[HttpVersion, str]) -> HttpVersion:
+        if isinstance(o, HttpVersion):
+            return o
+        elif isinstance(o, str):
+            return cls.from_str(o)
+        else:
+            raise TypeError(o)
 
 
 ########################################
@@ -3874,10 +3941,10 @@ class ParseHttpRequestResult(Abstract):
     def __init__(
             self,
             *,
-            server_version: HttpProtocolVersion,
+            server_version: HttpVersion,
             request_line: str,
-            request_version: HttpProtocolVersion,
-            version: HttpProtocolVersion,
+            request_version: HttpVersion,
+            version: HttpVersion,
             headers: ta.Optional[HttpHeaders],
             close_connection: bool,
     ) -> None:
@@ -3954,12 +4021,12 @@ class ParsedHttpRequest(ParseHttpRequestResult):
 
 
 class HttpRequestParser:
-    DEFAULT_SERVER_VERSION = HttpProtocolVersions.HTTP_1_0
+    DEFAULT_SERVER_VERSION = HttpVersions.HTTP_1_0
 
     # The default request version. This only affects responses up until the point where the request line is parsed, so
     # it mainly decides what the client gets back when sending a malformed request line.
     # Most web servers default to HTTP 0.9, i.e. don't send a status line.
-    DEFAULT_REQUEST_VERSION = HttpProtocolVersions.HTTP_0_9
+    DEFAULT_REQUEST_VERSION = HttpVersions.HTTP_0_9
 
     #
 
@@ -3971,14 +4038,14 @@ class HttpRequestParser:
     def __init__(
             self,
             *,
-            server_version: HttpProtocolVersion = DEFAULT_SERVER_VERSION,
+            server_version: HttpVersion = DEFAULT_SERVER_VERSION,
 
             max_line: int = DEFAULT_MAX_LINE,
             max_headers: int = DEFAULT_MAX_HEADERS,
     ) -> None:
         super().__init__()
 
-        if server_version >= HttpProtocolVersions.HTTP_2_0:
+        if server_version >= HttpVersions.HTTP_2_0:
             raise ValueError(f'Unsupported protocol version: {server_version}')
         self._server_version = server_version
 
@@ -3988,7 +4055,7 @@ class HttpRequestParser:
     #
 
     @property
-    def server_version(self) -> HttpProtocolVersion:
+    def server_version(self) -> HttpVersion:
         return self._server_version
 
     #
@@ -4008,7 +4075,7 @@ class HttpRequestParser:
 
     #
 
-    def parse_request_version(self, version_str: str) -> HttpProtocolVersion:
+    def parse_request_version(self, version_str: str) -> HttpVersion:
         if not version_str.startswith('HTTP/'):
             raise ValueError(version_str)  # noqa
 
@@ -4029,7 +4096,7 @@ class HttpRequestParser:
         if any(len(component) > 10 for component in version_number_parts):
             raise ValueError('unreasonable length http version')  # noqa
 
-        return HttpProtocolVersion(
+        return HttpVersion(
             int(version_number_parts[0]),
             int(version_number_parts[1]),
         )
@@ -4134,8 +4201,8 @@ class HttpRequestParser:
                 )
 
             if (
-                    request_version < HttpProtocolVersions.HTTP_0_9 or
-                    request_version >= HttpProtocolVersions.HTTP_2_0
+                    request_version < HttpVersions.HTTP_0_9 or
+                    request_version >= HttpVersions.HTTP_2_0
             ):
                 return ParseHttpRequestError(
                     code=http.HTTPStatus.HTTP_VERSION_NOT_SUPPORTED,
@@ -4145,7 +4212,7 @@ class HttpRequestParser:
 
             version = min([self._server_version, request_version])
 
-            if version >= HttpProtocolVersions.HTTP_1_1:
+            if version >= HttpVersions.HTTP_1_1:
                 close_connection = False
 
         # Verify word count
@@ -4211,7 +4278,7 @@ class HttpRequestParser:
             close_connection = True
         elif (
                 conn_type.lower() == 'keep-alive' and
-                version >= HttpProtocolVersions.HTTP_1_1
+                version >= HttpVersions.HTTP_1_1
         ):
             close_connection = False
 
@@ -4220,7 +4287,7 @@ class HttpRequestParser:
         expect = headers.get('Expect', '')
         if (
                 expect.lower() == '100-continue' and
-                version >= HttpProtocolVersions.HTTP_1_1
+                version >= HttpVersions.HTTP_1_1
         ):
             expects_continue = True
         else:
@@ -9828,7 +9895,7 @@ class CoroHttpServer:
 
     def _format_status_line(
             self,
-            version: HttpProtocolVersion,
+            version: HttpVersion,
             code: ta.Union[http.HTTPStatus, int],
             message: ta.Optional[str] = None,
     ) -> str:
@@ -9844,7 +9911,7 @@ class CoroHttpServer:
 
     @dc.dataclass(frozen=True)
     class _Response:
-        version: HttpProtocolVersion
+        version: HttpVersion
         code: http.HTTPStatus
 
         message: ta.Optional[str] = None
@@ -9867,7 +9934,7 @@ class CoroHttpServer:
     def _build_response_head_bytes(self, a: _Response) -> bytes:
         out = io.BytesIO()
 
-        if a.version >= HttpProtocolVersions.HTTP_1_0:
+        if a.version >= HttpVersions.HTTP_1_0:
             out.write(self._header_encode(self._format_status_line(
                 a.version,
                 a.code,
@@ -9932,7 +9999,7 @@ class CoroHttpServer:
 
     @dc.dataclass(frozen=True)
     class Error:
-        version: HttpProtocolVersion
+        version: HttpVersion
         code: http.HTTPStatus
         message: str
         explain: str
@@ -9945,7 +10012,7 @@ class CoroHttpServer:
             message: ta.Optional[str] = None,
             explain: ta.Optional[str] = None,
             *,
-            version: ta.Optional[HttpProtocolVersion] = None,
+            version: ta.Optional[HttpVersion] = None,
             method: ta.Optional[str] = None,
     ) -> Error:
         code = http.HTTPStatus(code)
@@ -13152,7 +13219,7 @@ def make_simple_http_server(
         bind: CanSocketBinder,
         handler: HttpHandler,
         *,
-        server_version: HttpProtocolVersion = HttpProtocolVersions.HTTP_1_1,
+        server_version: HttpVersion = HttpVersions.HTTP_1_1,
         keep_alive: bool = False,
         ssl_context: ta.Optional['ssl.SSLContext'] = None,
         ignore_ssl_errors: bool = False,
