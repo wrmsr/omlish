@@ -48,9 +48,9 @@ class YamlScanningContext:
     size: int = 0
     not_space_char_pos: int = 0
     not_space_org_char_pos: int = 0
-    src: str = ''
-    buf: str = ''
-    obuf: str = ''
+    src: ta.List[str] = dc.field(default_factory=list)
+    buf: ta.List[str] = dc.field(default_factory=list)
+    obuf: ta.List[str] = dc.field(default_factory=list)
     tokens: YamlTokens = dc.field(default_factory=YamlTokens)
     mstate: ta.Optional['YamlMultiLineState'] = None
 
@@ -58,17 +58,17 @@ class YamlScanningContext:
         self.reset_buffer()
         self.mstate = None
 
-    def reset(self, src: str) -> None:
+    def reset(self, src: ta.List[str]) -> None:
         self.idx = 0
         self.size = len(src)
-        self.src = src
+        self.src = list(src)
         self.tokens = YamlTokens()
         self.reset_buffer()
         self.mstate = None
 
     def reset_buffer(self) -> None:
-        self.buf = ''
-        self.obuf = ''
+        self.buf = []
+        self.obuf = []
         self.not_space_char_pos = 0
         self.not_space_org_char_pos = 0
 
@@ -135,7 +135,7 @@ class YamlScanningContext:
         diff = len(self.obuf) - buflen
         if diff > 0:
             self.obuf = self.obuf[:buflen]
-            self.buf = self.buffered_src()
+            self.buf = list(self.buffered_src())
 
     def is_eos(self) -> bool:
         return len(self.src) - 1 <= self.idx
@@ -147,7 +147,7 @@ class YamlScanningContext:
         return self.idx < self.size
 
     def source(self, s: int, e: int) -> str:
-        return self.src[s:e]
+        return ''.join(self.src[s:e])
 
     def previous_char(self) -> str:
         if self.idx > 0:
@@ -182,7 +182,7 @@ class YamlScanningContext:
     def is_multi_line(self) -> bool:
         return self.mstate is not None
 
-    def buffered_src(self) -> str:
+    def buffered_src(self) -> ta.List[str]:
         src = self.buf[:self.not_space_char_pos]
 
         if self.is_multi_line():
@@ -192,7 +192,7 @@ class YamlScanningContext:
             # https://yaml.org/spec/1.2.2/#8112-block-chomping-indicator
             if mstate.has_trim_all_end_newline_opt():
                 # If the '-' flag is specified, all trailing newline characters will be removed.
-                src = src.rstrip('\n')
+                src = list(''.join(src).rstrip('\n'))
 
             elif not mstate.has_keep_all_end_newline_opt():
                 # Normally, all but one of the trailing newline characters are removed.
@@ -205,20 +205,20 @@ class YamlScanningContext:
 
                 removed_new_line_char_count = new_line_char_count - 1
                 while removed_new_line_char_count > 0:
-                    src = src.rstrip('\n')
+                    src = list(''.join(src).rstrip('\n'))
                     removed_new_line_char_count -= 1
 
             # If the text ends with a space character, remove all of them.
             if mstate.has_trim_all_end_newline_opt():
-                src = src.rstrip(' ')
+                src = list(''.join(src).rstrip(' '))
 
-            if src == '\n':
+            if src == ['\n']:
                 # If the content consists only of a newline, it can be considered as the document ending without any
                 # specified value, so it is treated as an empty string.
-                src = ''
+                src = []
 
             if mstate.has_keep_all_end_newline_opt() and len(src) == 0:
-                src = '\n'
+                src = ['\n']
 
         return src
 
@@ -260,7 +260,7 @@ class YamlScanningContext:
         return None
 
     @staticmethod
-    def new(src: str) -> 'YamlScanningContext':
+    def new(src: ta.List[str]) -> 'YamlScanningContext':
         ctx = YamlScanningContext()
         ctx.reset(src)
         return ctx
@@ -420,7 +420,7 @@ class YamlIndentState(enum.Enum):
 # structure but must be initialized via init before use.
 @dc.dataclass()
 class YamlScanner:
-    source: str = ''
+    source: ta.List[str] = dc.field(default_factory=list)
     source_pos: int = 0
     source_size: int = 0
     # line number. This number starts from 1.
@@ -512,7 +512,7 @@ class YamlScanner:
             return True
         return False
 
-    def new_line_count(self, src: str) -> int:
+    def new_line_count(self, src: ta.List[str]) -> int:
         size = len(src)
         cnt = 0
         i = -1
@@ -581,7 +581,7 @@ class YamlScanner:
         start_index = ctx.idx + 1
         src = ctx.src
         size = len(src)
-        value = ''
+        value: ta.List[str] = []
         is_first_line_char = False
         is_new_line = False
 
@@ -668,7 +668,7 @@ class YamlScanner:
         start_index = ctx.idx + 1
         src = ctx.src
         size = len(src)
-        value = ''
+        value: ta.List[str] = []
         is_first_line_char = False
         is_new_line = False
 
@@ -961,15 +961,19 @@ class YamlScanner:
             ),
         )
 
-    def validate_document_separator_marker(self, ctx: YamlScanningContext, src: str) -> ta.Optional[YamlError]:
+    def validate_document_separator_marker(self, ctx: YamlScanningContext, src: ta.List[str]) -> ta.Optional[YamlError]:
         if self.found_document_separator_marker(src):
             return err_invalid_token(
-                YamlTokenMakers.new_invalid(yaml_error('found unexpected document separator'), ctx.obuf, self.pos()),
+                YamlTokenMakers.new_invalid(
+                    yaml_error('found unexpected document separator'),
+                    ''.join(ctx.obuf),
+                    self.pos(),
+                ),
             )
 
         return None
 
-    def found_document_separator_marker(self, src: str) -> bool:
+    def found_document_separator_marker(self, src: ta.List[str]) -> bool:
         if len(src) < 3:
             return False
 
@@ -1060,7 +1064,7 @@ class YamlScanner:
             if c == ' ':
                 ctx.add_origin_buf(c)
                 value = ctx.source(ctx.idx - 1, ctx.idx + idx)
-                ctx.add_token(YamlTokenMakers.new_tag(value, ctx.obuf, self.pos()))
+                ctx.add_token(YamlTokenMakers.new_tag(value, ''.join(ctx.obuf), self.pos()))
                 self.progress_column(ctx, len(value))
                 ctx.clear()
                 return True
@@ -1068,7 +1072,7 @@ class YamlScanner:
             elif c == ',':
                 if self.started_flow_sequence_num > 0 or self.started_flow_map_num > 0:
                     value = ctx.source(ctx.idx - 1, ctx.idx + idx)
-                    ctx.add_token(YamlTokenMakers.new_tag(value, ctx.obuf, self.pos()))
+                    ctx.add_token(YamlTokenMakers.new_tag(value, ''.join(ctx.obuf), self.pos()))
                     # progress column before collect-entry for scanning it at scan_flow_entry function.
                     self.progress_column(ctx, len(value) - 1)
                     ctx.clear()
@@ -1079,7 +1083,7 @@ class YamlScanner:
             elif c in ('\n', '\r'):
                 ctx.add_origin_buf(c)
                 value = ctx.source(ctx.idx - 1, ctx.idx + idx)
-                ctx.add_token(YamlTokenMakers.new_tag(value, ctx.obuf, self.pos()))
+                ctx.add_token(YamlTokenMakers.new_tag(value, ''.join(ctx.obuf), self.pos()))
                 # progress column before new-line-char for scanning new-line-char at scan_new_line function.
                 self.progress_column(ctx, len(value) - 1)
                 ctx.clear()
@@ -1121,7 +1125,7 @@ class YamlScanner:
 
             value = ctx.source(ctx.idx, ctx.idx + idx)
             progress = len(value)
-            ctx.add_token(YamlTokenMakers.new_comment(value, ctx.obuf, self.pos()))
+            ctx.add_token(YamlTokenMakers.new_comment(value, ''.join(ctx.obuf), self.pos()))
             self.progress_column(ctx, progress)
             self.progress_line(ctx)
             ctx.clear()
@@ -1129,7 +1133,7 @@ class YamlScanner:
 
         # document ends with comment.
         value = ctx.src[ctx.idx:]
-        ctx.add_token(YamlTokenMakers.new_comment(value, ctx.obuf, self.pos()))
+        ctx.add_token(YamlTokenMakers.new_comment(value, ''.join(ctx.obuf), self.pos()))
         progress = len(value)
         self.progress_column(ctx, progress)
         self.progress_line(ctx)
@@ -1157,12 +1161,12 @@ class YamlScanner:
 
             state.update_indent_column(self.column)
             if (err := state.validate_indent_column()) is not None:
-                invalid_tk = YamlTokenMakers.new_invalid(yaml_error(str(err)), ctx.obuf, self.pos())
+                invalid_tk = YamlTokenMakers.new_invalid(yaml_error(str(err)), ''.join(ctx.obuf), self.pos())
                 self.progress_column(ctx, 1)
                 return err_invalid_token(invalid_tk)
 
             value = ctx.buffered_src()
-            ctx.add_token(YamlTokenMakers.new_string(value, ctx.obuf, self.pos()))
+            ctx.add_token(YamlTokenMakers.new_string(value, ''.join(ctx.obuf), self.pos()))
             ctx.clear()
             self.progress_column(ctx, 1)
 
@@ -1174,7 +1178,7 @@ class YamlScanner:
             if ctx.next():
                 if self.found_document_separator_marker(ctx.src[ctx.idx:]):
                     value = ctx.buffered_src()
-                    ctx.add_token(YamlTokenMakers.new_string(value, ctx.obuf, self.pos()))
+                    ctx.add_token(YamlTokenMakers.new_string(value, ''.join(ctx.obuf), self.pos()))
                     ctx.clear()
                     self.break_multi_line(ctx)
 
@@ -1199,13 +1203,13 @@ class YamlScanner:
 
         else:
             if (err := state.validate_indent_after_space_only(self.column)) is not None:
-                invalid_tk = YamlTokenMakers.new_invalid(yaml_error(str(err)), ctx.obuf, self.pos())
+                invalid_tk = YamlTokenMakers.new_invalid(yaml_error(str(err)), ''.join(ctx.obuf), self.pos())
                 self.progress_column(ctx, 1)
                 return err_invalid_token(invalid_tk)
 
             state.update_indent_column(self.column)
             if (err := state.validate_indent_column()) is not None:
-                invalid_tk = YamlTokenMakers.new_invalid(yaml_error(str(err)), ctx.obuf, self.pos())
+                invalid_tk = YamlTokenMakers.new_invalid(yaml_error(str(err)), ''.join(ctx.obuf), self.pos())
                 self.progress_column(ctx, 1)
                 return err_invalid_token(invalid_tk)
 
@@ -1251,7 +1255,7 @@ class YamlScanner:
 
         if ctx.exists_buffer() and self.is_first_char_at_line:
             if ctx.buf[len(ctx.buf) - 1] == ' ':
-                ctx.buf = ctx.buf[:-1] + '\n'
+                ctx.buf[len(ctx.buf) - 1] = '\n'
             else:
                 ctx.buf += '\n'
         else:
@@ -1275,7 +1279,7 @@ class YamlScanner:
 
         self.add_buffered_token_if_exists(ctx)
         ctx.add_origin_buf('{')
-        ctx.add_token(YamlTokenMakers.new_mapping_start(ctx.obuf, self.pos()))
+        ctx.add_token(YamlTokenMakers.new_mapping_start(''.join(ctx.obuf), self.pos()))
         self.started_flow_map_num += 1
         self.progress_column(ctx, 1)
         ctx.clear()
@@ -1287,7 +1291,7 @@ class YamlScanner:
 
         self.add_buffered_token_if_exists(ctx)
         ctx.add_origin_buf('}')
-        ctx.add_token(YamlTokenMakers.new_mapping_end(ctx.obuf, self.pos()))
+        ctx.add_token(YamlTokenMakers.new_mapping_end(''.join(ctx.obuf), self.pos()))
         self.started_flow_map_num -= 1
         self.progress_column(ctx, 1)
         ctx.clear()
@@ -1299,7 +1303,7 @@ class YamlScanner:
 
         self.add_buffered_token_if_exists(ctx)
         ctx.add_origin_buf('[')
-        ctx.add_token(YamlTokenMakers.new_sequence_start(ctx.obuf, self.pos()))
+        ctx.add_token(YamlTokenMakers.new_sequence_start(''.join(ctx.obuf), self.pos()))
         self.started_flow_sequence_num += 1
         self.progress_column(ctx, 1)
         ctx.clear()
@@ -1311,7 +1315,7 @@ class YamlScanner:
 
         self.add_buffered_token_if_exists(ctx)
         ctx.add_origin_buf(']')
-        ctx.add_token(YamlTokenMakers.new_sequence_end(ctx.obuf, self.pos()))
+        ctx.add_token(YamlTokenMakers.new_sequence_end(''.join(ctx.obuf), self.pos()))
         self.started_flow_sequence_num -= 1
         self.progress_column(ctx, 1)
         ctx.clear()
@@ -1323,7 +1327,7 @@ class YamlScanner:
 
         self.add_buffered_token_if_exists(ctx)
         ctx.add_origin_buf(c)
-        ctx.add_token(YamlTokenMakers.new_collect_entry(ctx.obuf, self.pos()))
+        ctx.add_token(YamlTokenMakers.new_collect_entry(''.join(ctx.obuf), self.pos()))
         self.progress_column(ctx, 1)
         ctx.clear()
         return True
@@ -1351,10 +1355,10 @@ class YamlScanner:
             if tk is not None and tk.type == YamlTokenType.MAPPING_VALUE:
                 return False
 
-        if ctx.obuf.lstrip(' ').startswith('\t') and not ctx.buf.startswith('\t'):
+        if ''.join(ctx.obuf).lstrip(' ').startswith('\t') and not ''.join(ctx.buf).startswith('\t'):
             invalid_tk = YamlTokenMakers.new_invalid(
                 yaml_error('tab character cannot use as a map key directly'),
-                ctx.obuf,
+                ''.join(ctx.obuf),
                 self.pos(),
             )
             self.progress_column(ctx, 1)
@@ -1393,7 +1397,7 @@ class YamlScanner:
                 return False
 
         self.add_buffered_token_if_exists(ctx)
-        ctx.add_token(YamlTokenMakers.new_document_header(ctx.obuf + '---', self.pos()))
+        ctx.add_token(YamlTokenMakers.new_document_header(''.join(ctx.obuf) + '---', self.pos()))
         self.progress_column(ctx, 3)
         ctx.clear()
         self.clear_state()
@@ -1410,7 +1414,7 @@ class YamlScanner:
             return False
 
         self.add_buffered_token_if_exists(ctx)
-        ctx.add_token(YamlTokenMakers.new_document_end(ctx.obuf + '...', self.pos()))
+        ctx.add_token(YamlTokenMakers.new_document_end(''.join(ctx.obuf) + '...', self.pos()))
         self.progress_column(ctx, 3)
         ctx.clear()
         return True
@@ -1420,7 +1424,7 @@ class YamlScanner:
             return False
 
         self.last_delim_column = self.column
-        ctx.add_token(YamlTokenMakers.new_merge_key(ctx.obuf + '<<', self.pos()))
+        ctx.add_token(YamlTokenMakers.new_merge_key(''.join(ctx.obuf) + '<<', self.pos()))
         self.progress_column(ctx, 2)
         ctx.clear()
         return True
@@ -1446,10 +1450,10 @@ class YamlScanner:
         if nc != 0 and nc != ' ' and nc != '\t' and not self.is_new_line_char(nc):
             return False
 
-        if ctx.obuf.lstrip(' ').startswith('\t'):
+        if ''.join(ctx.obuf).lstrip(' ').startswith('\t'):
             invalid_tk = YamlTokenMakers.new_invalid(
                 yaml_error('tab character cannot use as a sequence delimiter'),
-                ctx.obuf,
+                ''.join(ctx.obuf),
                 self.pos(),
             )
             self.progress_column(ctx, 1)
@@ -1457,7 +1461,7 @@ class YamlScanner:
 
         self.add_buffered_token_if_exists(ctx)
         ctx.add_origin_buf('-')
-        tk = YamlTokenMakers.new_sequence_entry(ctx.obuf, self.pos())
+        tk = YamlTokenMakers.new_sequence_entry(''.join(ctx.obuf), self.pos())
         self.last_delim_column = tk.position.column
         ctx.add_token(tk)
         self.progress_column(ctx, 1)
@@ -1532,15 +1536,18 @@ class YamlScanner:
 
         if len(opt) != 0:
             if (err := self.validate_multi_line_header_option(opt)) is not None:
-                invalid_tk = YamlTokenMakers.new_invalid(yaml_error(str(err)), ctx.obuf, self.pos())
+                invalid_tk = YamlTokenMakers.new_invalid(yaml_error(str(err)), ''.join(ctx.obuf), self.pos())
                 self.progress_column(ctx, progress)
                 return err_invalid_token(invalid_tk)
 
         if self.column == 1:
             self.last_delim_column = 1
 
-        comment_index = ctx.obuf.find('#')
-        header_buf = ctx.obuf
+        try:
+            comment_index = ctx.obuf.index('#')
+        except ValueError:
+            comment_index = -1
+        header_buf = ''.join(ctx.obuf)
         if comment_index > 0:
             header_buf = header_buf[:comment_index]
 
@@ -1555,7 +1562,7 @@ class YamlScanner:
             comment = value[comment_value_index + 1:]
             self.offset += len(header_buf)
             self.column += len(header_buf)
-            ctx.add_token(YamlTokenMakers.new_comment(comment, ctx.obuf[len(header_buf):], self.pos()))
+            ctx.add_token(YamlTokenMakers.new_comment(comment, ''.join(ctx.obuf[len(header_buf):]), self.pos()))
 
         self.indent_state = YamlIndentState.KEEP
         ctx.reset_buffer()
@@ -1585,7 +1592,7 @@ class YamlScanner:
 
         self.add_buffered_token_if_exists(ctx)
         ctx.add_origin_buf('%')
-        ctx.add_token(YamlTokenMakers.new_directive(ctx.obuf, self.pos()))
+        ctx.add_token(YamlTokenMakers.new_directive(''.join(ctx.obuf), self.pos()))
         self.progress_column(ctx, 1)
         ctx.clear()
         self.is_directive = True
@@ -1597,7 +1604,7 @@ class YamlScanner:
 
         self.add_buffered_token_if_exists(ctx)
         ctx.add_origin_buf('&')
-        ctx.add_token(YamlTokenMakers.new_anchor(ctx.obuf, self.pos()))
+        ctx.add_token(YamlTokenMakers.new_anchor(''.join(ctx.obuf), self.pos()))
         self.progress_column(ctx, 1)
         self.is_anchor = True
         ctx.clear()
@@ -1609,7 +1616,7 @@ class YamlScanner:
 
         self.add_buffered_token_if_exists(ctx)
         ctx.add_origin_buf('*')
-        ctx.add_token(YamlTokenMakers.new_alias(ctx.obuf, self.pos()))
+        ctx.add_token(YamlTokenMakers.new_alias(''.join(ctx.obuf), self.pos()))
         self.progress_column(ctx, 1)
         self.is_alias = True
         ctx.clear()
@@ -1624,7 +1631,7 @@ class YamlScanner:
         err = err_invalid_token(
             YamlTokenMakers.new_invalid(
                 yaml_error(f'{c!r} is a reserved character'),
-                ctx.obuf,
+                ''.join(ctx.obuf),
                 self.pos(),
             ),
         )
@@ -1645,7 +1652,7 @@ class YamlScanner:
         err = err_invalid_token(
             YamlTokenMakers.new_invalid(
                 yaml_error("found character '\t' that cannot start any token"),
-                ctx.obuf,
+                ''.join(ctx.obuf),
                 self.pos(),
             ),
         )
@@ -1676,7 +1683,7 @@ class YamlScanner:
                             return yaml_error(err_invalid_token(
                                 YamlTokenMakers.new_invalid(
                                     yaml_error('could not find multi-line content'),
-                                    ctx.obuf,
+                                    ''.join(ctx.obuf),
                                     self.pos(),
                                 ),
                             ))
@@ -1825,7 +1832,7 @@ class YamlScanner:
     # init prepares the scanner s to tokenize the text src by setting the scanner at the beginning of src.
     def init(self, text: str) -> None:
         src = text
-        self.source = src
+        self.source = list(src)
         self.source_pos = 0
         self.source_size = len(src)
         self.line = 1
@@ -1890,7 +1897,7 @@ def hex_to_int(s: str) -> int:
     return ord(b) - ord('0')
 
 
-def hex_runes_to_int(b: str) -> int:
+def hex_runes_to_int(b: ta.List[str]) -> int:
     n = 0
     for i in range(len(b)):
         n += hex_to_int(b[i]) << ((len(b) - i - 1) * 4)
