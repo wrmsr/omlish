@@ -166,7 +166,7 @@ def __omlish_amalg__():  # noqa
             dict(path='dispatchers.py', sha1='33fe5ae77e33b3cfabb97b1a1c0f06dd0cc54703'),
             dict(path='groupsimpl.py', sha1='4fe587a6eaff7dd874b54450be62f9689283d230'),
             dict(path='process.py', sha1='ec0903adbde7552ba8a6aad9030716ef57fc4a6c'),
-            dict(path='../../omlish/http/coro/server/fdio.py', sha1='3f1b4865e589a336f942a763dc11ce42fa5c8857'),
+            dict(path='../../omlish/http/coro/server/fdio.py', sha1='8920a9d208f355981a85c8cf5eecfa6b2a3cb88c'),
             dict(path='../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='groups.py', sha1='a02a602d28793e5c84fbe7bfbcfa6ccce2ee0788'),
@@ -13229,6 +13229,12 @@ class CoroHttpServerConnectionFdioHandler(SocketFdioHandler):
 
             elif isinstance(o, CoroHttpIo.ReadLineIo):
                 if (d := self._read_buf.read_until(b'\n')) is None:
+                    break
+                o = None
+
+            elif isinstance(o, CoroHttpIo.ReadUntilIo):
+                # FIXME lol no max size, this is all getting thrown away anyawy
+                if (d := self._read_buf.read_until(o.b)) is None:
                     break
                 o = None
 

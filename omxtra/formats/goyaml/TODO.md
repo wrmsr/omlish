@@ -1,6 +1,6 @@
-- undo __str__, bad idea, go with explicit def string(self) -> str
- - or 'def render'?
- - 'done'? verify
+- undo `__str__`, bad idea, go with explicit def string(self) -> str
+  - or 'def render'?
+  - 'done'? verify
 - deal with hilarious buffer management inefficiency
 - actually test
 - promote to prod

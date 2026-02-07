@@ -89,6 +89,12 @@ class CoroHttpServerConnectionFdioHandler(SocketFdioHandler):
                     break
                 o = None
 
+            elif isinstance(o, CoroHttpIo.ReadUntilIo):
+                # FIXME lol no max size, this is all getting thrown away anyawy
+                if (d := self._read_buf.read_until(o.b)) is None:
+                    break
+                o = None
+
             elif isinstance(o, CoroHttpIo.WriteIo):
                 check.none(self._write_buf)
                 self._write_buf = IncrementalWriteBuffer(o.data, write_size=self._write_size)
