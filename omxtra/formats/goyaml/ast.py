@@ -1374,10 +1374,18 @@ class MappingValueYamlNode(BaseYamlNode):
             return f'{space}{self.key.string()}: {value}'
 
         elif key_indent_level < value_indent_level and not self.is_flow_style:
+            value_str = self.value.string()
+            # For flow-style values indented on the next line, we need to add the proper indentation
+            if isinstance(self.value, MappingYamlNode) and self.value.is_flow_style:
+                value_indent = ' ' * (self.value.get_token().position.column - 1)
+                value_str = value_indent + value_str
+            elif isinstance(self.value, SequenceYamlNode) and s.is_flow_style:
+                value_indent = ' ' * (self.value.get_token().position.column - 1)
+                value_str = value_indent + value_str
             if key_comment is not None:
-                return f'{space}{self.key.string_without_comment()}: {key_comment.string()}\n{self.value.string()}'
+                return f'{space}{self.key.string_without_comment()}: {key_comment.string()}\n{value_str}'
 
-            return f'{space}{self.key.string()}:\n{self.value.string()}'
+            return f'{space}{self.key.string()}:\n{value_str}'
 
         elif isinstance(self.value, MappingYamlNode) and (self.value.is_flow_style or len(self.value.values) == 0):
             return f'{space}{self.key.string()}: {self.value.string()}'
