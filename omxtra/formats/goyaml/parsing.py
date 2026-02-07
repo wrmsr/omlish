@@ -1506,6 +1506,10 @@ class YamlParser:
             is_first = False
         if node.end is None:
             return err_syntax("could not find flow mapping end token '}'", node.start)
+
+        # set line comment if exists. e.g.) } # comment
+        if (err := set_line_comment(ctx, node, ctx.current_token())) is not None:
+            return err
         ctx.go_next()  # skip mapping end token.
         return node
 
@@ -2115,6 +2119,10 @@ class YamlParser:
             is_first = False
         if node.end is None:
             return err_syntax("sequence end token ']' not found", node.start)
+
+        # set ine comment if exists. e.g.) ] # comment
+        if (err := set_line_comment(ctx, node, ctx.current_token())) is not None:
+            return err
         ctx.go_next()  # skip sequence end token.
         return node
 

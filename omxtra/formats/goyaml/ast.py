@@ -1524,7 +1524,11 @@ class SequenceYamlNode(BaseYamlNode, ArrayYamlNode):
         for value in self.values:
             values.append(check.not_none(value).string())
 
-        return f'[{", ".join(values)}]'
+        seq_text = f'[{", ".join(values)}]'
+        if self.comment is not None:
+            return add_comment_string(seq_text, self.comment)
+
+        return seq_text
 
     def block_style_string(self) -> str:
         space = ' ' * (self.start.position.column - 1)
