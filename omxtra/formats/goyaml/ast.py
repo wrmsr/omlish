@@ -306,182 +306,183 @@ def check_yaml_line_break(t: YamlToken) -> bool:
 ##
 
 
-# Null create node for null value
-def null(tk: YamlToken) -> 'NullYamlNode':
-    return NullYamlNode(
-        token=tk,
-    )
+class YamlAsts:
+    # Null create node for null value
+    @classmethod
+    def null(cls, tk: YamlToken) -> 'NullYamlNode':
+        return NullYamlNode(
+            token=tk,
+        )
 
+    _BOOL_TRUE_STRS: ta.ClassVar[ta.AbstractSet[str]] = {'1', 't', 'T', 'true', 'TRUE', 'True'}
+    _BOOL_FALSE_STRS: ta.ClassVar[ta.AbstractSet[str]] = {'0', 'f', 'F', 'false', 'FALSE', 'False'}
 
-_BOOL_TRUE_STRS = {'1', 't', 'T', 'true', 'TRUE', 'True'}
-_BOOL_FALSE_STRS = {'0', 'f', 'F', 'false', 'FALSE', 'False'}
+    @classmethod
+    def _parse_bool(cls, s: str) -> bool:
+        if s in cls._BOOL_TRUE_STRS:
+            return True
+        if s in cls._BOOL_FALSE_STRS:
+            return False
+        raise ValueError(f'"{s}" is not a valid boolean string')
 
+    # bool_ create node for boolean value
+    @classmethod
+    def bool_(cls, tk: YamlToken) -> 'BoolYamlNode':
+        b = cls._parse_bool(tk.value)
+        return BoolYamlNode(
+            token=tk,
+            value=b,
+        )
 
-def _parse_bool(s: str) -> bool:
-    if s in _BOOL_TRUE_STRS:
-        return True
-    if s in _BOOL_FALSE_STRS:
-        return False
-    raise ValueError(f'"{s}" is not a valid boolean string')
-
-
-# bool_ create node for boolean value
-def bool_(tk: YamlToken) -> 'BoolYamlNode':
-    b = _parse_bool(tk.value)
-    return BoolYamlNode(
-        token=tk,
-        value=b,
-    )
-
-
-# integer create node for integer value
-def integer(tk: YamlToken) -> 'IntegerYamlNode':
-    v: ta.Any = None
-    if (num := tokens.to_yaml_number(tk.value)) is not None:
-        v = num.value
-
-    return IntegerYamlNode(
-        token=tk,
-        value=v,
-    )
-
-
-# float_ create node for float value
-def float_(tk: YamlToken) -> 'FloatYamlNode':
-    v: float = 0.
-    if (num := tokens.to_yaml_number(tk.value)) is not None and num.type == YamlNumberType.FLOAT:
-        if isinstance(num.value, float):
+    # integer create node for integer value
+    @classmethod
+    def integer(cls, tk: YamlToken) -> 'IntegerYamlNode':
+        v: ta.Any = None
+        if (num := tokens.to_yaml_number(tk.value)) is not None:
             v = num.value
 
-    return FloatYamlNode(
-        token=tk,
-        value=v,
-    )
+        return IntegerYamlNode(
+            token=tk,
+            value=v,
+        )
 
+    # float_ create node for float value
+    @classmethod
+    def float_(cls, tk: YamlToken) -> 'FloatYamlNode':
+        v: float = 0.
+        if (num := tokens.to_yaml_number(tk.value)) is not None and num.type == YamlNumberType.FLOAT:
+            if isinstance(num.value, float):
+                v = num.value
 
-# infinity create node for .inf or -.inf value
-def infinity(tk: YamlToken) -> 'InfinityYamlNode':
-    if tk.value in ('.inf', '.Inf', '.INF'):
-        value = float('inf')
-    elif tk.value in ('-.inf', '-.Inf', '-.INF'):
-        value = float('-inf')
-    node = InfinityYamlNode(
-        token=tk,
-        value=value,
-    )
-    return node
+        return FloatYamlNode(
+            token=tk,
+            value=v,
+        )
 
+    # infinity create node for .inf or -.inf value
+    @classmethod
+    def infinity(cls, tk: YamlToken) -> 'InfinityYamlNode':
+        if tk.value in ('.inf', '.Inf', '.INF'):
+            value = float('inf')
+        elif tk.value in ('-.inf', '-.Inf', '-.INF'):
+            value = float('-inf')
+        node = InfinityYamlNode(
+            token=tk,
+            value=value,
+        )
+        return node
 
-# nan create node for .nan value
-def nan(tk: YamlToken) -> 'NanYamlNode':
-    return NanYamlNode(
-        token=tk,
-    )
+    # nan create node for .nan value
+    @classmethod
+    def nan(cls, tk: YamlToken) -> 'NanYamlNode':
+        return NanYamlNode(
+            token=tk,
+        )
 
+    # string create node for string value
+    @classmethod
+    def string(cls, tk: YamlToken) -> 'StringYamlNode':
+        return StringYamlNode(
+            token=tk,
+            value=tk.value,
+        )
 
-# string create node for string value
-def string(tk: YamlToken) -> 'StringYamlNode':
-    return StringYamlNode(
-        token=tk,
-        value=tk.value,
-    )
+    # comment create node for comment
+    @classmethod
+    def comment(cls, tk: ta.Optional[YamlToken]) -> 'CommentYamlNode':
+        return CommentYamlNode(
+            token=tk,
+        )
 
+    @classmethod
+    def comment_group(cls, comments: ta.Iterable[ta.Optional[YamlToken]]) -> 'CommentGroupYamlNode':
+        nodes: ta.List[CommentYamlNode] = []
+        for c in comments:
+            nodes.append(cls.comment(c))
 
-# comment create node for comment
-def comment(tk: ta.Optional[YamlToken]) -> 'CommentYamlNode':
-    return CommentYamlNode(
-        token=tk,
-    )
+        return CommentGroupYamlNode(
+            comments=nodes,
+        )
 
+    # merge_key create node for merge key ( << )
+    @classmethod
+    def merge_key(cls, tk: YamlToken) -> 'MergeKeyYamlNode':
+        return MergeKeyYamlNode(
+            token=tk,
+        )
 
-def comment_group(comments: ta.Iterable[ta.Optional[YamlToken]]) -> 'CommentGroupYamlNode':
-    nodes: ta.List[CommentYamlNode] = []
-    for c in comments:
-        nodes.append(comment(c))
+    # mapping create node for map
+    @classmethod
+    def mapping(cls, tk: YamlToken, is_flow_style: bool, *values: 'MappingValueYamlNode') -> 'MappingYamlNode':
+        node = MappingYamlNode(
+            start=tk,
+            is_flow_style=is_flow_style,
+            values=[],
+        )
+        node.values.extend(values)
+        return node
 
-    return CommentGroupYamlNode(
-        comments=nodes,
-    )
+    # mapping_value create node for mapping value
+    @classmethod
+    def mapping_value(cls, tk: YamlToken, key: 'MapKeyYamlNode', value: YamlNode) -> 'MappingValueYamlNode':
+        return MappingValueYamlNode(
+            start=tk,
+            key=key,
+            value=value,
+        )
 
+    # mapping_key create node for map key ( '?' ).
+    @classmethod
+    def mapping_key(cls, tk: YamlToken) -> 'MappingKeyYamlNode':
+        return MappingKeyYamlNode(
+            start=tk,
+        )
 
-# merge_key create node for merge key ( << )
-def merge_key(tk: YamlToken) -> 'MergeKeyYamlNode':
-    return MergeKeyYamlNode(
-        token=tk,
-    )
+    # sequence create node for sequence
+    @classmethod
+    def sequence(cls, tk: YamlToken, is_flow_style: bool) -> 'SequenceYamlNode':
+        return SequenceYamlNode(
+            start=tk,
+            is_flow_style=is_flow_style,
+            values=[],
+        )
 
+    @classmethod
+    def anchor(cls, tk: YamlToken) -> 'AnchorYamlNode':
+        return AnchorYamlNode(
+            start=tk,
+        )
 
-# mapping create node for map
-def mapping(tk: YamlToken, is_flow_style: bool, *values: 'MappingValueYamlNode') -> 'MappingYamlNode':
-    node = MappingYamlNode(
-        start=tk,
-        is_flow_style=is_flow_style,
-        values=[],
-    )
-    node.values.extend(values)
-    return node
+    @classmethod
+    def alias(cls, tk: YamlToken) -> 'AliasYamlNode':
+        return AliasYamlNode(
+            start=tk,
+        )
 
+    @classmethod
+    def document(cls, tk: ta.Optional[YamlToken], body: ta.Optional[YamlNode]) -> 'DocumentYamlNode':
+        return DocumentYamlNode(
+            start=tk,
+            body=body,
+        )
 
-# mapping_value create node for mapping value
-def mapping_value(tk: YamlToken, key: 'MapKeyYamlNode', value: YamlNode) -> 'MappingValueYamlNode':
-    return MappingValueYamlNode(
-        start=tk,
-        key=key,
-        value=value,
-    )
+    @classmethod
+    def directive(cls, tk: YamlToken) -> 'DirectiveYamlNode':
+        return DirectiveYamlNode(
+            start=tk,
+        )
 
+    @classmethod
+    def literal(cls, tk: YamlToken) -> 'LiteralYamlNode':
+        return LiteralYamlNode(
+            start=tk,
+        )
 
-# mapping_key create node for map key ( '?' ).
-def mapping_key(tk: YamlToken) -> 'MappingKeyYamlNode':
-    return MappingKeyYamlNode(
-        start=tk,
-    )
-
-
-# sequence create node for sequence
-def sequence(tk: YamlToken, is_flow_style: bool) -> 'SequenceYamlNode':
-    return SequenceYamlNode(
-        start=tk,
-        is_flow_style=is_flow_style,
-        values=[],
-    )
-
-
-def anchor(tk: YamlToken) -> 'AnchorYamlNode':
-    return AnchorYamlNode(
-        start=tk,
-    )
-
-
-def alias(tk: YamlToken) -> 'AliasYamlNode':
-    return AliasYamlNode(
-        start=tk,
-    )
-
-
-def document(tk: ta.Optional[YamlToken], body: ta.Optional[YamlNode]) -> 'DocumentYamlNode':
-    return DocumentYamlNode(
-        start=tk,
-        body=body,
-    )
-
-
-def directive(tk: YamlToken) -> 'DirectiveYamlNode':
-    return DirectiveYamlNode(
-        start=tk,
-    )
-
-
-def literal(tk: YamlToken) -> 'LiteralYamlNode':
-    return LiteralYamlNode(
-        start=tk,
-    )
-
-
-def tag(tk: YamlToken) -> 'TagYamlNode':
-    return TagYamlNode(
-        start=tk,
-    )
+    @classmethod
+    def tag(cls, tk: YamlToken) -> 'TagYamlNode':
+        return TagYamlNode(
+            start=tk,
+        )
 
 
 ##
