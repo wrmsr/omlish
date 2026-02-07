@@ -1,3 +1,4 @@
+# ruff: noqa: UP045
 # @omlish-lite
 import typing as ta
 

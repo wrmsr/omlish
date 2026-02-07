@@ -1,15 +1,15 @@
 import dataclasses as dc
 import typing as ta
 
+from omlish.http.parsing import HttpParser
+from omlish.http.parsing import ParsedHttpMessage
+from omlish.http.parsing import parse_http_message
 from omlish.http.versions import HttpVersion
 from omlish.io.streams.errors import FrameTooLargeByteStreamBufferError
 from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.lite.check import check
 
-from ....http.parsing import HttpParser
-from ....http.parsing import ParsedHttpMessage
-from ....http.parsing import parse_http_message
 from ..core import ChannelPipelineEvents
 from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext

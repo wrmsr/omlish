@@ -9,7 +9,7 @@ import typing as ta
 from ..lite.abstract import Abstract
 from ..logs.protocols import LoggerLike
 from ..sockets.addresses import SocketAddress
-from .parsing import HttpHeaders
+from .parsing import ParsedHttpHeaders
 
 
 HttpHandler = ta.Callable[['HttpHandlerRequest'], 'HttpHandlerResponse']  # ta.TypeAlias
@@ -24,7 +24,7 @@ class HttpHandlerRequest:
     client_address: SocketAddress
     method: str
     path: str
-    headers: HttpHeaders
+    headers: ParsedHttpHeaders
     data: ta.Optional[bytes]
 
 

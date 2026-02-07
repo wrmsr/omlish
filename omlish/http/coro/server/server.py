@@ -68,10 +68,9 @@ from ...handlers import HttpHandlerRequest
 from ...handlers import HttpHandlerResponseData
 from ...handlers import HttpHandlerResponseStreamedData
 from ...handlers import UnsupportedMethodHttpHandlerError
-from ...parsing import EmptyParsedHttpResult
-from ...parsing import HttpRequestParser
-from ...parsing import ParsedHttpRequest
-from ...parsing import ParseHttpRequestError
+from ...parsing import HttpParseError
+from ...parsing import HttpParser
+from ...parsing import ParsedHttpMessage
 from ...versions import HttpVersion
 from ...versions import HttpVersions
 from ..io import CoroHttpIo
@@ -96,7 +95,7 @@ class CoroHttpServer:
             client_address: SocketAddress,
             *,
             handler: HttpHandler,
-            parser: HttpRequestParser = HttpRequestParser(),
+            parser: HttpParser = HttpParser(),
 
             default_content_type: ta.Optional[str] = None,
 
@@ -124,10 +123,6 @@ class CoroHttpServer:
     @property
     def handler(self) -> HttpHandler:
         return self._handler
-
-    @property
-    def parser(self) -> HttpRequestParser:
-        return self._parser
 
     #
 
@@ -304,7 +299,7 @@ class CoroHttpServer:
             explain = long_msg
 
         if version is None:
-            version = self._parser.server_version
+            version = HttpVersions.HTTP_1_1
 
         return self.Error(
             version=version,
@@ -382,7 +377,7 @@ class CoroHttpServer:
 
     @dc.dataclass(frozen=True)
     class ParsedRequestLogIo(CoroHttpIo.AnyLogIo):
-        request: ParsedHttpRequest
+        request: ParsedHttpMessage
 
     @dc.dataclass(frozen=True)
     class ErrorLogIo(CoroHttpIo.AnyLogIo):
@@ -461,32 +456,29 @@ class CoroHttpServer:
     ]:
         # Parse request
 
-        barf = (yield CoroHttpIo.ReadUntilIo(b'\r\n\r\n'))
+        head = check.not_none((yield CoroHttpIo.ReadUntilIo(b'\r\n\r\n')))
 
-        gen = self._parser.coro_parse()
-        gen_in: ta.Any = None
-        while True:
-            try:
-                sz = gen.send(gen_in)
-            except StopIteration as e:
-                parsed = e.value
-                break
-            gen_in = check.isinstance((yield CoroHttpIo.ReadLineIo(sz)), bytes)
+        try:
+            o: ta.Any = self._parser.parse_message(head)
+        except HttpParseError as e:
+            o = e
 
-        if isinstance(parsed, EmptyParsedHttpResult):
-            raise self.Close
+        # FIXME:
+        # if isinstance(parsed, EmptyParsedHttpResult):
+        #     raise self.Close
 
-        if isinstance(parsed, ParseHttpRequestError):
+        if isinstance(o, HttpParseError):
             err = self._build_error(
-                parsed.code,
-                *([parsed.message] if isinstance(parsed.message, str) else parsed.message),
-                version=parsed.version,
+                400,  # FIXME: parsed.code,
+                # FIXME: *([parsed.message] if isinstance(parsed.message, str) else parsed.message),
+                f'Bad request ({o!r})',
+                version=HttpVersions.HTTP_1_1,  # FIXME: version=parsed.version,
             )
             yield self.ErrorLogIo(err)
             yield self._build_error_response(err)
             return
 
-        parsed = check.isinstance(parsed, ParsedHttpRequest)
+        parsed = check.isinstance(o, ParsedHttpMessage)
 
         # Log
 
@@ -494,11 +486,11 @@ class CoroHttpServer:
 
         # Handle CONTINUE
 
-        if parsed.expects_continue:
+        if parsed.prepared.expect_100_continue:
             # https://bugs.python.org/issue1491
             # https://github.com/python/cpython/commit/0f476d49f8d4aa84210392bf13b59afc67b32b31
             yield self._Response(
-                version=parsed.version,
+                version=parsed.request_line.http_version if parsed.request_line else HttpVersions.HTTP_1_1,
                 code=http.HTTPStatus.CONTINUE,
             )
 
@@ -514,8 +506,8 @@ class CoroHttpServer:
 
         handler_request = HttpHandlerRequest(
             client_address=self._client_address,
-            method=check.not_none(parsed.method),
-            path=parsed.path,
+            method=check.not_none(parsed.request_line).method,
+            path=check.not_none(parsed.request_line).request_target.decode('ascii'),  # FIXME: lol
             headers=parsed.headers,
             data=request_data,
         )
@@ -528,9 +520,9 @@ class CoroHttpServer:
         except UnsupportedMethodHttpHandlerError:
             err = self._build_error(
                 http.HTTPStatus.NOT_IMPLEMENTED,
-                f'Unsupported method ({parsed.method!r})',
-                version=parsed.version,
-                method=parsed.method,
+                f'Unsupported method ({(parsed.request_line.method if parsed.request_line else "?")!r})',
+                version=parsed.request_line.http_version if parsed.request_line else HttpVersions.HTTP_1_1,
+                method=parsed.request_line.method if parsed.request_line else None,
             )
             yield self.ErrorLogIo(err)
             yield self._build_error_response(err)
@@ -553,7 +545,7 @@ class CoroHttpServer:
                 headers.append(self._Header('Connection', 'close'))
 
             yield self._Response(
-                version=parsed.version,
+                version=parsed.request_line.http_version if parsed.request_line else HttpVersions.HTTP_1_1,
                 code=http.HTTPStatus(handler_response.status),
                 headers=headers,
                 data=response_data,
