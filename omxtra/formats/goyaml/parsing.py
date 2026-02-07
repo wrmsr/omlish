@@ -9,6 +9,7 @@ from omlish.lite.check import check
 from omlish.lite.dataclasses import dataclass_field_required
 
 from . import ast
+from .ast import AnchorYamlNode
 from .ast import YamlAsts
 from .errors import YamlError
 from .errors import YamlErrorOr
@@ -914,7 +915,7 @@ class YamlNodeMakers:
         return node
 
     @staticmethod
-    def new_anchor_node(ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[ast.AnchorYamlNode]:
+    def new_anchor_node(ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[AnchorYamlNode]:
         node = YamlAsts.anchor(check.not_none(YamlParseToken.raw_token(tk)))
         node.set_path(ctx.path)
         if (err := set_line_comment(ctx, node, tk)) is not None:
@@ -1291,7 +1292,7 @@ class YamlParser:
             value = self.parse_token(ctx, ctx.current_token())
             if isinstance(value, YamlError):
                 return value
-            if isinstance(value, ast.AnchorYamlNode):
+            if isinstance(value, AnchorYamlNode):
                 return err_syntax('anchors cannot be used consecutively', value.get_token())
             anchor.value = value
             return anchor
@@ -1357,7 +1358,7 @@ class YamlParser:
                 value = self.parse_token(ctx, ctx.current_token())
                 if isinstance(value, YamlError):
                     return value
-                if isinstance(value, ast.AnchorYamlNode):
+                if isinstance(value, AnchorYamlNode):
                     return err_syntax('anchors cannot be used consecutively', value.get_token())
                 anchor.value = value
                 return anchor
@@ -1778,7 +1779,7 @@ class YamlParser:
             return self.map_key_text(nn.value)
         if isinstance(nn, ast.TagYamlNode):
             return self.map_key_text(nn.value)
-        if isinstance(nn, ast.AnchorYamlNode):
+        if isinstance(nn, AnchorYamlNode):
             return self.map_key_text(nn.value)
         if isinstance(nn, ast.AliasYamlNode):
             return ''
@@ -1887,9 +1888,9 @@ class YamlParser:
         return value
 
     def validate_anchor_value_in_map_or_seq(self, value: ast.YamlNode, col: int) -> ta.Optional[YamlError]:
-        if not isinstance(value, ast.AnchorYamlNode):
+        if not isinstance(value, AnchorYamlNode):
             return None
-        anchor: ast.AnchorYamlNode = value
+        anchor: AnchorYamlNode = value
         if not isinstance(anchor.value, ast.TagYamlNode):
             return None
         tag: ast.TagYamlNode = anchor.value
@@ -1912,7 +1913,7 @@ class YamlParser:
             return err_syntax('tag is not allowed in this context', tag_tk)
         return None
 
-    def parse_anchor(self, ctx: YamlParsingContext, g: YamlParseTokenGroup) -> YamlErrorOr[ast.AnchorYamlNode]:
+    def parse_anchor(self, ctx: YamlParsingContext, g: YamlParseTokenGroup) -> YamlErrorOr[AnchorYamlNode]:
         anchor_name_group = check.not_none(check.not_none(g.first()).group)
         anchor = self.parse_anchor_name(ctx.with_group(anchor_name_group))
         if isinstance(anchor, YamlError):
@@ -1924,12 +1925,12 @@ class YamlParser:
         value = self.parse_token(ctx, ctx.current_token())
         if isinstance(value, YamlError):
             return value
-        if isinstance(value, ast.AnchorYamlNode):
+        if isinstance(value, AnchorYamlNode):
             return err_syntax('anchors cannot be used consecutively', value.get_token())
         anchor.value = value
         return anchor
 
-    def parse_anchor_name(self, ctx: YamlParsingContext) -> YamlErrorOr[ast.AnchorYamlNode]:
+    def parse_anchor_name(self, ctx: YamlParsingContext) -> YamlErrorOr[AnchorYamlNode]:
         anchor = YamlNodeMakers.new_anchor_node(ctx, ctx.current_token())
         if isinstance(anchor, YamlError):
             return anchor
