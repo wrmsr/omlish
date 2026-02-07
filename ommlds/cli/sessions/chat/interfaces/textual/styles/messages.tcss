@@ -149,6 +149,12 @@
 
 .tool-confirmation-message-controls {
     margin: 1;
+    layout: horizontal;
+    height: auto;
+}
+
+.tool-confirmation-message-controls Button {
+    margin-right: 1;
 }
 
 
