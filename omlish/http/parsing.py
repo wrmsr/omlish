@@ -417,20 +417,6 @@ class HttpParser:
         self,
         data: bytes,
     ) -> ParsedHttpTrailers:
-        """
-        Parse HTTP/1.x trailer fields from *data*.
-
-        *data* must contain the complete trailer section ending with ``\\r\\n\\r\\n`` (an empty line). No start-line is
-        expected.
-
-        Fields listed in :data:`_FORBIDDEN_TRAILER_FIELDS` (per RFC 7230 §4.1.2) are rejected.
-
-        :param data: Complete trailer section ending with ``\\r\\n\\r\\n``.
-        :param config: Parsing strictness configuration (same knobs as header parsing).
-        :returns: A :class:`ParsedTrailers` with raw and normalized headers.
-        :raises HttpParseError: On any parsing violation.
-        """
-
         if not isinstance(data, (bytes, bytearray)):
             raise TypeError(f'Expected bytes, got {type(data).__name__}')
 
@@ -1842,18 +1828,6 @@ def parse_http_message(
         mode: HttpParser.Mode = HttpParser.Mode.AUTO,
         config: ta.Optional[HttpParser.Config] = None,
 ) -> ParsedHttpMessage:
-    """
-    Parse an HTTP/1.x message head from *data*.
-
-    This is a convenience wrapper around :class:`HttpHeadParser`.
-
-    :param data: Complete message head ending with ``\\r\\n\\r\\n``.
-    :param mode: ``REQUEST``, ``RESPONSE``, or ``AUTO`` (detect from start-line).
-    :param config: Parsing strictness configuration.
-    :returns: A :class:`ParsedHttpHead` with raw headers, normalized headers, and prepared values.
-    :raises HttpParseError: On any parsing violation.
-    """
-
     parser = HttpParser(**(dict(config=config) if config is not None else {}))
     return parser.parse_message(data, mode=mode)
 
@@ -1862,19 +1836,5 @@ def parse_http_trailers(
         data: bytes,
         config: ta.Optional[HttpParser.Config] = None,
 ) -> ParsedHttpTrailers:
-    """
-    Parse HTTP/1.x trailer fields from *data*.
-
-    *data* must contain the complete trailer section ending with ``\\r\\n\\r\\n`` (an empty line). No start-line is
-    expected.
-
-    Fields listed in :data:`_FORBIDDEN_TRAILER_FIELDS` (per RFC 7230 §4.1.2) are rejected.
-
-    :param data: Complete trailer section ending with ``\\r\\n\\r\\n``.
-    :param config: Parsing strictness configuration (same knobs as header parsing).
-    :returns: A :class:`ParsedTrailers` with raw and normalized headers.
-    :raises HttpParseError: On any parsing violation.
-    """
-
     parser = HttpParser(**(dict(config=config) if config is not None else {}))
     return parser.parse_trailers(data)
