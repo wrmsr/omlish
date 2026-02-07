@@ -233,9 +233,9 @@ class YamlScanningContext:
 
         tk: ta.Optional[YamlToken]
         if self.is_multi_line():
-            tk = YamlTokenMakers.new_string(source, self.obuf, pos)
+            tk = YamlTokenMakers.new_string(''.join(source), ''.join(self.obuf), pos)
         else:
-            tk = new_yaml_token(source, self.obuf, pos)
+            tk = new_yaml_token(''.join(source), ''.join(self.obuf), pos)
 
         self.set_token_type_by_prev_tag(tk)
         self.reset_buffer()
@@ -255,7 +255,7 @@ class YamlScanningContext:
 
     def last_token(self) -> ta.Optional[YamlToken]:
         if len(self.tokens) != 0:
-            return self.tokens[len(self.tokens) - 1]
+            return self.tokens[-1]
 
         return None
 
@@ -355,9 +355,9 @@ class YamlMultiLineState:
         last_char = ''
         prev_last_char = ''
         if len(ctx.buf) != 0:
-            last_char = ctx.buf[len(ctx.buf) - 1]
+            last_char = ctx.buf[-1]
         if len(ctx.buf) > 1:
-            prev_last_char = ctx.buf[len(ctx.buf) - 2]
+            prev_last_char = ctx.buf[-2]
 
         if self.line_indent_column == self.prev_line_indent_column:
             # ---
@@ -365,7 +365,7 @@ class YamlMultiLineState:
             #  a
             #  b
             if last_char == '\n':
-                ctx.buf = ctx.buf[:-1] + ' '
+                ctx.buf[-1] = ' '
 
         elif self.prev_line_indent_column == 0 and self.last_not_space_only_line_indent_column == column:
             # if previous line is indent-space and new-line-char only, prev_line_indent_column is zero. In this case,
@@ -466,7 +466,7 @@ class YamlScanner:
         level = self.indent_level
         if ctx.is_multi_line():
             line -= self.new_line_count(ctx.buf)
-            column = ctx.obuf.find(ctx.buf) + 1
+            column = ''.join(ctx.obuf).find(''.join(ctx.buf)) + 1
             # Since we are in a literal, folded or raw folded we can use the indent level from the last token.
             last = ctx.last_token()
             if last is not None:  # The last token should never be None here.
@@ -630,7 +630,7 @@ class YamlScanner:
                     return err_invalid_token(
                         YamlTokenMakers.new_invalid(
                             yaml_error('tab character cannot be used for indentation in single-quoted text'),
-                            ctx.obuf,
+                            ''.join(ctx.obuf),
                             self.pos(),
                         ),
                     )
@@ -651,13 +651,13 @@ class YamlScanner:
                 continue
 
             self.progress_column(ctx, 1)
-            return YamlTokenMakers.new_single_quote(value, ctx.obuf, srcpos)
+            return YamlTokenMakers.new_single_quote(''.join(value), ''.join(ctx.obuf), srcpos)
 
         self.progress_column(ctx, 1)
         return err_invalid_token(
             YamlTokenMakers.new_invalid(
                 yaml_error('could not find end character of single-quoted text'),
-                ctx.obuf,
+                ''.join(ctx.obuf),
                 srcpos,
             ),
         )
@@ -718,7 +718,7 @@ class YamlScanner:
                     return err_invalid_token(
                         YamlTokenMakers.new_invalid(
                             yaml_error('tab character cannot be used for indentation in double-quoted text'),
-                            ctx.obuf,
+                            ''.join(ctx.obuf),
                             self.pos(),
                         ),
                     )
@@ -819,7 +819,7 @@ class YamlScanner:
                         return err_invalid_token(
                             YamlTokenMakers.new_invalid(
                                 yaml_error('not enough length for escaped UTF-16 character'),
-                                ctx.obuf,
+                                ''.join(ctx.obuf),
                                 self.pos(),
                             ),
                         )
@@ -836,7 +836,7 @@ class YamlScanner:
                             return err_invalid_token(
                                 YamlTokenMakers.new_invalid(
                                     yaml_error('not enough length for escaped UTF-16 surrogate pair'),
-                                    ctx.obuf,
+                                    ''.join(ctx.obuf),
                                     self.pos(),
                                 ),
                             )
@@ -845,7 +845,7 @@ class YamlScanner:
                             return err_invalid_token(
                                 YamlTokenMakers.new_invalid(
                                     yaml_error('found unexpected character after high surrogate for UTF-16 surrogate pair'),  # noqa
-                                    ctx.obuf,
+                                    ''.join(ctx.obuf),
                                     self.pos(),
                                 ),
                             )
@@ -855,7 +855,7 @@ class YamlScanner:
                             return err_invalid_token(
                                 YamlTokenMakers.new_invalid(
                                     yaml_error('found unexpected low surrogate after high surrogate'),
-                                    ctx.obuf,
+                                    ''.join(ctx.obuf),
                                     self.pos(),
                                 ),
                             )
@@ -871,7 +871,7 @@ class YamlScanner:
                         return err_invalid_token(
                             YamlTokenMakers.new_invalid(
                                 yaml_error('not enough length for escaped UTF-32 character'),
-                                ctx.obuf,
+                                ''.join(ctx.obuf),
                                 self.pos(),
                             ),
                         )
@@ -910,7 +910,7 @@ class YamlScanner:
                     return err_invalid_token(
                         YamlTokenMakers.new_invalid(
                             yaml_error(f'found unknown escape character {next_char!r}'),
-                            ctx.obuf,
+                            ''.join(ctx.obuf),
                             self.pos(),
                         ),
                     )
@@ -950,13 +950,13 @@ class YamlScanner:
                 continue
 
             self.progress_column(ctx, 1)
-            return YamlTokenMakers.new_double_quote(value, ctx.obuf, srcpos)
+            return YamlTokenMakers.new_double_quote(''.join(value), ''.join(ctx.obuf), srcpos)
 
         self.progress_column(ctx, 1)
         return err_invalid_token(
             YamlTokenMakers.new_invalid(
                 yaml_error('could not find end character of double-quoted text'),
-                ctx.obuf,
+                ''.join(ctx.obuf),
                 srcpos,
             ),
         )
@@ -979,9 +979,9 @@ class YamlScanner:
 
         marker = ''
         if len(src) == 3:
-            marker = src
+            marker = ''.join(src)
         else:
-            marker = trim_right_func(src[:4], lambda r: r == ' ' or r == '\t' or r == '\n' or r == '\r')
+            marker = trim_right_func(''.join(src[:4]), lambda r: r == ' ' or r == '\t' or r == '\n' or r == '\r')
 
         return marker == '---' or marker == '...'
 
@@ -1094,7 +1094,7 @@ class YamlScanner:
                 self.progress_column(ctx, progress)
                 invalid_tk = YamlTokenMakers.new_invalid(
                     yaml_error(f'found invalid tag character {c!r}'),
-                    ctx.obuf,
+                    ''.join(ctx.obuf),
                     self.pos(),
                 )
                 return err_invalid_token(invalid_tk)
@@ -1125,14 +1125,14 @@ class YamlScanner:
 
             value = ctx.source(ctx.idx, ctx.idx + idx)
             progress = len(value)
-            ctx.add_token(YamlTokenMakers.new_comment(value, ''.join(ctx.obuf), self.pos()))
+            ctx.add_token(YamlTokenMakers.new_comment(''.join(value), ''.join(ctx.obuf), self.pos()))
             self.progress_column(ctx, progress)
             self.progress_line(ctx)
             ctx.clear()
             return True
 
         # document ends with comment.
-        value = ctx.src[ctx.idx:]
+        value = ''.join(ctx.src[ctx.idx:])
         ctx.add_token(YamlTokenMakers.new_comment(value, ''.join(ctx.obuf), self.pos()))
         progress = len(value)
         self.progress_column(ctx, progress)
@@ -1166,7 +1166,7 @@ class YamlScanner:
                 return err_invalid_token(invalid_tk)
 
             value = ctx.buffered_src()
-            ctx.add_token(YamlTokenMakers.new_string(value, ''.join(ctx.obuf), self.pos()))
+            ctx.add_token(YamlTokenMakers.new_string(''.join(value), ''.join(ctx.obuf), self.pos()))
             ctx.clear()
             self.progress_column(ctx, 1)
 
@@ -1178,7 +1178,7 @@ class YamlScanner:
             if ctx.next():
                 if self.found_document_separator_marker(ctx.src[ctx.idx:]):
                     value = ctx.buffered_src()
-                    ctx.add_token(YamlTokenMakers.new_string(value, ''.join(ctx.obuf), self.pos()))
+                    ctx.add_token(YamlTokenMakers.new_string(''.join(value), ''.join(ctx.obuf), self.pos()))
                     ctx.clear()
                     self.break_multi_line(ctx)
 
@@ -1190,7 +1190,7 @@ class YamlScanner:
             err = err_invalid_token(
                 YamlTokenMakers.new_invalid(
                     yaml_error('found a tab character where an indentation space is expected'),
-                    ctx.obuf,
+                    ''.join(ctx.obuf),
                     self.pos(),
                 ),
             )
@@ -1254,8 +1254,8 @@ class YamlScanner:
             self.add_buffered_token_if_exists(ctx)
 
         if ctx.exists_buffer() and self.is_first_char_at_line:
-            if ctx.buf[len(ctx.buf) - 1] == ' ':
-                ctx.buf[len(ctx.buf) - 1] = '\n'
+            if ctx.buf[-1] == ' ':
+                ctx.buf[-1] = '\n'
             else:
                 ctx.buf += '\n'
         else:
