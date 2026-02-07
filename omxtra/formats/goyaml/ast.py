@@ -705,7 +705,7 @@ class FloatYamlNode(ScalarYamlNode, BaseYamlNode):
 ##
 
 
-def _go_is_print(char_ord):
+def _yaml_go_is_print(char_ord):
     """
     Approximates Go's unicode.IsPrint logic. A rune is printable if it is a letter, mark, number, punctuation, symbol,
     or ASCII space. (Corresponds to Unicode categories L, M, N, P, S, plus U+0020 SPACE).
@@ -720,7 +720,7 @@ def _go_is_print(char_ord):
     return False
 
 
-def strconv_quote(s: str) -> str:
+def _yaml_strconv_quote(s: str) -> str:
     """
     Produces a double-quoted string literal with Go-style escapes, similar to Go's strconv.Quote.
     """
@@ -752,7 +752,7 @@ def strconv_quote(s: str) -> str:
         elif 0x20 <= char_ord < 0x7F:  # Printable ASCII (already handled \, ")
             res.append(char_val)
         # Unicode characters (char_ord >= 0x80) and C1 controls (0x80-0x9F)
-        elif _go_is_print(char_ord):
+        elif _yaml_go_is_print(char_ord):
             res.append(char_val)
         elif char_ord <= 0xFFFF:
             res.append(f'\\u{char_ord:04x}')
@@ -799,12 +799,12 @@ class StringYamlNode(ScalarYamlNode, BaseYamlNode):
     # string string value to text with quote or literal header if required
     def string(self) -> str:
         if self.token.type == YamlTokenType.SINGLE_QUOTE:
-            quoted = escape_single_quote(self.value)
+            quoted = _yaml_escape_single_quote(self.value)
             if self.comment is not None:
                 return add_yaml_comment_string(quoted, self.comment)
             return quoted
         elif self.token.type == YamlTokenType.DOUBLE_QUOTE:
-            quoted = strconv_quote(self.value)
+            quoted = _yaml_strconv_quote(self.value)
             if self.comment is not None:
                 return add_yaml_comment_string(quoted, self.comment)
             return quoted
@@ -832,7 +832,7 @@ class StringYamlNode(ScalarYamlNode, BaseYamlNode):
             quoted = f"'{self.value}'"
             return quoted
         elif self.token.type == YamlTokenType.DOUBLE_QUOTE:
-            quoted = strconv_quote(self.value)
+            quoted = _yaml_strconv_quote(self.value)
             return quoted
 
         lbc = tokens.yaml_detect_line_break_char(self.value)
@@ -858,7 +858,7 @@ class StringYamlNode(ScalarYamlNode, BaseYamlNode):
 
 # escape_single_quote escapes s to a single quoted scalar.
 # https://yaml.org/spec/1.2.2/#732-single-quoted-style
-def escape_single_quote(s: str) -> str:
+def _yaml_escape_single_quote(s: str) -> str:
     sb = io.StringIO()
     # growLen = len(s) + # s includes also one ' from the doubled pair
     #     2 + # opening and closing '
@@ -1651,7 +1651,7 @@ class SequenceEntryYamlNode(BaseYamlNode):
 
 
 # sequence_entry creates SequenceEntryNode instance.
-def sequence_entry(
+def yaml_sequence_entry(
         start: ta.Optional[YamlToken],
         value: YamlNode,
         head_comment: ta.Optional['CommentGroupYamlNode'],
@@ -1664,7 +1664,7 @@ def sequence_entry(
 
 
 # SequenceMergeValue creates SequenceMergeValueNode instance.
-def sequence_merge_value(*values: MapYamlNode) -> 'SequenceMergeValueYamlNode':
+def yaml_sequence_merge_value(*values: MapYamlNode) -> 'SequenceMergeValueYamlNode':
     return SequenceMergeValueYamlNode(
         values=list(values),
     )
@@ -2011,9 +2011,9 @@ class CommentGroupYamlNode(BaseYamlNode):
 # Visitor has Visit method that is invokded for each node encountered by walk.
 # If the result visitor w is not nil, walk visits each of the children of node with the visitor w,
 # followed by a call of w.visit(nil).
-class Visitor(Abstract):
+class YamlAstVisitor(Abstract):
     @abc.abstractmethod
-    def visit(self, node: YamlNode) -> ta.Optional['Visitor']:
+    def visit(self, node: YamlNode) -> ta.Optional['YamlAstVisitor']:
         raise NotImplementedError
 
 
@@ -2021,83 +2021,83 @@ class Visitor(Abstract):
 # If the visitor w returned by v.visit(node) is not nil,
 # walk is invoked recursively with visitor w for each of the non-nil children of node,
 # followed by a call of w.visit(nil).
-def walk(v: Visitor, node: YamlNode) -> None:
+def yaml_ast_walk(v: YamlAstVisitor, node: YamlNode) -> None:
     if (v_ := v.visit(node)) is None:
         return
     v = v_
 
     n = node
     if isinstance(n, (CommentYamlNode, NullYamlNode)):
-        walk_comment(v, n)
+        yaml_ast_walk_comment(v, n)
     if isinstance(n, IntegerYamlNode):
-        walk_comment(v, n)
+        yaml_ast_walk_comment(v, n)
     if isinstance(n, FloatYamlNode):
-        walk_comment(v, n)
+        yaml_ast_walk_comment(v, n)
     if isinstance(n, StringYamlNode):
-        walk_comment(v, n)
+        yaml_ast_walk_comment(v, n)
     if isinstance(n, MergeKeyYamlNode):
-        walk_comment(v, n)
+        yaml_ast_walk_comment(v, n)
     if isinstance(n, BoolYamlNode):
-        walk_comment(v, n)
+        yaml_ast_walk_comment(v, n)
     if isinstance(n, InfinityYamlNode):
-        walk_comment(v, n)
+        yaml_ast_walk_comment(v, n)
     if isinstance(n, NanYamlNode):
-        walk_comment(v, n)
+        yaml_ast_walk_comment(v, n)
     if isinstance(n, LiteralYamlNode):
-        walk_comment(v, n)
-        walk(v, check.not_none(n.value))
+        yaml_ast_walk_comment(v, n)
+        yaml_ast_walk(v, check.not_none(n.value))
     if isinstance(n, DirectiveYamlNode):
-        walk_comment(v, n)
-        walk(v, check.not_none(n.name))
+        yaml_ast_walk_comment(v, n)
+        yaml_ast_walk(v, check.not_none(n.name))
         for value0 in n.values:
-            walk(v, value0)
+            yaml_ast_walk(v, value0)
     if isinstance(n, TagYamlNode):
-        walk_comment(v, n)
-        walk(v, check.not_none(n.value))
+        yaml_ast_walk_comment(v, n)
+        yaml_ast_walk(v, check.not_none(n.value))
     if isinstance(n, DocumentYamlNode):
-        walk_comment(v, n)
-        walk(v, check.not_none(n.body))
+        yaml_ast_walk_comment(v, n)
+        yaml_ast_walk(v, check.not_none(n.body))
     if isinstance(n, MappingYamlNode):
-        walk_comment(v, n)
+        yaml_ast_walk_comment(v, n)
         for value1 in n.values:
-            walk(v, value1)
+            yaml_ast_walk(v, value1)
     if isinstance(n, MappingKeyYamlNode):
-        walk_comment(v, n)
-        walk(v, check.not_none(n.value))
+        yaml_ast_walk_comment(v, n)
+        yaml_ast_walk(v, check.not_none(n.value))
     if isinstance(n, MappingValueYamlNode):
-        walk_comment(v, n)
-        walk(v, n.key)
-        walk(v, n.value)
+        yaml_ast_walk_comment(v, n)
+        yaml_ast_walk(v, n.key)
+        yaml_ast_walk(v, n.value)
     if isinstance(n, SequenceYamlNode):
-        walk_comment(v, n)
+        yaml_ast_walk_comment(v, n)
         for value2 in n.values:
-            walk(v, check.not_none(value2))
+            yaml_ast_walk(v, check.not_none(value2))
     if isinstance(n, AnchorYamlNode):
-        walk_comment(v, n)
-        walk(v, check.not_none(n.name))
-        walk(v, check.not_none(n.value))
+        yaml_ast_walk_comment(v, n)
+        yaml_ast_walk(v, check.not_none(n.name))
+        yaml_ast_walk(v, check.not_none(n.value))
     if isinstance(n, AliasYamlNode):
-        walk_comment(v, n)
-        walk(v, check.not_none(n.value))
+        yaml_ast_walk_comment(v, n)
+        yaml_ast_walk(v, check.not_none(n.value))
 
 
-def walk_comment(v: Visitor, base: ta.Optional[BaseYamlNode]) -> None:
+def yaml_ast_walk_comment(v: YamlAstVisitor, base: ta.Optional[BaseYamlNode]) -> None:
     if base is None:
         return
     if base.comment is None:
         return
-    walk(v, base.comment)
+    yaml_ast_walk(v, base.comment)
 
 
 #
 
 
 @dc.dataclass()
-class FilterWalker(Visitor):
+class FilterYamlAstWalker(YamlAstVisitor):
     typ: YamlNodeType = dc.field(default_factory=dataclass_field_required('typ'))
     results: ta.List[YamlNode] = dc.field(default_factory=list)
 
-    def visit(self, n: YamlNode) -> Visitor:
+    def visit(self, n: YamlNode) -> YamlAstVisitor:
         if self.typ == n.type():
             self.results.append(n)
         return self
@@ -2179,8 +2179,8 @@ def parent(root: YamlNode, child: YamlNode) -> ta.Optional[YamlNode]:
 
 # Filter returns a list of nodes that match the given type.
 def filter_(typ: YamlNodeType, node: YamlNode) -> ta.List[YamlNode]:
-    walker = FilterWalker(typ=typ)
-    walk(walker, node)
+    walker = FilterYamlAstWalker(typ=typ)
+    yaml_ast_walk(walker, node)
     return walker.results
 
 
@@ -2188,8 +2188,8 @@ def filter_(typ: YamlNodeType, node: YamlNode) -> ta.List[YamlNode]:
 def filter_file(typ: YamlNodeType, file: YamlFile) -> ta.List[YamlNode]:
     results: ta.List[YamlNode] = []
     for doc in file.docs:
-        walker = FilterWalker(typ=typ)
-        walk(walker, doc)
+        walker = FilterYamlAstWalker(typ=typ)
+        yaml_ast_walk(walker, doc)
         results.extend(walker.results)
     return results
 
@@ -2208,7 +2208,7 @@ class InvalidMergeTypeYamlError(YamlError):
 
 
 # Merge merge document, map, sequence node.
-def merge(dst: YamlNode, src: YamlNode) -> ta.Optional[YamlError]:
+def yaml_ast_merge(dst: YamlNode, src: YamlNode) -> ta.Optional[YamlError]:
     if isinstance(src, DocumentYamlNode):
         doc: DocumentYamlNode = src
         src = check.not_none(doc.body)
@@ -2216,7 +2216,7 @@ def merge(dst: YamlNode, src: YamlNode) -> ta.Optional[YamlError]:
     err = InvalidMergeTypeYamlError(dst=dst, src=src)
     if dst.type() == YamlNodeType.DOCUMENT:
         node0: DocumentYamlNode = check.isinstance(dst, DocumentYamlNode)
-        return merge(check.not_none(node0.body), src)
+        return yaml_ast_merge(check.not_none(node0.body), src)
     if dst.type() == YamlNodeType.MAPPING:
         node1: MappingYamlNode = check.isinstance(dst, MappingYamlNode)
         if not isinstance(src, MappingYamlNode):

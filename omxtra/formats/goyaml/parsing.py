@@ -33,7 +33,7 @@ from .ast import TagYamlNode
 from .ast import YamlAsts
 from .ast import YamlFile
 from .ast import YamlNode
-from .ast import sequence_entry
+from .ast import yaml_sequence_entry
 from .errors import YamlError
 from .errors import YamlErrorOr
 from .errors import yaml_error
@@ -2132,7 +2132,7 @@ class YamlParser:
             if isinstance(value, YamlError):
                 return value
             node.values.append(value)
-            seq_entry = sequence_entry(
+            seq_entry = yaml_sequence_entry(
                 entry_tk.raw_token() if entry_tk is not None else None,
                 value,
                 None,
@@ -2170,7 +2170,7 @@ class YamlParser:
             value = self.parse_sequence_value(ctx, check.not_none(seq_tk))
             if isinstance(value, YamlError):
                 return value
-            seq_entry = sequence_entry(YamlParseToken.raw_token(seq_tk), value, head_comment)
+            seq_entry = yaml_sequence_entry(YamlParseToken.raw_token(seq_tk), value, head_comment)
             if (err := set_line_comment(ctx, seq_entry, seq_tk)) is not None:
                 return err
             seq_entry.set_path(ctx.path)
