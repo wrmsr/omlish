@@ -337,7 +337,7 @@ def bool_(tk: YamlToken) -> 'BoolYamlNode':
 # integer create node for integer value
 def integer(tk: YamlToken) -> 'IntegerYamlNode':
     v: ta.Any = None
-    if (num := tokens.to_number(tk.value)) is not None:
+    if (num := tokens.to_yaml_number(tk.value)) is not None:
         v = num.value
 
     return IntegerYamlNode(
@@ -349,7 +349,7 @@ def integer(tk: YamlToken) -> 'IntegerYamlNode':
 # float_ create node for float value
 def float_(tk: YamlToken) -> 'FloatYamlNode':
     v: float = 0.
-    if (num := tokens.to_number(tk.value)) is not None and num.type == YamlNumberType.FLOAT:
+    if (num := tokens.to_yaml_number(tk.value)) is not None and num.type == YamlNumberType.FLOAT:
         if isinstance(num.value, float):
             v = num.value
 
@@ -808,11 +808,11 @@ class StringYamlNode(ScalarYamlNode, BaseYamlNode):
                 return add_yaml_comment_string(quoted, self.comment)
             return quoted
 
-        lbc = tokens.detect_line_break_char(self.value)
+        lbc = tokens.yaml_detect_line_break_char(self.value)
         if lbc in self.value:
             # This block assumes that the line breaks in this inside scalar content and the Outside scalar content are
             # the same. It works mostly, but inconsistencies occur if line break characters are mixed.
-            header = tokens.literal_block_header(self.value)
+            header = tokens.yaml_literal_block_header(self.value)
             space = ' ' * (self.token.position.column - 1)
             indent = ' ' * self.token.position.indent_num
             values: ta.List[str] = []
@@ -834,11 +834,11 @@ class StringYamlNode(ScalarYamlNode, BaseYamlNode):
             quoted = strconv_quote(self.value)
             return quoted
 
-        lbc = tokens.detect_line_break_char(self.value)
+        lbc = tokens.yaml_detect_line_break_char(self.value)
         if lbc in self.value:
             # This block assumes that the line breaks in this inside scalar content and the Outside scalar content are
             # the same. It works mostly, but inconsistencies occur if line break characters are mixed.
-            header = tokens.literal_block_header(self.value)
+            header = tokens.yaml_literal_block_header(self.value)
             space = ' ' * (self.token.position.column - 1)
             indent = ' ' * self.token.position.indent_num
             values: ta.List[str] = []

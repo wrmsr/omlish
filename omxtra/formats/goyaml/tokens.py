@@ -410,16 +410,16 @@ class YamlNumberValue:
     text: str
 
 
-def to_number(value: str) -> ta.Optional[YamlNumberValue]:
-    num = _to_number(value)
+def to_yaml_number(value: str) -> ta.Optional[YamlNumberValue]:
+    num = _to_yaml_number(value)
     if isinstance(num, YamlError):
         return None
 
     return num
 
 
-def _is_number(value: str) -> bool:
-    num = _to_number(value)
+def _is_yaml_number(value: str) -> bool:
+    num = _to_yaml_number(value)
     if isinstance(num, YamlError):
         # var numErr *strconv.NumError
         # if errors.As(err, &numErr) && errors.Is(numErr.Err, strconv.ErrRange) {
@@ -430,7 +430,7 @@ def _is_number(value: str) -> bool:
     return num is not None
 
 
-def _to_number(value: str) -> YamlErrorOr[ta.Optional[YamlNumberValue]]:
+def _to_yaml_number(value: str) -> YamlErrorOr[ta.Optional[YamlNumberValue]]:
     if not value:
         return None
 
@@ -507,7 +507,7 @@ YAML_TIMESTAMP_FORMATS = (
 )
 
 
-def _is_timestamp(value: str) -> bool:
+def _is_yaml_timestamp(value: str) -> bool:
     for format_str in YAML_TIMESTAMP_FORMATS:
         try:
             datetime.datetime.strptime(value, format_str)  # noqa
@@ -521,14 +521,14 @@ def _is_timestamp(value: str) -> bool:
 
 
 # is_need_quoted checks whether the value needs quote for passed string or not
-def is_need_quoted(value: str) -> bool:
+def yaml_is_need_quoted(value: str) -> bool:
     if not value:
         return True
 
     if value in YamlKeywords.RESERVED_ENC_KEYWORD_MAP:
         return True
 
-    if _is_number(value):
+    if _is_yaml_number(value):
         return True
 
     if value == '-':
@@ -540,7 +540,7 @@ def is_need_quoted(value: str) -> bool:
     if value[-1] in (':', ' '):
         return True
 
-    if _is_timestamp(value):
+    if _is_yaml_timestamp(value):
         return True
 
     for i, c in enumerate(value):
@@ -554,8 +554,8 @@ def is_need_quoted(value: str) -> bool:
 
 
 # literal_block_header detect literal block scalar header
-def literal_block_header(value: str) -> str:
-    lbc = detect_line_break_char(value)
+def yaml_literal_block_header(value: str) -> str:
+    lbc = yaml_detect_line_break_char(value)
 
     if lbc not in value:
         return ''
@@ -576,7 +576,7 @@ def new_yaml_token(value: str, org: str, pos: 'YamlPosition') -> 'YamlToken':
     if fn is not None:
         return fn(value, org, pos)
 
-    if (num := to_number(value)) is not None:
+    if (num := to_yaml_number(value)) is not None:
         tk = YamlToken(
             type=YamlTokenType.INTEGER,
             char_type=YamlCharType.MISCELLANEOUS,
@@ -989,7 +989,7 @@ class YamlTokenMakers:  # noqa
 
 
 # detect_line_break_char detect line break character in only one inside scalar content scope.
-def detect_line_break_char(src: str) -> str:
+def yaml_detect_line_break_char(src: str) -> str:
     nc = src.count('\n')
     rc = src.count('\r')
     rnc = src.count('\r\n')
