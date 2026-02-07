@@ -4,6 +4,7 @@ import itertools
 import typing as ta
 
 from ....lite.check import check
+from ....io.pushback import PushbackReader
 from ....sockets.addresses import SocketAddress
 from ....sockets.handlers import SocketHandler_
 from ....sockets.io import SocketIoPair
@@ -32,19 +33,22 @@ class CoroHttpServerSocketHandler(SocketHandler_):
     def __call__(self, client_address: SocketAddress, fp: SocketIoPair) -> None:
         server = self._server_factory(client_address)
 
+        pbr = PushbackReader(fp.r)
+
         if self._keep_alive:
             for i in itertools.count():  # noqa
-                res = self._handle_one(server, fp)
+                res = self._handle_one(server, fp, pbr)
                 if res.close_reason is not None:
                     break
 
         else:
-            self._handle_one(server, fp)
+            self._handle_one(server, fp, pbr)
 
     def _handle_one(
             self,
             server: CoroHttpServer,
             fp: SocketIoPair,
+            pbr: PushbackReader,
     ) -> CoroHttpServer.CoroHandleResult:
         gen = server.coro_handle()
 
@@ -56,10 +60,13 @@ class CoroHttpServerSocketHandler(SocketHandler_):
                     self._log_handler(server, o)
 
             elif isinstance(o, CoroHttpIo.ReadIo):
-                i = fp.r.read(check.not_none(o.sz))
+                i = pbr.read(check.not_none(o.sz))
 
             elif isinstance(o, CoroHttpIo.ReadLineIo):
-                i = fp.r.readline(o.sz)
+                i = pbr.readline(o.sz)
+
+            elif isinstance(o, CoroHttpIo.ReadUntilIo):
+                i = pbr.readuntil(o.b, max_bytes=o.sz)
 
             elif isinstance(o, CoroHttpIo.WriteIo):
                 i = None

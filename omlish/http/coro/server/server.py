@@ -461,6 +461,8 @@ class CoroHttpServer:
     ]:
         # Parse request
 
+        barf = (yield CoroHttpIo.ReadUntilIo(b'\r\n\r\n'))
+
         gen = self._parser.coro_parse()
         gen_in: ta.Any = None
         while True:

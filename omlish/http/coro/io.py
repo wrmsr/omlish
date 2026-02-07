@@ -58,6 +58,11 @@ class CoroHttpIo:
         sz: int
 
     @dc.dataclass(frozen=True)
+    class ReadUntilIo(AnyReadIo):
+        b: bytes
+        sz: ta.Optional[int] = None
+
+    @dc.dataclass(frozen=True)
     class PeekIo(AnyReadIo):
         sz: int
 
