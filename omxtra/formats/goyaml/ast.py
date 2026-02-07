@@ -1379,7 +1379,7 @@ class MappingValueYamlNode(BaseYamlNode):
             if isinstance(self.value, MappingYamlNode) and self.value.is_flow_style:
                 value_indent = ' ' * (self.value.get_token().position.column - 1)
                 value_str = value_indent + value_str
-            elif isinstance(self.value, SequenceYamlNode) and s.is_flow_style:
+            elif isinstance(self.value, SequenceYamlNode) and self.value.is_flow_style:
                 value_indent = ' ' * (self.value.get_token().position.column - 1)
                 value_str = value_indent + value_str
             if key_comment is not None:
