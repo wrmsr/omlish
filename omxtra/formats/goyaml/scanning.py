@@ -1140,6 +1140,15 @@ class YamlScanner:
         state = check.not_none(ctx.get_multi_line_state())
         ctx.add_origin_buf(c)
 
+        # normalize CR and CRLF to LF
+        if c == '\r':
+            if ctx.next_char() == '\n':
+                ctx.add_origin_buf('\n')
+                s.progress(ctx, 1)
+                s.offset += 1
+
+            c = '\n'
+
         if ctx.is_eos():
             if self.is_first_char_at_line and c == ' ':
                 state.add_indent(ctx, self.column)
@@ -1496,13 +1505,24 @@ class YamlScanner:
         self.progress(ctx, 1)  # skip '|' or '>' character
 
         progress = 0
+        crlf = False
         for idx, c in enumerate(ctx.src[ctx.idx:]):
             progress = idx
             ctx.add_origin_buf(c)
             if self.is_new_line_char(c):
+                next_idx = ctx.idx + idx + 1
+                if c == '\r' and next_idx < len(ctx.src) and ctx.src[next_idx] == '\n':
+                    crlf = True
+                    continue  # process \n in the next iteration
+
                 break
 
-        value = ctx.source(ctx.idx, ctx.idx + progress).rstrip(' ')
+        end_pos = ctx.idx + progress
+        if crlf:
+            # Exclude \r
+            end_pos = end_pos - 1
+
+        value = ctx.source(ctx.idx, end_pos).rstrip(' ')
         comment_value_index = value.find('#')
         opt = value
         if comment_value_index > 0:

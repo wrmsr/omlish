@@ -1,7 +1,7 @@
 """
 A *manual*, near-direct, 'lite'-compatible translation of go-yaml (see LICENSE file):
 
-  https://github.com/goccy/go-yaml/tree/25e5d9094248e480434ca87d9119e3d9ce7ac1d7
+  https://github.com/goccy/go-yaml/tree/ce9c8828869a9c64f138d02390cf78823d6f1eb6
 
 The primary reasons for.. doing this.. are as follows:
 
