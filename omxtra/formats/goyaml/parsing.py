@@ -8,9 +8,32 @@ import typing as ta
 from omlish.lite.check import check
 from omlish.lite.dataclasses import dataclass_field_required
 
-from . import ast
+from .ast import AliasYamlNode
 from .ast import AnchorYamlNode
+from .ast import BaseYamlNode
+from .ast import BoolYamlNode
+from .ast import CommentGroupYamlNode
+from .ast import DirectiveYamlNode
+from .ast import DocumentYamlNode
+from .ast import FloatYamlNode
+from .ast import InfinityYamlNode
+from .ast import IntegerYamlNode
+from .ast import LiteralYamlNode
+from .ast import MapKeyYamlNode
+from .ast import MappingKeyYamlNode
+from .ast import MappingValueYamlNode
+from .ast import MappingYamlNode
+from .ast import MergeKeyYamlNode
+from .ast import NanYamlNode
+from .ast import NullYamlNode
+from .ast import ScalarYamlNode
+from .ast import SequenceYamlNode
+from .ast import StringYamlNode
+from .ast import TagYamlNode
 from .ast import YamlAsts
+from .ast import YamlFile
+from .ast import YamlNode
+from .ast import sequence_entry
 from .errors import YamlError
 from .errors import YamlErrorOr
 from .errors import yaml_error
@@ -874,8 +897,8 @@ class YamlNodeMakers:
             ctx: YamlParsingContext,
             tk: YamlParseToken,
             is_flow: bool,
-            *values: ast.MappingValueYamlNode,
-    ) -> YamlErrorOr[ast.MappingYamlNode]:
+            *values: MappingValueYamlNode,
+    ) -> YamlErrorOr[MappingYamlNode]:
         node = YamlAsts.mapping(check.not_none(tk.raw_token()), is_flow, *values)
         node.set_path(ctx.path)
         return node
@@ -885,9 +908,9 @@ class YamlNodeMakers:
             ctx: YamlParsingContext,
             colon_tk: YamlParseToken,
             entry_tk: ta.Optional[YamlParseToken],
-            key: ast.MapKeyYamlNode,
-            value: ast.YamlNode,
-    ) -> YamlErrorOr[ast.MappingValueYamlNode]:
+            key: MapKeyYamlNode,
+            value: YamlNode,
+    ) -> YamlErrorOr[MappingValueYamlNode]:
         node = YamlAsts.mapping_value(check.not_none(colon_tk.raw_token()), key, value)
         node.set_path(ctx.path)
         node.collect_entry = YamlParseToken.raw_token(entry_tk)
@@ -907,7 +930,7 @@ class YamlNodeMakers:
         return node
 
     @staticmethod
-    def new_mapping_key_node(ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[ast.MappingKeyYamlNode]:  # noqa
+    def new_mapping_key_node(ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[MappingKeyYamlNode]:  # noqa
         node = YamlAsts.mapping_key(check.not_none(YamlParseToken.raw_token(tk)))
         node.set_path(ctx.path)
         if (err := set_line_comment(ctx, node, tk)) is not None:
@@ -923,7 +946,7 @@ class YamlNodeMakers:
         return node
 
     @staticmethod
-    def new_alias_node(ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[ast.AliasYamlNode]:
+    def new_alias_node(ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[AliasYamlNode]:
         node = YamlAsts.alias(check.not_none(YamlParseToken.raw_token(tk)))
         node.set_path(ctx.path)
         if (err := set_line_comment(ctx, node, tk)) is not None:
@@ -931,7 +954,7 @@ class YamlNodeMakers:
         return node
 
     @staticmethod
-    def new_directive_node(ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[ast.DirectiveYamlNode]:  # noqa
+    def new_directive_node(ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[DirectiveYamlNode]:  # noqa
         node = YamlAsts.directive(check.not_none(YamlParseToken.raw_token(tk)))
         node.set_path(ctx.path)
         if (err := set_line_comment(ctx, node, tk)) is not None:
@@ -939,7 +962,7 @@ class YamlNodeMakers:
         return node
 
     @staticmethod
-    def new_merge_key_node(ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[ast.MergeKeyYamlNode]:  # noqa
+    def new_merge_key_node(ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[MergeKeyYamlNode]:  # noqa
         node = YamlAsts.merge_key(check.not_none(YamlParseToken.raw_token(tk)))
         node.set_path(ctx.path)
         if (err := set_line_comment(ctx, node, tk)) is not None:
@@ -947,7 +970,7 @@ class YamlNodeMakers:
         return node
 
     @staticmethod
-    def new_null_node(ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[ast.NullYamlNode]:
+    def new_null_node(ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[NullYamlNode]:
         node = YamlAsts.null(check.not_none(YamlParseToken.raw_token(tk)))
         node.set_path(ctx.path)
         if (err := set_line_comment(ctx, node, tk)) is not None:
@@ -955,7 +978,7 @@ class YamlNodeMakers:
         return node
 
     @staticmethod
-    def new_bool_node(ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[ast.BoolYamlNode]:
+    def new_bool_node(ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[BoolYamlNode]:
         node = YamlAsts.bool_(check.not_none(YamlParseToken.raw_token(tk)))
         node.set_path(ctx.path)
         if (err := set_line_comment(ctx, node, tk)) is not None:
@@ -963,7 +986,7 @@ class YamlNodeMakers:
         return node
 
     @staticmethod
-    def new_integer_node(ctx: YamlParsingContext, tk: YamlParseToken) -> YamlErrorOr[ast.IntegerYamlNode]:
+    def new_integer_node(ctx: YamlParsingContext, tk: YamlParseToken) -> YamlErrorOr[IntegerYamlNode]:
         node = YamlAsts.integer(check.not_none(YamlParseToken.raw_token(tk)))
         node.set_path(ctx.path)
         if (err := set_line_comment(ctx, node, tk)) is not None:
@@ -971,7 +994,7 @@ class YamlNodeMakers:
         return node
 
     @staticmethod
-    def new_float_node(ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[ast.FloatYamlNode]:
+    def new_float_node(ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[FloatYamlNode]:
         node = YamlAsts.float_(check.not_none(YamlParseToken.raw_token(tk)))
         node.set_path(ctx.path)
         if (err := set_line_comment(ctx, node, tk)) is not None:
@@ -979,7 +1002,7 @@ class YamlNodeMakers:
         return node
 
     @staticmethod
-    def new_infinity_node(ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[ast.InfinityYamlNode]:  # noqa
+    def new_infinity_node(ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[InfinityYamlNode]:  # noqa
         node = YamlAsts.infinity(check.not_none(YamlParseToken.raw_token(tk)))
         node.set_path(ctx.path)
         if (err := set_line_comment(ctx, node, tk)) is not None:
@@ -987,7 +1010,7 @@ class YamlNodeMakers:
         return node
 
     @staticmethod
-    def new_nan_node(ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[ast.NanYamlNode]:
+    def new_nan_node(ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[NanYamlNode]:
         node = YamlAsts.nan(check.not_none(YamlParseToken.raw_token(tk)))
         node.set_path(ctx.path)
         if (err := set_line_comment(ctx, node, tk)) is not None:
@@ -995,7 +1018,7 @@ class YamlNodeMakers:
         return node
 
     @staticmethod
-    def new_string_node(ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[ast.StringYamlNode]:
+    def new_string_node(ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[StringYamlNode]:
         node = YamlAsts.string(check.not_none(YamlParseToken.raw_token(tk)))
         node.set_path(ctx.path)
         if (err := set_line_comment(ctx, node, tk)) is not None:
@@ -1003,7 +1026,7 @@ class YamlNodeMakers:
         return node
 
     @staticmethod
-    def new_literal_node(ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[ast.LiteralYamlNode]:
+    def new_literal_node(ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[LiteralYamlNode]:
         node = YamlAsts.literal(check.not_none(YamlParseToken.raw_token(tk)))
         node.set_path(ctx.path)
         if (err := set_line_comment(ctx, node, tk)) is not None:
@@ -1011,7 +1034,7 @@ class YamlNodeMakers:
         return node
 
     @staticmethod
-    def new_tag_node(ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[ast.TagYamlNode]:
+    def new_tag_node(ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[TagYamlNode]:
         node = YamlAsts.tag(check.not_none(YamlParseToken.raw_token(tk)))
         node.set_path(ctx.path)
         if (err := set_line_comment(ctx, node, tk)) is not None:
@@ -1019,7 +1042,7 @@ class YamlNodeMakers:
         return node
 
     @staticmethod
-    def new_sequence_node(ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken], is_flow: bool) -> YamlErrorOr[ast.SequenceYamlNode]:  # noqa
+    def new_sequence_node(ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken], is_flow: bool) -> YamlErrorOr[SequenceYamlNode]:  # noqa
         node = YamlAsts.sequence(check.not_none(YamlParseToken.raw_token(tk)), is_flow)
         node.set_path(ctx.path)
         if (err := set_line_comment(ctx, node, tk)) is not None:
@@ -1027,12 +1050,12 @@ class YamlNodeMakers:
         return node
 
     @staticmethod
-    def new_tag_default_scalar_value_node(ctx: YamlParsingContext, tag: YamlToken) -> YamlErrorOr[ast.ScalarYamlNode]:
+    def new_tag_default_scalar_value_node(ctx: YamlParsingContext, tag: YamlToken) -> YamlErrorOr[ScalarYamlNode]:
         pos = copy.copy(tag.position)
         pos.column += 1
 
         tk: YamlErrorOr[YamlParseToken]
-        node: YamlErrorOr[ast.ScalarYamlNode]
+        node: YamlErrorOr[ScalarYamlNode]
 
         if tag.value == YamlReservedTagKeywords.INTEGER:
             tk = YamlParseToken(token=new_yaml_token('0', '0', pos))
@@ -1075,7 +1098,7 @@ class YamlNodeMakers:
         return node
 
 
-def set_line_comment(ctx: YamlParsingContext, node: ast.YamlNode, tk: ta.Optional[YamlParseToken]) -> ta.Optional[YamlError]:  # noqa
+def set_line_comment(ctx: YamlParsingContext, node: YamlNode, tk: ta.Optional[YamlParseToken]) -> ta.Optional[YamlError]:  # noqa
     if tk is None or tk.line_comment is None:
         return None
     comment = YamlAsts.comment_group([tk.line_comment])
@@ -1085,15 +1108,15 @@ def set_line_comment(ctx: YamlParsingContext, node: ast.YamlNode, tk: ta.Optiona
     return None
 
 
-def set_head_comment(cm: ta.Optional[ast.CommentGroupYamlNode], value: ast.YamlNode) -> ta.Optional[YamlError]:
+def set_head_comment(cm: ta.Optional[CommentGroupYamlNode], value: YamlNode) -> ta.Optional[YamlError]:
     if cm is None:
         return None
     n = value
-    if isinstance(n, ast.MappingYamlNode):
+    if isinstance(n, MappingYamlNode):
         if len(n.values) != 0 and value.get_comment() is None:
             cm.set_path(n.values[0].get_path())
             return n.values[0].set_comment(cm)
-    elif isinstance(n, ast.MappingValueYamlNode):
+    elif isinstance(n, MappingValueYamlNode):
         cm.set_path(n.get_path())
         return n.set_comment(cm)
     cm.set_path(value.get_path())
@@ -1108,12 +1131,12 @@ ParseMode = int  # ta.TypeAlias  # omlish-amalg-typing-no-move
 PARSE_COMMENTS = ParseMode(1)  # parse comments and add them to AST
 
 
-# ParseBytes parse from byte slice, and returns ast.File
+# ParseBytes parse from byte slice, and returns YamlFile
 def parse_str(
         s: str,
         mode: ParseMode = ParseMode(0),
         *opts: Option,
-) -> YamlErrorOr[ast.YamlFile]:
+) -> YamlErrorOr[YamlFile]:
     tokens = yaml_tokenize(s)
     f = parse(tokens, mode, *opts)
     if isinstance(f, YamlError):
@@ -1121,12 +1144,12 @@ def parse_str(
     return f
 
 
-# Parse parse from token instances, and returns ast.File
+# Parse parse from token instances, and returns YamlFile
 def parse(
         tokens: YamlTokens,
         mode: ParseMode = ParseMode(0),
         *opts: Option,
-) -> YamlErrorOr[ast.YamlFile]:
+) -> YamlErrorOr[YamlFile]:
     if (tk := tokens.invalid_token()) is not None:
         return err_syntax(check.not_none(tk.error).message, tk)
     p = YamlParser.new_parser(tokens, mode, opts)
@@ -1161,10 +1184,10 @@ YAML_VERSION_MAP: ta.Mapping[str, YAMLVersion] = {
 @dc.dataclass()
 class YamlParser:
     tokens: ta.List[YamlParseToken]
-    path_map: ta.Dict[str, ast.YamlNode]
+    path_map: ta.Dict[str, YamlNode]
     yaml_version: YAMLVersion = YAMLVersion('')
     allow_duplicate_map_key: bool = False
-    secondary_tag_directive: ta.Optional[ast.DirectiveYamlNode] = None
+    secondary_tag_directive: ta.Optional[DirectiveYamlNode] = None
 
     @staticmethod
     def new_parser(
@@ -1193,8 +1216,8 @@ class YamlParser:
             opt(p)
         return p
 
-    def parse(self, ctx: YamlParsingContext) -> YamlErrorOr[ast.YamlFile]:
-        file = ast.YamlFile(docs=[])
+    def parse(self, ctx: YamlParsingContext) -> YamlErrorOr[YamlFile]:
+        file = YamlFile(docs=[])
         for token in self.tokens:
             doc = self.parse_document(ctx, check.not_none(token.group))
             if isinstance(doc, YamlError):
@@ -1206,11 +1229,11 @@ class YamlParser:
             self,
             ctx: YamlParsingContext,
             doc_group: YamlParseTokenGroup,
-    ) -> YamlErrorOr[ast.DocumentYamlNode]:
+    ) -> YamlErrorOr[DocumentYamlNode]:
         if len(doc_group.tokens) == 0:
             return YamlAsts.document(doc_group.raw_token(), None)
 
-        self.path_map: ta.Dict[str, ast.YamlNode] = {}
+        self.path_map: ta.Dict[str, YamlNode] = {}
 
         tokens = doc_group.tokens
         start: ta.Optional[YamlToken] = None
@@ -1244,7 +1267,7 @@ class YamlParser:
             if clear_yaml_version:
                 self.yaml_version = ''
 
-    def parse_document_body(self, ctx: YamlParsingContext) -> YamlErrorOr[ast.YamlNode]:
+    def parse_document_body(self, ctx: YamlParsingContext) -> YamlErrorOr[YamlNode]:
         node = self.parse_token(ctx, ctx.current_token())
         if isinstance(node, YamlError):
             return node
@@ -1252,7 +1275,7 @@ class YamlParser:
             return err_syntax('value is not allowed in this context', YamlParseToken.raw_token(ctx.current_token()))
         return node
 
-    def parse_token(self, ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[ast.YamlNode]:
+    def parse_token(self, ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[YamlNode]:
         if YamlParseToken.group_type(tk) in (
                 YamlParseTokenGroupType.MAP_KEY,
                 YamlParseTokenGroupType.MAP_KEY_VALUE,
@@ -1318,7 +1341,7 @@ class YamlParser:
             ctx.go_next()
             return node5
         if YamlParseToken.type(tk) == YamlTokenType.COMMENT:
-            return ta.cast('YamlErrorOr[ast.YamlNode]', check.not_none(self.parse_comment(ctx)))
+            return ta.cast('YamlErrorOr[YamlNode]', check.not_none(self.parse_comment(ctx)))
         elif YamlParseToken.type(tk) == YamlTokenType.TAG:
             return self.parse_tag(ctx)
         elif YamlParseToken.type(tk) == YamlTokenType.MAPPING_START:
@@ -1343,7 +1366,7 @@ class YamlParser:
         ctx.go_next()
         return check.not_none(node6)
 
-    def parse_scalar_value(self, ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[ta.Optional[ast.ScalarYamlNode]]:  # noqa
+    def parse_scalar_value(self, ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[ta.Optional[ScalarYamlNode]]:  # noqa
         tk = check.not_none(tk)
         if tk.group is not None:
             if tk.group_type() == YamlParseTokenGroupType.ANCHOR:
@@ -1404,7 +1427,7 @@ class YamlParser:
             return self.parse_scalar_tag(ctx)
         return err_syntax('unexpected scalar value type', tk.raw_token())
 
-    def parse_flow_map(self, ctx: YamlParsingContext) -> YamlErrorOr[ast.MappingYamlNode]:
+    def parse_flow_map(self, ctx: YamlParsingContext) -> YamlErrorOr[MappingYamlNode]:
         node = YamlNodeMakers.new_mapping_node(ctx, check.not_none(ctx.current_token()), True)
         if isinstance(node, YamlError):
             return node
@@ -1518,11 +1541,11 @@ class YamlParser:
     def is_flow_map_delim(self, tk: YamlParseToken) -> bool:
         return tk.type() == YamlTokenType.MAPPING_END or tk.type() == YamlTokenType.COLLECT_ENTRY
 
-    def parse_map(self, ctx: YamlParsingContext) -> YamlErrorOr[ast.MappingYamlNode]:
+    def parse_map(self, ctx: YamlParsingContext) -> YamlErrorOr[MappingYamlNode]:
         key_tk = check.not_none(ctx.current_token())
         if key_tk.group is None:
             return err_syntax('unexpected map key', YamlParseToken.raw_token(key_tk))
-        key_value_node: ast.MappingValueYamlNode
+        key_value_node: MappingValueYamlNode
         if YamlParseToken.group_type(key_tk) == YamlParseTokenGroupType.MAP_KEY_VALUE:
             node0 = self.parse_map_key_value(
                 ctx.with_group(check.not_none(key_tk.group)),
@@ -1609,10 +1632,10 @@ class YamlParser:
                 # treat it as a footer comment for the last element.
                 if len(map_node.values) == 1:
                     map_node.values[0].foot_comment = self.parse_foot_comment(ctx, YamlParseToken.column(key_tk))
-                    ast.BaseYamlNode.set_path(map_node.values[0].foot_comment, map_node.values[0].key.get_path())
+                    BaseYamlNode.set_path(map_node.values[0].foot_comment, map_node.values[0].key.get_path())
                 else:
                     map_node.foot_comment = self.parse_foot_comment(ctx, YamlParseToken.column(key_tk))
-                    ast.BaseYamlNode.set_path(map_node.foot_comment, map_node.get_path())
+                    BaseYamlNode.set_path(map_node.foot_comment, map_node.get_path())
         return map_node
 
     def validate_map_key_value_next_token(self, ctx: YamlParsingContext, key_tk, tk: ta.Optional[YamlParseToken]) -> ta.Optional[YamlError]:  # noqa
@@ -1642,7 +1665,7 @@ class YamlParser:
             ctx: YamlParsingContext,
             g: YamlParseTokenGroup,
             entry_tk: ta.Optional[YamlParseToken],
-    ) -> YamlErrorOr[ast.MappingValueYamlNode]:
+    ) -> YamlErrorOr[MappingValueYamlNode]:
         if g.type != YamlParseTokenGroupType.MAP_KEY_VALUE:
             return err_syntax('unexpected map key-value pair', g.raw_token())
         if check.not_none(g.first()).group is None:
@@ -1658,7 +1681,7 @@ class YamlParser:
             return value
         return YamlNodeMakers.new_mapping_value_node(c, check.not_none(key_group.last()), entry_tk, key, value)
 
-    def parse_map_key(self, ctx: YamlParsingContext, g: YamlParseTokenGroup) -> YamlErrorOr[ast.MapKeyYamlNode]:
+    def parse_map_key(self, ctx: YamlParsingContext, g: YamlParseTokenGroup) -> YamlErrorOr[MapKeyYamlNode]:
         if g.type != YamlParseTokenGroupType.MAP_KEY:
             return err_syntax('unexpected map key', g.raw_token())
         if YamlParseToken.type(g.first()) == YamlTokenType.MAPPING_KEY:
@@ -1694,13 +1717,13 @@ class YamlParser:
         scalar1 = self.parse_scalar_value(ctx, g.first())
         if isinstance(scalar1, YamlError):
             return scalar1
-        if not isinstance(scalar1, ast.MapKeyYamlNode):
+        if not isinstance(scalar1, MapKeyYamlNode):
             # FIXME: not possible
             return err_syntax(
                 'cannot take map-key node',
                 check.not_none(scalar1).get_token(),
             )
-        key1: ast.MapKeyYamlNode = ta.cast(ast.MapKeyYamlNode, scalar1)
+        key1: MapKeyYamlNode = ta.cast(MapKeyYamlNode, scalar1)
         key_text = self.map_key_text(key1)
         key_path = ctx.with_child(key_text).path
         key1.set_path(key_path)
@@ -1771,26 +1794,26 @@ class YamlParser:
                 num += 1
         return num
 
-    def map_key_text(self, n: ta.Optional[ast.YamlNode]) -> str:
+    def map_key_text(self, n: ta.Optional[YamlNode]) -> str:
         if n is None:
             return ''
         nn = n
-        if isinstance(nn, ast.MappingKeyYamlNode):
+        if isinstance(nn, MappingKeyYamlNode):
             return self.map_key_text(nn.value)
-        if isinstance(nn, ast.TagYamlNode):
+        if isinstance(nn, TagYamlNode):
             return self.map_key_text(nn.value)
         if isinstance(nn, AnchorYamlNode):
             return self.map_key_text(nn.value)
-        if isinstance(nn, ast.AliasYamlNode):
+        if isinstance(nn, AliasYamlNode):
             return ''
         return check.not_none(n.get_token()).value
 
     def parse_map_value(
             self,
             ctx: YamlParsingContext,
-            key: ast.MapKeyYamlNode,
+            key: MapKeyYamlNode,
             colon_tk: YamlParseToken,
-    ) -> YamlErrorOr[ast.YamlNode]:
+    ) -> YamlErrorOr[YamlNode]:
         tk = ctx.current_token()
         if tk is None:
             return YamlNodeMakers.new_null_node(ctx, ctx.add_null_value_token(colon_tk))
@@ -1887,13 +1910,13 @@ class YamlParser:
             return err
         return value
 
-    def validate_anchor_value_in_map_or_seq(self, value: ast.YamlNode, col: int) -> ta.Optional[YamlError]:
+    def validate_anchor_value_in_map_or_seq(self, value: YamlNode, col: int) -> ta.Optional[YamlError]:
         if not isinstance(value, AnchorYamlNode):
             return None
         anchor: AnchorYamlNode = value
-        if not isinstance(anchor.value, ast.TagYamlNode):
+        if not isinstance(anchor.value, TagYamlNode):
             return None
-        tag: ast.TagYamlNode = anchor.value
+        tag: TagYamlNode = anchor.value
         anchor_tk = anchor.get_token()
         tag_tk = tag.get_token()
 
@@ -1949,7 +1972,7 @@ class YamlParser:
         anchor.name = anchor_name
         return anchor
 
-    def parse_alias(self, ctx: YamlParsingContext) -> YamlErrorOr[ast.AliasYamlNode]:
+    def parse_alias(self, ctx: YamlParsingContext) -> YamlErrorOr[AliasYamlNode]:
         alias = YamlNodeMakers.new_alias_node(ctx, ctx.current_token())
         if isinstance(alias, YamlError):
             return alias
@@ -1968,7 +1991,7 @@ class YamlParser:
         alias.value = alias_name
         return alias
 
-    def parse_literal(self, ctx: YamlParsingContext) -> YamlErrorOr[ast.LiteralYamlNode]:
+    def parse_literal(self, ctx: YamlParsingContext) -> YamlErrorOr[LiteralYamlNode]:
         node = YamlNodeMakers.new_literal_node(ctx, ctx.current_token())
         if isinstance(node, YamlError):
             return node
@@ -1987,22 +2010,22 @@ class YamlParser:
         value1 = self.parse_token(ctx, tk)
         if isinstance(value1, YamlError):
             return value1
-        if not isinstance(s := value1, ast.StringYamlNode):
+        if not isinstance(s := value1, StringYamlNode):
             return err_syntax('unexpected token. required string token', value1.get_token())
         node.value = s
         return node
 
-    def parse_scalar_tag(self, ctx: YamlParsingContext) -> YamlErrorOr[ast.TagYamlNode]:
+    def parse_scalar_tag(self, ctx: YamlParsingContext) -> YamlErrorOr[TagYamlNode]:
         tag = self.parse_tag(ctx)
         if isinstance(tag, YamlError):
             return tag
         if tag.value is None:
             return err_syntax('specified not scalar tag', tag.get_token())
-        if not isinstance(tag.value, ast.ScalarYamlNode):
+        if not isinstance(tag.value, ScalarYamlNode):
             return err_syntax('specified not scalar tag', tag.get_token())
         return tag
 
-    def parse_tag(self, ctx: YamlParsingContext) -> YamlErrorOr[ast.TagYamlNode]:
+    def parse_tag(self, ctx: YamlParsingContext) -> YamlErrorOr[TagYamlNode]:
         tag_tk = ctx.current_token()
         tag_raw_tk = YamlParseToken.raw_token(tag_tk)
         node = YamlNodeMakers.new_tag_node(ctx, tag_tk)
@@ -2012,7 +2035,7 @@ class YamlParser:
 
         comment = self.parse_head_comment(ctx)
 
-        tag_value: ast.YamlNode
+        tag_value: YamlNode
         if self.secondary_tag_directive is not None:
             value0 = YamlNodeMakers.new_string_node(ctx, ctx.current_token())
             if isinstance(value0, YamlError):
@@ -2034,7 +2057,7 @@ class YamlParser:
             ctx: YamlParsingContext,
             tag_raw_tk: YamlToken,
             tk: ta.Optional[YamlParseToken],
-    ) -> YamlErrorOr[ta.Optional[ast.YamlNode]]:
+    ) -> YamlErrorOr[ta.Optional[YamlNode]]:
         if tk is None:
             return YamlNodeMakers.new_null_node(ctx, ctx.create_implicit_null_token(YamlParseToken(token=tag_raw_tk)))
         if tag_raw_tk.value in (
@@ -2073,7 +2096,7 @@ class YamlParser:
             return self.parse_sequence(ctx)
         return self.parse_token(ctx, tk)
 
-    def parse_flow_sequence(self, ctx: YamlParsingContext) -> YamlErrorOr[ast.SequenceYamlNode]:
+    def parse_flow_sequence(self, ctx: YamlParsingContext) -> YamlErrorOr[SequenceYamlNode]:
         node = YamlNodeMakers.new_sequence_node(ctx, ctx.current_token(), True)
         if isinstance(node, YamlError):
             return node
@@ -2109,7 +2132,7 @@ class YamlParser:
             if isinstance(value, YamlError):
                 return value
             node.values.append(value)
-            seq_entry = ast.sequence_entry(
+            seq_entry = sequence_entry(
                 entry_tk.raw_token() if entry_tk is not None else None,
                 value,
                 None,
@@ -2129,7 +2152,7 @@ class YamlParser:
         ctx.go_next()  # skip sequence end token.
         return node
 
-    def parse_sequence(self, ctx: YamlParsingContext) -> YamlErrorOr[ast.SequenceYamlNode]:
+    def parse_sequence(self, ctx: YamlParsingContext) -> YamlErrorOr[SequenceYamlNode]:
         seq_tk = ctx.current_token()
         seq_node = YamlNodeMakers.new_sequence_node(ctx, seq_tk, False)
         if isinstance(seq_node, YamlError):
@@ -2147,7 +2170,7 @@ class YamlParser:
             value = self.parse_sequence_value(ctx, check.not_none(seq_tk))
             if isinstance(value, YamlError):
                 return value
-            seq_entry = ast.sequence_entry(YamlParseToken.raw_token(seq_tk), value, head_comment)
+            seq_entry = sequence_entry(YamlParseToken.raw_token(seq_tk), value, head_comment)
             if (err := set_line_comment(ctx, seq_entry, seq_tk)) is not None:
                 return err
             seq_entry.set_path(ctx.path)
@@ -2170,7 +2193,7 @@ class YamlParser:
                     )
         return seq_node
 
-    def parse_sequence_value(self, ctx: YamlParsingContext, seq_tk: YamlParseToken) -> YamlErrorOr[ast.YamlNode]:
+    def parse_sequence_value(self, ctx: YamlParsingContext, seq_tk: YamlParseToken) -> YamlErrorOr[YamlNode]:
         tk = ctx.current_token()
         if tk is None:
             return YamlNodeMakers.new_null_node(ctx, ctx.add_null_value_token(seq_tk))
@@ -2252,7 +2275,7 @@ class YamlParser:
             return err
         return value
 
-    def parse_directive(self, ctx: YamlParsingContext, g: YamlParseTokenGroup) -> YamlErrorOr[ast.DirectiveYamlNode]:
+    def parse_directive(self, ctx: YamlParsingContext, g: YamlParseTokenGroup) -> YamlErrorOr[DirectiveYamlNode]:
         directive_name_group = check.not_none(check.not_none(g.first()).group)
         directive = self.parse_directive_name(ctx.with_group(directive_name_group))
         if isinstance(directive, YamlError):
@@ -2294,7 +2317,7 @@ class YamlParser:
                 directive.values.append(value1)
         return directive
 
-    def parse_directive_name(self, ctx: YamlParsingContext) -> YamlErrorOr[ast.DirectiveYamlNode]:
+    def parse_directive_name(self, ctx: YamlParsingContext) -> YamlErrorOr[DirectiveYamlNode]:
         directive = YamlNodeMakers.new_directive_node(ctx, ctx.current_token())
         if isinstance(directive, YamlError):
             return directive
@@ -2313,7 +2336,7 @@ class YamlParser:
         directive.name = directive_name
         return directive
 
-    def parse_comment(self, ctx: YamlParsingContext) -> YamlErrorOr[ta.Optional[ast.YamlNode]]:
+    def parse_comment(self, ctx: YamlParsingContext) -> YamlErrorOr[ta.Optional[YamlNode]]:
         cm = self.parse_head_comment(ctx)
         if ctx.is_token_not_found():
             return cm
@@ -2324,7 +2347,7 @@ class YamlParser:
             return err
         return node
 
-    def parse_head_comment(self, ctx: YamlParsingContext) -> ta.Optional[ast.CommentGroupYamlNode]:
+    def parse_head_comment(self, ctx: YamlParsingContext) -> ta.Optional[CommentGroupYamlNode]:
         tks: ta.List[ta.Optional[YamlToken]] = []
         while ctx.is_comment():
             tks.append(YamlParseToken.raw_token(ctx.current_token()))
@@ -2333,7 +2356,7 @@ class YamlParser:
             return None
         return YamlAsts.comment_group(tks)
 
-    def parse_foot_comment(self, ctx: YamlParsingContext, col: int) -> ta.Optional[ast.CommentGroupYamlNode]:
+    def parse_foot_comment(self, ctx: YamlParsingContext, col: int) -> ta.Optional[CommentGroupYamlNode]:
         tks: ta.List[ta.Optional[YamlToken]] = []
         while ctx.is_comment() and col <= YamlParseToken.column(ctx.current_token()):
             tks.append(YamlParseToken.raw_token(ctx.current_token()))

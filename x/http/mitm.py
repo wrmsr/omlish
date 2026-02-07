@@ -72,7 +72,7 @@ class SimpleMitmHandler:
 
             url = self._target + h_req.path
 
-            hdrs = hu.headers(h_req.headers)
+            hdrs = hu.headers(h_req.headers.items())
             hdrs = hdrs.update(
                 (b'Host', check.not_none(urllib.parse.urlparse(self._target).hostname).encode()),
                 override=True,
