@@ -1144,8 +1144,8 @@ class YamlScanner:
         if c == '\r':
             if ctx.next_char() == '\n':
                 ctx.add_origin_buf('\n')
-                s.progress(ctx, 1)
-                s.offset += 1
+                self.progress(ctx, 1)
+                self.offset += 1
 
             c = '\n'
 
