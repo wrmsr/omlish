@@ -149,11 +149,18 @@ class ToolConfirmationControls(tx.Static):
     class ClickedAllow(tx.Message):
         pass
 
+    class ClickedDeny(tx.Message):
+        pass
+
     def compose(self) -> tx.ComposeResult:
         yield tx.Button('Allow', action='allow')
+        yield tx.Button('Deny', action='deny')
 
     def action_allow(self) -> None:
         self.post_message(self.ClickedAllow())
+
+    def action_deny(self) -> None:
+        self.post_message(self.ClickedDeny())
 
 
 class ToolConfirmationMessage(Message):
@@ -172,22 +179,22 @@ class ToolConfirmationMessage(Message):
         self._fut = fut
 
         self._has_rendered = False
-        self._has_confirmed = False
+        self._has_responded = False
 
     @property
     def has_rendered(self) -> bool:
         return self._has_rendered
 
     @property
-    def has_confirmed(self) -> bool:
-        return self._has_confirmed
+    def has_responded(self) -> bool:
+        return self._has_responded
 
-    async def confirm(self) -> None:
-        check.equal(self._fut.done(), self._has_confirmed)
+    async def respond(self, allowed: bool) -> None:
+        check.equal(self._fut.done(), self._has_responded)
 
-        if self._has_confirmed:
+        if self._has_responded:
             return
-        self._has_confirmed = True
+        self._has_responded = True
 
         inner = self.query_one(tx.Vertical)
 
@@ -196,9 +203,11 @@ class ToolConfirmationMessage(Message):
         inner.remove_class('tool-confirmation-message-inner-open')
         inner.add_class('tool-confirmation-message-inner-closed')
 
-        inner.query_one('.tool-confirmation-message-outer-content', tx.Static).update('Tool use confirmed.')
+        inner.query_one('.tool-confirmation-message-outer-content', tx.Static).update(
+            f'Tool use {"allowed" if allowed else "denied"}.',
+        )
 
-        self._fut.set_result(True)
+        self._fut.set_result(allowed)
 
     def compose(self) -> tx.ComposeResult:
         with tx.Horizontal(classes='tool-confirmation-message-outer message-outer'):
@@ -221,7 +230,11 @@ class ToolConfirmationMessage(Message):
 
     @tx.on(ToolConfirmationControls.ClickedAllow)
     async def on_clicked_allow(self, event: ToolConfirmationControls.ClickedAllow) -> None:
-        await self.confirm()
+        await self.respond(True)
+
+    @tx.on(ToolConfirmationControls.ClickedDeny)
+    async def on_clicked_deny(self, event: ToolConfirmationControls.ClickedDeny) -> None:
+        await self.respond(False)
 
 
 #

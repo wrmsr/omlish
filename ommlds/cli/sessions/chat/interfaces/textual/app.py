@@ -63,8 +63,14 @@ class ChatAppScreen(tx.Screen):
 
         tx.Binding(
             'f10',
-            'app.confirm_all_pending_tool_uses',
-            'Confirms all pending tool uses',
+            'app.allow_all_pending_tool_uses',
+            'Allows all pending tool uses',
+        ),
+
+        tx.Binding(
+            'f11',
+            'app.deny_all_pending_tool_uses',
+            'Denies all pending tool uses',
         ),
     ]
 
@@ -446,12 +452,18 @@ class ChatApp(
         if (cat := self._cur_chat_action) is not None:
             cat.cancel()
 
-    async def action_confirm_all_pending_tool_uses(self) -> None:
+    async def _respond_to_all_pending_tool_uses(self, allowed: bool) -> None:
         for tcm in list(self._pending_tool_confirmations):
             if not tcm.has_rendered:
                 continue
 
-            if not tcm.has_confirmed:
-                await tcm.confirm()
+            if not tcm.has_responded:
+                await tcm.respond(allowed)
 
             self._pending_tool_confirmations.discard(tcm)
+
+    async def action_allow_all_pending_tool_uses(self) -> None:
+        await self._respond_to_all_pending_tool_uses(True)
+
+    async def action_deny_all_pending_tool_uses(self) -> None:
+        await self._respond_to_all_pending_tool_uses(False)
