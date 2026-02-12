@@ -61,10 +61,9 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../../omlish/formats/ini/sections.py', sha1='731c92cce82e183d1d4bdc23fc781fad62187394'),
             dict(path='../../../../omlish/formats/toml/parser.py', sha1='73dac82289350ab951c4bcdbfe61167fa221f26f'),
             dict(path='../../../../omlish/formats/toml/writer.py', sha1='6ea41d7e724bb1dcf6bd84b88993ff4e8798e021'),
-            dict(path='../../../../omlish/io/readers.py', sha1='30de386d499d2cec695d2c151a97deb9cab4cbb8'),
+            dict(path='../../../../omlish/io/streams/errors.py', sha1='67ca85fd8741b5bfefe76c872ce1c30c18fab06f'),
             dict(path='../../../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../../../omlish/lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
-            dict(path='../../../../omlish/lite/attrops.py', sha1='c1ebfb8573d766d34593c452a2377208d02726dc'),
             dict(path='../../../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
             dict(path='../../../../omlish/lite/check.py', sha1='0ce40cc68bd1b18604293a0b4924efabb6033766'),
             dict(path='../../../../omlish/lite/contextmanagers.py', sha1='993f5ed96d3410f739a20363f55670d5e5267fa3'),
@@ -81,24 +80,29 @@ def __omlish_amalg__():  # noqa
             dict(path='../auth.py', sha1='b1ac1a5e03d4e9e38957a54e346943c6dcc964a1'),
             dict(path='../dataclasses.py', sha1='8e950d7815904588fed284889392cbb0b1002605'),
             dict(path='../../../../omlish/configs/formats.py', sha1='3074c3e1428f9598cd0591745cb60fb3fe2b309f'),
-            dict(path='../../../../omlish/io/buffers.py', sha1='ab4da773b752cf19d5bdcf5997a56972ad11d888'),
+            dict(path='../../../../omlish/io/streams/types.py', sha1='6ae05b5486ac8eb1f2667d415aad0cde3c962df4'),
             dict(path='../../../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
             dict(path='../../../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
             dict(path='../../../../omlish/logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
             dict(path='../../../../omlish/logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='../../../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='../logs.py', sha1='5a4fad522508bdc1b790f1d5234a87f319c9da2d'),
+            dict(path='../../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
+            dict(path='../../../../omlish/io/streams/framing.py', sha1='854bb6bbfc713fa47d0293b11cb4db230f51268d'),
+            dict(path='../../../../omlish/io/streams/utils.py', sha1='f29ce425931dda3a1ce1cc3f2a90ae867d790358'),
             dict(path='../../../../omlish/lite/configs.py', sha1='c8602e0e197ef1133e7e8e248935ac745bfd46cb'),
             dict(path='../../../../omlish/logs/contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
             dict(path='../../../../omlish/logs/std/standard.py', sha1='5c97c1b9f7ead58d6127d047b873398f708f288d'),
             dict(path='../../../../omlish/subprocesses/wrap.py', sha1='8a9b7d2255481fae15c05f5624b0cdc0766f4b3f'),
+            dict(path='../../../../omlish/io/streams/direct.py', sha1='c7a8cf3adb785387e410381cc83be2aad74b8d41'),
             dict(path='../../../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
             dict(path='../../../../omlish/logs/std/records.py', sha1='8bbf6ef9eccb3a012c6ca416ddf3969450fd8fc9'),
+            dict(path='../../../../omlish/io/streams/segmented.py', sha1='69b63fb61953eaaea7e996cbd96555882ba8f6f2'),
             dict(path='../../../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='../../../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='cursor.py', sha1='00f1c62e16e4c85b20658eaf33c0bedf22c9e18f'),
-            dict(path='../../../journald/messages.py', sha1='6f2d2eeedb71723b1c6631ad2e634b473b297696'),
+            dict(path='../../../journald/messages.py', sha1='b761dcb21181337c42177a42a6834ab74bf0728f'),
             dict(path='../../../threadworkers.py', sha1='e3413436070b66faeb3e6974dc9a75cd8a949ad7'),
             dict(path='poster.py', sha1='275770a4e60ea5777053c9044e37d71397c3ed20'),
             dict(path='../../../journald/tailer.py', sha1='1c37a6bbde32e8556d26b94b439f14869731ac01'),
@@ -145,6 +149,9 @@ LogLevel = int  # ta.TypeAlias
 
 # ../../../../omlish/configs/formats.py
 ConfigDataT = ta.TypeVar('ConfigDataT', bound='ConfigData')
+
+# ../../../../omlish/io/streams/types.py
+BytesLike = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
 
 # ../../../../omlish/logs/infos.py
 LoggingMsgFn = ta.Callable[[], ta.Union[str, tuple]]  # ta.TypeAlias
@@ -1255,79 +1262,67 @@ class TomlWriter:
 
 
 ########################################
-# ../../../../../omlish/io/readers.py
+# ../../../../../omlish/io/streams/errors.py
 
 
 ##
 
 
-class RawBytesReader(ta.Protocol):
-    def read1(self, n: int = -1, /) -> bytes: ...
-
-
-class BufferedBytesReader(RawBytesReader, ta.Protocol):
-    def read(self, n: int = -1, /) -> bytes: ...
-
-    def readall(self) -> bytes: ...
+class ByteStreamBufferError(Exception):
+    pass
 
 
 #
 
 
-class AsyncRawBytesReader(ta.Protocol):
-    def read1(self, n: int = -1, /) -> ta.Awaitable[bytes]: ...
-
-
-class AsyncBufferedBytesReader(AsyncRawBytesReader, ta.Protocol):
-    def read(self, n: int = -1, /) -> ta.Awaitable[bytes]: ...
-
-    def readall(self) -> ta.Awaitable[bytes]: ...
-
-
-##
-
-
-class FileLikeRawBytesReader:
+class NeedMoreDataByteStreamBufferError(ByteStreamBufferError):
     """
-    Adapter: file-like object -> RawBytesReader-style `read1`.
+    Raised when an operation cannot complete because insufficient bytes are currently buffered.
 
-    This is intentionally permissive: it duck-types common file-like APIs.
-
-    Notes:
-      - If the object has `read1`, we use it.
-      - Otherwise we fall back to `read`.
-      - This is a *raw* reader: it makes no buffering guarantees beyond what the wrapped object provides.
+    This is intentionally distinct from EOF: it means "try again after feeding more bytes".
     """
 
-    def __init__(self, f: ta.Any) -> None:
-        super().__init__()
 
-        self._f = f
-
-    def read1(self, n: int = -1, /) -> bytes:
-        f = self._f
-        if hasattr(f, 'read1'):
-            return ta.cast(bytes, f.read1(n))
-        return ta.cast(bytes, f.read(n))
+#
 
 
-class FileLikeBufferedBytesReader(FileLikeRawBytesReader):
+class LimitByteStreamBufferError(ValueError, ByteStreamBufferError):
     """
-    Adapter: file-like object -> BufferedBytesReader-style `read/readall`.
+    Base class for buffer/framing limit violations.
 
-    Notes:
-      - Uses `readall` if present; otherwise uses `read()` with `-1`.
-      - Does not impose additional buffering; it reflects the wrapped object's behavior.
+    Subclasses inherit from ValueError so existing tests expecting ValueError continue to pass.
     """
 
-    def read(self, n: int = -1, /) -> bytes:
-        return ta.cast(bytes, self._f.read(n))
 
-    def readall(self) -> bytes:
-        f = self._f
-        if hasattr(f, 'readall'):
-            return ta.cast(bytes, f.readall())
-        return ta.cast(bytes, f.read())
+class BufferTooLargeByteStreamBufferError(LimitByteStreamBufferError):
+    """
+    Buffered data exceeded a configured cap without finding a boundary that would allow progress.
+
+    Typically indicates an unframed stream, a missing delimiter, or an upstream not enforcing limits.
+    """
+
+
+class FrameTooLargeByteStreamBufferError(LimitByteStreamBufferError):
+    """A single decoded frame (payload before its boundary delimiter/length) exceeded a configured max size."""
+
+
+#
+
+
+class StateByteStreamBufferError(RuntimeError, ByteStreamBufferError):
+    """
+    Base class for invalid buffer state transitions (e.g., coalescing while a reservation is outstanding).
+
+    Subclasses inherit from RuntimeError so existing tests expecting RuntimeError continue to pass.
+    """
+
+
+class OutstandingReserveByteStreamBufferError(StateByteStreamBufferError):
+    """A reserve() is outstanding; an operation requiring stable storage cannot proceed."""
+
+
+class NoOutstandingReserveByteStreamBufferError(StateByteStreamBufferError):
+    """commit() was called without a preceding reserve()."""
 
 
 ########################################
@@ -1619,418 +1614,6 @@ class SyncToAsyncContextManager(ta.Generic[T]):
 
 
 as_async_context_manager = SyncToAsyncContextManager
-
-
-########################################
-# ../../../../../omlish/lite/attrops.py
-"""
-TODO:
- - dotted paths!
- - per-attr repr transform / filter
- - __ne__ ? cases where it still matters
- - ordering ?
- - repr_filter: ta.Union[ta.Callable[[ta.Any], ta.Optional[str]], ta.Literal['not_none', 'truthy']]] ?
-  - unify repr/repr_fn/repr_filter
-"""
-
-
-##
-
-
-@ta.final
-class AttrOps(ta.Generic[T]):
-    @ta.final
-    class Attr:
-        def __init__(
-                self,
-                name: str,
-                *,
-                display: ta.Optional[str] = None,
-
-                repr: bool = True,  # noqa
-                repr_fn: ta.Optional[ta.Callable[[ta.Any], ta.Optional[str]]] = None,
-
-                hash: bool = True,  # noqa
-                eq: bool = True,
-        ) -> None:
-            if '.' in name:
-                raise NotImplementedError('Dotted paths not yet supported')
-            if not name.isidentifier() or name.startswith('__'):
-                raise AttributeError(f'Invalid attr: {name!r}')
-            self._name = name
-
-            if display is None:
-                display = name[1:] if name.startswith('_') and len(name) > 1 else name
-            self._display = display
-
-            self._repr = repr
-            self._repr_fn = repr_fn
-
-            self._hash = hash
-            self._eq = eq
-
-        @classmethod
-        def of(
-                cls,
-                o: ta.Union[
-                    'AttrOps.Attr',
-                    str,
-                    ta.Tuple[str, ta.Union[str, ta.Mapping[str, ta.Any]]],
-                    ta.Mapping[str, ta.Any],
-                ],
-        ) -> 'AttrOps.Attr':
-            if isinstance(o, AttrOps.Attr):
-                return o
-            elif isinstance(o, str):
-                return cls(o)
-            elif isinstance(o, tuple):
-                name, x = o
-                kw: ta.Mapping[str, ta.Any]
-                if isinstance(x, str):
-                    kw = dict(display=x)
-                elif isinstance(x, ta.Mapping):
-                    kw = x
-                else:
-                    raise TypeError(x)
-                return cls(name, **kw)
-            elif isinstance(o, ta.Mapping):
-                return cls(**o)
-            else:
-                raise TypeError(o)
-
-        @property
-        def name(self) -> str:
-            return self._name
-
-        @property
-        def display(self) -> str:
-            return self._display
-
-        @property
-        def hash(self) -> bool:
-            return self._hash
-
-        @property
-        def eq(self) -> bool:
-            return self._eq
-
-    @staticmethod
-    def opt_repr(o: ta.Any) -> ta.Optional[str]:
-        return repr(o) if o is not None else None
-
-    @staticmethod
-    def truthy_repr(o: ta.Any) -> ta.Optional[str]:
-        return repr(o) if o else None
-
-    #
-
-    @ta.overload
-    def __init__(
-            self,
-            *attrs: ta.Sequence[ta.Union[
-                str,
-                ta.Tuple[str, ta.Union[str, ta.Mapping[str, ta.Any]]],
-                ta.Mapping[str, ta.Any],
-                Attr,
-            ]],
-
-            with_module: bool = False,
-            use_qualname: bool = False,
-            with_id: bool = False,
-            terse: bool = False,
-            repr_filter: ta.Optional[ta.Callable[[ta.Any], bool]] = None,
-            recursive: bool = False,
-
-            cache_hash: ta.Union[bool, str] = False,
-            subtypes_eq: bool = False,
-    ) -> None:
-        ...
-
-    @ta.overload
-    def __init__(
-            self,
-            attrs_fn: ta.Callable[[T], ta.Tuple[ta.Union[
-                ta.Any,
-                ta.Tuple[ta.Any, ta.Union[str, ta.Mapping[str, ta.Any]]],
-                Attr,
-            ], ...]],
-            /,
-            *,
-
-            with_module: bool = False,
-            use_qualname: bool = False,
-            with_id: bool = False,
-            terse: bool = False,
-            repr_filter: ta.Optional[ta.Callable[[ta.Any], bool]] = None,
-            recursive: bool = False,
-
-            cache_hash: ta.Union[bool, str] = False,
-            subtypes_eq: bool = False,
-    ) -> None:
-        ...
-
-    def __init__(
-            self,
-            *args,
-
-            with_module=False,
-            use_qualname=False,
-            with_id=False,
-            terse=False,
-            repr_filter=None,
-            recursive=False,
-
-            cache_hash=False,
-            subtypes_eq=False,
-    ) -> None:
-        if args and len(args) == 1 and callable(args[0]):
-            self._attrs: ta.Sequence[AttrOps.Attr] = self._capture_attrs(args[0])
-        else:
-            self._attrs = list(map(AttrOps.Attr.of, args))
-
-        self._with_module: bool = with_module
-        self._use_qualname: bool = use_qualname
-        self._with_id: bool = with_id
-        self._terse: bool = terse
-        self._repr_filter: ta.Optional[ta.Callable[[ta.Any], bool]] = repr_filter
-        self._recursive: bool = recursive
-
-        self._cache_hash: ta.Union[bool, str] = cache_hash
-        self._subtypes_eq: bool = subtypes_eq
-
-    @property
-    def attrs(self) -> ta.Sequence[Attr]:
-        return self._attrs
-
-    #
-
-    @ta.final
-    class _AttrCapturer:
-        def __init__(self, fn):
-            self.__fn = fn
-
-        def __getattr__(self, attr):
-            return self.__fn(self, attr)
-
-    @classmethod
-    def _capture_attrs(cls, fn: ta.Callable) -> ta.Sequence[Attr]:
-        def access(parent, attr):
-            dct[(ret := cls._AttrCapturer(access))] = (parent, attr)
-            return ret
-
-        dct: dict = {}
-        raw = fn(root := cls._AttrCapturer(access))
-
-        def rec(cap):  # noqa
-            if cap is root:
-                return
-            parent, attr = dct[cap]
-            yield from rec(parent)
-            yield attr
-
-        attrs: ta.List[AttrOps.Attr] = []
-        for o in raw:
-            if isinstance(o, (AttrOps.Attr, ta.Mapping)):
-                attrs.append(AttrOps.Attr.of(o))
-                continue
-
-            kw: ta.Mapping[str, ta.Any]
-            if isinstance(o, tuple):
-                cap, x = o
-                if isinstance(x, str):
-                    kw = dict(display=x)
-                elif isinstance(x, ta.Mapping):
-                    kw = x
-                else:
-                    raise TypeError(x)
-            else:
-                cap, kw = o, {}
-
-            path = tuple(rec(cap))
-
-            attrs.append(AttrOps.Attr(
-                '.'.join(path),
-                **kw,
-            ))
-
-        return attrs
-
-    #
-
-    _repr: ta.Callable[[T], str]
-
-    @property
-    def repr(self) -> ta.Callable[[T], str]:
-        try:
-            return self._repr
-        except AttributeError:
-            pass
-
-        def _repr(o: T) -> str:
-            vs: ta.List[str] = []
-            for a in self._attrs:
-                if not a._repr:  # noqa
-                    continue
-                v = getattr(o, a._name)  # noqa
-                if self._repr_filter is not None and not self._repr_filter(v):
-                    continue
-                if (rfn := a._repr_fn) is None:  # noqa
-                    rfn = repr
-                if (vr := rfn(v)) is None:
-                    continue
-                if self._terse:
-                    vs.append(vr)
-                else:
-                    vs.append(f'{a._display}={vr}')  # noqa
-
-            return (
-                f'{o.__class__.__module__ + "." if self._with_module else ""}'
-                f'{o.__class__.__qualname__ if self._use_qualname else o.__class__.__name__}'
-                f'{("@" + hex(id(o))[2:]) if self._with_id else ""}'  # noqa
-                f'({", ".join(vs)})'
-            )
-
-        if self._recursive:
-            _repr = self._reprlib().recursive_repr()(_repr)
-
-        self._repr = _repr
-        return _repr
-
-    _reprlib_: ta.ClassVar[ta.Any]
-
-    @classmethod
-    def _reprlib(cls) -> ta.Any:
-        try:
-            return cls._reprlib_
-        except AttributeError:
-            pass
-
-        import reprlib  # noqa
-
-        cls._reprlib_ = reprlib
-        return reprlib
-
-    #
-
-    _DEFAULT_CACHED_HASH_ATTR: ta.ClassVar[str] = '__cached_hash__'
-
-    _hash: ta.Callable[[T], int]
-
-    @property
-    def hash(self) -> ta.Callable[[T], int]:
-        try:
-            return self._hash
-        except AttributeError:
-            pass
-
-        def _calc_hash(o: T) -> int:
-            return hash(tuple(
-                getattr(o, a._name)  # noqa
-                for a in self._attrs
-                if a._hash  # noqa
-            ))
-
-        if (ch := self._cache_hash) is not False:
-            if ch is True:
-                cha = self._DEFAULT_CACHED_HASH_ATTR
-            elif isinstance(ch, str):
-                cha = ch
-            else:
-                raise TypeError(ch)
-
-            def _cached_hash(o: T) -> int:
-                try:
-                    return object.__getattribute__(o, cha)
-                except AttributeError:
-                    object.__setattr__(o, cha, h := _calc_hash(o))
-                return h
-
-            _hash = _cached_hash
-
-        else:
-            _hash = _calc_hash
-
-        self._hash = _hash
-        return _hash
-
-    #
-
-    _eq: ta.Callable[[T, ta.Any], ta.Union[bool, 'types.NotImplementedType']]
-
-    @property
-    def eq(self) -> ta.Callable[[T, ta.Any], ta.Union[bool, 'types.NotImplementedType']]:
-        try:
-            return self._eq
-        except AttributeError:
-            pass
-
-        def _eq(o: T, x: ta.Any) -> 'ta.Union[bool, types.NotImplementedType]':
-            if self._subtypes_eq:
-                if not isinstance(x, type(o)):
-                    return NotImplemented
-            else:
-                if type(x) is not type(o):
-                    return NotImplemented
-
-            return all(
-                getattr(o, a._name) == getattr(x, a._name)  # noqa
-                for a in self._attrs
-                if a._eq  # noqa
-            )
-
-        self._eq = _eq
-        return _eq
-
-    @property
-    def hash_eq(self) -> ta.Tuple[
-        ta.Callable[[T], int],
-        ta.Callable[[T, ta.Any], ta.Union[bool, 'types.NotImplementedType']],
-    ]:
-        return (self.hash, self.eq)
-
-    #
-
-    @property
-    def repr_hash_eq(self) -> ta.Tuple[
-        ta.Callable[[T], str],
-        ta.Callable[[T], int],
-        ta.Callable[[T, ta.Any], ta.Union[bool, 'types.NotImplementedType']],
-    ]:
-        return (self.repr, self.hash, self.eq)
-
-    #
-
-    class NOT_SET:  # noqa
-        def __new__(cls, *args, **kwargs):  # noqa
-            raise TypeError
-
-    def install(
-            self,
-            locals_dct: ta.MutableMapping[str, ta.Any],
-            *,
-            repr: ta.Union[bool, ta.Type[NOT_SET]] = NOT_SET,  # noqa
-            hash: ta.Union[bool, ta.Type[NOT_SET]] = NOT_SET,  # noqa
-            eq: ta.Union[bool, ta.Type[NOT_SET]] = NOT_SET,
-    ) -> 'AttrOps[T]':
-        if all(a is self.NOT_SET for a in (repr, hash, eq)):
-            repr = hash = eq = True  # noqa
-        if repr:
-            locals_dct.update(__repr__=self.repr)
-        if hash:
-            locals_dct.update(__hash__=self.hash)
-        if eq:
-            locals_dct.update(__eq__=self.eq)
-        return self
-
-
-attr_ops = AttrOps[ta.Any]
-
-
-##
-
-
-def attr_repr(obj: ta.Any, *attrs: str, **kwargs: ta.Any) -> str:
-    return AttrOps(*attrs, **kwargs).repr(obj)
 
 
 ########################################
@@ -4259,436 +3842,266 @@ DEFAULT_CONFIG_RENDERER = SwitchedConfigRenderer(DEFAULT_CONFIG_RENDERERS)
 
 
 ########################################
-# ../../../../../omlish/io/buffers.py
-"""
-TODO:
- - overhaul and just coro-ify pyio?
-"""
+# ../../../../../omlish/io/streams/types.py
 
 
 ##
 
 
-class DelimitingBuffer:
-    """
-    https://github.com/python-trio/trio/issues/796 :|
+class ByteStreamBufferLike(Abstract):
+    @ta.final
+    def __bool__(self) -> bool:
+        raise TypeError('Do not use bool() for ByteStreamBufferLike, use len().')
 
-    FIXME: when given overlapping delimiters like [b'\r', b'\r\n'], *should* refuse to output a line ending in '\r'
-      without knowing it will not be followed by '\n'. does not currently do this - currently only picks longest
-      delimiter present in the buffer. does this need a prefix-trie? is this borderline parsing?
-    """
-
-    #
-
-    class Error(Exception):
-        def __init__(self, buffer: 'DelimitingBuffer') -> None:
-            super().__init__(buffer)
-
-            self.buffer = buffer
-
-        def __repr__(self) -> str:
-            return attr_repr(self, 'buffer')
-
-    class ClosedError(Error):
-        pass
-
-    #
-
-    DEFAULT_DELIMITERS: bytes = b'\n'
-
-    def __init__(
-            self,
-            delimiters: ta.Iterable[ta.Union[int, bytes]] = DEFAULT_DELIMITERS,
-            *,
-            keep_ends: bool = False,
-            max_size: ta.Optional[int] = None,
-    ) -> None:
-        super().__init__()
-
-        ds: ta.Set[bytes] = set()
-        for d in delimiters:
-            if isinstance(d, int):
-                d = bytes([d])
-            ds.add(check.isinstance(d, bytes))
-
-        self._delimiters: ta.FrozenSet[bytes] = frozenset(ds)
-        self._keep_ends = keep_ends
-        self._max_size = max_size
-
-        self._buf: ta.Optional[io.BytesIO] = io.BytesIO()
-
-        ddl = {}
-        dl = sorted(self._delimiters, key=lambda d: -len(d))
-        for i, d in enumerate(dl):
-            for j, d2 in enumerate(dl):
-                if len(d2) < len(d):
-                    break
-                if i == j or not d2.startswith(d):
-                    continue
-                ddl[d] = len(d2)
-                break
-        self._delimiter_disambiguation_lens: ta.Dict[bytes, int] = ddl
-
-    #
-
-    @property
-    def is_closed(self) -> bool:
-        return self._buf is None
-
-    def tell(self) -> int:
-        if (buf := self._buf) is None:
-            raise self.ClosedError(self)
-        return buf.tell()
-
-    def peek(self) -> bytes:
-        if (buf := self._buf) is None:
-            raise self.ClosedError(self)
-        return buf.getvalue()
-
-    def _find_delim(self, data: ta.Union[bytes, bytearray], i: int) -> ta.Optional[ta.Tuple[int, int]]:
-        rp = None  # type: int | None
-        rl = None  # type: int | None
-        rd = None  # type: bytes | None
-
-        for d in self._delimiters:
-            if (p := data.find(d, i)) < 0:
-                continue
-
-            dl = len(d)
-
-            if rp is None or p < rp:
-                rp, rl, rd = p, dl, d
-            elif rp == p and rl < dl:  # type: ignore
-                rl, rd = dl, d  # noqa
-
-        if rp is None:
-            return None
-
-        # FIXME:
-        # if (ddl := self._delimiter_disambiguation_lens.get(rd)) is not None:
-        #     raise NotImplementedError
-
-        return rp, rl  # type: ignore
-
-    def _append_and_reset(self, chunk: bytes) -> bytes:
-        buf = check.not_none(self._buf)
-        if not buf.tell():
-            return chunk
-
-        buf.write(chunk)
-        ret = buf.getvalue()
-        buf.seek(0)
-        buf.truncate()
-        return ret
-
-    class Incomplete(ta.NamedTuple):
-        b: bytes
-
-    def feed(self, data: ta.Union[bytes, bytearray]) -> ta.Generator[ta.Union[bytes, Incomplete], None, None]:
-        if (buf := self._buf) is None:
-            raise self.ClosedError(self)
-
-        if not data:
-            self._buf = None
-
-            if buf.tell():
-                yield self.Incomplete(buf.getvalue())
-
-            return
-
-        l = len(data)
-        i = 0
-        while i < l:
-            if (pt := self._find_delim(data, i)) is None:
-                break
-
-            p, pl = pt
-            n = p + pl
-            if self._keep_ends:
-                p = n
-
-            yield self._append_and_reset(data[i:p])
-
-            i = n
-
-        if i >= l:
-            return
-
-        if self._max_size is None:
-            buf.write(data[i:])
-            return
-
-        while i < l:
-            remaining_data_len = l - i
-            remaining_buf_capacity = self._max_size - buf.tell()
-
-            if remaining_data_len < remaining_buf_capacity:
-                buf.write(data[i:])
-                return
-
-            p = i + remaining_buf_capacity
-            yield self.Incomplete(self._append_and_reset(data[i:p]))
-            i = p
-
-
-##
-
-
-class ReadableListBuffer:
-    # FIXME: merge with PrependableGeneratorReader
-    # FIXME: AND PUSHBACKREADER
-    # FIXME: replace this whole thing with ByteStreamBuffers
-
-    def __init__(self) -> None:
-        super().__init__()
-
-        self._lst: list[bytes] = []
-        self._len = 0
-
-    def __bool__(self) -> ta.NoReturn:
-        raise TypeError("Use 'buf is not None' or 'len(buf)'.")
-
+    @abc.abstractmethod
     def __len__(self) -> int:
-        return self._len
+        """
+        Return the number of readable bytes.
 
-    def feed(self, d: bytes) -> None:
-        if d:
-            self._lst.append(d)
-            self._len += len(d)
+        This is expected to be O(1). Many drivers and codecs use `len(buf)` in tight loops to decide whether more data
+        is needed before attempting to parse a frame.
+        """
 
-    def _chop(self, i: int, e: int) -> bytes:
-        lst = self._lst
-        d = lst[i]
+        raise NotImplementedError
 
-        o = b''.join([
-            *lst[:i],
-            d[:e],
-        ])
+    @abc.abstractmethod
+    def peek(self) -> memoryview:
+        """
+        Return a contiguous, read-only `memoryview` of the first available bytes.
 
-        self._lst = [
-            *([d[e:]] if e < len(d) else []),
-            *lst[i + 1:],
-        ]
+        This is the "next chunk" fast-path: for segmented views, the returned memoryview may represent only the first
+        segment (and thus may be shorter than `len(self)`), but it must be non-copying. This is the fast-path for codecs
+        that can parse headers from an initial contiguous region.
 
-        self._len -= len(o)
+        The returned view should be treated as ephemeral: callers must assume it may be invalidated by subsequent buffer
+        mutations (advance/write/reserve/commit), depending on the implementation.
+        """
 
-        return o
+        raise NotImplementedError
 
-    def read(self, n: ta.Optional[int] = None) -> ta.Optional[bytes]:
-        if n is None:
-            if not self._lst:
-                return b''
+    @abc.abstractmethod
+    def segments(self) -> ta.Sequence[memoryview]:
+        """
+        Return the readable contents as an ordered sequence of non-copying `memoryview` segments.
 
-            o = b''.join(self._lst)
-            self._lst = []
-            self._len = 0
-            return o
+        This method is required because efficient operations in pure Python typically depend on delegating work to
+        CPython's optimized implementations for searching/slicing within contiguous regions. By exposing
+        already-contiguous segments, the buffer enables implementations of `find/rfind` and higher-level framing to
+        avoid Python-level per-byte iteration.
 
-        if not (lst := self._lst):
-            return None
+        The returned segments must:
+          - collectively represent exactly the readable bytes, in order
+          - be 1-D, byte-oriented views (itemsize 1)
+          - be non-copying views of the underlying storage
+          - be non-empty - lack of data is represented by returning no segments, not a empty segments
 
-        c = 0
-        for i, d in enumerate(lst):
-            r = n - c
-            if (l := len(d)) >= r:
-                return self._chop(i, r)
-            c += l
+        Callers must assume that the returned views may be invalidated by subsequent mutations of the originating
+        buffer/view (e.g., advancing, writing, reserving, committing), depending on the implementation's rules.
+        """
 
-        return None
-
-    def read_exact(self, sz: int) -> bytes:
-        d = self.read(sz)
-        if d is None or len(d) != sz:
-            raise EOFError(f'ReadableListBuffer got {"no" if d is None else len(d)}, expected {sz}')
-        return d
-
-    def read_until_(self, delim: bytes = b'\n', start_buffer: int = 0) -> ta.Union[bytes, int]:
-        if not (lst := self._lst):
-            return 0
-
-        i = start_buffer
-        while i < len(lst):
-            if (p := lst[i].find(delim)) >= 0:
-                return self._chop(i, p + len(delim))
-            i += 1
-
-        return i
-
-    def read_until(self, delim: bytes = b'\n') -> ta.Optional[bytes]:
-        r = self.read_until_(delim)
-        return r if isinstance(r, bytes) else None
-
-    #
-
-    DEFAULT_BUFFERED_READER_CHUNK_SIZE: ta.ClassVar[int] = -1
-
-    @ta.final
-    class _BufferedBytesReader(BufferedBytesReader):
-        def __init__(
-                self,
-                raw: RawBytesReader,
-                buf: 'ReadableListBuffer',
-                *,
-                chunk_size: ta.Optional[int] = None,
-        ) -> None:
-            self._raw = raw
-            self._buf = buf
-            self._chunk_size = chunk_size or ReadableListBuffer.DEFAULT_BUFFERED_READER_CHUNK_SIZE
-
-        def read1(self, n: int = -1, /) -> bytes:
-            if n < 0:
-                n = self._chunk_size
-            if not n:
-                return b''
-            if 0 < n <= len(self._buf):
-                return self._buf.read(n) or b''
-            return self._raw.read1(n)
-
-        def read(self, /, n: int = -1) -> bytes:
-            if n < 0:
-                return self.readall()
-            while len(self._buf) < n:
-                if not (b := self._raw.read1(n)):
-                    break
-                self._buf.feed(b)
-
-            if len(self._buf) >= n:
-                return self._buf.read(n) or b''
-
-            # EOF with a partial buffer: return what we have.
-            return self._buf.read() or b''
-
-        def readall(self) -> bytes:
-            buf = io.BytesIO()
-            buf.write(self._buf.read() or b'')
-            while (b := self._raw.read1(self._chunk_size)):
-                buf.write(b)
-            return buf.getvalue()
-
-    def new_buffered_reader(
-            self,
-            raw: RawBytesReader,
-            *,
-            chunk_size: ta.Optional[int] = None,
-    ) -> BufferedBytesReader:
-        return self._BufferedBytesReader(
-            raw,
-            self,
-            chunk_size=chunk_size,
-        )
-
-    @ta.final
-    class _AsyncBufferedBytesReader(AsyncBufferedBytesReader):
-        def __init__(
-                self,
-                raw: AsyncRawBytesReader,
-                buf: 'ReadableListBuffer',
-                *,
-                chunk_size: ta.Optional[int] = None,
-        ) -> None:
-            self._raw = raw
-            self._buf = buf
-            self._chunk_size = chunk_size or ReadableListBuffer.DEFAULT_BUFFERED_READER_CHUNK_SIZE
-
-        async def read1(self, n: int = -1, /) -> bytes:
-            if n < 0:
-                n = self._chunk_size
-            if not n:
-                return b''
-            if 0 < n <= len(self._buf):
-                return self._buf.read(n) or b''
-            return await self._raw.read1(n)
-
-        async def read(self, /, n: int = -1) -> bytes:
-            if n < 0:
-                return await self.readall()
-            while len(self._buf) < n:
-                if not (b := await self._raw.read1(n)):
-                    break
-                self._buf.feed(b)
-
-            if len(self._buf) >= n:
-                return self._buf.read(n) or b''
-
-            # EOF with a partial buffer: return what we have.
-            return self._buf.read() or b''
-
-        async def readall(self) -> bytes:
-            buf = io.BytesIO()
-            buf.write(self._buf.read() or b'')
-            while b := await self._raw.read1(self._chunk_size):
-                buf.write(b)
-            return buf.getvalue()
-
-    def new_async_buffered_reader(
-            self,
-            raw: AsyncRawBytesReader,
-            *,
-            chunk_size: ta.Optional[int] = None,
-    ) -> AsyncBufferedBytesReader:
-        return self._AsyncBufferedBytesReader(
-            raw,
-            self,
-            chunk_size=chunk_size,
-        )
+        raise NotImplementedError
 
 
-##
+class ByteStreamBufferView(ByteStreamBufferLike, Abstract):
+    """
+    A read-only, possibly non-contiguous view of bytes.
+
+    This is the result type of operations like `ByteStreamBuffer.split_to()`: it represents a *logical* byte sequence
+    without requiring a copy. A `ByteStreamBufferView` is intentionally minimal: it is not a general-purpose container
+    API, not a random-access sequence, and not intended for arbitrary indexing/slicing-heavy use.
+
+    `ByteStreamBufferView` exists to make copy boundaries explicit:
+      - Use `segments()` / `peek()` to access data without copying.
+      - Use `tobytes()` (or `bytes(view)`) to intentionally materialize a contiguous `bytes` object.
+
+    Implementations may be backed by one or many `memoryview` segments; the semantics are defined as if all readable
+    bytes were concatenated in order.
+    """
+
+    @abc.abstractmethod
+    def tobytes(self) -> bytes:
+        """
+        Materialize this view as a contiguous `bytes` object (copying).
+
+        This is the explicit copy boundary: callers should prefer `peek()` / `segments()` for zero-copy-ish access when
+        feasible, and use `tobytes()` only when a contiguous owned `bytes` is required.
+        """
+
+        raise NotImplementedError
 
 
-class IncrementalWriteBuffer:
-    def __init__(
-            self,
-            data: bytes,
-            *,
-            write_size: int = 0x10000,
-    ) -> None:
-        super().__init__()
+class ByteStreamBuffer(ByteStreamBufferLike, Abstract):
+    """
+    An incremental, consumption-oriented byte accumulator intended for protocol parsing.
 
-        check.not_empty(data)
-        self._len = len(data)
-        self._write_size = write_size
+    A `ByteStreamBuffer` is a *stream buffer*: bytes are appended by a driver/transport and then consumed by codecs via
+    peeking, searching, splitting, and advancing-without forcing repeated concatenation or reallocation. It is
+    explicitly designed to support segmented storage (to avoid "a huge buffer pinned by a tiny tail") and to enable
+    low-copy pipeline-style decoding (Netty/Tokio-inspired).
 
-        self._lst = [
-            data[i:i + write_size]
-            for i in range(0, len(data), write_size)
-        ]
-        self._pos = 0
+    What it is for:
+      - buffering raw bytes between I/O and protocol codecs,
+      - framing (delimiters/length-prefixed) using split/advance,
+      - efficient searching over buffered bytes using C-accelerated primitives via `memoryview` segments.
 
-    @property
-    def rem(self) -> int:
-        return self._len - self._pos
+    What it is *not* for:
+      - a general-purpose replacement for `bytes`/`bytearray`,
+      - a `collections.abc.Sequence` or random-access container abstraction,
+      - arbitrary indexing/slicing-heavy workloads (use `bytes`/`bytearray`/`memoryview` directly).
 
-    def write(self, fn: ta.Callable[[bytes], int]) -> int:
-        lst = check.not_empty(self._lst)
+    `ByteStreamBuffer` deliberately exposes `memoryview` at its boundary. This is foundational: it allows both immutable
+    (`bytes`) and mutable (`bytearray`) internal storage to be viewed in O(1) without copying. It also avoids relying
+    on `io.BytesIO` as a core backing store: while `BytesIO.getbuffer()` can expose a view, exported views pin the
+    underlying buffer against resizing, which makes it awkward as a general-purpose buffer substrate.
 
-        t = 0
-        for i, d in enumerate(lst):  # noqa
-            d = check.not_empty(d)
-            n = fn(d)
-            if not n:
-                break
+    Semantics note:
+      Many methods describe behavior in terms of the *conceptual concatenation* of readable bytes, even if the buffer
+      is physically segmented. This is what "stream-correct" means here: results must be correct regardless of how the
+      buffered bytes are chunked internally.
+    """
 
-            if n > len(d):
-                raise ValueError(n)
+    @abc.abstractmethod
+    def advance(self, n: int, /) -> None:
+        """
+        Consume (discard) exactly `n` readable bytes from the front of the buffer.
 
-            t += n
+        This operation must not copy remaining bytes unnecessarily. For segmented buffers, this typically adjusts a head
+        offset and drops exhausted segments.
 
-            if n < len(d):
-                # Short write - keep the remainder of this chunk and stop.
-                self._lst = [
-                    d[n:],
-                    *lst[i + 1:],
-                ]
-                self._pos += t
-                return t
+        Implementations must raise if `n` is negative or greater than `len(self)`.
+        """
 
-        if t:
-            # Only fully-written chunks were consumed.
-            self._lst = lst[i + 1:]
-            self._pos += t
+        raise NotImplementedError
 
-        return t
+    @abc.abstractmethod
+    def split_to(self, n: int, /) -> ByteStreamBufferView:
+        """
+        Split off and return a read-only view of the first `n` readable bytes, consuming them from this buffer.
+
+        This is the core "low-copy framing" primitive:
+          - codecs can `split_to(frame_len)` to obtain a view of an entire frame without copying,
+          - then immediately continue parsing subsequent frames from the remaining bytes.
+
+        Implementations should strive for O(1) or amortized O(1) behavior, returning a view that references underlying
+        segments rather than materializing a new contiguous `bytes`.
+
+        Implementations must raise if `n` is negative or greater than `len(self)`.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def coalesce(self, n: int, /) -> memoryview:
+        """
+        Ensure the first `n` readable bytes are available contiguously and return a view of them.
+
+        Semantics:
+          - Non-consuming: does not advance.
+          - May restructure internal segments (content-preserving) to make the prefix contiguous.
+          - Returns a read-only-ish `memoryview` (callers must not mutate readable bytes).
+
+        Copying behavior:
+          - If `peek()` already exposes >= n contiguous bytes, this is zero-copy.
+          - Otherwise, it copies exactly the first `n` bytes into a new contiguous segment and rewrites the internal
+            segment list so that segment[0] contains that prefix.
+
+        Reserve interaction:
+          - Disallowed while an outstanding reservation exists, since reserve() hands out a view that must not be
+            invalidated by internal reshaping.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def find(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
+        """
+        Find the first occurrence of `sub` within the readable bytes and return its offset, or -1 if not found.
+
+        This operation is "stream-correct": it must behave as if searching within the conceptual concatenation of all
+        readable bytes, even if the buffer is physically segmented. In particular, matches that span segment boundaries
+        must be detected.
+
+        `start` and `end` are offsets into the readable region, matching the semantics of `bytes.find()`:
+          - `start` defaults to 0 (the beginning of readable bytes),
+          - `end` defaults to `len(self)`.
+
+        Rationale for being part of the core interface:
+          In pure Python, higher-level codecs cannot efficiently implement correct cross-segment searching byte-by-byte.
+          Keeping `find` near the owning storage allows implementations to exploit contiguous segments and CPython's
+          optimized search within each segment while still providing correct stream semantics.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def rfind(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
+        """
+        Find the last occurrence of `sub` within the readable bytes and return its offset, or -1 if not found.
+
+        This operation is also stream-correct and matches `bytes.rfind()` semantics for `start`/`end`, interpreted as
+        offsets into the readable region of this buffer.
+        """
+
+        raise NotImplementedError
+
+
+class MutableByteStreamBuffer(ByteStreamBuffer, Abstract):
+    """
+    A writable `ByteStreamBuffer`: supports appending bytes and (optionally) reserving writable space.
+
+    `MutableByteStreamBuffer` is the primary target for drivers/transports feeding data into protocol pipelines, and for
+    encoders building outbound byte sequences. It intentionally does not imply any particular I/O model (blocking,
+    asyncio, custom reactors); it is simply the mutable byte substrate.
+
+    Implementations may be linear (single `bytearray` + indices), segmented (multiple chunks), or adaptive.
+    """
+
+    @abc.abstractmethod
+    def write(self, data: BytesLike, /) -> None:
+        """
+        Append `data` to the end of the readable region (after any existing unread bytes).
+
+        Implementations should avoid needless copying; e.g., segmented buffers may store large `bytes` chunks directly,
+        while linear buffers may copy into a `bytearray`.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def reserve(self, n: int, /) -> memoryview:
+        """
+        Reserve writable space for at least `n` bytes and return a writable `memoryview` into that space.
+
+        This method exists to support "close to the metal" drivers that can fill buffers directly (e.g., `recv_into`,
+        `readinto`) without allocating temporary `bytes` objects.
+
+        The returned view represents capacity that is not yet part of the readable region. The caller must write into
+        some prefix of the view and then call `commit(written)` to make those bytes readable.
+
+        Implementations should document their rules regarding outstanding reservations; a simple and robust rule is:
+          - only one active reservation may exist at a time,
+          - mutations that would reallocate storage are forbidden while a reservation is outstanding.
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def commit(self, n: int, /) -> None:
+        """
+        Commit `n` bytes from the most recent reservation, making them readable.
+
+        Conceptually, `reserve()` may provide more capacity than the caller actually uses; `commit(n)` "shrinks" that
+        over-reservation by only publishing the first `n` bytes as readable.
+
+        Implementations must validate:
+          - that a reservation is outstanding,
+          - that `0 <= n <= reserved_length`.
+
+        After commit, the reservation is considered consumed; subsequent reads and searches must include the committed
+        bytes as part of the readable region.
+        """
+
+        raise NotImplementedError
 
 
 ########################################
@@ -6247,6 +5660,453 @@ class AwsLogMessageBuilder:
 
 
 ########################################
+# ../../../../../omlish/io/streams/base.py
+
+
+##
+
+
+class BaseByteStreamBufferLike(ByteStreamBufferLike, Abstract):
+    def _norm_slice(self, start: int, end: ta.Optional[int]) -> ta.Tuple[int, int]:
+        s, e, _ = slice(start, end, 1).indices(len(self))
+        if e < s:
+            e = s
+        return s, e
+
+
+########################################
+# ../../../../../omlish/io/streams/framing.py
+
+
+##
+
+
+class LongestMatchDelimiterByteStreamFrameDecoder:
+    """
+    A delimiter-based framing codec that supports *overlapping* delimiters with longest-match semantics.
+
+    This is intentionally decoupled from any I/O model: it operates purely on a `ByteStreamBuffer`-like object
+    (providing `__len__`, `find`, `split_to`, `advance`, and `segments`/`peek`).
+
+    Key property:
+      Given overlapping delimiters like [b'\\r', b'\\r\\n'], this codec will *not* emit a frame ending at '\\r' unless
+      it can prove the next byte is not '\\n' (or the stream is finalized).
+
+    Implementation note:
+      This codec relies on `ByteStreamBuffer.find(...)` being stream-correct and C-accelerated over the buffer's
+      underlying contiguous segments. In pure Python it is usually better to keep searching near the storage layer than
+      to re-implement scanning byte-by-byte in higher-level codecs.
+    """
+
+    def __init__(
+            self,
+            delims: ta.Sequence[bytes],
+            *,
+            keep_ends: bool = False,
+            max_size: ta.Optional[int] = None,
+    ) -> None:
+        super().__init__()
+
+        dl = list(delims)
+        if not dl:
+            raise ValueError('no delimiters')
+        if any(not isinstance(d, (bytes, bytearray)) for d in dl):
+            raise TypeError(delims)
+        if any(not d for d in dl):
+            raise ValueError('empty delimiter')
+
+        self._delims = tuple(bytes(d) for d in dl)
+        self._keep_ends = keep_ends
+        self._max_size = max_size
+
+        # Sort by length descending for "choose longest at same start".
+        self._delims_by_len = tuple(sorted(self._delims, key=len, reverse=True))
+
+        # Build prefix relationships for overlap deferral. For each short delimiter, store longer delimiters that start
+        # with it.
+        pref: ta.Dict[bytes, ta.List[bytes]] = {}
+        for d in self._delims:
+            for e in self._delims:
+                if d is e:
+                    continue
+                if len(e) > len(d) and e.startswith(d):
+                    pref.setdefault(d, []).append(e)
+        for k, vs in list(pref.items()):
+            pref[k] = sorted(vs, key=len, reverse=True)
+        self._prefix_longer = pref
+
+        self._max_delim_len = max(len(d) for d in self._delims)
+
+    @ta.overload
+    def decode(
+            self,
+            buf: ByteStreamBuffer,
+            *,
+            final: bool = False,
+            include_delims: ta.Literal[True],
+    ) -> ta.List[ta.Tuple[ByteStreamBufferView, bytes]]:
+        ...
+
+    @ta.overload
+    def decode(
+            self,
+            buf: ByteStreamBuffer,
+            *,
+            final: bool = False,
+            include_delims: ta.Literal[False] = False,
+    ) -> ta.List[ByteStreamBufferView]:
+        ...
+
+    def decode(
+            self,
+            buf,
+            *,
+            final=False,
+            include_delims=False,
+    ):
+        """
+        Consume as many complete frames as possible from `buf` and return them as views.
+
+        - Frames are produced without copying (via `buf.split_to(...)`) when possible.
+        - The delimiter is consumed from the buffer; it may be retained on the frame if `keep_ends=True`.
+        - If `final=True`, the codec will not defer on overlapping delimiter prefixes at the end of the buffer.
+
+        Raises:
+          - BufferTooLargeByteStreamBufferError if no delimiter is present and the buffered prefix exceeds max_size.
+          - FrameTooLargeByteStreamBufferError if the next frame payload (bytes before delimiter) exceeds max_size.
+
+        Note on `max_size`:
+          `max_size` is enforced as a limit on the *current* frame (bytes before the next delimiter). If the buffer
+          contains bytes for a subsequent frame that already exceed `max_size`, this codec will only raise when it would
+          otherwise need to make progress on that oversized frame. Concretely: if this call already emitted at least one
+          frame, it will return those frames rather than raising immediately on trailing oversized data, leaving the
+          remaining bytes buffered.
+        """
+
+        out: ta.List[ta.Any] = []
+
+        while True:
+            hit = self._find_next_delim(buf)
+            if hit is None:
+                if self._max_size is not None and len(buf) > self._max_size and not out:
+                    raise BufferTooLargeByteStreamBufferError('buffer exceeded max_size without delimiter')
+                return out
+
+            pos, delim = hit
+
+            if self._max_size is not None and pos > self._max_size:
+                raise FrameTooLargeByteStreamBufferError('frame exceeded max_size')
+
+            if not final and self._should_defer(buf, pos, delim):
+                return out
+
+            if self._keep_ends:
+                frame = buf.split_to(pos + len(delim))
+            else:
+                frame = buf.split_to(pos)
+                buf.advance(len(delim))
+
+            if include_delims:
+                out.append((frame, delim))
+            else:
+                out.append(frame)
+
+    def _find_next_delim(self, buf: ByteStreamBuffer) -> ta.Optional[ta.Tuple[int, bytes]]:
+        """
+        Return (pos, delim) for the earliest delimiter occurrence. If multiple delimiters occur at the same position,
+        choose the longest matching delimiter.
+        """
+
+        ln = len(buf)
+        if not ln:
+            return None
+
+        best_pos = None  # type: ta.Optional[int]
+        best_delim = None  # type: ta.Optional[bytes]
+
+        # First pass: find the earliest position of any delimiter (cheap, uses buf.find).
+        for d in self._delims:
+            i = buf.find(d, 0, None)
+            if i == -1:
+                continue
+            if best_pos is None or i < best_pos:
+                best_pos = i
+                best_delim = d
+                if not best_pos:
+                    # Can't beat position 0; still need to choose longest at this position.
+                    pass
+            elif i == best_pos and best_delim is not None and len(d) > len(best_delim):
+                best_delim = d
+
+        if best_pos is None or best_delim is None:
+            return None
+
+        # Second pass: at that position, choose the longest delimiter that actually matches there. (We can't just rely
+        # on "which delimiter found it first" when overlaps exist.)
+        pos = best_pos
+        for d in self._delims_by_len:
+            if pos + len(d) > ln:
+                continue
+            if buf.find(d, pos, pos + len(d)) == pos:
+                return pos, d
+
+        # Shouldn't happen: best_pos came from some delimiter occurrence.
+        return pos, best_delim
+
+    def _should_defer(self, buf: ByteStreamBuffer, pos: int, matched: bytes) -> bool:
+        """
+        Return True if we must defer because a longer delimiter could still match starting at `pos` but we don't yet
+        have enough bytes to decide.
+
+        We only defer when:
+          - the current match ends at the end of the currently buffered bytes, and
+          - there exists some longer delimiter that has `matched` as a prefix, and
+          - the buffered bytes from pos match the available prefix of that longer delimiter.
+        """
+
+        ln = len(buf)
+        endpos = pos + len(matched)
+        if endpos != ln:
+            return False
+
+        longer = self._prefix_longer.get(matched)
+        if not longer:
+            return False
+
+        avail = ln - pos
+        for d2 in longer:
+            if avail >= len(d2):
+                # If we had enough bytes, we'd have matched d2 in _find_next_delim.
+                continue
+            # Check whether buffered bytes match the prefix of d2 that we have available.
+            # Use stream-correct find on the prefix.
+            prefix = d2[:avail]
+            if buf.find(prefix, pos, pos + avail) == pos:
+                return True
+
+        return False
+
+
+##
+
+
+class LengthFieldByteStreamFrameDecoder:
+    """
+    Decode length-prefixed frames from a BytesBuffer/MutableBytesBuffer.
+
+    This is modeled after the common Netty pattern:
+      total_frame_length = length_field_value + length_adjustment + length_field_end_offset
+    where:
+      length_field_end_offset = length_field_offset + length_field_length
+
+    Parameters:
+      - length_field_offset: byte offset of the length field from the start of the frame
+      - length_field_length: length of the length field in bytes (1, 2, 4, or 8)
+      - byteorder: 'big' or 'little'
+      - length_adjustment: adjustment added to computed frame length (may be negative)
+      - initial_bytes_to_strip: number of leading bytes to drop from the emitted frame (typically used to strip the
+        length field and/or header from the delivered payload)
+      - max_frame_length: maximum allowed total frame length (before stripping)
+
+    Notes:
+      - This decoder operates directly on the provided buffer and consumes bytes as frames are produced.
+      - It relies on `buf.coalesce(n)` for efficient header parsing in pure Python.
+      - It does not require async/await and is suitable for pipeline-style codecs.
+    """
+
+    def __init__(
+            self,
+            *,
+            length_field_offset: int = 0,
+            length_field_length: int = 4,
+            byteorder: ta.Literal['little', 'big'] = 'big',
+            length_adjustment: int = 0,
+            initial_bytes_to_strip: int = 0,
+            max_frame_length: ta.Optional[int] = None,
+    ) -> None:
+        super().__init__()
+
+        if length_field_offset < 0:
+            raise ValueError(length_field_offset)
+        if length_field_length not in (1, 2, 4, 8):
+            raise ValueError(length_field_length)
+        if byteorder not in ('big', 'little'):
+            raise ValueError(byteorder)
+        if initial_bytes_to_strip < 0:
+            raise ValueError(initial_bytes_to_strip)
+        if max_frame_length is not None and max_frame_length < 0:
+            raise ValueError(max_frame_length)
+
+        self._off = int(length_field_offset)
+        self._llen = int(length_field_length)
+        self._byteorder = byteorder
+        self._adj = int(length_adjustment)
+        self._strip = int(initial_bytes_to_strip)
+        self._max = None if max_frame_length is None else int(max_frame_length)
+
+        self._end_off = self._off + self._llen
+
+    def decode(self, buf: ByteStreamBuffer) -> ta.List[ByteStreamBufferView]:
+        """
+        Consume as many complete frames as possible from `buf` and return them as views.
+
+        Returns:
+          - list of BytesView-like objects (from `split_to`) representing each decoded frame
+
+        Raises:
+          - FrameTooLarge if a frame exceeds max_frame_length
+          - BufferTooLarge if max_frame_length is set and the buffered unread prefix grows beyond it without making
+            progress (defensive; rarely hit if upstream caps buffer growth)
+        """
+
+        out: ta.List[ta.Any] = []
+
+        while True:
+            # Need at least enough bytes to read the length field.
+            if len(buf) < self._end_off:
+                return out
+
+            # Read header up through the length field contiguously.
+            # IMPORTANT: don't keep exported memoryviews alive across buffer mutation.
+            mv = buf.coalesce(self._end_off)
+            if len(mv) < self._end_off:
+                # Defensive: coalesce contract.
+                return out
+
+            # Copy just the length field bytes (1/2/4/8) so we can safely mutate the buffer afterward.
+            lf_bytes = bytes(mv[self._off:self._end_off])
+            # del mv
+
+            length_val = int.from_bytes(lf_bytes, self._byteorder, signed=False)
+
+            total_len = length_val + self._adj + self._end_off
+            if total_len < 0:
+                raise ValueError('negative frame length')
+
+            if self._max is not None and total_len > self._max:
+                raise FrameTooLargeByteStreamBufferError('frame exceeded max_frame_length')
+
+            # If we don't have the full frame yet, either wait or (optionally) fail fast if buffering is clearly out of
+            # control.
+            if len(buf) < total_len:
+                if self._max is not None and len(buf) > self._max:
+                    raise BufferTooLargeByteStreamBufferError(
+                        'buffer exceeded max_frame_length without completing a frame',
+                    )
+                return out
+
+            # We have a complete frame available.
+            if self._strip:
+                if self._strip > total_len:
+                    raise ValueError('initial_bytes_to_strip > frame length')
+                buf.advance(self._strip)
+                total_len -= self._strip
+
+            out.append(buf.split_to(total_len))
+
+            # Loop for additional frames
+
+
+########################################
+# ../../../../../omlish/io/streams/utils.py
+
+
+##
+
+
+class ByteStreamBuffers:
+    _CAN_CONVERT_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
+        bytes,
+        bytearray,
+        memoryview,
+        ByteStreamBufferLike,
+    )
+
+    #
+
+    @staticmethod
+    def can_bytes(obj: ta.Any) -> bool:
+        return type(obj) in (cts := ByteStreamBuffers._CAN_CONVERT_TYPES) or isinstance(obj, cts)
+
+    @staticmethod
+    def _to_bytes(obj: ta.Any) -> bytes:
+        if type(obj) is memoryview or isinstance(obj, memoryview):
+            return ByteStreamBuffers._memoryview_to_bytes(obj)
+
+        elif isinstance(obj, ByteStreamBufferView):
+            return obj.tobytes()
+
+        elif isinstance(obj, ByteStreamBufferLike):
+            return b''.join(bytes(mv) for mv in obj.segments())
+
+        else:
+            raise TypeError(obj)
+
+    @staticmethod
+    def to_bytes(obj: ta.Any) -> bytes:
+        if (ot := type(obj)) is bytes:
+            return obj
+        elif ot is bytearray:
+            return bytes(obj)
+
+        elif isinstance(obj, bytes):
+            return obj
+        elif isinstance(obj, bytearray):
+            return bytes(obj)
+
+        else:
+            return ByteStreamBuffers._to_bytes(obj)
+
+    @staticmethod
+    def to_bytes_or_bytearray(obj: ta.Any) -> ta.Union[bytes, bytearray]:
+        if (ot := type(obj)) is bytes or ot is bytearray or isinstance(obj, (bytes, bytearray)):
+            return obj
+
+        else:
+            return ByteStreamBuffers._to_bytes(obj)
+
+    #
+
+    @staticmethod
+    def bytes_len(obj: ta.Any) -> int:
+        if ByteStreamBuffers.can_bytes(obj):
+            return len(obj)
+
+        else:
+            # Not bytes-like
+            return 0
+
+    #
+
+    @staticmethod
+    def iter_segments(obj: ta.Any) -> ta.Iterator[memoryview]:
+        if (ot := type(obj)) is memoryview:
+            yield obj
+        elif ot is bytes or ot is bytearray:
+            yield memoryview(obj)
+
+        elif isinstance(obj, memoryview):
+            yield obj
+        elif isinstance(obj, (bytes, bytearray)):
+            yield memoryview(obj)
+
+        elif isinstance(obj, ByteStreamBufferLike):
+            yield from obj.segments()
+
+        else:
+            raise TypeError(obj)
+
+    #
+
+    @staticmethod
+    def _memoryview_to_bytes(mv: memoryview) -> bytes:
+        if (((ot := type(obj := mv.obj)) is bytes or ot is bytearray or isinstance(obj, (bytes, bytearray))) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
+            return obj  # type: ignore[return-value]
+
+        return mv.tobytes()
+
+
+########################################
 # ../../../../../omlish/lite/configs.py
 
 
@@ -6591,6 +6451,173 @@ def subprocess_maybe_shell_wrap_exec(*cmd: str) -> ta.Tuple[str, ...]:
         return subprocess_shell_wrap_exec(*cmd)
     else:
         return cmd
+
+
+########################################
+# ../../../../../omlish/io/streams/direct.py
+
+
+##
+
+
+class BaseDirectByteStreamBufferLike(BaseByteStreamBufferLike, Abstract):
+    def __init__(self, data: BytesLike) -> None:
+        super().__init__()
+
+        self._data = data
+        if isinstance(data, memoryview):
+            self._mv_ = data
+        else:
+            self._b_ = data
+
+    _mv_: memoryview
+    _b_: ta.Union[bytes, bytearray]
+
+    def _mv(self) -> memoryview:
+        try:
+            return self._mv_
+        except AttributeError:
+            pass
+
+        self._mv_ = mv = memoryview(self._b_)
+        return mv
+
+    def _b(self) -> ta.Union[bytes, bytearray]:
+        try:
+            return self._b_
+        except AttributeError:
+            pass
+
+        self._b_ = b = ByteStreamBuffers._memoryview_to_bytes(self._mv_)  # noqa
+        return b
+
+
+class DirectByteStreamBufferView(BaseDirectByteStreamBufferLike, ByteStreamBufferView):
+    def __len__(self) -> int:
+        return len(self._data)
+
+    def peek(self) -> memoryview:
+        return self._mv()
+
+    def segments(self) -> ta.Sequence[memoryview]:
+        return (self._mv(),) if len(self._data) else ()
+
+    def tobytes(self) -> bytes:
+        if type(b := self._b()) is bytes:
+            return b
+        return bytes(b)
+
+
+class DirectByteStreamBuffer(BaseDirectByteStreamBufferLike, ByteStreamBuffer):
+    """
+    A read-only ByteStreamBuffer that wraps existing bytes without copying.
+
+    This is a lightweight, zero-copy wrapper around bytes/bytearray/memoryview that provides the full
+    ByteStreamBuffer interface (find, rfind, split_to, advance, coalesce) without mutation capabilities.
+
+    Strengths:
+      - Zero-copy construction from existing data
+      - Always contiguous (coalesce is trivial)
+      - Fast find/rfind delegating to optimized bytes methods
+      - Simple implementation with minimal overhead
+
+    Use cases:
+      - Parsing fixed/immutable data (HTTP requests, protocol messages)
+      - Using framers/codecs on data already in memory
+      - Avoiding buffer allocation/copying overhead when mutation isn't needed
+
+    Important notes:
+      - If constructed from a bytearray, the underlying data could still be mutated externally. This is by design -
+        we're wrapping directly, not defensively copying.
+      - This is a read-only buffer - it does not implement MutableByteStreamBuffer (no write/reserve/commit).
+      - All views returned from split_to() remain valid as they reference the original underlying data.
+
+    Example:
+        >>> data = b'GET /path HTTP/1.1\\r\\nHost: example.com\\r\\n\\r\\n'
+        >>> buf = DirectByteStreamBuffer(data)
+        >>> pos = buf.find(b'\\r\\n\\r\\n')
+        >>> headers = buf.split_to(pos)
+        >>> print(headers.tobytes())
+        b'GET /path HTTP/1.1\\r\\nHost: example.com'
+    """
+
+    def __init__(self, data: BytesLike) -> None:
+        super().__init__(data)
+
+        self._rpos = 0
+
+    def __len__(self) -> int:
+        return len(self._data) - self._rpos
+
+    def peek(self) -> memoryview:
+        mv = self._mv()
+        if self._rpos >= len(mv):
+            return memoryview(b'')
+        return mv[self._rpos:]
+
+    def segments(self) -> ta.Sequence[memoryview]:
+        mv = self.peek()
+        return (mv,) if len(mv) else ()
+
+    def advance(self, n: int, /) -> None:
+        if n < 0 or n > len(self):
+            raise ValueError(n)
+        self._rpos += n
+
+    def split_to(self, n: int, /) -> ByteStreamBufferView:
+        if n < 0 or n > len(self):
+            raise ValueError(n)
+        if not n:
+            return _EMPTY_DIRECT_BYTE_STREAM_BUFFER_VIEW
+
+        if not self._rpos and n == len(self._data):
+            self._rpos += n
+            return DirectByteStreamBufferView(self._data)
+
+        mv = self._mv()
+        view = mv[self._rpos:self._rpos + n]
+        self._rpos += n
+        return DirectByteStreamBufferView(view)
+
+    def find(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
+        start, end = self._norm_slice(start, end)
+
+        if not sub:
+            return start
+
+        b = self._b()
+        idx = b.find(sub, self._rpos + start, self._rpos + end)
+        return (idx - self._rpos) if idx >= 0 else -1
+
+    def rfind(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
+        start, end = self._norm_slice(start, end)
+
+        if not sub:
+            return end
+
+        b = self._b()
+        idx = b.rfind(sub, self._rpos + start, self._rpos + end)
+        return (idx - self._rpos) if idx >= 0 else -1
+
+    def coalesce(self, n: int, /) -> memoryview:
+        if n < 0 or n > len(self):
+            raise ValueError(n)
+        if not n:
+            return memoryview(b'')
+
+        # Always contiguous - just return the requested slice
+        mv = self._mv()
+        return mv[self._rpos:self._rpos + n]
+
+
+##
+
+
+_EMPTY_DIRECT_BYTE_STREAM_BUFFER_VIEW = DirectByteStreamBufferView(b'')
+
+
+def empty_byte_stream_buffer_view() -> ByteStreamBufferView:
+    return _EMPTY_DIRECT_BYTE_STREAM_BUFFER_VIEW
 
 
 ########################################
@@ -7562,6 +7589,709 @@ class LogRecordLoggingContext(LoggingContext):
 
 
 ########################################
+# ../../../../../omlish/io/streams/segmented.py
+
+
+##
+
+
+class SegmentedByteStreamBufferView(BaseByteStreamBufferLike, ByteStreamBufferView):
+    """
+    A read-only, possibly non-contiguous view over a sequence of byte segments.
+
+    This is intended to be produced by `SegmentedByteStreamBuffer.split_to()` without copying.
+    """
+
+    def __init__(self, segs: ta.Sequence[memoryview]) -> None:
+        super().__init__()
+
+        self._segs = tuple(segs)
+        for mv in self._segs:
+            self._len += len(mv)
+
+    _len = 0
+
+    def __len__(self) -> int:
+        return self._len
+
+    def peek(self) -> memoryview:
+        if not self._segs:
+            return memoryview(b'')
+        return self._segs[0]
+
+    def segments(self) -> ta.Sequence[memoryview]:
+        return self._segs
+
+    def tobytes(self) -> bytes:
+        if not self._segs:
+            return b''
+        if len(self._segs) == 1:
+            return bytes(self._segs[0])
+        return b''.join(bytes(mv) for mv in self._segs)
+
+
+class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
+    """
+    A segmented, consumption-oriented bytes buffer.
+
+    Internally stores a list of `bytes`/`bytearray` segments plus a head offset. Exposes readable data as `memoryview`
+    segments without copying.
+
+    Optional "chunked writes":
+      - If chunk_size > 0, small writes are accumulated into a lazily-allocated active bytearray "chunk" up to
+        chunk_size.
+      - Writes >= chunk_size are stored as their own segments (after flushing any active chunk).
+      - On flush, the active chunk is kept as a bytearray segment iff it is at least `chunk_compact_threshold` full;
+        otherwise it is materialized as bytes to avoid pinning a large capacity for tiny content.
+
+    Reserve/commit:
+      - If chunk_size > 0 and reserve(n) fits in the active chunk, the reservation is carved from the active chunk.
+        Reserved bytes are not readable until commit().
+      - If reserve(n) does not fit, the active chunk is flushed first.
+      - If n <= chunk_size after flushing, the reservation is served from a new active chunk (so the remainder becomes
+        the next active chunk).
+      - If n > chunk_size, reserve allocates a dedicated buffer and on commit it is "closed" (it does not become the
+        next active chunk).
+
+    Important exported-view caveat:
+      - reserve() returns a memoryview. As long as any exported memoryview exists, the underlying bytearray must not be
+        resized, or Python will raise BufferError. Therefore the active chunk bytearray is *fixed capacity*
+        (len==chunk_size) and we track "used" bytes separately, writing via slice assignment rather than extend().
+    """
+
+    def __init__(
+            self,
+            *,
+            max_bytes: ta.Optional[int] = None,
+            chunk_size: int = 0,
+            chunk_compact_threshold: float = .25,
+    ) -> None:
+        super().__init__()
+
+        self._segs: ta.List[ta.Union[bytes, bytearray]] = []
+
+        self._max_bytes = None if max_bytes is None else int(max_bytes)
+
+        if chunk_size < 0:
+            raise ValueError(chunk_size)
+        self._chunk_size = chunk_size
+
+        if not (0.0 <= chunk_compact_threshold <= 1.0):
+            raise ValueError(chunk_compact_threshold)
+        self._chunk_compact_threshold = chunk_compact_threshold
+
+        self._active: ta.Optional[bytearray] = None
+        self._active_used = 0
+
+    _head_off = 0
+    _len = 0
+
+    _reserved: ta.Optional[bytearray] = None
+    _reserved_len = 0
+    _reserved_in_active = False
+
+    #
+
+    def __len__(self) -> int:
+        return self._len
+
+    def _active_readable_len(self) -> int:
+        if self._active is None:
+            return 0
+        if self._reserved_in_active and self._reserved is not None:
+            tail = self._reserved_len
+        else:
+            tail = 0
+        rl = self._active_used - tail
+        return rl if rl > 0 else 0
+
+    def peek(self) -> memoryview:
+        if not self._segs:
+            return memoryview(b'')
+
+        s0 = self._segs[0]
+        mv = memoryview(s0)
+        if self._head_off:
+            mv = mv[self._head_off:]
+
+        if s0 is self._active:
+            # Active is only meaningful by _active_used, not len(bytearray).
+            rl = self._active_readable_len()
+            if self._head_off >= rl:
+                return memoryview(b'')
+            mv = memoryview(self._active)[self._head_off:rl]
+            return mv
+
+        return mv
+
+    def segments(self) -> ta.Sequence[memoryview]:
+        if not self._segs:
+            return ()
+
+        out: ta.List[memoryview] = []
+
+        last_i = len(self._segs) - 1
+        for i, s in enumerate(self._segs):
+            if s is self._active and i == last_i:
+                # Active chunk: create fresh view with readable length.
+                rl = self._active_readable_len()
+                if not i:
+                    # Active is also first segment; apply head_off.
+                    if self._head_off >= rl:
+                        continue
+                    mv = memoryview(self._active)[self._head_off:rl]
+                else:
+                    if rl <= 0:
+                        continue
+                    mv = memoryview(self._active)[:rl]
+            else:
+                # Non-active segment.
+                mv = memoryview(s)
+                if not i and self._head_off:
+                    mv = mv[self._head_off:]
+
+            if len(mv):
+                out.append(mv)
+
+        return tuple(out)
+
+    #
+
+    def _ensure_active(self) -> bytearray:
+        if self._chunk_size <= 0:
+            raise RuntimeError('no active chunk without chunk_size')
+
+        a = self._active
+        if a is None:
+            a = bytearray(self._chunk_size)  # fixed capacity
+            self._segs.append(a)
+            self._active = a
+            self._active_used = 0
+
+        return a
+
+    def _flush_active(self) -> None:
+        if (a := self._active) is None:
+            return
+
+        if self._reserved_in_active:
+            raise OutstandingReserveByteStreamBufferError('outstanding reserve')
+
+        if (used := self._active_used) <= 0:
+            if self._segs and self._segs[-1] is a:
+                self._segs.pop()
+            self._active = None
+            self._active_used = 0
+            return
+
+        # If under threshold, always bytes() to avoid pinning.
+        if self._chunk_size and (float(used) / float(self._chunk_size)) < self._chunk_compact_threshold:
+            if not self._segs or self._segs[-1] is not a:
+                raise RuntimeError('active not at tail')
+            self._segs[-1] = bytes(memoryview(a)[:used])
+
+        else:
+            # Try to shrink in-place to used bytes. If exported views exist, this can BufferError; fall back to bytes()
+            # in that case.
+            if not self._segs or self._segs[-1] is not a:
+                raise RuntimeError('active not at tail')
+            try:
+                del a[used:]  # may raise BufferError if any exports exist
+            except BufferError:
+                self._segs[-1] = bytes(memoryview(a)[:used])
+
+        self._active = None
+        self._active_used = 0
+
+    def write(self, data: BytesLike, /) -> None:
+        if not data:
+            return
+        if isinstance(data, memoryview):
+            data = ByteStreamBuffers._memoryview_to_bytes(data)  # noqa
+        # elif isinstance(data, bytearray):
+        #     pass
+        # else:
+        #     pass
+
+        dl = len(data)
+
+        if self._max_bytes is not None and self._len + dl > self._max_bytes:
+            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_bytes')
+
+        if self._chunk_size <= 0:
+            self._segs.append(data)
+            self._len += dl
+            return
+
+        if self._reserved_in_active:
+            raise OutstandingReserveByteStreamBufferError('outstanding reserve')
+
+        if dl >= self._chunk_size:
+            self._flush_active()
+            self._segs.append(data)
+            self._len += dl
+            return
+
+        a = self._ensure_active()
+        if self._active_used + dl > self._chunk_size:
+            self._flush_active()
+            a = self._ensure_active()
+
+        # Copy into fixed-capacity buffer; do not resize.
+        memoryview(a)[self._active_used:self._active_used + dl] = data
+        self._active_used += dl
+        self._len += dl
+
+    def reserve(self, n: int, /) -> memoryview:
+        if n < 0:
+            raise ValueError(n)
+        if self._reserved is not None:
+            raise OutstandingReserveByteStreamBufferError('outstanding reserve')
+
+        if self._chunk_size <= 0:
+            b = bytearray(n)
+            self._reserved = b
+            self._reserved_len = n
+            self._reserved_in_active = False
+            return memoryview(b)
+
+        if n > self._chunk_size:
+            self._flush_active()
+            b = bytearray(n)
+            self._reserved = b
+            self._reserved_len = n
+            self._reserved_in_active = False
+            return memoryview(b)
+
+        # Ensure reservation fits in active; otherwise flush then create a new one.
+        if self._active is not None and (self._active_used + n > self._chunk_size):
+            self._flush_active()
+
+        a = self._ensure_active()
+
+        start = self._active_used
+        # Reservation does not change _active_used (not readable until commit).
+        self._reserved = a
+        self._reserved_len = n
+        self._reserved_in_active = True
+        return memoryview(a)[start:start + n]
+
+    def commit(self, n: int, /) -> None:
+        if self._reserved is None:
+            raise NoOutstandingReserveByteStreamBufferError('no outstanding reserve')
+        if n < 0 or n > self._reserved_len:
+            raise ValueError(n)
+
+        if self._reserved_in_active:
+            a = self._reserved
+            self._reserved = None
+            self._reserved_len = 0
+            self._reserved_in_active = False
+
+            if self._max_bytes is not None and self._len + n > self._max_bytes:
+                raise BufferTooLargeByteStreamBufferError('buffer exceeded max_bytes')
+
+            if n:
+                self._active_used += n
+                self._len += n
+
+            # Keep active for reuse.
+            self._active = a
+            return
+
+        b = self._reserved
+        self._reserved = None
+        self._reserved_len = 0
+        self._reserved_in_active = False
+
+        if self._max_bytes is not None and self._len + n > self._max_bytes:
+            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_bytes')
+
+        if not n:
+            return
+
+        if n == len(b):
+            self._segs.append(b)
+            self._len += n
+        else:
+            bb = bytes(memoryview(b)[:n])
+            self._segs.append(bb)
+            self._len += n
+
+    #
+
+    def advance(self, n: int, /) -> None:
+        if n < 0 or n > self._len:
+            raise ValueError(n)
+        if not n:
+            return
+
+        self._len -= n
+
+        while n and self._segs:
+            s0 = self._segs[0]
+
+            if s0 is self._active:
+                avail0 = self._active_readable_len() - self._head_off
+            else:
+                avail0 = len(s0) - self._head_off
+
+            if avail0 <= 0:
+                popped = self._segs.pop(0)
+                if popped is self._active:
+                    self._active = None
+                    self._active_used = 0
+                self._head_off = 0
+                continue
+
+            if n < avail0:
+                self._head_off += n
+                return
+
+            n -= avail0
+            popped = self._segs.pop(0)
+            if popped is self._active:
+                self._active = None
+                self._active_used = 0
+            self._head_off = 0
+
+        if n:
+            raise RuntimeError(n)
+
+    def split_to(self, n: int, /) -> ByteStreamBufferView:
+        if n < 0 or n > self._len:
+            raise ValueError(n)
+        if not n:
+            return _EMPTY_DIRECT_BYTE_STREAM_BUFFER_VIEW
+
+        out: ta.List[memoryview] = []
+        rem = n
+
+        while rem:
+            if not self._segs:
+                raise RuntimeError(rem)
+
+            s0 = self._segs[0]
+
+            if s0 is self._active:
+                rl = self._active_readable_len()
+                if self._head_off >= rl:
+                    raise RuntimeError(rem)
+                mv0 = memoryview(s0)[self._head_off:rl]
+            else:
+                mv0 = memoryview(s0)
+                if self._head_off:
+                    mv0 = mv0[self._head_off:]
+
+            if rem < len(mv0):
+                out.append(mv0[:rem])
+                self._head_off += rem
+                self._len -= n
+                return byte_stream_buffer_view_from_segments(out)
+
+            out.append(mv0)
+            rem -= len(mv0)
+            popped = self._segs.pop(0)
+            if popped is self._active:
+                self._active = None
+                self._active_used = 0
+            self._head_off = 0
+
+        self._len -= n
+        return byte_stream_buffer_view_from_segments(out)
+
+    def coalesce(self, n: int, /) -> memoryview:
+        if n < 0:
+            raise ValueError(n)
+        if n > self._len:
+            raise ValueError(n)
+        if not n:
+            return memoryview(b'')
+
+        if self._reserved is not None:
+            raise OutstandingReserveByteStreamBufferError('outstanding reserve')
+
+        mv0 = self.peek()
+        if len(mv0) >= n:
+            return mv0[:n]
+
+        out = bytearray(n)
+        w = 0
+
+        new_segs: ta.List[ta.Union[bytes, bytearray]] = []
+
+        seg_i = 0
+        while w < n and seg_i < len(self._segs):
+            s = self._segs[seg_i]
+            off = self._head_off if not seg_i else 0
+
+            seg_len = len(s) - off
+            if s is self._active and seg_i == (len(self._segs) - 1):
+                seg_len = self._active_readable_len() - off
+
+            if seg_len <= 0:
+                seg_i += 1
+                continue
+
+            take = n - w
+            if take > seg_len:
+                take = seg_len
+
+            out[w:w + take] = memoryview(s)[off:off + take]
+            w += take
+
+            if take < seg_len:
+                rem = s[off + take:off + seg_len]
+                if rem:
+                    new_segs.append(rem)
+                seg_i += 1
+                break
+
+            seg_i += 1
+
+        if seg_i < len(self._segs):
+            new_segs.extend(self._segs[seg_i:])
+
+        self._segs = [bytes(out), *new_segs]
+        self._head_off = 0
+
+        self._active = None
+        self._active_used = 0
+
+        return memoryview(self._segs[0])[:n]
+
+    def _seg_readable_slice(
+            self,
+            si: int,
+            s: ta.Union[bytes, bytearray],
+            last_i: int,
+    ) -> ta.Tuple[int, int]:
+        """
+        Compute the readable offset and length for segment at index si.
+
+        Returns (offset, readable_len) where:
+          - offset: byte offset into segment (head_off for si==0, else 0)
+          - readable_len: number of readable bytes from offset (0 if segment empty/consumed)
+
+        Handles head offset for first segment and active chunk readable length for last segment.
+        """
+
+        off = self._head_off if not si else 0
+        seg_len = len(s) - off
+        if s is self._active and si == last_i:
+            seg_len = self._active_readable_len() - off
+        return off, max(0, seg_len)
+
+    def _seg_search_range(
+            self,
+            start: int,
+            limit: int,
+            m: int,
+            seg_gs: int,
+            seg_ge: int,
+            seg_len: int,
+    ) -> ta.Optional[ta.Tuple[int, int]]:
+        """
+        Compute local search range within a segment.
+
+        Args:
+            start: global start position (user-provided)
+            limit: global limit (end - m, last valid position where match can start)
+            m: pattern length
+            seg_gs: segment global start position
+            seg_ge: segment global end position
+            seg_len: segment readable length
+
+        Returns (local_start, local_end) if segment overlaps search range, else None.
+          - local_start: offset within segment to start searching
+          - local_end: offset within segment to end searching (exclusive)
+        """
+
+        # Check if segment overlaps search range
+        if limit < seg_gs or start >= seg_ge:
+            return None
+
+        # Compute local start within segment
+        ls = max(0, start - seg_gs)
+
+        # Compute local end: can start match anywhere up to limit, need m bytes
+        max_start_in_seg = limit - seg_gs
+        end_search = min(max_start_in_seg + m, seg_len)
+
+        # Validate range
+        if ls >= end_search:
+            return None
+
+        return ls, end_search
+
+    def find(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
+        start, end = self._norm_slice(start, end)
+
+        m = len(sub)
+        if m == 0:
+            return start
+        if end - start < m:
+            return -1
+
+        limit = end - m
+
+        tail = b''
+        tail_gstart = 0
+
+        gpos = 0
+
+        last_i = len(self._segs) - 1
+
+        for si, s in enumerate(self._segs):
+            off, seg_len = self._seg_readable_slice(si, s, last_i)
+            if seg_len <= 0:
+                continue
+
+            seg_gs = gpos
+            seg_ge = gpos + seg_len
+
+            # Within-segment search
+            search_range = self._seg_search_range(start, limit, m, seg_gs, seg_ge, seg_len)
+            if search_range is not None:
+                ls, end_search = search_range
+                idx = s.find(sub, off + ls, off + end_search)
+                if idx != -1:
+                    return seg_gs + (idx - off)
+
+            if m > 1 and tail:
+                head_need = m - 1
+                # Only read as many bytes as are actually available in this segment to avoid reading uninitialized data
+                # from active chunks.
+                head_avail = min(head_need, seg_len)
+                if head_avail > 0:
+                    head = s[off:off + head_avail]
+                    comb = tail + head
+                    j = comb.find(sub)
+                    if j != -1 and j < len(tail) < j + m:
+                        cand = tail_gstart + j
+                        if start <= cand <= limit:
+                            return cand
+
+            if m > 1:
+                take = m - 1
+                if seg_len >= take:
+                    tail = s[off + seg_len - take:off + seg_len]
+                    tail_gstart = seg_ge - take
+                else:
+                    tail = (tail + s[off:off + seg_len])[-(m - 1):]
+                    tail_gstart = seg_ge - len(tail)
+
+            gpos = seg_ge
+
+        return -1
+
+    def rfind(self, sub: bytes, start: int = 0, end: ta.Optional[int] = None) -> int:
+        start, end = self._norm_slice(start, end)
+
+        m = len(sub)
+        if m == 0:
+            return end
+        if end - start < m:
+            return -1
+
+        limit = end - m
+
+        if not self._segs:
+            return -1
+
+        best = -1
+
+        seg_ge = self._len
+        prev_s: ta.Optional[ta.Union[bytes, bytearray]] = None
+        prev_off = 0
+        prev_seg_len = 0
+
+        last_i = len(self._segs) - 1
+
+        for si in range(len(self._segs) - 1, -1, -1):
+            s = self._segs[si]
+            off, seg_len = self._seg_readable_slice(si, s, last_i)
+            if seg_len <= 0:
+                continue
+
+            seg_gs = seg_ge - seg_len
+
+            # Within-segment search
+            search_range = self._seg_search_range(start, limit, m, seg_gs, seg_ge, seg_len)
+            if search_range is not None:
+                ls, end_search = search_range
+                idx = s.rfind(sub, off + ls, off + end_search)
+                if idx != -1:
+                    cand = seg_gs + (idx - off)
+                    if cand > best:
+                        best = cand
+
+            if m > 1 and prev_s is not None:
+                tail_need = m - 1
+                if seg_len >= tail_need:
+                    tail = s[off + seg_len - tail_need:off + seg_len]
+                    tail_gstart = seg_ge - tail_need
+
+                else:
+                    tail_parts = [s[off:off + seg_len]]
+                    tail_len = seg_len
+                    for sj in range(si - 1, -1, -1):
+                        if tail_len >= tail_need:
+                            break
+
+                        sj_s = self._segs[sj]
+                        sj_off, sj_len = self._seg_readable_slice(sj, sj_s, last_i)
+                        if sj_len <= 0:
+                            continue
+
+                        take = min(tail_need - tail_len, sj_len)
+                        tail_parts.insert(0, sj_s[sj_off + sj_len - take:sj_off + sj_len])
+                        tail_len += take
+
+                    tail_combined = b''.join(tail_parts)
+                    tail = tail_combined[-(m - 1):] if len(tail_combined) >= m - 1 else tail_combined
+                    tail_gstart = seg_ge - len(tail)
+
+                head_need = m - 1
+                # Only read as many bytes as are actually available in prev segment to avoid reading uninitialized data
+                # from active chunks.
+                head_avail = min(head_need, prev_seg_len)
+                if head_avail > 0:
+                    head = prev_s[prev_off:prev_off + head_avail]
+                else:
+                    head = b''
+
+                comb = tail + head
+                j = comb.rfind(sub)
+                if j != -1 and j < len(tail) < j + m:
+                    cand = tail_gstart + j
+                    if start <= cand <= limit and cand > best:
+                        best = cand
+
+            if best >= seg_gs:
+                return best
+
+            prev_s = s
+            prev_off = off
+            prev_seg_len = seg_len
+            seg_ge = seg_gs
+
+        return best
+
+
+##
+
+
+def byte_stream_buffer_view_from_segments(mvs: ta.Sequence[memoryview]) -> ByteStreamBufferView:
+    if not mvs:
+        return _EMPTY_DIRECT_BYTE_STREAM_BUFFER_VIEW
+    elif len(mvs) == 1:
+        return DirectByteStreamBufferView(mvs[0])
+    else:
+        return SegmentedByteStreamBufferView(mvs)
+
+
+########################################
 # ../../../../../omlish/logs/asyncs.py
 
 
@@ -7781,7 +8511,8 @@ class JournalctlMessageBuilder:
     def __init__(self) -> None:
         super().__init__()
 
-        self._buf = DelimitingBuffer(b'\n')
+        self._buf = SegmentedByteStreamBuffer(chunk_size=0x4000)
+        self._frm = LongestMatchDelimiterByteStreamFrameDecoder([b'\n'])
 
     _cursor_field = '__CURSOR'
 
@@ -7833,8 +8564,9 @@ class JournalctlMessageBuilder:
 
     def feed(self, data: bytes) -> ta.Sequence[JournalctlMessage]:
         ret: ta.List[JournalctlMessage] = []
-        for line in self._buf.feed(data):
-            ret.append(self._make_message(check.isinstance(line, bytes)))
+        self._buf.write(data)
+        for line in self._frm.decode(self._buf, final=not data):
+            ret.append(self._make_message(line.tobytes()))
         return ret
 
 

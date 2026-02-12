@@ -9,7 +9,8 @@ from omlish import dataclasses as dc
 from omlish import lang
 from omlish.http import all as http
 from omlish.http import sse
-from omlish.io.buffers import DelimitingBuffer
+from omlish.io.streams.framing import LongestMatchDelimiterByteStreamFrameDecoder
+from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 
 from ..resources import UseResources
 from ..stream.services import StreamResponse
@@ -133,21 +134,28 @@ class LinesBytesHttpStreamResponseHandler(BytesHttpStreamResponseHandler):
 
         self._handler = handler
 
-        self._db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
+        self._buf = SegmentedByteStreamBuffer(chunk_size=0x4000)
+        self._frm = LongestMatchDelimiterByteStreamFrameDecoder([b'\r', b'\n', b'\r\n'])
+        self._seen_eof = False
 
     def start(self) -> ta.Sequence[Output]:
         return self._handler.start()
 
     def process_bytes(self, data: bytes) -> ta.Iterable:
-        for o in self._db.feed(data):
-            if isinstance(o, bytes):
-                yield from self._handler.process_line(o)
+        check.state(not self._seen_eof)
 
-            else:
-                raise TypeError(o)
+        self._buf.write(data)
+
+        for o in self._frm.decode(self._buf, final=not data):
+            yield from self._handler.process_line(o.tobytes())
+
+        if not data:
+            self._seen_eof = True
+
+            check.state(not len(self._buf))
 
     def finish(self) -> ta.Sequence[Output]:
-        check.state(self._db.is_closed)
+        check.state(self._seen_eof)
 
         return self._handler.finish()
 

@@ -4,7 +4,8 @@ from omlish import check
 from omlish import marshal as msh
 from omlish.formats import json
 from omlish.http import sse
-from omlish.io.buffers import DelimitingBuffer
+from omlish.io.streams.framing import LongestMatchDelimiterByteStreamFrameDecoder
+from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 
 from ......backends.anthropic.protocol.sse.events import AnthropicSseDecoderEvents
 from .....chat.choices.stream.types import AiChoiceDeltas
@@ -24,17 +25,15 @@ def test_assemble():
         cbk_start: AnthropicSseDecoderEvents.ContentBlockStart | None = None
         msg_stop: AnthropicSseDecoderEvents.MessageStop | None = None
 
-        db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
+        buf = SegmentedByteStreamBuffer(chunk_size=0x4000)
+        frm = LongestMatchDelimiterByteStreamFrameDecoder([b'\r', b'\n', b'\r\n'])
 
         sd = sse.SseDecoder()
         for b in bs:
-            for l in db.feed(b):
-                if isinstance(l, DelimitingBuffer.Incomplete):
-                    # FIXME: handle
-                    raise TypeError(l)
-
+            buf.write(b)
+            for l in frm.decode(buf, final=not b):
                 # FIXME: https://docs.anthropic.com/en/docs/build-with-claude/streaming
-                for so in sd.process_line(l):
+                for so in sd.process_line(l.tobytes()):
                     if isinstance(so, sse.SseEvent):
                         ss = so.data.decode('utf-8')
                         if ss == '[DONE]':

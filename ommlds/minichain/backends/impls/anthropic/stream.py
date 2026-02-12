@@ -6,7 +6,8 @@ from omlish import typedvalues as tv
 from omlish.formats import json
 from omlish.http import all as http
 from omlish.http import sse
-from omlish.io.buffers import DelimitingBuffer
+from omlish.io.streams.framing import LongestMatchDelimiterByteStreamFrameDecoder
+from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 
 from .....backends.anthropic.protocol import types as pt
 from .....backends.anthropic.protocol.sse.events import AnthropicSseDecoderEvents
@@ -98,17 +99,15 @@ class AnthropicChatChoicesStreamService:
                 cbk_start: AnthropicSseDecoderEvents.ContentBlockStart | None = None
                 msg_stop: AnthropicSseDecoderEvents.MessageStop | None = None
 
-                db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
+                buf = SegmentedByteStreamBuffer(chunk_size=0x4000)
+                frm = LongestMatchDelimiterByteStreamFrameDecoder([b'\r', b'\n', b'\r\n'])
                 sd = sse.SseDecoder()
                 while True:
                     b = await http_response.stream.read1(self.READ_CHUNK_SIZE)
-                    for l in db.feed(b):
-                        if isinstance(l, DelimitingBuffer.Incomplete):
-                            # FIXME: handle
-                            raise TypeError(l)
-
+                    buf.write(b)
+                    for l in frm.decode(buf, final=not b):
                         # FIXME: https://docs.anthropic.com/en/docs/build-with-claude/streaming
-                        for so in sd.process_line(l):
+                        for so in sd.process_line(l.tobytes()):
                             if isinstance(so, sse.SseEvent):
                                 ss = so.data.decode('utf-8')
                                 if ss == '[DONE]':
@@ -183,6 +182,7 @@ class AnthropicChatChoicesStreamService:
                     if not b:
                         check.not_none(msg_stop)
                         check.none(cbk_start)
+                        check.state(not len(buf))
                         return []
 
             # raw_response = json.loads(check.not_none(http_response.data).decode('utf-8'))

@@ -32,7 +32,8 @@ from omlish import marshal as msh
 from omlish import typedvalues as tv
 from omlish.formats import json
 from omlish.http import all as http
-from omlish.io.buffers import DelimitingBuffer
+from omlish.io.streams.framing import LongestMatchDelimiterByteStreamFrameDecoder
+from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 
 from .....backends.ollama import protocol as pt
 from ....chat.choices.services import ChatChoicesOutputs
@@ -173,21 +174,21 @@ class OllamaChatChoicesStreamService(BaseOllamaChatChoicesService):
             http_response = await rs.enter_async_context(await http_client.stream_request(http_request))
 
             async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ta.Sequence[ChatChoicesOutputs] | None:
-                db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
+                buf = SegmentedByteStreamBuffer(chunk_size=0x4000)
+                frm = LongestMatchDelimiterByteStreamFrameDecoder([b'\r', b'\n', b'\r\n'])
                 while True:
                     b = await http_response.stream.read1(self.READ_CHUNK_SIZE)
-                    for l in db.feed(b):
-                        if isinstance(l, DelimitingBuffer.Incomplete):
-                            # FIXME: handle
-                            raise TypeError(l)
-
-                        lj = json.loads(l.decode('utf-8'))
+                    buf.write(b)
+                    for l in frm.decode(buf, final=not b):
+                        lj = json.loads(l.tobytes().decode('utf-8'))
                         lp: pt.ChatResponse = msh.unmarshal(lj, pt.ChatResponse)
 
                         if (ds := build_mc_ai_choice_deltas(lp)).deltas:
                             await sink.emit(AiChoicesDeltas([ds]))
 
                     if not b:
+                        check.state(not len(buf))
+
                         return []
 
             return await new_stream_response(rs, inner)

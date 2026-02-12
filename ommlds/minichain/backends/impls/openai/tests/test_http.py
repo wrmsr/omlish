@@ -23,7 +23,8 @@ from omlish import dataclasses as dc
 from omlish.formats import json
 from omlish.http import all as hu
 from omlish.http import sse
-from omlish.io.buffers import DelimitingBuffer
+from omlish.io.streams.framing import LongestMatchDelimiterByteStreamFrameDecoder
+from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 from omlish.secrets.tests.harness import HarnessSecrets
 
 
@@ -122,15 +123,15 @@ def test_openai_http_stream(harness, cli_cls):
                 if v is not None
             }).encode('utf-8'),
         )) as resp:
-            db = DelimitingBuffer([b'\r', b'\n', b'\r\n'])
+            buf = SegmentedByteStreamBuffer(chunk_size=0x4000)
+            frm = LongestMatchDelimiterByteStreamFrameDecoder([b'\r', b'\n', b'\r\n'])
             sd = sse.SseDecoder()
             while True:
                 done = False
                 b = resp.stream.read1()
-                for l in db.feed(b):
-                    if isinstance(l, DelimitingBuffer.Incomplete):
-                        break
-                    for so in sd.process_line(l):
+                buf.write(b)
+                for l in frm.decode(buf, final=not b):
+                    for so in sd.process_line(l.tobytes()):
                         if isinstance(so, sse.SseEvent) and so.type == b'message':
                             ss = so.data.decode('utf-8')
                             if ss == '[DONE]':
