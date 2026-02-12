@@ -334,6 +334,7 @@ class ProcessImpl(Process):
         Return None if the signal was sent, or an error message string if an error occurred or if the subprocess is not
         running.
         """
+
         args: tuple
         if not self.pid:
             fmt, args = "Attempted to send %s sig %s but it wasn't running", (self.name, sig_name(sig))

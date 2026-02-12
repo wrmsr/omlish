@@ -175,7 +175,7 @@ def __omlish_amalg__():  # noqa
             dict(path='dispatchersimpl.py', sha1='701947899daef9f68c4277495594031cf73d9a62'),
             dict(path='http.py', sha1='6a144e4c93abefc5f9cdba207e807ea75f8f2d5d'),
             dict(path='io.py', sha1='6ba708a8396c212afdd1d314c9b5804c2d66646e'),
-            dict(path='processimpl.py', sha1='7edbbcd39a8ed1fd195c760da894620617a9d969'),
+            dict(path='processimpl.py', sha1='ac6cc63f2259d73b714522e028056f7944ed6084'),
             dict(path='setupimpl.py', sha1='b4b8b8c3e1d71a0e6794fb0a845181f3662a6bfd'),
             dict(path='signals.py', sha1='645361d922557b5cedddbd261b3f1485b96555dd'),
             dict(path='spawningimpl.py', sha1='c770e0017c2388fe59897d12fe67c3b6b7b2ca5a'),
@@ -14415,6 +14415,7 @@ class ProcessImpl(Process):
         Return None if the signal was sent, or an error message string if an error occurred or if the subprocess is not
         running.
         """
+
         args: tuple
         if not self.pid:
             fmt, args = "Attempted to send %s sig %s but it wasn't running", (self.name, sig_name(sig))
