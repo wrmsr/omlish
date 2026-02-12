@@ -10,7 +10,8 @@ from ... import check
 from ... import lang
 from ... import marshal as msh
 from ...asyncs import anyio as aiu
-from ...io.buffers import DelimitingBuffer
+from ...io.streams.framing import LongestMatchDelimiterByteStreamFrameDecoder
+from ...io.streams.segmented import SegmentedByteStreamBuffer
 from .types import Error
 from .types import Id
 from .types import Message
@@ -48,7 +49,8 @@ class JsonrpcConnection:
             id_creator = self.default_create_id
         self._create_id = id_creator
 
-        self._buf = DelimitingBuffer(b'\n')
+        self._buf = SegmentedByteStreamBuffer(chunk_size=0x4000)
+        self._frm = LongestMatchDelimiterByteStreamFrameDecoder([b'\n'])
         self._response_futures_by_id: dict[Id, aiu.Future[Response]] = {}
         self._send_lock = anyio.Lock()
         self._shutdown_event = anyio.Event()
@@ -147,7 +149,13 @@ class JsonrpcConnection:
             if not data:
                 self._received_eof = True
 
-            lines = list(self._buf.feed(data))
+            self._buf.write(data)
+            lines = self._frm.decode(self._buf, final=not data)
+
+            if not data:
+                if len(self._buf):
+                    raise ConnectionError('Received incomplete message')
+
             if lines:
                 break
 
@@ -155,9 +163,8 @@ class JsonrpcConnection:
                 return None
 
         msgs: list[Message] = []
-        for line in lines:
-            if isinstance(line, DelimitingBuffer.Incomplete):
-                raise ConnectionError('Received incomplete message')
+        for linev in lines:
+            line = linev.tobytes()
 
             try:
                 dct = json.loads(line.decode('utf-8'))
