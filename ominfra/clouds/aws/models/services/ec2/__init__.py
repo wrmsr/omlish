@@ -1529,6 +1529,19 @@ class InstanceType(_enum.Enum):
     G7E_12XLARGE = 'g7e.12xlarge'
     G7E_24XLARGE = 'g7e.24xlarge'
     G7E_48XLARGE = 'g7e.48xlarge'
+    R8ID_LARGE = 'r8id.large'
+    R8ID_XLARGE = 'r8id.xlarge'
+    R8ID_2XLARGE = 'r8id.2xlarge'
+    R8ID_4XLARGE = 'r8id.4xlarge'
+    R8ID_8XLARGE = 'r8id.8xlarge'
+    R8ID_12XLARGE = 'r8id.12xlarge'
+    R8ID_16XLARGE = 'r8id.16xlarge'
+    R8ID_24XLARGE = 'r8id.24xlarge'
+    R8ID_32XLARGE = 'r8id.32xlarge'
+    R8ID_48XLARGE = 'r8id.48xlarge'
+    R8ID_96XLARGE = 'r8id.96xlarge'
+    R8ID_METAL_48XL = 'r8id.metal-48xl'
+    R8ID_METAL_96XL = 'r8id.metal-96xl'
 
 
 class InstanceTypeHypervisor(_enum.Enum):
@@ -1543,6 +1556,9 @@ class IpSource(_enum.Enum):
     AMAZON = 'amazon'
     BYOIP = 'byoip'
     NONE = 'none'
+
+
+Ipv4AddressesPerSecondaryInterface = _ta.NewType('Ipv4AddressesPerSecondaryInterface', int)
 
 
 class Ipv6AddressAttribute(_enum.Enum):
@@ -1598,6 +1614,8 @@ MaximumEnaQueueCountPerInterface = _ta.NewType('MaximumEnaQueueCountPerInterface
 MaximumIops = _ta.NewType('MaximumIops', int)
 
 MaximumNetworkCards = _ta.NewType('MaximumNetworkCards', int)
+
+MaximumSecondaryNetworkInterfaces = _ta.NewType('MaximumSecondaryNetworkInterfaces', int)
 
 MaximumThroughputInMBps = _ta.NewType('MaximumThroughputInMBps', float)
 
@@ -1828,6 +1846,9 @@ class ResourceType(_enum.Enum):
     IPAM_PREFIX_LIST_RESOLVER = 'ipam-prefix-list-resolver'
     IPAM_POLICY = 'ipam-policy'
     IPAM_PREFIX_LIST_RESOLVER_TARGET = 'ipam-prefix-list-resolver-target'
+    SECONDARY_INTERFACE = 'secondary-interface'
+    SECONDARY_NETWORK = 'secondary-network'
+    SECONDARY_SUBNET = 'secondary-subnet'
     CAPACITY_MANAGER_DATA_EXPORT = 'capacity-manager-data-export'
     VPN_CONCENTRATOR = 'vpn-concentrator'
 
@@ -1864,6 +1885,24 @@ class RouteTableAssociationStateCode(_enum.Enum):
 RouteTableId = _ta.NewType('RouteTableId', str)
 
 RunInstancesUserData = _ta.NewType('RunInstancesUserData', str)
+
+SecondaryInterfaceId = _ta.NewType('SecondaryInterfaceId', str)
+
+
+class SecondaryInterfaceStatus(_enum.Enum):
+    AVAILABLE = 'available'
+    IN_USE = 'in-use'
+
+
+class SecondaryInterfaceType(_enum.Enum):
+    SECONDARY = 'secondary'
+
+
+SecondaryNetworkId = _ta.NewType('SecondaryNetworkId', str)
+
+SecondaryNetworkSupportedFlag = _ta.NewType('SecondaryNetworkSupportedFlag', bool)
+
+SecondarySubnetId = _ta.NewType('SecondarySubnetId', str)
 
 SecurityGroupId = _ta.NewType('SecurityGroupId', str)
 
@@ -3219,6 +3258,71 @@ class InstanceNetworkPerformanceOptionsRequest(
     bandwidth_weighting: InstanceBandwidthWeighting | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='BandwidthWeighting',
         shape_name='InstanceBandwidthWeighting',
+    ))
+
+
+@_dc.dataclass(frozen=True, kw_only=True)
+class InstanceSecondaryInterfaceAttachment(
+    _base.Shape,
+    shape_name='InstanceSecondaryInterfaceAttachment',
+):
+    attach_time: _base.MillisecondDateTime | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='AttachTime',
+        serialization_name='attachTime',
+        shape_name='MillisecondDateTime',
+    ))
+
+    attachment_id: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='AttachmentId',
+        serialization_name='attachmentId',
+        shape_name='String',
+    ))
+
+    delete_on_termination: bool | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='DeleteOnTermination',
+        serialization_name='deleteOnTermination',
+        shape_name='Boolean',
+    ))
+
+    device_index: int | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='DeviceIndex',
+        serialization_name='deviceIndex',
+        shape_name='Integer',
+    ))
+
+    status: AttachmentStatus | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='Status',
+        serialization_name='status',
+        shape_name='AttachmentStatus',
+    ))
+
+    network_card_index: int | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='NetworkCardIndex',
+        serialization_name='networkCardIndex',
+        shape_name='Integer',
+    ))
+
+
+@_dc.dataclass(frozen=True, kw_only=True)
+class InstanceSecondaryInterfacePrivateIpAddress(
+    _base.Shape,
+    shape_name='InstanceSecondaryInterfacePrivateIpAddress',
+):
+    private_ip_address: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='PrivateIpAddress',
+        serialization_name='privateIpAddress',
+        shape_name='String',
+    ))
+
+
+@_dc.dataclass(frozen=True, kw_only=True)
+class InstanceSecondaryInterfacePrivateIpAddressRequest(
+    _base.Shape,
+    shape_name='InstanceSecondaryInterfacePrivateIpAddressRequest',
+):
+    private_ip_address: str = _dc.field(metadata=_base.field_metadata(
+        member_name='PrivateIpAddress',
+        shape_name='String',
     ))
 
 
@@ -4629,6 +4733,11 @@ class InstancePrivateIpAddress(
     ))
 
 
+InstanceSecondaryInterfacePrivateIpAddressList: _ta.TypeAlias = _ta.Sequence[InstanceSecondaryInterfacePrivateIpAddress]
+
+InstanceSecondaryInterfacePrivateIpAddressListRequest: _ta.TypeAlias = _ta.Sequence[InstanceSecondaryInterfacePrivateIpAddressRequest]
+
+
 @_dc.dataclass(frozen=True, kw_only=True)
 class InstanceStateChange(
     _base.Shape,
@@ -5576,6 +5685,117 @@ class InstanceNetworkInterfaceSpecification(
 
 InstancePrivateIpAddressList: _ta.TypeAlias = _ta.Sequence[InstancePrivateIpAddress]
 
+
+@_dc.dataclass(frozen=True, kw_only=True)
+class InstanceSecondaryInterface(
+    _base.Shape,
+    shape_name='InstanceSecondaryInterface',
+):
+    attachment: InstanceSecondaryInterfaceAttachment | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='Attachment',
+        serialization_name='attachment',
+        shape_name='InstanceSecondaryInterfaceAttachment',
+    ))
+
+    mac_address: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='MacAddress',
+        serialization_name='macAddress',
+        shape_name='String',
+    ))
+
+    secondary_interface_id: SecondaryInterfaceId | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='SecondaryInterfaceId',
+        serialization_name='secondaryInterfaceId',
+        shape_name='SecondaryInterfaceId',
+    ))
+
+    owner_id: str | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='OwnerId',
+        serialization_name='ownerId',
+        shape_name='String',
+    ))
+
+    private_ip_addresses: InstanceSecondaryInterfacePrivateIpAddressList | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='PrivateIpAddresses',
+        serialization_name='privateIpAddressSet',
+        value_type=_base.ListValueType(InstanceSecondaryInterfacePrivateIpAddress),
+        shape_name='InstanceSecondaryInterfacePrivateIpAddressList',
+    ))
+
+    source_dest_check: bool | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='SourceDestCheck',
+        serialization_name='sourceDestCheck',
+        shape_name='Boolean',
+    ))
+
+    status: SecondaryInterfaceStatus | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='Status',
+        serialization_name='status',
+        shape_name='SecondaryInterfaceStatus',
+    ))
+
+    secondary_subnet_id: SecondarySubnetId | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='SecondarySubnetId',
+        serialization_name='secondarySubnetId',
+        shape_name='SecondarySubnetId',
+    ))
+
+    secondary_network_id: SecondaryNetworkId | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='SecondaryNetworkId',
+        serialization_name='secondaryNetworkId',
+        shape_name='SecondaryNetworkId',
+    ))
+
+    interface_type: SecondaryInterfaceType | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='InterfaceType',
+        serialization_name='interfaceType',
+        shape_name='SecondaryInterfaceType',
+    ))
+
+
+@_dc.dataclass(frozen=True, kw_only=True)
+class InstanceSecondaryInterfaceSpecificationRequest(
+    _base.Shape,
+    shape_name='InstanceSecondaryInterfaceSpecificationRequest',
+):
+    delete_on_termination: bool | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='DeleteOnTermination',
+        shape_name='Boolean',
+    ))
+
+    device_index: int | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='DeviceIndex',
+        shape_name='Integer',
+    ))
+
+    private_ip_addresses: InstanceSecondaryInterfacePrivateIpAddressListRequest | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='PrivateIpAddresses',
+        serialization_name='PrivateIpAddress',
+        value_type=_base.ListValueType(InstanceSecondaryInterfacePrivateIpAddressRequest),
+        shape_name='InstanceSecondaryInterfacePrivateIpAddressListRequest',
+    ))
+
+    private_ip_address_count: int | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='PrivateIpAddressCount',
+        shape_name='Integer',
+    ))
+
+    secondary_subnet_id: SecondarySubnetId | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='SecondarySubnetId',
+        shape_name='SecondarySubnetId',
+    ))
+
+    interface_type: SecondaryInterfaceType | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='InterfaceType',
+        shape_name='SecondaryInterfaceType',
+    ))
+
+    network_card_index: int | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='NetworkCardIndex',
+        shape_name='Integer',
+    ))
+
+
 InstanceStateChangeList: _ta.TypeAlias = _ta.Sequence[InstanceStateChange]
 
 
@@ -5792,6 +6012,24 @@ class NetworkInfo(
         member_name='FlexibleEnaQueuesSupport',
         serialization_name='flexibleEnaQueuesSupport',
         shape_name='FlexibleEnaQueuesSupport',
+    ))
+
+    secondary_network_supported: SecondaryNetworkSupportedFlag | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='SecondaryNetworkSupported',
+        serialization_name='secondaryNetworkSupported',
+        shape_name='SecondaryNetworkSupportedFlag',
+    ))
+
+    maximum_secondary_network_interfaces: MaximumSecondaryNetworkInterfaces | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='MaximumSecondaryNetworkInterfaces',
+        serialization_name='maximumSecondaryNetworkInterfaces',
+        shape_name='MaximumSecondaryNetworkInterfaces',
+    ))
+
+    ipv4_addresses_per_secondary_interface: Ipv4AddressesPerSecondaryInterface | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='Ipv4AddressesPerSecondaryInterface',
+        serialization_name='ipv4AddressesPerSecondaryInterface',
+        shape_name='Ipv4AddressesPerSecondaryInterface',
     ))
 
 
@@ -6774,6 +7012,10 @@ class InstanceNetworkInterface(
 
 
 InstanceNetworkInterfaceSpecificationList: _ta.TypeAlias = _ta.Sequence[InstanceNetworkInterfaceSpecification]
+
+InstanceSecondaryInterfaceList: _ta.TypeAlias = _ta.Sequence[InstanceSecondaryInterface]
+
+InstanceSecondaryInterfaceSpecificationListRequest: _ta.TypeAlias = _ta.Sequence[InstanceSecondaryInterfaceSpecificationRequest]
 
 InternetGatewayList: _ta.TypeAlias = _ta.Sequence[InternetGateway]
 
@@ -7774,6 +8016,13 @@ class RunInstancesRequest(
         shape_name='OperatorRequest',
     ))
 
+    secondary_interfaces: InstanceSecondaryInterfaceSpecificationListRequest | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='SecondaryInterfaces',
+        serialization_name='SecondaryInterface',
+        value_type=_base.ListValueType(InstanceSecondaryInterfaceSpecificationRequest),
+        shape_name='InstanceSecondaryInterfaceSpecificationListRequest',
+    ))
+
     dry_run: bool | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='DryRun',
         serialization_name='dryRun',
@@ -8245,6 +8494,13 @@ class Instance(
         shape_name='OperatorResponse',
     ))
 
+    secondary_interfaces: InstanceSecondaryInterfaceList | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='SecondaryInterfaces',
+        serialization_name='secondaryInterfaceSet',
+        value_type=_base.ListValueType(InstanceSecondaryInterface),
+        shape_name='InstanceSecondaryInterfaceList',
+    ))
+
     instance_id: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='InstanceId',
         serialization_name='instanceId',
@@ -8571,6 +8827,11 @@ ALL_SHAPES: frozenset[type[_base.Shape]] = frozenset([
     InstanceNetworkPerformanceOptions,
     InstanceNetworkPerformanceOptionsRequest,
     InstancePrivateIpAddress,
+    InstanceSecondaryInterface,
+    InstanceSecondaryInterfaceAttachment,
+    InstanceSecondaryInterfacePrivateIpAddress,
+    InstanceSecondaryInterfacePrivateIpAddressRequest,
+    InstanceSecondaryInterfaceSpecificationRequest,
     InstanceState,
     InstanceStateChange,
     InstanceStorageInfo,

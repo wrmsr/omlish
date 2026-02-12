@@ -96,10 +96,10 @@ class Project(ProjectBase):
             # 'psycopg ~= 3.2',
 
             'pymysql ~= 1.1',
-            # 'mysql-connector-python ~= 9.5',
+            # 'mysql-connector-python ~= 9.6',
             # 'mysqlclient ~= 2.2',
 
-            'snowflake-connector-python ~= 4.2',
+            'snowflake-connector-python ~= 4.3',
 
             'aiomysql ~= 0.3',
             'aiosqlite ~= 0.22',
