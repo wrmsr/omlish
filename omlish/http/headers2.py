@@ -1,5 +1,5 @@
 # @omlish-lite
-# ruff: noqa: PYI034 UP006 UP007
+# ruff: noqa: PYI034 UP006 UP007 UP045
 """
 TODO:
  - handle secrets (but they're strs..)
@@ -145,6 +145,20 @@ class HttpHeaders(ta.Mapping[str, ta.Sequence[str]]):
                 raise DuplicateHttpHeaderError(key)
             return l[0]
 
+        @ta.overload
+        def get(self, key: str, /, default: str) -> str:
+            ...
+
+        @ta.overload
+        def get(self, key: str, /, default: ta.Optional[str] = None) -> ta.Optional[str]:
+            ...
+
+        def get(self, key, /, default=None):
+            try:
+                return self[key]
+            except KeyError:
+                return default
+
     _single: _SingleAccessor
 
     @property
@@ -156,6 +170,46 @@ class HttpHeaders(ta.Mapping[str, ta.Sequence[str]]):
         a = self._single = self._SingleAccessor(self)
         return a
 
+    #
 
-def http_headers(src: CanHttpHeaders) -> HttpHeaders:
-    return HttpHeaders(src)
+    @ta.final
+    class _LowerAccessor:
+        def __init__(self, o: 'HttpHeaders') -> None:
+            self._o = o
+
+            self._cache: ta.Dict[str, ta.Sequence[str]] = {}
+
+        def __getitem__(self, key: str) -> ta.Sequence[str]:
+            key = key.lower()
+            try:
+                return self._cache[key]
+            except KeyError:
+                pass
+            x = self._o._dct[key]  # noqa
+            l = self._cache[key] = tuple(v.lower() for v in x)
+            return l
+
+        @ta.overload
+        def get(self, key: str, /, default: ta.Sequence[str]) -> ta.Sequence[str]:
+            ...
+
+        @ta.overload
+        def get(self, key: str, /, default: ta.Optional[str] = None) -> ta.Optional[ta.Sequence[str]]:
+            ...
+
+        def get(self, key, /, default=None):
+            try:
+                return self[key]
+            except KeyError:
+                return default
+
+    _lower: _LowerAccessor
+
+    @property
+    def lower(self) -> _LowerAccessor:
+        try:
+            return self._lower
+        except AttributeError:
+            pass
+        a = self._lower = self._LowerAccessor(self)
+        return a

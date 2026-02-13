@@ -3,16 +3,18 @@
 import dataclasses as dc
 import typing as ta
 
+from omlish.http.headers2 import HttpHeaders
+from omlish.http.parsing import ParsedHttpMessage
+from omlish.http.versions import HttpVersion
+
 
 ##
 
 
 @dc.dataclass(frozen=True)
 class PipelineHttpResponseHead:
-    version: str
+    version: HttpVersion
     status: int
     reason: str
-    headers: ta.Mapping[str, str]
-
-    def header(self, name: str) -> ta.Optional[str]:
-        return self.headers.get(name.casefold())
+    headers: HttpHeaders
+    parsed: ta.Optional[ParsedHttpMessage] = None

@@ -3,8 +3,12 @@
 import typing as ta
 import zlib
 
+from omlish.http.headers2 import HttpHeaders
+from omlish.http.parsing import HttpParser
+from omlish.http.parsing import parse_http_message
 from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 from omlish.io.streams.utils import ByteStreamBuffers
+from omlish.lite.check import check
 
 from ...core import ChannelPipelineEvents
 from ...core import ChannelPipelineHandler
@@ -87,37 +91,15 @@ class PipelineHttpResponseDecoder(ChannelPipelineHandler):
             ctx.feed_in(body_view)
 
     def _parse_head(self, raw: bytes) -> PipelineHttpResponseHead:
-        text = raw.decode('iso-8859-1', errors='replace')
-        lines = text.split('\r\n')
-        while lines and lines[-1] == '':
-            lines.pop()
-        if not lines:
-            raise ValueError('bad http response head')
-
-        status_line = lines[0]
-        parts = status_line.split(' ', 2)
-        if len(parts) < 2:
-            raise ValueError('bad http status line')
-
-        version = parts[0].strip()
-        try:
-            status = int(parts[1])
-        except ValueError:
-            raise ValueError('bad http status code') from None
-        reason = parts[2].strip() if len(parts) > 2 else ''
-
-        headers: ta.Dict[str, str] = {}
-        for ln in lines[1:]:
-            if not ln or ':' not in ln:
-                continue
-            k, v = ln.split(':', 1)
-            headers[k.strip().casefold()] = v.lstrip(' \t').strip()
+        parsed = parse_http_message(raw, mode=HttpParser.Mode.RESPONSE)
+        status = check.not_none(parsed.status_line)
 
         return PipelineHttpResponseHead(
-            version=version,
-            status=status,
-            reason=reason,
-            headers=headers,
+            version=status.http_version,
+            status=status.status_code,
+            reason=status.reason_phrase,
+            headers=HttpHeaders(parsed.headers.entries),
+            parsed=parsed,
         )
 
 
@@ -148,8 +130,8 @@ class PipelineHttpResponseConditionalGzipDecoder(ChannelPipelineHandler):
             return
 
         if isinstance(msg, PipelineHttpResponseHead):
-            enc = (msg.header('content-encoding') or '').lower()
-            self._enabled = ('gzip' in enc)
+            enc = msg.headers.lower.get('content-encoding', ())
+            self._enabled = 'gzip' in enc
             self._z = zlib.decompressobj(16 + zlib.MAX_WBITS) if self._enabled else None
             ctx.feed_in(msg)
             return

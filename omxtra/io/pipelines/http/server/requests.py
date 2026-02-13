@@ -3,6 +3,7 @@
 import enum
 import typing as ta
 
+from omlish.http.headers2 import HttpHeaders
 from omlish.http.parsing import HttpParser
 from omlish.http.parsing import parse_http_message
 from omlish.io.streams.errors import FrameTooLargeByteStreamBufferError
@@ -121,7 +122,7 @@ class PipelineHttpRequestHeadDecoder(ChannelPipelineHandler):
             method=line.method,
             target=check.not_none(line.request_target).decode('utf-8'),
             version=line.http_version,
-            headers=dict(parsed.headers.items()),
+            headers=HttpHeaders(parsed.headers.entries),
             parsed=parsed,
         )
 
@@ -185,7 +186,7 @@ class PipelineHttpRequestBodyAggregator(ChannelPipelineHandler):
 
             self._cur_head = msg
 
-            cl = msg.header('content-length')
+            cl = msg.headers.single.get('content-length')
             if cl is None or cl == '':
                 self._want = 0
 
@@ -381,7 +382,7 @@ class PipelineHttpRequestBodyStreamDecoder(ChannelPipelineHandler):
         chunk_remain: ta.Optional[int]
 
     def _select_mode(self, head: PipelineHttpRequestHead) -> _SelectedMode:
-        te = (head.header('transfer-encoding') or '').lower()
+        te = head.headers.lower.get('transfer-encoding', '')
         if 'chunked' in te:
             return PipelineHttpRequestBodyStreamDecoder._SelectedMode(
                 PipelineHttpRequestBodyStreamDecoder._Mode.CHUNKED,
@@ -389,7 +390,7 @@ class PipelineHttpRequestBodyStreamDecoder(ChannelPipelineHandler):
                 None,
             )
 
-        cl = head.header('content-length')
+        cl = head.headers.single.get('content-length')
         if cl is not None and cl != '':
             try:
                 n = int(cl)

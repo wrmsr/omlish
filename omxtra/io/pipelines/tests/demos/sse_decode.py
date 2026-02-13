@@ -5,8 +5,8 @@ from ...core import PipelineChannel
 from ...decoders import DelimiterFramePipelineDecoder
 from ...decoders import StripLineEndingsPipelineDecoder
 from ...decoders import Utf8PipelineDecoder
-from ...http.server.responses import PipelineHttpResponseConditionalGzipDecoder
-from ...http.server.responses import PipelineHttpResponseDecoder
+from ...http.client.responses import PipelineHttpResponseConditionalGzipDecoder
+from ...http.client.responses import PipelineHttpResponseDecoder
 from ...http.sse import PipelineSseDecoder
 
 

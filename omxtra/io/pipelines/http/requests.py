@@ -3,6 +3,7 @@
 import dataclasses as dc
 import typing as ta
 
+from omlish.http.headers2 import HttpHeaders
 from omlish.http.parsing import ParsedHttpMessage
 from omlish.http.versions import HttpVersion
 
@@ -15,11 +16,8 @@ class PipelineHttpRequestHead:
     method: str
     target: str
     version: HttpVersion
-    headers: ta.Mapping[str, str]
+    headers: HttpHeaders
     parsed: ta.Optional[ParsedHttpMessage] = None
-
-    def header(self, name: str) -> ta.Optional[str]:
-        return self.headers.get(name.casefold())
 
 
 @dc.dataclass(frozen=True)

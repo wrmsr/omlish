@@ -123,3 +123,9 @@ def test_http_headers_duplicate_key_error():
     assert headers.single['foo'] == 'bar'
     with pytest.raises(DuplicateHttpHeaderError):
         headers.single['content-type']  # noqa
+
+
+def test_http_headers_lower():
+    headers = HttpHeaders([('transfer-encoding', 'FoO'), ('TRANSFER-EnCoDiNG', 'bar')])
+    assert list(headers['transfer-encoding']) == ['FoO', 'bar']
+    assert list(headers.lower['transfer-encoding']) == ['foo', 'bar']
