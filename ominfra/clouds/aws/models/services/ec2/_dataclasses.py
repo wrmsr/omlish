@@ -1535,25 +1535,29 @@ def _process_dataclass__7966b5342926406c3075c21a6670466e44b592e4():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('core_count', 'threads_per_core', 'amd_sev_snp')), EqPlan(fields=('core_count', 't"
-        "hreads_per_core', 'amd_sev_snp')), FrozenPlan(fields=('__shape__', 'core_count', 'threads_per_core', 'amd_sev_"
-        "snp'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('core_count', 'threads_per_core', 'am"
-        "d_sev_snp'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.field"
-        "s.0.annotation'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VA"
-        "R, coerce=None, validate=None, check_type=None), InitPlan.Field(name='core_count', annotation=OpRef(name='init"
-        ".fields.1.annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override"
-        "=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='thre"
-        "ads_per_core', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'),"
-        " default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, c"
-        "heck_type=None), InitPlan.Field(name='amd_sev_snp', annotation=OpRef(name='init.fields.3.annotation'), default"
-        "=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, field_type=FieldType.IN"
-        "STANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=(), kw_only_params=('core"
-        "_count', 'threads_per_core', 'amd_sev_snp'), frozen=True, slots=False, post_init_params=None, init_fns=(), val"
-        "idate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='core_count', kw_only=True, fn=None), ReprPlan.Field(name="
-        "'threads_per_core', kw_only=True, fn=None), ReprPlan.Field(name='amd_sev_snp', kw_only=True, fn=None)), id=Fal"
-        "se, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('core_count', 'threads_per_core', 'amd_sev_snp', 'nested_virtualization')), EqPlan"
+        "(fields=('core_count', 'threads_per_core', 'amd_sev_snp', 'nested_virtualization')), FrozenPlan(fields=('__sha"
+        "pe__', 'core_count', 'threads_per_core', 'amd_sev_snp', 'nested_virtualization'), allow_dynamic_dunder_attrs=F"
+        "alse), HashPlan(action='add', fields=('core_count', 'threads_per_core', 'amd_sev_snp', 'nested_virtualization'"
+        "), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', annotation=OpRef(name='init.fields.0.annota"
+        "tion'), default=None, default_factory=None, init=True, override=False, field_type=FieldType.CLASS_VAR, coerce="
+        "None, validate=None, check_type=None), InitPlan.Field(name='core_count', annotation=OpRef(name='init.fields.1."
+        "annotation'), default=OpRef(name='init.fields.1.default'), default_factory=None, init=True, override=False, fi"
+        "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='threads_per_co"
+        "re', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields.2.default'), default_f"
+        "actory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type="
+        "None), InitPlan.Field(name='amd_sev_snp', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(nam"
+        "e='init.fields.3.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, co"
+        "erce=None, validate=None, check_type=None), InitPlan.Field(name='nested_virtualization', annotation=OpRef(name"
+        "='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, init=True, ov"
+        "erride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self',"
+        " std_params=(), kw_only_params=('core_count', 'threads_per_core', 'amd_sev_snp', 'nested_virtualization'), fro"
+        "zen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(n"
+        "ame='core_count', kw_only=True, fn=None), ReprPlan.Field(name='threads_per_core', kw_only=True, fn=None), Repr"
+        "Plan.Field(name='amd_sev_snp', kw_only=True, fn=None), ReprPlan.Field(name='nested_virtualization', kw_only=Tr"
+        "ue, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='f309cd6072681bb44dd6795348d4642efe3a7e7c',
+    plan_repr_sha1='147d641b6fe062ace9ae79cf40c895abb57d7f1e',
     op_ref_idents=(
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__1__default',
@@ -1561,13 +1565,15 @@ def _process_dataclass__7966b5342926406c3075c21a6670466e44b592e4():
         '__dataclass__init__fields__2__default',
         '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
     ),
     cls_names=(
         ('ominfra.clouds.aws.models.services.ec2', 'CpuOptions'),
         ('ominfra.clouds.aws.models.services.ec2', 'CpuOptionsRequest'),
     ),
 )
-def _process_dataclass__f309cd6072681bb44dd6795348d4642efe3a7e7c():
+def _process_dataclass__147d641b6fe062ace9ae79cf40c895abb57d7f1e():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -1577,6 +1583,8 @@ def _process_dataclass__f309cd6072681bb44dd6795348d4642efe3a7e7c():
         __dataclass__init__fields__2__default,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
+        __dataclass__init__fields__4__annotation,
+        __dataclass__init__fields__4__default,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -1598,6 +1606,7 @@ def _process_dataclass__f309cd6072681bb44dd6795348d4642efe3a7e7c():
                 core_count=self.core_count,
                 threads_per_core=self.threads_per_core,
                 amd_sev_snp=self.amd_sev_snp,
+                nested_virtualization=self.nested_virtualization,
             )
 
         __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
@@ -1613,7 +1622,8 @@ def _process_dataclass__f309cd6072681bb44dd6795348d4642efe3a7e7c():
             return (
                 self.core_count == other.core_count and
                 self.threads_per_core == other.threads_per_core and
-                self.amd_sev_snp == other.amd_sev_snp
+                self.amd_sev_snp == other.amd_sev_snp and
+                self.nested_virtualization == other.nested_virtualization
             )
 
         __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
@@ -1626,6 +1636,7 @@ def _process_dataclass__f309cd6072681bb44dd6795348d4642efe3a7e7c():
             'core_count',
             'threads_per_core',
             'amd_sev_snp',
+            'nested_virtualization',
         }
 
         def __setattr__(self, name, value):
@@ -1646,6 +1657,7 @@ def _process_dataclass__f309cd6072681bb44dd6795348d4642efe3a7e7c():
             'core_count',
             'threads_per_core',
             'amd_sev_snp',
+            'nested_virtualization',
         }
 
         def __delattr__(self, name):
@@ -1666,6 +1678,7 @@ def _process_dataclass__f309cd6072681bb44dd6795348d4642efe3a7e7c():
                 self.core_count,
                 self.threads_per_core,
                 self.amd_sev_snp,
+                self.nested_virtualization,
             ))
 
         __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
@@ -1677,10 +1690,12 @@ def _process_dataclass__f309cd6072681bb44dd6795348d4642efe3a7e7c():
             core_count: __dataclass__init__fields__1__annotation = __dataclass__init__fields__1__default,
             threads_per_core: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
             amd_sev_snp: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
+            nested_virtualization: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'core_count', core_count)
             __dataclass__object_setattr(self, 'threads_per_core', threads_per_core)
             __dataclass__object_setattr(self, 'amd_sev_snp', amd_sev_snp)
+            __dataclass__object_setattr(self, 'nested_virtualization', nested_virtualization)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
         if '__init__' in __dataclass__cls.__dict__:
@@ -1693,6 +1708,7 @@ def _process_dataclass__f309cd6072681bb44dd6795348d4642efe3a7e7c():
             parts.append(f"core_count={self.core_count!r}")
             parts.append(f"threads_per_core={self.threads_per_core!r}")
             parts.append(f"amd_sev_snp={self.amd_sev_snp!r}")
+            parts.append(f"nested_virtualization={self.nested_virtualization!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

@@ -1639,6 +1639,12 @@ class MonitoringState(_enum.Enum):
 
 NatGatewayId = _ta.NewType('NatGatewayId', str)
 
+
+class NestedVirtualizationSpecification(_enum.Enum):
+    ENABLED = 'enabled'
+    DISABLED = 'disabled'
+
+
 NetworkCardIndex = _ta.NewType('NetworkCardIndex', int)
 
 NetworkInterfaceId = _ta.NewType('NetworkInterfaceId', str)
@@ -1954,6 +1960,7 @@ class SubnetState(_enum.Enum):
 
 class SupportedAdditionalProcessorFeature(_enum.Enum):
     AMD_SEV_SNP = 'amd-sev-snp'
+    NESTED_VIRTUALIZATION = 'nested-virtualization'
 
 
 class Tenancy(_enum.Enum):
@@ -2326,6 +2333,12 @@ class CpuOptions(
         shape_name='AmdSevSnpSpecification',
     ))
 
+    nested_virtualization: NestedVirtualizationSpecification | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='NestedVirtualization',
+        serialization_name='nestedVirtualization',
+        shape_name='NestedVirtualizationSpecification',
+    ))
+
 
 @_dc.dataclass(frozen=True, kw_only=True)
 class CpuOptionsRequest(
@@ -2345,6 +2358,11 @@ class CpuOptionsRequest(
     amd_sev_snp: AmdSevSnpSpecification | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='AmdSevSnp',
         shape_name='AmdSevSnpSpecification',
+    ))
+
+    nested_virtualization: NestedVirtualizationSpecification | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='NestedVirtualization',
+        shape_name='NestedVirtualizationSpecification',
     ))
 
 
