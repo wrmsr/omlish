@@ -33,6 +33,7 @@ from omlish import typedvalues as tv
 from omlish.formats import json
 from omlish.http import all as http
 from omlish.io.streams.framing import LongestMatchDelimiterByteStreamFrameDecoder
+from omlish.io.streams.scanning import ScanningByteStreamBuffer
 from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 
 from .....backends.ollama import protocol as pt
@@ -174,7 +175,7 @@ class OllamaChatChoicesStreamService(BaseOllamaChatChoicesService):
             http_response = await rs.enter_async_context(await http_client.stream_request(http_request))
 
             async def inner(sink: StreamResponseSink[AiChoicesDeltas]) -> ta.Sequence[ChatChoicesOutputs] | None:
-                buf = SegmentedByteStreamBuffer(chunk_size=0x4000)
+                buf = ScanningByteStreamBuffer(SegmentedByteStreamBuffer(chunk_size=0x4000))
                 frm = LongestMatchDelimiterByteStreamFrameDecoder([b'\r', b'\n', b'\r\n'])
                 while True:
                     b = await http_response.stream.read1(self.READ_CHUNK_SIZE)

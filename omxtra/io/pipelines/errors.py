@@ -1,0 +1,6 @@
+class ChannelPipelineError(Exception):
+    pass
+
+
+class IncompleteDecodingChannelPipelineError(ChannelPipelineError):
+    pass

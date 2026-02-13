@@ -4,8 +4,9 @@ import dataclasses as dc
 import json
 import typing as ta
 
-from omlish.io.streams.framing import LongestMatchDelimiterByteStreamFrameDecoder
+from omlish.io.streams.scanning import ScanningByteStreamBuffer
 from omlish.io.streams.segmented import SegmentedByteStreamBuffer
+from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.logs.modules import get_module_logger
 
 
@@ -27,8 +28,8 @@ class JournalctlMessageBuilder:
     def __init__(self) -> None:
         super().__init__()
 
-        self._buf = SegmentedByteStreamBuffer(chunk_size=0x4000)
-        self._frm = LongestMatchDelimiterByteStreamFrameDecoder([b'\n'])
+        self._raw_buf = SegmentedByteStreamBuffer(chunk_size=0x4000)
+        self._buf = ScanningByteStreamBuffer(self._raw_buf)
 
     _cursor_field = '__CURSOR'
 
@@ -81,6 +82,6 @@ class JournalctlMessageBuilder:
     def feed(self, data: bytes) -> ta.Sequence[JournalctlMessage]:
         ret: ta.List[JournalctlMessage] = []
         self._buf.write(data)
-        for line in self._frm.decode(self._buf, final=not data):
+        for line in ByteStreamBuffers.split(self._buf, b'\n', final=not data):
             ret.append(self._make_message(line.tobytes()))
         return ret

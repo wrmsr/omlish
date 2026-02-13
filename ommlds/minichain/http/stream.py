@@ -10,6 +10,7 @@ from omlish import lang
 from omlish.http import all as http
 from omlish.http import sse
 from omlish.io.streams.framing import LongestMatchDelimiterByteStreamFrameDecoder
+from omlish.io.streams.scanning import ScanningByteStreamBuffer
 from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 
 from ..resources import UseResources
@@ -134,7 +135,7 @@ class LinesBytesHttpStreamResponseHandler(BytesHttpStreamResponseHandler):
 
         self._handler = handler
 
-        self._buf = SegmentedByteStreamBuffer(chunk_size=0x4000)
+        self._buf = ScanningByteStreamBuffer(SegmentedByteStreamBuffer(chunk_size=0x4000))
         self._frm = LongestMatchDelimiterByteStreamFrameDecoder([b'\r', b'\n', b'\r\n'])
         self._seen_eof = False
 

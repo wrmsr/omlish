@@ -10,8 +10,9 @@ from ... import check
 from ... import lang
 from ... import marshal as msh
 from ...asyncs import anyio as aiu
-from ...io.streams.framing import LongestMatchDelimiterByteStreamFrameDecoder
+from ...io.streams.scanning import ScanningByteStreamBuffer
 from ...io.streams.segmented import SegmentedByteStreamBuffer
+from ...io.streams.utils import ByteStreamBuffers
 from .types import Error
 from .types import Id
 from .types import Message
@@ -49,8 +50,8 @@ class JsonrpcConnection:
             id_creator = self.default_create_id
         self._create_id = id_creator
 
-        self._buf = SegmentedByteStreamBuffer(chunk_size=0x4000)
-        self._frm = LongestMatchDelimiterByteStreamFrameDecoder([b'\n'])
+        self._raw_buf = SegmentedByteStreamBuffer(chunk_size=0x4000)
+        self._buf = ScanningByteStreamBuffer(self._raw_buf)
         self._response_futures_by_id: dict[Id, aiu.Future[Response]] = {}
         self._send_lock = anyio.Lock()
         self._shutdown_event = anyio.Event()
@@ -150,7 +151,7 @@ class JsonrpcConnection:
                 self._received_eof = True
 
             self._buf.write(data)
-            lines = self._frm.decode(self._buf, final=not data)
+            lines = ByteStreamBuffers.split(self._buf, b'\n')
 
             if not data:
                 if len(self._buf):

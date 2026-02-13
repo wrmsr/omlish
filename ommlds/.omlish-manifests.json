@@ -86,7 +86,7 @@
     "module": ".minichain.backends.impls.anthropic.stream",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/anthropic/stream.py",
-    "line": 37,
+    "line": 38,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.anthropic.stream",
@@ -493,7 +493,7 @@
     "module": ".minichain.backends.impls.ollama.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/ollama/chat.py",
-    "line": 62,
+    "line": 63,
     "value": {
       "!.minichain.backends.strings.manifests.BackendStringsManifest": {
         "service_cls_names": [
@@ -509,7 +509,7 @@
     "module": ".minichain.backends.impls.ollama.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/ollama/chat.py",
-    "line": 95,
+    "line": 96,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.ollama.chat",
@@ -524,7 +524,7 @@
     "module": ".minichain.backends.impls.ollama.chat",
     "attr": null,
     "file": "ommlds/minichain/backends/impls/ollama/chat.py",
-    "line": 138,
+    "line": 139,
     "value": {
       "!.minichain.registries.manifests.RegistryManifest": {
         "module": "ommlds.minichain.backends.impls.ollama.chat",

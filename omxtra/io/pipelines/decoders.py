@@ -2,12 +2,14 @@
 import typing as ta
 
 from omlish.io.streams.framing import LongestMatchDelimiterByteStreamFrameDecoder
+from omlish.io.streams.scanning import ScanningByteStreamBuffer
 from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 from omlish.io.streams.utils import ByteStreamBuffers
 
 from .core import ChannelPipelineEvents
 from .core import ChannelPipelineHandler
 from .core import ChannelPipelineHandlerContext
+from .errors import IncompleteDecodingChannelPipelineError
 
 
 ##
@@ -53,13 +55,16 @@ class DelimiterFrameDecoder(ChannelPipelineHandler):  # HasChannelPipelineFlowBu
             max_size: int | None = None,
             max_buffer_bytes: int | None = None,
             chunk_size: int = 0x4000,
+            on_incomplete_final: ta.Literal['allow', 'raise'] = 'allow',
     ) -> None:
         super().__init__()
 
-        self._buf = SegmentedByteStreamBuffer(
+        self._on_incomplete_final = on_incomplete_final
+
+        self._buf = ScanningByteStreamBuffer(SegmentedByteStreamBuffer(
             max_bytes=max_buffer_bytes,
             chunk_size=chunk_size,
-        )
+        ))
 
         self._fr = LongestMatchDelimiterByteStreamFrameDecoder(
             delims,
@@ -89,7 +94,17 @@ class DelimiterFrameDecoder(ChannelPipelineHandler):  # HasChannelPipelineFlowBu
 
     def _produce_frames(self, ctx: ChannelPipelineHandlerContext, *, final: bool = False) -> None:
         before = len(self._buf)
+
         frames = self._fr.decode(self._buf, final=final)
+
+        if final and len(self._buf):
+            if (oif := self._on_incomplete_final) == 'allow':
+                frames.append(self._buf.split_to(len(self._buf)))
+            elif oif == 'raise':
+                raise IncompleteDecodingChannelPipelineError
+            else:
+                raise RuntimeError(f'unexpected on_incomplete_final: {oif!r}')
+
         after = len(self._buf)
 
         if (bfc := ctx.bytes_flow_control) is not None:

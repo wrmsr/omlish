@@ -48,7 +48,7 @@ class DelimitingParser:
 
     def parse(self, b: bytes) -> ta.Iterator[ta.Any]:
         self._buf.write(b)
-        for chunk in ByteStreamBuffers.split(self._buf, self._delimiter):
+        for chunk in ByteStreamBuffers.split(self._buf, self._delimiter, final=not b):
             s = chunk.tobytes().decode('utf-8')
             v = self._fmt.load(io.StringIO(s))
             yield v
