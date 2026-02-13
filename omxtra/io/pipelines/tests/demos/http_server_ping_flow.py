@@ -6,8 +6,8 @@ from ...bytes import BytesFlowControlChannelPipelineHandler
 from ...core import ChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
 from ...core import PipelineChannel
-from ...http.requests import HttpRequestHead
-from ...http.requests import HttpRequestHeadDecoder
+from ...http.requests import PipelineHttpRequestHead
+from ...http.server.requests import PipelineHttpRequestHeadDecoder
 
 
 ##
@@ -21,7 +21,7 @@ class PingHandler(ChannelPipelineHandler):
     """
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if not isinstance(msg, HttpRequestHead):
+        if not isinstance(msg, PipelineHttpRequestHead):
             ctx.feed_in(msg)
             return
 
@@ -68,7 +68,7 @@ def build_http_ping_channel(
             ),
         ),
 
-        HttpRequestHeadDecoder(),
+        PipelineHttpRequestHeadDecoder(),
 
         PingHandler(),
 

@@ -6,9 +6,9 @@ from ...bytes import BytesFlowControlChannelPipelineHandler
 from ...core import ChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
 from ...core import PipelineChannel
-from ...http.requests import HttpRequest
-from ...http.requests import HttpRequestBodyAggregator
-from ...http.requests import HttpRequestHeadDecoder
+from ...http.requests import FullPipelineHttpRequest
+from ...http.server.requests import PipelineHttpRequestBodyAggregator
+from ...http.server.requests import PipelineHttpRequestHeadDecoder
 
 
 ##
@@ -35,7 +35,7 @@ class KvStoreHandler(ChannelPipelineHandler):
         self._items = items
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if not isinstance(msg, HttpRequest):
+        if not isinstance(msg, FullPipelineHttpRequest):
             ctx.feed_in(ctx)
             return
 
@@ -132,11 +132,11 @@ def build_http_kv_channel(
             ),
         ),
 
-        HttpRequestHeadDecoder(
+        PipelineHttpRequestHeadDecoder(
             max_head=max_head,
         ),
 
-        HttpRequestBodyAggregator(
+        PipelineHttpRequestBodyAggregator(
             max_body=max_body,
         ),
 

@@ -5,8 +5,8 @@ from ...core import PipelineChannel
 from ...decoders import DelimiterFrameDecoder
 from ...decoders import StripLineEndings
 from ...decoders import Utf8Decode
-from ...http.responses import HttpResponseConditionalGzipDecompressor
-from ...http.responses import HttpResponseDecoder
+from ...http.server.responses import HttpResponseConditionalGzipDecoder
+from ...http.server.responses import HttpResponseDecoder
 from ...http.sse import SseDecoder
 
 
@@ -18,7 +18,7 @@ def build_http_sse_channel() -> PipelineChannel:
 
     return PipelineChannel([
         HttpResponseDecoder(),
-        HttpResponseConditionalGzipDecompressor(),
+        HttpResponseConditionalGzipDecoder(),
         DelimiterFrameDecoder([b'\r\n', b'\n'], keep_ends=True, max_size=1 << 20),
         Utf8Decode(),
         StripLineEndings(),

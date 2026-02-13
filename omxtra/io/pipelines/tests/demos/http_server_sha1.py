@@ -11,12 +11,12 @@ from ...bytes import BytesFlowControlChannelPipelineHandler
 from ...core import ChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
 from ...core import PipelineChannel
-from ...http.requests import HttpBodyStreamDecoder
-from ...http.requests import HttpContentChunk
-from ...http.requests import HttpRequestAborted
-from ...http.requests import HttpRequestEnd
-from ...http.requests import HttpRequestHead
-from ...http.requests import HttpRequestHeadDecoder
+from ...http.requests import PipelineHttpContentChunk
+from ...http.requests import PipelineHttpRequestAborted
+from ...http.requests import PipelineHttpRequestEnd
+from ...http.requests import PipelineHttpRequestHead
+from ...http.server.requests import PipelineHttpRequestBodyStreamDecoder
+from ...http.server.requests import PipelineHttpRequestHeadDecoder
 
 
 ##
@@ -27,8 +27,8 @@ class Sha1Handler(ChannelPipelineHandler):
     Handles:
       POST /sha1
 
-    Reads the request body as a stream of HttpContentChunk and computes SHA1 incrementally. On HttpRequestEnd, responds
-    with hex digest and closes.
+    Reads the request body as a stream of HttpContentChunk and computes SHA1 incrementally. On DecodedHttpRequestEnd,
+    responds with hex digest and closes.
 
     If the peer disconnects partway through upload (HttpRequestAborted), it closes quietly.
     """
@@ -40,7 +40,7 @@ class Sha1Handler(ChannelPipelineHandler):
         self._h: ta.Any = None  # hashlib object
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, HttpRequestHead):
+        if isinstance(msg, PipelineHttpRequestHead):
             if msg.method.upper() == 'POST' and msg.target.split('?', 1)[0] == '/sha1':
                 self._active = True
                 self._h = hashlib.sha1()  # noqa
@@ -61,13 +61,13 @@ class Sha1Handler(ChannelPipelineHandler):
 
             return
 
-        if isinstance(msg, HttpContentChunk):
+        if isinstance(msg, PipelineHttpContentChunk):
             if self._active and self._h is not None:
                 self._h.update(msg.data)
 
             return
 
-        if isinstance(msg, HttpRequestEnd):
+        if isinstance(msg, PipelineHttpRequestEnd):
             if self._active and self._h is not None:
                 hexd = self._h.hexdigest().encode('ascii')
                 resp = (
@@ -86,7 +86,7 @@ class Sha1Handler(ChannelPipelineHandler):
 
             return
 
-        if isinstance(msg, HttpRequestAborted):
+        if isinstance(msg, PipelineHttpRequestAborted):
             # Graceful: nothing to do, just close and drop state.
             self._active = False
             self._h = None
@@ -117,11 +117,11 @@ def build_http_sha1_channel(
             ),
         ),
 
-        HttpRequestHeadDecoder(
+        PipelineHttpRequestHeadDecoder(
             max_head=max_head,
         ),
 
-        HttpBodyStreamDecoder(
+        PipelineHttpRequestBodyStreamDecoder(
             max_chunk=max_chunk,
             max_buf=max_body_buf,
         ),
