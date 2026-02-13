@@ -1,3 +1,5 @@
+# ruff: noqa: UP045
+# @omlish-lite
 import asyncio
 import typing as ta
 
@@ -16,12 +18,12 @@ class AsyncioStreamChannelPipelineDriver:
             self,
             channel: PipelineChannel,
             reader: asyncio.StreamReader,
-            writer: asyncio.StreamWriter | None = None,
+            writer: ta.Optional[asyncio.StreamWriter] = None,
             *,
             read_chunk_size: int = 1 << 16,
-            write_chunk_max: int | None = None,
+            write_chunk_max: ta.Optional[int] = None,
 
-            on_app_msg: ta.Callable[[ta.Any], None] | None = None,
+            on_app_msg: ta.Optional[ta.Callable[[ta.Any], None]] = None,
     ) -> None:
         super().__init__()
 
@@ -97,12 +99,12 @@ class BytesFlowControlAsyncioStreamChannelPipelineDriver(AsyncioStreamChannelPip
             self,
             channel: PipelineChannel,
             reader: asyncio.StreamReader,
-            writer: asyncio.StreamWriter | None = None,
+            writer: ta.Optional[asyncio.StreamWriter] = None,
             *,
             read_chunk_size: int = 1 << 16,
-            write_chunk_max: int | None = None,
+            write_chunk_max: ta.Optional[int] = None,
 
-            on_app_msg: ta.Callable[[ta.Any], None] | None = None,
+            on_app_msg: ta.Optional[ta.Callable[[ta.Any], None]] = None,
 
             backpressure_sleep: float = 0.,
     ) -> None:

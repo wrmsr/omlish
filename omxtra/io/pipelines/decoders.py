@@ -1,4 +1,5 @@
-# ruff: noqa: FURB188
+# ruff: noqa: FURB188 UP045
+# @omlish-lite
 import typing as ta
 
 from omlish.io.streams.framing import LongestMatchDelimiterByteStreamFrameDecoder
@@ -52,8 +53,8 @@ class DelimiterFramePipelineDecoder(ChannelPipelineHandler):  # HasChannelPipeli
             delims: ta.Sequence[bytes],
             *,
             keep_ends: bool = False,
-            max_size: int | None = None,
-            max_buffer_bytes: int | None = None,
+            max_size: ta.Optional[int] = None,
+            max_buffer_bytes: ta.Optional[int] = None,
             chunk_size: int = 0x4000,
             on_incomplete_final: ta.Literal['allow', 'raise'] = 'allow',
     ) -> None:
