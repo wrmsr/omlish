@@ -1,9 +1,5 @@
 # ruff: noqa: UP006 UP045
 # @omlish-lite
-"""
-TODO:
- - compute dense inbound/outbound index where relevant handler method is not overridden
-"""
 import abc
 import collections
 import dataclasses as dc
@@ -95,7 +91,7 @@ class ChannelPipelineHandlerContext:
     def __init__(
             self,
             *,
-            _state: 'ChannelPipeline._State',
+            _state: 'ChannelPipeline._State',  # noqa
             _index: int,
             _handler: 'ChannelPipelineHandler',
     ) -> None:
@@ -104,6 +100,12 @@ class ChannelPipelineHandlerContext:
         self._state = _state
         self._index = _index
         self._handler = _handler
+
+        self._next_in_index = _state.next_in_indexes[_index]
+        self._next_out_index = _state.next_out_indexes[_index]
+
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}<{self._index}>({self._handler!r}, {self.pipeline!r})'
 
     @property
     def pipeline(self) -> 'ChannelPipeline':
@@ -128,10 +130,10 @@ class ChannelPipelineHandlerContext:
     #
 
     def feed_in(self, msg: ta.Any) -> None:
-        self._state.feed_in_from(self._index + 1, msg)
+        self._state.feed_in_from(self._next_in_index, msg)
 
     def feed_out(self, msg: ta.Any) -> None:
-        self._state.feed_out_from(self._index - 1, msg)
+        self._state.feed_out_from(self._next_out_index, msg)
 
     def emit_out(self, msg: ta.Any) -> None:
         self._state.pipeline._channel.emit_out(msg)  # noqa
@@ -198,6 +200,8 @@ class ChannelPipeline:
 
             self.invalidated = False
 
+            self.next_in_indexes, self.next_out_indexes = self._calculate_link_lists(handlers)
+
             self.ctxs = [
                 ChannelPipelineHandlerContext(
                     _state=self,
@@ -213,6 +217,32 @@ class ChannelPipeline:
             # The result of this is discarded - this is done to enforce uniqueness of this special cased handler if it's
             # present.
             self.get_handler(BytesChannelPipelineFlowControl)  # type: ignore[type-abstract]
+
+        #
+
+        @classmethod
+        def _calculate_link_lists(
+                cls,
+                handlers: ta.Sequence[ChannelPipelineHandler],
+        ) -> ta.Tuple[ta.Sequence[int], ta.Sequence[int]]:
+            n = len(handlers)
+
+            next_in_indexes = [-1] * n
+            next_out_indexes = [-1] * n
+
+            last_in = -1
+            for i in range(n - 1, -1, -1):
+                next_in_indexes[i] = last_in
+                if type(handlers[i]).inbound is not ChannelPipelineHandler.inbound or i == n - 1:
+                    last_in = i
+
+            last_out = -1
+            for i in range(n):
+                next_out_indexes[i] = last_out
+                if type(handlers[i]).outbound is not ChannelPipelineHandler.outbound or i == 0:
+                    last_out = i
+
+            return next_in_indexes, next_out_indexes
 
         #
 
@@ -246,7 +276,7 @@ class ChannelPipeline:
             if self.invalidated:
                 raise ChannelPipelineContextInvalidatedError
             if idx < 0:
-                raise ValueError(f'Negative handler index {idx!r}.')
+                raise RuntimeError(f'Negative handler index {idx!r}.')
             ctx = self.ctxs[idx]
             ctx._handler.inbound(ctx, msg)  # noqa
 
@@ -254,7 +284,7 @@ class ChannelPipeline:
             if self.invalidated:
                 raise ChannelPipelineContextInvalidatedError
             if idx < 0:
-                raise ValueError(f'Negative handler index {idx!r}.')
+                raise RuntimeError(f'Negative handler index {idx!r}.')
             ctx = self.ctxs[idx]
             ctx._handler.outbound(ctx, msg)  # noqa
 
@@ -324,7 +354,7 @@ class PipelineChannel:
 
         st = self._pipeline._state()  # noqa
         try:
-            st.feed_in_from(0, msg)
+            st.feed_in_from(1, msg)  # Skip outermost
         except BaseException as e:  # noqa
             self.handle_error(e)
 
@@ -351,7 +381,7 @@ class PipelineChannel:
     def feed_out(self, msg: ta.Any) -> None:
         st = self._pipeline._state()  # noqa
         try:
-            st.feed_out_from(len(st.ctxs) - 1, msg)
+            st.feed_out_from(len(st.ctxs) - 2, msg)  # Skip innermost
         except BaseException as e:  # noqa
             self.handle_error(e)
 

@@ -360,6 +360,12 @@ venv-14t:
 test-14t:
 	${PYPROJECT} venv 14t test -- ${PYTEST_OPTS} --ignore=omlish/sql
 
+# 15
+
+.PHONY: venv-15
+venv-15:
+	${PYPROJECT} venv 15 exe
+
 # 8
 
 .PHONY: test-8
