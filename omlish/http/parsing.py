@@ -162,12 +162,16 @@ class ParsedHttpHeaders:
             self._order.append(name)
         self._entries[name].append(value)
 
+    @property
+    def entries(self) -> ta.Mapping[str, ta.Sequence[str]]:
+        return self._entries
+
     def __contains__(self, name: ta.Any) -> bool:
         if not isinstance(name, str):
             return False
         return name.lower() in self._entries
 
-    # Headers where duplicate values are comma-combined per RFC 7230 §3.2.2. # Set-Cookie is the notable exception.
+    # Headers where duplicate values are comma-combined per RFC 7230 §3.2.2. Set-Cookie is the notable exception.
     _NO_COMBINE_HEADERS: ta.ClassVar[ta.FrozenSet[str]] = frozenset({
         'set-cookie',
     })

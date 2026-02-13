@@ -23,20 +23,10 @@ CanHttpHeaders = ta.Union[  # ta.TypeAlias  # omlish-amalg-typing-no-move
 
     http.client.HTTPMessage,
 
-    ta.Mapping[str, str],
-    ta.Mapping[str, ta.Sequence[str]],
-    ta.Mapping[str, ta.Union[str, ta.Sequence[str]]],
-
-    ta.Mapping[bytes, bytes],
-    ta.Mapping[bytes, ta.Sequence[bytes]],
-    ta.Mapping[bytes, ta.Union[bytes, ta.Sequence[bytes]]],
-
-    ta.Mapping[StrOrBytes, StrOrBytes],
-    ta.Mapping[StrOrBytes, ta.Sequence[StrOrBytes]],
+    ta.Mapping[str, ta.Union[StrOrBytes, ta.Sequence[StrOrBytes]]],
+    ta.Mapping[bytes, ta.Union[StrOrBytes, ta.Sequence[StrOrBytes]]],
     ta.Mapping[StrOrBytes, ta.Union[StrOrBytes, ta.Sequence[StrOrBytes]]],
 
-    ta.Sequence[ta.Tuple[str, str]],
-    ta.Sequence[ta.Tuple[bytes, bytes]],
     ta.Sequence[ta.Tuple[StrOrBytes, StrOrBytes]],
 ]
 
@@ -90,15 +80,12 @@ class HttpHeaders:
 
     #
 
-    # https://github.com/pgjones/hypercorn/commit/13f385be7277f407a9a361c958820515e16e217e
-    ENCODING: ta.ClassVar[str] = 'latin1'
-
     @classmethod
     def _as_bytes(cls, o: StrOrBytes) -> bytes:
         if isinstance(o, bytes):
             return o
         elif isinstance(o, str):
-            return o.encode(cls.ENCODING)
+            return o.encode('latin-1')
         else:
             raise TypeError(o)
 
@@ -154,7 +141,7 @@ class HttpHeaders:
 
     @cached_property
     def strs(self) -> ta.Sequence[ta.Tuple[str, str]]:
-        return tuple((k.decode(self.ENCODING), v.decode(self.ENCODING)) for k, v in self.normalized)
+        return tuple((k.decode('latin-1'), v.decode('latin-1')) for k, v in self.normalized)
 
     @cached_property
     def multi_str_dct(self) -> ta.Mapping[str, ta.Sequence[str]]:
@@ -170,17 +157,6 @@ class HttpHeaders:
     @cached_property
     def single_str_dct(self) -> ta.Mapping[str, str]:
         return {k: v[0] for k, v in self.multi_str_dct.items() if len(v) == 1}
-
-    @cached_property
-    def strict_str_dct(self) -> ta.Mapping[str, str]:
-        d: ta.Dict[str, str] = {}
-        for k, v in self.strs:
-            if k in d:
-                if True:
-                    raise DuplicateHttpHeaderError(k)
-            else:
-                d[k] = v
-        return d
 
     #
 

@@ -124,7 +124,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../oci/pack/unpacking.py', sha1='f43dee9a2eee79cbbb90f0721ed234a2bc35daa7'),
             dict(path='../../omlish/argparse/cli.py', sha1='f4dc3cd353d14386b5da0306768700e396afd2b3'),
             dict(path='../../omlish/http/coro/io.py', sha1='6ccbbf6a1a6a702ce0f1dc24b4057e8264ef4641'),
-            dict(path='../../omlish/http/parsing.py', sha1='9beb75dc1f3b5b9c58b5496621db93150d25d428'),
+            dict(path='../../omlish/http/parsing.py', sha1='58579597eaf70a8ee409c2814481b3002a6acea1'),
             dict(path='../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
             dict(path='../../omlish/lite/maybes.py', sha1='04d2fcbea17028a5e6b8e7a7fb742375495ed233'),
             dict(path='../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
@@ -4186,12 +4186,16 @@ class ParsedHttpHeaders:
             self._order.append(name)
         self._entries[name].append(value)
 
+    @property
+    def entries(self) -> ta.Mapping[str, ta.Sequence[str]]:
+        return self._entries
+
     def __contains__(self, name: ta.Any) -> bool:
         if not isinstance(name, str):
             return False
         return name.lower() in self._entries
 
-    # Headers where duplicate values are comma-combined per RFC 7230 §3.2.2. # Set-Cookie is the notable exception.
+    # Headers where duplicate values are comma-combined per RFC 7230 §3.2.2. Set-Cookie is the notable exception.
     _NO_COMBINE_HEADERS: ta.ClassVar[ta.FrozenSet[str]] = frozenset({
         'set-cookie',
     })
