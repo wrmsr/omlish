@@ -1,4 +1,5 @@
 # ruff: noqa: UP045
+# @omlish-lite
 import dataclasses as dc
 import typing as ta
 
@@ -14,10 +15,10 @@ class PipelineHttpRequestHead:
     method: str
     target: str
     version: HttpVersion
-    headers: dict[str, str]
+    headers: ta.Mapping[str, str]
     parsed: ta.Optional[ParsedHttpMessage] = None
 
-    def header(self, name: str) -> str | None:
+    def header(self, name: str) -> ta.Optional[str]:
         return self.headers.get(name.casefold())
 
 

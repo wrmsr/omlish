@@ -20,7 +20,7 @@ class AsyncioStreamChannelPipelineDriver:
             reader: asyncio.StreamReader,
             writer: ta.Optional[asyncio.StreamWriter] = None,
             *,
-            read_chunk_size: int = 1 << 16,
+            read_chunk_size: int = 0x10000,
             write_chunk_max: ta.Optional[int] = None,
 
             on_app_msg: ta.Optional[ta.Callable[[ta.Any], None]] = None,
@@ -101,7 +101,7 @@ class BytesFlowControlAsyncioStreamChannelPipelineDriver(AsyncioStreamChannelPip
             reader: asyncio.StreamReader,
             writer: ta.Optional[asyncio.StreamWriter] = None,
             *,
-            read_chunk_size: int = 1 << 16,
+            read_chunk_size: int = 0x10000,
             write_chunk_max: ta.Optional[int] = None,
 
             on_app_msg: ta.Optional[ta.Callable[[ta.Any], None]] = None,

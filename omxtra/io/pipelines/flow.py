@@ -47,10 +47,10 @@ class ChannelPipelineFlowControlAdapter(Abstract):
 class FlowControlChannelPipelineHandler(ChannelPipelineFlowControl, ChannelPipelineHandler):
     @dc.dataclass(frozen=True)
     class Config:
-        credit: int = 1 << 20
+        credit: int = 0x100000
 
-        high_watermark: int = 1 << 20
-        low_watermark: int = 1 << 19
+        high_watermark: int = 0x100000
+        low_watermark: int = 0x80000
 
         pause_reading_when_unwritable: bool = True
 

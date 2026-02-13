@@ -1,3 +1,4 @@
+# ruff: noqa: UP006
 import asyncio
 import typing as ta
 
@@ -29,7 +30,7 @@ class KvStoreHandler(ChannelPipelineHandler):
       - Connection: close (we close after each response).
     """
 
-    def __init__(self, items: dict[str, str]) -> None:
+    def __init__(self, items: ta.MutableMapping[str, str]) -> None:
         super().__init__()
 
         self._items = items
@@ -114,7 +115,7 @@ class KvStoreHandler(ChannelPipelineHandler):
 
 
 def build_http_kv_channel(
-        items: dict[str, str],
+        items: ta.MutableMapping[str, str],
         *,
         outbound_capacity: int | None = 1 << 22,
         outbound_overflow_policy: ta.Literal['allow', 'close', 'raise', 'drop'] = 'close',
@@ -160,7 +161,7 @@ async def serve_kv(
       - DELETE /key
     """
 
-    items: dict[str, str] = {}
+    items: ta.Dict[str, str] = {}
 
     async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         drv = BytesFlowControlAsyncioStreamChannelPipelineDriver(

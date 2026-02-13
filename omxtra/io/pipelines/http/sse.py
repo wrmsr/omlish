@@ -1,4 +1,5 @@
-# ruff: noqa: FURB188 UP006
+# ruff: noqa: FURB188 UP006 UP045
+# @omlish-lite
 import dataclasses as dc
 import typing as ta
 
@@ -12,10 +13,10 @@ from ..core import ChannelPipelineHandlerContext
 
 @dc.dataclass(frozen=True)
 class PipelineSseEvent:
-    event: str | None = None
+    event: ta.Optional[str] = None
     data: str = ''
-    id: str | None = None
-    retry: int | None = None
+    id: ta.Optional[str] = None
+    retry: ta.Optional[int] = None
 
 
 ##
@@ -27,10 +28,10 @@ class PipelineSseDecoder(ChannelPipelineHandler):
     def __init__(self) -> None:
         super().__init__()
 
-        self._event: str | None = None
+        self._event: ta.Optional[str] = None
         self._data: ta.List[str] = []
-        self._id: str | None = None
-        self._retry: int | None = None
+        self._id: ta.Optional[str] = None
+        self._retry: ta.Optional[int] = None
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         if isinstance(msg, ChannelPipelineEvents.Eof):

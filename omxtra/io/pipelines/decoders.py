@@ -55,7 +55,7 @@ class DelimiterFramePipelineDecoder(ChannelPipelineHandler):  # HasChannelPipeli
             keep_ends: bool = False,
             max_size: ta.Optional[int] = None,
             max_buffer_bytes: ta.Optional[int] = None,
-            chunk_size: int = 0x4000,
+            chunk_size: int = 0x10000,
             on_incomplete_final: ta.Literal['allow', 'raise'] = 'allow',
     ) -> None:
         super().__init__()

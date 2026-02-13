@@ -1,3 +1,5 @@
+# ruff: noqa: UP006 UP045
+# @omlish-lite
 import typing as ta
 import zlib
 
@@ -27,13 +29,14 @@ class PipelineHttpResponseDecoder(ChannelPipelineHandler):
     def __init__(
             self,
             *,
-            max_head: int = 64 << 10,
+            max_head: int = 0x10000,
+            chunk_size: int = 0x10000,
     ) -> None:
         super().__init__()
 
         self._buf = SegmentedByteStreamBuffer(
             max_bytes=max_head,
-            chunk_size=0x4000,
+            chunk_size=chunk_size,
         )
         self._got_head = False
         self._max_head = int(max_head)
@@ -103,7 +106,7 @@ class PipelineHttpResponseDecoder(ChannelPipelineHandler):
             raise ValueError('bad http status code') from None
         reason = parts[2].strip() if len(parts) > 2 else ''
 
-        headers: dict[str, str] = {}
+        headers: ta.Dict[str, str] = {}
         for ln in lines[1:]:
             if not ln or ':' not in ln:
                 continue
@@ -133,7 +136,7 @@ class PipelineHttpResponseConditionalGzipDecoder(ChannelPipelineHandler):
         super().__init__()
 
         self._enabled = False
-        self._z: ta.Any | None = None
+        self._z: ta.Optional[ta.Any] = None
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         if isinstance(msg, ChannelPipelineEvents.Eof):
