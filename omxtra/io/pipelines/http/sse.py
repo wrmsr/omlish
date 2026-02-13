@@ -11,7 +11,7 @@ from ..core import ChannelPipelineHandlerContext
 
 
 @dc.dataclass(frozen=True)
-class SseEvent:
+class PipelineSseEvent:
     event: str | None = None
     data: str = ''
     id: str | None = None
@@ -21,7 +21,7 @@ class SseEvent:
 ##
 
 
-class SseDecoder(ChannelPipelineHandler):
+class PipelineSseDecoder(ChannelPipelineHandler):
     """Consumes lines and emits SseEvent objects; ignores comment lines and handles blank-line termination."""
 
     def __init__(self) -> None:
@@ -79,7 +79,7 @@ class SseDecoder(ChannelPipelineHandler):
         ):
             return
 
-        ev = SseEvent(
+        ev = PipelineSseEvent(
             event=self._event,
             data='\n'.join(self._data),
             id=self._id,

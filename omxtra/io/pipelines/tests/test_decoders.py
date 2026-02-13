@@ -2,14 +2,14 @@ import unittest
 
 from ..core import ChannelPipelineEvents
 from ..core import PipelineChannel
-from ..decoders import DelimiterFrameDecoder
-from ..decoders import Utf8Decode
+from ..decoders import DelimiterFramePipelineDecoder
+from ..decoders import Utf8PipelineDecoder
 
 
 class TestDecoders(unittest.TestCase):
     def test_decoders(self):
         ch = PipelineChannel([
-            Utf8Decode(),
+            Utf8PipelineDecoder(),
         ])
 
         ch.feed_in(b'abcd')
@@ -20,8 +20,8 @@ class TestDecoders(unittest.TestCase):
 
     def test_delim(self):
         ch = PipelineChannel([
-            DelimiterFrameDecoder([b'\n']),
-            Utf8Decode(),
+            DelimiterFramePipelineDecoder([b'\n']),
+            Utf8PipelineDecoder(),
         ])
 
         ch.feed_in(b'abc')

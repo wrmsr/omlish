@@ -11,7 +11,7 @@ from .core import PipelineChannel
 ##
 
 
-class AsyncioStreamDriver:
+class AsyncioStreamChannelPipelineDriver:
     def __init__(
             self,
             channel: PipelineChannel,
@@ -92,7 +92,7 @@ class AsyncioStreamDriver:
             pass
 
 
-class BytesFlowControlAsyncioStreamDriver(AsyncioStreamDriver):
+class BytesFlowControlAsyncioStreamChannelPipelineDriver(AsyncioStreamChannelPipelineDriver):
     def __init__(
             self,
             channel: PipelineChannel,

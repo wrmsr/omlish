@@ -15,7 +15,7 @@ from .errors import IncompleteDecodingChannelPipelineError
 ##
 
 
-class Utf8Decode(ChannelPipelineHandler):
+class Utf8PipelineDecoder(ChannelPipelineHandler):
     """bytes/view -> str (UTF-8, replacement)."""
 
     def __init__(self) -> None:
@@ -33,7 +33,7 @@ class Utf8Decode(ChannelPipelineHandler):
         ctx.feed_in(msg)
 
 
-class StripLineEndings(ChannelPipelineHandler):
+class StripLineEndingsPipelineDecoder(ChannelPipelineHandler):
     """str line -> str without trailing CR (supports both LF and CRLF sources)."""
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
@@ -44,7 +44,7 @@ class StripLineEndings(ChannelPipelineHandler):
         ctx.feed_in(msg)
 
 
-class DelimiterFrameDecoder(ChannelPipelineHandler):  # HasChannelPipelineFlowBuffer
+class DelimiterFramePipelineDecoder(ChannelPipelineHandler):  # HasChannelPipelineFlowBuffer
     """bytes-like -> frames using longest-match delimiter semantics."""
 
     def __init__(

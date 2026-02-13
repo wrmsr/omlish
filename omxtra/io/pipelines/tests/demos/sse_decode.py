@@ -2,12 +2,12 @@
 import typing as ta
 
 from ...core import PipelineChannel
-from ...decoders import DelimiterFrameDecoder
-from ...decoders import StripLineEndings
-from ...decoders import Utf8Decode
-from ...http.server.responses import HttpResponseConditionalGzipDecoder
-from ...http.server.responses import HttpResponseDecoder
-from ...http.sse import SseDecoder
+from ...decoders import DelimiterFramePipelineDecoder
+from ...decoders import StripLineEndingsPipelineDecoder
+from ...decoders import Utf8PipelineDecoder
+from ...http.server.responses import PipelineHttpResponseConditionalGzipDecoder
+from ...http.server.responses import PipelineHttpResponseDecoder
+from ...http.sse import PipelineSseDecoder
 
 
 ##
@@ -17,12 +17,12 @@ def build_http_sse_channel() -> PipelineChannel:
     """Example: raw bytes -> HTTP response head -> conditional gzip -> longest-match line framing -> Sse events."""
 
     return PipelineChannel([
-        HttpResponseDecoder(),
-        HttpResponseConditionalGzipDecoder(),
-        DelimiterFrameDecoder([b'\r\n', b'\n'], keep_ends=True, max_size=1 << 20),
-        Utf8Decode(),
-        StripLineEndings(),
-        SseDecoder(),
+        PipelineHttpResponseDecoder(),
+        PipelineHttpResponseConditionalGzipDecoder(),
+        DelimiterFramePipelineDecoder([b'\r\n', b'\n'], keep_ends=True, max_size=1 << 20),
+        Utf8PipelineDecoder(),
+        StripLineEndingsPipelineDecoder(),
+        PipelineSseDecoder(),
     ])
 
 

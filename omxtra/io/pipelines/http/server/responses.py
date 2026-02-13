@@ -13,7 +13,7 @@ from ..responses import PipelineHttpResponseHead
 ##
 
 
-class HttpResponseDecoder(ChannelPipelineHandler):
+class PipelineHttpResponseDecoder(ChannelPipelineHandler):
     """
     Minimal HTTP/1.x response head decoder (demo-grade).
 
@@ -121,7 +121,7 @@ class HttpResponseDecoder(ChannelPipelineHandler):
 ##
 
 
-class HttpResponseConditionalGzipDecoder(ChannelPipelineHandler):
+class PipelineHttpResponseConditionalGzipDecoder(ChannelPipelineHandler):
     """
     Conditional streaming gzip decompression.
 
