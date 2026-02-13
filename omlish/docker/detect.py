@@ -20,7 +20,7 @@ def get_docker_host_platform() -> ta.Optional[str]:
 ##
 
 
-_LIKELY_IN_DOCKER_PATTERN = re.compile(r'^overlay / .*/(docker|desktop-containerd)/')
+_LIKELY_IN_DOCKER_PATTERN = re.compile(r'^overlay / .*/(docker|desktop-containerd|var/lib/containerd)/')
 
 
 def is_likely_in_docker() -> bool:
