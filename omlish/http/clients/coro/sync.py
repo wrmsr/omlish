@@ -83,7 +83,7 @@ class CoroHttpClient(HttpClient):
                     self._req.method or 'GET',
                     unparse_url_request_path(self._ups) or '/',
                     self._req.data,
-                    hh.single_str_dct if (hh := self._req.headers_) is not None else {},
+                    {k: check.single(v) for k, v in hh.items()} if (hh := self._req.headers_) is not None else {},
                 ))
 
                 self._resp = resp = self._run_coro(cc.get_response())

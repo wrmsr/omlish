@@ -1,9 +1,8 @@
 # ruff: noqa: UP045
 # @omlish-lite
-import enum
 import typing as ta
 
-from omlish.http.headers2 import HttpHeaders
+from omlish.http.headers import HttpHeaders
 from omlish.http.parsing import HttpParser
 from omlish.http.parsing import parse_http_message
 from omlish.io.streams.errors import FrameTooLargeByteStreamBufferError
@@ -253,6 +252,14 @@ class PipelineHttpRequestBodyAggregator(ChannelPipelineHandler):
 ##
 
 
+_PipelineHttpRequestBodyStreamDecoderMode = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+    'none',
+    'cl',
+    'chunked',
+    'eof',
+]
+
+
 class PipelineHttpRequestBodyStreamDecoder(ChannelPipelineHandler):
     """
     Turns (PipelineHttpRequestHead + subsequent bytes) into streaming PipelineHttpContentChunk events +
@@ -285,17 +292,11 @@ class PipelineHttpRequestBodyStreamDecoder(ChannelPipelineHandler):
         )
 
         self._head: ta.Optional[PipelineHttpRequestHead] = None
-        self._mode: ta.Optional[PipelineHttpRequestBodyStreamDecoder._Mode] = None
+        self._mode: ta.Optional[_PipelineHttpRequestBodyStreamDecoderMode] = None
         self._remain = 0
 
         # chunked parsing state
         self._chunk_remain: ta.Optional[int] = None  # None -> need size line; 0 -> need trailers/end
-
-    class _Mode(enum.Enum):
-        NONE = enum.auto()
-        CL = enum.auto()
-        CHUNKED = enum.auto()
-        EOF = enum.auto()
 
     # @ta.override
     # def buffered_bytes(self) -> int:
@@ -308,13 +309,13 @@ class PipelineHttpRequestBodyStreamDecoder(ChannelPipelineHandler):
                 ctx.feed_in(msg)
                 return
 
-            if self._mode is PipelineHttpRequestBodyStreamDecoder._Mode.EOF:
+            if self._mode == 'eof':
                 ctx.feed_in(PipelineHttpRequestEnd())
             else:
                 # Abort if we were expecting more bytes.
-                if self._mode is PipelineHttpRequestBodyStreamDecoder._Mode.CL and self._remain != 0:
+                if self._mode == 'cl' and self._remain != 0:
                     ctx.feed_in(PipelineHttpRequestAborted('EOF before Content-Length satisfied'))
-                elif self._mode is PipelineHttpRequestBodyStreamDecoder._Mode.CHUNKED and self._chunk_remain != 0:
+                elif self._mode == 'chunked' and self._chunk_remain != 0:
                     ctx.feed_in(PipelineHttpRequestAborted('EOF before chunked body complete'))
                 else:
                     # mode == 'none' or already complete
@@ -335,7 +336,7 @@ class PipelineHttpRequestBodyStreamDecoder(ChannelPipelineHandler):
             ctx.feed_in(msg)
 
             # If no body expected, end immediately.
-            if self._mode is PipelineHttpRequestBodyStreamDecoder._Mode.NONE:
+            if self._mode == 'none':
                 ctx.feed_in(PipelineHttpRequestEnd())
                 self._reset()
             return
@@ -357,11 +358,11 @@ class PipelineHttpRequestBodyStreamDecoder(ChannelPipelineHandler):
                 added += len(mv)
                 self._buf.write(mv)
 
-        if self._mode is PipelineHttpRequestBodyStreamDecoder._Mode.CL:
+        if self._mode == 'cl':
             self._drain_content_length(ctx)
-        elif self._mode is PipelineHttpRequestBodyStreamDecoder._Mode.CHUNKED:
+        elif self._mode == 'chunked':
             self._drain_chunked(ctx)
-        elif self._mode is PipelineHttpRequestBodyStreamDecoder._Mode.EOF:
+        elif self._mode == 'eof':
             self._drain_until_eof(ctx)
         else:
             # none: shouldn't be receiving bytes
@@ -377,18 +378,14 @@ class PipelineHttpRequestBodyStreamDecoder(ChannelPipelineHandler):
                 bfc.on_consumed(removed)
 
     class _SelectedMode(ta.NamedTuple):
-        mode: 'PipelineHttpRequestBodyStreamDecoder._Mode'
+        mode: _PipelineHttpRequestBodyStreamDecoderMode
         remain: int
         chunk_remain: ta.Optional[int]
 
     def _select_mode(self, head: PipelineHttpRequestHead) -> _SelectedMode:
         te = head.headers.lower.get('transfer-encoding', '')
         if 'chunked' in te:
-            return PipelineHttpRequestBodyStreamDecoder._SelectedMode(
-                PipelineHttpRequestBodyStreamDecoder._Mode.CHUNKED,
-                0,
-                None,
-            )
+            return PipelineHttpRequestBodyStreamDecoder._SelectedMode('chunked', 0, None)
 
         cl = head.headers.single.get('content-length')
         if cl is not None and cl != '':
@@ -401,24 +398,12 @@ class PipelineHttpRequestBodyStreamDecoder(ChannelPipelineHandler):
                 raise ValueError('bad Content-Length')
 
             if n == 0:
-                return PipelineHttpRequestBodyStreamDecoder._SelectedMode(
-                    PipelineHttpRequestBodyStreamDecoder._Mode.NONE,
-                    0,
-                    0,
-                )
+                return PipelineHttpRequestBodyStreamDecoder._SelectedMode('none', 0, 0)
 
-            return PipelineHttpRequestBodyStreamDecoder._SelectedMode(
-                PipelineHttpRequestBodyStreamDecoder._Mode.CL,
-                n,
-                0,
-            )
+            return PipelineHttpRequestBodyStreamDecoder._SelectedMode('cl', n, 0)
 
         # No length info: treat as until EOF (supports infinite streaming).
-        return PipelineHttpRequestBodyStreamDecoder._SelectedMode(
-            PipelineHttpRequestBodyStreamDecoder._Mode.EOF,
-            0,
-            0,
-        )
+        return PipelineHttpRequestBodyStreamDecoder._SelectedMode('eof', 0, 0)
 
     def _drain_content_length(self, ctx: ChannelPipelineHandlerContext) -> int:
         # Emit as many chunks as available up to remaining length.

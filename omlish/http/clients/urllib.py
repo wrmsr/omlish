@@ -6,6 +6,7 @@ import urllib.error
 import urllib.request
 
 from ...io.buffers import ReadableListBuffer
+from ...lite.check import check
 from ..headers import HttpHeaders
 from .base import DEFAULT_ENCODING
 from .base import HttpClientContext
@@ -33,8 +34,8 @@ class UrllibHttpClient(HttpClient):
         # [3]: https://github.com/python/cpython/blob/232b303e4ca47892f544294bf42e31dc34f0ec72/Lib/http/client.py#L1300-L1301  # noqa
         h: dict[str, str] = {}
         if hs := req.headers_:
-            for k, v in hs.strict_dct.items():
-                h[k.decode('ascii')] = v.decode('ascii')
+            for k, vs in hs.items():
+                h[k] = check.single(vs)
 
         return urllib.request.Request(  # noqa
             req.url,

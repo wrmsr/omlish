@@ -7,15 +7,15 @@ from ..headers import HttpHeaders
 def test_http_headers_init_with_mapping():
     src = {'Content-Type': 'text/html', 'Content-Length': '1234'}
     headers = HttpHeaders(src)
-    assert headers.single_str_dct['content-type'] == 'text/html'
-    assert headers.single_str_dct['content-length'] == '1234'
+    assert headers.single['content-type'] == 'text/html'
+    assert headers.single['content-length'] == '1234'
 
 
 def test_http_headers_init_with_sequence():
     src = [('Content-Type', 'text/html'), ('Content-Length', '1234')]
     headers = HttpHeaders(src)
-    assert headers.single_str_dct['content-type'] == 'text/html'
-    assert headers.single_str_dct['content-length'] == '1234'
+    assert headers.single['content-type'] == 'text/html'
+    assert headers.single['content-length'] == '1234'
 
 
 def test_http_headers_init_with_http_headers_instance():
@@ -24,26 +24,20 @@ def test_http_headers_init_with_http_headers_instance():
     assert headers is src
 
 
-def test_http_headers_as_bytes():
-    src = {'Content-Type': 'text/html'}
-    headers = HttpHeaders(src)
-    assert headers._as_bytes('Content-Type') == b'Content-Type'  # noqa
-    assert headers._as_bytes(b'Content-Type') == b'Content-Type'  # noqa
-
-
 def test_http_headers_as_key():
     src = {'Content-Type': 'text/html'}
     headers = HttpHeaders(src)
-    assert headers._as_key('Content-Type') == b'content-type'  # noqa
-    assert headers._as_key(b'Content-Type') == b'content-type'  # noqa
+    assert headers._as_key('Content-Type') == 'content-type'  # noqa
+    assert headers._as_key(b'Content-Type') == 'content-type'  # noqa
 
 
 def test_http_headers_normalized():
     src = {'Content-Type': 'text/html', 'Accept': 'application/json'}
     headers = HttpHeaders(src)
-    normalized = headers.normalized
-    assert (b'content-type', b'text/html') in normalized
-    assert (b'accept', b'application/json') in normalized
+    assert list(headers.all) == [
+        ('content-type', 'text/html'),
+        ('accept', 'application/json'),
+    ]
 
 
 def test_http_headers_duplicate_normalized():
@@ -53,37 +47,31 @@ def test_http_headers_duplicate_normalized():
         ('Accept', 'application/json'),
     ]
     headers = HttpHeaders(src)
-    assert list(headers.normalized) == [
-        (b'content-type', b'text/html'),
-        (b'content-type', b'Foo'),
-        (b'accept', b'application/json'),
+    assert list(headers.all) == [
+        ('content-type', 'text/html'),
+        ('content-type', 'Foo'),
+        ('accept', 'application/json'),
     ]
     assert list(headers['Content-Type']) == ['text/html', 'Foo']
-    assert list(headers[b'Content-Type']) == [b'text/html', b'Foo']
-
-
-def test_http_headers_strs():
-    src = {'Content-Type': 'text/html'}
-    headers = HttpHeaders(src)
-    assert ('content-type', 'text/html') in headers.strs
+    assert list(headers['content-type']) == ['text/html', 'Foo']
 
 
 def test_http_headers_multi_dct():
     src = {'Content-Type': ['text/html', 'application/json']}
     headers = HttpHeaders(src)
-    assert headers.multi_dct[b'content-type'] == [b'text/html', b'application/json']
+    assert list(headers['content-type']) == ['text/html', 'application/json']
 
 
 def test_http_headers_single_dct():
     src = {'Content-Type': 'text/html'}
     headers = HttpHeaders(src)
-    assert headers.single_dct[b'content-type'] == b'text/html'
+    assert headers.single['content-type'] == 'text/html'
 
 
 def test_http_headers_strict_dct():
     src = {'Content-Type': 'text/html'}
     headers = HttpHeaders(src)
-    assert headers.strict_dct[b'content-type'] == b'text/html'
+    assert headers.single['content-type'] == 'text/html'
 
 
 def test_http_headers_bool():
@@ -100,30 +88,25 @@ def test_http_headers_len():
     assert len(headers) == 1
 
 
-def test_http_headers_iter():
-    src = {'Content-Type': 'text/html'}
+def test_http_headers_iter_and_items():
+    src = [('Content-Type', 'text/html'), ('valid', 'yes'), ('content-type', 'bad')]
     headers = HttpHeaders(src)
-    assert list(iter(headers)) == [(b'Content-Type', b'text/html')]
+    assert list(iter(headers)) == ['content-type', 'valid']
+    (k1, v1), (k2, v2) = list(headers.items())
+    assert (k1, list(v1)) == ('content-type', ['text/html', 'bad'])
+    assert (k2, list(v2)) == ('valid', ['yes'])
 
 
 def test_http_headers_getitem():
     src = {'Content-Type': ['text/html', 'application/json']}
     headers = HttpHeaders(src)
-    assert headers['content-type'] == ['text/html', 'application/json']
-    assert headers[0] == (b'Content-Type', b'text/html')
-    assert headers[1] == (b'Content-Type', b'application/json')
+    assert list(headers['content-type']) == ['text/html', 'application/json']
 
 
 def test_http_headers_keys():
     src = {'Content-Type': 'text/html'}
     headers = HttpHeaders(src)
-    assert list(headers.keys()) == [b'content-type']
-
-
-def test_http_headers_items():
-    src = {'Content-Type': 'text/html'}
-    headers = HttpHeaders(src)
-    assert list(headers.items()) == [(b'Content-Type', b'text/html')]
+    assert list(headers.keys()) == ['content-type']
 
 
 def test_http_headers_invalid_init():
@@ -135,7 +118,14 @@ def test_http_headers_invalid_init():
 
 
 def test_http_headers_duplicate_key_error():
-    src = {'Content-Type': ['text/html', 'application/json']}
+    src = {'Content-Type': ['text/html', 'application/json'], 'foo': 'bar'}
     headers = HttpHeaders(src)
+    assert headers.single['foo'] == 'bar'
     with pytest.raises(DuplicateHttpHeaderError):
-        headers.strict_dct  # noqa
+        headers.single['content-type']  # noqa
+
+
+def test_http_headers_lower():
+    headers = HttpHeaders([('transfer-encoding', 'FoO'), ('TRANSFER-EnCoDiNG', 'bar')])
+    assert list(headers['transfer-encoding']) == ['FoO', 'bar']
+    assert list(headers.lower['transfer-encoding']) == ['foo', 'bar']

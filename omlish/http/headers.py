@@ -1,14 +1,14 @@
 # @omlish-lite
-# ruff: noqa: PYI034 UP006 UP007
+# ruff: noqa: PYI034 UP006 UP007 UP045
 """
 TODO:
  - handle secrets (but they're strs..)
 """
+import collections.abc
+import dataclasses as dc
 import http.client
 import typing as ta
 
-from ..lite.cached import cached_nullary
-from ..lite.cached import cached_property
 from ..lite.check import check
 
 
@@ -31,11 +31,12 @@ CanHttpHeaders = ta.Union[  # ta.TypeAlias  # omlish-amalg-typing-no-move
 ]
 
 
+@dc.dataclass()
 class DuplicateHttpHeaderError(Exception):
-    pass
+    key: str
 
 
-class HttpHeaders:
+class HttpHeaders(ta.Mapping[str, ta.Sequence[str]]):
     def __init__(self, src: CanHttpHeaders) -> None:
         super().__init__()
 
@@ -43,34 +44,41 @@ class HttpHeaders:
             check.is_(src, self)
             return
 
-        # TODO: optimized storage, 'use-whats-given'
-        lst: ta.List[ta.Tuple[bytes, bytes]] = []
+        raw: ta.List[ta.Tuple[str, str]] = []
+
         if isinstance(src, http.client.HTTPMessage):
-            lst = [(self._as_bytes(k), self._as_bytes(v)) for k, v in src.items()]
+            raw = list(src.items())
 
         elif isinstance(src, ta.Mapping):
             for k, v in src.items():
                 if isinstance(v, (str, bytes)):
-                    lst.append((self._as_bytes(k), self._as_bytes(v)))
+                    raw.append((self._decode(k), self._decode(v)))
                 else:
                     for e in v:
-                        lst.append((self._as_bytes(k), self._as_bytes(e)))
+                        raw.append((self._decode(k), self._decode(e)))
 
         elif isinstance(src, (str, bytes)):  # type: ignore
             raise TypeError(src)
 
-        elif isinstance(src, ta.Sequence):
+        elif isinstance(src, collections.abc.Sequence):
             for t in src:
                 if isinstance(t, (str, bytes)):
                     raise TypeError(t)
 
                 k, v = t
-                lst.append((self._as_bytes(k), self._as_bytes(v)))
+                raw.append((self._decode(k), self._decode(v)))
 
         else:
             raise TypeError(src)
 
-        self._lst = lst
+        self._raw = raw
+
+        self._all = tuple((self._as_key(k), v) for k, v in self._raw)
+
+        dct: ta.Dict[str, ta.List[str]] = {}
+        for k, v in self._all:
+            dct.setdefault(k, []).append(v)
+        self._dct = {k: tuple(v) for k, v in dct.items()}
 
     def __new__(cls, obj: CanHttpHeaders) -> 'HttpHeaders':
         if isinstance(obj, HttpHeaders):
@@ -80,144 +88,128 @@ class HttpHeaders:
 
     #
 
+    @property
+    def raw(self) -> ta.Sequence[ta.Tuple[str, str]]:
+        return self._raw
+
+    @property
+    def all(self) -> ta.Sequence[ta.Tuple[str, str]]:
+        return self._all
+
+    #
+
     @classmethod
-    def _as_bytes(cls, o: StrOrBytes) -> bytes:
+    def _decode(cls, o: StrOrBytes) -> str:
         if isinstance(o, bytes):
-            return o
+            return o.decode('latin-1')
         elif isinstance(o, str):
-            return o.encode('latin-1')
+            return o
         else:
             raise TypeError(o)
 
-    #
-
-    @cached_nullary
-    def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({{{", ".join(repr(k) for k in self.single_str_dct)}}})'
-
-    #
-
-    @property
-    def raw(self) -> ta.Sequence[ta.Tuple[bytes, bytes]]:
-        return self._lst
-
     @classmethod
-    def _as_key(cls, o: StrOrBytes) -> bytes:
-        return cls._as_bytes(o).lower()
-
-    @cached_property
-    def normalized(self) -> ta.Sequence[ta.Tuple[bytes, bytes]]:
-        return [(self._as_key(k), v) for k, v in self._lst]
+    def _as_key(cls, o: StrOrBytes) -> str:
+        return cls._decode(o).lower()
 
     #
 
-    @cached_property
-    def multi_dct(self) -> ta.Mapping[bytes, ta.Sequence[bytes]]:
-        d: ta.Dict[bytes, ta.List[bytes]] = {}
-        for k, v in self.normalized:
-            try:
-                l = d[k]
-            except KeyError:
-                l = d[k] = []
-            l.append(v)
-        return d
-
-    @cached_property
-    def single_dct(self) -> ta.Mapping[bytes, bytes]:
-        return {k: v[0] for k, v in self.multi_dct.items() if len(v) == 1}
-
-    @cached_property
-    def strict_dct(self) -> ta.Mapping[bytes, bytes]:
-        d: ta.Dict[bytes, bytes] = {}
-        for k, v in self.normalized:
-            if k in d:
-                if True:
-                    raise DuplicateHttpHeaderError(k)
-            else:
-                d[k] = v
-        return d
-
-    #
-
-    @cached_property
-    def strs(self) -> ta.Sequence[ta.Tuple[str, str]]:
-        return tuple((k.decode('latin-1'), v.decode('latin-1')) for k, v in self.normalized)
-
-    @cached_property
-    def multi_str_dct(self) -> ta.Mapping[str, ta.Sequence[str]]:
-        d: ta.Dict[str, ta.List[str]] = {}
-        for k, v in self.strs:
-            try:
-                l = d[k]
-            except KeyError:
-                l = d[k] = []
-            l.append(v)
-        return d
-
-    @cached_property
-    def single_str_dct(self) -> ta.Mapping[str, str]:
-        return {k: v[0] for k, v in self.multi_str_dct.items() if len(v) == 1}
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self._raw!r})'
 
     #
 
     def __bool__(self) -> bool:
-        return bool(self._lst)
-
-    def __len__(self) -> int:
-        return len(self._lst)
-
-    def __iter__(self) -> ta.Iterator[ta.Tuple[bytes, bytes]]:
-        return iter(self._lst)
-
-    @ta.overload
-    def __getitem__(self, item: str) -> ta.Sequence[str]:
-        ...
-
-    @ta.overload
-    def __getitem__(self, item: bytes) -> ta.Sequence[bytes]:
-        ...
-
-    @ta.overload
-    def __getitem__(self, item: int) -> ta.Tuple[StrOrBytes, StrOrBytes]:
-        ...
-
-    @ta.overload
-    def __getitem__(self, item: slice) -> ta.Sequence[ta.Tuple[StrOrBytes, StrOrBytes]]:
-        ...
-
-    def __getitem__(self, item):
-        if isinstance(item, (int, slice)):
-            return self._lst[item]
-        elif isinstance(item, str):
-            return self.multi_str_dct[item.lower()]
-        elif isinstance(item, bytes):
-            return self.multi_dct[self._as_key(item)]
-        else:
-            raise TypeError(item)
-
-    def keys(self) -> ta.Iterable[bytes]:
-        return self.multi_dct.keys()
-
-    def items(self) -> ta.Iterable[ta.Tuple[bytes, bytes]]:
-        return self._lst
+        return len(self._dct) > 0
 
     #
 
-    def update(
-            self,
-            *items: ta.Tuple[bytes, bytes],  # FIXME: all arg types
-            override: bool = False,
-    ) -> 'HttpHeaders':
-        if override:
-            nks = {k.lower() for k, v in items}
-            src = [(k, v) for k, v in self.items() if k.lower() not in nks]
-        else:
-            src = list(self.items())
-        return HttpHeaders([
-            *src,
-            *items,
-        ])
+    def __len__(self) -> int:
+        return len(self._dct)
 
+    def __iter__(self) -> ta.Iterator[str]:
+        return iter(self._dct)
 
-def headers(src: CanHttpHeaders) -> HttpHeaders:
-    return HttpHeaders(src)
+    def __getitem__(self, key: str) -> ta.Sequence[str]:
+        return self._dct[key.lower()]
+
+    #
+
+    @ta.final
+    class _SingleAccessor:
+        def __init__(self, o: 'HttpHeaders') -> None:
+            self._o = o
+
+        def __getitem__(self, key: str) -> str:
+            l = self._o._dct[key.lower()]  # noqa
+            if len(l) > 1:
+                raise DuplicateHttpHeaderError(key)
+            return l[0]
+
+        @ta.overload
+        def get(self, key: str, /, default: str) -> str:
+            ...
+
+        @ta.overload
+        def get(self, key: str, /, default: ta.Optional[str] = None) -> ta.Optional[str]:
+            ...
+
+        def get(self, key, /, default=None):
+            try:
+                return self[key]
+            except KeyError:
+                return default
+
+    _single: _SingleAccessor
+
+    @property
+    def single(self) -> _SingleAccessor:
+        try:
+            return self._single
+        except AttributeError:
+            pass
+        a = self._single = self._SingleAccessor(self)
+        return a
+
+    #
+
+    @ta.final
+    class _LowerAccessor:
+        def __init__(self, o: 'HttpHeaders') -> None:
+            self._o = o
+
+            self._cache: ta.Dict[str, ta.Sequence[str]] = {}
+
+        def __getitem__(self, key: str) -> ta.Sequence[str]:
+            key = key.lower()
+            try:
+                return self._cache[key]
+            except KeyError:
+                pass
+            x = self._o._dct[key]  # noqa
+            l = self._cache[key] = tuple(v.lower() for v in x)
+            return l
+
+        @ta.overload
+        def get(self, key: str, /, default: ta.Sequence[str]) -> ta.Sequence[str]:
+            ...
+
+        @ta.overload
+        def get(self, key: str, /, default: ta.Optional[str] = None) -> ta.Optional[ta.Sequence[str]]:
+            ...
+
+        def get(self, key, /, default=None):
+            try:
+                return self[key]
+            except KeyError:
+                return default
+
+    _lower: _LowerAccessor
+
+    @property
+    def lower(self) -> _LowerAccessor:
+        try:
+            return self._lower
+        except AttributeError:
+            pass
+        a = self._lower = self._LowerAccessor(self)
+        return a

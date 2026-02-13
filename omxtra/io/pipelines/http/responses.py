@@ -3,7 +3,7 @@
 import dataclasses as dc
 import typing as ta
 
-from omlish.http.headers2 import HttpHeaders
+from omlish.http.headers import HttpHeaders
 from omlish.http.parsing import ParsedHttpMessage
 from omlish.http.versions import HttpVersion
 

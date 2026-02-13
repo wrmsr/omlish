@@ -164,7 +164,7 @@ class RedirectHandlingHttpClientMiddleware(HttpClientMiddleware):
                 raise TooManyRedirectsHttpClientError
             st.num_redirects += 1
 
-            rd_url = check.not_none(resp.headers).single_str_dct['location']
+            rd_url = check.not_none(resp.headers).single['location']
 
             rd_purl = urllib.parse.urlparse(rd_url)
             if not rd_purl.netloc:

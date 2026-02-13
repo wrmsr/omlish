@@ -102,7 +102,6 @@ with _lang.auto_proxy_init(globals()):
         CanHttpHeaders,
         DuplicateHttpHeaderError,
         HttpHeaders,
-        headers,
     )
 
     from .json import (  # noqa

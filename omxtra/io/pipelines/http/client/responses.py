@@ -3,7 +3,7 @@
 import typing as ta
 import zlib
 
-from omlish.http.headers2 import HttpHeaders
+from omlish.http.headers import HttpHeaders
 from omlish.http.parsing import HttpParser
 from omlish.http.parsing import parse_http_message
 from omlish.io.streams.segmented import SegmentedByteStreamBuffer

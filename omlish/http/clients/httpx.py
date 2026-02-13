@@ -44,7 +44,7 @@ class HttpxHttpClient(HttpClient):
             resp_cm = httpx.stream(
                 method=req.method_or_default,
                 url=req.url,
-                headers=req.headers_ or None,  # type: ignore
+                headers=req.headers_.all if req.headers_ is not None else None,
                 content=req.data,
                 timeout=req.timeout_s,
             )
@@ -97,7 +97,7 @@ class HttpxAsyncHttpClient(AsyncHttpClient):
             resp = await es.enter_async_context(client.stream(
                 method=req.method_or_default,
                 url=req.url,
-                headers=req.headers_ or None,  # type: ignore
+                headers=req.headers_.all if req.headers_ is not None else None,
                 content=req.data,
                 timeout=req.timeout_s,
             ))
