@@ -89,7 +89,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../logs.py', sha1='5a4fad522508bdc1b790f1d5234a87f319c9da2d'),
             dict(path='../../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='../../../../omlish/io/streams/framing.py', sha1='854bb6bbfc713fa47d0293b11cb4db230f51268d'),
-            dict(path='../../../../omlish/io/streams/utils.py', sha1='f29ce425931dda3a1ce1cc3f2a90ae867d790358'),
+            dict(path='../../../../omlish/io/streams/utils.py', sha1='8bf1df1c7eada9969b00dfb65f4178cc923c95bb'),
             dict(path='../../../../omlish/lite/configs.py', sha1='c8602e0e197ef1133e7e8e248935ac745bfd46cb'),
             dict(path='../../../../omlish/logs/contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
             dict(path='../../../../omlish/logs/std/standard.py', sha1='5c97c1b9f7ead58d6127d047b873398f708f288d'),
@@ -6104,6 +6104,17 @@ class ByteStreamBuffers:
             return obj  # type: ignore[return-value]
 
         return mv.tobytes()
+
+    #
+
+    @staticmethod
+    def split(buf: ByteStreamBuffer, sep: bytes, *, final: bool = False) -> ta.List[ByteStreamBufferView]:
+        out: ta.List[ByteStreamBufferView] = []
+        while (i := buf.find(sep)) >= 0:
+            out.append(buf.split_to(i + 1))
+        if final and len(buf):
+            out.append(buf.split_to(len(buf)))
+        return out
 
 
 ########################################

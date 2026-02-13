@@ -2,6 +2,7 @@
 # @omlish-lite
 import typing as ta
 
+from .types import ByteStreamBuffer
 from .types import ByteStreamBufferLike
 from .types import ByteStreamBufferView
 
@@ -99,3 +100,14 @@ class ByteStreamBuffers:
             return obj  # type: ignore[return-value]
 
         return mv.tobytes()
+
+    #
+
+    @staticmethod
+    def split(buf: ByteStreamBuffer, sep: bytes, *, final: bool = False) -> ta.List[ByteStreamBufferView]:
+        out: ta.List[ByteStreamBufferView] = []
+        while (i := buf.find(sep)) >= 0:
+            out.append(buf.split_to(i + 1))
+        if final and len(buf):
+            out.append(buf.split_to(len(buf)))
+        return out

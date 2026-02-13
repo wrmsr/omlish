@@ -29,7 +29,7 @@ def __omlish_amalg__():  # noqa
             dict(path='base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='framing.py', sha1='854bb6bbfc713fa47d0293b11cb4db230f51268d'),
             dict(path='reading.py', sha1='7631635c46ab4b40bcaeb7c506cf15cb2d529a40'),
-            dict(path='utils.py', sha1='f29ce425931dda3a1ce1cc3f2a90ae867d790358'),
+            dict(path='utils.py', sha1='8bf1df1c7eada9969b00dfb65f4178cc923c95bb'),
             dict(path='direct.py', sha1='c7a8cf3adb785387e410381cc83be2aad74b8d41'),
             dict(path='scanning.py', sha1='5d4cf0776463a6f675ca74ca87637133b78b51a2'),
             dict(path='adapters.py', sha1='1a6c209490fa78947a607101e20169a5e135847b'),
@@ -1110,6 +1110,17 @@ class ByteStreamBuffers:
             return obj  # type: ignore[return-value]
 
         return mv.tobytes()
+
+    #
+
+    @staticmethod
+    def split(buf: ByteStreamBuffer, sep: bytes, *, final: bool = False) -> ta.List[ByteStreamBufferView]:
+        out: ta.List[ByteStreamBufferView] = []
+        while (i := buf.find(sep)) >= 0:
+            out.append(buf.split_to(i + 1))
+        if final and len(buf):
+            out.append(buf.split_to(len(buf)))
+        return out
 
 
 ########################################

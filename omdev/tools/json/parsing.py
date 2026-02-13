@@ -8,8 +8,9 @@ from omlish.formats.json.stream.building import JsonValueBuilder
 from omlish.formats.json.stream.lexing import JsonStreamLexer
 from omlish.formats.json.stream.parsing import Event
 from omlish.formats.json.stream.parsing import JsonStreamParser
-from omlish.io.streams.framing import LongestMatchDelimiterByteStreamFrameDecoder
+from omlish.io.streams.scanning import ScanningByteStreamBuffer
 from omlish.io.streams.segmented import SegmentedByteStreamBuffer
+from omlish.io.streams.utils import ByteStreamBuffers
 
 from .formats import Format
 
@@ -35,18 +36,19 @@ class DelimitingParser:
             self,
             fmt: Format,
             *,
-            delimiters: ta.Sequence[bytes] = (b'\n',),
+            delimiter: bytes = b'\n',
     ) -> None:
         super().__init__()
 
         self._fmt = fmt
+        self._delimiter = delimiter
 
-        self._buf = SegmentedByteStreamBuffer(chunk_size=0x4000)
-        self._db = LongestMatchDelimiterByteStreamFrameDecoder(delimiters)
+        self._raw_buf = SegmentedByteStreamBuffer(chunk_size=0x4000)
+        self._buf = ScanningByteStreamBuffer(self._raw_buf)
 
     def parse(self, b: bytes) -> ta.Iterator[ta.Any]:
         self._buf.write(b)
-        for chunk in self._db.decode(self._buf, final=not b):
+        for chunk in ByteStreamBuffers.split(self._buf, self._delimiter):
             s = chunk.tobytes().decode('utf-8')
             v = self._fmt.load(io.StringIO(s))
             yield v
