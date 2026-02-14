@@ -127,7 +127,7 @@ class BytesFlowControlAsyncioStreamChannelPipelineDriver(AsyncioStreamChannelPip
         while not self._flow.want_read():
             await self._flush_outbound()
 
-            await asyncio.sleep(self._backpressure_sleep)  # FIXME: event-driven or callback?
+            await asyncio.sleep(self._backpressure_sleep)  # FIXME: lol - event-driven or callback?
 
             if self._channel.closed:
                 break

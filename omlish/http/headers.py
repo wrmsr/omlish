@@ -134,17 +134,6 @@ class HttpHeaders(ta.Mapping[str, ta.Sequence[str]]):
 
     #
 
-    def contains_value(self, key: str, value: str, *, ignore_case: bool = False) -> bool:
-        try:
-            vs = self._dct[key.lower()]
-        except KeyError:
-            return False
-        if ignore_case:
-            value = value.lower()
-        return value in vs
-
-    #
-
     @ta.final
     class _SingleAccessor:
         def __init__(self, o: 'HttpHeaders') -> None:
@@ -224,3 +213,15 @@ class HttpHeaders(ta.Mapping[str, ta.Sequence[str]]):
             pass
         a = self._lower = self._LowerAccessor(self)
         return a
+
+    #
+
+    def contains_value(self, key: str, value: str, *, ignore_case: bool = False) -> bool:
+        try:
+            if ignore_case:
+                vs = self.lower[key.lower()]
+            else:
+                vs = self._dct[key.lower()]
+        except KeyError:
+            return False
+        return value in vs

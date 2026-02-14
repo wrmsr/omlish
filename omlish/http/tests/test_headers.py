@@ -129,3 +129,10 @@ def test_http_headers_lower():
     headers = HttpHeaders([('transfer-encoding', 'FoO'), ('TRANSFER-EnCoDiNG', 'bar')])
     assert list(headers['transfer-encoding']) == ['FoO', 'bar']
     assert list(headers.lower['transfer-encoding']) == ['foo', 'bar']
+
+
+def test_headers_contains_value():
+    headers = HttpHeaders([('transfer-encoding', 'FoO'), ('TRANSFER-EnCoDiNG', 'bar')])
+    assert headers.contains_value('tRANSFER-encoding', 'FoO')
+    assert not headers.contains_value('tRANSFER-encoding', 'foo')
+    assert headers.contains_value('tRANSFER-encoding', 'foo', ignore_case=True)

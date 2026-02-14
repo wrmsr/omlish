@@ -3,8 +3,7 @@ import typing as ta
 
 from ...core import PipelineChannel
 from ...decoders import DelimiterFramePipelineDecoder
-from ...decoders import StripLineEndingsPipelineDecoder
-from ...decoders import Utf8PipelineDecoder
+from ...decoders import UnicodePipelineDecoder
 from ...http.client.responses import PipelineHttpResponseConditionalGzipDecoder
 from ...http.client.responses import PipelineHttpResponseDecoder
 from ...http.sse import PipelineSseDecoder
@@ -20,8 +19,7 @@ def build_http_sse_channel() -> PipelineChannel:
         PipelineHttpResponseDecoder(),
         PipelineHttpResponseConditionalGzipDecoder(),
         DelimiterFramePipelineDecoder([b'\r\n', b'\n'], keep_ends=True, max_size=1 << 20),
-        Utf8PipelineDecoder(),
-        StripLineEndingsPipelineDecoder(),
+        UnicodePipelineDecoder(),
         PipelineSseDecoder(),
     ])
 

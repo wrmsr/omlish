@@ -16,11 +16,19 @@ from .errors import IncompleteDecodingChannelPipelineError
 ##
 
 
-class Utf8PipelineDecoder(ChannelPipelineHandler):
+class UnicodePipelineDecoder(ChannelPipelineHandler):
     """bytes/view -> str (UTF-8, replacement)."""
 
-    def __init__(self) -> None:
+    def __init__(
+            self,
+            encoding: str = 'utf-8',
+            *,
+            errors: ta.Literal['strict', 'ignore', 'replace'] = 'strict',
+    ) -> None:
         super().__init__()
+
+        self._encoding = encoding
+        self._errors = errors
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         if ByteStreamBuffers.can_bytes(msg):
@@ -29,18 +37,7 @@ class Utf8PipelineDecoder(ChannelPipelineHandler):
             if (bfc := ctx.bytes_flow_control) is not None:
                 bfc.on_consumed(len(b))
 
-            msg = b.decode('utf-8', errors='replace')
-
-        ctx.feed_in(msg)
-
-
-class StripLineEndingsPipelineDecoder(ChannelPipelineHandler):
-    """str line -> str without trailing CR (supports both LF and CRLF sources)."""
-
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, str):
-            if msg.endswith('\r'):
-                msg = msg[:-1]
+            msg = b.decode(self._encoding, errors=self._errors)
 
         ctx.feed_in(msg)
 
