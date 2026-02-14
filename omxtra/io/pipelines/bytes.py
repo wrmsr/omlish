@@ -28,8 +28,10 @@ class BytesFlowControlChannelPipelineHandler(FlowControlChannelPipelineHandler, 
             config: FlowControlChannelPipelineHandler.Config = FlowControlChannelPipelineHandler.Config(),
             *,
             adapter: ChannelPipelineFlowControlAdapter = BytesChannelPipelineFlowControlAdapter(),
+            **kwargs: ta.Any,
     ) -> None:
         super().__init__(
             adapter,
             config,
+            **kwargs,
         )

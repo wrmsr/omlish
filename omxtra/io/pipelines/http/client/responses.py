@@ -63,8 +63,6 @@ class PipelineHttpResponseDecoder(ChannelPipelineHandler):
             ctx.feed_in(msg)
             return
 
-        before = len(self._buf)
-
         for mv in ByteStreamBuffers.iter_segments(msg):
             if mv:
                 self._buf.write(mv)
@@ -73,14 +71,15 @@ class PipelineHttpResponseDecoder(ChannelPipelineHandler):
         if i < 0:
             return
 
+        before = len(self._buf)
         head_view = self._buf.split_to(i + 4)
+        after = len(self._buf)
+
         head = self._parse_head(ByteStreamBuffers.to_bytes(head_view))
         self._got_head = True
 
-        after = len(self._buf)
-
         if (bfc := ctx.bytes_flow_control) is not None:
-            bfc.on_consumed(before - after + (i + 4))
+            bfc.on_consumed(before - after)
 
         ctx.feed_in(head)
 

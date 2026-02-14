@@ -13,6 +13,7 @@ from .core import ChannelPipelineFlowControl
 from .core import ChannelPipelineHandler
 from .core import ChannelPipelineHandlerContext
 from .core import PipelineChannel
+from .errors import FlowControlValidationChannelPipelineError
 
 
 ##
@@ -68,12 +69,14 @@ class FlowControlChannelPipelineHandler(ChannelPipelineFlowControl, ChannelPipel
             config: Config = Config(),
             *,
             passthrough: bool = False,
+            validate: bool = False,
     ) -> None:
         super().__init__()
 
         self._adapter = adapter
         self._config = config
         self._passthrough = passthrough
+        self._validate = validate
 
         self._inflight = 0
         self._pending_out = 0
@@ -104,7 +107,10 @@ class FlowControlChannelPipelineHandler(ChannelPipelineFlowControl, ChannelPipel
     def on_consumed(self, cost: int) -> None:
         self._inflight -= cost
         if self._inflight < 0:
-            self._inflight = 0  # FIXME: warn? raise?
+            if self._validate:
+                raise FlowControlValidationChannelPipelineError(f'inflight count went negative: {self._inflight}')
+
+            self._inflight = 0
 
     def want_read(self) -> bool:
         if not self._inflight < self._config.credit:
@@ -128,6 +134,10 @@ class FlowControlChannelPipelineHandler(ChannelPipelineFlowControl, ChannelPipel
         self._channel = ctx.channel
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if self._validate and isinstance(msg, ChannelPipelineEvents.Close):
+            if self._inflight != 0:
+                raise FlowControlValidationChannelPipelineError('inbound Close event with non-zero inflight count')
+
         if (cost := self._adapter.get_cost(msg)) is None:
             ctx.feed_in(msg)
             return

@@ -10,3 +10,7 @@ class ChannelPipelineError(Exception):
 
 class IncompleteDecodingChannelPipelineError(ChannelPipelineError):
     pass
+
+
+class FlowControlValidationChannelPipelineError(ChannelPipelineError):
+    pass

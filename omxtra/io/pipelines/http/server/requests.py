@@ -83,8 +83,6 @@ class PipelineHttpRequestHeadDecoder(ChannelPipelineHandler):
             ctx.feed_in(msg)
             return
 
-        before = len(self._buf)
-
         for mv in ByteStreamBuffers.iter_segments(msg):
             if mv:
                 self._buf.write(mv)
@@ -93,12 +91,12 @@ class PipelineHttpRequestHeadDecoder(ChannelPipelineHandler):
         if i < 0:
             return
 
+        before = len(self._buf)
         head_view = self._buf.split_to(i + 4)
-
         after = len(self._buf)
 
         if (bfc := ctx.bytes_flow_control) is not None:
-            bfc.on_consumed(before - after + (i + 4))
+            bfc.on_consumed(before - after)
 
         req = self._parse_head(ByteStreamBuffers.to_bytes(head_view))
         ctx.feed_in(req)
@@ -218,8 +216,6 @@ class PipelineHttpRequestBodyAggregator(ChannelPipelineHandler):
             # Ignore stray bytes (or treat as error). Minimal server: ignore.
             return
 
-        before = len(self._buf)
-
         for mv in ByteStreamBuffers.iter_segments(msg):
             if mv:
                 self._buf.write(mv)
@@ -229,11 +225,12 @@ class PipelineHttpRequestBodyAggregator(ChannelPipelineHandler):
             return
 
         # Extract exactly want bytes; preserve any extra (we don't support pipelining, but be correct).
+        before = len(self._buf)
         body_view = self._buf.split_to(self._want)
         after = len(self._buf)
 
         if (bfc := ctx.bytes_flow_control) is not None:
-            bfc.on_consumed(before - after + self._want)
+            bfc.on_consumed(before - after)
 
         body = ByteStreamBuffers.to_bytes(body_view)
 

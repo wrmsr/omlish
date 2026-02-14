@@ -131,6 +131,7 @@ def build_http_kv_channel(
                 outbound_capacity=outbound_capacity,
                 outbound_overflow_policy=outbound_overflow_policy,
             ),
+            validate=True,
         ),
 
         PipelineHttpRequestHeadDecoder(
