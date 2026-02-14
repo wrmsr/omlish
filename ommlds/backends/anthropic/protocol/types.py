@@ -53,6 +53,8 @@ class ToolUse(Content):
 
     _: dc.KW_ONLY
 
+    caller: ta.Mapping[str, ta.Any] | None = dc.xfield(default=None, repr_fn=lang.opt_repr)
+
     cache_control: Content.CacheControl | None = dc.xfield(default=None, repr_fn=lang.opt_repr)
 
 

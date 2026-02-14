@@ -1231,37 +1231,43 @@ def _process_dataclass__a0bb088e6d220904a11db30de04c9b3fb2ddce42():
 
 @_register(
     plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('id', 'name', 'input', 'cache_control')), EqPlan(fields=('id', 'name', 'input', 'c"
-        "ache_control')), FrozenPlan(fields=('id', 'name', 'input', 'cache_control'), allow_dynamic_dunder_attrs=False)"
-        ", HashPlan(action='add', fields=('id', 'name', 'input', 'cache_control'), cache=False), InitPlan(fields=(InitP"
-        "lan.Field(name='id', annotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, in"
-        "it=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan"
-        ".Field(name='name', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, ini"
-        "t=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan."
-        "Field(name='input', annotation=OpRef(name='init.fields.2.annotation'), default=None, default_factory=None, ini"
-        "t=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan."
-        "Field(name='cache_control', annotation=OpRef(name='init.fields.3.annotation'), default=OpRef(name='init.fields"
-        ".3.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
-        "idate=None, check_type=None)), self_param='self', std_params=('id', 'name', 'input'), kw_only_params=('cache_c"
-        "ontrol',), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(Re"
-        "prPlan.Field(name='id', kw_only=False, fn=None), ReprPlan.Field(name='name', kw_only=False, fn=None), ReprPlan"
-        ".Field(name='input', kw_only=False, fn=None), ReprPlan.Field(name='cache_control', kw_only=True, fn=OpRef(name"
-        "='repr.fns.3.fn'))), id=False, terse=False, default_fn=None)))"
+        "Plans(tup=(CopyPlan(fields=('id', 'name', 'input', 'caller', 'cache_control')), EqPlan(fields=('id', 'name', '"
+        "input', 'caller', 'cache_control')), FrozenPlan(fields=('id', 'name', 'input', 'caller', 'cache_control'), all"
+        "ow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('id', 'name', 'input', 'caller', 'cache_control"
+        "'), cache=False), InitPlan(fields=(InitPlan.Field(name='id', annotation=OpRef(name='init.fields.0.annotation')"
+        ", default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, v"
+        "alidate=None, check_type=None), InitPlan.Field(name='name', annotation=OpRef(name='init.fields.1.annotation'),"
+        " default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
+        "lidate=None, check_type=None), InitPlan.Field(name='input', annotation=OpRef(name='init.fields.2.annotation'),"
+        " default=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
+        "lidate=None, check_type=None), InitPlan.Field(name='caller', annotation=OpRef(name='init.fields.3.annotation')"
+        ", default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, override=False, field_type=Fie"
+        "ldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='cache_control', annotation"
+        "=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.default'), default_factory=None, in"
+        "it=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_pa"
+        "ram='self', std_params=('id', 'name', 'input'), kw_only_params=('caller', 'cache_control'), frozen=True, slots"
+        "=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='id', kw_on"
+        "ly=False, fn=None), ReprPlan.Field(name='name', kw_only=False, fn=None), ReprPlan.Field(name='input', kw_only="
+        "False, fn=None), ReprPlan.Field(name='caller', kw_only=True, fn=OpRef(name='repr.fns.3.fn')), ReprPlan.Field(n"
+        "ame='cache_control', kw_only=True, fn=OpRef(name='repr.fns.4.fn'))), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='51ac2f5bc2410c36bb667aa3a8f0ed87eb16813e',
+    plan_repr_sha1='54cc5d0a0974b6b52b5a05290b2b67f7e02ba942',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__1__annotation',
         '__dataclass__init__fields__2__annotation',
         '__dataclass__init__fields__3__annotation',
         '__dataclass__init__fields__3__default',
+        '__dataclass__init__fields__4__annotation',
+        '__dataclass__init__fields__4__default',
         '__dataclass__repr__fns__3__fn',
+        '__dataclass__repr__fns__4__fn',
     ),
     cls_names=(
         ('ommlds.backends.anthropic.protocol', 'ToolUse'),
     ),
 )
-def _process_dataclass__51ac2f5bc2410c36bb667aa3a8f0ed87eb16813e():
+def _process_dataclass__54cc5d0a0974b6b52b5a05290b2b67f7e02ba942():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -1270,7 +1276,10 @@ def _process_dataclass__51ac2f5bc2410c36bb667aa3a8f0ed87eb16813e():
         __dataclass__init__fields__2__annotation,
         __dataclass__init__fields__3__annotation,
         __dataclass__init__fields__3__default,
+        __dataclass__init__fields__4__annotation,
+        __dataclass__init__fields__4__default,
         __dataclass__repr__fns__3__fn,
+        __dataclass__repr__fns__4__fn,
         __dataclass__FieldFnValidationError,  # noqa
         __dataclass__FieldTypeValidationError,  # noqa
         __dataclass__FnValidationError,  # noqa
@@ -1292,6 +1301,7 @@ def _process_dataclass__51ac2f5bc2410c36bb667aa3a8f0ed87eb16813e():
                 id=self.id,
                 name=self.name,
                 input=self.input,
+                caller=self.caller,
                 cache_control=self.cache_control,
             )
 
@@ -1309,6 +1319,7 @@ def _process_dataclass__51ac2f5bc2410c36bb667aa3a8f0ed87eb16813e():
                 self.id == other.id and
                 self.name == other.name and
                 self.input == other.input and
+                self.caller == other.caller and
                 self.cache_control == other.cache_control
             )
 
@@ -1321,6 +1332,7 @@ def _process_dataclass__51ac2f5bc2410c36bb667aa3a8f0ed87eb16813e():
             'id',
             'name',
             'input',
+            'caller',
             'cache_control',
         }
 
@@ -1341,6 +1353,7 @@ def _process_dataclass__51ac2f5bc2410c36bb667aa3a8f0ed87eb16813e():
             'id',
             'name',
             'input',
+            'caller',
             'cache_control',
         }
 
@@ -1362,6 +1375,7 @@ def _process_dataclass__51ac2f5bc2410c36bb667aa3a8f0ed87eb16813e():
                 self.id,
                 self.name,
                 self.input,
+                self.caller,
                 self.cache_control,
             ))
 
@@ -1374,11 +1388,13 @@ def _process_dataclass__51ac2f5bc2410c36bb667aa3a8f0ed87eb16813e():
             name: __dataclass__init__fields__1__annotation,
             input: __dataclass__init__fields__2__annotation,
             *,
-            cache_control: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
+            caller: __dataclass__init__fields__3__annotation = __dataclass__init__fields__3__default,
+            cache_control: __dataclass__init__fields__4__annotation = __dataclass__init__fields__4__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'id', id)
             __dataclass__object_setattr(self, 'name', name)
             __dataclass__object_setattr(self, 'input', input)
+            __dataclass__object_setattr(self, 'caller', caller)
             __dataclass__object_setattr(self, 'cache_control', cache_control)
 
         __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
@@ -1392,7 +1408,9 @@ def _process_dataclass__51ac2f5bc2410c36bb667aa3a8f0ed87eb16813e():
             parts.append(f"id={self.id!r}")
             parts.append(f"name={self.name!r}")
             parts.append(f"input={self.input!r}")
-            if (s := __dataclass__repr__fns__3__fn(self.cache_control)) is not None:
+            if (s := __dataclass__repr__fns__3__fn(self.caller)) is not None:
+                parts.append(f"caller={s}")
+            if (s := __dataclass__repr__fns__4__fn(self.cache_control)) is not None:
                 parts.append(f"cache_control={s}")
             return (
                 f"{self.__class__.__qualname__}("
