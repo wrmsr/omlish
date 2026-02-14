@@ -1,0 +1,366 @@
+# ruff: noqa: UP006 UP007 UP045
+# @omlish-lite
+import unittest
+
+from omlish.http.headers import HttpHeaders
+from omlish.http.versions import HttpVersion
+
+from ....core import PipelineChannel
+from ...responses import FullPipelineHttpResponse
+from ...responses import PipelineHttpResponseHead
+from ..responses import PipelineHttpResponseEncoder
+
+
+class TestPipelineHttpResponseEncoder(unittest.TestCase):
+    def test_basic_response(self) -> None:
+        """Test basic HTTP response encoding."""
+
+        encoder = PipelineHttpResponseEncoder()
+        channel = PipelineChannel([encoder])
+
+        response = FullPipelineHttpResponse(
+            head=PipelineHttpResponseHead(
+                version=HttpVersion(1, 1),
+                status=200,
+                reason='OK',
+                headers=HttpHeaders([
+                    ('Content-Type', 'text/plain'),
+                    ('Content-Length', '5'),
+                ]),
+            ),
+            body=b'hello',
+        )
+
+        channel.feed_out(response)
+        out = channel.drain_out()
+
+        self.assertEqual(len(out), 1)
+        encoded = out[0]
+
+        expected = (
+            b'HTTP/1.1 200 OK\r\n'
+            b'Content-Type: text/plain\r\n'
+            b'Content-Length: 5\r\n'
+            b'\r\n'
+            b'hello'
+        )
+
+        self.assertEqual(encoded, expected)
+
+    def test_404_response(self) -> None:
+        """Test 404 response encoding."""
+
+        encoder = PipelineHttpResponseEncoder()
+        channel = PipelineChannel([encoder])
+
+        response = FullPipelineHttpResponse(
+            head=PipelineHttpResponseHead(
+                version=HttpVersion(1, 1),
+                status=404,
+                reason='Not Found',
+                headers=HttpHeaders([
+                    ('Content-Type', 'text/plain'),
+                    ('Content-Length', '9'),
+                ]),
+            ),
+            body=b'not found',
+        )
+
+        channel.feed_out(response)
+        out = channel.drain_out()
+
+        self.assertEqual(len(out), 1)
+        encoded = out[0]
+
+        expected = (
+            b'HTTP/1.1 404 Not Found\r\n'
+            b'Content-Type: text/plain\r\n'
+            b'Content-Length: 9\r\n'
+            b'\r\n'
+            b'not found'
+        )
+
+        self.assertEqual(encoded, expected)
+
+    def test_empty_body(self) -> None:
+        """Test response with empty body."""
+
+        encoder = PipelineHttpResponseEncoder()
+        channel = PipelineChannel([encoder])
+
+        response = FullPipelineHttpResponse(
+            head=PipelineHttpResponseHead(
+                version=HttpVersion(1, 1),
+                status=204,
+                reason='No Content',
+                headers=HttpHeaders([
+                    ('Content-Length', '0'),
+                ]),
+            ),
+            body=b'',
+        )
+
+        channel.feed_out(response)
+        out = channel.drain_out()
+
+        self.assertEqual(len(out), 1)
+        encoded = out[0]
+
+        expected = (
+            b'HTTP/1.1 204 No Content\r\n'
+            b'Content-Length: 0\r\n'
+            b'\r\n'
+        )
+
+        self.assertEqual(encoded, expected)
+
+    def test_multiple_headers(self) -> None:
+        """Test response with multiple headers."""
+
+        encoder = PipelineHttpResponseEncoder()
+        channel = PipelineChannel([encoder])
+
+        response = FullPipelineHttpResponse(
+            head=PipelineHttpResponseHead(
+                version=HttpVersion(1, 1),
+                status=200,
+                reason='OK',
+                headers=HttpHeaders([
+                    ('Content-Type', 'text/html; charset=utf-8'),
+                    ('Content-Length', '4'),
+                    ('Connection', 'close'),
+                    ('Cache-Control', 'no-cache'),
+                    ('X-Custom-Header', 'custom-value'),
+                ]),
+            ),
+            body=b'test',
+        )
+
+        channel.feed_out(response)
+        out = channel.drain_out()
+
+        self.assertEqual(len(out), 1)
+        encoded = out[0]
+
+        # Verify status line
+        self.assertTrue(encoded.startswith(b'HTTP/1.1 200 OK\r\n'))
+
+        # Verify all headers present
+        self.assertIn(b'Content-Type: text/html; charset=utf-8\r\n', encoded)
+        self.assertIn(b'Content-Length: 4\r\n', encoded)
+        self.assertIn(b'Connection: close\r\n', encoded)
+        self.assertIn(b'Cache-Control: no-cache\r\n', encoded)
+        self.assertIn(b'X-Custom-Header: custom-value\r\n', encoded)
+
+        # Verify body
+        self.assertTrue(encoded.endswith(b'\r\n\r\ntest'))
+
+    def test_http_10_version(self) -> None:
+        """Test HTTP/1.0 version encoding."""
+
+        encoder = PipelineHttpResponseEncoder()
+        channel = PipelineChannel([encoder])
+
+        response = FullPipelineHttpResponse(
+            head=PipelineHttpResponseHead(
+                version=HttpVersion(1, 0),
+                status=200,
+                reason='OK',
+                headers=HttpHeaders([
+                    ('Content-Length', '2'),
+                ]),
+            ),
+            body=b'ok',
+        )
+
+        channel.feed_out(response)
+        out = channel.drain_out()
+
+        self.assertEqual(len(out), 1)
+        encoded = out[0]
+
+        self.assertTrue(encoded.startswith(b'HTTP/1.0 200 OK\r\n'))
+
+    def test_large_body(self) -> None:
+        """Test response with large body."""
+
+        encoder = PipelineHttpResponseEncoder()
+        channel = PipelineChannel([encoder])
+
+        body = b'x' * 10000
+
+        response = FullPipelineHttpResponse(
+            head=PipelineHttpResponseHead(
+                version=HttpVersion(1, 1),
+                status=200,
+                reason='OK',
+                headers=HttpHeaders([
+                    ('Content-Type', 'application/octet-stream'),
+                    ('Content-Length', str(len(body))),
+                ]),
+            ),
+            body=body,
+        )
+
+        channel.feed_out(response)
+        out = channel.drain_out()
+
+        self.assertEqual(len(out), 1)
+        encoded = out[0]
+
+        # Verify body is present and correct
+        self.assertTrue(encoded.endswith(body))
+        self.assertIn(b'Content-Length: 10000\r\n', encoded)
+
+    def test_duplicate_header_names(self) -> None:
+        """Test response with duplicate header names (e.g., Set-Cookie)."""
+
+        encoder = PipelineHttpResponseEncoder()
+        channel = PipelineChannel([encoder])
+
+        response = FullPipelineHttpResponse(
+            head=PipelineHttpResponseHead(
+                version=HttpVersion(1, 1),
+                status=200,
+                reason='OK',
+                headers=HttpHeaders([
+                    ('Set-Cookie', 'session=abc123'),
+                    ('Set-Cookie', 'user=john'),
+                    ('Content-Length', '0'),
+                ]),
+            ),
+            body=b'',
+        )
+
+        channel.feed_out(response)
+        out = channel.drain_out()
+
+        self.assertEqual(len(out), 1)
+        encoded = out[0]
+
+        # Both Set-Cookie headers should be present
+        lines = encoded.split(b'\r\n')
+        set_cookie_lines = [line for line in lines if line.startswith(b'Set-Cookie:')]
+        self.assertEqual(len(set_cookie_lines), 2)
+        self.assertIn(b'Set-Cookie: session=abc123', set_cookie_lines)
+        self.assertIn(b'Set-Cookie: user=john', set_cookie_lines)
+
+    def test_pass_through_non_response_messages(self) -> None:
+        """Test that non-response messages pass through unchanged."""
+
+        encoder = PipelineHttpResponseEncoder()
+        channel = PipelineChannel([encoder])
+
+        # Send various non-response messages
+        channel.feed_out(b'raw bytes')
+        channel.feed_out('string message')
+        channel.feed_out(42)
+
+        out = channel.drain_out()
+
+        self.assertEqual(len(out), 3)
+        self.assertEqual(out[0], b'raw bytes')
+        self.assertEqual(out[1], 'string message')
+        self.assertEqual(out[2], 42)
+
+    def test_mixed_messages(self) -> None:
+        """Test encoding responses mixed with other messages."""
+
+        encoder = PipelineHttpResponseEncoder()
+        channel = PipelineChannel([encoder])
+
+        # Send response
+        response = FullPipelineHttpResponse(
+            head=PipelineHttpResponseHead(
+                version=HttpVersion(1, 1),
+                status=200,
+                reason='OK',
+                headers=HttpHeaders([
+                    ('Content-Length', '2'),
+                ]),
+            ),
+            body=b'ok',
+        )
+        channel.feed_out(response)
+
+        # Send non-response
+        channel.feed_out(b'other data')
+
+        out = channel.drain_out()
+
+        self.assertEqual(len(out), 2)
+
+        # First should be encoded response
+        self.assertIn(b'HTTP/1.1 200 OK\r\n', out[0])
+
+        # Second should be unchanged
+        self.assertEqual(out[1], b'other data')
+
+    def test_redirect_response(self) -> None:
+        """Test 302 redirect response."""
+
+        encoder = PipelineHttpResponseEncoder()
+        channel = PipelineChannel([encoder])
+
+        response = FullPipelineHttpResponse(
+            head=PipelineHttpResponseHead(
+                version=HttpVersion(1, 1),
+                status=302,
+                reason='Found',
+                headers=HttpHeaders([
+                    ('Location', 'https://example.com/new-path'),
+                    ('Content-Length', '0'),
+                ]),
+            ),
+            body=b'',
+        )
+
+        channel.feed_out(response)
+        out = channel.drain_out()
+
+        self.assertEqual(len(out), 1)
+        encoded = out[0]
+
+        expected = (
+            b'HTTP/1.1 302 Found\r\n'
+            b'Location: https://example.com/new-path\r\n'
+            b'Content-Length: 0\r\n'
+            b'\r\n'
+        )
+
+        self.assertEqual(encoded, expected)
+
+    def test_server_error_response(self) -> None:
+        """Test 500 server error response."""
+
+        encoder = PipelineHttpResponseEncoder()
+        channel = PipelineChannel([encoder])
+
+        response = FullPipelineHttpResponse(
+            head=PipelineHttpResponseHead(
+                version=HttpVersion(1, 1),
+                status=500,
+                reason='Internal Server Error',
+                headers=HttpHeaders([
+                    ('Content-Type', 'text/plain'),
+                    ('Content-Length', '13'),
+                ]),
+            ),
+            body=b'server error!',
+        )
+
+        channel.feed_out(response)
+        out = channel.drain_out()
+
+        self.assertEqual(len(out), 1)
+        encoded = out[0]
+
+        expected = (
+            b'HTTP/1.1 500 Internal Server Error\r\n'
+            b'Content-Type: text/plain\r\n'
+            b'Content-Length: 13\r\n'
+            b'\r\n'
+            b'server error!'
+        )
+
+        self.assertEqual(encoded, expected)

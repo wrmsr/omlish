@@ -18,3 +18,9 @@ class PipelineHttpResponseHead:
     reason: str
     headers: HttpHeaders
     parsed: ta.Optional[ParsedHttpMessage] = None
+
+
+@dc.dataclass(frozen=True)
+class FullPipelineHttpResponse:
+    head: PipelineHttpResponseHead
+    body: bytes
