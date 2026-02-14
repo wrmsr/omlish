@@ -19,14 +19,17 @@ class ChannelPipelineEvents:
     def __new__(cls, *args, **kwargs):  # noqa
         raise TypeError
 
+    @ta.final
     @dc.dataclass(frozen=True)
     class Eof:
         """Signals that the inbound byte stream reached EOF."""
 
+    @ta.final
     @dc.dataclass(frozen=True)
     class Close:
         """Requests that the channel/pipeline close."""
 
+    @ta.final
     @dc.dataclass(frozen=True)
     class Error:
         """Signals an exception occurred in the pipeline."""
@@ -87,6 +90,7 @@ class BytesChannelPipelineFlowControl(ChannelPipelineFlowControl, Abstract):
 ##
 
 
+@ta.final
 class ChannelPipelineHandlerContext:
     def __init__(
             self,
@@ -167,6 +171,7 @@ class ChannelPipelineHandler(Abstract):
 ##
 
 
+@ta.final
 class ChannelPipeline:
     def __init__(
             self,
@@ -186,6 +191,7 @@ class ChannelPipeline:
         for ctx in st.ctxs:
             ctx.handler.handler_added(ctx)
 
+    @ta.final
     class _State:
         def __init__(
                 self,
@@ -318,6 +324,7 @@ class ChannelPipeline:
 ##
 
 
+@ta.final
 class PipelineChannel:
     def __init__(
             self,
