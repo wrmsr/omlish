@@ -72,9 +72,9 @@ class SimpleMitmHandler:
 
             url = self._target + h_req.path
 
-            hdrs = hu.headers(h_req.headers.items())
+            hdrs = hu.HttpHeaders(h_req.headers.items())
             hdrs = hdrs.update(
-                (b'Host', check.not_none(urllib.parse.urlparse(self._target).hostname).encode()),
+                ('Host', check.not_none(urllib.parse.urlparse(self._target).hostname)),
                 override=True,
             )
 
@@ -90,7 +90,7 @@ class SimpleMitmHandler:
                 if (
                         self._handle_gzip and
                         t_resp.headers is not None and
-                        t_resp.headers.single_dct.get(b'content-encoding') == b'gzip'
+                        t_resp.headers.contains_value('content-encoding', 'gzip', ignore_case=True)
                 ):
                     dec = iterable_bytes_stepped_coro(
                         check.not_none(cdu.lookup('gzip').new_incremental)().decode_incremental(),
@@ -102,7 +102,7 @@ class SimpleMitmHandler:
                 if self._on_response is not None:
                     buf = io.BytesIO()
 
-                resp_hdrs = dict(check.not_none(t_resp.headers).single_str_dct)
+                resp_hdrs = dict(check.not_none(t_resp.headers).all)
                 is_chunked = resp_hdrs.get('transfer-encoding') == 'chunked'
 
                 def stream_data():

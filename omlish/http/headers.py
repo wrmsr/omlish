@@ -225,3 +225,18 @@ class HttpHeaders(ta.Mapping[str, ta.Sequence[str]]):
         except KeyError:
             return False
         return value in vs
+
+    def update(
+            self,
+            *items: ta.Tuple[str, str],
+            override: bool = False,
+    ) -> 'HttpHeaders':
+        if override:
+            nks = {self._as_key(k) for k, v in items}
+            src = [(k, v) for k, v in self._raw if k.lower() not in nks]
+        else:
+            src = list(self._raw)
+        return HttpHeaders([
+            *src,
+            *items,
+        ])
