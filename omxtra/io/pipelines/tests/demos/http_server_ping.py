@@ -6,7 +6,9 @@ from ...core import ChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
 from ...core import PipelineChannel
 from ...http.requests import PipelineHttpRequestHead
+from ...http.responses import FullPipelineHttpResponse
 from ...http.server.requests import PipelineHttpRequestHeadDecoder
+from ...http.server.responses import PipelineHttpResponseEncoder
 
 
 ##
@@ -25,28 +27,18 @@ class PingHandler(ChannelPipelineHandler):
             return
 
         if msg.method == 'GET' and msg.target == '/ping':
-            body = b'pong'
-            resp = (
-                b'HTTP/1.1 200 OK\r\n'
-                b'Content-Type: text/plain; charset=utf-8\r\n'
-                b'Content-Length: ' + str(len(body)).encode('ascii') + b'\r\n'
-                b'Connection: close\r\n'
-                b'\r\n' +
-                body
+            resp = FullPipelineHttpResponse.simple(
+                status=200,
+                body=b'pong',
             )
 
         else:
-            body = b'not found'
-            resp = (
-                b'HTTP/1.1 404 Not Found\r\n'
-                b'Content-Type: text/plain; charset=utf-8\r\n'
-                b'Content-Length: ' + str(len(body)).encode('ascii') + b'\r\n'
-                b'Connection: close\r\n'
-                b'\r\n' +
-                body
+            resp = FullPipelineHttpResponse.simple(
+                status=404,
+                body=b'not found',
             )
 
-        # Write response bytes immediately.
+        # Write response object; encoder will convert to bytes.
         ctx.feed_out(resp)
 
         # Request logical close; driver will close transport after flushing outbound.
@@ -56,6 +48,7 @@ class PingHandler(ChannelPipelineHandler):
 def build_http_ping_channel() -> PipelineChannel:
     return PipelineChannel([
         PipelineHttpRequestHeadDecoder(),
+        PipelineHttpResponseEncoder(),
         PingHandler(),
     ])
 
