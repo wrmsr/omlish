@@ -96,6 +96,7 @@ class PipelineHttpRequestHeadDecoder(ChannelPipelineHandler):
         head_view = self._buf.split_to(i + 4)
 
         after = len(self._buf)
+
         if (bfc := ctx.bytes_flow_control) is not None:
             bfc.on_consumed(before - after + (i + 4))
 
@@ -109,8 +110,7 @@ class PipelineHttpRequestHeadDecoder(ChannelPipelineHandler):
         if len(self._buf):
             rem = len(self._buf)
             rem_view = self._buf.split_to(rem)
-            if (bfc := ctx.bytes_flow_control) is not None:
-                bfc.on_consumed(rem)
+
             ctx.feed_in(rem_view)
 
     def _parse_head(self, raw: bytes) -> PipelineHttpRequestHead:

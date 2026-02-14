@@ -66,11 +66,14 @@ class FlowControlChannelPipelineHandler(ChannelPipelineFlowControl, ChannelPipel
             self,
             adapter: ChannelPipelineFlowControlAdapter,
             config: Config = Config(),
+            *,
+            passthrough: bool = False,
     ) -> None:
         super().__init__()
 
         self._adapter = adapter
         self._config = config
+        self._passthrough = passthrough
 
         self._inflight = 0
         self._pending_out = 0
@@ -101,7 +104,7 @@ class FlowControlChannelPipelineHandler(ChannelPipelineFlowControl, ChannelPipel
     def on_consumed(self, cost: int) -> None:
         self._inflight -= cost
         if self._inflight < 0:
-            self._inflight = 0
+            self._inflight = 0  # FIXME: warn? raise?
 
     def want_read(self) -> bool:
         if not self._inflight < self._config.credit:
@@ -137,7 +140,8 @@ class FlowControlChannelPipelineHandler(ChannelPipelineFlowControl, ChannelPipel
             ctx.feed_out(msg)
             return
 
-        ctx.feed_out(msg)
+        if self._passthrough:
+            ctx.feed_out(msg)
 
         # Overflow policy:
         # - If `outbound_capacity_bytes` is None: never overflow (subject only to writability watermarks).

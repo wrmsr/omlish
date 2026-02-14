@@ -378,9 +378,6 @@ class PipelineChannel:
         if self._saw_close:
             return
 
-        # Set to True here to prevent infinite loop from `_feed_in` calling `handle_error`.
-        self._saw_close = True
-
         self._feed_in(ChannelPipelineEvents.Close())
 
     #

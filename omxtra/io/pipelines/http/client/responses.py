@@ -45,8 +45,8 @@ class PipelineHttpResponseDecoder(ChannelPipelineHandler):
         self._got_head = False
         self._max_head = int(max_head)
 
-    def buffered_bytes(self) -> int:
-        return len(self._buf)
+    # def buffered_bytes(self) -> int:
+    #     return len(self._buf)
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         if isinstance(msg, ChannelPipelineEvents.Eof):
@@ -78,6 +78,7 @@ class PipelineHttpResponseDecoder(ChannelPipelineHandler):
         self._got_head = True
 
         after = len(self._buf)
+
         if (bfc := ctx.bytes_flow_control) is not None:
             bfc.on_consumed(before - after + (i + 4))
 
@@ -86,8 +87,7 @@ class PipelineHttpResponseDecoder(ChannelPipelineHandler):
         if len(self._buf):
             before2 = len(self._buf)
             body_view = self._buf.split_to(before2)
-            if (bfc := ctx.bytes_flow_control) is not None:
-                bfc.on_consumed(before2)
+
             ctx.feed_in(body_view)
 
     def _parse_head(self, raw: bytes) -> PipelineHttpResponseHead:
