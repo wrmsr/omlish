@@ -41,7 +41,7 @@ class Project(ProjectBase):
 
             'greenlet ~= 3.3',
 
-            'trio ~= 0.32',
+            'trio ~= 0.33',
             'trio-asyncio ~= 0.15',
         ],
 
