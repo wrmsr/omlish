@@ -1,14 +1,14 @@
 import asyncio
 import typing as ta
 
-from ...asyncio import AsyncioStreamChannelPipelineDriver
-from ...core import ChannelPipelineHandler
-from ...core import ChannelPipelineHandlerContext
-from ...core import PipelineChannel
-from ...http.requests import PipelineHttpRequestHead
-from ...http.responses import FullPipelineHttpResponse
-from ...http.server.requests import PipelineHttpRequestHeadDecoder
-from ...http.server.responses import PipelineHttpResponseEncoder
+from ....asyncio import AsyncioStreamChannelPipelineDriver
+from ....core import ChannelPipelineHandler
+from ....core import ChannelPipelineHandlerContext
+from ....core import PipelineChannel
+from ...requests import PipelineHttpRequestHead
+from ...responses import FullPipelineHttpResponse
+from ...server.requests import PipelineHttpRequestHeadDecoder
+from ...server.responses import PipelineHttpResponseEncoder
 
 
 ##

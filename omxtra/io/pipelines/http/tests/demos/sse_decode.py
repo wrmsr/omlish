@@ -1,12 +1,12 @@
 # ruff: noqa: UP006
 import typing as ta
 
-from ...core import PipelineChannel
-from ...decoders import DelimiterFramePipelineDecoder
-from ...decoders import UnicodePipelineDecoder
-from ...http.client.responses import PipelineHttpResponseConditionalGzipDecoder
-from ...http.client.responses import PipelineHttpResponseDecoder
-from ...http.sse import PipelineSseDecoder
+from ....core import PipelineChannel
+from ....decoders import DelimiterFramePipelineDecoder
+from ....decoders import UnicodePipelineDecoder
+from ...client.responses import PipelineHttpResponseConditionalGzipDecoder
+from ...client.responses import PipelineHttpResponseDecoder
+from ...sse import PipelineSseDecoder
 
 
 ##
