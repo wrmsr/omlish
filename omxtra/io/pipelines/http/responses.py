@@ -62,3 +62,13 @@ class FullPipelineHttpResponse:
             return http.HTTPStatus(code).phrase
         except ValueError:
             return ''
+
+
+@dc.dataclass(frozen=True)
+class PipelineHttpResponseContentChunk:
+    data: bytes
+
+
+@dc.dataclass(frozen=True)
+class PipelineHttpResponseEnd:
+    """Signals the end of a streaming HTTP response body."""

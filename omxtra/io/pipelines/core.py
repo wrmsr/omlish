@@ -67,7 +67,7 @@ class ChannelPipelineFlowControl(Abstract):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def on_consumed(self, cost: int) -> None:
+    def on_consumed(self, handler: 'ChannelPipelineHandler', cost: int) -> None:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -205,6 +205,13 @@ class ChannelPipeline:
             check.isinstance(handlers[-1], ChannelPipeline._Innermost)
 
             self.invalidated = False
+
+            handler_indexes: ta.Dict[ChannelPipelineHandler, int] = {}
+            for i, h in enumerate(handlers):
+                if h in handler_indexes:
+                    raise ValueError(f'Duplicate handler {h!r}.')
+                handler_indexes[h] = i
+            self.handler_indexes: ta.Mapping[ChannelPipelineHandler, int] = handler_indexes
 
             self.next_in_indexes, self.next_out_indexes = self._calculate_link_lists(handlers)
 

@@ -31,7 +31,7 @@ class MockBytesFlowControl(BytesChannelPipelineFlowControl, ChannelPipelineHandl
         # Return None so we don't interfere with message flow
         return None
 
-    def on_consumed(self, cost: int) -> None:
+    def on_consumed(self, handler: ChannelPipelineHandler, cost: int) -> None:
         self.consumed.append(cost)
 
     def want_read(self) -> bool:

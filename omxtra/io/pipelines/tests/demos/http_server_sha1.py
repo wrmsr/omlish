@@ -11,8 +11,8 @@ from ...bytes import BytesFlowControlChannelPipelineHandler
 from ...core import ChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
 from ...core import PipelineChannel
-from ...http.requests import PipelineHttpContentChunk
 from ...http.requests import PipelineHttpRequestAborted
+from ...http.requests import PipelineHttpRequestContentChunk
 from ...http.requests import PipelineHttpRequestEnd
 from ...http.requests import PipelineHttpRequestHead
 from ...http.server.requests import PipelineHttpRequestBodyStreamDecoder
@@ -61,7 +61,7 @@ class Sha1Handler(ChannelPipelineHandler):
 
             return
 
-        if isinstance(msg, PipelineHttpContentChunk):
+        if isinstance(msg, PipelineHttpRequestContentChunk):
             if self._active and self._h is not None:
                 self._h.update(msg.data)
 

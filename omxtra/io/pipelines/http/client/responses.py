@@ -79,7 +79,7 @@ class PipelineHttpResponseDecoder(ChannelPipelineHandler):
         self._got_head = True
 
         if (bfc := ctx.bytes_flow_control) is not None:
-            bfc.on_consumed(before - after)
+            bfc.on_consumed(self, before - after)
 
         ctx.feed_in(head)
 

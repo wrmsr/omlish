@@ -35,7 +35,7 @@ class UnicodePipelineDecoder(ChannelPipelineHandler):
             b = ByteStreamBuffers.to_bytes(msg)
 
             if (bfc := ctx.bytes_flow_control) is not None:
-                bfc.on_consumed(len(b))
+                bfc.on_consumed(self, len(b))
 
             msg = b.decode(self._encoding, errors=self._errors)
 
@@ -106,7 +106,7 @@ class DelimiterFramePipelineDecoder(ChannelPipelineHandler):  # HasChannelPipeli
         after = len(self._buf)
 
         if (bfc := ctx.bytes_flow_control) is not None:
-            bfc.on_consumed(before - after)
+            bfc.on_consumed(self, before - after)
 
         for fr in frames:
             ctx.feed_in(fr)

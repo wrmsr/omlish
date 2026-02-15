@@ -7,6 +7,8 @@ from omlish.http.versions import HttpVersion
 
 from ....core import PipelineChannel
 from ...responses import FullPipelineHttpResponse
+from ...responses import PipelineHttpResponseContentChunk
+from ...responses import PipelineHttpResponseEnd
 from ...responses import PipelineHttpResponseHead
 from ..responses import PipelineHttpResponseEncoder
 
@@ -364,3 +366,208 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         )
 
         self.assertEqual(encoded, expected)
+
+
+class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
+    def test_streaming_response_with_content_length(self) -> None:
+        """Test streaming response with Content-Length (no chunked encoding)."""
+
+        encoder = PipelineHttpResponseEncoder()
+        channel = PipelineChannel([encoder])
+
+        # Send head
+        channel.feed_out(PipelineHttpResponseHead(
+            version=HttpVersion(1, 1),
+            status=200,
+            reason='OK',
+            headers=HttpHeaders([
+                ('Content-Type', 'text/plain'),
+                ('Content-Length', '10'),
+            ]),
+        ))
+
+        # Send body chunks
+        channel.feed_out(PipelineHttpResponseContentChunk(b'hello'))
+        channel.feed_out(PipelineHttpResponseContentChunk(b'world'))
+
+        # Send end
+        channel.feed_out(PipelineHttpResponseEnd())
+
+        out = channel.drain_out()
+
+        # Should get: head bytes, chunk1, chunk2
+        self.assertEqual(len(out), 3)
+
+        # Head
+        head = out[0]
+        self.assertIn(b'HTTP/1.1 200 OK\r\n', head)
+        self.assertIn(b'Content-Type: text/plain\r\n', head)
+        self.assertIn(b'Content-Length: 10\r\n', head)
+        self.assertTrue(head.endswith(b'\r\n'))
+
+        # Chunks (raw bytes, no chunked encoding)
+        self.assertEqual(out[1], b'hello')
+        self.assertEqual(out[2], b'world')
+
+    def test_streaming_response_with_chunked_encoding(self) -> None:
+        """Test streaming response with Transfer-Encoding: chunked."""
+
+        encoder = PipelineHttpResponseEncoder()
+        channel = PipelineChannel([encoder])
+
+        # Send head with Transfer-Encoding: chunked
+        channel.feed_out(PipelineHttpResponseHead(
+            version=HttpVersion(1, 1),
+            status=200,
+            reason='OK',
+            headers=HttpHeaders([
+                ('Content-Type', 'text/plain'),
+                ('Transfer-Encoding', 'chunked'),
+            ]),
+        ))
+
+        # Send body chunks
+        channel.feed_out(PipelineHttpResponseContentChunk(b'hello'))
+        channel.feed_out(PipelineHttpResponseContentChunk(b'world'))
+
+        # Send end
+        channel.feed_out(PipelineHttpResponseEnd())
+
+        out = channel.drain_out()
+
+        # Should get: head, chunk1 (size+data+crlf), chunk2 (size+data+crlf), terminator
+        self.assertEqual(len(out), 8)
+
+        # Head
+        head = out[0]
+        self.assertIn(b'HTTP/1.1 200 OK\r\n', head)
+        self.assertIn(b'Transfer-Encoding: chunked\r\n', head)
+
+        # First chunk: 5\r\nhello\r\n
+        self.assertEqual(out[1], b'5\r\n')
+        self.assertEqual(out[2], b'hello')
+        self.assertEqual(out[3], b'\r\n')
+
+        # Second chunk: 5\r\nworld\r\n
+        self.assertEqual(out[4], b'5\r\n')
+        self.assertEqual(out[5], b'world')
+        self.assertEqual(out[6], b'\r\n')
+
+        # Terminator
+        self.assertEqual(out[7], b'0\r\n\r\n')
+
+    def test_streaming_response_chunked_terminator(self) -> None:
+        """Test that chunked encoding emits final terminator."""
+
+        encoder = PipelineHttpResponseEncoder()
+        channel = PipelineChannel([encoder])
+
+        channel.feed_out(PipelineHttpResponseHead(
+            version=HttpVersion(1, 1),
+            status=200,
+            reason='OK',
+            headers=HttpHeaders([
+                ('Transfer-Encoding', 'chunked'),
+            ]),
+        ))
+
+        channel.feed_out(PipelineHttpResponseContentChunk(b'data'))
+        channel.feed_out(PipelineHttpResponseEnd())
+
+        out = channel.drain_out()
+
+        # Last message should be the terminator
+        self.assertEqual(out[-1], b'0\r\n\r\n')
+
+    def test_streaming_empty_chunks_ignored(self) -> None:
+        """Test that empty chunks don't emit bytes."""
+
+        encoder = PipelineHttpResponseEncoder()
+        channel = PipelineChannel([encoder])
+
+        channel.feed_out(PipelineHttpResponseHead(
+            version=HttpVersion(1, 1),
+            status=200,
+            reason='OK',
+            headers=HttpHeaders([
+                ('Content-Length', '5'),
+            ]),
+        ))
+
+        channel.feed_out(PipelineHttpResponseContentChunk(b''))  # Empty - should be ignored
+        channel.feed_out(PipelineHttpResponseContentChunk(b'hello'))
+        channel.feed_out(PipelineHttpResponseContentChunk(b''))  # Empty - should be ignored
+        channel.feed_out(PipelineHttpResponseEnd())
+
+        out = channel.drain_out()
+
+        # Should only get head + 1 chunk
+        self.assertEqual(len(out), 2)
+        self.assertIn(b'HTTP/1.1 200 OK\r\n', out[0])
+        self.assertEqual(out[1], b'hello')
+
+    def test_streaming_multiple_responses(self) -> None:
+        """Test that encoder resets state between responses."""
+
+        encoder = PipelineHttpResponseEncoder()
+        channel = PipelineChannel([encoder])
+
+        # First response (chunked)
+        channel.feed_out(PipelineHttpResponseHead(
+            version=HttpVersion(1, 1),
+            status=200,
+            reason='OK',
+            headers=HttpHeaders([
+                ('Transfer-Encoding', 'chunked'),
+            ]),
+        ))
+        channel.feed_out(PipelineHttpResponseContentChunk(b'first'))
+        channel.feed_out(PipelineHttpResponseEnd())
+
+        # Second response (Content-Length)
+        channel.feed_out(PipelineHttpResponseHead(
+            version=HttpVersion(1, 1),
+            status=200,
+            reason='OK',
+            headers=HttpHeaders([
+                ('Content-Length', '6'),
+            ]),
+        ))
+        channel.feed_out(PipelineHttpResponseContentChunk(b'second'))
+        channel.feed_out(PipelineHttpResponseEnd())
+
+        out = channel.drain_out()
+
+        # Verify first response was chunked
+        self.assertIn(b'5\r\n', out)
+        self.assertIn(b'first', out)
+        self.assertIn(b'0\r\n\r\n', out)
+
+        # Verify second response was NOT chunked (raw bytes)
+        self.assertIn(b'second', out)
+
+    def test_streaming_large_chunk_hex_encoding(self) -> None:
+        """Test chunked encoding with larger chunk sizes."""
+
+        encoder = PipelineHttpResponseEncoder()
+        channel = PipelineChannel([encoder])
+
+        channel.feed_out(PipelineHttpResponseHead(
+            version=HttpVersion(1, 1),
+            status=200,
+            reason='OK',
+            headers=HttpHeaders([
+                ('Transfer-Encoding', 'chunked'),
+            ]),
+        ))
+
+        # 256 byte chunk -> 100 in hex
+        data = b'x' * 256
+        channel.feed_out(PipelineHttpResponseContentChunk(data))
+        channel.feed_out(PipelineHttpResponseEnd())
+
+        out = channel.drain_out()
+
+        # Check hex size is correct
+        self.assertIn(b'100\r\n', out)  # 256 = 0x100
+        self.assertIn(data, out)

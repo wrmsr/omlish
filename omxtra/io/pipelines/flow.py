@@ -104,7 +104,7 @@ class FlowControlChannelPipelineHandler(ChannelPipelineFlowControl, ChannelPipel
     def get_cost(self, msg: ta.Any) -> ta.Optional[int]:
         return self._adapter.get_cost(msg)
 
-    def on_consumed(self, cost: int) -> None:
+    def on_consumed(self, handler: ChannelPipelineHandler, cost: int) -> None:
         self._inflight -= cost
         if self._inflight < 0:
             if self._validate:

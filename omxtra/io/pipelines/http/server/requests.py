@@ -14,8 +14,8 @@ from ...core import ChannelPipelineEvents
 from ...core import ChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
 from ..requests import FullPipelineHttpRequest
-from ..requests import PipelineHttpContentChunk
 from ..requests import PipelineHttpRequestAborted
+from ..requests import PipelineHttpRequestContentChunk
 from ..requests import PipelineHttpRequestEnd
 from ..requests import PipelineHttpRequestHead
 
@@ -96,7 +96,7 @@ class PipelineHttpRequestHeadDecoder(ChannelPipelineHandler):
         after = len(self._buf)
 
         if (bfc := ctx.bytes_flow_control) is not None:
-            bfc.on_consumed(before - after)
+            bfc.on_consumed(self, before - after)
 
         req = self._parse_head(ByteStreamBuffers.to_bytes(head_view))
         ctx.feed_in(req)
@@ -230,7 +230,7 @@ class PipelineHttpRequestBodyAggregator(ChannelPipelineHandler):
         after = len(self._buf)
 
         if (bfc := ctx.bytes_flow_control) is not None:
-            bfc.on_consumed(before - after)
+            bfc.on_consumed(self, before - after)
 
         body = ByteStreamBuffers.to_bytes(body_view)
 
@@ -372,7 +372,7 @@ class PipelineHttpRequestBodyStreamDecoder(ChannelPipelineHandler):
         removed = before + added - after
         if removed > 0:
             if (bfc := ctx.bytes_flow_control) is not None:
-                bfc.on_consumed(removed)
+                bfc.on_consumed(self, removed)
 
     class _SelectedMode(ta.NamedTuple):
         mode: _PipelineHttpRequestBodyStreamDecoderMode
@@ -413,7 +413,7 @@ class PipelineHttpRequestBodyStreamDecoder(ChannelPipelineHandler):
 
             v = self._buf.split_to(take)
             data = ByteStreamBuffers.to_bytes(v)
-            ctx.feed_in(PipelineHttpContentChunk(data))
+            ctx.feed_in(PipelineHttpRequestContentChunk(data))
             self._remain -= take
 
         if self._remain == 0:
@@ -429,7 +429,7 @@ class PipelineHttpRequestBodyStreamDecoder(ChannelPipelineHandler):
             if take > self._max_chunk:
                 take = self._max_chunk
             v = self._buf.split_to(take)
-            ctx.feed_in(PipelineHttpContentChunk(ByteStreamBuffers.to_bytes(v)))
+            ctx.feed_in(PipelineHttpRequestContentChunk(ByteStreamBuffers.to_bytes(v)))
         return 0
 
     def _drain_chunked(self, ctx: ChannelPipelineHandlerContext) -> int:
@@ -484,7 +484,7 @@ class PipelineHttpRequestBodyStreamDecoder(ChannelPipelineHandler):
             data_v = self._buf.split_to(self._chunk_remain)
             data = ByteStreamBuffers.to_bytes(data_v)
             self._buf.advance(2)  # CRLF after chunk
-            ctx.feed_in(PipelineHttpContentChunk(data))
+            ctx.feed_in(PipelineHttpRequestContentChunk(data))
             self._chunk_remain = None  # next size line
 
         raise RuntimeError('unreachable')

@@ -27,7 +27,7 @@ class FullPipelineHttpRequest:
 
 
 @dc.dataclass(frozen=True)
-class PipelineHttpContentChunk:
+class PipelineHttpRequestContentChunk:
     data: bytes  # small copy boundary; downstream may hash/update immediately
 
 
