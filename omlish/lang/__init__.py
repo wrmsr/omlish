@@ -535,6 +535,33 @@ with _auto_proxy_init(globals(), update_exports=True):
         SequenceNotStr,
     )
 
+    from .units import (  # noqa
+        Bytes,
+
+        B,
+
+        KB,
+        MB,
+        GB,
+        TB,
+
+        KiB,
+        MiB,
+        GiB,
+        TiB,
+
+        Seconds,
+
+        S,
+        MS,
+        US,
+        NS,
+
+        M,
+        H,
+        D,
+    )
+
     ##
 
     from ..lite.abstract import (  # noqa
