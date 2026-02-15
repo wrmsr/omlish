@@ -6,7 +6,8 @@ import threading
 import typing as ta
 
 from ...asyncio import AsyncioStreamChannelPipelineDriver
-from .demos.http_server_ping import build_http_ping_channel
+from ...asyncio import BytesFlowControlAsyncioStreamChannelPipelineDriver
+from ...core import PipelineChannel
 
 
 ##
@@ -19,8 +20,16 @@ class HttpServerRunner:
     Automatically finds an available port and shuts down cleanly on exit.
     """
 
-    def __init__(self, preferred_port: int = 0) -> None:
+    def __init__(
+            self,
+            channel_builder: ta.Callable[[], PipelineChannel],
+            preferred_port: int = 0,
+            *,
+            use_flow_control: bool = False,
+    ) -> None:
+        self._channel_builder = channel_builder
         self._preferred_port = preferred_port
+        self._use_flow_control = use_flow_control
         self._port: ta.Optional[int] = None
         self._thread: ta.Optional[threading.Thread] = None
         self._loop: ta.Optional[asyncio.AbstractEventLoop] = None
@@ -80,11 +89,19 @@ class HttpServerRunner:
         """Serve requests until shutdown."""
 
         async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
-            drv = AsyncioStreamChannelPipelineDriver(
-                build_http_ping_channel(),
-                reader,
-                writer,
-            )
+            if self._use_flow_control:
+                drv = BytesFlowControlAsyncioStreamChannelPipelineDriver(
+                    self._channel_builder(),
+                    reader,
+                    writer,
+                    backpressure_sleep=0.001,
+                )
+            else:
+                drv = AsyncioStreamChannelPipelineDriver(
+                    self._channel_builder(),
+                    reader,
+                    writer,
+                )
             await drv.run()
 
         self._server = await asyncio.start_server(
