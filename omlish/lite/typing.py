@@ -101,3 +101,18 @@ _TYPING_ANNOTATIONS_ATTR = '__annotate__' if sys.version_info >= (3, 14) else '_
 
 def typing_annotations_attr() -> str:
     return _TYPING_ANNOTATIONS_ATTR
+
+
+##
+
+
+@ta.runtime_checkable
+class CanInt(ta.Protocol):
+    def __int__(self) -> int:
+        ...
+
+
+@ta.runtime_checkable
+class CanFloat(ta.Protocol):
+    def __float__(self) -> float:
+        ...

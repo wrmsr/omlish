@@ -93,7 +93,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='../../omlish/lite/resources.py', sha1='1365cb6046eb929358e7c86a3fda20d95fd4a296'),
             dict(path='../../omlish/lite/strings.py', sha1='89831ecbc34ad80e118a865eceb390ed399dc4d6'),
-            dict(path='../../omlish/lite/typing.py', sha1='048bb5fb8ecad5be101516f8f3b7996707f5bc42'),
+            dict(path='../../omlish/lite/typing.py', sha1='9d6caabc7b31534109e3f2e249d21f8610c9c079'),
             dict(path='../../omlish/logs/levels.py', sha1='91405563d082a5eba874da82aac89d83ce7b6152'),
             dict(path='../../omlish/logs/std/filters.py', sha1='f36aab646d84d31e295b33aaaaa6f8b67ff38b3d'),
             dict(path='../../omlish/logs/std/proxy.py', sha1='3e7301a2aa351127f9c85f61b2f85dcc3f15aafb'),
@@ -115,7 +115,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
             dict(path='../../omlish/lite/maybes.py', sha1='04d2fcbea17028a5e6b8e7a7fb742375495ed233'),
             dict(path='../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
-            dict(path='../../omlish/lite/timeouts.py', sha1='a0f673033a6943f242e35848d78a41892b9c62a1'),
+            dict(path='../../omlish/lite/timeouts.py', sha1='c312d9f057eabcb6b6b089581d956ad2448e56d0'),
             dict(path='../../omlish/logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
             dict(path='../../omlish/logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
@@ -271,7 +271,7 @@ ConfigDataT = ta.TypeVar('ConfigDataT', bound='ConfigData')
 U = ta.TypeVar('U')
 
 # ../../omlish/lite/timeouts.py
-TimeoutLike = ta.Union['Timeout', ta.Type['Timeout.DEFAULT'], ta.Iterable['TimeoutLike'], float, None]  # ta.TypeAlias
+TimeoutLike = ta.Union['Timeout', ta.Type['Timeout.DEFAULT'], ta.Iterable['TimeoutLike'], 'CanFloat', 'CanInt', float, int, bool, None]  # ta.TypeAlias  # noqa
 
 # ../../omlish/logs/infos.py
 LoggingMsgFn = ta.Callable[[], ta.Union[str, tuple]]  # ta.TypeAlias
@@ -4555,6 +4555,21 @@ def typing_annotations_attr() -> str:
     return _TYPING_ANNOTATIONS_ATTR
 
 
+##
+
+
+@ta.runtime_checkable
+class CanInt(ta.Protocol):
+    def __int__(self) -> int:
+        ...
+
+
+@ta.runtime_checkable
+class CanFloat(ta.Protocol):
+    def __float__(self) -> float:
+        ...
+
+
 ########################################
 # ../../../omlish/logs/levels.py
 
@@ -7960,27 +7975,38 @@ class Timeout(Abstract):
             obj: TimeoutLike,
             default: ta.Union[TimeoutLike, ta.Type[_NOT_SPECIFIED]] = _NOT_SPECIFIED,
     ) -> 'Timeout':
+        if isinstance(obj, bool):
+            if obj:
+                obj = Timeout.DEFAULT
+            else:
+                obj = None
+
         if obj is None:
             return InfiniteTimeout()
 
-        elif isinstance(obj, Timeout):
+        if isinstance(obj, Timeout):
             return obj
 
-        elif isinstance(obj, (float, int)):
+        if isinstance(obj, (float, int)):
             return DeadlineTimeout(cls._now() + obj)
 
-        elif isinstance(obj, ta.Iterable):
+        if isinstance(obj, CanInt):
+            return DeadlineTimeout(cls._now() + int(obj))
+
+        if isinstance(obj, CanFloat):
+            return DeadlineTimeout(cls._now() + float(obj))
+
+        if isinstance(obj, ta.Iterable):
             return CompositeTimeout(*[Timeout.of(c) for c in obj])
 
-        elif obj is Timeout.DEFAULT:
+        if obj is Timeout.DEFAULT:
             if default is Timeout._NOT_SPECIFIED or default is Timeout.DEFAULT:
                 raise RuntimeError('Must specify a default timeout')
 
             else:
                 return Timeout.of(default)  # type: ignore[arg-type]
 
-        else:
-            raise TypeError(obj)
+        raise TypeError(obj)
 
     @classmethod
     def of_deadline(cls, deadline: float) -> 'DeadlineTimeout':

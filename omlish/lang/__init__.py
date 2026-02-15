@@ -668,6 +668,9 @@ with _auto_proxy_init(globals(), update_exports=True):
         CachedFunc0,
         AsyncCachedFunc0,
 
+        CanInt,
+        CanFloat,
+
         typing_annotations_attr,
     )
 

@@ -8,9 +8,11 @@ import time
 import typing as ta
 
 from .abstract import Abstract
+from .typing import CanFloat
+from .typing import CanInt
 
 
-TimeoutLike = ta.Union['Timeout', ta.Type['Timeout.DEFAULT'], ta.Iterable['TimeoutLike'], float, None]  # ta.TypeAlias
+TimeoutLike = ta.Union['Timeout', ta.Type['Timeout.DEFAULT'], ta.Iterable['TimeoutLike'], 'CanFloat', 'CanInt', float, int, bool, None]  # ta.TypeAlias  # noqa
 
 
 ##
@@ -70,27 +72,38 @@ class Timeout(Abstract):
             obj: TimeoutLike,
             default: ta.Union[TimeoutLike, ta.Type[_NOT_SPECIFIED]] = _NOT_SPECIFIED,
     ) -> 'Timeout':
+        if isinstance(obj, bool):
+            if obj:
+                obj = Timeout.DEFAULT
+            else:
+                obj = None
+
         if obj is None:
             return InfiniteTimeout()
 
-        elif isinstance(obj, Timeout):
+        if isinstance(obj, Timeout):
             return obj
 
-        elif isinstance(obj, (float, int)):
+        if isinstance(obj, (float, int)):
             return DeadlineTimeout(cls._now() + obj)
 
-        elif isinstance(obj, ta.Iterable):
+        if isinstance(obj, CanInt):
+            return DeadlineTimeout(cls._now() + int(obj))
+
+        if isinstance(obj, CanFloat):
+            return DeadlineTimeout(cls._now() + float(obj))
+
+        if isinstance(obj, ta.Iterable):
             return CompositeTimeout(*[Timeout.of(c) for c in obj])
 
-        elif obj is Timeout.DEFAULT:
+        if obj is Timeout.DEFAULT:
             if default is Timeout._NOT_SPECIFIED or default is Timeout.DEFAULT:
                 raise RuntimeError('Must specify a default timeout')
 
             else:
                 return Timeout.of(default)  # type: ignore[arg-type]
 
-        else:
-            raise TypeError(obj)
+        raise TypeError(obj)
 
     @classmethod
     def of_deadline(cls, deadline: float) -> 'DeadlineTimeout':

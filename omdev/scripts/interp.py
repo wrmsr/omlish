@@ -60,6 +60,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/json.py', sha1='57eeddc4d23a17931e00284ffa5cb6e3ce089486'),
             dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='../../omlish/lite/strings.py', sha1='89831ecbc34ad80e118a865eceb390ed399dc4d6'),
+            dict(path='../../omlish/lite/typing.py', sha1='9d6caabc7b31534109e3f2e249d21f8610c9c079'),
             dict(path='../../omlish/logs/levels.py', sha1='91405563d082a5eba874da82aac89d83ce7b6152'),
             dict(path='../../omlish/logs/std/filters.py', sha1='f36aab646d84d31e295b33aaaaa6f8b67ff38b3d'),
             dict(path='../../omlish/logs/std/proxy.py', sha1='3e7301a2aa351127f9c85f61b2f85dcc3f15aafb'),
@@ -67,7 +68,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/argparse/cli.py', sha1='f4dc3cd353d14386b5da0306768700e396afd2b3'),
             dict(path='../../omlish/lite/maybes.py', sha1='04d2fcbea17028a5e6b8e7a7fb742375495ed233'),
             dict(path='../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
-            dict(path='../../omlish/lite/timeouts.py', sha1='a0f673033a6943f242e35848d78a41892b9c62a1'),
+            dict(path='../../omlish/lite/timeouts.py', sha1='c312d9f057eabcb6b6b089581d956ad2448e56d0'),
             dict(path='../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
             dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='types.py', sha1='caf068a6e81fb6e221d777b341ac5777d92b8091'),
@@ -123,6 +124,11 @@ CheckOnRaiseFn = ta.Callable[[Exception], None]  # ta.TypeAlias
 CheckExceptionFactory = ta.Callable[..., Exception]  # ta.TypeAlias
 CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
 
+# ../../omlish/lite/typing.py
+A0 = ta.TypeVar('A0')
+A1 = ta.TypeVar('A1')
+A2 = ta.TypeVar('A2')
+
 # ../../omlish/logs/levels.py
 LogLevel = int  # ta.TypeAlias
 
@@ -138,7 +144,7 @@ ArgparseCmdFn = ta.Callable[[], ta.Optional[int]]  # ta.TypeAlias
 U = ta.TypeVar('U')
 
 # ../../omlish/lite/timeouts.py
-TimeoutLike = ta.Union['Timeout', ta.Type['Timeout.DEFAULT'], ta.Iterable['TimeoutLike'], float, None]  # ta.TypeAlias
+TimeoutLike = ta.Union['Timeout', ta.Type['Timeout.DEFAULT'], ta.Iterable['TimeoutLike'], 'CanFloat', 'CanInt', float, int, bool, None]  # ta.TypeAlias  # noqa
 
 # ../../omlish/asyncs/asyncio/timeouts.py
 AwaitableT = ta.TypeVar('AwaitableT', bound=ta.Awaitable)
@@ -1601,6 +1607,118 @@ def format_num_bytes(num_bytes: int) -> str:
 
 
 ########################################
+# ../../../omlish/lite/typing.py
+
+
+##
+# A workaround for typing deficiencies (like `Argument 2 to NewType(...) must be subclassable`).
+#
+# Note that this problem doesn't happen at runtime - it happens in mypy:
+#
+#   mypy <(echo "import typing as ta; MyCallback = ta.NewType('MyCallback', ta.Callable[[], None])")
+#   /dev/fd/11:1:22: error: Argument 2 to NewType(...) must be subclassable (got "Callable[[], None]")  [valid-newtype]
+#
+
+
+@dc.dataclass(frozen=True)
+class AnyFunc(ta.Generic[T]):
+    fn: ta.Callable[..., T]
+
+    def __call__(self, *args: ta.Any, **kwargs: ta.Any) -> T:
+        return self.fn(*args, **kwargs)
+
+
+@dc.dataclass(frozen=True)
+class Func0(ta.Generic[T]):
+    fn: ta.Callable[[], T]
+
+    def __call__(self) -> T:
+        return self.fn()
+
+
+@dc.dataclass(frozen=True)
+class Func1(ta.Generic[A0, T]):
+    fn: ta.Callable[[A0], T]
+
+    def __call__(self, a0: A0) -> T:
+        return self.fn(a0)
+
+
+@dc.dataclass(frozen=True)
+class Func2(ta.Generic[A0, A1, T]):
+    fn: ta.Callable[[A0, A1], T]
+
+    def __call__(self, a0: A0, a1: A1) -> T:
+        return self.fn(a0, a1)
+
+
+@dc.dataclass(frozen=True)
+class Func3(ta.Generic[A0, A1, A2, T]):
+    fn: ta.Callable[[A0, A1, A2], T]
+
+    def __call__(self, a0: A0, a1: A1, a2: A2) -> T:
+        return self.fn(a0, a1, a2)
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class CachedFunc0(ta.Generic[T]):
+    fn: ta.Callable[[], T]
+
+    def __call__(self) -> T:
+        try:
+            return object.__getattribute__(self, '_value')
+        except AttributeError:
+            pass
+
+        value = self.fn()
+        object.__setattr__(self, '_value', value)
+        return value
+
+
+@dc.dataclass(frozen=True)
+class AsyncCachedFunc0(ta.Generic[T]):
+    fn: ta.Callable[[], ta.Awaitable[T]]
+
+    async def __call__(self) -> T:
+        try:
+            return object.__getattribute__(self, '_value')
+        except AttributeError:
+            pass
+
+        value = await self.fn()
+        object.__setattr__(self, '_value', value)
+        return value
+
+
+##
+
+
+_TYPING_ANNOTATIONS_ATTR = '__annotate__' if sys.version_info >= (3, 14) else '__annotations__'
+
+
+def typing_annotations_attr() -> str:
+    return _TYPING_ANNOTATIONS_ATTR
+
+
+##
+
+
+@ta.runtime_checkable
+class CanInt(ta.Protocol):
+    def __int__(self) -> int:
+        ...
+
+
+@ta.runtime_checkable
+class CanFloat(ta.Protocol):
+    def __float__(self) -> float:
+        ...
+
+
+########################################
 # ../../../omlish/logs/levels.py
 
 
@@ -2956,27 +3074,38 @@ class Timeout(Abstract):
             obj: TimeoutLike,
             default: ta.Union[TimeoutLike, ta.Type[_NOT_SPECIFIED]] = _NOT_SPECIFIED,
     ) -> 'Timeout':
+        if isinstance(obj, bool):
+            if obj:
+                obj = Timeout.DEFAULT
+            else:
+                obj = None
+
         if obj is None:
             return InfiniteTimeout()
 
-        elif isinstance(obj, Timeout):
+        if isinstance(obj, Timeout):
             return obj
 
-        elif isinstance(obj, (float, int)):
+        if isinstance(obj, (float, int)):
             return DeadlineTimeout(cls._now() + obj)
 
-        elif isinstance(obj, ta.Iterable):
+        if isinstance(obj, CanInt):
+            return DeadlineTimeout(cls._now() + int(obj))
+
+        if isinstance(obj, CanFloat):
+            return DeadlineTimeout(cls._now() + float(obj))
+
+        if isinstance(obj, ta.Iterable):
             return CompositeTimeout(*[Timeout.of(c) for c in obj])
 
-        elif obj is Timeout.DEFAULT:
+        if obj is Timeout.DEFAULT:
             if default is Timeout._NOT_SPECIFIED or default is Timeout.DEFAULT:
                 raise RuntimeError('Must specify a default timeout')
 
             else:
                 return Timeout.of(default)  # type: ignore[arg-type]
 
-        else:
-            raise TypeError(obj)
+        raise TypeError(obj)
 
     @classmethod
     def of_deadline(cls, deadline: float) -> 'DeadlineTimeout':

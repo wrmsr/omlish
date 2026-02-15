@@ -123,7 +123,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
             dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='../../omlish/lite/strings.py', sha1='89831ecbc34ad80e118a865eceb390ed399dc4d6'),
-            dict(path='../../omlish/lite/typing.py', sha1='048bb5fb8ecad5be101516f8f3b7996707f5bc42'),
+            dict(path='../../omlish/lite/typing.py', sha1='9d6caabc7b31534109e3f2e249d21f8610c9c079'),
             dict(path='../../omlish/logs/levels.py', sha1='91405563d082a5eba874da82aac89d83ce7b6152'),
             dict(path='../../omlish/logs/std/filters.py', sha1='f36aab646d84d31e295b33aaaaa6f8b67ff38b3d'),
             dict(path='../../omlish/logs/std/proxy.py', sha1='3e7301a2aa351127f9c85f61b2f85dcc3f15aafb'),
@@ -3315,6 +3315,21 @@ _TYPING_ANNOTATIONS_ATTR = '__annotate__' if sys.version_info >= (3, 14) else '_
 
 def typing_annotations_attr() -> str:
     return _TYPING_ANNOTATIONS_ATTR
+
+
+##
+
+
+@ta.runtime_checkable
+class CanInt(ta.Protocol):
+    def __int__(self) -> int:
+        ...
+
+
+@ta.runtime_checkable
+class CanFloat(ta.Protocol):
+    def __float__(self) -> float:
+        ...
 
 
 ########################################
