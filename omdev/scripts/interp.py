@@ -68,7 +68,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/argparse/cli.py', sha1='f4dc3cd353d14386b5da0306768700e396afd2b3'),
             dict(path='../../omlish/lite/maybes.py', sha1='04d2fcbea17028a5e6b8e7a7fb742375495ed233'),
             dict(path='../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
-            dict(path='../../omlish/lite/timeouts.py', sha1='c312d9f057eabcb6b6b089581d956ad2448e56d0'),
+            dict(path='../../omlish/lite/timeouts.py', sha1='2f19c808e582877f999d7ea7dde0acd6382266a2'),
             dict(path='../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
             dict(path='../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='types.py', sha1='caf068a6e81fb6e221d777b341ac5777d92b8091'),
@@ -144,7 +144,7 @@ ArgparseCmdFn = ta.Callable[[], ta.Optional[int]]  # ta.TypeAlias
 U = ta.TypeVar('U')
 
 # ../../omlish/lite/timeouts.py
-TimeoutLike = ta.Union['Timeout', ta.Type['Timeout.DEFAULT'], ta.Iterable['TimeoutLike'], 'CanFloat', 'CanInt', float, int, bool, None]  # ta.TypeAlias  # noqa
+TimeoutLike = ta.Union['Timeout', ta.Type['Timeout.DEFAULT'], ta.Iterable['TimeoutLike'], 'CanFloat', float, int, bool, None]  # ta.TypeAlias  # noqa
 
 # ../../omlish/asyncs/asyncio/timeouts.py
 AwaitableT = ta.TypeVar('AwaitableT', bound=ta.Awaitable)
@@ -3089,8 +3089,8 @@ class Timeout(Abstract):
         if isinstance(obj, (float, int)):
             return DeadlineTimeout(cls._now() + obj)
 
-        if isinstance(obj, CanInt):
-            return DeadlineTimeout(cls._now() + int(obj))
+        # if isinstance(obj, CanInt):
+        #     return DeadlineTimeout(cls._now() + int(obj))
 
         if isinstance(obj, CanFloat):
             return DeadlineTimeout(cls._now() + float(obj))
@@ -3127,6 +3127,9 @@ class DeadlineTimeout(Timeout):
         self.deadline = deadline
         self.exc = exc
 
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({self.deadline!r}, {self.exc!r})'
+
     @property
     def can_expire(self) -> bool:
         return True
@@ -3147,6 +3150,9 @@ class DeadlineTimeout(Timeout):
 
 
 class InfiniteTimeout(Timeout):
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}()'
+
     @property
     def can_expire(self) -> bool:
         return False
@@ -3169,6 +3175,9 @@ class CompositeTimeout(Timeout):
         super().__init__()
 
         self.children = children
+
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({self.children!r})'
 
     @property
     def can_expire(self) -> bool:
@@ -3199,6 +3208,9 @@ class PredicateTimeout(Timeout):
 
         self.expired_fn = expired_fn
         self.exc = exc
+
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({self.expired_fn!r}, {self.exc!r})'
 
     @property
     def can_expire(self) -> bool:

@@ -48,6 +48,9 @@ class Bytes:
 
     # formatting / parsing
 
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({self._v!r})'
+
     _DEC_UNITS: ta.ClassVar[tuple[tuple[str, int], ...]] = (
         ('B', 1),
         ('KB', 1000),
@@ -240,6 +243,9 @@ class Seconds:
         return self._v
 
     # formatting / parsing
+
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({self._v!r})'
 
     _UNITS: ta.ClassVar[tuple[tuple[str, float], ...]] = (
         ('ns', 1e-9),

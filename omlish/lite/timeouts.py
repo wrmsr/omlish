@@ -9,10 +9,9 @@ import typing as ta
 
 from .abstract import Abstract
 from .typing import CanFloat
-from .typing import CanInt
 
 
-TimeoutLike = ta.Union['Timeout', ta.Type['Timeout.DEFAULT'], ta.Iterable['TimeoutLike'], 'CanFloat', 'CanInt', float, int, bool, None]  # ta.TypeAlias  # noqa
+TimeoutLike = ta.Union['Timeout', ta.Type['Timeout.DEFAULT'], ta.Iterable['TimeoutLike'], 'CanFloat', float, int, bool, None]  # ta.TypeAlias  # noqa
 
 
 ##
@@ -87,8 +86,8 @@ class Timeout(Abstract):
         if isinstance(obj, (float, int)):
             return DeadlineTimeout(cls._now() + obj)
 
-        if isinstance(obj, CanInt):
-            return DeadlineTimeout(cls._now() + int(obj))
+        # if isinstance(obj, CanInt):
+        #     return DeadlineTimeout(cls._now() + int(obj))
 
         if isinstance(obj, CanFloat):
             return DeadlineTimeout(cls._now() + float(obj))
@@ -125,6 +124,9 @@ class DeadlineTimeout(Timeout):
         self.deadline = deadline
         self.exc = exc
 
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({self.deadline!r}, {self.exc!r})'
+
     @property
     def can_expire(self) -> bool:
         return True
@@ -145,6 +147,9 @@ class DeadlineTimeout(Timeout):
 
 
 class InfiniteTimeout(Timeout):
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}()'
+
     @property
     def can_expire(self) -> bool:
         return False
@@ -167,6 +172,9 @@ class CompositeTimeout(Timeout):
         super().__init__()
 
         self.children = children
+
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({self.children!r})'
 
     @property
     def can_expire(self) -> bool:
@@ -197,6 +205,9 @@ class PredicateTimeout(Timeout):
 
         self.expired_fn = expired_fn
         self.exc = exc
+
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({self.expired_fn!r}, {self.exc!r})'
 
     @property
     def can_expire(self) -> bool:
