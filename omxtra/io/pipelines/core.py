@@ -120,6 +120,10 @@ class ChannelPipelineHandlerContext:
         return self._state.pipeline._channel  # noqa
 
     @property
+    def scheduler(self) -> ta.Optional['ChannelPipelineScheduler']:
+        return self._state.pipeline._channel._scheduler  # noqa
+
+    @property
     def index(self) -> int:
         return self._index
 
@@ -331,13 +335,31 @@ class ChannelPipeline:
 ##
 
 
+class ChannelPipelineScheduler(Abstract):
+    class Handle(Abstract):
+        @abc.abstractmethod
+        def cancel(self) -> None:
+            raise NotImplementedError
+
+    @abc.abstractmethod
+    def schedule(self, handler: ChannelPipelineHandler, msg: ta.Any) -> Handle:
+        raise NotImplementedError
+
+
+##
+
+
 @ta.final
 class PipelineChannel:
     def __init__(
             self,
             handlers: ta.Sequence[ChannelPipelineHandler],
+            *,
+            scheduler: ta.Optional[ChannelPipelineScheduler] = None,
     ) -> None:
         super().__init__()
+
+        self._scheduler = scheduler
 
         self._out_q: collections.deque[ta.Any] = collections.deque()
 
@@ -345,6 +367,10 @@ class PipelineChannel:
         self._saw_eof = False
 
         self._pipeline = ChannelPipeline(self, handlers)  # final
+
+    @property
+    def eof(self) -> bool:
+        return self._saw_eof
 
     @property
     def closed(self) -> bool:
