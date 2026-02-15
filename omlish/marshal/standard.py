@@ -1,3 +1,4 @@
+# flake8: noqa: E241
 """
 FIXME:
  - this is gross and temporary
@@ -61,48 +62,41 @@ class StandardFactories(ta.NamedTuple):
     marshaler_factories: ta.Sequence[MarshalerFactory]
     unmarshaler_factories: ta.Sequence[UnmarshalerFactory]
 
+    @classmethod
+    def of_pairs(
+            cls,
+            pairs: ta.Sequence[
+                tuple[
+                    MarshalerFactory | None,
+                    UnmarshalerFactory | None,
+                ],
+            ],
+    ) -> 'StandardFactories':
+        return cls(
+            tuple(mf for mf, _ in pairs if mf is not None),
+            tuple(uf for _, uf in pairs if uf is not None),
+        )
 
-DEFAULT_STANDARD_FACTORIES = StandardFactories(
-    (
-        PRIMITIVE_MARSHALER_FACTORY,
-        NewtypeMarshalerFactory(),
-        OptionalMarshalerFactory(),
-        LiteralUnionMarshalerFactory(),
-        PrimitiveUnionMarshalerFactory(),
-        DataclassMarshalerFactory(),
-        NamedtupleMarshalerFactory(),
-        EnumMarshalerFactory(),
-        LiteralMarshalerFactory(),
-        NUMBERS_MARSHALER_FACTORY,
-        UUID_MARSHALER_FACTORY,
-        DATETIME_MARSHALER_FACTORY,
-        MaybeMarshalerFactory(),
-        MappingMarshalerFactory(),
-        SequenceNotStrMarshalerFactory(),
-        IterableMarshalerFactory(),
-        ANY_MARSHALER_FACTORY,
-    ),
 
-    (
-        PRIMITIVE_UNMARSHALER_FACTORY,
-        NewtypeUnmarshalerFactory(),
-        OptionalUnmarshalerFactory(),
-        LiteralUnionUnmarshalerFactory(),
-        PrimitiveUnionUnmarshalerFactory(),
-        DataclassUnmarshalerFactory(),
-        NamedtupleUnmarshalerFactory(),
-        EnumUnmarshalerFactory(),
-        LiteralUnmarshalerFactory(),
-        NUMBERS_UNMARSHALER_FACTORY,
-        UUID_UNMARSHALER_FACTORY,
-        DATETIME_UNMARSHALER_FACTORY,
-        MaybeUnmarshalerFactory(),
-        MappingUnmarshalerFactory(),
-        SequenceNotStrUnmarshalerFactory(),
-        IterableUnmarshalerFactory(),
-        ANY_UNMARSHALER_FACTORY,
-    ),
-)
+DEFAULT_STANDARD_FACTORIES = StandardFactories.of_pairs([
+    (PRIMITIVE_MARSHALER_FACTORY,      PRIMITIVE_UNMARSHALER_FACTORY),
+    (NewtypeMarshalerFactory(),        NewtypeUnmarshalerFactory()),
+    (OptionalMarshalerFactory(),       OptionalUnmarshalerFactory()),
+    (LiteralUnionMarshalerFactory(),   LiteralUnionUnmarshalerFactory()),
+    (PrimitiveUnionMarshalerFactory(), PrimitiveUnionUnmarshalerFactory()),
+    (DataclassMarshalerFactory(),      DataclassUnmarshalerFactory()),
+    (NamedtupleMarshalerFactory(),     NamedtupleUnmarshalerFactory()),
+    (EnumMarshalerFactory(),           EnumUnmarshalerFactory()),
+    (LiteralMarshalerFactory(),        LiteralUnmarshalerFactory()),
+    (NUMBERS_MARSHALER_FACTORY,        NUMBERS_UNMARSHALER_FACTORY),
+    (UUID_MARSHALER_FACTORY,           UUID_UNMARSHALER_FACTORY),
+    (DATETIME_MARSHALER_FACTORY,       DATETIME_UNMARSHALER_FACTORY),
+    (MaybeMarshalerFactory(),          MaybeUnmarshalerFactory()),
+    (MappingMarshalerFactory(),        MappingUnmarshalerFactory()),
+    (SequenceNotStrMarshalerFactory(), SequenceNotStrUnmarshalerFactory()),
+    (IterableMarshalerFactory(),       IterableUnmarshalerFactory()),
+    (ANY_MARSHALER_FACTORY,            ANY_UNMARSHALER_FACTORY),
+])
 
 
 ##
