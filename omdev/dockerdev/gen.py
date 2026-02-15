@@ -38,7 +38,8 @@ JDKS: ta.Sequence[str] = [
     'zulu25-ca-jdk',
 ]
 
-GO_VERSION = '1.25.6'
+GO_VERSION = '1.26.0'
+
 ZIG_VERSION = '0.15.2'
 
 NVM_VERSIONS: ta.Sequence[str] = [

@@ -214,7 +214,7 @@ curl --proto '=https' --tlsv1.2 -sSf 'https://sh.rustup.rs' | sh -s -- -y ;\
 ## go
 
 RUN (\
-export GO_VERSION='1.25.6' ;\
+export GO_VERSION='1.26.0' ;\
 \
 set -ex ;\
 \

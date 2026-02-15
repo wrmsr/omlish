@@ -7,7 +7,11 @@ else
     TTY_ENV_ARGS=""
 fi
 
-SERVICE_NAME="@PROJECT-dev"
+SCRIPT_PATH=$(cd -- "$(dirname -- "$0")" && pwd)
+SCRIPT_PATH="$SCRIPT_PATH/$(basename -- "$0")"
+SCRIPT_DIR=$(dirname "$SCRIPT_PATH")
+
+SERVICE_NAME="$(basename "$SCRIPT_DIR")-dev"
 if ! [ $# -eq 0 ] ; then
     if [ "$1" = "--amd64" ] ; then
         SERVICE_NAME="$SERVICE_NAME-amd64"
