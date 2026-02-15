@@ -37,7 +37,7 @@ class LinearByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
             *,
             max_bytes: ta.Optional[int] = None,
             initial_capacity: int = 0,
-            compact_threshold: int = 1 << 16,
+            compact_threshold: int = 0x10000,
     ) -> None:
         super().__init__()
 

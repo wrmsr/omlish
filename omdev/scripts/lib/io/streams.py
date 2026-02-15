@@ -32,8 +32,8 @@ def __omlish_amalg__():  # noqa
             dict(path='utils.py', sha1='8bf1df1c7eada9969b00dfb65f4178cc923c95bb'),
             dict(path='direct.py', sha1='c7a8cf3adb785387e410381cc83be2aad74b8d41'),
             dict(path='scanning.py', sha1='5d4cf0776463a6f675ca74ca87637133b78b51a2'),
-            dict(path='adapters.py', sha1='1a6c209490fa78947a607101e20169a5e135847b'),
-            dict(path='linear.py', sha1='c58741a70953bfb53f369782db46e7912af790b3'),
+            dict(path='adapters.py', sha1='75087e980f4ff90796728596512ffc3bf8ef235a'),
+            dict(path='linear.py', sha1='c447145ff755d469365adb30568705174874476f'),
             dict(path='segmented.py', sha1='69b63fb61953eaaea7e996cbd96555882ba8f6f2'),
             dict(path='_amalg.py', sha1='9c88a055447d7b37da1b356e6a1e00b7c4a9a3cb'),
         ],
@@ -1569,7 +1569,7 @@ class BytesIoByteStreamBuffer(MutableByteStreamBuffer):
     def __init__(
             self,
             *,
-            compaction_threshold: int = 1 << 16,
+            compaction_threshold: int = 0x10000,
     ) -> None:
         super().__init__()
 
@@ -1717,7 +1717,7 @@ class LinearByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
             *,
             max_bytes: ta.Optional[int] = None,
             initial_capacity: int = 0,
-            compact_threshold: int = 1 << 16,
+            compact_threshold: int = 0x10000,
     ) -> None:
         super().__init__()
 
