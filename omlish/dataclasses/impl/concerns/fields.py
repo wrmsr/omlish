@@ -10,7 +10,7 @@ from ...specs import FieldType
 from ..generation.idents import IDENT_PREFIX
 from ..processing.base import ProcessingContext
 from ..processing.base import Processor
-from ..processing.priority import ProcessorPriority
+from ..processing.phases import ProcessorPhase
 from ..processing.registry import register_processing_context_item_factory
 from ..processing.registry import register_processor_type
 
@@ -111,7 +111,7 @@ def _fields_inspection_processing_context_item_factory(ctx: ProcessingContext) -
 ##
 
 
-@register_processor_type(priority=ProcessorPriority.BOOTSTRAP)
+@register_processor_type(phase=ProcessorPhase.BOOTSTRAP)
 class FieldsProcessor(Processor):
     def check(self) -> None:
         check.not_none(self._ctx[StdFields])

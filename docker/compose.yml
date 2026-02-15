@@ -56,7 +56,7 @@ services:
   # main
 
   omlish-postgres:
-    image: 'postgres:17.7'
+    image: 'postgres:17.8'
     restart: 'unless-stopped'
     environment:
       POSTGRES_USER: 'postgres'

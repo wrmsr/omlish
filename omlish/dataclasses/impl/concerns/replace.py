@@ -6,7 +6,7 @@ from ..._internals import StdFieldType
 from ..._internals import std_field_type
 from ..._internals import std_is_dataclass_instance
 from ..processing.base import Processor
-from ..processing.priority import ProcessorPriority
+from ..processing.phases import ProcessorPhase
 from ..processing.registry import register_processor_type
 from ..utils import set_new_attribute
 
@@ -41,7 +41,7 @@ def _replace(obj, /, **changes):
     return obj.__class__(**changes)
 
 
-@register_processor_type(priority=ProcessorPriority.POST_GENERATION)
+@register_processor_type(phase=ProcessorPhase.POST_GENERATION)
 class ReplaceProcessor(Processor):
     def process(self, cls: type) -> type:
         set_new_attribute(cls, '__replace__', _replace)

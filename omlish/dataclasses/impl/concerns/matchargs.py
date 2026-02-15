@@ -1,6 +1,6 @@
 from .... import check
 from ..processing.base import Processor
-from ..processing.priority import ProcessorPriority
+from ..processing.phases import ProcessorPhase
 from ..processing.registry import register_processor_type
 from ..utils import set_new_attribute
 from .fields import InitFields
@@ -9,7 +9,7 @@ from .fields import InitFields
 ##
 
 
-@register_processor_type(priority=ProcessorPriority.POST_GENERATION)
+@register_processor_type(phase=ProcessorPhase.POST_GENERATION)
 class MatchArgsProcessor(Processor):
     def check(self) -> None:
         check.not_none(self._ctx[InitFields])

@@ -14,7 +14,7 @@ from ....logs import all as logs
 from ..processing.base import ProcessingContext
 from ..processing.base import ProcessingOption
 from ..processing.base import Processor
-from ..processing.priority import ProcessorPriority
+from ..processing.phases import ProcessorPhase
 from ..processing.registry import register_processor_type
 from .base import Plan
 from .compilation import OpCompiler
@@ -68,7 +68,7 @@ class Codegen(ProcessingOption):
 ##
 
 
-@register_processor_type(priority=ProcessorPriority.GENERATION)
+@register_processor_type(phase=ProcessorPhase.GENERATION)
 class GeneratorProcessor(Processor):
     PROCESS_FN_NAME: ta.ClassVar[str] = '_process_dataclass'
 

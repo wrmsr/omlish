@@ -5,7 +5,7 @@ import types
 import typing as ta
 
 from ..processing.base import Processor
-from ..processing.priority import ProcessorPriority
+from ..processing.phases import ProcessorPhase
 from ..processing.registry import register_processor_type
 
 
@@ -167,7 +167,7 @@ def add_slots(
 ##
 
 
-@register_processor_type(priority=ProcessorPriority.SLOTS)
+@register_processor_type(phase=ProcessorPhase.SLOTS)
 class SlotsProcessor(Processor):
     def check(self) -> None:
         if self._ctx.cs.weakref_slot and not self._ctx.cs.slots:

@@ -6,7 +6,7 @@ from .... import lang
 from ..utils import SealableRegistry
 from .base import ProcessingContextItemFactory
 from .base import Processor
-from .priority import ProcessorPriority
+from .phases import ProcessorPhase
 
 
 ProcessorT = ta.TypeVar('ProcessorT', bound=Processor)
@@ -41,7 +41,7 @@ def all_processing_context_item_factories() -> ta.Mapping[type, ProcessingContex
 
 @dc.dataclass(frozen=True, kw_only=True)
 class ProcessorTypeRegistration:
-    priority: ProcessorPriority
+    phase: ProcessorPhase
 
 
 _PROCESSOR_TYPES: SealableRegistry[type[Processor], ProcessorTypeRegistration] = SealableRegistry()
@@ -49,11 +49,11 @@ _PROCESSOR_TYPES: SealableRegistry[type[Processor], ProcessorTypeRegistration] =
 
 def register_processor_type(
         *,
-        priority: ProcessorPriority,
+        phase: ProcessorPhase,
         **kwargs: ta.Any,
 ) -> ta.Callable[[type[ProcessorT]], type[ProcessorT]]:
     reg = ProcessorTypeRegistration(
-        priority=priority,
+        phase=phase,
         **kwargs,
     )
 
@@ -76,6 +76,6 @@ def ordered_processor_types() -> ta.Sequence[type]:
         t
         for t, r in sorted(
             all_processor_types().items(),
-            key=lambda t_r: t_r[1].priority,
+            key=lambda t_r: (t_r[1].phase, t_r[0].__name__),
         )
     ]

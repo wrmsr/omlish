@@ -4,7 +4,7 @@ import enum
 ##
 
 
-class ProcessorPriority(enum.IntEnum):
+class ProcessorPhase(enum.IntEnum):
     BOOTSTRAP = enum.auto()
 
     PRE_GENERATION = enum.auto()
