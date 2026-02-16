@@ -12,8 +12,8 @@ from omlish.lite.check import check
 from ...core import ChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
 from ...core import ChannelPipelineMessages
-from ..decoding import PipelineHttpChunkedDecoder
-from ..decoding import PipelineHttpHeadDecoder
+from ..decoders import PipelineHttpChunkedDecoder
+from ..decoders import PipelineHttpHeadDecoder
 from ..responses import PipelineHttpResponseContentChunk
 from ..responses import PipelineHttpResponseEnd
 from ..responses import PipelineHttpResponseHead

@@ -32,6 +32,9 @@ class ChannelPipelineMessages:
     def __new__(cls, *args, **kwargs):  # noqa
         raise TypeError
 
+    def __init_subclass__(cls, **kwargs):  # noqa
+        raise TypeError
+
     #
 
     class NeverInbound(Abstract):
@@ -73,6 +76,9 @@ class ChannelPipelineEvents:
     """Standard events emitted from a channel pipeline."""
 
     def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
+
+    def __init_subclass__(cls, **kwargs):  # noqa
         raise TypeError
 
     #

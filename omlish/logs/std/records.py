@@ -306,7 +306,7 @@ class LoggingContextInfoRecordAdapters:
             pathname=(str, _UNKNOWN_PATH_NAME),
 
             # Source line number where the logging call was issued (if available). Unmodified by ctor. May default to 0
-            # y Logger.findCaller / Logger._log.
+            # by Logger.findCaller / Logger._log.
             lineno=(int, 0),
 
             # Name of function containing the logging call. Set by ctor to `func` arg, unmodified. May default to

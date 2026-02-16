@@ -13,8 +13,8 @@ from omlish.lite.check import check
 from ...core import ChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
 from ...core import ChannelPipelineMessages
-from ..decoding import PipelineHttpChunkedDecoder
-from ..decoding import PipelineHttpHeadDecoder
+from ..decoders import PipelineHttpChunkedDecoder
+from ..decoders import PipelineHttpHeadDecoder
 from ..requests import FullPipelineHttpRequest
 from ..requests import PipelineHttpRequestAborted
 from ..requests import PipelineHttpRequestContentChunk
