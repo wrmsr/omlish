@@ -95,70 +95,61 @@ class ChannelPipelineHandlerContext:
     def __init__(
             self,
             *,
-            _state: 'ChannelPipeline._State',  # noqa
-            _index: int,
+            _pipeline: 'ChannelPipeline',
             _handler: 'ChannelPipelineHandler',
     ) -> None:
         super().__init__()
 
-        self._state = _state
-        self._index = _index
+        self._pipeline = _pipeline
         self._handler = _handler
 
-        self._next_in_index = _state.next_in_indexes[_index]
-        self._next_out_index = _state.next_out_indexes[_index]
+        self._handles_inbound = type(_handler).inbound is not ChannelPipelineHandler.inbound
+        self._handles_outbound = type(_handler).outbound is not ChannelPipelineHandler.outbound
+
+    _next_in: 'ChannelPipelineHandlerContext'  # 'next'
+    _next_out: 'ChannelPipelineHandlerContext'  # 'prev'
 
     def __repr__(self) -> str:
-        return f'{type(self).__name__}<{self._index}>({self._handler!r}, {self.pipeline!r})'
+        return f'{type(self).__name__}({self._handler!r}, {self.pipeline!r})'
 
     @property
     def pipeline(self) -> 'ChannelPipeline':
-        return self._state.pipeline
+        return self._pipeline
 
     @property
     def channel(self) -> 'PipelineChannel':
-        return self._state.pipeline._channel  # noqa
+        return self._pipeline._channel  # noqa
 
     @property
     def scheduler(self) -> ta.Optional['ChannelPipelineScheduler']:
-        return self._state.pipeline._channel._scheduler  # noqa
-
-    @property
-    def index(self) -> int:
-        return self._index
+        return self._pipeline._channel._scheduler  # noqa
 
     @property
     def handler(self) -> 'ChannelPipelineHandler':
         return self._handler
 
-    @property
-    def invalidated(self) -> bool:
-        return self._state.invalidated
-
     #
 
     def feed_in(self, msg: ta.Any) -> None:
-        self._state.feed_in_from(self._next_in_index, msg)
+        nxt = self._next_in
+        while not nxt._handles_inbound:  # noqa
+            nxt = nxt._next_in  # noqa
+        nxt._handler.inbound(nxt, msg)  # noqa
 
     def feed_out(self, msg: ta.Any) -> None:
-        self._state.feed_out_from(self._next_out_index, msg)
+        nxt = self._next_out  # noqa
+        while not nxt._handles_outbound:  # noqa
+            nxt = nxt._next_out  # noqa
+        nxt._handler.outbound(nxt, msg)  # noqa
 
     def emit_out(self, msg: ta.Any) -> None:
-        self._state.pipeline._channel.emit_out(msg)  # noqa
-
-    #
-
-    def find_handler(self, ty: ta.Type[T]) -> ta.Optional[T]:
-        return self._state.find_handler(ty)
-
-    def find_handlers(self, ty: ta.Type[T]) -> ta.Sequence[T]:
-        return self._state.find_handlers(ty)
+        self._pipeline._channel.emit_out(msg)  # noqa
 
     #
 
     @property
     def bytes_flow_control(self) -> ta.Optional[BytesChannelPipelineFlowControl]:
-        return self._state.find_handler(BytesChannelPipelineFlowControl)  # type: ignore[type-abstract]
+        return self._pipeline.find_handler(BytesChannelPipelineFlowControl)  # type: ignore[type-abstract]
 
 
 class ChannelPipelineHandler(Abstract):
@@ -192,161 +183,111 @@ class ChannelPipeline:
 
         self._channel = channel  # final
 
-        self._outermost = ChannelPipeline._Outermost()
-        self._innermost = ChannelPipeline._Innermost()
+        self._outermost = outermost = ChannelPipelineHandlerContext(
+            _pipeline=self,
+            _handler=ChannelPipeline._Outermost(),
+        )
+        self._innermost = innermost = ChannelPipelineHandlerContext(
+            _pipeline=self,
+            _handler=ChannelPipeline._Innermost(),
+        )
 
-        self.__state = st = self.__new_state(handlers)
+        innermost._next_in = innermost._next_out = outermost  # noqa
+        outermost._next_in = outermost._next_out = innermost  # noqa
 
-        for ctx in st.contexts:
-            ctx.handler.added(ctx)
+        self._contexts: ta.Dict[ChannelPipelineHandler, ChannelPipelineHandlerContext] = {}
 
-    @ta.final
-    class _State:
-        def __init__(
-                self,
-                pipeline: 'ChannelPipeline',
-                handlers: ta.Sequence[ChannelPipelineHandler],
-        ) -> None:
-            self.pipeline = pipeline
+        # State to be cleared on handler chain modification
+        self._single_handlers_by_type_cache: ta.Dict[type, ta.Optional[ta.Any]] = {}
+        self._handlers_by_type_cache: ta.Dict[type, ta.Sequence[ta.Any]] = {}
 
-            self.handlers = [
-                pipeline._outermost,  # noqa
-                *handlers,
-                pipeline._innermost,  # noqa
-            ]
-
-            self.invalidated = False
-
-            handler_indexes: ta.Dict[ChannelPipelineHandler, int] = {}
-            for i, h in enumerate(self.handlers):
-                if h in handler_indexes:
-                    raise ValueError(f'Duplicate handler {h!r}.')
-                handler_indexes[h] = i
-            self.handler_indexes: ta.Mapping[ChannelPipelineHandler, int] = handler_indexes
-
-            self.next_in_indexes, self.next_out_indexes = self._calculate_link_lists(self.handlers)
-
-            self.contexts = [
-                ChannelPipelineHandlerContext(
-                    _state=self,
-                    _index=i,
-                    _handler=h,
-                )
-                for i, h in enumerate(self.handlers)
-            ]
-
-            self._single_handlers_by_type_cache: ta.Dict[type, ta.Optional[ta.Any]] = {}
-            self._handlers_by_type_cache: ta.Dict[type, ta.Sequence[ta.Any]] = {}
-
-            # The result of this is discarded - this is done to enforce uniqueness of this special cased handler if it's
-            # present.
-            self.find_handler(BytesChannelPipelineFlowControl)  # type: ignore[type-abstract]
-
-        #
-
-        @classmethod
-        def _calculate_link_lists(
-                cls,
-                handlers: ta.Sequence[ChannelPipelineHandler],
-        ) -> ta.Tuple[ta.Sequence[int], ta.Sequence[int]]:
-            n = len(handlers)
-
-            next_in_indexes = [-1] * n
-            next_out_indexes = [-1] * n
-
-            last_in = -1
-            for i in range(n - 1, -1, -1):
-                next_in_indexes[i] = last_in
-                if type(handlers[i]).inbound is not ChannelPipelineHandler.inbound or i == n - 1:
-                    last_in = i
-
-            last_out = -1
-            for i in range(n):
-                next_out_indexes[i] = last_out
-                if type(handlers[i]).outbound is not ChannelPipelineHandler.outbound or i == 0:
-                    last_out = i
-
-            return next_in_indexes, next_out_indexes
-
-        #
-
-        def check_invalidated(self) -> None:
-            if self.invalidated:
-                raise ChannelPipelineContextInvalidatedError
-
-        #
-
-        def find_handler(self, ty: ta.Type[T]) -> ta.Optional[T]:
-            try:
-                return self._single_handlers_by_type_cache[ty]
-            except KeyError:
-                pass
-
-            self._single_handlers_by_type_cache[ty] = ret = check.opt_single(self.find_handlers(ty))
-            return ret
-
-        def find_handlers(self, ty: ta.Type[T]) -> ta.Sequence[T]:
-            try:
-                return self._handlers_by_type_cache[ty]
-            except KeyError:
-                pass
-
-            self._handlers_by_type_cache[ty] = ret = [h for h in self.handlers if isinstance(h, ty)]
-            return ret
-
-        #
-
-        def feed_in_from(self, idx: int, msg: ta.Any) -> None:
-            if self.invalidated:
-                raise ChannelPipelineContextInvalidatedError
-            if idx < 0:
-                raise RuntimeError(f'Negative handler index {idx!r}.')
-            ctx = self.contexts[idx]
-            ctx._handler.inbound(ctx, msg)  # noqa
-
-        def feed_out_from(self, idx: int, msg: ta.Any) -> None:
-            if self.invalidated:
-                raise ChannelPipelineContextInvalidatedError
-            if idx < 0:
-                raise RuntimeError(f'Negative handler index {idx!r}.')
-            ctx = self.contexts[idx]
-            ctx._handler.outbound(ctx, msg)  # noqa
-
-    def __new_state(self, handlers: ta.Sequence[ChannelPipelineHandler]) -> _State:
-        return self._State(self, handlers)
-
-    __state: _State
-
-    def _state(self) -> _State:
-        return self.__state
+        for h in handlers:
+            self.add_innermost(h)
 
     #
 
-    def set_handlers(self, handlers: ta.Sequence[ChannelPipelineHandler]) -> None:
-        old_state = self.__state
-        new_state = self.__new_state(handlers)
-
-        for i, h in enumerate(old_state.handlers):
-            if h not in new_state.handler_indexes:
-                if (sch := self._channel._scheduler) is not None:  # noqa
-                    sch.cancel_all(h)
-
-                h.removing(old_state.contexts[i])
-
-        old_state.invalidated = True
-        self.__state = new_state
-
-        for i, h in enumerate(new_state.handlers):
-            if h not in old_state.handler_indexes:
-                h.added(new_state.contexts[i])
+    def _clear_handler_caches(self) -> None:
+        self._single_handlers_by_type_cache.clear()
+        self._handlers_by_type_cache.clear()
 
     #
 
     def find_handler(self, ty: ta.Type[T]) -> ta.Optional[T]:
-        return self._state().find_handler(ty)
+        try:
+            return self._single_handlers_by_type_cache[ty]
+        except KeyError:
+            pass
+
+        self._single_handlers_by_type_cache[ty] = ret = check.opt_single(self.find_handlers(ty))
+        return ret
 
     def find_handlers(self, ty: ta.Type[T]) -> ta.Sequence[T]:
-        return self._state().find_handlers(ty)
+        try:
+            return self._handlers_by_type_cache[ty]
+        except KeyError:
+            pass
+
+        self._handlers_by_type_cache[ty] = ret = [h for h in self._contexts if isinstance(h, ty)]
+        return ret
+
+    #
+
+    def feed_in_from(self, handler: ChannelPipelineHandler, msg: ta.Any) -> None:
+        ctx = self._contexts[handler]
+        ctx._handler.inbound(ctx, msg)  # noqa
+
+    def feed_out_from(self, handler: ChannelPipelineHandler, msg: ta.Any) -> None:
+        ctx = self._contexts[handler]
+        ctx._handler.outbound(ctx, msg)  # noqa
+
+    #
+
+    def _add(
+            self,
+            handler: ChannelPipelineHandler,
+            *,
+            inner_to: ta.Optional[ChannelPipelineHandlerContext] = None,
+            outer_to: ta.Optional[ChannelPipelineHandlerContext] = None,
+    ) -> None:
+        if inner_to is not None:
+            check.none(outer_to)
+            check.is_not(inner_to, self._innermost)
+        elif outer_to is not None:
+            check.none(inner_to)
+            check.is_not(outer_to, self._outermost)
+        else:
+            raise ValueError('Must specify exactly one of inner_to or outer_to')
+
+        ctx = ChannelPipelineHandlerContext(
+            _pipeline=self,
+            _handler=handler,
+        )
+
+        self._contexts[handler] = ctx
+
+        if inner_to is not None:
+            prv = inner_to._next_in  # noqa
+            ctx._next_out = inner_to  # noqa
+            ctx._next_in = prv  # noqa
+            inner_to._next_in = ctx  # noqa
+            prv._next_out = ctx  # noqa
+
+        if outer_to is not None:
+            prv = outer_to._next_out  # noqa
+            ctx._next_out = prv  # noqa
+            ctx._next_in = outer_to  # noqa
+            prv._next_in = ctx  # noqa
+            outer_to._next_out = ctx  # noqa
+
+        self._clear_handler_caches()
+
+        handler.added(ctx)
+
+    def add_innermost(self, handler: ChannelPipelineHandler) -> None:
+        self._add(handler, outer_to=self._innermost)
+
+    def add_outermost(self, handler: ChannelPipelineHandler) -> None:
+        self._add(handler, inner_to=self._outermost)
 
     #
 
@@ -423,9 +364,9 @@ class PipelineChannel:
         if isinstance(msg, ChannelPipelineEvents.Close):
             self._saw_close = True
 
-        st = self._pipeline._state()  # noqa
+        ctx = self._pipeline._outermost  # noqa
         try:
-            st.feed_in_from(1, msg)  # Skip outermost
+            ctx._handler.inbound(ctx, msg)  # noqa
         except BaseException as e:  # noqa
             self.handle_error(e)
 
@@ -447,9 +388,9 @@ class PipelineChannel:
     #
 
     def feed_out(self, msg: ta.Any) -> None:
-        st = self._pipeline._state()  # noqa
+        ctx = self._pipeline._innermost  # noqa
         try:
-            st.feed_out_from(len(st.contexts) - 2, msg)  # Skip innermost
+            ctx._handler.outbound(ctx, msg)  # noqa
         except BaseException as e:  # noqa
             self.handle_error(e)
 

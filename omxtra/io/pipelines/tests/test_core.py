@@ -40,13 +40,15 @@ class TestCore(unittest.TestCase):
         ch.feed_out('240')
         assert ch.drain_out() == [240]
 
-        ch.pipeline.set_handlers([
-            IntIncInboundHandler(),
-            *handlers,
-        ])
+        handlers  # noqa
 
-        ch.feed_in(420)
-        assert ch.drain_out() == ['422']
-
-        ch.feed_out('240')
-        assert ch.drain_out() == [240]
+        # ch.pipeline.set_handlers([
+        #     IntIncInboundHandler(),
+        #     *handlers,
+        # ])
+        #
+        # ch.feed_in(420)
+        # assert ch.drain_out() == ['422']
+        #
+        # ch.feed_out('240')
+        # assert ch.drain_out() == [240]
