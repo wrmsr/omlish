@@ -1,5 +1,14 @@
 # ruff: noqa: UP006 UP045
 # @omlish-lite
+"""
+TODO:
+ - re-add BytesChannelPipelineFlowControl unique check (without thrashing cache)?
+ - 'optional' / 'advisory' event abstract base class? if any non-this isn't 'handled' by some 'driver', raise
+   - need to catch stray bytes falling out
+ - 'mandatory' event abstract base class? when fed in either direction add to identity map, must see on next drain or
+   something failed to propagate
+   - nothing should fail to propagate 'Eof' / 'Close'
+"""
 import abc
 import collections
 import dataclasses as dc
@@ -218,11 +227,11 @@ class ChannelPipeline:
 
     #
 
-    def feed_in_from(self, handler: ChannelPipelineHandler, msg: ta.Any) -> None:
+    def feed_in_to(self, handler: ChannelPipelineHandler, msg: ta.Any) -> None:
         ctx = self._contexts[handler]
         ctx._handler.inbound(ctx, msg)  # noqa
 
-    def feed_out_from(self, handler: ChannelPipelineHandler, msg: ta.Any) -> None:
+    def feed_out_to(self, handler: ChannelPipelineHandler, msg: ta.Any) -> None:
         ctx = self._contexts[handler]
         ctx._handler.outbound(ctx, msg)  # noqa
 
