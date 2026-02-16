@@ -13,6 +13,7 @@ from omlish.lite.check import check
 from ...core import ChannelPipelineEvents
 from ...core import ChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
+from ..responses import PipelineHttpResponseEnd
 from ..responses import PipelineHttpResponseHead
 
 
@@ -147,3 +148,151 @@ class PipelineHttpResponseConditionalGzipDecoder(ChannelPipelineHandler):
             out = self._z.decompress(mv)
             if out:
                 ctx.feed_in(out)
+
+
+##
+
+
+class PipelineHttpResponseChunkedDecoder(ChannelPipelineHandler):
+    """
+    Decodes HTTP/1.x chunked transfer encoding.
+
+    Watches for PipelineHttpResponseHead; if Transfer-Encoding includes 'chunked',
+    decodes chunked body format:
+
+      <chunk-size-hex>\r\n
+      <chunk-data>
+      \r\n
+      ...
+      0\r\n
+      \r\n
+
+    Emits decoded body bytes and PipelineHttpResponseEnd when complete.
+    """
+
+    def __init__(
+            self,
+            *,
+            max_chunk_header: int = 1024,
+            chunk_size: int = 0x10000,
+    ) -> None:
+        super().__init__()
+
+        self._buf = SegmentedByteStreamBuffer(
+            max_bytes=max_chunk_header,
+            chunk_size=chunk_size,
+        )
+        self._enabled = False
+        self._chunk_remaining = 0
+        self._state: ta.Literal['size', 'data', 'trailer', 'done'] = 'size'
+
+    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, ChannelPipelineEvents.Eof):
+            if self._enabled and self._state != 'done':
+                raise ValueError('EOF before chunked encoding complete')
+            ctx.feed_in(msg)
+            return
+
+        if isinstance(msg, PipelineHttpResponseHead):
+            te = msg.headers.lower.get('transfer-encoding', ())
+            self._enabled = 'chunked' in te
+            ctx.feed_in(msg)
+            return
+
+        if not self._enabled or not ByteStreamBuffers.can_bytes(msg):
+            ctx.feed_in(msg)
+            return
+
+        # Process chunked encoding
+        for mv in ByteStreamBuffers.iter_segments(msg):
+            if mv:
+                self._buf.write(mv)
+
+        self._decode_chunks(ctx)
+
+    def _decode_chunks(self, ctx: ChannelPipelineHandlerContext) -> None:
+        """Decode as many complete chunks as possible from buffer."""
+
+        while True:
+            if self._state == 'size':
+                # Parse chunk size line: <hex-size>\r\n
+                i = self._buf.find(b'\r\n')
+                if i < 0:
+                    return  # Need more data
+
+                before = len(self._buf)
+                size_line = self._buf.split_to(i + 2)
+                after = len(self._buf)
+
+                size_bytes = ByteStreamBuffers.any_to_bytes(size_line)[:-2]  # Strip \r\n
+                try:
+                    self._chunk_remaining = int(size_bytes, 16)
+                except ValueError as e:
+                    raise ValueError(f'Invalid chunk size: {size_bytes!r}') from e
+
+                if (bfc := ctx.bytes_flow_control) is not None:
+                    bfc.on_consumed(self, before - after)
+
+                if self._chunk_remaining == 0:
+                    # Final chunk
+                    self._state = 'trailer'
+                else:
+                    self._state = 'data'
+
+            elif self._state == 'data':
+                # Read chunk data + trailing \r\n
+                needed = self._chunk_remaining + 2
+                if len(self._buf) < needed:
+                    return  # Need more data
+
+                before = len(self._buf)
+
+                # Extract chunk data
+                chunk_data = self._buf.split_to(self._chunk_remaining)
+
+                # Extract trailing \r\n
+                trailing = self._buf.split_to(2)
+                trailing_bytes = ByteStreamBuffers.any_to_bytes(trailing)
+
+                after = len(self._buf)
+
+                if trailing_bytes != b'\r\n':
+                    raise ValueError(f'Expected \\r\\n after chunk data, got {trailing_bytes!r}')
+
+                # Emit chunk data
+                ctx.feed_in(chunk_data)
+
+                if (bfc := ctx.bytes_flow_control) is not None:
+                    bfc.on_consumed(self, before - after)
+
+                self._chunk_remaining = 0
+                self._state = 'size'
+
+            elif self._state == 'trailer':
+                # Final \r\n after 0-size chunk
+                if len(self._buf) < 2:
+                    return  # Need more data
+
+                before = len(self._buf)
+                trailing = self._buf.split_to(2)
+                after = len(self._buf)
+
+                trailing_bytes = ByteStreamBuffers.any_to_bytes(trailing)
+
+                if trailing_bytes != b'\r\n':
+                    raise ValueError(f'Expected \\r\\n after final chunk, got {trailing_bytes!r}')
+
+                if (bfc := ctx.bytes_flow_control) is not None:
+                    bfc.on_consumed(self, before - after)
+
+                # Emit end marker
+                ctx.feed_in(PipelineHttpResponseEnd())
+
+                self._state = 'done'
+                return
+
+            elif self._state == 'done':
+                # Should not receive more data after completion
+                if len(self._buf) > 0:
+                    raise ValueError('Unexpected data after chunked encoding complete')
+                return

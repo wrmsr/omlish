@@ -11,6 +11,7 @@ from ....core import ChannelPipelineHandler
 from ....core import ChannelPipelineHandlerContext
 from ....core import PipelineChannel
 from ...client.requests import PipelineHttpRequestEncoder
+from ...client.responses import PipelineHttpResponseChunkedDecoder
 from ...client.responses import PipelineHttpResponseDecoder
 from ...requests import FullPipelineHttpRequest
 from ...responses import PipelineHttpResponseHead
@@ -83,6 +84,7 @@ def build_http_client_channel() -> PipelineChannel:
 
     return PipelineChannel([
         PipelineHttpResponseDecoder(),
+        PipelineHttpResponseChunkedDecoder(),
         PipelineHttpRequestEncoder(),
         HttpClientHandler(),
     ])
