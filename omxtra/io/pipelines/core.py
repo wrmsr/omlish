@@ -110,7 +110,11 @@ class ChannelPipelineHandlerContext:
     _next_out: 'ChannelPipelineHandlerContext'  # 'prev'
 
     def __repr__(self) -> str:
-        return f'{type(self).__name__}({self._handler!r}, {self.pipeline!r})'
+        return (
+            f'{type(self).__name__}@{id(self):x}'
+            f'{"<INVALIDATED>" if self._invalidated else ""}'
+            f'({self._handler!r}, {self.pipeline!r})'
+        )
 
     @property
     def pipeline(self) -> 'ChannelPipeline':
@@ -198,8 +202,8 @@ class ChannelPipeline:
             _handler=ChannelPipeline._Innermost(),
         )
 
-        innermost._next_in = innermost._next_out = outermost  # noqa
-        outermost._next_in = outermost._next_out = innermost  # noqa
+        outermost._next_in = innermost  # noqa
+        innermost._next_out = outermost  # noqa
 
         self._contexts: ta.Final[ta.Dict[ChannelPipelineHandler, ChannelPipelineHandlerContext]] = {}
 
@@ -208,6 +212,9 @@ class ChannelPipeline:
 
     _outermost: ta.Final[ChannelPipelineHandlerContext]
     _innermost: ta.Final[ChannelPipelineHandlerContext]
+
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}@{id(self):x}()'
 
     #
 
@@ -223,8 +230,6 @@ class ChannelPipeline:
 
     def _check_can_add(self, handler: ChannelPipelineHandler) -> ChannelPipelineHandler:
         check.not_in(handler, self._contexts)
-        check.is_not(handler, self._outermost._handler)  # noqa
-        check.is_not(handler, self._innermost._handler)  # noqa
 
         return handler
 
@@ -311,16 +316,26 @@ class ChannelPipeline:
         self._remove(handler)
 
     def replace(self, old_handler: ChannelPipelineHandler, new_handler: ChannelPipelineHandler) -> None:
+        self._check_can_remove(old_handler)
+        self._check_can_add(new_handler)
+
+        inner_to = self._contexts[old_handler]._next_out  # noqa
         self._remove(old_handler)
-        self._add(new_handler, inner_to=self._innermost)
+        self._add(new_handler, inner_to=inner_to)
 
     #
 
     class _Outermost(ChannelPipelineHandler):
+        def __repr__(self) -> str:
+            return f'{type(self).__name__}()'
+
         def outbound(self, ctx: 'ChannelPipelineHandlerContext', msg: ta.Any) -> None:
             ctx.emit_out(msg)
 
     class _Innermost(ChannelPipelineHandler):
+        def __repr__(self) -> str:
+            return f'{type(self).__name__}()'
+
         def inbound(self, ctx: 'ChannelPipelineHandlerContext', msg: ta.Any) -> None:
             ctx.emit_out(msg)
 
@@ -426,12 +441,15 @@ class PipelineChannel:
 
         self._scheduler: ta.Final[ta.Optional[ChannelPipelineScheduler]] = scheduler
 
-        self._out_q: collections.deque[ta.Any] = collections.deque()
+        self._out_q: ta.Final[collections.deque[ta.Any]] = collections.deque()
 
         self._saw_close = False
         self._saw_eof = False
 
         self._pipeline: ta.Final[ChannelPipeline] = ChannelPipeline(self, handlers)  # final
+
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}@{id(self):x}()'
 
     @property
     def eof(self) -> bool:

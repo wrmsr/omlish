@@ -16,6 +16,13 @@ class TestCore(unittest.TestCase):
 
                 ctx.feed_in(msg)
 
+        class IntMulThreeInboundHandler(ChannelPipelineHandler):
+            def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+                if isinstance(msg, int):
+                    msg *= 3
+
+                ctx.feed_in(msg)
+
         class IntStrDuplexHandler(ChannelPipelineHandler):
             def inbound(self, ctx: 'ChannelPipelineHandlerContext', msg: ta.Any) -> None:
                 if isinstance(msg, int):
@@ -36,30 +43,46 @@ class TestCore(unittest.TestCase):
             IntStrDuplexHandler(),
         ])
 
-        ch.feed_in(420)
-        assert ch.drain_out() == ['421']
+        ch.feed_in('hi')
+        assert ch.drain_out() == ['hi']
 
-        ch.feed_out('240')
-        assert ch.drain_out() == [240]
+        ch.feed_in(42)
+        assert ch.drain_out() == ['43']
+
+        ch.feed_out('24')
+        assert ch.drain_out() == [24]
 
         #
 
         ch.pipeline.add_outermost(
-            IntIncInboundHandler(),
+            IntMulThreeInboundHandler(),
         )
 
-        ch.feed_in(420)
-        assert ch.drain_out() == ['422']
+        ch.feed_in(42)
+        assert ch.drain_out() == ['127']
 
-        ch.feed_out('240')
-        assert ch.drain_out() == [240]
+        ch.feed_out('24')
+        assert ch.drain_out() == [24]
 
         #
 
-        ch.pipeline.remove(ch.pipeline.handlers()[-1])
+        ch.pipeline.remove(ch.pipeline.handlers()[1])
 
-        ch.feed_in(420)
-        assert ch.drain_out() == [422]
+        ch.feed_in(42)
+        assert ch.drain_out() == ['126']
 
-        ch.feed_out(240)
-        assert ch.drain_out() == [240]
+        ch.feed_out(24)
+        assert ch.drain_out() == [24]
+
+        #
+
+        ch.pipeline.replace(ch.pipeline.handlers()[0], IntIncInboundHandler())
+
+        ch.feed_in('hi')
+        assert ch.drain_out() == ['hi']
+
+        ch.feed_in(42)
+        assert ch.drain_out() == ['43']
+
+        ch.feed_out('24')
+        assert ch.drain_out() == [24]
