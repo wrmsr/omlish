@@ -5,8 +5,6 @@ TODO:
  - re-add BytesChannelPipelineFlowControl unique check (without thrashing cache)?
  - 'optional' / 'advisory' event abstract base class? if any non-this isn't 'handled' by some 'driver', raise
    - need to catch stray bytes falling out
- - 'MustPropagate' message abstract - nothing should swallow Eof/Close
-   - when/where to enforce?
 """
 import abc
 import collections
@@ -49,7 +47,7 @@ class ChannelPipelineMessages:
     @ta.final
     @dc.dataclass(frozen=True)
     class Eof(NeverOutbound, MustPropagate):
-        """Signals that the inbound byte stream reached EOF."""
+        """Signals that the inbound stream reached EOF."""
 
     @ta.final
     @dc.dataclass(frozen=True)
@@ -183,11 +181,17 @@ class ChannelPipelineHandlerContext:
         check.state(not self._invalidated)
         check.not_isinstance(msg, ChannelPipelineMessages.NeverInbound)
 
+        if isinstance(msg, ChannelPipelineMessages.MustPropagate):
+            self._pipeline._channel._add_must_propagate('inbound', msg)  # noqa
+
         self._handler.inbound(self, msg)
 
     def _outbound(self, msg: ta.Any) -> None:
         check.state(not self._invalidated)
         check.not_isinstance(msg, ChannelPipelineMessages.NeverOutbound)
+
+        if isinstance(msg, ChannelPipelineMessages.MustPropagate):
+            self._pipeline._channel._add_must_propagate('outbound', msg)  # noqa
 
         self._handler.outbound(self, msg)
 
@@ -384,12 +388,6 @@ class ChannelPipeline:
         def __repr__(self) -> str:
             return f'{type(self).__name__}()'
 
-        def inbound(self, ctx: 'ChannelPipelineHandlerContext', msg: ta.Any) -> None:
-            if isinstance(msg, ChannelPipelineMessages.MustPropagate):
-                ctx._pipeline._channel._add_must_propagate('inbound', msg)  # noqa
-
-            ctx.feed_in(msg)
-
         def outbound(self, ctx: 'ChannelPipelineHandlerContext', msg: ta.Any) -> None:
             if isinstance(msg, ChannelPipelineMessages.MustPropagate):
                 ctx._pipeline._channel._remove_must_propagate('outbound', msg)  # noqa
@@ -407,12 +405,6 @@ class ChannelPipeline:
                 ctx._pipeline._channel._remove_must_propagate('inbound', msg)  # noqa
 
             ctx.emit(msg)
-
-        def outbound(self, ctx: 'ChannelPipelineHandlerContext', msg: ta.Any) -> None:
-            if isinstance(msg, ChannelPipelineMessages.MustPropagate):
-                ctx._pipeline._channel._add_must_propagate('outbound', msg)  # noqa
-
-            ctx.feed_out(msg)
 
     #
 
@@ -454,7 +446,13 @@ class ChannelPipeline:
             except KeyError:
                 pass
 
-            self._handlers_by_type_cache[ty] = ret = [h for h in self._p._contexts if isinstance(h, ty)]  # noqa
+            ret: ta.List[ta.Any] = []
+            ctx = self._p._outermost  # noqa
+            while (ctx := ctx._next_in) is not self._p._innermost:  # noqa
+                if isinstance(h := ctx._handler, ty):  # noqa
+                    ret.append(h)
+
+            self._handlers_by_type_cache[ty] = ret
             return ret
 
     __caches: _Caches
