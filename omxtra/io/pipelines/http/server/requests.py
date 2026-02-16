@@ -306,8 +306,7 @@ class PipelineHttpRequestBodyStreamDecoder(ChannelPipelineHandler):
         chunk_remain: ta.Optional[int]
 
     def _select_mode(self, head: PipelineHttpRequestHead) -> _SelectedMode:
-        te = head.headers.lower.get('transfer-encoding', '')
-        if 'chunked' in te:
+        if head.headers.contains_value('transfer-encoding', 'chunked', ignore_case=True):
             return PipelineHttpRequestBodyStreamDecoder._SelectedMode('chunked', 0, None)
 
         cl = head.headers.single.get('content-length')
@@ -453,8 +452,7 @@ class PipelineHttpRequestChunkedDecoder(PipelineHttpChunkedDecoder):
         return isinstance(msg, PipelineHttpRequestHead)
 
     def _should_enable(self, head: ta.Any) -> bool:
-        te = head.headers.lower.get('transfer-encoding', ())
-        return 'chunked' in te
+        return head.headers.contains_value('transfer-encoding', 'chunked', ignore_case=True)
 
     def _emit_chunk(self, ctx: ChannelPipelineHandlerContext, chunk_data: ta.Any) -> None:
         data = ByteStreamBuffers.any_to_bytes(chunk_data)
