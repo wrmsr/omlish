@@ -4,7 +4,7 @@ import typing as ta
 
 from omlish.http.headers import HttpHeaders
 from omlish.http.parsing import HttpParser
-from omlish.http.parsing import parse_http_message
+from omlish.http.parsing import ParsedHttpMessage
 from omlish.io.streams.errors import FrameTooLargeByteStreamBufferError
 from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 from omlish.io.streams.utils import ByteStreamBuffers
@@ -13,6 +13,7 @@ from omlish.lite.check import check
 from ...core import ChannelPipelineEvents
 from ...core import ChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
+from ..decoding import PipelineHttpHeadDecoder
 from ..requests import FullPipelineHttpRequest
 from ..requests import PipelineHttpRequestAborted
 from ..requests import PipelineHttpRequestContentChunk
@@ -23,96 +24,17 @@ from ..requests import PipelineHttpRequestHead
 ##
 
 
-class PipelineHttpRequestHeadDecoder(ChannelPipelineHandler):
+class PipelineHttpRequestHeadDecoder(PipelineHttpHeadDecoder):
     """
-    Minimal HTTP/1.x request head decoder (demo-grade).
+    HTTP/1.x request head decoder.
 
-    Inbound:
-      - buffers until b'\\r\\n\\r\\n'
-      - parses request line + headers
-      - emits DecodedHttpRequestHead
-      - forwards any remaining bytes (ignored by ping example)
-
-    Not supported:
-      - request bodies
-      - chunked encoding
-      - pipelining / keep-alive correctness beyond the demo
+    Extends PipelineHttpHeadDecoder to parse request line (method, target, version) + headers.
     """
 
-    def __init__(
-            self,
-            *,
-            max_head: int = 0x10000,
-            chunk_size: int = 0x10000,
-    ) -> None:
-        super().__init__()
+    def _parse_mode(self) -> HttpParser.Mode:
+        return HttpParser.Mode.REQUEST
 
-        self._max_head = max_head
-
-        self._buf = SegmentedByteStreamBuffer(
-            max_bytes=max_head,
-            chunk_size=chunk_size,
-        )
-        self._passthrough_body = False
-
-    # @ta.override
-    # def buffered_bytes(self) -> int:
-    #     return len(self._buf)
-
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineEvents.Eof):
-            # EOF: if we have partial head buffered and we haven't switched to body passthrough, that's an error.
-            if not self._passthrough_body and len(self._buf):
-                raise ValueError('EOF before HTTP request head complete')
-
-            # Either way, reset.
-            self._passthrough_body = False
-            if len(self._buf):
-                _ = self._buf.split_to(len(self._buf))
-
-            ctx.feed_in(msg)
-            return
-
-        # If we've already parsed the request head, we are in "body passthrough" mode: forward bytes-like directly
-        # downstream without further head parsing.
-        if self._passthrough_body:
-            ctx.feed_in(msg)
-            return
-
-        if not ByteStreamBuffers.can_bytes(msg):
-            ctx.feed_in(msg)
-            return
-
-        for mv in ByteStreamBuffers.iter_segments(msg):
-            if mv:
-                self._buf.write(mv)
-
-        i = self._buf.find(b'\r\n\r\n')
-        if i < 0:
-            return
-
-        before = len(self._buf)
-        head_view = self._buf.split_to(i + 4)
-        after = len(self._buf)
-
-        if (bfc := ctx.bytes_flow_control) is not None:
-            bfc.on_consumed(self, before - after)
-
-        req = self._parse_head(ByteStreamBuffers.any_to_bytes(head_view))
-        ctx.feed_in(req)
-
-        # Switch into body passthrough mode after emitting the head.
-        self._passthrough_body = True
-
-        # Forward any remainder bytes that were read alongside the head (body bytes).
-        if len(self._buf):
-            rem = len(self._buf)
-            rem_view = self._buf.split_to(rem)
-
-            ctx.feed_in(rem_view)
-
-    def _parse_head(self, raw: bytes) -> PipelineHttpRequestHead:
-        parsed = parse_http_message(raw, mode=HttpParser.Mode.REQUEST)
+    def _build_head(self, parsed: ParsedHttpMessage) -> PipelineHttpRequestHead:
         line = check.not_none(parsed.request_line)
 
         return PipelineHttpRequestHead(
