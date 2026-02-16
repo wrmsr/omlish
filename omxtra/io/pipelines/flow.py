@@ -123,7 +123,7 @@ class FlowControlChannelPipelineHandler(ChannelPipelineFlowControl, ChannelPipel
 
     #
 
-    def handler_added(self, ctx: ChannelPipelineHandlerContext) -> None:
+    def added(self, ctx: ChannelPipelineHandlerContext) -> None:
         try:
             self._channel  # noqa
         except AttributeError:

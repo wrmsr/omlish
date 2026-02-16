@@ -121,7 +121,7 @@ class BytesFlowControlAsyncioStreamChannelPipelineDriver(AsyncioStreamChannelPip
 
         self._backpressure_sleep = backpressure_sleep
 
-        self._flow = check.not_none(self._channel.pipeline.get_handler(BytesChannelPipelineFlowControl))  # type: ignore[type-abstract]  # noqa
+        self._flow = check.not_none(self._channel.pipeline.find_handler(BytesChannelPipelineFlowControl))  # type: ignore[type-abstract]  # noqa
 
     async def _gate_inbound(self) -> None:
         while not self._flow.want_read():
