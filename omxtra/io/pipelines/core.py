@@ -149,7 +149,7 @@ class ChannelPipelineHandlerContext:
 
     @property
     def bytes_flow_control(self) -> ta.Optional[BytesChannelPipelineFlowControl]:
-        return self._pipeline.find_handler(BytesChannelPipelineFlowControl)  # type: ignore[type-abstract]
+        return self._pipeline._caches().find_handler(BytesChannelPipelineFlowControl)  # type: ignore[type-abstract]  # noqa
 
 
 class ChannelPipelineHandler(Abstract):
@@ -197,38 +197,8 @@ class ChannelPipeline:
 
         self._contexts: ta.Dict[ChannelPipelineHandler, ChannelPipelineHandlerContext] = {}
 
-        # State to be cleared on handler chain modification
-        self._single_handlers_by_type_cache: ta.Dict[type, ta.Optional[ta.Any]] = {}
-        self._handlers_by_type_cache: ta.Dict[type, ta.Sequence[ta.Any]] = {}
-
         for h in handlers:
             self.add_innermost(h)
-
-    #
-
-    def _clear_handler_caches(self) -> None:
-        self._single_handlers_by_type_cache.clear()
-        self._handlers_by_type_cache.clear()
-
-    #
-
-    def find_handler(self, ty: ta.Type[T]) -> ta.Optional[T]:
-        try:
-            return self._single_handlers_by_type_cache[ty]
-        except KeyError:
-            pass
-
-        self._single_handlers_by_type_cache[ty] = ret = check.opt_single(self.find_handlers(ty))
-        return ret
-
-    def find_handlers(self, ty: ta.Type[T]) -> ta.Sequence[T]:
-        try:
-            return self._handlers_by_type_cache[ty]
-        except KeyError:
-            pass
-
-        self._handlers_by_type_cache[ty] = ret = [h for h in self._contexts if isinstance(h, ty)]
-        return ret
 
     #
 
@@ -279,9 +249,29 @@ class ChannelPipeline:
             prv._next_in = ctx  # noqa
             outer_to._next_out = ctx  # noqa
 
-        self._clear_handler_caches()
+        self._clear_caches()
 
         handler.added(ctx)
+
+    def _remove(self, handler: ChannelPipelineHandler) -> None:
+        ctx = self._contexts[handler]
+
+        check.is_not(ctx, self._innermost)
+        check.is_not(ctx, self._outermost)
+
+        if (sched := self._channel._scheduler) is not None:  # noqa
+            sched.cancel_all(handler)
+
+        ctx.handler.removing(ctx)
+
+        del self._contexts[handler]
+
+        ctx._next_in._next_out = ctx._next_out  # noqa
+        ctx._next_out._next_in = ctx._next_in  # noqa
+
+        self._clear_caches()
+
+    #
 
     def add_innermost(self, handler: ChannelPipelineHandler) -> None:
         self._add(handler, outer_to=self._innermost)
@@ -298,6 +288,56 @@ class ChannelPipeline:
     class _Innermost(ChannelPipelineHandler):
         def inbound(self, ctx: 'ChannelPipelineHandlerContext', msg: ta.Any) -> None:
             ctx.emit_out(msg)
+
+    #
+
+    class _Caches:
+        def __init__(self, p: 'ChannelPipeline') -> None:
+            self._p = p
+
+            # State to be cleared on handler chain modification
+            self._single_handlers_by_type_cache: ta.Dict[type, ta.Optional[ta.Any]] = {}
+            self._handlers_by_type_cache: ta.Dict[type, ta.Sequence[ta.Any]] = {}
+
+        def find_handler(self, ty: ta.Type[T]) -> ta.Optional[T]:
+            try:
+                return self._single_handlers_by_type_cache[ty]
+            except KeyError:
+                pass
+
+            self._single_handlers_by_type_cache[ty] = ret = check.opt_single(self.find_handlers(ty))
+            return ret
+
+        def find_handlers(self, ty: ta.Type[T]) -> ta.Sequence[T]:
+            try:
+                return self._handlers_by_type_cache[ty]
+            except KeyError:
+                pass
+
+            self._handlers_by_type_cache[ty] = ret = [h for h in self._p._contexts if isinstance(h, ty)]  # noqa
+            return ret
+
+    __caches: _Caches
+
+    def _caches(self) -> _Caches:
+        try:
+            return self.__caches
+        except AttributeError:
+            pass
+        self.__caches = caches = ChannelPipeline._Caches(self)
+        return caches
+
+    def _clear_caches(self) -> None:
+        try:
+            del self.__caches
+        except AttributeError:
+            pass
+
+    def find_handler(self, ty: ta.Type[T]) -> ta.Optional[T]:
+        return self._caches().find_handler(ty)
+
+    def find_handlers(self, ty: ta.Type[T]) -> ta.Sequence[T]:
+        return self._caches().find_handlers(ty)
 
 
 ##
