@@ -3,8 +3,6 @@
 import asyncio
 import typing as ta
 
-from omlish.http.headers import HttpHeaders
-from omlish.http.versions import HttpVersion
 from omlish.io.streams.utils import ByteStreamBuffers
 
 from ....asyncio import AsyncioStreamChannelPipelineDriver
@@ -15,7 +13,6 @@ from ....core import PipelineChannel
 from ...client.requests import PipelineHttpRequestEncoder
 from ...client.responses import PipelineHttpResponseDecoder
 from ...requests import FullPipelineHttpRequest
-from ...requests import PipelineHttpRequestHead
 from ...responses import PipelineHttpResponseHead
 
 
@@ -125,18 +122,12 @@ async def fetch_url(url: str = 'http://example.com/') -> None:
         channel = build_http_client_channel()
 
         # Send request
-        request = FullPipelineHttpRequest(
-            head=PipelineHttpRequestHead(
-                method='GET',
-                target=path,
-                version=HttpVersion(1, 1),
-                headers=HttpHeaders([
-                    ('Host', host),
-                    ('User-Agent', 'omlish-http-client/0.1'),
-                    ('Connection', 'close'),
-                ]),
-            ),
-            body=b'',
+        request = FullPipelineHttpRequest.simple(
+            host,
+            path,
+            headers={
+                'User-Agent': 'omlish-http-client/0.1',
+            },
         )
         channel.feed_out(request)
 
