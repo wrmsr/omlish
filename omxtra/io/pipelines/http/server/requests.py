@@ -94,7 +94,7 @@ class PipelineHttpRequestBodyAggregator(ChannelPipelineHandler):
             self,
             *,
             max_body: ta.Optional[int] = 0x100000,
-            chunk_size: int = 0x10000,
+            buffer_chunk_size: int = 0x10000,
     ) -> None:
         super().__init__()
 
@@ -104,7 +104,7 @@ class PipelineHttpRequestBodyAggregator(ChannelPipelineHandler):
         self._want = 0
         self._buf = SegmentedByteStreamBuffer(
             max_bytes=self._max_body,
-            chunk_size=chunk_size,
+            chunk_size=buffer_chunk_size,
         )
 
     # @ta.override
@@ -193,6 +193,11 @@ class PipelineHttpRequestBodyAggregator(ChannelPipelineHandler):
 ##
 
 
+# class PipelineHttpRequestBodyStreamDecoder2(ChannelPipelineHandler):
+#     PipelineHttpContentChunkDecoder
+#     pass
+
+
 _PipelineHttpRequestBodyStreamDecoderMode = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typing-no-move
     'none',
     'cl',
@@ -222,16 +227,16 @@ class PipelineHttpRequestBodyStreamDecoder(ChannelPipelineHandler):
             self,
             *,
             max_chunk: int = 0x100000,
-            max_buf: ta.Optional[int] = 0x400000,
-            chunk_size: int = 0x10000,
+            max_buffer: ta.Optional[int] = 0x400000,
+            buffer_chunk_size: int = 0x10000,
     ) -> None:
         super().__init__()
 
         self._max_chunk = max_chunk
 
         self._buf = SegmentedByteStreamBuffer(
-            max_bytes=max_buf,
-            chunk_size=chunk_size,
+            max_bytes=max_buffer,
+            chunk_size=buffer_chunk_size,
         )
 
         self._head: ta.Optional[PipelineHttpRequestHead] = None

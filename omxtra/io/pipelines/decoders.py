@@ -51,8 +51,8 @@ class DelimiterFramePipelineDecoder(ChannelPipelineHandler):  # HasChannelPipeli
             *,
             keep_ends: bool = False,
             max_size: ta.Optional[int] = None,
-            max_buffer_bytes: ta.Optional[int] = None,
-            chunk_size: int = 0x10000,
+            max_buffer: ta.Optional[int] = None,
+            buffer_chunk_size: int = 0x10000,
             on_incomplete_final: ta.Literal['allow', 'raise'] = 'allow',
     ) -> None:
         super().__init__()
@@ -60,8 +60,8 @@ class DelimiterFramePipelineDecoder(ChannelPipelineHandler):  # HasChannelPipeli
         self._on_incomplete_final = on_incomplete_final
 
         self._buf = ScanningByteStreamBuffer(SegmentedByteStreamBuffer(
-            max_bytes=max_buffer_bytes,
-            chunk_size=chunk_size,
+            max_bytes=max_buffer,
+            chunk_size=buffer_chunk_size,
         ))
 
         self._fr = LongestMatchDelimiterByteStreamFrameDecoder(

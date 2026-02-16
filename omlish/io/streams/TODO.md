@@ -1,1 +1,2 @@
 - `import bisect` find/rfind initial segment index, `key=len`
+- cext lol

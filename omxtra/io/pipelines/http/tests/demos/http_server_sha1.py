@@ -108,7 +108,7 @@ def build_http_sha1_channel(
         max_head: int = 64 << 10,
 
         max_chunk: int = 1 << 20,
-        max_body_buf: ta.Optional[int] = 1 << 22,
+        max_body_buffer: ta.Optional[int] = 1 << 22,
 ) -> PipelineChannel:
     return PipelineChannel([
 
@@ -125,7 +125,7 @@ def build_http_sha1_channel(
 
         PipelineHttpRequestBodyStreamDecoder(
             max_chunk=max_chunk,
-            max_buf=max_body_buf,
+            max_buffer=max_body_buffer,
         ),
 
         Sha1Handler(),
