@@ -295,9 +295,15 @@ class ChannelPipeline:
         def __init__(self, p: 'ChannelPipeline') -> None:
             self._p = p
 
-            # State to be cleared on handler chain modification
             self._single_handlers_by_type_cache: ta.Dict[type, ta.Optional[ta.Any]] = {}
             self._handlers_by_type_cache: ta.Dict[type, ta.Sequence[ta.Any]] = {}
+
+        def handlers(self) -> ta.Sequence[ChannelPipelineHandler]:
+            lst: ta.List[ChannelPipelineHandler] = []
+            ctx = self._p._outermost  # noqa
+            while (ctx := ctx._next_in) is not self._p._innermost:  # noqa
+                lst.append(ctx._handler)  # noqa
+            return lst
 
         def find_handler(self, ty: ta.Type[T]) -> ta.Optional[T]:
             try:
@@ -332,6 +338,9 @@ class ChannelPipeline:
             del self.__caches
         except AttributeError:
             pass
+
+    def handlers(self) -> ta.Sequence[ChannelPipelineHandler]:
+        return self._caches().handlers()
 
     def find_handler(self, ty: ta.Type[T]) -> ta.Optional[T]:
         return self._caches().find_handler(ty)
