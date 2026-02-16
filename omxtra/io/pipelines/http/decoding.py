@@ -6,6 +6,7 @@ import typing as ta
 from omlish.http.parsing import HttpParser
 from omlish.http.parsing import ParsedHttpMessage
 from omlish.http.parsing import parse_http_message
+from omlish.io.streams.scanning import ScanningByteStreamBuffer
 from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.lite.abstract import Abstract
@@ -44,10 +45,10 @@ class PipelineHttpHeadDecoder(ChannelPipelineHandler, Abstract):
 
         self._max_head = max_head
 
-        self._buf = SegmentedByteStreamBuffer(
+        self._buf = ScanningByteStreamBuffer(SegmentedByteStreamBuffer(
             max_bytes=max_head,
             chunk_size=chunk_size,
-        )
+        ))
         self._head_parsed = False
 
     @abc.abstractmethod
@@ -154,10 +155,10 @@ class PipelineHttpChunkedDecoder(ChannelPipelineHandler, Abstract):
     ) -> None:
         super().__init__()
 
-        self._buf = SegmentedByteStreamBuffer(
+        self._buf = ScanningByteStreamBuffer(SegmentedByteStreamBuffer(
             max_bytes=max_chunk_header,
             chunk_size=chunk_size,
-        )
+        ))
         self._enabled = False
         self._chunk_remaining = 0
         self._state: PipelineHttpChunkedDecoderState = 'size'
