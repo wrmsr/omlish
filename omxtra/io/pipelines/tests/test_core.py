@@ -61,13 +61,13 @@ class TestCore(unittest.TestCase):
         ])
 
         ch.feed_in('hi')
-        assert ch.drain_out() == ['hi']
+        assert ch.drain() == ['hi']
 
         ch.feed_in(42)
-        assert ch.drain_out() == ['43']
+        assert ch.drain() == ['43']
 
         ch.feed_out('24')
-        assert ch.drain_out() == [24]
+        assert ch.drain() == [24]
 
         #
 
@@ -76,33 +76,33 @@ class TestCore(unittest.TestCase):
         )
 
         ch.feed_in(42)
-        assert ch.drain_out() == ['127']
+        assert ch.drain() == ['127']
 
         ch.feed_out('24')
-        assert ch.drain_out() == [24]
+        assert ch.drain() == [24]
 
         #
 
         ch.pipeline.remove(ch.pipeline.handlers()[1])
 
         ch.feed_in(42)
-        assert ch.drain_out() == ['126']
+        assert ch.drain() == ['126']
 
         ch.feed_out(24)
-        assert ch.drain_out() == [24]
+        assert ch.drain() == [24]
 
         #
 
         ch.pipeline.replace(ch.pipeline.handlers()[0], IntIncInboundHandler())
 
         ch.feed_in('hi')
-        assert ch.drain_out() == ['hi']
+        assert ch.drain() == ['hi']
 
         ch.feed_in(42)
-        assert ch.drain_out() == ['43']
+        assert ch.drain() == ['43']
 
         ch.feed_out('24')
-        assert ch.drain_out() == [24]
+        assert ch.drain() == [24]
 
     def test_replace_self(self):
         ch = PipelineChannel([
@@ -112,4 +112,4 @@ class TestCore(unittest.TestCase):
         ])
 
         ch.feed_in(42)
-        assert ch.drain_out() == ['43', '43']
+        assert ch.drain() == ['43', '43']

@@ -12,6 +12,7 @@ from .core import ChannelPipelineEvents
 from .core import ChannelPipelineFlowControl
 from .core import ChannelPipelineHandler
 from .core import ChannelPipelineHandlerContext
+from .core import ChannelPipelineMessages
 from .core import PipelineChannel
 from .errors import FlowControlValidationChannelPipelineError
 
@@ -134,7 +135,7 @@ class FlowControlChannelPipelineHandler(ChannelPipelineFlowControl, ChannelPipel
         self._channel = ctx.channel
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if self._validate and isinstance(msg, ChannelPipelineEvents.Close):
+        if self._validate and isinstance(msg, ChannelPipelineMessages.Close):
             if self._inflight != 0:
                 raise FlowControlValidationChannelPipelineError('inbound Close event with non-zero inflight count')
 
@@ -174,7 +175,7 @@ class FlowControlChannelPipelineHandler(ChannelPipelineFlowControl, ChannelPipel
                     return
 
                 elif pol == 'close':
-                    ctx.emit_out(ChannelPipelineEvents.Error(ChannelPipelineFlowCapacityExceededError()))
+                    ctx.emit(ChannelPipelineEvents.Error(ChannelPipelineFlowCapacityExceededError()))
                     ctx.channel.feed_close()
                     return
 

@@ -38,7 +38,7 @@ class KvStoreHandler(ChannelPipelineHandler):
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         if not isinstance(msg, FullPipelineHttpRequest):
-            ctx.feed_in(ctx)
+            ctx.feed_in(msg)
             return
 
         head = msg.head

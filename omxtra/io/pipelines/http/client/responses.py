@@ -9,9 +9,9 @@ from omlish.http.parsing import ParsedHttpMessage
 from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.lite.check import check
 
-from ...core import ChannelPipelineEvents
 from ...core import ChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
+from ...core import ChannelPipelineMessages
 from ..decoding import PipelineHttpChunkedDecoder
 from ..decoding import PipelineHttpHeadDecoder
 from ..responses import PipelineHttpResponseContentChunk
@@ -62,7 +62,7 @@ class PipelineHttpResponseConditionalGzipDecoder(ChannelPipelineHandler):
         self._z: ta.Optional[ta.Any] = None
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineEvents.Eof):
+        if isinstance(msg, ChannelPipelineMessages.Eof):
             if self._enabled and self._z is not None:
                 tail = self._z.flush()
                 if tail:

@@ -11,9 +11,9 @@ from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.lite.abstract import Abstract
 
-from ..core import ChannelPipelineEvents
 from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
+from ..core import ChannelPipelineMessages
 
 
 ##
@@ -64,7 +64,7 @@ class PipelineHttpHeadDecoder(ChannelPipelineHandler, Abstract):
         raise NotImplementedError
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineEvents.Eof):
+        if isinstance(msg, ChannelPipelineMessages.Eof):
             # EOF: if we have partial head buffered and haven't parsed head, that's an error.
             if not self._head_parsed and len(self._buf):
                 raise ValueError('EOF before HTTP head complete')
@@ -182,7 +182,7 @@ class PipelineHttpChunkedDecoder(ChannelPipelineHandler, Abstract):
         raise NotImplementedError
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineEvents.Eof):
+        if isinstance(msg, ChannelPipelineMessages.Eof):
             if self._enabled and self._state != 'done':
                 raise ValueError('EOF before chunked encoding complete')
             ctx.feed_in(msg)

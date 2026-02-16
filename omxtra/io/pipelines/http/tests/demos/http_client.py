@@ -6,9 +6,9 @@ import typing as ta
 from omlish.io.streams.utils import ByteStreamBuffers
 
 from ....asyncio import AsyncioStreamChannelPipelineDriver
-from ....core import ChannelPipelineEvents
 from ....core import ChannelPipelineHandler
 from ....core import ChannelPipelineHandlerContext
+from ....core import ChannelPipelineMessages
 from ....core import PipelineChannel
 from ...client.requests import PipelineHttpRequestEncoder
 from ...client.responses import PipelineHttpResponseChunkedDecoder
@@ -39,7 +39,7 @@ class HttpClientHandler(ChannelPipelineHandler):
             self._response_head = msg
             return
 
-        if isinstance(msg, ChannelPipelineEvents.Eof):
+        if isinstance(msg, ChannelPipelineMessages.Eof):
             self._print_response()
             ctx.feed_in(msg)
             return

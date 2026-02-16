@@ -7,9 +7,9 @@ from omlish.io.streams.scanning import ScanningByteStreamBuffer
 from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 from omlish.io.streams.utils import ByteStreamBuffers
 
-from .core import ChannelPipelineEvents
 from .core import ChannelPipelineHandler
 from .core import ChannelPipelineHandlerContext
+from .core import ChannelPipelineMessages
 from .errors import IncompleteDecodingChannelPipelineError
 
 
@@ -75,7 +75,7 @@ class DelimiterFramePipelineDecoder(ChannelPipelineHandler):  # HasChannelPipeli
     #     return len(self._buf)
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineEvents.Eof):
+        if isinstance(msg, ChannelPipelineMessages.Eof):
             self._produce_frames(ctx, final=True)
             ctx.feed_in(msg)
             return

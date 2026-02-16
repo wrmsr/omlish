@@ -34,7 +34,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         )
 
         channel.feed_out(response)
-        out = channel.drain_out()
+        out = channel.drain()
 
         self.assertEqual(len(out), 1)
         encoded = out[0]
@@ -69,7 +69,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         )
 
         channel.feed_out(response)
-        out = channel.drain_out()
+        out = channel.drain()
 
         self.assertEqual(len(out), 1)
         encoded = out[0]
@@ -103,7 +103,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         )
 
         channel.feed_out(response)
-        out = channel.drain_out()
+        out = channel.drain()
 
         self.assertEqual(len(out), 1)
         encoded = out[0]
@@ -139,7 +139,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         )
 
         channel.feed_out(response)
-        out = channel.drain_out()
+        out = channel.drain()
 
         self.assertEqual(len(out), 1)
         encoded = out[0]
@@ -176,7 +176,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         )
 
         channel.feed_out(response)
-        out = channel.drain_out()
+        out = channel.drain()
 
         self.assertEqual(len(out), 1)
         encoded = out[0]
@@ -205,7 +205,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         )
 
         channel.feed_out(response)
-        out = channel.drain_out()
+        out = channel.drain()
 
         self.assertEqual(len(out), 1)
         encoded = out[0]
@@ -235,7 +235,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         )
 
         channel.feed_out(response)
-        out = channel.drain_out()
+        out = channel.drain()
 
         self.assertEqual(len(out), 1)
         encoded = out[0]
@@ -258,7 +258,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         channel.feed_out('string message')
         channel.feed_out(42)
 
-        out = channel.drain_out()
+        out = channel.drain()
 
         self.assertEqual(len(out), 3)
         self.assertEqual(out[0], b'raw bytes')
@@ -288,7 +288,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         # Send non-response
         channel.feed_out(b'other data')
 
-        out = channel.drain_out()
+        out = channel.drain()
 
         self.assertEqual(len(out), 2)
 
@@ -318,7 +318,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         )
 
         channel.feed_out(response)
-        out = channel.drain_out()
+        out = channel.drain()
 
         self.assertEqual(len(out), 1)
         encoded = out[0]
@@ -352,7 +352,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         )
 
         channel.feed_out(response)
-        out = channel.drain_out()
+        out = channel.drain()
 
         self.assertEqual(len(out), 1)
         encoded = out[0]
@@ -393,7 +393,7 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
         # Send end
         channel.feed_out(PipelineHttpResponseEnd())
 
-        out = channel.drain_out()
+        out = channel.drain()
 
         # Should get: head bytes, chunk1, chunk2
         self.assertEqual(len(out), 3)
@@ -433,7 +433,7 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
         # Send end
         channel.feed_out(PipelineHttpResponseEnd())
 
-        out = channel.drain_out()
+        out = channel.drain()
 
         # Should get: head, chunk1 (size+data+crlf), chunk2 (size+data+crlf), terminator
         self.assertEqual(len(out), 8)
@@ -474,7 +474,7 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
         channel.feed_out(PipelineHttpResponseContentChunk(b'data'))
         channel.feed_out(PipelineHttpResponseEnd())
 
-        out = channel.drain_out()
+        out = channel.drain()
 
         # Last message should be the terminator
         self.assertEqual(out[-1], b'0\r\n\r\n')
@@ -499,7 +499,7 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
         channel.feed_out(PipelineHttpResponseContentChunk(b''))  # Empty - should be ignored
         channel.feed_out(PipelineHttpResponseEnd())
 
-        out = channel.drain_out()
+        out = channel.drain()
 
         # Should only get head + 1 chunk
         self.assertEqual(len(out), 2)
@@ -536,7 +536,7 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
         channel.feed_out(PipelineHttpResponseContentChunk(b'second'))
         channel.feed_out(PipelineHttpResponseEnd())
 
-        out = channel.drain_out()
+        out = channel.drain()
 
         # Verify first response was chunked
         self.assertIn(b'5\r\n', out)
@@ -566,7 +566,7 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
         channel.feed_out(PipelineHttpResponseContentChunk(data))
         channel.feed_out(PipelineHttpResponseEnd())
 
-        out = channel.drain_out()
+        out = channel.drain()
 
         # Check hex size is correct
         self.assertIn(b'100\r\n', out)  # 256 = 0x100

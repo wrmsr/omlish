@@ -34,7 +34,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         )
 
         channel.feed_out(request)
-        out = channel.drain_out()
+        out = channel.drain()
 
         self.assertEqual(len(out), 1)
         encoded = out[0]
@@ -71,7 +71,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         )
 
         channel.feed_out(request)
-        out = channel.drain_out()
+        out = channel.drain()
 
         self.assertEqual(len(out), 1)
         encoded = out[0]
@@ -110,7 +110,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         )
 
         channel.feed_out(request)
-        out = channel.drain_out()
+        out = channel.drain()
 
         self.assertEqual(len(out), 1)
         encoded = out[0]
@@ -145,7 +145,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         )
 
         channel.feed_out(request)
-        out = channel.drain_out()
+        out = channel.drain()
 
         self.assertEqual(len(out), 1)
         encoded = out[0]
@@ -177,7 +177,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         )
 
         channel.feed_out(request)
-        out = channel.drain_out()
+        out = channel.drain()
 
         self.assertEqual(len(out), 1)
         encoded = out[0]
@@ -213,7 +213,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         )
 
         channel.feed_out(request)
-        out = channel.drain_out()
+        out = channel.drain()
 
         self.assertEqual(len(out), 1)
         encoded = out[0]
@@ -249,7 +249,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         )
 
         channel.feed_out(request)
-        out = channel.drain_out()
+        out = channel.drain()
 
         self.assertEqual(len(out), 1)
         encoded = out[0]
@@ -288,7 +288,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         # Send end
         channel.feed_out(PipelineHttpRequestEnd())
 
-        out = channel.drain_out()
+        out = channel.drain()
 
         # Should get: head, then 3 data chunks, then nothing (end consumed)
         self.assertEqual(len(out), 4)
@@ -332,7 +332,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         # Send end
         channel.feed_out(PipelineHttpRequestEnd())
 
-        out = channel.drain_out()
+        out = channel.drain()
 
         # Should get: head, chunked data, terminator
         self.assertEqual(len(out), 8)
@@ -383,7 +383,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
 
         channel.feed_out(PipelineHttpRequestEnd())
 
-        out = channel.drain_out()
+        out = channel.drain()
 
         # Head + single data chunk
         self.assertEqual(len(out), 2)
@@ -422,7 +422,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         )
         channel.feed_out(req2)
 
-        out = channel.drain_out()
+        out = channel.drain()
 
         self.assertEqual(len(out), 2)
 
@@ -456,6 +456,6 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         msg = UnknownMessage()
         channel.feed_out(msg)
 
-        out = channel.drain_out()
+        out = channel.drain()
         self.assertEqual(len(out), 1)
         self.assertIs(out[0], msg)

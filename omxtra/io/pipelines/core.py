@@ -5,9 +5,8 @@ TODO:
  - re-add BytesChannelPipelineFlowControl unique check (without thrashing cache)?
  - 'optional' / 'advisory' event abstract base class? if any non-this isn't 'handled' by some 'driver', raise
    - need to catch stray bytes falling out
- - 'mandatory' event abstract base class? when fed in either direction add to identity map, must see on next drain or
-   something failed to propagate
-   - nothing should fail to propagate 'Eof' / 'Close'
+ - 'MustPropagate' message abstract - nothing should swallow Eof/Close
+   - when/where to enforce?
 """
 import abc
 import collections
@@ -17,6 +16,10 @@ import typing as ta
 from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 
+from .errors import ClosedChannelPipelineError
+from .errors import MessageNotPropagatedChannelPipelineError
+from .errors import SawEofChannelPipelineError
+
 
 T = ta.TypeVar('T')
 
@@ -24,19 +27,46 @@ T = ta.TypeVar('T')
 ##
 
 
-class ChannelPipelineEvents:
+class ChannelPipelineMessages:
+    """Standard messages sent through a channel pipeline."""
+
     def __new__(cls, *args, **kwargs):  # noqa
         raise TypeError
 
+    #
+
+    class NeverInbound(Abstract):
+        pass
+
+    class NeverOutbound(Abstract):
+        pass
+
+    class MustPropagate(Abstract):
+        """These must be propagated all the way through the pipeline when sent in either direction."""
+
+    #
+
     @ta.final
     @dc.dataclass(frozen=True)
-    class Eof:
+    class Eof(NeverOutbound, MustPropagate):
         """Signals that the inbound byte stream reached EOF."""
 
     @ta.final
     @dc.dataclass(frozen=True)
-    class Close:
+    class Close(NeverInbound, MustPropagate):
         """Requests that the channel/pipeline close."""
+
+
+##
+
+
+class ChannelPipelineEvents:
+    """Standard events emitted from a channel pipeline."""
+
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
+
+    #
 
     @ta.final
     @dc.dataclass(frozen=True)
@@ -149,20 +179,34 @@ class ChannelPipelineHandlerContext:
 
     #
 
+    def _inbound(self, msg: ta.Any) -> None:
+        check.state(not self._invalidated)
+        check.not_isinstance(msg, ChannelPipelineMessages.NeverInbound)
+
+        self._handler.inbound(self, msg)
+
+    def _outbound(self, msg: ta.Any) -> None:
+        check.state(not self._invalidated)
+        check.not_isinstance(msg, ChannelPipelineMessages.NeverOutbound)
+
+        self._handler.outbound(self, msg)
+
+    #
+
     def feed_in(self, msg: ta.Any) -> None:
         nxt = self._next_in
         while not nxt._handles_inbound:  # noqa
             nxt = nxt._next_in  # noqa
-        nxt._handler.inbound(nxt, msg)  # noqa
+        nxt._inbound(msg)  # noqa
 
     def feed_out(self, msg: ta.Any) -> None:
         nxt = self._next_out  # noqa
         while not nxt._handles_outbound:  # noqa
             nxt = nxt._next_out  # noqa
-        nxt._handler.outbound(nxt, msg)  # noqa
+        nxt._outbound(msg)  # noqa
 
-    def emit_out(self, msg: ta.Any) -> None:
-        self._pipeline._channel.emit_out(msg)  # noqa
+    def emit(self, msg: ta.Any) -> None:
+        self._pipeline._channel.emit(msg)  # noqa
 
     #
 
@@ -229,11 +273,11 @@ class ChannelPipeline:
 
     def feed_in_to(self, handler: ChannelPipelineHandler, msg: ta.Any) -> None:
         ctx = self._contexts[handler]
-        ctx._handler.inbound(ctx, msg)  # noqa
+        ctx._inbound(msg)  # noqa
 
     def feed_out_to(self, handler: ChannelPipelineHandler, msg: ta.Any) -> None:
         ctx = self._contexts[handler]
-        ctx._handler.outbound(ctx, msg)  # noqa
+        ctx._outbound(msg)  # noqa
 
     #
 
@@ -335,18 +379,40 @@ class ChannelPipeline:
     #
 
     class _Outermost(ChannelPipelineHandler):
-        def __repr__(self) -> str:
-            return f'{type(self).__name__}()'
+        """'Head' in netty terms."""
 
-        def outbound(self, ctx: 'ChannelPipelineHandlerContext', msg: ta.Any) -> None:
-            ctx.emit_out(msg)
-
-    class _Innermost(ChannelPipelineHandler):
         def __repr__(self) -> str:
             return f'{type(self).__name__}()'
 
         def inbound(self, ctx: 'ChannelPipelineHandlerContext', msg: ta.Any) -> None:
-            ctx.emit_out(msg)
+            if isinstance(msg, ChannelPipelineMessages.MustPropagate):
+                ctx._pipeline._channel._add_must_propagate('inbound', msg)  # noqa
+
+            ctx.feed_in(msg)
+
+        def outbound(self, ctx: 'ChannelPipelineHandlerContext', msg: ta.Any) -> None:
+            if isinstance(msg, ChannelPipelineMessages.MustPropagate):
+                ctx._pipeline._channel._remove_must_propagate('outbound', msg)  # noqa
+
+            ctx.emit(msg)
+
+    class _Innermost(ChannelPipelineHandler):
+        """'Tail' in netty terms."""
+
+        def __repr__(self) -> str:
+            return f'{type(self).__name__}()'
+
+        def inbound(self, ctx: 'ChannelPipelineHandlerContext', msg: ta.Any) -> None:
+            if isinstance(msg, ChannelPipelineMessages.MustPropagate):
+                ctx._pipeline._channel._remove_must_propagate('inbound', msg)  # noqa
+
+            ctx.emit(msg)
+
+        def outbound(self, ctx: 'ChannelPipelineHandlerContext', msg: ta.Any) -> None:
+            if isinstance(msg, ChannelPipelineMessages.MustPropagate):
+                ctx._pipeline._channel._add_must_propagate('outbound', msg)  # noqa
+
+            ctx.feed_out(msg)
 
     #
 
@@ -450,12 +516,15 @@ class PipelineChannel:
 
         self._scheduler: ta.Final[ta.Optional[ChannelPipelineScheduler]] = scheduler
 
-        self._out_q: ta.Final[collections.deque[ta.Any]] = collections.deque()
+        self._emitted_q: ta.Final[collections.deque[ta.Any]] = collections.deque()
 
         self._saw_close = False
         self._saw_eof = False
 
         self._pipeline: ta.Final[ChannelPipeline] = ChannelPipeline(self, handlers)  # final
+
+        self._pending_inbound_must_propagate: ta.Final[ta.Dict[int, ta.Any]] = {}
+        self._pending_outbound_must_propagate: ta.Final[ta.Dict[int, ta.Any]] = {}
 
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}()'
@@ -481,18 +550,14 @@ class PipelineChannel:
     #
 
     def _feed_in(self, msg: ta.Any) -> None:
-        if self._saw_close or self._saw_eof:
-            return
-
-        if isinstance(msg, ChannelPipelineEvents.Eof):
+        if isinstance(msg, ChannelPipelineMessages.Eof):
             self._saw_eof = True
-
-        if isinstance(msg, ChannelPipelineEvents.Close):
-            self._saw_close = True
+        elif self._saw_eof:
+            raise SawEofChannelPipelineError
 
         ctx = self._pipeline._outermost  # noqa
         try:
-            ctx._handler.inbound(ctx, msg)  # noqa
+            ctx._inbound(msg)  # noqa
         except BaseException as e:  # noqa
             self.handle_error(e)
 
@@ -500,48 +565,100 @@ class PipelineChannel:
         self._feed_in(msg)
 
     def feed_eof(self) -> None:
-        if self._saw_close or self._saw_eof:
-            return
-
-        self._feed_in(ChannelPipelineEvents.Eof())
-
-    def feed_close(self) -> None:
-        if self._saw_close:
-            return
-
-        self._feed_in(ChannelPipelineEvents.Close())
+        self._feed_in(ChannelPipelineMessages.Eof())
 
     #
 
-    def feed_out(self, msg: ta.Any) -> None:
+    def _feed_out(self, msg: ta.Any) -> None:
+        if isinstance(msg, ChannelPipelineMessages.Close):
+            self._saw_close = True
+        elif self._saw_close:
+            raise ClosedChannelPipelineError
+
         ctx = self._pipeline._innermost  # noqa
         try:
-            ctx._handler.outbound(ctx, msg)  # noqa
+            ctx._outbound(msg)  # noqa
         except BaseException as e:  # noqa
             self.handle_error(e)
 
+    def feed_out(self, msg: ta.Any) -> None:
+        self._feed_out(msg)
+
+    def feed_close(self) -> None:
+        self._feed_out(ChannelPipelineMessages.Close())
+
     #
 
-    def emit_out(self, msg: ta.Any) -> None:
-        self._out_q.append(msg)
+    def emit(self, msg: ta.Any) -> None:
+        self._emitted_q.append(msg)
 
-    def poll_out(self) -> ta.Optional[ta.Any]:
-        if not self._out_q:
+    def poll(self) -> ta.Optional[ta.Any]:
+        if not self._emitted_q:
             return None
 
-        return self._out_q.popleft()
+        return self._emitted_q.popleft()
 
-    def drain_out(self) -> ta.List[ta.Any]:
+    def drain(self) -> ta.List[ta.Any]:
         out: ta.List[ta.Any] = []
 
-        while self._out_q:
-            out.append(self._out_q.popleft())
+        while self._emitted_q:
+            out.append(self._emitted_q.popleft())
 
         return out
 
     #
 
     def handle_error(self, e: BaseException) -> None:
-        self.emit_out(ChannelPipelineEvents.Error(e))
+        self.emit(ChannelPipelineEvents.Error(e))
 
         self.feed_close()
+
+    #
+
+    def _get_must_propagate_dct(self, d: ta.Literal['inbound', 'outbound']) -> ta.Dict[int, ta.Any]:
+        if d == 'inbound':
+            return self._pending_inbound_must_propagate
+        elif d == 'outbound':
+            return self._pending_outbound_must_propagate
+        else:
+            raise ValueError(d)
+
+    def _add_must_propagate(
+            self,
+            d: ta.Literal['inbound', 'outbound'],
+            msg: ChannelPipelineMessages.MustPropagate,
+    ) -> None:
+        dct = self._get_must_propagate_dct(d)
+
+        i = id(msg)
+        try:
+            x = dct[i]
+        except KeyError:
+            pass
+        else:
+            check.is_(msg, x)
+            return
+        dct[i] = msg
+
+    def _remove_must_propagate(
+            self,
+            d: ta.Literal['inbound', 'outbound'],
+            msg: ChannelPipelineMessages.MustPropagate,
+    ) -> None:
+        dct = self._get_must_propagate_dct(d)
+
+        i = id(msg)
+        try:
+            x = dct.pop(i)
+        except KeyError:
+            raise MessageNotPropagatedChannelPipelineError([msg]) from None
+        if x is not msg:
+            raise MessageNotPropagatedChannelPipelineError([msg])
+
+    def check_propagated(self) -> None:
+        lst: ta.List[ta.Any] = [
+            *self._pending_inbound_must_propagate.values(),
+            *self._pending_outbound_must_propagate.values(),
+        ]
+        if lst:
+            raise MessageNotPropagatedChannelPipelineError(lst)

@@ -10,9 +10,9 @@ from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.lite.check import check
 
-from ...core import ChannelPipelineEvents
 from ...core import ChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
+from ...core import ChannelPipelineMessages
 from ..decoding import PipelineHttpChunkedDecoder
 from ..decoding import PipelineHttpHeadDecoder
 from ..requests import FullPipelineHttpRequest
@@ -91,7 +91,7 @@ class PipelineHttpRequestBodyAggregator(ChannelPipelineHandler):
     #     return len(self._buf)
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineEvents.Eof):
+        if isinstance(msg, ChannelPipelineMessages.Eof):
             # If we were expecting body bytes, that's a protocol error.
             if self._cur_head is not None and self._want and len(self._buf) < self._want:
                 raise ValueError('EOF before HTTP request body complete')
@@ -226,7 +226,7 @@ class PipelineHttpRequestBodyStreamDecoder(ChannelPipelineHandler):
     #     return len(self._buf)
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineEvents.Eof):
+        if isinstance(msg, ChannelPipelineMessages.Eof):
             # EOF: if we're in eof-mode, this terminates body; otherwise abort if incomplete.
             if self._head is None:
                 ctx.feed_in(msg)

@@ -6,6 +6,7 @@ from omlish.http.headers import HttpHeaders
 from omlish.http.versions import HttpVersion
 
 from ....core import ChannelPipelineEvents
+from ....core import ChannelPipelineMessages
 from ....core import PipelineChannel
 from ...responses import PipelineHttpResponseContentChunk
 from ...responses import PipelineHttpResponseEnd
@@ -34,7 +35,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         # Send chunked body: 5\r\nhello\r\n5\r\nworld\r\n0\r\n\r\n
         channel.feed_in(b'5\r\nhello\r\n5\r\nworld\r\n0\r\n\r\n')
 
-        out = channel.drain_out()
+        out = channel.drain()
 
         # Should get: head, chunk1 data, chunk2 data, end marker
         self.assertEqual(len(out), 4)
@@ -73,7 +74,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         # Send final chunk
         channel.feed_in(b'0\r\n\r\n')
 
-        out = channel.drain_out()
+        out = channel.drain()
 
         # Should get: head, chunk data, end marker
         self.assertEqual(len(out), 3)
@@ -101,7 +102,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         # Send body (not chunked)
         channel.feed_in(b'hello')
 
-        out = channel.drain_out()
+        out = channel.drain()
 
         # Should pass through unchanged
         self.assertEqual(len(out), 2)
@@ -127,7 +128,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         # Single chunk then terminator
         channel.feed_in(b'5\r\nhello\r\n0\r\n\r\n')
 
-        out = channel.drain_out()
+        out = channel.drain()
 
         self.assertEqual(len(out), 3)
         self.assertIs(out[0], head)
@@ -158,7 +159,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
 
         channel.feed_in(chunk_size + data + b'\r\n0\r\n\r\n')
 
-        out = channel.drain_out()
+        out = channel.drain()
 
         self.assertEqual(len(out), 3)
         self.assertIsInstance(out[1], PipelineHttpResponseContentChunk)
@@ -189,7 +190,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
             b'0\r\n\r\n',
         )
 
-        out = channel.drain_out()
+        out = channel.drain()
 
         self.assertEqual(len(out), 5)  # head + 3 chunks + end
         self.assertIsInstance(out[1], PipelineHttpResponseContentChunk)
@@ -220,9 +221,9 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         channel.feed_in(b'5\r\nhel')
 
         # Send EOF before completion - pipeline wraps exception in Error event
-        channel.feed_in(ChannelPipelineEvents.Eof())
+        channel.feed_in(ChannelPipelineMessages.Eof())
 
-        out = channel.drain_out()
+        out = channel.drain()
 
         # Should get head and Error event
         self.assertIs(out[0], head)
@@ -248,7 +249,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         # Send invalid chunk size - pipeline wraps exception in Error event
         channel.feed_in(b'xyz\r\n')
 
-        out = channel.drain_out()
+        out = channel.drain()
 
         # Should get head and Error event
         self.assertIs(out[0], head)
@@ -274,7 +275,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         # Send chunk with missing trailing \r\n - pipeline wraps exception in Error event
         channel.feed_in(b'5\r\nhelloXX')
 
-        out = channel.drain_out()
+        out = channel.drain()
 
         # Should get head and Error event
         self.assertIs(out[0], head)
@@ -300,7 +301,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         # Use uppercase hex
         channel.feed_in(b'A\r\n' + b'x' * 10 + b'\r\n0\r\n\r\n')
 
-        out = channel.drain_out()
+        out = channel.drain()
 
         self.assertEqual(len(out), 3)
         self.assertIsInstance(out[1], PipelineHttpResponseContentChunk)
@@ -334,7 +335,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
 
         channel.feed_in(encoded)
 
-        out = channel.drain_out()
+        out = channel.drain()
 
         # head + 5 chunks + end
         self.assertEqual(len(out), 7)
@@ -363,10 +364,10 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         channel.feed_in(head)
 
         channel.feed_in(b'5\r\nhello\r\n0\r\n\r\n')
-        channel.feed_in(ChannelPipelineEvents.Eof())
+        channel.feed_in(ChannelPipelineMessages.Eof())
 
-        out = channel.drain_out()
+        out = channel.drain()
 
         # Should complete without error
         self.assertEqual(len(out), 4)
-        self.assertIsInstance(out[3], ChannelPipelineEvents.Eof)
+        self.assertIsInstance(out[3], ChannelPipelineMessages.Eof)

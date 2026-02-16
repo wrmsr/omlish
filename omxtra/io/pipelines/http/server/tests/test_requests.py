@@ -55,7 +55,7 @@ class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):
         request = b'GET /path HTTP/1.1\r\nHost: example.com\r\n\r\n'
         channel.feed_in(request)
 
-        out = channel.drain_out()
+        out = channel.drain()
         self.assertEqual(len(out), 1)
 
         head = out[0]
@@ -73,7 +73,7 @@ class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):
         request = b'POST /api HTTP/1.1\r\nHost: test\r\nContent-Length: 4\r\n\r\ntest'
         channel.feed_in(request)
 
-        out = channel.drain_out()
+        out = channel.drain()
         self.assertEqual(len(out), 2)
 
         # First: head
@@ -95,14 +95,14 @@ class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):
         request = b'POST /api HTTP/1.1\r\nHost: test\r\nContent-Length: 10\r\n\r\n'
         channel.feed_in(request)
 
-        out = channel.drain_out()
+        out = channel.drain()
         self.assertEqual(len(out), 1)
 
         # Send body in chunks - should all pass through
         channel.feed_in(b'hello')
         channel.feed_in(b'world')
 
-        out = channel.drain_out()
+        out = channel.drain()
         self.assertEqual(len(out), 2)
         self.assertEqual(ByteStreamBuffers.any_to_bytes(out[0]), b'hello')
         self.assertEqual(ByteStreamBuffers.any_to_bytes(out[1]), b'world')
@@ -130,7 +130,7 @@ class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):
         partial = b'GET /path HTTP/1.1\r\nHost: example.com\r\nX-Custom: '
         channel.feed_in(partial)
 
-        out = channel.drain_out()
+        out = channel.drain()
         self.assertEqual(len(out), 0)
         self.assertEqual(flow.consumed, [])
 
@@ -138,7 +138,7 @@ class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):
         rest = b'value\r\n\r\n'
         channel.feed_in(rest)
 
-        out = channel.drain_out()
+        out = channel.drain()
         self.assertEqual(len(out), 1)
 
         # Refund should equal total head size
@@ -156,7 +156,7 @@ class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):
         request = b'GET / HTTP/1.1\r\nHost: test\r\n\r\n'
         channel.feed_in(request)
 
-        out = channel.drain_out()
+        out = channel.drain()
         self.assertEqual(len(out), 1)
 
         self.assertEqual(len(flow.consumed), 1)
@@ -175,7 +175,7 @@ class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):
 
         channel.feed_in(request)
 
-        out = channel.drain_out()
+        out = channel.drain()
         self.assertEqual(len(out), 2)  # head + body bytes
 
         # Only head should be refunded
@@ -191,7 +191,7 @@ class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):
         channel.feed_in(b'GET /path HTTP/1.1\r\n')
         channel.feed_eof()
 
-        out = channel.drain_out()
+        out = channel.drain()
         self.assertTrue(any(isinstance(m, ChannelPipelineEvents.Error) for m in out))
 
 
@@ -206,7 +206,7 @@ class TestPipelineHttpRequestBodyAggregator(unittest.TestCase):
         request = b'GET / HTTP/1.1\r\nHost: test\r\n\r\n'
         channel.feed_in(request)
 
-        out = channel.drain_out()
+        out = channel.drain()
         self.assertEqual(len(out), 1)
 
         req = out[0]
@@ -224,7 +224,7 @@ class TestPipelineHttpRequestBodyAggregator(unittest.TestCase):
         request = b'POST /api HTTP/1.1\r\nHost: test\r\nContent-Length: 11\r\n\r\nhello world'
         channel.feed_in(request)
 
-        out = channel.drain_out()
+        out = channel.drain()
         self.assertEqual(len(out), 1)
 
         req = out[0]
@@ -243,16 +243,16 @@ class TestPipelineHttpRequestBodyAggregator(unittest.TestCase):
         head = b'POST /api HTTP/1.1\r\nHost: test\r\nContent-Length: 10\r\n\r\n'
         channel.feed_in(head)
 
-        out = channel.drain_out()
+        out = channel.drain()
         self.assertEqual(len(out), 0)  # Waiting for body
 
         # Send body in parts
         channel.feed_in(b'hello')
-        out = channel.drain_out()
+        out = channel.drain()
         self.assertEqual(len(out), 0)  # Still waiting
 
         channel.feed_in(b'world')
-        out = channel.drain_out()
+        out = channel.drain()
         self.assertEqual(len(out), 1)  # Complete!
 
         req = out[0]
@@ -282,18 +282,18 @@ class TestPipelineHttpRequestBodyAggregator(unittest.TestCase):
         # Send head
         head = b'POST /api HTTP/1.1\r\nHost: test\r\nContent-Length: 10\r\n\r\n'
         channel.feed_in(head)
-        channel.drain_out()
+        channel.drain()
 
         # Clear previous consumption tracking
         flow.consumed.clear()
 
         # Send body in two parts
         channel.feed_in(b'hello')
-        channel.drain_out()
+        channel.drain()
         self.assertEqual(flow.consumed, [])  # No refund yet, body incomplete
 
         channel.feed_in(b'world')
-        out = channel.drain_out()
+        out = channel.drain()
         self.assertEqual(len(out), 1)
 
         # Should refund exactly 10 bytes (the body consumed)
@@ -311,7 +311,7 @@ class TestPipelineHttpRequestBodyAggregator(unittest.TestCase):
         request = b'POST /api HTTP/1.1\r\nHost: test\r\nContent-Length: 4\r\n\r\ntest'
         channel.feed_in(request)
 
-        out = channel.drain_out()
+        out = channel.drain()
         self.assertEqual(len(out), 1)
 
         # Should have two refunds: head (from head decoder) + body (from aggregator)
@@ -329,11 +329,11 @@ class TestPipelineHttpRequestBodyAggregator(unittest.TestCase):
 
         head = b'POST /api HTTP/1.1\r\nHost: test\r\nContent-Length: 10\r\n\r\n'
         channel.feed_in(head)
-        channel.drain_out()
+        channel.drain()
 
         # Send partial body then EOF
         channel.feed_in(b'hello')
         channel.feed_eof()
 
-        out = channel.drain_out()
+        out = channel.drain()
         self.assertTrue(any(isinstance(m, ChannelPipelineEvents.Error) for m in out))

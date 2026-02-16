@@ -72,7 +72,7 @@ class AsyncioStreamChannelPipelineDriver:
         pass
 
     async def _flush_channel(self) -> None:
-        for m in self._channel.drain_out():
+        for m in self._channel.drain():
             if ByteStreamBuffers.can_bytes(m):
                 for mv in ByteStreamBuffers.iter_segments(m):
                     if self._writer is not None and mv:
@@ -136,12 +136,12 @@ class BytesFlowControlAsyncioStreamChannelPipelineDriver(AsyncioStreamChannelPip
         await self._flush_outbound()
 
         if self._on_app_msg is not None:
-            for m in self._channel.drain_out():
+            for m in self._channel.drain():
                 self._on_app_msg(m)
 
         else:
             # Drain to avoid unbounded app queue in examples that don't consume it.
-            self._channel.drain_out()
+            self._channel.drain()
 
     async def _flush_outbound(self) -> None:
         if self._writer is None:

@@ -52,7 +52,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         response = b'HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\n'
         channel.feed_in(response)
 
-        out = channel.drain_out()
+        out = channel.drain()
         self.assertEqual(len(out), 1)
 
         head = out[0]
@@ -69,7 +69,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         response = b'HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nhello'
         channel.feed_in(response)
 
-        out = channel.drain_out()
+        out = channel.drain()
         self.assertEqual(len(out), 2)
 
         # First: head
@@ -88,11 +88,11 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
 
         # Send head in parts
         channel.feed_in(b'HTTP/1.1 200 OK\r\n')
-        out = channel.drain_out()
+        out = channel.drain()
         self.assertEqual(len(out), 0)  # Not complete yet
 
         channel.feed_in(b'Content-Type: text/plain\r\n\r\n')
-        out = channel.drain_out()
+        out = channel.drain()
         self.assertEqual(len(out), 1)
 
         head = out[0]
@@ -125,7 +125,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         channel.feed_in(partial)
 
         # No head emitted yet, no refund
-        out = channel.drain_out()
+        out = channel.drain()
         self.assertEqual(len(out), 0)
         self.assertEqual(flow.consumed, [])
 
@@ -133,7 +133,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         rest = b'value\r\n\r\n'
         channel.feed_in(rest)
 
-        out = channel.drain_out()
+        out = channel.drain()
         self.assertEqual(len(out), 1)  # Head emitted
 
         # Verify refund is exactly the head size, not affected by buffer state
@@ -151,7 +151,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         response = b'HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n\r\n'
         channel.feed_in(response)
 
-        out = channel.drain_out()
+        out = channel.drain()
         self.assertEqual(len(out), 1)
 
         # Refund should equal the head size
@@ -171,7 +171,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
 
         channel.feed_in(response)
 
-        out = channel.drain_out()
+        out = channel.drain()
         self.assertEqual(len(out), 2)  # Head + body bytes
 
         # Only the head should be refunded by the decoder
@@ -191,6 +191,6 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         # Send EOF
         channel.feed_eof()
 
-        out = channel.drain_out()
+        out = channel.drain()
         # Should get an error event
         self.assertTrue(any(isinstance(m, ChannelPipelineEvents.Error) for m in out))

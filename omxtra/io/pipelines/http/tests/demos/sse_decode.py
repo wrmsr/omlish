@@ -32,7 +32,7 @@ def demo_sync_http_sse() -> ta.List[ta.Any]:
     In real usage, a transport driver would:
       - call channel.want_read() before reading
       - call channel.feed_bytes(...)
-      - write channel.drain_outbound() to the socket
+      - write channel.drain() to the socket
       - deliver channel.poll_app()/drain_app() to application logic
     """
 
@@ -52,10 +52,10 @@ def demo_sync_http_sse() -> ta.List[ta.Any]:
     out: ta.List[ta.Any] = []
     for c in (raw[:25], raw[25:60], raw[60:90], raw[90:]):
         ch.feed_in(c)
-        out.extend(ch.drain_out())
+        out.extend(ch.drain())
 
     ch.feed_eof()
-    out.extend(ch.drain_out())
+    out.extend(ch.drain())
     return out
 
 

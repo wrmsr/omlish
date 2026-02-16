@@ -3,9 +3,9 @@
 import dataclasses as dc
 import typing as ta
 
-from ..core import ChannelPipelineEvents
 from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
+from ..core import ChannelPipelineMessages
 
 
 ##
@@ -34,7 +34,7 @@ class PipelineSseDecoder(ChannelPipelineHandler):
         self._retry: ta.Optional[int] = None
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineEvents.Eof):
+        if isinstance(msg, ChannelPipelineMessages.Eof):
             self._emit_if_any(ctx)
             ctx.feed_in(msg)
             return
