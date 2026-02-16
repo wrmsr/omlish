@@ -155,7 +155,7 @@ class PipelineHttpRequestBodyAggregator(ChannelPipelineHandler):
         if (bfc := ctx.bytes_flow_control) is not None:
             bfc.on_consumed(self, before - after)
 
-        body = ByteStreamBuffers.any_to_bytes(body_view)
+        body = body_view.tobytes()
 
         head = self._cur_head
         self._cur_head = None
@@ -338,7 +338,7 @@ class PipelineHttpRequestBodyStreamDecoder(ChannelPipelineHandler):
                 take = self._max_chunk
 
             v = self._buf.split_to(take)
-            data = ByteStreamBuffers.any_to_bytes(v)
+            data = v.tobytes()
             ctx.feed_in(PipelineHttpRequestContentChunk(data))
             self._remain -= take
 
@@ -355,16 +355,17 @@ class PipelineHttpRequestBodyStreamDecoder(ChannelPipelineHandler):
             if take > self._max_chunk:
                 take = self._max_chunk
             v = self._buf.split_to(take)
-            ctx.feed_in(PipelineHttpRequestContentChunk(ByteStreamBuffers.any_to_bytes(v)))
+            ctx.feed_in(PipelineHttpRequestContentChunk(v.tobytes()))
         return 0
 
     def _drain_chunked(self, ctx: ChannelPipelineHandlerContext) -> int:
         """
         RFC 7230 chunked decoding. Follows PipelineHttpChunkedDecoder pattern.
 
-        Note: Flow control is handled at the higher inbound() level via buffer size tracking,
-        unlike PipelineHttpChunkedDecoder which tracks per-operation.
+        Note: Flow control is handled at the higher inbound() level via buffer size tracking, unlike
+        PipelineHttpChunkedDecoder which tracks per-operation.
         """
+
         while True:
             if self._chunk_state == 'size':
                 # Parse chunk size line: <hex-size>\r\n
@@ -372,7 +373,7 @@ class PipelineHttpRequestBodyStreamDecoder(ChannelPipelineHandler):
                 if i < 0:
                     return 0
 
-                line = ByteStreamBuffers.any_to_bytes(self._buf.split_to(i))
+                line = self._buf.split_to(i).tobytes()
                 self._buf.advance(2)  # CRLF
                 s = line.split(b';', 1)[0].strip()
                 try:
@@ -396,11 +397,11 @@ class PipelineHttpRequestBodyStreamDecoder(ChannelPipelineHandler):
                     return 0
 
                 data_v = self._buf.split_to(check.not_none(self._chunk_remain))
-                data = ByteStreamBuffers.any_to_bytes(data_v)
+                data = data_v.tobytes()
 
                 # Verify trailing \r\n
                 trailing = self._buf.split_to(2)
-                trailing_bytes = ByteStreamBuffers.any_to_bytes(trailing)
+                trailing_bytes = trailing.tobytes()
                 if trailing_bytes != b'\r\n':
                     raise ValueError(f'Expected \\r\\n after chunk data, got {trailing_bytes!r}')
 

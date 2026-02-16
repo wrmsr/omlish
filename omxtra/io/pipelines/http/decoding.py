@@ -105,7 +105,7 @@ class PipelineHttpHeadDecoder(ChannelPipelineHandler, Abstract):
             bfc.on_consumed(self, before - after)
 
         # Parse and emit head
-        raw = ByteStreamBuffers.any_to_bytes(head_view)
+        raw = head_view.tobytes()
         parsed = parse_http_message(raw, mode=self._parse_mode())
         head = self._build_head(parsed)
 
@@ -225,7 +225,7 @@ class PipelineHttpChunkedDecoder(ChannelPipelineHandler, Abstract):
                 size_line = self._buf.split_to(i + 2)
                 after = len(self._buf)
 
-                size_bytes = ByteStreamBuffers.any_to_bytes(size_line)[:-2]  # Strip \r\n
+                size_bytes = size_line.tobytes()[:-2]  # Strip \r\n
                 try:
                     self._chunk_remaining = int(size_bytes, 16)
                 except ValueError as e:
@@ -253,7 +253,7 @@ class PipelineHttpChunkedDecoder(ChannelPipelineHandler, Abstract):
 
                 # Extract trailing \r\n
                 trailing = self._buf.split_to(2)
-                trailing_bytes = ByteStreamBuffers.any_to_bytes(trailing)
+                trailing_bytes = trailing.tobytes()
 
                 after = len(self._buf)
 
@@ -278,7 +278,7 @@ class PipelineHttpChunkedDecoder(ChannelPipelineHandler, Abstract):
                 trailing = self._buf.split_to(2)
                 after = len(self._buf)
 
-                trailing_bytes = ByteStreamBuffers.any_to_bytes(trailing)
+                trailing_bytes = trailing.tobytes()
 
                 if trailing_bytes != b'\r\n':
                     raise ValueError(f'Expected \\r\\n after final chunk, got {trailing_bytes!r}')
