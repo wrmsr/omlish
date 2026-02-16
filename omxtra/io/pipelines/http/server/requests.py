@@ -214,8 +214,9 @@ class PipelineHttpRequestBodyStreamDecoder(ChannelPipelineHandler):
         self._mode: ta.Optional[_PipelineHttpRequestBodyStreamDecoderMode] = None
         self._remain = 0
 
-        # chunked parsing state
+        # chunked parsing state (follows PipelineHttpChunkedDecoder pattern)
         self._chunk_remain: ta.Optional[int] = None  # None -> need size line; 0 -> need trailers/end
+        self._chunk_state: ta.Literal['size', 'data', 'trailer'] = 'size'
 
     # @ta.override
     # def buffered_bytes(self) -> int:
@@ -355,59 +356,73 @@ class PipelineHttpRequestBodyStreamDecoder(ChannelPipelineHandler):
         return 0
 
     def _drain_chunked(self, ctx: ChannelPipelineHandlerContext) -> int:
-        # Minimal RFC 7230 chunked decoding:
-        # chunk-size (hex) [;ext] CRLF
-        # chunk-data CRLF
-        # ...
-        # 0 CRLF
-        # trailers CRLF
-        # CRLF
+        """
+        RFC 7230 chunked decoding. Follows PipelineHttpChunkedDecoder pattern.
+
+        Note: Flow control is handled at the higher inbound() level via buffer size tracking,
+        unlike PipelineHttpChunkedDecoder which tracks per-operation.
+        """
         while True:
-            if self._chunk_remain is None:
-                # Need a size line.
+            if self._chunk_state == 'size':
+                # Parse chunk size line: <hex-size>\r\n
                 i = self._buf.find(b'\r\n')
                 if i < 0:
                     return 0
+
                 line = ByteStreamBuffers.any_to_bytes(self._buf.split_to(i))
                 self._buf.advance(2)  # CRLF
                 s = line.split(b';', 1)[0].strip()
                 try:
                     n = int(s, 16)
                 except ValueError:
-                    raise ValueError('bad chunk size') from None
+                    raise ValueError('Invalid chunk size') from None
                 if n < 0:
-                    raise ValueError('bad chunk size')
+                    raise ValueError('Invalid chunk size')
+
                 self._chunk_remain = n
                 if n == 0:
-                    # Need terminator trailers: consume through \r\n\r\n if present.
-                    self._chunk_remain = 0
+                    # Final chunk
+                    self._chunk_state = 'trailer'
+                else:
+                    self._chunk_state = 'data'
                 continue
 
-            if self._chunk_remain == 0:
-                # Consume trailers terminator: require \r\n\r\n (empty trailers) or tolerate simple \r\n.
+            elif self._chunk_state == 'data':
+                # Read chunk data + trailing \r\n
+                if len(self._buf) < check.not_none(self._chunk_remain) + 2:
+                    return 0
+
+                data_v = self._buf.split_to(check.not_none(self._chunk_remain))
+                data = ByteStreamBuffers.any_to_bytes(data_v)
+
+                # Verify trailing \r\n
+                trailing = self._buf.split_to(2)
+                trailing_bytes = ByteStreamBuffers.any_to_bytes(trailing)
+                if trailing_bytes != b'\r\n':
+                    raise ValueError(f'Expected \\r\\n after chunk data, got {trailing_bytes!r}')
+
+                ctx.feed_in(PipelineHttpRequestContentChunk(data))
+                self._chunk_remain = None
+                self._chunk_state = 'size'
+
+            elif self._chunk_state == 'trailer':
+                # Final \r\n after 0-size chunk (or \r\n\r\n with trailers)
+                # Tolerate both \r\n\r\n (with trailers) and \r\n (no trailers)
                 j = self._buf.find(b'\r\n\r\n')
                 if j >= 0:
                     self._buf.advance(j + 4)
                     ctx.feed_in(PipelineHttpRequestEnd())
                     self._reset()
                     return 0
-                # If not found, we might only have '\r\n' for no trailers in some cases.
+
+                # Simple case: just \r\n
                 if len(self._buf) >= 2 and self._buf.find(b'\r\n', 0, 2) == 0:
                     self._buf.advance(2)
                     ctx.feed_in(PipelineHttpRequestEnd())
                     self._reset()
                     return 0
-                return 0
 
-            # Need chunk data + trailing CRLF.
-            if len(self._buf) < self._chunk_remain + 2:
                 return 0
-
-            data_v = self._buf.split_to(self._chunk_remain)
-            data = ByteStreamBuffers.any_to_bytes(data_v)
-            self._buf.advance(2)  # CRLF after chunk
-            ctx.feed_in(PipelineHttpRequestContentChunk(data))
-            self._chunk_remain = None  # next size line
 
         raise RuntimeError('unreachable')
 
@@ -416,6 +431,7 @@ class PipelineHttpRequestBodyStreamDecoder(ChannelPipelineHandler):
         self._mode = None
         self._remain = 0
         self._chunk_remain = None
+        self._chunk_state = 'size'
         # leave _buf empty; any leftover bytes would imply pipelining, which we currently reject
         if len(self._buf):
             # treat as protocol error

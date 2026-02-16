@@ -14,6 +14,7 @@ from ...core import ChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
 from ..decoding import PipelineHttpChunkedDecoder
 from ..decoding import PipelineHttpHeadDecoder
+from ..responses import PipelineHttpResponseContentChunk
 from ..responses import PipelineHttpResponseEnd
 from ..responses import PipelineHttpResponseHead
 
@@ -106,6 +107,10 @@ class PipelineHttpResponseChunkedDecoder(PipelineHttpChunkedDecoder):
     def _should_enable(self, head: ta.Any) -> bool:
         te = head.headers.lower.get('transfer-encoding', ())
         return 'chunked' in te
+
+    def _emit_chunk(self, ctx: ChannelPipelineHandlerContext, chunk_data: ta.Any) -> None:
+        data = ByteStreamBuffers.any_to_bytes(chunk_data)
+        ctx.feed_in(PipelineHttpResponseContentChunk(data))
 
     def _emit_end(self, ctx: ChannelPipelineHandlerContext) -> None:
         ctx.feed_in(PipelineHttpResponseEnd())

@@ -14,6 +14,7 @@ from ...client.requests import PipelineHttpRequestEncoder
 from ...client.responses import PipelineHttpResponseChunkedDecoder
 from ...client.responses import PipelineHttpResponseDecoder
 from ...requests import FullPipelineHttpRequest
+from ...responses import PipelineHttpResponseContentChunk
 from ...responses import PipelineHttpResponseHead
 
 
@@ -43,7 +44,12 @@ class HttpClientHandler(ChannelPipelineHandler):
             ctx.feed_in(msg)
             return
 
-        # Body bytes
+        # Handle wrapped chunks
+        if isinstance(msg, PipelineHttpResponseContentChunk):
+            self._body_chunks.append(msg.data)
+            return
+
+        # Body bytes (for non-chunked responses)
         if ByteStreamBuffers.can_bytes(msg):
             for mv in ByteStreamBuffers.iter_segments(msg):
                 if mv:

@@ -4,10 +4,10 @@ import unittest
 
 from omlish.http.headers import HttpHeaders
 from omlish.http.versions import HttpVersion
-from omlish.io.streams.utils import ByteStreamBuffers
 
 from ....core import ChannelPipelineEvents
 from ....core import PipelineChannel
+from ...responses import PipelineHttpResponseContentChunk
 from ...responses import PipelineHttpResponseEnd
 from ...responses import PipelineHttpResponseHead
 from ..responses import PipelineHttpResponseChunkedDecoder
@@ -39,8 +39,10 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         # Should get: head, chunk1 data, chunk2 data, end marker
         self.assertEqual(len(out), 4)
         self.assertIs(out[0], head)
-        self.assertEqual(ByteStreamBuffers.any_to_bytes(out[1]), b'hello')
-        self.assertEqual(ByteStreamBuffers.any_to_bytes(out[2]), b'world')
+        self.assertIsInstance(out[1], PipelineHttpResponseContentChunk)
+        self.assertEqual(out[1].data, b'hello')
+        self.assertIsInstance(out[2], PipelineHttpResponseContentChunk)
+        self.assertEqual(out[2].data, b'world')
         self.assertIsInstance(out[3], PipelineHttpResponseEnd)
 
     def test_chunked_response_split_across_reads(self) -> None:
@@ -76,7 +78,8 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         # Should get: head, chunk data, end marker
         self.assertEqual(len(out), 3)
         self.assertIs(out[0], head)
-        self.assertEqual(ByteStreamBuffers.any_to_bytes(out[1]), b'hello')
+        self.assertIsInstance(out[1], PipelineHttpResponseContentChunk)
+        self.assertEqual(out[1].data, b'hello')
         self.assertIsInstance(out[2], PipelineHttpResponseEnd)
 
     def test_non_chunked_response_passes_through(self) -> None:
@@ -128,7 +131,8 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
 
         self.assertEqual(len(out), 3)
         self.assertIs(out[0], head)
-        self.assertEqual(ByteStreamBuffers.any_to_bytes(out[1]), b'hello')
+        self.assertIsInstance(out[1], PipelineHttpResponseContentChunk)
+        self.assertEqual(out[1].data, b'hello')
         self.assertIsInstance(out[2], PipelineHttpResponseEnd)
 
     def test_large_chunk(self) -> None:
@@ -157,7 +161,8 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         out = channel.drain_out()
 
         self.assertEqual(len(out), 3)
-        self.assertEqual(ByteStreamBuffers.any_to_bytes(out[1]), data)
+        self.assertIsInstance(out[1], PipelineHttpResponseContentChunk)
+        self.assertEqual(out[1].data, data)
         self.assertIsInstance(out[2], PipelineHttpResponseEnd)
 
     def test_hex_chunk_sizes(self) -> None:
@@ -187,9 +192,12 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         out = channel.drain_out()
 
         self.assertEqual(len(out), 5)  # head + 3 chunks + end
-        self.assertEqual(ByteStreamBuffers.any_to_bytes(out[1]), b'0123456789')
-        self.assertEqual(ByteStreamBuffers.any_to_bytes(out[2]), b'a' * 16)
-        self.assertEqual(ByteStreamBuffers.any_to_bytes(out[3]), b'b' * 100)
+        self.assertIsInstance(out[1], PipelineHttpResponseContentChunk)
+        self.assertEqual(out[1].data, b'0123456789')
+        self.assertIsInstance(out[2], PipelineHttpResponseContentChunk)
+        self.assertEqual(out[2].data, b'a' * 16)
+        self.assertIsInstance(out[3], PipelineHttpResponseContentChunk)
+        self.assertEqual(out[3].data, b'b' * 100)
         self.assertIsInstance(out[4], PipelineHttpResponseEnd)
 
     def test_eof_before_complete_raises(self) -> None:
@@ -295,7 +303,8 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         out = channel.drain_out()
 
         self.assertEqual(len(out), 3)
-        self.assertEqual(ByteStreamBuffers.any_to_bytes(out[1]), b'x' * 10)
+        self.assertIsInstance(out[1], PipelineHttpResponseContentChunk)
+        self.assertEqual(out[1].data, b'x' * 10)
         self.assertIsInstance(out[2], PipelineHttpResponseEnd)
 
     def test_multiple_chunks(self) -> None:
@@ -332,7 +341,8 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         self.assertIs(out[0], head)
 
         for i, chunk in enumerate(chunks, 1):
-            self.assertEqual(ByteStreamBuffers.any_to_bytes(out[i]), chunk)
+            self.assertIsInstance(out[i], PipelineHttpResponseContentChunk)
+            self.assertEqual(out[i].data, chunk)
 
         self.assertIsInstance(out[6], PipelineHttpResponseEnd)
 

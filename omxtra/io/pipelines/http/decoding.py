@@ -169,6 +169,12 @@ class PipelineHttpChunkedDecoder(ChannelPipelineHandler, Abstract):
         raise NotImplementedError
 
     @abc.abstractmethod
+    def _emit_chunk(self, ctx: ChannelPipelineHandlerContext, chunk_data: ta.Any) -> None:
+        """Emit PipelineHttpRequestContentChunk or PipelineHttpResponseContentChunk."""
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
     def _emit_end(self, ctx: ChannelPipelineHandlerContext) -> None:
         """Emit PipelineHttpRequestEnd or PipelineHttpResponseEnd."""
 
@@ -253,8 +259,8 @@ class PipelineHttpChunkedDecoder(ChannelPipelineHandler, Abstract):
                 if trailing_bytes != b'\r\n':
                     raise ValueError(f'Expected \\r\\n after chunk data, got {trailing_bytes!r}')
 
-                # Emit chunk data
-                ctx.feed_in(chunk_data)
+                # Emit chunk data (wrapped by subclass)
+                self._emit_chunk(ctx, chunk_data)
 
                 if (bfc := ctx.bytes_flow_control) is not None:
                     bfc.on_consumed(self, before - after)
