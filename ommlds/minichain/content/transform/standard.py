@@ -5,8 +5,8 @@ from omlish import check
 
 from ..content import Content
 from ..metadata import ContentOriginal
-from ..sequence import BlockContent
-from ..sequence import InlineContent
+from ..sequence import BlocksContent
+from ..sequence import ConcatContent
 from ..sequence import SequenceContent
 from ..text import TextContent
 from .visitors import VisitorContentTransform
@@ -19,7 +19,7 @@ class LiftToStandardContentTransform(VisitorContentTransform[None]):
     def __init__(
             self,
             *,
-            sequence_mode: ta.Literal['block', 'inline'] = 'block',
+            sequence_mode: ta.Literal['blocks', 'concat'] = 'blocks',
     ) -> None:
         super().__init__()
 
@@ -33,10 +33,10 @@ class LiftToStandardContentTransform(VisitorContentTransform[None]):
 
         nc: SequenceContent
         match self._sequence_mode:
-            case 'block':
-                nc = BlockContent(cc)
-            case 'inline':
-                nc = InlineContent(cc)
+            case 'blocks':
+                nc = BlocksContent(cc)
+            case 'concat':
+                nc = ConcatContent(cc)
             case _:
                 raise ValueError(self._sequence_mode)
 

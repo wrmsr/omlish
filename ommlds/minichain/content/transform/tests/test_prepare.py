@@ -1,16 +1,16 @@
-from ...sequence import BlockContent
-from ...sequence import InlineContent
+from ...sequence import BlocksContent
+from ...sequence import ConcatContent
 from ...tag import TagContent  # noqa
 from ..prepare import prepare_content_str  # noqa
 
 
 def test_materialize_sequences():
-    c = InlineContent([  # noqa
-        BlockContent([
+    c = ConcatContent([  # noqa
+        BlocksContent([
             'block 1 item 1\n',
             'block 1 item 2\n',
         ]),
-        BlockContent([
+        BlocksContent([
             'block 2 item 1 ',
             'block 2 item 2',
         ]),

@@ -10,7 +10,7 @@ from .._marshal import MarshalSingleRawContent
 from ..content import Content
 from ..raw import RawContent
 from ..raw import SingleRawContent
-from ..sequence import InlineContent
+from ..sequence import ConcatContent
 from ..text import TextContent
 
 
@@ -25,7 +25,7 @@ def test_marshal():
     assert msh.marshal(Foo('hi')) == {'c': 'hi'}
 
     assert msh.marshal(TextContent('hi'), Content) == {'text': {'s': 'hi'}}
-    assert msh.marshal(InlineContent(['hi', [TextContent('bye')]]), Content) == {'inline': {'l': ['hi', [{'text': {'s': 'bye'}}]]}}  # noqa
+    assert msh.marshal(ConcatContent(['hi', [TextContent('bye')]]), Content) == {'concat': {'l': ['hi', [{'text': {'s': 'bye'}}]]}}  # noqa
 
     u = uuid.uuid4()
     assert msh.marshal(TextContent('hi').with_metadata(Uuid(u)), Content) == {'text': {'s': 'hi', 'metadata': [{'uuid': str(u)}]}}  # noqa

@@ -26,8 +26,8 @@ from .quote import QuoteContent
 from .recursive import RecursiveContent
 from .resources import ResourceContent
 from .section import SectionContent
-from .sequence import BlockContent
-from .sequence import InlineContent
+from .sequence import BlocksContent
+from .sequence import ConcatContent
 from .sequence import ItemListContent
 from .sequence import SequenceContent
 from .standard import StandardContent
@@ -174,10 +174,10 @@ class ContentVisitor(lang.Abstract, ta.Generic[C, R]):
     def visit_sequence_content(self, c: SequenceContent, ctx: C) -> R:
         return self.visit_composite_content(c, ctx)
 
-    def visit_inline_content(self, c: InlineContent, ctx: C) -> R:
+    def visit_blocks_content(self, c: BlocksContent, ctx: C) -> R:
         return self.visit_sequence_content(c, ctx)
 
-    def visit_block_content(self, c: BlockContent, ctx: C) -> R:
+    def visit_concat_content(self, c: ConcatContent, ctx: C) -> R:
         return self.visit_sequence_content(c, ctx)
 
     def visit_item_list_content(self, c: ItemListContent, ctx: C) -> R:
