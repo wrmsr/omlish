@@ -100,8 +100,8 @@ class ChannelPipelineHandlerContext:
     ) -> None:
         super().__init__()
 
-        self._pipeline = _pipeline
-        self._handler = _handler
+        self._pipeline: ta.Final[ChannelPipeline] = _pipeline
+        self._handler: ta.Final[ChannelPipelineHandler] = _handler
 
         self._handles_inbound = type(_handler).inbound is not ChannelPipelineHandler.inbound
         self._handles_outbound = type(_handler).outbound is not ChannelPipelineHandler.outbound
@@ -187,7 +187,7 @@ class ChannelPipeline:
     ) -> None:
         super().__init__()
 
-        self._channel = channel  # final
+        self._channel: ta.Final[PipelineChannel] = channel
 
         self._outermost = outermost = ChannelPipelineHandlerContext(
             _pipeline=self,
@@ -201,10 +201,13 @@ class ChannelPipeline:
         innermost._next_in = innermost._next_out = outermost  # noqa
         outermost._next_in = outermost._next_out = innermost  # noqa
 
-        self._contexts: ta.Dict[ChannelPipelineHandler, ChannelPipelineHandlerContext] = {}
+        self._contexts: ta.Final[ta.Dict[ChannelPipelineHandler, ChannelPipelineHandlerContext]] = {}
 
         for h in handlers:
             self.add_innermost(h)
+
+    _outermost: ta.Final[ChannelPipelineHandlerContext]
+    _innermost: ta.Final[ChannelPipelineHandlerContext]
 
     #
 
@@ -218,6 +221,13 @@ class ChannelPipeline:
 
     #
 
+    def _check_can_add(self, handler: ChannelPipelineHandler) -> ChannelPipelineHandler:
+        check.not_in(handler, self._contexts)
+        check.is_not(handler, self._outermost._handler)  # noqa
+        check.is_not(handler, self._innermost._handler)  # noqa
+
+        return handler
+
     def _add(
             self,
             handler: ChannelPipelineHandler,
@@ -225,6 +235,8 @@ class ChannelPipeline:
             inner_to: ta.Optional[ChannelPipelineHandlerContext] = None,
             outer_to: ta.Optional[ChannelPipelineHandlerContext] = None,
     ) -> None:
+        self._check_can_add(handler)
+
         if inner_to is not None:
             check.none(outer_to)
             check.is_not(inner_to, self._innermost)
@@ -259,16 +271,22 @@ class ChannelPipeline:
 
         handler.added(ctx)
 
-    def _remove(self, handler: ChannelPipelineHandler) -> None:
+    def _check_can_remove(self, handler: ChannelPipelineHandler) -> ChannelPipelineHandler:
         ctx = self._contexts[handler]
 
         check.is_not(ctx, self._innermost)
         check.is_not(ctx, self._outermost)
-        check.arg(not ctx._invalidated)  # noqa
+
+        return handler
+
+    def _remove(self, handler: ChannelPipelineHandler) -> None:
+        self._check_can_remove(handler)
+
+        ctx = self._contexts[handler]
 
         self._channel._removing(handler)  # noqa
 
-        ctx.handler.removing(ctx)
+        handler.removing(ctx)
 
         del self._contexts[handler]
 
@@ -291,6 +309,10 @@ class ChannelPipeline:
 
     def remove(self, handler: ChannelPipelineHandler) -> None:
         self._remove(handler)
+
+    def replace(self, old_handler: ChannelPipelineHandler, new_handler: ChannelPipelineHandler) -> None:
+        self._remove(old_handler)
+        self._add(new_handler, inner_to=self._innermost)
 
     #
 
@@ -402,14 +424,14 @@ class PipelineChannel:
     ) -> None:
         super().__init__()
 
-        self._scheduler = scheduler
+        self._scheduler: ta.Final[ta.Optional[ChannelPipelineScheduler]] = scheduler
 
         self._out_q: collections.deque[ta.Any] = collections.deque()
 
         self._saw_close = False
         self._saw_eof = False
 
-        self._pipeline = ChannelPipeline(self, handlers)  # final
+        self._pipeline: ta.Final[ChannelPipeline] = ChannelPipeline(self, handlers)  # final
 
     @property
     def eof(self) -> bool:
