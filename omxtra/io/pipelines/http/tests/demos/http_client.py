@@ -46,7 +46,7 @@ class HttpClientHandler(ChannelPipelineHandler):
         if ByteStreamBuffers.can_bytes(msg):
             for mv in ByteStreamBuffers.iter_segments(msg):
                 if mv:
-                    self._body_chunks.append(bytes(mv))
+                    self._body_chunks.append(ByteStreamBuffers.memoryview_to_bytes(mv))
             return
 
         # Pass through other messages
