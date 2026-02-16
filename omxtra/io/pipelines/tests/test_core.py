@@ -29,7 +29,9 @@ class TestCore(unittest.TestCase):
 
                 ctx.feed_out(msg)
 
-        ch = PipelineChannel(handlers := [
+        #
+
+        ch = PipelineChannel([
             IntIncInboundHandler(),
             IntStrDuplexHandler(),
         ])
@@ -40,15 +42,24 @@ class TestCore(unittest.TestCase):
         ch.feed_out('240')
         assert ch.drain_out() == [240]
 
-        handlers  # noqa
+        #
 
-        # ch.pipeline.set_handlers([
-        #     IntIncInboundHandler(),
-        #     *handlers,
-        # ])
+        ch.pipeline.add_outermost(
+            IntIncInboundHandler(),
+        )
+
+        ch.feed_in(420)
+        assert ch.drain_out() == ['422']
+
+        ch.feed_out('240')
+        assert ch.drain_out() == [240]
+
         #
-        # ch.feed_in(420)
-        # assert ch.drain_out() == ['422']
-        #
-        # ch.feed_out('240')
-        # assert ch.drain_out() == [240]
+
+        ch.pipeline.remove(ch.pipeline.handlers()[-1])
+
+        ch.feed_in(420)
+        assert ch.drain_out() == [422]
+
+        ch.feed_out(240)
+        assert ch.drain_out() == [240]

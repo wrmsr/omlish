@@ -128,6 +128,12 @@ class ChannelPipelineHandlerContext:
     def handler(self) -> 'ChannelPipelineHandler':
         return self._handler
 
+    _invalidated = False
+
+    @property
+    def invalidated(self) -> bool:
+        return self._invalidated
+
     #
 
     def feed_in(self, msg: ta.Any) -> None:
@@ -177,7 +183,7 @@ class ChannelPipeline:
     def __init__(
             self,
             channel: 'PipelineChannel',
-            handlers: ta.Sequence[ChannelPipelineHandler],
+            handlers: ta.Sequence[ChannelPipelineHandler] = (),
     ) -> None:
         super().__init__()
 
@@ -258,6 +264,7 @@ class ChannelPipeline:
 
         check.is_not(ctx, self._innermost)
         check.is_not(ctx, self._outermost)
+        check.arg(not ctx._invalidated)  # noqa
 
         self._channel._removing(handler)  # noqa
 
@@ -268,6 +275,10 @@ class ChannelPipeline:
         ctx._next_in._next_out = ctx._next_out  # noqa
         ctx._next_out._next_in = ctx._next_in  # noqa
 
+        ctx._invalidated = True  # noqa
+        del ctx._next_in  # noqa
+        del ctx._next_out  # noqa
+
         self._clear_caches()
 
     #
@@ -277,6 +288,9 @@ class ChannelPipeline:
 
     def add_outermost(self, handler: ChannelPipelineHandler) -> None:
         self._add(handler, inner_to=self._outermost)
+
+    def remove(self, handler: ChannelPipelineHandler) -> None:
+        self._remove(handler)
 
     #
 
@@ -297,11 +311,20 @@ class ChannelPipeline:
             self._single_handlers_by_type_cache: ta.Dict[type, ta.Optional[ta.Any]] = {}
             self._handlers_by_type_cache: ta.Dict[type, ta.Sequence[ta.Any]] = {}
 
+        _handlers: ta.List[ChannelPipelineHandler]
+
         def handlers(self) -> ta.Sequence[ChannelPipelineHandler]:
+            try:
+                return self._handlers
+            except AttributeError:
+                pass
+
             lst: ta.List[ChannelPipelineHandler] = []
             ctx = self._p._outermost  # noqa
             while (ctx := ctx._next_in) is not self._p._innermost:  # noqa
                 lst.append(ctx._handler)  # noqa
+
+            self._handlers = lst
             return lst
 
         def find_handler(self, ty: ta.Type[T]) -> ta.Optional[T]:
@@ -373,7 +396,7 @@ class ChannelPipelineScheduler(Abstract):
 class PipelineChannel:
     def __init__(
             self,
-            handlers: ta.Sequence[ChannelPipelineHandler],
+            handlers: ta.Sequence[ChannelPipelineHandler] = (),
             *,
             scheduler: ta.Optional[ChannelPipelineScheduler] = None,
     ) -> None:
