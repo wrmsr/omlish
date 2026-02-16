@@ -1,4 +1,4 @@
-# ruff: noqa: UP006 UP007 UP045
+# ruff: noqa: UP006 UP007 UP043 UP045
 # @omlish-lite
 import abc
 import typing as ta
@@ -11,8 +11,25 @@ from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
+from omlish.lite.namespaces import NamespaceClass
 
+from ..core import ChannelPipelineHandlerContext
 from ..core import ChannelPipelineMessages
+
+
+##
+
+
+class PipelineHttpDecoders(NamespaceClass):
+    @staticmethod
+    def ctx_on_consumed_fn(ctx: ChannelPipelineHandlerContext) -> ta.Optional[ta.Callable[[int], None]]:
+        if (bfc := ctx.bytes_flow_control) is None:
+            return None
+
+        def inner(n: int) -> None:
+            bfc.on_consumed(ctx.handler, n)
+
+        return inner
 
 
 ##
@@ -47,7 +64,7 @@ class PipelineHttpHeadDecoder:
 
         self._buf = ScanningByteStreamBuffer(SegmentedByteStreamBuffer(
             max_bytes=max_head,
-            buffer_chunk_size=buffer_chunk_size,
+            chunk_size=buffer_chunk_size,
         ))
 
         self._done = False
@@ -66,7 +83,7 @@ class PipelineHttpHeadDecoder:
 
         if isinstance(msg, ChannelPipelineMessages.Eof):
             # EOF: if we have partial head buffered and haven't parsed head, that's an error.
-            raise ValueError('EOF before HTTP head complete')
+            raise ValueError('EOF before HTTP head complete')  # noqa
 
         if not ByteStreamBuffers.can_bytes(msg):
             yield msg
@@ -99,8 +116,7 @@ class PipelineHttpHeadDecoder:
 
         # Forward any remainder bytes (body bytes)
         if len(self._buf):
-            rem = len(self._buf)
-            rem_view = self._buf.split_to(rem)
+            rem_view = self._buf.split_to(len(self._buf))
             yield rem_view
 
         self._done = True
@@ -198,7 +214,7 @@ class ContentLengthPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecod
         check.state(self._remain)
 
         if isinstance(msg, ChannelPipelineMessages.Eof):
-            raise ValueError('EOF before HTTP body complete')
+            raise ValueError('EOF before HTTP body complete')  # noqa
 
         if not ByteStreamBuffers.can_bytes(msg):
             yield msg
@@ -268,7 +284,7 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
 
         self._buf = ScanningByteStreamBuffer(SegmentedByteStreamBuffer(
             max_bytes=max_chunk_header,
-            buffer_chunk_size=buffer_chunk_size,
+            chunk_size=buffer_chunk_size,
         ))
 
         self._chunk_remaining = 0
@@ -288,7 +304,7 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
         check.state(self._state != 'done')
 
         if isinstance(msg, ChannelPipelineMessages.Eof):
-            raise ValueError('EOF before HTTP body complete')
+            raise ValueError('EOF before chunked encoding complete')  # noqa
 
         if not ByteStreamBuffers.can_bytes(msg):
             yield msg
@@ -376,8 +392,7 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
 
                 self._state = 'done'
 
-                for rem in self._buf.segments():
-                    yield rem
+                yield from self._buf.segments()
 
                 return
 

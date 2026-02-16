@@ -2,6 +2,7 @@
 # @omlish-lite
 import typing as ta
 
+from ...lite.namespaces import NamespaceClass
 from .types import ByteStreamBuffer
 from .types import ByteStreamBufferLike
 from .types import ByteStreamBufferView
@@ -10,7 +11,7 @@ from .types import ByteStreamBufferView
 ##
 
 
-class ByteStreamBuffers:
+class ByteStreamBuffers(NamespaceClass):
     _CAN_CONVERT_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
         bytes,
         bytearray,

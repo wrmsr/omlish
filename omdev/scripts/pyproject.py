@@ -129,7 +129,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/subprocesses/wrap.py', sha1='8a9b7d2255481fae15c05f5624b0cdc0766f4b3f'),
             dict(path='../interp/providers/base.py', sha1='f5d068c21f230d742e9015b033cd6320f4c68898'),
             dict(path='../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
-            dict(path='../../omlish/logs/std/records.py', sha1='8bbf6ef9eccb3a012c6ca416ddf3969450fd8fc9'),
+            dict(path='../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
             dict(path='../../omlish/subprocesses/base.py', sha1='cb9f668be5422fecb27222caabb67daac6c1bab9'),
             dict(path='../interp/resolvers.py', sha1='817b8e76401cd7a19eb43ca54d65272e4c8a4b0e'),
             dict(path='../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
@@ -9404,7 +9404,7 @@ class LoggingContextInfoRecordAdapters:
             pathname=(str, _UNKNOWN_PATH_NAME),
 
             # Source line number where the logging call was issued (if available). Unmodified by ctor. May default to 0
-            # y Logger.findCaller / Logger._log.
+            # by Logger.findCaller / Logger._log.
             lineno=(int, 0),
 
             # Name of function containing the logging call. Set by ctor to `func` arg, unmodified. May default to

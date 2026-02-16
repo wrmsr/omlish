@@ -68,6 +68,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../../omlish/lite/check.py', sha1='0ce40cc68bd1b18604293a0b4924efabb6033766'),
             dict(path='../../../../omlish/lite/contextmanagers.py', sha1='993f5ed96d3410f739a20363f55670d5e5267fa3'),
             dict(path='../../../../omlish/lite/json.py', sha1='57eeddc4d23a17931e00284ffa5cb6e3ce089486'),
+            dict(path='../../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='../../../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
             dict(path='../../../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='../../../../omlish/lite/strings.py', sha1='89831ecbc34ad80e118a865eceb390ed399dc4d6'),
@@ -88,7 +89,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='../logs.py', sha1='5a4fad522508bdc1b790f1d5234a87f319c9da2d'),
             dict(path='../../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
-            dict(path='../../../../omlish/io/streams/utils.py', sha1='704f1c423ad7a99eb8daa9f24e9c89a938202c5c'),
+            dict(path='../../../../omlish/io/streams/utils.py', sha1='620360799f1282f8374d2cdbfe8c058e4a04d0d5'),
             dict(path='../../../../omlish/lite/configs.py', sha1='c8602e0e197ef1133e7e8e248935ac745bfd46cb'),
             dict(path='../../../../omlish/logs/contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
             dict(path='../../../../omlish/logs/std/standard.py', sha1='5c97c1b9f7ead58d6127d047b873398f708f288d'),
@@ -96,7 +97,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../../omlish/io/streams/direct.py', sha1='b01937212493e9a41644ac4e366e4cbab10332ce'),
             dict(path='../../../../omlish/io/streams/scanning.py', sha1='5d4cf0776463a6f675ca74ca87637133b78b51a2'),
             dict(path='../../../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
-            dict(path='../../../../omlish/logs/std/records.py', sha1='8bbf6ef9eccb3a012c6ca416ddf3969450fd8fc9'),
+            dict(path='../../../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
             dict(path='../../../../omlish/io/streams/segmented.py', sha1='77b78666798688be9fa8fd54ad74abc4376c4410'),
             dict(path='../../../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
@@ -2525,6 +2526,21 @@ JSON_COMPACT_KWARGS: ta.Mapping[str, ta.Any] = dict(
 
 json_dump_compact: ta.Callable[..., None] = functools.partial(json.dump, **JSON_COMPACT_KWARGS)
 json_dumps_compact: ta.Callable[..., str] = functools.partial(json.dumps, **JSON_COMPACT_KWARGS)
+
+
+########################################
+# ../../../../../omlish/lite/namespaces.py
+
+
+class NamespaceClass:
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
+
+    def __init_subclass__(cls, **kwargs):  # noqa
+        super().__init_subclass__(**kwargs)
+
+        if any(issubclass(b, NamespaceClass) and b is not NamespaceClass for b in cls.__bases__):
+            raise TypeError
 
 
 ########################################
@@ -5681,7 +5697,7 @@ class BaseByteStreamBufferLike(ByteStreamBufferLike, Abstract):
 ##
 
 
-class ByteStreamBuffers:
+class ByteStreamBuffers(NamespaceClass):
     _CAN_CONVERT_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
         bytes,
         bytearray,
@@ -7007,7 +7023,7 @@ class LoggingContextInfoRecordAdapters:
             pathname=(str, _UNKNOWN_PATH_NAME),
 
             # Source line number where the logging call was issued (if available). Unmodified by ctor. May default to 0
-            # y Logger.findCaller / Logger._log.
+            # by Logger.findCaller / Logger._log.
             lineno=(int, 0),
 
             # Name of function containing the logging call. Set by ctor to `func` arg, unmodified. May default to

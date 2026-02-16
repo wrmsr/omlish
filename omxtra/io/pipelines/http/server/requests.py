@@ -13,7 +13,6 @@ from omlish.lite.check import check
 from ...core import ChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
 from ...core import ChannelPipelineMessages
-from ..decoders import PipelineHttpChunkedDecoder
 from ..decoders import PipelineHttpHeadDecoder
 from ..requests import FullPipelineHttpRequest
 from ..requests import PipelineHttpRequestAborted
@@ -439,24 +438,3 @@ class PipelineHttpRequestBodyStreamDecoder(ChannelPipelineHandler):
         if len(self._buf):
             # treat as protocol error
             raise ValueError('unexpected extra bytes after request')
-
-
-class PipelineHttpRequestChunkedDecoder(PipelineHttpChunkedDecoder):
-    """
-    HTTP/1.x request chunked transfer encoding decoder.
-
-    Extends PipelineHttpChunkedDecoder to decode chunked request bodies.
-    """
-
-    def _is_head_message(self, msg: ta.Any) -> bool:
-        return isinstance(msg, PipelineHttpRequestHead)
-
-    def _should_enable(self, head: ta.Any) -> bool:
-        return head.headers.contains_value('transfer-encoding', 'chunked', ignore_case=True)
-
-    def _emit_chunk(self, ctx: ChannelPipelineHandlerContext, chunk_data: ta.Any) -> None:
-        data = ByteStreamBuffers.any_to_bytes(chunk_data)
-        ctx.feed_in(PipelineHttpRequestContentChunk(data))
-
-    def _emit_end(self, ctx: ChannelPipelineHandlerContext) -> None:
-        ctx.feed_in(PipelineHttpRequestEnd())

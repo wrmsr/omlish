@@ -161,7 +161,7 @@ def __omlish_amalg__():  # noqa
             dict(path='types.py', sha1='7ef67f710fb54c3af067aa596cb593f33eafe380'),
             dict(path='../../omlish/http/coro/server/server.py', sha1='7c98ff3073835079b4170c1235332f1c620cbf52'),
             dict(path='../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
-            dict(path='../../omlish/logs/std/records.py', sha1='8bbf6ef9eccb3a012c6ca416ddf3969450fd8fc9'),
+            dict(path='../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
             dict(path='dispatchers.py', sha1='33fe5ae77e33b3cfabb97b1a1c0f06dd0cc54703'),
             dict(path='groupsimpl.py', sha1='4fe587a6eaff7dd874b54450be62f9689283d230'),
             dict(path='process.py', sha1='ec0903adbde7552ba8a6aad9030716ef57fc4a6c'),
@@ -12095,7 +12095,7 @@ class LoggingContextInfoRecordAdapters:
             pathname=(str, _UNKNOWN_PATH_NAME),
 
             # Source line number where the logging call was issued (if available). Unmodified by ctor. May default to 0
-            # y Logger.findCaller / Logger._log.
+            # by Logger.findCaller / Logger._log.
             lineno=(int, 0),
 
             # Name of function containing the logging call. Set by ctor to `func` arg, unmodified. May default to

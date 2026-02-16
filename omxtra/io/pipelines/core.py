@@ -13,6 +13,7 @@ import typing as ta
 
 from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
+from omlish.lite.namespaces import NamespaceClass
 
 from .errors import ClosedChannelPipelineError
 from .errors import ContextInvalidatedChannelPipelineError
@@ -26,16 +27,8 @@ T = ta.TypeVar('T')
 ##
 
 
-class ChannelPipelineMessages:
+class ChannelPipelineMessages(NamespaceClass):
     """Standard messages sent through a channel pipeline."""
-
-    def __new__(cls, *args, **kwargs):  # noqa
-        raise TypeError
-
-    def __init_subclass__(cls, **kwargs):  # noqa
-        raise TypeError
-
-    #
 
     class NeverInbound(Abstract):
         pass
@@ -72,16 +65,8 @@ class ChannelPipelineMessages:
 ##
 
 
-class ChannelPipelineEvents:
+class ChannelPipelineEvents(NamespaceClass):
     """Standard events emitted from a channel pipeline."""
-
-    def __new__(cls, *args, **kwargs):  # noqa
-        raise TypeError
-
-    def __init_subclass__(cls, **kwargs):  # noqa
-        raise TypeError
-
-    #
 
     @ta.final
     @dc.dataclass(frozen=True)

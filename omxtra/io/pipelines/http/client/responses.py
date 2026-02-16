@@ -12,8 +12,9 @@ from omlish.lite.check import check
 from ...core import ChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
 from ...core import ChannelPipelineMessages
-from ..decoders import PipelineHttpHeadDecoder
 from ..decoders import ChunkedPipelineHttpContentChunkDecoder
+from ..decoders import PipelineHttpDecoders
+from ..decoders import PipelineHttpHeadDecoder
 from ..responses import PipelineHttpResponseContentChunk
 from ..responses import PipelineHttpResponseEnd
 from ..responses import PipelineHttpResponseHead
@@ -22,15 +23,20 @@ from ..responses import PipelineHttpResponseHead
 ##
 
 
-class PipelineHttpResponseDecoder(PipelineHttpHeadDecoder):
+class PipelineHttpResponseDecoder(ChannelPipelineHandler):
     """
     HTTP/1.x response head decoder.
 
     Extends PipelineHttpHeadDecoder to parse status line (version, status, reason) + headers.
     """
 
-    def _parse_mode(self) -> HttpParser.Mode:
-        return HttpParser.Mode.RESPONSE
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._decoder = PipelineHttpHeadDecoder(
+            HttpParser.Mode.RESPONSE,
+            lambda parsed: self._build_head(parsed),
+        )
 
     def _build_head(self, parsed: ParsedHttpMessage) -> PipelineHttpResponseHead:
         status = check.not_none(parsed.status_line)
@@ -42,6 +48,17 @@ class PipelineHttpResponseDecoder(PipelineHttpHeadDecoder):
             headers=HttpHeaders(parsed.headers.entries),
             parsed=parsed,
         )
+
+    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if self._decoder.done:
+            ctx.feed_in(msg)
+            return
+
+        for dec_msg in self._decoder.inbound(
+                msg,
+                on_bytes_consumed=PipelineHttpDecoders.ctx_on_consumed_fn(ctx),
+        ):
+            ctx.feed_in(dec_msg)
 
 
 ##
@@ -106,41 +123,32 @@ class PipelineHttpResponseChunkedDecoder(ChannelPipelineHandler):
         self._max_chunk_header = max_chunk_header
         self._buffer_chunk_size = buffer_chunk_size
 
-        self._enabled: ta.Optional[bool] = None
         self._decoder: ta.Optional[ChunkedPipelineHttpContentChunkDecoder] = None
-
-    def _should_enable(self, head: ta.Any) -> bool:
-        te = head.headers.lower.get('transfer-encoding', ())
-        return 'chunked' in te
-
-    def _emit_chunk(self, ctx: ChannelPipelineHandlerContext, chunk_data: ta.Any) -> None:
-        data = ByteStreamBuffers.any_to_bytes(chunk_data)
-        ctx.feed_in(PipelineHttpResponseContentChunk(data))
-
-    def _emit_end(self, ctx: ChannelPipelineHandlerContext) -> None:
-        ctx.feed_in(PipelineHttpResponseEnd())
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         if isinstance(msg, PipelineHttpResponseHead):
             check.none(self._decoder)
 
-            self._enabled = self._should_enable(msg)
-
-            if self._enabled:
+            if msg.headers.contains_value('transfer-encoding', 'chunked', ignore_case=True):
                 self._decoder = ChunkedPipelineHttpContentChunkDecoder(
-                    on_bytes_consumed=lambda n:
+                    lambda data: PipelineHttpResponseContentChunk(data),
+                    lambda: PipelineHttpResponseEnd(),
                     max_chunk_header=self._max_chunk_header,
                     buffer_chunk_size=self._buffer_chunk_size,
                 )
 
             ctx.feed_in(msg)
+            return
 
-        if (dec := self._decoder) is not None:
-            for dec_msg in dec.inbound(msg):
-                ctx.feed_in(dec_msg)
-
-        if not self._enabled or not ByteStreamBuffers.can_bytes(msg):
+        if (dec := self._decoder) is None:
             ctx.feed_in(msg)
             return
 
-        raise NotImplementedError
+        for dec_msg in dec.inbound(
+                msg,
+                on_bytes_consumed=PipelineHttpDecoders.ctx_on_consumed_fn(ctx),
+        ):
+            ctx.feed_in(dec_msg)
+
+        if dec.done:
+            self._decoder = None

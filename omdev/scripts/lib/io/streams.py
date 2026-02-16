@@ -25,11 +25,12 @@ def __omlish_amalg__():  # noqa
         src_files=[
             dict(path='errors.py', sha1='67ca85fd8741b5bfefe76c872ce1c30c18fab06f'),
             dict(path='../../lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
+            dict(path='../../lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='types.py', sha1='6ae05b5486ac8eb1f2667d415aad0cde3c962df4'),
             dict(path='base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='framing.py', sha1='854bb6bbfc713fa47d0293b11cb4db230f51268d'),
             dict(path='reading.py', sha1='7631635c46ab4b40bcaeb7c506cf15cb2d529a40'),
-            dict(path='utils.py', sha1='704f1c423ad7a99eb8daa9f24e9c89a938202c5c'),
+            dict(path='utils.py', sha1='620360799f1282f8374d2cdbfe8c058e4a04d0d5'),
             dict(path='direct.py', sha1='b01937212493e9a41644ac4e366e4cbab10332ce'),
             dict(path='scanning.py', sha1='5d4cf0776463a6f675ca74ca87637133b78b51a2'),
             dict(path='adapters.py', sha1='75087e980f4ff90796728596512ffc3bf8ef235a'),
@@ -259,6 +260,21 @@ class Abstract:
 
         if not isinstance(cls, abc.ABCMeta):
             update_abstracts(cls, force=True)
+
+
+########################################
+# ../../../lite/namespaces.py
+
+
+class NamespaceClass:
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
+
+    def __init_subclass__(cls, **kwargs):  # noqa
+        super().__init_subclass__(**kwargs)
+
+        if any(issubclass(b, NamespaceClass) and b is not NamespaceClass for b in cls.__bases__):
+            raise TypeError
 
 
 ########################################
@@ -1020,7 +1036,7 @@ class ByteStreamBufferReader:
 ##
 
 
-class ByteStreamBuffers:
+class ByteStreamBuffers(NamespaceClass):
     _CAN_CONVERT_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
         bytes,
         bytearray,

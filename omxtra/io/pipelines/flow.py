@@ -7,6 +7,7 @@ import typing as ta
 
 from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
+from omlish.lite.namespaces import NamespaceClass
 
 from .core import ChannelPipelineEvents
 from .core import ChannelPipelineFlowControl
@@ -20,10 +21,7 @@ from .errors import FlowControlValidationChannelPipelineError
 ##
 
 
-class ChannelPipelineFlowControlEvents:
-    def __new__(cls, *args, **kwargs):  # noqa
-        raise TypeError
-
+class ChannelPipelineFlowControlEvents(NamespaceClass):
     @dc.dataclass(frozen=True)
     class WritabilityChanged:
         is_writable: bool
