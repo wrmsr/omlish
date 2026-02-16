@@ -4,7 +4,7 @@ build>=1.4.0
 twine>=6.2.0
 wheel>=0.46.2
 
-uv>=0.10.2
+uv>=0.10.3
 
 pytest==9.0.2
 pytest-benchmark==5.2.3
@@ -75,7 +75,7 @@ ujson==5.11.0  # @omlish-venv !13t !13dt !14t !14dt  # https://github.com/ultraj
 
 markupsafe==3.0.3
 
-redis==7.1.1
+redis==7.2.0
 
 sqlean.py==3.50.4.5
 # git+https://github.com/wrmsr/sqlean.py.git
@@ -104,8 +104,8 @@ asttokens==3.0.1
 numpy>=1.26
 
 rich==14.3.2
-textual==7.5.0  # @omlish-venv 13t 13dt 14t
-textual[syntax]==7.5.0  # @omlish-venv !13t !13dt !14t
+textual==8.0.0  # @omlish-venv 13t 13dt 14t
+textual[syntax]==8.0.0  # @omlish-venv !13t !13dt !14t
 textual-dev==1.8.0
 textual-speedups==0.2.1
 
@@ -121,7 +121,7 @@ hf-xet==1.2.0  # @omlish-venv !14t !14dt
 
 datasets==4.5.0; python_version < "3.14"  # !! includes arrow and pandas and shit
 
-transformers==5.1.0  # @omlish-venv !14t !14dt
+transformers==5.2.0  # @omlish-venv !14t !14dt
 sentence-transformers==5.2.2  # @omlish-venv !14t !14dt
 
 sentencepiece==0.2.1
@@ -133,9 +133,9 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.42.49
+boto3>=1.42.50
 botocore-stubs>=1.42.41
-types-boto3>=1.42.49
+types-boto3>=1.42.50
 
 antlr4-python3-runtime==4.13.2
 
@@ -151,7 +151,6 @@ pillow==12.1.1
 
 accelerate==1.12.0  # @omlish-venv !14t !14dt
 
-# bitsandbytes==0.45.4
-bitsandbytes==0.49.1
+bitsandbytes==0.49.2
 
 regex==2026.1.15
