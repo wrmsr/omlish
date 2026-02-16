@@ -13,6 +13,7 @@ from omlish.lite.check import check
 from ...core import ChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
 from ...core import ChannelPipelineMessages
+from ..decoders import PipelineHttpDecoders
 from ..decoders import PipelineHttpHeadDecoder
 from ..requests import FullPipelineHttpRequest
 from ..requests import PipelineHttpRequestAborted
@@ -24,15 +25,25 @@ from ..requests import PipelineHttpRequestHead
 ##
 
 
-class PipelineHttpRequestHeadDecoder(PipelineHttpHeadDecoder):
+class PipelineHttpRequestHeadDecoder(ChannelPipelineHandler):
     """
     HTTP/1.x request head decoder.
-
-    Extends PipelineHttpHeadDecoder to parse request line (method, target, version) + headers.
     """
 
-    def _parse_mode(self) -> HttpParser.Mode:
-        return HttpParser.Mode.REQUEST
+    def __init__(
+            self,
+            *,
+            max_head: int = 0x10000,
+            buffer_chunk_size: int = 0x10000,
+    ) -> None:
+        super().__init__()
+
+        self._decoder = PipelineHttpHeadDecoder(
+            HttpParser.Mode.REQUEST,
+            lambda parsed: self._build_head(parsed),
+            max_head=max_head,
+            buffer_chunk_size=buffer_chunk_size,
+        )
 
     def _build_head(self, parsed: ParsedHttpMessage) -> PipelineHttpRequestHead:
         line = check.not_none(parsed.request_line)
@@ -44,6 +55,17 @@ class PipelineHttpRequestHeadDecoder(PipelineHttpHeadDecoder):
             headers=HttpHeaders(parsed.headers.entries),
             parsed=parsed,
         )
+
+    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if self._decoder.done:
+            ctx.feed_in(msg)
+            return
+
+        for dec_msg in self._decoder.inbound(
+                msg,
+                on_bytes_consumed=PipelineHttpDecoders.ctx_on_consumed_fn(ctx),
+        ):
+            ctx.feed_in(dec_msg)
 
 
 ##

@@ -26,16 +26,21 @@ from ..responses import PipelineHttpResponseHead
 class PipelineHttpResponseDecoder(ChannelPipelineHandler):
     """
     HTTP/1.x response head decoder.
-
-    Extends PipelineHttpHeadDecoder to parse status line (version, status, reason) + headers.
     """
 
-    def __init__(self) -> None:
+    def __init__(
+            self,
+            *,
+            max_head: int = 0x10000,
+            buffer_chunk_size: int = 0x10000,
+    ) -> None:
         super().__init__()
 
         self._decoder = PipelineHttpHeadDecoder(
             HttpParser.Mode.RESPONSE,
             lambda parsed: self._build_head(parsed),
+            max_head=max_head,
+            buffer_chunk_size=buffer_chunk_size,
         )
 
     def _build_head(self, parsed: ParsedHttpMessage) -> PipelineHttpResponseHead:

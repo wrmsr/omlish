@@ -211,7 +211,7 @@ class ContentLengthPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecod
             *,
             on_bytes_consumed: ta.Optional[ta.Callable[[int], None]] = None,
     ) -> ta.Generator[ta.Any, None, None]:
-        check.state(self._remain)
+        check.state(self._remain > 0)
 
         if isinstance(msg, ChannelPipelineMessages.Eof):
             raise ValueError('EOF before HTTP body complete')  # noqa
