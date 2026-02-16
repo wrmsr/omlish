@@ -35,7 +35,6 @@ class PipelineHttpHeadDecoder:
             parse_mode: HttpParser.Mode,
             make_head: ta.Callable[[ParsedHttpMessage], ta.Any],
             *,
-            on_bytes_consumed: ta.Optional[ta.Callable[[int], None]] = None,
             max_head: int = 0x10000,
             buffer_chunk_size: int = 0x10000,
     ) -> None:
@@ -43,7 +42,6 @@ class PipelineHttpHeadDecoder:
 
         self._parse_mode = parse_mode
         self._make_head = make_head
-        self._on_bytes_consumed = on_bytes_consumed
 
         self._max_head = max_head
 
@@ -58,7 +56,12 @@ class PipelineHttpHeadDecoder:
     def done(self) -> bool:
         return self._done
 
-    def inbound(self, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
+    def inbound(
+            self,
+            msg: ta.Any,
+            *,
+            on_bytes_consumed: ta.Optional[ta.Callable[[int], None]] = None,
+    ) -> ta.Generator[ta.Any, None, None]:
         check.state(not self._done)
 
         if isinstance(msg, ChannelPipelineMessages.Eof):
@@ -84,8 +87,8 @@ class PipelineHttpHeadDecoder:
         head_view = self._buf.split_to(i + 4)
         after = len(self._buf)
 
-        if (obc := self._on_bytes_consumed) is not None:
-            obc(before - after)
+        if on_bytes_consumed is not None:
+            on_bytes_consumed(before - after)
 
         # Parse and emit head
         raw = head_view.tobytes()
@@ -111,16 +114,11 @@ class PipelineHttpContentChunkDecoder(Abstract):
             self,
             make_chunk: ta.Callable[[bytes], ta.Any],
             make_end: ta.Callable[[], ta.Any],
-            *,
-            on_bytes_consumed: ta.Optional[ta.Callable[[int], None]] = None,
-            # buffer_chunk_size: int = 0x10000,
-            # _use_scanning_buffer: bool = False,
     ) -> None:
         super().__init__()
 
         self._make_chunk = make_chunk
         self._make_end = make_end
-        self._on_bytes_consumed = on_bytes_consumed
 
     @property
     @abc.abstractmethod
@@ -128,7 +126,12 @@ class PipelineHttpContentChunkDecoder(Abstract):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def inbound(self, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
+    def inbound(
+            self,
+            msg: ta.Any,
+            *,
+            on_bytes_consumed: ta.Optional[ta.Callable[[int], None]] = None,
+    ) -> ta.Generator[ta.Any, None, None]:
         raise NotImplementedError
 
 
@@ -139,7 +142,12 @@ class UntilEofPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
     def done(self) -> bool:
         return self._done
 
-    def inbound(self, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
+    def inbound(
+            self,
+            msg: ta.Any,
+            *,
+            on_bytes_consumed: ta.Optional[ta.Callable[[int], None]] = None,
+    ) -> ta.Generator[ta.Any, None, None]:
         check.state(not self._done)
 
         if isinstance(msg, ChannelPipelineMessages.Eof):
@@ -155,8 +163,8 @@ class UntilEofPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
             return
 
         for mv in ByteStreamBuffers.iter_segments(msg):
-            if (obc := self._on_bytes_consumed) is not None:
-                obc(len(mv))
+            if on_bytes_consumed is not None:
+                on_bytes_consumed(len(mv))
 
             yield self._make_chunk(ByteStreamBuffers.memoryview_to_bytes(mv))
 
@@ -167,15 +175,12 @@ class ContentLengthPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecod
             make_chunk: ta.Callable[[bytes], ta.Any],
             make_end: ta.Callable[[], ta.Any],
             content_length: int,
-            *,
-            on_bytes_consumed: ta.Optional[ta.Callable[[int], None]] = None,
     ) -> None:
         check.arg(content_length > 0)
 
         super().__init__(
             make_chunk,
             make_end,
-            on_bytes_consumed=on_bytes_consumed,
         )
 
         self._remain = content_length
@@ -184,7 +189,12 @@ class ContentLengthPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecod
     def done(self) -> bool:
         return self._remain < 1
 
-    def inbound(self, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
+    def inbound(
+            self,
+            msg: ta.Any,
+            *,
+            on_bytes_consumed: ta.Optional[ta.Callable[[int], None]] = None,
+    ) -> ta.Generator[ta.Any, None, None]:
         check.state(self._remain)
 
         if isinstance(msg, ChannelPipelineMessages.Eof):
@@ -215,8 +225,8 @@ class ContentLengthPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecod
 
                 break
 
-            if (obc := self._on_bytes_consumed) is not None:
-                obc(mvl)
+            if on_bytes_consumed is not None:
+                on_bytes_consumed(mvl)
 
             yield self._make_chunk(ByteStreamBuffers.memoryview_to_bytes(mv))
 
@@ -248,14 +258,12 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
             make_chunk: ta.Callable[[bytes], ta.Any],
             make_end: ta.Callable[[], ta.Any],
             *,
-            on_bytes_consumed: ta.Optional[ta.Callable[[int], None]] = None,
             max_chunk_header: int = 1024,
             buffer_chunk_size: int = 0x10000,
     ) -> None:
         super().__init__(
             make_chunk,
             make_end,
-            on_bytes_consumed=on_bytes_consumed,
         )
 
         self._buf = ScanningByteStreamBuffer(SegmentedByteStreamBuffer(
@@ -271,7 +279,12 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
     def done(self) -> bool:
         return self._state == 'done'
 
-    def inbound(self, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
+    def inbound(
+            self,
+            msg: ta.Any,
+            *,
+            on_bytes_consumed: ta.Optional[ta.Callable[[int], None]] = None,
+    ) -> ta.Generator[ta.Any, None, None]:
         check.state(self._state != 'done')
 
         if isinstance(msg, ChannelPipelineMessages.Eof):
@@ -303,8 +316,8 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
                 except ValueError as e:
                     raise ValueError(f'Invalid chunk size: {size_bytes!r}') from e
 
-                if (obc := self._on_bytes_consumed) is not None:
-                    obc(before - after)
+                if on_bytes_consumed is not None:
+                    on_bytes_consumed(before - after)
 
                 if self._chunk_remaining == 0:
                     # Final chunk
@@ -335,8 +348,8 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
                 # Emit chunk data (wrapped by subclass)
                 yield self._make_chunk(chunk_data.tobytes())
 
-                if (obc := self._on_bytes_consumed) is not None:
-                    obc(before - after)
+                if on_bytes_consumed is not None:
+                    on_bytes_consumed(before - after)
 
                 self._chunk_remaining = 0
                 self._state = 'size'
@@ -355,8 +368,8 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
                 if trailing_bytes != b'\r\n':
                     raise ValueError(f'Expected \\r\\n after final chunk, got {trailing_bytes!r}')
 
-                if (obc := self._on_bytes_consumed) is not None:
-                    obc(before - after)
+                if on_bytes_consumed is not None:
+                    on_bytes_consumed(before - after)
 
                 # Emit end marker
                 yield self._make_end()

@@ -12,8 +12,8 @@ from omlish.lite.check import check
 from ...core import ChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
 from ...core import ChannelPipelineMessages
-from ..decoders import PipelineHttpChunkedDecoder
 from ..decoders import PipelineHttpHeadDecoder
+from ..decoders import ChunkedPipelineHttpContentChunkDecoder
 from ..responses import PipelineHttpResponseContentChunk
 from ..responses import PipelineHttpResponseEnd
 from ..responses import PipelineHttpResponseHead
@@ -94,15 +94,20 @@ class PipelineHttpResponseConditionalGzipDecoder(ChannelPipelineHandler):
 ##
 
 
-class PipelineHttpResponseChunkedDecoder(PipelineHttpChunkedDecoder):
-    """
-    HTTP/1.x response chunked transfer encoding decoder.
+class PipelineHttpResponseChunkedDecoder(ChannelPipelineHandler):
+    def __init__(
+            self,
+            *,
+            max_chunk_header: int = 1024,
+            buffer_chunk_size: int = 0x10000,
+    ) -> None:
+        super().__init__()
 
-    Extends PipelineHttpChunkedDecoder to decode chunked response bodies.
-    """
+        self._max_chunk_header = max_chunk_header
+        self._buffer_chunk_size = buffer_chunk_size
 
-    def _is_head_message(self, msg: ta.Any) -> bool:
-        return isinstance(msg, PipelineHttpResponseHead)
+        self._enabled: ta.Optional[bool] = None
+        self._decoder: ta.Optional[ChunkedPipelineHttpContentChunkDecoder] = None
 
     def _should_enable(self, head: ta.Any) -> bool:
         te = head.headers.lower.get('transfer-encoding', ())
@@ -114,3 +119,28 @@ class PipelineHttpResponseChunkedDecoder(PipelineHttpChunkedDecoder):
 
     def _emit_end(self, ctx: ChannelPipelineHandlerContext) -> None:
         ctx.feed_in(PipelineHttpResponseEnd())
+
+    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, PipelineHttpResponseHead):
+            check.none(self._decoder)
+
+            self._enabled = self._should_enable(msg)
+
+            if self._enabled:
+                self._decoder = ChunkedPipelineHttpContentChunkDecoder(
+                    on_bytes_consumed=lambda n:
+                    max_chunk_header=self._max_chunk_header,
+                    buffer_chunk_size=self._buffer_chunk_size,
+                )
+
+            ctx.feed_in(msg)
+
+        if (dec := self._decoder) is not None:
+            for dec_msg in dec.inbound(msg):
+                ctx.feed_in(dec_msg)
+
+        if not self._enabled or not ByteStreamBuffers.can_bytes(msg):
+            ctx.feed_in(msg)
+            return
+
+        raise NotImplementedError
