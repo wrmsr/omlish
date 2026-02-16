@@ -1,1 +1,0 @@
-- make chunk data fields a CanBytes

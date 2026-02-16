@@ -2,9 +2,6 @@
 # @omlish-lite
 """
 TODO:
- - re-add BytesChannelPipelineFlowControl unique check (without thrashing cache)?
- - 'optional' / 'advisory' event abstract base class? if any non-this isn't 'handled' by some 'driver', raise
-   - need to catch stray bytes falling out
 """
 import abc
 import collections

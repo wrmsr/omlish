@@ -1,10 +1,5 @@
 # ruff: noqa: UP045
 # @omlish-lite
-"""
-TODO:
- - BytesBufferingChannelPipelineHandler or whatever..
-  - not even in here probably
-"""
 import typing as ta
 
 from omlish.io.streams.utils import ByteStreamBuffers
