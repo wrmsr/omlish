@@ -206,9 +206,12 @@ class ContentLengthPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecod
 
                 yield self._make_end()
 
-                yield mv[self._remain:]
-
+                # Sets done flag before yielding tail in case it happens to be checked before pulling it out of the
+                # generator.
+                rem = self._remain
                 self._remain = 0
+
+                yield mv[rem:]
 
                 break
 
@@ -264,27 +267,24 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
 
         self._state: ta.Literal['size', 'data', 'trailer', 'done'] = 'size'
 
-    def inbound(self, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineMessages.Eof):
-            check.state(self._state == 'done')
-            ctx.feed_in(msg)
-            return
+    @property
+    def done(self) -> bool:
+        return self._state == 'done'
 
+    def inbound(self, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
         check.state(self._state != 'done')
 
+        if isinstance(msg, ChannelPipelineMessages.Eof):
+            raise ValueError('EOF before HTTP body complete')
+
         if not ByteStreamBuffers.can_bytes(msg):
-            ctx.feed_in(msg)
+            yield msg
             return
 
         # Buffer and decode chunks
         for mv in ByteStreamBuffers.iter_segments(msg):
             if mv:
                 self._buf.write(mv)
-
-        self._decode_chunks()
-
-    def _decode_chunks(self) -> None:
-        """Decode as many complete chunks as possible from buffer."""
 
         while True:
             if self._state == 'size':
@@ -333,7 +333,7 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
                     raise ValueError(f'Expected \\r\\n after chunk data, got {trailing_bytes!r}')
 
                 # Emit chunk data (wrapped by subclass)
-                ctx.feed_in(self._make_chunk(chunk_data.tobytes()))
+                yield self._make_chunk(chunk_data.tobytes())
 
                 if (obc := self._on_bytes_consumed) is not None:
                     obc(before - after)
@@ -359,9 +359,13 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
                     obc(before - after)
 
                 # Emit end marker
-                ctx.feed_in(self._make_end())
+                yield self._make_end()
 
                 self._state = 'done'
+
+                for rem in self._buf.segments():
+                    yield rem
+
                 return
 
             elif self._state == 'done':
