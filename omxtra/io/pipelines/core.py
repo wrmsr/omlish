@@ -328,10 +328,17 @@ class ChannelPipeline:
 
         for i, h in enumerate(old_state.handlers):
             if h not in new_state.handler_indexes:
+                if (sch := self._channel._scheduler) is not None:  # noqa
+                    sch.cancel_all(h)
+
                 h.removing(old_state.contexts[i])
 
         old_state.invalidated = True
         self.__state = new_state
+
+        for i, h in enumerate(new_state.handlers):
+            if h not in old_state.handler_indexes:
+                h.added(new_state.contexts[i])
 
     #
 
