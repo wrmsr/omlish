@@ -78,7 +78,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
 
         # Second: body bytes
         body = out[1]
-        self.assertEqual(ByteStreamBuffers.to_bytes(body), b'hello')
+        self.assertEqual(ByteStreamBuffers.any_to_bytes(body), b'hello')
 
     def test_response_incremental_head(self) -> None:
         """Test response head received incrementally."""

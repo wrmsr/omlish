@@ -18,16 +18,23 @@ class ByteStreamBuffers:
         ByteStreamBufferLike,
     )
 
-    #
-
     @staticmethod
     def can_bytes(obj: ta.Any) -> bool:
         return type(obj) in (cts := ByteStreamBuffers._CAN_CONVERT_TYPES) or isinstance(obj, cts)
 
+    #
+
     @staticmethod
-    def _to_bytes(obj: ta.Any) -> bytes:
+    def memoryview_to_bytes(mv: memoryview) -> bytes:
+        if (((ot := type(obj := mv.obj)) is bytes or ot is bytearray or isinstance(obj, (bytes, bytearray))) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
+            return obj  # type: ignore[return-value]
+
+        return mv.tobytes()
+
+    @staticmethod
+    def buffer_to_bytes(obj: ta.Any) -> bytes:
         if type(obj) is memoryview or isinstance(obj, memoryview):
-            return ByteStreamBuffers._memoryview_to_bytes(obj)
+            return ByteStreamBuffers.memoryview_to_bytes(obj)
 
         elif isinstance(obj, ByteStreamBufferView):
             return obj.tobytes()
@@ -39,7 +46,7 @@ class ByteStreamBuffers:
             raise TypeError(obj)
 
     @staticmethod
-    def to_bytes(obj: ta.Any) -> bytes:
+    def any_to_bytes(obj: ta.Any) -> bytes:
         if (ot := type(obj)) is bytes:
             return obj
         elif ot is bytearray:
@@ -51,15 +58,15 @@ class ByteStreamBuffers:
             return bytes(obj)
 
         else:
-            return ByteStreamBuffers._to_bytes(obj)
+            return ByteStreamBuffers.buffer_to_bytes(obj)
 
     @staticmethod
-    def to_bytes_or_bytearray(obj: ta.Any) -> ta.Union[bytes, bytearray]:
+    def any_to_bytes_or_bytearray(obj: ta.Any) -> ta.Union[bytes, bytearray]:
         if (ot := type(obj)) is bytes or ot is bytearray or isinstance(obj, (bytes, bytearray)):
             return obj
 
         else:
-            return ByteStreamBuffers._to_bytes(obj)
+            return ByteStreamBuffers.buffer_to_bytes(obj)
 
     #
 
@@ -91,15 +98,6 @@ class ByteStreamBuffers:
 
         else:
             raise TypeError(obj)
-
-    #
-
-    @staticmethod
-    def _memoryview_to_bytes(mv: memoryview) -> bytes:
-        if (((ot := type(obj := mv.obj)) is bytes or ot is bytearray or isinstance(obj, (bytes, bytearray))) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
-            return obj  # type: ignore[return-value]
-
-        return mv.tobytes()
 
     #
 

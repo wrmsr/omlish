@@ -41,7 +41,7 @@ class BaseDirectByteStreamBufferLike(BaseByteStreamBufferLike, Abstract):
         except AttributeError:
             pass
 
-        self._b_ = b = ByteStreamBuffers._memoryview_to_bytes(self._mv_)  # noqa
+        self._b_ = b = ByteStreamBuffers.memoryview_to_bytes(self._mv_)  # noqa
         return b
 
 

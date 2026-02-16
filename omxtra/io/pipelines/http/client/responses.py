@@ -75,7 +75,7 @@ class PipelineHttpResponseDecoder(ChannelPipelineHandler):
         head_view = self._buf.split_to(i + 4)
         after = len(self._buf)
 
-        head = self._parse_head(ByteStreamBuffers.to_bytes(head_view))
+        head = self._parse_head(ByteStreamBuffers.any_to_bytes(head_view))
         self._got_head = True
 
         if (bfc := ctx.bytes_flow_control) is not None:

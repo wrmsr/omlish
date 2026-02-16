@@ -88,16 +88,16 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='../logs.py', sha1='5a4fad522508bdc1b790f1d5234a87f319c9da2d'),
             dict(path='../../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
-            dict(path='../../../../omlish/io/streams/utils.py', sha1='8bf1df1c7eada9969b00dfb65f4178cc923c95bb'),
+            dict(path='../../../../omlish/io/streams/utils.py', sha1='704f1c423ad7a99eb8daa9f24e9c89a938202c5c'),
             dict(path='../../../../omlish/lite/configs.py', sha1='c8602e0e197ef1133e7e8e248935ac745bfd46cb'),
             dict(path='../../../../omlish/logs/contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
             dict(path='../../../../omlish/logs/std/standard.py', sha1='5c97c1b9f7ead58d6127d047b873398f708f288d'),
             dict(path='../../../../omlish/subprocesses/wrap.py', sha1='8a9b7d2255481fae15c05f5624b0cdc0766f4b3f'),
-            dict(path='../../../../omlish/io/streams/direct.py', sha1='c7a8cf3adb785387e410381cc83be2aad74b8d41'),
+            dict(path='../../../../omlish/io/streams/direct.py', sha1='b01937212493e9a41644ac4e366e4cbab10332ce'),
             dict(path='../../../../omlish/io/streams/scanning.py', sha1='5d4cf0776463a6f675ca74ca87637133b78b51a2'),
             dict(path='../../../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
             dict(path='../../../../omlish/logs/std/records.py', sha1='8bbf6ef9eccb3a012c6ca416ddf3969450fd8fc9'),
-            dict(path='../../../../omlish/io/streams/segmented.py', sha1='69b63fb61953eaaea7e996cbd96555882ba8f6f2'),
+            dict(path='../../../../omlish/io/streams/segmented.py', sha1='77b78666798688be9fa8fd54ad74abc4376c4410'),
             dict(path='../../../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='../../../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
@@ -5689,16 +5689,23 @@ class ByteStreamBuffers:
         ByteStreamBufferLike,
     )
 
-    #
-
     @staticmethod
     def can_bytes(obj: ta.Any) -> bool:
         return type(obj) in (cts := ByteStreamBuffers._CAN_CONVERT_TYPES) or isinstance(obj, cts)
 
+    #
+
     @staticmethod
-    def _to_bytes(obj: ta.Any) -> bytes:
+    def memoryview_to_bytes(mv: memoryview) -> bytes:
+        if (((ot := type(obj := mv.obj)) is bytes or ot is bytearray or isinstance(obj, (bytes, bytearray))) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
+            return obj  # type: ignore[return-value]
+
+        return mv.tobytes()
+
+    @staticmethod
+    def buffer_to_bytes(obj: ta.Any) -> bytes:
         if type(obj) is memoryview or isinstance(obj, memoryview):
-            return ByteStreamBuffers._memoryview_to_bytes(obj)
+            return ByteStreamBuffers.memoryview_to_bytes(obj)
 
         elif isinstance(obj, ByteStreamBufferView):
             return obj.tobytes()
@@ -5710,7 +5717,7 @@ class ByteStreamBuffers:
             raise TypeError(obj)
 
     @staticmethod
-    def to_bytes(obj: ta.Any) -> bytes:
+    def any_to_bytes(obj: ta.Any) -> bytes:
         if (ot := type(obj)) is bytes:
             return obj
         elif ot is bytearray:
@@ -5722,15 +5729,15 @@ class ByteStreamBuffers:
             return bytes(obj)
 
         else:
-            return ByteStreamBuffers._to_bytes(obj)
+            return ByteStreamBuffers.buffer_to_bytes(obj)
 
     @staticmethod
-    def to_bytes_or_bytearray(obj: ta.Any) -> ta.Union[bytes, bytearray]:
+    def any_to_bytes_or_bytearray(obj: ta.Any) -> ta.Union[bytes, bytearray]:
         if (ot := type(obj)) is bytes or ot is bytearray or isinstance(obj, (bytes, bytearray)):
             return obj
 
         else:
-            return ByteStreamBuffers._to_bytes(obj)
+            return ByteStreamBuffers.buffer_to_bytes(obj)
 
     #
 
@@ -5762,15 +5769,6 @@ class ByteStreamBuffers:
 
         else:
             raise TypeError(obj)
-
-    #
-
-    @staticmethod
-    def _memoryview_to_bytes(mv: memoryview) -> bytes:
-        if (((ot := type(obj := mv.obj)) is bytes or ot is bytearray or isinstance(obj, (bytes, bytearray))) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
-            return obj  # type: ignore[return-value]
-
-        return mv.tobytes()
 
     #
 
@@ -6166,7 +6164,7 @@ class BaseDirectByteStreamBufferLike(BaseByteStreamBufferLike, Abstract):
         except AttributeError:
             pass
 
-        self._b_ = b = ByteStreamBuffers._memoryview_to_bytes(self._mv_)  # noqa
+        self._b_ = b = ByteStreamBuffers.memoryview_to_bytes(self._mv_)  # noqa
         return b
 
 
@@ -7593,7 +7591,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         if not data:
             return
         if isinstance(data, memoryview):
-            data = ByteStreamBuffers._memoryview_to_bytes(data)  # noqa
+            data = ByteStreamBuffers.memoryview_to_bytes(data)  # noqa
         # elif isinstance(data, bytearray):
         #     pass
         # else:

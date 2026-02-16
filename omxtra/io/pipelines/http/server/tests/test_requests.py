@@ -83,7 +83,7 @@ class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):
 
         # Second: body bytes (forwarded)
         body = out[1]
-        self.assertEqual(ByteStreamBuffers.to_bytes(body), b'test')
+        self.assertEqual(ByteStreamBuffers.any_to_bytes(body), b'test')
 
     def test_body_passthrough_mode(self) -> None:
         """Test that after head parsed, subsequent bytes pass through."""
@@ -104,8 +104,8 @@ class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):
 
         out = channel.drain_out()
         self.assertEqual(len(out), 2)
-        self.assertEqual(ByteStreamBuffers.to_bytes(out[0]), b'hello')
-        self.assertEqual(ByteStreamBuffers.to_bytes(out[1]), b'world')
+        self.assertEqual(ByteStreamBuffers.any_to_bytes(out[0]), b'hello')
+        self.assertEqual(ByteStreamBuffers.any_to_bytes(out[1]), b'world')
 
     def test_flow_control_refund_with_preexisting_buffer(self) -> None:
         """

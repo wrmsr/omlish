@@ -29,12 +29,12 @@ def __omlish_amalg__():  # noqa
             dict(path='base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='framing.py', sha1='854bb6bbfc713fa47d0293b11cb4db230f51268d'),
             dict(path='reading.py', sha1='7631635c46ab4b40bcaeb7c506cf15cb2d529a40'),
-            dict(path='utils.py', sha1='8bf1df1c7eada9969b00dfb65f4178cc923c95bb'),
-            dict(path='direct.py', sha1='c7a8cf3adb785387e410381cc83be2aad74b8d41'),
+            dict(path='utils.py', sha1='704f1c423ad7a99eb8daa9f24e9c89a938202c5c'),
+            dict(path='direct.py', sha1='b01937212493e9a41644ac4e366e4cbab10332ce'),
             dict(path='scanning.py', sha1='5d4cf0776463a6f675ca74ca87637133b78b51a2'),
             dict(path='adapters.py', sha1='75087e980f4ff90796728596512ffc3bf8ef235a'),
-            dict(path='linear.py', sha1='c447145ff755d469365adb30568705174874476f'),
-            dict(path='segmented.py', sha1='69b63fb61953eaaea7e996cbd96555882ba8f6f2'),
+            dict(path='linear.py', sha1='ea42b0d9fd00863493dc9a8c8860c2a406a07dfc'),
+            dict(path='segmented.py', sha1='77b78666798688be9fa8fd54ad74abc4376c4410'),
             dict(path='_amalg.py', sha1='9c88a055447d7b37da1b356e6a1e00b7c4a9a3cb'),
         ],
     )
@@ -1028,16 +1028,23 @@ class ByteStreamBuffers:
         ByteStreamBufferLike,
     )
 
-    #
-
     @staticmethod
     def can_bytes(obj: ta.Any) -> bool:
         return type(obj) in (cts := ByteStreamBuffers._CAN_CONVERT_TYPES) or isinstance(obj, cts)
 
+    #
+
     @staticmethod
-    def _to_bytes(obj: ta.Any) -> bytes:
+    def memoryview_to_bytes(mv: memoryview) -> bytes:
+        if (((ot := type(obj := mv.obj)) is bytes or ot is bytearray or isinstance(obj, (bytes, bytearray))) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
+            return obj  # type: ignore[return-value]
+
+        return mv.tobytes()
+
+    @staticmethod
+    def buffer_to_bytes(obj: ta.Any) -> bytes:
         if type(obj) is memoryview or isinstance(obj, memoryview):
-            return ByteStreamBuffers._memoryview_to_bytes(obj)
+            return ByteStreamBuffers.memoryview_to_bytes(obj)
 
         elif isinstance(obj, ByteStreamBufferView):
             return obj.tobytes()
@@ -1049,7 +1056,7 @@ class ByteStreamBuffers:
             raise TypeError(obj)
 
     @staticmethod
-    def to_bytes(obj: ta.Any) -> bytes:
+    def any_to_bytes(obj: ta.Any) -> bytes:
         if (ot := type(obj)) is bytes:
             return obj
         elif ot is bytearray:
@@ -1061,15 +1068,15 @@ class ByteStreamBuffers:
             return bytes(obj)
 
         else:
-            return ByteStreamBuffers._to_bytes(obj)
+            return ByteStreamBuffers.buffer_to_bytes(obj)
 
     @staticmethod
-    def to_bytes_or_bytearray(obj: ta.Any) -> ta.Union[bytes, bytearray]:
+    def any_to_bytes_or_bytearray(obj: ta.Any) -> ta.Union[bytes, bytearray]:
         if (ot := type(obj)) is bytes or ot is bytearray or isinstance(obj, (bytes, bytearray)):
             return obj
 
         else:
-            return ByteStreamBuffers._to_bytes(obj)
+            return ByteStreamBuffers.buffer_to_bytes(obj)
 
     #
 
@@ -1101,15 +1108,6 @@ class ByteStreamBuffers:
 
         else:
             raise TypeError(obj)
-
-    #
-
-    @staticmethod
-    def _memoryview_to_bytes(mv: memoryview) -> bytes:
-        if (((ot := type(obj := mv.obj)) is bytes or ot is bytearray or isinstance(obj, (bytes, bytearray))) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
-            return obj  # type: ignore[return-value]
-
-        return mv.tobytes()
 
     #
 
@@ -1158,7 +1156,7 @@ class BaseDirectByteStreamBufferLike(BaseByteStreamBufferLike, Abstract):
         except AttributeError:
             pass
 
-        self._b_ = b = ByteStreamBuffers._memoryview_to_bytes(self._mv_)  # noqa
+        self._b_ = b = ByteStreamBuffers.memoryview_to_bytes(self._mv_)  # noqa
         return b
 
 
@@ -1774,7 +1772,7 @@ class LinearByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
         if not data:
             return
         if isinstance(data, memoryview):
-            data = ByteStreamBuffers._memoryview_to_bytes(data)  # noqa
+            data = ByteStreamBuffers.memoryview_to_bytes(data)  # noqa
         elif isinstance(data, bytearray):
             data = bytes(data)
 
@@ -2193,7 +2191,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         if not data:
             return
         if isinstance(data, memoryview):
-            data = ByteStreamBuffers._memoryview_to_bytes(data)  # noqa
+            data = ByteStreamBuffers.memoryview_to_bytes(data)  # noqa
         # elif isinstance(data, bytearray):
         #     pass
         # else:

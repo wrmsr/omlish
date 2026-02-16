@@ -94,7 +94,7 @@ class LinearByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
         if not data:
             return
         if isinstance(data, memoryview):
-            data = ByteStreamBuffers._memoryview_to_bytes(data)  # noqa
+            data = ByteStreamBuffers.memoryview_to_bytes(data)  # noqa
         elif isinstance(data, bytearray):
             data = bytes(data)
 

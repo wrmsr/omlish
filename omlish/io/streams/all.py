@@ -76,8 +76,8 @@ NoOutstandingReserve = NoOutstandingReserveByteStreamBufferError
 #
 
 can_bytes = ByteStreamBuffers.can_bytes
-to_bytes = ByteStreamBuffers.to_bytes
-to_bytes_or_bytearray = ByteStreamBuffers.to_bytes_or_bytearray
+to_bytes = ByteStreamBuffers.any_to_bytes
+to_bytes_or_bytearray = ByteStreamBuffers.any_to_bytes_or_bytearray
 
 bytes_len = ByteStreamBuffers.bytes_len
 

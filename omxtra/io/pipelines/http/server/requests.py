@@ -98,7 +98,7 @@ class PipelineHttpRequestHeadDecoder(ChannelPipelineHandler):
         if (bfc := ctx.bytes_flow_control) is not None:
             bfc.on_consumed(self, before - after)
 
-        req = self._parse_head(ByteStreamBuffers.to_bytes(head_view))
+        req = self._parse_head(ByteStreamBuffers.any_to_bytes(head_view))
         ctx.feed_in(req)
 
         # Switch into body passthrough mode after emitting the head.
@@ -232,7 +232,7 @@ class PipelineHttpRequestBodyAggregator(ChannelPipelineHandler):
         if (bfc := ctx.bytes_flow_control) is not None:
             bfc.on_consumed(self, before - after)
 
-        body = ByteStreamBuffers.to_bytes(body_view)
+        body = ByteStreamBuffers.any_to_bytes(body_view)
 
         head = self._cur_head
         self._cur_head = None
@@ -412,7 +412,7 @@ class PipelineHttpRequestBodyStreamDecoder(ChannelPipelineHandler):
                 take = self._max_chunk
 
             v = self._buf.split_to(take)
-            data = ByteStreamBuffers.to_bytes(v)
+            data = ByteStreamBuffers.any_to_bytes(v)
             ctx.feed_in(PipelineHttpRequestContentChunk(data))
             self._remain -= take
 
@@ -429,7 +429,7 @@ class PipelineHttpRequestBodyStreamDecoder(ChannelPipelineHandler):
             if take > self._max_chunk:
                 take = self._max_chunk
             v = self._buf.split_to(take)
-            ctx.feed_in(PipelineHttpRequestContentChunk(ByteStreamBuffers.to_bytes(v)))
+            ctx.feed_in(PipelineHttpRequestContentChunk(ByteStreamBuffers.any_to_bytes(v)))
         return 0
 
     def _drain_chunked(self, ctx: ChannelPipelineHandlerContext) -> int:
@@ -446,7 +446,7 @@ class PipelineHttpRequestBodyStreamDecoder(ChannelPipelineHandler):
                 i = self._buf.find(b'\r\n')
                 if i < 0:
                     return 0
-                line = ByteStreamBuffers.to_bytes(self._buf.split_to(i))
+                line = ByteStreamBuffers.any_to_bytes(self._buf.split_to(i))
                 self._buf.advance(2)  # CRLF
                 s = line.split(b';', 1)[0].strip()
                 try:
@@ -482,7 +482,7 @@ class PipelineHttpRequestBodyStreamDecoder(ChannelPipelineHandler):
                 return 0
 
             data_v = self._buf.split_to(self._chunk_remain)
-            data = ByteStreamBuffers.to_bytes(data_v)
+            data = ByteStreamBuffers.any_to_bytes(data_v)
             self._buf.advance(2)  # CRLF after chunk
             ctx.feed_in(PipelineHttpRequestContentChunk(data))
             self._chunk_remain = None  # next size line

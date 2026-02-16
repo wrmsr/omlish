@@ -32,7 +32,7 @@ class UnicodePipelineDecoder(ChannelPipelineHandler):
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         if ByteStreamBuffers.can_bytes(msg):
-            b = ByteStreamBuffers.to_bytes(msg)
+            b = ByteStreamBuffers.any_to_bytes(msg)
 
             if (bfc := ctx.bytes_flow_control) is not None:
                 bfc.on_consumed(self, len(b))
