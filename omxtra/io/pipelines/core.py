@@ -259,8 +259,7 @@ class ChannelPipeline:
         check.is_not(ctx, self._innermost)
         check.is_not(ctx, self._outermost)
 
-        if (sched := self._channel._scheduler) is not None:  # noqa
-            sched.cancel_all(handler)
+        self._channel._removing(handler)  # noqa
 
         ctx.handler.removing(ctx)
 
@@ -400,6 +399,12 @@ class PipelineChannel:
     @property
     def pipeline(self) -> ChannelPipeline:
         return self._pipeline
+
+    #
+
+    def _removing(self, handler: ChannelPipelineHandler) -> None:
+        if (sched := self._scheduler) is not None:
+            sched.cancel_all(handler)
 
     #
 
