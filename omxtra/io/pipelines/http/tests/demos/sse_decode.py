@@ -1,4 +1,5 @@
-# ruff: noqa: UP006
+# ruff: noqa: UP006 UP045
+# @omlish-lite
 import typing as ta
 
 from ....core import PipelineChannel

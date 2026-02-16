@@ -1,4 +1,5 @@
-# ruff: noqa: UP006
+# ruff: noqa: UP006 UP045
+# @omlish-lite
 import asyncio
 import typing as ta
 
@@ -77,7 +78,7 @@ class KvStoreHandler(ChannelPipelineHandler):
         self._write_response(ctx, 405, b'method not allowed')
         ctx.channel.feed_close()
 
-    def _parse_key(self, target: str) -> str | None:
+    def _parse_key(self, target: str) -> ta.Optional[str]:
         # strip querystring
         if '?' in target:
             target = target.split('?', 1)[0]
@@ -117,12 +118,12 @@ class KvStoreHandler(ChannelPipelineHandler):
 def build_http_kv_channel(
         items: ta.MutableMapping[str, str],
         *,
-        outbound_capacity: int | None = 1 << 22,
+        outbound_capacity: ta.Optional[int] = 1 << 22,
         outbound_overflow_policy: ta.Literal['allow', 'close', 'raise', 'drop'] = 'close',
 
         max_head: int = 64 << 10,
 
-        max_body: int | None = 1 << 20,
+        max_body: ta.Optional[int] = 1 << 20,
 ) -> PipelineChannel:
     return PipelineChannel([
 

@@ -1,3 +1,5 @@
+# ruff: noqa: UP045
+# @omlish-lite
 import asyncio
 import typing as ta
 
@@ -56,7 +58,7 @@ class PingHandler(ChannelPipelineHandler):
 
 def build_http_ping_channel(
         *,
-        outbound_capacity: int | None = 1 << 22,
+        outbound_capacity: ta.Optional[int] = 1 << 22,
         outbound_overflow_policy: ta.Literal['allow', 'close', 'raise', 'drop'] = 'close',
 ) -> PipelineChannel:
     return PipelineChannel([

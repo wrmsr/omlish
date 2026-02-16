@@ -1,5 +1,6 @@
 # ruff: noqa: S310 UP006 UP045
 # @omlish-lite
+# @omlish-precheck-allow-any-unicode
 import typing as ta
 import unittest
 import urllib.error

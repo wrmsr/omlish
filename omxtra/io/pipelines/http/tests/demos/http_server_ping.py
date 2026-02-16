@@ -1,3 +1,5 @@
+# ruff: noqa: UP045
+# @omlish-lite
 import asyncio
 import typing as ta
 

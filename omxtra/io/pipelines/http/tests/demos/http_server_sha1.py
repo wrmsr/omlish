@@ -1,3 +1,5 @@
+# ruff: noqa: UP045
+# @omlish-lite
 """
 time bash -c 'cat ~/Downloads/ghidra_11.4.2_PUBLIC_20250826.zip | curl -X POST --data-binary @- http://localhost:8087/sha1'
 time sha1 ~/Downloads/ghidra_11.4.2_PUBLIC_20250826.zip
@@ -100,13 +102,13 @@ class Sha1Handler(ChannelPipelineHandler):
 
 def build_http_sha1_channel(
         *,
-        outbound_capacity: int | None = 1 << 22,
+        outbound_capacity: ta.Optional[int] = 1 << 22,
         outbound_overflow_policy: ta.Literal['allow', 'close', 'raise', 'drop'] = 'close',
 
         max_head: int = 64 << 10,
 
         max_chunk: int = 1 << 20,
-        max_body_buf: int | None = 1 << 22,
+        max_body_buf: ta.Optional[int] = 1 << 22,
 ) -> PipelineChannel:
     return PipelineChannel([
 

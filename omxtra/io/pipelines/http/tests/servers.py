@@ -89,6 +89,8 @@ class HttpServerRunner:
         """Serve requests until shutdown."""
 
         async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
+            drv: AsyncioStreamChannelPipelineDriver
+
             if self._use_flow_control:
                 drv = BytesFlowControlAsyncioStreamChannelPipelineDriver(
                     self._channel_builder(),
