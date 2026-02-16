@@ -13,9 +13,13 @@ from omlish.lite.check import check
 from ...core import ChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
 from ...core import ChannelPipelineMessages
+from ..decoders import PipelineHttpContentChunkDecoder
 from ..decoders import PipelineHttpDecoders
 from ..decoders import PipelineHttpHeadDecoder
 from ..requests import FullPipelineHttpRequest
+from ..decoders import UntilEofPipelineHttpContentChunkDecoder
+from ..decoders import ContentLengthPipelineHttpContentChunkDecoder
+from ..decoders import ChunkedPipelineHttpContentChunkDecoder
 from ..requests import PipelineHttpRequestAborted
 from ..requests import PipelineHttpRequestContentChunk
 from ..requests import PipelineHttpRequestEnd
@@ -193,9 +197,102 @@ class PipelineHttpRequestBodyAggregator(ChannelPipelineHandler):
 ##
 
 
-# class PipelineHttpRequestBodyStreamDecoder2(ChannelPipelineHandler):
-#     PipelineHttpContentChunkDecoder
-#     pass
+class PipelineHttpRequestBodyStreamDecoder2(ChannelPipelineHandler):
+    """
+    Turns (PipelineHttpRequestHead + subsequent bytes) into streaming PipelineHttpContentChunk events +
+    PipelineHttpRequestEnd.
+
+    Supported body modes:
+      - Content-Length: reads exactly that many bytes
+      - Transfer-Encoding: chunked: decodes RFC 7230 chunked encoding (minimal, trailers ignored beyond terminator)
+      - Neither present: treats body as "until EOF" (useful for infinite streaming uploads)
+    """
+
+    def __init__(
+            self,
+            *,
+            max_chunk: int = 0x100000,
+            max_chunk_header: int = 1024,
+            buffer_chunk_size: int = 0x10000,
+    ) -> None:
+        super().__init__()
+
+        self._max_chunk = max_chunk
+        self._max_chunk_header = max_chunk_header
+        self._buffer_chunk_size = buffer_chunk_size
+
+        self._decoder: ta.Optional[PipelineHttpContentChunkDecoder] = None
+
+    class _SelectedMode(ta.NamedTuple):
+        mode: ta.Literal['none', 'eof', 'cl', 'chunked']
+        length: ta.Optional[int]
+
+    def _select_mode(self, head: PipelineHttpRequestHead) -> _SelectedMode:
+        if head.headers.contains_value('transfer-encoding', 'chunked', ignore_case=True):
+            return self._SelectedMode('chunked', None)
+
+        cl = head.headers.single.get('content-length')
+        if cl is not None and cl != '':
+            try:
+                n = int(cl)
+            except ValueError:
+                raise ValueError('bad Content-Length') from None
+
+            if n < 0:
+                raise ValueError('bad Content-Length')
+
+            if n == 0:
+                return self._SelectedMode('none', None)
+
+            return self._SelectedMode('cl', n)
+
+        # No length info: treat as until EOF (supports infinite streaming).
+        return self._SelectedMode('eof', None)
+
+    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if self._decoder is not None:
+            ctx.feed_in(msg)
+            return
+
+        if not isinstance(msg, PipelineHttpRequestHead):
+            ctx.feed_in(msg)
+            return
+
+        sm = self._select_mode(msg)
+
+        ctx.feed_in(msg)
+
+        make_chunk = lambda data: PipelineHttpRequestContentChunk(data)  # noqa
+        make_end = lambda: PipelineHttpRequestEnd()  # noqa
+
+        if sm.mode == 'none':
+            ctx.feed_in(PipelineHttpRequestEnd())
+
+        elif sm.mode == 'eof':
+            self._decoder = UntilEofPipelineHttpContentChunkDecoder(
+                make_chunk,
+                make_end,
+            )
+
+        elif sm.mode == 'cl':
+            self._decoder = ContentLengthPipelineHttpContentChunkDecoder(
+                make_chunk,
+                make_end,
+                sm.length,
+            )
+
+        elif sm.mode == 'chunked':
+            self._decoder = ChunkedPipelineHttpContentChunkDecoder(
+                make_chunk,
+                make_end,
+                max_chunk_header=self._max_chunk_header,
+            )
+
+        else:
+            raise RuntimeError(f'unexpected mode {sm!r}')
+
+
+##
 
 
 _PipelineHttpRequestBodyStreamDecoderMode = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typing-no-move
@@ -215,12 +312,6 @@ class PipelineHttpRequestBodyStreamDecoder(ChannelPipelineHandler):
       - Content-Length: reads exactly that many bytes
       - Transfer-Encoding: chunked: decodes RFC 7230 chunked encoding (minimal, trailers ignored beyond terminator)
       - Neither present: treats body as "until EOF" (useful for infinite streaming uploads)
-
-    This keeps the "simple non-streaming body" path possible via a separate aggregator handler:
-      PipelineHttpRequestHead -> PipelineHttpContentChunk* -> PipelineHttpRequestEnd (stream)
-      PipelineHttpRequestHead -> FullPipelineHttpRequest(head, body) (aggregated)
-
-    FIXME: Decompose! Replace self with PipelineHttpRequestChunkedDecoder or whatever behavior is selected.
     """
 
     def __init__(

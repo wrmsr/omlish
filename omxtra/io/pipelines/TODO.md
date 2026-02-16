@@ -27,6 +27,8 @@
 
 ### http
 
+- cleanup / standardize / deduplicate / sane-ify buffer configs
+  - 'max_chunk_header'? really? it's not the int max it's the max bytes in the buffer..
 - make chunk data fields a CanBytes
 - ensure parity with urllib/http.server in general
 - ensure parity with netty security wise
