@@ -18,6 +18,10 @@ class FlowControlValidationChannelPipelineError(ChannelPipelineError):
     pass
 
 
+class ContextInvalidatedChannelPipelineError(ChannelPipelineError):
+    pass
+
+
 class SawEofChannelPipelineError(ChannelPipelineError):
     pass
 

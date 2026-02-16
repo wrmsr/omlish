@@ -15,6 +15,7 @@ from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 
 from .errors import ClosedChannelPipelineError
+from .errors import ContextInvalidatedChannelPipelineError
 from .errors import MessageNotPropagatedChannelPipelineError
 from .errors import SawEofChannelPipelineError
 
@@ -40,7 +41,11 @@ class ChannelPipelineMessages:
         pass
 
     class MustPropagate(Abstract):
-        """These must be propagated all the way through the pipeline when sent in either direction."""
+        """
+        These must be propagated all the way through the pipeline when sent in either direction. This is enforced via
+        object identity - the same *instance* of the message must be seen at the end of the pipeline to be considered
+        caught. This is intentional.
+        """
 
     #
 
@@ -49,10 +54,16 @@ class ChannelPipelineMessages:
     class Eof(NeverOutbound, MustPropagate):
         """Signals that the inbound stream reached EOF."""
 
+        def __repr__(self) -> str:
+            return f'{type(self).__name__}@{id(self):x}()'
+
     @ta.final
     @dc.dataclass(frozen=True)
     class Close(NeverInbound, MustPropagate):
         """Requests that the channel/pipeline close."""
+
+        def __repr__(self) -> str:
+            return f'{type(self).__name__}@{id(self):x}()'
 
 
 ##
@@ -75,10 +86,6 @@ class ChannelPipelineEvents:
 
 
 class ChannelPipelineError(Exception):
-    pass
-
-
-class ChannelPipelineContextInvalidatedError(ChannelPipelineError):
     pass
 
 
@@ -129,6 +136,13 @@ class BytesChannelPipelineFlowControl(ChannelPipelineFlowControl, Abstract):
 
 @ta.final
 class ChannelPipelineHandlerContext:
+    """
+    Passed to ChannelPipelineHandler methods, provides handler-specific access and operations the pipeline channel.
+
+    Instances of this are never to be cached or shared - they are only considered valid within the scope of a single
+    handler method call.
+    """
+
     def __init__(
             self,
             *,
@@ -178,7 +192,8 @@ class ChannelPipelineHandlerContext:
     #
 
     def _inbound(self, msg: ta.Any) -> None:
-        check.state(not self._invalidated)
+        if self._invalidated:
+            raise ContextInvalidatedChannelPipelineError
         check.not_isinstance(msg, ChannelPipelineMessages.NeverInbound)
 
         if isinstance(msg, ChannelPipelineMessages.MustPropagate):
@@ -187,7 +202,8 @@ class ChannelPipelineHandlerContext:
         self._handler.inbound(self, msg)
 
     def _outbound(self, msg: ta.Any) -> None:
-        check.state(not self._invalidated)
+        if self._invalidated:
+            raise ContextInvalidatedChannelPipelineError
         check.not_isinstance(msg, ChannelPipelineMessages.NeverOutbound)
 
         if isinstance(msg, ChannelPipelineMessages.MustPropagate):
@@ -232,7 +248,7 @@ class ChannelPipelineHandler(Abstract):
     def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         ctx.feed_out(msg)
 
-    def scheduled(self, msg: ta.Any) -> None:
+    def scheduled(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         raise NotImplementedError
 
 
@@ -259,6 +275,8 @@ class ChannelPipeline:
             _handler=ChannelPipeline._Innermost(),
         )
 
+        # Explicitly does not form a ring, iteration past the outermost/innermost is always an error and will
+        # intentionally raise AttributeError if not caught earlier.
         outermost._next_in = innermost  # noqa
         innermost._next_out = outermost  # noqa
 
@@ -609,7 +627,8 @@ class PipelineChannel:
     def handle_error(self, e: BaseException) -> None:
         self.emit(ChannelPipelineEvents.Error(e))
 
-        self.feed_close()
+        if not self._saw_close:
+            self.feed_close()
 
     #
 
