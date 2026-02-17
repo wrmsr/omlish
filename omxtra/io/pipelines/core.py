@@ -515,10 +515,12 @@ class PipelineChannel:
             handlers: ta.Sequence[ChannelPipelineHandler] = (),
             *,
             scheduler: ta.Optional[ChannelPipelineScheduler] = None,
+            raise_handler_errors: bool = False,
     ) -> None:
         super().__init__()
 
         self._scheduler: ta.Final[ta.Optional[ChannelPipelineScheduler]] = scheduler
+        self._raise_handler_errors = raise_handler_errors
 
         self._emitted_q: ta.Final[collections.deque[ta.Any]] = collections.deque()
 
@@ -563,6 +565,8 @@ class PipelineChannel:
         try:
             ctx._inbound(msg)  # noqa
         except BaseException as e:  # noqa
+            if self._raise_handler_errors:
+                raise
             self.handle_error(e)
 
     def feed_in(self, msg: ta.Any) -> None:
@@ -583,6 +587,8 @@ class PipelineChannel:
         try:
             ctx._outbound(msg)  # noqa
         except BaseException as e:  # noqa
+            if self._raise_handler_errors:
+                raise
             self.handle_error(e)
 
     def feed_out(self, msg: ta.Any) -> None:

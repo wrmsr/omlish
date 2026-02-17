@@ -220,40 +220,37 @@ class ContentLengthPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecod
             yield msg
             return
 
-        mvs = list(ByteStreamBuffers.iter_segments(msg))
+        for mv in ByteStreamBuffers.iter_segments(msg):
+            if self._remain < 1:
+                yield mv
+                continue
 
-        i = 0
-        while i < len(mvs) and self._remain > 0:
-            mv = mvs[i]
             mvl = len(mv)
 
-            if self._remain < mvl:
-                yield self._make_chunk(ByteStreamBuffers.memoryview_to_bytes(mv[:self._remain]))
+            if self._remain > mvl:
+                if on_bytes_consumed is not None:
+                    on_bytes_consumed(mvl)
 
+                yield self._make_chunk(ByteStreamBuffers.memoryview_to_bytes(mv))
+                self._remain -= mvl
+
+            elif self._remain == mvl:
+                if on_bytes_consumed is not None:
+                    on_bytes_consumed(mvl)
+
+                yield self._make_chunk(ByteStreamBuffers.memoryview_to_bytes(mv))
                 yield self._make_end()
-
-                # Sets done flag before yielding tail in case it happens to be checked before pulling it out of the
-                # generator.
-                rem = self._remain
                 self._remain = 0
 
-                yield mv[rem:]
+            else:
+                if on_bytes_consumed is not None:
+                    on_bytes_consumed(self._remain)
 
-                break
-
-            if on_bytes_consumed is not None:
-                on_bytes_consumed(mvl)
-
-            yield self._make_chunk(ByteStreamBuffers.memoryview_to_bytes(mv))
-
-            self._remain -= mvl
-
-            i += 1
-
-        while i < len(mvs):
-            yield mvs[i]
-
-            i += 1
+                yield self._make_chunk(ByteStreamBuffers.memoryview_to_bytes(mv[:self._remain]))
+                yield self._make_end()
+                ofs = self._remain
+                self._remain = 0
+                yield mv[ofs:]
 
 
 class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):

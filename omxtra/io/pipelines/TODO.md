@@ -1,16 +1,16 @@
 ### immed
 
+- meditate on close/eof/errors
 - evented/callback want_read, not a dumb sleep
 - meditate on flow control
   - bidirectional?
-- meditate on close/eof/errors
+- need to catch stray bytes falling out
+  - 'Ignorable' event abstract base class? if any non-this isn't 'handled' by some 'driver', raise
 
 ### core
 
 - BytesBufferingChannelPipelineHandler or whatever - `def bytes_buffered() -> int`
 - re-add BytesChannelPipelineFlowControl unique check (without thrashing cache)?
-- 'optional' / 'advisory' event abstract base class? if any non-this isn't 'handled' by some 'driver', raise
-    - need to catch stray bytes falling out
 - ssl
 - drivers
   - 'pure' - no io
@@ -24,6 +24,7 @@
 - apps
   - async/await interop
 - thread safety? nogil?
+- inject interop
 
 ### http
 

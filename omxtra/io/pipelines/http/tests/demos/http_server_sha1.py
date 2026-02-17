@@ -108,29 +108,32 @@ def build_http_sha1_channel(
         max_head: int = 64 << 10,
 
         max_chunk: int = 1 << 20,
-        max_body_buffer: ta.Optional[int] = 1 << 22,
+        # max_body_buffer: ta.Optional[int] = 1 << 22,  # FIXME
 ) -> PipelineChannel:
-    return PipelineChannel([
+    return PipelineChannel(
+        [
 
-        BytesFlowControlChannelPipelineHandler(
-            BytesFlowControlChannelPipelineHandler.Config(
-                outbound_capacity=outbound_capacity,
-                outbound_overflow_policy=outbound_overflow_policy,
+            BytesFlowControlChannelPipelineHandler(
+                BytesFlowControlChannelPipelineHandler.Config(
+                    outbound_capacity=outbound_capacity,
+                    outbound_overflow_policy=outbound_overflow_policy,
+                ),
             ),
-        ),
 
-        PipelineHttpRequestHeadDecoder(
-            max_head=max_head,
-        ),
+            PipelineHttpRequestHeadDecoder(
+                max_head=max_head,
+            ),
 
-        PipelineHttpRequestBodyStreamDecoder(
-            max_chunk=max_chunk,
-            max_buffer=max_body_buffer,
-        ),
+            PipelineHttpRequestBodyStreamDecoder(
+                max_chunk=max_chunk,
+                # max_buffer=max_body_buffer,  # FIXME
+            ),
 
-        Sha1Handler(),
+            Sha1Handler(),
 
-    ])
+        ],
+        raise_handler_errors=True,
+    )
 
 
 async def serve_sha1(
