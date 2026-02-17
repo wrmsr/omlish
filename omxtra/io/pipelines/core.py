@@ -221,6 +221,20 @@ class ChannelPipelineHandlerContext:
 
 
 class ChannelPipelineHandler(Abstract):
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        if not (
+            cls.__hash__ is object.__hash__ and
+            cls.__eq__ is object.__eq__ and
+            cls.__ne__ is object.__ne__
+        ):
+            raise TypeError(
+                f'ChannelPipelineHandler subclass {cls.__name__} must not override __hash__, __eq__ or __ne__',
+            )
+
+    #
+
     def added(self, ctx: ChannelPipelineHandlerContext) -> None:
         pass
 
