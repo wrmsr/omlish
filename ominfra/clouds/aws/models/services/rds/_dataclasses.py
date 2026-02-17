@@ -2274,70 +2274,317 @@ def _process_dataclass__e370acdd02f632f5ffa5833dfc2b29fa253e1324():
         "'latest_restorable_time', 'multi_az', 'engine_version', 'auto_minor_version_upgrade', 'read_replica_source_db_"
         "instance_identifier', 'read_replica_db_instance_identifiers', 'read_replica_db_cluster_identifiers', 'replica_"
         "mode', 'license_model', 'iops', 'storage_throughput', 'option_group_memberships', 'character_set_name', 'nchar"
-        "_character_set_name', 'secondary_availability_zone', 'publicly_accessible', 'status_infos', 'storage_type', 't"
-        "de_credential_arn', 'db_instance_port', 'db_cluster_identifier', 'storage_encrypted', 'kms_key_id', 'dbi_resou"
-        "rce_id', 'ca_certificate_identifier', 'domain_memberships', 'copy_tags_to_snapshot', 'monitoring_interval', 'e"
-        "nhanced_monitoring_resource_arn', 'monitoring_role_arn', 'promotion_tier', 'db_instance_arn', 'timezone', 'iam"
-        "_database_authentication_enabled', 'database_insights_mode', 'performance_insights_enabled', 'performance_insi"
-        "ghts_kms_key_id', 'performance_insights_retention_period', 'enabled_cloudwatch_logs_exports', 'processor_featu"
-        "res', 'deletion_protection', 'associated_roles', 'listener_endpoint', 'max_allocated_storage', 'tag_list', 'au"
-        "tomation_mode', 'resume_full_automation_mode_time', 'customer_owned_ip_enabled', 'network_type', 'activity_str"
-        "eam_status', 'activity_stream_kms_key_id', 'activity_stream_kinesis_stream_name', 'activity_stream_mode', 'act"
-        "ivity_stream_engine_native_audit_fields_included', 'aws_backup_recovery_point_arn', 'db_instance_automated_bac"
-        "kups_replications', 'backup_target', 'automatic_restart_time', 'custom_iam_instance_profile', 'activity_stream"
-        "_policy_status', 'certificate_details', 'db_system_id', 'master_user_secret', 'read_replica_source_db_cluster_"
-        "identifier', 'percent_progress', 'multi_tenant', 'dedicated_log_volume', 'is_storage_config_upgrade_available'"
-        ", 'engine_lifecycle_support', 'additional_storage_volumes', 'storage_volume_status')), EqPlan(fields=('db_inst"
-        "ance_identifier', 'db_instance_class', 'engine', 'db_instance_status', 'master_username', 'db_name', 'endpoint"
-        "', 'allocated_storage', 'instance_create_time', 'preferred_backup_window', 'backup_retention_period', 'db_secu"
-        "rity_groups', 'vpc_security_groups', 'db_parameter_groups', 'availability_zone', 'db_subnet_group', 'preferred"
-        "_maintenance_window', 'upgrade_rollout_order', 'pending_modified_values', 'latest_restorable_time', 'multi_az'"
-        ", 'engine_version', 'auto_minor_version_upgrade', 'read_replica_source_db_instance_identifier', 'read_replica_"
-        "db_instance_identifiers', 'read_replica_db_cluster_identifiers', 'replica_mode', 'license_model', 'iops', 'sto"
-        "rage_throughput', 'option_group_memberships', 'character_set_name', 'nchar_character_set_name', 'secondary_ava"
-        "ilability_zone', 'publicly_accessible', 'status_infos', 'storage_type', 'tde_credential_arn', 'db_instance_por"
-        "t', 'db_cluster_identifier', 'storage_encrypted', 'kms_key_id', 'dbi_resource_id', 'ca_certificate_identifier'"
-        ", 'domain_memberships', 'copy_tags_to_snapshot', 'monitoring_interval', 'enhanced_monitoring_resource_arn', 'm"
-        "onitoring_role_arn', 'promotion_tier', 'db_instance_arn', 'timezone', 'iam_database_authentication_enabled', '"
-        "database_insights_mode', 'performance_insights_enabled', 'performance_insights_kms_key_id', 'performance_insig"
-        "hts_retention_period', 'enabled_cloudwatch_logs_exports', 'processor_features', 'deletion_protection', 'associ"
-        "ated_roles', 'listener_endpoint', 'max_allocated_storage', 'tag_list', 'automation_mode', 'resume_full_automat"
-        "ion_mode_time', 'customer_owned_ip_enabled', 'network_type', 'activity_stream_status', 'activity_stream_kms_ke"
-        "y_id', 'activity_stream_kinesis_stream_name', 'activity_stream_mode', 'activity_stream_engine_native_audit_fie"
-        "lds_included', 'aws_backup_recovery_point_arn', 'db_instance_automated_backups_replications', 'backup_target',"
-        " 'automatic_restart_time', 'custom_iam_instance_profile', 'activity_stream_policy_status', 'certificate_detail"
-        "s', 'db_system_id', 'master_user_secret', 'read_replica_source_db_cluster_identifier', 'percent_progress', 'mu"
-        "lti_tenant', 'dedicated_log_volume', 'is_storage_config_upgrade_available', 'engine_lifecycle_support', 'addit"
-        "ional_storage_volumes', 'storage_volume_status')), FrozenPlan(fields=('__shape__', 'db_instance_identifier', '"
-        "db_instance_class', 'engine', 'db_instance_status', 'master_username', 'db_name', 'endpoint', 'allocated_stora"
-        "ge', 'instance_create_time', 'preferred_backup_window', 'backup_retention_period', 'db_security_groups', 'vpc_"
-        "security_groups', 'db_parameter_groups', 'availability_zone', 'db_subnet_group', 'preferred_maintenance_window"
-        "', 'upgrade_rollout_order', 'pending_modified_values', 'latest_restorable_time', 'multi_az', 'engine_version',"
-        " 'auto_minor_version_upgrade', 'read_replica_source_db_instance_identifier', 'read_replica_db_instance_identif"
-        "iers', 'read_replica_db_cluster_identifiers', 'replica_mode', 'license_model', 'iops', 'storage_throughput', '"
-        "option_group_memberships', 'character_set_name', 'nchar_character_set_name', 'secondary_availability_zone', 'p"
-        "ublicly_accessible', 'status_infos', 'storage_type', 'tde_credential_arn', 'db_instance_port', 'db_cluster_ide"
-        "ntifier', 'storage_encrypted', 'kms_key_id', 'dbi_resource_id', 'ca_certificate_identifier', 'domain_membershi"
-        "ps', 'copy_tags_to_snapshot', 'monitoring_interval', 'enhanced_monitoring_resource_arn', 'monitoring_role_arn'"
-        ", 'promotion_tier', 'db_instance_arn', 'timezone', 'iam_database_authentication_enabled', 'database_insights_m"
-        "ode', 'performance_insights_enabled', 'performance_insights_kms_key_id', 'performance_insights_retention_perio"
-        "d', 'enabled_cloudwatch_logs_exports', 'processor_features', 'deletion_protection', 'associated_roles', 'liste"
-        "ner_endpoint', 'max_allocated_storage', 'tag_list', 'automation_mode', 'resume_full_automation_mode_time', 'cu"
-        "stomer_owned_ip_enabled', 'network_type', 'activity_stream_status', 'activity_stream_kms_key_id', 'activity_st"
-        "ream_kinesis_stream_name', 'activity_stream_mode', 'activity_stream_engine_native_audit_fields_included', 'aws"
-        "_backup_recovery_point_arn', 'db_instance_automated_backups_replications', 'backup_target', 'automatic_restart"
-        "_time', 'custom_iam_instance_profile', 'activity_stream_policy_status', 'certificate_details', 'db_system_id',"
-        " 'master_user_secret', 'read_replica_source_db_cluster_identifier', 'percent_progress', 'multi_tenant', 'dedic"
-        "ated_log_volume', 'is_storage_config_upgrade_available', 'engine_lifecycle_support', 'additional_storage_volum"
-        "es', 'storage_volume_status'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('db_instance_"
-        "identifier', 'db_instance_class', 'engine', 'db_instance_status', 'master_username', 'db_name', 'endpoint', 'a"
-        "llocated_storage', 'instance_create_time', 'preferred_backup_window', 'backup_retention_period', 'db_security_"
-        "groups', 'vpc_security_groups', 'db_parameter_groups', 'availability_zone', 'db_subnet_group', 'preferred_main"
-        "tenance_window', 'upgrade_rollout_order', 'pending_modified_values', 'latest_restorable_time', 'multi_az', 'en"
-        "gine_version', 'auto_minor_version_upgrade', 'read_replica_source_db_instance_identifier', 'read_replica_db_in"
-        "stance_identifiers', 'read_replica_db_cluster_identifiers', 'replica_mode', 'license_model', 'iops', 'storage_"
-        "throughput', 'option_group_memberships', 'character_set_name', 'nchar_character_set_name', 'secondary_availabi"
-        "lity_zone', 'publicly_accessible', 'status_infos', 'storage_type', 'tde_credential_arn', 'db_instance_port', '"
+        "_character_set_name', 'secondary_availability_zone', 'publicly_accessible', 'status_infos', 'storage_type', 's"
+        "torage_encryption_type', 'tde_credential_arn', 'db_instance_port', 'db_cluster_identifier', 'storage_encrypted"
+        "', 'kms_key_id', 'dbi_resource_id', 'ca_certificate_identifier', 'domain_memberships', 'copy_tags_to_snapshot'"
+        ", 'monitoring_interval', 'enhanced_monitoring_resource_arn', 'monitoring_role_arn', 'promotion_tier', 'db_inst"
+        "ance_arn', 'timezone', 'iam_database_authentication_enabled', 'database_insights_mode', 'performance_insights_"
+        "enabled', 'performance_insights_kms_key_id', 'performance_insights_retention_period', 'enabled_cloudwatch_logs"
+        "_exports', 'processor_features', 'deletion_protection', 'associated_roles', 'listener_endpoint', 'max_allocate"
+        "d_storage', 'tag_list', 'automation_mode', 'resume_full_automation_mode_time', 'customer_owned_ip_enabled', 'n"
+        "etwork_type', 'activity_stream_status', 'activity_stream_kms_key_id', 'activity_stream_kinesis_stream_name', '"
+        "activity_stream_mode', 'activity_stream_engine_native_audit_fields_included', 'aws_backup_recovery_point_arn',"
+        " 'db_instance_automated_backups_replications', 'backup_target', 'automatic_restart_time', 'custom_iam_instance"
+        "_profile', 'activity_stream_policy_status', 'certificate_details', 'db_system_id', 'master_user_secret', 'read"
+        "_replica_source_db_cluster_identifier', 'percent_progress', 'multi_tenant', 'dedicated_log_volume', 'is_storag"
+        "e_config_upgrade_available', 'engine_lifecycle_support', 'additional_storage_volumes', 'storage_volume_status'"
+        ")), EqPlan(fields=('db_instance_identifier', 'db_instance_class', 'engine', 'db_instance_status', 'master_user"
+        "name', 'db_name', 'endpoint', 'allocated_storage', 'instance_create_time', 'preferred_backup_window', 'backup_"
+        "retention_period', 'db_security_groups', 'vpc_security_groups', 'db_parameter_groups', 'availability_zone', 'd"
+        "b_subnet_group', 'preferred_maintenance_window', 'upgrade_rollout_order', 'pending_modified_values', 'latest_r"
+        "estorable_time', 'multi_az', 'engine_version', 'auto_minor_version_upgrade', 'read_replica_source_db_instance_"
+        "identifier', 'read_replica_db_instance_identifiers', 'read_replica_db_cluster_identifiers', 'replica_mode', 'l"
+        "icense_model', 'iops', 'storage_throughput', 'option_group_memberships', 'character_set_name', 'nchar_characte"
+        "r_set_name', 'secondary_availability_zone', 'publicly_accessible', 'status_infos', 'storage_type', 'storage_en"
+        "cryption_type', 'tde_credential_arn', 'db_instance_port', 'db_cluster_identifier', 'storage_encrypted', 'kms_k"
+        "ey_id', 'dbi_resource_id', 'ca_certificate_identifier', 'domain_memberships', 'copy_tags_to_snapshot', 'monito"
+        "ring_interval', 'enhanced_monitoring_resource_arn', 'monitoring_role_arn', 'promotion_tier', 'db_instance_arn'"
+        ", 'timezone', 'iam_database_authentication_enabled', 'database_insights_mode', 'performance_insights_enabled',"
+        " 'performance_insights_kms_key_id', 'performance_insights_retention_period', 'enabled_cloudwatch_logs_exports'"
+        ", 'processor_features', 'deletion_protection', 'associated_roles', 'listener_endpoint', 'max_allocated_storage"
+        "', 'tag_list', 'automation_mode', 'resume_full_automation_mode_time', 'customer_owned_ip_enabled', 'network_ty"
+        "pe', 'activity_stream_status', 'activity_stream_kms_key_id', 'activity_stream_kinesis_stream_name', 'activity_"
+        "stream_mode', 'activity_stream_engine_native_audit_fields_included', 'aws_backup_recovery_point_arn', 'db_inst"
+        "ance_automated_backups_replications', 'backup_target', 'automatic_restart_time', 'custom_iam_instance_profile'"
+        ", 'activity_stream_policy_status', 'certificate_details', 'db_system_id', 'master_user_secret', 'read_replica_"
+        "source_db_cluster_identifier', 'percent_progress', 'multi_tenant', 'dedicated_log_volume', 'is_storage_config_"
+        "upgrade_available', 'engine_lifecycle_support', 'additional_storage_volumes', 'storage_volume_status')), Froze"
+        "nPlan(fields=('__shape__', 'db_instance_identifier', 'db_instance_class', 'engine', 'db_instance_status', 'mas"
+        "ter_username', 'db_name', 'endpoint', 'allocated_storage', 'instance_create_time', 'preferred_backup_window', "
+        "'backup_retention_period', 'db_security_groups', 'vpc_security_groups', 'db_parameter_groups', 'availability_z"
+        "one', 'db_subnet_group', 'preferred_maintenance_window', 'upgrade_rollout_order', 'pending_modified_values', '"
+        "latest_restorable_time', 'multi_az', 'engine_version', 'auto_minor_version_upgrade', 'read_replica_source_db_i"
+        "nstance_identifier', 'read_replica_db_instance_identifiers', 'read_replica_db_cluster_identifiers', 'replica_m"
+        "ode', 'license_model', 'iops', 'storage_throughput', 'option_group_memberships', 'character_set_name', 'nchar_"
+        "character_set_name', 'secondary_availability_zone', 'publicly_accessible', 'status_infos', 'storage_type', 'st"
+        "orage_encryption_type', 'tde_credential_arn', 'db_instance_port', 'db_cluster_identifier', 'storage_encrypted'"
+        ", 'kms_key_id', 'dbi_resource_id', 'ca_certificate_identifier', 'domain_memberships', 'copy_tags_to_snapshot',"
+        " 'monitoring_interval', 'enhanced_monitoring_resource_arn', 'monitoring_role_arn', 'promotion_tier', 'db_insta"
+        "nce_arn', 'timezone', 'iam_database_authentication_enabled', 'database_insights_mode', 'performance_insights_e"
+        "nabled', 'performance_insights_kms_key_id', 'performance_insights_retention_period', 'enabled_cloudwatch_logs_"
+        "exports', 'processor_features', 'deletion_protection', 'associated_roles', 'listener_endpoint', 'max_allocated"
+        "_storage', 'tag_list', 'automation_mode', 'resume_full_automation_mode_time', 'customer_owned_ip_enabled', 'ne"
+        "twork_type', 'activity_stream_status', 'activity_stream_kms_key_id', 'activity_stream_kinesis_stream_name', 'a"
+        "ctivity_stream_mode', 'activity_stream_engine_native_audit_fields_included', 'aws_backup_recovery_point_arn', "
+        "'db_instance_automated_backups_replications', 'backup_target', 'automatic_restart_time', 'custom_iam_instance_"
+        "profile', 'activity_stream_policy_status', 'certificate_details', 'db_system_id', 'master_user_secret', 'read_"
+        "replica_source_db_cluster_identifier', 'percent_progress', 'multi_tenant', 'dedicated_log_volume', 'is_storage"
+        "_config_upgrade_available', 'engine_lifecycle_support', 'additional_storage_volumes', 'storage_volume_status')"
+        ", allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('db_instance_identifier', 'db_instance_cla"
+        "ss', 'engine', 'db_instance_status', 'master_username', 'db_name', 'endpoint', 'allocated_storage', 'instance_"
+        "create_time', 'preferred_backup_window', 'backup_retention_period', 'db_security_groups', 'vpc_security_groups"
+        "', 'db_parameter_groups', 'availability_zone', 'db_subnet_group', 'preferred_maintenance_window', 'upgrade_rol"
+        "lout_order', 'pending_modified_values', 'latest_restorable_time', 'multi_az', 'engine_version', 'auto_minor_ve"
+        "rsion_upgrade', 'read_replica_source_db_instance_identifier', 'read_replica_db_instance_identifiers', 'read_re"
+        "plica_db_cluster_identifiers', 'replica_mode', 'license_model', 'iops', 'storage_throughput', 'option_group_me"
+        "mberships', 'character_set_name', 'nchar_character_set_name', 'secondary_availability_zone', 'publicly_accessi"
+        "ble', 'status_infos', 'storage_type', 'storage_encryption_type', 'tde_credential_arn', 'db_instance_port', 'db"
+        "_cluster_identifier', 'storage_encrypted', 'kms_key_id', 'dbi_resource_id', 'ca_certificate_identifier', 'doma"
+        "in_memberships', 'copy_tags_to_snapshot', 'monitoring_interval', 'enhanced_monitoring_resource_arn', 'monitori"
+        "ng_role_arn', 'promotion_tier', 'db_instance_arn', 'timezone', 'iam_database_authentication_enabled', 'databas"
+        "e_insights_mode', 'performance_insights_enabled', 'performance_insights_kms_key_id', 'performance_insights_ret"
+        "ention_period', 'enabled_cloudwatch_logs_exports', 'processor_features', 'deletion_protection', 'associated_ro"
+        "les', 'listener_endpoint', 'max_allocated_storage', 'tag_list', 'automation_mode', 'resume_full_automation_mod"
+        "e_time', 'customer_owned_ip_enabled', 'network_type', 'activity_stream_status', 'activity_stream_kms_key_id', "
+        "'activity_stream_kinesis_stream_name', 'activity_stream_mode', 'activity_stream_engine_native_audit_fields_inc"
+        "luded', 'aws_backup_recovery_point_arn', 'db_instance_automated_backups_replications', 'backup_target', 'autom"
+        "atic_restart_time', 'custom_iam_instance_profile', 'activity_stream_policy_status', 'certificate_details', 'db"
+        "_system_id', 'master_user_secret', 'read_replica_source_db_cluster_identifier', 'percent_progress', 'multi_ten"
+        "ant', 'dedicated_log_volume', 'is_storage_config_upgrade_available', 'engine_lifecycle_support', 'additional_s"
+        "torage_volumes', 'storage_volume_status'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', ann"
+        "otation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, override=False,"
+        " field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='db_instanc"
+        "e_identifier', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'),"
+        " default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, c"
+        "heck_type=None), InitPlan.Field(name='db_instance_class', annotation=OpRef(name='init.fields.2.annotation'), d"
+        "efault=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=False, field_type=FieldT"
+        "ype.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='engine', annotation=OpRef(nam"
+        "e='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True, o"
+        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(nam"
+        "e='db_instance_status', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4.d"
+        "efault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
+        "e=None, check_type=None), InitPlan.Field(name='master_username', annotation=OpRef(name='init.fields.5.annotati"
+        "on'), default=OpRef(name='init.fields.5.default'), default_factory=None, init=True, override=False, field_type"
+        "=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='db_name', annotation=O"
+        "pRef(name='init.fields.6.annotation'), default=OpRef(name='init.fields.6.default'), default_factory=None, init"
+        "=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.F"
+        "ield(name='endpoint', annotation=OpRef(name='init.fields.7.annotation'), default=OpRef(name='init.fields.7.def"
+        "ault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate="
+        "None, check_type=None), InitPlan.Field(name='allocated_storage', annotation=OpRef(name='init.fields.8.annotati"
+        "on'), default=OpRef(name='init.fields.8.default'), default_factory=None, init=True, override=False, field_type"
+        "=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='instance_create_time',"
+        " annotation=OpRef(name='init.fields.9.annotation'), default=OpRef(name='init.fields.9.default'), default_facto"
+        "ry=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None"
+        "), InitPlan.Field(name='preferred_backup_window', annotation=OpRef(name='init.fields.10.annotation'), default="
+        "OpRef(name='init.fields.10.default'), default_factory=None, init=True, override=False, field_type=FieldType.IN"
+        "STANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='backup_retention_period', annotatio"
+        "n=OpRef(name='init.fields.11.annotation'), default=OpRef(name='init.fields.11.default'), default_factory=None,"
+        " init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitP"
+        "lan.Field(name='db_security_groups', annotation=OpRef(name='init.fields.12.annotation'), default=OpRef(name='i"
+        "nit.fields.12.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
+        "e=None, validate=None, check_type=None), InitPlan.Field(name='vpc_security_groups', annotation=OpRef(name='ini"
+        "t.fields.13.annotation'), default=OpRef(name='init.fields.13.default'), default_factory=None, init=True, overr"
+        "ide=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='d"
+        "b_parameter_groups', annotation=OpRef(name='init.fields.14.annotation'), default=OpRef(name='init.fields.14.de"
+        "fault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate"
+        "=None, check_type=None), InitPlan.Field(name='availability_zone', annotation=OpRef(name='init.fields.15.annota"
+        "tion'), default=OpRef(name='init.fields.15.default'), default_factory=None, init=True, override=False, field_t"
+        "ype=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='db_subnet_group', a"
+        "nnotation=OpRef(name='init.fields.16.annotation'), default=OpRef(name='init.fields.16.default'), default_facto"
+        "ry=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None"
+        "), InitPlan.Field(name='preferred_maintenance_window', annotation=OpRef(name='init.fields.17.annotation'), def"
+        "ault=OpRef(name='init.fields.17.default'), default_factory=None, init=True, override=False, field_type=FieldTy"
+        "pe.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='upgrade_rollout_order', annota"
+        "tion=OpRef(name='init.fields.18.annotation'), default=OpRef(name='init.fields.18.default'), default_factory=No"
+        "ne, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), In"
+        "itPlan.Field(name='pending_modified_values', annotation=OpRef(name='init.fields.19.annotation'), default=OpRef"
+        "(name='init.fields.19.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANC"
+        "E, coerce=None, validate=None, check_type=None), InitPlan.Field(name='latest_restorable_time', annotation=OpRe"
+        "f(name='init.fields.20.annotation'), default=OpRef(name='init.fields.20.default'), default_factory=None, init="
+        "True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fi"
+        "eld(name='multi_az', annotation=OpRef(name='init.fields.21.annotation'), default=OpRef(name='init.fields.21.de"
+        "fault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate"
+        "=None, check_type=None), InitPlan.Field(name='engine_version', annotation=OpRef(name='init.fields.22.annotatio"
+        "n'), default=OpRef(name='init.fields.22.default'), default_factory=None, init=True, override=False, field_type"
+        "=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='auto_minor_version_upg"
+        "rade', annotation=OpRef(name='init.fields.23.annotation'), default=OpRef(name='init.fields.23.default'), defau"
+        "lt_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_t"
+        "ype=None), InitPlan.Field(name='read_replica_source_db_instance_identifier', annotation=OpRef(name='init.field"
+        "s.24.annotation'), default=OpRef(name='init.fields.24.default'), default_factory=None, init=True, override=Fal"
+        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='read_rep"
+        "lica_db_instance_identifiers', annotation=OpRef(name='init.fields.25.annotation'), default=OpRef(name='init.fi"
+        "elds.25.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None"
+        ", validate=None, check_type=None), InitPlan.Field(name='read_replica_db_cluster_identifiers', annotation=OpRef"
+        "(name='init.fields.26.annotation'), default=OpRef(name='init.fields.26.default'), default_factory=None, init=T"
+        "rue, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Fie"
+        "ld(name='replica_mode', annotation=OpRef(name='init.fields.27.annotation'), default=OpRef(name='init.fields.27"
+        ".default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valid"
+        "ate=None, check_type=None), InitPlan.Field(name='license_model', annotation=OpRef(name='init.fields.28.annotat"
+        "ion'), default=OpRef(name='init.fields.28.default'), default_factory=None, init=True, override=False, field_ty"
+        "pe=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='iops', annotation=Op"
+        "Ref(name='init.fields.29.annotation'), default=OpRef(name='init.fields.29.default'), default_factory=None, ini"
+        "t=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan."
+        "Field(name='storage_throughput', annotation=OpRef(name='init.fields.30.annotation'), default=OpRef(name='init."
+        "fields.30.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=No"
+        "ne, validate=None, check_type=None), InitPlan.Field(name='option_group_memberships', annotation=OpRef(name='in"
+        "it.fields.31.annotation'), default=OpRef(name='init.fields.31.default'), default_factory=None, init=True, over"
+        "ride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='"
+        "character_set_name', annotation=OpRef(name='init.fields.32.annotation'), default=OpRef(name='init.fields.32.de"
+        "fault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate"
+        "=None, check_type=None), InitPlan.Field(name='nchar_character_set_name', annotation=OpRef(name='init.fields.33"
+        ".annotation'), default=OpRef(name='init.fields.33.default'), default_factory=None, init=True, override=False, "
+        "field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='secondary_av"
+        "ailability_zone', annotation=OpRef(name='init.fields.34.annotation'), default=OpRef(name='init.fields.34.defau"
+        "lt'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=No"
+        "ne, check_type=None), InitPlan.Field(name='publicly_accessible', annotation=OpRef(name='init.fields.35.annotat"
+        "ion'), default=OpRef(name='init.fields.35.default'), default_factory=None, init=True, override=False, field_ty"
+        "pe=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='status_infos', annot"
+        "ation=OpRef(name='init.fields.36.annotation'), default=OpRef(name='init.fields.36.default'), default_factory=N"
+        "one, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), I"
+        "nitPlan.Field(name='storage_type', annotation=OpRef(name='init.fields.37.annotation'), default=OpRef(name='ini"
+        "t.fields.37.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
+        "None, validate=None, check_type=None), InitPlan.Field(name='storage_encryption_type', annotation=OpRef(name='i"
+        "nit.fields.38.annotation'), default=OpRef(name='init.fields.38.default'), default_factory=None, init=True, ove"
+        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name="
+        "'tde_credential_arn', annotation=OpRef(name='init.fields.39.annotation'), default=OpRef(name='init.fields.39.d"
+        "efault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
+        "e=None, check_type=None), InitPlan.Field(name='db_instance_port', annotation=OpRef(name='init.fields.40.annota"
+        "tion'), default=OpRef(name='init.fields.40.default'), default_factory=None, init=True, override=False, field_t"
+        "ype=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='db_cluster_identifi"
+        "er', annotation=OpRef(name='init.fields.41.annotation'), default=OpRef(name='init.fields.41.default'), default"
+        "_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_typ"
+        "e=None), InitPlan.Field(name='storage_encrypted', annotation=OpRef(name='init.fields.42.annotation'), default="
+        "OpRef(name='init.fields.42.default'), default_factory=None, init=True, override=False, field_type=FieldType.IN"
+        "STANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='kms_key_id', annotation=OpRef(name="
+        "'init.fields.43.annotation'), default=OpRef(name='init.fields.43.default'), default_factory=None, init=True, o"
+        "verride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(nam"
+        "e='dbi_resource_id', annotation=OpRef(name='init.fields.44.annotation'), default=OpRef(name='init.fields.44.de"
+        "fault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate"
+        "=None, check_type=None), InitPlan.Field(name='ca_certificate_identifier', annotation=OpRef(name='init.fields.4"
+        "5.annotation'), default=OpRef(name='init.fields.45.default'), default_factory=None, init=True, override=False,"
+        " field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='domain_memb"
+        "erships', annotation=OpRef(name='init.fields.46.annotation'), default=OpRef(name='init.fields.46.default'), de"
+        "fault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, chec"
+        "k_type=None), InitPlan.Field(name='copy_tags_to_snapshot', annotation=OpRef(name='init.fields.47.annotation'),"
+        " default=OpRef(name='init.fields.47.default'), default_factory=None, init=True, override=False, field_type=Fie"
+        "ldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='monitoring_interval', anno"
+        "tation=OpRef(name='init.fields.48.annotation'), default=OpRef(name='init.fields.48.default'), default_factory="
+        "None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), "
+        "InitPlan.Field(name='enhanced_monitoring_resource_arn', annotation=OpRef(name='init.fields.49.annotation'), de"
+        "fault=OpRef(name='init.fields.49.default'), default_factory=None, init=True, override=False, field_type=FieldT"
+        "ype.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='monitoring_role_arn', annotat"
+        "ion=OpRef(name='init.fields.50.annotation'), default=OpRef(name='init.fields.50.default'), default_factory=Non"
+        "e, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Ini"
+        "tPlan.Field(name='promotion_tier', annotation=OpRef(name='init.fields.51.annotation'), default=OpRef(name='ini"
+        "t.fields.51.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
+        "None, validate=None, check_type=None), InitPlan.Field(name='db_instance_arn', annotation=OpRef(name='init.fiel"
+        "ds.52.annotation'), default=OpRef(name='init.fields.52.default'), default_factory=None, init=True, override=Fa"
+        "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='timezon"
+        "e', annotation=OpRef(name='init.fields.53.annotation'), default=OpRef(name='init.fields.53.default'), default_"
+        "factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type"
+        "=None), InitPlan.Field(name='iam_database_authentication_enabled', annotation=OpRef(name='init.fields.54.annot"
+        "ation'), default=OpRef(name='init.fields.54.default'), default_factory=None, init=True, override=False, field_"
+        "type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='database_insights_"
+        "mode', annotation=OpRef(name='init.fields.55.annotation'), default=OpRef(name='init.fields.55.default'), defau"
+        "lt_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_t"
+        "ype=None), InitPlan.Field(name='performance_insights_enabled', annotation=OpRef(name='init.fields.56.annotatio"
+        "n'), default=OpRef(name='init.fields.56.default'), default_factory=None, init=True, override=False, field_type"
+        "=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='performance_insights_k"
+        "ms_key_id', annotation=OpRef(name='init.fields.57.annotation'), default=OpRef(name='init.fields.57.default'), "
+        "default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, ch"
+        "eck_type=None), InitPlan.Field(name='performance_insights_retention_period', annotation=OpRef(name='init.field"
+        "s.58.annotation'), default=OpRef(name='init.fields.58.default'), default_factory=None, init=True, override=Fal"
+        "se, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='enabled_"
+        "cloudwatch_logs_exports', annotation=OpRef(name='init.fields.59.annotation'), default=OpRef(name='init.fields."
+        "59.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
+        "idate=None, check_type=None), InitPlan.Field(name='processor_features', annotation=OpRef(name='init.fields.60."
+        "annotation'), default=OpRef(name='init.fields.60.default'), default_factory=None, init=True, override=False, f"
+        "ield_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='deletion_prot"
+        "ection', annotation=OpRef(name='init.fields.61.annotation'), default=OpRef(name='init.fields.61.default'), def"
+        "ault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check"
+        "_type=None), InitPlan.Field(name='associated_roles', annotation=OpRef(name='init.fields.62.annotation'), defau"
+        "lt=OpRef(name='init.fields.62.default'), default_factory=None, init=True, override=False, field_type=FieldType"
+        ".INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='listener_endpoint', annotation=O"
+        "pRef(name='init.fields.63.annotation'), default=OpRef(name='init.fields.63.default'), default_factory=None, in"
+        "it=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan"
+        ".Field(name='max_allocated_storage', annotation=OpRef(name='init.fields.64.annotation'), default=OpRef(name='i"
+        "nit.fields.64.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
+        "e=None, validate=None, check_type=None), InitPlan.Field(name='tag_list', annotation=OpRef(name='init.fields.65"
+        ".annotation'), default=OpRef(name='init.fields.65.default'), default_factory=None, init=True, override=False, "
+        "field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='automation_m"
+        "ode', annotation=OpRef(name='init.fields.66.annotation'), default=OpRef(name='init.fields.66.default'), defaul"
+        "t_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_ty"
+        "pe=None), InitPlan.Field(name='resume_full_automation_mode_time', annotation=OpRef(name='init.fields.67.annota"
+        "tion'), default=OpRef(name='init.fields.67.default'), default_factory=None, init=True, override=False, field_t"
+        "ype=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='customer_owned_ip_e"
+        "nabled', annotation=OpRef(name='init.fields.68.annotation'), default=OpRef(name='init.fields.68.default'), def"
+        "ault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check"
+        "_type=None), InitPlan.Field(name='network_type', annotation=OpRef(name='init.fields.69.annotation'), default=O"
+        "pRef(name='init.fields.69.default'), default_factory=None, init=True, override=False, field_type=FieldType.INS"
+        "TANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='activity_stream_status', annotation="
+        "OpRef(name='init.fields.70.annotation'), default=OpRef(name='init.fields.70.default'), default_factory=None, i"
+        "nit=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPla"
+        "n.Field(name='activity_stream_kms_key_id', annotation=OpRef(name='init.fields.71.annotation'), default=OpRef(n"
+        "ame='init.fields.71.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE,"
+        " coerce=None, validate=None, check_type=None), InitPlan.Field(name='activity_stream_kinesis_stream_name', anno"
+        "tation=OpRef(name='init.fields.72.annotation'), default=OpRef(name='init.fields.72.default'), default_factory="
+        "None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), "
+        "InitPlan.Field(name='activity_stream_mode', annotation=OpRef(name='init.fields.73.annotation'), default=OpRef("
+        "name='init.fields.73.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE"
+        ", coerce=None, validate=None, check_type=None), InitPlan.Field(name='activity_stream_engine_native_audit_field"
+        "s_included', annotation=OpRef(name='init.fields.74.annotation'), default=OpRef(name='init.fields.74.default'),"
+        " default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, c"
+        "heck_type=None), InitPlan.Field(name='aws_backup_recovery_point_arn', annotation=OpRef(name='init.fields.75.an"
+        "notation'), default=OpRef(name='init.fields.75.default'), default_factory=None, init=True, override=False, fie"
+        "ld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='db_instance_aut"
+        "omated_backups_replications', annotation=OpRef(name='init.fields.76.annotation'), default=OpRef(name='init.fie"
+        "lds.76.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None,"
+        " validate=None, check_type=None), InitPlan.Field(name='backup_target', annotation=OpRef(name='init.fields.77.a"
+        "nnotation'), default=OpRef(name='init.fields.77.default'), default_factory=None, init=True, override=False, fi"
+        "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='automatic_rest"
+        "art_time', annotation=OpRef(name='init.fields.78.annotation'), default=OpRef(name='init.fields.78.default'), d"
+        "efault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, che"
+        "ck_type=None), InitPlan.Field(name='custom_iam_instance_profile', annotation=OpRef(name='init.fields.79.annota"
+        "tion'), default=OpRef(name='init.fields.79.default'), default_factory=None, init=True, override=False, field_t"
+        "ype=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='activity_stream_pol"
+        "icy_status', annotation=OpRef(name='init.fields.80.annotation'), default=OpRef(name='init.fields.80.default'),"
+        " default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, c"
+        "heck_type=None), InitPlan.Field(name='certificate_details', annotation=OpRef(name='init.fields.81.annotation')"
+        ", default=OpRef(name='init.fields.81.default'), default_factory=None, init=True, override=False, field_type=Fi"
+        "eldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='db_system_id', annotation"
+        "=OpRef(name='init.fields.82.annotation'), default=OpRef(name='init.fields.82.default'), default_factory=None, "
+        "init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPl"
+        "an.Field(name='master_user_secret', annotation=OpRef(name='init.fields.83.annotation'), default=OpRef(name='in"
+        "it.fields.83.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce"
+        "=None, validate=None, check_type=None), InitPlan.Field(name='read_replica_source_db_cluster_identifier', annot"
+        "ation=OpRef(name='init.fields.84.annotation'), default=OpRef(name='init.fields.84.default'), default_factory=N"
+        "one, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), I"
+        "nitPlan.Field(name='percent_progress', annotation=OpRef(name='init.fields.85.annotation'), default=OpRef(name="
+        "'init.fields.85.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
+        "rce=None, validate=None, check_type=None), InitPlan.Field(name='multi_tenant', annotation=OpRef(name='init.fie"
+        "lds.86.annotation'), default=OpRef(name='init.fields.86.default'), default_factory=None, init=True, override=F"
+        "alse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='dedica"
+        "ted_log_volume', annotation=OpRef(name='init.fields.87.annotation'), default=OpRef(name='init.fields.87.defaul"
+        "t'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=Non"
+        "e, check_type=None), InitPlan.Field(name='is_storage_config_upgrade_available', annotation=OpRef(name='init.fi"
+        "elds.88.annotation'), default=OpRef(name='init.fields.88.default'), default_factory=None, init=True, override="
+        "False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='engin"
+        "e_lifecycle_support', annotation=OpRef(name='init.fields.89.annotation'), default=OpRef(name='init.fields.89.d"
+        "efault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
+        "e=None, check_type=None), InitPlan.Field(name='additional_storage_volumes', annotation=OpRef(name='init.fields"
+        ".90.annotation'), default=OpRef(name='init.fields.90.default'), default_factory=None, init=True, override=Fals"
+        "e, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='storage_v"
+        "olume_status', annotation=OpRef(name='init.fields.91.annotation'), default=OpRef(name='init.fields.91.default'"
+        "), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None,"
+        " check_type=None)), self_param='self', std_params=(), kw_only_params=('db_instance_identifier', 'db_instance_c"
+        "lass', 'engine', 'db_instance_status', 'master_username', 'db_name', 'endpoint', 'allocated_storage', 'instanc"
+        "e_create_time', 'preferred_backup_window', 'backup_retention_period', 'db_security_groups', 'vpc_security_grou"
+        "ps', 'db_parameter_groups', 'availability_zone', 'db_subnet_group', 'preferred_maintenance_window', 'upgrade_r"
+        "ollout_order', 'pending_modified_values', 'latest_restorable_time', 'multi_az', 'engine_version', 'auto_minor_"
+        "version_upgrade', 'read_replica_source_db_instance_identifier', 'read_replica_db_instance_identifiers', 'read_"
+        "replica_db_cluster_identifiers', 'replica_mode', 'license_model', 'iops', 'storage_throughput', 'option_group_"
+        "memberships', 'character_set_name', 'nchar_character_set_name', 'secondary_availability_zone', 'publicly_acces"
+        "sible', 'status_infos', 'storage_type', 'storage_encryption_type', 'tde_credential_arn', 'db_instance_port', '"
         "db_cluster_identifier', 'storage_encrypted', 'kms_key_id', 'dbi_resource_id', 'ca_certificate_identifier', 'do"
         "main_memberships', 'copy_tags_to_snapshot', 'monitoring_interval', 'enhanced_monitoring_resource_arn', 'monito"
         "ring_role_arn', 'promotion_tier', 'db_instance_arn', 'timezone', 'iam_database_authentication_enabled', 'datab"
@@ -2350,310 +2597,67 @@ def _process_dataclass__e370acdd02f632f5ffa5833dfc2b29fa253e1324():
         "omatic_restart_time', 'custom_iam_instance_profile', 'activity_stream_policy_status', 'certificate_details', '"
         "db_system_id', 'master_user_secret', 'read_replica_source_db_cluster_identifier', 'percent_progress', 'multi_t"
         "enant', 'dedicated_log_volume', 'is_storage_config_upgrade_available', 'engine_lifecycle_support', 'additional"
-        "_storage_volumes', 'storage_volume_status'), cache=False), InitPlan(fields=(InitPlan.Field(name='__shape__', a"
-        "nnotation=OpRef(name='init.fields.0.annotation'), default=None, default_factory=None, init=True, override=Fals"
-        "e, field_type=FieldType.CLASS_VAR, coerce=None, validate=None, check_type=None), InitPlan.Field(name='db_insta"
-        "nce_identifier', annotation=OpRef(name='init.fields.1.annotation'), default=OpRef(name='init.fields.1.default'"
-        "), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None,"
-        " check_type=None), InitPlan.Field(name='db_instance_class', annotation=OpRef(name='init.fields.2.annotation'),"
-        " default=OpRef(name='init.fields.2.default'), default_factory=None, init=True, override=False, field_type=Fiel"
-        "dType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='engine', annotation=OpRef(n"
-        "ame='init.fields.3.annotation'), default=OpRef(name='init.fields.3.default'), default_factory=None, init=True,"
-        " override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(n"
-        "ame='db_instance_status', annotation=OpRef(name='init.fields.4.annotation'), default=OpRef(name='init.fields.4"
-        ".default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valid"
-        "ate=None, check_type=None), InitPlan.Field(name='master_username', annotation=OpRef(name='init.fields.5.annota"
-        "tion'), default=OpRef(name='init.fields.5.default'), default_factory=None, init=True, override=False, field_ty"
-        "pe=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='db_name', annotation"
-        "=OpRef(name='init.fields.6.annotation'), default=OpRef(name='init.fields.6.default'), default_factory=None, in"
-        "it=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan"
-        ".Field(name='endpoint', annotation=OpRef(name='init.fields.7.annotation'), default=OpRef(name='init.fields.7.d"
-        "efault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
-        "e=None, check_type=None), InitPlan.Field(name='allocated_storage', annotation=OpRef(name='init.fields.8.annota"
-        "tion'), default=OpRef(name='init.fields.8.default'), default_factory=None, init=True, override=False, field_ty"
-        "pe=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='instance_create_time"
-        "', annotation=OpRef(name='init.fields.9.annotation'), default=OpRef(name='init.fields.9.default'), default_fac"
-        "tory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=No"
-        "ne), InitPlan.Field(name='preferred_backup_window', annotation=OpRef(name='init.fields.10.annotation'), defaul"
-        "t=OpRef(name='init.fields.10.default'), default_factory=None, init=True, override=False, field_type=FieldType."
-        "INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='backup_retention_period', annotat"
-        "ion=OpRef(name='init.fields.11.annotation'), default=OpRef(name='init.fields.11.default'), default_factory=Non"
-        "e, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), Ini"
-        "tPlan.Field(name='db_security_groups', annotation=OpRef(name='init.fields.12.annotation'), default=OpRef(name="
-        "'init.fields.12.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
-        "rce=None, validate=None, check_type=None), InitPlan.Field(name='vpc_security_groups', annotation=OpRef(name='i"
-        "nit.fields.13.annotation'), default=OpRef(name='init.fields.13.default'), default_factory=None, init=True, ove"
-        "rride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name="
-        "'db_parameter_groups', annotation=OpRef(name='init.fields.14.annotation'), default=OpRef(name='init.fields.14."
-        "default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valida"
-        "te=None, check_type=None), InitPlan.Field(name='availability_zone', annotation=OpRef(name='init.fields.15.anno"
-        "tation'), default=OpRef(name='init.fields.15.default'), default_factory=None, init=True, override=False, field"
-        "_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='db_subnet_group',"
-        " annotation=OpRef(name='init.fields.16.annotation'), default=OpRef(name='init.fields.16.default'), default_fac"
-        "tory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=No"
-        "ne), InitPlan.Field(name='preferred_maintenance_window', annotation=OpRef(name='init.fields.17.annotation'), d"
-        "efault=OpRef(name='init.fields.17.default'), default_factory=None, init=True, override=False, field_type=Field"
-        "Type.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='upgrade_rollout_order', anno"
-        "tation=OpRef(name='init.fields.18.annotation'), default=OpRef(name='init.fields.18.default'), default_factory="
-        "None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), "
-        "InitPlan.Field(name='pending_modified_values', annotation=OpRef(name='init.fields.19.annotation'), default=OpR"
-        "ef(name='init.fields.19.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTA"
-        "NCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='latest_restorable_time', annotation=Op"
-        "Ref(name='init.fields.20.annotation'), default=OpRef(name='init.fields.20.default'), default_factory=None, ini"
-        "t=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan."
-        "Field(name='multi_az', annotation=OpRef(name='init.fields.21.annotation'), default=OpRef(name='init.fields.21."
-        "default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valida"
-        "te=None, check_type=None), InitPlan.Field(name='engine_version', annotation=OpRef(name='init.fields.22.annotat"
-        "ion'), default=OpRef(name='init.fields.22.default'), default_factory=None, init=True, override=False, field_ty"
-        "pe=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='auto_minor_version_u"
-        "pgrade', annotation=OpRef(name='init.fields.23.annotation'), default=OpRef(name='init.fields.23.default'), def"
-        "ault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check"
-        "_type=None), InitPlan.Field(name='read_replica_source_db_instance_identifier', annotation=OpRef(name='init.fie"
-        "lds.24.annotation'), default=OpRef(name='init.fields.24.default'), default_factory=None, init=True, override=F"
-        "alse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='read_r"
-        "eplica_db_instance_identifiers', annotation=OpRef(name='init.fields.25.annotation'), default=OpRef(name='init."
-        "fields.25.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=No"
-        "ne, validate=None, check_type=None), InitPlan.Field(name='read_replica_db_cluster_identifiers', annotation=OpR"
-        "ef(name='init.fields.26.annotation'), default=OpRef(name='init.fields.26.default'), default_factory=None, init"
-        "=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.F"
-        "ield(name='replica_mode', annotation=OpRef(name='init.fields.27.annotation'), default=OpRef(name='init.fields."
-        "27.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
-        "idate=None, check_type=None), InitPlan.Field(name='license_model', annotation=OpRef(name='init.fields.28.annot"
-        "ation'), default=OpRef(name='init.fields.28.default'), default_factory=None, init=True, override=False, field_"
-        "type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='iops', annotation="
-        "OpRef(name='init.fields.29.annotation'), default=OpRef(name='init.fields.29.default'), default_factory=None, i"
-        "nit=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPla"
-        "n.Field(name='storage_throughput', annotation=OpRef(name='init.fields.30.annotation'), default=OpRef(name='ini"
-        "t.fields.30.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce="
-        "None, validate=None, check_type=None), InitPlan.Field(name='option_group_memberships', annotation=OpRef(name='"
-        "init.fields.31.annotation'), default=OpRef(name='init.fields.31.default'), default_factory=None, init=True, ov"
-        "erride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name"
-        "='character_set_name', annotation=OpRef(name='init.fields.32.annotation'), default=OpRef(name='init.fields.32."
-        "default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valida"
-        "te=None, check_type=None), InitPlan.Field(name='nchar_character_set_name', annotation=OpRef(name='init.fields."
-        "33.annotation'), default=OpRef(name='init.fields.33.default'), default_factory=None, init=True, override=False"
-        ", field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='secondary_"
-        "availability_zone', annotation=OpRef(name='init.fields.34.annotation'), default=OpRef(name='init.fields.34.def"
-        "ault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate="
-        "None, check_type=None), InitPlan.Field(name='publicly_accessible', annotation=OpRef(name='init.fields.35.annot"
-        "ation'), default=OpRef(name='init.fields.35.default'), default_factory=None, init=True, override=False, field_"
-        "type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='status_infos', ann"
-        "otation=OpRef(name='init.fields.36.annotation'), default=OpRef(name='init.fields.36.default'), default_factory"
-        "=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None),"
-        " InitPlan.Field(name='storage_type', annotation=OpRef(name='init.fields.37.annotation'), default=OpRef(name='i"
-        "nit.fields.37.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerc"
-        "e=None, validate=None, check_type=None), InitPlan.Field(name='tde_credential_arn', annotation=OpRef(name='init"
-        ".fields.38.annotation'), default=OpRef(name='init.fields.38.default'), default_factory=None, init=True, overri"
-        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='db"
-        "_instance_port', annotation=OpRef(name='init.fields.39.annotation'), default=OpRef(name='init.fields.39.defaul"
-        "t'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=Non"
-        "e, check_type=None), InitPlan.Field(name='db_cluster_identifier', annotation=OpRef(name='init.fields.40.annota"
-        "tion'), default=OpRef(name='init.fields.40.default'), default_factory=None, init=True, override=False, field_t"
-        "ype=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='storage_encrypted',"
-        " annotation=OpRef(name='init.fields.41.annotation'), default=OpRef(name='init.fields.41.default'), default_fac"
-        "tory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=No"
-        "ne), InitPlan.Field(name='kms_key_id', annotation=OpRef(name='init.fields.42.annotation'), default=OpRef(name="
-        "'init.fields.42.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coe"
-        "rce=None, validate=None, check_type=None), InitPlan.Field(name='dbi_resource_id', annotation=OpRef(name='init."
-        "fields.43.annotation'), default=OpRef(name='init.fields.43.default'), default_factory=None, init=True, overrid"
-        "e=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ca_"
-        "certificate_identifier', annotation=OpRef(name='init.fields.44.annotation'), default=OpRef(name='init.fields.4"
-        "4.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, vali"
-        "date=None, check_type=None), InitPlan.Field(name='domain_memberships', annotation=OpRef(name='init.fields.45.a"
-        "nnotation'), default=OpRef(name='init.fields.45.default'), default_factory=None, init=True, override=False, fi"
-        "eld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='copy_tags_to_s"
-        "napshot', annotation=OpRef(name='init.fields.46.annotation'), default=OpRef(name='init.fields.46.default'), de"
-        "fault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, chec"
-        "k_type=None), InitPlan.Field(name='monitoring_interval', annotation=OpRef(name='init.fields.47.annotation'), d"
-        "efault=OpRef(name='init.fields.47.default'), default_factory=None, init=True, override=False, field_type=Field"
-        "Type.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='enhanced_monitoring_resource"
-        "_arn', annotation=OpRef(name='init.fields.48.annotation'), default=OpRef(name='init.fields.48.default'), defau"
-        "lt_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_t"
-        "ype=None), InitPlan.Field(name='monitoring_role_arn', annotation=OpRef(name='init.fields.49.annotation'), defa"
-        "ult=OpRef(name='init.fields.49.default'), default_factory=None, init=True, override=False, field_type=FieldTyp"
-        "e.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='promotion_tier', annotation=OpR"
-        "ef(name='init.fields.50.annotation'), default=OpRef(name='init.fields.50.default'), default_factory=None, init"
-        "=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.F"
-        "ield(name='db_instance_arn', annotation=OpRef(name='init.fields.51.annotation'), default=OpRef(name='init.fiel"
-        "ds.51.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, "
-        "validate=None, check_type=None), InitPlan.Field(name='timezone', annotation=OpRef(name='init.fields.52.annotat"
-        "ion'), default=OpRef(name='init.fields.52.default'), default_factory=None, init=True, override=False, field_ty"
-        "pe=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='iam_database_authent"
-        "ication_enabled', annotation=OpRef(name='init.fields.53.annotation'), default=OpRef(name='init.fields.53.defau"
-        "lt'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=No"
-        "ne, check_type=None), InitPlan.Field(name='database_insights_mode', annotation=OpRef(name='init.fields.54.anno"
-        "tation'), default=OpRef(name='init.fields.54.default'), default_factory=None, init=True, override=False, field"
-        "_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='performance_insig"
-        "hts_enabled', annotation=OpRef(name='init.fields.55.annotation'), default=OpRef(name='init.fields.55.default')"
-        ", default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, "
-        "check_type=None), InitPlan.Field(name='performance_insights_kms_key_id', annotation=OpRef(name='init.fields.56"
-        ".annotation'), default=OpRef(name='init.fields.56.default'), default_factory=None, init=True, override=False, "
-        "field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='performance_"
-        "insights_retention_period', annotation=OpRef(name='init.fields.57.annotation'), default=OpRef(name='init.field"
-        "s.57.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, v"
-        "alidate=None, check_type=None), InitPlan.Field(name='enabled_cloudwatch_logs_exports', annotation=OpRef(name='"
-        "init.fields.58.annotation'), default=OpRef(name='init.fields.58.default'), default_factory=None, init=True, ov"
-        "erride=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name"
-        "='processor_features', annotation=OpRef(name='init.fields.59.annotation'), default=OpRef(name='init.fields.59."
-        "default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valida"
-        "te=None, check_type=None), InitPlan.Field(name='deletion_protection', annotation=OpRef(name='init.fields.60.an"
-        "notation'), default=OpRef(name='init.fields.60.default'), default_factory=None, init=True, override=False, fie"
-        "ld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='associated_role"
-        "s', annotation=OpRef(name='init.fields.61.annotation'), default=OpRef(name='init.fields.61.default'), default_"
-        "factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type"
-        "=None), InitPlan.Field(name='listener_endpoint', annotation=OpRef(name='init.fields.62.annotation'), default=O"
-        "pRef(name='init.fields.62.default'), default_factory=None, init=True, override=False, field_type=FieldType.INS"
-        "TANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='max_allocated_storage', annotation=O"
-        "pRef(name='init.fields.63.annotation'), default=OpRef(name='init.fields.63.default'), default_factory=None, in"
-        "it=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan"
-        ".Field(name='tag_list', annotation=OpRef(name='init.fields.64.annotation'), default=OpRef(name='init.fields.64"
-        ".default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, valid"
-        "ate=None, check_type=None), InitPlan.Field(name='automation_mode', annotation=OpRef(name='init.fields.65.annot"
-        "ation'), default=OpRef(name='init.fields.65.default'), default_factory=None, init=True, override=False, field_"
-        "type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='resume_full_automa"
-        "tion_mode_time', annotation=OpRef(name='init.fields.66.annotation'), default=OpRef(name='init.fields.66.defaul"
-        "t'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=Non"
-        "e, check_type=None), InitPlan.Field(name='customer_owned_ip_enabled', annotation=OpRef(name='init.fields.67.an"
-        "notation'), default=OpRef(name='init.fields.67.default'), default_factory=None, init=True, override=False, fie"
-        "ld_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='network_type', "
-        "annotation=OpRef(name='init.fields.68.annotation'), default=OpRef(name='init.fields.68.default'), default_fact"
-        "ory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=Non"
-        "e), InitPlan.Field(name='activity_stream_status', annotation=OpRef(name='init.fields.69.annotation'), default="
-        "OpRef(name='init.fields.69.default'), default_factory=None, init=True, override=False, field_type=FieldType.IN"
-        "STANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='activity_stream_kms_key_id', annota"
-        "tion=OpRef(name='init.fields.70.annotation'), default=OpRef(name='init.fields.70.default'), default_factory=No"
-        "ne, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), In"
-        "itPlan.Field(name='activity_stream_kinesis_stream_name', annotation=OpRef(name='init.fields.71.annotation'), d"
-        "efault=OpRef(name='init.fields.71.default'), default_factory=None, init=True, override=False, field_type=Field"
-        "Type.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='activity_stream_mode', annot"
-        "ation=OpRef(name='init.fields.72.annotation'), default=OpRef(name='init.fields.72.default'), default_factory=N"
-        "one, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), I"
-        "nitPlan.Field(name='activity_stream_engine_native_audit_fields_included', annotation=OpRef(name='init.fields.7"
-        "3.annotation'), default=OpRef(name='init.fields.73.default'), default_factory=None, init=True, override=False,"
-        " field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='aws_backup_"
-        "recovery_point_arn', annotation=OpRef(name='init.fields.74.annotation'), default=OpRef(name='init.fields.74.de"
-        "fault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate"
-        "=None, check_type=None), InitPlan.Field(name='db_instance_automated_backups_replications', annotation=OpRef(na"
-        "me='init.fields.75.annotation'), default=OpRef(name='init.fields.75.default'), default_factory=None, init=True"
-        ", override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field("
-        "name='backup_target', annotation=OpRef(name='init.fields.76.annotation'), default=OpRef(name='init.fields.76.d"
-        "efault'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validat"
-        "e=None, check_type=None), InitPlan.Field(name='automatic_restart_time', annotation=OpRef(name='init.fields.77."
-        "annotation'), default=OpRef(name='init.fields.77.default'), default_factory=None, init=True, override=False, f"
-        "ield_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='custom_iam_in"
-        "stance_profile', annotation=OpRef(name='init.fields.78.annotation'), default=OpRef(name='init.fields.78.defaul"
-        "t'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=Non"
-        "e, check_type=None), InitPlan.Field(name='activity_stream_policy_status', annotation=OpRef(name='init.fields.7"
-        "9.annotation'), default=OpRef(name='init.fields.79.default'), default_factory=None, init=True, override=False,"
-        " field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='certificate"
-        "_details', annotation=OpRef(name='init.fields.80.annotation'), default=OpRef(name='init.fields.80.default'), d"
-        "efault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, che"
-        "ck_type=None), InitPlan.Field(name='db_system_id', annotation=OpRef(name='init.fields.81.annotation'), default"
-        "=OpRef(name='init.fields.81.default'), default_factory=None, init=True, override=False, field_type=FieldType.I"
-        "NSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='master_user_secret', annotation=Op"
-        "Ref(name='init.fields.82.annotation'), default=OpRef(name='init.fields.82.default'), default_factory=None, ini"
-        "t=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan."
-        "Field(name='read_replica_source_db_cluster_identifier', annotation=OpRef(name='init.fields.83.annotation'), de"
-        "fault=OpRef(name='init.fields.83.default'), default_factory=None, init=True, override=False, field_type=FieldT"
-        "ype.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='percent_progress', annotation"
-        "=OpRef(name='init.fields.84.annotation'), default=OpRef(name='init.fields.84.default'), default_factory=None, "
-        "init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPl"
-        "an.Field(name='multi_tenant', annotation=OpRef(name='init.fields.85.annotation'), default=OpRef(name='init.fie"
-        "lds.85.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None,"
-        " validate=None, check_type=None), InitPlan.Field(name='dedicated_log_volume', annotation=OpRef(name='init.fiel"
-        "ds.86.annotation'), default=OpRef(name='init.fields.86.default'), default_factory=None, init=True, override=Fa"
-        "lse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='is_stor"
-        "age_config_upgrade_available', annotation=OpRef(name='init.fields.87.annotation'), default=OpRef(name='init.fi"
-        "elds.87.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None"
-        ", validate=None, check_type=None), InitPlan.Field(name='engine_lifecycle_support', annotation=OpRef(name='init"
-        ".fields.88.annotation'), default=OpRef(name='init.fields.88.default'), default_factory=None, init=True, overri"
-        "de=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), InitPlan.Field(name='ad"
-        "ditional_storage_volumes', annotation=OpRef(name='init.fields.89.annotation'), default=OpRef(name='init.fields"
-        ".89.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, va"
-        "lidate=None, check_type=None), InitPlan.Field(name='storage_volume_status', annotation=OpRef(name='init.fields"
-        ".90.annotation'), default=OpRef(name='init.fields.90.default'), default_factory=None, init=True, override=Fals"
-        "e, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params"
-        "=(), kw_only_params=('db_instance_identifier', 'db_instance_class', 'engine', 'db_instance_status', 'master_us"
-        "ername', 'db_name', 'endpoint', 'allocated_storage', 'instance_create_time', 'preferred_backup_window', 'backu"
-        "p_retention_period', 'db_security_groups', 'vpc_security_groups', 'db_parameter_groups', 'availability_zone', "
-        "'db_subnet_group', 'preferred_maintenance_window', 'upgrade_rollout_order', 'pending_modified_values', 'latest"
-        "_restorable_time', 'multi_az', 'engine_version', 'auto_minor_version_upgrade', 'read_replica_source_db_instanc"
-        "e_identifier', 'read_replica_db_instance_identifiers', 'read_replica_db_cluster_identifiers', 'replica_mode', "
-        "'license_model', 'iops', 'storage_throughput', 'option_group_memberships', 'character_set_name', 'nchar_charac"
-        "ter_set_name', 'secondary_availability_zone', 'publicly_accessible', 'status_infos', 'storage_type', 'tde_cred"
-        "ential_arn', 'db_instance_port', 'db_cluster_identifier', 'storage_encrypted', 'kms_key_id', 'dbi_resource_id'"
-        ", 'ca_certificate_identifier', 'domain_memberships', 'copy_tags_to_snapshot', 'monitoring_interval', 'enhanced"
-        "_monitoring_resource_arn', 'monitoring_role_arn', 'promotion_tier', 'db_instance_arn', 'timezone', 'iam_databa"
-        "se_authentication_enabled', 'database_insights_mode', 'performance_insights_enabled', 'performance_insights_km"
-        "s_key_id', 'performance_insights_retention_period', 'enabled_cloudwatch_logs_exports', 'processor_features', '"
-        "deletion_protection', 'associated_roles', 'listener_endpoint', 'max_allocated_storage', 'tag_list', 'automatio"
-        "n_mode', 'resume_full_automation_mode_time', 'customer_owned_ip_enabled', 'network_type', 'activity_stream_sta"
-        "tus', 'activity_stream_kms_key_id', 'activity_stream_kinesis_stream_name', 'activity_stream_mode', 'activity_s"
-        "tream_engine_native_audit_fields_included', 'aws_backup_recovery_point_arn', 'db_instance_automated_backups_re"
-        "plications', 'backup_target', 'automatic_restart_time', 'custom_iam_instance_profile', 'activity_stream_policy"
-        "_status', 'certificate_details', 'db_system_id', 'master_user_secret', 'read_replica_source_db_cluster_identif"
-        "ier', 'percent_progress', 'multi_tenant', 'dedicated_log_volume', 'is_storage_config_upgrade_available', 'engi"
-        "ne_lifecycle_support', 'additional_storage_volumes', 'storage_volume_status'), frozen=True, slots=False, post_"
-        "init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='db_instance_identifier'"
-        ", kw_only=True, fn=None), ReprPlan.Field(name='db_instance_class', kw_only=True, fn=None), ReprPlan.Field(name"
-        "='engine', kw_only=True, fn=None), ReprPlan.Field(name='db_instance_status', kw_only=True, fn=None), ReprPlan."
-        "Field(name='master_username', kw_only=True, fn=None), ReprPlan.Field(name='db_name', kw_only=True, fn=None), R"
-        "eprPlan.Field(name='endpoint', kw_only=True, fn=None), ReprPlan.Field(name='allocated_storage', kw_only=True, "
-        "fn=None), ReprPlan.Field(name='instance_create_time', kw_only=True, fn=None), ReprPlan.Field(name='preferred_b"
-        "ackup_window', kw_only=True, fn=None), ReprPlan.Field(name='backup_retention_period', kw_only=True, fn=None), "
-        "ReprPlan.Field(name='db_security_groups', kw_only=True, fn=None), ReprPlan.Field(name='vpc_security_groups', k"
-        "w_only=True, fn=None), ReprPlan.Field(name='db_parameter_groups', kw_only=True, fn=None), ReprPlan.Field(name="
-        "'availability_zone', kw_only=True, fn=None), ReprPlan.Field(name='db_subnet_group', kw_only=True, fn=None), Re"
-        "prPlan.Field(name='preferred_maintenance_window', kw_only=True, fn=None), ReprPlan.Field(name='upgrade_rollout"
-        "_order', kw_only=True, fn=None), ReprPlan.Field(name='pending_modified_values', kw_only=True, fn=None), ReprPl"
-        "an.Field(name='latest_restorable_time', kw_only=True, fn=None), ReprPlan.Field(name='multi_az', kw_only=True, "
-        "fn=None), ReprPlan.Field(name='engine_version', kw_only=True, fn=None), ReprPlan.Field(name='auto_minor_versio"
-        "n_upgrade', kw_only=True, fn=None), ReprPlan.Field(name='read_replica_source_db_instance_identifier', kw_only="
-        "True, fn=None), ReprPlan.Field(name='read_replica_db_instance_identifiers', kw_only=True, fn=None), ReprPlan.F"
-        "ield(name='read_replica_db_cluster_identifiers', kw_only=True, fn=None), ReprPlan.Field(name='replica_mode', k"
-        "w_only=True, fn=None), ReprPlan.Field(name='license_model', kw_only=True, fn=None), ReprPlan.Field(name='iops'"
-        ", kw_only=True, fn=None), ReprPlan.Field(name='storage_throughput', kw_only=True, fn=None), ReprPlan.Field(nam"
-        "e='option_group_memberships', kw_only=True, fn=None), ReprPlan.Field(name='character_set_name', kw_only=True, "
-        "fn=None), ReprPlan.Field(name='nchar_character_set_name', kw_only=True, fn=None), ReprPlan.Field(name='seconda"
-        "ry_availability_zone', kw_only=True, fn=None), ReprPlan.Field(name='publicly_accessible', kw_only=True, fn=Non"
-        "e), ReprPlan.Field(name='status_infos', kw_only=True, fn=None), ReprPlan.Field(name='storage_type', kw_only=Tr"
-        "ue, fn=None), ReprPlan.Field(name='tde_credential_arn', kw_only=True, fn=None), ReprPlan.Field(name='db_instan"
-        "ce_port', kw_only=True, fn=None), ReprPlan.Field(name='db_cluster_identifier', kw_only=True, fn=None), ReprPla"
-        "n.Field(name='storage_encrypted', kw_only=True, fn=None), ReprPlan.Field(name='kms_key_id', kw_only=True, fn=N"
-        "one), ReprPlan.Field(name='dbi_resource_id', kw_only=True, fn=None), ReprPlan.Field(name='ca_certificate_ident"
-        "ifier', kw_only=True, fn=None), ReprPlan.Field(name='domain_memberships', kw_only=True, fn=None), ReprPlan.Fie"
-        "ld(name='copy_tags_to_snapshot', kw_only=True, fn=None), ReprPlan.Field(name='monitoring_interval', kw_only=Tr"
-        "ue, fn=None), ReprPlan.Field(name='enhanced_monitoring_resource_arn', kw_only=True, fn=None), ReprPlan.Field(n"
-        "ame='monitoring_role_arn', kw_only=True, fn=None), ReprPlan.Field(name='promotion_tier', kw_only=True, fn=None"
-        "), ReprPlan.Field(name='db_instance_arn', kw_only=True, fn=None), ReprPlan.Field(name='timezone', kw_only=True"
-        ", fn=None), ReprPlan.Field(name='iam_database_authentication_enabled', kw_only=True, fn=None), ReprPlan.Field("
-        "name='database_insights_mode', kw_only=True, fn=None), ReprPlan.Field(name='performance_insights_enabled', kw_"
-        "only=True, fn=None), ReprPlan.Field(name='performance_insights_kms_key_id', kw_only=True, fn=None), ReprPlan.F"
-        "ield(name='performance_insights_retention_period', kw_only=True, fn=None), ReprPlan.Field(name='enabled_cloudw"
-        "atch_logs_exports', kw_only=True, fn=None), ReprPlan.Field(name='processor_features', kw_only=True, fn=None), "
-        "ReprPlan.Field(name='deletion_protection', kw_only=True, fn=None), ReprPlan.Field(name='associated_roles', kw_"
-        "only=True, fn=None), ReprPlan.Field(name='listener_endpoint', kw_only=True, fn=None), ReprPlan.Field(name='max"
-        "_allocated_storage', kw_only=True, fn=None), ReprPlan.Field(name='tag_list', kw_only=True, fn=None), ReprPlan."
-        "Field(name='automation_mode', kw_only=True, fn=None), ReprPlan.Field(name='resume_full_automation_mode_time', "
-        "kw_only=True, fn=None), ReprPlan.Field(name='customer_owned_ip_enabled', kw_only=True, fn=None), ReprPlan.Fiel"
-        "d(name='network_type', kw_only=True, fn=None), ReprPlan.Field(name='activity_stream_status', kw_only=True, fn="
-        "None), ReprPlan.Field(name='activity_stream_kms_key_id', kw_only=True, fn=None), ReprPlan.Field(name='activity"
-        "_stream_kinesis_stream_name', kw_only=True, fn=None), ReprPlan.Field(name='activity_stream_mode', kw_only=True"
-        ", fn=None), ReprPlan.Field(name='activity_stream_engine_native_audit_fields_included', kw_only=True, fn=None),"
-        " ReprPlan.Field(name='aws_backup_recovery_point_arn', kw_only=True, fn=None), ReprPlan.Field(name='db_instance"
-        "_automated_backups_replications', kw_only=True, fn=None), ReprPlan.Field(name='backup_target', kw_only=True, f"
-        "n=None), ReprPlan.Field(name='automatic_restart_time', kw_only=True, fn=None), ReprPlan.Field(name='custom_iam"
-        "_instance_profile', kw_only=True, fn=None), ReprPlan.Field(name='activity_stream_policy_status', kw_only=True,"
-        " fn=None), ReprPlan.Field(name='certificate_details', kw_only=True, fn=None), ReprPlan.Field(name='db_system_i"
-        "d', kw_only=True, fn=None), ReprPlan.Field(name='master_user_secret', kw_only=True, fn=None), ReprPlan.Field(n"
-        "ame='read_replica_source_db_cluster_identifier', kw_only=True, fn=None), ReprPlan.Field(name='percent_progress"
-        "', kw_only=True, fn=None), ReprPlan.Field(name='multi_tenant', kw_only=True, fn=None), ReprPlan.Field(name='de"
-        "dicated_log_volume', kw_only=True, fn=None), ReprPlan.Field(name='is_storage_config_upgrade_available', kw_onl"
-        "y=True, fn=None), ReprPlan.Field(name='engine_lifecycle_support', kw_only=True, fn=None), ReprPlan.Field(name="
-        "'additional_storage_volumes', kw_only=True, fn=None), ReprPlan.Field(name='storage_volume_status', kw_only=Tru"
-        "e, fn=None)), id=False, terse=False, default_fn=None)))"
+        "_storage_volumes', 'storage_volume_status'), frozen=True, slots=False, post_init_params=None, init_fns=(), val"
+        "idate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='db_instance_identifier', kw_only=True, fn=None), ReprPlan"
+        ".Field(name='db_instance_class', kw_only=True, fn=None), ReprPlan.Field(name='engine', kw_only=True, fn=None),"
+        " ReprPlan.Field(name='db_instance_status', kw_only=True, fn=None), ReprPlan.Field(name='master_username', kw_o"
+        "nly=True, fn=None), ReprPlan.Field(name='db_name', kw_only=True, fn=None), ReprPlan.Field(name='endpoint', kw_"
+        "only=True, fn=None), ReprPlan.Field(name='allocated_storage', kw_only=True, fn=None), ReprPlan.Field(name='ins"
+        "tance_create_time', kw_only=True, fn=None), ReprPlan.Field(name='preferred_backup_window', kw_only=True, fn=No"
+        "ne), ReprPlan.Field(name='backup_retention_period', kw_only=True, fn=None), ReprPlan.Field(name='db_security_g"
+        "roups', kw_only=True, fn=None), ReprPlan.Field(name='vpc_security_groups', kw_only=True, fn=None), ReprPlan.Fi"
+        "eld(name='db_parameter_groups', kw_only=True, fn=None), ReprPlan.Field(name='availability_zone', kw_only=True,"
+        " fn=None), ReprPlan.Field(name='db_subnet_group', kw_only=True, fn=None), ReprPlan.Field(name='preferred_maint"
+        "enance_window', kw_only=True, fn=None), ReprPlan.Field(name='upgrade_rollout_order', kw_only=True, fn=None), R"
+        "eprPlan.Field(name='pending_modified_values', kw_only=True, fn=None), ReprPlan.Field(name='latest_restorable_t"
+        "ime', kw_only=True, fn=None), ReprPlan.Field(name='multi_az', kw_only=True, fn=None), ReprPlan.Field(name='eng"
+        "ine_version', kw_only=True, fn=None), ReprPlan.Field(name='auto_minor_version_upgrade', kw_only=True, fn=None)"
+        ", ReprPlan.Field(name='read_replica_source_db_instance_identifier', kw_only=True, fn=None), ReprPlan.Field(nam"
+        "e='read_replica_db_instance_identifiers', kw_only=True, fn=None), ReprPlan.Field(name='read_replica_db_cluster"
+        "_identifiers', kw_only=True, fn=None), ReprPlan.Field(name='replica_mode', kw_only=True, fn=None), ReprPlan.Fi"
+        "eld(name='license_model', kw_only=True, fn=None), ReprPlan.Field(name='iops', kw_only=True, fn=None), ReprPlan"
+        ".Field(name='storage_throughput', kw_only=True, fn=None), ReprPlan.Field(name='option_group_memberships', kw_o"
+        "nly=True, fn=None), ReprPlan.Field(name='character_set_name', kw_only=True, fn=None), ReprPlan.Field(name='nch"
+        "ar_character_set_name', kw_only=True, fn=None), ReprPlan.Field(name='secondary_availability_zone', kw_only=Tru"
+        "e, fn=None), ReprPlan.Field(name='publicly_accessible', kw_only=True, fn=None), ReprPlan.Field(name='status_in"
+        "fos', kw_only=True, fn=None), ReprPlan.Field(name='storage_type', kw_only=True, fn=None), ReprPlan.Field(name="
+        "'storage_encryption_type', kw_only=True, fn=None), ReprPlan.Field(name='tde_credential_arn', kw_only=True, fn="
+        "None), ReprPlan.Field(name='db_instance_port', kw_only=True, fn=None), ReprPlan.Field(name='db_cluster_identif"
+        "ier', kw_only=True, fn=None), ReprPlan.Field(name='storage_encrypted', kw_only=True, fn=None), ReprPlan.Field("
+        "name='kms_key_id', kw_only=True, fn=None), ReprPlan.Field(name='dbi_resource_id', kw_only=True, fn=None), Repr"
+        "Plan.Field(name='ca_certificate_identifier', kw_only=True, fn=None), ReprPlan.Field(name='domain_memberships',"
+        " kw_only=True, fn=None), ReprPlan.Field(name='copy_tags_to_snapshot', kw_only=True, fn=None), ReprPlan.Field(n"
+        "ame='monitoring_interval', kw_only=True, fn=None), ReprPlan.Field(name='enhanced_monitoring_resource_arn', kw_"
+        "only=True, fn=None), ReprPlan.Field(name='monitoring_role_arn', kw_only=True, fn=None), ReprPlan.Field(name='p"
+        "romotion_tier', kw_only=True, fn=None), ReprPlan.Field(name='db_instance_arn', kw_only=True, fn=None), ReprPla"
+        "n.Field(name='timezone', kw_only=True, fn=None), ReprPlan.Field(name='iam_database_authentication_enabled', kw"
+        "_only=True, fn=None), ReprPlan.Field(name='database_insights_mode', kw_only=True, fn=None), ReprPlan.Field(nam"
+        "e='performance_insights_enabled', kw_only=True, fn=None), ReprPlan.Field(name='performance_insights_kms_key_id"
+        "', kw_only=True, fn=None), ReprPlan.Field(name='performance_insights_retention_period', kw_only=True, fn=None)"
+        ", ReprPlan.Field(name='enabled_cloudwatch_logs_exports', kw_only=True, fn=None), ReprPlan.Field(name='processo"
+        "r_features', kw_only=True, fn=None), ReprPlan.Field(name='deletion_protection', kw_only=True, fn=None), ReprPl"
+        "an.Field(name='associated_roles', kw_only=True, fn=None), ReprPlan.Field(name='listener_endpoint', kw_only=Tru"
+        "e, fn=None), ReprPlan.Field(name='max_allocated_storage', kw_only=True, fn=None), ReprPlan.Field(name='tag_lis"
+        "t', kw_only=True, fn=None), ReprPlan.Field(name='automation_mode', kw_only=True, fn=None), ReprPlan.Field(name"
+        "='resume_full_automation_mode_time', kw_only=True, fn=None), ReprPlan.Field(name='customer_owned_ip_enabled', "
+        "kw_only=True, fn=None), ReprPlan.Field(name='network_type', kw_only=True, fn=None), ReprPlan.Field(name='activ"
+        "ity_stream_status', kw_only=True, fn=None), ReprPlan.Field(name='activity_stream_kms_key_id', kw_only=True, fn"
+        "=None), ReprPlan.Field(name='activity_stream_kinesis_stream_name', kw_only=True, fn=None), ReprPlan.Field(name"
+        "='activity_stream_mode', kw_only=True, fn=None), ReprPlan.Field(name='activity_stream_engine_native_audit_fiel"
+        "ds_included', kw_only=True, fn=None), ReprPlan.Field(name='aws_backup_recovery_point_arn', kw_only=True, fn=No"
+        "ne), ReprPlan.Field(name='db_instance_automated_backups_replications', kw_only=True, fn=None), ReprPlan.Field("
+        "name='backup_target', kw_only=True, fn=None), ReprPlan.Field(name='automatic_restart_time', kw_only=True, fn=N"
+        "one), ReprPlan.Field(name='custom_iam_instance_profile', kw_only=True, fn=None), ReprPlan.Field(name='activity"
+        "_stream_policy_status', kw_only=True, fn=None), ReprPlan.Field(name='certificate_details', kw_only=True, fn=No"
+        "ne), ReprPlan.Field(name='db_system_id', kw_only=True, fn=None), ReprPlan.Field(name='master_user_secret', kw_"
+        "only=True, fn=None), ReprPlan.Field(name='read_replica_source_db_cluster_identifier', kw_only=True, fn=None), "
+        "ReprPlan.Field(name='percent_progress', kw_only=True, fn=None), ReprPlan.Field(name='multi_tenant', kw_only=Tr"
+        "ue, fn=None), ReprPlan.Field(name='dedicated_log_volume', kw_only=True, fn=None), ReprPlan.Field(name='is_stor"
+        "age_config_upgrade_available', kw_only=True, fn=None), ReprPlan.Field(name='engine_lifecycle_support', kw_only"
+        "=True, fn=None), ReprPlan.Field(name='additional_storage_volumes', kw_only=True, fn=None), ReprPlan.Field(name"
+        "='storage_volume_status', kw_only=True, fn=None)), id=False, terse=False, default_fn=None)))"
     ),
-    plan_repr_sha1='06d1d03f4b9d0ffc072cef69b6538b583c4a3931',
+    plan_repr_sha1='917e4f74917743d28348aefd8bdad6190bf332f2',
     op_ref_idents=(
         '__dataclass__init__fields__10__annotation',
         '__dataclass__init__fields__10__default',
@@ -2833,6 +2837,8 @@ def _process_dataclass__e370acdd02f632f5ffa5833dfc2b29fa253e1324():
         '__dataclass__init__fields__8__default',
         '__dataclass__init__fields__90__annotation',
         '__dataclass__init__fields__90__default',
+        '__dataclass__init__fields__91__annotation',
+        '__dataclass__init__fields__91__default',
         '__dataclass__init__fields__9__annotation',
         '__dataclass__init__fields__9__default',
     ),
@@ -2840,7 +2846,7 @@ def _process_dataclass__e370acdd02f632f5ffa5833dfc2b29fa253e1324():
         ('ominfra.clouds.aws.models.services.rds', 'DBInstance'),
     ),
 )
-def _process_dataclass__06d1d03f4b9d0ffc072cef69b6538b583c4a3931():
+def _process_dataclass__917e4f74917743d28348aefd8bdad6190bf332f2():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -3022,6 +3028,8 @@ def _process_dataclass__06d1d03f4b9d0ffc072cef69b6538b583c4a3931():
         __dataclass__init__fields__8__default,
         __dataclass__init__fields__90__annotation,
         __dataclass__init__fields__90__default,
+        __dataclass__init__fields__91__annotation,
+        __dataclass__init__fields__91__default,
         __dataclass__init__fields__9__annotation,
         __dataclass__init__fields__9__default,
         __dataclass__FieldFnValidationError,  # noqa
@@ -3079,6 +3087,7 @@ def _process_dataclass__06d1d03f4b9d0ffc072cef69b6538b583c4a3931():
                 publicly_accessible=self.publicly_accessible,
                 status_infos=self.status_infos,
                 storage_type=self.storage_type,
+                storage_encryption_type=self.storage_encryption_type,
                 tde_credential_arn=self.tde_credential_arn,
                 db_instance_port=self.db_instance_port,
                 db_cluster_identifier=self.db_cluster_identifier,
@@ -3182,6 +3191,7 @@ def _process_dataclass__06d1d03f4b9d0ffc072cef69b6538b583c4a3931():
                 self.publicly_accessible == other.publicly_accessible and
                 self.status_infos == other.status_infos and
                 self.storage_type == other.storage_type and
+                self.storage_encryption_type == other.storage_encryption_type and
                 self.tde_credential_arn == other.tde_credential_arn and
                 self.db_instance_port == other.db_instance_port and
                 self.db_cluster_identifier == other.db_cluster_identifier and
@@ -3281,6 +3291,7 @@ def _process_dataclass__06d1d03f4b9d0ffc072cef69b6538b583c4a3931():
             'publicly_accessible',
             'status_infos',
             'storage_type',
+            'storage_encryption_type',
             'tde_credential_arn',
             'db_instance_port',
             'db_cluster_identifier',
@@ -3388,6 +3399,7 @@ def _process_dataclass__06d1d03f4b9d0ffc072cef69b6538b583c4a3931():
             'publicly_accessible',
             'status_infos',
             'storage_type',
+            'storage_encryption_type',
             'tde_credential_arn',
             'db_instance_port',
             'db_cluster_identifier',
@@ -3495,6 +3507,7 @@ def _process_dataclass__06d1d03f4b9d0ffc072cef69b6538b583c4a3931():
                 self.publicly_accessible,
                 self.status_infos,
                 self.storage_type,
+                self.storage_encryption_type,
                 self.tde_credential_arn,
                 self.db_instance_port,
                 self.db_cluster_identifier,
@@ -3593,59 +3606,60 @@ def _process_dataclass__06d1d03f4b9d0ffc072cef69b6538b583c4a3931():
             publicly_accessible: __dataclass__init__fields__35__annotation = __dataclass__init__fields__35__default,
             status_infos: __dataclass__init__fields__36__annotation = __dataclass__init__fields__36__default,
             storage_type: __dataclass__init__fields__37__annotation = __dataclass__init__fields__37__default,
-            tde_credential_arn: __dataclass__init__fields__38__annotation = __dataclass__init__fields__38__default,
-            db_instance_port: __dataclass__init__fields__39__annotation = __dataclass__init__fields__39__default,
-            db_cluster_identifier: __dataclass__init__fields__40__annotation = __dataclass__init__fields__40__default,
-            storage_encrypted: __dataclass__init__fields__41__annotation = __dataclass__init__fields__41__default,
-            kms_key_id: __dataclass__init__fields__42__annotation = __dataclass__init__fields__42__default,
-            dbi_resource_id: __dataclass__init__fields__43__annotation = __dataclass__init__fields__43__default,
-            ca_certificate_identifier: __dataclass__init__fields__44__annotation = __dataclass__init__fields__44__default,
-            domain_memberships: __dataclass__init__fields__45__annotation = __dataclass__init__fields__45__default,
-            copy_tags_to_snapshot: __dataclass__init__fields__46__annotation = __dataclass__init__fields__46__default,
-            monitoring_interval: __dataclass__init__fields__47__annotation = __dataclass__init__fields__47__default,
-            enhanced_monitoring_resource_arn: __dataclass__init__fields__48__annotation = __dataclass__init__fields__48__default,
-            monitoring_role_arn: __dataclass__init__fields__49__annotation = __dataclass__init__fields__49__default,
-            promotion_tier: __dataclass__init__fields__50__annotation = __dataclass__init__fields__50__default,
-            db_instance_arn: __dataclass__init__fields__51__annotation = __dataclass__init__fields__51__default,
-            timezone: __dataclass__init__fields__52__annotation = __dataclass__init__fields__52__default,
-            iam_database_authentication_enabled: __dataclass__init__fields__53__annotation = __dataclass__init__fields__53__default,
-            database_insights_mode: __dataclass__init__fields__54__annotation = __dataclass__init__fields__54__default,
-            performance_insights_enabled: __dataclass__init__fields__55__annotation = __dataclass__init__fields__55__default,
-            performance_insights_kms_key_id: __dataclass__init__fields__56__annotation = __dataclass__init__fields__56__default,
-            performance_insights_retention_period: __dataclass__init__fields__57__annotation = __dataclass__init__fields__57__default,
-            enabled_cloudwatch_logs_exports: __dataclass__init__fields__58__annotation = __dataclass__init__fields__58__default,
-            processor_features: __dataclass__init__fields__59__annotation = __dataclass__init__fields__59__default,
-            deletion_protection: __dataclass__init__fields__60__annotation = __dataclass__init__fields__60__default,
-            associated_roles: __dataclass__init__fields__61__annotation = __dataclass__init__fields__61__default,
-            listener_endpoint: __dataclass__init__fields__62__annotation = __dataclass__init__fields__62__default,
-            max_allocated_storage: __dataclass__init__fields__63__annotation = __dataclass__init__fields__63__default,
-            tag_list: __dataclass__init__fields__64__annotation = __dataclass__init__fields__64__default,
-            automation_mode: __dataclass__init__fields__65__annotation = __dataclass__init__fields__65__default,
-            resume_full_automation_mode_time: __dataclass__init__fields__66__annotation = __dataclass__init__fields__66__default,
-            customer_owned_ip_enabled: __dataclass__init__fields__67__annotation = __dataclass__init__fields__67__default,
-            network_type: __dataclass__init__fields__68__annotation = __dataclass__init__fields__68__default,
-            activity_stream_status: __dataclass__init__fields__69__annotation = __dataclass__init__fields__69__default,
-            activity_stream_kms_key_id: __dataclass__init__fields__70__annotation = __dataclass__init__fields__70__default,
-            activity_stream_kinesis_stream_name: __dataclass__init__fields__71__annotation = __dataclass__init__fields__71__default,
-            activity_stream_mode: __dataclass__init__fields__72__annotation = __dataclass__init__fields__72__default,
-            activity_stream_engine_native_audit_fields_included: __dataclass__init__fields__73__annotation = __dataclass__init__fields__73__default,
-            aws_backup_recovery_point_arn: __dataclass__init__fields__74__annotation = __dataclass__init__fields__74__default,
-            db_instance_automated_backups_replications: __dataclass__init__fields__75__annotation = __dataclass__init__fields__75__default,
-            backup_target: __dataclass__init__fields__76__annotation = __dataclass__init__fields__76__default,
-            automatic_restart_time: __dataclass__init__fields__77__annotation = __dataclass__init__fields__77__default,
-            custom_iam_instance_profile: __dataclass__init__fields__78__annotation = __dataclass__init__fields__78__default,
-            activity_stream_policy_status: __dataclass__init__fields__79__annotation = __dataclass__init__fields__79__default,
-            certificate_details: __dataclass__init__fields__80__annotation = __dataclass__init__fields__80__default,
-            db_system_id: __dataclass__init__fields__81__annotation = __dataclass__init__fields__81__default,
-            master_user_secret: __dataclass__init__fields__82__annotation = __dataclass__init__fields__82__default,
-            read_replica_source_db_cluster_identifier: __dataclass__init__fields__83__annotation = __dataclass__init__fields__83__default,
-            percent_progress: __dataclass__init__fields__84__annotation = __dataclass__init__fields__84__default,
-            multi_tenant: __dataclass__init__fields__85__annotation = __dataclass__init__fields__85__default,
-            dedicated_log_volume: __dataclass__init__fields__86__annotation = __dataclass__init__fields__86__default,
-            is_storage_config_upgrade_available: __dataclass__init__fields__87__annotation = __dataclass__init__fields__87__default,
-            engine_lifecycle_support: __dataclass__init__fields__88__annotation = __dataclass__init__fields__88__default,
-            additional_storage_volumes: __dataclass__init__fields__89__annotation = __dataclass__init__fields__89__default,
-            storage_volume_status: __dataclass__init__fields__90__annotation = __dataclass__init__fields__90__default,
+            storage_encryption_type: __dataclass__init__fields__38__annotation = __dataclass__init__fields__38__default,
+            tde_credential_arn: __dataclass__init__fields__39__annotation = __dataclass__init__fields__39__default,
+            db_instance_port: __dataclass__init__fields__40__annotation = __dataclass__init__fields__40__default,
+            db_cluster_identifier: __dataclass__init__fields__41__annotation = __dataclass__init__fields__41__default,
+            storage_encrypted: __dataclass__init__fields__42__annotation = __dataclass__init__fields__42__default,
+            kms_key_id: __dataclass__init__fields__43__annotation = __dataclass__init__fields__43__default,
+            dbi_resource_id: __dataclass__init__fields__44__annotation = __dataclass__init__fields__44__default,
+            ca_certificate_identifier: __dataclass__init__fields__45__annotation = __dataclass__init__fields__45__default,
+            domain_memberships: __dataclass__init__fields__46__annotation = __dataclass__init__fields__46__default,
+            copy_tags_to_snapshot: __dataclass__init__fields__47__annotation = __dataclass__init__fields__47__default,
+            monitoring_interval: __dataclass__init__fields__48__annotation = __dataclass__init__fields__48__default,
+            enhanced_monitoring_resource_arn: __dataclass__init__fields__49__annotation = __dataclass__init__fields__49__default,
+            monitoring_role_arn: __dataclass__init__fields__50__annotation = __dataclass__init__fields__50__default,
+            promotion_tier: __dataclass__init__fields__51__annotation = __dataclass__init__fields__51__default,
+            db_instance_arn: __dataclass__init__fields__52__annotation = __dataclass__init__fields__52__default,
+            timezone: __dataclass__init__fields__53__annotation = __dataclass__init__fields__53__default,
+            iam_database_authentication_enabled: __dataclass__init__fields__54__annotation = __dataclass__init__fields__54__default,
+            database_insights_mode: __dataclass__init__fields__55__annotation = __dataclass__init__fields__55__default,
+            performance_insights_enabled: __dataclass__init__fields__56__annotation = __dataclass__init__fields__56__default,
+            performance_insights_kms_key_id: __dataclass__init__fields__57__annotation = __dataclass__init__fields__57__default,
+            performance_insights_retention_period: __dataclass__init__fields__58__annotation = __dataclass__init__fields__58__default,
+            enabled_cloudwatch_logs_exports: __dataclass__init__fields__59__annotation = __dataclass__init__fields__59__default,
+            processor_features: __dataclass__init__fields__60__annotation = __dataclass__init__fields__60__default,
+            deletion_protection: __dataclass__init__fields__61__annotation = __dataclass__init__fields__61__default,
+            associated_roles: __dataclass__init__fields__62__annotation = __dataclass__init__fields__62__default,
+            listener_endpoint: __dataclass__init__fields__63__annotation = __dataclass__init__fields__63__default,
+            max_allocated_storage: __dataclass__init__fields__64__annotation = __dataclass__init__fields__64__default,
+            tag_list: __dataclass__init__fields__65__annotation = __dataclass__init__fields__65__default,
+            automation_mode: __dataclass__init__fields__66__annotation = __dataclass__init__fields__66__default,
+            resume_full_automation_mode_time: __dataclass__init__fields__67__annotation = __dataclass__init__fields__67__default,
+            customer_owned_ip_enabled: __dataclass__init__fields__68__annotation = __dataclass__init__fields__68__default,
+            network_type: __dataclass__init__fields__69__annotation = __dataclass__init__fields__69__default,
+            activity_stream_status: __dataclass__init__fields__70__annotation = __dataclass__init__fields__70__default,
+            activity_stream_kms_key_id: __dataclass__init__fields__71__annotation = __dataclass__init__fields__71__default,
+            activity_stream_kinesis_stream_name: __dataclass__init__fields__72__annotation = __dataclass__init__fields__72__default,
+            activity_stream_mode: __dataclass__init__fields__73__annotation = __dataclass__init__fields__73__default,
+            activity_stream_engine_native_audit_fields_included: __dataclass__init__fields__74__annotation = __dataclass__init__fields__74__default,
+            aws_backup_recovery_point_arn: __dataclass__init__fields__75__annotation = __dataclass__init__fields__75__default,
+            db_instance_automated_backups_replications: __dataclass__init__fields__76__annotation = __dataclass__init__fields__76__default,
+            backup_target: __dataclass__init__fields__77__annotation = __dataclass__init__fields__77__default,
+            automatic_restart_time: __dataclass__init__fields__78__annotation = __dataclass__init__fields__78__default,
+            custom_iam_instance_profile: __dataclass__init__fields__79__annotation = __dataclass__init__fields__79__default,
+            activity_stream_policy_status: __dataclass__init__fields__80__annotation = __dataclass__init__fields__80__default,
+            certificate_details: __dataclass__init__fields__81__annotation = __dataclass__init__fields__81__default,
+            db_system_id: __dataclass__init__fields__82__annotation = __dataclass__init__fields__82__default,
+            master_user_secret: __dataclass__init__fields__83__annotation = __dataclass__init__fields__83__default,
+            read_replica_source_db_cluster_identifier: __dataclass__init__fields__84__annotation = __dataclass__init__fields__84__default,
+            percent_progress: __dataclass__init__fields__85__annotation = __dataclass__init__fields__85__default,
+            multi_tenant: __dataclass__init__fields__86__annotation = __dataclass__init__fields__86__default,
+            dedicated_log_volume: __dataclass__init__fields__87__annotation = __dataclass__init__fields__87__default,
+            is_storage_config_upgrade_available: __dataclass__init__fields__88__annotation = __dataclass__init__fields__88__default,
+            engine_lifecycle_support: __dataclass__init__fields__89__annotation = __dataclass__init__fields__89__default,
+            additional_storage_volumes: __dataclass__init__fields__90__annotation = __dataclass__init__fields__90__default,
+            storage_volume_status: __dataclass__init__fields__91__annotation = __dataclass__init__fields__91__default,
         ) -> __dataclass__None:
             __dataclass__object_setattr(self, 'db_instance_identifier', db_instance_identifier)
             __dataclass__object_setattr(self, 'db_instance_class', db_instance_class)
@@ -3684,6 +3698,7 @@ def _process_dataclass__06d1d03f4b9d0ffc072cef69b6538b583c4a3931():
             __dataclass__object_setattr(self, 'publicly_accessible', publicly_accessible)
             __dataclass__object_setattr(self, 'status_infos', status_infos)
             __dataclass__object_setattr(self, 'storage_type', storage_type)
+            __dataclass__object_setattr(self, 'storage_encryption_type', storage_encryption_type)
             __dataclass__object_setattr(self, 'tde_credential_arn', tde_credential_arn)
             __dataclass__object_setattr(self, 'db_instance_port', db_instance_port)
             __dataclass__object_setattr(self, 'db_cluster_identifier', db_cluster_identifier)
@@ -3783,6 +3798,7 @@ def _process_dataclass__06d1d03f4b9d0ffc072cef69b6538b583c4a3931():
             parts.append(f"publicly_accessible={self.publicly_accessible!r}")
             parts.append(f"status_infos={self.status_infos!r}")
             parts.append(f"storage_type={self.storage_type!r}")
+            parts.append(f"storage_encryption_type={self.storage_encryption_type!r}")
             parts.append(f"tde_credential_arn={self.tde_credential_arn!r}")
             parts.append(f"db_instance_port={self.db_instance_port!r}")
             parts.append(f"db_cluster_identifier={self.db_cluster_identifier!r}")

@@ -120,7 +120,7 @@ class BytesChannelPipelineFlowControl(ChannelPipelineFlowControl, Abstract):
 
 
 @ta.final
-class ChannelPipelineHandlerRef:
+class ChannelPipelineHandlerRef(ta.Generic[T]):
     def __init__(self, *, _context: 'ChannelPipelineHandlerContext') -> None:
         self._context = _context
 
@@ -129,8 +129,8 @@ class ChannelPipelineHandlerRef:
         return self._context._pipeline  # noqa
 
     @property
-    def handler(self) -> 'ChannelPipelineHandler':
-        return self._context._handler  # noqa
+    def handler(self) -> T:
+        return self._context._handler  # type: ignore[return-value]  # noqa
 
     @property
     def invalidated(self) -> bool:
@@ -138,6 +138,9 @@ class ChannelPipelineHandlerRef:
 
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}<{self._context!r}>'
+
+
+ChannelPipelineHandlerRef_ = ChannelPipelineHandlerRef['ChannelPipelineHandler']  # ta.TypeAlias  # omlish-amalg-typing-no-move  # noqa
 
 
 @ta.final
@@ -159,7 +162,7 @@ class ChannelPipelineHandlerContext:
         self._pipeline: ta.Final[ChannelPipeline] = _pipeline
         self._handler: ta.Final[ChannelPipelineHandler] = _handler
 
-        self._ref = ChannelPipelineHandlerRef(_context=self)
+        self._ref: ChannelPipelineHandlerRef_ = ChannelPipelineHandlerRef(_context=self)
 
         self._handles_inbound = type(_handler).inbound is not ChannelPipelineHandler.inbound
         self._handles_outbound = type(_handler).outbound is not ChannelPipelineHandler.outbound
@@ -175,7 +178,7 @@ class ChannelPipelineHandlerContext:
         )
 
     @property
-    def ref(self) -> ChannelPipelineHandlerRef:
+    def ref(self) -> ChannelPipelineHandlerRef_:
         return self._ref
 
     @property
@@ -243,7 +246,9 @@ class ChannelPipelineHandlerContext:
 
     @property
     def bytes_flow_control(self) -> ta.Optional[BytesChannelPipelineFlowControl]:
-        return self._pipeline._caches().find_handler(BytesChannelPipelineFlowControl)  # type: ignore[type-abstract]  # noqa
+        if (hr := self._pipeline._caches().find_handler(BytesChannelPipelineFlowControl)) is None:  # type: ignore[type-abstract]  # noqa
+            return None
+        return hr._context._handler  # type: ignore[return-value]  # noqa
 
 
 class ChannelPipelineHandler(Abstract):
@@ -277,8 +282,8 @@ class ChannelPipelineHandler(Abstract):
         raise NotImplementedError
 
 
-# class ShareableChannelPipelineHandler(ChannelPipelineHandler, Abstract):
-#     pass
+class ShareableChannelPipelineHandler(ChannelPipelineHandler, Abstract):
+    pass
 
 
 ##
@@ -309,10 +314,8 @@ class ChannelPipeline:
         outermost._next_in = innermost  # noqa
         innermost._next_out = outermost  # noqa
 
-        self._contexts: ta.Final[ta.Dict[ChannelPipelineHandler, ChannelPipelineHandlerContext]] = {}
-
-        # self._unique_contexts: ta.Final[ta.Dict[ChannelPipelineHandler, ChannelPipelineHandlerContext]] = {}
-        # self._shareable_contexts: ta.Final[ta.Dict[ShareableChannelPipelineHandler, ta.Set[ChannelPipelineHandlerContext]]] = {}  # noqa
+        self._unique_contexts: ta.Final[ta.Dict[ChannelPipelineHandler, ChannelPipelineHandlerContext]] = {}
+        self._shareable_contexts: ta.Final[ta.Dict[ShareableChannelPipelineHandler, ta.Set[ChannelPipelineHandlerContext]]] = {}  # noqa
 
         for h in handlers:
             self.add_innermost(h)
@@ -325,18 +328,21 @@ class ChannelPipeline:
 
     #
 
-    def feed_in_to(self, handler: ChannelPipelineHandler, msg: ta.Any) -> None:
-        ctx = self._contexts[handler]
+    def feed_in_to(self, handler_ref: ChannelPipelineHandlerRef, msg: ta.Any) -> None:
+        ctx = handler_ref._context  # noqa
+        check.is_(ctx._pipeline, self)  # noqa
         ctx._inbound(msg)  # noqa
 
-    def feed_out_to(self, handler: ChannelPipelineHandler, msg: ta.Any) -> None:
-        ctx = self._contexts[handler]
+    def feed_out_to(self, handler_ref: ChannelPipelineHandlerRef, msg: ta.Any) -> None:
+        ctx = handler_ref._context  # noqa
+        check.is_(ctx._pipeline, self)  # noqa
         ctx._outbound(msg)  # noqa
 
     #
 
     def _check_can_add(self, handler: ChannelPipelineHandler) -> ChannelPipelineHandler:
-        check.not_in(handler, self._contexts)
+        if not isinstance(handler, ShareableChannelPipelineHandler):
+            check.not_in(handler, self._unique_contexts)
 
         return handler
 
@@ -346,7 +352,7 @@ class ChannelPipeline:
             *,
             inner_to: ta.Optional[ChannelPipelineHandlerContext] = None,
             outer_to: ta.Optional[ChannelPipelineHandlerContext] = None,
-    ) -> None:
+    ) -> ChannelPipelineHandlerRef:
         self._check_can_add(handler)
 
         if inner_to is not None:
@@ -363,7 +369,11 @@ class ChannelPipeline:
             _handler=handler,
         )
 
-        self._contexts[handler] = ctx
+        if isinstance(handler, ShareableChannelPipelineHandler):
+            self._shareable_contexts.setdefault(handler, set()).add(ctx)
+        else:
+            check.not_in(handler, self._unique_contexts)  # also pre-checked by _check_can_add
+            self._unique_contexts[handler] = ctx
 
         if inner_to is not None:
             prv = inner_to._next_in  # noqa
@@ -383,24 +393,50 @@ class ChannelPipeline:
 
         handler.added(ctx)
 
-    def _check_can_remove(self, handler: ChannelPipelineHandler) -> ChannelPipelineHandler:
-        ctx = self._contexts[handler]
+        return ctx._ref  # noqa
+
+    def add_innermost(self, handler: ChannelPipelineHandler) -> ChannelPipelineHandlerRef:
+        return self._add(handler, outer_to=self._innermost)
+
+    def add_outermost(self, handler: ChannelPipelineHandler) -> ChannelPipelineHandlerRef:
+        return self._add(handler, inner_to=self._outermost)
+
+    #
+
+    def _check_can_remove(self, handler_ref: ChannelPipelineHandlerRef) -> ChannelPipelineHandler:
+        ctx = handler_ref._context  # noqa
+        check.is_(ctx._pipeline, self)  # noqa
+
+        check.state(not ctx._invalidated)  # noqa
+
+        handler = ctx._handler  # noqa
+        if isinstance(handler, ShareableChannelPipelineHandler):
+            check.in_(ctx, self._shareable_contexts[handler])
+        else:
+            check.equal(ctx, self._unique_contexts[handler])
 
         check.is_not(ctx, self._innermost)
         check.is_not(ctx, self._outermost)
 
         return handler
 
-    def _remove(self, handler: ChannelPipelineHandler) -> None:
-        self._check_can_remove(handler)
+    def _remove(self, handler_ref: ChannelPipelineHandlerRef) -> None:
+        self._check_can_remove(handler_ref)
 
-        ctx = self._contexts[handler]
+        ctx = handler_ref._context  # noqa
 
         self._channel._removing(ctx._ref)  # noqa
 
+        handler = ctx._handler  # noqa
         handler.removing(ctx)
 
-        del self._contexts[handler]
+        if isinstance(handler, ShareableChannelPipelineHandler):
+            cs = self._shareable_contexts[handler]
+            cs.remove(ctx)
+            if not cs:
+                del self._shareable_contexts[handler]
+        else:
+            del self._unique_contexts[handler]
 
         ctx._next_in._next_out = ctx._next_out  # noqa
         ctx._next_out._next_in = ctx._next_in  # noqa
@@ -411,24 +447,22 @@ class ChannelPipeline:
 
         self._clear_caches()
 
+    def remove(self, handler_ref: ChannelPipelineHandlerRef) -> None:
+        self._remove(handler_ref)
+
     #
 
-    def add_innermost(self, handler: ChannelPipelineHandler) -> None:
-        self._add(handler, outer_to=self._innermost)
-
-    def add_outermost(self, handler: ChannelPipelineHandler) -> None:
-        self._add(handler, inner_to=self._outermost)
-
-    def remove(self, handler: ChannelPipelineHandler) -> None:
-        self._remove(handler)
-
-    def replace(self, old_handler: ChannelPipelineHandler, new_handler: ChannelPipelineHandler) -> None:
-        self._check_can_remove(old_handler)
+    def replace(
+            self,
+            old_handler_ref: ChannelPipelineHandlerRef,
+            new_handler: ChannelPipelineHandler,
+    ) -> ChannelPipelineHandlerRef:
+        self._check_can_remove(old_handler_ref)
         self._check_can_add(new_handler)
 
-        inner_to = self._contexts[old_handler]._next_out  # noqa
-        self._remove(old_handler)
-        self._add(new_handler, inner_to=inner_to)
+        inner_to = old_handler_ref._context._next_out  # noqa
+        self._remove(old_handler_ref)
+        return self._add(new_handler, inner_to=inner_to)
 
     #
 
@@ -462,26 +496,26 @@ class ChannelPipeline:
         def __init__(self, p: 'ChannelPipeline') -> None:
             self._p = p
 
-            self._single_handlers_by_type_cache: ta.Dict[type, ta.Optional[ta.Any]] = {}
-            self._handlers_by_type_cache: ta.Dict[type, ta.Sequence[ta.Any]] = {}
+            self._single_handlers_by_type_cache: ta.Dict[type, ta.Optional[ChannelPipelineHandlerRef]] = {}
+            self._handlers_by_type_cache: ta.Dict[type, ta.Sequence[ChannelPipelineHandlerRef]] = {}
 
-        _handlers: ta.List[ChannelPipelineHandler]
+        _handlers: ta.List[ChannelPipelineHandlerRef_]
 
-        def handlers(self) -> ta.Sequence[ChannelPipelineHandler]:
+        def handlers(self) -> ta.Sequence[ChannelPipelineHandlerRef_]:
             try:
                 return self._handlers
             except AttributeError:
                 pass
 
-            lst: ta.List[ChannelPipelineHandler] = []
+            lst: ta.List[ChannelPipelineHandlerRef_] = []
             ctx = self._p._outermost  # noqa
             while (ctx := ctx._next_in) is not self._p._innermost:  # noqa
-                lst.append(ctx._handler)  # noqa
+                lst.append(ctx._ref)  # noqa
 
             self._handlers = lst
             return lst
 
-        def find_handler(self, ty: ta.Type[T]) -> ta.Optional[T]:
+        def find_handler(self, ty: ta.Type[T]) -> ta.Optional[ChannelPipelineHandlerRef[T]]:
             try:
                 return self._single_handlers_by_type_cache[ty]
             except KeyError:
@@ -490,7 +524,7 @@ class ChannelPipeline:
             self._single_handlers_by_type_cache[ty] = ret = check.opt_single(self.find_handlers(ty))
             return ret
 
-        def find_handlers(self, ty: ta.Type[T]) -> ta.Sequence[T]:
+        def find_handlers(self, ty: ta.Type[T]) -> ta.Sequence[ChannelPipelineHandlerRef[T]]:
             try:
                 return self._handlers_by_type_cache[ty]
             except KeyError:
@@ -499,8 +533,8 @@ class ChannelPipeline:
             ret: ta.List[ta.Any] = []
             ctx = self._p._outermost  # noqa
             while (ctx := ctx._next_in) is not self._p._innermost:  # noqa
-                if isinstance(h := ctx._handler, ty):  # noqa
-                    ret.append(h)
+                if isinstance(ctx._handler, ty):  # noqa
+                    ret.append(ctx._ref)  # noqa
 
             self._handlers_by_type_cache[ty] = ret
             return ret
@@ -521,13 +555,13 @@ class ChannelPipeline:
         except AttributeError:
             pass
 
-    def handlers(self) -> ta.Sequence[ChannelPipelineHandler]:
+    def handlers(self) -> ta.Sequence[ChannelPipelineHandlerRef]:
         return self._caches().handlers()
 
-    def find_handler(self, ty: ta.Type[T]) -> ta.Optional[T]:
+    def find_handler(self, ty: ta.Type[T]) -> ta.Optional[ChannelPipelineHandlerRef[T]]:
         return self._caches().find_handler(ty)
 
-    def find_handlers(self, ty: ta.Type[T]) -> ta.Sequence[T]:
+    def find_handlers(self, ty: ta.Type[T]) -> ta.Sequence[ChannelPipelineHandlerRef[T]]:
         return self._caches().find_handlers(ty)
 
 

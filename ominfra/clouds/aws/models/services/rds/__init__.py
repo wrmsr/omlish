@@ -259,6 +259,12 @@ class SnapshotQuotaExceededFault(
     pass
 
 
+class StorageEncryptionType(_enum.Enum):
+    NONE = 'none'
+    SSE_KMS = 'sse-kms'
+    SSE_RDS = 'sse-rds'
+
+
 @_dc.dataclass(frozen=True, kw_only=True)
 class StorageQuotaExceededFault(
     _base.Shape,
@@ -1574,6 +1580,11 @@ class DBInstance(
     storage_type: str | None = _dc.field(default=None, metadata=_base.field_metadata(
         member_name='StorageType',
         shape_name='String',
+    ))
+
+    storage_encryption_type: StorageEncryptionType | None = _dc.field(default=None, metadata=_base.field_metadata(
+        member_name='StorageEncryptionType',
+        shape_name='StorageEncryptionType',
     ))
 
     tde_credential_arn: str | None = _dc.field(default=None, metadata=_base.field_metadata(
