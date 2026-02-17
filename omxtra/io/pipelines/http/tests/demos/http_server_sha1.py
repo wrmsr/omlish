@@ -17,8 +17,10 @@ from ...requests import PipelineHttpRequestAborted
 from ...requests import PipelineHttpRequestContentChunk
 from ...requests import PipelineHttpRequestEnd
 from ...requests import PipelineHttpRequestHead
+from ...responses import FullPipelineHttpResponse
 from ...server.requests import PipelineHttpRequestBodyStreamDecoder
 from ...server.requests import PipelineHttpRequestHeadDecoder
+from ...server.responses import PipelineHttpResponseEncoder
 
 
 ##
@@ -49,16 +51,11 @@ class Sha1Handler(ChannelPipelineHandler):
 
             else:
                 # Not our endpoint; reply 404 and close.
-                body = b'not found'
-                resp = (
-                    b'HTTP/1.1 404 Not Found\r\n'
-                    b'Content-Type: text/plain; charset=utf-8\r\n'
-                    b'Content-Length: ' + str(len(body)).encode('ascii') + b'\r\n'
-                    b'Connection: close\r\n'
-                    b'\r\n' + body
-                )
+                ctx.feed_out(FullPipelineHttpResponse.simple(
+                    status=404,
+                    body=b'not found',
+                ))
 
-                ctx.feed_out(resp)
                 ctx.channel.feed_close()
 
             return
@@ -72,15 +69,11 @@ class Sha1Handler(ChannelPipelineHandler):
         if isinstance(msg, PipelineHttpRequestEnd):
             if self._active and self._h is not None:
                 hexd = self._h.hexdigest().encode('ascii')
-                resp = (
-                    b'HTTP/1.1 200 OK\r\n'
-                    b'Content-Type: text/plain; charset=utf-8\r\n'
-                    b'Content-Length: ' + str(len(hexd)).encode('ascii') + b'\r\n'
-                    b'Connection: close\r\n'
-                    b'\r\n' + hexd
-                )
 
-                ctx.feed_out(resp)
+                ctx.feed_out(FullPipelineHttpResponse.simple(
+                    body=hexd,
+                ))
+
                 ctx.channel.feed_close()
 
                 self._active = False
@@ -128,6 +121,8 @@ def build_http_sha1_channel(
                 max_chunk=max_chunk,
                 # max_buffer=max_body_buffer,  # FIXME
             ),
+
+            PipelineHttpResponseEncoder(),
 
             Sha1Handler(),
 
