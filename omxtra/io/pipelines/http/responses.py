@@ -8,6 +8,7 @@ from omlish.http.headers import HttpHeaders
 from omlish.http.parsing import ParsedHttpMessage
 from omlish.http.versions import HttpVersion
 from omlish.http.versions import HttpVersions
+from omlish.io.streams.types import BytesLikeOrMemoryview
 
 
 ##
@@ -66,7 +67,7 @@ class FullPipelineHttpResponse:
 
 @dc.dataclass(frozen=True)
 class PipelineHttpResponseContentChunk:
-    data: bytes
+    data: BytesLikeOrMemoryview
 
 
 @dc.dataclass(frozen=True)

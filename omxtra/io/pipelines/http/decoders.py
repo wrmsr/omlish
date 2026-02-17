@@ -8,6 +8,7 @@ from omlish.http.parsing import ParsedHttpMessage
 from omlish.http.parsing import parse_http_message
 from omlish.io.streams.scanning import ScanningByteStreamBuffer
 from omlish.io.streams.segmented import SegmentedByteStreamBuffer
+from omlish.io.streams.types import BytesLikeOrMemoryview
 from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
@@ -128,7 +129,7 @@ class PipelineHttpHeadDecoder:
 class PipelineHttpContentChunkDecoder(Abstract):
     def __init__(
             self,
-            make_chunk: ta.Callable[[bytes], ta.Any],
+            make_chunk: ta.Callable[[BytesLikeOrMemoryview], ta.Any],
             make_end: ta.Callable[[], ta.Any],
     ) -> None:
         super().__init__()
@@ -182,13 +183,13 @@ class UntilEofPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
             if on_bytes_consumed is not None:
                 on_bytes_consumed(len(mv))
 
-            yield self._make_chunk(ByteStreamBuffers.memoryview_to_bytes(mv))
+            yield self._make_chunk(mv)
 
 
 class ContentLengthPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
     def __init__(
             self,
-            make_chunk: ta.Callable[[bytes], ta.Any],
+            make_chunk: ta.Callable[[BytesLikeOrMemoryview], ta.Any],
             make_end: ta.Callable[[], ta.Any],
             content_length: int,
     ) -> None:
@@ -231,14 +232,14 @@ class ContentLengthPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecod
                 if on_bytes_consumed is not None:
                     on_bytes_consumed(mvl)
 
-                yield self._make_chunk(ByteStreamBuffers.memoryview_to_bytes(mv))
+                yield self._make_chunk(mv)
                 self._remain -= mvl
 
             elif self._remain == mvl:
                 if on_bytes_consumed is not None:
                     on_bytes_consumed(mvl)
 
-                yield self._make_chunk(ByteStreamBuffers.memoryview_to_bytes(mv))
+                yield self._make_chunk(mv)
                 yield self._make_end()
                 self._remain = 0
 
@@ -246,7 +247,7 @@ class ContentLengthPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecod
                 if on_bytes_consumed is not None:
                     on_bytes_consumed(self._remain)
 
-                yield self._make_chunk(ByteStreamBuffers.memoryview_to_bytes(mv[:self._remain]))
+                yield self._make_chunk(mv[:self._remain])
                 yield self._make_end()
                 ofs = self._remain
                 self._remain = 0
@@ -268,7 +269,7 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
 
     def __init__(
             self,
-            make_chunk: ta.Callable[[bytes], ta.Any],
+            make_chunk: ta.Callable[[BytesLikeOrMemoryview], ta.Any],
             make_end: ta.Callable[[], ta.Any],
             *,
             max_chunk_header: int = 1024,
@@ -359,7 +360,8 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
                     raise ValueError(f'Expected \\r\\n after chunk data, got {trailing_bytes!r}')
 
                 # Emit chunk data (wrapped by subclass)
-                yield self._make_chunk(chunk_data.tobytes())
+                for mv in chunk_data.segments():
+                    yield self._make_chunk(mv)
 
                 if on_bytes_consumed is not None:
                     on_bytes_consumed(before - after)
