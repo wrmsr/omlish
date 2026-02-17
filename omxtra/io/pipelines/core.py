@@ -120,12 +120,32 @@ class BytesChannelPipelineFlowControl(ChannelPipelineFlowControl, Abstract):
 
 
 @ta.final
+class ChannelPipelineHandlerRef:
+    def __init__(self, *, _context: 'ChannelPipelineHandlerContext') -> None:
+        self._context = _context
+
+    @property
+    def pipeline(self) -> 'ChannelPipeline':
+        return self._context._pipeline  # noqa
+
+    @property
+    def handler(self) -> 'ChannelPipelineHandler':
+        return self._context._handler  # noqa
+
+    @property
+    def invalidated(self) -> bool:
+        return self._context._invalidated  # noqa
+
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}@{id(self):x}<{self._context!r}>'
+
+
+@ta.final
 class ChannelPipelineHandlerContext:
     """
     Passed to ChannelPipelineHandler methods, provides handler-specific access and operations the pipeline channel.
 
-    Instances of this are never to be cached or shared - they are only considered valid within the scope of a single
-    handler method call.
+    Instances of this are not to be cached or shared.
     """
 
     def __init__(
@@ -139,6 +159,8 @@ class ChannelPipelineHandlerContext:
         self._pipeline: ta.Final[ChannelPipeline] = _pipeline
         self._handler: ta.Final[ChannelPipelineHandler] = _handler
 
+        self._ref = ChannelPipelineHandlerRef(_context=self)
+
         self._handles_inbound = type(_handler).inbound is not ChannelPipelineHandler.inbound
         self._handles_outbound = type(_handler).outbound is not ChannelPipelineHandler.outbound
 
@@ -149,8 +171,12 @@ class ChannelPipelineHandlerContext:
         return (
             f'{type(self).__name__}@{id(self):x}'
             f'{"<INVALIDATED>" if self._invalidated else ""}'
-            f'({self._handler!r}, {self.pipeline!r})'
+            f'({self._handler!r}@{id(self._handler):x}, {self.pipeline!r})'
         )
+
+    @property
+    def ref(self) -> ChannelPipelineHandlerRef:
+        return self._ref
 
     @property
     def pipeline(self) -> 'ChannelPipeline':
@@ -251,6 +277,10 @@ class ChannelPipelineHandler(Abstract):
         raise NotImplementedError
 
 
+# class ShareableChannelPipelineHandler(ChannelPipelineHandler, Abstract):
+#     pass
+
+
 ##
 
 
@@ -280,6 +310,9 @@ class ChannelPipeline:
         innermost._next_out = outermost  # noqa
 
         self._contexts: ta.Final[ta.Dict[ChannelPipelineHandler, ChannelPipelineHandlerContext]] = {}
+
+        # self._unique_contexts: ta.Final[ta.Dict[ChannelPipelineHandler, ChannelPipelineHandlerContext]] = {}
+        # self._shareable_contexts: ta.Final[ta.Dict[ShareableChannelPipelineHandler, ta.Set[ChannelPipelineHandlerContext]]] = {}  # noqa
 
         for h in handlers:
             self.add_innermost(h)
@@ -363,7 +396,7 @@ class ChannelPipeline:
 
         ctx = self._contexts[handler]
 
-        self._channel._removing(handler)  # noqa
+        self._channel._removing(ctx._ref)  # noqa
 
         handler.removing(ctx)
 
@@ -508,11 +541,11 @@ class ChannelPipelineScheduler(Abstract):
             raise NotImplementedError
 
     @abc.abstractmethod
-    def schedule(self, handler: ChannelPipelineHandler, msg: ta.Any) -> Handle:
+    def schedule(self, handler_ref: ChannelPipelineHandlerRef, msg: ta.Any) -> Handle:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def cancel_all(self, handler: ta.Optional[ChannelPipelineHandler] = None) -> None:
+    def cancel_all(self, handler_ref: ta.Optional[ChannelPipelineHandlerRef] = None) -> None:
         raise NotImplementedError
 
 
@@ -560,9 +593,9 @@ class PipelineChannel:
 
     #
 
-    def _removing(self, handler: ChannelPipelineHandler) -> None:
+    def _removing(self, handler_ref: ChannelPipelineHandlerRef) -> None:
         if (sched := self._scheduler) is not None:
-            sched.cancel_all(handler)
+            sched.cancel_all(handler_ref)
 
     #
 
