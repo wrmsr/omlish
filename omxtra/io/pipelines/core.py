@@ -12,6 +12,7 @@ from omlish.lite.namespaces import NamespaceClass
 from .errors import ClosedChannelPipelineError
 from .errors import ContextInvalidatedChannelPipelineError
 from .errors import MessageNotPropagatedChannelPipelineError
+from .errors import MessageReachedTerminalChannelPipelineError
 from .errors import SawEofChannelPipelineError
 
 
@@ -289,16 +290,22 @@ class ShareableChannelPipelineHandler(ChannelPipelineHandler, Abstract):
 ##
 
 
+ChannelPipelineDirection = ta.Literal['inbound', 'outbound']  # ta.TypeAlias  # omlish-amalg-typing-no-move
+
+
 @ta.final
 class ChannelPipeline:
     def __init__(
             self,
             channel: 'PipelineChannel',
             handlers: ta.Sequence[ChannelPipelineHandler] = (),
+            *,
+            terminal_mode: ta.Literal['drop', 'emit', 'raise'] = 'drop',
     ) -> None:
         super().__init__()
 
         self._channel: ta.Final[PipelineChannel] = channel
+        self._terminal_mode = terminal_mode
 
         self._outermost = outermost = ChannelPipelineHandlerContext(
             _pipeline=self,
@@ -489,6 +496,22 @@ class ChannelPipeline:
                 ctx._pipeline._channel._remove_must_propagate('inbound', msg)  # noqa
 
             ctx.emit(msg)
+
+    def _terminal(self, direction: ChannelPipelineDirection, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if (tm := self._terminal_mode) == 'drop':
+            pass
+
+        elif tm == 'emit':
+            ctx.emit(msg)
+
+        elif tm == 'raise':
+            raise MessageReachedTerminalChannelPipelineError(
+                inbound=[msg] if direction == 'inbound' else None,
+                outbound=[msg] if direction == 'outbound' else None,
+            )
+
+        else:
+            raise RuntimeError(f'unknown terminal mode {tm}')
 
     #
 
@@ -704,20 +727,20 @@ class PipelineChannel:
 
     #
 
-    def _get_must_propagate_dct(self, d: ta.Literal['inbound', 'outbound']) -> ta.Dict[int, ta.Any]:
-        if d == 'inbound':
+    def _get_must_propagate_dct(self, direction: ChannelPipelineDirection) -> ta.Dict[int, ta.Any]:
+        if direction == 'inbound':
             return self._pending_inbound_must_propagate
-        elif d == 'outbound':
+        elif direction == 'outbound':
             return self._pending_outbound_must_propagate
         else:
-            raise ValueError(d)
+            raise ValueError(direction)
 
     def _add_must_propagate(
             self,
-            d: ta.Literal['inbound', 'outbound'],
+            direction: ChannelPipelineDirection,
             msg: ChannelPipelineMessages.MustPropagate,
     ) -> None:
-        dct = self._get_must_propagate_dct(d)
+        dct = self._get_must_propagate_dct(direction)
 
         i = id(msg)
         try:
@@ -731,23 +754,31 @@ class PipelineChannel:
 
     def _remove_must_propagate(
             self,
-            d: ta.Literal['inbound', 'outbound'],
+            direction: ChannelPipelineDirection,
             msg: ChannelPipelineMessages.MustPropagate,
     ) -> None:
-        dct = self._get_must_propagate_dct(d)
+        dct = self._get_must_propagate_dct(direction)
 
         i = id(msg)
         try:
             x = dct.pop(i)
         except KeyError:
-            raise MessageNotPropagatedChannelPipelineError([msg]) from None
+            raise MessageNotPropagatedChannelPipelineError(
+                inbound=[msg] if direction == 'inbound' else None,
+                outbound=[msg] if direction == 'outbound' else None,
+            ) from None
+
         if x is not msg:
-            raise MessageNotPropagatedChannelPipelineError([msg])
+            raise MessageNotPropagatedChannelPipelineError(
+                inbound=[msg] if direction == 'inbound' else None,
+                outbound=[msg] if direction == 'outbound' else None,
+            )
 
     def check_propagated(self) -> None:
-        lst: ta.List[ta.Any] = [
-            *self._pending_inbound_must_propagate.values(),
-            *self._pending_outbound_must_propagate.values(),
-        ]
-        if lst:
-            raise MessageNotPropagatedChannelPipelineError(lst)
+        inbound = list(self._pending_inbound_must_propagate.values())
+        outbound = list(self._pending_outbound_must_propagate.values())
+        if inbound or outbound:
+            raise MessageNotPropagatedChannelPipelineError(
+                inbound=inbound or None,
+                outbound=outbound or None,
+            )
