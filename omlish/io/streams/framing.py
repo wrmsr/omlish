@@ -26,6 +26,8 @@ class LongestMatchDelimiterByteStreamFrameDecoder:
       This codec relies on `ByteStreamBuffer.find(...)` being stream-correct and C-accelerated over the buffer's
       underlying contiguous segments. In pure Python it is usually better to keep searching near the storage layer than
       to re-implement scanning byte-by-byte in higher-level codecs.
+
+    Pairs well with `ScanningByteStreamBuffer`.
     """
 
     def __init__(

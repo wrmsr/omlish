@@ -1,8 +1,5 @@
 # ruff: noqa: UP006 UP045
 # @omlish-lite
-"""
-TODO:
-"""
 import abc
 import collections
 import dataclasses as dc

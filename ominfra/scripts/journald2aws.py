@@ -95,7 +95,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../../omlish/logs/std/standard.py', sha1='5c97c1b9f7ead58d6127d047b873398f708f288d'),
             dict(path='../../../../omlish/subprocesses/wrap.py', sha1='8a9b7d2255481fae15c05f5624b0cdc0766f4b3f'),
             dict(path='../../../../omlish/io/streams/direct.py', sha1='83c33460e9490a77a00ae66251617ba98128b56b'),
-            dict(path='../../../../omlish/io/streams/scanning.py', sha1='63414c7989bc2c95d8d93cecc06b80c75156ce36'),
+            dict(path='../../../../omlish/io/streams/scanning.py', sha1='4c0323e0b11cd506f7b6b4cf28ea4d7c6064b9d3'),
             dict(path='../../../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
             dict(path='../../../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
             dict(path='../../../../omlish/io/streams/segmented.py', sha1='f855d67d88ed71bbe2bbeee09321534f0ef18e24'),
@@ -6332,6 +6332,8 @@ class ScanningByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer
       - buf.write(...small...)
       - buf.find(delim)
       - (not found) repeat
+
+    Pairs well with `LongestMatchDelimiterByteStreamFrameDecoder`.
     """
 
     def __init__(self, buf) -> None:

@@ -9,6 +9,7 @@
 
 ### core
 
+- revive DESIGN.md
 - BytesBufferingChannelPipelineHandler or whatever - `def bytes_buffered() -> int`
 - re-add BytesChannelPipelineFlowControl unique check (without thrashing cache)?
 - ssl
@@ -38,6 +39,7 @@
 - Date default server header
 - dynamic streaming vs full by app endpoint
 - h2 - _will not implement protocol manually_, plug in to `h2` lib
+- lean on ParsedHeaders more - validly-duplicate-but-identical content-length currently isn't handled for ex.
 
 ### proto impls
 

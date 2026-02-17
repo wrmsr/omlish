@@ -1,9 +1,9 @@
 """
 https://docs.anthropic.com/en/docs/build-with-claude/streaming#content-block-delta-types
 """
-import dataclasses as dc
 import typing as ta
 
+from omlish import dataclasses as dc
 from omlish import lang
 
 from ..types import Usage
@@ -81,6 +81,10 @@ class AnthropicSseDecoderEvents(lang.Namespace):
             id: str
             name: str
             input: ta.Any
+
+            _: dc.KW_ONLY
+
+            caller: ta.Mapping[str, ta.Any] | None = dc.xfield(default=None, repr_fn=lang.opt_repr)
 
         @dc.dataclass(frozen=True)
         class Thinking(ContentBlock):

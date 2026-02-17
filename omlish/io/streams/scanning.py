@@ -24,6 +24,8 @@ class ScanningByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer
       - buf.write(...small...)
       - buf.find(delim)
       - (not found) repeat
+
+    Pairs well with `LongestMatchDelimiterByteStreamFrameDecoder`.
     """
 
     def __init__(self, buf) -> None:

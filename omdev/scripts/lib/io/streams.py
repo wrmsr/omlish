@@ -28,11 +28,11 @@ def __omlish_amalg__():  # noqa
             dict(path='../../lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='types.py', sha1='36dfe0ba2bb0a7fdf255a3a2fcfc7a5fe2cce2c3'),
             dict(path='base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
-            dict(path='framing.py', sha1='854bb6bbfc713fa47d0293b11cb4db230f51268d'),
+            dict(path='framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='reading.py', sha1='7631635c46ab4b40bcaeb7c506cf15cb2d529a40'),
             dict(path='utils.py', sha1='620360799f1282f8374d2cdbfe8c058e4a04d0d5'),
             dict(path='direct.py', sha1='83c33460e9490a77a00ae66251617ba98128b56b'),
-            dict(path='scanning.py', sha1='63414c7989bc2c95d8d93cecc06b80c75156ce36'),
+            dict(path='scanning.py', sha1='4c0323e0b11cd506f7b6b4cf28ea4d7c6064b9d3'),
             dict(path='adapters.py', sha1='865338413829b97be23883f713d50eb7cb62617a'),
             dict(path='linear.py', sha1='e1669b97cf16184d479fd4589862380730236737'),
             dict(path='segmented.py', sha1='f855d67d88ed71bbe2bbeee09321534f0ef18e24'),
@@ -577,6 +577,8 @@ class LongestMatchDelimiterByteStreamFrameDecoder:
       This codec relies on `ByteStreamBuffer.find(...)` being stream-correct and C-accelerated over the buffer's
       underlying contiguous segments. In pure Python it is usually better to keep searching near the storage layer than
       to re-implement scanning byte-by-byte in higher-level codecs.
+
+    Pairs well with `ScanningByteStreamBuffer`.
     """
 
     def __init__(
@@ -1324,6 +1326,8 @@ class ScanningByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer
       - buf.write(...small...)
       - buf.find(delim)
       - (not found) repeat
+
+    Pairs well with `LongestMatchDelimiterByteStreamFrameDecoder`.
     """
 
     def __init__(self, buf) -> None:
