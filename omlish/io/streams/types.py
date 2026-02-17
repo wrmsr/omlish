@@ -6,7 +6,7 @@ import typing as ta
 from ...lite.abstract import Abstract
 
 
-BytesLike = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
+BytesLikeOrMemoryview = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
 
 
 ##
@@ -221,7 +221,7 @@ class MutableByteStreamBuffer(ByteStreamBuffer, Abstract):
     """
 
     @abc.abstractmethod
-    def write(self, data: BytesLike, /) -> None:
+    def write(self, data: BytesLikeOrMemoryview, /) -> None:
         """
         Append `data` to the end of the readable region (after any existing unread bytes).
 

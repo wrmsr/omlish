@@ -81,7 +81,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../auth.py', sha1='b1ac1a5e03d4e9e38957a54e346943c6dcc964a1'),
             dict(path='../dataclasses.py', sha1='8e950d7815904588fed284889392cbb0b1002605'),
             dict(path='../../../../omlish/configs/formats.py', sha1='3074c3e1428f9598cd0591745cb60fb3fe2b309f'),
-            dict(path='../../../../omlish/io/streams/types.py', sha1='6ae05b5486ac8eb1f2667d415aad0cde3c962df4'),
+            dict(path='../../../../omlish/io/streams/types.py', sha1='36dfe0ba2bb0a7fdf255a3a2fcfc7a5fe2cce2c3'),
             dict(path='../../../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
             dict(path='../../../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
             dict(path='../../../../omlish/logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
@@ -94,11 +94,11 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../../omlish/logs/contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
             dict(path='../../../../omlish/logs/std/standard.py', sha1='5c97c1b9f7ead58d6127d047b873398f708f288d'),
             dict(path='../../../../omlish/subprocesses/wrap.py', sha1='8a9b7d2255481fae15c05f5624b0cdc0766f4b3f'),
-            dict(path='../../../../omlish/io/streams/direct.py', sha1='b01937212493e9a41644ac4e366e4cbab10332ce'),
-            dict(path='../../../../omlish/io/streams/scanning.py', sha1='5d4cf0776463a6f675ca74ca87637133b78b51a2'),
+            dict(path='../../../../omlish/io/streams/direct.py', sha1='83c33460e9490a77a00ae66251617ba98128b56b'),
+            dict(path='../../../../omlish/io/streams/scanning.py', sha1='63414c7989bc2c95d8d93cecc06b80c75156ce36'),
             dict(path='../../../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
             dict(path='../../../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
-            dict(path='../../../../omlish/io/streams/segmented.py', sha1='77b78666798688be9fa8fd54ad74abc4376c4410'),
+            dict(path='../../../../omlish/io/streams/segmented.py', sha1='f855d67d88ed71bbe2bbeee09321534f0ef18e24'),
             dict(path='../../../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='../../../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
@@ -152,7 +152,7 @@ LogLevel = int  # ta.TypeAlias
 ConfigDataT = ta.TypeVar('ConfigDataT', bound='ConfigData')
 
 # ../../../../omlish/io/streams/types.py
-BytesLike = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
+BytesLikeOrMemoryview = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
 
 # ../../../../omlish/logs/infos.py
 LoggingMsgFn = ta.Callable[[], ta.Union[str, tuple]]  # ta.TypeAlias
@@ -4073,7 +4073,7 @@ class MutableByteStreamBuffer(ByteStreamBuffer, Abstract):
     """
 
     @abc.abstractmethod
-    def write(self, data: BytesLike, /) -> None:
+    def write(self, data: BytesLikeOrMemoryview, /) -> None:
         """
         Append `data` to the end of the readable region (after any existing unread bytes).
 
@@ -6153,7 +6153,7 @@ def subprocess_maybe_shell_wrap_exec(*cmd: str) -> ta.Tuple[str, ...]:
 
 
 class BaseDirectByteStreamBufferLike(BaseByteStreamBufferLike, Abstract):
-    def __init__(self, data: BytesLike) -> None:
+    def __init__(self, data: BytesLikeOrMemoryview) -> None:
         super().__init__()
 
         self._data = data
@@ -6233,7 +6233,7 @@ class DirectByteStreamBuffer(BaseDirectByteStreamBufferLike, ByteStreamBuffer):
         b'GET /path HTTP/1.1\\r\\nHost: example.com'
     """
 
-    def __init__(self, data: BytesLike) -> None:
+    def __init__(self, data: BytesLikeOrMemoryview) -> None:
         super().__init__(data)
 
         self._rpos = 0
@@ -6393,7 +6393,7 @@ class ScanningByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer
 
     #
 
-    def write(self, data: BytesLike, /) -> None:
+    def write(self, data: BytesLikeOrMemoryview, /) -> None:
         self._buf.write(data)
 
     def reserve(self, n: int, /) -> memoryview:
@@ -7603,7 +7603,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         self._active = None
         self._active_used = 0
 
-    def write(self, data: BytesLike, /) -> None:
+    def write(self, data: BytesLikeOrMemoryview, /) -> None:
         if not data:
             return
         if isinstance(data, memoryview):

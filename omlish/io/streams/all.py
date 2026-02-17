@@ -50,7 +50,7 @@ from .segmented import (  # noqa
 )
 
 from .types import (  # noqa
-    BytesLike,
+    BytesLikeOrMemoryview,
 
     ByteStreamBufferView,
     ByteStreamBuffer,

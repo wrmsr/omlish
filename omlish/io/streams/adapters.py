@@ -6,7 +6,7 @@ import typing as ta
 
 from .direct import DirectByteStreamBufferView
 from .errors import NeedMoreDataByteStreamBufferError
-from .types import BytesLike
+from .types import BytesLikeOrMemoryview
 from .types import ByteStreamBuffer
 from .types import ByteStreamBufferLike
 from .types import ByteStreamBufferView
@@ -231,7 +231,7 @@ class BytesIoByteStreamBuffer(MutableByteStreamBuffer):
         self._rpos += n
         return DirectByteStreamBufferView(out)
 
-    def write(self, data: BytesLike, /) -> None:
+    def write(self, data: BytesLikeOrMemoryview, /) -> None:
         if not data:
             return
         if isinstance(data, memoryview):

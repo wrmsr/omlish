@@ -8,7 +8,7 @@ from .direct import DirectByteStreamBufferView
 from .errors import BufferTooLargeByteStreamBufferError
 from .errors import NoOutstandingReserveByteStreamBufferError
 from .errors import OutstandingReserveByteStreamBufferError
-from .types import BytesLike
+from .types import BytesLikeOrMemoryview
 from .types import ByteStreamBufferView
 from .types import MutableByteStreamBuffer
 from .utils import ByteStreamBuffers
@@ -89,7 +89,7 @@ class LinearByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
         if self._resv_start is not None:
             raise OutstandingReserveByteStreamBufferError('outstanding reserve')
 
-    def write(self, data: BytesLike, /) -> None:
+    def write(self, data: BytesLikeOrMemoryview, /) -> None:
         self._check_no_reserve()
         if not data:
             return

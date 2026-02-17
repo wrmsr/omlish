@@ -4,7 +4,7 @@ import typing as ta
 
 from ...lite.abstract import Abstract
 from .base import BaseByteStreamBufferLike
-from .types import BytesLike
+from .types import BytesLikeOrMemoryview
 from .types import ByteStreamBuffer
 from .types import ByteStreamBufferView
 from .utils import ByteStreamBuffers
@@ -14,7 +14,7 @@ from .utils import ByteStreamBuffers
 
 
 class BaseDirectByteStreamBufferLike(BaseByteStreamBufferLike, Abstract):
-    def __init__(self, data: BytesLike) -> None:
+    def __init__(self, data: BytesLikeOrMemoryview) -> None:
         super().__init__()
 
         self._data = data
@@ -94,7 +94,7 @@ class DirectByteStreamBuffer(BaseDirectByteStreamBufferLike, ByteStreamBuffer):
         b'GET /path HTTP/1.1\\r\\nHost: example.com'
     """
 
-    def __init__(self, data: BytesLike) -> None:
+    def __init__(self, data: BytesLikeOrMemoryview) -> None:
         super().__init__(data)
 
         self._rpos = 0

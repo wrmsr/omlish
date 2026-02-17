@@ -8,7 +8,7 @@ from .direct import DirectByteStreamBufferView
 from .errors import BufferTooLargeByteStreamBufferError
 from .errors import NoOutstandingReserveByteStreamBufferError
 from .errors import OutstandingReserveByteStreamBufferError
-from .types import BytesLike
+from .types import BytesLikeOrMemoryview
 from .types import ByteStreamBufferView
 from .types import MutableByteStreamBuffer
 from .utils import ByteStreamBuffers
@@ -225,7 +225,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         self._active = None
         self._active_used = 0
 
-    def write(self, data: BytesLike, /) -> None:
+    def write(self, data: BytesLikeOrMemoryview, /) -> None:
         if not data:
             return
         if isinstance(data, memoryview):

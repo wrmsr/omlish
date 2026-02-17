@@ -26,16 +26,16 @@ def __omlish_amalg__():  # noqa
             dict(path='errors.py', sha1='67ca85fd8741b5bfefe76c872ce1c30c18fab06f'),
             dict(path='../../lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
-            dict(path='types.py', sha1='6ae05b5486ac8eb1f2667d415aad0cde3c962df4'),
+            dict(path='types.py', sha1='36dfe0ba2bb0a7fdf255a3a2fcfc7a5fe2cce2c3'),
             dict(path='base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='framing.py', sha1='854bb6bbfc713fa47d0293b11cb4db230f51268d'),
             dict(path='reading.py', sha1='7631635c46ab4b40bcaeb7c506cf15cb2d529a40'),
             dict(path='utils.py', sha1='620360799f1282f8374d2cdbfe8c058e4a04d0d5'),
-            dict(path='direct.py', sha1='b01937212493e9a41644ac4e366e4cbab10332ce'),
-            dict(path='scanning.py', sha1='5d4cf0776463a6f675ca74ca87637133b78b51a2'),
-            dict(path='adapters.py', sha1='75087e980f4ff90796728596512ffc3bf8ef235a'),
-            dict(path='linear.py', sha1='ea42b0d9fd00863493dc9a8c8860c2a406a07dfc'),
-            dict(path='segmented.py', sha1='77b78666798688be9fa8fd54ad74abc4376c4410'),
+            dict(path='direct.py', sha1='83c33460e9490a77a00ae66251617ba98128b56b'),
+            dict(path='scanning.py', sha1='63414c7989bc2c95d8d93cecc06b80c75156ce36'),
+            dict(path='adapters.py', sha1='865338413829b97be23883f713d50eb7cb62617a'),
+            dict(path='linear.py', sha1='e1669b97cf16184d479fd4589862380730236737'),
+            dict(path='segmented.py', sha1='f855d67d88ed71bbe2bbeee09321534f0ef18e24'),
             dict(path='_amalg.py', sha1='9c88a055447d7b37da1b356e6a1e00b7c4a9a3cb'),
         ],
     )
@@ -48,7 +48,7 @@ def __omlish_amalg__():  # noqa
 T = ta.TypeVar('T')
 
 # types.py
-BytesLike = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
+BytesLikeOrMemoryview = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
 
 
 ########################################
@@ -493,7 +493,7 @@ class MutableByteStreamBuffer(ByteStreamBuffer, Abstract):
     """
 
     @abc.abstractmethod
-    def write(self, data: BytesLike, /) -> None:
+    def write(self, data: BytesLikeOrMemoryview, /) -> None:
         """
         Append `data` to the end of the readable region (after any existing unread bytes).
 
@@ -1145,7 +1145,7 @@ class ByteStreamBuffers(NamespaceClass):
 
 
 class BaseDirectByteStreamBufferLike(BaseByteStreamBufferLike, Abstract):
-    def __init__(self, data: BytesLike) -> None:
+    def __init__(self, data: BytesLikeOrMemoryview) -> None:
         super().__init__()
 
         self._data = data
@@ -1225,7 +1225,7 @@ class DirectByteStreamBuffer(BaseDirectByteStreamBufferLike, ByteStreamBuffer):
         b'GET /path HTTP/1.1\\r\\nHost: example.com'
     """
 
-    def __init__(self, data: BytesLike) -> None:
+    def __init__(self, data: BytesLikeOrMemoryview) -> None:
         super().__init__(data)
 
         self._rpos = 0
@@ -1385,7 +1385,7 @@ class ScanningByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer
 
     #
 
-    def write(self, data: BytesLike, /) -> None:
+    def write(self, data: BytesLikeOrMemoryview, /) -> None:
         self._buf.write(data)
 
     def reserve(self, n: int, /) -> memoryview:
@@ -1634,7 +1634,7 @@ class BytesIoByteStreamBuffer(MutableByteStreamBuffer):
         self._rpos += n
         return DirectByteStreamBufferView(out)
 
-    def write(self, data: BytesLike, /) -> None:
+    def write(self, data: BytesLikeOrMemoryview, /) -> None:
         if not data:
             return
         if isinstance(data, memoryview):
@@ -1783,7 +1783,7 @@ class LinearByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
         if self._resv_start is not None:
             raise OutstandingReserveByteStreamBufferError('outstanding reserve')
 
-    def write(self, data: BytesLike, /) -> None:
+    def write(self, data: BytesLikeOrMemoryview, /) -> None:
         self._check_no_reserve()
         if not data:
             return
@@ -2203,7 +2203,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         self._active = None
         self._active_used = 0
 
-    def write(self, data: BytesLike, /) -> None:
+    def write(self, data: BytesLikeOrMemoryview, /) -> None:
         if not data:
             return
         if isinstance(data, memoryview):
