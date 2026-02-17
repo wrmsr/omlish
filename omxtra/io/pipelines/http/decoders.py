@@ -74,6 +74,11 @@ class PipelineHttpHeadDecoder:
     def done(self) -> bool:
         return self._done
 
+    def inbound_buffered_bytes(self) -> int:
+        if self._done:
+            return 0
+        return len(self._buf)
+
     def inbound(
             self,
             msg: ta.Any,
@@ -120,6 +125,7 @@ class PipelineHttpHeadDecoder:
             rem_view = self._buf.split_to(len(self._buf))
             yield rem_view
 
+        del self._buf
         self._done = True
 
 
@@ -143,6 +149,10 @@ class PipelineHttpContentChunkDecoder(Abstract):
         raise NotImplementedError
 
     @abc.abstractmethod
+    def inbound_buffered_bytes(self) -> int:
+        raise NotImplementedError
+
+    @abc.abstractmethod
     def inbound(
             self,
             msg: ta.Any,
@@ -158,6 +168,9 @@ class UntilEofPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
     @property
     def done(self) -> bool:
         return self._done
+
+    def inbound_buffered_bytes(self) -> int:
+        return 0
 
     def inbound(
             self,
@@ -205,6 +218,9 @@ class ContentLengthPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecod
     @property
     def done(self) -> bool:
         return self._remain < 1
+
+    def inbound_buffered_bytes(self) -> int:
+        return 0
 
     def inbound(
             self,
@@ -292,6 +308,11 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
     @property
     def done(self) -> bool:
         return self._state == 'done'
+
+    def inbound_buffered_bytes(self) -> int:
+        if self._state == 'done':
+            return 0
+        return len(self._buf)
 
     def inbound(
             self,
@@ -389,9 +410,12 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
                 # Emit end marker
                 yield self._make_end()
 
-                self._state = 'done'
+                if len(self._buf):
+                    rem_view = self._buf.split_to(len(self._buf))
+                    yield rem_view
 
-                yield from self._buf.segments()
+                del self._buf
+                self._state = 'done'
 
                 return
 

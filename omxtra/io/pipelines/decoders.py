@@ -7,6 +7,7 @@ from omlish.io.streams.scanning import ScanningByteStreamBuffer
 from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 from omlish.io.streams.utils import ByteStreamBuffers
 
+from .bytes import InboundBytesBufferingChannelPipelineHandler
 from .core import ChannelPipelineHandler
 from .core import ChannelPipelineHandlerContext
 from .core import ChannelPipelineMessages
@@ -42,7 +43,7 @@ class UnicodePipelineDecoder(ChannelPipelineHandler):
         ctx.feed_in(msg)
 
 
-class DelimiterFramePipelineDecoder(ChannelPipelineHandler):  # HasChannelPipelineFlowBuffer
+class DelimiterFramePipelineDecoder(InboundBytesBufferingChannelPipelineHandler):  # HasChannelPipelineFlowBuffer
     """bytes-like -> frames using longest-match delimiter semantics."""
 
     def __init__(
@@ -70,9 +71,8 @@ class DelimiterFramePipelineDecoder(ChannelPipelineHandler):  # HasChannelPipeli
             max_size=max_size,
         )
 
-    # @ta.override
-    # def buffered_cost(self) -> int:
-    #     return len(self._buf)
+    def inbound_buffered_bytes(self) -> int:
+        return len(self._buf)
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         if isinstance(msg, ChannelPipelineMessages.Eof):

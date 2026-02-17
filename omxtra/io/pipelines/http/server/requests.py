@@ -91,6 +91,9 @@ class PipelineHttpRequestBodyAggregator(ChannelPipelineHandler):
         - No chunked transfer decoding
         - Assumes one request per connection in our server examples (we close after response)
       - Body bytes may arrive in the same TCP read as the head; HttpRequestDecoder forwards any remainder.
+
+    TODO:
+      - Use ContentLengthPipelineHttpContentChunkDecoder
     """
 
     def __init__(
