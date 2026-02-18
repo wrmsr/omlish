@@ -111,6 +111,18 @@
     }
   },
   {
+    "module": ".java.__main__",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/java/__main__.py",
+    "line": 4,
+    "value": {
+      "!.cli.types.CliModule": {
+        "name": "java",
+        "module": "omdev.java.__main__"
+      }
+    }
+  },
+  {
     "module": ".magic.__main__",
     "attr": "_CLI_MODULE",
     "file": "omdev/magic/__main__.py",
