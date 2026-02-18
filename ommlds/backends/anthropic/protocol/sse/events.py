@@ -115,6 +115,16 @@ class AnthropicSseDecoderEvents(lang.Namespace):
         class SignatureDelta(Delta):
             signature: str
 
+        @dc.dataclass(frozen=True)
+        class ServerToolUse(Delta):
+            id: str
+            name: str
+            input: ta.Any
+
+            _: dc.KW_ONLY
+
+            caller: ta.Mapping[str, ta.Any] | None = dc.xfield(default=None, repr_fn=lang.opt_repr)
+
         delta: Delta
         index: int
 
