@@ -21,6 +21,7 @@ from .errors import FlowControlValidationChannelPipelineError
 
 
 class ChannelPipelineFlowControlEvents(NamespaceClass):
+    @ta.final
     @dc.dataclass(frozen=True)
     class WritabilityChanged:
         is_writable: bool
@@ -77,7 +78,7 @@ class ChannelPipelineFlowControl(Abstract):
 class FlowControlChannelPipelineHandler(ChannelPipelineFlowControl, ChannelPipelineHandler):
     @dc.dataclass(frozen=True)
     class Config:
-        credit: int = 0x100000
+        credit: int = 0x10000000  # FIXME: lol - 0x100000
 
         high_watermark: int = 0x100000
         low_watermark: int = 0x80000

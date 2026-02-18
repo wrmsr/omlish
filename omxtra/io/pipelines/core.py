@@ -74,10 +74,6 @@ class ChannelPipelineEvents(NamespaceClass):
         exc: BaseException
 
 
-class ChannelPipelineError(Exception):
-    pass
-
-
 ##
 
 
