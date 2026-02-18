@@ -123,3 +123,26 @@ class TestCore(unittest.TestCase):
 
         ch.feed_in(42)
         assert ch.drain() == ['43', '43']
+
+    def test_named(self):
+        ch = PipelineChannel([
+            OUTBOUND_EMIT_TERMINAL,
+            INBOUND_EMIT_TERMINAL,
+        ])
+
+        ch.pipeline.add_inner_to(ch.pipeline.handlers()[0], IntStrDuplexHandler(), name='int_str')
+        ch.pipeline.add_inner_to(ch.pipeline.handlers()[0], IntIncInboundHandler(), name='int_inc')
+
+        ch.feed_in(42)
+        assert ch.drain() == ['43']
+
+        ch.feed_out('24')
+        assert ch.drain() == [24]
+
+        ch.pipeline.remove(ch.pipeline.handlers_by_name()['int_inc'])
+
+        ch.feed_in(42)
+        assert ch.drain() == ['42']
+
+        ch.feed_out('24')
+        assert ch.drain() == [24]
