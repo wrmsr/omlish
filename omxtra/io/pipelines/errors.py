@@ -32,15 +32,29 @@ class ClosedChannelPipelineError(ChannelPipelineError):
 
 
 @dc.dataclass()
-class MessageNotPropagatedChannelPipelineError(ChannelPipelineError):
+class MessageChannelPipelineError(ChannelPipelineError):
     inbound: ta.Optional[ta.Sequence[ta.Any]] = None
     outbound: ta.Optional[ta.Sequence[ta.Any]] = None
 
+    def __repr__(self) -> str:
+        return ''.join([
+            f'{self.__class__.__name__}(',
+            ', '.join([
+                *([f'inbound={self.inbound!r}'] if self.inbound is not None else []),
+                *([f'outbound={self.outbound!r}'] if self.outbound is not None else []),
+            ]),
+            ')',
+        ])
 
-@dc.dataclass()
-class MessageReachedTerminalChannelPipelineError(ChannelPipelineError):
-    inbound: ta.Optional[ta.Sequence[ta.Any]] = None
-    outbound: ta.Optional[ta.Sequence[ta.Any]] = None
+
+@dc.dataclass(repr=False)
+class MessageNotPropagatedChannelPipelineError(MessageChannelPipelineError):
+    pass
+
+
+@dc.dataclass(repr=False)
+class MessageReachedTerminalChannelPipelineError(MessageChannelPipelineError):
+    pass
 
 
 ##

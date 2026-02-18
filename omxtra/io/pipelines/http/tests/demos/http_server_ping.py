@@ -3,10 +3,13 @@
 import asyncio
 import typing as ta
 
+from omlish.io.streams.utils import ByteStreamBuffers
+
 from ....asyncio import AsyncioStreamChannelPipelineDriver
 from ....core import ChannelPipelineHandler
 from ....core import ChannelPipelineHandlerContext
 from ....core import PipelineChannel
+from ....handlers.flatmap import FlatMapChannelPipelineHandlers
 from ...requests import PipelineHttpRequestHead
 from ...responses import FullPipelineHttpResponse
 from ...server.requests import PipelineHttpRequestHeadDecoder
@@ -50,6 +53,10 @@ class PingHandler(ChannelPipelineHandler):
 def build_http_ping_channel() -> PipelineChannel:
     return PipelineChannel(
         [
+            FlatMapChannelPipelineHandlers.emit_and_drop(
+                'outbound',
+                no_ctx_filter=ByteStreamBuffers.can_bytes,
+            ),
             PipelineHttpRequestHeadDecoder(),
             PipelineHttpResponseEncoder(),
             PingHandler(),
