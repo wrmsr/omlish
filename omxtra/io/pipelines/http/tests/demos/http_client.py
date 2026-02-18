@@ -10,11 +10,13 @@ from ....core import ChannelPipelineHandler
 from ....core import ChannelPipelineHandlerContext
 from ....core import ChannelPipelineMessages
 from ....core import PipelineChannel
+from ....handlers.flatmap import FlatMapChannelPipelineHandlers
 from ...client.requests import PipelineHttpRequestEncoder
 from ...client.responses import PipelineHttpResponseChunkedDecoder
 from ...client.responses import PipelineHttpResponseDecoder
 from ...requests import FullPipelineHttpRequest
 from ...responses import PipelineHttpResponseContentChunk
+from ...responses import PipelineHttpResponseEnd
 from ...responses import PipelineHttpResponseHead
 
 
@@ -37,6 +39,9 @@ class HttpClientHandler(ChannelPipelineHandler):
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         if isinstance(msg, PipelineHttpResponseHead):
             self._response_head = msg
+            return
+
+        if isinstance(msg, PipelineHttpResponseEnd):
             return
 
         if isinstance(msg, ChannelPipelineMessages.Eof):
@@ -89,6 +94,10 @@ def build_http_client_channel() -> PipelineChannel:
     """Build a client channel with encoder, decoder, and handler."""
 
     return PipelineChannel([
+        FlatMapChannelPipelineHandlers.emit_and_drop(
+            'outbound',
+            no_ctx_filter=ByteStreamBuffers.can_bytes,
+        ),
         PipelineHttpResponseDecoder(),
         PipelineHttpResponseChunkedDecoder(),
         PipelineHttpRequestEncoder(),
