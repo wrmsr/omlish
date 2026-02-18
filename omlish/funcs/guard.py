@@ -1,3 +1,23 @@
+"""
+A 'guard function' (`GuardFn`) is a callable that simultaneously tests whether it can handle a given set of arguments
+and, if so, returns a zero-argument thunk encapsulating the actual computation to perform. If the guard cannot handle
+the arguments it returns `None`. The defining characteristic -- and the key difference from a simple predicate -- is
+that this single call combines both the applicability test and the argument binding: any work done during the test (type
+narrowing, parsing, pattern matching, preliminary computation) is naturally captured in the returned thunk's closure,
+available when and if that thunk is eventually called.
+
+This design is related to but not directly equivalent to Scala's `PartialFunction`
+(https://www.scala-lang.org/api/current/scala/PartialFunction.html). Both represent functions defined only over a subset
+of their domain. A Scala `PartialFunction` separates applicability testing (`isDefinedAt`) from application (`apply`),
+forcing any shared computation to be performed twice. A `GuardFn` merges these into a single call: the returned thunk
+already has the arguments bound from the guard-test invocation, so no work need be repeated. Whether the returned thunk
+is reusable -- i.e. whether it may be called zero, one, or more times -- is intentionally outside the scope of this
+abstraction and is left to the use case.
+
+Also provided: `MultiGuardFn` for composing multiple guards with optional strict single-match enforcement;
+`GuardFnMethod` and `ImmediateGuardFnMethod` descriptors for class-method-style dispatch with inheritance-aware handler
+registration, exposed via the `method()` and `immediate_method()` decorators.
+"""
 import abc
 import functools
 import operator
