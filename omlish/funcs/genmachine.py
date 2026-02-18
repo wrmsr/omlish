@@ -104,7 +104,7 @@ class GenMachine(ta.Generic[I, O]):
             except StopIteration as s:
                 if (sv := s.value) is None:
                     self._gen = None
-                    return None
+                    return
 
                 self._gen = sv
                 gi = None
