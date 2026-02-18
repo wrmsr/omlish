@@ -125,11 +125,15 @@ class ChannelPipelineHandlerContext:
             *,
             _pipeline: 'ChannelPipeline',
             _handler: 'ChannelPipelineHandler',
+
+            name: ta.Optional[str] = None,
     ) -> None:
         super().__init__()
 
         self._pipeline: ta.Final[ChannelPipeline] = _pipeline
         self._handler: ta.Final[ChannelPipelineHandler] = _handler
+
+        self._name: ta.Final[ta.Optional[str]] = name
 
         self._ref: ChannelPipelineHandlerRef_ = ChannelPipelineHandlerRef(_context=self)
 
@@ -165,6 +169,12 @@ class ChannelPipelineHandlerContext:
     @property
     def handler(self) -> 'ChannelPipelineHandler':
         return self._handler
+
+    @property
+    def name(self) -> ta.Optional[str]:
+        return self._name
+
+    #
 
     _invalidated = False
 
@@ -388,7 +398,12 @@ class ChannelPipeline:
 
     #
 
-    def _check_can_add(self, handler: ChannelPipelineHandler) -> ChannelPipelineHandler:
+    def _check_can_add(
+            self,
+            handler: ChannelPipelineHandler,
+            *,
+            name: ta.Optional[str] = None,
+    ) -> ChannelPipelineHandler:
         if not isinstance(handler, ShareableChannelPipelineHandler):
             check.not_in(handler, self._unique_contexts)
 
@@ -406,8 +421,10 @@ class ChannelPipeline:
             *,
             inner_to: ta.Optional[ChannelPipelineHandlerContext] = None,
             outer_to: ta.Optional[ChannelPipelineHandlerContext] = None,
+
+            name: ta.Optional[str] = None,
     ) -> ChannelPipelineHandlerRef:
-        self._check_can_add(handler)
+        self._check_can_add(handler, name=name)
 
         if inner_to is not None:
             check.none(outer_to)
@@ -423,6 +440,8 @@ class ChannelPipeline:
         ctx = ChannelPipelineHandlerContext(
             _pipeline=self,
             _handler=handler,
+
+            name=name,
         )
 
         if isinstance(handler, ShareableChannelPipelineHandler):
@@ -452,27 +471,41 @@ class ChannelPipeline:
 
         return ctx._ref  # noqa
 
-    def add_innermost(self, handler: ChannelPipelineHandler) -> ChannelPipelineHandlerRef:
-        return self._add(handler, outer_to=self._innermost)
+    def add_innermost(
+            self,
+            handler: ChannelPipelineHandler,
+            *,
+            name: ta.Optional[str] = None,
+    ) -> ChannelPipelineHandlerRef:
+        return self._add(handler, outer_to=self._innermost, name=name)
 
-    def add_outermost(self, handler: ChannelPipelineHandler) -> ChannelPipelineHandlerRef:
-        return self._add(handler, inner_to=self._outermost)
+    def add_outermost(
+            self,
+            handler: ChannelPipelineHandler,
+            *,
+            name: ta.Optional[str] = None,
+    ) -> ChannelPipelineHandlerRef:
+        return self._add(handler, inner_to=self._outermost, name=name)
 
     def add_inner_to(
             self,
             inner_to: ChannelPipelineHandlerRef,
             handler: ChannelPipelineHandler,
+            *,
+            name: ta.Optional[str] = None,
     ) -> ChannelPipelineHandlerRef:
         ctx = inner_to._context   # noqa
-        return self._add(handler, inner_to=ctx)
+        return self._add(handler, inner_to=ctx, name=name)
 
     def add_outer_to(
             self,
             outer_to: ChannelPipelineHandlerRef,
             handler: ChannelPipelineHandler,
+            *,
+            name: ta.Optional[str] = None,
     ) -> ChannelPipelineHandlerRef:
         ctx = outer_to._context   # noqa
-        return self._add(handler, outer_to=ctx)
+        return self._add(handler, outer_to=ctx, name=name)
 
     #
 
@@ -530,13 +563,15 @@ class ChannelPipeline:
             self,
             old_handler_ref: ChannelPipelineHandlerRef,
             new_handler: ChannelPipelineHandler,
+            *,
+            name: ta.Optional[str] = None,
     ) -> ChannelPipelineHandlerRef:
         self._check_can_remove(old_handler_ref)
-        self._check_can_add(new_handler)
+        self._check_can_add(new_handler, name=name)
 
         inner_to = old_handler_ref._context._next_out  # noqa
         self._remove(old_handler_ref)
-        return self._add(new_handler, inner_to=inner_to)
+        return self._add(new_handler, inner_to=inner_to, name=name)
 
     #
 
