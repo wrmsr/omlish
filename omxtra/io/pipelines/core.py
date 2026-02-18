@@ -371,6 +371,8 @@ class ChannelPipeline:
         self._unique_contexts: ta.Final[ta.Dict[ChannelPipelineHandler, ChannelPipelineHandlerContext]] = {}
         self._shareable_contexts: ta.Final[ta.Dict[ShareableChannelPipelineHandler, ta.Set[ChannelPipelineHandlerContext]]] = {}  # noqa
 
+        self._contexts_by_name: ta.Final[ta.Dict[str, ChannelPipelineHandlerContext]] = {}
+
         for h in handlers:
             self.add_innermost(h)
 
@@ -406,6 +408,9 @@ class ChannelPipeline:
     ) -> ChannelPipelineHandler:
         if not isinstance(handler, ShareableChannelPipelineHandler):
             check.not_in(handler, self._unique_contexts)
+
+        if name is not None:
+            check.not_in(name, self._contexts_by_name)
 
         return handler
 
@@ -449,6 +454,9 @@ class ChannelPipeline:
         else:
             check.not_in(handler, self._unique_contexts)  # also pre-checked by _check_can_add
             self._unique_contexts[handler] = ctx
+
+        if name is not None:
+            self._contexts_by_name[name] = ctx
 
         if inner_to is not None:
             prv = inner_to._next_in  # noqa
@@ -530,12 +538,15 @@ class ChannelPipeline:
         self._check_can_remove(handler_ref)
 
         ctx = handler_ref._context  # noqa
+        handler = ctx._handler  # noqa
 
-        # FIXME: exceptions? defer?
         self._channel._removing(ctx._ref)  # noqa
 
-        handler = ctx._handler  # noqa
+        # FIXME: exceptions? defer?
         handler.removing(ctx)
+
+        if ctx._name is not None:  # noqa
+            del self._contexts_by_name[ctx._name]  # noqa
 
         if isinstance(handler, ShareableChannelPipelineHandler):
             cs = self._shareable_contexts[handler]
@@ -625,7 +636,7 @@ class ChannelPipeline:
             self._handlers_by_type_cache: ta.Dict[type, ta.Sequence[ChannelPipelineHandlerRef]] = {}
             self._single_handlers_by_type_cache: ta.Dict[type, ta.Optional[ChannelPipelineHandlerRef]] = {}
 
-        _handlers: ta.List[ChannelPipelineHandlerRef_]
+        _handlers: ta.Sequence[ChannelPipelineHandlerRef_]
 
         def handlers(self) -> ta.Sequence[ChannelPipelineHandlerRef_]:
             try:
@@ -640,6 +651,23 @@ class ChannelPipeline:
 
             self._handlers = lst
             return lst
+
+        _handlers_by_name: ta.Mapping[str, ChannelPipelineHandlerRef_]
+
+        def handlers_by_name(self) -> ta.Mapping[str, ChannelPipelineHandlerRef_]:
+            try:
+                return self._handlers_by_name
+            except AttributeError:
+                pass
+
+            dct: ta.Dict[str, ChannelPipelineHandlerRef_] = {}
+            ctx = self._p._outermost  # noqa
+            while (ctx := ctx._next_in) is not self._p._innermost:  # noqa
+                if (n := ctx._name) is not None:  # noqa
+                    dct[n] = ctx._ref  # noqa
+
+            self._handlers_by_name = dct
+            return dct
 
         def find_handlers_of_type(self, ty: ta.Type[T]) -> ta.Sequence[ChannelPipelineHandlerRef[T]]:
             try:
@@ -683,6 +711,9 @@ class ChannelPipeline:
 
     def handlers(self) -> ta.Sequence[ChannelPipelineHandlerRef]:
         return self._caches().handlers()
+
+    def handlers_by_name(self) -> ta.Mapping[str, ChannelPipelineHandlerRef_]:
+        return self._caches().handlers_by_name()
 
     def find_handlers_of_type(self, ty: ta.Type[T]) -> ta.Sequence[ChannelPipelineHandlerRef[T]]:
         return self._caches().find_handlers_of_type(ty)
