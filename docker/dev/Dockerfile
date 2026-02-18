@@ -70,6 +70,7 @@ DEPS="$DEPS\
   lsof\
   make\
   man-db\
+  maven\
   mercurial\
   moreutils\
   mosh\

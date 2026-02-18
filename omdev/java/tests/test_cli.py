@@ -57,16 +57,16 @@ def test_hi(tmpdir):
     assert lines[2] == 'argv[1]: baz'
 
 
-# def test_hi_deps(tmpdir):
-#     out = _compile_and_run(
-#         str(tmpdir),
-#         os.path.join(os.path.dirname(__file__), 'src/HiDeps.java'),
-#         'foo bar',
-#         'baz',
-#     )
-#     lines = out.decode().splitlines()  # noqa
-#
-#     assert len(lines) == 3
-#     assert lines[0] == 'Arguments (2):'
-#     assert lines[1] == 'argv[0]: foo bar'
-#     assert lines[2] == 'argv[1]: baz'
+def test_hi_deps(tmpdir):
+    out = _compile_and_run(
+        str(tmpdir),
+        os.path.join(os.path.dirname(__file__), 'src/HiDeps.java'),
+        'foo bar',
+        'baz',
+    )
+    lines = out.decode().splitlines()  # noqa
+
+    assert len(lines) == 3
+    assert lines[0] == 'Arguments (2):'
+    assert lines[1] == 'argv[0]: foo bar'
+    assert lines[2] == 'argv[1]: baz'

@@ -38,6 +38,7 @@ deps = [
   'pkg-config',
 
   # language toolchains & runtimes
+  'maven',
   'nodejs',
   'npm',
   'perl',
