@@ -162,7 +162,7 @@ exclude = [
     'LICENSE.txt',
     'AUTHORS',
     'DESIGN.md',
-    './CODESTYLE.md',
+    'CODESTYLE.md',
     'specs/jsonschema/schemas/draft202012/*.json',
     'specs/jsonschema/schemas/draft202012/vocabularies/*.json',
 ]

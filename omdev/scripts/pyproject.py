@@ -148,7 +148,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../interp/providers/system.py', sha1='9638a154475ca98775159d27739563ac7fb2eb16'),
             dict(path='../interp/pyenv/install.py', sha1='4a10a19717364b4ba9f3b8bf1d12621cf21ba8b8'),
             dict(path='../interp/uv/provider.py', sha1='3c3980878ad2b9fd2cd02172f9424954759c7f06'),
-            dict(path='pkg.py', sha1='e2acb40b17d75b6deb78056e6726d114a7aef2e4'),
+            dict(path='pkg.py', sha1='fd158f4026f2e0e672f147612b46d8552f262eb3'),
             dict(path='../interp/providers/inject.py', sha1='7cc9ebf58cf2ec09545321456bd9da9f9a3a79fb'),
             dict(path='../interp/pyenv/provider.py', sha1='377542ce01a35849e2a5b4a4dbafedc26882f983'),
             dict(path='../interp/uv/inject.py', sha1='e95d058c2340baa5a3155ec3440f311d1daa10a8'),
@@ -11817,10 +11817,10 @@ class BasePyprojectPackageGenerator(Abstract):
                 for l in src.splitlines():
                     if not (l := l.strip()):
                         continue
-                    if l.startswith('!'):
-                        exc.append(os.path.join(rp, l[1:]))
-                    else:
-                        inc.append(os.path.join(rp, l))
+                    if (bang := l.startswith('!')):
+                        l = l[1:]
+                    rlp = os.path.join(rp, l) if rp != '.' else l
+                    (exc if bang else inc).append(rlp)
 
         return self._PkgData(inc, exc)
 

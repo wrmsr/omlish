@@ -166,10 +166,10 @@ class BasePyprojectPackageGenerator(Abstract):
                 for l in src.splitlines():
                     if not (l := l.strip()):
                         continue
-                    if l.startswith('!'):
-                        exc.append(os.path.join(rp, l[1:]))
-                    else:
-                        inc.append(os.path.join(rp, l))
+                    if (bang := l.startswith('!')):
+                        l = l[1:]
+                    rlp = os.path.join(rp, l) if rp != '.' else l
+                    (exc if bang else inc).append(rlp)
 
         return self._PkgData(inc, exc)
 
