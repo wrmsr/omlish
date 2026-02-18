@@ -28,9 +28,7 @@ from ..requests import PipelineHttpRequestHead
 
 
 class PipelineHttpRequestHeadDecoder(InboundBytesBufferingChannelPipelineHandler):
-    """
-    HTTP/1.x request head decoder.
-    """
+    """HTTP/1.x request head decoder."""
 
     def __init__(
             self,

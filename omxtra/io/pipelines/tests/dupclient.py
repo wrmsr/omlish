@@ -1,5 +1,28 @@
 # ruff: noqa: UP045
 # @omlish-lite
+"""
+Baseline (fast)
+--conns 100 --requests-per-conn 200 --pipeline-depth 1
+
+Slow readers (forces server backpressure)
+--conns 50 --requests-per-conn 200 --pipeline-depth 1 --recv-read-size 64 --recv-sleep 0.002 --recv-jitter 0.002
+
+Pipelining + slow readers (really pressures server buffering)
+--conns 20 --requests-per-conn 200 --pipeline-depth 8 --recv-read-size 64 --recv-sleep 0.005 --recv-jitter 0.003
+
+Fragmented sends
+--conns 50 --requests-per-conn 200 --pipeline-depth 4 --send-chunk 3 --send-sleep 0.0005 --send-jitter 0.0005
+
+Recipe A: pipeline pressure (client pushes ahead)
+--conns 50 --requests-per-conn 200 --pipeline-depth 32 --recv-read-size 4096 --recv-sleep 0 --send-chunk 0
+
+Recipe B: slow readers (forces outbound backpressure)
+--conns 20 --requests-per-conn 100 --pipeline-depth 8 --recv-read-size 64 --recv-sleep 0.01 --recv-jitter 0.005
+
+Recipe C: slow producer + pipelining (server can't keep up "upstream")
+(server: --port 5003 --delay-ms 2 --delay-jitter-ms 2 --lines-per-chunk 16)
+--conns 50 --requests-per-conn 200 --pipeline-depth 64 --recv-read-size 4096 --recv-sleep 0
+"""
 import argparse
 import asyncio
 import dataclasses as dc
@@ -247,6 +270,7 @@ async def main_async(k: Knobs) -> None:
     total_fail = 0
     crashed = 0
 
+    r: ta.Any
     for r in results:
         if isinstance(r, Exception):
             crashed += 1
