@@ -18,6 +18,9 @@ from .errors import SawEofChannelPipelineError
 
 T = ta.TypeVar('T')
 
+ChannelPipelineHandlerT = ta.TypeVar('ChannelPipelineHandlerT', bound='ChannelPipelineHandler')
+ShareableChannelPipelineHandlerT = ta.TypeVar('ShareableChannelPipelineHandlerT', bound='ShareableChannelPipelineHandler')  # noqa
+
 
 ##
 
@@ -476,8 +479,8 @@ class ChannelPipeline:
         def __init__(self, p: 'ChannelPipeline') -> None:
             self._p = p
 
-            self._single_handlers_by_type_cache: ta.Dict[type, ta.Optional[ChannelPipelineHandlerRef]] = {}
             self._handlers_by_type_cache: ta.Dict[type, ta.Sequence[ChannelPipelineHandlerRef]] = {}
+            self._single_handlers_by_type_cache: ta.Dict[type, ta.Optional[ChannelPipelineHandlerRef]] = {}
 
         _handlers: ta.List[ChannelPipelineHandlerRef_]
 
@@ -495,15 +498,6 @@ class ChannelPipeline:
             self._handlers = lst
             return lst
 
-        def find_handler_of_type(self, ty: ta.Type[T]) -> ta.Optional[ChannelPipelineHandlerRef[T]]:
-            try:
-                return self._single_handlers_by_type_cache[ty]
-            except KeyError:
-                pass
-
-            self._single_handlers_by_type_cache[ty] = ret = check.opt_single(self.find_handlers_of_type(ty))
-            return ret
-
         def find_handlers_of_type(self, ty: ta.Type[T]) -> ta.Sequence[ChannelPipelineHandlerRef[T]]:
             try:
                 return self._handlers_by_type_cache[ty]
@@ -517,6 +511,15 @@ class ChannelPipeline:
                     ret.append(ctx._ref)  # noqa
 
             self._handlers_by_type_cache[ty] = ret
+            return ret
+
+        def find_single_handler_of_type(self, ty: ta.Type[T]) -> ta.Optional[ChannelPipelineHandlerRef[T]]:
+            try:
+                return self._single_handlers_by_type_cache[ty]
+            except KeyError:
+                pass
+
+            self._single_handlers_by_type_cache[ty] = ret = check.opt_single(self.find_handlers_of_type(ty))
             return ret
 
     __caches: _Caches
@@ -538,11 +541,44 @@ class ChannelPipeline:
     def handlers(self) -> ta.Sequence[ChannelPipelineHandlerRef]:
         return self._caches().handlers()
 
-    def find_handler_of_type(self, ty: ta.Type[T]) -> ta.Optional[ChannelPipelineHandlerRef[T]]:
-        return self._caches().find_handler_of_type(ty)
-
     def find_handlers_of_type(self, ty: ta.Type[T]) -> ta.Sequence[ChannelPipelineHandlerRef[T]]:
         return self._caches().find_handlers_of_type(ty)
+
+    def find_single_handler_of_type(self, ty: ta.Type[T]) -> ta.Optional[ChannelPipelineHandlerRef[T]]:
+        return self._caches().find_single_handler_of_type(ty)
+
+    #
+
+    @ta.overload
+    def find_handler(  # type: ignore[overload-overlap]
+            self,
+            handler: ShareableChannelPipelineHandlerT,
+    ) -> ta.Sequence[ChannelPipelineHandlerRef[ShareableChannelPipelineHandlerT]]:
+        ...
+
+    @ta.overload
+    def find_handler(
+            self,
+            handler: ChannelPipelineHandlerT,
+    ) -> ta.Optional[ChannelPipelineHandlerRef[ChannelPipelineHandlerT]]:
+        ...
+
+    def find_handler(self, handler):
+        if isinstance(handler, ShareableChannelPipelineHandler):
+            out: ta.List[ta.Any] = []
+            ctx = self._outermost
+            while (ctx := ctx._next_in) is not self._innermost:  # noqa
+                if handler == ctx._handler:  # noqa
+                    out.append(ctx._ref)  # noqa
+            return out
+
+        else:
+            # Relies on existing uniqueness checks
+            ctx = self._outermost
+            while (ctx := ctx._next_in) is not self._innermost:  # noqa
+                if handler == ctx._handler:  # noqa
+                    return ctx._ref  # noqa
+            return None
 
 
 ##
