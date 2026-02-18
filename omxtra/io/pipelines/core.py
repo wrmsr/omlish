@@ -248,9 +248,13 @@ ChannelPipelineDirection = ta.Literal['inbound', 'outbound']  # ta.TypeAlias  # 
 
 @ta.final
 class ChannelPipeline:
+    @ta.final
     @dc.dataclass(frozen=True)
     class Config:
         terminal_mode: ta.Literal['drop', 'emit', 'raise'] = 'emit'  # TODO: default 'raise'
+
+        def __post_init__(self) -> None:
+            check.in_(self.terminal_mode, ('drop', 'emit', 'raise'))
 
     def __init__(
             self,
@@ -604,6 +608,7 @@ class ChannelPipelineScheduler(Abstract):
 
 @ta.final
 class PipelineChannel:
+    @ta.final
     @dc.dataclass(frozen=True)
     class Config:
         raise_handler_errors: bool = False
@@ -740,7 +745,7 @@ class PipelineChannel:
         elif direction == 'outbound':
             return self._pending_outbound_must_propagate
         else:
-            raise ValueError(direction)
+            raise RuntimeError(f'Unknown direction {direction}')
 
     def _add_must_propagate(
             self,
