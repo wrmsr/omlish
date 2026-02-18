@@ -295,17 +295,20 @@ ChannelPipelineDirection = ta.Literal['inbound', 'outbound']  # ta.TypeAlias  # 
 
 @ta.final
 class ChannelPipeline:
+    @dc.dataclass(frozen=True)
+    class Config:
+        terminal_mode: ta.Literal['drop', 'emit', 'raise'] = 'emit'  # TODO: default 'raise'
+
     def __init__(
             self,
             channel: 'PipelineChannel',
             handlers: ta.Sequence[ChannelPipelineHandler] = (),
-            *,
-            terminal_mode: ta.Literal['drop', 'emit', 'raise'] = 'drop',
+            config: Config = Config(),
     ) -> None:
         super().__init__()
 
         self._channel: ta.Final[PipelineChannel] = channel
-        self._terminal_mode = terminal_mode
+        self._config: ta.Final[ChannelPipeline.Config] = config
 
         self._outermost = outermost = ChannelPipelineHandlerContext(
             _pipeline=self,
@@ -332,6 +335,10 @@ class ChannelPipeline:
 
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}()'
+
+    @property
+    def config(self) -> Config:
+        return self._config
 
     #
 
@@ -483,7 +490,7 @@ class ChannelPipeline:
             if isinstance(msg, ChannelPipelineMessages.MustPropagate):
                 ctx._pipeline._channel._remove_must_propagate('outbound', msg)  # noqa
 
-            ctx.emit(msg)
+            ctx._pipeline._terminal('outbound', ctx, msg)  # noqa
 
     class _Innermost(ChannelPipelineHandler):
         """'Tail' in netty terms."""
@@ -495,10 +502,10 @@ class ChannelPipeline:
             if isinstance(msg, ChannelPipelineMessages.MustPropagate):
                 ctx._pipeline._channel._remove_must_propagate('inbound', msg)  # noqa
 
-            ctx.emit(msg)
+            ctx._pipeline._terminal('inbound', ctx, msg)  # noqa
 
     def _terminal(self, direction: ChannelPipelineDirection, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if (tm := self._terminal_mode) == 'drop':
+        if (tm := self._config.terminal_mode) == 'drop':
             pass
 
         elif tm == 'emit':
@@ -611,30 +618,44 @@ class ChannelPipelineScheduler(Abstract):
 
 @ta.final
 class PipelineChannel:
+    @dc.dataclass(frozen=True)
+    class Config:
+        raise_handler_errors: bool = False
+
+        pipeline: ChannelPipeline.Config = ChannelPipeline.Config()
+
     def __init__(
             self,
             handlers: ta.Sequence[ChannelPipelineHandler] = (),
+            config: Config = Config(),
             *,
             scheduler: ta.Optional[ChannelPipelineScheduler] = None,
-            raise_handler_errors: bool = False,
     ) -> None:
         super().__init__()
 
         self._scheduler: ta.Final[ta.Optional[ChannelPipelineScheduler]] = scheduler
-        self._raise_handler_errors = raise_handler_errors
+        self._config: ta.Final[PipelineChannel.Config] = config
 
         self._emitted_q: ta.Final[collections.deque[ta.Any]] = collections.deque()
 
         self._saw_close = False
         self._saw_eof = False
 
-        self._pipeline: ta.Final[ChannelPipeline] = ChannelPipeline(self, handlers)  # final
+        self._pipeline: ta.Final[ChannelPipeline] = ChannelPipeline(
+            self,
+            handlers,
+            config=config.pipeline,
+        )
 
         self._pending_inbound_must_propagate: ta.Final[ta.Dict[int, ta.Any]] = {}
         self._pending_outbound_must_propagate: ta.Final[ta.Dict[int, ta.Any]] = {}
 
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}()'
+
+    @property
+    def config(self) -> Config:
+        return self._config
 
     @property
     def eof(self) -> bool:
@@ -666,7 +687,7 @@ class PipelineChannel:
         try:
             ctx._inbound(msg)  # noqa
         except BaseException as e:  # noqa
-            if self._raise_handler_errors:
+            if self._config.raise_handler_errors:
                 raise
             self.handle_error(e)
 
@@ -688,7 +709,7 @@ class PipelineChannel:
         try:
             ctx._outbound(msg)  # noqa
         except BaseException as e:  # noqa
-            if self._raise_handler_errors:
+            if self._config.raise_handler_errors:
                 raise
             self.handle_error(e)
 

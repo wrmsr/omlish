@@ -127,7 +127,7 @@ def build_http_sha1_channel(
             Sha1Handler(),
 
         ],
-        raise_handler_errors=True,
+        config=PipelineChannel.Config(raise_handler_errors=True),
     )
 
 
