@@ -22,6 +22,10 @@ Recipe B: slow readers (forces outbound backpressure)
 Recipe C: slow producer + pipelining (server can't keep up "upstream")
 (server: --port 5003 --delay-ms 2 --delay-jitter-ms 2 --lines-per-chunk 16)
 --conns 50 --requests-per-conn 200 --pipeline-depth 64 --recv-read-size 4096 --recv-sleep 0
+
+TODO:
+ - extend the server to support --max-inflight K (bounded queue) and add Python-side "burst modes" that find the knee
+   where memory begins to rise when K is too large.
 """
 import argparse
 import asyncio
