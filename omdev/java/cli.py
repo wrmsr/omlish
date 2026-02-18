@@ -16,6 +16,7 @@ import typing as ta
 from omlish import check
 from omlish.argparse import all as ap
 
+from .. import intellij as ij
 from .. import magic
 from . import pomgen as pg
 
@@ -213,6 +214,20 @@ class Cli(ap.Cli):
             shutil.rmtree(tmp_dir)
 
         return proc.returncode  # type: ignore[unreachable]  # noqa
+
+    @ap.cmd(
+        ap.arg('src-file'),
+    )
+    def ij(self) -> None:
+        src_file = self.args.src_file
+        src_file_name = os.path.basename(src_file)
+        prj_name = src_file_name.rpartition('.')[0]
+
+        tmp_dir = tempfile.mkdtemp(f'__{prj_name}')
+
+        build_maven_project(tmp_dir, src_file)
+
+        ij.open_ide(tmp_dir, ide=ij.Ide.IDEA)
 
 
 def _main() -> None:
