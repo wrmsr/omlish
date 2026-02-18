@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # ruff: noqa: UP045
 # @omlish-lite
 """

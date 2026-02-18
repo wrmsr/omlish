@@ -1,3 +1,7 @@
+//usr/bin/true; exec om java run "$0" "$@"
+/* @omlish-jdeps [
+    "io.netty:netty-all:4.2.9.FINAL"
+] */
 /*
  * Netty TCP server with explicit flow control + streaming responses + optional slow-producer delay.
  *

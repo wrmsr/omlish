@@ -23,10 +23,103 @@ from . import pomgen as pg
 ##
 
 
-PACKAGE_PAT = re.compile(r'^package\s+(\S+);$')
+PACKAGE_PAT = re.compile(r'package\s+(\S+);\s*')
 
-DEFAULT_GROUP_ID = 'tmp'
-DEFAULT_VERSION = '0.0.1-SNAPSHOT'
+DEFAULT_PROJECT_GROUP_ID = 'tmp'
+DEFAULT_PROJECT_VERSION = '0.0.1-SNAPSHOT'
+
+DEFAULT_JAVA_VERSION = '17'
+
+
+def scan_jdeps(src: str) -> ta.Sequence[str]:
+    src_magics = magic.find_magic(  # noqa
+        magic.C_MAGIC_STYLE,
+        src.splitlines(),
+        preparer=magic.json_magic_preparer,
+    )
+
+    deps: list[str] = []
+
+    for src_magic in src_magics:
+        if src_magic.key == '@omlish-jdeps':
+            for dep in check.isinstance(src_magic.prepared, ta.Sequence):  # noqa
+                deps.append(dep)  # noqa
+
+    return deps
+
+
+def build_maven_project(
+        root_dir: str,
+        src_file: str,
+        *,
+        deps: ta.Sequence[str] | None = None,
+) -> pg.Project:
+    with open(src_file) as f:
+        src = f.read()
+
+    #
+
+    name = os.path.basename(src_file).split('.', maxsplit=1)[0]
+
+    if (pms := list(filter(None, map(PACKAGE_PAT.fullmatch, src.splitlines())))):
+        group_id = pms[0].group(1)
+    else:
+        group_id = DEFAULT_PROJECT_GROUP_ID
+        src = f'package {group_id};\n\n{src}'
+
+    check.non_empty_str(group_id)
+    group_id_parts = group_id.split('.')
+    for gi_part in group_id_parts:
+        check.non_empty_str(gi_part)
+        check.arg(gi_part.isalnum())
+
+    #
+
+    if deps is None:
+        deps = scan_jdeps(src)
+
+    #
+
+    pom_prj = pg.Project(
+        group_id,
+        name,
+        DEFAULT_PROJECT_VERSION,
+
+        name,
+
+        properties={
+            'maven.compiler.source': DEFAULT_JAVA_VERSION,
+            'maven.compiler.target': DEFAULT_JAVA_VERSION,
+        },
+
+        dependencies=[
+            pg.Dependency(*dep.split(':'))
+            for dep in deps
+        ],
+    )
+
+    pom_xml = pg.render_project_xml(pom_prj)
+
+    #
+
+    smj_dir = os.path.join(root_dir, 'src', 'main', 'java')
+    sp_dir = smj_dir
+    for gi_part in group_id_parts:
+        sp_dir = os.path.join(sp_dir, gi_part)
+    os.makedirs(sp_dir)
+
+    with open(os.path.join(sp_dir, os.path.basename(src_file)), 'w') as f:
+        f.write(src)
+
+    with open(os.path.join(root_dir, 'pom.xml'), 'w') as f:
+        f.write(pom_xml)
+
+    #
+
+    return pom_prj
+
+
+##
 
 
 class Cli(ap.Cli):
@@ -44,25 +137,9 @@ class Cli(ap.Cli):
         with open(src_file) as f:
             src = f.read()
 
-        src_magics = magic.find_magic(  # noqa
-            magic.C_MAGIC_STYLE,
-            src.splitlines(),
-            file=src_file,
-            preparer=magic.json_magic_preparer,
-        )
+        #
 
-        deps: list[str] = []
-
-        for src_magic in src_magics:
-            if src_magic.key == '@omlish-jdeps':
-                for dep in check.isinstance(src_magic.prepared, ta.Sequence):  # noqa
-                    deps.append(dep)  # noqa
-
-            elif src_magic.key == '@omlish-llm-author':
-                pass
-
-            else:
-                raise KeyError(src_magic.key)
+        deps = scan_jdeps(src)
 
         #
 
@@ -81,53 +158,13 @@ class Cli(ap.Cli):
 
         #
 
-        with open(src_file) as f:
-            src = f.read()
-
-        name = os.path.basename(src_file).split('.', maxsplit=1)[0]
-
-        if (m := PACKAGE_PAT.search(src)) is not None:
-            group_id = m.group(1)
-        else:
-            group_id = DEFAULT_GROUP_ID
-            src = f'package {group_id};\n\n{src}'
-
-        check.non_empty_str(group_id)
-        group_id_parts = group_id.split('.')
-        for gi_part in group_id_parts:
-            check.non_empty_str(gi_part)
-            check.arg(gi_part.isalnum())
-
-        pom_prj = pg.Project(
-            group_id,
-            name,
-            DEFAULT_VERSION,
-
-            name,
-
-            dependencies=[
-                pg.Dependency(*dep.split(':'))
-                for dep in deps
-            ],
-        )
-
-        pom_xml = pg.render_project_xml(pom_prj)
-
-        #
-
         tmp_dir = tempfile.mkdtemp()
         try:
-            smj_dir = os.path.join(tmp_dir, 'src', 'main', 'java')
-            sp_dir = smj_dir
-            for gi_part in group_id_parts:
-                sp_dir = os.path.join(sp_dir, gi_part)
-            os.makedirs(sp_dir)
-
-            with open(os.path.join(sp_dir, os.path.basename(src_file)), 'w') as f:
-                f.write(src)
-
-            with open(os.path.join(tmp_dir, 'pom.xml'), 'w') as f:
-                f.write(pom_xml)
+            pom_prj = build_maven_project(
+                tmp_dir,
+                src_file,
+                deps=deps,
+            )
 
             proc = subprocess.run(
                 [
@@ -163,7 +200,7 @@ class Cli(ap.Cli):
                     self.args.java or 'java',
                     '-cp',
                     cp,
-                    f'{group_id}.{name}',
+                    f'{pom_prj.group_id}.{pom_prj.name}',
                     *self.args.args,
                 ],
                 cwd=self.args.cwd,
