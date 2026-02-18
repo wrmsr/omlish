@@ -45,6 +45,7 @@
 - dynamic streaming vs full by app endpoint
 - h2 - _will not implement protocol manually_, plug in to `h2` lib
 - lean on ParsedHeaders more - validly-duplicate-but-identical content-length currently isn't handled for ex.
+- dangerous switch to not validate http headers
 
 ### proto impls
 
