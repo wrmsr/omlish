@@ -27,6 +27,10 @@
 - thread safety? nogil?
 - inject interop
 - interleavable inter-stage message queueing handler? usecases?
+- dont catch BaseException lol - or at least have exception reraise filter (ex. cancelled)
+- removed callbacks
+  - currently just blow up everything if they raise lol
+  - also removing in flight might mess stuff up (STARTTLS?)
 
 ### http
 

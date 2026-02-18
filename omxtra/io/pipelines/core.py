@@ -373,6 +373,7 @@ class ChannelPipeline:
 
         self._clear_caches()
 
+        # FIXME: exceptions?
         handler.added(ctx)
 
         return ctx._ref  # noqa
@@ -407,6 +408,7 @@ class ChannelPipeline:
 
         ctx = handler_ref._context  # noqa
 
+        # FIXME: exceptions? defer?
         self._channel._removing(ctx._ref)  # noqa
 
         handler = ctx._handler  # noqa
