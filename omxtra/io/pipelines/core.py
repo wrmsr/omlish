@@ -16,13 +16,10 @@ from .errors import MessageReachedTerminalChannelPipelineError
 from .errors import SawEofChannelPipelineError
 
 
-F = ta.TypeVar('F')
 T = ta.TypeVar('T')
 
 ChannelPipelineHandlerT = ta.TypeVar('ChannelPipelineHandlerT', bound='ChannelPipelineHandler')
 ShareableChannelPipelineHandlerT = ta.TypeVar('ShareableChannelPipelineHandlerT', bound='ShareableChannelPipelineHandler')  # noqa
-
-ChannelPipelineHandlerFn = ta.Callable[['ChannelPipelineHandlerContext', F], T]  # ta.TypeAlias
 
 
 ##
@@ -75,41 +72,6 @@ class ChannelPipelineEvents(NamespaceClass):
         """Signals an exception occurred in the pipeline."""
 
         exc: BaseException
-
-
-##
-
-
-class ChannelPipelineHandlerFns(NamespaceClass):
-    @dc.dataclass(frozen=True)
-    class NoContext(ta.Generic[F, T]):
-        fn: ta.Callable[[F], T]
-
-        def __repr__(self) -> str:
-            return f'{type(self).__name__}({self.fn!r})'
-
-        def __call__(self, ctx: 'ChannelPipelineHandlerContext', obj: F) -> T:
-            return self.fn(obj)
-
-    @classmethod
-    def no_context(cls, fn: ta.Callable[[F], T]) -> ChannelPipelineHandlerFn[F, T]:
-        return cls.NoContext(fn=fn)
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class Isinstance:
-        ty: ta.Union[type, ta.Tuple[type, ...]]
-
-        def __repr__(self) -> str:
-            return f'{type(self).__name__}({self.ty!r})'
-
-        def __call__(self, ctx: 'ChannelPipelineHandlerContext', msg: ta.Any) -> bool:
-            return isinstance(msg, self.ty)
-
-    @classmethod
-    def isinstance(cls, ty: ta.Union[type, ta.Tuple[type, ...]]) -> ChannelPipelineHandlerFn[ta.Any, bool]:
-        return cls.Isinstance(ty=ty)
 
 
 ##

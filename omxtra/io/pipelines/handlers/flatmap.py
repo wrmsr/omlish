@@ -11,7 +11,7 @@ from omlish.lite.namespaces import NamespaceClass
 from ..core import ChannelPipelineDirectionOrDuplex
 from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
-from ..core import ChannelPipelineHandlerFn
+from .fns import ChannelPipelineHandlerFn
 
 
 ##
