@@ -97,15 +97,29 @@ class ChannelPipelineHandlerRef(ta.Generic[T]):
         return self._context._pipeline  # noqa
 
     @property
+    def channel(self) -> 'PipelineChannel':
+        return self._context._pipeline._channel  # noqa
+
+    @property
     def handler(self) -> T:
         return self._context._handler  # type: ignore[return-value]  # noqa
+
+    @property
+    def name(self) -> ta.Optional[str]:
+        return self._context._name  # noqa
 
     @property
     def invalidated(self) -> bool:
         return self._context._invalidated  # noqa
 
     def __repr__(self) -> str:
-        return f'{type(self).__name__}@{id(self):x}<{self._context!r}>'
+        return (
+            f'{type(self).__name__}'
+            f'{"!INVALIDATED" if self.invalidated else ""}'
+            f'{f"<{self.name!r}>" if self.name is not None else ""}'
+            f'<context@{id(self._context):x}>'
+            f'({self.handler!r}@{id(self.handler):x})'
+        )
 
 
 ChannelPipelineHandlerRef_ = ChannelPipelineHandlerRef['ChannelPipelineHandler']  # ta.TypeAlias  # omlish-amalg-typing-no-move  # noqa
@@ -146,8 +160,10 @@ class ChannelPipelineHandlerContext:
     def __repr__(self) -> str:
         return (
             f'{type(self).__name__}@{id(self):x}'
-            f'{"<INVALIDATED>" if self._invalidated else ""}'
-            f'({self._handler!r}@{id(self._handler):x}, {self.pipeline!r})'
+            f'{"!INVALIDATED" if self._invalidated else ""}'
+            f'{f"<{self._name!r}>" if self._name is not None else ""}'
+            f'<pipeline@{id(self.pipeline):x}>'
+            f'({self._handler!r}@{id(self._handler):x})'
         )
 
     @property
