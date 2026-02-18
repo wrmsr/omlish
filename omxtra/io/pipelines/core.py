@@ -251,6 +251,7 @@ class ShareableChannelPipelineHandler(ChannelPipelineHandler, Abstract):
 
 
 ChannelPipelineDirection = ta.Literal['inbound', 'outbound']  # ta.TypeAlias  # omlish-amalg-typing-no-move
+ChannelPipelineDirectionOrDuplex = ta.Literal[ChannelPipelineDirection, 'duplex']  # ta.TypeAlias  # omlish-amalg-typing-no-move  # noqa
 
 
 @ta.final

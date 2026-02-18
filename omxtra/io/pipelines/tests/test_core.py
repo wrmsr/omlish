@@ -5,12 +5,11 @@ import unittest
 from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
 from ..core import PipelineChannel
-from ..handlers import InboundSimplePredicateChannelPipelineHandler
-from ..handlers import OutboundSimplePredicateChannelPipelineHandler
+from ..flatmap import FlatMapChannelPipelineHandlers
 
 
-INBOUND_EMIT_TERMINAL = InboundSimplePredicateChannelPipelineHandler(lambda _: True, emit=True, drop=True)
-OUTBOUND_EMIT_TERMINAL = OutboundSimplePredicateChannelPipelineHandler(lambda _: True, emit=True, drop=True)
+INBOUND_EMIT_TERMINAL = FlatMapChannelPipelineHandlers.emit_and_drop('inbound')
+OUTBOUND_EMIT_TERMINAL = FlatMapChannelPipelineHandlers.emit_and_drop('outbound')
 
 
 class IntIncInboundHandler(ChannelPipelineHandler):
