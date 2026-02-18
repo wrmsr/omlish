@@ -469,10 +469,11 @@ class ChannelPipeline:
             ctx.emit(msg)
 
         elif tm == 'raise':
-            raise MessageReachedTerminalChannelPipelineError(
-                inbound=[msg] if direction == 'inbound' else None,
-                outbound=[msg] if direction == 'outbound' else None,
-            )
+            if not isinstance(msg, ChannelPipelineMessages.MustPropagate):
+                raise MessageReachedTerminalChannelPipelineError(
+                    inbound=[msg] if direction == 'inbound' else None,
+                    outbound=[msg] if direction == 'outbound' else None,
+                )
 
         else:
             raise RuntimeError(f'unknown terminal mode {tm}')

@@ -26,6 +26,7 @@
   - async/await interop
 - thread safety? nogil?
 - inject interop
+- interleavable inter-stage message queueing handler? usecases?
 
 ### http
 
