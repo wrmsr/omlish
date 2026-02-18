@@ -83,6 +83,16 @@ class ChannelPipelineError(Exception):
 
 @ta.final
 class ChannelPipelineHandlerRef(ta.Generic[T]):
+    """
+    Encapsulates a reference to a unique position of a handler instance in a pipeline, used at public api boundaries.
+
+    Should the handler be removed from the relevant position in the pipeline, the ref instance becomes permanently
+    invalidated.
+
+    Note that this is definitionally identity hash/eq: given some valid ref, removing that ref from the pipeline and
+    re-adding the same handler instance to the same effective position in a pipeline results in a different ref.
+    """
+
     def __init__(self, *, _context: 'ChannelPipelineHandlerContext') -> None:
         self._context = _context
 
@@ -108,9 +118,10 @@ ChannelPipelineHandlerRef_ = ChannelPipelineHandlerRef['ChannelPipelineHandler']
 @ta.final
 class ChannelPipelineHandlerContext:
     """
-    Passed to ChannelPipelineHandler methods, provides handler-specific access and operations the pipeline channel.
+    Passed to ChannelPipelineHandler methods, provides handler-specific access and operations the pipeline channel. As
+    instances of `ShareableChannelPipelineHandler` may validly be present in multiple
 
-    Instances of this are not to be cached or shared.
+    Instances of this class are considered private to a handler instance and are not to be cached or shared in any way.
     """
 
     def __init__(
@@ -625,8 +636,8 @@ class PipelineChannel:
     ) -> None:
         super().__init__()
 
-        self._scheduler: ta.Final[ta.Optional[ChannelPipelineScheduler]] = scheduler
         self._config: ta.Final[PipelineChannel.Config] = config
+        self._scheduler: ta.Final[ta.Optional[ChannelPipelineScheduler]] = scheduler
 
         self._emitted_q: ta.Final[collections.deque[ta.Any]] = collections.deque()
 
