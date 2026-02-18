@@ -14,12 +14,19 @@ from ...responses import PipelineHttpResponseHead
 from ..responses import PipelineHttpResponseChunkedDecoder
 
 
+TERMINAL_EMIT_CHANNEL_CONFIG = PipelineChannel.Config(
+    pipeline=PipelineChannel.PipelineConfig(
+        terminal_mode='emit',
+    ),
+)
+
+
 class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
     def test_simple_chunked_response(self) -> None:
         """Test decoding simple chunked response."""
 
         decoder = PipelineHttpResponseChunkedDecoder()
-        channel = PipelineChannel([decoder])
+        channel = PipelineChannel([decoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         # Send response head with chunked encoding
         head = PipelineHttpResponseHead(
@@ -50,7 +57,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         """Test chunked response split across multiple reads."""
 
         decoder = PipelineHttpResponseChunkedDecoder()
-        channel = PipelineChannel([decoder])
+        channel = PipelineChannel([decoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         head = PipelineHttpResponseHead(
             version=HttpVersion(1, 1),
@@ -87,7 +94,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         """Test that non-chunked responses pass through unchanged."""
 
         decoder = PipelineHttpResponseChunkedDecoder()
-        channel = PipelineChannel([decoder])
+        channel = PipelineChannel([decoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         head = PipelineHttpResponseHead(
             version=HttpVersion(1, 1),
@@ -113,7 +120,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         """Test that zero-size chunks before final chunk work correctly."""
 
         decoder = PipelineHttpResponseChunkedDecoder()
-        channel = PipelineChannel([decoder])
+        channel = PipelineChannel([decoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         head = PipelineHttpResponseHead(
             version=HttpVersion(1, 1),
@@ -141,7 +148,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
 
         # Use larger buffer size for this test
         decoder = PipelineHttpResponseChunkedDecoder(max_chunk_header=0x10000)
-        channel = PipelineChannel([decoder])
+        channel = PipelineChannel([decoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         head = PipelineHttpResponseHead(
             version=HttpVersion(1, 1),
@@ -170,7 +177,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         """Test that hex chunk sizes are properly decoded."""
 
         decoder = PipelineHttpResponseChunkedDecoder()
-        channel = PipelineChannel([decoder])
+        channel = PipelineChannel([decoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         head = PipelineHttpResponseHead(
             version=HttpVersion(1, 1),
@@ -205,7 +212,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         """Test that EOF before chunked encoding completes raises error."""
 
         decoder = PipelineHttpResponseChunkedDecoder()
-        channel = PipelineChannel([decoder])
+        channel = PipelineChannel([decoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         head = PipelineHttpResponseHead(
             version=HttpVersion(1, 1),
@@ -234,7 +241,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         """Test that invalid chunk size raises error."""
 
         decoder = PipelineHttpResponseChunkedDecoder()
-        channel = PipelineChannel([decoder])
+        channel = PipelineChannel([decoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         head = PipelineHttpResponseHead(
             version=HttpVersion(1, 1),
@@ -260,7 +267,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         """Test that missing trailing CRLF after chunk data raises error."""
 
         decoder = PipelineHttpResponseChunkedDecoder()
-        channel = PipelineChannel([decoder])
+        channel = PipelineChannel([decoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         head = PipelineHttpResponseHead(
             version=HttpVersion(1, 1),
@@ -286,7 +293,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         """Test that uppercase hex chunk sizes work."""
 
         decoder = PipelineHttpResponseChunkedDecoder()
-        channel = PipelineChannel([decoder])
+        channel = PipelineChannel([decoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         head = PipelineHttpResponseHead(
             version=HttpVersion(1, 1),
@@ -312,7 +319,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         """Test multiple chunks in sequence."""
 
         decoder = PipelineHttpResponseChunkedDecoder()
-        channel = PipelineChannel([decoder])
+        channel = PipelineChannel([decoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         head = PipelineHttpResponseHead(
             version=HttpVersion(1, 1),
@@ -351,7 +358,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         """Test that EOF after complete chunked response is OK."""
 
         decoder = PipelineHttpResponseChunkedDecoder()
-        channel = PipelineChannel([decoder])
+        channel = PipelineChannel([decoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         head = PipelineHttpResponseHead(
             version=HttpVersion(1, 1),

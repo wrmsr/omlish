@@ -48,11 +48,14 @@ class PingHandler(ChannelPipelineHandler):
 
 
 def build_http_ping_channel() -> PipelineChannel:
-    return PipelineChannel([
-        PipelineHttpRequestHeadDecoder(),
-        PipelineHttpResponseEncoder(),
-        PingHandler(),
-    ])
+    return PipelineChannel(
+        [
+            PipelineHttpRequestHeadDecoder(),
+            PipelineHttpResponseEncoder(),
+            PingHandler(),
+        ],
+        PipelineChannel.Config(raise_handler_errors=True),
+    )
 
 
 async def serve_ping(

@@ -9,12 +9,19 @@ from ....core import PipelineChannel
 from ..responses import PipelineHttpResponseDecoder
 
 
+TERMINAL_EMIT_CHANNEL_CONFIG = PipelineChannel.Config(
+    pipeline=PipelineChannel.PipelineConfig(
+        terminal_mode='emit',
+    ),
+)
+
+
 class TestPipelineHttpResponseDecoder(unittest.TestCase):
     def test_basic_response_head(self) -> None:
         """Test basic HTTP response head parsing."""
 
         decoder = PipelineHttpResponseDecoder()
-        channel = PipelineChannel([decoder])
+        channel = PipelineChannel([decoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         response = b'HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\n'
         channel.feed_in(response)
@@ -31,7 +38,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         """Test response head + body bytes received together."""
 
         decoder = PipelineHttpResponseDecoder()
-        channel = PipelineChannel([decoder])
+        channel = PipelineChannel([decoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         response = b'HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nhello'
         channel.feed_in(response)
@@ -51,7 +58,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         """Test response head received incrementally."""
 
         decoder = PipelineHttpResponseDecoder()
-        channel = PipelineChannel([decoder])
+        channel = PipelineChannel([decoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         # Send head in parts
         channel.feed_in(b'HTTP/1.1 200 OK\r\n')
@@ -70,7 +77,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         """Test EOF arriving before head is complete raises ValueError."""
 
         decoder = PipelineHttpResponseDecoder()
-        channel = PipelineChannel([decoder])
+        channel = PipelineChannel([decoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         # Send partial head
         channel.feed_in(b'HTTP/1.1 200 OK\r\n')

@@ -13,12 +13,19 @@ from ...responses import PipelineHttpResponseHead
 from ..responses import PipelineHttpResponseEncoder
 
 
+TERMINAL_EMIT_CHANNEL_CONFIG = PipelineChannel.Config(
+    pipeline=PipelineChannel.PipelineConfig(
+        terminal_mode='emit',
+    ),
+)
+
+
 class TestPipelineHttpResponseEncoder(unittest.TestCase):
     def test_basic_response(self) -> None:
         """Test basic HTTP response encoding."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder])
+        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         response = FullPipelineHttpResponse(
             head=PipelineHttpResponseHead(
@@ -53,7 +60,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test 404 response encoding."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder])
+        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         response = FullPipelineHttpResponse(
             head=PipelineHttpResponseHead(
@@ -88,7 +95,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test response with empty body."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder])
+        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         response = FullPipelineHttpResponse(
             head=PipelineHttpResponseHead(
@@ -120,7 +127,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test response with multiple headers."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder])
+        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         response = FullPipelineHttpResponse(
             head=PipelineHttpResponseHead(
@@ -161,7 +168,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test HTTP/1.0 version encoding."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder])
+        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         response = FullPipelineHttpResponse(
             head=PipelineHttpResponseHead(
@@ -187,7 +194,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test response with large body."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder])
+        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         body = b'x' * 10000
 
@@ -218,7 +225,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test response with duplicate header names (e.g., Set-Cookie)."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder])
+        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         response = FullPipelineHttpResponse(
             head=PipelineHttpResponseHead(
@@ -251,7 +258,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test that non-response messages pass through unchanged."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder])
+        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         # Send various non-response messages
         channel.feed_out(b'raw bytes')
@@ -269,7 +276,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test encoding responses mixed with other messages."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder])
+        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         # Send response
         response = FullPipelineHttpResponse(
@@ -302,7 +309,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test 302 redirect response."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder])
+        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         response = FullPipelineHttpResponse(
             head=PipelineHttpResponseHead(
@@ -336,7 +343,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test 500 server error response."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder])
+        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         response = FullPipelineHttpResponse(
             head=PipelineHttpResponseHead(
@@ -373,7 +380,7 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
         """Test streaming response with Content-Length (no chunked encoding)."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder])
+        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         # Send head
         channel.feed_out(PipelineHttpResponseHead(
@@ -413,7 +420,7 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
         """Test streaming response with Transfer-Encoding: chunked."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder])
+        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         # Send head with Transfer-Encoding: chunked
         channel.feed_out(PipelineHttpResponseHead(
@@ -460,7 +467,7 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
         """Test that chunked encoding emits final terminator."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder])
+        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         channel.feed_out(PipelineHttpResponseHead(
             version=HttpVersion(1, 1),
@@ -483,7 +490,7 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
         """Test that empty chunks don't emit bytes."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder])
+        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         channel.feed_out(PipelineHttpResponseHead(
             version=HttpVersion(1, 1),
@@ -510,7 +517,7 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
         """Test that encoder resets state between responses."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder])
+        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         # First response (chunked)
         channel.feed_out(PipelineHttpResponseHead(
@@ -550,7 +557,7 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
         """Test chunked encoding with larger chunk sizes."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder])
+        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         channel.feed_out(PipelineHttpResponseHead(
             version=HttpVersion(1, 1),

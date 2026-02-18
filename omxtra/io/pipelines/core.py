@@ -650,6 +650,10 @@ class PipelineChannel:
 
         pipeline: ChannelPipeline.Config = ChannelPipeline.Config()
 
+    # Available here for user convenience (so configuration of a PipelineChannel's ChannelPipeline doesn't require
+    # actually importing ChannelPipeline to get to its Config class).
+    PipelineConfig: ta.ClassVar[ta.Type[ChannelPipeline.Config]] = ChannelPipeline.Config
+
     def __init__(
             self,
             handlers: ta.Sequence[ChannelPipelineHandler] = (),

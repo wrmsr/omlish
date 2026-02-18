@@ -12,12 +12,19 @@ from ..requests import PipelineHttpRequestHead
 from ..requests import PipelineHttpRequestHeadDecoder
 
 
+TERMINAL_EMIT_CHANNEL_CONFIG = PipelineChannel.Config(
+    pipeline=PipelineChannel.PipelineConfig(
+        terminal_mode='emit',
+    ),
+)
+
+
 class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):
     def test_basic_request_head(self) -> None:
         """Test basic HTTP request head parsing."""
 
         decoder = PipelineHttpRequestHeadDecoder()
-        channel = PipelineChannel([decoder])
+        channel = PipelineChannel([decoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         request = b'GET /path HTTP/1.1\r\nHost: example.com\r\n\r\n'
         channel.feed_in(request)
@@ -35,7 +42,7 @@ class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):
         """Test request head + body bytes received together."""
 
         decoder = PipelineHttpRequestHeadDecoder()
-        channel = PipelineChannel([decoder])
+        channel = PipelineChannel([decoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         request = b'POST /api HTTP/1.1\r\nHost: test\r\nContent-Length: 4\r\n\r\ntest'
         channel.feed_in(request)
@@ -56,7 +63,7 @@ class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):
         """Test that after head parsed, subsequent bytes pass through."""
 
         decoder = PipelineHttpRequestHeadDecoder()
-        channel = PipelineChannel([decoder])
+        channel = PipelineChannel([decoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         # Send head
         request = b'POST /api HTTP/1.1\r\nHost: test\r\nContent-Length: 10\r\n\r\n'
@@ -78,7 +85,7 @@ class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):
         """Test EOF before head complete raises error."""
 
         decoder = PipelineHttpRequestHeadDecoder()
-        channel = PipelineChannel([decoder])
+        channel = PipelineChannel([decoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         channel.feed_in(b'GET /path HTTP/1.1\r\n')
         channel.feed_eof()
@@ -93,7 +100,7 @@ class TestPipelineHttpRequestBodyAggregator(unittest.TestCase):
 
         head_decoder = PipelineHttpRequestHeadDecoder()
         body_agg = PipelineHttpRequestBodyAggregator()
-        channel = PipelineChannel([head_decoder, body_agg])
+        channel = PipelineChannel([head_decoder, body_agg], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         request = b'GET / HTTP/1.1\r\nHost: test\r\n\r\n'
         channel.feed_in(request)
@@ -111,7 +118,7 @@ class TestPipelineHttpRequestBodyAggregator(unittest.TestCase):
 
         head_decoder = PipelineHttpRequestHeadDecoder()
         body_agg = PipelineHttpRequestBodyAggregator()
-        channel = PipelineChannel([head_decoder, body_agg])
+        channel = PipelineChannel([head_decoder, body_agg], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         request = b'POST /api HTTP/1.1\r\nHost: test\r\nContent-Length: 11\r\n\r\nhello world'
         channel.feed_in(request)
@@ -129,7 +136,7 @@ class TestPipelineHttpRequestBodyAggregator(unittest.TestCase):
 
         head_decoder = PipelineHttpRequestHeadDecoder()
         body_agg = PipelineHttpRequestBodyAggregator()
-        channel = PipelineChannel([head_decoder, body_agg])
+        channel = PipelineChannel([head_decoder, body_agg], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         # Send head
         head = b'POST /api HTTP/1.1\r\nHost: test\r\nContent-Length: 10\r\n\r\n'
@@ -155,7 +162,7 @@ class TestPipelineHttpRequestBodyAggregator(unittest.TestCase):
 
         head_decoder = PipelineHttpRequestHeadDecoder()
         body_agg = PipelineHttpRequestBodyAggregator()
-        channel = PipelineChannel([head_decoder, body_agg])
+        channel = PipelineChannel([head_decoder, body_agg], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         head = b'POST /api HTTP/1.1\r\nHost: test\r\nContent-Length: 10\r\n\r\n'
         channel.feed_in(head)

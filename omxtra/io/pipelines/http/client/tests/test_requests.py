@@ -13,12 +13,19 @@ from ...requests import PipelineHttpRequestHead
 from ..requests import PipelineHttpRequestEncoder
 
 
+TERMINAL_EMIT_CHANNEL_CONFIG = PipelineChannel.Config(
+    pipeline=PipelineChannel.PipelineConfig(
+        terminal_mode='emit',
+    ),
+)
+
+
 class TestPipelineHttpRequestEncoder(unittest.TestCase):
     def test_basic_get_request(self) -> None:
         """Test basic GET request encoding."""
 
         encoder = PipelineHttpRequestEncoder()
-        channel = PipelineChannel([encoder])
+        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         request = FullPipelineHttpRequest(
             head=PipelineHttpRequestHead(
@@ -52,7 +59,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         """Test POST request with body."""
 
         encoder = PipelineHttpRequestEncoder()
-        channel = PipelineChannel([encoder])
+        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         body = b'name=value&foo=bar'
 
@@ -91,7 +98,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         """Test PUT request encoding."""
 
         encoder = PipelineHttpRequestEncoder()
-        channel = PipelineChannel([encoder])
+        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         body = b'{"key": "value"}'
 
@@ -130,7 +137,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         """Test DELETE request encoding."""
 
         encoder = PipelineHttpRequestEncoder()
-        channel = PipelineChannel([encoder])
+        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         request = FullPipelineHttpRequest(
             head=PipelineHttpRequestHead(
@@ -162,7 +169,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         """Test HTTP/1.0 request."""
 
         encoder = PipelineHttpRequestEncoder()
-        channel = PipelineChannel([encoder])
+        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         request = FullPipelineHttpRequest(
             head=PipelineHttpRequestHead(
@@ -194,7 +201,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         """Test request with multiple headers."""
 
         encoder = PipelineHttpRequestEncoder()
-        channel = PipelineChannel([encoder])
+        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         request = FullPipelineHttpRequest(
             head=PipelineHttpRequestHead(
@@ -234,7 +241,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         """Test request with absolute URI as target."""
 
         encoder = PipelineHttpRequestEncoder()
-        channel = PipelineChannel([encoder])
+        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         request = FullPipelineHttpRequest(
             head=PipelineHttpRequestHead(
@@ -266,7 +273,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         """Test streaming request without chunked encoding."""
 
         encoder = PipelineHttpRequestEncoder()
-        channel = PipelineChannel([encoder])
+        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         # Send head
         head = PipelineHttpRequestHead(
@@ -311,7 +318,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         """Test streaming request with chunked encoding."""
 
         encoder = PipelineHttpRequestEncoder()
-        channel = PipelineChannel([encoder])
+        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         # Send head with Transfer-Encoding: chunked
         head = PipelineHttpRequestHead(
@@ -363,7 +370,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         """Test that empty chunks don't emit data."""
 
         encoder = PipelineHttpRequestEncoder()
-        channel = PipelineChannel([encoder])
+        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         head = PipelineHttpRequestHead(
             method='POST',
@@ -393,7 +400,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         """Test encoding multiple sequential requests."""
 
         encoder = PipelineHttpRequestEncoder()
-        channel = PipelineChannel([encoder])
+        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         # First request
         req1 = FullPipelineHttpRequest(
@@ -448,7 +455,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         """Test that unknown messages pass through unchanged."""
 
         encoder = PipelineHttpRequestEncoder()
-        channel = PipelineChannel([encoder])
+        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         class UnknownMessage:
             pass
