@@ -82,6 +82,7 @@ class PipelineHttpResponseConditionalGzipDecoder(ChannelPipelineHandler):
         self._z: ta.Optional[ta.Any] = None
 
     # FIXME:
+    #  - we get obj.unconsumed_tail and unused_data, but not the full internal buffer sizes
     # def inbound_buffered_bytes(self) -> int:
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
@@ -109,7 +110,8 @@ class PipelineHttpResponseConditionalGzipDecoder(ChannelPipelineHandler):
             return
 
         for mv in ByteStreamBuffers.iter_segments(msg):
-            out = self._z.decompress(mv)
+            out = self._z.decompress(mv)  # FIXME: max_length!! zip bombs
+            # FIXME: also unconsumed_tail lol
             if out:
                 ctx.feed_in(out)
 
