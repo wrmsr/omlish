@@ -8,6 +8,7 @@ from omlish.io.streams.utils import ByteStreamBuffers
 from ....asyncio import AsyncioStreamChannelPipelineDriver
 from ....core import ChannelPipelineHandler
 from ....core import ChannelPipelineHandlerContext
+from ....core import ChannelPipelineHandlerFns
 from ....core import ChannelPipelineMessages
 from ....core import PipelineChannel
 from ....handlers.flatmap import FlatMapChannelPipelineHandlers
@@ -96,7 +97,7 @@ def build_http_client_channel() -> PipelineChannel:
     return PipelineChannel([
         FlatMapChannelPipelineHandlers.emit_and_drop(
             'outbound',
-            no_ctx_filter=ByteStreamBuffers.can_bytes,
+            filter=ChannelPipelineHandlerFns.no_context(ByteStreamBuffers.can_bytes),
         ),
         PipelineHttpResponseDecoder(),
         PipelineHttpResponseChunkedDecoder(),

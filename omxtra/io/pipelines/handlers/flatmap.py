@@ -11,45 +11,19 @@ from omlish.lite.namespaces import NamespaceClass
 from ..core import ChannelPipelineDirectionOrDuplex
 from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
-from ..core import ChannelPipelineHandlerContextFn
+from ..core import ChannelPipelineHandlerFn
 
 
 ##
 
 
-FlatMapChannelPipelineHandlerFn = ChannelPipelineHandlerContextFn[ta.Any, ta.Iterable[ta.Any]]  # ta.TypeAlias  # omlish-amalg-typing-no-move  # noqa
-FlatMapChannelPipelineHandlerPred = ChannelPipelineHandlerContextFn[ta.Any, bool]  # ta.TypeAlias  # omlish-amalg-typing-no-move  # noqa
-
-CanFlatMapChannelPipelineHandlerPred = ta.Union[  # ta.TypeAlias  # omlish-amalg-typing-no-move
-    FlatMapChannelPipelineHandlerPred,
-    type,
-    ta.Tuple[type, ...],
-]
+FlatMapChannelPipelineHandlerFn = ChannelPipelineHandlerFn[ta.Any, ta.Iterable[ta.Any]]  # ta.TypeAlias  # omlish-amalg-typing-no-move  # noqa
 
 
 class FlatMapChannelPipelineHandlerFns(NamespaceClass):
     @dc.dataclass(frozen=True)
-    class IsinstancePred:
-        ty: ta.Union[type, ta.Tuple[type, ...]]
-
-        def __repr__(self) -> str:
-            return f'{type(self).__name__}({self.ty!r})'
-
-        def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:
-            return isinstance(msg, self.ty)
-
-    @classmethod
-    def pred(cls, pred: CanFlatMapChannelPipelineHandlerPred) -> FlatMapChannelPipelineHandlerPred:
-        if isinstance(pred, (type, tuple)):
-            return cls.IsinstancePred(pred)
-        else:
-            return pred
-
-    #
-
-    @dc.dataclass(frozen=True)
     class Filter:
-        pred: FlatMapChannelPipelineHandlerPred
+        pred: ChannelPipelineHandlerFn[ta.Any, bool]
         fn: FlatMapChannelPipelineHandlerFn
 
         def __repr__(self) -> str:
@@ -62,30 +36,10 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
     @classmethod
     def filter(
             cls,
-            pred: CanFlatMapChannelPipelineHandlerPred,
+            pred: ChannelPipelineHandlerFn[ta.Any, bool],
             fn: FlatMapChannelPipelineHandlerFn,
     ) -> FlatMapChannelPipelineHandlerFn:
-        return cls.Filter(cls.pred(pred), fn)
-
-    #
-
-    @dc.dataclass(frozen=True)
-    class NoCtxPred:
-        fn: ta.Callable[[ta.Any], bool]
-
-        def __repr__(self) -> str:
-            return f'{type(self).__name__}({self.fn!r})'
-
-        def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:
-            return self.fn(msg)
-
-    @classmethod
-    def no_ctx_filter(
-            cls,
-            nc_pred: ta.Callable[[ta.Any], bool],
-            fn: FlatMapChannelPipelineHandlerFn,
-    ) -> FlatMapChannelPipelineHandlerFn:
-        return cls.Filter(cls.NoCtxPred(nc_pred), fn)
+        return cls.Filter(pred, fn)
 
     #
 
@@ -142,13 +96,34 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
 
     @dc.dataclass(frozen=True)
     class Map:
-        fn: ChannelPipelineHandlerContextFn[ta.Any, ta.Any]
+        fn: ChannelPipelineHandlerFn[ta.Any, ta.Any]
 
         def __repr__(self) -> str:
             return f'{type(self).__name__}({self.fn!r})'
 
         def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
             return (self.fn(ctx, msg),)
+
+    @classmethod
+    def map(cls, fn: ChannelPipelineHandlerFn[ta.Any, ta.Any]) -> FlatMapChannelPipelineHandlerFn:
+        return cls.Map(fn)
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class Apply:
+        fn: ChannelPipelineHandlerFn[ta.Any, None]
+
+        def __repr__(self) -> str:
+            return f'{type(self).__name__}({self.fn!r})'
+
+        def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
+            self.fn(ctx, msg)
+            return ()
+
+    @classmethod
+    def apply(cls, fn: ChannelPipelineHandlerFn[ta.Any, None]) -> FlatMapChannelPipelineHandlerFn:
+        return cls.Apply(fn)
 
     ##
 
@@ -187,21 +162,15 @@ class FlatMapChannelPipelineHandler(ChannelPipelineHandler, Abstract):
     def __init__(
             self,
             fn: FlatMapChannelPipelineHandlerFn,
-            desc: ta.Optional[str] = None,
     ) -> None:
         super().__init__()
 
         self._fn = check.callable(fn)
-        self._desc = desc
 
     _fn: FlatMapChannelPipelineHandlerFn
 
     def __repr__(self) -> str:
-        return (
-            f'{self.__class__.__name__}@{id(self):x}'
-            f'{f"<{self._desc!r}>" if self._desc is not None else ""}'
-            f'({self._fn!r})'
-        )
+        return f'{self.__class__.__name__}@{id(self):x}({self._fn!r})'
 
 
 #
@@ -241,12 +210,9 @@ class FlatMapChannelPipelineHandlers(NamespaceClass):
             cls,
             direction: ChannelPipelineDirectionOrDuplex,
             fn: FlatMapChannelPipelineHandlerFn,
-            desc: ta.Optional[str] = None,
-            *,
-            _default_desc: ta.Optional[str] = None,
     ) -> ChannelPipelineHandler:
         h_cls = cls._CLS_BY_DIRECTION[direction]
-        return h_cls(fn, desc if desc is not None else _default_desc)
+        return h_cls(fn)
 
     #
 
@@ -254,10 +220,8 @@ class FlatMapChannelPipelineHandlers(NamespaceClass):
     def emit_and_drop(
             cls,
             direction: ChannelPipelineDirectionOrDuplex,
-            desc: ta.Optional[str] = None,
             *,
-            filter: ta.Optional[CanFlatMapChannelPipelineHandlerPred] = None,  # noqa
-            no_ctx_filter: ta.Optional[ta.Callable[[ta.Any], bool]] = None,
+            filter: ta.Optional[ChannelPipelineHandlerFn[ta.Any, bool]] = None,  # noqa
     ) -> ChannelPipelineHandler:
         fn = FlatMapChannelPipelineHandlerFns.compose(
             FlatMapChannelPipelineHandlerFns.emit(),
@@ -267,12 +231,4 @@ class FlatMapChannelPipelineHandlers(NamespaceClass):
         if filter is not None:
             fn = FlatMapChannelPipelineHandlerFns.filter(filter, fn)
 
-        if no_ctx_filter is not None:
-            fn = FlatMapChannelPipelineHandlerFns.no_ctx_filter(no_ctx_filter, fn)
-
-        return cls.new(
-            direction,
-            fn,
-            desc,
-            _default_desc='emit_and_drop',
-        )
+        return cls.new(direction, fn)

@@ -1,4 +1,4 @@
-# ruff: noqa: UP006 UP045
+# ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
 import abc
 import collections
@@ -22,7 +22,7 @@ T = ta.TypeVar('T')
 ChannelPipelineHandlerT = ta.TypeVar('ChannelPipelineHandlerT', bound='ChannelPipelineHandler')
 ShareableChannelPipelineHandlerT = ta.TypeVar('ShareableChannelPipelineHandlerT', bound='ShareableChannelPipelineHandler')  # noqa
 
-ChannelPipelineHandlerContextFn = ta.Callable[['ChannelPipelineHandlerContext', F], T]  # ta.TypeAlias
+ChannelPipelineHandlerFn = ta.Callable[['ChannelPipelineHandlerContext', F], T]  # ta.TypeAlias
 
 
 ##
@@ -80,7 +80,7 @@ class ChannelPipelineEvents(NamespaceClass):
 ##
 
 
-class ChannelPipelineHandlerContextFns(NamespaceClass):
+class ChannelPipelineHandlerFns(NamespaceClass):
     @dc.dataclass(frozen=True)
     class NoContext(ta.Generic[F, T]):
         fn: ta.Callable[[F], T]
@@ -92,7 +92,7 @@ class ChannelPipelineHandlerContextFns(NamespaceClass):
             return self.fn(obj)
 
     @classmethod
-    def no_context(cls, fn: ta.Callable[[F], T]) -> ChannelPipelineHandlerContextFn[F, T]:
+    def no_context(cls, fn: ta.Callable[[F], T]) -> ChannelPipelineHandlerFn[F, T]:
         return cls.NoContext(fn=fn)
 
     #
@@ -108,7 +108,7 @@ class ChannelPipelineHandlerContextFns(NamespaceClass):
             return isinstance(msg, self.ty)
 
     @classmethod
-    def isinstance(cls, ty: ta.Union[type, ta.Tuple[type, ...]]) -> ChannelPipelineHandlerContextFn[ta.Any, bool]:
+    def isinstance(cls, ty: ta.Union[type, ta.Tuple[type, ...]]) -> ChannelPipelineHandlerFn[ta.Any, bool]:
         return cls.Isinstance(ty=ty)
 
 
