@@ -9,6 +9,7 @@ from omlish.http.parsing import ParsedHttpMessage
 from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.lite.check import check
 
+from ...bytes import InboundBytesBufferingChannelPipelineHandler
 from ...core import ChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
 from ...core import ChannelPipelineMessages
@@ -23,10 +24,8 @@ from ..responses import PipelineHttpResponseHead
 ##
 
 
-class PipelineHttpResponseDecoder(ChannelPipelineHandler):
-    """
-    HTTP/1.x response head decoder.
-    """
+class PipelineHttpResponseDecoder(InboundBytesBufferingChannelPipelineHandler):
+    """HTTP/1.x response head decoder."""
 
     def __init__(
             self,
@@ -42,6 +41,9 @@ class PipelineHttpResponseDecoder(ChannelPipelineHandler):
             max_head=max_head,
             buffer_chunk_size=buffer_chunk_size,
         )
+
+    def inbound_buffered_bytes(self) -> int:
+        return self._decoder.inbound_buffered_bytes()
 
     def _build_head(self, parsed: ParsedHttpMessage) -> PipelineHttpResponseHead:
         status = check.not_none(parsed.status_line)
@@ -83,6 +85,9 @@ class PipelineHttpResponseConditionalGzipDecoder(ChannelPipelineHandler):
         self._enabled = False
         self._z: ta.Optional[ta.Any] = None
 
+    # FIXME:
+    # def inbound_buffered_bytes(self) -> int:
+
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         if isinstance(msg, ChannelPipelineMessages.Eof):
             if self._enabled and self._z is not None:
@@ -116,7 +121,7 @@ class PipelineHttpResponseConditionalGzipDecoder(ChannelPipelineHandler):
 ##
 
 
-class PipelineHttpResponseChunkedDecoder(ChannelPipelineHandler):
+class PipelineHttpResponseChunkedDecoder(InboundBytesBufferingChannelPipelineHandler):
     def __init__(
             self,
             *,
@@ -129,6 +134,11 @@ class PipelineHttpResponseChunkedDecoder(ChannelPipelineHandler):
         self._buffer_chunk_size = buffer_chunk_size
 
         self._decoder: ta.Optional[ChunkedPipelineHttpContentChunkDecoder] = None
+
+    def inbound_buffered_bytes(self) -> ta.Optional[int]:
+        if (dec := self._decoder) is None:
+            return 0
+        return dec.inbound_buffered_bytes()
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         if isinstance(msg, PipelineHttpResponseHead):

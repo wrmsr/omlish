@@ -10,7 +10,7 @@ from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.lite.check import check
 
-from ...core import ChannelPipelineHandler
+from ...bytes import InboundBytesBufferingChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
 from ...core import ChannelPipelineMessages
 from ..decoders import ChunkedPipelineHttpContentChunkDecoder
@@ -28,7 +28,7 @@ from ..requests import PipelineHttpRequestHead
 ##
 
 
-class PipelineHttpRequestHeadDecoder(ChannelPipelineHandler):
+class PipelineHttpRequestHeadDecoder(InboundBytesBufferingChannelPipelineHandler):
     """
     HTTP/1.x request head decoder.
     """
@@ -47,6 +47,9 @@ class PipelineHttpRequestHeadDecoder(ChannelPipelineHandler):
             max_head=max_head,
             buffer_chunk_size=buffer_chunk_size,
         )
+
+    def inbound_buffered_bytes(self) -> int:
+        return self._decoder.inbound_buffered_bytes()
 
     def _build_head(self, parsed: ParsedHttpMessage) -> PipelineHttpRequestHead:
         line = check.not_none(parsed.request_line)
@@ -74,7 +77,7 @@ class PipelineHttpRequestHeadDecoder(ChannelPipelineHandler):
 ##
 
 
-class PipelineHttpRequestBodyAggregator(ChannelPipelineHandler):
+class PipelineHttpRequestBodyAggregator(InboundBytesBufferingChannelPipelineHandler):
     """
     Aggregates an HTTP/1 request body using Content-Length.
 
@@ -113,9 +116,8 @@ class PipelineHttpRequestBodyAggregator(ChannelPipelineHandler):
             chunk_size=buffer_chunk_size,
         )
 
-    # @ta.override
-    # def buffered_bytes(self) -> int:
-    #     return len(self._buf)
+    def inbound_buffered_bytes(self) -> int:
+        return len(self._buf)
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         if isinstance(msg, ChannelPipelineMessages.Eof):
@@ -199,7 +201,7 @@ class PipelineHttpRequestBodyAggregator(ChannelPipelineHandler):
 ##
 
 
-class PipelineHttpRequestBodyStreamDecoder(ChannelPipelineHandler):
+class PipelineHttpRequestBodyStreamDecoder(InboundBytesBufferingChannelPipelineHandler):
     """
     Turns (PipelineHttpRequestHead + subsequent bytes) into streaming PipelineHttpContentChunk events +
     PipelineHttpRequestEnd.
@@ -224,6 +226,11 @@ class PipelineHttpRequestBodyStreamDecoder(ChannelPipelineHandler):
         self._buffer_chunk_size = buffer_chunk_size
 
         self._decoder: ta.Optional[PipelineHttpContentChunkDecoder] = None
+
+    def inbound_buffered_bytes(self) -> int:
+        if (dec := self._decoder) is None:
+            return 0
+        return dec.inbound_buffered_bytes()
 
     class _SelectedMode(ta.NamedTuple):
         mode: ta.Literal['none', 'eof', 'cl', 'chunked']
