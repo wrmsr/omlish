@@ -35,9 +35,6 @@ class UnicodePipelineDecoder(ChannelPipelineHandler):
         if ByteStreamBuffers.can_bytes(msg):
             b = ByteStreamBuffers.any_to_bytes(msg)
 
-            if (bfc := ctx.bytes_flow_control) is not None:
-                bfc.on_consumed(self, len(b))
-
             msg = b.decode(self._encoding, errors=self._errors)
 
         ctx.feed_in(msg)
@@ -91,8 +88,6 @@ class DelimiterFramePipelineDecoder(InboundBytesBufferingChannelPipelineHandler)
         self._produce_frames(ctx)
 
     def _produce_frames(self, ctx: ChannelPipelineHandlerContext, *, final: bool = False) -> None:
-        before = len(self._buf)
-
         frames = self._fr.decode(self._buf, final=final)
 
         if final and len(self._buf):
@@ -102,11 +97,6 @@ class DelimiterFramePipelineDecoder(InboundBytesBufferingChannelPipelineHandler)
                 raise IncompleteDecodingChannelPipelineError
             else:
                 raise RuntimeError(f'unexpected on_incomplete_final: {oif!r}')
-
-        after = len(self._buf)
-
-        if (bfc := ctx.bytes_flow_control) is not None:
-            bfc.on_consumed(self, before - after)
 
         for fr in frames:
             ctx.feed_in(fr)

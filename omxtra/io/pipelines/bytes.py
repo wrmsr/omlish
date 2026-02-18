@@ -6,8 +6,8 @@ import typing as ta
 from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.lite.abstract import Abstract
 
-from .core import BytesChannelPipelineFlowControl
 from .core import ChannelPipelineHandler
+from .flow import ChannelPipelineFlowControl
 from .flow import ChannelPipelineFlowControlAdapter
 from .flow import FlowControlChannelPipelineHandler
 
@@ -29,6 +29,20 @@ class InboundBytesBufferingChannelPipelineHandler(ChannelPipelineHandler, Abstra
 class BytesChannelPipelineFlowControlAdapter(ChannelPipelineFlowControlAdapter):
     def get_cost(self, msg: ta.Any) -> ta.Optional[int]:
         return ByteStreamBuffers.bytes_len(msg)
+
+
+##
+
+
+class BytesChannelPipelineFlowControl(ChannelPipelineFlowControl, Abstract):
+    """
+    Special cased flow control specifically for 'external' bytes streams. Many of the decoders will talk to the instance
+    of this (if present) to report the bytes they've consumed as they consume them. If present in a pipeline it must be
+    unique, and should generally be at the outermost position.
+    """
+
+
+##
 
 
 class BytesFlowControlChannelPipelineHandler(FlowControlChannelPipelineHandler, BytesChannelPipelineFlowControl):

@@ -10,7 +10,6 @@ from omlish.lite.check import check
 from omlish.lite.namespaces import NamespaceClass
 
 from .core import ChannelPipelineEvents
-from .core import ChannelPipelineFlowControl
 from .core import ChannelPipelineHandler
 from .core import ChannelPipelineHandlerContext
 from .core import ChannelPipelineMessages
@@ -38,6 +37,37 @@ class ChannelPipelineFlowCapacityExceededError(Exception):
 class ChannelPipelineFlowControlAdapter(Abstract):
     @abc.abstractmethod
     def get_cost(self, msg: ta.Any) -> ta.Optional[int]:
+        raise NotImplementedError
+
+
+##
+
+
+class ChannelPipelineFlowControl(Abstract):
+    """
+    ChannelPipelines as a concept and core mechanism are useful independent of the notion of 'bytes', and the core
+    machinery is generally kept pure and generic (including the flow control machinery). In practice though their main
+    usecase *is* bytes in / bytes out, and as such it has this tiny bit of special-cased support in the core. But again,
+    it's really only due to the current `type-abstract` deficiency of mypy.
+
+    Aside from the special BytesChannelPipelineFlowControl case, there may be any number of flow control handlers in a
+    pipeline - other handlers can choose to find and talk to them as they wish.
+    """
+
+    @abc.abstractmethod
+    def get_cost(self, msg: ta.Any) -> ta.Optional[int]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def on_consumed(self, handler: ChannelPipelineHandler, cost: int) -> None:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def want_read(self) -> bool:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def drain_outbound(self, max_cost: ta.Optional[int] = None) -> ta.List[ta.Any]:
         raise NotImplementedError
 
 

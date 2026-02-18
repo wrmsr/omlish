@@ -14,7 +14,6 @@ from ...core import ChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
 from ...core import ChannelPipelineMessages
 from ..decoders import ChunkedPipelineHttpContentChunkDecoder
-from ..decoders import PipelineHttpDecoders
 from ..decoders import PipelineHttpHeadDecoder
 from ..responses import PipelineHttpResponseContentChunk
 from ..responses import PipelineHttpResponseEnd
@@ -61,10 +60,7 @@ class PipelineHttpResponseDecoder(InboundBytesBufferingChannelPipelineHandler):
             ctx.feed_in(msg)
             return
 
-        for dec_msg in self._decoder.inbound(
-                msg,
-                on_bytes_consumed=PipelineHttpDecoders.ctx_on_consumed_fn(ctx),
-        ):
+        for dec_msg in self._decoder.inbound(msg):
             ctx.feed_in(dec_msg)
 
 
@@ -159,10 +155,7 @@ class PipelineHttpResponseChunkedDecoder(InboundBytesBufferingChannelPipelineHan
             ctx.feed_in(msg)
             return
 
-        for dec_msg in dec.inbound(
-                msg,
-                on_bytes_consumed=PipelineHttpDecoders.ctx_on_consumed_fn(ctx),
-        ):
+        for dec_msg in dec.inbound(msg):
             ctx.feed_in(dec_msg)
 
         if dec.done:

@@ -16,7 +16,6 @@ from ...core import ChannelPipelineMessages
 from ..decoders import ChunkedPipelineHttpContentChunkDecoder
 from ..decoders import ContentLengthPipelineHttpContentChunkDecoder
 from ..decoders import PipelineHttpContentChunkDecoder
-from ..decoders import PipelineHttpDecoders
 from ..decoders import PipelineHttpHeadDecoder
 from ..decoders import UntilEofPipelineHttpContentChunkDecoder
 from ..requests import FullPipelineHttpRequest
@@ -67,10 +66,7 @@ class PipelineHttpRequestHeadDecoder(InboundBytesBufferingChannelPipelineHandler
             ctx.feed_in(msg)
             return
 
-        for dec_msg in self._decoder.inbound(
-                msg,
-                on_bytes_consumed=PipelineHttpDecoders.ctx_on_consumed_fn(ctx),
-        ):
+        for dec_msg in self._decoder.inbound(msg):
             ctx.feed_in(dec_msg)
 
 
@@ -177,13 +173,7 @@ class PipelineHttpRequestBodyAggregator(InboundBytesBufferingChannelPipelineHand
             return
 
         # Extract exactly want bytes; preserve any extra (we don't support pipelining, but be correct).
-        before = len(self._buf)
         body_view = self._buf.split_to(self._want)
-        after = len(self._buf)
-
-        if (bfc := ctx.bytes_flow_control) is not None:
-            bfc.on_consumed(self, before - after)
-
         body = body_view.tobytes()
 
         head = self._cur_head
@@ -264,10 +254,7 @@ class PipelineHttpRequestBodyStreamDecoder(InboundBytesBufferingChannelPipelineH
                 ctx.feed_in(msg)
                 return
 
-            for dec_msg in self._decoder.inbound(
-                    msg,
-                    on_bytes_consumed=PipelineHttpDecoders.ctx_on_consumed_fn(ctx),
-            ):
+            for dec_msg in self._decoder.inbound(msg):
                 ctx.feed_in(dec_msg)
 
             return

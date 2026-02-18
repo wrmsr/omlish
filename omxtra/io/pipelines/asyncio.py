@@ -6,7 +6,7 @@ import typing as ta
 from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.lite.check import check
 
-from .core import BytesChannelPipelineFlowControl
+from .bytes import BytesChannelPipelineFlowControl
 from .core import PipelineChannel
 
 

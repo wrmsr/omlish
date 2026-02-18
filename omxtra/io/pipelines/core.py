@@ -78,48 +78,6 @@ class ChannelPipelineError(Exception):
 ##
 
 
-class ChannelPipelineFlowControl(Abstract):
-    """
-    Present in core largely just to work around mypy `type-abstract` errors (see https://peps.python.org/pep-0747/ ),
-    but also for the 'special cased' bytes case below.
-
-    ChannelPipelines as a concept and core mechanism are useful independent of the notion of 'bytes', and the core
-    machinery is generally kept pure and generic (including the flow control machinery). In practice though their main
-    usecase *is* bytes in / bytes out, and as such it has this tiny bit of special-cased support in the core. But again,
-    it's really only due to the current `type-abstract` deficiency of mypy.
-
-    Aside from the special BytesChannelPipelineFlowControl case, there may be any number of flow control handlers in a
-    pipeline - other handlers can choose to find and talk to them as they wish.
-    """
-
-    @abc.abstractmethod
-    def get_cost(self, msg: ta.Any) -> ta.Optional[int]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def on_consumed(self, handler: 'ChannelPipelineHandler', cost: int) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def want_read(self) -> bool:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def drain_outbound(self, max_cost: ta.Optional[int] = None) -> ta.List[ta.Any]:
-        raise NotImplementedError
-
-
-class BytesChannelPipelineFlowControl(ChannelPipelineFlowControl, Abstract):
-    """
-    Special cased flow control specifically for 'external' bytes streams. Many of the decoders will talk to the instance
-    of this (if present) to report the bytes they've consumed as they consume them. If present in a pipeline it must be
-    unique, and should generally be at the outermost position.
-    """
-
-
-##
-
-
 @ta.final
 class ChannelPipelineHandlerRef(ta.Generic[T]):
     def __init__(self, *, _context: 'ChannelPipelineHandlerContext') -> None:
@@ -242,14 +200,6 @@ class ChannelPipelineHandlerContext:
 
     def emit(self, msg: ta.Any) -> None:
         self._pipeline._channel.emit(msg)  # noqa
-
-    #
-
-    @property
-    def bytes_flow_control(self) -> ta.Optional[BytesChannelPipelineFlowControl]:
-        if (hr := self._pipeline._caches().find_handler(BytesChannelPipelineFlowControl)) is None:  # type: ignore[type-abstract]  # noqa
-            return None
-        return hr._context._handler  # type: ignore[return-value]  # noqa
 
 
 class ChannelPipelineHandler(Abstract):

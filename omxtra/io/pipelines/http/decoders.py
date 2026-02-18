@@ -12,25 +12,8 @@ from omlish.io.streams.types import BytesLikeOrMemoryview
 from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
-from omlish.lite.namespaces import NamespaceClass
 
-from ..core import ChannelPipelineHandlerContext
 from ..core import ChannelPipelineMessages
-
-
-##
-
-
-class PipelineHttpDecoders(NamespaceClass):
-    @staticmethod
-    def ctx_on_consumed_fn(ctx: ChannelPipelineHandlerContext) -> ta.Optional[ta.Callable[[int], None]]:
-        if (bfc := ctx.bytes_flow_control) is None:
-            return None
-
-        def inner(n: int) -> None:
-            bfc.on_consumed(ctx.handler, n)
-
-        return inner
 
 
 ##
@@ -43,7 +26,6 @@ class PipelineHttpHeadDecoder:
     Handles common logic:
       - Buffering until b'\\r\\n\\r\\n'
       - Parsing request/response line + headers
-      - Flow control refund
       - Forwarding remainder bytes
       - EOF handling
     """
@@ -79,12 +61,7 @@ class PipelineHttpHeadDecoder:
             return 0
         return len(self._buf)
 
-    def inbound(
-            self,
-            msg: ta.Any,
-            *,
-            on_bytes_consumed: ta.Optional[ta.Callable[[int], None]] = None,
-    ) -> ta.Generator[ta.Any, None, None]:
+    def inbound(self, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
         check.state(not self._done)
 
         if isinstance(msg, ChannelPipelineMessages.Eof):
@@ -106,12 +83,7 @@ class PipelineHttpHeadDecoder:
             return
 
         # Extract head
-        before = len(self._buf)
         head_view = self._buf.split_to(i + 4)
-        after = len(self._buf)
-
-        if on_bytes_consumed is not None:
-            on_bytes_consumed(before - after)
 
         # Parse and emit head
         raw = head_view.tobytes()
@@ -153,12 +125,7 @@ class PipelineHttpContentChunkDecoder(Abstract):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def inbound(
-            self,
-            msg: ta.Any,
-            *,
-            on_bytes_consumed: ta.Optional[ta.Callable[[int], None]] = None,
-    ) -> ta.Generator[ta.Any, None, None]:
+    def inbound(self, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
         raise NotImplementedError
 
 
@@ -172,12 +139,7 @@ class UntilEofPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
     def inbound_buffered_bytes(self) -> int:
         return 0
 
-    def inbound(
-            self,
-            msg: ta.Any,
-            *,
-            on_bytes_consumed: ta.Optional[ta.Callable[[int], None]] = None,
-    ) -> ta.Generator[ta.Any, None, None]:
+    def inbound(self, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
         check.state(not self._done)
 
         if isinstance(msg, ChannelPipelineMessages.Eof):
@@ -193,9 +155,6 @@ class UntilEofPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
             return
 
         for mv in ByteStreamBuffers.iter_segments(msg):
-            if on_bytes_consumed is not None:
-                on_bytes_consumed(len(mv))
-
             yield self._make_chunk(mv)
 
 
@@ -222,12 +181,7 @@ class ContentLengthPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecod
     def inbound_buffered_bytes(self) -> int:
         return 0
 
-    def inbound(
-            self,
-            msg: ta.Any,
-            *,
-            on_bytes_consumed: ta.Optional[ta.Callable[[int], None]] = None,
-    ) -> ta.Generator[ta.Any, None, None]:
+    def inbound(self, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
         check.state(self._remain > 0)
 
         if isinstance(msg, ChannelPipelineMessages.Eof):
@@ -245,24 +199,15 @@ class ContentLengthPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecod
             mvl = len(mv)
 
             if self._remain > mvl:
-                if on_bytes_consumed is not None:
-                    on_bytes_consumed(mvl)
-
                 yield self._make_chunk(mv)
                 self._remain -= mvl
 
             elif self._remain == mvl:
-                if on_bytes_consumed is not None:
-                    on_bytes_consumed(mvl)
-
                 yield self._make_chunk(mv)
                 yield self._make_end()
                 self._remain = 0
 
             else:
-                if on_bytes_consumed is not None:
-                    on_bytes_consumed(self._remain)
-
                 yield self._make_chunk(mv[:self._remain])
                 yield self._make_end()
                 ofs = self._remain
@@ -279,7 +224,6 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
       - Extracting chunk data
       - Validating CRLF delimiters
       - Detecting terminator (0\\r\\n\\r\\n)
-      - Flow control refund
       - State machine: 'size' -> 'data' -> 'size' ... -> 'trailer' -> 'done'
     """
 
@@ -314,12 +258,7 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
             return 0
         return len(self._buf)
 
-    def inbound(
-            self,
-            msg: ta.Any,
-            *,
-            on_bytes_consumed: ta.Optional[ta.Callable[[int], None]] = None,
-    ) -> ta.Generator[ta.Any, None, None]:
+    def inbound(self, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
         check.state(self._state != 'done')
 
         if isinstance(msg, ChannelPipelineMessages.Eof):
@@ -341,18 +280,13 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
                 if i < 0:
                     return  # Need more data
 
-                before = len(self._buf)
                 size_line = self._buf.split_to(i + 2)
-                after = len(self._buf)
 
                 size_bytes = size_line.tobytes()[:-2]  # Strip \r\n
                 try:
                     self._chunk_remaining = int(size_bytes, 16)
                 except ValueError as e:
                     raise ValueError(f'Invalid chunk size: {size_bytes!r}') from e
-
-                if on_bytes_consumed is not None:
-                    on_bytes_consumed(before - after)
 
                 if self._chunk_remaining == 0:
                     # Final chunk
@@ -366,8 +300,6 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
                 if len(self._buf) < needed:
                     return  # Need more data
 
-                before = len(self._buf)
-
                 # Extract chunk data
                 chunk_data = self._buf.split_to(self._chunk_remaining)
 
@@ -375,17 +307,12 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
                 trailing = self._buf.split_to(2)
                 trailing_bytes = trailing.tobytes()
 
-                after = len(self._buf)
-
                 if trailing_bytes != b'\r\n':
                     raise ValueError(f'Expected \\r\\n after chunk data, got {trailing_bytes!r}')
 
                 # Emit chunk data (wrapped by subclass)
                 for mv in chunk_data.segments():
                     yield self._make_chunk(mv)
-
-                if on_bytes_consumed is not None:
-                    on_bytes_consumed(before - after)
 
                 self._chunk_remaining = 0
                 self._state = 'size'
@@ -395,17 +322,11 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
                 if len(self._buf) < 2:
                     return  # Need more data
 
-                before = len(self._buf)
                 trailing = self._buf.split_to(2)
-                after = len(self._buf)
-
                 trailing_bytes = trailing.tobytes()
 
                 if trailing_bytes != b'\r\n':
                     raise ValueError(f'Expected \\r\\n after final chunk, got {trailing_bytes!r}')
-
-                if on_bytes_consumed is not None:
-                    on_bytes_consumed(before - after)
 
                 # Emit end marker
                 yield self._make_end()
