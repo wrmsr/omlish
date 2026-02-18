@@ -495,16 +495,16 @@ class ChannelPipeline:
             self._handlers = lst
             return lst
 
-        def find_handler(self, ty: ta.Type[T]) -> ta.Optional[ChannelPipelineHandlerRef[T]]:
+        def find_handler_of_type(self, ty: ta.Type[T]) -> ta.Optional[ChannelPipelineHandlerRef[T]]:
             try:
                 return self._single_handlers_by_type_cache[ty]
             except KeyError:
                 pass
 
-            self._single_handlers_by_type_cache[ty] = ret = check.opt_single(self.find_handlers(ty))
+            self._single_handlers_by_type_cache[ty] = ret = check.opt_single(self.find_handlers_of_type(ty))
             return ret
 
-        def find_handlers(self, ty: ta.Type[T]) -> ta.Sequence[ChannelPipelineHandlerRef[T]]:
+        def find_handlers_of_type(self, ty: ta.Type[T]) -> ta.Sequence[ChannelPipelineHandlerRef[T]]:
             try:
                 return self._handlers_by_type_cache[ty]
             except KeyError:
@@ -538,11 +538,11 @@ class ChannelPipeline:
     def handlers(self) -> ta.Sequence[ChannelPipelineHandlerRef]:
         return self._caches().handlers()
 
-    def find_handler(self, ty: ta.Type[T]) -> ta.Optional[ChannelPipelineHandlerRef[T]]:
-        return self._caches().find_handler(ty)
+    def find_handler_of_type(self, ty: ta.Type[T]) -> ta.Optional[ChannelPipelineHandlerRef[T]]:
+        return self._caches().find_handler_of_type(ty)
 
-    def find_handlers(self, ty: ta.Type[T]) -> ta.Sequence[ChannelPipelineHandlerRef[T]]:
-        return self._caches().find_handlers(ty)
+    def find_handlers_of_type(self, ty: ta.Type[T]) -> ta.Sequence[ChannelPipelineHandlerRef[T]]:
+        return self._caches().find_handlers_of_type(ty)
 
 
 ##
