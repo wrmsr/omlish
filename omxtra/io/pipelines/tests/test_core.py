@@ -5,7 +5,7 @@ import unittest
 from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
 from ..core import PipelineChannel
-from ..flatmap import FlatMapChannelPipelineHandlers
+from ..handlers.flatmap import FlatMapChannelPipelineHandlers
 
 
 INBOUND_EMIT_TERMINAL = FlatMapChannelPipelineHandlers.emit_and_drop('inbound')

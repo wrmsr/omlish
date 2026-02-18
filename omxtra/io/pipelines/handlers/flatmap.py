@@ -8,9 +8,9 @@ from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 from omlish.lite.namespaces import NamespaceClass
 
-from .core import ChannelPipelineDirectionOrDuplex
-from .core import ChannelPipelineHandler
-from .core import ChannelPipelineHandlerContext
+from ..core import ChannelPipelineDirectionOrDuplex
+from ..core import ChannelPipelineHandler
+from ..core import ChannelPipelineHandlerContext
 
 
 ##
@@ -27,6 +27,9 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
     class Filter:
         pred: ta.Callable[[ChannelPipelineHandlerContext, ta.Any], bool]
         fn: FlatMapChannelPipelineHandlerFn
+
+        def __repr__(self) -> str:
+            return f'{type(self).__name__}({self.pred!r}, {self.fn!r})'
 
         def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
             if self.pred(ctx, msg):
@@ -46,6 +49,9 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
     class Concat:
         fns: ta.Sequence[FlatMapChannelPipelineHandlerFn]
 
+        def __repr__(self) -> str:
+            return f'{type(self).__name__}([{", ".join(map(repr, self.fns))}])'
+
         def __post_init__(self) -> None:
             check.not_empty(self.fns)
 
@@ -63,7 +69,10 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
     class Compose:
         fns: ta.Sequence[FlatMapChannelPipelineHandlerFn]
 
-        _fn: FlatMapChannelPipelineHandlerFn = dc.field(init=False, repr=False)
+        def __repr__(self) -> str:
+            return f'{type(self).__name__}([{", ".join(map(repr, self.fns))}])'
+
+        _fn: FlatMapChannelPipelineHandlerFn = dc.field(init=False)
 
         def __post_init__(self) -> None:
             check.not_empty(self.fns)
@@ -89,6 +98,9 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
 
     @dc.dataclass(frozen=True)
     class Emit:
+        def __repr__(self) -> str:
+            return f'{type(self).__name__}()'
+
         def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
             ctx.emit(msg)
             return (msg,)
@@ -101,6 +113,9 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
 
     @dc.dataclass(frozen=True)
     class Drop:
+        def __repr__(self) -> str:
+            return f'{type(self).__name__}()'
+
         def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
             return ()
 
@@ -128,7 +143,8 @@ class FlatMapChannelPipelineHandler(ChannelPipelineHandler, Abstract):
     def __repr__(self) -> str:
         return (
             f'{self.__class__.__name__}@{id(self):x}'
-            f'({self._fn!r}{f", {self._desc!r}" if self._desc is not None else ""})'
+            f'{f"<{self._desc!r}>" if self._desc is not None else ""}'
+            f'({self._fn!r})'
         )
 
 

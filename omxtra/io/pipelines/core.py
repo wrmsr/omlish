@@ -299,7 +299,7 @@ class ChannelPipeline:
     _innermost: ta.Final[ChannelPipelineHandlerContext]
 
     def __repr__(self) -> str:
-        return f'{type(self).__name__}@{id(self):x}()'
+        return f'{type(self).__name__}@{id(self):x}'
 
     @property
     def config(self) -> Config:
@@ -475,7 +475,7 @@ class ChannelPipeline:
         """'Head' in netty terms."""
 
         def __repr__(self) -> str:
-            return f'{type(self).__name__}()'
+            return f'{type(self).__name__}'
 
         def outbound(self, ctx: 'ChannelPipelineHandlerContext', msg: ta.Any) -> None:
             if isinstance(msg, ChannelPipelineMessages.MustPropagate):
@@ -487,7 +487,7 @@ class ChannelPipeline:
         """'Tail' in netty terms."""
 
         def __repr__(self) -> str:
-            return f'{type(self).__name__}()'
+            return f'{type(self).__name__}'
 
         def inbound(self, ctx: 'ChannelPipelineHandlerContext', msg: ta.Any) -> None:
             if isinstance(msg, ChannelPipelineMessages.MustPropagate):
@@ -677,7 +677,7 @@ class PipelineChannel:
         self._pending_outbound_must_propagate: ta.Final[ta.Dict[int, ta.Any]] = {}
 
     def __repr__(self) -> str:
-        return f'{type(self).__name__}@{id(self):x}()'
+        return f'{type(self).__name__}@{id(self):x}'
 
     @property
     def config(self) -> Config:

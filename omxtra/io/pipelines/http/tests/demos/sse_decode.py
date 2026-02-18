@@ -3,8 +3,8 @@
 import typing as ta
 
 from ....core import PipelineChannel
-from ....decoders import DelimiterFramePipelineDecoder
-from ....decoders import UnicodePipelineDecoder
+from ....handlers.decoders import DelimiterFramePipelineDecoder
+from ....handlers.decoders import UnicodePipelineDecoder
 from ...client.responses import PipelineHttpResponseConditionalGzipDecoder
 from ...client.responses import PipelineHttpResponseDecoder
 from ...sse import PipelineSseDecoder

@@ -1,7 +1,7 @@
 import unittest
 
-from ..core import ChannelPipelineMessages
-from ..core import PipelineChannel
+from ...core import ChannelPipelineMessages
+from ...core import PipelineChannel
 from ..decoders import DelimiterFramePipelineDecoder
 from ..decoders import UnicodePipelineDecoder
 from ..flatmap import FlatMapChannelPipelineHandlers
