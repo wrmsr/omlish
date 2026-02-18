@@ -1,0 +1,36 @@
+base_image = 'ubuntu:24.04'
+
+dep_sets = [
+    'system',
+    'python',
+    'x11',
+]
+
+jdks = [
+    'zulu21-ca-jdk',
+    'zulu25-ca-jdk',
+]
+
+go_version = '1.26.0'
+
+zig_version = '0.15.2'
+
+nvm_versions = [
+    '20',
+    '22',
+    '25',
+]
+
+pyenv_version_keys = [
+    '8',
+    '13',
+    '14',
+]
+
+config_files = [
+    '.gdbinit',
+    '.tmux.conf',
+    '.vimrc',
+]
+
+workdir = '/omlish'

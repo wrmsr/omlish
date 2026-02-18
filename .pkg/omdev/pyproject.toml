@@ -104,6 +104,7 @@ exclude = [
     'AUTHORS',
     'DESIGN.md',
     'cc/cdeps.toml',
+    'dockerdev/config.toml',
     'dockerdev/resources/*',
     'dockerdev/resources/configs/*',
     'dockerdev/resources/depsets/*',

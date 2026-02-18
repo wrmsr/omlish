@@ -1,8 +1,21 @@
 """
+FIXME:
+ - zipsafe / resourcey, but still hard refs .versions file in repo root lol
+
+TODO:
+ - per-feature config, obv
+
+====
+
 docker run --rm -it "$(docker build -q -f x/dockerdev/Dockerfile .)" bash
 """
 import io
+import tomllib
 import typing as ta
+
+from omlish import dataclasses as dc
+from omlish import lang
+from omlish import marshal as msh
 
 from .content import LazyContent
 from .content import Resource
@@ -25,143 +38,143 @@ from .rendering import render_op
 ##
 
 
-BASE_IMAGE = 'ubuntu:24.04'
+@dc.dataclass(frozen=True)
+class Config:
+    base_image: str
 
-DEP_SETS: ta.Sequence[str] = [
-    'system',
-    'python',
-    'x11',
-]
+    workdir: str | None = None
 
-JDKS: ta.Sequence[str] = [
-    'zulu21-ca-jdk',
-    'zulu25-ca-jdk',
-]
+    _: dc.KW_ONLY
 
-GO_VERSION = '1.26.0'
+    dep_sets: ta.Sequence[str] | None = None
 
-ZIG_VERSION = '0.15.2'
+    jdks: ta.Sequence[str] | None = None
 
-NVM_VERSIONS: ta.Sequence[str] = [
-    '20',
-    '22',
-    '25',
-]
+    go_version: str | None = None
 
-PYENV_VERSION_KEYS: ta.Sequence[str] = [
-    '8',
-    '13',
-    '14',
-]
+    zig_version: str | None = None
 
-CONFIG_FILES: ta.Sequence[str] = [
-    '.gdbinit',
-    '.tmux.conf',
-    '.vimrc',
-]
+    nvm_versions: ta.Sequence[str] | None = None
 
-WORKDIR = '/omlish'
+    pyenv_version_keys: ta.Sequence[str] | None = None
+
+    config_files: ta.Sequence[str] | None = None
 
 
-#
+##
 
 
-OPS: ta.Sequence[Op] = [
-    From(BASE_IMAGE),
+def gen_ops(cfg: Config) -> ta.Sequence[Op]:
+    ops: list[Op] = [
+        From(cfg.base_image),
+    ]
 
-    # Section('timestamp', [
+    # ops.append(Section('timestamp', [
     #     Copy(src='docker/.timestamp', dst='/'),
-    # ]),
+    # ]))
 
-    Section('locale', [
+    ops.append(Section('locale', [
         Env([
             ('LANG', 'en_US.UTF-8'),
             ('LANGUAGE', 'en_US:en'),
             ('LC_ALL', 'en_US.UTF-8'),
         ]),
-    ]),
+    ]))
 
-    Section('deps', [
+    ops.append(Section('deps', [
         Run(
             [
                 Resource('fragments/apt.sh'),
-                LazyContent(lambda: render_apt_install_dep_sets(*DEP_SETS)),
+                LazyContent(lambda: render_apt_install_dep_sets(*(cfg.dep_sets or []))),
             ],
             cache_mounts=APT_CACHE_MOUNTS,
         ),
-    ]),
+    ]))
 
-    fragment_section(
+    ops.append(fragment_section(
         'firefox',
         cache_mounts=APT_CACHE_MOUNTS,
-    ),
+    ))
 
-    fragment_section(
+    ops.append(fragment_section(
         'docker',
         cache_mounts=APT_CACHE_MOUNTS,
-    ),
+    ))
 
-    fragment_section(
-        'jdk',
-        static_env={'JDKS': JDKS},
-        cache_mounts=APT_CACHE_MOUNTS,
-    ),
+    if cfg.jdks:
+        ops.append(fragment_section(
+            'jdk',
+            static_env={'JDKS': cfg.jdks},
+            cache_mounts=APT_CACHE_MOUNTS,
+        ))
 
-    fragment_section('rustup'),
+    ops.append(fragment_section('rust'))
 
-    fragment_section(
-        'go',
-        static_env={'GO_VERSION': GO_VERSION},
-    ),
+    if cfg.go_version is not None:
+        ops.append(fragment_section(
+            'go',
+            static_env={'GO_VERSION': cfg.go_version},
+        ))
 
-    fragment_section(
-        'zig',
-        static_env={'ZIG_VERSION': ZIG_VERSION},
-    ),
+    if cfg.zig_version is not None:
+        ops.append(fragment_section(
+            'zig',
+            static_env={'ZIG_VERSION': cfg.zig_version},
+        ))
 
-    fragment_section('vcpkg'),
+    ops.append(fragment_section('vcpkg'))
 
-    fragment_section(
-        'nvm',
-        static_env={'NVM_VERSIONS': NVM_VERSIONS},
-    ),
+    if cfg.nvm_versions:
+        ops.append(fragment_section(
+            'nvm',
+            static_env={'NVM_VERSIONS': cfg.nvm_versions},
+        ))
 
-    fragment_section(
-        'pyenv',
-        static_env=lambda: {
-            'PYENV_VERSIONS': list(read_versions_file_versions(*[
-                f'PYTHON_{k}' for k in PYENV_VERSION_KEYS
-            ]).values()),
-        },
-        cache_mounts=['/root/.pyenv_cache'],
-    ),
+    if cfg.pyenv_version_keys:
+        ops.append(fragment_section(
+            'pyenv',
+            static_env=lambda: {
+                'PYENV_VERSIONS': list(read_versions_file_versions(*[
+                    f'PYTHON_{k}' for k in cfg.pyenv_version_keys
+                ]).values()),
+            },
+            cache_mounts=['/root/.pyenv_cache'],
+        ))
 
-    fragment_section('sshd'),
+    ops.append(fragment_section('sshd'))
 
-    # Section('x11', [
+    # ops.append(Section('x11', [
     #     Run('touch /root/.Xauthority'),
     #     Write('/root/xu', Resource('xu')),
-    # ]),
+    # ]))
 
-    Section('configs', [
-        Write(f'/root/{n}', Resource(f'configs/{n}'))
-        for n in CONFIG_FILES
-    ]),
+    if cfg.config_files:
+        ops.append(Section('configs', [
+            Write(f'/root/{n}', Resource(f'configs/{n}'))
+            for n in cfg.config_files
+        ]))
 
-    Section('entrypoint', [
-        Workdir(WORKDIR),
+    ops.append(Section('entrypoint', [
+        *([Workdir(cfg.workdir)] if cfg.workdir is not None else []),
         Entrypoint(['dumb-init', '--']),
         Cmd(['sh', '-c', 'echo "Ready" && sleep infinity']),
-    ]),
-]
+    ]))
+
+    return ops
 
 
 ##
 
 
 def _main() -> None:
+    cfg_src = lang.get_relative_resources(globals=globals())['config.toml'].read_text()
+    cfg_dct = tomllib.loads(cfg_src)
+    cfg = msh.unmarshal(cfg_dct, Config)
+
+    ops = gen_ops(cfg)
+
     out = io.StringIO()
-    for i, section in enumerate(OPS):
+    for i, section in enumerate(ops):
         if i:
             out.write('\n\n\n')
         out.write(render_op(section))
