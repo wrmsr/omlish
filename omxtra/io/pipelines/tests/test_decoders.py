@@ -4,12 +4,17 @@ from ..core import ChannelPipelineMessages
 from ..core import PipelineChannel
 from ..decoders import DelimiterFramePipelineDecoder
 from ..decoders import UnicodePipelineDecoder
+from ..handlers import InboundSimplePredicateChannelPipelineHandler
+
+
+INBOUND_EMIT_TERMINAL = InboundSimplePredicateChannelPipelineHandler(lambda _: True, emit=True, drop=True)
 
 
 class TestDecoders(unittest.TestCase):
     def test_decoders(self):
         ch = PipelineChannel([
             UnicodePipelineDecoder(),
+            INBOUND_EMIT_TERMINAL,
         ])
 
         ch.feed_in(b'abcd')
@@ -22,6 +27,7 @@ class TestDecoders(unittest.TestCase):
         ch = PipelineChannel([
             DelimiterFramePipelineDecoder([b'\n']),
             UnicodePipelineDecoder(),
+            INBOUND_EMIT_TERMINAL,
         ])
 
         ch.feed_in(b'abc')

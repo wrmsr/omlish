@@ -258,7 +258,7 @@ class ChannelPipeline:
     @ta.final
     @dc.dataclass(frozen=True)
     class Config:
-        terminal_mode: ta.Literal['drop', 'emit', 'raise'] = 'emit'  # TODO: default 'raise'
+        terminal_mode: ta.Literal['drop', 'emit', 'raise'] = 'raise'
 
         def __post_init__(self) -> None:
             check.in_(self.terminal_mode, ('drop', 'emit', 'raise'))
@@ -324,6 +324,12 @@ class ChannelPipeline:
 
         return handler
 
+    def _check_can_add_relative_to(self, ctx: ChannelPipelineHandlerContext) -> ChannelPipelineHandlerContext:
+        check.is_(ctx._pipeline, self)  # noqa
+        check.state(not ctx._invalidated)  # noqa
+
+        return ctx
+
     def _add(
             self,
             handler: ChannelPipelineHandler,
@@ -336,9 +342,11 @@ class ChannelPipeline:
         if inner_to is not None:
             check.none(outer_to)
             check.is_not(inner_to, self._innermost)
+            self._check_can_add_relative_to(inner_to)
         elif outer_to is not None:
             check.none(inner_to)
             check.is_not(outer_to, self._outermost)
+            self._check_can_add_relative_to(outer_to)
         else:
             raise ValueError('Must specify exactly one of inner_to or outer_to')
 
@@ -379,6 +387,22 @@ class ChannelPipeline:
 
     def add_outermost(self, handler: ChannelPipelineHandler) -> ChannelPipelineHandlerRef:
         return self._add(handler, inner_to=self._outermost)
+
+    def add_inner_to(
+            self,
+            inner_to: ChannelPipelineHandlerRef,
+            handler: ChannelPipelineHandler,
+    ) -> ChannelPipelineHandlerRef:
+        ctx = inner_to._context   # noqa
+        return self._add(handler, inner_to=ctx)
+
+    def add_outer_to(
+            self,
+            outer_to: ChannelPipelineHandlerRef,
+            handler: ChannelPipelineHandler,
+    ) -> ChannelPipelineHandlerRef:
+        ctx = outer_to._context   # noqa
+        return self._add(handler, outer_to=ctx)
 
     #
 

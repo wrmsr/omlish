@@ -5,6 +5,12 @@ import unittest
 from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
 from ..core import PipelineChannel
+from ..handlers import InboundSimplePredicateChannelPipelineHandler
+from ..handlers import OutboundSimplePredicateChannelPipelineHandler
+
+
+INBOUND_EMIT_TERMINAL = InboundSimplePredicateChannelPipelineHandler(lambda _: True, emit=True, drop=True)
+OUTBOUND_EMIT_TERMINAL = OutboundSimplePredicateChannelPipelineHandler(lambda _: True, emit=True, drop=True)
 
 
 class IntIncInboundHandler(ChannelPipelineHandler):
@@ -56,8 +62,10 @@ class ReplaceSelfInboundHandler(ChannelPipelineHandler):
 class TestCore(unittest.TestCase):
     def test_core(self):
         ch = PipelineChannel([
+            OUTBOUND_EMIT_TERMINAL,
             IntIncInboundHandler(),
             IntStrDuplexHandler(),
+            INBOUND_EMIT_TERMINAL,
         ])
 
         ch.feed_in('hi')
@@ -71,7 +79,8 @@ class TestCore(unittest.TestCase):
 
         #
 
-        ch.pipeline.add_outermost(
+        ch.pipeline.add_outer_to(
+            ch.pipeline.handlers()[1],
             IntMulThreeInboundHandler(),
         )
 
@@ -83,7 +92,7 @@ class TestCore(unittest.TestCase):
 
         #
 
-        ch.pipeline.remove(ch.pipeline.handlers()[1])
+        ch.pipeline.remove(ch.pipeline.handlers()[2])
 
         ch.feed_in(42)
         assert ch.drain() == ['126']
@@ -93,7 +102,7 @@ class TestCore(unittest.TestCase):
 
         #
 
-        ch.pipeline.replace(ch.pipeline.handlers()[0], IntIncInboundHandler())
+        ch.pipeline.replace(ch.pipeline.handlers()[1], IntIncInboundHandler())
 
         ch.feed_in('hi')
         assert ch.drain() == ['hi']
@@ -106,9 +115,11 @@ class TestCore(unittest.TestCase):
 
     def test_replace_self(self):
         ch = PipelineChannel([
+            OUTBOUND_EMIT_TERMINAL,
             DuplicateInboundHandler(),
             ReplaceSelfInboundHandler(IntIncInboundHandler),
             IntStrDuplexHandler(),
+            INBOUND_EMIT_TERMINAL,
         ])
 
         ch.feed_in(42)
