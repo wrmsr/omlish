@@ -11,20 +11,14 @@ from omlish.lite.namespaces import NamespaceClass
 from ..core import ChannelPipelineDirectionOrDuplex
 from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
+from ..core import ChannelPipelineHandlerContextFn
 
 
 ##
 
 
-FlatMapChannelPipelineHandlerFn = ta.Callable[  # ta.TypeAlias  # omlish-amalg-typing-no-move
-    [ChannelPipelineHandlerContext, ta.Any],
-    ta.Iterable[ta.Any],
-]
-
-FlatMapChannelPipelineHandlerPred = ta.Callable[  # ta.TypeAlias  # omlish-amalg-typing-no-move
-    [ChannelPipelineHandlerContext, ta.Any],
-    bool,
-]
+FlatMapChannelPipelineHandlerFn = ChannelPipelineHandlerContextFn[ta.Any, ta.Iterable[ta.Any]]  # ta.TypeAlias  # omlish-amalg-typing-no-move  # noqa
+FlatMapChannelPipelineHandlerPred = ChannelPipelineHandlerContextFn[ta.Any, bool]  # ta.TypeAlias  # omlish-amalg-typing-no-move  # noqa
 
 CanFlatMapChannelPipelineHandlerPred = ta.Union[  # ta.TypeAlias  # omlish-amalg-typing-no-move
     FlatMapChannelPipelineHandlerPred,
@@ -54,18 +48,6 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
     #
 
     @dc.dataclass(frozen=True)
-    class NoCtxPred:
-        fn: ta.Callable[[ta.Any], bool]
-
-        def __repr__(self) -> str:
-            return f'{type(self).__name__}({self.fn!r})'
-
-        def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:
-            return self.fn(msg)
-
-    #
-
-    @dc.dataclass(frozen=True)
     class Filter:
         pred: FlatMapChannelPipelineHandlerPred
         fn: FlatMapChannelPipelineHandlerFn
@@ -84,6 +66,18 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
             fn: FlatMapChannelPipelineHandlerFn,
     ) -> FlatMapChannelPipelineHandlerFn:
         return cls.Filter(cls.pred(pred), fn)
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class NoCtxPred:
+        fn: ta.Callable[[ta.Any], bool]
+
+        def __repr__(self) -> str:
+            return f'{type(self).__name__}({self.fn!r})'
+
+        def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:
+            return self.fn(msg)
 
     @classmethod
     def no_ctx_filter(
@@ -145,6 +139,18 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
         return cls.Compose(fns)
 
     #
+
+    @dc.dataclass(frozen=True)
+    class Map:
+        fn: ChannelPipelineHandlerContextFn[ta.Any, ta.Any]
+
+        def __repr__(self) -> str:
+            return f'{type(self).__name__}({self.fn!r})'
+
+        def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
+            return (self.fn(ctx, msg),)
+
+    ##
 
     @dc.dataclass(frozen=True)
     class Emit:
