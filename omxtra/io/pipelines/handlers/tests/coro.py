@@ -5,7 +5,7 @@ import typing as ta
 from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 
-from ..core import ChannelPipelineHandler
+from ...core import ChannelPipelineHandler
 
 
 ##

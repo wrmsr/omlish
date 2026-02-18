@@ -114,8 +114,8 @@ ChannelPipelineHandlerRef_ = ChannelPipelineHandlerRef['ChannelPipelineHandler']
 @ta.final
 class ChannelPipelineHandlerContext:
     """
-    Passed to ChannelPipelineHandler methods, provides handler-specific access and operations the pipeline channel. As
-    instances of `ShareableChannelPipelineHandler` may validly be present in multiple
+    Passed to ChannelPipelineHandler methods, provides handler-specific access and operations to the pipeline channel.
+    As instances of `ShareableChannelPipelineHandler` may validly be present in multiple
 
     Instances of this class are considered private to a handler instance and are not to be cached or shared in any way.
     """
@@ -171,6 +171,75 @@ class ChannelPipelineHandlerContext:
     @property
     def invalidated(self) -> bool:
         return self._invalidated
+
+    #
+
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class StorageKey(ta.Generic[T]):
+        name: str
+
+    @ta.final
+    class Storage:
+        def __init__(self) -> None:
+            self.__dict: ta.Dict[ChannelPipelineHandlerContext.StorageKey, ta.Any] = {}
+
+        @property
+        def dict(self) -> ta.Dict['ChannelPipelineHandlerContext.StorageKey', ta.Any]:
+            return self.__dict
+
+        def __getitem__(self, key: 'ChannelPipelineHandlerContext.StorageKey[T]') -> T:
+            return self.__dict[key]
+
+        @ta.overload
+        def get(
+                self,
+                key: 'ChannelPipelineHandlerContext.StorageKey[T]',
+                default: T,
+                /,
+        ) -> T:
+            ...
+
+        @ta.overload
+        def get(
+                self,
+                key: 'ChannelPipelineHandlerContext.StorageKey[T]',
+                default: ta.Optional[T] = None,
+                /,
+        ) -> ta.Optional[T]:
+            ...
+
+        def get(self, key, default=None, /):
+            return self.__dict.get(key, default)
+
+        def __setitem__(self, key: 'ChannelPipelineHandlerContext.StorageKey[T]', value: T) -> None:
+            self.__dict[key] = value
+
+        def __delitem__(self, key: 'ChannelPipelineHandlerContext.StorageKey[T]') -> None:
+            del self.__dict[key]
+
+        def __len__(self) -> int:
+            return len(self.__dict)
+
+        def __contains__(self, key: 'ChannelPipelineHandlerContext.StorageKey[T]') -> bool:
+            return key in self.__dict
+
+        def __iter__(self) -> ta.Iterator['ChannelPipelineHandlerContext.StorageKey[T]']:
+            return iter(self.__dict)
+
+        def items(self) -> ta.Iterator[ta.Tuple['ChannelPipelineHandlerContext.StorageKey[T]', T]]:
+            return iter(self.__dict.items())
+
+    _storage_: Storage
+
+    @property
+    def storage(self) -> Storage:
+        try:
+            return self._storage_
+        except AttributeError:
+            pass
+        self._storage_ = ret = ChannelPipelineHandlerContext.Storage()
+        return ret
 
     #
 
