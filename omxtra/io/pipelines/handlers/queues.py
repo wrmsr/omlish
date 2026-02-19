@@ -70,7 +70,7 @@ class QueueChannelPipelineHandler(ChannelPipelineHandler, Abstract):
 
 class InboundQueueChannelPipelineHandler(QueueChannelPipelineHandler):
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if not (self._filter is not None and not self._filter(ctx, msg)):
+        if (self._filter is not None and not self._filter(ctx, msg)):
             ctx.feed_in(msg)
             return
 
@@ -82,7 +82,7 @@ class InboundQueueChannelPipelineHandler(QueueChannelPipelineHandler):
 
 class OutboundQueueChannelPipelineHandler(QueueChannelPipelineHandler):
     def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if not (self._filter is not None and not self._filter(ctx, msg)):
+        if (self._filter is not None and not self._filter(ctx, msg)):
             ctx.feed_out(msg)
             return
 

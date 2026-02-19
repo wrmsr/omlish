@@ -4,6 +4,8 @@ import typing as ta
 
 from omlish.io.streams.utils import ByteStreamBuffers
 
+from ..handlers.fns import ChannelPipelineHandlerFn
+from ..handlers.fns import ChannelPipelineHandlerFns
 from ..handlers.queues import InboundQueueChannelPipelineHandler
 from .buffering import InboundBytesBufferingChannelPipelineHandler
 
@@ -15,6 +17,20 @@ class InboundBytesBufferingQueueChannelPipelineHandler(
     InboundBytesBufferingChannelPipelineHandler,
     InboundQueueChannelPipelineHandler,
 ):
+    def __init__(
+            self,
+            *,
+            filter: ta.Union[ChannelPipelineHandlerFn[ta.Any, bool], ta.Literal[True], None] = None,  # noqa
+            passthrough: bool = False,
+    ) -> None:
+        if filter is True:
+            filter = ChannelPipelineHandlerFns.no_context(ByteStreamBuffers.can_bytes)  # noqa
+
+        super().__init__(
+            filter=filter,  # noqa
+            passthrough=passthrough,
+        )
+
     _buffered_bytes: int = 0
 
     # @ta.override

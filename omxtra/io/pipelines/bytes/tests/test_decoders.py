@@ -1,3 +1,4 @@
+# @omlish-lite
 import unittest
 
 from ...core import ChannelPipelineMessages
