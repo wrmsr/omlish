@@ -131,6 +131,7 @@ static PyObject * unpack_isinstance_spec(PyObject *module, PyObject *spec)
 typedef struct {
     PyObject_HEAD
     PyObject *fn;
+    vectorcallfunc vectorcall; // Added field for vectorcall pointer
 } BoundCheckNotNone;
 
 static int BoundCheckNotNone_traverse(BoundCheckNotNone *self, visitproc visit, void *arg)
@@ -172,9 +173,35 @@ static PyObject * BoundCheckNotNone_call(BoundCheckNotNone *self, PyObject *args
         return v;
     }
 
-    // Slow path: v is None, call fn(v, msg) which will raise
-    PyObject *result = PyObject_CallFunctionObjArgs(self->fn, v, msg, nullptr);
-    return result;
+    // Slow path: v is None, call fn(v, msg)
+    return PyObject_CallFunctionObjArgs(self->fn, v, msg, nullptr);
+}
+
+static PyObject * BoundCheckNotNone_vectorcall(PyObject *callable, PyObject *const *args, size_t nargsf, PyObject *kwnames)
+{
+    BoundCheckNotNone *self = (BoundCheckNotNone *)callable;
+    Py_ssize_t nargs = PyVectorcall_NARGS(nargsf);
+
+    if (kwnames != nullptr && PyTuple_GET_SIZE(kwnames) != 0) {
+        PyErr_SetString(PyExc_TypeError, "inner() takes no keyword arguments");
+        return nullptr;
+    }
+
+    if (nargs < 1 || nargs > 2) {
+        PyErr_Format(PyExc_TypeError, "inner() takes from 1 to 2 positional arguments but %zd were given", nargs);
+        return nullptr;
+    }
+
+    PyObject *v = args[0];
+    PyObject *msg = (nargs == 2) ? args[1] : Py_None;
+
+    // Fast path: if v is not None, return it immediately
+    if (v != Py_None) {
+        return Py_NewRef(v);
+    }
+
+    // Slow path: v is None, call fn(v, msg)
+    return PyObject_CallFunctionObjArgs(self->fn, v, msg, nullptr);
 }
 
 static PyType_Slot BoundCheckNotNone_slots[] = {
@@ -190,7 +217,7 @@ static PyType_Spec BoundCheckNotNone_spec = {
     .name = _MODULE_FULL_NAME ".BoundCheckNotNone",
     .basicsize = sizeof(BoundCheckNotNone),
     .itemsize = 0,
-    .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
+    .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC | Py_TPFLAGS_HAVE_VECTORCALL,
     .slots = BoundCheckNotNone_slots,
 };
 
@@ -212,6 +239,7 @@ static PyObject * bind_check_not_none(PyObject *module, PyObject *fn)
     }
 
     self->fn = Py_NewRef(fn);
+    self->vectorcall = BoundCheckNotNone_vectorcall;
 
     PyObject_GC_Track(self);
     return (PyObject *)self;
@@ -252,6 +280,7 @@ static int check_exec(PyObject *module)
     if (state->BoundCheckNotNoneType == nullptr) {
         return -1;
     }
+    state->BoundCheckNotNoneType->tp_vectorcall_offset = offsetof(BoundCheckNotNone, vectorcall);
 
     return 0;
 }
