@@ -5,10 +5,10 @@ import typing as ta
 
 from omlish.io.streams.utils import ByteStreamBuffers
 
-from ....asyncio import AsyncioStreamChannelPipelineDriver
 from ....core import ChannelPipelineHandler
 from ....core import ChannelPipelineHandlerContext
 from ....core import PipelineChannel
+from ....drivers.asyncio import AsyncioStreamChannelPipelineDriver
 from ....handlers.flatmap import FlatMapChannelPipelineHandlers
 from ....handlers.fns import ChannelPipelineHandlerFns
 from ...requests import PipelineHttpRequestHead

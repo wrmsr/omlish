@@ -1,12 +1,10 @@
 # ruff: noqa: UP045
 # @omlish-lite
-import abc
 import typing as ta
 
 from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.lite.abstract import Abstract
 
-from .core import ChannelPipelineHandler
 from .flow import ChannelPipelineFlowControl
 from .flow import ChannelPipelineFlowControlAdapter
 from .flow import FlowControlChannelPipelineHandler

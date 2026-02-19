@@ -1,3 +1,5 @@
+# ruff: noqa: UP006 UP037 UP045
+# @omlish-lite
 """
 TODO:
  - max size, simple backpressure?
@@ -27,7 +29,7 @@ class QueueChannelPipelineHandler(ChannelPipelineHandler, Abstract):
         self._filter = filter
         self._passthrough = passthrough
 
-        self._q = collections.deque()
+        self._q: 'collections.deque[ta.Any]' = collections.deque()
 
     def __repr__(self) -> str:
         return ''.join([
@@ -68,17 +70,25 @@ class QueueChannelPipelineHandler(ChannelPipelineHandler, Abstract):
 
 class InboundQueueChannelPipelineHandler(QueueChannelPipelineHandler):
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if self._filter is None or self._filter(ctx, msg):
-            self._append(msg)
-        else:
+        if not (self._filter is not None and not self._filter(ctx, msg)):
+            ctx.feed_in(msg)
+            return
+
+        self._append(msg)
+
+        if self._passthrough:
             ctx.feed_in(msg)
 
 
 class OutboundQueueChannelPipelineHandler(QueueChannelPipelineHandler):
     def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if self._filter is None or self._filter(ctx, msg):
-            self._append(msg)
-        else:
+        if not (self._filter is not None and not self._filter(ctx, msg)):
+            ctx.feed_out(msg)
+            return
+
+        self._append(msg)
+
+        if self._passthrough:
             ctx.feed_out(msg)
 
 

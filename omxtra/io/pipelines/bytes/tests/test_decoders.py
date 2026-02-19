@@ -2,9 +2,9 @@ import unittest
 
 from ...core import ChannelPipelineMessages
 from ...core import PipelineChannel
+from ...handlers.flatmap import FlatMapChannelPipelineHandlers
 from ..decoders import DelimiterFramePipelineDecoder
 from ..decoders import UnicodePipelineDecoder
-from ...handlers.flatmap import FlatMapChannelPipelineHandlers
 
 
 INBOUND_EMIT_TERMINAL = FlatMapChannelPipelineHandlers.emit_and_drop('inbound')

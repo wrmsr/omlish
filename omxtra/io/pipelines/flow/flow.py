@@ -9,12 +9,12 @@ from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 from omlish.lite.namespaces import NamespaceClass
 
-from .core import ChannelPipelineEvents
-from .core import ChannelPipelineHandler
-from .core import ChannelPipelineHandlerContext
-from .core import ChannelPipelineMessages
-from .core import PipelineChannel
-from .errors import FlowControlValidationChannelPipelineError
+from ..core import ChannelPipelineEvents
+from ..core import ChannelPipelineHandler
+from ..core import ChannelPipelineHandlerContext
+from ..core import ChannelPipelineMessages
+from ..core import PipelineChannel
+from ..errors import FlowControlValidationChannelPipelineError
 
 
 ##

@@ -8,11 +8,11 @@ import asyncio
 import hashlib
 import typing as ta
 
-from ....asyncio import BytesFlowControlAsyncioStreamChannelPipelineDriver
-from ....bytes import BytesFlowControlChannelPipelineHandler
 from ....core import ChannelPipelineHandler
 from ....core import ChannelPipelineHandlerContext
 from ....core import PipelineChannel
+from ....drivers.asyncio import BytesFlowControlAsyncioStreamChannelPipelineDriver
+from ....flow.bytes import BytesFlowControlChannelPipelineHandler
 from ...requests import PipelineHttpRequestAborted
 from ...requests import PipelineHttpRequestContentChunk
 from ...requests import PipelineHttpRequestEnd

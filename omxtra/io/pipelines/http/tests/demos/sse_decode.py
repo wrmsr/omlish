@@ -2,9 +2,9 @@
 # @omlish-lite
 import typing as ta
 
+from ....bytes.decoders import DelimiterFramePipelineDecoder
+from ....bytes.decoders import UnicodePipelineDecoder
 from ....core import PipelineChannel
-from ....handlers.decoders import DelimiterFramePipelineDecoder
-from ....handlers.decoders import UnicodePipelineDecoder
 from ...client.responses import PipelineHttpResponseConditionalGzipDecoder
 from ...client.responses import PipelineHttpResponseDecoder
 from ...sse import PipelineSseDecoder

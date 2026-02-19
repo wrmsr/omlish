@@ -4,8 +4,8 @@ import typing as ta
 
 from omlish.io.streams.utils import ByteStreamBuffers
 
-from .buffering import InboundBytesBufferingChannelPipelineHandler
 from ..handlers.queues import InboundQueueChannelPipelineHandler
+from .buffering import InboundBytesBufferingChannelPipelineHandler
 
 
 ##
@@ -31,7 +31,8 @@ class InboundBytesBufferingQueueChannelPipelineHandler(
 
         super()._append((msg, bl))
 
-        self._buffered_bytes += bl
+        if bl is not None:
+            self._buffered_bytes += bl
 
     # @ta.override
     def _popleft(self) -> ta.Any:

@@ -5,9 +5,9 @@ import socket
 import threading
 import typing as ta
 
-from ...asyncio import AsyncioStreamChannelPipelineDriver
-from ...asyncio import BytesFlowControlAsyncioStreamChannelPipelineDriver
 from ...core import PipelineChannel
+from ...drivers.asyncio import AsyncioStreamChannelPipelineDriver
+from ...drivers.asyncio import BytesFlowControlAsyncioStreamChannelPipelineDriver
 
 
 ##

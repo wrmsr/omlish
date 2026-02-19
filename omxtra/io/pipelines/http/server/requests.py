@@ -10,7 +10,7 @@ from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.lite.check import check
 
-from ...bytes import InboundBytesBufferingChannelPipelineHandler
+from ...bytes.buffering import InboundBytesBufferingChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
 from ...core import ChannelPipelineMessages
 from ..decoders import ChunkedPipelineHttpContentChunkDecoder

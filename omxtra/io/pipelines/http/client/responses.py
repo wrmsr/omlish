@@ -9,7 +9,7 @@ from omlish.http.parsing import ParsedHttpMessage
 from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.lite.check import check
 
-from ...bytes import InboundBytesBufferingChannelPipelineHandler
+from ...bytes.buffering import InboundBytesBufferingChannelPipelineHandler
 from ...core import ChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
 from ...core import ChannelPipelineMessages

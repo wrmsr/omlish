@@ -30,7 +30,7 @@ def __omlish_amalg__():  # noqa
             dict(path='base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='reading.py', sha1='7631635c46ab4b40bcaeb7c506cf15cb2d529a40'),
-            dict(path='utils.py', sha1='620360799f1282f8374d2cdbfe8c058e4a04d0d5'),
+            dict(path='utils.py', sha1='b3cac589b0629e8d6ade40cb428164cc4eb39e5a'),
             dict(path='direct.py', sha1='83c33460e9490a77a00ae66251617ba98128b56b'),
             dict(path='scanning.py', sha1='4c0323e0b11cd506f7b6b4cf28ea4d7c6064b9d3'),
             dict(path='adapters.py', sha1='865338413829b97be23883f713d50eb7cb62617a'),
@@ -1039,6 +1039,15 @@ class ByteStreamBufferReader:
 
 
 class ByteStreamBuffers(NamespaceClass):
+    @staticmethod
+    def memoryview_to_bytes(mv: memoryview) -> bytes:
+        if (((ot := type(obj := mv.obj)) is bytes or ot is bytearray or isinstance(obj, (bytes, bytearray))) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
+            return obj  # type: ignore[return-value]
+
+        return mv.tobytes()
+
+    #
+
     _CAN_CONVERT_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
         bytes,
         bytearray,
@@ -1050,14 +1059,16 @@ class ByteStreamBuffers(NamespaceClass):
     def can_bytes(obj: ta.Any) -> bool:
         return type(obj) in (cts := ByteStreamBuffers._CAN_CONVERT_TYPES) or isinstance(obj, cts)
 
+    # TODO:
+    # @staticmethod
+    # @ta.overload
+    # def buffer_to_bytes(obj: ta.Any, or_none: ta.Literal[True], /) -> ta.Optional[bytes]:
+    #     ...
     #
-
-    @staticmethod
-    def memoryview_to_bytes(mv: memoryview) -> bytes:
-        if (((ot := type(obj := mv.obj)) is bytes or ot is bytearray or isinstance(obj, (bytes, bytearray))) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
-            return obj  # type: ignore[return-value]
-
-        return mv.tobytes()
+    # @staticmethod
+    # @ta.overload
+    # def buffer_to_bytes(obj: ta.Any, or_none: ta.Literal[False] = False, /) -> bytes:
+    #     ...
 
     @staticmethod
     def buffer_to_bytes(obj: ta.Any) -> bytes:
@@ -1095,8 +1106,6 @@ class ByteStreamBuffers(NamespaceClass):
 
         else:
             return ByteStreamBuffers.buffer_to_bytes(obj)
-
-    #
 
     @staticmethod
     def bytes_len(obj: ta.Any) -> int:
