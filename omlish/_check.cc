@@ -14,12 +14,13 @@
 typedef struct check_state {
     PyObject *typing_any;
     PyTypeObject *nonetype;
+    PyTypeObject *BoundCheckNotNoneType;
 } check_state;
 
 static inline check_state * get_check_state(PyObject *module)
 {
     void *state = PyModule_GetState(module);
-    assert(state != NULL);
+    assert(state != nullptr);
     return (check_state *)state;
 }
 
@@ -127,6 +128,97 @@ static PyObject * unpack_isinstance_spec(PyObject *module, PyObject *spec)
 
 //
 
+typedef struct {
+    PyObject_HEAD
+    PyObject *fn;
+} BoundCheckNotNone;
+
+static int BoundCheckNotNone_traverse(BoundCheckNotNone *self, visitproc visit, void *arg)
+{
+    Py_VISIT(self->fn);
+    return 0;
+}
+
+static int BoundCheckNotNone_clear(BoundCheckNotNone *self)
+{
+    Py_CLEAR(self->fn);
+    return 0;
+}
+
+static void BoundCheckNotNone_dealloc(BoundCheckNotNone *self)
+{
+    PyObject_GC_UnTrack(self);
+    BoundCheckNotNone_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *)self);
+}
+
+static PyObject * BoundCheckNotNone_call(BoundCheckNotNone *self, PyObject *args, PyObject *kwargs)
+{
+    PyObject *v;
+    PyObject *msg = Py_None;
+
+    if (kwargs != nullptr && PyDict_GET_SIZE(kwargs) != 0) {
+        PyErr_SetString(PyExc_TypeError, "inner() takes no keyword arguments");
+        return nullptr;
+    }
+
+    if (!PyArg_ParseTuple(args, "O|O:inner", &v, &msg)) {
+        return nullptr;
+    }
+
+    // Fast path: if v is not None, return it immediately (99.99% case)
+    if (v != Py_None) {
+        Py_INCREF(v);
+        return v;
+    }
+
+    // Slow path: v is None, call fn(v, msg) which will raise
+    PyObject *result = PyObject_CallFunctionObjArgs(self->fn, v, msg, nullptr);
+    return result;
+}
+
+static PyType_Slot BoundCheckNotNone_slots[] = {
+    {Py_tp_dealloc, (void *)BoundCheckNotNone_dealloc},
+    {Py_tp_traverse, (void *)BoundCheckNotNone_traverse},
+    {Py_tp_clear, (void *)BoundCheckNotNone_clear},
+    {Py_tp_call, (void *)BoundCheckNotNone_call},
+    {Py_tp_doc, (void *)"Bound check.not_none callable with C acceleration"},
+    {0, nullptr}
+};
+
+static PyType_Spec BoundCheckNotNone_spec = {
+    .name = _MODULE_FULL_NAME ".BoundCheckNotNone",
+    .basicsize = sizeof(BoundCheckNotNone),
+    .itemsize = 0,
+    .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
+    .slots = BoundCheckNotNone_slots,
+};
+
+//
+
+PyDoc_STRVAR(bind_check_not_none_doc, "bind_check_not_none(fn)\n\nBind a check.not_none callable with C acceleration.");
+
+static PyObject * bind_check_not_none(PyObject *module, PyObject *fn)
+{
+    if (!PyCallable_Check(fn)) {
+        PyErr_SetString(PyExc_TypeError, "fn must be callable");
+        return nullptr;
+    }
+
+    check_state *state = get_check_state(module);
+    BoundCheckNotNone *self = PyObject_GC_New(BoundCheckNotNone, state->BoundCheckNotNoneType);
+    if (self == nullptr) {
+        return nullptr;
+    }
+
+    self->fn = Py_NewRef(fn);
+
+    PyObject_GC_Track(self);
+    return (PyObject *)self;
+}
+
+//
+
 PyDoc_STRVAR(check_doc, "Native C++ implementations for omlish.lite.check");
 
 static int check_exec(PyObject *module)
@@ -151,6 +243,16 @@ static int check_exec(PyObject *module)
     state->nonetype = Py_TYPE(Py_None);
     Py_INCREF(state->nonetype);
 
+    // Create the BoundCheckNotNone type dynamically
+    state->BoundCheckNotNoneType = (PyTypeObject *)PyType_FromModuleAndSpec(
+        module,
+        &BoundCheckNotNone_spec,
+        nullptr
+    );
+    if (state->BoundCheckNotNoneType == nullptr) {
+        return -1;
+    }
+
     return 0;
 }
 
@@ -159,6 +261,7 @@ static int check_traverse(PyObject *module, visitproc visit, void *arg)
     check_state *state = get_check_state(module);
     Py_VISIT(state->typing_any);
     Py_VISIT(state->nonetype);
+    Py_VISIT(state->BoundCheckNotNoneType);
     return 0;
 }
 
@@ -167,6 +270,7 @@ static int check_clear(PyObject *module)
     check_state *state = get_check_state(module);
     Py_CLEAR(state->typing_any);
     Py_CLEAR(state->nonetype);
+    Py_CLEAR(state->BoundCheckNotNoneType);
     return 0;
 }
 
@@ -177,14 +281,15 @@ static void check_free(void *module)
 
 static PyMethodDef check_methods[] = {
     {"unpack_isinstance_spec", (PyCFunction)unpack_isinstance_spec, METH_O, unpack_isinstance_spec_doc},
-    {NULL, NULL, 0, NULL}
+    {"bind_check_not_none", (PyCFunction)bind_check_not_none, METH_O, bind_check_not_none_doc},
+    {nullptr, nullptr, 0, nullptr}
 };
 
 static struct PyModuleDef_Slot check_slots[] = {
     {Py_mod_exec, (void *) check_exec},
     {Py_mod_gil, Py_MOD_GIL_NOT_USED},
     {Py_mod_multiple_interpreters, Py_MOD_MULTIPLE_INTERPRETERS_SUPPORTED},
-    {0, NULL}
+    {0, nullptr}
 };
 
 static struct PyModuleDef check_module = {

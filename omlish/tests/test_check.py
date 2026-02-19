@@ -8,6 +8,13 @@ def test_check():
         check.equal(1, 2)
 
 
+def test_check_not_none():
+    assert check.not_none(1) == 1
+    with pytest.raises(ValueError) as e:  # noqa
+        check.not_none(1 and None)  # noqa
+    # print(e.value)
+
+
 class A:
     def __init_subclass__(cls, **kwargs):
         check.not_issubclass_except_nameerror(cls, lambda: B)

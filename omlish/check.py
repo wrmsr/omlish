@@ -36,6 +36,8 @@ else:
     setattr(Checks, '_py_unpack_isinstance_spec', Checks._unpack_isinstance_spec)  # noqa
     setattr(Checks, '_unpack_isinstance_spec', _check.unpack_isinstance_spec)
 
+    setattr(check, 'not_none', _check.bind_check_not_none(check.not_none))
+
 
 ##
 
