@@ -11,7 +11,6 @@ from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 from omlish.lite.dataclasses import dataclass_field_required
 
-from . import tokens
 from .errors import EofYamlError
 from .errors import YamlError
 from .errors import YamlErrorOr
@@ -20,6 +19,9 @@ from .tokens import YamlNumberType
 from .tokens import YamlPosition
 from .tokens import YamlToken
 from .tokens import YamlTokenType
+from .tokens import yaml_detect_line_break_char
+from .tokens import yaml_literal_block_header
+from .tokens import yaml_to_number
 
 
 ##
@@ -338,7 +340,7 @@ class YamlAsts:
     @classmethod
     def integer(cls, tk: YamlToken) -> 'IntegerYamlNode':
         v: ta.Any = None
-        if (num := tokens.yaml_to_number(tk.value)) is not None:
+        if (num := yaml_to_number(tk.value)) is not None:
             v = num.value
 
         return IntegerYamlNode(
@@ -350,7 +352,7 @@ class YamlAsts:
     @classmethod
     def float_(cls, tk: YamlToken) -> 'FloatYamlNode':
         v: float = 0.
-        if (num := tokens.yaml_to_number(tk.value)) is not None and num.type == YamlNumberType.FLOAT:
+        if (num := yaml_to_number(tk.value)) is not None and num.type == YamlNumberType.FLOAT:
             if isinstance(num.value, float):
                 v = num.value
 
@@ -809,11 +811,11 @@ class StringYamlNode(ScalarYamlNode, BaseYamlNode):
                 return yaml_add_comment_string(quoted, self.comment)
             return quoted
 
-        lbc = tokens.yaml_detect_line_break_char(self.value)
+        lbc = yaml_detect_line_break_char(self.value)
         if lbc in self.value:
             # This block assumes that the line breaks in this inside scalar content and the Outside scalar content are
             # the same. It works mostly, but inconsistencies occur if line break characters are mixed.
-            header = tokens.yaml_literal_block_header(self.value)
+            header = yaml_literal_block_header(self.value)
             space = ' ' * (self.token.position.column - 1)
             indent = ' ' * self.token.position.indent_num
             values: ta.List[str] = []
@@ -835,11 +837,11 @@ class StringYamlNode(ScalarYamlNode, BaseYamlNode):
             quoted = _yaml_strconv_quote(self.value)
             return quoted
 
-        lbc = tokens.yaml_detect_line_break_char(self.value)
+        lbc = yaml_detect_line_break_char(self.value)
         if lbc in self.value:
             # This block assumes that the line breaks in this inside scalar content and the Outside scalar content are
             # the same. It works mostly, but inconsistencies occur if line break characters are mixed.
-            header = tokens.yaml_literal_block_header(self.value)
+            header = yaml_literal_block_header(self.value)
             space = ' ' * (self.token.position.column - 1)
             indent = ' ' * self.token.position.indent_num
             values: ta.List[str] = []
