@@ -151,26 +151,26 @@ class YamlDecoder:
     def is_exceeded_max_depth(self) -> bool:
         return self.decode_depth > self.MAX_DECODE_DEPTH
 
-
-r"""
-    def cast_to_float(self, v: ta.Any) ta.Any {
-        if isinstance(vv, float):
+    def cast_to_float(self, v: ta.Any) -> ta.Any:
+        if isinstance(v, float):
             return v
-        elif isinstance(vv, int):
+        elif isinstance(v, int):
             return float(v)
-        elif isinstance(vv, str):
+        elif isinstance(v, str):
             # if error occurred, return zero value
             try:
-                return float(vv)
+                return float(v)
             except ValueError:
                 return 0
         return 0
 
+
+r"""
     def map_key_node_to_string(self, ctx Context, node ast.MapKeyNode) -> YamlErrorOr[str]:
         key, err := self.node_to_value(ctx, node)
-        if err != nil {
+        if err is not None:
             return "", err
-        if key == nil {
+        if key is None:
             return "null", nil
         if k, ok := key.(str); ok {
             return k, nil
@@ -179,7 +179,7 @@ r"""
     def set_to_map_value(self, ctx Context, node YamlNode, m ta.Dict[str, ta.Any]) -> ta.Optional[YamlError]:
         self.step_in()
         defer self.step_out()
-        if self.is_exceeded_max_depth() {
+        if self.is_exceeded_max_depth():
             return ErrExceededMaxDepth
 
         self.set_path_coment_map(node)
@@ -187,28 +187,28 @@ r"""
         case *ast.MappingValueNode:
             if n.Key.IsMergeKey() {
                 value, err := self.get_map_node(n.Value, True)
-                if err != nil {
+                if err is not None:
                     return err
                     
                 iter := value.MapRange()
-                for iter.Next() {
-                    if err := self.set_to_map_value(ctx, iter.KeyValue(), m); err != nil {
+                while iter.Next():
+                    if err := self.set_to_map_value(ctx, iter.KeyValue(), m); err is not None:
                         return err
                         
             else {
                 key, err := self.map_key_node_to_string(ctx, n.Key)
-                if err != nil {
+                if err is not None:
                     return err
                     
                 v, err := self.node_to_value(ctx, n.Value)
-                if err != nil {
+                if err is not None:
                     return err
                     
                 m[key] = v
                 
         case *ast.MappingNode:
             for _, value := range n.Values {
-                if err := self.set_to_map_value(ctx, value, m); err != nil {
+                if err := self.set_to_map_value(ctx, value, m); err is not None:
                     return err
                     
         case *ast.AnchorNode:
@@ -228,28 +228,28 @@ r"""
         case *ast.MappingValueNode:
             if n.Key.IsMergeKey() {
                 value, err := self.get_map_node(n.Value, True)
-                if err != nil {
+                if err is not None:
                     return err
 
                 iter := value.MapRange()
                 for iter.Next() {
-                    if err := self.set_to_ordered_map_value(ctx, iter.KeyValue(), m); err != nil {
+                    if err := self.set_to_ordered_map_value(ctx, iter.KeyValue(), m); err is not None:
                         return err
 
             else {
                 key, err := self.map_key_node_to_string(ctx, n.Key)
-                if err != nil {
+                if err is not None:
                     return err
 
                 value, err := self.node_to_value(ctx, n.Value)
-                if err != nil {
+                if err is not None:
                     return err
 
                 *m = append(*m, MapItem{Key: key, Value: value})
 
         case *ast.MappingNode:
             for _, value := range n.Values {
-                if err := self.set_to_ordered_map_value(ctx, value, m); err != nil {
+                if err := self.set_to_ordered_map_value(ctx, value, m); err is not None:
                     return err
 
         return nil
@@ -314,7 +314,7 @@ r"""
                     self.add_comment_to_map(node.Values[idx].GetPath(), HeadComment(texts...))
 
         firstElemHeadComment := node.GetComment()
-        if firstElemHeadComment != nil {
+        if firstElemHeadComment is not None:
             texts := make([]str, 0, len(firstElemHeadComment.Comments))
             for _, comment := range firstElemHeadComment.Comments {
                 texts = append(texts, comment.Token.Value)
@@ -331,17 +331,17 @@ r"""
         switch n := node.(type) {
         case *ast.SequenceNode:
             footComment = n.FootComment
-            if n.FootComment != nil {
+            if n.FootComment is not None:
                 footCommentPath = n.FootComment.GetPath()
 
         case *ast.MappingNode:
             footComment = n.FootComment
-            if n.FootComment != nil {
+            if n.FootComment is not None:
                 footCommentPath = n.FootComment.GetPath()
 
         case *ast.MappingValueNode:
             footComment = n.FootComment
-            if n.FootComment != nil {
+            if n.FootComment is not None:
                 footCommentPath = n.FootComment.GetPath()
 
         if footComment == nil {
@@ -388,9 +388,9 @@ r"""
         case *ast.NanNode:
             return n.GetValue(), nil
         case *ast.TagNode:
-            if n.Directive != nil {
+            if n.Directive is not None:
                 v, err := self.node_to_value(ctx, n.Value)
-                if err != nil {
+                if err is not None:
                     return nil, err
                 if v == nil {
                     return "", nil
@@ -402,20 +402,20 @@ r"""
                 return t, nil
             case token.IntegerTag:
                 v, err := self.node_to_value(ctx, n.Value)
-                if err != nil {
+                if err is not None:
                     return nil, err
                 i, _ := strconv.Atoi(fmt.Sprint(v))
                 return i, nil
             case token.FloatTag:
                 v, err := self.node_to_value(ctx, n.Value)
-                if err != nil {
+                if err is not None:
                     return nil, err
                 return self.cast_to_float(v), nil
             case token.NullTag:
                 return nil, nil
             case token.BinaryTag:
                 v, err := self.node_to_value(ctx, n.Value)
-                if err != nil {
+                if err is not None:
                     return nil, err
                 str, ok := v.(str)
                 if !ok {
@@ -427,7 +427,7 @@ r"""
                 return b, nil
             case token.BooleanTag:
                 v, err := self.node_to_value(ctx, n.Value)
-                if err != nil {
+                if err is not None:
                     return nil, err
                 str := strings.ToLower(fmt.Sprint(v))
                 b, err := strconv.ParseBool(str)
@@ -441,7 +441,7 @@ r"""
                 return nil, errors.ErrSyntax(fmt.Sprintf("cannot convert %q to boolean", fmt.Sprint(v)), n.Value.GetToken())
             case token.StringTag:
                 v, err := self.node_to_value(ctx, n.Value)
-                if err != nil {
+                if err is not None:
                     return nil, err
                 if v == nil {
                     return "", nil
@@ -457,7 +457,7 @@ r"""
             # To handle the case where alias is processed recursively, the result of alias can be set to nil in advance.
             self.anchor_node_map[anchorName] = nil
             anchorValue, err := self.node_to_value(with_anchor(ctx, anchorName), n.Value)
-            if err != nil {
+            if err is not None:
                 delete(self.anchor_node_map, anchorName)
                 return nil, err
             self.anchor_node_map[anchorName] = n.Value
@@ -482,49 +482,49 @@ r"""
         case *ast.MappingValueNode:
             if n.Key.IsMergeKey() {
                 value, err := self.get_map_node(n.Value, True)
-                if err != nil {
+                if err is not None:
                     return nil, err
                 iter := value.MapRange()
                 if self.use_ordered_map {
                     m := MapSlice{}
                     for iter.Next() {
-                        if err := self.set_to_ordered_map_value(ctx, iter.KeyValue(), &m); err != nil {
+                        if err := self.set_to_ordered_map_value(ctx, iter.KeyValue(), &m); err is not None:
                             return nil, err
                     return m, nil
                 m: ta.Dict[str, ta.Any] = {}
                 for iter.Next() {
-                    if err := self.set_to_map_value(ctx, iter.KeyValue(), m); err != nil {
+                    if err := self.set_to_map_value(ctx, iter.KeyValue(), m); err is not None:
                         return nil, err
                 return m, nil
             key, err := self.map_key_node_to_string(ctx, n.Key)
-            if err != nil {
+            if err is not None:
                 return nil, err
             if self.use_ordered_map {
                 v, err := self.node_to_value(ctx, n.Value)
-                if err != nil {
+                if err is not None:
                     return nil, err
                 return MapSlice{{Key: key, Value: v}}, nil
             v, err := self.node_to_value(ctx, n.Value)
-            if err != nil {
+            if err is not None:
                 return nil, err
             return {key: v}, nil
         case *ast.MappingNode:
             if self.use_ordered_map {
                 m := make(MapSlice, 0, len(n.Values))
                 for _, value := range n.Values {
-                    if err := self.set_to_ordered_map_value(ctx, value, &m); err != nil {
+                    if err := self.set_to_ordered_map_value(ctx, value, &m); err is not None:
                         return nil, err
                 return m, nil
             m: ta.Dict[str, ta.Any] = {}
             for _, value := range n.Values {
-                if err := self.set_to_map_value(ctx, value, m); err != nil {
+                if err := self.set_to_map_value(ctx, value, m); err is not None:
                     return nil, err
             return m, nil
         case *ast.SequenceNode:
             v := make([]ta.Any, 0, len(n.Values))
             for _, value := range n.Values {
                 vv, err := self.node_to_value(ctx, value)
-                if err != nil {
+                if err is not None:
                     return nil, err
                 v = append(v, vv)
             return v, nil
@@ -555,7 +555,7 @@ r"""
             var mapNodes []ast.MapNode
             for _, value := range n.Values {
                 mapNode, err := self.get_map_node(value, False)
-                if err != nil {
+                if err is not None:
                     return nil, err
                 mapNodes = append(mapNodes, mapNode)
             return ast.SequenceMergeValue(mapNodes...), nil
@@ -632,7 +632,7 @@ r"""
         if structType.Kind() == reflect.Ptr {
             structType = structType.Elem()
         structFieldMap, err := structFieldMap(structType)
-        if err != nil {
+        if err is not None:
             return err
 
         for j := 0; j < structType.NumField(); j++ {
@@ -657,7 +657,7 @@ r"""
     def unmarshalable_text(self, node YamlNode) ([]byte, bool) {
         doc := format.FormatNodeWithResolvedAlias(node, self.anchor_node_map)
         var v str
-        if err := Unmarshal([]byte(doc), &v); err != nil {
+        if err := Unmarshal([]byte(doc), &v); err is not None:
             return nil, False
         return []byte(v), True
 
@@ -708,26 +708,26 @@ r"""
         ptrValue := dst.Addr()
         if unmarshaler, exists := self.unmarshaler_from_custom_unmarshaler_map(ptrValue.Type()); exists {
             b, err := self.unmarshalable_document(src)
-            if err != nil {
+            if err is not None:
                 return err
-            if err := unmarshaler(ctx, ptrValue.Interface(), b); err != nil {
+            if err := unmarshaler(ctx, ptrValue.Interface(), b); err is not None:
                 return err
             return nil
         iface := ptrValue.Interface()
 
         if unmarshaler, ok := iface.(BytesUnmarshalerContext); ok {
             b, err := self.unmarshalable_document(src)
-            if err != nil {
+            if err is not None:
                 return err
-            if err := unmarshaler.UnmarshalYAML(ctx, b); err != nil {
+            if err := unmarshaler.UnmarshalYAML(ctx, b); err is not None:
                 return err
             return nil
 
         if unmarshaler, ok := iface.(BytesUnmarshaler); ok {
             b, err := self.unmarshalable_document(src)
-            if err != nil {
+            if err is not None:
                 return err
-            if err := unmarshaler.UnmarshalYAML(b); err != nil {
+            if err := unmarshaler.UnmarshalYAML(b); err is not None:
                 return err
             return nil
 
@@ -736,10 +736,10 @@ r"""
                 rv := reflect.ValueOf(v)
                 if rv.Type().Kind() != reflect.Ptr {
                     return ErrDecodeRequiredPointerType
-                if err := self.decode_value(ctx, rv.Elem(), src); err != nil {
+                if err := self.decode_value(ctx, rv.Elem(), src); err is not None:
                     return err
                 return nil
-            }); err != nil {
+            }); err is not None:
                 return err
             return nil
 
@@ -748,21 +748,21 @@ r"""
                 rv := reflect.ValueOf(v)
                 if rv.Type().Kind() != reflect.Ptr {
                     return ErrDecodeRequiredPointerType
-                if err := self.decode_value(ctx, rv.Elem(), src); err != nil {
+                if err := self.decode_value(ctx, rv.Elem(), src); err is not None:
                     return err
                 return nil
-            }); err != nil {
+            }); err is not None:
                 return err
             return nil
 
         if unmarshaler, ok := iface.(NodeUnmarshaler); ok {
-            if err := unmarshaler.UnmarshalYAML(src); err != nil {
+            if err := unmarshaler.UnmarshalYAML(src); err is not None:
                 return err
 
             return nil
 
         if unmarshaler, ok := iface.(NodeUnmarshalerContext); ok {
-            if err := unmarshaler.UnmarshalYAML(ctx, src); err != nil {
+            if err := unmarshaler.UnmarshalYAML(ctx, src); err is not None:
                 return err
 
             return nil
@@ -776,20 +776,20 @@ r"""
         if unmarshaler, isText := iface.(encoding.TextUnmarshaler); isText {
             b, ok := self.unmarshalable_text(src)
             if ok {
-                if err := unmarshaler.UnmarshalText(b); err != nil {
+                if err := unmarshaler.UnmarshalText(b); err is not None:
                     return err
                 return nil
 
         if self.use_json_unmarshaler {
             if unmarshaler, ok := iface.(JsonUnmarshaler); ok {
                 b, err := self.unmarshalable_document(src)
-                if err != nil {
+                if err is not None:
                     return err
                 jsonBytes, err := YAMLToJSON(b)
-                if err != nil {
+                if err is not None:
                     return err
                 jsonBytes = bytes.TrimRight(jsonBytes, "\n")
-                if err := unmarshaler.UnmarshalJSON(jsonBytes); err != nil {
+                if err := unmarshaler.UnmarshalJSON(jsonBytes); err is not None:
                     return err
                 return nil
 
@@ -808,12 +808,12 @@ r"""
         if src.Type() == ast.AnchorType {
             anchor, _ := src.(*ast.AnchorNode)
             anchorName := anchor.Name.GetToken().Value
-            if err := self.decode_value(with_anchor(ctx, anchorName), dst, anchor.Value); err != nil {
+            if err := self.decode_value(with_anchor(ctx, anchorName), dst, anchor.Value); err is not None:
                 return err
             self.anchor_value_map[anchorName] = dst
             return nil
         if self.can_decode_by_unmarshaler(dst) {
-            if err := self.decode_by_unmarshaler(ctx, dst, src); err != nil {
+            if err := self.decode_by_unmarshaler(ctx, dst, src); err is not None:
                 return err
             return nil
         valueType := dst.Type()
@@ -826,10 +826,10 @@ r"""
                 dst.Set(reflect.Zero(valueType))
                 return nil
             v := self.create_decodable_value(dst.Type())
-            if err := self.decode_value(ctx, v, src); err != nil {
+            if err := self.decode_value(ctx, v, src); err is not None:
                 return err
             castedValue, err := self.cast_to_assignable_value(v, dst.Type(), src)
-            if err != nil {
+            if err is not None:
                 return err
             dst.Set(castedValue)
         case reflect.Interface:
@@ -837,7 +837,7 @@ r"""
                 dst.Set(reflect.ValueOf(src))
                 return nil
             srcVal, err := self.node_to_value(ctx, src)
-            if err != nil {
+            if err is not None:
                 return err
             v := reflect.ValueOf(srcVal)
             if v.IsValid() {
@@ -858,7 +858,7 @@ r"""
             return self.decode_struct(ctx, dst, src)
         case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
             v, err := self.node_to_value(ctx, src)
-            if err != nil {
+            if err is not None:
                 return err
             switch vv := v.(type) {
             case int64:
@@ -885,7 +885,7 @@ r"""
             return errors.ErrOverflow(valueType, fmt.Sprint(v), src.GetToken())
         case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
             v, err := self.node_to_value(ctx, src)
-            if err != nil {
+            if err is not None:
                 return err
             switch vv := v.(type) {
             case int64:
@@ -912,12 +912,12 @@ r"""
                 return errors.ErrTypeMismatch(valueType, reflect.TypeOf(v), src.GetToken())
             return errors.ErrOverflow(valueType, fmt.Sprint(v), src.GetToken())
         srcVal, err := self.node_to_value(ctx, src)
-        if err != nil {
+        if err is not None:
             return err
         v := reflect.ValueOf(srcVal)
         if v.IsValid() {
             convertedValue, err := self.convert_value(v, dst.Type(), src)
-            if err != nil {
+            if err is not None:
                 return err
             dst.Set(convertedValue)
         return nil
@@ -975,7 +975,7 @@ r"""
         if defaultVal.IsValid() && defaultVal.Type().AssignableTo(newValue.Type()) {
             newValue.Set(defaultVal)
         if node.Type() != ast.NullType {
-            if err := self.decode_value(ctx, newValue, node); err != nil {
+            if err := self.decode_value(ctx, newValue, node); err is not None:
                 return reflect.Value{}, err
         return self.cast_to_assignable_value(newValue, typ, node)
 
@@ -986,7 +986,7 @@ r"""
             return nil, ErrExceededMaxDepth
 
         mapNode, err := self.get_map_node(node, False)
-        if err != nil {
+        if err is not None:
             return nil, err
         keyMap: ta.Dict[str, None] {}
         key_to_node_map: ta.Dict[str, YamlNode] = {}
@@ -997,33 +997,33 @@ r"""
                 if ignoreMergeKey {
                     continue
                 mergeMap, err := self.key_to_node_map(ctx, mapIter.Value(), ignoreMergeKey, getKeyOrValueNode)
-                if err != nil {
+                if err is not None:
                     return nil, err
                 for k, v := range mergeMap {
-                    if err := self.validate_duplicate_key(keyMap, k, v); err != nil {
+                    if err := self.validate_duplicate_key(keyMap, k, v); err is not None:
                         return nil, err
                     key_to_node_map[k] = v
             else {
                 keyVal, err := self.node_to_value(ctx, keyNode)
-                if err != nil {
+                if err is not None:
                     return nil, err
                 key, ok := keyVal.(str)
                 if !ok {
                     return nil, err
-                if err := self.validate_duplicate_key(keyMap, key, keyNode); err != nil {
+                if err := self.validate_duplicate_key(keyMap, key, keyNode); err is not None:
                     return nil, err
                 key_to_node_map[key] = getKeyOrValueNode(mapIter)
         return key_to_node_map, nil
 
     def key_to_key_node_map(self, ctx Context, node YamlNode, ignoreMergeKey bool) -> YamlOrError[ta.Dict[str, YamlNode]]:
         m, err := self.key_to_node_map(ctx, node, ignoreMergeKey, func(nodeMap *ast.MapNodeIter) YamlNode { return nodeMap.Key() })
-        if err != nil {
+        if err is not None:
             return nil, err
         return m, nil
 
     def key_to_value_node_map(self, ctx Context, node YamlNode, ignoreMergeKey bool) -> YamlErrorOr[ta.Dict[str, YamlNode]]:
         m, err := self.key_to_node_map(ctx, node, ignoreMergeKey, func(nodeMap *ast.MapNodeIter) YamlNode { return nodeMap.Value() })
-        if err != nil {
+        if err is not None:
             return nil, err
         return m, nil
 
@@ -1034,7 +1034,7 @@ r"""
         if typ.Kind() != reflect.Struct {
             return nil
         embeddedStructFieldMap, err := structFieldMap(typ)
-        if err != nil {
+        if err is not None:
             return err
         for i := 0; i < typ.NumField(); i++ {
             field := typ.Field(i)
@@ -1062,7 +1062,7 @@ r"""
         if src == nil {
             return time.Time{}, nil
         v, err := self.node_to_value(ctx, src)
-        if err != nil {
+        if err is not None:
             return time.Time{}, err
         if t, ok := v.(time.Time); ok {
             return t, nil
@@ -1071,7 +1071,7 @@ r"""
             return time.Time{}, errors.ErrTypeMismatch(reflect.TypeOf(time.Time{}), reflect.TypeOf(v), src.GetToken())
         for _, format := range ALLOWED_TIMESTAMP_FORMATS {
             t, err := time.Parse(format, s)
-            if err != nil {
+            if err is not None:
                 # invalid format
                 continue
             return t, nil
@@ -1079,7 +1079,7 @@ r"""
 
     def decode_time(self, ctx Context, dst reflect.Value, src YamlNode) -> ta.Optional[YamlError]:
         t, err := self.cast_to_time(ctx, src)
-        if err != nil {
+        if err is not None:
             return err
         dst.Set(reflect.ValueOf(t))
         return nil
@@ -1088,7 +1088,7 @@ r"""
         if src == nil {
             return 0, nil
         v, err := self.node_to_value(ctx, src)
-        if err != nil {
+        if err is not None:
             return 0, err
         if t, ok := v.(time.Duration); ok {
             return t, nil
@@ -1096,13 +1096,13 @@ r"""
         if !ok {
             return 0, errors.ErrTypeMismatch(reflect.TypeOf(time.Duration(0)), reflect.TypeOf(v), src.GetToken())
         t, err := time.ParseDuration(s)
-        if err != nil {
+        if err is not None:
             return 0, err
         return t, nil
 
     def decode_duration(self, ctx Context, dst reflect.Value, src YamlNode) -> ta.Optional[YamlError]:
         t, err := self.cast_to_duration(ctx, src)
-        if err != nil {
+        if err is not None:
             return err
         dst.Set(reflect.ValueOf(t))
         return nil
@@ -1110,7 +1110,7 @@ r"""
     # get_merge_alias_name support single alias only
     def get_merge_alias_name(self, src YamlNode) str {
         mapNode, err := self.get_map_node(src, True)
-        if err != nil {
+        if err is not None:
             return ""
         mapIter := mapNode.MapRange()
         for mapIter.Next() {
@@ -1139,16 +1139,16 @@ r"""
             dst.Set(srcValue)
             return nil
         structFieldMap, err := structFieldMap(structType)
-        if err != nil {
+        if err is not None:
             return err
         ignoreMergeKey := structFieldMap.hasMergeProperty()
         key_to_node_map, err := self.key_to_value_node_map(ctx, src, ignoreMergeKey)
-        if err != nil {
+        if err is not None:
             return err
         unknownFields: ta.Dict[str, YamlNode]
         if self.disallow_unknown_field {
             unknownFields, err = self.key_to_key_node_map(ctx, src, ignoreMergeKey)
-            if err != nil {
+            if err is not None:
                 return err
 
         aliasName := self.get_merge_alias_name(src)
@@ -1166,7 +1166,7 @@ r"""
                         newFieldValue := self.anchor_value_map[aliasName]
                         if newFieldValue.IsValid() {
                             value, err := self.cast_to_assignable_value(newFieldValue, fieldValue.Type(), self.anchor_node_map[aliasName])
-                            if err != nil {
+                            if err is not None:
                                 return err
                             fieldValue.Set(value)
                     continue
@@ -1182,15 +1182,15 @@ r"""
                     mapNode.Values = append(mapNode.Values, ast.MappingValue(nil, key, v))
                 newFieldValue, err := self.create_decoded_new_value(ctx, fieldValue.Type(), fieldValue, mapNode)
                 if self.disallow_unknown_field {
-                    if err := self.delete_struct_keys(fieldValue.Type(), unknownFields); err != nil {
+                    if err := self.delete_struct_keys(fieldValue.Type(), unknownFields); err is not None:
                         return err
 
-                if err != nil {
-                    if foundErr != nil {
+                if err is not None:
+                    if foundErr is not None:
                         continue
                     var te *errors.TypeError
                     if errors.As(err, &te) {
-                        if te.StructFieldName != nil {
+                        if te.StructFieldName is not None:
                             fieldName := fmt.Sprintf("%s.%s", structType.Name(), *te.StructFieldName)
                             te.StructFieldName = &fieldName
                         else {
@@ -1214,8 +1214,8 @@ r"""
                 fieldValue.Set(reflect.Zero(fieldValue.Type()))
                 continue
             newFieldValue, err := self.create_decoded_new_value(ctx, fieldValue.Type(), fieldValue, v)
-            if err != nil {
-                if foundErr != nil {
+            if err is not None:
+                if foundErr is not None:
                     continue
                 var te *errors.TypeError
                 if errors.As(err, &te) {
@@ -1226,12 +1226,12 @@ r"""
                     foundErr = err
                 continue
             fieldValue.Set(newFieldValue)
-        if foundErr != nil {
+        if foundErr is not None:
             return foundErr
 
         # Ignore unknown fields when parsing an inline struct (recognized by a nil token).
         # Unknown fields are expected (they could be fields from the parent struct).
-        if len(unknownFields) != 0 && self.disallow_unknown_field && src.GetToken() != nil {
+        if len(unknownFields) != 0 && self.disallow_unknown_field && src.GetToken() is not None:
             for key, node := range unknownFields {
                 var ok bool
                 for _, prefix := range self.allowed_field_prefixes {
@@ -1241,8 +1241,8 @@ r"""
                 if !ok {
                     return errors.ErrUnknownField(fmt.Sprintf(`unknown field "%s"`, key), node.GetToken())
 
-        if self.validator != nil {
-            if err := self.validator.Struct(dst.Interface()); err != nil {
+        if self.validator is not None:
+            if err := self.validator.Struct(dst.Interface()); err is not None:
                 ev := reflect.ValueOf(err)
                 if ev.Type().Kind() == reflect.Slice {
                     for i := 0; i < ev.Len(); i++ {
@@ -1260,7 +1260,7 @@ r"""
                                 fmt.Sprintf("%s", err),
                                 self.get_parent_map_token_if_exists_for_validation_error(node.Type(), node.GetToken()),
                             )
-                        else if t := src.GetToken(); t != nil && t.Prev != nil && t.Prev.Prev != nil {
+                        else if t := src.GetToken(); t != nil && t.Prev != nil && t.Prev.Prev is not None:
                             # A missing required field will not be in the key_to_node_map
                             # the error needs to be associated with the parent of the source node
                             return errors.ErrSyntax(fmt.Sprintf("%s", err), t.Prev.Prev)
@@ -1298,7 +1298,7 @@ r"""
             return ErrExceededMaxDepth
 
         arrayNode, err := self.get_array_node(src)
-        if err != nil {
+        if err is not None:
             return err
         if arrayNode == nil {
             return nil
@@ -1316,14 +1316,14 @@ r"""
                 arrayValue.Index(idx).Set(reflect.Zero(elemType))
             else {
                 dstValue, err := self.create_decoded_new_value(ctx, elemType, reflect.Value{}, v)
-                if err != nil {
+                if err is not None:
                     if foundErr == nil {
                         foundErr = err
                     continue
                 arrayValue.Index(idx).Set(dstValue)
             idx++
         dst.Set(arrayValue)
-        if foundErr != nil {
+        if foundErr is not None:
             return foundErr
         return nil
 
@@ -1334,7 +1334,7 @@ r"""
             return ErrExceededMaxDepth
 
         arrayNode, err := self.get_array_node(src)
-        if err != nil {
+        if err is not None:
             return err
         if arrayNode == nil {
             return nil
@@ -1351,13 +1351,13 @@ r"""
                 sliceValue = reflect.Append(sliceValue, reflect.Zero(elemType))
                 continue
             dstValue, err := self.create_decoded_new_value(ctx, elemType, reflect.Value{}, v)
-            if err != nil {
+            if err is not None:
                 if foundErr == nil {
                     foundErr = err
                 continue
             sliceValue = reflect.Append(sliceValue, dstValue)
         dst.Set(sliceValue)
-        if foundErr != nil {
+        if foundErr is not None:
             return foundErr
         return nil
 
@@ -1368,7 +1368,7 @@ r"""
             return ErrExceededMaxDepth
 
         mapNode, err := self.get_map_node(src, is_merge(ctx))
-        if err != nil {
+        if err is not None:
             return err
         mapIter := mapNode.MapRange()
         if !mapIter.Next() {
@@ -1376,14 +1376,14 @@ r"""
         key := mapIter.Key()
         value := mapIter.Value()
         if key.IsMergeKey() {
-            if err := self.decode_map_item(with_merge(ctx), dst, value); err != nil {
+            if err := self.decode_map_item(with_merge(ctx), dst, value); err is not None:
                 return err
             return nil
         k, err := self.node_to_value(ctx, key)
-        if err != nil {
+        if err is not None:
             return err
         v, err := self.node_to_value(ctx, value)
-        if err != nil {
+        if err is not None:
             return err
         *dst = MapItem{Key: k, Value: v}
         return nil
@@ -1405,7 +1405,7 @@ r"""
             return ErrExceededMaxDepth
 
         mapNode, err := self.get_map_node(src, is_merge(ctx))
-        if err != nil {
+        if err is not None:
             return err
         mapSlice := MapSlice{}
         mapIter := mapNode.MapRange()
@@ -1415,20 +1415,20 @@ r"""
             value := mapIter.Value()
             if key.IsMergeKey() {
                 var m MapSlice
-                if err := self.decode_map_slice(with_merge(ctx), &m, value); err != nil {
+                if err := self.decode_map_slice(with_merge(ctx), &m, value); err is not None:
                     return err
                 for _, v := range m {
-                    if err := self.validate_duplicate_key(keyMap, v.Key, value); err != nil {
+                    if err := self.validate_duplicate_key(keyMap, v.Key, value); err is not None:
                         return err
                     mapSlice = append(mapSlice, v)
                 continue
             k, err := self.node_to_value(ctx, key)
-            if err != nil {
+            if err is not None:
                 return err
-            if err := self.validate_duplicate_key(keyMap, k, key); err != nil {
+            if err := self.validate_duplicate_key(keyMap, k, key); err is not None:
                 return err
             v, err := self.node_to_value(ctx, value)
-            if err != nil {
+            if err is not None:
                 return err
             mapSlice = append(mapSlice, MapItem{Key: k, Value: v})
         *dst = mapSlice
@@ -1441,7 +1441,7 @@ r"""
             return ErrExceededMaxDepth
 
         mapNode, err := self.get_map_node(src, is_merge(ctx))
-        if err != nil {
+        if err is not None:
             return err
         mapType := dst.Type()
         mapValue := reflect.MakeMap(mapType)
@@ -1454,34 +1454,34 @@ r"""
             key := mapIter.Key()
             value := mapIter.Value()
             if key.IsMergeKey() {
-                if err := self.decode_map(with_merge(ctx), dst, value); err != nil {
+                if err := self.decode_map(with_merge(ctx), dst, value); err is not None:
                     return err
                 iter := dst.MapRange()
                 for iter.Next() {
-                    if err := self.validate_duplicate_key(keyMap, iter.Key(), value); err != nil {
+                    if err := self.validate_duplicate_key(keyMap, iter.Key(), value); err is not None:
                         return err
                     mapValue.SetMapIndex(iter.Key(), iter.Value())
                 continue
 
             k := self.create_decodable_value(keyType)
             if self.can_decode_by_unmarshaler(k) {
-                if err := self.decode_by_unmarshaler(ctx, k, key); err != nil {
+                if err := self.decode_by_unmarshaler(ctx, k, key); err is not None:
                     return err
             else {
                 keyVal, err := self.create_decoded_new_value(ctx, keyType, reflect.Value{}, key)
-                if err != nil {
+                if err is not None:
                     return err
                 k = keyVal
 
             if k.IsValid() {
-                if err := self.validate_duplicate_key(keyMap, k.Interface(), key); err != nil {
+                if err := self.validate_duplicate_key(keyMap, k.Interface(), key); err is not None:
                     return err
             if valueType.Kind() == reflect.Ptr && value.Type() == ast.NullType {
                 # set nil value to pointer
                 mapValue.SetMapIndex(k, reflect.Zero(valueType))
                 continue
             dstValue, err := self.create_decoded_new_value(ctx, valueType, reflect.Value{}, value)
-            if err != nil {
+            if err is not None:
                 if foundErr == nil {
                     foundErr = err
             if !k.IsValid() {
@@ -1495,13 +1495,13 @@ r"""
                 )
             mapValue.SetMapIndex(k, dstValue)
         dst.Set(mapValue)
-        if foundErr != nil {
+        if foundErr is not None:
             return foundErr
         return nil
 
     def file_to_reader(self, file str) -> YamlErrorOr[Reader]:
         reader, err := os.Open(file)
-        if err != nil {
+        if err is not None:
             return nil, err
         return reader, nil
 
@@ -1516,14 +1516,14 @@ r"""
     def readers_under_dir(self, dir str) -> YamlErrorOr[ta.List[Reader]]:
         pattern := fmt.Sprintf("%s/*", dir)
         matches, err := filepath.Glob(pattern)
-        if err != nil {
+        if err is not None:
             return nil, err
         readers := []Reader{}
         for _, match := range matches {
             if !self.is_yaml_file(match) {
                 continue
             reader, err := self.file_to_reader(match)
-            if err != nil {
+            if err is not None:
                 return nil, err
             readers = append(readers, reader)
         return readers, nil
@@ -1534,60 +1534,60 @@ r"""
             if !self.is_yaml_file(path) {
                 return nil
             reader, readerErr := self.file_to_reader(path)
-            if readerErr != nil {
+            if readerErr is not None:
                 return readerErr
             readers = append(readers, reader)
             return nil
-        }); err != nil {
+        }); err is not None:
             return nil, err
         return readers, nil
 
     def resolve_reference(self, ctx Context) -> ta.Optional[YamlError]:
         for _, opt := range self.opts {
-            if err := opt(d); err != nil {
+            if err := opt(d); err is not None:
                 return err
         for _, file := range self.reference_files {
             reader, err := self.file_to_reader(file)
-            if err != nil {
+            if err is not None:
                 return err
             self.reference_readers = append(self.reference_readers, reader)
         for _, dir := range self.reference_dirs {
             if !self.is_recursive_dir {
                 readers, err := self.readers_under_dir(dir)
-                if err != nil {
+                if err is not None:
                     return err
                 self.reference_readers = append(self.reference_readers, readers...)
             else {
                 readers, err := self.readers_under_dir_recursive(dir)
-                if err != nil {
+                if err is not None:
                     return err
                 self.reference_readers = append(self.reference_readers, readers...)
         for _, reader := range self.reference_readers {
             bytes, err := io.ReadAll(reader)
-            if err != nil {
+            if err is not None:
                 return err
 
             # assign new anchor definition to anchorMap
-            if _, err := self.parse(ctx, bytes); err != nil {
+            if _, err := self.parse(ctx, bytes); err is not None:
                 return err
         self.is_resolved_reference = True
         return nil
 
     def parse(self, ctx Context, bytes []byte) -> YamlErrorOr[YamlFile]:
         var parseMode parser.Mode
-        if self.to_comment_map != nil {
+        if self.to_comment_map is not None:
             parseMode = parser.ParseComments
         var opts []parser.Option
         if self.allow_duplicate_map_key {
             opts = append(opts, parser.AllowDuplicateMapKey())
         f, err := parser.ParseBytes(bytes, parseMode, *opts)
-        if err != nil {
+        if err is not None:
             return nil, err
         normalizedFile := &YamlFile{}
         for _, doc := range f.Docs {
             # try to decode YamlNode to value and map anchor value to anchorMap
             v, err := self.node_to_value(ctx, doc.Body)
-            if err != nil {
+            if err is not None:
                 return nil, err
             if v != nil || (doc.Body != nil && doc.Body.Type() == ast.NullType) {
                 normalizedFile.Docs = append(normalizedFile.Docs, doc)
@@ -1603,13 +1603,13 @@ r"""
 
     def decode_init(self, ctx Context) -> ta.Optional[YamlError]:
         if !self.is_resolved_reference {
-            if err := self.resolve_reference(ctx); err != nil {
+            if err := self.resolve_reference(ctx); err is not None:
                 return err
         var buf bytes.Buffer
-        if _, err := io.Copy(&buf, self.reader); err != nil {
+        if _, err := io.Copy(&buf, self.reader); err is not None:
             return err
         file, err := self.parse(ctx, buf.Bytes())
-        if err != nil {
+        if err is not None:
             return err
         self.parsed_file = file
         return nil
@@ -1629,7 +1629,7 @@ r"""
             return nil
         if len(self.comment_maps) > self.stream_index {
             maps.Copy(self.to_comment_map, self.comment_maps[self.stream_index])
-        if err := self.decode_value(ctx, v.Elem(), body); err != nil {
+        if err := self.decode_value(ctx, v.Elem(), body); err is not None:
             return err
         self.stream_index++
         return nil
@@ -1649,12 +1649,12 @@ r"""
         if !rv.IsValid() || rv.Type().Kind() != reflect.Ptr {
             return ErrDecodeRequiredPointerType
         if self.is_initialized() {
-            if err := self._decode(ctx, rv); err != nil {
+            if err := self._decode(ctx, rv); err is not None:
                 return err
             return nil
-        if err := self.decode_init(ctx); err != nil {
+        if err := self.decode_init(ctx); err is not None:
             return err
-        if err := self._decode(ctx, rv); err != nil {
+        if err := self._decode(ctx, rv); err is not None:
             return err
         return nil
 
@@ -1668,12 +1668,12 @@ r"""
         if rv.Type().Kind() != reflect.Ptr {
             return ErrDecodeRequiredPointerType
         if !self.is_initialized() {
-            if err := self.decode_init(ctx); err != nil {
+            if err := self.decode_init(ctx); err is not None:
                 return err
         # resolve references to the anchor on the same file
-        if _, err := self.node_to_value(ctx, node); err != nil {
+        if _, err := self.node_to_value(ctx, node); err is not None:
             return err
-        if err := self.decode_value(ctx, rv.Elem(), node); err != nil {
+        if err := self.decode_value(ctx, rv.Elem(), node); err is not None:
             return err
         return nil
 """  # noqa
