@@ -30,7 +30,7 @@ def __omlish_amalg__():  # noqa
             dict(path='base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='reading.py', sha1='7631635c46ab4b40bcaeb7c506cf15cb2d529a40'),
-            dict(path='utils.py', sha1='dfb7accf14efdc524515a21388788b9bb242d787'),
+            dict(path='utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
             dict(path='direct.py', sha1='83c33460e9490a77a00ae66251617ba98128b56b'),
             dict(path='scanning.py', sha1='4c0323e0b11cd506f7b6b4cf28ea4d7c6064b9d3'),
             dict(path='adapters.py', sha1='865338413829b97be23883f713d50eb7cb62617a'),
@@ -1118,23 +1118,45 @@ class ByteStreamBuffers(NamespaceClass):
     #
 
     @classmethod
-    def any_to_bytes_or_bytearray(cls, obj: ta.Any) -> ta.Union[bytes, bytearray]:
+    @ta.overload
+    def any_to_bytes_or_bytearray(cls, obj: ta.Any, or_none: ta.Literal[True], /) -> ta.Union[bytes, bytearray, None]:
+        ...
+
+    @classmethod
+    @ta.overload
+    def any_to_bytes_or_bytearray(cls, obj: ta.Any, or_none: ta.Literal[False] = False, /) -> ta.Union[bytes, bytearray]:  # noqa
+        ...
+
+    @classmethod
+    def any_to_bytes_or_bytearray(cls, obj, or_none=False, /):
         if (ot := type(obj)) is bytes or ot is bytearray or isinstance(obj, (bytes, bytearray)):
             return obj
 
         else:
-            return cls.buffer_to_bytes(obj)
+            return cls.buffer_to_bytes(obj, or_none)  # noqa
 
-    ##
+    #
 
     @classmethod
-    def bytes_len(cls, obj: ta.Any, /) -> int:
+    @ta.overload
+    def bytes_len(cls, obj: ta.Any, or_none: ta.Literal[True], /) -> ta.Optional[int]:
+        ...
+
+    @classmethod
+    @ta.overload
+    def bytes_len(cls, obj: ta.Any, or_none: ta.Literal[False] = False, /) -> int:
+        ...
+
+    @classmethod
+    def bytes_len(cls, obj, or_none=False):
         if cls.can_bytes(obj):
             return len(obj)
 
+        elif or_none:
+            return None
+
         else:
-            # Not bytes-like
-            return 0
+            raise TypeError(obj)
 
     ##
 

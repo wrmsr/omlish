@@ -89,7 +89,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='../logs.py', sha1='5a4fad522508bdc1b790f1d5234a87f319c9da2d'),
             dict(path='../../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
-            dict(path='../../../../omlish/io/streams/utils.py', sha1='dfb7accf14efdc524515a21388788b9bb242d787'),
+            dict(path='../../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
             dict(path='../../../../omlish/lite/configs.py', sha1='c8602e0e197ef1133e7e8e248935ac745bfd46cb'),
             dict(path='../../../../omlish/logs/contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
             dict(path='../../../../omlish/logs/std/standard.py', sha1='5c97c1b9f7ead58d6127d047b873398f708f288d'),
@@ -5777,23 +5777,45 @@ class ByteStreamBuffers(NamespaceClass):
     #
 
     @classmethod
-    def any_to_bytes_or_bytearray(cls, obj: ta.Any) -> ta.Union[bytes, bytearray]:
+    @ta.overload
+    def any_to_bytes_or_bytearray(cls, obj: ta.Any, or_none: ta.Literal[True], /) -> ta.Union[bytes, bytearray, None]:
+        ...
+
+    @classmethod
+    @ta.overload
+    def any_to_bytes_or_bytearray(cls, obj: ta.Any, or_none: ta.Literal[False] = False, /) -> ta.Union[bytes, bytearray]:  # noqa
+        ...
+
+    @classmethod
+    def any_to_bytes_or_bytearray(cls, obj, or_none=False, /):
         if (ot := type(obj)) is bytes or ot is bytearray or isinstance(obj, (bytes, bytearray)):
             return obj
 
         else:
-            return cls.buffer_to_bytes(obj)
+            return cls.buffer_to_bytes(obj, or_none)  # noqa
 
-    ##
+    #
 
     @classmethod
-    def bytes_len(cls, obj: ta.Any, /) -> int:
+    @ta.overload
+    def bytes_len(cls, obj: ta.Any, or_none: ta.Literal[True], /) -> ta.Optional[int]:
+        ...
+
+    @classmethod
+    @ta.overload
+    def bytes_len(cls, obj: ta.Any, or_none: ta.Literal[False] = False, /) -> int:
+        ...
+
+    @classmethod
+    def bytes_len(cls, obj, or_none=False):
         if cls.can_bytes(obj):
             return len(obj)
 
+        elif or_none:
+            return None
+
         else:
-            # Not bytes-like
-            return 0
+            raise TypeError(obj)
 
     ##
 

@@ -75,10 +75,13 @@ NoOutstandingReserve = NoOutstandingReserveByteStreamBufferError
 
 #
 
-can_bytes = ByteStreamBuffers.can_bytes
-to_bytes = ByteStreamBuffers.any_to_bytes
-to_bytes_or_bytearray = ByteStreamBuffers.any_to_bytes_or_bytearray
+memoryview_to_bytes = ByteStreamBuffers.memoryview_to_bytes
 
+can_bytes = ByteStreamBuffers.can_bytes
+buffer_to_bytes = ByteStreamBuffers.buffer_to_bytes
+any_to_bytes = ByteStreamBuffers.any_to_bytes
+any_to_bytes_or_bytearray = ByteStreamBuffers.any_to_bytes_or_bytearray
 bytes_len = ByteStreamBuffers.bytes_len
 
 iter_segments = ByteStreamBuffers.iter_segments
+split = ByteStreamBuffers.split

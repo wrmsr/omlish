@@ -91,23 +91,45 @@ class ByteStreamBuffers(NamespaceClass):
     #
 
     @classmethod
-    def any_to_bytes_or_bytearray(cls, obj: ta.Any) -> ta.Union[bytes, bytearray]:
+    @ta.overload
+    def any_to_bytes_or_bytearray(cls, obj: ta.Any, or_none: ta.Literal[True], /) -> ta.Union[bytes, bytearray, None]:
+        ...
+
+    @classmethod
+    @ta.overload
+    def any_to_bytes_or_bytearray(cls, obj: ta.Any, or_none: ta.Literal[False] = False, /) -> ta.Union[bytes, bytearray]:  # noqa
+        ...
+
+    @classmethod
+    def any_to_bytes_or_bytearray(cls, obj, or_none=False, /):
         if (ot := type(obj)) is bytes or ot is bytearray or isinstance(obj, (bytes, bytearray)):
             return obj
 
         else:
-            return cls.buffer_to_bytes(obj)
+            return cls.buffer_to_bytes(obj, or_none)  # noqa
 
-    ##
+    #
 
     @classmethod
-    def bytes_len(cls, obj: ta.Any, /) -> int:
+    @ta.overload
+    def bytes_len(cls, obj: ta.Any, or_none: ta.Literal[True], /) -> ta.Optional[int]:
+        ...
+
+    @classmethod
+    @ta.overload
+    def bytes_len(cls, obj: ta.Any, or_none: ta.Literal[False] = False, /) -> int:
+        ...
+
+    @classmethod
+    def bytes_len(cls, obj, or_none=False):
         if cls.can_bytes(obj):
             return len(obj)
 
+        elif or_none:
+            return None
+
         else:
-            # Not bytes-like
-            return 0
+            raise TypeError(obj)
 
     ##
 

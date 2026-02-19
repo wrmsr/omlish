@@ -15,7 +15,7 @@ from .flow import FlowControlChannelPipelineHandler
 
 class BytesChannelPipelineFlowControlAdapter(ChannelPipelineFlowControlAdapter):
     def get_cost(self, msg: ta.Any) -> ta.Optional[int]:
-        return ByteStreamBuffers.bytes_len(msg)
+        return ByteStreamBuffers.bytes_len(msg, True)
 
 
 ##

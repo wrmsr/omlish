@@ -23,11 +23,7 @@ class InboundBytesBufferingQueueChannelPipelineHandler(
 
     # @ta.override
     def _append(self, msg: ta.Any) -> None:
-        # FIXME: use 'or_none'
-        if ByteStreamBuffers.can_bytes(msg):
-            bl = ByteStreamBuffers.bytes_len(msg)
-        else:
-            bl = None
+        bl = ByteStreamBuffers.bytes_len(msg, True)
 
         super()._append((msg, bl))
 
