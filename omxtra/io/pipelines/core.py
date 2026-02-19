@@ -89,7 +89,7 @@ class ChannelPipelineHandlerNotifications(NamespaceClass):
 
     @ta.final
     @dc.dataclass(frozen=True)
-    class Removing(ChannelPipelineHandlerNotification):
+    class Removed(ChannelPipelineHandlerNotification):
         pass
 
 
@@ -578,9 +578,6 @@ class ChannelPipeline:
 
         self._channel._removing(ctx._ref)  # noqa
 
-        # FIXME: exceptions? defer?
-        handler.notify(ctx, ChannelPipelineHandlerNotifications.Removing())
-
         if ctx._name is not None:  # noqa
             del self._contexts_by_name[ctx._name]  # noqa
 
@@ -600,6 +597,9 @@ class ChannelPipeline:
         del ctx._next_out  # noqa
 
         self._clear_caches()
+
+        # FIXME: exceptions? defer?
+        handler.notify(ctx, ChannelPipelineHandlerNotifications.Removed())
 
     def remove(self, handler_ref: ChannelPipelineHandlerRef) -> None:
         self._remove(handler_ref)
