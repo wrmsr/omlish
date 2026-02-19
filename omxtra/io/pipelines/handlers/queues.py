@@ -29,7 +29,7 @@ class QueueChannelPipelineHandler(ChannelPipelineHandler, Abstract):
         self._filter = filter
         self._passthrough = passthrough
 
-        self._q: 'collections.deque[ta.Any]' = collections.deque()
+        self._q: collections.deque[ta.Any] = collections.deque()
 
     def __repr__(self) -> str:
         return ''.join([

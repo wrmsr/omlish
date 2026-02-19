@@ -32,7 +32,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='errors.py', sha1='c8301263ba2f5cd116a11c2229aafa705b3d94fc'),
             dict(path='../../../omlish/io/streams/types.py', sha1='36dfe0ba2bb0a7fdf255a3a2fcfc7a5fe2cce2c3'),
-            dict(path='core.py', sha1='e64083a18023d6f3382c18f743ce8474ec594509'),
+            dict(path='core.py', sha1='cd76776b9c4f5a435337283fe0bea72c1ae0efaf'),
             dict(path='../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -41,7 +41,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/io/streams/direct.py', sha1='83c33460e9490a77a00ae66251617ba98128b56b'),
             dict(path='../../../omlish/io/streams/scanning.py', sha1='4c0323e0b11cd506f7b6b4cf28ea4d7c6064b9d3'),
             dict(path='handlers/flatmap.py', sha1='c9004f70bb5ef65a3b3a70c64fb25754d9bbf134'),
-            dict(path='handlers/queues.py', sha1='13861ed4517689da2346c721e305d4197522d2c4'),
+            dict(path='handlers/queues.py', sha1='2821e894bf96a55928a3fa812f7e48cff46f3fff'),
             dict(path='../../../omlish/io/streams/segmented.py', sha1='f855d67d88ed71bbe2bbeee09321534f0ef18e24'),
             dict(path='bytes/queues.py', sha1='6c8b43f86d8c96041f8c84840cea62b2485077dd'),
             dict(path='bytes/decoders.py', sha1='034c88a438365ab2a404fe0b7c056e91dc42355e'),
@@ -1332,10 +1332,14 @@ ChannelPipelineHandlerRef_ = ChannelPipelineHandlerRef['ChannelPipelineHandler']
 @ta.final
 class ChannelPipelineHandlerContext:
     """
-    Passed to ChannelPipelineHandler methods, provides handler-specific access and operations to the pipeline channel.
-    As instances of `ShareableChannelPipelineHandler` may validly be present in multiple
+    The embodiment of an instance of a handler at a position in a pipeline. Passed to ChannelPipelineHandler methods,
+    providing handler-specific access to the pipeline and channel. As instances of `ShareableChannelPipelineHandler` may
+    validly be simultaneously present at multiple positions in a pipeline, a single handler may have multiple active
+    context instances associated with it in any given pipeline.
 
     Instances of this class are considered private to a handler instance and are not to be cached or shared in any way.
+    The method names reflect this: they are operations available to the handler in the context of a pipeline processing
+    operation.
     """
 
     def __init__(
@@ -1393,6 +1397,14 @@ class ChannelPipelineHandlerContext:
     @property
     def name(self) -> ta.Optional[str]:
         return self._name
+
+    #
+
+    def defer(self, fn: ta.Callable[['ChannelPipelineHandlerContext'], None], *, first: bool = False) -> None:
+        self._pipeline._channel._defer(self, fn, first=first)  # noqa
+
+    def defer_no_context(self, fn: ta.Callable[[], None], *, first: bool = False) -> None:
+        self._pipeline._channel._defer(self, fn, no_context=True, first=first)  # noqa
 
     #
 
@@ -2026,6 +2038,8 @@ class PipelineChannel:
 
         self._execution_depth = 0
 
+        self._deferred: collections.deque[PipelineChannel._Deferred] = collections.deque()
+
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}'
 
@@ -2053,6 +2067,46 @@ class PipelineChannel:
 
     #
 
+    class _Deferred(ta.NamedTuple):
+        ctx: ChannelPipelineHandlerContext
+
+        fn: ta.Union[
+            ta.Callable[[ChannelPipelineHandlerContext], None],
+            ta.Callable[[], None],
+        ]
+
+        no_context: bool
+
+    def _defer(
+            self,
+            ctx: ChannelPipelineHandlerContext,
+            fn: ta.Union[
+                ta.Callable[[ChannelPipelineHandlerContext], None],
+                ta.Callable[[], None],
+            ],
+            *,
+            no_context: bool = False,
+            first: bool = False,
+    ) -> None:
+        dfl = PipelineChannel._Deferred(ctx, fn, no_context)
+        if first:
+            self._deferred.appendleft(dfl)
+        else:
+            self._deferred.append(dfl)
+
+    def _maybe_execute_deferred(self) -> None:
+        # TODO: errors lol
+        # TODO: meditate on reentrancy lol
+        while self._deferred and self._execution_depth == 0:
+            dfl = self._deferred.popleft()
+
+            if dfl.no_context:
+                dfl.fn()  # type: ignore[call-arg]
+            else:
+                dfl.fn(dfl.ctx)  # type: ignore[call-arg]
+
+    #
+
     def _feed_in_to(self, msg: ta.Any, ctx: ChannelPipelineHandlerContext) -> None:
         if isinstance(msg, ChannelPipelineMessages.Eof):
             self._saw_eof = True
@@ -2068,6 +2122,7 @@ class PipelineChannel:
             self.handle_error(e)
         finally:
             self._execution_depth -= 1
+            self._maybe_execute_deferred()
 
     def feed_in(self, msg: ta.Any) -> None:
         self._feed_in_to(msg, self._pipeline._outermost)  # noqa
@@ -2097,6 +2152,7 @@ class PipelineChannel:
             self.handle_error(e)
         finally:
             self._execution_depth -= 1
+            self._maybe_execute_deferred()
 
     def feed_out(self, msg: ta.Any) -> None:
         self._feed_out_to(msg, self._pipeline._innermost)  # noqa
@@ -3349,7 +3405,7 @@ class QueueChannelPipelineHandler(ChannelPipelineHandler, Abstract):
         self._filter = filter
         self._passthrough = passthrough
 
-        self._q: 'collections.deque[ta.Any]' = collections.deque()
+        self._q: collections.deque[ta.Any] = collections.deque()
 
     def __repr__(self) -> str:
         return ''.join([
