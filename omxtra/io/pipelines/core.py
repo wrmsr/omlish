@@ -77,6 +77,25 @@ class ChannelPipelineEvents(NamespaceClass):
 ##
 
 
+class ChannelPipelineHandlerNotification(Abstract):
+    pass
+
+
+class ChannelPipelineHandlerNotifications(NamespaceClass):
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class Added(ChannelPipelineHandlerNotification):
+        pass
+
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class Removing(ChannelPipelineHandlerNotification):
+        pass
+
+
+##
+
+
 @ta.final
 class ChannelPipelineHandlerRef(ta.Generic[T]):
     """
@@ -272,7 +291,7 @@ class ChannelPipelineHandlerContext:
     def _inbound(self, msg: ta.Any) -> None:
         if self._invalidated:
             raise ContextInvalidatedChannelPipelineError
-        check.not_isinstance(msg, ChannelPipelineMessages.NeverInbound)
+        check.not_isinstance(msg, (ChannelPipelineMessages.NeverInbound, ChannelPipelineHandlerNotification))
 
         if isinstance(msg, ChannelPipelineMessages.MustPropagate):
             self._pipeline._channel._add_must_propagate('inbound', msg)  # noqa
@@ -282,7 +301,7 @@ class ChannelPipelineHandlerContext:
     def _outbound(self, msg: ta.Any) -> None:
         if self._invalidated:
             raise ContextInvalidatedChannelPipelineError
-        check.not_isinstance(msg, ChannelPipelineMessages.NeverOutbound)
+        check.not_isinstance(msg, (ChannelPipelineMessages.NeverOutbound, ChannelPipelineHandlerNotification))
 
         if isinstance(msg, ChannelPipelineMessages.MustPropagate):
             self._pipeline._channel._add_must_propagate('outbound', msg)  # noqa
@@ -307,6 +326,9 @@ class ChannelPipelineHandlerContext:
         self._pipeline._channel.emit(msg)  # noqa
 
 
+##
+
+
 class ChannelPipelineHandler(Abstract):
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
@@ -322,10 +344,7 @@ class ChannelPipelineHandler(Abstract):
 
     #
 
-    def added(self, ctx: ChannelPipelineHandlerContext) -> None:
-        pass
-
-    def removing(self, ctx: ChannelPipelineHandlerContext) -> None:
+    def notify(self, ctx: ChannelPipelineHandlerContext, no: ChannelPipelineHandlerNotification) -> None:
         pass
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
@@ -333,9 +352,6 @@ class ChannelPipelineHandler(Abstract):
 
     def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         ctx.feed_out(msg)
-
-    def scheduled(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        raise NotImplementedError
 
 
 class ShareableChannelPipelineHandler(ChannelPipelineHandler, Abstract):
@@ -495,7 +511,7 @@ class ChannelPipeline:
         self._clear_caches()
 
         # FIXME: exceptions?
-        handler.added(ctx)
+        handler.notify(ctx, ChannelPipelineHandlerNotifications.Added())
 
         return ctx._ref  # noqa
 
@@ -563,7 +579,7 @@ class ChannelPipeline:
         self._channel._removing(ctx._ref)  # noqa
 
         # FIXME: exceptions? defer?
-        handler.removing(ctx)
+        handler.notify(ctx, ChannelPipelineHandlerNotifications.Removing())
 
         if ctx._name is not None:  # noqa
             del self._contexts_by_name[ctx._name]  # noqa

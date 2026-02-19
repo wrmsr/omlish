@@ -12,6 +12,8 @@ from omlish.lite.namespaces import NamespaceClass
 from ..core import ChannelPipelineEvents
 from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
+from ..core import ChannelPipelineHandlerNotification
+from ..core import ChannelPipelineHandlerNotifications
 from ..core import ChannelPipelineMessages
 from ..core import PipelineChannel
 from ..errors import FlowControlValidationChannelPipelineError
@@ -153,15 +155,17 @@ class FlowControlChannelPipelineHandler(ChannelPipelineFlowControl, ChannelPipel
 
     #
 
-    def added(self, ctx: ChannelPipelineHandlerContext) -> None:
-        try:
-            self._channel  # noqa
-        except AttributeError:
-            pass
-        else:
-            raise RuntimeError('ChannelPipelineFlowControlHandler can only be added once')
+    def notify(self, ctx: ChannelPipelineHandlerContext, no: ChannelPipelineHandlerNotification) -> None:
+        if isinstance(no, ChannelPipelineHandlerNotifications.Added):
+            try:
+                self._channel  # noqa
+            except AttributeError:
+                pass
+            else:
+                raise RuntimeError('ChannelPipelineFlowControlHandler can only be added once')
 
-        self._channel = ctx.channel
+            self._channel = ctx.channel
+            return
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         if self._validate and isinstance(msg, ChannelPipelineMessages.Close):

@@ -32,7 +32,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='errors.py', sha1='c8301263ba2f5cd116a11c2229aafa705b3d94fc'),
             dict(path='../../../omlish/io/streams/types.py', sha1='36dfe0ba2bb0a7fdf255a3a2fcfc7a5fe2cce2c3'),
-            dict(path='core.py', sha1='ebb8af52feae8211faf53ac53e8f498b78887206'),
+            dict(path='core.py', sha1='f6bc8c324ef24915853392e558e2453aabc736ad'),
             dict(path='../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -1262,6 +1262,25 @@ class ChannelPipelineEvents(NamespaceClass):
 ##
 
 
+class ChannelPipelineHandlerNotification(Abstract):
+    pass
+
+
+class ChannelPipelineHandlerNotifications(NamespaceClass):
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class Added(ChannelPipelineHandlerNotification):
+        pass
+
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class Removing(ChannelPipelineHandlerNotification):
+        pass
+
+
+##
+
+
 @ta.final
 class ChannelPipelineHandlerRef(ta.Generic[T]):
     """
@@ -1457,7 +1476,7 @@ class ChannelPipelineHandlerContext:
     def _inbound(self, msg: ta.Any) -> None:
         if self._invalidated:
             raise ContextInvalidatedChannelPipelineError
-        check.not_isinstance(msg, ChannelPipelineMessages.NeverInbound)
+        check.not_isinstance(msg, (ChannelPipelineMessages.NeverInbound, ChannelPipelineHandlerNotification))
 
         if isinstance(msg, ChannelPipelineMessages.MustPropagate):
             self._pipeline._channel._add_must_propagate('inbound', msg)  # noqa
@@ -1467,7 +1486,7 @@ class ChannelPipelineHandlerContext:
     def _outbound(self, msg: ta.Any) -> None:
         if self._invalidated:
             raise ContextInvalidatedChannelPipelineError
-        check.not_isinstance(msg, ChannelPipelineMessages.NeverOutbound)
+        check.not_isinstance(msg, (ChannelPipelineMessages.NeverOutbound, ChannelPipelineHandlerNotification))
 
         if isinstance(msg, ChannelPipelineMessages.MustPropagate):
             self._pipeline._channel._add_must_propagate('outbound', msg)  # noqa
@@ -1492,6 +1511,9 @@ class ChannelPipelineHandlerContext:
         self._pipeline._channel.emit(msg)  # noqa
 
 
+##
+
+
 class ChannelPipelineHandler(Abstract):
     def __init_subclass__(cls, **kwargs: ta.Any) -> None:
         super().__init_subclass__(**kwargs)
@@ -1507,10 +1529,7 @@ class ChannelPipelineHandler(Abstract):
 
     #
 
-    def added(self, ctx: ChannelPipelineHandlerContext) -> None:
-        pass
-
-    def removing(self, ctx: ChannelPipelineHandlerContext) -> None:
+    def notify(self, ctx: ChannelPipelineHandlerContext, no: ChannelPipelineHandlerNotification) -> None:
         pass
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
@@ -1518,9 +1537,6 @@ class ChannelPipelineHandler(Abstract):
 
     def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         ctx.feed_out(msg)
-
-    def scheduled(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        raise NotImplementedError
 
 
 class ShareableChannelPipelineHandler(ChannelPipelineHandler, Abstract):
@@ -1680,7 +1696,7 @@ class ChannelPipeline:
         self._clear_caches()
 
         # FIXME: exceptions?
-        handler.added(ctx)
+        handler.notify(ctx, ChannelPipelineHandlerNotifications.Added())
 
         return ctx._ref  # noqa
 
@@ -1748,7 +1764,7 @@ class ChannelPipeline:
         self._channel._removing(ctx._ref)  # noqa
 
         # FIXME: exceptions? defer?
-        handler.removing(ctx)
+        handler.notify(ctx, ChannelPipelineHandlerNotifications.Removing())
 
         if ctx._name is not None:  # noqa
             del self._contexts_by_name[ctx._name]  # noqa
