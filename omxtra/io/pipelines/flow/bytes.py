@@ -15,17 +15,6 @@ from .flow import FlowControlChannelPipelineHandler
 ##
 
 
-class InboundBytesBufferingChannelPipelineHandler(ChannelPipelineHandler, Abstract):
-    @abc.abstractmethod
-    def inbound_buffered_bytes(self) -> ta.Optional[int]:
-        """Returning `None` denotes currently unknown/unanswerable."""
-
-        raise NotImplementedError
-
-
-##
-
-
 class BytesChannelPipelineFlowControlAdapter(ChannelPipelineFlowControlAdapter):
     def get_cost(self, msg: ta.Any) -> ta.Optional[int]:
         return ByteStreamBuffers.bytes_len(msg)

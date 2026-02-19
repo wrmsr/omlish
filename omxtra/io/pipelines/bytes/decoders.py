@@ -7,7 +7,7 @@ from omlish.io.streams.scanning import ScanningByteStreamBuffer
 from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 from omlish.io.streams.utils import ByteStreamBuffers
 
-from ..bytes import InboundBytesBufferingChannelPipelineHandler
+from .buffering import InboundBytesBufferingChannelPipelineHandler
 from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
 from ..core import ChannelPipelineMessages

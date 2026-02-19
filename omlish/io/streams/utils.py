@@ -12,6 +12,15 @@ from .types import ByteStreamBufferView
 
 
 class ByteStreamBuffers(NamespaceClass):
+    @staticmethod
+    def memoryview_to_bytes(mv: memoryview) -> bytes:
+        if (((ot := type(obj := mv.obj)) is bytes or ot is bytearray or isinstance(obj, (bytes, bytearray))) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
+            return obj  # type: ignore[return-value]
+
+        return mv.tobytes()
+
+    #
+
     _CAN_CONVERT_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
         bytes,
         bytearray,
@@ -23,14 +32,16 @@ class ByteStreamBuffers(NamespaceClass):
     def can_bytes(obj: ta.Any) -> bool:
         return type(obj) in (cts := ByteStreamBuffers._CAN_CONVERT_TYPES) or isinstance(obj, cts)
 
+    # TODO:
+    # @staticmethod
+    # @ta.overload
+    # def buffer_to_bytes(obj: ta.Any, or_none: ta.Literal[True], /) -> ta.Optional[bytes]:
+    #     ...
     #
-
-    @staticmethod
-    def memoryview_to_bytes(mv: memoryview) -> bytes:
-        if (((ot := type(obj := mv.obj)) is bytes or ot is bytearray or isinstance(obj, (bytes, bytearray))) and len(mv) == len(obj)):  # type: ignore[arg-type]  # noqa
-            return obj  # type: ignore[return-value]
-
-        return mv.tobytes()
+    # @staticmethod
+    # @ta.overload
+    # def buffer_to_bytes(obj: ta.Any, or_none: ta.Literal[False] = False, /) -> bytes:
+    #     ...
 
     @staticmethod
     def buffer_to_bytes(obj: ta.Any) -> bytes:
@@ -68,8 +79,6 @@ class ByteStreamBuffers(NamespaceClass):
 
         else:
             return ByteStreamBuffers.buffer_to_bytes(obj)
-
-    #
 
     @staticmethod
     def bytes_len(obj: ta.Any) -> int:

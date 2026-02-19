@@ -79,7 +79,7 @@ class InboundFnChannelPipelineHandler(FnChannelPipelineHandler):
         self._inbound = inbound
 
     def __repr__(self) -> str:
-        return f'{type(self).__name__}({self._inbound!r})'
+        return f'{type(self).__name__}@{id(self):x}({self._inbound!r})'
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         self._inbound(ctx, msg)
@@ -92,7 +92,7 @@ class OutboundFnChannelPipelineHandler(FnChannelPipelineHandler):
         self._outbound = outbound
 
     def __repr__(self) -> str:
-        return f'{type(self).__name__}({self._outbound!r})'
+        return f'{type(self).__name__}@{id(self):x}({self._outbound!r})'
 
     def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         self._outbound(ctx, msg)
@@ -111,7 +111,7 @@ class DuplexFnChannelPipelineHandler(FnChannelPipelineHandler):
         self._outbound = outbound
 
     def __repr__(self) -> str:
-        return f'{type(self).__name__}(inbound={self._inbound!r}, outbound={self._outbound!r})'
+        return f'{type(self).__name__}@{id(self):x}(inbound={self._inbound!r}, outbound={self._outbound!r})'
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         self._inbound(ctx, msg)

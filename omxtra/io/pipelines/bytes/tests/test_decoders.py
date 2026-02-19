@@ -4,7 +4,7 @@ from ...core import ChannelPipelineMessages
 from ...core import PipelineChannel
 from ..decoders import DelimiterFramePipelineDecoder
 from ..decoders import UnicodePipelineDecoder
-from ..flatmap import FlatMapChannelPipelineHandlers
+from ...handlers.flatmap import FlatMapChannelPipelineHandlers
 
 
 INBOUND_EMIT_TERMINAL = FlatMapChannelPipelineHandlers.emit_and_drop('inbound')
