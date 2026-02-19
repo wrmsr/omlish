@@ -443,7 +443,7 @@ class FollowSetComputer:
                             self.follow_sets[sym].add(next_sym)
                         elif isinstance(next_sym, NonTerminal):
                             first_next = self.first_sets.get(next_sym, set())
-                            self.follow_sets[sym] |= first_next - {EPSILON}
+                            self.follow_sets[sym] |= first_next - {EPSILON}  # type: ignore[arg-type]
 
                             # If next can be epsilon, add FOLLOW(lhs) to FOLLOW(sym)
                             if EPSILON in first_next:
@@ -514,7 +514,7 @@ class ParseTable:
                     # Shift or goto
                     sym = item.symbol_after_dot
                     if (state_idx, sym) in self.automaton.goto_table:
-                        next_state = self.automaton.goto_table[(state_idx, sym)]
+                        next_state = self.automaton.goto_table[(state_idx, sym)]  # type: ignore[index]
 
                         if isinstance(sym, Terminal):
                             # Shift action
