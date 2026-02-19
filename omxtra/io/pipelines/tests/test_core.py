@@ -55,7 +55,7 @@ class ReplaceSelfInboundHandler(ChannelPipelineHandler):
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         h = self.fn()
         hr = ctx.pipeline.replace(ctx.ref, h)
-        ctx.pipeline.feed_in_to(hr, msg)
+        ctx.channel.feed_in_to(hr, msg)
 
 
 class TestCore(unittest.TestCase):

@@ -424,18 +424,6 @@ class ChannelPipeline:
 
     #
 
-    def feed_in_to(self, handler_ref: ChannelPipelineHandlerRef, msg: ta.Any) -> None:
-        ctx = handler_ref._context  # noqa
-        check.is_(ctx._pipeline, self)  # noqa
-        ctx._inbound(msg)  # noqa
-
-    def feed_out_to(self, handler_ref: ChannelPipelineHandlerRef, msg: ta.Any) -> None:
-        ctx = handler_ref._context  # noqa
-        check.is_(ctx._pipeline, self)  # noqa
-        ctx._outbound(msg)  # noqa
-
-    #
-
     def _check_can_add(
             self,
             handler: ChannelPipelineHandler,
@@ -851,6 +839,8 @@ class PipelineChannel:
         self._pending_inbound_must_propagate: ta.Final[ta.Dict[int, ta.Any]] = {}
         self._pending_outbound_must_propagate: ta.Final[ta.Dict[int, ta.Any]] = {}
 
+        self._execution_depth = 0
+
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}'
 
@@ -878,47 +868,61 @@ class PipelineChannel:
 
     #
 
-    def _feed_in(self, msg: ta.Any) -> None:
+    def _feed_in_to(self, msg: ta.Any, ctx: ChannelPipelineHandlerContext) -> None:
         if isinstance(msg, ChannelPipelineMessages.Eof):
             self._saw_eof = True
         elif self._saw_eof:
             raise SawEofChannelPipelineError
 
-        ctx = self._pipeline._outermost  # noqa
+        self._execution_depth += 1
         try:
             ctx._inbound(msg)  # noqa
         except BaseException as e:  # noqa
             if self._config.raise_handler_errors:
                 raise
             self.handle_error(e)
+        finally:
+            self._execution_depth -= 1
 
     def feed_in(self, msg: ta.Any) -> None:
-        self._feed_in(msg)
+        self._feed_in_to(msg, self._pipeline._outermost)  # noqa
 
     def feed_eof(self) -> None:
-        self._feed_in(ChannelPipelineMessages.Eof())
+        self._feed_in_to(ChannelPipelineMessages.Eof(), self._pipeline._outermost)  # noqa
+
+    def feed_in_to(self, handler_ref: ChannelPipelineHandlerRef, msg: ta.Any) -> None:
+        ctx = handler_ref._context  # noqa
+        check.is_(ctx._pipeline, self._pipeline)  # noqa
+        self._feed_in_to(msg, ctx)
 
     #
 
-    def _feed_out(self, msg: ta.Any) -> None:
+    def _feed_out_to(self, msg: ta.Any, ctx: ChannelPipelineHandlerContext) -> None:
         if isinstance(msg, ChannelPipelineMessages.Close):
             self._saw_close = True
         elif self._saw_close:
             raise ClosedChannelPipelineError
 
-        ctx = self._pipeline._innermost  # noqa
+        self._execution_depth += 1
         try:
             ctx._outbound(msg)  # noqa
         except BaseException as e:  # noqa
             if self._config.raise_handler_errors:
                 raise
             self.handle_error(e)
+        finally:
+            self._execution_depth -= 1
 
     def feed_out(self, msg: ta.Any) -> None:
-        self._feed_out(msg)
+        self._feed_out_to(msg, self._pipeline._innermost)  # noqa
 
     def feed_close(self) -> None:
-        self._feed_out(ChannelPipelineMessages.Close())
+        self._feed_out_to(ChannelPipelineMessages.Close(), self._pipeline._innermost)  # noqa
+
+    def feed_out_to(self, handler_ref: ChannelPipelineHandlerRef, msg: ta.Any) -> None:
+        ctx = handler_ref._context  # noqa
+        check.is_(ctx._pipeline, self._pipeline)  # noqa
+        self._feed_out_to(msg, ctx)
 
     #
 

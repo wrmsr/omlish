@@ -32,7 +32,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='errors.py', sha1='c8301263ba2f5cd116a11c2229aafa705b3d94fc'),
             dict(path='../../../omlish/io/streams/types.py', sha1='36dfe0ba2bb0a7fdf255a3a2fcfc7a5fe2cce2c3'),
-            dict(path='core.py', sha1='f6bc8c324ef24915853392e558e2453aabc736ad'),
+            dict(path='core.py', sha1='e64083a18023d6f3382c18f743ce8474ec594509'),
             dict(path='../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -1609,18 +1609,6 @@ class ChannelPipeline:
 
     #
 
-    def feed_in_to(self, handler_ref: ChannelPipelineHandlerRef, msg: ta.Any) -> None:
-        ctx = handler_ref._context  # noqa
-        check.is_(ctx._pipeline, self)  # noqa
-        ctx._inbound(msg)  # noqa
-
-    def feed_out_to(self, handler_ref: ChannelPipelineHandlerRef, msg: ta.Any) -> None:
-        ctx = handler_ref._context  # noqa
-        check.is_(ctx._pipeline, self)  # noqa
-        ctx._outbound(msg)  # noqa
-
-    #
-
     def _check_can_add(
             self,
             handler: ChannelPipelineHandler,
@@ -2036,6 +2024,8 @@ class PipelineChannel:
         self._pending_inbound_must_propagate: ta.Final[ta.Dict[int, ta.Any]] = {}
         self._pending_outbound_must_propagate: ta.Final[ta.Dict[int, ta.Any]] = {}
 
+        self._execution_depth = 0
+
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}'
 
@@ -2063,47 +2053,61 @@ class PipelineChannel:
 
     #
 
-    def _feed_in(self, msg: ta.Any) -> None:
+    def _feed_in_to(self, msg: ta.Any, ctx: ChannelPipelineHandlerContext) -> None:
         if isinstance(msg, ChannelPipelineMessages.Eof):
             self._saw_eof = True
         elif self._saw_eof:
             raise SawEofChannelPipelineError
 
-        ctx = self._pipeline._outermost  # noqa
+        self._execution_depth += 1
         try:
             ctx._inbound(msg)  # noqa
         except BaseException as e:  # noqa
             if self._config.raise_handler_errors:
                 raise
             self.handle_error(e)
+        finally:
+            self._execution_depth -= 1
 
     def feed_in(self, msg: ta.Any) -> None:
-        self._feed_in(msg)
+        self._feed_in_to(msg, self._pipeline._outermost)  # noqa
 
     def feed_eof(self) -> None:
-        self._feed_in(ChannelPipelineMessages.Eof())
+        self._feed_in_to(ChannelPipelineMessages.Eof(), self._pipeline._outermost)  # noqa
+
+    def feed_in_to(self, handler_ref: ChannelPipelineHandlerRef, msg: ta.Any) -> None:
+        ctx = handler_ref._context  # noqa
+        check.is_(ctx._pipeline, self._pipeline)  # noqa
+        self._feed_in_to(msg, ctx)
 
     #
 
-    def _feed_out(self, msg: ta.Any) -> None:
+    def _feed_out_to(self, msg: ta.Any, ctx: ChannelPipelineHandlerContext) -> None:
         if isinstance(msg, ChannelPipelineMessages.Close):
             self._saw_close = True
         elif self._saw_close:
             raise ClosedChannelPipelineError
 
-        ctx = self._pipeline._innermost  # noqa
+        self._execution_depth += 1
         try:
             ctx._outbound(msg)  # noqa
         except BaseException as e:  # noqa
             if self._config.raise_handler_errors:
                 raise
             self.handle_error(e)
+        finally:
+            self._execution_depth -= 1
 
     def feed_out(self, msg: ta.Any) -> None:
-        self._feed_out(msg)
+        self._feed_out_to(msg, self._pipeline._innermost)  # noqa
 
     def feed_close(self) -> None:
-        self._feed_out(ChannelPipelineMessages.Close())
+        self._feed_out_to(ChannelPipelineMessages.Close(), self._pipeline._innermost)  # noqa
+
+    def feed_out_to(self, handler_ref: ChannelPipelineHandlerRef, msg: ta.Any) -> None:
+        ctx = handler_ref._context  # noqa
+        check.is_(ctx._pipeline, self._pipeline)  # noqa
+        self._feed_out_to(msg, ctx)
 
     #
 
