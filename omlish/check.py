@@ -28,9 +28,12 @@ _callable = callable
 
 try:
     from . import _check  # type: ignore
+
 except ImportError:
     pass
+
 else:
+    setattr(Checks, '_py_unpack_isinstance_spec', Checks._unpack_isinstance_spec)  # noqa
     setattr(Checks, '_unpack_isinstance_spec', _check.unpack_isinstance_spec)
 
 
