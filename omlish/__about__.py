@@ -1,4 +1,4 @@
-__version__ = '0.0.0.dev527'
+__version__ = '0.0.0.dev528'
 __revision__ = None
 
 
