@@ -111,8 +111,8 @@ service = await async_injector[MyService]
 The `AsyncInjector` is event loop agnostic - it makes no reference to or usage of `asyncio`, and will run under any (or
 no) event loop (like `trio`, `anyio`, etc.).
 
-Internally, the non-async `Injector` class delegates to an internal async `AsyncInjector` class (but does not require
-any event loop to do so).
+Internally, the non-async `Injector` class delegates to an internal `AsyncInjector` class (but does not require any
+event loop to do so).
 
 ### Elements
 
