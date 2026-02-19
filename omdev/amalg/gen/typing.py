@@ -30,6 +30,7 @@ def _is_typing(
         exclude_newtypes: bool = False,
 ) -> bool:
     es = tks.join_toks(lts).strip()
+    # FIXME: doesn't handle lines ending with `noqa` comments lol
     if es.endswith(NO_MOVE_COMMENT):
         return False
     if any(es.endswith(sfx) for sfx in (TYPE_ALIAS_COMMENT, NOQA_TYPE_ALIAS_COMMENT)):
