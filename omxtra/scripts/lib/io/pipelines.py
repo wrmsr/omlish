@@ -28,7 +28,7 @@ def __omlish_amalg__():  # noqa
         src_files=[
             dict(path='../../../omlish/io/streams/errors.py', sha1='67ca85fd8741b5bfefe76c872ce1c30c18fab06f'),
             dict(path='../../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
-            dict(path='../../../omlish/lite/check.py', sha1='0ce40cc68bd1b18604293a0b4924efabb6033766'),
+            dict(path='../../../omlish/lite/check.py', sha1='4dee5d317d9e0fab5cd65f31a3cc1a496f7adfff'),
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='errors.py', sha1='c8301263ba2f5cd116a11c2229aafa705b3d94fc'),
             dict(path='../../../omlish/io/streams/types.py', sha1='36dfe0ba2bb0a7fdf255a3a2fcfc7a5fe2cce2c3'),
@@ -421,11 +421,11 @@ class Checks:
         return spec
 
     @ta.overload
-    def isinstance(self, v: ta.Any, spec: ta.Type[T], msg: CheckMessage = None) -> T:
+    def isinstance(self, v: ta.Any, spec: ta.Type[T], msg: CheckMessage = None, /) -> T:
         ...
 
     @ta.overload
-    def isinstance(self, v: ta.Any, spec: ta.Any, msg: CheckMessage = None) -> ta.Any:
+    def isinstance(self, v: ta.Any, spec: ta.Any, msg: CheckMessage = None, /) -> ta.Any:
         ...
 
     def isinstance(self, v, spec, msg=None):
@@ -441,14 +441,14 @@ class Checks:
         return v
 
     @ta.overload
-    def of_isinstance(self, spec: ta.Type[T], msg: CheckMessage = None) -> ta.Callable[[ta.Any], T]:
+    def of_isinstance(self, spec: ta.Type[T], msg: CheckMessage = None, /) -> ta.Callable[[ta.Any], T]:
         ...
 
     @ta.overload
-    def of_isinstance(self, spec: ta.Any, msg: CheckMessage = None) -> ta.Callable[[ta.Any], ta.Any]:
+    def of_isinstance(self, spec: ta.Any, msg: CheckMessage = None, /) -> ta.Callable[[ta.Any], ta.Any]:
         ...
 
-    def of_isinstance(self, spec, msg=None):
+    def of_isinstance(self, spec, msg=None, /):
         spec = self._unpack_isinstance_spec(spec)
 
         def inner(v):
@@ -456,7 +456,7 @@ class Checks:
 
         return inner
 
-    def cast(self, v: ta.Any, cls: ta.Type[T], msg: CheckMessage = None) -> T:
+    def cast(self, v: ta.Any, cls: ta.Type[T], msg: CheckMessage = None, /) -> T:
         if not isinstance(v, cls):
             self._raise(
                 TypeError,
@@ -467,13 +467,13 @@ class Checks:
 
         return v
 
-    def of_cast(self, cls: ta.Type[T], msg: CheckMessage = None) -> ta.Callable[[T], T]:
+    def of_cast(self, cls: ta.Type[T], msg: CheckMessage = None, /) -> ta.Callable[[T], T]:
         def inner(v):
             return self.cast(v, cls, msg)
 
         return inner
 
-    def not_isinstance(self, v: T, spec: ta.Any, msg: CheckMessage = None) -> T:  # noqa
+    def not_isinstance(self, v: T, spec: ta.Any, msg: CheckMessage = None, /) -> T:  # noqa
         if isinstance(v, self._unpack_isinstance_spec(spec)):
             self._raise(
                 TypeError,
@@ -485,7 +485,7 @@ class Checks:
 
         return v
 
-    def of_not_isinstance(self, spec: ta.Any, msg: CheckMessage = None) -> ta.Callable[[T], T]:
+    def of_not_isinstance(self, spec: ta.Any, msg: CheckMessage = None, /) -> ta.Callable[[T], T]:
         spec = self._unpack_isinstance_spec(spec)
 
         def inner(v):
@@ -495,7 +495,7 @@ class Checks:
 
     ##
 
-    def issubclass(self, v: ta.Type[T], spec: ta.Any, msg: CheckMessage = None) -> ta.Type[T]:  # noqa
+    def issubclass(self, v: ta.Type[T], spec: ta.Any, msg: CheckMessage = None, /) -> ta.Type[T]:  # noqa
         if not issubclass(v, spec):
             self._raise(
                 TypeError,
@@ -507,7 +507,7 @@ class Checks:
 
         return v
 
-    def not_issubclass(self, v: ta.Type[T], spec: ta.Any, msg: CheckMessage = None) -> ta.Type[T]:
+    def not_issubclass(self, v: ta.Type[T], spec: ta.Any, msg: CheckMessage = None, /) -> ta.Type[T]:
         if issubclass(v, spec):
             self._raise(
                 TypeError,
@@ -519,7 +519,7 @@ class Checks:
 
         return v
 
-    def not_issubclass_except_nameerror(self, v: ta.Type[T], spec: ta.Callable[[], type], msg: CheckMessage = None) -> ta.Type[T]:  # noqa
+    def not_issubclass_except_nameerror(self, v: ta.Type[T], spec: ta.Callable[[], type], msg: CheckMessage = None, /) -> ta.Type[T]:  # noqa
         try:
             c = spec()
         except NameError:
@@ -538,7 +538,7 @@ class Checks:
 
     #
 
-    def in_(self, v: T, c: ta.Container[T], msg: CheckMessage = None) -> T:
+    def in_(self, v: T, c: ta.Container[T], msg: CheckMessage = None, /) -> T:
         if v not in c:
             self._raise(
                 ValueError,
@@ -550,7 +550,7 @@ class Checks:
 
         return v
 
-    def not_in(self, v: T, c: ta.Container[T], msg: CheckMessage = None) -> T:
+    def not_in(self, v: T, c: ta.Container[T], msg: CheckMessage = None, /) -> T:
         if v in c:
             self._raise(
                 ValueError,
@@ -562,7 +562,7 @@ class Checks:
 
         return v
 
-    def empty(self, v: SizedT, msg: CheckMessage = None) -> SizedT:
+    def empty(self, v: SizedT, msg: CheckMessage = None, /) -> SizedT:
         if len(v) != 0:
             self._raise(
                 ValueError,
@@ -574,7 +574,7 @@ class Checks:
 
         return v
 
-    def iterempty(self, v: ta.Iterable[T], msg: CheckMessage = None) -> ta.Iterable[T]:
+    def iterempty(self, v: ta.Iterable[T], msg: CheckMessage = None, /) -> ta.Iterable[T]:
         it = iter(v)
         try:
             next(it)
@@ -591,7 +591,7 @@ class Checks:
 
         return v
 
-    def not_empty(self, v: SizedT, msg: CheckMessage = None) -> SizedT:
+    def not_empty(self, v: SizedT, msg: CheckMessage = None, /) -> SizedT:
         if len(v) == 0:
             self._raise(
                 ValueError,
@@ -603,7 +603,7 @@ class Checks:
 
         return v
 
-    def unique(self, it: ta.Iterable[T], msg: CheckMessage = None) -> ta.Iterable[T]:
+    def unique(self, it: ta.Iterable[T], msg: CheckMessage = None, /) -> ta.Iterable[T]:
         dupes = [e for e, c in collections.Counter(it).items() if c > 1]
         if dupes:
             self._raise(
@@ -615,7 +615,7 @@ class Checks:
 
         return it
 
-    def single(self, obj: ta.Iterable[T], msg: CheckMessage = None) -> T:
+    def single(self, obj: ta.Iterable[T], msg: CheckMessage = None, /) -> T:
         try:
             [value] = obj
         except ValueError:
@@ -629,7 +629,7 @@ class Checks:
 
         return value
 
-    def opt_single(self, obj: ta.Iterable[T], msg: CheckMessage = None) -> ta.Optional[T]:
+    def opt_single(self, obj: ta.Iterable[T], msg: CheckMessage = None, /) -> ta.Optional[T]:
         it = iter(obj)
         try:
             value = next(it)
@@ -651,7 +651,7 @@ class Checks:
 
         raise RuntimeError  # noqa
 
-    async def async_single(self, obj: ta.AsyncIterable[T], msg: CheckMessage = None) -> T:
+    async def async_single(self, obj: ta.AsyncIterable[T], msg: CheckMessage = None, /) -> T:
         ait = obj.__aiter__()
 
         try:
@@ -680,7 +680,7 @@ class Checks:
 
         raise RuntimeError  # noqa
 
-    async def async_opt_single(self, obj: ta.AsyncIterable[T], msg: CheckMessage = None) -> ta.Optional[T]:
+    async def async_opt_single(self, obj: ta.AsyncIterable[T], msg: CheckMessage = None, /) -> ta.Optional[T]:
         ait = obj.__aiter__()
 
         try:
@@ -710,7 +710,7 @@ class Checks:
 
     #
 
-    def none(self, v: ta.Any, msg: CheckMessage = None) -> None:
+    def none(self, v: ta.Any, msg: CheckMessage = None, /) -> None:
         if v is not None:
             self._raise(
                 ValueError,
@@ -720,7 +720,7 @@ class Checks:
                 render_fmt='%s',
             )
 
-    def not_none(self, v: ta.Optional[T], msg: CheckMessage = None) -> T:
+    def not_none(self, v: ta.Optional[T], msg: CheckMessage = None, /) -> T:
         if v is None:
             self._raise(
                 ValueError,
@@ -734,7 +734,7 @@ class Checks:
 
     #
 
-    def equal(self, v: T, o: ta.Any, msg: CheckMessage = None) -> T:
+    def equal(self, v: T, o: ta.Any, msg: CheckMessage = None, /) -> T:
         if o != v:
             self._raise(
                 ValueError,
@@ -746,7 +746,7 @@ class Checks:
 
         return v
 
-    def not_equal(self, v: T, o: ta.Any, msg: CheckMessage = None) -> T:
+    def not_equal(self, v: T, o: ta.Any, msg: CheckMessage = None, /) -> T:
         if o == v:
             self._raise(
                 ValueError,
@@ -758,7 +758,7 @@ class Checks:
 
         return v
 
-    def is_(self, v: T, o: ta.Any, msg: CheckMessage = None) -> T:
+    def is_(self, v: T, o: ta.Any, msg: CheckMessage = None, /) -> T:
         if o is not v:
             self._raise(
                 ValueError,
@@ -770,7 +770,7 @@ class Checks:
 
         return v
 
-    def is_not(self, v: T, o: ta.Any, msg: CheckMessage = None) -> T:
+    def is_not(self, v: T, o: ta.Any, msg: CheckMessage = None, /) -> T:
         if o is v:
             self._raise(
                 ValueError,
@@ -782,7 +782,7 @@ class Checks:
 
         return v
 
-    def callable(self, v: T, msg: CheckMessage = None) -> T:  # noqa
+    def callable(self, v: T, msg: CheckMessage = None, /) -> T:  # noqa
         if not callable(v):
             self._raise(
                 TypeError,
@@ -794,7 +794,7 @@ class Checks:
 
         return v
 
-    def non_empty_str(self, v: ta.Optional[str], msg: CheckMessage = None) -> str:
+    def non_empty_str(self, v: ta.Optional[str], msg: CheckMessage = None, /) -> str:
         if not isinstance(v, str) or not v:
             self._raise(
                 ValueError,
@@ -806,7 +806,7 @@ class Checks:
 
         return v
 
-    def replacing(self, expected: ta.Any, old: ta.Any, new: T, msg: CheckMessage = None) -> T:
+    def replacing(self, expected: ta.Any, old: ta.Any, new: T, msg: CheckMessage = None, /) -> T:
         if old != expected:
             self._raise(
                 ValueError,
@@ -818,7 +818,7 @@ class Checks:
 
         return new
 
-    def replacing_none(self, old: ta.Any, new: T, msg: CheckMessage = None) -> T:
+    def replacing_none(self, old: ta.Any, new: T, msg: CheckMessage = None, /) -> T:
         if old is not None:
             self._raise(
                 ValueError,
@@ -832,7 +832,7 @@ class Checks:
 
     #
 
-    def arg(self, v: bool, msg: CheckMessage = None) -> None:
+    def arg(self, v: bool, msg: CheckMessage = None, /) -> None:
         if not v:
             self._raise(
                 RuntimeError,
@@ -842,7 +842,7 @@ class Checks:
                 render_fmt='%s',
             )
 
-    def state(self, v: bool, msg: CheckMessage = None) -> None:
+    def state(self, v: bool, msg: CheckMessage = None, /) -> None:
         if not v:
             self._raise(
                 RuntimeError,

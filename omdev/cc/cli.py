@@ -24,6 +24,9 @@ TODO:
  - cc ij, based off of cmake
  - fix CFLAGS/CCFLAGS/CPPFLAGS/CXXFLAGS
  - jit-gen cmake mode? multi-src builds
+ - alt exec modes (* share / dedupe with java cli *):
+   - fork/exec, just leave temp dir
+   - fork, set pr_deathsig, exec, forward signals
 """
 import os
 import shlex
