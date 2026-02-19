@@ -6,13 +6,30 @@ import typing as ta
 
 from omlish.lite.check import check
 
+from .ast import AliasYamlNode  # noqa
 from .ast import AnchorYamlNode
+from .ast import ArrayYamlNode  # noqa
+from .ast import BaseYamlNode  # noqa
+from .ast import BoolYamlNode  # noqa
+from .ast import CommentGroupYamlNode  # noqa
+from .ast import FloatYamlNode  # noqa
+from .ast import InfinityYamlNode  # noqa
+from .ast import IntegerYamlNode  # noqa
+from .ast import LiteralYamlNode  # noqa
 from .ast import MapKeyYamlNode
+from .ast import MappingKeyYamlNode  # noqa
 from .ast import MappingValueYamlNode
 from .ast import MappingYamlNode
 from .ast import MapYamlNode
+from .ast import NanYamlNode  # noqa
+from .ast import NullYamlNode  # noqa
+from .ast import SequenceYamlNode  # noqa
+from .ast import StringYamlNode  # noqa
+from .ast import TagYamlNode  # noqa
 from .ast import YamlFile
 from .ast import YamlNode
+from .ast import YamlNodeType  # noqa
+from .ast import yaml_sequence_merge_value  # noqa
 from .errors import YamlError
 from .errors import YamlErrorOr
 from .errors import yaml_error
@@ -319,7 +336,7 @@ r"""
         self.add_foot_comment_to_map(node)
 
     def add_head_or_line_comment_to_map(self, node: YamlNode) -> None:
-        sequence, ok := node.(*ast.SequenceNode)
+        sequence, ok := node.(SequenceYamlNode)
         if ok {
             self.add_sequence_node_comment_to_map(sequence)
             return
@@ -347,14 +364,14 @@ r"""
                 if len(n.Values) != 0 {
                     commentPath = n.Values[0].Key.GetPath()
 
-            case *MappingValueYamlNode:
+            case MappingValueYamlNode:
                 commentPath = n.Key.GetPath()
 
             self.add_comment_to_map(commentPath, HeadComment(texts...))
         else:
             self.add_comment_to_map(commentPath, LineComment(texts[0]))
 
-    def add_sequence_node_comment_to_map(self, node: *ast.SequenceNode) -> None:
+    def add_sequence_node_comment_to_map(self, node: SequenceYamlNode) -> None:
         if len(node.ValueHeadComments) != 0 {
             for idx, headComment := range node.ValueHeadComments {
                 if headComment is None:
@@ -379,11 +396,11 @@ r"""
 
     def add_foot_comment_to_map(self, node: YamlNode) -> None:
         var (
-            footComment     *ast.CommentGroupNode
+            footComment     CommentGroupYamlNode
             footCommentPath = node.GetPath()
         )
         switch n := node.(type) {
-        case *ast.SequenceNode:
+        case SequenceYamlNode:
             footComment = n.FootComment
             if n.FootComment is not None:
                 footCommentPath = n.FootComment.GetPath()
@@ -393,7 +410,7 @@ r"""
             if n.FootComment is not None:
                 footCommentPath = n.FootComment.GetPath()
 
-        case *MappingValueYamlNode:
+        case MappingValueYamlNode:
             footComment = n.FootComment
             if n.FootComment is not None:
                 footCommentPath = n.FootComment.GetPath()
@@ -427,21 +444,21 @@ r"""
 
             self.set_path_comment_map(node)
             switch n := node.(type) {
-            case *ast.NullNode:
+            case NullYamlNode:
                 return nil, nil
-            case *ast.StringNode:
+            case StringYamlNode:
                 return n.GetValue(), nil
-            case *ast.IntegerNode:
+            case IntegerYamlNode:
                 return n.GetValue(), nil
-            case *ast.FloatNode:
+            case FloatYamlNode:
                 return n.GetValue(), nil
-            case *ast.BoolNode:
+            case BoolYamlNode:
                 return n.GetValue(), nil
-            case *ast.InfinityNode:
+            case InfinityYamlNode:
                 return n.GetValue(), nil
-            case *ast.NanNode:
+            case NanYamlNode:
                 return n.GetValue(), nil
-            case *ast.TagNode:
+            case TagYamlNode:
                 if n.Directive is not None:
                     v, err := self.node_to_value(ctx, n.Value)
                     if err is not None:
@@ -517,7 +534,7 @@ r"""
                 self.anchor_node_map[anchor_name] = n.Value
                 self.anchor_value_map[anchor_name] = reflect.ValueOf(anchorValue)
                 return anchorValue, nil
-            case *ast.AliasNode:
+            case AliasYamlNode:
                 text := n.Value.String()
                 if _, exists := get_anchor_map(ctx)[text]; exists {
                     # self recursion.
@@ -529,11 +546,11 @@ r"""
                 if node, exists := self.anchor_node_map[text]; exists {
                     return self.node_to_value(ctx, node)
                 return nil, errors.ErrSyntax(fmt.Sprintf("could not find alias %q", text), n.Value.GetToken())
-            case *ast.LiteralNode:
+            case LiteralYamlNode:
                 return n.Value.GetValue(), nil
-            case *ast.MappingKeyNode:
+            case MappingKeyYamlNode:
                 return self.node_to_value(ctx, n.Value)
-            case *MappingValueYamlNode:
+            case MappingValueYamlNode:
                 if n.Key.is_merge_key() {
                     value, err := self.get_map_node(n.Value, True)
                     if err is not None:
@@ -574,7 +591,7 @@ r"""
                     if err := self.set_to_map_value(ctx, value, m); err is not None:
                         return nil, err
                 return m, nil
-            case *ast.SequenceNode:
+            case SequenceYamlNode:
                 v := make([]ta.Any, 0, len(n.Values))
                 for _, value := range n.Values {
                     vv, err := self.node_to_value(ctx, value)
@@ -600,53 +617,53 @@ r"""
                 anchor_name := n.Name.GetToken().Value
                 self.anchor_node_map[anchor_name] = n.Value
                 return self.get_map_node(n.Value, is_merge)
-            case *ast.AliasNode:
+            case AliasYamlNode:
                 aliasName := n.Value.GetToken().Value
                 node := self.anchor_node_map[aliasName]
                 if node is None:
                     return nil, fmt.Errorf("cannot find anchor by alias name %s", aliasName)
                 return self.get_map_node(node, is_merge)
-            case *ast.SequenceNode:
+            case SequenceYamlNode:
                 if !is_merge {
-                    return nil, errors.ErrUnexpectedNodeType(node.Type(), ast.MappingType, node.GetToken())
+                    return nil, errors.ErrUnexpectedNodeType(node.Type(), YamlNodeType.MAPPING, node.GetToken())
                 var mapNodes []MapYamlNode
                 for _, value := range n.Values {
                     mapNode, err := self.get_map_node(value, False)
                     if err is not None:
                         return nil, err
                     mapNodes = append(mapNodes, mapNode)
-                return ast.SequenceMergeValue(mapNodes...), nil
-            return nil, errors.ErrUnexpectedNodeType(node.Type(), ast.MappingType, node.GetToken())
+                return yaml_sequence_merge_value(mapNodes...), nil
+            return nil, errors.ErrUnexpectedNodeType(node.Type(), YamlNodeType.MAPPING, node.GetToken())
 
         finally:
             self.step_out()
 
-    def get_array_node(self, node: YamlNode) -> YamlErrorOr[ast.ArrayNode]:
+    def get_array_node(self, node: YamlNode) -> YamlErrorOr[ArrayYamlNode]:
         self.step_in()
         try:
             if self.is_exceeded_max_depth() {
                 return YamlDecodeErrors.EXCEEDED_MAX_DEPTH
 
-            if _, ok := node.(*ast.NullNode); ok {
+            if _, ok := node.(NullYamlNode); ok {
                 return nil, nil
             if anchor, ok := node.(AnchorYamlNode); ok {
-                arrayNode, ok := anchor.Value.(ast.ArrayNode)
+                arrayNode, ok := anchor.Value.(ArrayYamlNode)
                 if ok {
                     return arrayNode, nil
 
-                return nil, errors.ErrUnexpectedNodeType(anchor.Value.Type(), ast.SequenceType, node.GetToken())
-            if alias, ok := node.(*ast.AliasNode); ok {
+                return nil, errors.ErrUnexpectedNodeType(anchor.Value.Type(), YamlNodeType.SEQUENCE, node.GetToken())
+            if alias, ok := node.(AliasYamlNode); ok {
                 aliasName := alias.Value.GetToken().Value
                 node := self.anchor_node_map[aliasName]
                 if node is None:
                     return nil, fmt.Errorf("cannot find anchor by alias name %s", aliasName)
-                arrayNode, ok := node.(ast.ArrayNode)
+                arrayNode, ok := node.(ArrayYamlNode)
                 if ok {
                     return arrayNode, nil
-                return nil, errors.ErrUnexpectedNodeType(node.Type(), ast.SequenceType, node.GetToken())
-            arrayNode, ok := node.(ast.ArrayNode)
+                return nil, errors.ErrUnexpectedNodeType(node.Type(), YamlNodeType.SEQUENCE, node.GetToken())
+            arrayNode, ok := node.(ArrayYamlNode)
             if !ok {
-                return nil, errors.ErrUnexpectedNodeType(node.Type(), ast.SequenceType, node.GetToken())
+                return nil, errors.ErrUnexpectedNodeType(node.Type(), YamlNodeType.SEQUENCE, node.GetToken())
             return arrayNode, nil
         
         finally:
@@ -868,7 +885,7 @@ r"""
             if !dst.IsValid() {
                 return nil
 
-            if src.Type() == ast.AnchorType {
+            if src.Type() == YamlNodeType.ANCHOR {
                 anchor, _ := src.(AnchorYamlNode)
                 anchor_name := anchor.Name.GetToken().Value
                 if err := self.decode_value(with_anchor(ctx, anchor_name), dst, anchor.Value); err is not None:
@@ -884,7 +901,7 @@ r"""
             case reflect.Ptr:
                 if dst.IsNil() {
                     return nil
-                if src.Type() == ast.NullType {
+                if src.Type() == YamlNodeType.NULL:
                     # set nil value to pointer
                     dst.Set(reflect.Zero(valueType))
                     return nil
@@ -1021,8 +1038,8 @@ r"""
         defaultVal: ta.Any,
         node: YamlNode,
     ) -> YamlErrorOr[ta.Any]:
-        if node.Type() == ast.AliasType {
-            aliasName := node.(*ast.AliasNode).Value.GetToken().Value
+        if node.Type() == YamlNodeType.ALIAS {
+            aliasName := node.(AliasYamlNode).Value.GetToken().Value
             value := self.anchor_value_map[aliasName]
             if value.IsValid() {
                 v, err := self.cast_to_assignable_value(value, typ, node)
@@ -1032,7 +1049,7 @@ r"""
             if exists {
                 node = anchor
         var newValue reflect.Value
-        if node.Type() == ast.NullType {
+        if node.Type() == YamlNodeType.NULL {
             newValue = reflect.New(typ).Elem()
         else:
             newValue = self.create_decodable_value(typ)
@@ -1040,7 +1057,7 @@ r"""
             defaultVal = defaultVal.Elem()
         if defaultVal.IsValid() && defaultVal.Type().AssignableTo(newValue.Type()) {
             newValue.Set(defaultVal)
-        if node.Type() != ast.NullType {
+        if node.Type() != YamlNodeType.NULL {
             if err := self.decode_value(ctx, newValue, node); err is not None:
                 return reflect.Value{}, err
         return self.cast_to_assignable_value(newValue, typ, node)
@@ -1185,8 +1202,8 @@ r"""
         for mapIter.Next() {
             key := mapIter.Key()
             value := mapIter.Value()
-            if key.is_merge_key() && value.Type() == ast.AliasType {
-                return value.(*ast.AliasNode).Value.GetToken().Value
+            if key.is_merge_key() && value.Type() == YamlNodeType.ALIAS {
+                return value.(AliasYamlNode).Value.GetToken().Value
         return ""
 
     def decode_struct(self, ctx: Context, dst: ta.Any, src: YamlNode) -> ta.Optional[YamlError]:
@@ -1241,13 +1258,13 @@ r"""
                         continue
                     if !fieldValue.CanSet() {
                         return fmt.Errorf("cannot set embedded type as unexported field %s.%s", field.PkgPath, field.Name)
-                    if fieldValue.Type().Kind() == reflect.Ptr && src.Type() == ast.NullType {
+                    if fieldValue.Type().Kind() == reflect.Ptr && src.Type() == YamlNodeType.NULL {
                         # set nil value to pointer
                         fieldValue.Set(reflect.Zero(fieldValue.Type()))
                         continue
                     mapNode := ast.Mapping(nil, False)
                     for k, v := range key_to_node_map {
-                        key := &ast.StringNode{BaseNode: &ast.BaseNode{}, Value: k}
+                        key := StringYamlNode{BaseNode: BaseYamlNode, Value: k}
                         mapNode.Values = append(mapNode.Values, ast.MappingValue(nil, key, v))
                     newFieldValue, err := self.create_decoded_new_value(ctx, fieldValue.Type(), fieldValue, mapNode)
                     if self.disallow_unknown_field {
@@ -1278,7 +1295,7 @@ r"""
                     continue
                 delete(unknownFields, structField.RenderName)
                 fieldValue := dst.FieldByName(field.Name)
-                if fieldValue.Type().Kind() == reflect.Ptr && src.Type() == ast.NullType {
+                if fieldValue.Type().Kind() == reflect.Ptr && src.Type() == YamlNodeType.NULL {
                     # set nil value to pointer
                     fieldValue.Set(reflect.Zero(fieldValue.Type()))
                     continue
@@ -1344,7 +1361,7 @@ r"""
     def get_parent_map_token_if_exists_for_validation_error(self, typ: YamlNodeType, tk: token.Token) -> token.Token:
         if tk is None:
             return nil
-        if typ == ast.MappingType {
+        if typ == YamlNodeType.MAPPING {
             # map:
             #   key: value
             #      ^ current token ( colon )
@@ -1354,7 +1371,7 @@ r"""
             if key.Prev is None:
                 return tk
             return key.Prev
-        if typ == ast.SequenceType {
+        if typ == YamlNodeType.SEQUENCE {
             # map:
             #   - value
             #   ^ current token ( sequence entry )
@@ -1383,7 +1400,7 @@ r"""
             var foundErr error
             for iter.Next() {
                 v := iter.Value()
-                if elemType.Kind() == reflect.Ptr && v.Type() == ast.NullType {
+                if elemType.Kind() == reflect.Ptr && v.Type() == YamlNodeType.NULL {
                     # set nil value to pointer
                     arrayValue.Index(idx).Set(reflect.Zero(elemType))
                 else:
@@ -1421,7 +1438,7 @@ r"""
             var foundErr error
             for iter.Next() {
                 v := iter.Value()
-                if elemType.Kind() == reflect.Ptr && v.Type() == ast.NullType {
+                if elemType.Kind() == reflect.Ptr && v.Type() == YamlNodeType.NULL {
                     # set nil value to pointer
                     sliceValue = reflect.Append(sliceValue, reflect.Zero(elemType))
                     continue
@@ -1560,7 +1577,7 @@ r"""
                 if k.IsValid() {
                     if err := self.validate_duplicate_key(keyMap, k.Interface(), key); err is not None:
                         return err
-                if valueType.Kind() == reflect.Ptr && value.Type() == ast.NullType {
+                if valueType.Kind() == reflect.Ptr && value.Type() == YamlNodeType.NULL:
                     # set nil value to pointer
                     mapValue.SetMapIndex(k, reflect.Zero(valueType))
                     continue
@@ -1676,7 +1693,7 @@ r"""
             v, err := self.node_to_value(ctx, doc.Body)
             if err is not None:
                 return nil, err
-            if v != nil || (doc.Body != nil && doc.Body.Type() == ast.NullType) {
+            if v != nil || (doc.Body != nil && doc.Body.Type() == YamlNodeType.NULL) {
                 normalizedFile.Docs = append(normalizedFile.Docs, doc)
                 cm := CommentMap{}
                 maps.Copy(cm, self.to_comment_map)
