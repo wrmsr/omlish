@@ -2242,7 +2242,10 @@ class YamlParser:
             # !!tag
             return err_syntax('tag is not allowed in this sequence context', YamlParseToken.raw_token(tk))
 
-        if YamlParseToken.column(tk) < seq_col:
+        if (
+                YamlParseToken.column(tk) < seq_col or
+                (YamlParseToken.column(tk) == seq_col and YamlParseToken.line(tk) != seq_line)
+        ):
             # in this case,
             # ----
             #   - <value does not defined>
