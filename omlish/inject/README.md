@@ -1,6 +1,7 @@
 # omlish.inject
 
-A Guice-inspired dependency injection system for Python with first-class async support and a focus on type safety.
+A Guice-inspired, annotation-driven dependency injection system for Python with first-class async support and a focus on
+type safety.
 
 ## Overview
 
@@ -34,6 +35,9 @@ cache_conn_key = inj.Key(DbConnection, tag='cache')
 key = inj.as_key(MyService)
 ```
 
+Usually (unless a tag is required) raw types (or type-like `typing` constructs) are used directly as keys. Internally,
+however, such usage is always quickly wrapped in a `Key` instance.
+
 ### Bindings
 
 Bindings connect keys to providers. The `bind()` function provides a concise API for most use cases:
@@ -59,6 +63,9 @@ inj.bind(420, tag='port')
 # Scoped binding
 inj.bind(Database, singleton=True)
 ```
+
+Importantly, the `bind()` function is stateless: it does nothing but return `Element`'s (described below), which must be
+passed to a function like `create_injector` in order to take effect.
 
 ### Providers
 
@@ -101,9 +108,15 @@ async_injector = await inj.create_async_injector(
 service = await async_injector[MyService]
 ```
 
+The `AsyncInjector` is event loop agnostic - it makes no reference to or usage of `asyncio`, and will run under any (or
+no) event loop (like `trio`, `anyio`, etc.).
+
+Internally, the non-async `Injector` class delegates to an internal async `AsyncInjector` class (but does not require
+any event loop to do so).
+
 ### Elements
 
-`Elements` are the building blocks of injector configuration. Most binding functions return `Element` or `Elements`:
+`Element`'s are the building blocks of injector configuration. Most binding functions return `Element` or `Elements`:
 
 ```python
 # Combine multiple elements
@@ -121,6 +134,9 @@ injector2 = inj.create_injector(config)
 collected = inj.collect_elements(config)
 injector3 = inj.create_injector(collected)
 ```
+
+`Element`'s are stateless and immutable, and can be freely shared and cached for future reuse, or inspected and
+transformed.
 
 ### Scopes
 
@@ -152,7 +168,8 @@ While inspired by Guice, `omlish.inject` differs in several key ways:
 
 ### Type System
 - Uses Python's native `typing` module instead of Java generics
-- No annotation-based injection (no `@Inject` decorator)
+- No annotation-based injection (no `@Inject` decorator) - as Python lacks multiple constructors that would be largely
+  redundant
 - Type annotations on constructors/functions drive automatic injection
 
 ### Async Support
@@ -174,6 +191,20 @@ While inspired by Guice, `omlish.inject` differs in several key ways:
 - `__getitem__` syntax for common case: `injector[MyService]`
 - Context managers for lifecycle and scoped execution
 - Dataclasses as natural config objects
+
+## Conventions
+
+### 'Injector-agnosticism'
+
+With the exception of the actual injector binding and configuration code itself, code should in almost all cases be
+written making no references to the injector at all: it should be fully usable without any injector machinery being
+involved.
+
+### Avoid 'injecting the injector'
+
+It's often tempting to declare a dependency on the `Injector` itself (in order to dynamically retrieve provisions out of
+it lazily) - this should never be done in 'application' code, and where rarely necessary should be 'hidden away' in
+injector wiring code. See: [InjectingTheInjector](https://github.com/google/guice/wiki/InjectingTheInjector).
 
 ## Common Idioms
 
