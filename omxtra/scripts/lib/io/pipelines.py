@@ -32,7 +32,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='errors.py', sha1='c8301263ba2f5cd116a11c2229aafa705b3d94fc'),
             dict(path='../../../omlish/io/streams/types.py', sha1='36dfe0ba2bb0a7fdf255a3a2fcfc7a5fe2cce2c3'),
-            dict(path='core.py', sha1='61f0ac95e25f0adc127178390bf604eb8f85642a'),
+            dict(path='core.py', sha1='244f99cc1d3f96fcfc85f8d86277661811501936'),
             dict(path='../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -1503,13 +1503,13 @@ class ChannelPipelineHandlerContext:
 
     #
 
-    def feed_in(self, msg: ta.Any) -> None:
+    def feed_in(self, msg: ta.Any) -> None:  # ~ Netty 'ChannelInboundInvoker.fireChannelRead'
         nxt = self._next_in
         while not nxt._handles_inbound:  # noqa
             nxt = nxt._next_in  # noqa
         nxt._inbound(msg)  # noqa
 
-    def feed_out(self, msg: ta.Any) -> None:
+    def feed_out(self, msg: ta.Any) -> None:  # ~ Netty 'ChannelOutboundHandler.write'
         nxt = self._next_out  # noqa
         while not nxt._handles_outbound:  # noqa
             nxt = nxt._next_out  # noqa
@@ -1817,7 +1817,7 @@ class ChannelPipeline:
     #
 
     class _Outermost(ChannelPipelineHandler):
-        """'Head' in netty terms."""
+        """'Head' in Netty terms."""
 
         def __repr__(self) -> str:
             return f'{type(self).__name__}'
@@ -1829,7 +1829,7 @@ class ChannelPipeline:
             ctx._pipeline._terminal('outbound', ctx, msg)  # noqa
 
     class _Innermost(ChannelPipelineHandler):
-        """'Tail' in netty terms."""
+        """'Tail' in Netty terms."""
 
         def __repr__(self) -> str:
             return f'{type(self).__name__}'
@@ -2182,59 +2182,69 @@ class PipelineChannel:
 
     #
 
-    def _feed(self, fn: ta.Callable[[ta.Any], None], msg: ta.Any) -> None:
+    def _feed_in_to(self, ctx: ChannelPipelineHandlerContext, msgs: ta.Iterable[ta.Any]) -> None:
         self._execution_depth += 1
         try:
-            fn(msg)  # noqa
+            for msg in msgs:
+                if isinstance(msg, ChannelPipelineMessages.Eof):
+                    self._saw_eof = True
+                elif self._saw_eof:
+                    raise SawEofChannelPipelineError  # noqa
+
+                ctx._inbound(msg)  # noqa
+
         except BaseException as e:  # noqa
             if self._config.raise_handler_errors:
                 raise
             self.handle_error(e)
+
         finally:
             self._execution_depth -= 1
             self._maybe_execute_deferred()
 
-    #
+    def feed_in_to(self, handler_ref: ChannelPipelineHandlerRef, *msgs: ta.Any) -> None:
+        ctx = handler_ref._context  # noqa
+        check.is_(ctx._pipeline, self._pipeline)  # noqa
+        self._feed_in_to(ctx, msgs)
 
-    def _feed_in_to(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineMessages.Eof):
-            self._saw_eof = True
-        elif self._saw_eof:
-            raise SawEofChannelPipelineError
-
-        self._feed(ctx._inbound, msg)  # noqa
-
-    def feed_in(self, msg: ta.Any) -> None:
-        self._feed_in_to(self._pipeline._outermost, msg)  # noqa
+    def feed_in(self, *msgs: ta.Any) -> None:
+        self._feed_in_to(self._pipeline._outermost, msgs)  # noqa
 
     def feed_eof(self) -> None:
-        self._feed_in_to(self._pipeline._outermost, ChannelPipelineMessages.Eof())  # noqa
-
-    def feed_in_to(self, handler_ref: ChannelPipelineHandlerRef, msg: ta.Any) -> None:
-        ctx = handler_ref._context  # noqa
-        check.is_(ctx._pipeline, self._pipeline)  # noqa
-        self._feed_in_to(ctx, msg)
+        self._feed_in_to(self._pipeline._outermost, (ChannelPipelineMessages.Eof(),))  # noqa
 
     #
 
-    def _feed_out_to(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineMessages.Close):
-            self._saw_close = True
-        elif self._saw_close:
-            raise ClosedChannelPipelineError
+    def _feed_out_to(self, ctx: ChannelPipelineHandlerContext, msgs: ta.Iterable[ta.Any]) -> None:
+        self._execution_depth += 1
+        try:
+            for msg in msgs:
+                if isinstance(msg, ChannelPipelineMessages.Close):
+                    self._saw_close = True
+                elif self._saw_close:
+                    raise ClosedChannelPipelineError  # noqa
 
-        self._feed(ctx._outbound, msg)  # noqa
+                ctx._outbound(msg)  # noqa
 
-    def feed_out(self, msg: ta.Any) -> None:
-        self._feed_out_to(self._pipeline._innermost, msg)  # noqa
+        except BaseException as e:  # noqa
+            if self._config.raise_handler_errors:
+                raise
+            self.handle_error(e)
 
-    def feed_close(self) -> None:
-        self._feed_out_to(self._pipeline._innermost, ChannelPipelineMessages.Close())  # noqa
+        finally:
+            self._execution_depth -= 1
+            self._maybe_execute_deferred()
 
-    def feed_out_to(self, handler_ref: ChannelPipelineHandlerRef, msg: ta.Any) -> None:
+    def feed_out_to(self, handler_ref: ChannelPipelineHandlerRef, *msgs: ta.Any) -> None:
         ctx = handler_ref._context  # noqa
         check.is_(ctx._pipeline, self._pipeline)  # noqa
-        self._feed_out_to(ctx, msg)
+        self._feed_out_to(ctx, msgs)
+
+    def feed_out(self, *msgs: ta.Any) -> None:
+        self._feed_out_to(self._pipeline._innermost, msgs)  # noqa
+
+    def feed_close(self) -> None:
+        self._feed_out_to(self._pipeline._innermost, (ChannelPipelineMessages.Close(),))  # noqa
 
     #
 
