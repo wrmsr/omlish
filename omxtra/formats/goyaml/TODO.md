@@ -1,5 +1,4 @@
 - actually test
 - promote to prod
-- exceptions lol
-- amalg-safe - finish 'yaml_' de-namespacifying everything
 - final bit of actually constructing objects from asts - fully diverge from go-yaml here
+- pull in yaml test suite (needs decoder)
