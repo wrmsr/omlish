@@ -1,6 +1,5 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
-import abc
 import collections
 import dataclasses as dc
 import typing as ta
@@ -202,10 +201,6 @@ class ChannelPipelineHandlerContext:
         return self._pipeline._channel  # noqa
 
     @property
-    def scheduler(self) -> ta.Optional['ChannelPipelineScheduler']:
-        return self._pipeline._channel._scheduler  # noqa
-
-    @property
     def handler(self) -> 'ChannelPipelineHandler':
         return self._handler
 
@@ -380,6 +375,13 @@ ChannelPipelineDirectionOrDuplex = ta.Literal[  # ta.TypeAlias  # omlish-amalg-t
     'duplex',
 ]
 
+ChannelPipelineHandlerUpdate = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+    'adding',
+    'added',
+    'removing',
+    'removed',
+]
+
 
 @ta.final
 class ChannelPipeline:
@@ -485,6 +487,8 @@ class ChannelPipeline:
             name=name,
         )
 
+        self._channel._handler_update(ctx, 'adding')  # noqa
+
         if isinstance(handler, ShareableChannelPipelineHandler):
             self._shareable_contexts.setdefault(handler, set()).add(ctx)
         else:
@@ -509,6 +513,8 @@ class ChannelPipeline:
             outer_to._next_out = ctx  # noqa
 
         self._clear_caches()
+
+        self._channel._handler_update(ctx, 'added')  # noqa
 
         # FIXME: exceptions?
         handler.notify(ctx, ChannelPipelineHandlerNotifications.Added())
@@ -576,7 +582,7 @@ class ChannelPipeline:
         ctx = handler_ref._context  # noqa
         handler = ctx._handler  # noqa
 
-        self._channel._removing(ctx._ref)  # noqa
+        self._channel._handler_update(ctx, 'removing')  # noqa
 
         if ctx._name is not None:  # noqa
             del self._contexts_by_name[ctx._name]  # noqa
@@ -597,6 +603,8 @@ class ChannelPipeline:
         del ctx._next_out  # noqa
 
         self._clear_caches()
+
+        self._channel._handler_update(ctx, 'removed')  # noqa
 
         # FIXME: exceptions? defer?
         handler.notify(ctx, ChannelPipelineHandlerNotifications.Removed())
@@ -751,10 +759,26 @@ class ChannelPipeline:
     def handlers_by_name(self) -> ta.Mapping[str, ChannelPipelineHandlerRef_]:
         return self._caches().handlers_by_name()
 
-    def find_handlers_of_type(self, ty: ta.Type[T]) -> ta.Sequence[ChannelPipelineHandlerRef[T]]:
+    @dc.dataclass(frozen=True)
+    class HandlerType(ta.Generic[T]):
+        """This is entirely just a workaround for mypy's `type-abstract` deficiency."""
+
+        ty: ta.Type[T]
+
+    def find_handlers_of_type(
+            self,
+            ty: ta.Union[HandlerType[T], ta.Type[T]],
+    ) -> ta.Sequence[ChannelPipelineHandlerRef[T]]:
+        if isinstance(ty, ChannelPipeline.HandlerType):
+            ty = ty.ty
         return self._caches().find_handlers_of_type(ty)
 
-    def find_single_handler_of_type(self, ty: ta.Type[T]) -> ta.Optional[ChannelPipelineHandlerRef[T]]:
+    def find_single_handler_of_type(
+            self,
+            ty: ta.Union[HandlerType[T], ta.Type[T]],
+    ) -> ta.Optional[ChannelPipelineHandlerRef[T]]:
+        if isinstance(ty, ChannelPipeline.HandlerType):
+            ty = ty.ty
         return self._caches().find_single_handler_of_type(ty)
 
     #
@@ -794,19 +818,9 @@ class ChannelPipeline:
 ##
 
 
-class ChannelPipelineScheduler(Abstract):
-    class Handle(Abstract):
-        @abc.abstractmethod
-        def cancel(self) -> None:
-            raise NotImplementedError
-
-    @abc.abstractmethod
-    def schedule(self, handler_ref: ChannelPipelineHandlerRef, msg: ta.Any) -> Handle:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def cancel_all(self, handler_ref: ta.Optional[ChannelPipelineHandlerRef] = None) -> None:
-        raise NotImplementedError
+class PipelineChannelService(Abstract):
+    def handler_update(self, handler_ref: ChannelPipelineHandlerRef, kind: ChannelPipelineHandlerUpdate) -> None:
+        pass
 
 
 ##
@@ -830,12 +844,13 @@ class PipelineChannel:
             handlers: ta.Sequence[ChannelPipelineHandler] = (),
             config: Config = Config(),
             *,
-            scheduler: ta.Optional[ChannelPipelineScheduler] = None,
+            services: ta.Optional[ta.Sequence[PipelineChannelService]] = None,
     ) -> None:
         super().__init__()
 
         self._config: ta.Final[PipelineChannel.Config] = config
-        self._scheduler: ta.Final[ta.Optional[ChannelPipelineScheduler]] = scheduler
+
+        self._services: ta.Final[PipelineChannel._Services] = PipelineChannel._Services(services or [])
 
         self._emitted_q: ta.Final[collections.deque[ta.Any]] = collections.deque()
 
@@ -863,6 +878,12 @@ class PipelineChannel:
         return self._config
 
     @property
+    def pipeline(self) -> ChannelPipeline:
+        return self._pipeline
+
+    #
+
+    @property
     def eof(self) -> bool:
         return self._saw_eof
 
@@ -870,15 +891,68 @@ class PipelineChannel:
     def closed(self) -> bool:
         return self._saw_close
 
+    #
+
+    class _Services:
+        def __init__(self, lst: ta.Sequence[PipelineChannelService]) -> None:
+            self._lst = lst
+
+            self._by_type_cache: ta.Dict[type, ta.Sequence[ta.Any]] = {}
+            self._single_by_type_cache: ta.Dict[type, ta.Optional[ta.Any]] = {}
+
+        def __len__(self) -> int:
+            return len(self._lst)
+
+        def __iter__(self) -> ta.Iterator[PipelineChannelService]:
+            return iter(self._lst)
+
+        def __contains__(self, item: ta.Any) -> bool:
+            return item in self._lst
+
+        @dc.dataclass(frozen=True)
+        class ServiceType(ta.Generic[T]):
+            """This is entirely just a workaround for mypy's `type-abstract` deficiency."""
+
+            ty: ta.Type[T]
+
+        def find_all(self, ty: ta.Union[ServiceType[T], ta.Type[T]]) -> ta.Sequence[T]:
+            if isinstance(ty, self.ServiceType):
+                ty = ty.ty
+
+            try:
+                return self._by_type_cache[ty]
+            except KeyError:
+                pass
+
+            self._by_type_cache[ty] = ret = [svc for svc in self._lst if isinstance(svc, ty)]
+            return ret
+
+        def find(self, ty: ta.Union[ServiceType[T], ta.Type[T]]) -> ta.Optional[T]:
+            if isinstance(ty, self.ServiceType):
+                ty = ty.ty
+
+            try:
+                return self._single_by_type_cache[ty]
+            except KeyError:
+                pass
+
+            self._single_by_type_cache[ty] = ret = check.opt_single(self.find_all(ty))
+            return ret
+
+        def __getitem__(self, ty: ta.Union[ServiceType[T], ta.Type[T]]) -> T:
+            if (svc := self.find(ty)) is None:
+                raise KeyError(ty)
+            return svc
+
     @property
-    def pipeline(self) -> ChannelPipeline:
-        return self._pipeline
+    def services(self) -> _Services:
+        return self._services
 
     #
 
-    def _removing(self, handler_ref: ChannelPipelineHandlerRef) -> None:
-        if (sched := self._scheduler) is not None:
-            sched.cancel_all(handler_ref)
+    def _handler_update(self, ctx: ChannelPipelineHandlerContext, kind: ChannelPipelineHandlerUpdate) -> None:
+        for svc in self._services._lst:  # noqa
+            svc.handler_update(ctx._ref, kind)  # noqa
 
     #
 

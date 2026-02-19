@@ -47,16 +47,6 @@ class ChannelPipelineFlowControlAdapter(Abstract):
 
 
 class ChannelPipelineFlowControl(Abstract):
-    """
-    ChannelPipelines as a concept and core mechanism are useful independent of the notion of 'bytes', and the core
-    machinery is generally kept pure and generic (including the flow control machinery). In practice though their main
-    usecase *is* bytes in / bytes out, and as such it has this tiny bit of special-cased support in the core. But again,
-    it's really only due to the current `type-abstract` deficiency of mypy.
-
-    Aside from the special BytesChannelPipelineFlowControl case, there may be any number of flow control handlers in a
-    pipeline - other handlers can choose to find and talk to them as they wish.
-    """
-
     @abc.abstractmethod
     def get_cost(self, msg: ta.Any) -> ta.Optional[int]:
         raise NotImplementedError

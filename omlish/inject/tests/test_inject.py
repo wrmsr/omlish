@@ -1,3 +1,4 @@
+import abc
 import dataclasses as dc
 
 import pytest
@@ -89,3 +90,20 @@ def test_collect_elements():
     for i in range(1, 4):
         assert inj.create_injector(ce)[str] == f'i=420 f=None c={i}'
         assert c == i
+
+
+class Thingy(lang.Abstract):
+    @abc.abstractmethod
+    def frob(self) -> None:
+        raise NotImplementedError
+
+
+class ThingyImpl(Thingy):
+    def frob(self) -> None:
+        pass
+
+
+def test_simple_abstract():
+    injector = inj.create_injector(inj.bind(Thingy, to_ctor=ThingyImpl))
+    assert isinstance(injector[Thingy], ThingyImpl)
+    assert isinstance(injector.provide(Thingy), ThingyImpl)

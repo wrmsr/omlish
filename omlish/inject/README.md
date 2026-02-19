@@ -186,6 +186,9 @@ While inspired by Guice, `omlish.inject` differs in several key ways:
 - Automatic kwarg inspection via `KwargsTarget`
 - Supports optional dependencies (parameters with defaults)
 - Explicit async/sync separation
+- Deliberately lacks support for implicit
+  [JustInTimeBindings](https://github.com/google/guice/wiki/JustInTimeBindings) - all provisions require explicit
+  bindings or will raise `UnboundKeyError`
 
 ### Python Idioms
 - `__getitem__` syntax for common case: `injector[MyService]`
@@ -313,6 +316,9 @@ inj.create_injector(
 )
 ```
 
+These also support specifying a custom wrapper type to avoid having to reference the injector package in application
+code.
+
 ### Managed Providers
 
 Integrate with context managers for lifecycle management:
@@ -339,6 +345,9 @@ inj.bind(
     ),
 )
 ```
+
+Under the hood all these really do is automatically bind and manage a `contextlib.ExitStack` or
+`contextlib.AsyncExitStack` instance which may then be declared as a standard dependency.
 
 ### KwargsTarget
 
