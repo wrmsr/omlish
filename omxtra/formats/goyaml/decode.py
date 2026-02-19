@@ -318,7 +318,7 @@ r"""
         self.add_head_or_line_comment_to_map(node)
         self.add_foot_comment_to_map(node)
 
-    def add_head_or_line_comment_to_map(self, node YamlNode) {
+    def add_head_or_line_comment_to_map(self, node: YamlNode) -> None:
         sequence, ok := node.(*ast.SequenceNode)
         if ok {
             self.add_sequence_node_comment_to_map(sequence)
@@ -354,7 +354,7 @@ r"""
         else:
             self.add_comment_to_map(commentPath, LineComment(texts[0]))
 
-    def add_sequence_node_comment_to_map(self, node *ast.SequenceNode) {
+    def add_sequence_node_comment_to_map(self, node: *ast.SequenceNode) -> None:
         if len(node.ValueHeadComments) != 0 {
             for idx, headComment := range node.ValueHeadComments {
                 if headComment is None:
@@ -377,7 +377,7 @@ r"""
                 if len(node.Values) != 0 {
                     self.add_comment_to_map(node.Values[0].GetPath(), HeadComment(texts...))
 
-    def add_foot_comment_to_map(self, node YamlNode) {
+    def add_foot_comment_to_map(self, node: YamlNode) -> None:
         var (
             footComment     *ast.CommentGroupNode
             footCommentPath = node.GetPath()
@@ -408,7 +408,7 @@ r"""
         if len(texts) != 0 {
             self.add_comment_to_map(footCommentPath, FootComment(texts...))
 
-    def add_comment_to_map(self, path str, comment *Comment) {
+    def add_comment_to_map(self, path: str, comment: Comment) -> None:
         for _, c := range self.to_comment_map[path] {
             if c.Position == comment.Position {
                 # already added same comment
@@ -621,7 +621,7 @@ r"""
         finally:
             self.step_out()
 
-    def get_array_node(self, node YamlNode) -> YamlErrorOr[ast.ArrayNode]:
+    def get_array_node(self, node: YamlNode) -> YamlErrorOr[ast.ArrayNode]:
         self.step_in()
         try:
             if self.is_exceeded_max_depth() {
@@ -652,7 +652,7 @@ r"""
         finally:
             self.step_out()
 
-    def convert_value(self, v reflect.Value, typ reflect.Type, src YamlNode) -> YamlErrorOr[ta.Any]:
+    def convert_value(self, v: ta.Any, typ: ta.Any, src: YamlNode) -> YamlErrorOr[ta.Any]:
         if typ.Kind() != reflect.String {
             if !v.Type().ConvertibleTo(typ) {
 
@@ -691,7 +691,7 @@ r"""
             val = val.Convert(typ)
         return val, nil
 
-    def delete_struct_keys(self, structType reflect.Type, unknownFields ta.Dict[str, YamlNode]) -> ta.Optional[YamlError]:
+    def delete_struct_keys(self, structType: type, unknownFields: ta.Dict[str, YamlNode]) -> ta.Optional[YamlError]:
         if structType.Kind() == reflect.Ptr {
             structType = structType.Elem()
         structFieldMap, err := structFieldMap(structType)
@@ -713,11 +713,11 @@ r"""
                 delete(unknownFields, structField.RenderName)
         return nil
 
-    def unmarshalable_document(self, node YamlNode) -> YamlErrorOr[bytes]:
+    def unmarshalable_document(self, node: YamlNode) -> YamlErrorOr[bytes]:
         doc := format.FormatNodeWithResolvedAlias(node, self.anchor_node_map)
         return []byte(doc), nil
 
-    def unmarshalable_text(self, node YamlNode) ([]byte, bool) {
+    def unmarshalable_text(self, node: YamlNode) -> ta.Tuple[bytes, bool]:
         doc := format.FormatNodeWithResolvedAlias(node, self.anchor_node_map)
         var v str
         if err := Unmarshal([]byte(doc), &v); err is not None:
@@ -727,7 +727,7 @@ r"""
     type JsonUnmarshaler interface {
         UnmarshalJSON([]byte) -> ta.Optional[YamlError]:
 
-    def exists_type_in_custom_unmarshaler_map(self, t reflect.Type) bool {
+    def exists_type_in_custom_unmarshaler_map(self, t: type) -> bool:
         if _, exists := self.custom_unmarshaler_map[t]; exists {
             return True
 
@@ -737,7 +737,7 @@ r"""
             return True
         return False
 
-    def unmarshaler_from_custom_unmarshaler_map(self, t reflect.Type) (func(Context, ta.Any, []byte) error, bool) {
+    def unmarshaler_from_custom_unmarshaler_map(self, t: type) -> (func(Context, ta.Any, []byte) error, bool):
         if unmarshaler, exists := self.custom_unmarshaler_map[t]; exists {
             return unmarshaler, exists
 
@@ -747,7 +747,7 @@ r"""
             return unmarshaler, exists
         return nil, False
 
-    def can_decode_by_unmarshaler(self, dst reflect.Value) bool {
+    def can_decode_by_unmarshaler(self, dst: ta.Any) -> bool:
         ptrValue := dst.Addr()
         if self.exists_type_in_custom_unmarshaler_map(ptrValue.Type()) {
             return True
@@ -767,7 +767,7 @@ r"""
             return self.use_json_unmarshaler
         return False
 
-    def decode_by_unmarshaler(self, ctx Context, dst reflect.Value, src YamlNode) -> ta.Optional[YamlError]:
+    def decode_by_unmarshaler(self, ctx: Context, dst: ta.Any, src: YamlNode) -> ta.Optional[YamlError]:
         ptrValue := dst.Addr()
         if unmarshaler, exists := self.unmarshaler_from_custom_unmarshaler_map(ptrValue.Type()); exists {
             b, err := self.unmarshalable_document(src)
@@ -860,7 +860,7 @@ r"""
 
     astNodeType = reflect.TypeOf((*YamlNode)(nil)).Elem()
 
-    def decode_value(self, ctx Context, dst reflect.Value, src YamlNode) -> ta.Optional[YamlError]:
+    def decode_value(self, ctx: Context, dst: ta.Any, src: YamlNode) -> ta.Optional[YamlError]:
         self.step_in()
         try:
             if self.is_exceeded_max_depth() {
@@ -988,7 +988,7 @@ r"""
         finally:
             self.step_out()
 
-    def create_decodable_value(self, typ reflect.Type) reflect.Value {
+    def create_decodable_value(self, typ: type) -> ta.Any:
         for {
             if typ.Kind() == reflect.Ptr {
                 typ = typ.Elem()
@@ -996,7 +996,7 @@ r"""
             break
         return reflect.New(typ).Elem()
 
-    def cast_to_assignable_value(self, value reflect.Value, target reflect.Type, src YamlNode) -> YamlErrorOr[ta.Any]:
+    def cast_to_assignable_value(self, value: ta.Any, target: type, src: YamlNode) -> YamlErrorOr[ta.Any]:
         if target.Kind() != reflect.Ptr {
             if !value.Type().AssignableTo(target) {
                 return reflect.Value{}, errors.ErrTypeMismatch(target, value.Type(), src.GetToken())
@@ -1016,10 +1016,10 @@ r"""
 
     def create_decoded_new_value(
         self,
-        ctx Context,
-        typ reflect.Type,
-        defaultVal reflect.Value,
-        node YamlNode,
+        ctx: Context,
+        typ: type,
+        defaultVal: ta.Any,
+        node: YamlNode,
     ) -> YamlErrorOr[ta.Any]:
         if node.Type() == ast.AliasType {
             aliasName := node.(*ast.AliasNode).Value.GetToken().Value
@@ -1045,7 +1045,7 @@ r"""
                 return reflect.Value{}, err
         return self.cast_to_assignable_value(newValue, typ, node)
 
-    def key_to_node_map(self, ctx Context, node YamlNode, ignoreMergeKey bool, getKeyOrValueNode func(*ast.MapNodeIter) YamlNode) (ta.Dict[str, YamlNode], error) {
+    def key_to_node_map(self, ctx: Context, node: YamlNode, ignoreMergeKey: bool, getKeyOrValueNode: func(*ast.MapNodeIter) YamlNode) -> YamlErrorOr[ta.Dict[str, YamlNode]]:
         self.step_in()
         try:
             if self.is_exceeded_max_depth() {
@@ -1084,19 +1084,19 @@ r"""
         finally:
             self.step_out()
 
-    def key_to_key_node_map(self, ctx Context, node YamlNode, ignoreMergeKey bool) -> YamlOrError[ta.Dict[str, YamlNode]]:
+    def key_to_key_node_map(self, ctx: Context, node: YamlNode, ignoreMergeKey: bool) -> YamlOrError[ta.Dict[str, YamlNode]]:
         m, err := self.key_to_node_map(ctx, node, ignoreMergeKey, func(nodeMap *ast.MapNodeIter) YamlNode { return nodeMap.Key() })
         if err is not None:
             return nil, err
         return m, nil
 
-    def key_to_value_node_map(self, ctx Context, node YamlNode, ignoreMergeKey bool) -> YamlErrorOr[ta.Dict[str, YamlNode]]:
+    def key_to_value_node_map(self, ctx: Context, node: YamlNode, ignoreMergeKey: bool) -> YamlErrorOr[ta.Dict[str, YamlNode]]:
         m, err := self.key_to_node_map(ctx, node, ignoreMergeKey, func(nodeMap *ast.MapNodeIter) YamlNode { return nodeMap.Value() })
         if err is not None:
             return nil, err
         return m, nil
 
-    def set_default_value_if_conflicted(self, v reflect.Value, fieldMap StructFieldMap) -> ta.Optional[YamlError]:
+    def set_default_value_if_conflicted(self, v: ta.Any, fieldMap: StructFieldMap) -> ta.Optional[YamlError]:
         for v.Type().Kind() == reflect.Ptr {
             v = v.Elem()
         typ := v.Type()
@@ -1127,7 +1127,7 @@ r"""
         "2006-1-2",                        # date only
     }
 
-    def cast_to_time(self, ctx Context, src YamlNode) -> YamlErrorOr[time.Time]:
+    def cast_to_time(self, ctx: Context, src: YamlNode) -> YamlErrorOr[time.Time]:
         if src is None:
             return time.Time{}, nil
         v, err := self.node_to_value(ctx, src)
@@ -1146,14 +1146,14 @@ r"""
             return t, nil
         return time.Time{}, nil
 
-    def decode_time(self, ctx Context, dst reflect.Value, src YamlNode) -> ta.Optional[YamlError]:
+    def decode_time(self, ctx: Context, dst: ta.Any, src: YamlNode) -> ta.Optional[YamlError]:
         t, err := self.cast_to_time(ctx, src)
         if err is not None:
             return err
         dst.Set(reflect.ValueOf(t))
         return nil
 
-    def cast_to_duration(self, ctx Context, src YamlNode) -> YamlErrorOr[time.Duration]:
+    def cast_to_duration(self, ctx: Context, src: YamlNode) -> YamlErrorOr[time.Duration]:
         if src is None:
             return 0, nil
         v, err := self.node_to_value(ctx, src)
@@ -1169,7 +1169,7 @@ r"""
             return 0, err
         return t, nil
 
-    def decode_duration(self, ctx Context, dst reflect.Value, src YamlNode) -> ta.Optional[YamlError]:
+    def decode_duration(self, ctx: Context, dst: ta.Any, src: YamlNode) -> ta.Optional[YamlError]:
         t, err := self.cast_to_duration(ctx, src)
         if err is not None:
             return err
@@ -1177,7 +1177,7 @@ r"""
         return nil
 
     # get_merge_alias_name support single alias only
-    def get_merge_alias_name(self, src YamlNode) str {
+    def get_merge_alias_name(self, src: YamlNode) -> str:
         mapNode, err := self.get_map_node(src, True)
         if err is not None:
             return ""
@@ -1189,7 +1189,7 @@ r"""
                 return value.(*ast.AliasNode).Value.GetToken().Value
         return ""
 
-    def decode_struct(self, ctx Context, dst reflect.Value, src YamlNode) -> ta.Optional[YamlError]:
+    def decode_struct(self, ctx: Context, dst: ta.Any, src: YamlNode) -> ta.Optional[YamlError]:
         if src is None:
             return nil
         self.step_in()
@@ -1341,7 +1341,7 @@ r"""
 
     # getParentMapTokenIfExists if the NodeType is a container type such as MappingType or SequenceType,
     # it is necessary to return the parent MapNode's colon token to represent the entire container.
-    def get_parent_map_token_if_exists_for_validation_error(self, typ YamlNodeType, tk *token.Token) *token.Token {
+    def get_parent_map_token_if_exists_for_validation_error(self, typ: YamlNodeType, tk: token.Token) -> token.Token:
         if tk is None:
             return nil
         if typ == ast.MappingType {
@@ -1363,7 +1363,7 @@ r"""
             return tk.Prev
         return tk
 
-    def decode_array(self, ctx Context, dst reflect.Value, src YamlNode) -> ta.Optional[YamlError]:
+    def decode_array(self, ctx: Context, dst: ta.Any, src: YamlNode) -> ta.Optional[YamlError]:
         self.step_in()
         try:
             if self.is_exceeded_max_depth() {
@@ -1402,7 +1402,7 @@ r"""
         finally:
             self.step_out()
 
-    def decode_slice(self, ctx Context, dst reflect.Value, src YamlNode) -> ta.Optional[YamlError]:
+    def decode_slice(self, ctx: Context, dst: ta.Any, src: YamlNode) -> ta.Optional[YamlError]:
         self.step_in()
         try:
             if self.is_exceeded_max_depth() {
@@ -1439,7 +1439,7 @@ r"""
         finally:
             self.step_out
 
-    def decode_map_item(self, ctx Context, dst *MapItem, src YamlNode) -> ta.Optional[YamlError]:
+    def decode_map_item(self, ctx: Context, dst: MapItem, src: YamlNode) -> ta.Optional[YamlError]:
         self.step_in()
         try:
             if self.is_exceeded_max_depth() {
@@ -1469,7 +1469,7 @@ r"""
         finally:
             self.step_out()
 
-    def validate_duplicate_key(self, keyMap ta.Dict[str, None], key ta.Any, keyNode YamlNode) -> ta.Optional[YamlError]:
+    def validate_duplicate_key(self, keyMap: ta.Dict[str, None], key: ta.Any, keyNode: YamlNode) -> ta.Optional[YamlError]:
         k, ok := key.(str)
         if !ok {
             return nil
@@ -1479,7 +1479,7 @@ r"""
         keyMap[k] = struct{}{}
         return nil
 
-    def decode_map_slice(self, ctx Context, dst *MapSlice, src YamlNode) -> ta.Optional[YamlError]:
+    def decode_map_slice(self, ctx: Context, dst: MapSlice, src: YamlNode) -> ta.Optional[YamlError]:
         self.step_in()
         try:
             if self.is_exceeded_max_depth() {
@@ -1518,7 +1518,7 @@ r"""
         finally:
             self.step_out()
 
-    def decode_map(self, ctx Context, dst reflect.Value, src YamlNode) -> ta.Optional[YamlError]:
+    def decode_map(self, ctx: Context, dst: reflect.Value, src: YamlNode) -> ta.Optional[YamlError]:
         self.step_in()
         try:
             if self.is_exceeded_max_depth() {
@@ -1586,13 +1586,13 @@ r"""
         finally:
             self.step_out()
 
-    def file_to_reader(self, file str) -> YamlErrorOr[Reader]:
+    def file_to_reader(self, file: str) -> YamlErrorOr[Reader]:
         reader, err := os.Open(file)
         if err is not None:
             return nil, err
         return reader, nil
 
-    def is_yaml_file(self, file str) bool {
+    def is_yaml_file(self, file: str) bool {
         ext := filepath.Ext(file)
         if ext == ".yml" {
             return True
@@ -1600,7 +1600,7 @@ r"""
             return True
         return False
 
-    def readers_under_dir(self, dir str) -> YamlErrorOr[ta.List[Reader]]:
+    def readers_under_dir(self, dir: str) -> YamlErrorOr[ta.List[Reader]]:
         pattern := fmt.Sprintf("%s/*", dir)
         matches, err := filepath.Glob(pattern)
         if err is not None:
@@ -1615,7 +1615,7 @@ r"""
             readers = append(readers, reader)
         return readers, nil
 
-    def readers_under_dir_recursive(self, dir str) -> YamlErrorOr[ta.List[Reader]]:
+    def readers_under_dir_recursive(self, dir: str) -> YamlErrorOr[ta.List[Reader]]:
         readers := []Reader{}
         if err := filepath.Walk(dir, func(path str, info os.FileInfo, _ error) error {
             if !self.is_yaml_file(path) {
@@ -1629,7 +1629,7 @@ r"""
             return nil, err
         return readers, nil
 
-    def resolve_reference(self, ctx Context) -> ta.Optional[YamlError]:
+    def resolve_reference(self, ctx: Context) -> ta.Optional[YamlError]:
         for _, opt := range self.opts {
             if err := opt(d); err is not None:
                 return err
@@ -1660,14 +1660,14 @@ r"""
         self.is_resolved_reference = True
         return nil
 
-    def parse(self, ctx Context, bytes []byte) -> YamlErrorOr[YamlFile]:
+    def parse(self, ctx: Context, bs bytes) -> YamlErrorOr[YamlFile]:
         var parseMode parser.Mode
         if self.to_comment_map is not None:
             parseMode = parser.ParseComments
         var opts []parser.Option
         if self.allow_duplicate_map_key {
             opts = append(opts, parser.AllowDuplicateMapKey())
-        f, err := parser.ParseBytes(bytes, parseMode, *opts)
+        f, err := parser.ParseBytes(bs, parseMode, *opts)
         if err is not None:
             return nil, err
         normalizedFile := &YamlFile{}
@@ -1685,10 +1685,10 @@ r"""
                 delete(self.to_comment_map, k)
         return normalizedFile, nil
 
-    def is_initialized(self) bool {
+    def is_initialized(self) -> bool:
         return self.parsed_file != nil
 
-    def decode_init(self, ctx Context) -> ta.Optional[YamlError]:
+    def decode_init(self, ctx: Context) -> ta.Optional[YamlError]:
         if !self.is_resolved_reference {
             if err := self.resolve_reference(ctx); err is not None:
                 return err
@@ -1701,7 +1701,7 @@ r"""
         self.parsed_file = file
         return nil
 
-    def _decode(self, ctx Context, v reflect.Value) -> ta.Optional[YamlError]:
+    def _decode(self, ctx: Context, v: ta.Any) -> ta.Optional[YamlError]:
         self.decode_depth = 0
         self.anchor_value_map = {}
         if len(self.parsed_file.Docs) == 0 {
@@ -1726,12 +1726,12 @@ r"""
     #
     # See the documentation for Unmarshal for details about the
     # conversion of YAML into a Go value.
-    def decode(self, v ta.Any) -> ta.Optional[YamlError]:
+    def decode(self, v: ta.Any) -> ta.Optional[YamlError]:
         return self.decode_context(context.Background(), v)
 
     # decode_context reads the next YAML-encoded value from its input
     # and stores it in the value pointed to by v with Context.
-    def decode_context(self, ctx Context, v ta.Any) -> ta.Optional[YamlError]:
+    def decode_context(self, ctx: Context, v: ta.Any) -> ta.Optional[YamlError]:
         rv := reflect.ValueOf(v)
         if !rv.IsValid() || rv.Type().Kind() != reflect.Ptr {
             return ErrDecodeRequiredPointerType
@@ -1746,11 +1746,11 @@ r"""
         return nil
 
     # decode_from_node decodes node into the value pointed to by v.
-    def decode_from_node(self, node YamlNode, v ta.Any) -> ta.Optional[YamlError]:
+    def decode_from_nodel(self, node: YamlNode, v: ta.Any) -> ta.Optional[YamlError]:
         return self.decode_from_node_context(context.Background(), node, v)
 
     # decode_from_node_context decodes node into the value pointed to by v with Context.
-    def decode_from_node_context(self, ctx Context, node YamlNode, v ta.Any) -> ta.Optional[YamlError]:
+    def decode_from_node_context(self, ctx: Context, node: YamlNode, v: ta.Any) -> ta.Optional[YamlError]:
         rv := reflect.ValueOf(v)
         if rv.Type().Kind() != reflect.Ptr {
             return ErrDecodeRequiredPointerType
