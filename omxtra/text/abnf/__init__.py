@@ -9,24 +9,6 @@ It has however been entirely rewritten.
 
 ====
 
-TODO:
- - opto
- - error reporting
- - codegen?
- - | as either(first_match=True)
- - optional auto SPACE channel for ALL-UPCASE-RULE-NAMES
- - fix_ws problem
-  - auto? no, need to keep lines / offsets accurate for errors
-  - relax CRLF rule by default?
-  - grammar transform? helper kwarg?
- - kwarg to mark uppercase rules insignificant
- - ebnf mode?
- - peg / lalr engines?
-  - must always keep true abnf mode
- - optionally separate lexing step
-
-====
-
 | Feature                   | EBNF           | ABNF             |
 | ------------------------- | -------------- | ---------------- |
 | Rule terminator           | `;`            | none             |
@@ -43,7 +25,6 @@ TODO:
 |                           | `/* */` or     |                  |
 |                           | `-- `          |                  |
 | Rule names                | case-sensitive | case-insensitive |
-
 """
 from omlish import dataclasses as _dc  # noqa
 

@@ -1,0 +1,15 @@
+TODO:
+- opto
+- error reporting
+- codegen?
+- | as either(first_match=True)
+- optional auto SPACE channel for ALL-UPCASE-RULE-NAMES
+- fix_ws problem
+- auto? no, need to keep lines / offsets accurate for errors
+- relax CRLF rule by default?
+- grammar transform? helper kwarg?
+- kwarg to mark uppercase rules insignificant
+- ebnf mode?
+- peg / lalr engines?
+- must always keep true abnf mode
+- optionally separate lexing step

@@ -1,6 +1,8 @@
+import abc
 import typing as ta
 
 from omlish import check
+from omlish import lang
 
 from .base import Op
 from .grammars import Grammar
@@ -19,11 +21,19 @@ from .ops import StringLiteral
 
 ##
 
-
-class _Parser:
+class _Parser(lang.Abstract):
     class MaxStepsExceededError(Exception):
         pass
 
+    @abc.abstractmethod
+    def iter_parse(self, op: Op, start: int) -> ta.Iterator[Match]:
+        raise NotImplementedError
+
+
+##
+
+
+class _ParserImpl(_Parser):
     def __init__(
             self,
             grammar: Grammar,
@@ -190,7 +200,7 @@ class _Parser:
 ##
 
 
-class _DebugParser(_Parser):
+class _DebugParserImpl(_ParserImpl):
     def __init__(
             self,
             grammar: Grammar,
@@ -267,14 +277,14 @@ def _iter_parse(
 ) -> ta.Iterator[Match]:
     parser: _Parser
     if debug:
-        parser = _DebugParser(
+        parser = _DebugParserImpl(
             grammar,
             source,
             max_steps=max_steps,
             level=debug,
         )
     else:
-        parser = _Parser(
+        parser = _ParserImpl(
             grammar,
             source,
             max_steps=max_steps,
