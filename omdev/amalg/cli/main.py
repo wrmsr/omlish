@@ -11,6 +11,7 @@ TODO:
  - more sanity checks lol
  - typealias - support # noqa, other comments, and lamely support multiline by just stealing lines till it parses
  - remove `if __name__ == '__main__':` blocks - thus, convention: no def _main() for these
+ - pyz! zipimport -> single `__main__.py` file + shebang
 
 See:
  - https://github.com/xonsh/amalgamate - mine is for portability not speed, and doesn't try to work on unmodified code

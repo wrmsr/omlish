@@ -67,9 +67,9 @@ def test_spec() -> None:
             # print(yts_f)
 
             try:
-                obj = parsing.parse_str(  # noqa
+                obj = parsing.yaml_parse_str(  # noqa
                     check.non_empty_str(item.yaml),
-                    parsing.ParseMode(0),
+                    parsing.YamlParseMode(0),
                 )
 
                 if isinstance(obj, YamlError):

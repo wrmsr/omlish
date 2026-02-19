@@ -8,9 +8,9 @@ from .. import parsing
 def _test_parsing(src: str) -> None:
     doc = yaml.safe_load(src)  # noqa
 
-    obj = parsing.parse_str(
+    obj = parsing.yaml_parse_str(
         src,
-        parsing.ParseMode(0),
+        parsing.YamlParseMode(0),
     )
 
     print(obj)

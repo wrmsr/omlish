@@ -17,7 +17,7 @@ from .tokens import YamlToken
 from .tokens import YamlTokenMakers
 from .tokens import YamlTokens
 from .tokens import YamlTokenType
-from .tokens import new_yaml_token
+from .tokens import yaml_new_token
 
 
 ##
@@ -235,7 +235,7 @@ class YamlScanningContext:
         if self.is_multi_line():
             tk = YamlTokenMakers.new_string(''.join(source), ''.join(self.obuf), pos)
         else:
-            tk = new_yaml_token(''.join(source), ''.join(self.obuf), pos)
+            tk = yaml_new_token(''.join(source), ''.join(self.obuf), pos)
 
         self.set_token_type_by_prev_tag(tk)
         self.reset_buffer()

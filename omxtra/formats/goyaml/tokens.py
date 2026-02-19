@@ -229,7 +229,7 @@ class YamlKeywords:
     RESERVED_ENC_KEYWORD_MAP: ta.ClassVar[ta.Mapping[str, ta.Callable[[str, str, 'YamlPosition'], 'YamlToken']]]
 
 
-def _reserved_yaml_keyword_token(typ: YamlTokenType, value: str, org: str, pos: 'YamlPosition') -> 'YamlToken':
+def _yaml_reserved_keyword_token(typ: YamlTokenType, value: str, org: str, pos: 'YamlPosition') -> 'YamlToken':
     return YamlToken(
         type=typ,
         char_type=YamlCharType.MISCELLANEOUS,
@@ -241,10 +241,10 @@ def _reserved_yaml_keyword_token(typ: YamlTokenType, value: str, org: str, pos: 
 
 
 YamlKeywords.RESERVED_KEYWORD_MAP = {
-    **{keyword: functools.partial(_reserved_yaml_keyword_token, YamlTokenType.NULL) for keyword in YamlKeywords.RESERVED_NULL_KEYWORDS},  # noqa
-    **{keyword: functools.partial(_reserved_yaml_keyword_token, YamlTokenType.BOOL) for keyword in YamlKeywords.RESERVED_BOOL_KEYWORDS},  # noqa
-    **{keyword: functools.partial(_reserved_yaml_keyword_token, YamlTokenType.INFINITY) for keyword in YamlKeywords.RESERVED_INF_KEYWORDS},  # noqa
-    **{keyword: functools.partial(_reserved_yaml_keyword_token, YamlTokenType.NAN) for keyword in YamlKeywords.RESERVED_NAN_KEYWORDS},  # noqa
+    **{keyword: functools.partial(_yaml_reserved_keyword_token, YamlTokenType.NULL) for keyword in YamlKeywords.RESERVED_NULL_KEYWORDS},  # noqa
+    **{keyword: functools.partial(_yaml_reserved_keyword_token, YamlTokenType.BOOL) for keyword in YamlKeywords.RESERVED_BOOL_KEYWORDS},  # noqa
+    **{keyword: functools.partial(_yaml_reserved_keyword_token, YamlTokenType.INFINITY) for keyword in YamlKeywords.RESERVED_INF_KEYWORDS},  # noqa
+    **{keyword: functools.partial(_yaml_reserved_keyword_token, YamlTokenType.NAN) for keyword in YamlKeywords.RESERVED_NAN_KEYWORDS},  # noqa
 }
 
 
@@ -252,9 +252,9 @@ YamlKeywords.RESERVED_KEYWORD_MAP = {
 # This is supposed to be a superset of RESERVED_KEYWORD_MAP, and used to quote legacy keywords present in YAML 1.1 or
 # lesser for compatibility reasons, even though this library is supposed to be YAML 1.2-compliant.
 YamlKeywords.RESERVED_ENC_KEYWORD_MAP = {
-    **{keyword: functools.partial(_reserved_yaml_keyword_token, YamlTokenType.NULL) for keyword in YamlKeywords.RESERVED_NULL_KEYWORDS},  # noqa
-    **{keyword: functools.partial(_reserved_yaml_keyword_token, YamlTokenType.BOOL) for keyword in YamlKeywords.RESERVED_BOOL_KEYWORDS},  # noqa
-    **{keyword: functools.partial(_reserved_yaml_keyword_token, YamlTokenType.BOOL) for keyword in YamlKeywords.RESERVED_LEGACY_BOOL_KEYWORDS},  # noqa
+    **{keyword: functools.partial(_yaml_reserved_keyword_token, YamlTokenType.NULL) for keyword in YamlKeywords.RESERVED_NULL_KEYWORDS},  # noqa
+    **{keyword: functools.partial(_yaml_reserved_keyword_token, YamlTokenType.BOOL) for keyword in YamlKeywords.RESERVED_BOOL_KEYWORDS},  # noqa
+    **{keyword: functools.partial(_yaml_reserved_keyword_token, YamlTokenType.BOOL) for keyword in YamlKeywords.RESERVED_LEGACY_BOOL_KEYWORDS},  # noqa
 }
 
 
@@ -410,16 +410,16 @@ class YamlNumberValue:
     text: str
 
 
-def to_yaml_number(value: str) -> ta.Optional[YamlNumberValue]:
-    num = _to_yaml_number(value)
+def yaml_to_number(value: str) -> ta.Optional[YamlNumberValue]:
+    num = _yaml_to_number(value)
     if isinstance(num, YamlError):
         return None
 
     return num
 
 
-def _is_yaml_number(value: str) -> bool:
-    num = _to_yaml_number(value)
+def _yaml_is_number(value: str) -> bool:
+    num = _yaml_to_number(value)
     if isinstance(num, YamlError):
         # var numErr *strconv.NumError
         # if errors.As(err, &numErr) && errors.Is(numErr.Err, strconv.ErrRange) {
@@ -430,7 +430,7 @@ def _is_yaml_number(value: str) -> bool:
     return num is not None
 
 
-def _to_yaml_number(value: str) -> YamlErrorOr[ta.Optional[YamlNumberValue]]:
+def _yaml_to_number(value: str) -> YamlErrorOr[ta.Optional[YamlNumberValue]]:
     if not value:
         return None
 
@@ -507,7 +507,7 @@ YAML_TIMESTAMP_FORMATS = (
 )
 
 
-def _is_yaml_timestamp(value: str) -> bool:
+def _yaml_is_timestamp(value: str) -> bool:
     for format_str in YAML_TIMESTAMP_FORMATS:
         try:
             datetime.datetime.strptime(value, format_str)  # noqa
@@ -528,7 +528,7 @@ def _yaml_is_need_quoted(value: str) -> bool:
     if value in YamlKeywords.RESERVED_ENC_KEYWORD_MAP:
         return True
 
-    if _is_yaml_number(value):
+    if _yaml_is_number(value):
         return True
 
     if value == '-':
@@ -540,7 +540,7 @@ def _yaml_is_need_quoted(value: str) -> bool:
     if value[-1] in (':', ' '):
         return True
 
-    if _is_yaml_timestamp(value):
+    if _yaml_is_timestamp(value):
         return True
 
     for i, c in enumerate(value):
@@ -571,12 +571,12 @@ def yaml_literal_block_header(value: str) -> str:
 
 
 # new create reserved keyword token or number token and other string token.
-def new_yaml_token(value: str, org: str, pos: 'YamlPosition') -> 'YamlToken':
+def yaml_new_token(value: str, org: str, pos: 'YamlPosition') -> 'YamlToken':
     fn = YamlKeywords.RESERVED_KEYWORD_MAP.get(value)
     if fn is not None:
         return fn(value, org, pos)
 
-    if (num := to_yaml_number(value)) is not None:
+    if (num := yaml_to_number(value)) is not None:
         tk = YamlToken(
             type=YamlTokenType.INTEGER,
             char_type=YamlCharType.MISCELLANEOUS,
