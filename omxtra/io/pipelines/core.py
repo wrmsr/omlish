@@ -1106,7 +1106,7 @@ class PipelineChannel:
             self._pending_inbound_must: ta.Final[ta.Dict[int, ta.Tuple[ta.Any, ChannelPipelineHandlerContext]]] = {}
             self._pending_outbound_must: ta.Final[ta.Dict[int, ta.Tuple[ta.Any, ChannelPipelineHandlerContext]]] = {}
 
-        def _get_must_dct(self, direction: ChannelPipelineDirection) -> ta.Dict[int, ta.Any]:
+        def _get_must_dict(self, direction: ChannelPipelineDirection) -> ta.Dict[int, ta.Any]:
             if direction == 'inbound':
                 return self._pending_inbound_must
             elif direction == 'outbound':
@@ -1120,7 +1120,7 @@ class PipelineChannel:
                 direction: ChannelPipelineDirection,
                 msg: ChannelPipelineMessages.MustPropagate,
         ) -> None:
-            dct = self._get_must_dct(direction)
+            dct = self._get_must_dict(direction)
 
             i = id(msg)
             try:
@@ -1137,7 +1137,7 @@ class PipelineChannel:
                 direction: ChannelPipelineDirection,
                 msg: ChannelPipelineMessages.MustPropagate,
         ) -> None:
-            dct = self._get_must_dct(direction)
+            dct = self._get_must_dict(direction)
 
             i = id(msg)
             try:

@@ -32,7 +32,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='errors.py', sha1='c8301263ba2f5cd116a11c2229aafa705b3d94fc'),
             dict(path='../../../omlish/io/streams/types.py', sha1='36dfe0ba2bb0a7fdf255a3a2fcfc7a5fe2cce2c3'),
-            dict(path='core.py', sha1='ff0888dc4d51dc457a075cb0fae723a80d8612be'),
+            dict(path='core.py', sha1='99f7d027bfe7fcbf53cf3996301993466fd0f073'),
             dict(path='../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -2292,7 +2292,7 @@ class PipelineChannel:
             self._pending_inbound_must: ta.Final[ta.Dict[int, ta.Tuple[ta.Any, ChannelPipelineHandlerContext]]] = {}
             self._pending_outbound_must: ta.Final[ta.Dict[int, ta.Tuple[ta.Any, ChannelPipelineHandlerContext]]] = {}
 
-        def _get_must_dct(self, direction: ChannelPipelineDirection) -> ta.Dict[int, ta.Any]:
+        def _get_must_dict(self, direction: ChannelPipelineDirection) -> ta.Dict[int, ta.Any]:
             if direction == 'inbound':
                 return self._pending_inbound_must
             elif direction == 'outbound':
@@ -2306,7 +2306,7 @@ class PipelineChannel:
                 direction: ChannelPipelineDirection,
                 msg: ChannelPipelineMessages.MustPropagate,
         ) -> None:
-            dct = self._get_must_dct(direction)
+            dct = self._get_must_dict(direction)
 
             i = id(msg)
             try:
@@ -2323,7 +2323,7 @@ class PipelineChannel:
                 direction: ChannelPipelineDirection,
                 msg: ChannelPipelineMessages.MustPropagate,
         ) -> None:
-            dct = self._get_must_dct(direction)
+            dct = self._get_must_dict(direction)
 
             i = id(msg)
             try:

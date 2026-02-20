@@ -15,7 +15,7 @@ pytest-xdist==3.8.0
 
 flake8==7.3.0
 flake8-pyproject==1.2.4
-ruff==0.15.1
+ruff==0.15.2
 
 docutils-stubs==0.0.22
 lxml-stubs==0.5.1
@@ -29,7 +29,7 @@ types-ujson==5.10.0.20250822
 
 black==26.1.0
 mypy==1.19.1
-pipdeptree==2.30.0
+pipdeptree==2.31.0
 
 astpretty==3.0.0
 
@@ -135,7 +135,7 @@ segno==1.6.6
 # Used for codegen
 boto3>=1.42.53
 botocore-stubs>=1.42.41
-types-boto3>=1.42.52
+types-boto3>=1.42.53
 
 antlr4-python3-runtime==4.13.2
 
