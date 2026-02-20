@@ -177,6 +177,15 @@ class FieldError:
 ##
 
 
+@dc.dataclass()
+class YamlValueBox:
+    v: ta.Any
+    is_valid: bool
+
+
+##
+
+
 class YamlDecodeErrors:
     def __new__(cls, *args, **kwargs):  # noqa
         raise TypeError
@@ -192,7 +201,7 @@ class YamlDecoder:
     reader: Reader
     reference_readers: ta.List[Reader]
     anchor_node_map: ta.Dict[str, ta.Optional[YamlNode]]
-    anchor_value_map: ta.Dict[str, ta.Any]
+    anchor_value_map: ta.Dict[str, YamlValueBox]
     custom_unmarshaler_map: ta.Dict[type, ta.Callable[[Context, ta.Any, bytes], ta.Optional[YamlError]]]
     comment_maps: ta.List[CommentMap]
     to_comment_map: ta.Optional[CommentMap] = None
@@ -570,7 +579,7 @@ class YamlDecoder:
                     del self.anchor_node_map[anchor_name]
                     return anchor_value
                 self.anchor_node_map[anchor_name] = n.value
-                self.anchor_value_map[anchor_name] = anchor_value
+                self.anchor_value_map[anchor_name] = YamlValueBox(anchor_value, True)
                 return anchor_value
 
             elif isinstance(n, AliasYamlNode):
@@ -583,11 +592,9 @@ class YamlDecoder:
                 except KeyError:
                     pass
                 else:
-                    # FIXME:
-                    # if not v.is_valid():
-                    #     return None
-                    # return v.interface()
-                    return v
+                    if not v.is_valid:
+                        return None
+                    return v.v
                 try:
                     node2 = self.anchor_node_map[text]
                 except KeyError:
@@ -740,7 +747,7 @@ class YamlDecoder:
             self.step_out()
 
     r"""
-    def convert_value(self, v: ta.Any, typ: ta.Any, src: YamlNode) -> YamlErrorOr[ta.Any]:
+    def convert_value(self, v: YamlValueBox, typ: ta.Any, src: YamlNode) -> YamlErrorOr[YamlValueBox]:
         if typ.Kind() != reflect.String:
             if not v.Type().ConvertibleTo(typ):
                 # Special case for "strings -> floats" aka scientific notation
@@ -845,7 +852,7 @@ class YamlDecoder:
             return unmarshaler, exists
         return nil, False
 
-    def can_decode_by_unmarshaler(self, dst: ta.Any) -> bool:
+    def can_decode_by_unmarshaler(self, dst: YamlValueBox) -> bool:
         ptrValue := dst.Addr()
         if self.exists_type_in_custom_unmarshaler_map(ptrValue.Type()):
             return True
@@ -866,7 +873,7 @@ class YamlDecoder:
             return self.use_json_unmarshaler
         return False
 
-    def decode_by_unmarshaler(self, ctx: Context, dst: ta.Any, src: YamlNode) -> ta.Optional[YamlError]:
+    def decode_by_unmarshaler(self, ctx: Context, dst: YamlValueBox, src: YamlNode) -> ta.Optional[YamlError]:
         ptrValue := dst.Addr()
         if unmarshaler, exists := self.unmarshaler_from_custom_unmarshaler_map(ptrValue.Type()); exists:
             b, err := self.unmarshalable_document(src)
@@ -959,7 +966,7 @@ class YamlDecoder:
 
     astNodeType = reflect.TypeOf((*YamlNode)(nil)).Elem()
 
-    def decode_value(self, ctx: Context, dst: ta.Any, src: YamlNode) -> ta.Optional[YamlError]:
+    def decode_value(self, ctx: Context, dst: YamlValueBox, src: YamlNode) -> ta.Optional[YamlError]:
         self.step_in()
         try:
             if self.is_exceeded_max_depth():
@@ -1105,7 +1112,7 @@ class YamlDecoder:
         finally:
             self.step_out()
 
-    def create_decodable_value(self, typ: type) -> ta.Any:
+    def create_decodable_value(self, typ: type) -> YamlValueBox:
         while True:
             if typ.Kind() == reflect.Ptr:
                 typ = typ.Elem()
@@ -1274,7 +1281,7 @@ class YamlDecoder:
             return t, nil
         return datetime.datetime{}, nil
 
-    def decode_time(self, ctx: Context, dst: ta.Any, src: YamlNode) -> ta.Optional[YamlError]:
+    def decode_time(self, ctx: Context, dst: YamlValueBox, src: YamlNode) -> ta.Optional[YamlError]:
         t, err := self.cast_to_time(ctx, src)
         if err is not None:
             return err
@@ -1297,7 +1304,7 @@ class YamlDecoder:
             return 0, err
         return t, nil
 
-    def decode_duration(self, ctx: Context, dst: ta.Any, src: YamlNode) -> ta.Optional[YamlError]:
+    def decode_duration(self, ctx: Context, dst: YamlValueBox, src: YamlNode) -> ta.Optional[YamlError]:
         t, err := self.cast_to_duration(ctx, src)
         if err is not None:
             return err
@@ -1317,7 +1324,7 @@ class YamlDecoder:
                 return value.(AliasYamlNode).Value.get_token().Value
         return ""
 
-    def decode_struct(self, ctx: Context, dst: ta.Any, src: YamlNode) -> ta.Optional[YamlError]:
+    def decode_struct(self, ctx: Context, dst: YamlValueBox, src: YamlNode) -> ta.Optional[YamlError]:
         if src is None:
             return nil
         self.step_in()
@@ -1497,7 +1504,7 @@ class YamlDecoder:
         return tk
 
     r"""
-    def decode_array(self, ctx: Context, dst: ta.Any, src: YamlNode) -> ta.Optional[YamlError]:
+    def decode_array(self, ctx: Context, dst: YamlValueBox, src: YamlNode) -> ta.Optional[YamlError]:
         self.step_in()
         try:
             if self.is_exceeded_max_depth():
@@ -1536,7 +1543,7 @@ class YamlDecoder:
         finally:
             self.step_out()
 
-    def decode_slice(self, ctx: Context, dst: ta.Any, src: YamlNode) -> ta.Optional[YamlError]:
+    def decode_slice(self, ctx: Context, dst: YamlValueBox, src: YamlNode) -> ta.Optional[YamlError]:
         self.step_in()
         try:
             if self.is_exceeded_max_depth():
@@ -1651,7 +1658,7 @@ class YamlDecoder:
         finally:
             self.step_out()
 
-    def decode_map(self, ctx: Context, dst: reflect.Value, src: YamlNode) -> ta.Optional[YamlError]:
+    def decode_map(self, ctx: Context, dst: YamlValueBox, src: YamlNode) -> ta.Optional[YamlError]:
         self.step_in()
         try:
             if self.is_exceeded_max_depth():
@@ -1726,10 +1733,10 @@ class YamlDecoder:
         return reader, nil
 
     def is_yaml_file(self, file: str) ->bool:
-        ext := filepath.Ext(file)
-        if ext == ".yml":
+        ext = file.rsplit('.', maxsplit=1)[-1]
+        if ext == '.yml':
             return True
-        if ext == ".yaml":
+        if ext == '.yaml':
             return True
         return False
 
