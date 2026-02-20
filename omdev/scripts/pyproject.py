@@ -109,7 +109,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../cexts/magic.py', sha1='4e5ce6732454f75c9dd27352959708d8fa7b1666'),
             dict(path='../magic/find.py', sha1='436228a9cf1d8bab6b9234d09f72913b0960382f'),
             dict(path='../packaging/specifiers.py', sha1='a56ab4e8c9b174adb523921f6280ac41e0fce749'),
-            dict(path='versions.py', sha1='99aa1788f4eccb1901f21f2265862716d7580192'),
+            dict(path='versions.py', sha1='eb6579b9ea2bcee5f71e1af1e430429112f7fc8d'),
             dict(path='../../omlish/argparse/cli.py', sha1='f4dc3cd353d14386b5da0306768700e396afd2b3'),
             dict(path='../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
             dict(path='../../omlish/lite/maybes.py', sha1='04d2fcbea17028a5e6b8e7a7fb742375495ed233'),
@@ -156,7 +156,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../interp/inject.py', sha1='b039abbadf0b096d2724182af2e0ebda2a230852'),
             dict(path='../interp/default.py', sha1='a799969a0d3f4b57538587b13ceb08f6334ebc16'),
             dict(path='../interp/venvs.py', sha1='9ba8f2c3131d7d519d5cf36ca69b75f9c6fe2b27'),
-            dict(path='configs.py', sha1='28d20c0288eef4a5c61dd9b95071b7b15958b575'),
+            dict(path='configs.py', sha1='9e93e810184f9d6c7efd4a149dd5fbc9ad50d611'),
             dict(path='venvs.py', sha1='9f1935171017aeb802da56e14d7f41d632a7aa25'),
             dict(path='cli.py', sha1='ecf31ccef6b0e1d1505b46d24faf076b6be32760'),
         ],
@@ -4408,33 +4408,15 @@ class SpecifierSet(BaseSpecifier):
 
 @dc.dataclass(frozen=True)
 class VersionsFile:
-    name: ta.Optional[str] = '.versions'
-
-    @staticmethod
-    def parse(s: str) -> ta.Mapping[str, str]:
-        return {
-            k: v
-            for l in s.splitlines()
-            if (sl := l.split('#')[0].strip())
-            for k, _, v in (sl.partition('='),)
-        }
+    name: ta.Optional[str] = '.python-versions.json'
 
     @cached_nullary
-    def contents(self) -> ta.Mapping[str, str]:
+    def pythons(self) -> ta.Mapping[str, str]:
         if not self.name or not os.path.exists(self.name):
             return {}
         with open(self.name) as f:
             s = f.read()
-        return self.parse(s)
-
-    @staticmethod
-    def get_pythons(d: ta.Mapping[str, str]) -> ta.Mapping[str, str]:
-        pfx = 'PYTHON_'
-        return {k[len(pfx):].lower(): v for k, v in d.items() if k.startswith(pfx)}
-
-    @cached_nullary
-    def pythons(self) -> ta.Mapping[str, str]:
-        return self.get_pythons(self.contents())
+        return json.loads(s)
 
 
 ########################################
@@ -12749,7 +12731,7 @@ class PyprojectConfig:
     venvs: ta.Mapping[str, VenvConfig] = dc.field(default_factory=dict)
 
     venvs_dir: str = '.venvs'
-    # versions_file: ta.Optional[str] = '.versions'  # FIXME:
+    # versions_file: ta.Optional[str] = '.python-versions.json'  # FIXME:
 
 
 class PyprojectConfigPreparer:

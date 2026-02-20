@@ -1,6 +1,10 @@
 import io
+import json
 import tomllib
 import typing as ta
+
+from omlish import check
+from omlish import lang
 
 from .content import Content
 from .content import Resource
@@ -63,21 +67,13 @@ def render_apt_install_dep_sets(*names: str) -> str:
 ##
 
 
-def read_versions_file(file_path: str | None = None) -> ta.Mapping[str, str]:
-    if file_path is None:
-        file_path = '.versions'
-    with open(file_path) as f:
-        s = f.read()
-
-    return {
-        k.strip(): v.strip()
-        for l in s.splitlines()
-        for l in [l.split('#')[0].strip()]
-        if '=' in l
-        for k, _, v in [l.partition('=')]
-    }
-
-
-def read_versions_file_versions(*keys: str, file_path: str | None = None) -> ta.Mapping[str, str]:
-    dct = read_versions_file(file_path)
+def read_versions_file_versions(
+        resource_path: str,
+        resource_name: str,
+        keys: ta.Sequence[str],
+) -> ta.Mapping[str, str]:
+    check.not_isinstance(keys, str)
+    rs = lang.get_relative_resources(resource_path, globals=globals())
+    src = rs[resource_name].read_text()
+    dct = json.loads(src)
     return {k: dct[k] for k in keys}

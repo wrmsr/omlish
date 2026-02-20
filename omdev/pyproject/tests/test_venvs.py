@@ -4,7 +4,6 @@ import unittest
 from omlish.formats.toml.parser import toml_loads
 from omlish.lite.marshal import marshal_obj
 
-from ..cli import VersionsFile
 from ..configs import PyprojectConfigPreparer
 
 
@@ -78,17 +77,16 @@ interp = '3.13'
 requires = ['requirements.txt']
 """
 
-
-_TEST_VERSIONS_FILE = """
-PYTHON_8=3.8.19
-PYTHON_9=3.9.19
-PYTHON_10=3.10.14
-PYTHON_11=3.11.9
-PYTHON_12=3.12.11
-PYTHON_13=3.13.5
-PYTHON_13T=3.13.5t
-PYTHON_DEV=3.14-dev
-"""
+_TEST_VERSIONS_FILE = {
+    '8': '3.8.19',
+    '9': '3.9.19',
+    '10': '3.10.14',
+    '11': '3.11.9',
+    '12': '3.12.11',
+    '13': '3.13.5',
+    '13t': '3.13.5t',
+    'dev': '3.14-dev',
+}
 
 
 class TestVenvs(unittest.TestCase):
@@ -100,7 +98,7 @@ class TestVenvs(unittest.TestCase):
         pj(dct)
 
         pcfg = PyprojectConfigPreparer(
-            python_versions=VersionsFile.get_pythons(VersionsFile.parse(_TEST_VERSIONS_FILE)),
+            python_versions=_TEST_VERSIONS_FILE,
         ).prepare_config(dct)
 
         pj(marshal_obj(pcfg))

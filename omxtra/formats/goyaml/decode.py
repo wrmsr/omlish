@@ -1105,7 +1105,7 @@ r"""
             self.step_out()
 
     def create_decodable_value(self, typ: type) -> ta.Any:
-        for:
+        while True:
             if typ.Kind() == reflect.Ptr:
                 typ = typ.Elem()
                 continue
@@ -1118,7 +1118,7 @@ r"""
                 return reflect.Value{}, errors.ErrTypeMismatch(target, value.Type(), src.get_token())
             return value, nil
 
-        const maxAddrCount = 5
+        max_addr_count = 5
 
         for i := 0; i < maxAddrCount; i++:
             if value.Type().AssignableTo(target):
@@ -1147,18 +1147,23 @@ r"""
             anchor, exists := self.anchor_node_map[alias_name]
             if exists:
                 node = anchor
+                
         var newValue reflect.Value
         if node.Type() == YamlNodeType.NULL:
             newValue = reflect.New(typ).Elem()
         else:
             newValue = self.create_decodable_value(typ)
+            
         for defaultVal.Kind() == reflect.Ptr:
             defaultVal = defaultVal.Elem()
+            
         if defaultVal.IsValid() && defaultVal.Type().AssignableTo(newValue.Type()):
             newValue.Set(defaultVal)
+            
         if node.Type() != YamlNodeType.NULL:
             if err := self.decode_value(ctx, newValue, node); err is not None:
                 return reflect.Value{}, err
+
         return self.cast_to_assignable_value(newValue, typ, node)
 
     def key_to_node_map(

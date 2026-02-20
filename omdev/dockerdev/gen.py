@@ -1,7 +1,4 @@
 """
-FIXME:
- - zipsafe / resourcey, but still hard refs .versions file in repo root lol
-
 TODO:
  - per-feature config, obv
 
@@ -134,9 +131,11 @@ def gen_ops(cfg: Config) -> ta.Sequence[Op]:
         ops.append(fragment_section(
             'pyenv',
             static_env=lambda: {
-                'PYENV_VERSIONS': list(read_versions_file_versions(*[
-                    f'PYTHON_{k}' for k in cfg.pyenv_version_keys
-                ]).values()),
+                'PYENV_VERSIONS': list(read_versions_file_versions(
+                    'resources',
+                    '.python-versions.json',
+                    cfg.pyenv_version_keys,
+                ).values()),
             },
             cache_mounts=['/root/.pyenv_cache'],
         ))

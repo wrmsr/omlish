@@ -24,7 +24,7 @@ class PyprojectConfig:
     venvs: ta.Mapping[str, VenvConfig] = dc.field(default_factory=dict)
 
     venvs_dir: str = '.venvs'
-    # versions_file: ta.Optional[str] = '.versions'  # FIXME:
+    # versions_file: ta.Optional[str] = '.python-versions.json'  # FIXME:
 
 
 class PyprojectConfigPreparer:
