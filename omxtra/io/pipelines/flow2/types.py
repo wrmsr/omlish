@@ -1,0 +1,38 @@
+import dataclasses as dc
+import typing as ta
+
+from omlish.lite.namespaces import NamespaceClass
+
+from ..core import ChannelPipelineMessages
+
+
+##
+
+
+class ChannelPipelineFlowMessages(NamespaceClass):
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class Barrier(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelInboundInvoker.fireChannelReadComplete`
+        pass
+
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class ReadyForOutput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelOutboundInvoker.fireChannelWritabilityChanged`  # noqa
+        pass
+
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class PauseOutput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelOutboundInvoker.fireChannelWritabilityChanged`  # noqa
+        pass
+
+    #
+
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class Flush(ChannelPipelineMessages.NeverInbound):  # ~ Netty 'ChannelOutboundInvoker.flush'
+        pass
+
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class ReadyForInput(ChannelPipelineMessages.NeverInbound):  # ~ Netty `ChannelOutboundInvoker.read`
+        pass

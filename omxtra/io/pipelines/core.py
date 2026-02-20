@@ -317,13 +317,13 @@ class ChannelPipelineHandlerContext:
 
     #
 
-    def feed_in(self, msg: ta.Any) -> None:  # ~ Netty 'ChannelInboundInvoker.fireChannelRead'
+    def feed_in(self, msg: ta.Any) -> None:  # ~ Netty `ChannelInboundInvoker.fireChannelRead`
         nxt = self._next_in
         while not nxt._handles_inbound:  # noqa
             nxt = nxt._next_in  # noqa
         nxt._inbound(msg)  # noqa
 
-    def feed_out(self, msg: ta.Any) -> None:  # ~ Netty 'ChannelOutboundHandler.write'
+    def feed_out(self, msg: ta.Any) -> None:  # ~ Netty `ChannelOutboundHandler.write`
         nxt = self._next_out  # noqa
         while not nxt._handles_outbound:  # noqa
             nxt = nxt._next_out  # noqa
