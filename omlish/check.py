@@ -33,11 +33,21 @@ except ImportError:
     pass
 
 else:
-    setattr(check, '_py_unpack_isinstance_spec', check._unpack_isinstance_spec)  # noqa
-    setattr(check, '_unpack_isinstance_spec', _check.unpack_isinstance_spec)
+    def _patch_for_cext() -> None:
+        def patch_fn(name: str, fn: ta.Any) -> None:
+            setattr(check, f'_py_{name}', getattr(check, name))
+            setattr(check, name, fn)
 
-    setattr(check, '_py_not_none', check.not_none)
-    setattr(check, 'not_none', _check.bind_unary_check(check.not_none))
+        patch_fn('_unpack_isinstance_spec', _check.unpack_isinstance_spec)
+
+        for uf in [
+            'not_none',
+            'arg',
+            'state',
+        ]:
+            patch_fn(uf, _check.bind_unary_check(getattr(check, uf)))
+
+    _patch_for_cext()
 
 
 ##

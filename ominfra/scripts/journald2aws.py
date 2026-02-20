@@ -65,7 +65,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../../../omlish/lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
             dict(path='../../../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
-            dict(path='../../../../omlish/lite/check.py', sha1='4dee5d317d9e0fab5cd65f31a3cc1a496f7adfff'),
+            dict(path='../../../../omlish/lite/check.py', sha1='82f3a60106322e6f8bda718caa991391ae9a18f6'),
             dict(path='../../../../omlish/lite/contextmanagers.py', sha1='993f5ed96d3410f739a20363f55670d5e5267fa3'),
             dict(path='../../../../omlish/lite/json.py', sha1='57eeddc4d23a17931e00284ffa5cb6e3ce089486'),
             dict(path='../../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
@@ -1852,15 +1852,15 @@ class Checks:
 
     #
 
-    def _unpack_isinstance_spec(self, spec: ta.Any) -> tuple:
-        if isinstance(spec, type):
-            return (spec,)
+    def _unpack_isinstance_spec(self, spec: ta.Any) -> ta.Any:
+        if spec == ta.Any:
+            return object
         if not isinstance(spec, tuple):
-            spec = (spec,)
+            return spec
+        if ta.Any in spec:
+            return object
         if None in spec:
             spec = tuple(filter(None, spec)) + (None.__class__,)  # noqa
-        if ta.Any in spec:
-            spec = (object,)
         return spec
 
     @ta.overload

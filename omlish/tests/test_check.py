@@ -1,3 +1,5 @@
+import typing as ta
+
 import pytest
 
 from .. import check
@@ -8,11 +10,17 @@ def test_check():
         check.equal(1, 2)
 
 
-def test_check_not_none():
+def test_cext():
+    assert check.check._unpack_isinstance_spec(int) == int  # noqa
+    assert check.check._unpack_isinstance_spec((int, str)) == (int, str)  # noqa
+    assert check.check._unpack_isinstance_spec((int, str, None)) == (int, str, type(None))  # noqa
+    assert check.check._unpack_isinstance_spec((int, str, None, ta.Any)) == object  # noqa
+
     assert check.not_none(1) == 1
     with pytest.raises(ValueError) as e:  # noqa
         check.not_none(1 and None)  # noqa
-    # print(e.value)
+    check.state(True)
+    check.arg(True)
 
 
 class A:

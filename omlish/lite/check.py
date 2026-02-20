@@ -133,15 +133,15 @@ class Checks:
 
     #
 
-    def _unpack_isinstance_spec(self, spec: ta.Any) -> tuple:
-        if isinstance(spec, type):
-            return (spec,)
+    def _unpack_isinstance_spec(self, spec: ta.Any) -> ta.Any:
+        if spec == ta.Any:
+            return object
         if not isinstance(spec, tuple):
-            spec = (spec,)
+            return spec
+        if ta.Any in spec:
+            return object
         if None in spec:
             spec = tuple(filter(None, spec)) + (None.__class__,)  # noqa
-        if ta.Any in spec:
-            spec = (object,)
         return spec
 
     @ta.overload

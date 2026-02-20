@@ -32,7 +32,7 @@ def __omlish_amalg__():  # noqa
     return dict(
         src_files=[
             dict(path='../../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
-            dict(path='../../../omlish/lite/check.py', sha1='4dee5d317d9e0fab5cd65f31a3cc1a496f7adfff'),
+            dict(path='../../../omlish/lite/check.py', sha1='82f3a60106322e6f8bda718caa991391ae9a18f6'),
             dict(path='../../../omlish/lite/dataclasses.py', sha1='73b7f5e5493c7ed12ff0ce36e37b596e5984cb08'),
             dict(path='errors.py', sha1='37ed49c07bc30bcedf4f3c059dbc994708ae2169'),
             dict(path='tokens.py', sha1='1db53ba357beede951df7fef0505ad99df269cf3'),
@@ -331,15 +331,15 @@ class Checks:
 
     #
 
-    def _unpack_isinstance_spec(self, spec: ta.Any) -> tuple:
-        if isinstance(spec, type):
-            return (spec,)
+    def _unpack_isinstance_spec(self, spec: ta.Any) -> ta.Any:
+        if spec == ta.Any:
+            return object
         if not isinstance(spec, tuple):
-            spec = (spec,)
+            return spec
+        if ta.Any in spec:
+            return object
         if None in spec:
             spec = tuple(filter(None, spec)) + (None.__class__,)  # noqa
-        if ta.Any in spec:
-            spec = (object,)
         return spec
 
     @ta.overload

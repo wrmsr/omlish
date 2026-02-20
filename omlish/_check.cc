@@ -32,63 +32,47 @@ static PyObject * unpack_isinstance_spec(PyObject *module, PyObject *spec)
 {
     check_state *state = get_check_state(module);
 
-    // If spec is a type, return (spec,)
-    if (PyType_Check(spec)) {
-        return PyTuple_Pack(1, spec);
-    }
-
-    PyObject *tuple_spec = nullptr;
-
-    // If not a tuple, wrap it in a tuple
-    if (!PyTuple_Check(spec)) {
-        tuple_spec = PyTuple_Pack(1, spec);
-        if (tuple_spec == nullptr) {
+    // If spec is typing.Any return object
+    if (state->typing_any != nullptr) {
+        int cmp = PyObject_RichCompareBool(spec, state->typing_any, Py_EQ);
+        if (cmp < 0) {
             return nullptr;
         }
-    } else {
-        // It's already a tuple, so we'll work with it
-        tuple_spec = spec;
-        Py_INCREF(tuple_spec);
+        if (cmp) {
+            return Py_NewRef((PyObject *)&PyBaseObject_Type);
+        }
     }
 
-    // Check if None is in spec
-    Py_ssize_t size = PyTuple_Size(tuple_spec);
-    if (size < 0) {
-        Py_DECREF(tuple_spec);
-        return nullptr;
+    // If not a tuple, return it directly
+    if (!PyTuple_Check(spec)) {
+        Py_INCREF(spec);
+        return spec;
     }
 
+    Py_ssize_t size = PyTuple_Size(spec);
     bool has_none = false;
-    bool has_any = false;
 
+    // Check for typing.Any and None
     for (Py_ssize_t i = 0; i < size; i++) {
-        PyObject *item = PyTuple_GetItem(tuple_spec, i);  // borrowed reference
+        PyObject *item = PyTuple_GetItem(spec, i);
         if (item == nullptr) {
-            Py_DECREF(tuple_spec);
             return nullptr;
+        }
+
+        // If typing.Any is in spec, return object
+        if (state->typing_any != nullptr) {
+            int cmp = PyObject_RichCompareBool(item, state->typing_any, Py_EQ);
+            if (cmp < 0) {
+                return nullptr;
+            }
+            if (cmp) {
+                return Py_NewRef((PyObject *)&PyBaseObject_Type);
+            }
         }
 
         if (item == Py_None) {
             has_none = true;
         }
-
-        // Check if item is typing.Any
-        if (state->typing_any != nullptr) {
-            int cmp = PyObject_RichCompareBool(item, state->typing_any, Py_EQ);
-            if (cmp < 0) {
-                Py_DECREF(tuple_spec);
-                return nullptr;
-            }
-            if (cmp) {
-                has_any = true;
-            }
-        }
-    }
-
-    // If typing.Any is in spec, return (object,)
-    if (has_any) {
-        Py_DECREF(tuple_spec);
-        return PyTuple_Pack(1, &PyBaseObject_Type);
     }
 
     // If None is in spec, filter it out and add NoneType
@@ -97,41 +81,43 @@ static PyObject * unpack_isinstance_spec(PyObject *module, PyObject *spec)
         filtered.reserve(size);
 
         for (Py_ssize_t i = 0; i < size; i++) {
-            PyObject *item = PyTuple_GetItem(tuple_spec, i);  // borrowed reference
+            PyObject *item = PyTuple_GetItem(spec, i);
             if (item != Py_None) {
                 filtered.push_back(item);
             }
         }
 
-        // Add NoneType
         filtered.push_back((PyObject *)state->nonetype);
 
-        // Create new tuple
         PyObject *result = PyTuple_New(filtered.size());
-        if (result == nullptr) {
-            Py_DECREF(tuple_spec);
-            return nullptr;
-        }
+        if (result == nullptr) return nullptr;
 
         for (size_t i = 0; i < filtered.size(); i++) {
             Py_INCREF(filtered[i]);
             PyTuple_SET_ITEM(result, i, filtered[i]);
         }
-
-        Py_DECREF(tuple_spec);
         return result;
     }
 
     // Return the tuple as-is
-    return tuple_spec;
+    Py_INCREF(spec);
+    return spec;
 }
 
 //
 
+typedef enum {
+    MODE_UNKNOWN,
+    MODE_NOT_NONE,
+    MODE_ARG,
+    MODE_STATE
+} bound_unary_check_mode;
+
 typedef struct {
     PyObject_HEAD
     PyObject *fn;
-    vectorcallfunc vectorcall; // Added field for vectorcall pointer
+    vectorcallfunc vectorcall;
+    bound_unary_check_mode mode;
 } BoundUnaryCheck;
 
 static int BoundUnaryCheck_traverse(BoundUnaryCheck *self, visitproc visit, void *arg)
@@ -153,6 +139,32 @@ static void BoundUnaryCheck_dealloc(BoundUnaryCheck *self)
     Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
+static PyObject * BoundUnaryCheck_execute(BoundUnaryCheck *self, PyObject *v, PyObject *msg)
+{
+    switch (self->mode) {
+        case MODE_NOT_NONE:
+            if (v != Py_None) {
+                return Py_NewRef(v);
+            }
+            break;
+
+        case MODE_ARG:
+        case MODE_STATE:
+            // For arg/state, v is expected to be a boolean-ish condition
+            if (PyObject_IsTrue(v)) {
+                return Py_NewRef(v);
+            }
+            break;
+
+        default:
+            // Fallback to Python for unknown modes
+            break;
+    }
+
+    // Slow path: logic failed or unknown mode, let Python handle exception raising
+    return PyObject_CallFunctionObjArgs(self->fn, v, msg, nullptr);
+}
+
 static PyObject * BoundUnaryCheck_call(BoundUnaryCheck *self, PyObject *args, PyObject *kwargs)
 {
     PyObject *v;
@@ -167,14 +179,7 @@ static PyObject * BoundUnaryCheck_call(BoundUnaryCheck *self, PyObject *args, Py
         return nullptr;
     }
 
-    // Fast path: if v is not None, return it immediately (99.99% case)
-    if (v != Py_None) {
-        Py_INCREF(v);
-        return v;
-    }
-
-    // Slow path: v is None, call fn(v, msg)
-    return PyObject_CallFunctionObjArgs(self->fn, v, msg, nullptr);
+    return BoundUnaryCheck_execute(self, v, msg);
 }
 
 static PyObject * BoundUnaryCheck_vectorcall(PyObject *callable, PyObject *const *args, size_t nargsf, PyObject *kwnames)
@@ -195,13 +200,7 @@ static PyObject * BoundUnaryCheck_vectorcall(PyObject *callable, PyObject *const
     PyObject *v = args[0];
     PyObject *msg = (nargs == 2) ? args[1] : Py_None;
 
-    // Fast path: if v is not None, return it immediately
-    if (v != Py_None) {
-        return Py_NewRef(v);
-    }
-
-    // Slow path: v is None, call fn(v, msg)
-    return PyObject_CallFunctionObjArgs(self->fn, v, msg, nullptr);
+    return BoundUnaryCheck_execute(self, v, msg);
 }
 
 static PyType_Slot BoundUnaryCheck_slots[] = {
@@ -209,7 +208,7 @@ static PyType_Slot BoundUnaryCheck_slots[] = {
     {Py_tp_traverse, (void *)BoundUnaryCheck_traverse},
     {Py_tp_clear, (void *)BoundUnaryCheck_clear},
     {Py_tp_call, (void *)BoundUnaryCheck_call},
-    {Py_tp_doc, (void *)"Bound check.not_none callable with C acceleration"},
+    {Py_tp_doc, (void *)"Bound unary check callable with C acceleration"},
     {0, nullptr}
 };
 
@@ -223,7 +222,7 @@ static PyType_Spec BoundUnaryCheck_spec = {
 
 //
 
-PyDoc_STRVAR(bind_unary_check_doc, "bind_unary_check(fn)\n\nBind a check.not_none callable with C acceleration.");
+PyDoc_STRVAR(bind_unary_check_doc, "bind_unary_check(fn)\n\nBind a unary check callable with C acceleration.");
 
 static PyObject * bind_unary_check(PyObject *module, PyObject *fn)
 {
@@ -231,6 +230,28 @@ static PyObject * bind_unary_check(PyObject *module, PyObject *fn)
         PyErr_SetString(PyExc_TypeError, "fn must be callable");
         return nullptr;
     }
+
+    // Determine mode from __name__
+    PyObject *name_obj = PyObject_GetAttrString(fn, "__name__");
+    if (name_obj == nullptr) return nullptr;
+
+    bound_unary_check_mode mode = MODE_UNKNOWN;
+    if (PyUnicode_Check(name_obj)) {
+        if (PyUnicode_CompareWithASCIIString(name_obj, "not_none") == 0) {
+            mode = MODE_NOT_NONE;
+        } else if (PyUnicode_CompareWithASCIIString(name_obj, "arg") == 0) {
+            mode = MODE_ARG;
+        } else if (PyUnicode_CompareWithASCIIString(name_obj, "state") == 0) {
+            mode = MODE_STATE;
+        }
+    }
+
+    if (mode == MODE_UNKNOWN) {
+        PyErr_Format(PyExc_TypeError, "Unsupported check function: %S", name_obj);
+        Py_DECREF(name_obj);
+        return nullptr;
+    }
+    Py_DECREF(name_obj);
 
     check_state *state = get_check_state(module);
     BoundUnaryCheck *self = PyObject_GC_New(BoundUnaryCheck, state->BoundUnaryCheckType);
@@ -240,6 +261,7 @@ static PyObject * bind_unary_check(PyObject *module, PyObject *fn)
 
     self->fn = Py_NewRef(fn);
     self->vectorcall = BoundUnaryCheck_vectorcall;
+    self->mode = mode;
 
     PyObject_GC_Track(self);
     return (PyObject *)self;
