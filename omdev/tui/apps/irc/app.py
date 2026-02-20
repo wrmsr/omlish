@@ -10,6 +10,7 @@ TODO:
 import shlex
 import typing as ta
 
+from omlish import check
 from omlish import lang
 
 from ... import textual as tx
@@ -90,7 +91,7 @@ class IrcApp(tx.App):
         self._window_order: list[str] = ['system']
         self._current_window_idx: int = 0
         self._current_channel: str | None = None
-        self._startup_commands: ta.Sequence[str] = startup_commands or []
+        self._startup_commands: ta.Sequence[str] = check.not_isinstance(startup_commands or [], str)
 
     @property
     def client(self) -> IrcClient | None:
