@@ -89,10 +89,10 @@ def get_anchor_map(ctx: Context) -> ta.Dict[str, None]:
 
 
 # CommentPosition type of the position for comment.
-class CommentPosition(enum.Enum):
-    HEAD = enum.auto()
-    LINE = enum.auto()
-    FOOT = enum.auto()
+class CommentPosition(enum.IntEnum):
+    HEAD = 0
+    LINE = 1
+    FOOT = 2
 
 
 # Comment raw data for comment.
@@ -412,54 +412,45 @@ class YamlDecoder:
                     self.add_comment_to_map(check.not_none(node.values[0]).get_path(), head_comment(*texts))
 
     def add_foot_comment_to_map(self, node: YamlNode) -> None:
-        raise NotImplementedError
+        fc: ta.Optional[CommentGroupYamlNode] = None
+        foot_comment_path = node.get_path()
 
-    def add_comment_to_map(self, path: str, comment: Comment) -> None:
-        raise NotImplementedError
+        if isinstance(n := node, SequenceYamlNode):
+            fc = n.foot_comment
+            if n.foot_comment is not None:
+                foot_comment_path = n.foot_comment.get_path()
 
-r"""
-    def add_foot_comment_to_map(self, node: YamlNode) -> None:
-        var (
-            footComment     CommentGroupYamlNode
-            footCommentPath = node.get_path()
-        )
-        switch n := node.(type):
-        case SequenceYamlNode:
-            footComment = n.FootComment
-            if n.FootComment is not None:
-                footCommentPath = n.FootComment.get_path()
+        elif isinstance(n, MappingYamlNode):
+            fc = n.foot_comment
+            if n.foot_comment is not None:
+                foot_comment_path = n.foot_comment.get_path()
 
-        case MappingYamlNode:
-            footComment = n.FootComment
-            if n.FootComment is not None:
-                footCommentPath = n.FootComment.get_path()
+        elif isinstance(n, MappingValueYamlNode):
+            fc = n.foot_comment
+            if n.foot_comment is not None:
+                foot_comment_path = n.foot_comment.get_path()
 
-        case MappingValueYamlNode:
-            footComment = n.FootComment
-            if n.FootComment is not None:
-                footCommentPath = n.FootComment.get_path()
-
-        if footComment is None:
+        if fc is None:
             return
 
-        var texts []str
-        for _, comment := range footComment.Comments:
-            texts = append(texts, comment.Token.Value)
+        texts: ta.List[str] = []
+        for comment in fc.comments:
+            texts.append(check.not_none(comment.token).value)
 
         if len(texts) != 0:
-            self.add_comment_to_map(footCommentPath, FootComment(texts...))
+            self.add_comment_to_map(foot_comment_path, foot_comment(*texts))
 
     def add_comment_to_map(self, path: str, comment: Comment) -> None:
-        for _, c := range self.to_comment_map[path]:
-            if c.Position == comment.Position:
+        tcm = check.not_none(self.to_comment_map)[path]
+        for c in tcm:
+            if c.position == comment.position:
                 # already added same comment
                 return
 
-        self.to_comment_map[path] = append(self.to_comment_map[path], comment)
-        sort.Slice(self.to_comment_map[path], func(i, j int) bool {
-            return self.to_comment_map[path][i].Position < self.to_comment_map[path][j].Position
-        })
+        tcm.append(comment)
+        tcm.sort(key=lambda c: c.position)
 
+r"""
     def node_to_value(self, ctx: Context, node: YamlNode) -> YamlErrorOr[ta.Any]:
         self.step_in()
         try:
