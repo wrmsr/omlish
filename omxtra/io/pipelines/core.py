@@ -301,7 +301,7 @@ class ChannelPipelineHandlerContext:
         check.not_isinstance(msg, (ChannelPipelineMessages.NeverInbound, ChannelPipelineHandlerNotification))
 
         if isinstance(msg, ChannelPipelineMessages.MustPropagate):
-            self._pipeline._channel._propagation_checking.add_must(self, 'inbound', msg)  # noqa
+            self._pipeline._channel._propagation.add_must(self, 'inbound', msg)  # noqa
 
         self._handler.inbound(self, msg)
 
@@ -311,7 +311,7 @@ class ChannelPipelineHandlerContext:
         check.not_isinstance(msg, (ChannelPipelineMessages.NeverOutbound, ChannelPipelineHandlerNotification))
 
         if isinstance(msg, ChannelPipelineMessages.MustPropagate):
-            self._pipeline._channel._propagation_checking.add_must(self, 'outbound', msg)  # noqa
+            self._pipeline._channel._propagation.add_must(self, 'outbound', msg)  # noqa
 
         self._handler.outbound(self, msg)
 
@@ -638,7 +638,7 @@ class ChannelPipeline:
 
         def outbound(self, ctx: 'ChannelPipelineHandlerContext', msg: ta.Any) -> None:
             if isinstance(msg, ChannelPipelineMessages.MustPropagate):
-                ctx._pipeline._channel._propagation_checking.remove_must(ctx, 'outbound', msg)  # noqa
+                ctx._pipeline._channel._propagation.remove_must(ctx, 'outbound', msg)  # noqa
 
             ctx._pipeline._terminal('outbound', ctx, msg)  # noqa
 
@@ -650,7 +650,7 @@ class ChannelPipeline:
 
         def inbound(self, ctx: 'ChannelPipelineHandlerContext', msg: ta.Any) -> None:
             if isinstance(msg, ChannelPipelineMessages.MustPropagate):
-                ctx._pipeline._channel._propagation_checking.remove_must(ctx, 'inbound', msg)  # noqa
+                ctx._pipeline._channel._propagation.remove_must(ctx, 'inbound', msg)  # noqa
 
             ctx._pipeline._terminal('inbound', ctx, msg)  # noqa
 
@@ -867,7 +867,7 @@ class PipelineChannel:
 
         self._deferred: collections.deque[PipelineChannel._Deferred] = collections.deque()
 
-        self._propagation_checking: PipelineChannel._PropagationChecking = PipelineChannel._PropagationChecking()
+        self._propagation: PipelineChannel._Propagation = PipelineChannel._Propagation()
 
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}'
@@ -1004,7 +1004,7 @@ class PipelineChannel:
         self._maybe_execute_deferred()
 
         if not self._execution_depth:
-            self._propagation_checking.check_and_clear()
+            self._propagation.check_and_clear()
 
     #
 
@@ -1100,7 +1100,7 @@ class PipelineChannel:
     #
 
     @ta.final
-    class _PropagationChecking:
+    class _Propagation:
         def __init__(self) -> None:
             self._pending_inbound_must: ta.Final[ta.Dict[int, ta.Tuple[ta.Any, ChannelPipelineHandlerContext]]] = {}
             self._pending_outbound_must: ta.Final[ta.Dict[int, ta.Tuple[ta.Any, ChannelPipelineHandlerContext]]] = {}
