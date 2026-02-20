@@ -7,6 +7,7 @@ from omlish.lite.abstract import Abstract
 from omlish.lite.namespaces import NamespaceClass
 
 from ..core import ChannelPipelineMessages
+from ..core import PipelineChannelService
 
 
 ##
@@ -44,7 +45,7 @@ class ChannelPipelineFlowMessages(NamespaceClass):
 ##
 
 
-class ChannelPipelineFlow(Abstract):
+class PipelineChannelFlow(PipelineChannelService, Abstract):
     @property
     @abc.abstractmethod
     def is_auto_read(self) -> bool:
