@@ -136,6 +136,8 @@ class Checks:
     def _unpack_isinstance_spec(self, spec: ta.Any) -> ta.Any:
         if spec == ta.Any:
             return object
+        if spec is None:
+            return None.__class__
         if not isinstance(spec, tuple):
             return spec
         if ta.Any in spec:

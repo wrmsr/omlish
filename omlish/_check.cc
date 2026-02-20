@@ -44,6 +44,11 @@ static PyObject * unpack_isinstance_spec(PyObject *module, PyObject *spec)
         }
     }
 
+    // Handle 'is None' -> return NoneType
+    if (spec == Py_None) {
+        return Py_NewRef((PyObject *)state->nonetype);
+    }
+
     // If not a tuple, return it directly
     if (!PyTuple_Check(spec)) {
         Py_INCREF(spec);
@@ -119,6 +124,7 @@ typedef enum {
 typedef struct {
     PyObject_HEAD
     PyObject *fn;
+    PyObject *module;
     vectorcallfunc vectorcall;
     bound_unary_check_mode mode;
 } BoundUnaryCheck;
@@ -126,12 +132,14 @@ typedef struct {
 static int BoundUnaryCheck_traverse(BoundUnaryCheck *self, visitproc visit, void *arg)
 {
     Py_VISIT(self->fn);
+    Py_VISIT(self->module);
     return 0;
 }
 
 static int BoundUnaryCheck_clear(BoundUnaryCheck *self)
 {
     Py_CLEAR(self->fn);
+    Py_CLEAR(self->module);
     return 0;
 }
 
@@ -266,6 +274,7 @@ static PyObject * bind_unary_check(PyObject *module, PyObject *fn)
     }
 
     self->fn = Py_NewRef(fn);
+    self->module = Py_NewRef(module);
     self->vectorcall = BoundUnaryCheck_vectorcall;
     self->mode = mode;
 
@@ -281,11 +290,13 @@ typedef enum {
     BINARY_CHECK_MODE_NOT_EQUAL,
     BINARY_CHECK_MODE_IS,
     BINARY_CHECK_MODE_IS_NOT,
+    BINARY_CHECK_MODE_ISINSTANCE,
 } bound_binary_check_mode;
 
 typedef struct {
     PyObject_HEAD
     PyObject *fn;
+    PyObject *module;
     vectorcallfunc vectorcall;
     bound_binary_check_mode mode;
 } BoundBinaryCheck;
@@ -293,12 +304,14 @@ typedef struct {
 static int BoundBinaryCheck_traverse(BoundBinaryCheck *self, visitproc visit, void *arg)
 {
     Py_VISIT(self->fn);
+    Py_VISIT(self->module);
     return 0;
 }
 
 static int BoundBinaryCheck_clear(BoundBinaryCheck *self)
 {
     Py_CLEAR(self->fn);
+    Py_CLEAR(self->module);
     return 0;
 }
 
@@ -344,6 +357,28 @@ static PyObject * BoundBinaryCheck_execute(BoundBinaryCheck *self, PyObject *l, 
                 return Py_NewRef(l);
             }
             break;
+
+        case BINARY_CHECK_MODE_ISINSTANCE: {
+            // 1. Unpack the spec (r) using our accelerated logic
+            // Note: This returns a new reference
+            PyObject *unpacked = unpack_isinstance_spec(self->module, r);
+            if (unpacked == nullptr) {
+                return nullptr;
+            }
+
+            // 2. Perform the actual isinstance check
+            // PyObject_IsInstance handles both single types and tuples of types
+            int is_inst = PyObject_IsInstance(l, unpacked);
+            Py_DECREF(unpacked); // Clean up the reference from unpack_isinstance_spec
+
+            if (is_inst > 0) {
+                return Py_NewRef(l);
+            } else if (is_inst < 0) {
+                return nullptr; // Exception in isinstance (e.g. invalid type in tuple)
+            }
+            // is_inst == 0, fall through to Python fallback for error formatting
+            break;
+        }
 
         default:
             // Fallback to Python for unknown modes
@@ -436,6 +471,8 @@ static PyObject * bind_binary_check(PyObject *module, PyObject *fn)
             mode = BINARY_CHECK_MODE_IS;
         } else if (PyUnicode_CompareWithASCIIString(name_obj, "is_not") == 0) {
             mode = BINARY_CHECK_MODE_IS_NOT;
+        } else if (PyUnicode_CompareWithASCIIString(name_obj, "isinstance") == 0) {
+            mode = BINARY_CHECK_MODE_ISINSTANCE;
         }
     }
 
@@ -453,6 +490,7 @@ static PyObject * bind_binary_check(PyObject *module, PyObject *fn)
     }
 
     self->fn = Py_NewRef(fn);
+    self->module = Py_NewRef(module);
     self->vectorcall = BoundBinaryCheck_vectorcall;
     self->mode = mode;
 

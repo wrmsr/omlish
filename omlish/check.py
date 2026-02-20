@@ -52,6 +52,7 @@ else:
             'not_equal',
             'is_',
             'is_not',
+            'isinstance',
         ]:
             patch_fn(bf, _check.bind_binary_check(getattr(check, bf)))
 
