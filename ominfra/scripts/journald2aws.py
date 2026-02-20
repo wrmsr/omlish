@@ -81,7 +81,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../auth.py', sha1='b1ac1a5e03d4e9e38957a54e346943c6dcc964a1'),
             dict(path='../dataclasses.py', sha1='8e950d7815904588fed284889392cbb0b1002605'),
             dict(path='../../../../omlish/configs/formats.py', sha1='3074c3e1428f9598cd0591745cb60fb3fe2b309f'),
-            dict(path='../../../../omlish/io/streams/types.py', sha1='36dfe0ba2bb0a7fdf255a3a2fcfc7a5fe2cce2c3'),
+            dict(path='../../../../omlish/io/streams/types.py', sha1='8a12dc29f6e483dd8df5336c0d9b58a00b64e7ed'),
             dict(path='../../../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
             dict(path='../../../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
             dict(path='../../../../omlish/logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
@@ -3909,7 +3909,7 @@ class ByteStreamBufferLike(Abstract):
           - collectively represent exactly the readable bytes, in order
           - be 1-D, byte-oriented views (itemsize 1)
           - be non-copying views of the underlying storage
-          - be non-empty - lack of data is represented by returning no segments, not a empty segments
+          - be non-empty - lack of data is represented by returning no segments, not empty segments
 
         Callers must assume that the returned views may be invalidated by subsequent mutations of the originating
         buffer/view (e.g., advancing, writing, reserving, committing), depending on the implementation's rules.

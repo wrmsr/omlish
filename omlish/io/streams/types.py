@@ -57,7 +57,7 @@ class ByteStreamBufferLike(Abstract):
           - collectively represent exactly the readable bytes, in order
           - be 1-D, byte-oriented views (itemsize 1)
           - be non-copying views of the underlying storage
-          - be non-empty - lack of data is represented by returning no segments, not a empty segments
+          - be non-empty - lack of data is represented by returning no segments, not empty segments
 
         Callers must assume that the returned views may be invalidated by subsequent mutations of the originating
         buffer/view (e.g., advancing, writing, reserving, committing), depending on the implementation's rules.

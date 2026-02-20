@@ -54,6 +54,7 @@ def build_maven_project(
         src_file: str,
         *,
         deps: ta.Sequence[str] | None = None,
+        require_symlink: bool = False,
 ) -> pg.Project:
     with open(src_file) as f:
         src = f.read()
@@ -64,9 +65,13 @@ def build_maven_project(
 
     if (pms := list(filter(None, map(PACKAGE_PAT.fullmatch, src.splitlines())))):
         group_id = pms[0].group(1)
+        can_symlink = True
     else:
+        if require_symlink:
+            raise ValueError(f'Cannot symlink source file, no package specified.')
         group_id = DEFAULT_PROJECT_GROUP_ID
         src = f'package {group_id};\n\n{src}'
+        can_symlink = False
 
     check.non_empty_str(group_id)
     group_id_parts = group_id.split('.')
@@ -109,8 +114,12 @@ def build_maven_project(
         sp_dir = os.path.join(sp_dir, gi_part)
     os.makedirs(sp_dir)
 
-    with open(os.path.join(sp_dir, os.path.basename(src_file)), 'w') as f:
-        f.write(src)
+    sp_src_file = os.path.join(sp_dir, os.path.basename(src_file))
+    if can_symlink:
+        os.symlink(os.path.abspath(src_file), os.path.abspath(sp_src_file))
+    else:
+        with open(sp_src_file, 'w') as f:
+            f.write(src)
 
     with open(os.path.join(root_dir, 'pom.xml'), 'w') as f:
         f.write(pom_xml)
