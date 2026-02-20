@@ -22,6 +22,9 @@ def test_cext():
     check.state(True)
     check.arg(True)
 
+    check.equal(420, 420)
+    check.not_equal(420, 421)
+
 
 class A:
     def __init_subclass__(cls, **kwargs):

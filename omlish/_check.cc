@@ -144,6 +144,7 @@ static void BoundUnaryCheck_dealloc(BoundUnaryCheck *self)
 
 static PyObject * BoundUnaryCheck_execute(BoundUnaryCheck *self, PyObject *v, PyObject *msg)
 {
+    int res;
     switch (self->mode) {
         case UNARY_CHECK_MODE_NOT_NONE:
             if (v != Py_None) {
@@ -153,18 +154,20 @@ static PyObject * BoundUnaryCheck_execute(BoundUnaryCheck *self, PyObject *v, Py
 
         case UNARY_CHECK_MODE_ARG:
         case UNARY_CHECK_MODE_STATE:
-            // For arg/state, v is expected to be a boolean-ish condition
-            if (PyObject_IsTrue(v)) {
+            res = PyObject_IsTrue(v);
+            if (res > 0) {
                 return Py_NewRef(v);
+            } else if (res < 0) {
+                // An exception occurred during truth evaluation (e.g., __bool__ failed)
+                return nullptr;
             }
+            // res == 0, fall through to Python fallback
             break;
 
         default:
-            // Fallback to Python for unknown modes
             break;
     }
 
-    // Slow path: logic failed or unknown mode, let Python handle exception raising
     return PyObject_CallFunctionObjArgs(self->fn, v, msg, nullptr);
 }
 
@@ -309,7 +312,6 @@ static void BoundBinaryCheck_dealloc(BoundBinaryCheck *self)
 static PyObject * BoundBinaryCheck_execute(BoundBinaryCheck *self, PyObject *l, PyObject *r, PyObject *msg)
 {
     int cmp;
-
     switch (self->mode) {
         case BINARY_CHECK_MODE_EQUAL:
             cmp = PyObject_RichCompareBool(l, r, Py_EQ);

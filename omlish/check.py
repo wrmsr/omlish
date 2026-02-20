@@ -47,6 +47,14 @@ else:
         ]:
             patch_fn(uf, _check.bind_unary_check(getattr(check, uf)))
 
+        for bf in [
+            'equal',
+            'not_equal',
+            'is_',
+            'is_not',
+        ]:
+            patch_fn(bf, _check.bind_binary_check(getattr(check, bf)))
+
     _patch_for_cext()
 
 
