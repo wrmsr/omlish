@@ -41,6 +41,7 @@ else:
         patch_fn('_unpack_isinstance_spec', _check.unpack_isinstance_spec)
 
         for uf in [
+            'none',
             'not_none',
             'arg',
             'state',

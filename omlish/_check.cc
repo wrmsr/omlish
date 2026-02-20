@@ -116,6 +116,7 @@ static PyObject * unpack_isinstance_spec(PyObject *module, PyObject *spec)
 
 typedef enum {
     UNARY_CHECK_MODE_UNKNOWN,
+    UNARY_CHECK_MODE_NONE,
     UNARY_CHECK_MODE_NOT_NONE,
     UNARY_CHECK_MODE_ARG,
     UNARY_CHECK_MODE_STATE,
@@ -154,6 +155,12 @@ static PyObject * BoundUnaryCheck_execute(BoundUnaryCheck *self, PyObject *v, Py
 {
     int res;
     switch (self->mode) {
+        case UNARY_CHECK_MODE_NONE:
+            if (v == Py_None) {
+                return Py_NewRef(v);
+            }
+            break;
+
         case UNARY_CHECK_MODE_NOT_NONE:
             if (v != Py_None) {
                 return Py_NewRef(v);
@@ -251,7 +258,9 @@ static PyObject * bind_unary_check(PyObject *module, PyObject *fn)
 
     bound_unary_check_mode mode = UNARY_CHECK_MODE_UNKNOWN;
     if (PyUnicode_Check(name_obj)) {
-        if (PyUnicode_CompareWithASCIIString(name_obj, "not_none") == 0) {
+        if (PyUnicode_CompareWithASCIIString(name_obj, "none") == 0) {
+            mode = UNARY_CHECK_MODE_NONE;
+        } else if (PyUnicode_CompareWithASCIIString(name_obj, "not_none") == 0) {
             mode = UNARY_CHECK_MODE_NOT_NONE;
         } else if (PyUnicode_CompareWithASCIIString(name_obj, "arg") == 0) {
             mode = UNARY_CHECK_MODE_ARG;
