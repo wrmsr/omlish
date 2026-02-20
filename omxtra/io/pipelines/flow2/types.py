@@ -13,7 +13,7 @@ from ..core import PipelineChannelService
 ##
 
 
-class ChannelPipelineFlowMessages(NamespaceClass):
+class PipelineChannelFlowMessages(NamespaceClass):
     @ta.final
     @dc.dataclass(frozen=True)
     class FlushInput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelInboundInvoker.fireChannelReadComplete`  # noqa

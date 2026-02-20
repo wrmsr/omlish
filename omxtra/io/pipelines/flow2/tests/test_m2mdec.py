@@ -12,6 +12,7 @@ from ...handlers.fns import ChannelPipelineHandlerFns
 from ..m2mdec import FnMessageToMessageDecoder
 from ..m2mdec import MessageToMessageDecoder
 from ..types import PipelineChannelFlow
+from ..types import PipelineChannelFlowMessages
 
 
 ##
@@ -135,9 +136,14 @@ class TestM2mdecNoFlow(unittest.TestCase):
 
 
 class MyFlow(PipelineChannelFlow):
+    _auto_read: bool = False
+
     @property
     def is_auto_read(self) -> bool:
-        return True
+        return self._auto_read
+
+    def set_auto_read(self, auto_read: bool) -> None:
+        self._auto_read = auto_read
 
 
 class TestM2mdecMyFlow(unittest.TestCase):
@@ -186,6 +192,9 @@ class TestM2mdecMyFlow(unittest.TestCase):
         assert ch.drain() == [
             BazMsg(420),
         ]
+
+        ch.feed_in(PipelineChannelFlowMessages.FlushInput())
+        assert ch.drain() == [PipelineChannelFlowMessages.FlushInput()]
 
         ch.feed_in(FooMsg(420), BazMsg(421))
         assert ch.drain() == [
