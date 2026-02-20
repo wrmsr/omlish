@@ -183,6 +183,9 @@ class YamlDecodeErrors:
     EXCEEDED_MAX_DEPTH = yaml_error('exceeded max depth')
 
 
+##
+
+
 # Decoder reads and decodes YAML values from an input stream.
 class YamlDecoder:
     reader: Reader
@@ -703,42 +706,39 @@ class YamlDecoder:
         finally:
             self.step_out()
 
-r"""
-    def get_array_node(self, node: YamlNode) -> YamlErrorOr[ArrayYamlNode]:
+    def get_array_node(self, node: YamlNode) -> YamlErrorOr[ta.Optional[ArrayYamlNode]]:
         self.step_in()
         try:
             if self.is_exceeded_max_depth():
                 return YamlDecodeErrors.EXCEEDED_MAX_DEPTH
 
-            if _, ok := node.(NullYamlNode); ok:
-                return nil, nil
-                
-            if anchor, ok := node.(AnchorYamlNode); ok:
-                arrayNode, ok := anchor.Value.(ArrayYamlNode)
-                if ok:
-                    return arrayNode, nil
+            if isinstance(node, NullYamlNode):
+                return None
 
-                return nil, errors.ErrUnexpectedNodeType(anchor.Value.Type(), YamlNodeType.SEQUENCE, node.get_token())
-                
-            if alias, ok := node.(AliasYamlNode); ok:
-                alias_name := alias.Value.get_token().Value
-                node := self.anchor_node_map[alias_name]
-                if node is None:
-                    return nil, fmt.Errorf("cannot find anchor by alias name %s", alias_name)
-                arrayNode, ok := node.(ArrayYamlNode)
-                if ok:
-                    return arrayNode, nil
-                return nil, errors.ErrUnexpectedNodeType(node.Type(), YamlNodeType.SEQUENCE, node.get_token())
-                
-            arrayNode, ok := node.(ArrayYamlNode)
-            if !ok:
-                return nil, errors.ErrUnexpectedNodeType(node.Type(), YamlNodeType.SEQUENCE, node.get_token())
-                
-            return arrayNode, nil
-        
+            if isinstance(anchor := node, AnchorYamlNode):
+                if isinstance(array_node := anchor.value, ArrayYamlNode):
+                    return array_node
+
+                return UnexpectedNodeTypeYamlError(check.not_none(anchor.value).type(), YamlNodeType.SEQUENCE, check.not_none(node.get_token()))  # noqa
+
+            if isinstance(alias := node, AliasYamlNode):
+                alias_name = check.not_none(check.not_none(alias.value).get_token()).value
+                node2 = self.anchor_node_map[alias_name]
+                if node2 is None:
+                    return yaml_error(f"cannot find anchor by alias name {alias_name}")
+                if isinstance(array_node := node2, ArrayYamlNode):
+                    return array_node
+                return UnexpectedNodeTypeYamlError(node2.type(), YamlNodeType.SEQUENCE, check.not_none(node2.get_token()))  # noqa
+
+            if not isinstance(array_node := node, ArrayYamlNode):
+                return UnexpectedNodeTypeYamlError(node.type(), YamlNodeType.SEQUENCE, check.not_none(node.get_token()))  # noqa
+
+            return array_node
+
         finally:
             self.step_out()
 
+r"""
     def convert_value(self, v: ta.Any, typ: ta.Any, src: YamlNode) -> YamlErrorOr[ta.Any]:
         if typ.Kind() != reflect.String:
             if !v.Type().ConvertibleTo(typ):
@@ -1500,12 +1500,12 @@ r"""
             if self.is_exceeded_max_depth():
                 return YamlDecodeErrors.EXCEEDED_MAX_DEPTH
 
-            arrayNode, err := self.get_array_node(src)
+            array_node, err := self.get_array_node(src)
             if err is not None:
                 return err
-            if arrayNode is None:
+            if array_node is None:
                 return nil
-            it := arrayNode.ArrayRange()
+            it := array_node.ArrayRange()
             arrayValue := reflect.New(dst.Type()).Elem()
             arrayType := dst.Type()
             elemType := arrayType.Elem()
@@ -1539,12 +1539,12 @@ r"""
             if self.is_exceeded_max_depth():
                 return YamlDecodeErrors.EXCEEDED_MAX_DEPTH
 
-            arrayNode, err := self.get_array_node(src)
+            array_node, err := self.get_array_node(src)
             if err is not None:
                 return err
-            if arrayNode is None:
+            if array_node is None:
                 return nil
-            it := arrayNode.ArrayRange()
+            it := array_node.ArrayRange()
             sliceType := dst.Type()
             sliceValue := reflect.MakeSlice(sliceType, 0, it.Len())
             elemType := sliceType.Elem()
