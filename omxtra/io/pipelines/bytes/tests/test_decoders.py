@@ -43,5 +43,5 @@ class TestDecoders(unittest.TestCase):
         assert ch.drain() == ['fg', 'h', 'ij']
         ch.feed_in(b'\nk')
         assert ch.drain() == ['']
-        ch.feed_eof()
+        ch.feed_final_input()
         assert ch.drain() == ['k']

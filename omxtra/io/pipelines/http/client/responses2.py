@@ -68,7 +68,7 @@ class PipelineHttpResponseConditionalGzipDecoder2(ChannelPipelineHandler):
             raise ValueError('gzip expansion ratio exceeds limit (possible zip bomb)')
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineMessages.Eof):
+        if isinstance(msg, ChannelPipelineMessages.FinalInput):
             if self._enabled and self._z is not None:
                 # Drain flush() output under the same chunking discipline.
                 while True:

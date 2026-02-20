@@ -18,7 +18,7 @@ class CoroChannelPipelineHandler(ChannelPipelineHandler, Abstract):
     class NotStartedError(Error):
         pass
 
-    class ClosedError(Error):
+    class FinalOutputdError(Error):
         pass
 
     #
@@ -56,7 +56,7 @@ class CoroChannelPipelineHandler(ChannelPipelineHandler, Abstract):
 
         def feed(self, i: ta.Any) -> ta.Iterator[ta.Any]:
             if self._gen is None:
-                raise CoroChannelPipelineHandler.ClosedError
+                raise CoroChannelPipelineHandler.FinalOutputdError
 
             gi: ta.Optional[ta.Any] = i
             while True:

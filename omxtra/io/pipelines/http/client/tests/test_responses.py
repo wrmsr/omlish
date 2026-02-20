@@ -84,11 +84,11 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         channel.feed_in(b'HTTP/1.1 200 OK\r\n')
 
         # Send EOF
-        channel.feed_eof()
+        channel.feed_final_input()
 
         out = channel.drain()
 
         # Should get an aborted message
         aborted, eof = out
         self.assertIsInstance(aborted, PipelineHttpResponseAborted)
-        self.assertIsInstance(eof, ChannelPipelineMessages.Eof)
+        self.assertIsInstance(eof, ChannelPipelineMessages.FinalInput)

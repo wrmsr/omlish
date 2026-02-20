@@ -72,7 +72,7 @@ class DelimiterFramePipelineDecoder(InboundBytesBufferingChannelPipelineHandler)
         return len(self._buf)
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineMessages.Eof):
+        if isinstance(msg, ChannelPipelineMessages.FinalInput):
             self._produce_frames(ctx, final=True)
             ctx.feed_in(msg)
             return

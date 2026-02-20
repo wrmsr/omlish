@@ -229,7 +229,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         channel.feed_in(b'5\r\nhel')
 
         # Send EOF before completion - pipeline wraps exception in Error event
-        channel.feed_in(ChannelPipelineMessages.Eof())
+        channel.feed_in(ChannelPipelineMessages.FinalInput())
 
         out = channel.drain()
 
@@ -237,7 +237,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         out_head, aborted, eof = out
         self.assertIs(out_head, head)
         self.assertIsInstance(aborted, PipelineHttpResponseAborted)
-        self.assertIsInstance(eof, ChannelPipelineMessages.Eof)
+        self.assertIsInstance(eof, ChannelPipelineMessages.FinalInput)
 
     def test_invalid_chunk_size_raises(self) -> None:
         """Test that invalid chunk size raises error."""
@@ -373,10 +373,10 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         channel.feed_in(head)
 
         channel.feed_in(b'5\r\nhello\r\n0\r\n\r\n')
-        channel.feed_in(ChannelPipelineMessages.Eof())
+        channel.feed_in(ChannelPipelineMessages.FinalInput())
 
         out = channel.drain()
 
         # Should complete without error
         self.assertEqual(len(out), 4)
-        self.assertIsInstance(out[3], ChannelPipelineMessages.Eof)
+        self.assertIsInstance(out[3], ChannelPipelineMessages.FinalInput)

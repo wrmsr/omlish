@@ -30,9 +30,9 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../../omlish/lite/check.py', sha1='df0ed561b5782545e34e61dd3424f69f836a87c0'),
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
-            dict(path='errors.py', sha1='c8301263ba2f5cd116a11c2229aafa705b3d94fc'),
+            dict(path='errors.py', sha1='6f9afc9cefa06807e76bebb23adc7a84dfec253f'),
             dict(path='../../../omlish/io/streams/types.py', sha1='8a12dc29f6e483dd8df5336c0d9b58a00b64e7ed'),
-            dict(path='core.py', sha1='c5681a379f9828dd14c777ffbf327f43f479f63f'),
+            dict(path='core.py', sha1='92c7ea5b77eb59b142c40aecb3a54094d906d902'),
             dict(path='../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -44,7 +44,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/io/streams/scanning.py', sha1='4c0323e0b11cd506f7b6b4cf28ea4d7c6064b9d3'),
             dict(path='bytes/queues.py', sha1='38b11596cd0fa2367825252413923f1292c14f4e'),
             dict(path='../../../omlish/io/streams/segmented.py', sha1='f855d67d88ed71bbe2bbeee09321534f0ef18e24'),
-            dict(path='bytes/decoders.py', sha1='034c88a438365ab2a404fe0b7c056e91dc42355e'),
+            dict(path='bytes/decoders.py', sha1='1a60586dd3345fe41cd629a6c1f238bbbc55fe07'),
             dict(path='_amalg.py', sha1='b6e21edc44b3b69db9a03f041e7057d6c2944623'),
         ],
     )
@@ -890,11 +890,11 @@ class ContextInvalidatedChannelPipelineError(ChannelPipelineError):
     pass
 
 
-class SawEofChannelPipelineError(ChannelPipelineError):
+class SawFinalInputChannelPipelineError(ChannelPipelineError):
     pass
 
 
-class ClosedChannelPipelineError(ChannelPipelineError):
+class FinalOutputdChannelPipelineError(ChannelPipelineError):
     pass
 
 
@@ -1230,16 +1230,16 @@ class ChannelPipelineMessages(NamespaceClass):
 
     @ta.final
     @dc.dataclass(frozen=True)
-    class Eof(NeverOutbound, MustPropagate):
-        """Signals that the inbound stream reached EOF."""
+    class FinalInput(NeverOutbound, MustPropagate):
+        """Signals that the inbound stream has produced its final message (`eof`)."""
 
         def __repr__(self) -> str:
             return f'{type(self).__name__}@{id(self):x}()'
 
     @ta.final
     @dc.dataclass(frozen=True)
-    class Close(NeverInbound, MustPropagate):
-        """Requests that the channel/pipeline close."""
+    class FinalOutput(NeverInbound, MustPropagate):
+        """Signals that the outbound stream has produced its final message (`close`)."""
 
         def __repr__(self) -> str:
             return f'{type(self).__name__}@{id(self):x}()'
@@ -2091,8 +2091,8 @@ class PipelineChannel:
 
         self._emitted_q: ta.Final[collections.deque[ta.Any]] = collections.deque()
 
-        self._saw_close = False
-        self._saw_eof = False
+        self._saw_final_input = False
+        self._saw_final_output = False
 
         self._pipeline: ta.Final[ChannelPipeline] = ChannelPipeline(
             self,
@@ -2120,12 +2120,12 @@ class PipelineChannel:
     #
 
     @property
-    def eof(self) -> bool:
-        return self._saw_eof
+    def saw_final_input(self) -> bool:
+        return self._saw_final_input
 
     @property
-    def closed(self) -> bool:
-        return self._saw_close
+    def saw_final_output(self) -> bool:
+        return self._saw_final_output
 
     #
 
@@ -2250,10 +2250,10 @@ class PipelineChannel:
         self._step_in()
         try:
             for msg in msgs:
-                if isinstance(msg, ChannelPipelineMessages.Eof):
-                    self._saw_eof = True
-                elif self._saw_eof:
-                    raise SawEofChannelPipelineError  # noqa
+                if isinstance(msg, ChannelPipelineMessages.FinalInput):
+                    self._saw_final_input = True
+                elif self._saw_final_input:
+                    raise SawFinalInputChannelPipelineError  # noqa
 
                 ctx._inbound(msg)  # noqa
 
@@ -2273,8 +2273,8 @@ class PipelineChannel:
     def feed_in(self, *msgs: ta.Any) -> None:
         self._feed_in_to(self._pipeline._outermost, msgs)  # noqa
 
-    def feed_eof(self) -> None:
-        self._feed_in_to(self._pipeline._outermost, (ChannelPipelineMessages.Eof(),))  # noqa
+    def feed_final_input(self) -> None:
+        self._feed_in_to(self._pipeline._outermost, (ChannelPipelineMessages.FinalInput(),))  # noqa
 
     #
 
@@ -2282,10 +2282,10 @@ class PipelineChannel:
         self._step_in()
         try:
             for msg in msgs:
-                if isinstance(msg, ChannelPipelineMessages.Close):
-                    self._saw_close = True
-                elif self._saw_close:
-                    raise ClosedChannelPipelineError  # noqa
+                if isinstance(msg, ChannelPipelineMessages.FinalOutput):
+                    self._saw_final_output = True
+                elif self._saw_final_output:
+                    raise FinalOutputdChannelPipelineError  # noqa
 
                 ctx._outbound(msg)  # noqa
 
@@ -2305,8 +2305,8 @@ class PipelineChannel:
     def feed_out(self, *msgs: ta.Any) -> None:
         self._feed_out_to(self._pipeline._innermost, msgs)  # noqa
 
-    def feed_close(self) -> None:
-        self._feed_out_to(self._pipeline._innermost, (ChannelPipelineMessages.Close(),))  # noqa
+    def feed_final_output(self) -> None:
+        self._feed_out_to(self._pipeline._innermost, (ChannelPipelineMessages.FinalOutput(),))  # noqa
 
     #
 
@@ -2332,8 +2332,8 @@ class PipelineChannel:
     def _handle_error(self, e: BaseException) -> None:
         self._emit(ChannelPipelineEvents.Error(e))
 
-        if not self._saw_close:
-            self.feed_close()
+        if not self._saw_final_output:
+            self.feed_final_output()
 
     #
 
@@ -4524,7 +4524,7 @@ class DelimiterFramePipelineDecoder(InboundBytesBufferingChannelPipelineHandler)
         return len(self._buf)
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineMessages.Eof):
+        if isinstance(msg, ChannelPipelineMessages.FinalInput):
             self._produce_frames(ctx, final=True)
             ctx.feed_in(msg)
             return

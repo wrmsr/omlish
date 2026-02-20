@@ -45,7 +45,7 @@ class HttpClientHandler(ChannelPipelineHandler):
         if isinstance(msg, PipelineHttpResponseEnd):
             return
 
-        if isinstance(msg, ChannelPipelineMessages.Eof):
+        if isinstance(msg, ChannelPipelineMessages.FinalInput):
             self._print_response()
             ctx.feed_in(msg)
             return

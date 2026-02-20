@@ -17,7 +17,7 @@ from ..decoders import ChunkedPipelineHttpContentChunkDecoder
 from ..decoders import ContentLengthPipelineHttpContentChunkDecoder
 from ..decoders import PipelineHttpContentChunkDecoder
 from ..decoders import PipelineHttpHeadDecoder
-from ..decoders import UntilEofPipelineHttpContentChunkDecoder
+from ..decoders import UntilFinalInputPipelineHttpContentChunkDecoder
 from ..requests import FullPipelineHttpRequest
 from ..requests import PipelineHttpRequestAborted
 from ..requests import PipelineHttpRequestContentChunk
@@ -116,7 +116,7 @@ class PipelineHttpRequestBodyAggregator(InboundBytesBufferingChannelPipelineHand
         return len(self._buf)
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineMessages.Eof):
+        if isinstance(msg, ChannelPipelineMessages.FinalInput):
             # If we were expecting body bytes, that's a protocol error.
             if self._cur_head is not None and self._want and len(self._buf) < self._want:
                 ctx.feed_in(PipelineHttpRequestAborted('EOF before HTTP request body complete'))
@@ -279,7 +279,7 @@ class PipelineHttpRequestBodyStreamDecoder(InboundBytesBufferingChannelPipelineH
             ctx.feed_in(PipelineHttpRequestEnd())
 
         elif sm.mode == 'eof':
-            self._decoder = UntilEofPipelineHttpContentChunkDecoder(
+            self._decoder = UntilFinalInputPipelineHttpContentChunkDecoder(
                 make_chunk,
                 make_end,
                 make_aborted,

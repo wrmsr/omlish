@@ -43,19 +43,19 @@ class AsyncioStreamChannelPipelineDriver:
                 await self._flush_channel()
 
                 # If channel closed, flush outbound and close transport.
-                if self._channel.closed:  # intentionally internal; this is the edge driver
+                if self._channel.saw_final_output:  # intentionally internal; this is the edge driver
                     await self._flush_channel()
                     await self._close_writer()
                     return
 
                 await self._gate_inbound()
 
-                if self._channel.closed:
+                if self._channel.saw_final_output:
                     continue  # type: ignore[unreachable]  # FIXME: ??
 
                 data = await self._reader.read(self._read_chunk_size)
                 if not data:
-                    self._channel.feed_eof()
+                    self._channel.feed_final_input()
                     await self._flush_channel()
                     await self._close_writer()
                     return
@@ -130,7 +130,7 @@ class BytesFlowControlAsyncioStreamChannelPipelineDriver(AsyncioStreamChannelPip
 
             await asyncio.sleep(self._backpressure_sleep)  # FIXME: lol - event-driven or callback?
 
-            if self._channel.closed:
+            if self._channel.saw_final_output:
                 break
 
     async def _flush_channel(self) -> None:

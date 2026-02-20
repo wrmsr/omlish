@@ -8,11 +8,11 @@ from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 from omlish.lite.namespaces import NamespaceClass
 
-from .errors import ClosedChannelPipelineError
 from .errors import ContextInvalidatedChannelPipelineError
+from .errors import FinalOutputdChannelPipelineError
 from .errors import MessageNotPropagatedChannelPipelineError
 from .errors import MessageReachedTerminalChannelPipelineError
-from .errors import SawEofChannelPipelineError
+from .errors import SawFinalInputChannelPipelineError
 
 
 F = ta.TypeVar('F')
@@ -47,16 +47,16 @@ class ChannelPipelineMessages(NamespaceClass):
 
     @ta.final
     @dc.dataclass(frozen=True)
-    class Eof(NeverOutbound, MustPropagate):
-        """Signals that the inbound stream reached EOF."""
+    class FinalInput(NeverOutbound, MustPropagate):
+        """Signals that the inbound stream has produced its final message (`eof`)."""
 
         def __repr__(self) -> str:
             return f'{type(self).__name__}@{id(self):x}()'
 
     @ta.final
     @dc.dataclass(frozen=True)
-    class Close(NeverInbound, MustPropagate):
-        """Requests that the channel/pipeline close."""
+    class FinalOutput(NeverInbound, MustPropagate):
+        """Signals that the outbound stream has produced its final message (`close`)."""
 
         def __repr__(self) -> str:
             return f'{type(self).__name__}@{id(self):x}()'
@@ -908,8 +908,8 @@ class PipelineChannel:
 
         self._emitted_q: ta.Final[collections.deque[ta.Any]] = collections.deque()
 
-        self._saw_close = False
-        self._saw_eof = False
+        self._saw_final_input = False
+        self._saw_final_output = False
 
         self._pipeline: ta.Final[ChannelPipeline] = ChannelPipeline(
             self,
@@ -937,12 +937,12 @@ class PipelineChannel:
     #
 
     @property
-    def eof(self) -> bool:
-        return self._saw_eof
+    def saw_final_input(self) -> bool:
+        return self._saw_final_input
 
     @property
-    def closed(self) -> bool:
-        return self._saw_close
+    def saw_final_output(self) -> bool:
+        return self._saw_final_output
 
     #
 
@@ -1067,10 +1067,10 @@ class PipelineChannel:
         self._step_in()
         try:
             for msg in msgs:
-                if isinstance(msg, ChannelPipelineMessages.Eof):
-                    self._saw_eof = True
-                elif self._saw_eof:
-                    raise SawEofChannelPipelineError  # noqa
+                if isinstance(msg, ChannelPipelineMessages.FinalInput):
+                    self._saw_final_input = True
+                elif self._saw_final_input:
+                    raise SawFinalInputChannelPipelineError  # noqa
 
                 ctx._inbound(msg)  # noqa
 
@@ -1090,8 +1090,8 @@ class PipelineChannel:
     def feed_in(self, *msgs: ta.Any) -> None:
         self._feed_in_to(self._pipeline._outermost, msgs)  # noqa
 
-    def feed_eof(self) -> None:
-        self._feed_in_to(self._pipeline._outermost, (ChannelPipelineMessages.Eof(),))  # noqa
+    def feed_final_input(self) -> None:
+        self._feed_in_to(self._pipeline._outermost, (ChannelPipelineMessages.FinalInput(),))  # noqa
 
     #
 
@@ -1099,10 +1099,10 @@ class PipelineChannel:
         self._step_in()
         try:
             for msg in msgs:
-                if isinstance(msg, ChannelPipelineMessages.Close):
-                    self._saw_close = True
-                elif self._saw_close:
-                    raise ClosedChannelPipelineError  # noqa
+                if isinstance(msg, ChannelPipelineMessages.FinalOutput):
+                    self._saw_final_output = True
+                elif self._saw_final_output:
+                    raise FinalOutputdChannelPipelineError  # noqa
 
                 ctx._outbound(msg)  # noqa
 
@@ -1122,8 +1122,8 @@ class PipelineChannel:
     def feed_out(self, *msgs: ta.Any) -> None:
         self._feed_out_to(self._pipeline._innermost, msgs)  # noqa
 
-    def feed_close(self) -> None:
-        self._feed_out_to(self._pipeline._innermost, (ChannelPipelineMessages.Close(),))  # noqa
+    def feed_final_output(self) -> None:
+        self._feed_out_to(self._pipeline._innermost, (ChannelPipelineMessages.FinalOutput(),))  # noqa
 
     #
 
@@ -1149,8 +1149,8 @@ class PipelineChannel:
     def _handle_error(self, e: BaseException) -> None:
         self._emit(ChannelPipelineEvents.Error(e))
 
-        if not self._saw_close:
-            self.feed_close()
+        if not self._saw_final_output:
+            self.feed_final_output()
 
     #
 

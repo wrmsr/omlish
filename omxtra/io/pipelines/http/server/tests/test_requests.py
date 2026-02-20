@@ -89,11 +89,11 @@ class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):
         channel = PipelineChannel([decoder], TERMINAL_EMIT_CHANNEL_CONFIG)
 
         channel.feed_in(b'GET /path HTTP/1.1\r\n')
-        channel.feed_eof()
+        channel.feed_final_input()
 
         aborted, eof = channel.drain()
         self.assertIsInstance(aborted, PipelineHttpRequestAborted)
-        self.assertIsInstance(eof, ChannelPipelineMessages.Eof)
+        self.assertIsInstance(eof, ChannelPipelineMessages.FinalInput)
 
 
 class TestPipelineHttpRequestBodyAggregator(unittest.TestCase):
@@ -172,8 +172,8 @@ class TestPipelineHttpRequestBodyAggregator(unittest.TestCase):
 
         # Send partial body then EOF
         channel.feed_in(b'hello')
-        channel.feed_eof()
+        channel.feed_final_input()
 
         aborted, eof = channel.drain()
         self.assertIsInstance(aborted, PipelineHttpRequestAborted)
-        self.assertIsInstance(eof, ChannelPipelineMessages.Eof)
+        self.assertIsInstance(eof, ChannelPipelineMessages.FinalInput)

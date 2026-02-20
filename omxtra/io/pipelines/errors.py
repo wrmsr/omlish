@@ -19,11 +19,11 @@ class ContextInvalidatedChannelPipelineError(ChannelPipelineError):
     pass
 
 
-class SawEofChannelPipelineError(ChannelPipelineError):
+class SawFinalInputChannelPipelineError(ChannelPipelineError):
     pass
 
 
-class ClosedChannelPipelineError(ChannelPipelineError):
+class FinalOutputdChannelPipelineError(ChannelPipelineError):
     pass
 
 

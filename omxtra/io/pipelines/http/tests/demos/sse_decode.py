@@ -54,7 +54,7 @@ def demo_sync_http_sse() -> ta.List[ta.Any]:
         ch.feed_in(c)
         out.extend(ch.drain())
 
-    ch.feed_eof()
+    ch.feed_final_input()
     out.extend(ch.drain())
     return out
 

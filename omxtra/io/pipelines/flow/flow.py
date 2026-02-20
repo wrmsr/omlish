@@ -158,9 +158,9 @@ class FlowControlChannelPipelineHandler(ChannelPipelineFlowControl, ChannelPipel
             return
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if self._validate and isinstance(msg, ChannelPipelineMessages.Close):
+        if self._validate and isinstance(msg, ChannelPipelineMessages.FinalOutput):
             if self._inflight != 0:
-                raise FlowControlValidationChannelPipelineError('inbound Close event with non-zero inflight count')
+                raise FlowControlValidationChannelPipelineError('inbound FinalOutput event with non-zero inflight count')  # noqa
 
         if (cost := self._adapter.get_cost(msg)) is None:
             ctx.feed_in(msg)
@@ -199,7 +199,7 @@ class FlowControlChannelPipelineHandler(ChannelPipelineFlowControl, ChannelPipel
 
                 elif pol == 'close':
                     ctx.emit(ChannelPipelineEvents.Error(ChannelPipelineFlowCapacityExceededError()))
-                    ctx.channel.feed_close()
+                    ctx.channel.feed_final_output()
                     return
 
                 elif pol == 'raise':

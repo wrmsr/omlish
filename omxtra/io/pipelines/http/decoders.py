@@ -66,7 +66,7 @@ class PipelineHttpHeadDecoder:
     def inbound(self, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
         check.state(not self._done)
 
-        if isinstance(msg, ChannelPipelineMessages.Eof):
+        if isinstance(msg, ChannelPipelineMessages.FinalInput):
             # EOF: if we have partial head buffered and haven't parsed head, that's an error.
             yield self._make_aborted('EOF before HTTP head complete')
 
@@ -139,7 +139,7 @@ class PipelineHttpContentChunkDecoder(Abstract):
         raise NotImplementedError
 
 
-class UntilEofPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
+class UntilFinalInputPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
     _done: bool = False
 
     @property
@@ -152,7 +152,7 @@ class UntilEofPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
     def inbound(self, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
         check.state(not self._done)
 
-        if isinstance(msg, ChannelPipelineMessages.Eof):
+        if isinstance(msg, ChannelPipelineMessages.FinalInput):
             yield self._make_end()
 
             self._done = True
@@ -196,7 +196,7 @@ class ContentLengthPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecod
     def inbound(self, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
         check.state(self._remain > 0)
 
-        if isinstance(msg, ChannelPipelineMessages.Eof):
+        if isinstance(msg, ChannelPipelineMessages.FinalInput):
             yield self._make_aborted('EOF before HTTP body complete')
 
             self._remain = 0
@@ -280,7 +280,7 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
     def inbound(self, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
         check.state(self._state != 'done')
 
-        if isinstance(msg, ChannelPipelineMessages.Eof):
+        if isinstance(msg, ChannelPipelineMessages.FinalInput):
             yield self._make_aborted('EOF before chunked encoding complete')
 
             del self._buf

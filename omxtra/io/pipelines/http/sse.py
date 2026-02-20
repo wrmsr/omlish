@@ -34,7 +34,7 @@ class PipelineSseDecoder(ChannelPipelineHandler):
         self._retry: ta.Optional[int] = None
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineMessages.Eof):
+        if isinstance(msg, ChannelPipelineMessages.FinalInput):
             self._emit_if_any(ctx)
             ctx.feed_in(msg)
             return
