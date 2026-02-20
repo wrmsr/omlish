@@ -12,7 +12,7 @@ from ..core import ChannelPipelineMessages
 class ChannelPipelineFlowMessages(NamespaceClass):
     @ta.final
     @dc.dataclass(frozen=True)
-    class Barrier(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelInboundInvoker.fireChannelReadComplete`
+    class FlushInput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelInboundInvoker.fireChannelReadComplete`  # noqa
         pass
 
     @ta.final
@@ -29,7 +29,7 @@ class ChannelPipelineFlowMessages(NamespaceClass):
 
     @ta.final
     @dc.dataclass(frozen=True)
-    class Flush(ChannelPipelineMessages.NeverInbound):  # ~ Netty 'ChannelOutboundInvoker.flush'
+    class FlushOutput(ChannelPipelineMessages.NeverInbound):  # ~ Netty 'ChannelOutboundInvoker.flush'
         pass
 
     @ta.final

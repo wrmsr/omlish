@@ -330,7 +330,7 @@ class ChannelPipelineHandlerContext:
         nxt._outbound(msg)  # noqa
 
     def emit(self, msg: ta.Any) -> None:
-        self._pipeline._channel.emit(msg)  # noqa
+        self._pipeline._channel._emit(msg)  # noqa
 
 
 ##
@@ -1023,7 +1023,7 @@ class PipelineChannel:
         except BaseException as e:  # noqa
             if self._config.raise_handler_errors:
                 raise
-            self.handle_error(e)
+            self._handle_error(e)
 
         finally:
             self._step_out()
@@ -1055,7 +1055,7 @@ class PipelineChannel:
         except BaseException as e:  # noqa
             if self._config.raise_handler_errors:
                 raise
-            self.handle_error(e)
+            self._handle_error(e)
 
         finally:
             self._step_out()
@@ -1073,7 +1073,7 @@ class PipelineChannel:
 
     #
 
-    def emit(self, msg: ta.Any) -> None:
+    def _emit(self, msg: ta.Any) -> None:
         self._emitted_q.append(msg)
 
     def poll(self) -> ta.Optional[ta.Any]:
@@ -1092,8 +1092,8 @@ class PipelineChannel:
 
     #
 
-    def handle_error(self, e: BaseException) -> None:
-        self.emit(ChannelPipelineEvents.Error(e))
+    def _handle_error(self, e: BaseException) -> None:
+        self._emit(ChannelPipelineEvents.Error(e))
 
         if not self._saw_close:
             self.feed_close()

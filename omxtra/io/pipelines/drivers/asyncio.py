@@ -63,7 +63,8 @@ class AsyncioStreamChannelPipelineDriver:
                 self._channel.feed_in(data)
 
         except BaseException as e:  # noqa
-            self._channel.handle_error(e)
+            # FIXME: internal.. some kinda ChannelDriver interface? ChannelDriverContext?
+            self._channel._handle_error(e)  # noqa
 
             await self._flush_channel()
             await self._close_writer()

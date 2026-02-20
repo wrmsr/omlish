@@ -32,7 +32,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='errors.py', sha1='c8301263ba2f5cd116a11c2229aafa705b3d94fc'),
             dict(path='../../../omlish/io/streams/types.py', sha1='8a12dc29f6e483dd8df5336c0d9b58a00b64e7ed'),
-            dict(path='core.py', sha1='99f7d027bfe7fcbf53cf3996301993466fd0f073'),
+            dict(path='core.py', sha1='7bc96d9bdaa796cbfc0df457d60250ed22f15591'),
             dict(path='../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -1518,7 +1518,7 @@ class ChannelPipelineHandlerContext:
         nxt._outbound(msg)  # noqa
 
     def emit(self, msg: ta.Any) -> None:
-        self._pipeline._channel.emit(msg)  # noqa
+        self._pipeline._channel._emit(msg)  # noqa
 
 
 ##
@@ -2211,7 +2211,7 @@ class PipelineChannel:
         except BaseException as e:  # noqa
             if self._config.raise_handler_errors:
                 raise
-            self.handle_error(e)
+            self._handle_error(e)
 
         finally:
             self._step_out()
@@ -2243,7 +2243,7 @@ class PipelineChannel:
         except BaseException as e:  # noqa
             if self._config.raise_handler_errors:
                 raise
-            self.handle_error(e)
+            self._handle_error(e)
 
         finally:
             self._step_out()
@@ -2261,7 +2261,7 @@ class PipelineChannel:
 
     #
 
-    def emit(self, msg: ta.Any) -> None:
+    def _emit(self, msg: ta.Any) -> None:
         self._emitted_q.append(msg)
 
     def poll(self) -> ta.Optional[ta.Any]:
@@ -2280,8 +2280,8 @@ class PipelineChannel:
 
     #
 
-    def handle_error(self, e: BaseException) -> None:
-        self.emit(ChannelPipelineEvents.Error(e))
+    def _handle_error(self, e: BaseException) -> None:
+        self._emit(ChannelPipelineEvents.Error(e))
 
         if not self._saw_close:
             self.feed_close()
