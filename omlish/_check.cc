@@ -299,6 +299,8 @@ typedef enum {
     BINARY_CHECK_MODE_NOT_EQUAL,
     BINARY_CHECK_MODE_IS,
     BINARY_CHECK_MODE_IS_NOT,
+    BINARY_CHECK_MODE_IN,
+    BINARY_CHECK_MODE_NOT_IN,
     BINARY_CHECK_MODE_ISINSTANCE,
     BINARY_CHECK_MODE_NOT_ISINSTANCE,
     BINARY_CHECK_MODE_ISSUBCLASS,
@@ -343,6 +345,7 @@ static PyObject * BoundBinaryCheck_execute(BoundBinaryCheck *self, PyObject *l, 
             if (cmp < 0) {
                 return nullptr;
             }
+
             if (cmp > 0) {
                 return Py_NewRef(l);
             }
@@ -353,6 +356,7 @@ static PyObject * BoundBinaryCheck_execute(BoundBinaryCheck *self, PyObject *l, 
             if (cmp < 0) {
                 return nullptr;
             }
+
             if (cmp > 0) {
                 return Py_NewRef(l);
             }
@@ -369,6 +373,24 @@ static PyObject * BoundBinaryCheck_execute(BoundBinaryCheck *self, PyObject *l, 
                 return Py_NewRef(l);
             }
             break;
+
+        case BINARY_CHECK_MODE_IN:
+        case BINARY_CHECK_MODE_NOT_IN: {
+            // PySequence_Contains(container, item) -> equivalent to 'l in r'
+            // Note: CPython arguments are (r, l) for 'l in r'
+            int res = PySequence_Contains(r, l);
+            if (res < 0) {
+                return nullptr; // e.g., TypeError: argument of type 'int' is not iterable
+            }
+
+            if (
+                (self->mode == BINARY_CHECK_MODE_IN && res > 0) ||
+                (self->mode == BINARY_CHECK_MODE_NOT_IN && res == 0)
+            ) {
+                return Py_NewRef(l);
+            }
+            break;
+        }
 
         case BINARY_CHECK_MODE_ISINSTANCE:
         case BINARY_CHECK_MODE_NOT_ISINSTANCE: {
@@ -507,6 +529,10 @@ static PyObject * bind_binary_check(PyObject *module, PyObject *fn)
             mode = BINARY_CHECK_MODE_IS;
         } else if (PyUnicode_CompareWithASCIIString(name_obj, "is_not") == 0) {
             mode = BINARY_CHECK_MODE_IS_NOT;
+        } else if (PyUnicode_CompareWithASCIIString(name_obj, "in_") == 0) {
+            mode = BINARY_CHECK_MODE_IN;
+        } else if (PyUnicode_CompareWithASCIIString(name_obj, "not_in") == 0) {
+            mode = BINARY_CHECK_MODE_NOT_IN;
         } else if (PyUnicode_CompareWithASCIIString(name_obj, "isinstance") == 0) {
             mode = BINARY_CHECK_MODE_ISINSTANCE;
         } else if (PyUnicode_CompareWithASCIIString(name_obj, "not_isinstance") == 0) {

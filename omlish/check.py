@@ -53,6 +53,8 @@ else:
             'not_equal',
             'is_',
             'is_not',
+            'in_',
+            'not_in',
             'isinstance',
             'not_isinstance',
             'issubclass',
