@@ -14,7 +14,7 @@
 typedef struct check_state {
     PyObject *typing_any;
     PyTypeObject *nonetype;
-    PyTypeObject *BoundCheckNotNoneType;
+    PyTypeObject *BoundUnaryCheckType;
 } check_state;
 
 static inline check_state * get_check_state(PyObject *module)
@@ -132,38 +132,38 @@ typedef struct {
     PyObject_HEAD
     PyObject *fn;
     vectorcallfunc vectorcall; // Added field for vectorcall pointer
-} BoundCheckNotNone;
+} BoundUnaryCheck;
 
-static int BoundCheckNotNone_traverse(BoundCheckNotNone *self, visitproc visit, void *arg)
+static int BoundUnaryCheck_traverse(BoundUnaryCheck *self, visitproc visit, void *arg)
 {
     Py_VISIT(self->fn);
     return 0;
 }
 
-static int BoundCheckNotNone_clear(BoundCheckNotNone *self)
+static int BoundUnaryCheck_clear(BoundUnaryCheck *self)
 {
     Py_CLEAR(self->fn);
     return 0;
 }
 
-static void BoundCheckNotNone_dealloc(BoundCheckNotNone *self)
+static void BoundUnaryCheck_dealloc(BoundUnaryCheck *self)
 {
     PyObject_GC_UnTrack(self);
-    BoundCheckNotNone_clear(self);
+    BoundUnaryCheck_clear(self);
     Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
-static PyObject * BoundCheckNotNone_call(BoundCheckNotNone *self, PyObject *args, PyObject *kwargs)
+static PyObject * BoundUnaryCheck_call(BoundUnaryCheck *self, PyObject *args, PyObject *kwargs)
 {
     PyObject *v;
     PyObject *msg = Py_None;
 
     if (kwargs != nullptr && PyDict_GET_SIZE(kwargs) != 0) {
-        PyErr_SetString(PyExc_TypeError, "inner() takes no keyword arguments");
+        PyErr_SetString(PyExc_TypeError, "unary_check() takes no keyword arguments");
         return nullptr;
     }
 
-    if (!PyArg_ParseTuple(args, "O|O:inner", &v, &msg)) {
+    if (!PyArg_ParseTuple(args, "O|O:unary_check", &v, &msg)) {
         return nullptr;
     }
 
@@ -177,18 +177,18 @@ static PyObject * BoundCheckNotNone_call(BoundCheckNotNone *self, PyObject *args
     return PyObject_CallFunctionObjArgs(self->fn, v, msg, nullptr);
 }
 
-static PyObject * BoundCheckNotNone_vectorcall(PyObject *callable, PyObject *const *args, size_t nargsf, PyObject *kwnames)
+static PyObject * BoundUnaryCheck_vectorcall(PyObject *callable, PyObject *const *args, size_t nargsf, PyObject *kwnames)
 {
-    BoundCheckNotNone *self = (BoundCheckNotNone *)callable;
+    BoundUnaryCheck *self = (BoundUnaryCheck *)callable;
     Py_ssize_t nargs = PyVectorcall_NARGS(nargsf);
 
     if (kwnames != nullptr && PyTuple_GET_SIZE(kwnames) != 0) {
-        PyErr_SetString(PyExc_TypeError, "inner() takes no keyword arguments");
+        PyErr_SetString(PyExc_TypeError, "unary_check() takes no keyword arguments");
         return nullptr;
     }
 
     if (nargs < 1 || nargs > 2) {
-        PyErr_Format(PyExc_TypeError, "inner() takes from 1 to 2 positional arguments but %zd were given", nargs);
+        PyErr_Format(PyExc_TypeError, "unary_check() takes from 1 to 2 positional arguments but %zd were given", nargs);
         return nullptr;
     }
 
@@ -204,28 +204,28 @@ static PyObject * BoundCheckNotNone_vectorcall(PyObject *callable, PyObject *con
     return PyObject_CallFunctionObjArgs(self->fn, v, msg, nullptr);
 }
 
-static PyType_Slot BoundCheckNotNone_slots[] = {
-    {Py_tp_dealloc, (void *)BoundCheckNotNone_dealloc},
-    {Py_tp_traverse, (void *)BoundCheckNotNone_traverse},
-    {Py_tp_clear, (void *)BoundCheckNotNone_clear},
-    {Py_tp_call, (void *)BoundCheckNotNone_call},
+static PyType_Slot BoundUnaryCheck_slots[] = {
+    {Py_tp_dealloc, (void *)BoundUnaryCheck_dealloc},
+    {Py_tp_traverse, (void *)BoundUnaryCheck_traverse},
+    {Py_tp_clear, (void *)BoundUnaryCheck_clear},
+    {Py_tp_call, (void *)BoundUnaryCheck_call},
     {Py_tp_doc, (void *)"Bound check.not_none callable with C acceleration"},
     {0, nullptr}
 };
 
-static PyType_Spec BoundCheckNotNone_spec = {
-    .name = _MODULE_FULL_NAME ".BoundCheckNotNone",
-    .basicsize = sizeof(BoundCheckNotNone),
+static PyType_Spec BoundUnaryCheck_spec = {
+    .name = _MODULE_FULL_NAME ".BoundUnaryCheck",
+    .basicsize = sizeof(BoundUnaryCheck),
     .itemsize = 0,
     .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC | Py_TPFLAGS_HAVE_VECTORCALL,
-    .slots = BoundCheckNotNone_slots,
+    .slots = BoundUnaryCheck_slots,
 };
 
 //
 
-PyDoc_STRVAR(bind_check_not_none_doc, "bind_check_not_none(fn)\n\nBind a check.not_none callable with C acceleration.");
+PyDoc_STRVAR(bind_unary_check_doc, "bind_unary_check(fn)\n\nBind a check.not_none callable with C acceleration.");
 
-static PyObject * bind_check_not_none(PyObject *module, PyObject *fn)
+static PyObject * bind_unary_check(PyObject *module, PyObject *fn)
 {
     if (!PyCallable_Check(fn)) {
         PyErr_SetString(PyExc_TypeError, "fn must be callable");
@@ -233,13 +233,13 @@ static PyObject * bind_check_not_none(PyObject *module, PyObject *fn)
     }
 
     check_state *state = get_check_state(module);
-    BoundCheckNotNone *self = PyObject_GC_New(BoundCheckNotNone, state->BoundCheckNotNoneType);
+    BoundUnaryCheck *self = PyObject_GC_New(BoundUnaryCheck, state->BoundUnaryCheckType);
     if (self == nullptr) {
         return nullptr;
     }
 
     self->fn = Py_NewRef(fn);
-    self->vectorcall = BoundCheckNotNone_vectorcall;
+    self->vectorcall = BoundUnaryCheck_vectorcall;
 
     PyObject_GC_Track(self);
     return (PyObject *)self;
@@ -271,16 +271,16 @@ static int check_exec(PyObject *module)
     state->nonetype = Py_TYPE(Py_None);
     Py_INCREF(state->nonetype);
 
-    // Create the BoundCheckNotNone type dynamically
-    state->BoundCheckNotNoneType = (PyTypeObject *)PyType_FromModuleAndSpec(
+    // Create the BoundUnaryCheck type dynamically
+    state->BoundUnaryCheckType = (PyTypeObject *)PyType_FromModuleAndSpec(
         module,
-        &BoundCheckNotNone_spec,
+        &BoundUnaryCheck_spec,
         nullptr
     );
-    if (state->BoundCheckNotNoneType == nullptr) {
+    if (state->BoundUnaryCheckType == nullptr) {
         return -1;
     }
-    state->BoundCheckNotNoneType->tp_vectorcall_offset = offsetof(BoundCheckNotNone, vectorcall);
+    state->BoundUnaryCheckType->tp_vectorcall_offset = offsetof(BoundUnaryCheck, vectorcall);
 
     return 0;
 }
@@ -290,7 +290,7 @@ static int check_traverse(PyObject *module, visitproc visit, void *arg)
     check_state *state = get_check_state(module);
     Py_VISIT(state->typing_any);
     Py_VISIT(state->nonetype);
-    Py_VISIT(state->BoundCheckNotNoneType);
+    Py_VISIT(state->BoundUnaryCheckType);
     return 0;
 }
 
@@ -299,7 +299,7 @@ static int check_clear(PyObject *module)
     check_state *state = get_check_state(module);
     Py_CLEAR(state->typing_any);
     Py_CLEAR(state->nonetype);
-    Py_CLEAR(state->BoundCheckNotNoneType);
+    Py_CLEAR(state->BoundUnaryCheckType);
     return 0;
 }
 
@@ -310,7 +310,7 @@ static void check_free(void *module)
 
 static PyMethodDef check_methods[] = {
     {"unpack_isinstance_spec", (PyCFunction)unpack_isinstance_spec, METH_O, unpack_isinstance_spec_doc},
-    {"bind_check_not_none", (PyCFunction)bind_check_not_none, METH_O, bind_check_not_none_doc},
+    {"bind_unary_check", (PyCFunction)bind_unary_check, METH_O, bind_unary_check_doc},
     {nullptr, nullptr, 0, nullptr}
 };
 
