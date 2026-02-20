@@ -8,12 +8,11 @@ from omlish.lite.namespaces import NamespaceClass
 
 from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
+from ..core import ChannelPipelineHandlerFn
 
 
 F = ta.TypeVar('F')
 T = ta.TypeVar('T')
-
-ChannelPipelineHandlerFn = ta.Callable[['ChannelPipelineHandlerContext', F], T]  # ta.TypeAlias
 
 
 ##

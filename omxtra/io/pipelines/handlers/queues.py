@@ -11,7 +11,7 @@ from omlish.lite.abstract import Abstract
 
 from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
-from .fns import ChannelPipelineHandlerFn
+from ..core import ChannelPipelineHandlerFn
 
 
 ##

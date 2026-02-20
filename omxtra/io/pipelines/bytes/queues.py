@@ -4,7 +4,7 @@ import typing as ta
 
 from omlish.io.streams.utils import ByteStreamBuffers
 
-from ..handlers.fns import ChannelPipelineHandlerFn
+from ..core import ChannelPipelineHandlerFn
 from ..handlers.fns import ChannelPipelineHandlerFns
 from ..handlers.queues import InboundQueueChannelPipelineHandler
 from .buffering import InboundBytesBufferingChannelPipelineHandler

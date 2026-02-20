@@ -15,7 +15,10 @@ from .errors import MessageReachedTerminalChannelPipelineError
 from .errors import SawEofChannelPipelineError
 
 
+F = ta.TypeVar('F')
 T = ta.TypeVar('T')
+
+ChannelPipelineHandlerFn = ta.Callable[['ChannelPipelineHandlerContext', F], T]  # ta.TypeAlias
 
 ChannelPipelineHandlerT = ta.TypeVar('ChannelPipelineHandlerT', bound='ChannelPipelineHandler')
 ShareableChannelPipelineHandlerT = ta.TypeVar('ShareableChannelPipelineHandlerT', bound='ShareableChannelPipelineHandler')  # noqa
