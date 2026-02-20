@@ -140,7 +140,8 @@ def foot_comment(*texts: str) -> Comment:
 
 
 # CommentMap map of the position of the comment and the comment information.
-CommentMap = ta.Dict[str, ta.List[Comment]]
+class CommentMap(ta.Dict[str, ta.List[Comment]]):
+    pass
 
 
 ##
@@ -204,7 +205,12 @@ class FieldError:
 @dc.dataclass()
 class YamlValueBox:
     v: ta.Any
-    is_valid: bool
+    is_valid: bool = True
+    ty: ta.Optional[type] = None
+
+    @classmethod
+    def new_invalid(cls) -> 'YamlValueBox':
+        return YamlValueBox(None, False)
 
 
 ##
@@ -603,7 +609,7 @@ class YamlDecoder:
                     del self.anchor_node_map[anchor_name]
                     return anchor_value
                 self.anchor_node_map[anchor_name] = n.value
-                self.anchor_value_map[anchor_name] = YamlValueBox(anchor_value, True)
+                self.anchor_value_map[anchor_name] = YamlValueBox(anchor_value)
                 return anchor_value
 
             elif isinstance(n, AliasYamlNode):
@@ -1834,7 +1840,8 @@ class YamlDecoder:
                 cm = CommentMap()
                 cm.update(self.to_comment_map or {})
                 self.comment_maps.append(cm)
-            check.not_none(self.to_comment_map).clear()
+            if self.to_comment_map is not None:
+                self.to_comment_map.clear()
         return normalized_file
 
     def is_initialized(self) -> bool:
@@ -1851,7 +1858,7 @@ class YamlDecoder:
         return None
 
     r"""
-    def _decode(self, ctx: Context, v: ta.Any) -> ta.Optional[YamlError]:
+    def _decode(self, ctx: Context, v: YamlValueBox) -> ta.Optional[YamlError]:
         self.decode_depth = 0
         self.anchor_value_map = {}
         if len(self.parsed_file.docs) == 0:

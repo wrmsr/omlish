@@ -508,7 +508,7 @@ class YamlAsts:
 @dc.dataclass()
 class YamlFile:
     name: str = ''
-    docs: ta.List['DocumentYamlNode'] = dc.field(default_factory=dataclass_field_required('docs'))
+    docs: ta.List['DocumentYamlNode'] = dc.field(default_factory=list)
 
     # read implements (io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:

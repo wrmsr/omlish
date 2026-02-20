@@ -36,7 +36,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/dataclasses.py', sha1='73b7f5e5493c7ed12ff0ce36e37b596e5984cb08'),
             dict(path='errors.py', sha1='37ed49c07bc30bcedf4f3c059dbc994708ae2169'),
             dict(path='tokens.py', sha1='1db53ba357beede951df7fef0505ad99df269cf3'),
-            dict(path='ast.py', sha1='9e3d8af188a1c34d9d40f973e5785537546c718b'),
+            dict(path='ast.py', sha1='db6c6fe7a916994b62e183f1d891b6154a6d1ec1'),
             dict(path='scanning.py', sha1='dc1e82092762fabd4d81eefe1aa96f783b5792b6'),
             dict(path='parsing.py', sha1='e8b2d3952294f4c1ed21b7b4760a69b46b5032cc'),
             dict(path='_amalg.py', sha1='bef526864739fbfb767def62cadf0098add33b05'),
@@ -2518,7 +2518,7 @@ class YamlAsts:
 @dc.dataclass()
 class YamlFile:
     name: str = ''
-    docs: ta.List['DocumentYamlNode'] = dc.field(default_factory=dataclass_field_required('docs'))
+    docs: ta.List['DocumentYamlNode'] = dc.field(default_factory=list)
 
     # read implements (io.Reader).Read
     def read(self, p: str) -> YamlErrorOr[int]:
