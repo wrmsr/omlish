@@ -1,6 +1,5 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
-import abc
 import collections
 import dataclasses as dc
 import typing as ta
@@ -868,7 +867,7 @@ class PipelineChannel:
 
         self._deferred: collections.deque[PipelineChannel._Deferred] = collections.deque()
 
-        self._propagation_checking: PipelineChannel._PropagationChecking = PipelineChannel._DefaultPropagationChecking()
+        self._propagation_checking: PipelineChannel._PropagationChecking = PipelineChannel._PropagationChecking()
 
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}'
@@ -1100,53 +1099,9 @@ class PipelineChannel:
 
     #
 
-    class _PropagationChecking(Abstract):
-        @abc.abstractmethod
-        def add_must(
-                self,
-                ctx: ChannelPipelineHandlerContext,
-                direction: ChannelPipelineDirection,
-                msg: ChannelPipelineMessages.MustPropagate,
-        ) -> None:
-            raise NotImplementedError
-
-        @abc.abstractmethod
-        def remove_must(
-                self,
-                ctx: ChannelPipelineHandlerContext,
-                direction: ChannelPipelineDirection,
-                msg: ChannelPipelineMessages.MustPropagate,
-        ) -> None:
-            raise NotImplementedError
-
-        @abc.abstractmethod
-        def check_and_clear(self) -> None:
-            raise NotImplementedError
-
-    class _NopPropagationChecking(_PropagationChecking):
-        def add_must(
-                self,
-                ctx: ChannelPipelineHandlerContext,
-                direction: ChannelPipelineDirection,
-                msg: ChannelPipelineMessages.MustPropagate,
-        ) -> None:
-            pass
-
-        def remove_must(
-                self,
-                ctx: ChannelPipelineHandlerContext,
-                direction: ChannelPipelineDirection,
-                msg: ChannelPipelineMessages.MustPropagate,
-        ) -> None:
-            pass
-
-        def check_and_clear(self) -> None:
-            pass
-
-    class _DefaultPropagationChecking(_PropagationChecking):
+    @ta.final
+    class _PropagationChecking:
         def __init__(self) -> None:
-            super().__init__()
-
             self._pending_inbound_must: ta.Final[ta.Dict[int, ta.Tuple[ta.Any, ChannelPipelineHandlerContext]]] = {}
             self._pending_outbound_must: ta.Final[ta.Dict[int, ta.Tuple[ta.Any, ChannelPipelineHandlerContext]]] = {}
 
