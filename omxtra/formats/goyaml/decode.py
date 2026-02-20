@@ -1,5 +1,6 @@
 # ruff: noqa: UP006 UP007 UP043 UP045
 # @omlish-lite
+import base64
 import dataclasses as dc
 import enum
 import typing as ta
@@ -17,10 +18,10 @@ from .ast import InfinityYamlNode  # noqa
 from .ast import IntegerYamlNode  # noqa
 from .ast import LiteralYamlNode  # noqa
 from .ast import MapKeyYamlNode
+from .ast import MapYamlNode
 from .ast import MappingKeyYamlNode  # noqa
 from .ast import MappingValueYamlNode
 from .ast import MappingYamlNode
-from .ast import MapYamlNode
 from .ast import NanYamlNode  # noqa
 from .ast import NullYamlNode  # noqa
 from .ast import SequenceYamlNode  # noqa
@@ -33,6 +34,8 @@ from .ast import yaml_sequence_merge_value  # noqa
 from .errors import YamlError
 from .errors import YamlErrorOr
 from .errors import yaml_error
+from .tokens import YamlReservedTagKeywords  # noqa
+from .tokens import YamlSyntaxError  # noqa
 
 
 ##
@@ -458,163 +461,207 @@ r"""
                 return YamlDecodeErrors.EXCEEDED_MAX_DEPTH
 
             self.set_path_comment_map(node)
-            switch n := node.(type):
-            case NullYamlNode:
-                return nil, nil
-            case StringYamlNode:
-                return n.GetValue(), nil
-            case IntegerYamlNode:
-                return n.GetValue(), nil
-            case FloatYamlNode:
-                return n.GetValue(), nil
-            case BoolYamlNode:
-                return n.GetValue(), nil
-            case InfinityYamlNode:
-                return n.GetValue(), nil
-            case NanYamlNode:
-                return n.GetValue(), nil
-            case TagYamlNode:
-                if n.Directive is not None:
-                    v, err := self.node_to_value(ctx, n.Value)
-                    if err is not None:
-                        return nil, err
+            
+            if isinstance(n := node, NullYamlNode):
+                return None
+                
+            elif isinstance(n, StringYamlNode):
+                return n.get_value()
+                
+            elif isinstance(n, IntegerYamlNode):
+                return n.get_value()
+                
+            elif isinstance(n, FloatYamlNode):
+                return n.get_value()
+                
+            elif isinstance(n, BoolYamlNode):
+                return n.get_value()
+                
+            elif isinstance(n, InfinityYamlNode):
+                return n.get_value()
+                
+            elif isinstance(n, NanYamlNode):
+                return n.get_value()
+                
+            elif isinstance(n, TagYamlNode):
+                if n.directive is not None:
+                    v = self.node_to_value(ctx, n.value)
+                    if isinstance(v, YamlError):
+                        return v
                     if v is None:
-                        return "", nil
+                        return ''
 
-                    return fmt.Sprint(v), nil
-                switch token.ReservedTagKeyword(n.Start.Value):
-                case token.TimestampTag:
-                    t, _ := self.cast_to_time(ctx, n.Value)
-                    return t, nil
-                case token.IntegerTag:
-                    v, err := self.node_to_value(ctx, n.Value)
-                    if err is not None:
-                        return nil, err
-                    i, _ := strconv.Atoi(fmt.Sprint(v))
-                    return i, nil
-                case token.FloatTag:
-                    v, err := self.node_to_value(ctx, n.Value)
-                    if err is not None:
-                        return nil, err
-                    return self.cast_to_float(v), nil
-                case token.NullTag:
-                    return nil, nil
-                case token.BinaryTag:
-                    v, err := self.node_to_value(ctx, n.Value)
-                    if err is not None:
-                        return nil, err
-                    str, ok := v.(str)
-                    if !ok:
-                        return nil, errors.ErrSyntax(
-                            fmt.Sprintf("cannot convert %q to string", fmt.Sprint(v)),
-                            n.Value.get_token(),
+                    return str(v)
+                    
+                rtk = n.start.value
+                if rtk == YamlReservedTagKeywords.TIMESTAMP:
+                    t = self.cast_to_time(ctx, n.value)
+                    if isinstance(t, YamlError):
+                        return None
+                    return t
+                    
+                elif rtk == YamlReservedTagKeywords.INTEGER:
+                    v = self.node_to_value(ctx, n.value)
+                    if isinstance(v, YamlError):
+                        return v
+                    try:
+                        return int(str(v))
+                    except ValueError:
+                        return 0
+                    
+                elif rtk == YamlReservedTagKeywords.FLOAT:
+                    v = self.node_to_value(ctx, n.value)
+                    if isinstance(v, YamlError):
+                        return v
+                    return self.cast_to_float(v)
+                    
+                elif rtk == YamlReservedTagKeywords.NULL:
+                    return None
+                    
+                elif rtk == YamlReservedTagKeywords.BINARY:
+                    v = self.node_to_value(ctx, n.value)
+                    if isinstance(v, YamlError):
+                        return v
+                    if not isinstance(v, str):
+                        return YamlSyntaxError(
+                            "cannot convert %r to string" % (str(v),),
+                            n.value.get_token(),
                         )
-                    b, _ := base64.StdEncoding.DecodeString(str)
-                    return b, nil
-                case token.BooleanTag:
-                    v, err := self.node_to_value(ctx, n.Value)
-                    if err is not None:
-                        return nil, err
-                    str := strings.ToLower(fmt.Sprint(v))
-                    b, err := strconv.ParseBool(str)
-                    if err is None:
-                        return b, nil
-                    switch str:
-                    case "yes":
-                        return True, nil
-                    case "no":
-                        return False, nil
-                    return nil, errors.ErrSyntax(fmt.Sprintf("cannot convert %q to boolean", fmt.Sprint(v)), n.Value.get_token())
-                case token.StringTag:
-                    v, err := self.node_to_value(ctx, n.Value)
-                    if err is not None:
-                        return nil, err
+                    try:
+                        return base64.b64decode(v)
+                    except ValueError:
+                        return None
+                    
+                elif rtk == YamlReservedTagKeywords.BOOLEAN:
+                    v = self.node_to_value(ctx, n.value)
+                    if isinstance(v, YamlError):
+                        return v
+                    l = str(v).lower()
+                    if l in ('true', 't', '1', 'yes'):
+                        return True
+                    if l in ('false', 'f', '0', 'no'):
+                        return False
+                    return YamlSyntaxError('cannot convert %r to boolean' % (v,), n.value.get_token())
+                    
+                elif rtk == YamlReservedTagKeywords.STRING:
+                    v = self.node_to_value(ctx, n.value)
+                    if isinstance(v, YamlError):
+                        return v
                     if v is None:
-                        return "", nil
-                    return fmt.Sprint(v), nil
-                case token.MappingTag:
-                    return self.node_to_value(ctx, n.Value)
-                default:
-                    return self.node_to_value(ctx, n.Value)
+                        return ''
+                    return str(v)
+                    
+                elif rtk == YamlReservedTagKeywords.MAPPING:
+                    return self.node_to_value(ctx, n.value)
+                    
+                else:
+                    return self.node_to_value(ctx, n.value)
 
-            case AnchorYamlNode:
-                anchor_name := n.Name.get_token().Value
+            elif isinstance(n, AnchorYamlNode):
+                anchor_name = n.name.get_token().value
 
-                # To handle the case where alias is processed recursively, the result of alias can be set to nil in advance.
-                self.anchor_node_map[anchor_name] = nil
-                anchorValue, err := self.node_to_value(with_anchor(ctx, anchor_name), n.Value)
-                if err is not None:
-                    delete(self.anchor_node_map, anchor_name)
-                    return nil, err
-                self.anchor_node_map[anchor_name] = n.Value
-                self.anchor_value_map[anchor_name] = reflect.ValueOf(anchorValue)
-                return anchorValue, nil
-            case AliasYamlNode:
-                text := n.Value.String()
-                if _, exists := get_anchor_map(ctx)[text]; exists:
+                # To handle the case where alias is processed recursively, the result of alias can be set to nil in
+                # advance.
+                self.anchor_node_map[anchor_name] = None
+                anchor_value = self.node_to_value(with_anchor(ctx, anchor_name), n.value)
+                if isinstance(anchor_value, YamlError):
+                    del self.anchor_node_map[anchor_name)
+                    return anchor_value
+                self.anchor_node_map[anchor_name] = n.value
+                self.anchor_value_map[anchor_name] = anchor_value
+                return anchor_value
+                
+            elif isinstance(n, AliasYamlNode):
+                text = n.value.string()
+                if text in get_anchor_map(ctx):
                     # self recursion.
-                    return nil, nil
-                if v, exists := self.anchor_value_map[text]; exists:
-                    if !v.IsValid():
-                        return nil, nil
-                    return v.Interface(), nil
-                if node, exists := self.anchor_node_map[text]; exists:
+                    return None
+                try:
+                    v = self.anchor_value_map[text]
+                except KeyError:
+                    exists = False
+                else:
+                    exists = True
+                if exists:
+                    # FIXME:
+                    # if not v.is_valid():
+                    #     return None
+                    # return v.interface()
+                    return v
+                try:
+                    node = self.anchor_node_map[text]
+                except KeyError:
+                    exists = False
+                else:
+                    exists = True
+                if exists:
                     return self.node_to_value(ctx, node)
-                return nil, errors.ErrSyntax(fmt.Sprintf("could not find alias %q", text), n.Value.get_token())
-            case LiteralYamlNode:
-                return n.Value.GetValue(), nil
-            case MappingKeyYamlNode:
-                return self.node_to_value(ctx, n.Value)
-            case MappingValueYamlNode:
-                if n.Key.is_merge_key():
-                    value, err := self.get_map_node(n.Value, True)
-                    if err is not None:
-                        return nil, err
-                    iter := value.map_range()
+                return YamlSyntaError('could not find alias %r' % (text,), n.value.get_token())
+                
+            elif isinstance(n, LiteralYamlNode):
+                return n.value.get_value()
+                
+            elif isinstance(n, MappingKeyYamlNode):
+                return self.node_to_value(ctx, n.value)
+                
+            elif isinstance(n, MappingValueYamlNode):
+                if n.key.is_merge_key():
+                    value := self.get_map_node(n.value, True)
+                    if isinstance(value, YamlError):
+                        return value
+                    it = value.map_range()
                     if self.use_ordered_map:
                         m := MapSlice{}
-                        for iter.Next():
-                            if err := self.set_to_ordered_map_value(ctx, iter.KeyValue(), &m); err is not None:
+                        for it.Next():
+                            if err := self.set_to_ordered_map_value(ctx, it.KeyValue(), &m); err is not None:
                                 return nil, err
-                        return m, nil
+                        return m
                     m: ta.Dict[str, ta.Any] = {}
-                    for iter.Next():
-                        if err := self.set_to_map_value(ctx, iter.KeyValue(), m); err is not None:
+                    for it.Next():
+                        if err := self.set_to_map_value(ctx, it.KeyValue(), m); err is not None:
                             return nil, err
-                    return m, nil
+                    return m
+                    
                 key, err := self.map_key_node_to_string(ctx, n.Key)
                 if err is not None:
                     return nil, err
+                    
                 if self.use_ordered_map:
                     v, err := self.node_to_value(ctx, n.Value)
                     if err is not None:
                         return nil, err
-                    return MapSlice{{Key: key, Value: v}}, nil
+                    return MapSlice{{Key: key, Value: v}}
+                    
                 v, err := self.node_to_value(ctx, n.Value)
                 if err is not None:
                     return nil, err
-                return {key: v}, nil
-            case MappingYamlNode:
+                    
+                return {key: v}
+                
+            elif isinstance(n, MappingYamlNode):
                 if self.use_ordered_map:
                     m := make(MapSlice, 0, len(n.Values))
                     for _, value := range n.Values:
                         if err := self.set_to_ordered_map_value(ctx, value, &m); err is not None:
                             return nil, err
-                    return m, nil
+                    return m
+                    
                 m: ta.Dict[str, ta.Any] = {}
                 for _, value := range n.Values:
                     if err := self.set_to_map_value(ctx, value, m); err is not None:
                         return nil, err
-                return m, nil
-            case SequenceYamlNode:
+                return m
+                
+            elif isinstance(n, SequenceYamlNode):
                 v := make([]ta.Any, 0, len(n.Values))
                 for _, value := range n.Values:
                     vv, err := self.node_to_value(ctx, value)
                     if err is not None:
                         return nil, err
                     v = append(v, vv)
-                return v, nil
-            return nil, nil
+                return v
+                
+            return nil
 
         finally:
             self.step_out()
@@ -707,7 +754,7 @@ r"""
         case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
             strVal = strconv.FormatInt(v.Int(), 10)
         case reflect.Float32, reflect.Float64:
-            strVal = fmt.Sprint(v.Float())
+            strVal = str(v.Float())
         case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
             strVal = strconv.FormatUint(v.Uint(), 10)
         case reflect.Bool:
@@ -977,7 +1024,7 @@ r"""
                         return errors.ErrTypeMismatch(valueType, reflect.TypeOf(v), src.get_token())
                 default:
                     return errors.ErrTypeMismatch(valueType, reflect.TypeOf(v), src.get_token())
-                return errors.ErrOverflow(valueType, fmt.Sprint(v), src.get_token())
+                return errors.ErrOverflow(valueType, str(v), src.get_token())
             case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
                 v, err := self.node_to_value(ctx, src)
                 if err is not None:
@@ -1005,7 +1052,7 @@ r"""
 
                 default:
                     return errors.ErrTypeMismatch(valueType, reflect.TypeOf(v), src.get_token())
-                return errors.ErrOverflow(valueType, fmt.Sprint(v), src.get_token())
+                return errors.ErrOverflow(valueType, str(v), src.get_token())
             srcVal, err := self.node_to_value(ctx, src)
             if err is not None:
                 return err
@@ -1406,15 +1453,15 @@ r"""
                 return err
             if arrayNode is None:
                 return nil
-            iter := arrayNode.ArrayRange()
+            it := arrayNode.ArrayRange()
             arrayValue := reflect.New(dst.Type()).Elem()
             arrayType := dst.Type()
             elemType := arrayType.Elem()
             idx := 0
 
             var foundErr error
-            for iter.Next():
-                v := iter.Value()
+            for it.Next():
+                v := it.Value()
                 if elemType.Kind() == reflect.Ptr && v.Type() == YamlNodeType.NULL:
                     # set nil value to pointer
                     arrayValue.Index(idx).Set(reflect.Zero(elemType))
@@ -1445,14 +1492,14 @@ r"""
                 return err
             if arrayNode is None:
                 return nil
-            iter := arrayNode.ArrayRange()
+            it := arrayNode.ArrayRange()
             sliceType := dst.Type()
-            sliceValue := reflect.MakeSlice(sliceType, 0, iter.Len())
+            sliceValue := reflect.MakeSlice(sliceType, 0, it.Len())
             elemType := sliceType.Elem()
 
             var foundErr error
-            for iter.Next():
-                v := iter.Value()
+            for it.Next():
+                v := it.Value()
                 if elemType.Kind() == reflect.Ptr && v.Type() == YamlNodeType.NULL:
                     # set nil value to pointer
                     sliceValue = reflect.Append(sliceValue, reflect.Zero(elemType))
@@ -1572,11 +1619,11 @@ r"""
                 if key.is_merge_key():
                     if err := self.decode_map(with_merge(ctx), dst, value); err is not None:
                         return err
-                    iter := dst.map_range()
-                    for iter.Next():
-                        if err := self.validate_duplicate_key(keyMap, iter.Key(), value); err is not None:
+                    it := dst.map_range()
+                    for it.Next():
+                        if err := self.validate_duplicate_key(keyMap, it.Key(), value); err is not None:
                             return err
-                        mapValue.SetMapIndex(iter.Key(), iter.Value())
+                        mapValue.SetMapIndex(it.Key(), it.Value())
                     continue
 
                 k := self.create_decodable_value(keyType)

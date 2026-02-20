@@ -17,6 +17,19 @@ from .errors import yaml_error
 ##
 
 
+@dc.dataclass(frozen=True)
+class YamlSyntaxError(YamlError):
+    msg: str
+    token: 'YamlToken'
+
+    @property
+    def message(self) -> str:
+        return self.msg
+
+
+##
+
+
 class YamlChars:
     # SEQUENCE_ENTRY character for sequence entry
     SEQUENCE_ENTRY = '-'
