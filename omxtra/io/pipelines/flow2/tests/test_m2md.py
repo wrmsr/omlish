@@ -9,8 +9,8 @@ from omlish.lite.check import check
 from ...core import ChannelPipelineHandlerContext
 from ...core import PipelineChannel
 from ...handlers.fns import ChannelPipelineHandlerFns
-from ..m2mdec import FnMessageToMessageDecoder
-from ..m2mdec import MessageToMessageDecoder
+from ..m2md import FnMessageToMessageDecoder
+from ..m2md import MessageToMessageDecoder
 from ..types import PipelineChannelFlow
 from ..types import PipelineChannelFlowMessages
 
