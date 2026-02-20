@@ -8,6 +8,7 @@ from omlish.http.versions import HttpVersion
 from ....core import ChannelPipelineEvents
 from ....core import ChannelPipelineMessages
 from ....core import PipelineChannel
+from ...responses import PipelineHttpResponseAborted
 from ...responses import PipelineHttpResponseContentChunk
 from ...responses import PipelineHttpResponseEnd
 from ...responses import PipelineHttpResponseHead
@@ -232,10 +233,11 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
 
         out = channel.drain()
 
-        # Should get head and Error event
+        # Should get an aborted message
+        head, aborted, eof = out
         self.assertIs(out[0], head)
-        self.assertIsInstance(out[1], ChannelPipelineEvents.Error)
-        self.assertIn('EOF before chunked encoding complete', str(out[1].exc))
+        self.assertIsInstance(aborted, PipelineHttpResponseAborted)
+        self.assertIsInstance(eof, ChannelPipelineMessages.Eof)
 
     def test_invalid_chunk_size_raises(self) -> None:
         """Test that invalid chunk size raises error."""

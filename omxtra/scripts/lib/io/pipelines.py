@@ -32,15 +32,15 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='errors.py', sha1='c8301263ba2f5cd116a11c2229aafa705b3d94fc'),
             dict(path='../../../omlish/io/streams/types.py', sha1='36dfe0ba2bb0a7fdf255a3a2fcfc7a5fe2cce2c3'),
-            dict(path='core.py', sha1='244f99cc1d3f96fcfc85f8d86277661811501936'),
+            dict(path='core.py', sha1='cf348d24943f482ac2ee5b904ad3bfdd3f8513ff'),
             dict(path='../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
             dict(path='bytes/buffering.py', sha1='aa8375c8ef0689db865bb4009afd3ed8dcc2bd12'),
-            dict(path='handlers/fns.py', sha1='39e122af1a29b486892401d3e6d06881514fd635'),
+            dict(path='handlers/fns.py', sha1='8b68ec96f3b6cbe84c7c099ba20daea14dbc16d5'),
             dict(path='../../../omlish/io/streams/direct.py', sha1='83c33460e9490a77a00ae66251617ba98128b56b'),
             dict(path='../../../omlish/io/streams/scanning.py', sha1='4c0323e0b11cd506f7b6b4cf28ea4d7c6064b9d3'),
-            dict(path='handlers/flatmap.py', sha1='c9004f70bb5ef65a3b3a70c64fb25754d9bbf134'),
+            dict(path='handlers/flatmap.py', sha1='0db9d8227710965328c80afade38934b032420f1'),
             dict(path='handlers/queues.py', sha1='2821e894bf96a55928a3fa812f7e48cff46f3fff'),
             dict(path='../../../omlish/io/streams/segmented.py', sha1='f855d67d88ed71bbe2bbeee09321534f0ef18e24'),
             dict(path='bytes/queues.py', sha1='6c8b43f86d8c96041f8c84840cea62b2485077dd'),
@@ -2172,7 +2172,7 @@ class PipelineChannel:
     def _maybe_execute_deferred(self) -> None:
         # TODO: errors lol
         # TODO: meditate on reentrancy lol
-        while self._deferred and self._execution_depth == 0:
+        while self._deferred and not self._execution_depth:
             dfl = self._deferred.popleft()
 
             if dfl.no_context:
@@ -2182,8 +2182,21 @@ class PipelineChannel:
 
     #
 
-    def _feed_in_to(self, ctx: ChannelPipelineHandlerContext, msgs: ta.Iterable[ta.Any]) -> None:
+    def _step_in(self) -> None:
         self._execution_depth += 1
+
+    def _step_out(self) -> None:
+        self._execution_depth -= 1
+
+        self._maybe_execute_deferred()
+
+        if not self._execution_depth:
+            self._check_propagated()
+
+    #
+
+    def _feed_in_to(self, ctx: ChannelPipelineHandlerContext, msgs: ta.Iterable[ta.Any]) -> None:
+        self._step_in()
         try:
             for msg in msgs:
                 if isinstance(msg, ChannelPipelineMessages.Eof):
@@ -2199,8 +2212,7 @@ class PipelineChannel:
             self.handle_error(e)
 
         finally:
-            self._execution_depth -= 1
-            self._maybe_execute_deferred()
+            self._step_out()
 
     def feed_in_to(self, handler_ref: ChannelPipelineHandlerRef, *msgs: ta.Any) -> None:
         ctx = handler_ref._context  # noqa
@@ -2216,7 +2228,7 @@ class PipelineChannel:
     #
 
     def _feed_out_to(self, ctx: ChannelPipelineHandlerContext, msgs: ta.Iterable[ta.Any]) -> None:
-        self._execution_depth += 1
+        self._step_in()
         try:
             for msg in msgs:
                 if isinstance(msg, ChannelPipelineMessages.Close):
@@ -2232,8 +2244,7 @@ class PipelineChannel:
             self.handle_error(e)
 
         finally:
-            self._execution_depth -= 1
-            self._maybe_execute_deferred()
+            self._step_out()
 
     def feed_out_to(self, handler_ref: ChannelPipelineHandlerRef, *msgs: ta.Any) -> None:
         ctx = handler_ref._context  # noqa
@@ -2322,7 +2333,7 @@ class PipelineChannel:
                 outbound=[msg] if direction == 'outbound' else None,
             )
 
-    def check_propagated(self) -> None:
+    def _check_propagated(self) -> None:
         inbound = list(self._pending_inbound_must_propagate.values())
         outbound = list(self._pending_outbound_must_propagate.values())
         if inbound or outbound:
@@ -2874,12 +2885,66 @@ class ChannelPipelineHandlerFns(NamespaceClass):
 
     @classmethod
     def no_context(cls, fn: ta.Callable[[F], T]) -> ChannelPipelineHandlerFn[F, T]:
-        return cls.NoContext(fn=fn)
+        return cls.NoContext(fn)
 
     #
 
     @dc.dataclass(frozen=True)
-    class Isinstance:
+    class And:
+        fns: ta.Sequence[ChannelPipelineHandlerFn[ta.Any, bool]]
+
+        def __repr__(self) -> str:
+            return f'{type(self).__name__}([{", ".join(map(repr, self.fns))}])'
+
+        def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:
+            return all(fn(ctx, msg) for fn in self.fns)
+
+    @classmethod
+    def and_(cls, *fns: ChannelPipelineHandlerFn[ta.Any, bool]) -> ChannelPipelineHandlerFn[ta.Any, bool]:
+        if len(fns) == 1:
+            return fns[0]
+        return cls.And(fns)
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class Or:
+        fns: ta.Sequence[ChannelPipelineHandlerFn[ta.Any, bool]]
+
+        def __repr__(self) -> str:
+            return f'{type(self).__name__}([{", ".join(map(repr, self.fns))}])'
+
+        def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:
+            return any(fn(ctx, msg) for fn in self.fns)
+
+    @classmethod
+    def or_(cls, *fns: ChannelPipelineHandlerFn[ta.Any, bool]) -> ChannelPipelineHandlerFn[ta.Any, bool]:
+        if len(fns) == 1:
+            return fns[0]
+        return cls.Or(fns)
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class Not:
+        fn: ChannelPipelineHandlerFn[ta.Any, bool]
+
+        def __repr__(self) -> str:
+            return f'{type(self).__name__}({self.fn!r})'
+
+        def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:
+            return not self.fn(ctx, msg)
+
+    @classmethod
+    def not_(cls, fn: ChannelPipelineHandlerFn[ta.Any, bool]) -> ChannelPipelineHandlerFn[ta.Any, bool]:
+        if isinstance(fn, cls.Not):
+            return fn.fn
+        return cls.Not(fn)
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class IsInstance:
         ty: ta.Union[type, ta.Tuple[type, ...]]
 
         def __repr__(self) -> str:
@@ -2890,7 +2955,11 @@ class ChannelPipelineHandlerFns(NamespaceClass):
 
     @classmethod
     def isinstance(cls, ty: ta.Union[type, ta.Tuple[type, ...]]) -> ChannelPipelineHandlerFn[ta.Any, bool]:
-        return cls.Isinstance(ty=ty)
+        return cls.IsInstance(ty)
+
+    @classmethod
+    def not_isinstance(cls, ty: ta.Union[type, ta.Tuple[type, ...]]) -> ChannelPipelineHandlerFn[ta.Any, bool]:
+        return cls.Not(cls.IsInstance(ty))
 
 
 ##
@@ -3254,21 +3323,33 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
     class Filter:
         pred: ChannelPipelineHandlerFn[ta.Any, bool]
         fn: FlatMapChannelPipelineHandlerFn
+        else_fn: ta.Optional[FlatMapChannelPipelineHandlerFn] = None
 
         def __repr__(self) -> str:
-            return f'{type(self).__name__}({self.pred!r}, {self.fn!r})'
+            return (
+                f'{type(self).__name__}('
+                f'{self.pred!r}'
+                f', {self.fn!r}, '
+                f'{f", else_fn={self.else_fn!r}" if self.else_fn is not None else ""}'
+                f')'
+            )
 
         def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
             if self.pred(ctx, msg):
                 yield from self.fn(ctx, msg)
+            elif (ef := self.else_fn) is not None:
+                yield from ef(ctx, msg)
+            else:
+                yield msg
 
     @classmethod
     def filter(
             cls,
             pred: ChannelPipelineHandlerFn[ta.Any, bool],
             fn: FlatMapChannelPipelineHandlerFn,
+            else_fn: ta.Optional[FlatMapChannelPipelineHandlerFn] = None,
     ) -> FlatMapChannelPipelineHandlerFn:
-        return cls.Filter(pred, fn)
+        return cls.Filter(pred, fn, else_fn)
 
     #
 
@@ -3348,7 +3429,7 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
 
         def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
             self.fn(ctx, msg)
-            return ()
+            return (msg,)
 
     @classmethod
     def apply(cls, fn: ChannelPipelineHandlerFn[ta.Any, None]) -> FlatMapChannelPipelineHandlerFn:

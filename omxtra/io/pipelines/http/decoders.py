@@ -34,6 +34,7 @@ class PipelineHttpHeadDecoder:
             self,
             parse_mode: HttpParser.Mode,
             make_head: ta.Callable[[ParsedHttpMessage], ta.Any],
+            make_aborted: ta.Callable[[str], ta.Any],
             *,
             max_head: int = 0x10000,
             buffer_chunk_size: int = 0x10000,
@@ -42,6 +43,7 @@ class PipelineHttpHeadDecoder:
 
         self._parse_mode = parse_mode
         self._make_head = make_head
+        self._make_aborted = make_aborted
 
         self._max_head = max_head
 
@@ -66,7 +68,13 @@ class PipelineHttpHeadDecoder:
 
         if isinstance(msg, ChannelPipelineMessages.Eof):
             # EOF: if we have partial head buffered and haven't parsed head, that's an error.
-            raise ValueError('EOF before HTTP head complete')  # noqa
+            yield self._make_aborted('EOF before HTTP head complete')
+
+            del self._buf
+            self._done = True
+
+            yield msg
+            return
 
         if not ByteStreamBuffers.can_bytes(msg):
             yield msg

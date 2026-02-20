@@ -15,6 +15,7 @@ from ...core import ChannelPipelineHandlerContext
 from ...core import ChannelPipelineMessages
 from ..decoders import ChunkedPipelineHttpContentChunkDecoder
 from ..decoders import PipelineHttpHeadDecoder
+from ..responses import PipelineHttpResponseAborted
 from ..responses import PipelineHttpResponseContentChunk
 from ..responses import PipelineHttpResponseEnd
 from ..responses import PipelineHttpResponseHead
@@ -37,6 +38,7 @@ class PipelineHttpResponseDecoder(InboundBytesBufferingChannelPipelineHandler):
         self._decoder = PipelineHttpHeadDecoder(
             HttpParser.Mode.RESPONSE,
             lambda parsed: self._build_head(parsed),
+            lambda reason: PipelineHttpResponseAborted(reason),
             max_head=max_head,
             buffer_chunk_size=buffer_chunk_size,
         )

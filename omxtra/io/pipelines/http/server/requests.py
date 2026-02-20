@@ -19,6 +19,7 @@ from ..decoders import PipelineHttpContentChunkDecoder
 from ..decoders import PipelineHttpHeadDecoder
 from ..decoders import UntilEofPipelineHttpContentChunkDecoder
 from ..requests import FullPipelineHttpRequest
+from ..requests import PipelineHttpRequestAborted
 from ..requests import PipelineHttpRequestContentChunk
 from ..requests import PipelineHttpRequestEnd
 from ..requests import PipelineHttpRequestHead
@@ -41,6 +42,7 @@ class PipelineHttpRequestHeadDecoder(InboundBytesBufferingChannelPipelineHandler
         self._decoder = PipelineHttpHeadDecoder(
             HttpParser.Mode.REQUEST,
             lambda parsed: self._build_head(parsed),
+            lambda reason: PipelineHttpRequestAborted(reason),
             max_head=max_head,
             buffer_chunk_size=buffer_chunk_size,
         )

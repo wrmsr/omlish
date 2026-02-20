@@ -25,21 +25,33 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
     class Filter:
         pred: ChannelPipelineHandlerFn[ta.Any, bool]
         fn: FlatMapChannelPipelineHandlerFn
+        else_fn: ta.Optional[FlatMapChannelPipelineHandlerFn] = None
 
         def __repr__(self) -> str:
-            return f'{type(self).__name__}({self.pred!r}, {self.fn!r})'
+            return (
+                f'{type(self).__name__}('
+                f'{self.pred!r}'
+                f', {self.fn!r}, '
+                f'{f", else_fn={self.else_fn!r}" if self.else_fn is not None else ""}'
+                f')'
+            )
 
         def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
             if self.pred(ctx, msg):
                 yield from self.fn(ctx, msg)
+            elif (ef := self.else_fn) is not None:
+                yield from ef(ctx, msg)
+            else:
+                yield msg
 
     @classmethod
     def filter(
             cls,
             pred: ChannelPipelineHandlerFn[ta.Any, bool],
             fn: FlatMapChannelPipelineHandlerFn,
+            else_fn: ta.Optional[FlatMapChannelPipelineHandlerFn] = None,
     ) -> FlatMapChannelPipelineHandlerFn:
-        return cls.Filter(pred, fn)
+        return cls.Filter(pred, fn, else_fn)
 
     #
 
@@ -119,7 +131,7 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
 
         def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
             self.fn(ctx, msg)
-            return ()
+            return (msg,)
 
     @classmethod
     def apply(cls, fn: ChannelPipelineHandlerFn[ta.Any, None]) -> FlatMapChannelPipelineHandlerFn:

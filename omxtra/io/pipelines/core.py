@@ -301,7 +301,7 @@ class ChannelPipelineHandlerContext:
         check.not_isinstance(msg, (ChannelPipelineMessages.NeverInbound, ChannelPipelineHandlerNotification))
 
         if isinstance(msg, ChannelPipelineMessages.MustPropagate):
-            self._pipeline._channel._add_must_propagate('inbound', msg)  # noqa
+            self._pipeline._channel._add_must_propagate(self, 'inbound', msg)  # noqa
 
         self._handler.inbound(self, msg)
 
@@ -311,7 +311,7 @@ class ChannelPipelineHandlerContext:
         check.not_isinstance(msg, (ChannelPipelineMessages.NeverOutbound, ChannelPipelineHandlerNotification))
 
         if isinstance(msg, ChannelPipelineMessages.MustPropagate):
-            self._pipeline._channel._add_must_propagate('outbound', msg)  # noqa
+            self._pipeline._channel._add_must_propagate(self, 'outbound', msg)  # noqa
 
         self._handler.outbound(self, msg)
 
@@ -638,7 +638,7 @@ class ChannelPipeline:
 
         def outbound(self, ctx: 'ChannelPipelineHandlerContext', msg: ta.Any) -> None:
             if isinstance(msg, ChannelPipelineMessages.MustPropagate):
-                ctx._pipeline._channel._remove_must_propagate('outbound', msg)  # noqa
+                ctx._pipeline._channel._remove_must_propagate(self, 'outbound', msg)  # noqa
 
             ctx._pipeline._terminal('outbound', ctx, msg)  # noqa
 
@@ -650,7 +650,7 @@ class ChannelPipeline:
 
         def inbound(self, ctx: 'ChannelPipelineHandlerContext', msg: ta.Any) -> None:
             if isinstance(msg, ChannelPipelineMessages.MustPropagate):
-                ctx._pipeline._channel._remove_must_propagate('inbound', msg)  # noqa
+                ctx._pipeline._channel._remove_must_propagate(self, 'inbound', msg)  # noqa
 
             ctx._pipeline._terminal('inbound', ctx, msg)  # noqa
 
@@ -986,7 +986,7 @@ class PipelineChannel:
     def _maybe_execute_deferred(self) -> None:
         # TODO: errors lol
         # TODO: meditate on reentrancy lol
-        while self._deferred and self._execution_depth == 0:
+        while self._deferred and not self._execution_depth:
             dfl = self._deferred.popleft()
 
             if dfl.no_context:
@@ -996,8 +996,21 @@ class PipelineChannel:
 
     #
 
-    def _feed_in_to(self, ctx: ChannelPipelineHandlerContext, msgs: ta.Iterable[ta.Any]) -> None:
+    def _step_in(self) -> None:
         self._execution_depth += 1
+
+    def _step_out(self) -> None:
+        self._execution_depth -= 1
+
+        self._maybe_execute_deferred()
+
+        if not self._execution_depth:
+            self._check_propagated()
+
+    #
+
+    def _feed_in_to(self, ctx: ChannelPipelineHandlerContext, msgs: ta.Iterable[ta.Any]) -> None:
+        self._step_in()
         try:
             for msg in msgs:
                 if isinstance(msg, ChannelPipelineMessages.Eof):
@@ -1013,8 +1026,7 @@ class PipelineChannel:
             self.handle_error(e)
 
         finally:
-            self._execution_depth -= 1
-            self._maybe_execute_deferred()
+            self._step_out()
 
     def feed_in_to(self, handler_ref: ChannelPipelineHandlerRef, *msgs: ta.Any) -> None:
         ctx = handler_ref._context  # noqa
@@ -1030,7 +1042,7 @@ class PipelineChannel:
     #
 
     def _feed_out_to(self, ctx: ChannelPipelineHandlerContext, msgs: ta.Iterable[ta.Any]) -> None:
-        self._execution_depth += 1
+        self._step_in()
         try:
             for msg in msgs:
                 if isinstance(msg, ChannelPipelineMessages.Close):
@@ -1046,8 +1058,7 @@ class PipelineChannel:
             self.handle_error(e)
 
         finally:
-            self._execution_depth -= 1
-            self._maybe_execute_deferred()
+            self._step_out()
 
     def feed_out_to(self, handler_ref: ChannelPipelineHandlerRef, *msgs: ta.Any) -> None:
         ctx = handler_ref._context  # noqa
@@ -1099,6 +1110,7 @@ class PipelineChannel:
 
     def _add_must_propagate(
             self,
+            ctx: ChannelPipelineHandlerContext,
             direction: ChannelPipelineDirection,
             msg: ChannelPipelineMessages.MustPropagate,
     ) -> None:
@@ -1116,6 +1128,7 @@ class PipelineChannel:
 
     def _remove_must_propagate(
             self,
+            ctx: ChannelPipelineHandlerContext,
             direction: ChannelPipelineDirection,
             msg: ChannelPipelineMessages.MustPropagate,
     ) -> None:
@@ -1136,7 +1149,7 @@ class PipelineChannel:
                 outbound=[msg] if direction == 'outbound' else None,
             )
 
-    def check_propagated(self) -> None:
+    def _check_propagated(self) -> None:
         inbound = list(self._pending_inbound_must_propagate.values())
         outbound = list(self._pending_outbound_must_propagate.values())
         if inbound or outbound:

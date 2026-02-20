@@ -4,8 +4,9 @@ import unittest
 
 from omlish.io.streams.utils import ByteStreamBuffers
 
-from ....core import ChannelPipelineEvents
+from ....core import ChannelPipelineMessages
 from ....core import PipelineChannel
+from ..responses import PipelineHttpResponseAborted
 from ..responses import PipelineHttpResponseDecoder
 
 
@@ -86,5 +87,8 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         channel.feed_eof()
 
         out = channel.drain()
-        # Should get an error event
-        self.assertTrue(any(isinstance(m, ChannelPipelineEvents.Error) for m in out))
+
+        # Should get an aborted message
+        aborted, eof = out
+        self.assertIsInstance(aborted, PipelineHttpResponseAborted)
+        self.assertIsInstance(eof, ChannelPipelineMessages.Eof)

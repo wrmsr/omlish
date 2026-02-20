@@ -73,3 +73,8 @@ class PipelineHttpResponseContentChunk:
 @dc.dataclass(frozen=True)
 class PipelineHttpResponseEnd:
     """Signals the end of a streaming HTTP response body."""
+
+
+@dc.dataclass(frozen=True)
+class PipelineHttpResponseAborted:
+    reason: str

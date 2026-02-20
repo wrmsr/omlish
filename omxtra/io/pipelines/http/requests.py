@@ -71,6 +71,4 @@ class PipelineHttpRequestEnd:
 
 @dc.dataclass(frozen=True)
 class PipelineHttpRequestAborted:
-    """Signals the peer disconnected before the request body completed."""
-
-    reason: str = 'peer disconnected'
+    reason: str

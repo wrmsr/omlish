@@ -32,12 +32,66 @@ class ChannelPipelineHandlerFns(NamespaceClass):
 
     @classmethod
     def no_context(cls, fn: ta.Callable[[F], T]) -> ChannelPipelineHandlerFn[F, T]:
-        return cls.NoContext(fn=fn)
+        return cls.NoContext(fn)
 
     #
 
     @dc.dataclass(frozen=True)
-    class Isinstance:
+    class And:
+        fns: ta.Sequence[ChannelPipelineHandlerFn[ta.Any, bool]]
+
+        def __repr__(self) -> str:
+            return f'{type(self).__name__}([{", ".join(map(repr, self.fns))}])'
+
+        def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:
+            return all(fn(ctx, msg) for fn in self.fns)
+
+    @classmethod
+    def and_(cls, *fns: ChannelPipelineHandlerFn[ta.Any, bool]) -> ChannelPipelineHandlerFn[ta.Any, bool]:
+        if len(fns) == 1:
+            return fns[0]
+        return cls.And(fns)
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class Or:
+        fns: ta.Sequence[ChannelPipelineHandlerFn[ta.Any, bool]]
+
+        def __repr__(self) -> str:
+            return f'{type(self).__name__}([{", ".join(map(repr, self.fns))}])'
+
+        def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:
+            return any(fn(ctx, msg) for fn in self.fns)
+
+    @classmethod
+    def or_(cls, *fns: ChannelPipelineHandlerFn[ta.Any, bool]) -> ChannelPipelineHandlerFn[ta.Any, bool]:
+        if len(fns) == 1:
+            return fns[0]
+        return cls.Or(fns)
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class Not:
+        fn: ChannelPipelineHandlerFn[ta.Any, bool]
+
+        def __repr__(self) -> str:
+            return f'{type(self).__name__}({self.fn!r})'
+
+        def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:
+            return not self.fn(ctx, msg)
+
+    @classmethod
+    def not_(cls, fn: ChannelPipelineHandlerFn[ta.Any, bool]) -> ChannelPipelineHandlerFn[ta.Any, bool]:
+        if isinstance(fn, cls.Not):
+            return fn.fn
+        return cls.Not(fn)
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class IsInstance:
         ty: ta.Union[type, ta.Tuple[type, ...]]
 
         def __repr__(self) -> str:
@@ -48,7 +102,11 @@ class ChannelPipelineHandlerFns(NamespaceClass):
 
     @classmethod
     def isinstance(cls, ty: ta.Union[type, ta.Tuple[type, ...]]) -> ChannelPipelineHandlerFn[ta.Any, bool]:
-        return cls.Isinstance(ty=ty)
+        return cls.IsInstance(ty)
+
+    @classmethod
+    def not_isinstance(cls, ty: ta.Union[type, ta.Tuple[type, ...]]) -> ChannelPipelineHandlerFn[ta.Any, bool]:
+        return cls.Not(cls.IsInstance(ty))
 
 
 ##

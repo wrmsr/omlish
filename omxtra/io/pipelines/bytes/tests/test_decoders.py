@@ -4,11 +4,15 @@ import unittest
 from ...core import ChannelPipelineMessages
 from ...core import PipelineChannel
 from ...handlers.flatmap import FlatMapChannelPipelineHandlers
+from ...handlers.fns import ChannelPipelineHandlerFns
 from ..decoders import DelimiterFramePipelineDecoder
 from ..decoders import UnicodePipelineDecoder
 
 
-INBOUND_EMIT_TERMINAL = FlatMapChannelPipelineHandlers.emit_and_drop('inbound')
+INBOUND_EMIT_TERMINAL = FlatMapChannelPipelineHandlers.emit_and_drop(
+    'inbound',
+    filter=ChannelPipelineHandlerFns.not_isinstance(ChannelPipelineMessages.MustPropagate),
+)
 
 
 class TestDecoders(unittest.TestCase):
@@ -40,4 +44,4 @@ class TestDecoders(unittest.TestCase):
         ch.feed_in(b'\nk')
         assert ch.drain() == ['']
         ch.feed_eof()
-        assert ch.drain() == ['k', ChannelPipelineMessages.Eof()]
+        assert ch.drain() == ['k']
