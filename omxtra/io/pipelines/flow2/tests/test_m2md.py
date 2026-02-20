@@ -11,8 +11,8 @@ from ...core import PipelineChannel
 from ...handlers.fns import ChannelPipelineHandlerFns
 from ..m2md import FnMessageToMessageDecoder
 from ..m2md import MessageToMessageDecoder
-from ..types import PipelineChannelFlow
-from ..types import PipelineChannelFlowMessages
+from ..types import ChannelPipelineFlow
+from ..types import ChannelPipelineFlowMessages
 
 
 ##
@@ -135,7 +135,7 @@ class TestM2mdecNoFlow(unittest.TestCase):
         ]
 
 
-class MyFlow(PipelineChannelFlow):
+class MyFlow(ChannelPipelineFlow):
     def __init__(self, *, auto_read: bool) -> None:
         super().__init__()
 
@@ -188,37 +188,37 @@ class TestM2mdecMyFlow(unittest.TestCase):
 
         #
 
-        ch.feed_in(FooMsg(123), BazMsg(True), PipelineChannelFlowMessages.FlushInput())
+        ch.feed_in(FooMsg(123), BazMsg(True), ChannelPipelineFlowMessages.FlushInput())
         assert ch.drain() == [
             BazMsg(True),
-            PipelineChannelFlowMessages.FlushInput(),
+            ChannelPipelineFlowMessages.FlushInput(),
         ]
 
-        ch.feed_in(BazMsg(420), PipelineChannelFlowMessages.FlushInput())
+        ch.feed_in(BazMsg(420), ChannelPipelineFlowMessages.FlushInput())
         assert ch.drain() == [
             BazMsg(420),
-            PipelineChannelFlowMessages.FlushInput(),
+            ChannelPipelineFlowMessages.FlushInput(),
         ]
 
-        ch.feed_in(PipelineChannelFlowMessages.FlushInput())
-        assert ch.drain() == [PipelineChannelFlowMessages.FlushInput()]
+        ch.feed_in(ChannelPipelineFlowMessages.FlushInput())
+        assert ch.drain() == [ChannelPipelineFlowMessages.FlushInput()]
 
-        ch.feed_in(FooMsg(420), BazMsg(421), PipelineChannelFlowMessages.FlushInput())
+        ch.feed_in(FooMsg(420), BazMsg(421), ChannelPipelineFlowMessages.FlushInput())
         assert ch.drain() == [
             BarMsg('123420'),
             BazMsg(421),
-            PipelineChannelFlowMessages.FlushInput(),
+            ChannelPipelineFlowMessages.FlushInput(),
         ]
 
-        ch.feed_in(FooMsg(123), PipelineChannelFlowMessages.FlushInput())
+        ch.feed_in(FooMsg(123), ChannelPipelineFlowMessages.FlushInput())
         assert ch.drain() == [
-            PipelineChannelFlowMessages.FlushInput(),
+            ChannelPipelineFlowMessages.FlushInput(),
         ]
 
-        ch.feed_in(FooMsg(123), PipelineChannelFlowMessages.FlushInput())
+        ch.feed_in(FooMsg(123), ChannelPipelineFlowMessages.FlushInput())
         assert ch.drain() == [
             BarMsg('123123'),
-            PipelineChannelFlowMessages.FlushInput(),
+            ChannelPipelineFlowMessages.FlushInput(),
         ]
 
     def test_accumulating_no_auto_read(self):
@@ -230,38 +230,38 @@ class TestM2mdecMyFlow(unittest.TestCase):
 
         #
 
-        ch.feed_in(FooMsg(123), BazMsg(True), PipelineChannelFlowMessages.FlushInput())
+        ch.feed_in(FooMsg(123), BazMsg(True), ChannelPipelineFlowMessages.FlushInput())
         assert ch.drain() == [
             BazMsg(True),
-            PipelineChannelFlowMessages.FlushInput(),
+            ChannelPipelineFlowMessages.FlushInput(),
         ]
 
-        ch.feed_in(BazMsg(420), PipelineChannelFlowMessages.FlushInput())
+        ch.feed_in(BazMsg(420), ChannelPipelineFlowMessages.FlushInput())
         assert ch.drain() == [
             BazMsg(420),
-            PipelineChannelFlowMessages.FlushInput(),
+            ChannelPipelineFlowMessages.FlushInput(),
         ]
 
-        ch.feed_in(PipelineChannelFlowMessages.FlushInput())
-        assert ch.drain() == [PipelineChannelFlowMessages.FlushInput()]
+        ch.feed_in(ChannelPipelineFlowMessages.FlushInput())
+        assert ch.drain() == [ChannelPipelineFlowMessages.FlushInput()]
 
-        ch.feed_in(FooMsg(420), BazMsg(421), PipelineChannelFlowMessages.FlushInput())
+        ch.feed_in(FooMsg(420), BazMsg(421), ChannelPipelineFlowMessages.FlushInput())
         assert ch.drain() == [
             BarMsg('123420'),
             BazMsg(421),
-            PipelineChannelFlowMessages.FlushInput(),
+            ChannelPipelineFlowMessages.FlushInput(),
         ]
 
         #
 
-        ch.feed_in(FooMsg(123), PipelineChannelFlowMessages.FlushInput())
+        ch.feed_in(FooMsg(123), ChannelPipelineFlowMessages.FlushInput())
         assert ch.drain() == [
-            PipelineChannelFlowMessages.ReadyForInput(),
-            PipelineChannelFlowMessages.FlushInput(),
+            ChannelPipelineFlowMessages.ReadyForInput(),
+            ChannelPipelineFlowMessages.FlushInput(),
         ]
 
-        ch.feed_in(FooMsg(123), PipelineChannelFlowMessages.FlushInput())
+        ch.feed_in(FooMsg(123), ChannelPipelineFlowMessages.FlushInput())
         assert ch.drain() == [
             BarMsg('123123'),
-            PipelineChannelFlowMessages.FlushInput(),
+            ChannelPipelineFlowMessages.FlushInput(),
         ]

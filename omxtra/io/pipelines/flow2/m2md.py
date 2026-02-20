@@ -9,8 +9,9 @@ from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
 from ..core import ChannelPipelineHandlerFn
 from ..core import ShareableChannelPipelineHandler
-from .types import PipelineChannelFlow
-from .types import PipelineChannelFlowMessages
+from .errors import DecoderError
+from .types import ChannelPipelineFlow
+from .types import ChannelPipelineFlowMessages
 
 
 ##
@@ -29,14 +30,14 @@ class MessageToMessageDecoder(ChannelPipelineHandler, Abstract):
     _message_produced = False
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, PipelineChannelFlowMessages.FlushInput):
+        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
             if not isinstance(self, ShareableChannelPipelineHandler):
                 if (
                         self._decode_called and
                         not self._message_produced and
-                        not ctx.channel.services[PipelineChannelFlow].is_auto_read
+                        not ctx.channel.services[ChannelPipelineFlow].is_auto_read
                 ):
-                    ctx.feed_out(PipelineChannelFlowMessages.ReadyForInput())
+                    ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
 
                 self._decode_called = False
                 self._message_produced = False
@@ -52,6 +53,11 @@ class MessageToMessageDecoder(ChannelPipelineHandler, Abstract):
                 out.extend(self._decode(ctx, msg))
             else:
                 out.append(msg)
+
+        except DecoderError:
+            raise
+        except Exception as e:
+            raise DecoderError from e
 
         finally:
             self._message_produced |= bool(out)

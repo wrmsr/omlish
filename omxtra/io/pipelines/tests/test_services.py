@@ -4,11 +4,11 @@ import unittest
 
 from omlish.lite.abstract import Abstract
 
+from ..core import ChannelPipelineService
 from ..core import PipelineChannel
-from ..core import PipelineChannelService
 
 
-class FooService(PipelineChannelService, Abstract):
+class FooService(ChannelPipelineService, Abstract):
     @abc.abstractmethod
     def frob(self) -> str:
         raise NotImplementedError

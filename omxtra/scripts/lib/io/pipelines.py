@@ -32,7 +32,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='errors.py', sha1='6f9afc9cefa06807e76bebb23adc7a84dfec253f'),
             dict(path='../../../omlish/io/streams/types.py', sha1='8a12dc29f6e483dd8df5336c0d9b58a00b64e7ed'),
-            dict(path='core.py', sha1='92c7ea5b77eb59b142c40aecb3a54094d906d902'),
+            dict(path='core.py', sha1='887e7d47675850bf2e76a840909960633d1bb7c1'),
             dict(path='../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -2053,7 +2053,7 @@ class ChannelPipeline:
 ##
 
 
-class PipelineChannelService(Abstract):
+class ChannelPipelineService(Abstract):
     def handler_update(self, handler_ref: ChannelPipelineHandlerRef, kind: ChannelPipelineHandlerUpdate) -> None:
         pass
 
@@ -2081,7 +2081,7 @@ class PipelineChannel:
             handlers: ta.Sequence[ChannelPipelineHandler] = (),
             config: Config = Config(),
             *,
-            services: ta.Optional[ta.Sequence[PipelineChannelService]] = None,
+            services: ta.Optional[ta.Sequence[ChannelPipelineService]] = None,
     ) -> None:
         super().__init__()
 
@@ -2130,7 +2130,7 @@ class PipelineChannel:
     #
 
     class _Services:
-        def __init__(self, lst: ta.Sequence[PipelineChannelService]) -> None:
+        def __init__(self, lst: ta.Sequence[ChannelPipelineService]) -> None:
             self._lst = lst
 
             self._by_type_cache: ta.Dict[type, ta.Sequence[ta.Any]] = {}
@@ -2139,7 +2139,7 @@ class PipelineChannel:
         def __len__(self) -> int:
             return len(self._lst)
 
-        def __iter__(self) -> ta.Iterator[PipelineChannelService]:
+        def __iter__(self) -> ta.Iterator[ChannelPipelineService]:
             return iter(self._lst)
 
         def __contains__(self, item: ta.Any) -> bool:

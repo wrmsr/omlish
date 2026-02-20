@@ -7,13 +7,13 @@ from omlish.lite.abstract import Abstract
 from omlish.lite.namespaces import NamespaceClass
 
 from ..core import ChannelPipelineMessages
-from ..core import PipelineChannelService
+from ..core import ChannelPipelineService
 
 
 ##
 
 
-class PipelineChannelFlowMessages(NamespaceClass):
+class ChannelPipelineFlowMessages(NamespaceClass):
     @ta.final
     @dc.dataclass(frozen=True)
     class FlushInput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelInboundInvoker.fireChannelReadComplete`  # noqa
@@ -45,7 +45,7 @@ class PipelineChannelFlowMessages(NamespaceClass):
 ##
 
 
-class PipelineChannelFlow(PipelineChannelService, Abstract):
+class ChannelPipelineFlow(ChannelPipelineService, Abstract):
     @property
     @abc.abstractmethod
     def is_auto_read(self) -> bool:

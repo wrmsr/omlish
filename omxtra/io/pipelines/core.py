@@ -870,7 +870,7 @@ class ChannelPipeline:
 ##
 
 
-class PipelineChannelService(Abstract):
+class ChannelPipelineService(Abstract):
     def handler_update(self, handler_ref: ChannelPipelineHandlerRef, kind: ChannelPipelineHandlerUpdate) -> None:
         pass
 
@@ -898,7 +898,7 @@ class PipelineChannel:
             handlers: ta.Sequence[ChannelPipelineHandler] = (),
             config: Config = Config(),
             *,
-            services: ta.Optional[ta.Sequence[PipelineChannelService]] = None,
+            services: ta.Optional[ta.Sequence[ChannelPipelineService]] = None,
     ) -> None:
         super().__init__()
 
@@ -947,7 +947,7 @@ class PipelineChannel:
     #
 
     class _Services:
-        def __init__(self, lst: ta.Sequence[PipelineChannelService]) -> None:
+        def __init__(self, lst: ta.Sequence[ChannelPipelineService]) -> None:
             self._lst = lst
 
             self._by_type_cache: ta.Dict[type, ta.Sequence[ta.Any]] = {}
@@ -956,7 +956,7 @@ class PipelineChannel:
         def __len__(self) -> int:
             return len(self._lst)
 
-        def __iter__(self) -> ta.Iterator[PipelineChannelService]:
+        def __iter__(self) -> ta.Iterator[ChannelPipelineService]:
             return iter(self._lst)
 
         def __contains__(self, item: ta.Any) -> bool:
