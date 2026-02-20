@@ -136,7 +136,10 @@ class TestM2mdecNoFlow(unittest.TestCase):
 
 
 class MyFlow(PipelineChannelFlow):
-    _auto_read: bool = False
+    def __init__(self, *, auto_read: bool) -> None:
+        super().__init__()
+
+        self._auto_read = auto_read
 
     @property
     def is_auto_read(self) -> bool:
@@ -153,7 +156,7 @@ class TestM2mdecMyFlow(unittest.TestCase):
                 SIMPLE_FOO_TO_BAR_DECODER,
             ],
             config=EMIT_TERMINAL_CHANNEL_CONFIG,
-            services=[mf := MyFlow()],  # noqa
+            services=[mf := MyFlow(auto_read=True)],  # noqa
         )
 
         ch.feed_in(FooMsg(123), BazMsg(True))
@@ -166,7 +169,7 @@ class TestM2mdecMyFlow(unittest.TestCase):
         ch = PipelineChannel(
             [DuplicatingFooToBarDecoder()],
             config=EMIT_TERMINAL_CHANNEL_CONFIG,
-            services=[mf := MyFlow()],  # noqa
+            services=[mf := MyFlow(auto_read=True)],  # noqa
         )
 
         ch.feed_in(FooMsg(123), BazMsg(True))
@@ -176,28 +179,89 @@ class TestM2mdecMyFlow(unittest.TestCase):
             BazMsg(True),
         ]
 
-    def test_accumulating(self):
+    def test_accumulating_auto_read(self):
         ch = PipelineChannel(
             [AccumulatingFooToBarDecoder()],
             config=EMIT_TERMINAL_CHANNEL_CONFIG,
-            services=[mf := MyFlow()],  # noqa
+            services=[mf := MyFlow(auto_read=True)],  # noqa
         )
 
-        ch.feed_in(FooMsg(123), BazMsg(True))
+        #
+
+        ch.feed_in(FooMsg(123), BazMsg(True), PipelineChannelFlowMessages.FlushInput())
         assert ch.drain() == [
             BazMsg(True),
+            PipelineChannelFlowMessages.FlushInput(),
         ]
 
-        ch.feed_in(BazMsg(420))
+        ch.feed_in(BazMsg(420), PipelineChannelFlowMessages.FlushInput())
         assert ch.drain() == [
             BazMsg(420),
+            PipelineChannelFlowMessages.FlushInput(),
         ]
 
         ch.feed_in(PipelineChannelFlowMessages.FlushInput())
         assert ch.drain() == [PipelineChannelFlowMessages.FlushInput()]
 
-        ch.feed_in(FooMsg(420), BazMsg(421))
+        ch.feed_in(FooMsg(420), BazMsg(421), PipelineChannelFlowMessages.FlushInput())
         assert ch.drain() == [
             BarMsg('123420'),
             BazMsg(421),
+            PipelineChannelFlowMessages.FlushInput(),
+        ]
+
+        ch.feed_in(FooMsg(123), PipelineChannelFlowMessages.FlushInput())
+        assert ch.drain() == [
+            PipelineChannelFlowMessages.FlushInput(),
+        ]
+
+        ch.feed_in(FooMsg(123), PipelineChannelFlowMessages.FlushInput())
+        assert ch.drain() == [
+            BarMsg('123123'),
+            PipelineChannelFlowMessages.FlushInput(),
+        ]
+
+    def test_accumulating_no_auto_read(self):
+        ch = PipelineChannel(
+            [AccumulatingFooToBarDecoder()],
+            config=EMIT_TERMINAL_CHANNEL_CONFIG,
+            services=[mf := MyFlow(auto_read=False)],  # noqa
+        )
+
+        #
+
+        ch.feed_in(FooMsg(123), BazMsg(True), PipelineChannelFlowMessages.FlushInput())
+        assert ch.drain() == [
+            BazMsg(True),
+            PipelineChannelFlowMessages.FlushInput(),
+        ]
+
+        ch.feed_in(BazMsg(420), PipelineChannelFlowMessages.FlushInput())
+        assert ch.drain() == [
+            BazMsg(420),
+            PipelineChannelFlowMessages.FlushInput(),
+        ]
+
+        ch.feed_in(PipelineChannelFlowMessages.FlushInput())
+        assert ch.drain() == [PipelineChannelFlowMessages.FlushInput()]
+
+        ch.feed_in(FooMsg(420), BazMsg(421), PipelineChannelFlowMessages.FlushInput())
+        assert ch.drain() == [
+            BarMsg('123420'),
+            BazMsg(421),
+            PipelineChannelFlowMessages.FlushInput(),
+        ]
+
+        #
+
+        ch.feed_in(FooMsg(123), PipelineChannelFlowMessages.FlushInput())
+        assert ch.drain() == [
+            PipelineChannelFlowMessages.ReadyForInput(),
+            PipelineChannelFlowMessages.FlushInput(),
+        ]
+
+        ch.feed_in(FooMsg(123), PipelineChannelFlowMessages.FlushInput())
+        assert ch.drain() == [
+            BarMsg('123123'),
+            PipelineChannelFlowMessages.FlushInput(),
         ]
