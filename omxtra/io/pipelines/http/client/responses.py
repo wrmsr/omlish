@@ -148,6 +148,7 @@ class PipelineHttpResponseChunkedDecoder(InboundBytesBufferingChannelPipelineHan
                 self._decoder = ChunkedPipelineHttpContentChunkDecoder(
                     lambda data: PipelineHttpResponseContentChunk(data),
                     lambda: PipelineHttpResponseEnd(),
+                    lambda reason: PipelineHttpResponseAborted(reason),
                     max_chunk_header=self._max_chunk_header,
                     buffer_chunk_size=self._buffer_chunk_size,
                 )

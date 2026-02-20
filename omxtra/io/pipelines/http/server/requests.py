@@ -119,7 +119,11 @@ class PipelineHttpRequestBodyAggregator(InboundBytesBufferingChannelPipelineHand
         if isinstance(msg, ChannelPipelineMessages.Eof):
             # If we were expecting body bytes, that's a protocol error.
             if self._cur_head is not None and self._want and len(self._buf) < self._want:
-                raise ValueError('EOF before HTTP request body complete')
+                ctx.feed_in(PipelineHttpRequestAborted('EOF before HTTP request body complete'))
+
+                self._cur_head = None
+                self._want = 0
+                self._buf.split_to(len(self._buf))
 
             ctx.feed_in(msg)
             return
@@ -269,6 +273,7 @@ class PipelineHttpRequestBodyStreamDecoder(InboundBytesBufferingChannelPipelineH
 
         make_chunk = lambda data: PipelineHttpRequestContentChunk(data)  # noqa
         make_end = lambda: PipelineHttpRequestEnd()  # noqa
+        make_aborted = lambda reason: PipelineHttpRequestAborted(reason)  # noqa
 
         if sm.mode == 'none':
             ctx.feed_in(PipelineHttpRequestEnd())
@@ -277,12 +282,14 @@ class PipelineHttpRequestBodyStreamDecoder(InboundBytesBufferingChannelPipelineH
             self._decoder = UntilEofPipelineHttpContentChunkDecoder(
                 make_chunk,
                 make_end,
+                make_aborted,
             )
 
         elif sm.mode == 'cl':
             self._decoder = ContentLengthPipelineHttpContentChunkDecoder(
                 make_chunk,
                 make_end,
+                make_aborted,
                 check.not_none(sm.length),
             )
 
@@ -290,6 +297,7 @@ class PipelineHttpRequestBodyStreamDecoder(InboundBytesBufferingChannelPipelineH
             self._decoder = ChunkedPipelineHttpContentChunkDecoder(
                 make_chunk,
                 make_end,
+                make_aborted,
                 max_chunk_header=self._max_chunk_header,
             )
 

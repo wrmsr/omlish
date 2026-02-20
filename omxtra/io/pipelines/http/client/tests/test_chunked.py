@@ -234,8 +234,8 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         out = channel.drain()
 
         # Should get an aborted message
-        head, aborted, eof = out
-        self.assertIs(out[0], head)
+        out_head, aborted, eof = out
+        self.assertIs(out_head, head)
         self.assertIsInstance(aborted, PipelineHttpResponseAborted)
         self.assertIsInstance(eof, ChannelPipelineMessages.Eof)
 

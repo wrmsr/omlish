@@ -4,9 +4,10 @@ import unittest
 
 from omlish.io.streams.utils import ByteStreamBuffers
 
-from ....core import ChannelPipelineEvents
+from ....core import ChannelPipelineMessages
 from ....core import PipelineChannel
 from ..requests import FullPipelineHttpRequest
+from ..requests import PipelineHttpRequestAborted
 from ..requests import PipelineHttpRequestBodyAggregator
 from ..requests import PipelineHttpRequestHead
 from ..requests import PipelineHttpRequestHeadDecoder
@@ -90,8 +91,9 @@ class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):
         channel.feed_in(b'GET /path HTTP/1.1\r\n')
         channel.feed_eof()
 
-        out = channel.drain()
-        self.assertTrue(any(isinstance(m, ChannelPipelineEvents.Error) for m in out))
+        aborted, eof = channel.drain()
+        self.assertIsInstance(aborted, PipelineHttpRequestAborted)
+        self.assertIsInstance(eof, ChannelPipelineMessages.Eof)
 
 
 class TestPipelineHttpRequestBodyAggregator(unittest.TestCase):
@@ -172,5 +174,6 @@ class TestPipelineHttpRequestBodyAggregator(unittest.TestCase):
         channel.feed_in(b'hello')
         channel.feed_eof()
 
-        out = channel.drain()
-        self.assertTrue(any(isinstance(m, ChannelPipelineEvents.Error) for m in out))
+        aborted, eof = channel.drain()
+        self.assertIsInstance(aborted, PipelineHttpRequestAborted)
+        self.assertIsInstance(eof, ChannelPipelineMessages.Eof)

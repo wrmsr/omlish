@@ -117,11 +117,13 @@ class PipelineHttpContentChunkDecoder(Abstract):
             self,
             make_chunk: ta.Callable[[BytesLikeOrMemoryview], ta.Any],
             make_end: ta.Callable[[], ta.Any],
+            make_aborted: ta.Callable[[str], ta.Any],
     ) -> None:
         super().__init__()
 
         self._make_chunk = make_chunk
         self._make_end = make_end
+        self._make_aborted = make_aborted
 
     @property
     @abc.abstractmethod
@@ -171,6 +173,7 @@ class ContentLengthPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecod
             self,
             make_chunk: ta.Callable[[BytesLikeOrMemoryview], ta.Any],
             make_end: ta.Callable[[], ta.Any],
+            make_aborted: ta.Callable[[str], ta.Any],
             content_length: int,
     ) -> None:
         check.arg(content_length > 0)
@@ -178,6 +181,7 @@ class ContentLengthPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecod
         super().__init__(
             make_chunk,
             make_end,
+            make_aborted,
         )
 
         self._remain = content_length
@@ -193,7 +197,12 @@ class ContentLengthPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecod
         check.state(self._remain > 0)
 
         if isinstance(msg, ChannelPipelineMessages.Eof):
-            raise ValueError('EOF before HTTP body complete')  # noqa
+            yield self._make_aborted('EOF before HTTP body complete')
+
+            self._remain = 0
+
+            yield msg
+            return
 
         if not ByteStreamBuffers.can_bytes(msg):
             yield msg
@@ -239,6 +248,7 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
             self,
             make_chunk: ta.Callable[[BytesLikeOrMemoryview], ta.Any],
             make_end: ta.Callable[[], ta.Any],
+            make_aborted: ta.Callable[[str], ta.Any],
             *,
             max_chunk_header: int = 1024,
             buffer_chunk_size: int = 0x10000,
@@ -246,6 +256,7 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
         super().__init__(
             make_chunk,
             make_end,
+            make_aborted,
         )
 
         self._buf = ScanningByteStreamBuffer(SegmentedByteStreamBuffer(
@@ -270,7 +281,13 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
         check.state(self._state != 'done')
 
         if isinstance(msg, ChannelPipelineMessages.Eof):
-            raise ValueError('EOF before chunked encoding complete')  # noqa
+            yield self._make_aborted('EOF before chunked encoding complete')
+
+            del self._buf
+            self._state = 'done'
+
+            yield msg
+            return
 
         if not ByteStreamBuffers.can_bytes(msg):
             yield msg

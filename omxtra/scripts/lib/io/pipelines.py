@@ -32,7 +32,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='errors.py', sha1='c8301263ba2f5cd116a11c2229aafa705b3d94fc'),
             dict(path='../../../omlish/io/streams/types.py', sha1='36dfe0ba2bb0a7fdf255a3a2fcfc7a5fe2cce2c3'),
-            dict(path='core.py', sha1='cf348d24943f482ac2ee5b904ad3bfdd3f8513ff'),
+            dict(path='core.py', sha1='d8dcfbcf413c3f2f519c2f2e8010c5ead6d80fbc'),
             dict(path='../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -1487,7 +1487,7 @@ class ChannelPipelineHandlerContext:
         check.not_isinstance(msg, (ChannelPipelineMessages.NeverInbound, ChannelPipelineHandlerNotification))
 
         if isinstance(msg, ChannelPipelineMessages.MustPropagate):
-            self._pipeline._channel._add_must_propagate('inbound', msg)  # noqa
+            self._pipeline._channel._propagation_checking.add_must(self, 'inbound', msg)  # noqa
 
         self._handler.inbound(self, msg)
 
@@ -1497,7 +1497,7 @@ class ChannelPipelineHandlerContext:
         check.not_isinstance(msg, (ChannelPipelineMessages.NeverOutbound, ChannelPipelineHandlerNotification))
 
         if isinstance(msg, ChannelPipelineMessages.MustPropagate):
-            self._pipeline._channel._add_must_propagate('outbound', msg)  # noqa
+            self._pipeline._channel._propagation_checking.add_must(self, 'outbound', msg)  # noqa
 
         self._handler.outbound(self, msg)
 
@@ -1824,7 +1824,7 @@ class ChannelPipeline:
 
         def outbound(self, ctx: 'ChannelPipelineHandlerContext', msg: ta.Any) -> None:
             if isinstance(msg, ChannelPipelineMessages.MustPropagate):
-                ctx._pipeline._channel._remove_must_propagate('outbound', msg)  # noqa
+                ctx._pipeline._channel._propagation_checking.remove_must(ctx, 'outbound', msg)  # noqa
 
             ctx._pipeline._terminal('outbound', ctx, msg)  # noqa
 
@@ -1836,7 +1836,7 @@ class ChannelPipeline:
 
         def inbound(self, ctx: 'ChannelPipelineHandlerContext', msg: ta.Any) -> None:
             if isinstance(msg, ChannelPipelineMessages.MustPropagate):
-                ctx._pipeline._channel._remove_must_propagate('inbound', msg)  # noqa
+                ctx._pipeline._channel._propagation_checking.remove_must(ctx, 'inbound', msg)  # noqa
 
             ctx._pipeline._terminal('inbound', ctx, msg)  # noqa
 
@@ -2049,12 +2049,11 @@ class PipelineChannel:
             config=config.pipeline,
         )
 
-        self._pending_inbound_must_propagate: ta.Final[ta.Dict[int, ta.Any]] = {}
-        self._pending_outbound_must_propagate: ta.Final[ta.Dict[int, ta.Any]] = {}
-
         self._execution_depth = 0
 
         self._deferred: collections.deque[PipelineChannel._Deferred] = collections.deque()
+
+        self._propagation_checking: PipelineChannel._PropagationChecking = PipelineChannel._DefaultPropagationChecking()
 
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}'
@@ -2191,7 +2190,7 @@ class PipelineChannel:
         self._maybe_execute_deferred()
 
         if not self._execution_depth:
-            self._check_propagated()
+            self._propagation_checking.check_and_clear()
 
     #
 
@@ -2286,61 +2285,115 @@ class PipelineChannel:
 
     #
 
-    def _get_must_propagate_dct(self, direction: ChannelPipelineDirection) -> ta.Dict[int, ta.Any]:
-        if direction == 'inbound':
-            return self._pending_inbound_must_propagate
-        elif direction == 'outbound':
-            return self._pending_outbound_must_propagate
-        else:
-            raise RuntimeError(f'Unknown direction {direction}')
+    class _PropagationChecking(Abstract):
+        @abc.abstractmethod
+        def add_must(
+                self,
+                ctx: ChannelPipelineHandlerContext,
+                direction: ChannelPipelineDirection,
+                msg: ChannelPipelineMessages.MustPropagate,
+        ) -> None:
+            raise NotImplementedError
 
-    def _add_must_propagate(
-            self,
-            direction: ChannelPipelineDirection,
-            msg: ChannelPipelineMessages.MustPropagate,
-    ) -> None:
-        dct = self._get_must_propagate_dct(direction)
+        @abc.abstractmethod
+        def remove_must(
+                self,
+                ctx: ChannelPipelineHandlerContext,
+                direction: ChannelPipelineDirection,
+                msg: ChannelPipelineMessages.MustPropagate,
+        ) -> None:
+            raise NotImplementedError
 
-        i = id(msg)
-        try:
-            x = dct[i]
-        except KeyError:
+        @abc.abstractmethod
+        def check_and_clear(self) -> None:
+            raise NotImplementedError
+
+    class _NopPropagationChecking(_PropagationChecking):
+        def add_must(
+                self,
+                ctx: ChannelPipelineHandlerContext,
+                direction: ChannelPipelineDirection,
+                msg: ChannelPipelineMessages.MustPropagate,
+        ) -> None:
             pass
-        else:
-            check.is_(msg, x)
-            return
-        dct[i] = msg
 
-    def _remove_must_propagate(
-            self,
-            direction: ChannelPipelineDirection,
-            msg: ChannelPipelineMessages.MustPropagate,
-    ) -> None:
-        dct = self._get_must_propagate_dct(direction)
+        def remove_must(
+                self,
+                ctx: ChannelPipelineHandlerContext,
+                direction: ChannelPipelineDirection,
+                msg: ChannelPipelineMessages.MustPropagate,
+        ) -> None:
+            pass
 
-        i = id(msg)
-        try:
-            x = dct.pop(i)
-        except KeyError:
-            raise MessageNotPropagatedChannelPipelineError(
-                inbound=[msg] if direction == 'inbound' else None,
-                outbound=[msg] if direction == 'outbound' else None,
-            ) from None
+        def check_and_clear(self) -> None:
+            pass
 
-        if x is not msg:
-            raise MessageNotPropagatedChannelPipelineError(
-                inbound=[msg] if direction == 'inbound' else None,
-                outbound=[msg] if direction == 'outbound' else None,
-            )
+    class _DefaultPropagationChecking(_PropagationChecking):
+        def __init__(self) -> None:
+            super().__init__()
 
-    def _check_propagated(self) -> None:
-        inbound = list(self._pending_inbound_must_propagate.values())
-        outbound = list(self._pending_outbound_must_propagate.values())
-        if inbound or outbound:
-            raise MessageNotPropagatedChannelPipelineError(
-                inbound=inbound or None,
-                outbound=outbound or None,
-            )
+            self._pending_inbound_must: ta.Final[ta.Dict[int, ta.Tuple[ta.Any, ChannelPipelineHandlerContext]]] = {}
+            self._pending_outbound_must: ta.Final[ta.Dict[int, ta.Tuple[ta.Any, ChannelPipelineHandlerContext]]] = {}
+
+        def _get_must_dct(self, direction: ChannelPipelineDirection) -> ta.Dict[int, ta.Any]:
+            if direction == 'inbound':
+                return self._pending_inbound_must
+            elif direction == 'outbound':
+                return self._pending_outbound_must
+            else:
+                raise RuntimeError(f'Unknown direction {direction}')
+
+        def add_must(
+                self,
+                ctx: ChannelPipelineHandlerContext,
+                direction: ChannelPipelineDirection,
+                msg: ChannelPipelineMessages.MustPropagate,
+        ) -> None:
+            dct = self._get_must_dct(direction)
+
+            i = id(msg)
+            try:
+                x, last_ctx = dct[i]  # noqa
+            except KeyError:
+                pass
+            else:
+                check.is_(msg, x)
+            dct[i] = (msg, ctx)
+
+        def remove_must(
+                self,
+                ctx: ChannelPipelineHandlerContext,
+                direction: ChannelPipelineDirection,
+                msg: ChannelPipelineMessages.MustPropagate,
+        ) -> None:
+            dct = self._get_must_dct(direction)
+
+            i = id(msg)
+            try:
+                x, last_ctx = dct.pop(i)  # noqa
+            except KeyError:
+                raise MessageNotPropagatedChannelPipelineError(
+                    inbound=[msg] if direction == 'inbound' else None,
+                    outbound=[msg] if direction == 'outbound' else None,
+                ) from None
+
+            if x is not msg:
+                raise MessageNotPropagatedChannelPipelineError(
+                    inbound=[msg] if direction == 'inbound' else None,
+                    outbound=[msg] if direction == 'outbound' else None,
+                )
+
+        def check_and_clear(self) -> None:
+            inbound = [msg for msg, _ in self._pending_inbound_must.values()]
+            outbound = [msg for msg, _ in self._pending_outbound_must.values()]
+            if inbound or outbound:
+                raise MessageNotPropagatedChannelPipelineError(
+                    inbound=inbound or None,
+                    outbound=outbound or None,
+                )
+
+            self._pending_inbound_must.clear()
+            self._pending_outbound_must.clear()
 
 
 ########################################
