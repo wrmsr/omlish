@@ -155,3 +155,40 @@ class TestM2mdecMyFlow(unittest.TestCase):
             BarMsg('123'),
             BazMsg(True),
         ]
+
+    def test_duplicating(self):
+        ch = PipelineChannel(
+            [DuplicatingFooToBarDecoder()],
+            config=EMIT_TERMINAL_CHANNEL_CONFIG,
+            services=[mf := MyFlow()],  # noqa
+        )
+
+        ch.feed_in(FooMsg(123), BazMsg(True))
+        assert ch.drain() == [
+            BarMsg('123'),
+            BarMsg('123'),
+            BazMsg(True),
+        ]
+
+    def test_accumulating(self):
+        ch = PipelineChannel(
+            [AccumulatingFooToBarDecoder()],
+            config=EMIT_TERMINAL_CHANNEL_CONFIG,
+            services=[mf := MyFlow()],  # noqa
+        )
+
+        ch.feed_in(FooMsg(123), BazMsg(True))
+        assert ch.drain() == [
+            BazMsg(True),
+        ]
+
+        ch.feed_in(BazMsg(420))
+        assert ch.drain() == [
+            BazMsg(420),
+        ]
+
+        ch.feed_in(FooMsg(420), BazMsg(421))
+        assert ch.drain() == [
+            BarMsg('123420'),
+            BazMsg(421),
+        ]
