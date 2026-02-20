@@ -35,10 +35,10 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/check.py', sha1='4dee5d317d9e0fab5cd65f31a3cc1a496f7adfff'),
             dict(path='../../../omlish/lite/dataclasses.py', sha1='73b7f5e5493c7ed12ff0ce36e37b596e5984cb08'),
             dict(path='errors.py', sha1='37ed49c07bc30bcedf4f3c059dbc994708ae2169'),
-            dict(path='tokens.py', sha1='087b421c1f3dbd7467ffe4ecb963e40eb91f5298'),
-            dict(path='ast.py', sha1='9fbb407c2fcb35d03bedb08e9250072411e92832'),
+            dict(path='tokens.py', sha1='1db53ba357beede951df7fef0505ad99df269cf3'),
+            dict(path='ast.py', sha1='9e3d8af188a1c34d9d40f973e5785537546c718b'),
             dict(path='scanning.py', sha1='dc1e82092762fabd4d81eefe1aa96f783b5792b6'),
-            dict(path='parsing.py', sha1='307da7dc3ba9d33c900766b6d39974f863143b95'),
+            dict(path='parsing.py', sha1='e8b2d3952294f4c1ed21b7b4760a69b46b5032cc'),
             dict(path='_amalg.py', sha1='bef526864739fbfb767def62cadf0098add33b05'),
         ],
     )
@@ -1033,6 +1033,19 @@ def yaml_error(obj: ta.Union[YamlError, str, Exception]) -> YamlError:
 ##
 
 
+@dc.dataclass(frozen=True)
+class YamlSyntaxError(YamlError):
+    msg: str
+    token: ta.Optional['YamlToken']
+
+    @property
+    def message(self) -> str:
+        return self.msg
+
+
+##
+
+
 class YamlChars:
     # SEQUENCE_ENTRY character for sequence entry
     SEQUENCE_ENTRY = '-'
@@ -2019,6 +2032,20 @@ def yaml_detect_line_break_char(src: str) -> str:
 
 ########################################
 # ../ast.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class UnexpectedNodeTypeYamlError(YamlError):
+    actual: 'YamlNodeType'
+    expected: 'YamlNodeType'
+    token: YamlToken
+
+    @property
+    def message(self) -> str:
+        return f'unexpected node type: expected {self.expected.name}, got {self.actual.name}, at {self.token.position}'
 
 
 ##
@@ -6531,10 +6558,6 @@ def yaml_create_literal_and_folded_token_groups(tokens: ta.List[YamlParseToken])
     return ret
 
 
-def yaml_err_syntax(msg: str, tk: ta.Optional[YamlToken]) -> YamlError:
-    return yaml_error(f'Syntax error: {msg}, {tk}')
-
-
 def yaml_create_anchor_and_alias_token_groups(tokens: ta.List[YamlParseToken]) -> YamlErrorOr[ta.List[YamlParseToken]]:
     ret: ta.List[YamlParseToken] = []
     i = -1
@@ -6545,9 +6568,9 @@ def yaml_create_anchor_and_alias_token_groups(tokens: ta.List[YamlParseToken]) -
         tk = tokens[i]
         if tk.type() == YamlTokenType.ANCHOR:
             if i + 1 >= len(tokens):
-                return yaml_err_syntax('undefined anchor name', tk.raw_token())
+                return YamlSyntaxError('undefined anchor name', tk.raw_token())
             if i + 2 >= len(tokens):
-                return yaml_err_syntax('undefined anchor value', tk.raw_token())
+                return YamlSyntaxError('undefined anchor value', tk.raw_token())
             anchor_name = YamlParseToken(
                 group=YamlParseTokenGroup(
                     type=YamlParseTokenGroupType.ANCHOR_NAME,
@@ -6556,7 +6579,7 @@ def yaml_create_anchor_and_alias_token_groups(tokens: ta.List[YamlParseToken]) -
             )
             value_tk = tokens[i + 2]
             if tk.line() == value_tk.line() and value_tk.type() == YamlTokenType.SEQUENCE_ENTRY:
-                return yaml_err_syntax(
+                return YamlSyntaxError(
                     'sequence entries are not allowed after anchor on the same line',
                     value_tk.raw_token(),
                 )
@@ -6573,7 +6596,7 @@ def yaml_create_anchor_and_alias_token_groups(tokens: ta.List[YamlParseToken]) -
             i += 1
         elif tk.type() == YamlTokenType.ALIAS:
             if i + 1 == len(tokens):
-                return yaml_err_syntax('undefined alias name', tk.raw_token())
+                return YamlSyntaxError('undefined alias name', tk.raw_token())
             ret.append(YamlParseToken(
                 group=YamlParseTokenGroup(
                     type=YamlParseTokenGroupType.ALIAS,
@@ -6639,7 +6662,7 @@ def yaml_create_scalar_tag_token_groups(tokens: ta.List[YamlParseToken]) -> Yaml
                     ret.append(tk)
                     continue
                 if tokens[i + 1].type() != YamlTokenType.MERGE_KEY:
-                    return yaml_err_syntax('could not find merge key', tokens[i + 1].raw_token())
+                    return YamlSyntaxError('could not find merge key', tokens[i + 1].raw_token())
                 ret.append(YamlParseToken(
                     group=YamlParseTokenGroup(
                         type=YamlParseTokenGroupType.SCALAR_TAG,
@@ -6682,7 +6705,7 @@ def yaml_create_anchor_with_scalar_tag_token_groups(tokens: ta.List[YamlParseTok
         tk = tokens[i]
         if tk.group_type() == YamlParseTokenGroupType.ANCHOR_NAME:
             if i + 1 >= len(tokens):
-                return yaml_err_syntax('undefined anchor value', tk.raw_token())
+                return YamlSyntaxError('undefined anchor value', tk.raw_token())
             value_tk = tokens[i + 1]
             if tk.line() == value_tk.line() and value_tk.group_type() == YamlParseTokenGroupType.SCALAR_TAG:
                 ret.append(YamlParseToken(
@@ -6716,7 +6739,7 @@ def yaml_create_map_key_by_mapping_key(tokens: ta.List[YamlParseToken]) -> YamlE
         tk = tokens[i]
         if tk.type() == YamlTokenType.MAPPING_KEY:
             if i + 1 >= len(tokens):
-                return yaml_err_syntax('undefined map key', tk.raw_token())
+                return YamlSyntaxError('undefined map key', tk.raw_token())
             ret.append(YamlParseToken(
                 group=YamlParseTokenGroup(
                     type=YamlParseTokenGroupType.MAP_KEY,
@@ -6739,10 +6762,10 @@ def yaml_create_map_key_by_mapping_value(tokens: ta.List[YamlParseToken]) -> Yam
         tk = tokens[i]
         if tk.type() == YamlTokenType.MAPPING_VALUE:
             if i == 0:
-                return yaml_err_syntax('unexpected key name', tk.raw_token())
+                return YamlSyntaxError('unexpected key name', tk.raw_token())
             map_key_tk = tokens[i - 1]
             if yaml_is_not_map_key_type(map_key_tk):
-                return yaml_err_syntax('found an invalid key for this map', tokens[i].raw_token())
+                return YamlSyntaxError('found an invalid key for this map', tokens[i].raw_token())
             new_tk = YamlParseToken(
                 token=map_key_tk.token,
                 group=map_key_tk.group,
@@ -6809,7 +6832,7 @@ def yaml_create_directive_token_groups(tokens: ta.List[YamlParseToken]) -> YamlE
         tk = tokens[i]
         if tk.type() == YamlTokenType.DIRECTIVE:
             if i + 1 >= len(tokens):
-                return yaml_err_syntax('undefined directive value', tk.raw_token())
+                return YamlSyntaxError('undefined directive value', tk.raw_token())
             directive_name = YamlParseToken(
                 group=YamlParseTokenGroup(
                     type=YamlParseTokenGroupType.DIRECTIVE_NAME,
@@ -6824,7 +6847,7 @@ def yaml_create_directive_token_groups(tokens: ta.List[YamlParseToken]) -> YamlE
                 value_tks.append(tokens[j])
                 i += 1
             if i + 1 >= len(tokens) or tokens[i + 1].type() != YamlTokenType.DOCUMENT_HEADER:
-                return yaml_err_syntax('unexpected directive value. document not started', tk.raw_token())
+                return YamlSyntaxError('unexpected directive value. document not started', tk.raw_token())
             if len(value_tks) != 0:
                 ret.append(YamlParseToken(
                     group=YamlParseTokenGroup(
@@ -6874,12 +6897,12 @@ def yaml_create_document_tokens(tokens: ta.List[YamlParseToken]) -> YamlErrorOr[
                         YamlParseTokenGroupType.MAP_KEY,
                         YamlParseTokenGroupType.MAP_KEY_VALUE,
                 ):
-                    return yaml_err_syntax(
+                    return YamlSyntaxError(
                         'value cannot be placed after document separator',
                         tokens[i + 1].raw_token(),
                     )
                 if tokens[i + 1].type() == YamlTokenType.SEQUENCE_ENTRY:
-                    return yaml_err_syntax(
+                    return YamlSyntaxError(
                         'value cannot be placed after document separator',
                         tokens[i + 1].raw_token(),
                     )
@@ -6909,7 +6932,7 @@ def yaml_create_document_tokens(tokens: ta.List[YamlParseToken]) -> YamlErrorOr[
             if i + 1 == len(tokens):
                 return ret
             if yaml_is_scalar_type(tokens[i + 1]):
-                return yaml_err_syntax('unexpected end content', tokens[i + 1].raw_token())
+                return YamlSyntaxError('unexpected end content', tokens[i + 1].raw_token())
 
             tks = yaml_create_document_tokens(tokens[i + 1:])
             if isinstance(tks, YamlError):
@@ -7183,7 +7206,7 @@ class YamlNodeMakers:
                 return n4
             node = n4
         else:
-            return yaml_err_syntax(f'cannot assign default value for {tag.value!r} tag', tag)
+            return YamlSyntaxError(f'cannot assign default value for {tag.value!r} tag', tag)
         ctx.insert_token(tk)
         ctx.go_next()
         return node
@@ -7242,7 +7265,7 @@ def yaml_parse(
         *opts: YamlOption,
 ) -> YamlErrorOr[YamlFile]:
     if (tk := tokens.invalid_token()) is not None:
-        return yaml_err_syntax(check.not_none(tk.error).message, tk)
+        return YamlSyntaxError(check.not_none(tk.error).message, tk)
     p = YamlParser.new_parser(tokens, mode, opts)
     if isinstance(p, YamlError):
         return p
@@ -7363,7 +7386,7 @@ class YamlParser:
         if isinstance(node, YamlError):
             return node
         if ctx.next():
-            return yaml_err_syntax('value is not allowed in this context', YamlParseToken.raw_token(ctx.current_token()))  # noqa
+            return YamlSyntaxError('value is not allowed in this context', YamlParseToken.raw_token(ctx.current_token()))  # noqa
         return node
 
     def parse_token(self, ctx: YamlParsingContext, tk: ta.Optional[YamlParseToken]) -> YamlErrorOr[YamlNode]:
@@ -7372,6 +7395,7 @@ class YamlParser:
                 YamlParseTokenGroupType.MAP_KEY_VALUE,
         ):
             return self.parse_map(ctx)
+
         elif YamlParseToken.group_type(tk) == YamlParseTokenGroupType.DIRECTIVE:
             node0 = self.parse_directive(
                 ctx.with_group(check.not_none(check.not_none(tk).group)),
@@ -7381,12 +7405,14 @@ class YamlParser:
                 return node0
             ctx.go_next()
             return node0
+
         elif YamlParseToken.group_type(tk) == YamlParseTokenGroupType.DIRECTIVE_NAME:
             node1 = self.parse_directive_name(ctx.with_group(check.not_none(check.not_none(tk).group)))
             if isinstance(node1, YamlError):
                 return node1
             ctx.go_next()
             return node1
+
         elif YamlParseToken.group_type(tk) == YamlParseTokenGroupType.ANCHOR:
             node2 = self.parse_anchor(
                 ctx.with_group(check.not_none(check.not_none(tk).group)),
@@ -7396,26 +7422,29 @@ class YamlParser:
                 return node2
             ctx.go_next()
             return node2
+
         elif YamlParseToken.group_type(tk) == YamlParseTokenGroupType.ANCHOR_NAME:
             anchor = self.parse_anchor_name(ctx.with_group(check.not_none(check.not_none(tk).group)))
             if isinstance(anchor, YamlError):
                 return anchor
             ctx.go_next()
             if ctx.is_token_not_found():
-                return yaml_err_syntax('could not find anchor value', YamlParseToken.raw_token(tk))
+                return YamlSyntaxError('could not find anchor value', YamlParseToken.raw_token(tk))
             value = self.parse_token(ctx, ctx.current_token())
             if isinstance(value, YamlError):
                 return value
             if isinstance(value, AnchorYamlNode):
-                return yaml_err_syntax('anchors cannot be used consecutively', value.get_token())
+                return YamlSyntaxError('anchors cannot be used consecutively', value.get_token())
             anchor.value = value
             return anchor
+
         elif YamlParseToken.group_type(tk) == YamlParseTokenGroupType.ALIAS:
             node3 = self.parse_alias(ctx.with_group(check.not_none(check.not_none(tk).group)))
             if isinstance(node3, YamlError):
                 return node3
             ctx.go_next()
             return node3
+
         elif YamlParseToken.group_type(tk) in (
                 YamlParseTokenGroupType.LITERAL,
                 YamlParseTokenGroupType.FOLDED,
@@ -7425,35 +7454,46 @@ class YamlParser:
                 return node4
             ctx.go_next()
             return node4
+
         elif YamlParseToken.group_type(tk) == YamlParseTokenGroupType.SCALAR_TAG:
             node5 = self.parse_tag(ctx.with_group(check.not_none(check.not_none(tk).group)))
             if isinstance(node5, YamlError):
                 return node5
             ctx.go_next()
             return node5
+
         if YamlParseToken.type(tk) == YamlTokenType.COMMENT:
             return ta.cast('YamlErrorOr[YamlNode]', check.not_none(self.parse_comment(ctx)))
+
         elif YamlParseToken.type(tk) == YamlTokenType.TAG:
             return self.parse_tag(ctx)
+
         elif YamlParseToken.type(tk) == YamlTokenType.MAPPING_START:
             return self.parse_flow_map(ctx.with_flow(True))
+
         elif YamlParseToken.type(tk) == YamlTokenType.SEQUENCE_START:
             return self.parse_flow_sequence(ctx.with_flow(True))
+
         elif YamlParseToken.type(tk) == YamlTokenType.SEQUENCE_ENTRY:
             return self.parse_sequence(ctx)
+
         elif YamlParseToken.type(tk) == YamlTokenType.SEQUENCE_END:
             # SequenceEndType is always validated in parse_flow_sequence.
             # Therefore, if this is found in other cases, it is treated as a syntax error.
-            return yaml_err_syntax("could not find '[' character corresponding to ']'", YamlParseToken.raw_token(tk))
+            return YamlSyntaxError("could not find '[' character corresponding to ']'", YamlParseToken.raw_token(tk))
+
         elif YamlParseToken.type(tk) == YamlTokenType.MAPPING_END:
             # MappingEndType is always validated in parse_flow_map.
             # Therefore, if this is found in other cases, it is treated as a syntax error.
-            return yaml_err_syntax("could not find '{' character corresponding to '}'", YamlParseToken.raw_token(tk))
+            return YamlSyntaxError("could not find '{' character corresponding to '}'", YamlParseToken.raw_token(tk))
+
         elif YamlParseToken.type(tk) == YamlTokenType.MAPPING_VALUE:
-            return yaml_err_syntax('found an invalid key for this map', YamlParseToken.raw_token(tk))
+            return YamlSyntaxError('found an invalid key for this map', YamlParseToken.raw_token(tk))
+
         node6 = self.parse_scalar_value(ctx, tk)
         if isinstance(node6, YamlError):
             return node6
+
         ctx.go_next()
         return check.not_none(node6)
 
@@ -7462,37 +7502,46 @@ class YamlParser:
         if tk.group is not None:
             if tk.group_type() == YamlParseTokenGroupType.ANCHOR:
                 return self.parse_anchor(ctx.with_group(tk.group), tk.group)
+
             elif tk.group_type() == YamlParseTokenGroupType.ANCHOR_NAME:
                 anchor = self.parse_anchor_name(ctx.with_group(tk.group))
                 if isinstance(anchor, YamlError):
                     return anchor
                 ctx.go_next()
                 if ctx.is_token_not_found():
-                    return yaml_err_syntax('could not find anchor value', tk.raw_token())
+                    return YamlSyntaxError('could not find anchor value', tk.raw_token())
                 value = self.parse_token(ctx, ctx.current_token())
                 if isinstance(value, YamlError):
                     return value
                 if isinstance(value, AnchorYamlNode):
-                    return yaml_err_syntax('anchors cannot be used consecutively', value.get_token())
+                    return YamlSyntaxError('anchors cannot be used consecutively', value.get_token())
                 anchor.value = value
                 return anchor
+
             elif tk.group_type() == YamlParseTokenGroupType.ALIAS:
                 return self.parse_alias(ctx.with_group(tk.group))
+
             elif tk.group_type() in (
                     YamlParseTokenGroupType.LITERAL,
                     YamlParseTokenGroupType.FOLDED,
             ):
                 return self.parse_literal(ctx.with_group(tk.group))
+
             elif tk.group_type() == YamlParseTokenGroupType.SCALAR_TAG:
                 return self.parse_tag(ctx.with_group(tk.group))
+
             else:
-                return yaml_err_syntax('unexpected scalar value', tk.raw_token())
+                return YamlSyntaxError('unexpected scalar value', tk.raw_token())
+
         if tk.type() == YamlTokenType.MERGE_KEY:
             return YamlNodeMakers.new_merge_key_node(ctx, tk)
+
         if tk.type() in (YamlTokenType.NULL, YamlTokenType.IMPLICIT_NULL):
             return YamlNodeMakers.new_null_node(ctx, tk)
+
         if tk.type() == YamlTokenType.BOOL:
             return YamlNodeMakers.new_bool_node(ctx, tk)
+
         if tk.type() in (
                 YamlTokenType.INTEGER,
                 YamlTokenType.BINARY_INTEGER,
@@ -7500,23 +7549,29 @@ class YamlParser:
                 YamlTokenType.HEX_INTEGER,
         ):
             return YamlNodeMakers.new_integer_node(ctx, tk)
+
         if tk.type() == YamlTokenType.FLOAT:
             return YamlNodeMakers.new_float_node(ctx, tk)
+
         if tk.type() == YamlTokenType.INFINITY:
             return YamlNodeMakers.new_infinity_node(ctx, tk)
+
         if tk.type() == YamlTokenType.NAN:
             return YamlNodeMakers.new_nan_node(ctx, tk)
+
         if tk.type() in (
                 YamlTokenType.STRING,
                 YamlTokenType.SINGLE_QUOTE,
                 YamlTokenType.DOUBLE_QUOTE,
         ):
             return YamlNodeMakers.new_string_node(ctx, tk)
+
         if tk.type() == YamlTokenType.TAG:
             # this case applies when it is a scalar tag and its value does not exist.
             # Examples of cases where the value does not exist include cases like `key: !!str,` or `!!str : value`.
             return self.parse_scalar_tag(ctx)
-        return yaml_err_syntax('unexpected scalar value type', tk.raw_token())
+
+        return YamlSyntaxError('unexpected scalar value type', tk.raw_token())
 
     def parse_flow_map(self, ctx: YamlParsingContext) -> YamlErrorOr[MappingYamlNode]:
         node = YamlNodeMakers.new_mapping_node(ctx, check.not_none(ctx.current_token()), True)
@@ -7536,7 +7591,7 @@ class YamlParser:
                 entry_tk = tk
                 ctx.go_next()
             elif not is_first:
-                return yaml_err_syntax("',' or '}' must be specified", YamlParseToken.raw_token(tk))
+                return YamlSyntaxError("',' or '}' must be specified", YamlParseToken.raw_token(tk))
 
             if YamlParseToken.type(tk := ctx.current_token()) == YamlTokenType.MAPPING_END:
                 # this case is here: "{ elem, }".
@@ -7555,6 +7610,7 @@ class YamlParser:
                     return value0
                 node.values.append(value0)
                 ctx.go_next()
+
             elif YamlParseToken.group_type(map_key_tk) == YamlParseTokenGroupType.MAP_KEY:
                 key0 = self.parse_map_key(
                     ctx.with_group(check.not_none(check.not_none(map_key_tk).group)),
@@ -7564,6 +7620,7 @@ class YamlParser:
                     return key0
                 ctx = ctx.with_child(self.map_key_text(key0))
                 colon_tk = check.not_none(check.not_none(map_key_tk).group).last()
+
                 if self.is_flow_map_delim(check.not_none(ctx.next_token())):
                     value1 = YamlNodeMakers.new_null_node(ctx, ctx.insert_null_token(check.not_none(colon_tk)))
                     if isinstance(value1, YamlError):
@@ -7579,10 +7636,11 @@ class YamlParser:
                         return map_value
                     node.values.append(map_value)
                     ctx.go_next()
+
                 else:
                     ctx.go_next()
                     if ctx.is_token_not_found():
-                        return yaml_err_syntax('could not find map value', YamlParseToken.raw_token(colon_tk))
+                        return YamlSyntaxError('could not find map value', YamlParseToken.raw_token(colon_tk))
                     value2 = self.parse_token(ctx, ctx.current_token())
                     if isinstance(value2, YamlError):
                         return value2
@@ -7596,18 +7654,22 @@ class YamlParser:
                     if isinstance(map_value, YamlError):
                         return map_value
                     node.values.append(map_value)
+
             else:
                 if not self.is_flow_map_delim(check.not_none(ctx.next_token())):
                     err_tk = map_key_tk
                     if err_tk is None:
                         err_tk = tk
-                    return yaml_err_syntax('could not find flow map content', YamlParseToken.raw_token(err_tk))
+                    return YamlSyntaxError('could not find flow map content', YamlParseToken.raw_token(err_tk))
+
                 key1 = self.parse_scalar_value(ctx, map_key_tk)
                 if isinstance(key1, YamlError):
                     return key1
+
                 value3 = YamlNodeMakers.new_null_node(ctx, ctx.insert_null_token(check.not_none(map_key_tk)))
                 if isinstance(value3, YamlError):
                     return value3
+
                 map_value = YamlNodeMakers.new_mapping_value_node(
                     ctx,
                     check.not_none(map_key_tk),
@@ -7617,15 +7679,19 @@ class YamlParser:
                 )
                 if isinstance(map_value, YamlError):
                     return map_value
+
                 node.values.append(map_value)
                 ctx.go_next()
+
             is_first = False
+
         if node.end is None:
-            return yaml_err_syntax("could not find flow mapping end token '}'", node.start)
+            return YamlSyntaxError("could not find flow mapping end token '}'", node.start)
 
         # set line comment if exists. e.g.) } # comment
         if (err := yaml_set_line_comment(ctx, node, ctx.current_token())) is not None:
             return err
+
         ctx.go_next()  # skip mapping end token.
         return node
 
@@ -7635,7 +7701,8 @@ class YamlParser:
     def parse_map(self, ctx: YamlParsingContext) -> YamlErrorOr[MappingYamlNode]:
         key_tk = check.not_none(ctx.current_token())
         if key_tk.group is None:
-            return yaml_err_syntax('unexpected map key', YamlParseToken.raw_token(key_tk))
+            return YamlSyntaxError('unexpected map key', YamlParseToken.raw_token(key_tk))
+
         key_value_node: MappingValueYamlNode
         if YamlParseToken.group_type(key_tk) == YamlParseTokenGroupType.MAP_KEY_VALUE:
             node0 = self.parse_map_key_value(
@@ -7645,10 +7712,12 @@ class YamlParser:
             )
             if isinstance(node0, YamlError):
                 return node0
+
             key_value_node = node0
             ctx.go_next()
             if (err := self.validate_map_key_value_next_token(ctx, key_tk, ctx.current_token())) is not None:
                 return err
+
         else:
             key = self.parse_map_key(ctx.with_group(check.not_none(key_tk.group)), check.not_none(key_tk.group))
             if isinstance(key, YamlError):
@@ -7660,14 +7729,16 @@ class YamlParser:
                     YamlParseToken.line(key_tk) == YamlParseToken.line(value_tk) and
                     YamlParseToken.type(value_tk) == YamlTokenType.SEQUENCE_ENTRY
             ):
-                return yaml_err_syntax(
+                return YamlSyntaxError(
                     'block sequence entries are not allowed in this context',
                     YamlParseToken.raw_token(value_tk),
                 )
+
             ctx = ctx.with_child(self.map_key_text(key))
             value = self.parse_map_value(ctx, key, check.not_none(check.not_none(key_tk.group).last()))
             if isinstance(value, YamlError):
                 return value
+
             node1 = YamlNodeMakers.new_mapping_value_node(
                 ctx,
                 check.not_none(check.not_none(key_tk.group).last()),
@@ -7677,7 +7748,9 @@ class YamlParser:
             )
             if isinstance(node1, YamlError):
                 return node1
+
             key_value_node = node1
+
         map_node = YamlNodeMakers.new_mapping_node(
             ctx,
             YamlParseToken(token=key_value_node.get_token()),
@@ -7686,11 +7759,13 @@ class YamlParser:
         )
         if isinstance(map_node, YamlError):
             return map_node
+
         tk: ta.Optional[YamlParseToken]
         if ctx.is_comment():
             tk = ctx.next_not_comment_token()
         else:
             tk = ctx.current_token()
+
         while YamlParseToken.column(tk) == YamlParseToken.column(key_tk):
             typ = YamlParseToken.type(tk)
             if ctx.is_flow and typ == YamlTokenType.SEQUENCE_END:
@@ -7699,7 +7774,7 @@ class YamlParser:
                 # ] <=
                 break
             if not self.is_map_token(check.not_none(tk)):
-                return yaml_err_syntax('non-map value is specified', YamlParseToken.raw_token(tk))
+                return YamlSyntaxError('non-map value is specified', YamlParseToken.raw_token(tk))
             cm = self.parse_head_comment(ctx)
             if typ == YamlTokenType.MAPPING_END:
                 # a: {
@@ -7717,6 +7792,7 @@ class YamlParser:
             if node2.foot_comment is not None:
                 map_node.values[len(map_node.values) - 1].foot_comment = node2.foot_comment
             tk = ctx.current_token()
+
         if ctx.is_comment():
             if YamlParseToken.column(key_tk) <= YamlParseToken.column(ctx.current_token()):
                 # If the comment is in the same or deeper column as the last element column in map value,
@@ -7727,6 +7803,7 @@ class YamlParser:
                 else:
                     map_node.foot_comment = self.parse_foot_comment(ctx, YamlParseToken.column(key_tk))
                     BaseYamlNode.set_path(map_node.foot_comment, map_node.get_path())
+
         return map_node
 
     def validate_map_key_value_next_token(self, ctx: YamlParsingContext, key_tk, tk: ta.Optional[YamlParseToken]) -> ta.Optional[YamlError]:  # noqa
@@ -7743,7 +7820,7 @@ class YamlParser:
             return None
         # a: b
         #  c <= this token is invalid.
-        return yaml_err_syntax('value is not allowed in this context. map key-value is pre-defined', tk.raw_token())
+        return YamlSyntaxError('value is not allowed in this context. map key-value is pre-defined', tk.raw_token())
 
     def is_map_token(self, tk: YamlParseToken) -> bool:
         if tk.group is None:
@@ -7758,9 +7835,9 @@ class YamlParser:
             entry_tk: ta.Optional[YamlParseToken],
     ) -> YamlErrorOr[MappingValueYamlNode]:
         if g.type != YamlParseTokenGroupType.MAP_KEY_VALUE:
-            return yaml_err_syntax('unexpected map key-value pair', g.raw_token())
+            return YamlSyntaxError('unexpected map key-value pair', g.raw_token())
         if check.not_none(g.first()).group is None:
-            return yaml_err_syntax('unexpected map key', g.raw_token())
+            return YamlSyntaxError('unexpected map key', g.raw_token())
         key_group = check.not_none(check.not_none(g.first()).group)
         key = self.parse_map_key(ctx.with_group(key_group), key_group)
         if isinstance(key, YamlError):
@@ -7774,7 +7851,8 @@ class YamlParser:
 
     def parse_map_key(self, ctx: YamlParsingContext, g: YamlParseTokenGroup) -> YamlErrorOr[MapKeyYamlNode]:
         if g.type != YamlParseTokenGroupType.MAP_KEY:
-            return yaml_err_syntax('unexpected map key', g.raw_token())
+            return YamlSyntaxError('unexpected map key', g.raw_token())
+
         if YamlParseToken.type(g.first()) == YamlTokenType.MAPPING_KEY:
             map_key_tk = check.not_none(g.first())
             if map_key_tk.group is not None:
@@ -7784,7 +7862,7 @@ class YamlParser:
                 return key0
             ctx.go_next()  # skip mapping key token
             if ctx.is_token_not_found():
-                return yaml_err_syntax('could not find value for mapping key', YamlParseToken.raw_token(map_key_tk))
+                return YamlSyntaxError('could not find value for mapping key', YamlParseToken.raw_token(map_key_tk))
 
             scalar0 = self.parse_scalar_value(ctx, ctx.current_token())
             if isinstance(scalar0, YamlError):
@@ -7803,14 +7881,14 @@ class YamlParser:
             self.path_map[key_path] = key0
             return key0
         if YamlParseToken.type(g.last()) != YamlTokenType.MAPPING_VALUE:
-            return yaml_err_syntax("expected map key-value delimiter ':'", YamlParseToken.raw_token(g.last()))
+            return YamlSyntaxError("expected map key-value delimiter ':'", YamlParseToken.raw_token(g.last()))
 
         scalar1 = self.parse_scalar_value(ctx, g.first())
         if isinstance(scalar1, YamlError):
             return scalar1
         if not isinstance(scalar1, MapKeyYamlNode):
             # FIXME: not possible
-            return yaml_err_syntax(
+            return YamlSyntaxError(
                 'cannot take map-key node',
                 check.not_none(scalar1).get_token(),
             )
@@ -7838,7 +7916,7 @@ class YamlParser:
         if not self.allow_duplicate_map_key:
             if (n := self.path_map.get(key_path)) is not None:
                 pos = check.not_none(n.get_token()).position
-                return yaml_err_syntax(
+                return YamlSyntaxError(
                     f'mapping key {tk.value!r} already defined at [{pos.line:d}:{pos.column:d}]',
                     tk,
                 )
@@ -7847,7 +7925,7 @@ class YamlParser:
             if tk.type == YamlTokenType.STRING:
                 origin = self.remove_right_white_space(origin)
                 if tk.position.line + self.new_line_character_num(origin) != colon_tk.line():
-                    return yaml_err_syntax('map key definition includes an implicit line break', tk)
+                    return YamlSyntaxError('map key definition includes an implicit line break', tk)
             return None
         if (
                 tk.type != YamlTokenType.STRING and
@@ -7856,7 +7934,7 @@ class YamlParser:
         ):
             return None
         if self.exists_new_line_character(origin):
-            return yaml_err_syntax('unexpected key name', tk)
+            return YamlSyntaxError('unexpected key name', tk)
         return None
 
     def remove_left_white_space(self, src: str) -> str:
@@ -7927,7 +8005,7 @@ class YamlParser:
             #
             # a: b: c
             #    ^
-            return yaml_err_syntax('mapping value is not allowed in this context', YamlParseToken.raw_token(tk))
+            return YamlSyntaxError('mapping value is not allowed in this context', YamlParseToken.raw_token(tk))
 
         if YamlParseToken.column(tk) == key_col and self.is_map_token(check.not_none(tk)):
             # in this case,
@@ -7962,11 +8040,11 @@ class YamlParser:
         ):
             # key: <value does not defined>
             # &anchor
-            return yaml_err_syntax('anchor is not allowed in this context', YamlParseToken.raw_token(tk))
+            return YamlSyntaxError('anchor is not allowed in this context', YamlParseToken.raw_token(tk))
         if YamlParseToken.column(tk) <= key_col and YamlParseToken.type(tk) == YamlTokenType.TAG:
             # key: <value does not defined>
             # !!tag
-            return yaml_err_syntax('tag is not allowed in this context', YamlParseToken.raw_token(tk))
+            return YamlSyntaxError('tag is not allowed in this context', YamlParseToken.raw_token(tk))
 
         if YamlParseToken.column(tk) < key_col:
             # in this case,
@@ -8024,7 +8102,7 @@ class YamlParser:
             #
             # - &anchor
             # !!tag
-            return yaml_err_syntax('tag is not allowed in this context', tag_tk)
+            return YamlSyntaxError('tag is not allowed in this context', tag_tk)
         return None
 
     def parse_anchor(self, ctx: YamlParsingContext, g: YamlParseTokenGroup) -> YamlErrorOr[AnchorYamlNode]:
@@ -8034,13 +8112,13 @@ class YamlParser:
             return anchor
         ctx.go_next()
         if ctx.is_token_not_found():
-            return yaml_err_syntax('could not find anchor value', anchor.get_token())
+            return YamlSyntaxError('could not find anchor value', anchor.get_token())
 
         value = self.parse_token(ctx, ctx.current_token())
         if isinstance(value, YamlError):
             return value
         if isinstance(value, AnchorYamlNode):
-            return yaml_err_syntax('anchors cannot be used consecutively', value.get_token())
+            return YamlSyntaxError('anchors cannot be used consecutively', value.get_token())
         anchor.value = value
         return anchor
 
@@ -8050,13 +8128,13 @@ class YamlParser:
             return anchor
         ctx.go_next()
         if ctx.is_token_not_found():
-            return yaml_err_syntax('could not find anchor value', anchor.get_token())
+            return YamlSyntaxError('could not find anchor value', anchor.get_token())
 
         anchor_name = self.parse_scalar_value(ctx, ctx.current_token())
         if isinstance(anchor_name, YamlError):
             return anchor_name
         if anchor_name is None:
-            return yaml_err_syntax(
+            return YamlSyntaxError(
                 'unexpected anchor. anchor name is not scalar value',
                 YamlParseToken.raw_token(ctx.current_token()),
             )
@@ -8069,13 +8147,13 @@ class YamlParser:
             return alias
         ctx.go_next()
         if ctx.is_token_not_found():
-            return yaml_err_syntax('could not find alias value', alias.get_token())
+            return YamlSyntaxError('could not find alias value', alias.get_token())
 
         alias_name = self.parse_scalar_value(ctx, ctx.current_token())
         if isinstance(alias_name, YamlError):
             return alias_name
         if alias_name is None:
-            return yaml_err_syntax(
+            return YamlSyntaxError(
                 'unexpected alias. alias name is not scalar value',
                 YamlParseToken.raw_token(ctx.current_token()),
             )
@@ -8102,7 +8180,7 @@ class YamlParser:
         if isinstance(value1, YamlError):
             return value1
         if not isinstance(s := value1, StringYamlNode):
-            return yaml_err_syntax('unexpected token. required string token', value1.get_token())
+            return YamlSyntaxError('unexpected token. required string token', value1.get_token())
         node.value = s
         return node
 
@@ -8111,9 +8189,9 @@ class YamlParser:
         if isinstance(tag, YamlError):
             return tag
         if tag.value is None:
-            return yaml_err_syntax('specified not scalar tag', tag.get_token())
+            return YamlSyntaxError('specified not scalar tag', tag.get_token())
         if not isinstance(tag.value, ScalarYamlNode):
-            return yaml_err_syntax('specified not scalar tag', tag.get_token())
+            return YamlSyntaxError('specified not scalar tag', tag.get_token())
         return tag
 
     def parse_tag(self, ctx: YamlParsingContext) -> YamlErrorOr[TagYamlNode]:
@@ -8156,7 +8234,7 @@ class YamlParser:
                 YamlReservedTagKeywords.SET,
         ):
             if not self.is_map_token(tk):
-                return yaml_err_syntax('could not find map', tk.raw_token())
+                return YamlSyntaxError('could not find map', tk.raw_token())
             if tk.type() == YamlTokenType.MAPPING_START:
                 return self.parse_flow_map(ctx.with_flow(True))
             return self.parse_map(ctx)
@@ -8203,11 +8281,11 @@ class YamlParser:
             entry_tk: ta.Optional[YamlParseToken] = None
             if YamlParseToken.type(tk) == YamlTokenType.COLLECT_ENTRY:
                 if is_first:
-                    return yaml_err_syntax("expected sequence element, but found ','", YamlParseToken.raw_token(tk))
+                    return YamlSyntaxError("expected sequence element, but found ','", YamlParseToken.raw_token(tk))
                 entry_tk = tk
                 ctx.go_next()
             elif not is_first:
-                return yaml_err_syntax("',' or ']' must be specified", YamlParseToken.raw_token(tk))
+                return YamlSyntaxError("',' or ']' must be specified", YamlParseToken.raw_token(tk))
 
             if YamlParseToken.type(tk := ctx.current_token()) == YamlTokenType.SEQUENCE_END:
                 # this case is here: "[ elem, ]".
@@ -8235,7 +8313,7 @@ class YamlParser:
 
             is_first = False
         if node.end is None:
-            return yaml_err_syntax("sequence end token ']' not found", node.start)
+            return YamlSyntaxError("sequence end token ']' not found", node.start)
 
         # set ine comment if exists. e.g.) ] # comment
         if (err := yaml_set_line_comment(ctx, node, ctx.current_token())) is not None:
@@ -8327,11 +8405,11 @@ class YamlParser:
         ):
             # - <value does not defined>
             # &anchor
-            return yaml_err_syntax('anchor is not allowed in this sequence context', YamlParseToken.raw_token(tk))
+            return YamlSyntaxError('anchor is not allowed in this sequence context', YamlParseToken.raw_token(tk))
         if YamlParseToken.column(tk) <= seq_col and YamlParseToken.type(tk) == YamlTokenType.TAG:
             # - <value does not defined>
             # !!tag
-            return yaml_err_syntax('tag is not allowed in this sequence context', YamlParseToken.raw_token(tk))
+            return YamlSyntaxError('tag is not allowed in this sequence context', YamlParseToken.raw_token(tk))
 
         if (
                 YamlParseToken.column(tk) < seq_col or
@@ -8377,23 +8455,24 @@ class YamlParser:
 
         if directive.name == 'YAML':
             if len(g.tokens) != 2:
-                return yaml_err_syntax('unexpected format YAML directive', YamlParseToken.raw_token(g.first()))
+                return YamlSyntaxError('unexpected format YAML directive', YamlParseToken.raw_token(g.first()))
             value_tk = g.tokens[1]
             value_raw_tk = check.not_none(value_tk.raw_token())
             value0 = value_raw_tk.value
             ver = YAML_VERSION_MAP.get(value0)
             if ver is None:
-                return yaml_err_syntax(f'unknown YAML version {value0!r}', value_raw_tk)
+                return YamlSyntaxError(f'unknown YAML version {value0!r}', value_raw_tk)
             if self.yaml_version != '':
-                return yaml_err_syntax('YAML version has already been specified', value_raw_tk)
+                return YamlSyntaxError('YAML version has already been specified', value_raw_tk)
             self.yaml_version = ver
             version_node = YamlNodeMakers.new_string_node(ctx, value_tk)
             if isinstance(version_node, YamlError):
                 return version_node
             directive.values.append(version_node)
+
         elif directive.name == 'TAG':
             if len(g.tokens) != 3:
-                return yaml_err_syntax('unexpected format TAG directive', YamlParseToken.raw_token(g.first()))
+                return YamlSyntaxError('unexpected format TAG directive', YamlParseToken.raw_token(g.first()))
             tag_key = YamlNodeMakers.new_string_node(ctx, g.tokens[1])
             if isinstance(tag_key, YamlError):
                 return tag_key
@@ -8403,12 +8482,14 @@ class YamlParser:
             if isinstance(tag_value, YamlError):
                 return tag_value
             directive.values.extend([tag_key, tag_value])
+
         elif len(g.tokens) > 1:
             for tk in g.tokens[1:]:
                 value1 = YamlNodeMakers.new_string_node(ctx, tk)
                 if isinstance(value1, YamlError):
                     return value1
                 directive.values.append(value1)
+
         return directive
 
     def parse_directive_name(self, ctx: YamlParsingContext) -> YamlErrorOr[DirectiveYamlNode]:
@@ -8417,13 +8498,13 @@ class YamlParser:
             return directive
         ctx.go_next()
         if ctx.is_token_not_found():
-            return yaml_err_syntax('could not find directive value', directive.get_token())
+            return YamlSyntaxError('could not find directive value', directive.get_token())
 
         directive_name = self.parse_scalar_value(ctx, ctx.current_token())
         if isinstance(directive_name, YamlError):
             return directive_name
         if directive_name is None:
-            return yaml_err_syntax(
+            return YamlSyntaxError(
                 'unexpected directive. directive name is not scalar value',
                 YamlParseToken.raw_token(ctx.current_token()),
             )

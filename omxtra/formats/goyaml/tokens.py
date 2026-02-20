@@ -20,7 +20,7 @@ from .errors import yaml_error
 @dc.dataclass(frozen=True)
 class YamlSyntaxError(YamlError):
     msg: str
-    token: 'YamlToken'
+    token: ta.Optional['YamlToken']
 
     @property
     def message(self) -> str:

@@ -27,6 +27,20 @@ from .tokens import yaml_to_number
 ##
 
 
+@dc.dataclass(frozen=True)
+class UnexpectedNodeTypeYamlError(YamlError):
+    actual: 'YamlNodeType'
+    expected: 'YamlNodeType'
+    token: YamlToken
+
+    @property
+    def message(self) -> str:
+        return f'unexpected node type: expected {self.expected.name}, got {self.actual.name}, at {self.token.position}'
+
+
+##
+
+
 class YamlAstErrors:
     def __new__(cls, *args, **kwargs):  # noqa
         raise TypeError
