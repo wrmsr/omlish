@@ -4,6 +4,8 @@ import base64
 import dataclasses as dc
 import datetime
 import enum
+import glob
+import os.path
 import typing as ta
 
 from omlish.lite.check import check
@@ -36,6 +38,11 @@ from .ast import yaml_sequence_merge_value  # noqa
 from .errors import YamlError
 from .errors import YamlErrorOr
 from .errors import yaml_error
+from .parsing import YAML_PARSE_COMMENTS  # noqa
+from .parsing import YamlOption
+from .parsing import YamlParseMode  # noqa
+from .parsing import yaml_allow_duplicate_map_key  # noqa
+from .parsing import yaml_parse_str  # noqa
 from .tokens import YamlReservedTagKeywords  # noqa
 from .tokens import YamlSyntaxError  # noqa
 from .tokens import YamlToken  # noqa
@@ -157,8 +164,25 @@ class MapSlice(ta.List[MapItem]):
 ##
 
 
-Reader = ta.Any  # FIXME
-DecodeOption = ta.Any  # FIXME
+class Reader(ta.Protocol):
+    def read(self) -> bytes: ...
+
+
+class ImmediateBytesReader:
+    def __init__(self, bs: bytes) -> None:
+        self._bs = bs
+
+    def read(self) -> bytes:
+        bs = self._bs
+        self._bs = b''
+        return bs
+
+
+##
+
+
+class DecodeOption(ta.Protocol):
+    def __call__(self, d: 'YamlDecoder') -> ta.Optional[YamlError]: ...
 
 
 # StructValidator need to implement Struct method only
@@ -971,10 +995,10 @@ class YamlDecoder:
         try:
             if self.is_exceeded_max_depth():
                 return YamlDecodeErrors.EXCEEDED_MAX_DEPTH
-            if not dst.IsValid():
-                return nil
+            if not dst.is_value:
+                return None
 
-            if src.Type() == YamlNodeType.ANCHOR:
+            if src.type() == YamlNodeType.ANCHOR:
                 anchor, _ := src.(AnchorYamlNode)
                 anchor_name := anchor.Name.get_token().Value
                 if err := self.decode_value(with_anchor(ctx, anchor_name), dst, anchor.Value); err is not None:
@@ -1725,14 +1749,14 @@ class YamlDecoder:
         
         finally:
             self.step_out()
+    """  # noqa
 
     def file_to_reader(self, file: str) -> YamlErrorOr[Reader]:
-        reader, err := os.Open(file)
-        if err is not None:
-            return nil, err
-        return reader, nil
+        with open(file, 'rb') as f:
+            bs = f.read()
+        return ImmediateBytesReader(bs)
 
-    def is_yaml_file(self, file: str) ->bool:
+    def is_yaml_file(self, file: str) -> bool:
         ext = file.rsplit('.', maxsplit=1)[-1]
         if ext == '.yml':
             return True
@@ -1740,118 +1764,104 @@ class YamlDecoder:
             return True
         return False
 
-    def readers_under_dir(self, dir: str) -> YamlErrorOr[ta.List[Reader]]:
-        pattern := fmt.Sprintf("%s/*", dir)
-        matches, err := filepath.Glob(pattern)
-        if err is not None:
-            return nil, err
-        readers := []Reader{}
-        for _, match := range matches:
+    def readers_under_dir(self, d: str) -> YamlErrorOr[ta.List[Reader]]:
+        pattern = f'{d}/*'
+        matches = glob.glob(pattern)
+        readers: ta.List[Reader] = []
+        for match in matches:
             if not self.is_yaml_file(match):
                 continue
-            reader, err := self.file_to_reader(match)
-            if err is not None:
-                return nil, err
-            readers = append(readers, reader)
-        return readers, nil
+            if isinstance(reader := self.file_to_reader(match), YamlError):
+                return reader
+            readers.append(reader)
+        return readers
 
-    def readers_under_dir_recursive(self, dir: str) -> YamlErrorOr[ta.List[Reader]]:
-        readers := []Reader{}
-        if err := filepath.Walk(dir, func(path str, info os.FileInfo, _ error) error:
-            if not self.is_yaml_file(path):
-                return nil
-            reader, readerErr := self.file_to_reader(path)
-            if readerErr is not None:
-                return readerErr
-            readers = append(readers, reader)
-            return nil
-        }); err is not None:
-            return nil, err
-        return readers, nil
+    def readers_under_dir_recursive(self, d: str) -> YamlErrorOr[ta.List[Reader]]:
+        readers: ta.List[Reader] = []
+        for dp, _, fns in os.walk(d):
+            for fn in fns:
+                path = os.path.join(dp, fn)
+                if not os.path.isfile(path):
+                    continue
+                if not self.is_yaml_file(path):
+                    continue
+                if isinstance(reader := self.file_to_reader(path), YamlError):
+                    return reader
+                readers.append(reader)
+        return readers
 
     def resolve_reference(self, ctx: Context) -> ta.Optional[YamlError]:
-        for _, opt := range self.opts:
-            if err := opt(d); err is not None:
+        for opt in self.opts:
+            if (err := opt(self)) is not None:
                 return err
-        for _, file := range self.reference_files:
-            reader, err := self.file_to_reader(file)
-            if err is not None:
-                return err
-            self.reference_readers = append(self.reference_readers, reader)
-        for _, dir := range self.reference_dirs:
+        for file in self.reference_files:
+            if isinstance(reader := self.file_to_reader(file), YamlError):
+                return reader
+            self.reference_readers.append(reader)
+        for d in self.reference_dirs:
             if not self.is_recursive_dir:
-                readers, err := self.readers_under_dir(dir)
-                if err is not None:
-                    return err
-                self.reference_readers = append(self.reference_readers, readers...)
+                if isinstance(readers := self.readers_under_dir(d), YamlError):
+                    return readers
+                self.reference_readers.extend(readers)
             else:
-                readers, err := self.readers_under_dir_recursive(dir)
-                if err is not None:
-                    return err
-                self.reference_readers = append(self.reference_readers, readers...)
-        for _, reader := range self.reference_readers:
-            bytes, err := io.ReadAll(reader)
-            if err is not None:
-                return err
-
+                if isinstance(readers := self.readers_under_dir_recursive(d), YamlError):
+                    return readers
+                self.reference_readers.extend(readers)
+        for reader in self.reference_readers:
+            bs = reader.read()
             # assign new anchor definition to anchorMap
-            if _, err := self.parse(ctx, bytes); err is not None:
-                return err
+            if isinstance(err2 := self.parse(ctx, bs), YamlError):
+                return err2
         self.is_resolved_reference = True
-        return nil
+        return None
 
-    def parse(self, ctx: Context, bs bytes) -> YamlErrorOr[YamlFile]:
-        var parseMode parser.Mode
+    def parse(self, ctx: Context, bs: bytes) -> YamlErrorOr[YamlFile]:
+        parse_mode: YamlParseMode = 0
         if self.to_comment_map is not None:
-            parseMode = parser.ParseComments
-        var opts []parser.Option
+            parse_mode |= YAML_PARSE_COMMENTS
+        opts: ta.List[YamlOption] = []
         if self.allow_duplicate_map_key:
-            opts = append(opts, parser.AllowDuplicateMapKey())
-        f, err := parser.ParseBytes(bs, parseMode, *opts)
-        if err is not None:
-            return nil, err
-        normalizedFile := &YamlFile{}
-        for _, doc := range f.Docs:
+            opts.append(yaml_allow_duplicate_map_key())
+        if isinstance(f := yaml_parse_str(bs.decode(), parse_mode, *opts), YamlError):
+            return f
+        normalized_file = YamlFile()
+        for doc in f.docs:
             # try to decode YamlNode to value and map anchor value to anchorMap
-            v, err := self.node_to_value(ctx, doc.Body)
-            if err is not None:
-                return nil, err
-            if v != nil || (doc.Body != nil && doc.Body.Type() == YamlNodeType.NULL):
-                normalizedFile.Docs = append(normalizedFile.Docs, doc)
-                cm := CommentMap{}
-                maps.Copy(cm, self.to_comment_map)
-                self.comment_maps = append(self.comment_maps, cm)
-            for k := range self.to_comment_map:
-                delete(self.to_comment_map, k)
-        return normalizedFile, nil
+            if isinstance(v := self.node_to_value(ctx, check.not_none(doc.body)), YamlError):
+                return v
+            if v is not None or (doc.body is not None and doc.body.type() == YamlNodeType.NULL):
+                normalized_file.docs.append(doc)
+                cm = CommentMap()
+                cm.update(self.to_comment_map or {})
+                self.comment_maps.append(cm)
+            check.not_none(self.to_comment_map).clear()
+        return normalized_file
 
     def is_initialized(self) -> bool:
-        return self.parsed_file != nil
+        return self.parsed_file is not None
 
     def decode_init(self, ctx: Context) -> ta.Optional[YamlError]:
         if not self.is_resolved_reference:
-            if err := self.resolve_reference(ctx); err is not None:
+            if (err := self.resolve_reference(ctx)) is not None:
                 return err
-        var buf bytes.Buffer
-        if _, err := io.Copy(&buf, self.reader); err is not None:
-            return err
-        file, err := self.parse(ctx, buf.Bytes())
-        if err is not None:
-            return err
+        buf = self.reader.read()
+        if isinstance(file := self.parse(ctx, buf), YamlError):
+            return file
         self.parsed_file = file
-        return nil
+        return None
 
+    r"""
     def _decode(self, ctx: Context, v: ta.Any) -> ta.Optional[YamlError]:
         self.decode_depth = 0
         self.anchor_value_map = {}
-        if len(self.parsed_file.Docs) == 0:
+        if len(self.parsed_file.docs) == 0:
             # empty document.
             dst := v.Elem()
             if dst.IsValid():
                 dst.Set(reflect.Zero(dst.Type()))
-        if len(self.parsed_file.Docs) <= self.stream_index:
+        if len(self.parsed_file.docs) <= self.stream_index:
             return io.EOF
-        body := self.parsed_file.Docs[self.stream_index].Body
+        body := self.parsed_file.docs[self.stream_index].Body
         if body is None:
             return nil
         if len(self.comment_maps) > self.stream_index:
