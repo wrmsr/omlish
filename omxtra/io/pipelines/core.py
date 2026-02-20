@@ -999,6 +999,7 @@ class PipelineChannel:
         self._execution_depth += 1
 
     def _step_out(self) -> None:
+        check.state(self._execution_depth > 0)
         self._execution_depth -= 1
 
         self._maybe_execute_deferred()
