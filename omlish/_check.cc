@@ -15,6 +15,7 @@ typedef struct check_state {
     PyObject *typing_any;
     PyTypeObject *nonetype;
     PyTypeObject *BoundUnaryCheckType;
+    PyTypeObject *BoundBinaryCheckType;
 } check_state;
 
 static inline check_state * get_check_state(PyObject *module)
@@ -90,7 +91,9 @@ static PyObject * unpack_isinstance_spec(PyObject *module, PyObject *spec)
         filtered.push_back((PyObject *)state->nonetype);
 
         PyObject *result = PyTuple_New(filtered.size());
-        if (result == nullptr) return nullptr;
+        if (result == nullptr) {
+            return nullptr;
+        }
 
         for (size_t i = 0; i < filtered.size(); i++) {
             Py_INCREF(filtered[i]);
@@ -107,10 +110,10 @@ static PyObject * unpack_isinstance_spec(PyObject *module, PyObject *spec)
 //
 
 typedef enum {
-    MODE_UNKNOWN,
-    MODE_NOT_NONE,
-    MODE_ARG,
-    MODE_STATE
+    UNARY_CHECK_MODE_UNKNOWN,
+    UNARY_CHECK_MODE_NOT_NONE,
+    UNARY_CHECK_MODE_ARG,
+    UNARY_CHECK_MODE_STATE,
 } bound_unary_check_mode;
 
 typedef struct {
@@ -142,14 +145,14 @@ static void BoundUnaryCheck_dealloc(BoundUnaryCheck *self)
 static PyObject * BoundUnaryCheck_execute(BoundUnaryCheck *self, PyObject *v, PyObject *msg)
 {
     switch (self->mode) {
-        case MODE_NOT_NONE:
+        case UNARY_CHECK_MODE_NOT_NONE:
             if (v != Py_None) {
                 return Py_NewRef(v);
             }
             break;
 
-        case MODE_ARG:
-        case MODE_STATE:
+        case UNARY_CHECK_MODE_ARG:
+        case UNARY_CHECK_MODE_STATE:
             // For arg/state, v is expected to be a boolean-ish condition
             if (PyObject_IsTrue(v)) {
                 return Py_NewRef(v);
@@ -220,8 +223,6 @@ static PyType_Spec BoundUnaryCheck_spec = {
     .slots = BoundUnaryCheck_slots,
 };
 
-//
-
 PyDoc_STRVAR(bind_unary_check_doc, "bind_unary_check(fn)\n\nBind a unary check callable with C acceleration.");
 
 static PyObject * bind_unary_check(PyObject *module, PyObject *fn)
@@ -233,21 +234,23 @@ static PyObject * bind_unary_check(PyObject *module, PyObject *fn)
 
     // Determine mode from __name__
     PyObject *name_obj = PyObject_GetAttrString(fn, "__name__");
-    if (name_obj == nullptr) return nullptr;
+    if (name_obj == nullptr) {
+        return nullptr;
+    }
 
-    bound_unary_check_mode mode = MODE_UNKNOWN;
+    bound_unary_check_mode mode = UNARY_CHECK_MODE_UNKNOWN;
     if (PyUnicode_Check(name_obj)) {
         if (PyUnicode_CompareWithASCIIString(name_obj, "not_none") == 0) {
-            mode = MODE_NOT_NONE;
+            mode = UNARY_CHECK_MODE_NOT_NONE;
         } else if (PyUnicode_CompareWithASCIIString(name_obj, "arg") == 0) {
-            mode = MODE_ARG;
+            mode = UNARY_CHECK_MODE_ARG;
         } else if (PyUnicode_CompareWithASCIIString(name_obj, "state") == 0) {
-            mode = MODE_STATE;
+            mode = UNARY_CHECK_MODE_STATE;
         }
     }
 
-    if (mode == MODE_UNKNOWN) {
-        PyErr_Format(PyExc_TypeError, "Unsupported check function: %S", name_obj);
+    if (mode == UNARY_CHECK_MODE_UNKNOWN) {
+        PyErr_Format(PyExc_TypeError, "Unsupported unary check function: %S", name_obj);
         Py_DECREF(name_obj);
         return nullptr;
     }
@@ -261,6 +264,194 @@ static PyObject * bind_unary_check(PyObject *module, PyObject *fn)
 
     self->fn = Py_NewRef(fn);
     self->vectorcall = BoundUnaryCheck_vectorcall;
+    self->mode = mode;
+
+    PyObject_GC_Track(self);
+    return (PyObject *)self;
+}
+
+//
+
+typedef enum {
+    BINARY_CHECK_MODE_UNKNOWN,
+    BINARY_CHECK_MODE_EQUAL,
+    BINARY_CHECK_MODE_NOT_EQUAL,
+    BINARY_CHECK_MODE_IS,
+    BINARY_CHECK_MODE_IS_NOT,
+} bound_binary_check_mode;
+
+typedef struct {
+    PyObject_HEAD
+    PyObject *fn;
+    vectorcallfunc vectorcall;
+    bound_binary_check_mode mode;
+} BoundBinaryCheck;
+
+static int BoundBinaryCheck_traverse(BoundBinaryCheck *self, visitproc visit, void *arg)
+{
+    Py_VISIT(self->fn);
+    return 0;
+}
+
+static int BoundBinaryCheck_clear(BoundBinaryCheck *self)
+{
+    Py_CLEAR(self->fn);
+    return 0;
+}
+
+static void BoundBinaryCheck_dealloc(BoundBinaryCheck *self)
+{
+    PyObject_GC_UnTrack(self);
+    BoundBinaryCheck_clear(self);
+    Py_TYPE(self)->tp_free((PyObject *)self);
+}
+
+static PyObject * BoundBinaryCheck_execute(BoundBinaryCheck *self, PyObject *l, PyObject *r, PyObject *msg)
+{
+    int cmp;
+
+    switch (self->mode) {
+        case BINARY_CHECK_MODE_EQUAL:
+            cmp = PyObject_RichCompareBool(l, r, Py_EQ);
+            if (cmp < 0) {
+                return nullptr;
+            }
+            if (cmp > 0) {
+                return Py_NewRef(l);
+            }
+            break;
+
+        case BINARY_CHECK_MODE_NOT_EQUAL:
+            cmp = PyObject_RichCompareBool(l, r, Py_NE);
+            if (cmp < 0) {
+                return nullptr;
+            }
+            if (cmp > 0) {
+                return Py_NewRef(l);
+            }
+            break;
+
+        case BINARY_CHECK_MODE_IS:
+            if (l == r) {
+                return Py_NewRef(l);
+            }
+            break;
+
+        case BINARY_CHECK_MODE_IS_NOT:
+            if (l != r) {
+                return Py_NewRef(l);
+            }
+            break;
+
+        default:
+            // Fallback to Python for unknown modes
+            break;
+    }
+
+    // Slow path: logic failed or unknown mode, let Python handle exception raising
+    return PyObject_CallFunctionObjArgs(self->fn, l, r, msg, nullptr);
+}
+
+static PyObject * BoundBinaryCheck_call(BoundBinaryCheck *self, PyObject *args, PyObject *kwargs)
+{
+    PyObject *l;
+    PyObject *r;
+    PyObject *msg = Py_None;
+
+    if (kwargs != nullptr && PyDict_GET_SIZE(kwargs) != 0) {
+        PyErr_SetString(PyExc_TypeError, "binary_check() takes no keyword arguments");
+        return nullptr;
+    }
+
+    if (!PyArg_ParseTuple(args, "OO|O:binary_check", &l, &r, &msg)) {
+        return nullptr;
+    }
+
+    return BoundBinaryCheck_execute(self, l, r, msg);
+}
+
+static PyObject * BoundBinaryCheck_vectorcall(PyObject *callable, PyObject *const *args, size_t nargsf, PyObject *kwnames)
+{
+    BoundBinaryCheck *self = (BoundBinaryCheck *)callable;
+    Py_ssize_t nargs = PyVectorcall_NARGS(nargsf);
+
+    if (kwnames != nullptr && PyTuple_GET_SIZE(kwnames) != 0) {
+        PyErr_SetString(PyExc_TypeError, "binary_check() takes no keyword arguments");
+        return nullptr;
+    }
+
+    if (nargs < 2 || nargs > 3) {
+        PyErr_Format(PyExc_TypeError, "binary_check() takes from 2 to 3 positional arguments but %zd were given", nargs);
+        return nullptr;
+    }
+
+    PyObject *l = args[0];
+    PyObject *r = args[1];
+    PyObject *msg = (nargs == 3) ? args[2] : Py_None;
+
+    return BoundBinaryCheck_execute(self, l, r, msg);
+}
+
+static PyType_Slot BoundBinaryCheck_slots[] = {
+    {Py_tp_dealloc, (void *)BoundBinaryCheck_dealloc},
+    {Py_tp_traverse, (void *)BoundBinaryCheck_traverse},
+    {Py_tp_clear, (void *)BoundBinaryCheck_clear},
+    {Py_tp_call, (void *)BoundBinaryCheck_call},
+    {Py_tp_doc, (void *)"Bound binary check callable with C acceleration"},
+    {0, nullptr}
+};
+
+static PyType_Spec BoundBinaryCheck_spec = {
+    .name = _MODULE_FULL_NAME ".BoundBinaryCheck",
+    .basicsize = sizeof(BoundBinaryCheck),
+    .itemsize = 0,
+    .flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC | Py_TPFLAGS_HAVE_VECTORCALL,
+    .slots = BoundBinaryCheck_slots,
+};
+
+PyDoc_STRVAR(bind_binary_check_doc, "bind_binary_check(fn)\n\nBind a binary check callable with C acceleration.");
+
+static PyObject * bind_binary_check(PyObject *module, PyObject *fn)
+{
+    if (!PyCallable_Check(fn)) {
+        PyErr_SetString(PyExc_TypeError, "fn must be callable");
+        return nullptr;
+    }
+
+    // Determine mode from __name__
+    PyObject *name_obj = PyObject_GetAttrString(fn, "__name__");
+    if (name_obj == nullptr) {
+        return nullptr;
+    }
+
+    bound_binary_check_mode mode = BINARY_CHECK_MODE_UNKNOWN;
+    if (PyUnicode_Check(name_obj)) {
+        if (PyUnicode_CompareWithASCIIString(name_obj, "equal") == 0) {
+            mode = BINARY_CHECK_MODE_EQUAL;
+        } else if (PyUnicode_CompareWithASCIIString(name_obj, "not_equal") == 0) {
+            mode = BINARY_CHECK_MODE_NOT_EQUAL;
+        } else if (PyUnicode_CompareWithASCIIString(name_obj, "is_") == 0) {
+            mode = BINARY_CHECK_MODE_IS;
+        } else if (PyUnicode_CompareWithASCIIString(name_obj, "is_not") == 0) {
+            mode = BINARY_CHECK_MODE_IS_NOT;
+        }
+    }
+
+    if (mode == BINARY_CHECK_MODE_UNKNOWN) {
+        PyErr_Format(PyExc_TypeError, "Unsupported binary check function: %S", name_obj);
+        Py_DECREF(name_obj);
+        return nullptr;
+    }
+    Py_DECREF(name_obj);
+
+    check_state *state = get_check_state(module);
+    BoundBinaryCheck *self = PyObject_GC_New(BoundBinaryCheck, state->BoundBinaryCheckType);
+    if (self == nullptr) {
+        return nullptr;
+    }
+
+    self->fn = Py_NewRef(fn);
+    self->vectorcall = BoundBinaryCheck_vectorcall;
     self->mode = mode;
 
     PyObject_GC_Track(self);
@@ -304,6 +495,17 @@ static int check_exec(PyObject *module)
     }
     state->BoundUnaryCheckType->tp_vectorcall_offset = offsetof(BoundUnaryCheck, vectorcall);
 
+    // Create the BoundBinaryCheck type dynamically
+    state->BoundBinaryCheckType = (PyTypeObject *)PyType_FromModuleAndSpec(
+        module,
+        &BoundBinaryCheck_spec,
+        nullptr
+    );
+    if (state->BoundBinaryCheckType == nullptr) {
+        return -1;
+    }
+    state->BoundBinaryCheckType->tp_vectorcall_offset = offsetof(BoundBinaryCheck, vectorcall);
+
     return 0;
 }
 
@@ -313,6 +515,7 @@ static int check_traverse(PyObject *module, visitproc visit, void *arg)
     Py_VISIT(state->typing_any);
     Py_VISIT(state->nonetype);
     Py_VISIT(state->BoundUnaryCheckType);
+    Py_VISIT(state->BoundBinaryCheckType);
     return 0;
 }
 
@@ -322,6 +525,7 @@ static int check_clear(PyObject *module)
     Py_CLEAR(state->typing_any);
     Py_CLEAR(state->nonetype);
     Py_CLEAR(state->BoundUnaryCheckType);
+    Py_CLEAR(state->BoundBinaryCheckType);
     return 0;
 }
 
@@ -333,6 +537,7 @@ static void check_free(void *module)
 static PyMethodDef check_methods[] = {
     {"unpack_isinstance_spec", (PyCFunction)unpack_isinstance_spec, METH_O, unpack_isinstance_spec_doc},
     {"bind_unary_check", (PyCFunction)bind_unary_check, METH_O, bind_unary_check_doc},
+    {"bind_binary_check", (PyCFunction)bind_binary_check, METH_O, bind_binary_check_doc},
     {nullptr, nullptr, 0, nullptr}
 };
 
