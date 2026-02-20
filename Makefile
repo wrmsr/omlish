@@ -366,6 +366,12 @@ test-14t:
 venv-15:
 	${PYPROJECT} venv 15 exe
 
+# 15t
+
+.PHONY: venv-15t
+venv-15t:
+	${PYPROJECT} venv 15t exe
+
 # 8
 
 .PHONY: test-8
