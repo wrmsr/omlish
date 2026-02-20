@@ -32,7 +32,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='errors.py', sha1='c8301263ba2f5cd116a11c2229aafa705b3d94fc'),
             dict(path='../../../omlish/io/streams/types.py', sha1='8a12dc29f6e483dd8df5336c0d9b58a00b64e7ed'),
-            dict(path='core.py', sha1='b3c5631397cc950ecb88c9a8394eac0ccc143e3f'),
+            dict(path='core.py', sha1='c5681a379f9828dd14c777ffbf327f43f479f63f'),
             dict(path='../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -2068,6 +2068,8 @@ class PipelineChannel:
     class Config:
         raise_handler_errors: bool = False
 
+        disable_propagation_checking: bool = False
+
         pipeline: ChannelPipeline.Config = ChannelPipeline.Config()
 
     # Available here for user convenience (so configuration of a PipelineChannel's ChannelPipeline doesn't require
@@ -2102,7 +2104,7 @@ class PipelineChannel:
 
         self._deferred: collections.deque[PipelineChannel._Deferred] = collections.deque()
 
-        self._propagation: PipelineChannel._Propagation = PipelineChannel._Propagation()
+        self._propagation: PipelineChannel._Propagation = PipelineChannel._Propagation(self)
 
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}'
@@ -2337,7 +2339,9 @@ class PipelineChannel:
 
     @ta.final
     class _Propagation:
-        def __init__(self) -> None:
+        def __init__(self, ch: 'PipelineChannel') -> None:
+            self._ch = ch
+
             self._pending_inbound_must: ta.Final[ta.Dict[int, ta.Tuple[ta.Any, ChannelPipelineHandlerContext]]] = {}
             self._pending_outbound_must: ta.Final[ta.Dict[int, ta.Tuple[ta.Any, ChannelPipelineHandlerContext]]] = {}
 
@@ -2355,6 +2359,9 @@ class PipelineChannel:
                 direction: ChannelPipelineDirection,
                 msg: ChannelPipelineMessages.MustPropagate,
         ) -> None:
+            if self._ch._config.disable_propagation_checking:  # noqa
+                return
+
             dct = self._get_must_dict(direction)
 
             i = id(msg)
@@ -2372,6 +2379,9 @@ class PipelineChannel:
                 direction: ChannelPipelineDirection,
                 msg: ChannelPipelineMessages.MustPropagate,
         ) -> None:
+            if self._ch._config.disable_propagation_checking:  # noqa
+                return
+
             dct = self._get_must_dict(direction)
 
             i = id(msg)
@@ -2390,6 +2400,9 @@ class PipelineChannel:
                 )
 
         def check_and_clear(self) -> None:
+            if self._ch._config.disable_propagation_checking:  # noqa
+                return
+
             inbound = [msg for msg, _ in self._pending_inbound_must.values()]
             outbound = [msg for msg, _ in self._pending_outbound_must.values()]
             if inbound or outbound:

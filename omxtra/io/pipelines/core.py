@@ -885,6 +885,8 @@ class PipelineChannel:
     class Config:
         raise_handler_errors: bool = False
 
+        disable_propagation_checking: bool = False
+
         pipeline: ChannelPipeline.Config = ChannelPipeline.Config()
 
     # Available here for user convenience (so configuration of a PipelineChannel's ChannelPipeline doesn't require
@@ -919,7 +921,7 @@ class PipelineChannel:
 
         self._deferred: collections.deque[PipelineChannel._Deferred] = collections.deque()
 
-        self._propagation: PipelineChannel._Propagation = PipelineChannel._Propagation()
+        self._propagation: PipelineChannel._Propagation = PipelineChannel._Propagation(self)
 
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}'
@@ -1154,7 +1156,9 @@ class PipelineChannel:
 
     @ta.final
     class _Propagation:
-        def __init__(self) -> None:
+        def __init__(self, ch: 'PipelineChannel') -> None:
+            self._ch = ch
+
             self._pending_inbound_must: ta.Final[ta.Dict[int, ta.Tuple[ta.Any, ChannelPipelineHandlerContext]]] = {}
             self._pending_outbound_must: ta.Final[ta.Dict[int, ta.Tuple[ta.Any, ChannelPipelineHandlerContext]]] = {}
 
@@ -1172,6 +1176,9 @@ class PipelineChannel:
                 direction: ChannelPipelineDirection,
                 msg: ChannelPipelineMessages.MustPropagate,
         ) -> None:
+            if self._ch._config.disable_propagation_checking:  # noqa
+                return
+
             dct = self._get_must_dict(direction)
 
             i = id(msg)
@@ -1189,6 +1196,9 @@ class PipelineChannel:
                 direction: ChannelPipelineDirection,
                 msg: ChannelPipelineMessages.MustPropagate,
         ) -> None:
+            if self._ch._config.disable_propagation_checking:  # noqa
+                return
+
             dct = self._get_must_dict(direction)
 
             i = id(msg)
@@ -1207,6 +1217,9 @@ class PipelineChannel:
                 )
 
         def check_and_clear(self) -> None:
+            if self._ch._config.disable_propagation_checking:  # noqa
+                return
+
             inbound = [msg for msg, _ in self._pending_inbound_must.values()]
             outbound = [msg for msg, _ in self._pending_outbound_must.values()]
             if inbound or outbound:
