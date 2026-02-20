@@ -53,6 +53,9 @@ else:
             'is_',
             'is_not',
             'isinstance',
+            'not_isinstance',
+            'issubclass',
+            'not_issubclass',
         ]:
             patch_fn(bf, _check.bind_binary_check(getattr(check, bf)))
 

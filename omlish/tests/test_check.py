@@ -26,6 +26,7 @@ def test_cext():
     check.not_equal(420, 421)
 
     check.isinstance(420, int)
+    check.not_isinstance(420, str)
     check.isinstance(420, (int, str))
     with pytest.raises(TypeError) as e:  # noqa
         check.isinstance(420, str)  # noqa
@@ -35,6 +36,11 @@ def test_cext():
     check.isinstance(420, (int, None))  # noqa
     with pytest.raises(TypeError) as e:  # noqa
         check.isinstance(420, (str, None))  # noqa
+
+    check.issubclass(bool, int)
+    check.not_issubclass(bool, str)
+    with pytest.raises(TypeError) as e:  # noqa
+        check.issubclass(bool, str)
 
 
 class A:

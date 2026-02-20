@@ -291,6 +291,9 @@ typedef enum {
     BINARY_CHECK_MODE_IS,
     BINARY_CHECK_MODE_IS_NOT,
     BINARY_CHECK_MODE_ISINSTANCE,
+    BINARY_CHECK_MODE_NOT_ISINSTANCE,
+    BINARY_CHECK_MODE_ISSUBCLASS,
+    BINARY_CHECK_MODE_NOT_ISSUBCLASS,
 } bound_binary_check_mode;
 
 typedef struct {
@@ -358,7 +361,8 @@ static PyObject * BoundBinaryCheck_execute(BoundBinaryCheck *self, PyObject *l, 
             }
             break;
 
-        case BINARY_CHECK_MODE_ISINSTANCE: {
+        case BINARY_CHECK_MODE_ISINSTANCE:
+        case BINARY_CHECK_MODE_NOT_ISINSTANCE: {
             // 1. Unpack the spec (r) using our accelerated logic
             // Note: This returns a new reference
             PyObject *unpacked = unpack_isinstance_spec(self->module, r);
@@ -371,12 +375,35 @@ static PyObject * BoundBinaryCheck_execute(BoundBinaryCheck *self, PyObject *l, 
             int is_inst = PyObject_IsInstance(l, unpacked);
             Py_DECREF(unpacked); // Clean up the reference from unpack_isinstance_spec
 
-            if (is_inst > 0) {
-                return Py_NewRef(l);
-            } else if (is_inst < 0) {
+            if (is_inst < 0) {
                 return nullptr; // Exception in isinstance (e.g. invalid type in tuple)
             }
+
+            if (
+                (self->mode == BINARY_CHECK_MODE_ISINSTANCE  && is_inst > 0) ||
+                (self->mode == BINARY_CHECK_MODE_NOT_ISINSTANCE  && is_inst == 0)
+            ) {
+                return Py_NewRef(l);
+            }
+
             // is_inst == 0, fall through to Python fallback for error formatting
+            break;
+        }
+
+        case BINARY_CHECK_MODE_ISSUBCLASS:
+        case BINARY_CHECK_MODE_NOT_ISSUBCLASS: {
+            int is_sub = PyObject_IsSubclass(l, r);
+            if (is_sub < 0) {
+                return nullptr;
+            }
+
+            if (
+                (self->mode == BINARY_CHECK_MODE_ISSUBCLASS && is_sub > 0) ||
+                (self->mode == BINARY_CHECK_MODE_NOT_ISSUBCLASS && is_sub == 0)
+            ) {
+                return Py_NewRef(l);
+            }
+
             break;
         }
 
@@ -473,6 +500,12 @@ static PyObject * bind_binary_check(PyObject *module, PyObject *fn)
             mode = BINARY_CHECK_MODE_IS_NOT;
         } else if (PyUnicode_CompareWithASCIIString(name_obj, "isinstance") == 0) {
             mode = BINARY_CHECK_MODE_ISINSTANCE;
+        } else if (PyUnicode_CompareWithASCIIString(name_obj, "not_isinstance") == 0) {
+            mode = BINARY_CHECK_MODE_NOT_ISINSTANCE;
+        } else if (PyUnicode_CompareWithASCIIString(name_obj, "issubclass") == 0) {
+            mode = BINARY_CHECK_MODE_ISSUBCLASS;
+        } else if (PyUnicode_CompareWithASCIIString(name_obj, "not_issubclass") == 0) {
+            mode = BINARY_CHECK_MODE_NOT_ISSUBCLASS;
         }
     }
 
