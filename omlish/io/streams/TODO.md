@@ -1,2 +1,15 @@
+- !! clean up util.ByteStreamBuffers !!
+  - orthogonality - m_to_n
+    - bytes
+    - bytearray
+    - memoryview
+    - ByteStreamBufferLike
+    - ByteStreamBufferView
+    - ByteStreamBuffer
+  - 'any'?
+  - 'can_bytes'?
+- hand optimize lol
+  - segmented find/rfind are still insane
+  - segmented split_to should mutate list in place
 - `import bisect` find/rfind initial segment index, `key=len`
 - cext lol
