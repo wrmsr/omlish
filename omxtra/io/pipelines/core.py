@@ -47,7 +47,7 @@ class ChannelPipelineMessages(NamespaceClass):
 
     @ta.final
     @dc.dataclass(frozen=True)
-    class FinalInput(NeverOutbound, MustPropagate):
+    class FinalInput(NeverOutbound, MustPropagate):  # ~ Netty `ChannelInboundHandler::channelInactive`
         """Signals that the inbound stream has produced its final message (`eof`)."""
 
         def __repr__(self) -> str:
@@ -55,8 +55,8 @@ class ChannelPipelineMessages(NamespaceClass):
 
     @ta.final
     @dc.dataclass(frozen=True)
-    class FinalOutput(NeverInbound, MustPropagate):
-        """Signals that the outbound stream has produced its final message (`close`)."""
+    class FinalOutput(NeverInbound, MustPropagate):  # ~ Netty `ChannelOutboundHandler::close`
+        """Signals that the outbound stream has produced its final message."""
 
         def __repr__(self) -> str:
             return f'{type(self).__name__}@{id(self):x}()'
@@ -79,8 +79,11 @@ class ChannelPipelineEvents(NamespaceClass):
 ##
 
 
-class ChannelPipelineHandlerNotification(Abstract):
-    pass
+class ChannelPipelineHandlerNotification(Abstract):  # ~ Netty `ChannelHandler` methods
+    """
+    Directionless, private events sent to a specific handler that are not to be forwarded to any other handler in either
+    direction.
+    """
 
 
 class ChannelPipelineHandlerNotifications(NamespaceClass):
@@ -352,7 +355,7 @@ class ChannelPipelineHandlerContext:
     def feed_in(self, msg: object) -> None:
         ...
 
-    def feed_in(self, msg):  # ~ Netty `ChannelInboundInvoker.fireChannelRead`
+    def feed_in(self, msg):  # ~ Netty `ChannelInboundInvoker::fireChannelRead`
         nxt = self._next_in
         while not nxt._handles_inbound:  # noqa
             nxt = nxt._next_in  # noqa
@@ -373,7 +376,7 @@ class ChannelPipelineHandlerContext:
     def feed_out(self, msg: object) -> None:
         ...
 
-    def feed_out(self, msg):  # ~ Netty `ChannelOutboundHandler.write`
+    def feed_out(self, msg):  # ~ Netty `ChannelOutboundInvoker::write`
         nxt = self._next_out  # noqa
         while not nxt._handles_outbound:  # noqa
             nxt = nxt._next_out  # noqa

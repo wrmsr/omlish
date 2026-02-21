@@ -32,7 +32,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='errors.py', sha1='6f9afc9cefa06807e76bebb23adc7a84dfec253f'),
             dict(path='../../../omlish/io/streams/types.py', sha1='8a12dc29f6e483dd8df5336c0d9b58a00b64e7ed'),
-            dict(path='core.py', sha1='887e7d47675850bf2e76a840909960633d1bb7c1'),
+            dict(path='core.py', sha1='e7e2ca7eddf5a4638ec9b0847358ac44d14426ae'),
             dict(path='../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -1230,7 +1230,7 @@ class ChannelPipelineMessages(NamespaceClass):
 
     @ta.final
     @dc.dataclass(frozen=True)
-    class FinalInput(NeverOutbound, MustPropagate):
+    class FinalInput(NeverOutbound, MustPropagate):  # ~ Netty `ChannelInboundHandler::channelInactive`
         """Signals that the inbound stream has produced its final message (`eof`)."""
 
         def __repr__(self) -> str:
@@ -1238,8 +1238,8 @@ class ChannelPipelineMessages(NamespaceClass):
 
     @ta.final
     @dc.dataclass(frozen=True)
-    class FinalOutput(NeverInbound, MustPropagate):
-        """Signals that the outbound stream has produced its final message (`close`)."""
+    class FinalOutput(NeverInbound, MustPropagate):  # ~ Netty `ChannelOutboundHandler::close`
+        """Signals that the outbound stream has produced its final message."""
 
         def __repr__(self) -> str:
             return f'{type(self).__name__}@{id(self):x}()'
@@ -1262,8 +1262,11 @@ class ChannelPipelineEvents(NamespaceClass):
 ##
 
 
-class ChannelPipelineHandlerNotification(Abstract):
-    pass
+class ChannelPipelineHandlerNotification(Abstract):  # ~ Netty `ChannelHandler` methods
+    """
+    Directionless, private events sent to a specific handler that are not to be forwarded to any other handler in either
+    direction.
+    """
 
 
 class ChannelPipelineHandlerNotifications(NamespaceClass):
@@ -1535,7 +1538,7 @@ class ChannelPipelineHandlerContext:
     def feed_in(self, msg: object) -> None:
         ...
 
-    def feed_in(self, msg):  # ~ Netty `ChannelInboundInvoker.fireChannelRead`
+    def feed_in(self, msg):  # ~ Netty `ChannelInboundInvoker::fireChannelRead`
         nxt = self._next_in
         while not nxt._handles_inbound:  # noqa
             nxt = nxt._next_in  # noqa
@@ -1556,7 +1559,7 @@ class ChannelPipelineHandlerContext:
     def feed_out(self, msg: object) -> None:
         ...
 
-    def feed_out(self, msg):  # ~ Netty `ChannelOutboundHandler.write`
+    def feed_out(self, msg):  # ~ Netty `ChannelOutboundInvoker::write`
         nxt = self._next_out  # noqa
         while not nxt._handles_outbound:  # noqa
             nxt = nxt._next_out  # noqa

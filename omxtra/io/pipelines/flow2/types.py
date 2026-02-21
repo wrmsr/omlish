@@ -16,29 +16,29 @@ from ..core import ChannelPipelineService
 class ChannelPipelineFlowMessages(NamespaceClass):
     @ta.final
     @dc.dataclass(frozen=True)
-    class FlushInput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelInboundInvoker.fireChannelReadComplete`  # noqa
+    class FlushInput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelInboundInvoker::fireChannelReadComplete`  # noqa
         pass
 
     @ta.final
     @dc.dataclass(frozen=True)
-    class ReadyForOutput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelOutboundInvoker.fireChannelWritabilityChanged`  # noqa
+    class ReadyForOutput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelOutboundInvoker::fireChannelWritabilityChanged`  # noqa
         pass
 
     @ta.final
     @dc.dataclass(frozen=True)
-    class PauseOutput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelOutboundInvoker.fireChannelWritabilityChanged`  # noqa
+    class PauseOutput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelOutboundInvoker::fireChannelWritabilityChanged`  # noqa
         pass
 
     #
 
     @ta.final
     @dc.dataclass(frozen=True)
-    class FlushOutput(ChannelPipelineMessages.NeverInbound):  # ~ Netty 'ChannelOutboundInvoker.flush'
+    class FlushOutput(ChannelPipelineMessages.NeverInbound):  # ~ Netty 'ChannelOutboundInvoker::flush'
         pass
 
     @ta.final
     @dc.dataclass(frozen=True)
-    class ReadyForInput(ChannelPipelineMessages.NeverInbound):  # ~ Netty `ChannelOutboundInvoker.read`
+    class ReadyForInput(ChannelPipelineMessages.NeverInbound):  # ~ Netty `ChannelOutboundInvoker::read`
         pass
 
 
