@@ -710,6 +710,9 @@ class ChannelPipeline:
             ctx._pipeline._terminal('inbound', ctx, msg)  # noqa
 
     def _terminal(self, direction: ChannelPipelineDirection, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if self._channel._handle_terminal(direction, ctx, msg):  # noqa
+            return
+
         if (tm := self._config.terminal_mode) == 'drop':
             pass
 
@@ -1098,35 +1101,45 @@ class PipelineChannel:
 
     #
 
-    def _feed_out_to(self, ctx: ChannelPipelineHandlerContext, msgs: ta.Iterable[ta.Any]) -> None:
-        self._step_in()
-        try:
-            for msg in msgs:
-                if isinstance(msg, ChannelPipelineMessages.FinalOutput):
-                    self._saw_final_output = True
-                elif self._saw_final_output:
-                    raise FinalOutputdChannelPipelineError  # noqa
+    def _handle_terminal(self, direction: ChannelPipelineDirection, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:  # noqa
+        if direction == 'outbound':
+            if isinstance(msg, ChannelPipelineMessages.FinalOutput):
+                self._saw_final_output = True
+            elif self._saw_final_output:
+                raise FinalOutputdChannelPipelineError  # noqa
 
-                ctx._outbound(msg)  # noqa
+        # FIXME: lol
+        return False
 
-        except BaseException as e:  # noqa
-            if self._config.raise_handler_errors:
-                raise
-            self._handle_error(e)
+    # def _feed_out_to(self, ctx: ChannelPipelineHandlerContext, msgs: ta.Iterable[ta.Any]) -> None:
+    #     self._step_in()
+    #     try:
+    #         for msg in msgs:
+    #             if isinstance(msg, ChannelPipelineMessages.FinalOutput):
+    #                 self._saw_final_output = True
+    #             elif self._saw_final_output:
+    #                 raise FinalOutputdChannelPipelineError  # noqa
+    #
+    #             ctx._outbound(msg)  # noqa
+    #
+    #     except BaseException as e:  # noqa
+    #         if self._config.raise_handler_errors:
+    #             raise
+    #         self._handle_error(e)
+    #
+    #     finally:
+    #         self._step_out()
 
-        finally:
-            self._step_out()
+    # def feed_out_to(self, handler_ref: ChannelPipelineHandlerRef, *msgs: ta.Any) -> None:
+    #     ctx = handler_ref._context  # noqa
+    #     check.is_(ctx._pipeline, self._pipeline)  # noqa
+    #     self._feed_out_to(ctx, msgs)
 
-    def feed_out_to(self, handler_ref: ChannelPipelineHandlerRef, *msgs: ta.Any) -> None:
-        ctx = handler_ref._context  # noqa
-        check.is_(ctx._pipeline, self._pipeline)  # noqa
-        self._feed_out_to(ctx, msgs)
+    # def feed_out(self, *msgs: ta.Any) -> None:
+    #     self._feed_out_to(self._pipeline._innermost, msgs)  # noqa
 
-    def feed_out(self, *msgs: ta.Any) -> None:
-        self._feed_out_to(self._pipeline._innermost, msgs)  # noqa
-
-    def feed_final_output(self) -> None:
-        self._feed_out_to(self._pipeline._innermost, (ChannelPipelineMessages.FinalOutput(),))  # noqa
+    # def feed_final_output(self) -> None:
+    #     self._feed_out_to(self._pipeline._innermost, (ChannelPipelineMessages.FinalOutput(),))  # noqa
 
     #
 

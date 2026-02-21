@@ -32,7 +32,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='errors.py', sha1='6f9afc9cefa06807e76bebb23adc7a84dfec253f'),
             dict(path='../../../omlish/io/streams/types.py', sha1='8a12dc29f6e483dd8df5336c0d9b58a00b64e7ed'),
-            dict(path='core.py', sha1='e7e2ca7eddf5a4638ec9b0847358ac44d14426ae'),
+            dict(path='core.py', sha1='a2c5b767a16aaab15b5c148a1bad908f5e8a4b8c'),
             dict(path='../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -1893,6 +1893,9 @@ class ChannelPipeline:
             ctx._pipeline._terminal('inbound', ctx, msg)  # noqa
 
     def _terminal(self, direction: ChannelPipelineDirection, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if self._channel._handle_terminal(direction, ctx, msg):  # noqa
+            return
+
         if (tm := self._config.terminal_mode) == 'drop':
             pass
 
@@ -2281,35 +2284,44 @@ class PipelineChannel:
 
     #
 
-    def _feed_out_to(self, ctx: ChannelPipelineHandlerContext, msgs: ta.Iterable[ta.Any]) -> None:
-        self._step_in()
-        try:
-            for msg in msgs:
-                if isinstance(msg, ChannelPipelineMessages.FinalOutput):
-                    self._saw_final_output = True
-                elif self._saw_final_output:
-                    raise FinalOutputdChannelPipelineError  # noqa
+    def _handle_terminal(self, direction: ChannelPipelineDirection, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:  # noqa
+        if isinstance(msg, ChannelPipelineMessages.FinalOutput):
+            self._saw_final_output = True
+        elif self._saw_final_output:
+            raise FinalOutputdChannelPipelineError  # noqa
 
-                ctx._outbound(msg)  # noqa
+        # FIXME: lol
+        return False
 
-        except BaseException as e:  # noqa
-            if self._config.raise_handler_errors:
-                raise
-            self._handle_error(e)
+    # def _feed_out_to(self, ctx: ChannelPipelineHandlerContext, msgs: ta.Iterable[ta.Any]) -> None:
+    #     self._step_in()
+    #     try:
+    #         for msg in msgs:
+    #             if isinstance(msg, ChannelPipelineMessages.FinalOutput):
+    #                 self._saw_final_output = True
+    #             elif self._saw_final_output:
+    #                 raise FinalOutputdChannelPipelineError  # noqa
+    #
+    #             ctx._outbound(msg)  # noqa
+    #
+    #     except BaseException as e:  # noqa
+    #         if self._config.raise_handler_errors:
+    #             raise
+    #         self._handle_error(e)
+    #
+    #     finally:
+    #         self._step_out()
 
-        finally:
-            self._step_out()
+    # def feed_out_to(self, handler_ref: ChannelPipelineHandlerRef, *msgs: ta.Any) -> None:
+    #     ctx = handler_ref._context  # noqa
+    #     check.is_(ctx._pipeline, self._pipeline)  # noqa
+    #     self._feed_out_to(ctx, msgs)
 
-    def feed_out_to(self, handler_ref: ChannelPipelineHandlerRef, *msgs: ta.Any) -> None:
-        ctx = handler_ref._context  # noqa
-        check.is_(ctx._pipeline, self._pipeline)  # noqa
-        self._feed_out_to(ctx, msgs)
+    # def feed_out(self, *msgs: ta.Any) -> None:
+    #     self._feed_out_to(self._pipeline._innermost, msgs)  # noqa
 
-    def feed_out(self, *msgs: ta.Any) -> None:
-        self._feed_out_to(self._pipeline._innermost, msgs)  # noqa
-
-    def feed_final_output(self) -> None:
-        self._feed_out_to(self._pipeline._innermost, (ChannelPipelineMessages.FinalOutput(),))  # noqa
+    # def feed_final_output(self) -> None:
+    #     self._feed_out_to(self._pipeline._innermost, (ChannelPipelineMessages.FinalOutput(),))  # noqa
 
     #
 
