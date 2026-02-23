@@ -68,7 +68,11 @@ class MessageReachedTerminalChannelPipelineError(MessageChannelPipelineError, Un
 # misc (TODO: move/cleanup)
 
 
-class IncompleteDecodingChannelPipelineError(ChannelPipelineError):
+class DecodingChannelPipelineError(ChannelPipelineError):
+    pass
+
+
+class IncompleteDecodingChannelPipelineError(DecodingChannelPipelineError):
     pass
 
 

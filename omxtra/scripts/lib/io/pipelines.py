@@ -30,7 +30,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../../omlish/lite/check.py', sha1='df0ed561b5782545e34e61dd3424f69f836a87c0'),
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
-            dict(path='errors.py', sha1='863eec379306c45bcb797ffbd31401095ca93a4e'),
+            dict(path='errors.py', sha1='a6e20daf54f563f7d2aa4f28fce87fa06417facb'),
             dict(path='../../../omlish/io/streams/types.py', sha1='8a12dc29f6e483dd8df5336c0d9b58a00b64e7ed'),
             dict(path='core.py', sha1='40c7ca332ce56b984c647ead75a0602b0fe36a9d'),
             dict(path='../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
@@ -939,7 +939,11 @@ class MessageReachedTerminalChannelPipelineError(MessageChannelPipelineError, Un
 # misc (TODO: move/cleanup)
 
 
-class IncompleteDecodingChannelPipelineError(ChannelPipelineError):
+class DecodingChannelPipelineError(ChannelPipelineError):
+    pass
+
+
+class IncompleteDecodingChannelPipelineError(DecodingChannelPipelineError):
     pass
 
 

@@ -9,7 +9,7 @@ from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
 from ..core import ChannelPipelineHandlerFn
 from ..core import ShareableChannelPipelineHandler
-from .errors import DecoderError
+from ..errors import DecodingChannelPipelineError
 from .types import ChannelPipelineFlow
 from .types import ChannelPipelineFlowMessages
 
@@ -26,43 +26,46 @@ class MessageToMessageDecoder(ChannelPipelineHandler, Abstract):
     def _decode(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
         raise NotImplementedError
 
-    _decode_called = False
-    _message_produced = False
+    _called_decode = False
+    _produced_messages = False
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
             if not isinstance(self, ShareableChannelPipelineHandler):
                 if (
-                        self._decode_called and
-                        not self._message_produced and
+                        self._called_decode and
+                        not self._produced_messages and
                         not ctx.channel.services[ChannelPipelineFlow].is_auto_read
                 ):
                     ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
 
-                self._decode_called = False
-                self._message_produced = False
+                self._called_decode = False
+                self._produced_messages = False
 
             ctx.feed_in(msg)
             return
 
-        self._decode_called = True
+        if not self._should_decode(ctx, msg):
+            ctx.feed_in(msg)
+            return
 
-        out: ta.List[ta.Any] = []
+        self._called_decode = True
+
         try:
-            if self._should_decode(ctx, msg):
-                out.extend(self._decode(ctx, msg))
-            else:
-                out.append(msg)
+            out = list(self._decode(ctx, msg))
 
-        except DecoderError:
+        except DecodingChannelPipelineError:
             raise
         except Exception as e:
-            raise DecoderError from e
+            raise DecodingChannelPipelineError from e
 
-        finally:
-            self._message_produced |= bool(out)
-            for out_msg in out:
-                ctx.feed_in(out_msg)
+        if not out:
+            return
+
+        self._produced_messages = True
+
+        for out_msg in out:
+            ctx.feed_in(out_msg)
 
 
 ##
