@@ -13,7 +13,10 @@ from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 
+from ..core import ChannelPipelineHandlerContext
 from ..core import ChannelPipelineMessages
+from ..flow.types import ChannelPipelineFlow
+from ..flow.types import ChannelPipelineFlowMessages
 
 
 ##
@@ -52,7 +55,7 @@ class PipelineHttpHeadDecoder:
             chunk_size=buffer_chunk_size,
         ))
 
-        self._done = False
+    _done = False
 
     @property
     def done(self) -> bool:
@@ -63,7 +66,7 @@ class PipelineHttpHeadDecoder:
             return 0
         return len(self._buf)
 
-    def inbound(self, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
+    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
         check.state(not self._done)
 
         if isinstance(msg, ChannelPipelineMessages.FinalInput):
@@ -72,6 +75,13 @@ class PipelineHttpHeadDecoder:
 
             del self._buf
             self._done = True
+
+            yield msg
+            return
+
+        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
+            if ctx.channel.services[ChannelPipelineFlow].is_auto_read:
+                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
 
             yield msg
             return
@@ -135,7 +145,7 @@ class PipelineHttpContentChunkDecoder(Abstract):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def inbound(self, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
+    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
         raise NotImplementedError
 
 
@@ -149,13 +159,20 @@ class UntilFinalInputPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDec
     def inbound_buffered_bytes(self) -> int:
         return 0
 
-    def inbound(self, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
+    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
         check.state(not self._done)
 
         if isinstance(msg, ChannelPipelineMessages.FinalInput):
             yield self._make_end()
 
             self._done = True
+
+            yield msg
+            return
+
+        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
+            if ctx.channel.services[ChannelPipelineFlow].is_auto_read:
+                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
 
             yield msg
             return
@@ -193,13 +210,20 @@ class ContentLengthPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecod
     def inbound_buffered_bytes(self) -> int:
         return 0
 
-    def inbound(self, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
+    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
         check.state(self._remain > 0)
 
         if isinstance(msg, ChannelPipelineMessages.FinalInput):
             yield self._make_aborted('EOF before HTTP body complete')
 
             self._remain = 0
+
+            yield msg
+            return
+
+        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
+            if ctx.channel.services[ChannelPipelineFlow].is_auto_read:
+                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
 
             yield msg
             return
@@ -277,7 +301,7 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
             return 0
         return len(self._buf)
 
-    def inbound(self, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
+    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
         check.state(self._state != 'done')
 
         if isinstance(msg, ChannelPipelineMessages.FinalInput):
@@ -285,6 +309,13 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
 
             del self._buf
             self._state = 'done'
+
+            yield msg
+            return
+
+        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
+            if ctx.channel.services[ChannelPipelineFlow].is_auto_read:
+                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
 
             yield msg
             return

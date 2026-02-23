@@ -188,21 +188,21 @@ class FlatMapChannelPipelineHandler(ChannelPipelineHandler, Abstract):
 #
 
 
-class InboundFlatMapPipelineHandler(FlatMapChannelPipelineHandler):
+class InboundFlatMapChannelPipelineHandler(FlatMapChannelPipelineHandler):
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         for x in self._fn(ctx, msg):
             ctx.feed_in(x)
 
 
-class OutboundFlatMapPipelineHandler(FlatMapChannelPipelineHandler):
+class OutboundFlatMapChannelPipelineHandler(FlatMapChannelPipelineHandler):
     def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         for x in self._fn(ctx, msg):
             ctx.feed_out(x)
 
 
-class DuplexFlatMapPipelineHandler(
-    InboundFlatMapPipelineHandler,
-    OutboundFlatMapPipelineHandler,
+class DuplexFlatMapChannelPipelineHandler(
+    InboundFlatMapChannelPipelineHandler,
+    OutboundFlatMapChannelPipelineHandler,
 ):
     pass
 
@@ -212,9 +212,9 @@ class DuplexFlatMapPipelineHandler(
 
 class FlatMapChannelPipelineHandlers(NamespaceClass):
     _CLS_BY_DIRECTION: ta.ClassVar[ta.Mapping[ChannelPipelineDirectionOrDuplex, ta.Type[FlatMapChannelPipelineHandler]]] = {  # noqa
-        'inbound': InboundFlatMapPipelineHandler,
-        'outbound': OutboundFlatMapPipelineHandler,
-        'duplex': DuplexFlatMapPipelineHandler,
+        'inbound': InboundFlatMapChannelPipelineHandler,
+        'outbound': OutboundFlatMapChannelPipelineHandler,
+        'duplex': DuplexFlatMapChannelPipelineHandler,
     }
 
     @classmethod

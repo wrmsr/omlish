@@ -66,7 +66,7 @@ class PipelineHttpRequestHeadDecoder(InboundBytesBufferingChannelPipelineHandler
             ctx.feed_in(msg)
             return
 
-        for dec_msg in self._decoder.inbound(msg):
+        for dec_msg in self._decoder.inbound(ctx, msg):
             ctx.feed_in(dec_msg)
 
 
@@ -258,7 +258,7 @@ class PipelineHttpRequestBodyStreamDecoder(InboundBytesBufferingChannelPipelineH
                 ctx.feed_in(msg)
                 return
 
-            for dec_msg in self._decoder.inbound(msg):
+            for dec_msg in self._decoder.inbound(ctx, msg):
                 ctx.feed_in(dec_msg)
 
             return

@@ -8,12 +8,12 @@ from omlish.lite.check import check
 
 from ...core import ChannelPipelineHandlerContext
 from ...core import PipelineChannel
+from ...flow.types import ChannelPipelineFlow
+from ...flow.types import ChannelPipelineFlowMessages
 from ...handlers.fns import ChannelPipelineHandlerFns
 from ...handlers.queues import InboundQueueChannelPipelineHandler
-from ..m2md import FnMessageToMessageDecoder
-from ..m2md import MessageToMessageDecoder
-from ..types import ChannelPipelineFlow
-from ..types import ChannelPipelineFlowMessages
+from ..decoders import FnMessageToMessageDecoderChannelPipelineHandler
+from ..decoders import MessageToMessageDecoderChannelPipelineHandler
 
 
 ##
@@ -34,7 +34,7 @@ class BazMsg:
     o: ta.Any
 
 
-SIMPLE_FOO_TO_BAR_DECODER = FnMessageToMessageDecoder(
+SIMPLE_FOO_TO_BAR_DECODER = FnMessageToMessageDecoderChannelPipelineHandler(
     ChannelPipelineHandlerFns.isinstance(FooMsg),
     lambda _, msg: (BarMsg(str(msg.i)),),
 )
@@ -43,7 +43,7 @@ SIMPLE_FOO_TO_BAR_DECODER = FnMessageToMessageDecoder(
 ##
 
 
-class DuplicatingFooToBarDecoder(MessageToMessageDecoder):
+class DuplicatingFooToBarDecoder(MessageToMessageDecoderChannelPipelineHandler):
     def __init__(self, n: int = 2) -> None:
         super().__init__()
 
@@ -56,7 +56,7 @@ class DuplicatingFooToBarDecoder(MessageToMessageDecoder):
         return [BarMsg(str(msg.i))] * self._n
 
 
-class AccumulatingFooToBarDecoder(MessageToMessageDecoder):
+class AccumulatingFooToBarDecoder(MessageToMessageDecoderChannelPipelineHandler):
     def __init__(self, n: int = 2) -> None:
         super().__init__()
 

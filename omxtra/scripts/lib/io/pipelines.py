@@ -37,15 +37,16 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
             dict(path='bytes/buffering.py', sha1='aa8375c8ef0689db865bb4009afd3ed8dcc2bd12'),
-            dict(path='handlers/flatmap.py', sha1='58fddc0a3c53406f1424af3af5f91eb053730804'),
+            dict(path='flow/types.py', sha1='920eb732c16ac52973ee43cd818aa098d2da1907'),
+            dict(path='handlers/flatmap.py', sha1='0683826c17c2f87384addca591761593a6fff515'),
             dict(path='handlers/fns.py', sha1='75e982604574d6ffaacf9ac1f37ab6e9edbd608d'),
             dict(path='handlers/queues.py', sha1='53be6d12d02baa192d25fe4af3a0712ce6e62d6f'),
             dict(path='../../../omlish/io/streams/direct.py', sha1='83c33460e9490a77a00ae66251617ba98128b56b'),
             dict(path='../../../omlish/io/streams/scanning.py', sha1='4c0323e0b11cd506f7b6b4cf28ea4d7c6064b9d3'),
             dict(path='bytes/queues.py', sha1='38b11596cd0fa2367825252413923f1292c14f4e'),
             dict(path='../../../omlish/io/streams/segmented.py', sha1='f855d67d88ed71bbe2bbeee09321534f0ef18e24'),
-            dict(path='bytes/decoders.py', sha1='1a60586dd3345fe41cd629a6c1f238bbbc55fe07'),
-            dict(path='_amalg.py', sha1='b6e21edc44b3b69db9a03f041e7057d6c2944623'),
+            dict(path='bytes/decoders.py', sha1='75838188cc007ec0622079998740e54c7b454ea0'),
+            dict(path='_amalg.py', sha1='f57d710297d549e3b788af08eeb44cf5ac1bab07'),
         ],
     )
 
@@ -2970,6 +2971,52 @@ class InboundBytesBufferingChannelPipelineHandler(ChannelPipelineHandler, Abstra
 
 
 ########################################
+# ../flow/types.py
+
+
+##
+
+
+class ChannelPipelineFlowMessages(NamespaceClass):
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class FlushInput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelInboundInvoker::fireChannelReadComplete`  # noqa
+        pass
+
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class ReadyForOutput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelOutboundInvoker::fireChannelWritabilityChanged`  # noqa
+        pass
+
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class PauseOutput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelOutboundInvoker::fireChannelWritabilityChanged`  # noqa
+        pass
+
+    #
+
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class FlushOutput(ChannelPipelineMessages.NeverInbound):  # ~ Netty 'ChannelOutboundInvoker::flush'
+        pass
+
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class ReadyForInput(ChannelPipelineMessages.NeverInbound):  # ~ Netty `ChannelOutboundInvoker::read`
+        pass
+
+
+##
+
+
+class ChannelPipelineFlow(ChannelPipelineService, Abstract):
+    @property
+    @abc.abstractmethod
+    def is_auto_read(self) -> bool:
+        raise NotImplementedError
+
+
+########################################
 # ../handlers/flatmap.py
 
 
@@ -3147,21 +3194,21 @@ class FlatMapChannelPipelineHandler(ChannelPipelineHandler, Abstract):
 #
 
 
-class InboundFlatMapPipelineHandler(FlatMapChannelPipelineHandler):
+class InboundFlatMapChannelPipelineHandler(FlatMapChannelPipelineHandler):
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         for x in self._fn(ctx, msg):
             ctx.feed_in(x)
 
 
-class OutboundFlatMapPipelineHandler(FlatMapChannelPipelineHandler):
+class OutboundFlatMapChannelPipelineHandler(FlatMapChannelPipelineHandler):
     def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         for x in self._fn(ctx, msg):
             ctx.feed_out(x)
 
 
-class DuplexFlatMapPipelineHandler(
-    InboundFlatMapPipelineHandler,
-    OutboundFlatMapPipelineHandler,
+class DuplexFlatMapChannelPipelineHandler(
+    InboundFlatMapChannelPipelineHandler,
+    OutboundFlatMapChannelPipelineHandler,
 ):
     pass
 
@@ -3171,9 +3218,9 @@ class DuplexFlatMapPipelineHandler(
 
 class FlatMapChannelPipelineHandlers(NamespaceClass):
     _CLS_BY_DIRECTION: ta.ClassVar[ta.Mapping[ChannelPipelineDirectionOrDuplex, ta.Type[FlatMapChannelPipelineHandler]]] = {  # noqa
-        'inbound': InboundFlatMapPipelineHandler,
-        'outbound': OutboundFlatMapPipelineHandler,
-        'duplex': DuplexFlatMapPipelineHandler,
+        'inbound': InboundFlatMapChannelPipelineHandler,
+        'outbound': OutboundFlatMapChannelPipelineHandler,
+        'duplex': DuplexFlatMapChannelPipelineHandler,
     }
 
     @classmethod
@@ -4512,7 +4559,7 @@ def byte_stream_buffer_view_from_segments(mvs: ta.Sequence[memoryview]) -> ByteS
 ##
 
 
-class UnicodePipelineDecoder(ChannelPipelineHandler):
+class UnicodeDecoderChannelPipelineHandler(ChannelPipelineHandler):
     """bytes/view -> str (UTF-8, replacement)."""
 
     def __init__(
@@ -4535,7 +4582,10 @@ class UnicodePipelineDecoder(ChannelPipelineHandler):
         ctx.feed_in(msg)
 
 
-class DelimiterFramePipelineDecoder(InboundBytesBufferingChannelPipelineHandler):  # HasChannelPipelineFlowBuffer
+##
+
+
+class DelimiterFrameDecoderChannelPipelineHandler(InboundBytesBufferingChannelPipelineHandler):
     """bytes-like -> frames using longest-match delimiter semantics."""
 
     def __init__(
@@ -4595,6 +4645,165 @@ class DelimiterFramePipelineDecoder(InboundBytesBufferingChannelPipelineHandler)
 
         for fr in frames:
             ctx.feed_in(fr)
+
+
+##
+
+
+class BytesToMessageDecoderChannelPipelineHandler(InboundBytesBufferingChannelPipelineHandler, Abstract):
+    def __init__(
+            self,
+            *,
+            scanning: bool = False,
+    ) -> None:
+        super().__init__()
+
+        self._scanning = scanning
+
+    def inbound_buffered_bytes(self) -> int:
+        if (buf := self._buf) is None:
+            return 0
+        return len(buf)
+
+    @abc.abstractmethod
+    def _decode(
+            self,
+            ctx: ChannelPipelineHandlerContext,
+            buf: ByteStreamBuffer,
+            *,
+            final: bool = False,
+    ) -> ta.Iterable[ta.Any]:
+        raise NotImplementedError
+
+    #
+
+    _buf: ta.Optional[MutableByteStreamBuffer] = None
+
+    def _new_buf(self) -> MutableByteStreamBuffer:
+        buf: MutableByteStreamBuffer = SegmentedByteStreamBuffer(chunk_size=0x4000)
+
+        if self._scanning:
+            buf = ScanningByteStreamBuffer(buf)
+
+        return buf
+
+    #
+
+    _called_decode: bool = False  # ~ `selfFiredChannelRead`
+    _produced_messages: bool = False  # ~ `firedChannelRead`
+
+    def _call_decode(
+            self,
+            ctx: ChannelPipelineHandlerContext,
+            buf: ByteStreamBuffer,
+            *,
+            final: bool = False,
+    ) -> None:
+        self._called_decode = True
+
+        try:
+            out = list(self._decode(ctx, buf, final=final))
+        except DecodingChannelPipelineError:
+            raise
+        except Exception as e:
+            raise DecodingChannelPipelineError from e
+
+        if not out:
+            return
+
+        self._produced_messages = True
+
+        for out_msg in out:
+            ctx.feed_in(out_msg)
+
+    #
+
+    def _on_flush_input(self, ctx: ChannelPipelineHandlerContext) -> None:
+        if (
+                self._called_decode and
+                not self._produced_messages and
+                not ctx.channel.services[ChannelPipelineFlow].is_auto_read
+        ):
+            ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+
+        self._called_decode = False
+        self._produced_messages = False
+
+        ctx.feed_in(ChannelPipelineFlowMessages.FlushInput())
+
+    def _on_final_input(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineMessages.FinalInput) -> None:
+        dec_buf: ByteStreamBuffer
+        if self._buf is not None:
+            dec_buf = self._buf
+        else:
+            dec_buf = DirectByteStreamBuffer(b'')
+
+        self._call_decode(ctx, dec_buf, final=True)
+
+        ctx.feed_in(msg)
+
+    def _on_bytes_input(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        check.arg(len(msg) > 0)
+
+        if self._buf is None:
+            self._buf = self._new_buf()
+
+        for seg in ByteStreamBuffers.iter_segments(msg):
+            self._buf.write(seg)
+
+        self._call_decode(ctx, self._buf)
+
+    #
+
+    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
+            self._on_flush_input(ctx)
+
+        elif isinstance(msg, ChannelPipelineMessages.FinalInput):
+            self._on_final_input(ctx, msg)
+
+        elif ByteStreamBuffers.can_bytes(msg):
+            self._on_bytes_input(ctx, msg)
+
+        else:
+            ctx.feed_in(msg)
+
+
+#
+
+
+@ta.final
+class FnBytesToMessageDecoderChannelPipelineHandler(BytesToMessageDecoderChannelPipelineHandler):
+    class DecodeFn(ta.Protocol):
+        def __call__(
+                self,
+                ctx: ChannelPipelineHandlerContext,
+                buf: ByteStreamBuffer,
+                *,
+                final: bool = False,
+        ) -> ta.Iterable[ta.Any]:
+            ...
+
+    def __init__(
+            self,
+            decode_fn: DecodeFn,
+            *,
+            scanning: bool = False,
+    ) -> None:
+        super().__init__(
+            scanning=scanning,
+        )
+
+        self._decode_fn = decode_fn
+
+    def _decode(
+            self,
+            ctx: ChannelPipelineHandlerContext,
+            buf: ByteStreamBuffer,
+            *,
+            final: bool = False,
+    ) -> ta.Iterable[ta.Any]:
+        return self._decode_fn(ctx, buf, final=final)
 
 
 ########################################

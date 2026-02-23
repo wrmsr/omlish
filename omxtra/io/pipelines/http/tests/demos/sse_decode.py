@@ -2,8 +2,8 @@
 # @omlish-lite
 import typing as ta
 
-from ....bytes.decoders import DelimiterFramePipelineDecoder
-from ....bytes.decoders import UnicodePipelineDecoder
+from ....bytes.decoders import DelimiterFrameDecoderChannelPipelineHandler
+from ....bytes.decoders import UnicodeDecoderChannelPipelineHandler
 from ....core import PipelineChannel
 from ...client.responses import PipelineHttpResponseConditionalGzipDecoder
 from ...client.responses import PipelineHttpResponseDecoder
@@ -19,8 +19,8 @@ def build_http_sse_channel() -> PipelineChannel:
     return PipelineChannel([
         PipelineHttpResponseDecoder(),
         PipelineHttpResponseConditionalGzipDecoder(),
-        DelimiterFramePipelineDecoder([b'\r\n', b'\n'], keep_ends=True, max_size=1 << 20),
-        UnicodePipelineDecoder(),
+        DelimiterFrameDecoderChannelPipelineHandler([b'\r\n', b'\n'], keep_ends=True, max_size=1 << 20),
+        UnicodeDecoderChannelPipelineHandler(),
         PipelineSseDecoder(),
     ])
 

@@ -10,14 +10,14 @@ from ..core import ChannelPipelineHandlerContext
 from ..core import ChannelPipelineHandlerFn
 from ..core import ShareableChannelPipelineHandler
 from ..errors import DecodingChannelPipelineError
-from .types import ChannelPipelineFlow
-from .types import ChannelPipelineFlowMessages
+from ..flow.types import ChannelPipelineFlow
+from ..flow.types import ChannelPipelineFlowMessages
 
 
 ##
 
 
-class MessageToMessageDecoder(ChannelPipelineHandler, Abstract):
+class MessageToMessageDecoderChannelPipelineHandler(ChannelPipelineHandler, Abstract):
     @abc.abstractmethod
     def _should_decode(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:
         raise NotImplementedError
@@ -71,7 +71,7 @@ class MessageToMessageDecoder(ChannelPipelineHandler, Abstract):
 ##
 
 
-class FnMessageToMessageDecoder(MessageToMessageDecoder):
+class FnMessageToMessageDecoderChannelPipelineHandler(MessageToMessageDecoderChannelPipelineHandler):
     def __init__(
             self,
             filter_fn: ChannelPipelineHandlerFn[ta.Any, bool],  # noqa
