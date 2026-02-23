@@ -1214,13 +1214,16 @@ class PipelineChannel:
             if self._ch._config.disable_propagation_checking:  # noqa
                 return
 
+            if not (self._pending_inbound_must or self._pending_outbound_must):
+                return
+
             inbound = [msg for msg, _ in self._pending_inbound_must.values()]
             outbound = [msg for msg, _ in self._pending_outbound_must.values()]
-            if inbound or outbound:
-                raise MessageNotPropagatedChannelPipelineError(
-                    inbound=inbound or None,
-                    outbound=outbound or None,
-                )
 
             self._pending_inbound_must.clear()
             self._pending_outbound_must.clear()
+
+            raise MessageNotPropagatedChannelPipelineError(
+                inbound=inbound or None,
+                outbound=outbound or None,
+            )

@@ -32,7 +32,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='errors.py', sha1='863eec379306c45bcb797ffbd31401095ca93a4e'),
             dict(path='../../../omlish/io/streams/types.py', sha1='8a12dc29f6e483dd8df5336c0d9b58a00b64e7ed'),
-            dict(path='core.py', sha1='1d3006a74adcc7df737964843d3d17d5d954fe92'),
+            dict(path='core.py', sha1='40c7ca332ce56b984c647ead75a0602b0fe36a9d'),
             dict(path='../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -2403,16 +2403,19 @@ class PipelineChannel:
             if self._ch._config.disable_propagation_checking:  # noqa
                 return
 
+            if not (self._pending_inbound_must or self._pending_outbound_must):
+                return
+
             inbound = [msg for msg, _ in self._pending_inbound_must.values()]
             outbound = [msg for msg, _ in self._pending_outbound_must.values()]
-            if inbound or outbound:
-                raise MessageNotPropagatedChannelPipelineError(
-                    inbound=inbound or None,
-                    outbound=outbound or None,
-                )
 
             self._pending_inbound_must.clear()
             self._pending_outbound_must.clear()
+
+            raise MessageNotPropagatedChannelPipelineError(
+                inbound=inbound or None,
+                outbound=outbound or None,
+            )
 
 
 ########################################
