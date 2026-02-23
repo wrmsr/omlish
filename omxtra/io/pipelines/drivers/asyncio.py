@@ -4,10 +4,8 @@ import asyncio
 import typing as ta
 
 from omlish.io.streams.utils import ByteStreamBuffers
-from omlish.lite.check import check
 
 from ..core import PipelineChannel
-from ..flow.bytes import BytesChannelPipelineFlowControl
 
 
 ##
@@ -122,16 +120,15 @@ class BytesFlowControlAsyncioStreamChannelPipelineDriver(AsyncioStreamChannelPip
 
         self._backpressure_sleep = backpressure_sleep
 
-        self._flow = check.not_none(self._channel.pipeline.find_single_handler_of_type(BytesChannelPipelineFlowControl)).handler  # noqa
-
     async def _gate_inbound(self) -> None:
-        while not self._flow.want_read():
-            await self._flush_channel()
-
-            await asyncio.sleep(self._backpressure_sleep)  # FIXME: lol - event-driven or callback?
-
-            if self._channel.saw_final_output:
-                break
+        # while not self._flow.want_read():
+        #     await self._flush_channel()
+        #
+        #     await asyncio.sleep(self._backpressure_sleep)  # FIXME: lol - event-driven or callback?
+        #
+        #     if self._channel.saw_final_output:
+        #         break
+        raise NotImplementedError
 
     async def _flush_channel(self) -> None:
         await self._flush_outbound()
@@ -148,12 +145,14 @@ class BytesFlowControlAsyncioStreamChannelPipelineDriver(AsyncioStreamChannelPip
         if self._writer is None:
             return
 
-        out = self._flow.drain_outbound(self._write_chunk_max)
+        # out = self._flow.drain_outbound(self._write_chunk_max)
+        #
+        # for msg in out:
+        #     for mv in ByteStreamBuffers.iter_segments(msg):
+        #         if mv:
+        #             self._writer.write(mv)
+        #
+        # if out:
+        #     await self._writer.drain()
 
-        for msg in out:
-            for mv in ByteStreamBuffers.iter_segments(msg):
-                if mv:
-                    self._writer.write(mv)
-
-        if out:
-            await self._writer.drain()
+        raise NotImplementedError

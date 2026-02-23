@@ -32,7 +32,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='errors.py', sha1='a6e20daf54f563f7d2aa4f28fce87fa06417facb'),
             dict(path='../../../omlish/io/streams/types.py', sha1='8a12dc29f6e483dd8df5336c0d9b58a00b64e7ed'),
-            dict(path='core.py', sha1='40c7ca332ce56b984c647ead75a0602b0fe36a9d'),
+            dict(path='core.py', sha1='2af962be14520e75814823b34e211e026ff79ed4'),
             dict(path='../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -1491,6 +1491,14 @@ class ChannelPipelineHandlerContext:
         self._storage_ = ret = ChannelPipelineHandlerContext.Storage()
         return ret
 
+    #
+
+    def _notify(self, no: ChannelPipelineHandlerNotification) -> None:
+        check.isinstance(no, ChannelPipelineHandlerNotification)
+        check.state(self._pipeline._channel._execution_depth > 0)  # noqa
+
+        self._handler.notify(self, no)
+
     ##
     # Feeding `type`'s is forbidden as it's almost always going to be an error - usually forgetting to instantiate a
     # marker dataclass)
@@ -1795,7 +1803,7 @@ class ChannelPipeline:
         self._channel._handler_update(ctx, 'added')  # noqa
 
         # FIXME: exceptions?
-        handler.notify(ctx, ChannelPipelineHandlerNotifications.Added())
+        self._channel._notify(ctx, ChannelPipelineHandlerNotifications.Added())  # noqa
 
         return ctx._ref  # noqa
 
@@ -1885,7 +1893,7 @@ class ChannelPipeline:
         self._channel._handler_update(ctx, 'removed')  # noqa
 
         # FIXME: exceptions? defer?
-        handler.notify(ctx, ChannelPipelineHandlerNotifications.Removed())
+        self._channel._notify(ctx, ChannelPipelineHandlerNotifications.Removed())  # noqa
 
     def remove(self, handler_ref: ChannelPipelineHandlerRef) -> None:
         self._remove(handler_ref)
@@ -2124,17 +2132,19 @@ class PipelineChannel:
         self._saw_final_input = False
         self._saw_final_output = False
 
-        self._pipeline: ta.Final[ChannelPipeline] = ChannelPipeline(
-            self,
-            handlers,
-            config=config.pipeline,
-        )
-
         self._execution_depth = 0
 
         self._deferred: collections.deque[PipelineChannel._Deferred] = collections.deque()
 
         self._propagation: PipelineChannel._Propagation = PipelineChannel._Propagation(self)
+
+        #
+
+        self._pipeline: ta.Final[ChannelPipeline] = ChannelPipeline(
+            self,
+            handlers,
+            config=config.pipeline,
+        )
 
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}'
@@ -2273,6 +2283,21 @@ class PipelineChannel:
 
         if not self._execution_depth:
             self._propagation.check_and_clear()
+
+    #
+
+    def _notify(self, ctx: ChannelPipelineHandlerContext, no: ChannelPipelineHandlerNotification) -> None:
+        self._step_in()
+        try:
+            ctx._notify(no)  # noqa
+
+        finally:
+            self._step_out()
+
+    def notify(self, handler_ref: ChannelPipelineHandlerRef, no: ChannelPipelineHandlerNotification) -> None:
+        ctx = handler_ref._context  # noqa
+        check.is_(ctx._pipeline, self._pipeline)  # noqa
+        self._notify(ctx, no)
 
     #
 

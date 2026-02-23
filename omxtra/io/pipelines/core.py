@@ -298,6 +298,14 @@ class ChannelPipelineHandlerContext:
         self._storage_ = ret = ChannelPipelineHandlerContext.Storage()
         return ret
 
+    #
+
+    def _notify(self, no: ChannelPipelineHandlerNotification) -> None:
+        check.isinstance(no, ChannelPipelineHandlerNotification)
+        check.state(self._pipeline._channel._execution_depth > 0)  # noqa
+
+        self._handler.notify(self, no)
+
     ##
     # Feeding `type`'s is forbidden as it's almost always going to be an error - usually forgetting to instantiate a
     # marker dataclass)
@@ -602,7 +610,7 @@ class ChannelPipeline:
         self._channel._handler_update(ctx, 'added')  # noqa
 
         # FIXME: exceptions?
-        handler.notify(ctx, ChannelPipelineHandlerNotifications.Added())
+        self._channel._notify(ctx, ChannelPipelineHandlerNotifications.Added())  # noqa
 
         return ctx._ref  # noqa
 
@@ -692,7 +700,7 @@ class ChannelPipeline:
         self._channel._handler_update(ctx, 'removed')  # noqa
 
         # FIXME: exceptions? defer?
-        handler.notify(ctx, ChannelPipelineHandlerNotifications.Removed())
+        self._channel._notify(ctx, ChannelPipelineHandlerNotifications.Removed())  # noqa
 
     def remove(self, handler_ref: ChannelPipelineHandlerRef) -> None:
         self._remove(handler_ref)
@@ -931,17 +939,19 @@ class PipelineChannel:
         self._saw_final_input = False
         self._saw_final_output = False
 
-        self._pipeline: ta.Final[ChannelPipeline] = ChannelPipeline(
-            self,
-            handlers,
-            config=config.pipeline,
-        )
-
         self._execution_depth = 0
 
         self._deferred: collections.deque[PipelineChannel._Deferred] = collections.deque()
 
         self._propagation: PipelineChannel._Propagation = PipelineChannel._Propagation(self)
+
+        #
+
+        self._pipeline: ta.Final[ChannelPipeline] = ChannelPipeline(
+            self,
+            handlers,
+            config=config.pipeline,
+        )
 
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}'
@@ -1080,6 +1090,21 @@ class PipelineChannel:
 
         if not self._execution_depth:
             self._propagation.check_and_clear()
+
+    #
+
+    def _notify(self, ctx: ChannelPipelineHandlerContext, no: ChannelPipelineHandlerNotification) -> None:
+        self._step_in()
+        try:
+            ctx._notify(no)  # noqa
+
+        finally:
+            self._step_out()
+
+    def notify(self, handler_ref: ChannelPipelineHandlerRef, no: ChannelPipelineHandlerNotification) -> None:
+        ctx = handler_ref._context  # noqa
+        check.is_(ctx._pipeline, self._pipeline)  # noqa
+        self._notify(ctx, no)
 
     #
 
