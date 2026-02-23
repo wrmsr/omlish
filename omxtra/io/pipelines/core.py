@@ -958,7 +958,7 @@ class PipelineChannel:
 
     @property
     def saw_final_input(self) -> bool:
-        return self._saw_final_input
+        return self._saw_final_input  # Note: only 'channel-level'
 
     @property
     def saw_final_output(self) -> bool:

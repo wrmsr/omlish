@@ -6,12 +6,12 @@ from omlish.io.streams.utils import ByteStreamBuffers
 
 from ....core import ChannelPipelineMessages
 from ....core import PipelineChannel
+from ....handlers.queues import InboundQueueChannelPipelineHandler
 from ..requests import FullPipelineHttpRequest
 from ..requests import PipelineHttpRequestAborted
 from ..requests import PipelineHttpRequestBodyAggregator
 from ..requests import PipelineHttpRequestHead
 from ..requests import PipelineHttpRequestHeadDecoder
-from ....handlers.queues import InboundQueueChannelPipelineHandler
 
 
 class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):

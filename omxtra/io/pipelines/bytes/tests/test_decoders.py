@@ -3,11 +3,9 @@ import unittest
 
 from ...core import ChannelPipelineMessages
 from ...core import PipelineChannel
-from ...handlers.flatmap import FlatMapChannelPipelineHandlers
-from ...handlers.fns import ChannelPipelineHandlerFns
+from ...handlers.queues import InboundQueueChannelPipelineHandler
 from ..decoders import DelimiterFramePipelineDecoder
 from ..decoders import UnicodePipelineDecoder
-from ...handlers.queues import InboundQueueChannelPipelineHandler
 
 
 class TestDecoders(unittest.TestCase):

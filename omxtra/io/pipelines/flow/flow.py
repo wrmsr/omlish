@@ -28,7 +28,6 @@ class ChannelPipelineFlowControlMessages(NamespaceClass):
         is_writable: bool
         pending_outbound: int
 
-
     @ta.final
     @dc.dataclass(frozen=True)
     class FlowCapacityExceeded(ChannelPipelineMessages.NeverInbound):

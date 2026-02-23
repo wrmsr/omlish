@@ -5,6 +5,7 @@ import unittest
 from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
 from ..core import PipelineChannel
+from ..handlers.feedback import FeedbackInboundChannelPipelineHandler
 from ..handlers.queues import InboundQueueChannelPipelineHandler
 
 
@@ -59,6 +60,7 @@ class TestCore(unittest.TestCase):
         ch = PipelineChannel([
             IntIncInboundHandler(),
             IntStrDuplexHandler(),
+            fbi := FeedbackInboundChannelPipelineHandler(),
             ibq := InboundQueueChannelPipelineHandler(),
         ])
 
@@ -68,7 +70,7 @@ class TestCore(unittest.TestCase):
         ch.feed_in(42)
         assert ibq.drain() == ['43']
 
-        ch.pipeline._innermost.feed_out('24')  # noqa
+        ch.feed_in(fbi.wrap('24'))
         assert ch.drain() == [24]
 
         #
@@ -81,7 +83,7 @@ class TestCore(unittest.TestCase):
         ch.feed_in(42)
         assert ibq.drain() == ['127']
 
-        ch.pipeline._innermost.feed_out('24')  # noqa
+        ch.feed_in(fbi.wrap('24'))
         assert ch.drain() == [24]
 
         #
@@ -91,7 +93,7 @@ class TestCore(unittest.TestCase):
         ch.feed_in(42)
         assert ibq.drain() == ['126']
 
-        ch.pipeline._innermost.feed_out('24')  # noqa
+        ch.feed_in(fbi.wrap('24'))
         assert ch.drain() == [24]
 
         #
@@ -104,7 +106,7 @@ class TestCore(unittest.TestCase):
         ch.feed_in(42)
         assert ibq.drain() == ['43']
 
-        ch.pipeline._innermost.feed_out('24')  # noqa
+        ch.feed_in(fbi.wrap('24'))
         assert ch.drain() == [24]
 
     def test_replace_self(self):
@@ -120,16 +122,17 @@ class TestCore(unittest.TestCase):
 
     def test_named(self):
         ch = PipelineChannel([
+            fbi := FeedbackInboundChannelPipelineHandler(),
             ibq := InboundQueueChannelPipelineHandler(),
         ])
 
         ch.pipeline.add_outermost(IntStrDuplexHandler(), name='int_str')
-        ch.pipeline.add_outer_to(ch.pipeline.handlers()[0], IntIncInboundHandler(), name='int_inc')
+        ch.pipeline.add_outermost(IntIncInboundHandler(), name='int_inc')
 
         ch.feed_in(42)
         assert ibq.drain() == ['43']
 
-        ch.pipeline._innermost.feed_out('24')  # noqa
+        ch.feed_in(fbi.wrap('24'))
         assert ch.drain() == [24]
 
         ch.pipeline.remove(ch.pipeline.handlers_by_name()['int_inc'])
@@ -137,5 +140,5 @@ class TestCore(unittest.TestCase):
         ch.feed_in(42)
         assert ibq.drain() == ['42']
 
-        ch.pipeline._innermost.feed_out('24')  # noqa
+        ch.feed_in(fbi.wrap('24'))
         assert ch.drain() == [24]

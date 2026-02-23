@@ -7,12 +7,12 @@ from omlish.http.versions import HttpVersion
 
 from ....core import ChannelPipelineMessages
 from ....core import PipelineChannel
+from ....handlers.queues import InboundQueueChannelPipelineHandler
 from ...responses import PipelineHttpResponseAborted
 from ...responses import PipelineHttpResponseContentChunk
 from ...responses import PipelineHttpResponseEnd
 from ...responses import PipelineHttpResponseHead
 from ..responses import PipelineHttpResponseChunkedDecoder
-from ....handlers.queues import InboundQueueChannelPipelineHandler
 
 
 class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):

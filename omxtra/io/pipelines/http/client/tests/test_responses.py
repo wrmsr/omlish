@@ -6,9 +6,9 @@ from omlish.io.streams.utils import ByteStreamBuffers
 
 from ....core import ChannelPipelineMessages
 from ....core import PipelineChannel
+from ....handlers.queues import InboundQueueChannelPipelineHandler
 from ..responses import PipelineHttpResponseAborted
 from ..responses import PipelineHttpResponseDecoder
-from ....handlers.queues import InboundQueueChannelPipelineHandler
 
 
 class TestPipelineHttpResponseDecoder(unittest.TestCase):

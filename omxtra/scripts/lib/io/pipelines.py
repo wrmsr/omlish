@@ -32,14 +32,14 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='errors.py', sha1='863eec379306c45bcb797ffbd31401095ca93a4e'),
             dict(path='../../../omlish/io/streams/types.py', sha1='8a12dc29f6e483dd8df5336c0d9b58a00b64e7ed'),
-            dict(path='core.py', sha1='814915ede9d05f020375b0a0097ecd5e8114fb76'),
+            dict(path='core.py', sha1='25361575227391d44972d50fa435b45e62c0d723'),
             dict(path='../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
             dict(path='bytes/buffering.py', sha1='aa8375c8ef0689db865bb4009afd3ed8dcc2bd12'),
             dict(path='handlers/flatmap.py', sha1='58fddc0a3c53406f1424af3af5f91eb053730804'),
             dict(path='handlers/fns.py', sha1='75e982604574d6ffaacf9ac1f37ab6e9edbd608d'),
-            dict(path='handlers/queues.py', sha1='668acd3a464244d2f9761b80d86f88f6e3ca524d'),
+            dict(path='handlers/queues.py', sha1='53be6d12d02baa192d25fe4af3a0712ce6e62d6f'),
             dict(path='../../../omlish/io/streams/direct.py', sha1='83c33460e9490a77a00ae66251617ba98128b56b'),
             dict(path='../../../omlish/io/streams/scanning.py', sha1='4c0323e0b11cd506f7b6b4cf28ea4d7c6064b9d3'),
             dict(path='bytes/queues.py', sha1='38b11596cd0fa2367825252413923f1292c14f4e'),
@@ -1501,6 +1501,7 @@ class ChannelPipelineHandlerContext:
         if self._invalidated:
             raise ContextInvalidatedChannelPipelineError
         check.not_isinstance(msg, self._FORBIDDEN_INBOUND_TYPES)
+        check.state(self._pipeline._channel._execution_depth > 0)  # noqa
 
         if isinstance(msg, ChannelPipelineMessages.MustPropagate):
             self._pipeline._channel._propagation.add_must(self, 'inbound', msg)  # noqa
@@ -1524,6 +1525,7 @@ class ChannelPipelineHandlerContext:
         if self._invalidated:
             raise ContextInvalidatedChannelPipelineError
         check.not_isinstance(msg, self._FORBIDDEN_OUTBOUND_TYPES)
+        check.state(self._pipeline._channel._execution_depth > 0)  # noqa
 
         if isinstance(msg, ChannelPipelineMessages.MustPropagate):
             self._pipeline._channel._propagation.add_must(self, 'outbound', msg)  # noqa
@@ -1557,9 +1559,9 @@ class ChannelPipelineHandlerContext:
             self._handling_error = False
 
     ##
-    # The following attempts to catch invalid inputs statically, but there's no explicit way to do this in mypy - the
-    # following trick only works if there's an unconditional statement after the attempted calls, but it's better than
-    # nothing.
+    # The following overloads attempts to catch invalid inputs statically, but there's no explicit way to do this in
+    # mypy - the following trick only works if there's an unconditional statement after the attempted calls, but it's
+    # better than nothing.
 
     @ta.overload
     def feed_in(
@@ -1603,6 +1605,10 @@ class ChannelPipelineHandlerContext:
             nxt = nxt._next_out  # noqa
         nxt._outbound(msg)  # noqa
 
+    #
+
+    def feed_final_output(self) -> None:
+        self.feed_out(ChannelPipelineMessages.FinalOutput())
 
 ##
 
@@ -2082,6 +2088,7 @@ class PipelineChannel:
     @ta.final
     @dc.dataclass(frozen=True)
     class Config:
+        # TODO: 'close'? 'deadletter'? combination? composition? ...
         inbound_terminal: ta.Literal['drop', 'raise'] = 'raise'
 
         disable_propagation_checking: bool = False
@@ -2140,7 +2147,7 @@ class PipelineChannel:
 
     @property
     def saw_final_input(self) -> bool:
-        return self._saw_final_input
+        return self._saw_final_input  # Note: only 'channel-level'
 
     @property
     def saw_final_output(self) -> bool:
@@ -2280,6 +2287,7 @@ class PipelineChannel:
             self._step_out()
 
     def feed_in_to(self, handler_ref: ChannelPipelineHandlerRef, *msgs: ta.Any) -> None:
+        # TODO: remove? internal only? used by replace-self pattern
         ctx = handler_ref._context  # noqa
         check.is_(ctx._pipeline, self._pipeline)  # noqa
         self._feed_in_to(ctx, msgs)
@@ -3346,7 +3354,7 @@ class QueueChannelPipelineHandler(ChannelPipelineHandler, Abstract):
             self,
             *,
             filter: ta.Optional[ChannelPipelineHandlerFn[ta.Any, bool]] = None,  # noqa
-            passthrough: bool = False,
+            passthrough: ta.Union[bool, ta.Literal['must_propagate']] = 'must_propagate',
     ) -> None:
         super().__init__()
 
@@ -3391,6 +3399,18 @@ class QueueChannelPipelineHandler(ChannelPipelineHandler, Abstract):
 
         return out
 
+    #
+
+    def _should_passthrough(self, msg: ta.Any) -> bool:
+        if isinstance(pt := self._passthrough, bool):
+            return pt
+
+        elif pt == 'must_propagate':
+            return isinstance(msg, ChannelPipelineMessages.MustPropagate)
+
+        else:
+            raise RuntimeError(f'Unknown passthrough mode {self._passthrough!r} for {self!r}')
+
 
 class InboundQueueChannelPipelineHandler(QueueChannelPipelineHandler):
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
@@ -3400,7 +3420,7 @@ class InboundQueueChannelPipelineHandler(QueueChannelPipelineHandler):
 
         self._append(msg)
 
-        if self._passthrough:
+        if self._should_passthrough(msg):
             ctx.feed_in(msg)
 
 
@@ -3412,7 +3432,7 @@ class OutboundQueueChannelPipelineHandler(QueueChannelPipelineHandler):
 
         self._append(msg)
 
-        if self._passthrough:
+        if self._should_passthrough(msg):
             ctx.feed_out(msg)
 
 

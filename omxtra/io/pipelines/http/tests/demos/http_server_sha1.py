@@ -56,7 +56,7 @@ class Sha1Handler(ChannelPipelineHandler):
                     body=b'not found',
                 ))
 
-                ctx.channel.feed_final_output()
+                ctx.feed_final_output()
 
             return
 
@@ -74,7 +74,7 @@ class Sha1Handler(ChannelPipelineHandler):
                     body=hexd,
                 ))
 
-                ctx.channel.feed_final_output()
+                ctx.feed_final_output()
 
                 self._active = False
                 self._h = None
@@ -86,7 +86,7 @@ class Sha1Handler(ChannelPipelineHandler):
             self._active = False
             self._h = None
 
-            ctx.channel.feed_final_output()
+            ctx.feed_final_output()
 
             return
 
@@ -127,7 +127,6 @@ def build_http_sha1_channel(
             Sha1Handler(),
 
         ],
-        config=PipelineChannel.Config(raise_handler_errors=True),
     )
 
 

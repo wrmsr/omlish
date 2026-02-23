@@ -2,8 +2,8 @@
 import unittest
 
 from ...core import PipelineChannel
-from ...handlers.queues import InboundQueueChannelPipelineHandler
 from ...handlers.fns import FnChannelPipelineHandler
+from ...handlers.queues import InboundQueueChannelPipelineHandler
 from ..queues import InboundBytesBufferingQueueChannelPipelineHandler
 
 

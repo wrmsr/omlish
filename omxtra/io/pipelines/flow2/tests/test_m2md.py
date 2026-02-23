@@ -9,6 +9,7 @@ from omlish.lite.check import check
 from ...core import ChannelPipelineHandlerContext
 from ...core import PipelineChannel
 from ...handlers.fns import ChannelPipelineHandlerFns
+from ...handlers.queues import InboundQueueChannelPipelineHandler
 from ..m2md import FnMessageToMessageDecoder
 from ..m2md import MessageToMessageDecoder
 from ..types import ChannelPipelineFlow
@@ -36,13 +37,6 @@ class BazMsg:
 SIMPLE_FOO_TO_BAR_DECODER = FnMessageToMessageDecoder(
     ChannelPipelineHandlerFns.isinstance(FooMsg),
     lambda _, msg: (BarMsg(str(msg.i)),),
-)
-
-
-EMIT_TERMINAL_CHANNEL_CONFIG = PipelineChannel.Config(
-    pipeline=PipelineChannel.PipelineConfig(
-        terminal_mode='emit',
-    ),
 )
 
 
@@ -88,48 +82,48 @@ class AccumulatingFooToBarDecoder(MessageToMessageDecoder):
 
 class TestM2mdecNoFlow(unittest.TestCase):
     def test_simple(self):
-        ch = PipelineChannel(
-            [SIMPLE_FOO_TO_BAR_DECODER],
-            config=EMIT_TERMINAL_CHANNEL_CONFIG,
-        )
+        ch = PipelineChannel([
+            SIMPLE_FOO_TO_BAR_DECODER,
+            ibq := InboundQueueChannelPipelineHandler(),
+        ])
 
         ch.feed_in(FooMsg(123), BazMsg(True))
-        assert ch.drain() == [
+        assert ibq.drain() == [
             BarMsg('123'),
             BazMsg(True),
         ]
 
     def test_duplicating(self):
-        ch = PipelineChannel(
-            [DuplicatingFooToBarDecoder()],
-            config=EMIT_TERMINAL_CHANNEL_CONFIG,
-        )
+        ch = PipelineChannel([
+            DuplicatingFooToBarDecoder(),
+            ibq := InboundQueueChannelPipelineHandler(),
+        ])
 
         ch.feed_in(FooMsg(123), BazMsg(True))
-        assert ch.drain() == [
+        assert ibq.drain() == [
             BarMsg('123'),
             BarMsg('123'),
             BazMsg(True),
         ]
 
     def test_accumulating(self):
-        ch = PipelineChannel(
-            [AccumulatingFooToBarDecoder()],
-            config=EMIT_TERMINAL_CHANNEL_CONFIG,
-        )
+        ch = PipelineChannel([
+            AccumulatingFooToBarDecoder(),
+            ibq := InboundQueueChannelPipelineHandler(),
+        ])
 
         ch.feed_in(FooMsg(123), BazMsg(True))
-        assert ch.drain() == [
+        assert ibq.drain() == [
             BazMsg(True),
         ]
 
         ch.feed_in(BazMsg(420))
-        assert ch.drain() == [
+        assert ibq.drain() == [
             BazMsg(420),
         ]
 
         ch.feed_in(FooMsg(420), BazMsg(421))
-        assert ch.drain() == [
+        assert ibq.drain() == [
             BarMsg('123420'),
             BazMsg(421),
         ]
@@ -154,26 +148,28 @@ class TestM2mdecMyFlow(unittest.TestCase):
         ch = PipelineChannel(
             [
                 SIMPLE_FOO_TO_BAR_DECODER,
+                ibq := InboundQueueChannelPipelineHandler(),
             ],
-            config=EMIT_TERMINAL_CHANNEL_CONFIG,
             services=[mf := MyFlow(auto_read=True)],  # noqa
         )
 
         ch.feed_in(FooMsg(123), BazMsg(True))
-        assert ch.drain() == [
+        assert ibq.drain() == [
             BarMsg('123'),
             BazMsg(True),
         ]
 
     def test_duplicating(self):
         ch = PipelineChannel(
-            [DuplicatingFooToBarDecoder()],
-            config=EMIT_TERMINAL_CHANNEL_CONFIG,
+            [
+                DuplicatingFooToBarDecoder(),
+                ibq := InboundQueueChannelPipelineHandler(),
+            ],
             services=[mf := MyFlow(auto_read=True)],  # noqa
         )
 
         ch.feed_in(FooMsg(123), BazMsg(True))
-        assert ch.drain() == [
+        assert ibq.drain() == [
             BarMsg('123'),
             BarMsg('123'),
             BazMsg(True),
@@ -181,72 +177,76 @@ class TestM2mdecMyFlow(unittest.TestCase):
 
     def test_accumulating_auto_read(self):
         ch = PipelineChannel(
-            [AccumulatingFooToBarDecoder()],
-            config=EMIT_TERMINAL_CHANNEL_CONFIG,
+            [
+                AccumulatingFooToBarDecoder(),
+                ibq := InboundQueueChannelPipelineHandler(),
+            ],
             services=[mf := MyFlow(auto_read=True)],  # noqa
         )
 
         #
 
         ch.feed_in(FooMsg(123), BazMsg(True), ChannelPipelineFlowMessages.FlushInput())
-        assert ch.drain() == [
+        assert ibq.drain() == [
             BazMsg(True),
             ChannelPipelineFlowMessages.FlushInput(),
         ]
 
         ch.feed_in(BazMsg(420), ChannelPipelineFlowMessages.FlushInput())
-        assert ch.drain() == [
+        assert ibq.drain() == [
             BazMsg(420),
             ChannelPipelineFlowMessages.FlushInput(),
         ]
 
         ch.feed_in(ChannelPipelineFlowMessages.FlushInput())
-        assert ch.drain() == [ChannelPipelineFlowMessages.FlushInput()]
+        assert ibq.drain() == [ChannelPipelineFlowMessages.FlushInput()]
 
         ch.feed_in(FooMsg(420), BazMsg(421), ChannelPipelineFlowMessages.FlushInput())
-        assert ch.drain() == [
+        assert ibq.drain() == [
             BarMsg('123420'),
             BazMsg(421),
             ChannelPipelineFlowMessages.FlushInput(),
         ]
 
         ch.feed_in(FooMsg(123), ChannelPipelineFlowMessages.FlushInput())
-        assert ch.drain() == [
+        assert ibq.drain() == [
             ChannelPipelineFlowMessages.FlushInput(),
         ]
 
         ch.feed_in(FooMsg(123), ChannelPipelineFlowMessages.FlushInput())
-        assert ch.drain() == [
+        assert ibq.drain() == [
             BarMsg('123123'),
             ChannelPipelineFlowMessages.FlushInput(),
         ]
 
     def test_accumulating_no_auto_read(self):
         ch = PipelineChannel(
-            [AccumulatingFooToBarDecoder()],
-            config=EMIT_TERMINAL_CHANNEL_CONFIG,
+            [
+                AccumulatingFooToBarDecoder(),
+                ibq := InboundQueueChannelPipelineHandler(),
+            ],
             services=[mf := MyFlow(auto_read=False)],  # noqa
         )
 
         #
 
         ch.feed_in(FooMsg(123), BazMsg(True), ChannelPipelineFlowMessages.FlushInput())
-        assert ch.drain() == [
+        assert ibq.drain() == [
             BazMsg(True),
             ChannelPipelineFlowMessages.FlushInput(),
         ]
 
         ch.feed_in(BazMsg(420), ChannelPipelineFlowMessages.FlushInput())
-        assert ch.drain() == [
+        assert ibq.drain() == [
             BazMsg(420),
             ChannelPipelineFlowMessages.FlushInput(),
         ]
 
         ch.feed_in(ChannelPipelineFlowMessages.FlushInput())
-        assert ch.drain() == [ChannelPipelineFlowMessages.FlushInput()]
+        assert ibq.drain() == [ChannelPipelineFlowMessages.FlushInput()]
 
         ch.feed_in(FooMsg(420), BazMsg(421), ChannelPipelineFlowMessages.FlushInput())
-        assert ch.drain() == [
+        assert ibq.drain() == [
             BarMsg('123420'),
             BazMsg(421),
             ChannelPipelineFlowMessages.FlushInput(),
@@ -255,13 +255,11 @@ class TestM2mdecMyFlow(unittest.TestCase):
         #
 
         ch.feed_in(FooMsg(123), ChannelPipelineFlowMessages.FlushInput())
-        assert ch.drain() == [
-            ChannelPipelineFlowMessages.ReadyForInput(),
-            ChannelPipelineFlowMessages.FlushInput(),
-        ]
+        assert ch.drain() == [ChannelPipelineFlowMessages.ReadyForInput()]
+        assert ibq.drain() == [ChannelPipelineFlowMessages.FlushInput()]
 
         ch.feed_in(FooMsg(123), ChannelPipelineFlowMessages.FlushInput())
-        assert ch.drain() == [
+        assert ibq.drain() == [
             BarMsg('123123'),
             ChannelPipelineFlowMessages.FlushInput(),
         ]

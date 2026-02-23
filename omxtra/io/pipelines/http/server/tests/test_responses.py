@@ -6,12 +6,12 @@ from omlish.http.headers import HttpHeaders
 from omlish.http.versions import HttpVersion
 
 from ....core import PipelineChannel
+from ....handlers.feedback import FeedbackInboundChannelPipelineHandler
 from ...responses import FullPipelineHttpResponse
 from ...responses import PipelineHttpResponseContentChunk
 from ...responses import PipelineHttpResponseEnd
 from ...responses import PipelineHttpResponseHead
 from ..responses import PipelineHttpResponseEncoder
-from ....handlers.feedback import FeedbackInboundChannelPipelineHandler
 
 
 class TestPipelineHttpResponseEncoder(unittest.TestCase):
