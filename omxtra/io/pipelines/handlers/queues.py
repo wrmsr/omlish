@@ -12,6 +12,7 @@ from omlish.lite.abstract import Abstract
 from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
 from ..core import ChannelPipelineHandlerFn
+from ..core import ChannelPipelineMessages
 
 
 ##
@@ -22,7 +23,7 @@ class QueueChannelPipelineHandler(ChannelPipelineHandler, Abstract):
             self,
             *,
             filter: ta.Optional[ChannelPipelineHandlerFn[ta.Any, bool]] = None,  # noqa
-            passthrough: bool = False,
+            passthrough: ta.Union[bool, ta.Literal['must_propagate']] = 'must_propagate',
     ) -> None:
         super().__init__()
 
@@ -67,6 +68,18 @@ class QueueChannelPipelineHandler(ChannelPipelineHandler, Abstract):
 
         return out
 
+    #
+
+    def _should_passthrough(self, msg: ta.Any) -> bool:
+        if isinstance(pt := self._passthrough, bool):
+            return pt
+
+        elif pt == 'must_propagate':
+            return isinstance(msg, ChannelPipelineMessages.MustPropagate)
+
+        else:
+            raise RuntimeError(f'Unknown passthrough mode {self._passthrough!r} for {self!r}')
+
 
 class InboundQueueChannelPipelineHandler(QueueChannelPipelineHandler):
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
@@ -76,7 +89,7 @@ class InboundQueueChannelPipelineHandler(QueueChannelPipelineHandler):
 
         self._append(msg)
 
-        if self._passthrough:
+        if self._should_passthrough(msg):
             ctx.feed_in(msg)
 
 
@@ -88,7 +101,7 @@ class OutboundQueueChannelPipelineHandler(QueueChannelPipelineHandler):
 
         self._append(msg)
 
-        if self._passthrough:
+        if self._should_passthrough(msg):
             ctx.feed_out(msg)
 
 

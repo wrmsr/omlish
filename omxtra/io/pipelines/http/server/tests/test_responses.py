@@ -11,13 +11,7 @@ from ...responses import PipelineHttpResponseContentChunk
 from ...responses import PipelineHttpResponseEnd
 from ...responses import PipelineHttpResponseHead
 from ..responses import PipelineHttpResponseEncoder
-
-
-TERMINAL_EMIT_CHANNEL_CONFIG = PipelineChannel.Config(
-    pipeline=PipelineChannel.PipelineConfig(
-        terminal_mode='emit',
-    ),
-)
+from ....handlers.feedback import FeedbackInboundChannelPipelineHandler
 
 
 class TestPipelineHttpResponseEncoder(unittest.TestCase):
@@ -25,7 +19,10 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test basic HTTP response encoding."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
+        channel = PipelineChannel([
+            encoder,
+            fbi := FeedbackInboundChannelPipelineHandler(),
+        ])
 
         response = FullPipelineHttpResponse(
             head=PipelineHttpResponseHead(
@@ -40,7 +37,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
             body=b'hello',
         )
 
-        channel.feed_out(response)
+        channel.feed_in(fbi.wrap(response))
         out = channel.drain()
 
         self.assertEqual(len(out), 1)
@@ -60,7 +57,10 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test 404 response encoding."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
+        channel = PipelineChannel([
+            encoder,
+            fbi := FeedbackInboundChannelPipelineHandler(),
+        ])
 
         response = FullPipelineHttpResponse(
             head=PipelineHttpResponseHead(
@@ -75,7 +75,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
             body=b'not found',
         )
 
-        channel.feed_out(response)
+        channel.feed_in(fbi.wrap(response))
         out = channel.drain()
 
         self.assertEqual(len(out), 1)
@@ -95,7 +95,10 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test response with empty body."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
+        channel = PipelineChannel([
+            encoder,
+            fbi := FeedbackInboundChannelPipelineHandler(),
+        ])
 
         response = FullPipelineHttpResponse(
             head=PipelineHttpResponseHead(
@@ -109,7 +112,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
             body=b'',
         )
 
-        channel.feed_out(response)
+        channel.feed_in(fbi.wrap(response))
         out = channel.drain()
 
         self.assertEqual(len(out), 1)
@@ -127,7 +130,10 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test response with multiple headers."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
+        channel = PipelineChannel([
+            encoder,
+            fbi := FeedbackInboundChannelPipelineHandler(),
+        ])
 
         response = FullPipelineHttpResponse(
             head=PipelineHttpResponseHead(
@@ -145,7 +151,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
             body=b'test',
         )
 
-        channel.feed_out(response)
+        channel.feed_in(fbi.wrap(response))
         out = channel.drain()
 
         self.assertEqual(len(out), 1)
@@ -168,7 +174,10 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test HTTP/1.0 version encoding."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
+        channel = PipelineChannel([
+            encoder,
+            fbi := FeedbackInboundChannelPipelineHandler(),
+        ])
 
         response = FullPipelineHttpResponse(
             head=PipelineHttpResponseHead(
@@ -182,7 +191,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
             body=b'ok',
         )
 
-        channel.feed_out(response)
+        channel.feed_in(fbi.wrap(response))
         out = channel.drain()
 
         self.assertEqual(len(out), 1)
@@ -194,7 +203,10 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test response with large body."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
+        channel = PipelineChannel([
+            encoder,
+            fbi := FeedbackInboundChannelPipelineHandler(),
+        ])
 
         body = b'x' * 10000
 
@@ -211,7 +223,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
             body=body,
         )
 
-        channel.feed_out(response)
+        channel.feed_in(fbi.wrap(response))
         out = channel.drain()
 
         self.assertEqual(len(out), 1)
@@ -225,7 +237,10 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test response with duplicate header names (e.g., Set-Cookie)."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
+        channel = PipelineChannel([
+            encoder,
+            fbi := FeedbackInboundChannelPipelineHandler(),
+        ])
 
         response = FullPipelineHttpResponse(
             head=PipelineHttpResponseHead(
@@ -241,7 +256,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
             body=b'',
         )
 
-        channel.feed_out(response)
+        channel.feed_in(fbi.wrap(response))
         out = channel.drain()
 
         self.assertEqual(len(out), 1)
@@ -258,12 +273,15 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test that non-response messages pass through unchanged."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
+        channel = PipelineChannel([
+            encoder,
+            fbi := FeedbackInboundChannelPipelineHandler(),
+        ])
 
         # Send various non-response messages
-        channel.feed_out(b'raw bytes')
-        channel.feed_out('string message')
-        channel.feed_out(42)
+        channel.feed_in(fbi.wrap(b'raw bytes'))
+        channel.feed_in(fbi.wrap('string message'))
+        channel.feed_in(fbi.wrap(42))
 
         out = channel.drain()
 
@@ -276,7 +294,10 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test encoding responses mixed with other messages."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
+        channel = PipelineChannel([
+            encoder,
+            fbi := FeedbackInboundChannelPipelineHandler(),
+        ])
 
         # Send response
         response = FullPipelineHttpResponse(
@@ -290,10 +311,10 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
             ),
             body=b'ok',
         )
-        channel.feed_out(response)
+        channel.feed_in(fbi.wrap(response))
 
         # Send non-response
-        channel.feed_out(b'other data')
+        channel.feed_in(fbi.wrap(b'other data'))
 
         out = channel.drain()
 
@@ -309,7 +330,10 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test 302 redirect response."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
+        channel = PipelineChannel([
+            encoder,
+            fbi := FeedbackInboundChannelPipelineHandler(),
+        ])
 
         response = FullPipelineHttpResponse(
             head=PipelineHttpResponseHead(
@@ -324,7 +348,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
             body=b'',
         )
 
-        channel.feed_out(response)
+        channel.feed_in(fbi.wrap(response))
         out = channel.drain()
 
         self.assertEqual(len(out), 1)
@@ -343,7 +367,10 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         """Test 500 server error response."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
+        channel = PipelineChannel([
+            encoder,
+            fbi := FeedbackInboundChannelPipelineHandler(),
+        ])
 
         response = FullPipelineHttpResponse(
             head=PipelineHttpResponseHead(
@@ -358,7 +385,7 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
             body=b'server error!',
         )
 
-        channel.feed_out(response)
+        channel.feed_in(fbi.wrap(response))
         out = channel.drain()
 
         self.assertEqual(len(out), 1)
@@ -380,10 +407,13 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
         """Test streaming response with Content-Length (no chunked encoding)."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
+        channel = PipelineChannel([
+            encoder,
+            fbi := FeedbackInboundChannelPipelineHandler(),
+        ])
 
         # Send head
-        channel.feed_out(PipelineHttpResponseHead(
+        channel.feed_in(fbi.wrap(PipelineHttpResponseHead(
             version=HttpVersion(1, 1),
             status=200,
             reason='OK',
@@ -391,14 +421,14 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
                 ('Content-Type', 'text/plain'),
                 ('Content-Length', '10'),
             ]),
-        ))
+        )))
 
         # Send body chunks
-        channel.feed_out(PipelineHttpResponseContentChunk(b'hello'))
-        channel.feed_out(PipelineHttpResponseContentChunk(b'world'))
+        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunk(b'hello')))
+        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunk(b'world')))
 
         # Send end
-        channel.feed_out(PipelineHttpResponseEnd())
+        channel.feed_in(fbi.wrap(PipelineHttpResponseEnd()))
 
         out = channel.drain()
 
@@ -420,10 +450,13 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
         """Test streaming response with Transfer-Encoding: chunked."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
+        channel = PipelineChannel([
+            encoder,
+            fbi := FeedbackInboundChannelPipelineHandler(),
+        ])
 
         # Send head with Transfer-Encoding: chunked
-        channel.feed_out(PipelineHttpResponseHead(
+        channel.feed_in(fbi.wrap(PipelineHttpResponseHead(
             version=HttpVersion(1, 1),
             status=200,
             reason='OK',
@@ -431,14 +464,14 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
                 ('Content-Type', 'text/plain'),
                 ('Transfer-Encoding', 'chunked'),
             ]),
-        ))
+        )))
 
         # Send body chunks
-        channel.feed_out(PipelineHttpResponseContentChunk(b'hello'))
-        channel.feed_out(PipelineHttpResponseContentChunk(b'world'))
+        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunk(b'hello')))
+        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunk(b'world')))
 
         # Send end
-        channel.feed_out(PipelineHttpResponseEnd())
+        channel.feed_in(fbi.wrap(PipelineHttpResponseEnd()))
 
         out = channel.drain()
 
@@ -467,19 +500,22 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
         """Test that chunked encoding emits final terminator."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
+        channel = PipelineChannel([
+            encoder,
+            fbi := FeedbackInboundChannelPipelineHandler(),
+        ])
 
-        channel.feed_out(PipelineHttpResponseHead(
+        channel.feed_in(fbi.wrap(PipelineHttpResponseHead(
             version=HttpVersion(1, 1),
             status=200,
             reason='OK',
             headers=HttpHeaders([
                 ('Transfer-Encoding', 'chunked'),
             ]),
-        ))
+        )))
 
-        channel.feed_out(PipelineHttpResponseContentChunk(b'data'))
-        channel.feed_out(PipelineHttpResponseEnd())
+        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunk(b'data')))
+        channel.feed_in(fbi.wrap(PipelineHttpResponseEnd()))
 
         out = channel.drain()
 
@@ -490,21 +526,24 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
         """Test that empty chunks don't emit bytes."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
+        channel = PipelineChannel([
+            encoder,
+            fbi := FeedbackInboundChannelPipelineHandler(),
+        ])
 
-        channel.feed_out(PipelineHttpResponseHead(
+        channel.feed_in(fbi.wrap(PipelineHttpResponseHead(
             version=HttpVersion(1, 1),
             status=200,
             reason='OK',
             headers=HttpHeaders([
                 ('Content-Length', '5'),
             ]),
-        ))
+        )))
 
-        channel.feed_out(PipelineHttpResponseContentChunk(b''))  # Empty - should be ignored
-        channel.feed_out(PipelineHttpResponseContentChunk(b'hello'))
-        channel.feed_out(PipelineHttpResponseContentChunk(b''))  # Empty - should be ignored
-        channel.feed_out(PipelineHttpResponseEnd())
+        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunk(b'')))  # Empty - should be ignored
+        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunk(b'hello')))
+        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunk(b'')))  # Empty - should be ignored
+        channel.feed_in(fbi.wrap(PipelineHttpResponseEnd()))
 
         out = channel.drain()
 
@@ -517,31 +556,34 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
         """Test that encoder resets state between responses."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
+        channel = PipelineChannel([
+            encoder,
+            fbi := FeedbackInboundChannelPipelineHandler(),
+        ])
 
         # First response (chunked)
-        channel.feed_out(PipelineHttpResponseHead(
+        channel.feed_in(fbi.wrap(PipelineHttpResponseHead(
             version=HttpVersion(1, 1),
             status=200,
             reason='OK',
             headers=HttpHeaders([
                 ('Transfer-Encoding', 'chunked'),
             ]),
-        ))
-        channel.feed_out(PipelineHttpResponseContentChunk(b'first'))
-        channel.feed_out(PipelineHttpResponseEnd())
+        )))
+        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunk(b'first')))
+        channel.feed_in(fbi.wrap(PipelineHttpResponseEnd()))
 
         # Second response (Content-Length)
-        channel.feed_out(PipelineHttpResponseHead(
+        channel.feed_in(fbi.wrap(PipelineHttpResponseHead(
             version=HttpVersion(1, 1),
             status=200,
             reason='OK',
             headers=HttpHeaders([
                 ('Content-Length', '6'),
             ]),
-        ))
-        channel.feed_out(PipelineHttpResponseContentChunk(b'second'))
-        channel.feed_out(PipelineHttpResponseEnd())
+        )))
+        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunk(b'second')))
+        channel.feed_in(fbi.wrap(PipelineHttpResponseEnd()))
 
         out = channel.drain()
 
@@ -557,21 +599,24 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
         """Test chunked encoding with larger chunk sizes."""
 
         encoder = PipelineHttpResponseEncoder()
-        channel = PipelineChannel([encoder], TERMINAL_EMIT_CHANNEL_CONFIG)
+        channel = PipelineChannel([
+            encoder,
+            fbi := FeedbackInboundChannelPipelineHandler(),
+        ])
 
-        channel.feed_out(PipelineHttpResponseHead(
+        channel.feed_in(fbi.wrap(PipelineHttpResponseHead(
             version=HttpVersion(1, 1),
             status=200,
             reason='OK',
             headers=HttpHeaders([
                 ('Transfer-Encoding', 'chunked'),
             ]),
-        ))
+        )))
 
         # 256 byte chunk -> 100 in hex
         data = b'x' * 256
-        channel.feed_out(PipelineHttpResponseContentChunk(data))
-        channel.feed_out(PipelineHttpResponseEnd())
+        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunk(data)))
+        channel.feed_in(fbi.wrap(PipelineHttpResponseEnd()))
 
         out = channel.drain()
 

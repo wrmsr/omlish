@@ -140,17 +140,17 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
     ##
 
     @dc.dataclass(frozen=True)
-    class Emit:
+    class FeedOut:
         def __repr__(self) -> str:
             return f'{type(self).__name__}()'
 
         def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
-            ctx.emit(msg)
+            ctx.feed_out(msg)
             return (msg,)
 
     @classmethod
-    def emit(cls) -> FlatMapChannelPipelineHandlerFn:
-        return cls.Emit()
+    def feed_out(cls) -> FlatMapChannelPipelineHandlerFn:
+        return cls.FeedOut()
 
     #
 
@@ -229,18 +229,17 @@ class FlatMapChannelPipelineHandlers(NamespaceClass):
     #
 
     @classmethod
-    def emit_and_drop(
+    def feed_out_and_drop(
             cls,
-            direction: ChannelPipelineDirectionOrDuplex,
             *,
             filter: ta.Optional[ChannelPipelineHandlerFn[ta.Any, bool]] = None,  # noqa
     ) -> ChannelPipelineHandler:
         fn = FlatMapChannelPipelineHandlerFns.compose(
-            FlatMapChannelPipelineHandlerFns.emit(),
+            FlatMapChannelPipelineHandlerFns.feed_out(),
             FlatMapChannelPipelineHandlerFns.drop(),
         )
 
         if filter is not None:
             fn = FlatMapChannelPipelineHandlerFns.filter(filter, fn)
 
-        return cls.new(direction, fn)
+        return cls.new('inbound', fn)

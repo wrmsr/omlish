@@ -5,11 +5,7 @@ import unittest
 from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
 from ..core import PipelineChannel
-from ..handlers.flatmap import FlatMapChannelPipelineHandlers
-
-
-INBOUND_EMIT_TERMINAL = FlatMapChannelPipelineHandlers.emit_and_drop('inbound')
-OUTBOUND_EMIT_TERMINAL = FlatMapChannelPipelineHandlers.emit_and_drop('outbound')
+from ..handlers.queues import InboundQueueChannelPipelineHandler
 
 
 class IntIncInboundHandler(ChannelPipelineHandler):
@@ -61,88 +57,85 @@ class ReplaceSelfInboundHandler(ChannelPipelineHandler):
 class TestCore(unittest.TestCase):
     def test_core(self):
         ch = PipelineChannel([
-            OUTBOUND_EMIT_TERMINAL,
             IntIncInboundHandler(),
             IntStrDuplexHandler(),
-            INBOUND_EMIT_TERMINAL,
+            ibq := InboundQueueChannelPipelineHandler(),
         ])
 
         ch.feed_in('hi')
-        assert ch.drain() == ['hi']
+        assert ibq.drain() == ['hi']
 
         ch.feed_in(42)
-        assert ch.drain() == ['43']
+        assert ibq.drain() == ['43']
 
-        ch.feed_out('24')
+        ch.pipeline._innermost.feed_out('24')  # noqa
         assert ch.drain() == [24]
 
         #
 
         ch.pipeline.add_outer_to(
-            ch.pipeline.handlers()[1],
+            ch.pipeline.handlers()[0],
             IntMulThreeInboundHandler(),
         )
 
         ch.feed_in(42)
-        assert ch.drain() == ['127']
+        assert ibq.drain() == ['127']
 
-        ch.feed_out('24')
+        ch.pipeline._innermost.feed_out('24')  # noqa
         assert ch.drain() == [24]
 
         #
 
-        ch.pipeline.remove(ch.pipeline.handlers()[2])
+        ch.pipeline.remove(ch.pipeline.handlers()[1])
 
         ch.feed_in(42)
-        assert ch.drain() == ['126']
+        assert ibq.drain() == ['126']
 
-        ch.feed_out(24)
+        ch.pipeline._innermost.feed_out('24')  # noqa
         assert ch.drain() == [24]
 
         #
 
-        ch.pipeline.replace(ch.pipeline.handlers()[1], IntIncInboundHandler())
+        ch.pipeline.replace(ch.pipeline.handlers()[0], IntIncInboundHandler())
 
         ch.feed_in('hi')
-        assert ch.drain() == ['hi']
+        assert ibq.drain() == ['hi']
 
         ch.feed_in(42)
-        assert ch.drain() == ['43']
+        assert ibq.drain() == ['43']
 
-        ch.feed_out('24')
+        ch.pipeline._innermost.feed_out('24')  # noqa
         assert ch.drain() == [24]
 
     def test_replace_self(self):
         ch = PipelineChannel([
-            OUTBOUND_EMIT_TERMINAL,
             DuplicateInboundHandler(),
             ReplaceSelfInboundHandler(IntIncInboundHandler),
             IntStrDuplexHandler(),
-            INBOUND_EMIT_TERMINAL,
+            ibq := InboundQueueChannelPipelineHandler(),
         ])
 
         ch.feed_in(42)
-        assert ch.drain() == ['43', '43']
+        assert ibq.drain() == ['43', '43']
 
     def test_named(self):
         ch = PipelineChannel([
-            OUTBOUND_EMIT_TERMINAL,
-            INBOUND_EMIT_TERMINAL,
+            ibq := InboundQueueChannelPipelineHandler(),
         ])
 
-        ch.pipeline.add_inner_to(ch.pipeline.handlers()[0], IntStrDuplexHandler(), name='int_str')
-        ch.pipeline.add_inner_to(ch.pipeline.handlers()[0], IntIncInboundHandler(), name='int_inc')
+        ch.pipeline.add_outermost(IntStrDuplexHandler(), name='int_str')
+        ch.pipeline.add_outer_to(ch.pipeline.handlers()[0], IntIncInboundHandler(), name='int_inc')
 
         ch.feed_in(42)
-        assert ch.drain() == ['43']
+        assert ibq.drain() == ['43']
 
-        ch.feed_out('24')
+        ch.pipeline._innermost.feed_out('24')  # noqa
         assert ch.drain() == [24]
 
         ch.pipeline.remove(ch.pipeline.handlers_by_name()['int_inc'])
 
         ch.feed_in(42)
-        assert ch.drain() == ['42']
+        assert ibq.drain() == ['42']
 
-        ch.feed_out('24')
+        ch.pipeline._innermost.feed_out('24')  # noqa
         assert ch.drain() == [24]

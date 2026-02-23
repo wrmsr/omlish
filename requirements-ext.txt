@@ -23,7 +23,7 @@ torchvision==0.25.0
 
 diffusers==0.36.0  # @omlish-venv !14t !14dt
 
-scipy==1.17.0
+scipy==1.17.1
 scikit-learn==1.8.0
 scikit-image==0.26.0
 
@@ -70,5 +70,5 @@ debugpy==1.8.20
 # jupyter
 
 jupyter==1.1.1
-jupyterlab==4.5.4
+jupyterlab==4.5.5
 notebook==7.5.3

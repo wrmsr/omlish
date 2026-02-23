@@ -9,10 +9,11 @@ from omlish.lite.check import check
 from omlish.lite.namespaces import NamespaceClass
 
 from .errors import ContextInvalidatedChannelPipelineError
-from .errors import FinalOutputdChannelPipelineError
+from .errors import FinalOutputChannelPipelineError
 from .errors import MessageNotPropagatedChannelPipelineError
 from .errors import MessageReachedTerminalChannelPipelineError
 from .errors import SawFinalInputChannelPipelineError
+from .errors import UnhandleableChannelPipelineError
 
 
 F = ta.TypeVar('F')
@@ -61,19 +62,17 @@ class ChannelPipelineMessages(NamespaceClass):
         def __repr__(self) -> str:
             return f'{type(self).__name__}@{id(self):x}()'
 
-
-##
-
-
-class ChannelPipelineEvents(NamespaceClass):
-    """Standard events emitted from a channel pipeline."""
+    #
 
     @ta.final
     @dc.dataclass(frozen=True)
-    class Error:
+    class Error(NeverOutbound):
         """Signals an exception occurred in the pipeline."""
 
         exc: BaseException
+
+        direction: ta.Optional['ChannelPipelineDirection'] = None
+        handler: ta.Optional['ChannelPipelineHandlerRef'] = None
 
 
 ##
@@ -313,11 +312,19 @@ class ChannelPipelineHandlerContext:
         if self._invalidated:
             raise ContextInvalidatedChannelPipelineError
         check.not_isinstance(msg, self._FORBIDDEN_INBOUND_TYPES)
+        check.state(self._pipeline._channel._execution_depth > 0)  # noqa
 
         if isinstance(msg, ChannelPipelineMessages.MustPropagate):
             self._pipeline._channel._propagation.add_must(self, 'inbound', msg)  # noqa
 
-        self._handler.inbound(self, msg)
+        try:
+            self._handler.inbound(self, msg)
+        except UnhandleableChannelPipelineError:
+            raise
+        except BaseException as e:
+            if self._handling_error or self._pipeline._config.raise_immediately:  # noqa
+                raise
+            self._handle_error(e, 'inbound')
 
     _FORBIDDEN_OUTBOUND_TYPES: ta.ClassVar[ta.Tuple[type, ...]] = (
         ChannelPipelineMessages.NeverOutbound,
@@ -329,16 +336,43 @@ class ChannelPipelineHandlerContext:
         if self._invalidated:
             raise ContextInvalidatedChannelPipelineError
         check.not_isinstance(msg, self._FORBIDDEN_OUTBOUND_TYPES)
+        check.state(self._pipeline._channel._execution_depth > 0)  # noqa
 
         if isinstance(msg, ChannelPipelineMessages.MustPropagate):
             self._pipeline._channel._propagation.add_must(self, 'outbound', msg)  # noqa
 
-        self._handler.outbound(self, msg)
+        try:
+            self._handler.outbound(self, msg)
+        except UnhandleableChannelPipelineError:
+            raise
+        except BaseException as e:
+            if self._handling_error or self._pipeline._config.raise_immediately:  # noqa
+                raise
+            self._handle_error(e, 'outbound')
+
+    #
+
+    _handling_error: bool = False
+
+    def _handle_error(self, e: BaseException, direction: 'ChannelPipelineDirection') -> None:
+        check.state(not self._handling_error)
+        self._handling_error = True
+
+        try:
+            try:
+                self.feed_in(ChannelPipelineMessages.Error(e, direction, self._ref))
+            except UnhandleableChannelPipelineError:  # noqa
+                raise
+            except BaseException as e2:  # noqa
+                raise
+
+        finally:
+            self._handling_error = False
 
     ##
-    # The following attempts to catch invalid inputs statically, but there's no explicit way to do this in mypy - the
-    # following trick only works if there's an unconditional statement after the attempted calls, but it's better than
-    # nothing.
+    # The following overloads attempts to catch invalid inputs statically, but there's no explicit way to do this in
+    # mypy - the following trick only works if there's an unconditional statement after the attempted calls, but it's
+    # better than nothing.
 
     @ta.overload
     def feed_in(
@@ -384,9 +418,8 @@ class ChannelPipelineHandlerContext:
 
     #
 
-    def emit(self, msg: ta.Any) -> None:
-        self._pipeline._channel._emit(msg)  # noqa
-
+    def feed_final_output(self) -> None:
+        self.feed_out(ChannelPipelineMessages.FinalOutput())
 
 ##
 
@@ -443,10 +476,7 @@ class ChannelPipeline:
     @ta.final
     @dc.dataclass(frozen=True)
     class Config:
-        terminal_mode: ta.Literal['drop', 'emit', 'raise'] = 'raise'
-
-        def __post_init__(self) -> None:
-            check.in_(self.terminal_mode, ('drop', 'emit', 'raise'))
+        raise_immediately: bool = False
 
     def __init__(
             self,
@@ -695,7 +725,7 @@ class ChannelPipeline:
             if isinstance(msg, ChannelPipelineMessages.MustPropagate):
                 ctx._pipeline._channel._propagation.remove_must(ctx, 'outbound', msg)  # noqa
 
-            ctx._pipeline._terminal('outbound', ctx, msg)  # noqa
+            ctx._pipeline._channel._terminal_outbound(ctx, msg)  # noqa
 
     class _Innermost(ChannelPipelineHandler):
         """'Tail' in Netty terms."""
@@ -707,27 +737,7 @@ class ChannelPipeline:
             if isinstance(msg, ChannelPipelineMessages.MustPropagate):
                 ctx._pipeline._channel._propagation.remove_must(ctx, 'inbound', msg)  # noqa
 
-            ctx._pipeline._terminal('inbound', ctx, msg)  # noqa
-
-    def _terminal(self, direction: ChannelPipelineDirection, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if self._channel._handle_terminal(direction, ctx, msg):  # noqa
-            return
-
-        if (tm := self._config.terminal_mode) == 'drop':
-            pass
-
-        elif tm == 'emit':
-            ctx.emit(msg)
-
-        elif tm == 'raise':
-            if not isinstance(msg, ChannelPipelineMessages.MustPropagate):
-                raise MessageReachedTerminalChannelPipelineError(
-                    inbound=[msg] if direction == 'inbound' else None,
-                    outbound=[msg] if direction == 'outbound' else None,
-                )
-
-        else:
-            raise RuntimeError(f'unknown terminal mode {tm}')
+            ctx._pipeline._channel._terminal_inbound(ctx, msg)  # noqa
 
     #
 
@@ -889,11 +899,15 @@ class PipelineChannel:
     @ta.final
     @dc.dataclass(frozen=True)
     class Config:
-        raise_handler_errors: bool = False
+        # TODO: 'close'? 'deadletter'? combination? composition? ...
+        inbound_terminal: ta.Literal['drop', 'raise'] = 'raise'
 
         disable_propagation_checking: bool = False
 
         pipeline: ChannelPipeline.Config = ChannelPipeline.Config()
+
+        def __post_init__(self) -> None:
+            check.in_(self.inbound_terminal, ('drop', 'raise'))
 
     # Available here for user convenience (so configuration of a PipelineChannel's ChannelPipeline doesn't require
     # actually importing ChannelPipeline to get to its Config class).
@@ -912,7 +926,7 @@ class PipelineChannel:
 
         self._services: ta.Final[PipelineChannel._Services] = PipelineChannel._Services(services or [])
 
-        self._emitted_q: ta.Final[collections.deque[ta.Any]] = collections.deque()
+        self._out_q: ta.Final[collections.deque[ta.Any]] = collections.deque()
 
         self._saw_final_input = False
         self._saw_final_output = False
@@ -1080,15 +1094,11 @@ class PipelineChannel:
 
                 ctx._inbound(msg)  # noqa
 
-        except BaseException as e:  # noqa
-            if self._config.raise_handler_errors:
-                raise
-            self._handle_error(e)
-
         finally:
             self._step_out()
 
     def feed_in_to(self, handler_ref: ChannelPipelineHandlerRef, *msgs: ta.Any) -> None:
+        # TODO: remove? internal only? used by replace-self pattern
         ctx = handler_ref._context  # noqa
         check.is_(ctx._pipeline, self._pipeline)  # noqa
         self._feed_in_to(ctx, msgs)
@@ -1101,72 +1111,40 @@ class PipelineChannel:
 
     #
 
-    def _handle_terminal(self, direction: ChannelPipelineDirection, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:  # noqa
-        if direction == 'outbound':
-            if isinstance(msg, ChannelPipelineMessages.FinalOutput):
-                self._saw_final_output = True
-            elif self._saw_final_output:
-                raise FinalOutputdChannelPipelineError  # noqa
+    def _terminal_inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:  # noqa
+        if (tm := self._config.inbound_terminal) == 'drop':
+            pass
 
-        # FIXME: lol
-        return False
+        elif tm == 'raise':
+            if not isinstance(msg, ChannelPipelineMessages.MustPropagate):
+                raise MessageReachedTerminalChannelPipelineError(inbound=msg)
 
-    # def _feed_out_to(self, ctx: ChannelPipelineHandlerContext, msgs: ta.Iterable[ta.Any]) -> None:
-    #     self._step_in()
-    #     try:
-    #         for msg in msgs:
-    #             if isinstance(msg, ChannelPipelineMessages.FinalOutput):
-    #                 self._saw_final_output = True
-    #             elif self._saw_final_output:
-    #                 raise FinalOutputdChannelPipelineError  # noqa
-    #
-    #             ctx._outbound(msg)  # noqa
-    #
-    #     except BaseException as e:  # noqa
-    #         if self._config.raise_handler_errors:
-    #             raise
-    #         self._handle_error(e)
-    #
-    #     finally:
-    #         self._step_out()
+        else:
+            raise RuntimeError(f'unknown inbound terminal mode {tm}')
 
-    # def feed_out_to(self, handler_ref: ChannelPipelineHandlerRef, *msgs: ta.Any) -> None:
-    #     ctx = handler_ref._context  # noqa
-    #     check.is_(ctx._pipeline, self._pipeline)  # noqa
-    #     self._feed_out_to(ctx, msgs)
+    def _terminal_outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:  # noqa
+        if isinstance(msg, ChannelPipelineMessages.FinalOutput):
+            self._saw_final_output = True
+        elif self._saw_final_output:
+            raise FinalOutputChannelPipelineError
 
-    # def feed_out(self, *msgs: ta.Any) -> None:
-    #     self._feed_out_to(self._pipeline._innermost, msgs)  # noqa
-
-    # def feed_final_output(self) -> None:
-    #     self._feed_out_to(self._pipeline._innermost, (ChannelPipelineMessages.FinalOutput(),))  # noqa
+        self._out_q.append(msg)
 
     #
-
-    def _emit(self, msg: ta.Any) -> None:
-        self._emitted_q.append(msg)
 
     def poll(self) -> ta.Optional[ta.Any]:
-        if not self._emitted_q:
+        if not self._out_q:
             return None
 
-        return self._emitted_q.popleft()
+        return self._out_q.popleft()
 
     def drain(self) -> ta.List[ta.Any]:
         out: ta.List[ta.Any] = []
 
-        while self._emitted_q:
-            out.append(self._emitted_q.popleft())
+        while self._out_q:
+            out.append(self._out_q.popleft())
 
         return out
-
-    #
-
-    def _handle_error(self, e: BaseException) -> None:
-        self._emit(ChannelPipelineEvents.Error(e))
-
-        if not self._saw_final_output:
-            self.feed_final_output()
 
     #
 

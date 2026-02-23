@@ -8,13 +8,7 @@ from ....core import ChannelPipelineMessages
 from ....core import PipelineChannel
 from ..responses import PipelineHttpResponseAborted
 from ..responses import PipelineHttpResponseDecoder
-
-
-TERMINAL_EMIT_CHANNEL_CONFIG = PipelineChannel.Config(
-    pipeline=PipelineChannel.PipelineConfig(
-        terminal_mode='emit',
-    ),
-)
+from ....handlers.queues import InboundQueueChannelPipelineHandler
 
 
 class TestPipelineHttpResponseDecoder(unittest.TestCase):
@@ -22,12 +16,15 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         """Test basic HTTP response head parsing."""
 
         decoder = PipelineHttpResponseDecoder()
-        channel = PipelineChannel([decoder], TERMINAL_EMIT_CHANNEL_CONFIG)
+        channel = PipelineChannel([
+            decoder,
+            ibq := InboundQueueChannelPipelineHandler(),
+        ])
 
         response = b'HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\n'
         channel.feed_in(response)
 
-        out = channel.drain()
+        out = ibq.drain()
         self.assertEqual(len(out), 1)
 
         head = out[0]
@@ -39,12 +36,15 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         """Test response head + body bytes received together."""
 
         decoder = PipelineHttpResponseDecoder()
-        channel = PipelineChannel([decoder], TERMINAL_EMIT_CHANNEL_CONFIG)
+        channel = PipelineChannel([
+            decoder,
+            ibq := InboundQueueChannelPipelineHandler(),
+        ])
 
         response = b'HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nhello'
         channel.feed_in(response)
 
-        out = channel.drain()
+        out = ibq.drain()
         self.assertEqual(len(out), 2)
 
         # First: head
@@ -59,15 +59,18 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         """Test response head received incrementally."""
 
         decoder = PipelineHttpResponseDecoder()
-        channel = PipelineChannel([decoder], TERMINAL_EMIT_CHANNEL_CONFIG)
+        channel = PipelineChannel([
+            decoder,
+            ibq := InboundQueueChannelPipelineHandler(),
+        ])
 
         # Send head in parts
         channel.feed_in(b'HTTP/1.1 200 OK\r\n')
-        out = channel.drain()
+        out = ibq.drain()
         self.assertEqual(len(out), 0)  # Not complete yet
 
         channel.feed_in(b'Content-Type: text/plain\r\n\r\n')
-        out = channel.drain()
+        out = ibq.drain()
         self.assertEqual(len(out), 1)
 
         head = out[0]
@@ -78,7 +81,10 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         """Test EOF arriving before head is complete raises ValueError."""
 
         decoder = PipelineHttpResponseDecoder()
-        channel = PipelineChannel([decoder], TERMINAL_EMIT_CHANNEL_CONFIG)
+        channel = PipelineChannel([
+            decoder,
+            ibq := InboundQueueChannelPipelineHandler(),
+        ])
 
         # Send partial head
         channel.feed_in(b'HTTP/1.1 200 OK\r\n')
@@ -86,7 +92,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         # Send EOF
         channel.feed_final_input()
 
-        out = channel.drain()
+        out = ibq.drain()
 
         # Should get an aborted message
         aborted, eof = out

@@ -95,14 +95,13 @@ def build_http_client_channel() -> PipelineChannel:
     """Build a client channel with encoder, decoder, and handler."""
 
     return PipelineChannel([
-        FlatMapChannelPipelineHandlers.emit_and_drop(
-            'outbound',
-            filter=ChannelPipelineHandlerFns.no_context(ByteStreamBuffers.can_bytes),
-        ),
         PipelineHttpResponseDecoder(),
         PipelineHttpResponseChunkedDecoder(),
         PipelineHttpRequestEncoder(),
         HttpClientHandler(),
+        FlatMapChannelPipelineHandlers.feed_out_and_drop(
+            filter=ChannelPipelineHandlerFns.isinstance(FullPipelineHttpRequest),
+        ),
     ])
 
 
@@ -147,7 +146,7 @@ async def fetch_url(url: str = 'http://example.com/') -> None:
                 'User-Agent': 'omlish-http-client/0.1',
             },
         )
-        channel.feed_out(request)
+        channel.feed_in(request)
 
         # Run driver to process request/response
         drv = AsyncioStreamChannelPipelineDriver(

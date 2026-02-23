@@ -45,7 +45,7 @@ class KvStoreHandler(ChannelPipelineHandler):
         key = self._parse_key(head.target)
         if key is None:
             self._write_response(ctx, 400, b'bad request')
-            ctx.channel.feed_final_output()
+            ctx.feed_final_output()
             return
 
         method = head.method.upper()
@@ -55,7 +55,7 @@ class KvStoreHandler(ChannelPipelineHandler):
             else:
                 b = self._items[key].encode('utf-8')
                 self._write_response(ctx, 200, b)
-            ctx.channel.feed_final_output()
+            ctx.feed_final_output()
             return
 
         if method in ('POST', 'PUT'):
@@ -63,7 +63,7 @@ class KvStoreHandler(ChannelPipelineHandler):
             self._items[key] = s
             code = 201 if method == 'POST' else 200
             self._write_response(ctx, code, s.encode('utf-8'))
-            ctx.channel.feed_final_output()
+            ctx.feed_final_output()
             return
 
         if method == 'DELETE':
@@ -72,11 +72,11 @@ class KvStoreHandler(ChannelPipelineHandler):
             else:
                 del self._items[key]
                 self._write_response(ctx, 200, b'deleted')
-            ctx.channel.feed_final_output()
+            ctx.feed_final_output()
             return
 
         self._write_response(ctx, 405, b'method not allowed')
-        ctx.channel.feed_final_output()
+        ctx.feed_final_output()
 
     def _parse_key(self, target: str) -> ta.Optional[str]:
         # strip querystring

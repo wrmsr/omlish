@@ -48,21 +48,16 @@ class PingHandler(ChannelPipelineHandler):
         ctx.feed_out(resp)
 
         # Request logical close; driver will close transport after flushing outbound.
-        ctx.channel.feed_final_output()
+        ctx.feed_final_output()
 
 
 def build_http_ping_channel() -> PipelineChannel:
     return PipelineChannel(
         [
-            FlatMapChannelPipelineHandlers.emit_and_drop(
-                'outbound',
-                filter=ChannelPipelineHandlerFns.no_context(ByteStreamBuffers.can_bytes),
-            ),
             PipelineHttpRequestHeadDecoder(),
             PipelineHttpResponseEncoder(),
             PingHandler(),
         ],
-        PipelineChannel.Config(raise_handler_errors=True),
     )
 
 

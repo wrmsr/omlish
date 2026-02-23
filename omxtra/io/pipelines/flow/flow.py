@@ -9,7 +9,6 @@ from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 from omlish.lite.namespaces import NamespaceClass
 
-from ..core import ChannelPipelineEvents
 from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
 from ..core import ChannelPipelineHandlerNotification
@@ -22,12 +21,18 @@ from ..errors import FlowControlValidationChannelPipelineError
 ##
 
 
-class ChannelPipelineFlowControlEvents(NamespaceClass):
+class ChannelPipelineFlowControlMessages(NamespaceClass):
     @ta.final
     @dc.dataclass(frozen=True)
-    class WritabilityChanged:
+    class WritabilityChanged(ChannelPipelineMessages.NeverInbound):
         is_writable: bool
         pending_outbound: int
+
+
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class FlowCapacityExceeded(ChannelPipelineMessages.NeverInbound):
+        pass
 
 
 class ChannelPipelineFlowCapacityExceededError(Exception):
@@ -198,8 +203,8 @@ class FlowControlChannelPipelineHandler(ChannelPipelineFlowControl, ChannelPipel
                     return
 
                 elif pol == 'close':
-                    ctx.emit(ChannelPipelineEvents.Error(ChannelPipelineFlowCapacityExceededError()))
-                    ctx.channel.feed_final_output()
+                    ctx.feed_out(ChannelPipelineFlowControlMessages.FlowCapacityExceeded())
+                    ctx.feed_out(ChannelPipelineMessages.FinalOutput())
                     return
 
                 elif pol == 'raise':
@@ -211,7 +216,7 @@ class FlowControlChannelPipelineHandler(ChannelPipelineFlowControl, ChannelPipel
         self._out_q.append((msg, cost))
         self._pending_out += cost
 
-        self._update_writability()
+        self._update_writability(ctx)
 
     #
 
@@ -243,7 +248,7 @@ class FlowControlChannelPipelineHandler(ChannelPipelineFlowControl, ChannelPipel
         self._update_writability()
         return out
 
-    def _update_writability(self) -> ta.Optional[bool]:
+    def _update_writability(self, ctx: ta.Optional[ChannelPipelineHandlerContext] = None) -> ta.Optional[bool]:
         before = self._writable
         after = before
 
@@ -258,6 +263,7 @@ class FlowControlChannelPipelineHandler(ChannelPipelineFlowControl, ChannelPipel
 
         self._writable = after
 
-        self._channel.feed_in(ChannelPipelineFlowControlEvents.WritabilityChanged(after, self._pending_out))
+        if ctx is not None:  # FIXME: this is all nonsense lol
+            ctx.feed_out(ChannelPipelineFlowControlMessages.WritabilityChanged(after, self._pending_out))
 
         return after

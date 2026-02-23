@@ -12,6 +12,13 @@ class ChannelPipelineError(Exception):
 
 
 ##
+
+
+class UnhandleableChannelPipelineError(ChannelPipelineError):
+    pass
+
+
+##
 # state
 
 
@@ -23,7 +30,7 @@ class SawFinalInputChannelPipelineError(ChannelPipelineError):
     pass
 
 
-class FinalOutputdChannelPipelineError(ChannelPipelineError):
+class FinalOutputChannelPipelineError(ChannelPipelineError):
     pass
 
 
@@ -48,12 +55,12 @@ class MessageChannelPipelineError(ChannelPipelineError):
 
 
 @dc.dataclass(repr=False)
-class MessageNotPropagatedChannelPipelineError(MessageChannelPipelineError):
+class MessageNotPropagatedChannelPipelineError(MessageChannelPipelineError, UnhandleableChannelPipelineError):
     pass
 
 
 @dc.dataclass(repr=False)
-class MessageReachedTerminalChannelPipelineError(MessageChannelPipelineError):
+class MessageReachedTerminalChannelPipelineError(MessageChannelPipelineError, UnhandleableChannelPipelineError):
     pass
 
 
