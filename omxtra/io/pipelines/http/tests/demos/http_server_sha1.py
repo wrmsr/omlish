@@ -11,8 +11,8 @@ import typing as ta
 from ....core import ChannelPipelineHandler
 from ....core import ChannelPipelineHandlerContext
 from ....core import PipelineChannel
-from ....drivers.asyncio import BytesFlowControlAsyncioStreamChannelPipelineDriver
-from ....flow.bytes import BytesFlowControlChannelPipelineHandler
+from ....drivers.asyncio import AsyncioStreamChannelPipelineDriver
+from ....flow.stub import StubChannelPipelineFlow
 from ...requests import PipelineHttpRequestAborted
 from ...requests import PipelineHttpRequestContentChunk
 from ...requests import PipelineHttpRequestEnd
@@ -95,8 +95,8 @@ class Sha1Handler(ChannelPipelineHandler):
 
 def build_http_sha1_channel(
         *,
-        outbound_capacity: ta.Optional[int] = 1 << 22,
-        outbound_overflow_policy: ta.Literal['allow', 'close', 'raise', 'drop'] = 'close',
+        # outbound_capacity: ta.Optional[int] = 1 << 22,
+        # outbound_overflow_policy: ta.Literal['allow', 'close', 'raise', 'drop'] = 'close',
 
         max_head: int = 64 << 10,
 
@@ -105,13 +105,6 @@ def build_http_sha1_channel(
 ) -> PipelineChannel:
     return PipelineChannel(
         [
-
-            BytesFlowControlChannelPipelineHandler(
-                BytesFlowControlChannelPipelineHandler.Config(
-                    outbound_capacity=outbound_capacity,
-                    outbound_overflow_policy=outbound_overflow_policy,
-                ),
-            ),
 
             PipelineHttpRequestHeadDecoder(
                 max_head=max_head,
@@ -126,6 +119,10 @@ def build_http_sha1_channel(
 
             Sha1Handler(),
 
+        ],
+
+        services=[
+            StubChannelPipelineFlow(),
         ],
     )
 
@@ -155,11 +152,10 @@ async def serve_sha1(
 
         )
 
-        drv = BytesFlowControlAsyncioStreamChannelPipelineDriver(
+        drv = AsyncioStreamChannelPipelineDriver(
             ch,
             reader,
             writer,
-            backpressure_sleep=0.001,
         )
 
         await drv.run()

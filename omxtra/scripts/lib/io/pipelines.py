@@ -32,12 +32,12 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='errors.py', sha1='a6e20daf54f563f7d2aa4f28fce87fa06417facb'),
             dict(path='../../../omlish/io/streams/types.py', sha1='8a12dc29f6e483dd8df5336c0d9b58a00b64e7ed'),
-            dict(path='core.py', sha1='2af962be14520e75814823b34e211e026ff79ed4'),
+            dict(path='core.py', sha1='c74f5770462abc121788100996e7266e11699b22'),
             dict(path='../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
             dict(path='bytes/buffering.py', sha1='aa8375c8ef0689db865bb4009afd3ed8dcc2bd12'),
-            dict(path='flow/types.py', sha1='920eb732c16ac52973ee43cd818aa098d2da1907'),
+            dict(path='flow/types.py', sha1='839f08718c67d2d84e56aee973ba1c9c34afb732'),
             dict(path='handlers/flatmap.py', sha1='0683826c17c2f87384addca591761593a6fff515'),
             dict(path='handlers/fns.py', sha1='75e982604574d6ffaacf9ac1f37ab6e9edbd608d'),
             dict(path='handlers/queues.py', sha1='53be6d12d02baa192d25fe4af3a0712ce6e62d6f'),
@@ -45,7 +45,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/io/streams/scanning.py', sha1='4c0323e0b11cd506f7b6b4cf28ea4d7c6064b9d3'),
             dict(path='bytes/queues.py', sha1='38b11596cd0fa2367825252413923f1292c14f4e'),
             dict(path='../../../omlish/io/streams/segmented.py', sha1='f855d67d88ed71bbe2bbeee09321534f0ef18e24'),
-            dict(path='bytes/decoders.py', sha1='75838188cc007ec0622079998740e54c7b454ea0'),
+            dict(path='bytes/decoders.py', sha1='d5fa28b723cdd66cc17e9a73632a51b9f031baf2'),
             dict(path='_amalg.py', sha1='f57d710297d549e3b788af08eeb44cf5ac1bab07'),
         ],
     )
@@ -1400,6 +1400,10 @@ class ChannelPipelineHandlerContext:
         return self._pipeline._channel  # noqa
 
     @property
+    def services(self) -> 'PipelineChannel._Services':  # noqa
+        return self._pipeline._channel._services  # noqa
+
+    @property
     def handler(self) -> 'ChannelPipelineHandler':
         return self._handler
 
@@ -2183,7 +2187,7 @@ class PipelineChannel:
         def __iter__(self) -> ta.Iterator[ChannelPipelineService]:
             return iter(self._lst)
 
-        def __contains__(self, item: ta.Any) -> bool:
+        def __contains__(self, item: ChannelPipelineService) -> bool:
             return item in self._lst
 
         @dc.dataclass(frozen=True)
@@ -2978,6 +2982,13 @@ class InboundBytesBufferingChannelPipelineHandler(ChannelPipelineHandler, Abstra
 
 
 class ChannelPipelineFlowMessages(NamespaceClass):
+    """
+    Note: these inbound messages will never be sent without a `ChannelPipelineFlow` instance in `channel.services` -
+    thus it's safe to refer to `ctx.services[ChannelPipelineFlow]` when handling these.
+    """
+
+    #
+
     @ta.final
     @dc.dataclass(frozen=True)
     class FlushInput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelInboundInvoker::fireChannelReadComplete`  # noqa
@@ -3010,7 +3021,6 @@ class ChannelPipelineFlowMessages(NamespaceClass):
 
 
 class ChannelPipelineFlow(ChannelPipelineService, Abstract):
-    @property
     @abc.abstractmethod
     def is_auto_read(self) -> bool:
         raise NotImplementedError
@@ -4586,7 +4596,12 @@ class UnicodeDecoderChannelPipelineHandler(ChannelPipelineHandler):
 
 
 class DelimiterFrameDecoderChannelPipelineHandler(InboundBytesBufferingChannelPipelineHandler):
-    """bytes-like -> frames using longest-match delimiter semantics."""
+    """
+    bytes-like -> frames using longest-match delimiter semantics.
+
+    TODO:
+     - flow control, *or* replace with BytesToMessageDecoderChannelPipelineHandler
+    """
 
     def __init__(
             self,
@@ -4722,7 +4737,7 @@ class BytesToMessageDecoderChannelPipelineHandler(InboundBytesBufferingChannelPi
         if (
                 self._called_decode and
                 not self._produced_messages and
-                not ctx.channel.services[ChannelPipelineFlow].is_auto_read
+                not ctx.services[ChannelPipelineFlow].is_auto_read()
         ):
             ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
 

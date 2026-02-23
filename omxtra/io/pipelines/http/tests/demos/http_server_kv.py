@@ -6,8 +6,8 @@ import typing as ta
 from ....core import ChannelPipelineHandler
 from ....core import ChannelPipelineHandlerContext
 from ....core import PipelineChannel
-from ....drivers.asyncio import BytesFlowControlAsyncioStreamChannelPipelineDriver
-from ....flow.bytes import BytesFlowControlChannelPipelineHandler
+from ....drivers.asyncio import AsyncioStreamChannelPipelineDriver
+from ....flow.stub import StubChannelPipelineFlow
 from ...requests import FullPipelineHttpRequest
 from ...server.requests import PipelineHttpRequestBodyAggregator
 from ...server.requests import PipelineHttpRequestHeadDecoder
@@ -118,34 +118,32 @@ class KvStoreHandler(ChannelPipelineHandler):
 def build_http_kv_channel(
         items: ta.MutableMapping[str, str],
         *,
-        outbound_capacity: ta.Optional[int] = 1 << 22,
-        outbound_overflow_policy: ta.Literal['allow', 'close', 'raise', 'drop'] = 'close',
+        # outbound_capacity: ta.Optional[int] = 1 << 22,
+        # outbound_overflow_policy: ta.Literal['allow', 'close', 'raise', 'drop'] = 'close',
 
         max_head: int = 64 << 10,
 
         max_body: ta.Optional[int] = 1 << 20,
 ) -> PipelineChannel:
-    return PipelineChannel([
+    return PipelineChannel(
+        [
 
-        BytesFlowControlChannelPipelineHandler(
-            BytesFlowControlChannelPipelineHandler.Config(
-                outbound_capacity=outbound_capacity,
-                outbound_overflow_policy=outbound_overflow_policy,
+            PipelineHttpRequestHeadDecoder(
+                max_head=max_head,
             ),
-            validate=True,
-        ),
 
-        PipelineHttpRequestHeadDecoder(
-            max_head=max_head,
-        ),
+            PipelineHttpRequestBodyAggregator(
+                max_body=max_body,
+            ),
 
-        PipelineHttpRequestBodyAggregator(
-            max_body=max_body,
-        ),
+            KvStoreHandler(items),
 
-        KvStoreHandler(items),
+        ],
 
-    ])
+        services=[
+            StubChannelPipelineFlow(),
+        ],
+    )
 
 
 async def serve_kv(
@@ -166,11 +164,11 @@ async def serve_kv(
     items: ta.Dict[str, str] = {}
 
     async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
-        drv = BytesFlowControlAsyncioStreamChannelPipelineDriver(
+        drv = AsyncioStreamChannelPipelineDriver(
             build_http_kv_channel(items),
             reader,
             writer,
-            backpressure_sleep=0.001,
+            # backpressure_sleep=0.001,
         )
         await drv.run()
 

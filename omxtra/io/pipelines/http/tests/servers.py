@@ -7,7 +7,6 @@ import typing as ta
 
 from ...core import PipelineChannel
 from ...drivers.asyncio import AsyncioStreamChannelPipelineDriver
-from ...drivers.asyncio import BytesFlowControlAsyncioStreamChannelPipelineDriver
 
 
 ##
@@ -91,19 +90,11 @@ class HttpServerRunner:
         async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
             drv: AsyncioStreamChannelPipelineDriver
 
-            if self._use_flow_control:
-                drv = BytesFlowControlAsyncioStreamChannelPipelineDriver(
-                    self._channel_builder(),
-                    reader,
-                    writer,
-                    backpressure_sleep=0.001,
-                )
-            else:
-                drv = AsyncioStreamChannelPipelineDriver(
-                    self._channel_builder(),
-                    reader,
-                    writer,
-                )
+            drv = AsyncioStreamChannelPipelineDriver(
+                self._channel_builder(),
+                reader,
+                writer,
+            )
             await drv.run()
 
         self._server = await asyncio.start_server(

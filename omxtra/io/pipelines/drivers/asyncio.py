@@ -6,7 +6,7 @@ import typing as ta
 from omlish.io.streams.utils import ByteStreamBuffers
 
 from ..core import PipelineChannel
-from ..flow.types import ChannelPipelineFlow
+from ..flow.types import ChannelPipelineFlow  # noqa
 
 
 ##
@@ -92,71 +92,3 @@ class AsyncioStreamChannelPipelineDriver:
         except Exception:  # noqa
             # Best effort; transport close errors aren't actionable at this layer.
             pass
-
-
-class BytesFlowControlAsyncioStreamChannelPipelineDriver(AsyncioStreamChannelPipelineDriver):
-    def __init__(
-            self,
-            channel: PipelineChannel,
-            reader: asyncio.StreamReader,
-            writer: ta.Optional[asyncio.StreamWriter] = None,
-            *,
-            read_chunk_size: int = 0x10000,
-            write_chunk_max: ta.Optional[int] = None,
-
-            on_app_msg: ta.Optional[ta.Callable[[ta.Any], None]] = None,
-
-            backpressure_sleep: float = 0.,
-    ) -> None:
-        super().__init__(
-            channel,
-            reader,
-            writer,
-
-            read_chunk_size=read_chunk_size,
-            write_chunk_max=write_chunk_max,
-
-            on_app_msg=on_app_msg,
-        )
-
-        self._backpressure_sleep = backpressure_sleep
-
-        self._flow = channel.services[ChannelPipelineFlow]
-
-    async def _gate_inbound(self) -> None:
-        # while not self._flow.want_read():
-        #     await self._flush_channel()
-        #
-        #     await asyncio.sleep(self._backpressure_sleep)  # FIXME: lol - event-driven or callback?
-        #
-        #     if self._channel.saw_final_output:
-        #         break
-
-        raise NotImplementedError
-
-    async def _flush_channel(self) -> None:
-        await self._flush_outbound()
-
-        if self._on_app_msg is not None:
-            for m in self._channel.drain():
-                self._on_app_msg(m)
-
-        else:
-            # Drain to avoid unbounded app queue in examples that don't consume it.
-            self._channel.drain()
-
-    async def _flush_outbound(self) -> None:
-        if self._writer is None:
-            return
-
-        # out = self._flow.drain_outbound(self._write_chunk_max)
-        #
-        # for msg in out:
-        #     for mv in ByteStreamBuffers.iter_segments(msg):
-        #         if mv:
-        #             self._writer.write(mv)
-        #
-        # if out:
-        #     await self._writer.drain()
-
-        raise NotImplementedError

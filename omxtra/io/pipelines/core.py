@@ -993,7 +993,7 @@ class PipelineChannel:
         def __iter__(self) -> ta.Iterator[ChannelPipelineService]:
             return iter(self._lst)
 
-        def __contains__(self, item: ta.Any) -> bool:
+        def __contains__(self, item: ChannelPipelineService) -> bool:
             return item in self._lst
 
         @dc.dataclass(frozen=True)
