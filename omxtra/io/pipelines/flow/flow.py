@@ -24,7 +24,7 @@ from ..errors import FlowControlValidationChannelPipelineError
 class ChannelPipelineFlowControlMessages(NamespaceClass):
     @ta.final
     @dc.dataclass(frozen=True)
-    class WritabilityChanged(ChannelPipelineMessages.NeverInbound):
+    class WritabilityChanged(ChannelPipelineMessages.NeverOutbound):
         is_writable: bool
         pending_outbound: int
 
@@ -263,6 +263,6 @@ class FlowControlChannelPipelineHandler(ChannelPipelineFlowControl, ChannelPipel
         self._writable = after
 
         if ctx is not None:  # FIXME: this is all nonsense lol
-            ctx.feed_out(ChannelPipelineFlowControlMessages.WritabilityChanged(after, self._pending_out))
+            ctx.feed_in(ChannelPipelineFlowControlMessages.WritabilityChanged(after, self._pending_out))
 
         return after

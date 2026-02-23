@@ -57,7 +57,7 @@ class ChannelPipelineMessages(NamespaceClass):
     @ta.final
     @dc.dataclass(frozen=True)
     class FinalOutput(NeverInbound, MustPropagate):  # ~ Netty `ChannelOutboundHandler::close`
-        """Signals that the outbound stream has produced its final message."""
+        """Signals that the outbound stream has produced its final message (`close`)."""
 
         def __repr__(self) -> str:
             return f'{type(self).__name__}@{id(self):x}()'

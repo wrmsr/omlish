@@ -32,7 +32,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='errors.py', sha1='863eec379306c45bcb797ffbd31401095ca93a4e'),
             dict(path='../../../omlish/io/streams/types.py', sha1='8a12dc29f6e483dd8df5336c0d9b58a00b64e7ed'),
-            dict(path='core.py', sha1='25361575227391d44972d50fa435b45e62c0d723'),
+            dict(path='core.py', sha1='1d3006a74adcc7df737964843d3d17d5d954fe92'),
             dict(path='../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -1246,7 +1246,7 @@ class ChannelPipelineMessages(NamespaceClass):
     @ta.final
     @dc.dataclass(frozen=True)
     class FinalOutput(NeverInbound, MustPropagate):  # ~ Netty `ChannelOutboundHandler::close`
-        """Signals that the outbound stream has produced its final message."""
+        """Signals that the outbound stream has produced its final message (`close`)."""
 
         def __repr__(self) -> str:
             return f'{type(self).__name__}@{id(self):x}()'
