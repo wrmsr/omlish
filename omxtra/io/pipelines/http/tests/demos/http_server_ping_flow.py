@@ -7,7 +7,7 @@ from ....core import ChannelPipelineHandler
 from ....core import ChannelPipelineHandlerContext
 from ....core import PipelineChannel
 from ....drivers.asyncio import BytesFlowControlAsyncioStreamChannelPipelineDriver
-from ....flow.bytes import BytesFlowControlChannelPipelineHandler
+from ....flow.stub import StubChannelPipelineFlow
 from ...requests import PipelineHttpRequestHead
 from ...server.requests import PipelineHttpRequestHeadDecoder
 
@@ -57,24 +57,30 @@ class PingHandler(ChannelPipelineHandler):
 
 
 def build_http_ping_channel(
-        *,
-        outbound_capacity: ta.Optional[int] = 1 << 22,
-        outbound_overflow_policy: ta.Literal['allow', 'close', 'raise', 'drop'] = 'close',
+        # *,
+        # outbound_capacity: ta.Optional[int] = 1 << 22,
+        # outbound_overflow_policy: ta.Literal['allow', 'close', 'raise', 'drop'] = 'close',
 ) -> PipelineChannel:
-    return PipelineChannel([
+    return PipelineChannel(
+        [
 
-        BytesFlowControlChannelPipelineHandler(
-            BytesFlowControlChannelPipelineHandler.Config(
-                outbound_capacity=outbound_capacity,
-                outbound_overflow_policy=outbound_overflow_policy,
-            ),
-        ),
+            # BytesFlowControlChannelPipelineHandler(
+            #     BytesFlowControlChannelPipelineHandler.Config(
+            #         outbound_capacity=outbound_capacity,
+            #         outbound_overflow_policy=outbound_overflow_policy,
+            #     ),
+            # ),
 
-        PipelineHttpRequestHeadDecoder(),
+            PipelineHttpRequestHeadDecoder(),
 
-        PingHandler(),
+            PingHandler(),
 
-    ])
+        ],
+
+        services=[
+            StubChannelPipelineFlow(),
+        ],
+    )
 
 
 async def serve_ping(

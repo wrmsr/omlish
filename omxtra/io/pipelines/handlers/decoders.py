@@ -35,7 +35,7 @@ class MessageToMessageDecoderChannelPipelineHandler(ChannelPipelineHandler, Abst
                 if (
                         self._called_decode and
                         not self._produced_messages and
-                        not ctx.channel.services[ChannelPipelineFlow].is_auto_read
+                        not ctx.services[ChannelPipelineFlow].is_auto_read()
                 ):
                     ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
 

@@ -14,6 +14,13 @@ from ..core import ChannelPipelineService
 
 
 class ChannelPipelineFlowMessages(NamespaceClass):
+    """
+    Note: these inbound messages will never be sent without a `ChannelPipelineFlow` instance in `channel.services` -
+    thus it's safe to refer to `ctx.services[ChannelPipelineFlow]` when handling these.
+    """
+
+    #
+
     @ta.final
     @dc.dataclass(frozen=True)
     class FlushInput(ChannelPipelineMessages.NeverOutbound):  # ~ Netty `ChannelInboundInvoker::fireChannelReadComplete`  # noqa
@@ -46,7 +53,6 @@ class ChannelPipelineFlowMessages(NamespaceClass):
 
 
 class ChannelPipelineFlow(ChannelPipelineService, Abstract):
-    @property
     @abc.abstractmethod
     def is_auto_read(self) -> bool:
         raise NotImplementedError

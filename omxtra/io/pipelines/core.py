@@ -206,6 +206,10 @@ class ChannelPipelineHandlerContext:
         return self._pipeline._channel  # noqa
 
     @property
+    def services(self) -> 'PipelineChannel._Services':  # noqa
+        return self._pipeline._channel._services  # noqa
+
+    @property
     def handler(self) -> 'ChannelPipelineHandler':
         return self._handler
 

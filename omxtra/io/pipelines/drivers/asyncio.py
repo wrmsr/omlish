@@ -6,6 +6,7 @@ import typing as ta
 from omlish.io.streams.utils import ByteStreamBuffers
 
 from ..core import PipelineChannel
+from ..flow.types import ChannelPipelineFlow
 
 
 ##
@@ -120,6 +121,8 @@ class BytesFlowControlAsyncioStreamChannelPipelineDriver(AsyncioStreamChannelPip
 
         self._backpressure_sleep = backpressure_sleep
 
+        self._flow = channel.services[ChannelPipelineFlow]
+
     async def _gate_inbound(self) -> None:
         # while not self._flow.want_read():
         #     await self._flush_channel()
@@ -128,6 +131,7 @@ class BytesFlowControlAsyncioStreamChannelPipelineDriver(AsyncioStreamChannelPip
         #
         #     if self._channel.saw_final_output:
         #         break
+
         raise NotImplementedError
 
     async def _flush_channel(self) -> None:

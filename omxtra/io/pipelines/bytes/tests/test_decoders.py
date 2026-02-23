@@ -63,7 +63,6 @@ class MyFlow(ChannelPipelineFlow):
 
         self._auto_read = auto_read
 
-    @property
     def is_auto_read(self) -> bool:
         return self._auto_read
 

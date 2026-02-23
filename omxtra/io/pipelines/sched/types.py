@@ -6,12 +6,13 @@ import typing as ta
 from omlish.lite.abstract import Abstract
 
 from ..core import ChannelPipelineHandlerRef
+from ..core import ChannelPipelineService
 
 
 ##
 
 
-class ChannelPipelineScheduler(Abstract):
+class ChannelPipelineScheduling(ChannelPipelineService, Abstract):
     class Handle(Abstract):
         @abc.abstractmethod
         def cancel(self) -> None:

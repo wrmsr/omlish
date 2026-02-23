@@ -53,7 +53,12 @@ class UnicodeDecoderChannelPipelineHandler(ChannelPipelineHandler):
 
 
 class DelimiterFrameDecoderChannelPipelineHandler(InboundBytesBufferingChannelPipelineHandler):
-    """bytes-like -> frames using longest-match delimiter semantics."""
+    """
+    bytes-like -> frames using longest-match delimiter semantics.
+
+    TODO:
+     - flow control, *or* replace with BytesToMessageDecoderChannelPipelineHandler
+    """
 
     def __init__(
             self,
@@ -189,7 +194,7 @@ class BytesToMessageDecoderChannelPipelineHandler(InboundBytesBufferingChannelPi
         if (
                 self._called_decode and
                 not self._produced_messages and
-                not ctx.channel.services[ChannelPipelineFlow].is_auto_read
+                not ctx.services[ChannelPipelineFlow].is_auto_read()
         ):
             ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
 
