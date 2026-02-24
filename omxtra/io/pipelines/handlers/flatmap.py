@@ -12,6 +12,7 @@ from ..core import ChannelPipelineDirectionOrDuplex
 from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
 from ..core import ChannelPipelineHandlerFn
+from ..core import ChannelPipelineMessages
 from .fns import ChannelPipelineHandlerFns
 
 
@@ -32,7 +33,7 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
             return (
                 f'{type(self).__name__}('
                 f'{self.pred!r}'
-                f', {self.fn!r}, '
+                f', {self.fn!r}'
                 f'{f", else_fn={self.else_fn!r}" if self.else_fn is not None else ""}'
                 f')'
             )
@@ -41,7 +42,7 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
             if self.pred(ctx, msg):
                 yield from self.fn(ctx, msg)
             elif (ef := self.else_fn) is not None:
-                yield from ef(ctx, msg)
+                yield from ef(ctx, msg)  # noqa
             else:
                 yield msg
 
@@ -229,6 +230,31 @@ class FlatMapChannelPipelineHandlers(NamespaceClass):
 
     #
 
+    _NOT_MUST_PROPAGATE: ta.ClassVar[ChannelPipelineHandlerFn[ta.Any, bool]] = ChannelPipelineHandlerFns.not_(
+        ChannelPipelineHandlerFns.isinstance(ChannelPipelineMessages.MustPropagate),
+    )
+
+    @classmethod
+    def _add_drop_filters(
+            cls,
+            fn: FlatMapChannelPipelineHandlerFn,
+            *,
+            filter_type: ta.Optional[ta.Union[type, ta.Tuple[type, ...]]] = None,
+            filter: ta.Optional[ChannelPipelineHandlerFn[ta.Any, bool]] = None,  # noqa
+    ) -> FlatMapChannelPipelineHandlerFn:
+        if filter is not None:
+            fn = FlatMapChannelPipelineHandlerFns.filter(filter, fn)
+
+        if filter_type is not None:
+            fn = FlatMapChannelPipelineHandlerFns.filter(
+                ChannelPipelineHandlerFns.isinstance(filter_type),
+                fn,
+            )
+
+        fn = FlatMapChannelPipelineHandlerFns.filter(cls._NOT_MUST_PROPAGATE, fn)
+
+        return fn
+
     @classmethod
     def drop(
             cls,
@@ -237,17 +263,14 @@ class FlatMapChannelPipelineHandlers(NamespaceClass):
             filter_type: ta.Optional[ta.Union[type, ta.Tuple[type, ...]]] = None,
             filter: ta.Optional[ChannelPipelineHandlerFn[ta.Any, bool]] = None,  # noqa
     ) -> ChannelPipelineHandler:
-        fn = FlatMapChannelPipelineHandlerFns.drop()
-
-        if filter is not None:
-            fn = FlatMapChannelPipelineHandlerFns.filter(filter, fn)
-
-        if filter_type is not None:
-            fn = FlatMapChannelPipelineHandlerFns.filter(ChannelPipelineHandlerFns.isinstance(filter_type), fn)
-
-        return cls.new(direction, fn)
-
-    #
+        return cls.new(
+            direction,
+            cls._add_drop_filters(
+                FlatMapChannelPipelineHandlerFns.drop(),
+                filter=filter,
+                filter_type=filter_type,
+            ),
+        )
 
     @classmethod
     def feed_out_and_drop(
@@ -256,15 +279,14 @@ class FlatMapChannelPipelineHandlers(NamespaceClass):
             filter_type: ta.Optional[ta.Union[type, ta.Tuple[type, ...]]] = None,
             filter: ta.Optional[ChannelPipelineHandlerFn[ta.Any, bool]] = None,  # noqa
     ) -> ChannelPipelineHandler:
-        fn = FlatMapChannelPipelineHandlerFns.compose(
-            FlatMapChannelPipelineHandlerFns.feed_out(),
-            FlatMapChannelPipelineHandlerFns.drop(),
+        return cls.new(
+            'inbound',
+            cls._add_drop_filters(
+                FlatMapChannelPipelineHandlerFns.compose(
+                    FlatMapChannelPipelineHandlerFns.feed_out(),
+                    FlatMapChannelPipelineHandlerFns.drop(),
+                ),
+                filter=filter,
+                filter_type=filter_type,
+            ),
         )
-
-        if filter is not None:
-            fn = FlatMapChannelPipelineHandlerFns.filter(filter, fn)
-
-        if filter_type is not None:
-            fn = FlatMapChannelPipelineHandlerFns.filter(ChannelPipelineHandlerFns.isinstance(filter_type), fn)
-
-        return cls.new('inbound', fn)

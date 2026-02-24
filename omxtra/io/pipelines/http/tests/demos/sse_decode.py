@@ -5,6 +5,7 @@ import typing as ta
 from ....bytes.decoders import DelimiterFrameDecoderChannelPipelineHandler
 from ....bytes.decoders import UnicodeDecoderChannelPipelineHandler
 from ....core import PipelineChannel
+from ....handlers.flatmap import FlatMapChannelPipelineHandlers
 from ...client.responses import PipelineHttpResponseConditionalGzipDecoder
 from ...client.responses import PipelineHttpResponseDecoder
 from ...sse import PipelineSseDecoder
@@ -22,6 +23,7 @@ def build_http_sse_channel() -> PipelineChannel:
         DelimiterFrameDecoderChannelPipelineHandler([b'\r\n', b'\n'], keep_ends=True, max_size=1 << 20),
         UnicodeDecoderChannelPipelineHandler(),
         PipelineSseDecoder(),
+        FlatMapChannelPipelineHandlers.feed_out_and_drop(),
     ])
 
 

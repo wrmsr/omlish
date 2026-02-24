@@ -43,7 +43,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/io/streams/direct.py', sha1='83c33460e9490a77a00ae66251617ba98128b56b'),
             dict(path='../../../omlish/io/streams/scanning.py', sha1='4c0323e0b11cd506f7b6b4cf28ea4d7c6064b9d3'),
             dict(path='bytes/queues.py', sha1='38b11596cd0fa2367825252413923f1292c14f4e'),
-            dict(path='handlers/flatmap.py', sha1='356703fad2cc24fb3b99bfadf46c6e2cbf62f539'),
+            dict(path='handlers/flatmap.py', sha1='4e7f009885ee35e4746d14ba22f78d7b108f42c8'),
             dict(path='../../../omlish/io/streams/segmented.py', sha1='f855d67d88ed71bbe2bbeee09321534f0ef18e24'),
             dict(path='bytes/decoders.py', sha1='d5fa28b723cdd66cc17e9a73632a51b9f031baf2'),
             dict(path='_amalg.py', sha1='f57d710297d549e3b788af08eeb44cf5ac1bab07'),
@@ -3653,7 +3653,7 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
             return (
                 f'{type(self).__name__}('
                 f'{self.pred!r}'
-                f', {self.fn!r}, '
+                f', {self.fn!r}'
                 f'{f", else_fn={self.else_fn!r}" if self.else_fn is not None else ""}'
                 f')'
             )
@@ -3662,7 +3662,7 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
             if self.pred(ctx, msg):
                 yield from self.fn(ctx, msg)
             elif (ef := self.else_fn) is not None:
-                yield from ef(ctx, msg)
+                yield from ef(ctx, msg)  # noqa
             else:
                 yield msg
 
@@ -3850,6 +3850,31 @@ class FlatMapChannelPipelineHandlers(NamespaceClass):
 
     #
 
+    _NOT_MUST_PROPAGATE: ta.ClassVar[ChannelPipelineHandlerFn[ta.Any, bool]] = ChannelPipelineHandlerFns.not_(
+        ChannelPipelineHandlerFns.isinstance(ChannelPipelineMessages.MustPropagate),
+    )
+
+    @classmethod
+    def _add_drop_filters(
+            cls,
+            fn: FlatMapChannelPipelineHandlerFn,
+            *,
+            filter_type: ta.Optional[ta.Union[type, ta.Tuple[type, ...]]] = None,
+            filter: ta.Optional[ChannelPipelineHandlerFn[ta.Any, bool]] = None,  # noqa
+    ) -> FlatMapChannelPipelineHandlerFn:
+        if filter is not None:
+            fn = FlatMapChannelPipelineHandlerFns.filter(filter, fn)
+
+        if filter_type is not None:
+            fn = FlatMapChannelPipelineHandlerFns.filter(
+                ChannelPipelineHandlerFns.isinstance(filter_type),
+                fn,
+            )
+
+        fn = FlatMapChannelPipelineHandlerFns.filter(cls._NOT_MUST_PROPAGATE, fn)
+
+        return fn
+
     @classmethod
     def drop(
             cls,
@@ -3858,17 +3883,14 @@ class FlatMapChannelPipelineHandlers(NamespaceClass):
             filter_type: ta.Optional[ta.Union[type, ta.Tuple[type, ...]]] = None,
             filter: ta.Optional[ChannelPipelineHandlerFn[ta.Any, bool]] = None,  # noqa
     ) -> ChannelPipelineHandler:
-        fn = FlatMapChannelPipelineHandlerFns.drop()
-
-        if filter is not None:
-            fn = FlatMapChannelPipelineHandlerFns.filter(filter, fn)
-
-        if filter_type is not None:
-            fn = FlatMapChannelPipelineHandlerFns.filter(ChannelPipelineHandlerFns.isinstance(filter_type), fn)
-
-        return cls.new(direction, fn)
-
-    #
+        return cls.new(
+            direction,
+            cls._add_drop_filters(
+                FlatMapChannelPipelineHandlerFns.drop(),
+                filter=filter,
+                filter_type=filter_type,
+            ),
+        )
 
     @classmethod
     def feed_out_and_drop(
@@ -3877,18 +3899,17 @@ class FlatMapChannelPipelineHandlers(NamespaceClass):
             filter_type: ta.Optional[ta.Union[type, ta.Tuple[type, ...]]] = None,
             filter: ta.Optional[ChannelPipelineHandlerFn[ta.Any, bool]] = None,  # noqa
     ) -> ChannelPipelineHandler:
-        fn = FlatMapChannelPipelineHandlerFns.compose(
-            FlatMapChannelPipelineHandlerFns.feed_out(),
-            FlatMapChannelPipelineHandlerFns.drop(),
+        return cls.new(
+            'inbound',
+            cls._add_drop_filters(
+                FlatMapChannelPipelineHandlerFns.compose(
+                    FlatMapChannelPipelineHandlerFns.feed_out(),
+                    FlatMapChannelPipelineHandlerFns.drop(),
+                ),
+                filter=filter,
+                filter_type=filter_type,
+            ),
         )
-
-        if filter is not None:
-            fn = FlatMapChannelPipelineHandlerFns.filter(filter, fn)
-
-        if filter_type is not None:
-            fn = FlatMapChannelPipelineHandlerFns.filter(ChannelPipelineHandlerFns.isinstance(filter_type), fn)
-
-        return cls.new('inbound', fn)
 
 
 ########################################
