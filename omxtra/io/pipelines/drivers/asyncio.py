@@ -86,13 +86,6 @@ class AsyncioStreamChannelPipelineDriver:
 
     #
 
-    _shutdown_task: asyncio.Task
-
-    async def _shutdown_task_main(self) -> None:
-        await self._shutdown_event.wait()
-
-    #
-
     class _Command(Abstract):
         pass
 
@@ -257,54 +250,6 @@ class AsyncioStreamChannelPipelineDriver:
 
             self._ensure_read_task()
 
-    #
-
-    _driver_task: asyncio.Task
-
-    @async_exception_logging(alog)
-    async def _driver_task_main(self) -> None:
-        self._ensure_read_task()
-
-        command_queue_task: ta.Optional[asyncio.Task[AsyncioStreamChannelPipelineDriver._Command]] = None
-
-        try:
-            while not self._shutdown_event.is_set():
-                if command_queue_task is None:
-                    command_queue_task = asyncio.create_task(self._command_queue.get())
-
-                done, pending = await asyncio.wait(
-                    [command_queue_task, self._shutdown_task],
-                    return_when=asyncio.FIRST_COMPLETED,
-                )
-
-                winner = done.pop()
-
-                if winner is self._shutdown_task:
-                    break
-
-                elif winner is command_queue_task:
-                    cmd = command_queue_task.result()
-                    command_queue_task = None
-
-                    await self._handle_command(cmd)
-
-                    del cmd
-                    command_queue_task = None
-
-                else:
-                    raise RuntimeError(f'Unexpected task: {winner!r}')
-
-        finally:
-            self._shutdown_event.set()
-
-            await self._cancel_tasks(
-                command_queue_task,
-                self._shutdown_task,
-                self._read_task,
-            )
-
-            self._read_task = None
-
     async def _handle_command(self, cmd: _Command) -> None:
         if isinstance(cmd, AsyncioStreamChannelPipelineDriver._FeedInCommand):
             await self._handle_feed_in_command(cmd)
@@ -369,10 +314,70 @@ class AsyncioStreamChannelPipelineDriver:
 
     #
 
-    async def run(self) -> None:
+    _shutdown_task: asyncio.Task
+
+    async def _shutdown_task_main(self) -> None:
+        await self._shutdown_event.wait()
+
+    #
+
+    async def _run(self) -> None:
+        try:
+            self._shutdown_task  # noqa
+        except AttributeError:
+            pass
+        else:
+            raise RuntimeError('Already running')
         self._shutdown_task = asyncio.create_task(self._shutdown_task_main())
-        self._driver_task = asyncio.create_task(self._driver_task_main())
 
-        await self._driver_task
+        #
 
-        await self._cancel_tasks(self._shutdown_task)
+        self._ensure_read_task()
+
+        #
+
+        command_queue_task: ta.Optional[asyncio.Task[AsyncioStreamChannelPipelineDriver._Command]] = None
+
+        try:
+            while not self._shutdown_event.is_set():
+                if command_queue_task is None:
+                    command_queue_task = asyncio.create_task(self._command_queue.get())
+
+                done, pending = await asyncio.wait(
+                    [command_queue_task, self._shutdown_task],
+                    return_when=asyncio.FIRST_COMPLETED,
+                )
+
+                winner = done.pop()
+
+                if self._shutdown_event.is_set() or winner is self._shutdown_task:
+                    break
+
+                elif winner is command_queue_task:
+                    cmd = command_queue_task.result()
+                    command_queue_task = None
+
+                    await self._handle_command(cmd)
+
+                    del cmd
+                    command_queue_task = None
+
+                else:
+                    raise RuntimeError(f'Unexpected task: {winner!r}')
+
+        finally:
+            try:
+                loop = asyncio.get_running_loop()
+            except RuntimeError:
+                pass
+            else:
+                if loop.is_running():
+                    await self._cancel_tasks(
+                        command_queue_task,
+                        self._shutdown_task,
+                        self._read_task,
+                    )
+
+    @async_exception_logging(alog)
+    async def run(self) -> None:
+        await self._run()

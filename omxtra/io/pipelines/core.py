@@ -331,7 +331,7 @@ class ChannelPipelineHandlerContext:
 
         try:
             self._handler.inbound(self, msg)
-        except UnhandleableChannelPipelineError:
+        except self._pipeline._channel._all_never_handle_exceptions:  # type: ignore[misc]  # noqa
             raise
         except BaseException as e:
             if self._handling_error or self._pipeline._config.raise_immediately:  # noqa
@@ -355,7 +355,7 @@ class ChannelPipelineHandlerContext:
 
         try:
             self._handler.outbound(self, msg)
-        except UnhandleableChannelPipelineError:
+        except self._pipeline._channel._all_never_handle_exceptions:  # type: ignore[misc]  # noqa
             raise
         except BaseException as e:
             if self._handling_error or self._pipeline._config.raise_immediately:  # noqa
@@ -373,7 +373,7 @@ class ChannelPipelineHandlerContext:
         try:
             try:
                 self.feed_in(ChannelPipelineMessages.Error(e, direction, self._ref))
-            except UnhandleableChannelPipelineError:  # noqa
+            except self._pipeline._channel._all_never_handle_exceptions:  # type: ignore[misc]  # noqa
                 raise
             except BaseException as e2:  # noqa
                 raise
@@ -934,17 +934,22 @@ class PipelineChannel:
             *,
             # Services are fixed for the lifetime of the channel.
             services: ta.Optional[ta.Sequence[ChannelPipelineService]] = None,
+
+            never_handle_exceptions: ta.Tuple[type, ...] = (),
     ) -> None:
         super().__init__()
 
         self._config: ta.Final[PipelineChannel.Config] = config
 
         self._services: ta.Final[PipelineChannel._Services] = PipelineChannel._Services(services or [])
+        self._never_handle_exceptions = never_handle_exceptions
 
         self._out_q: ta.Final[collections.deque[ta.Any]] = collections.deque()
 
         self._saw_final_input = False
         self._saw_final_output = False
+
+        self._all_never_handle_exceptions: ta.Tuple[type, ...] = (UnhandleableChannelPipelineError, *never_handle_exceptions)  # noqa
 
         self._execution_depth = 0
 

@@ -95,6 +95,7 @@ class HttpServerRunner:
                 reader,
                 writer,
             )
+
             await drv.run()
 
         self._server = await asyncio.start_server(
