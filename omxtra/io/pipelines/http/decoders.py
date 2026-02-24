@@ -2,7 +2,10 @@
 # @omlish-lite
 """
 TODO:
+ - chunked make_chunk_header - https://datatracker.ietf.org/doc/html/rfc9112#name-chunk-extensions
+  - and make_chunk_data ...
  - fix exception handling lol - do we raise ValueError?? do we return aborted??
+ - unify with pipelines.bytes.decoders
 """
 import abc
 import dataclasses as dc
@@ -331,7 +334,7 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
         self._header_buf = self._new_header_buf()
 
         self._chunk_remaining = 0
-        self._got_data_cr = False
+        self._got_cr = False
 
         self._state: ta.Literal['size', 'data', 'trailer', 'done'] = 'size'
 
@@ -453,19 +456,23 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
             return True
 
         if self._chunk_remaining > 0:
-            if mvl > self._chunk_remaining:
-                out.append(self._make_chunk(mv[:self._chunk_remaining]))
-                mv = mv[self._chunk_remaining:]
-                mvl = len(mv)
+            if mvl == self._chunk_remaining:
+                out.append(self._make_chunk(mv))
+                self._chunk_remaining = 0
+                return True
+
+            out.append(self._make_chunk(mv[:self._chunk_remaining]))
+            mv = mv[self._chunk_remaining:]
+            mvl = len(mv)
             self._chunk_remaining = 0
 
         if mvl < 1:
             return True
 
-        if not self._got_data_cr:
+        if not self._got_cr:
             if mv[0] != 0x0d:
                 raise ValueError(f'Expected \\r\\n after chunk data, got {bytes([mv[0]])!r}')
-            self._got_data_cr = True
+            self._got_cr = True
             mv = mv[1:]
             mvl -= 1
             if mvl < 1:
@@ -476,7 +483,7 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
         mv = mv[1:]
         mvl -= 1
 
-        self._got_data_cr = False
+        self._got_cr = False
         self._state = 'size'
 
         if mvl > 0:
@@ -486,24 +493,32 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
         return True
 
     def _process_trailer(self, mv: memoryview, out: ta.List[ta.Any]) -> bool:
-        # Final \r\n after 0-size chunk
-        if len(self._header_buf) < 2:
-            return True  # Need more data
+        mvl = len(mv)
+        if mvl < 1:
+            return True
 
-        trailing = self._header_buf.split_to(2)
-        trailing_bytes = trailing.tobytes()
+        if not self._got_cr:
+            if mv[0] != 0x0d:
+                raise ValueError(f'Expected \\r\\n after final chunk, got {bytes([mv[0]])!r}')
+            self._got_cr = True
+            mv = mv[1:]
+            mvl -= 1
+            if mvl < 1:
+                return True
 
-        if trailing_bytes != b'\r\n':
-            raise ValueError(f'Expected \\r\\n after final chunk, got {trailing_bytes!r}')
+        if mv[0] != 0x0a:
+            raise ValueError(f'Expected \\r\\n after final chunk, got {bytes([mv[0]])!r}')
+        mv = mv[1:]
+        mvl -= 1
+
+        del self._header_buf
+        self._got_cr = False
+        self._state = 'done'
 
         # Emit end marker
         out.append(self._make_end())
 
-        if len(self._header_buf):
-            rem_view = self._header_buf.split_to(len(self._header_buf))
-            out.append(rem_view)
-
-        del self._header_buf
-        self._state = 'done'
+        if mvl > 0:
+            out.append(mv)
 
         return True

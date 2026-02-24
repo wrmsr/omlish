@@ -5,7 +5,6 @@ time bash -c 'cat ~/Downloads/ghidra_11.4.2_PUBLIC_20250826.zip | curl -X POST -
 time sha1 ~/Downloads/ghidra_11.4.2_PUBLIC_20250826.zip
 """  # noqa
 import asyncio
-import dataclasses as dc
 import hashlib
 import typing as ta
 
@@ -16,7 +15,6 @@ from ....drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
 from ....flow.stub import StubChannelPipelineFlow
 from ....flow.types import ChannelPipelineFlowMessages
 from ....handlers.flatmap import FlatMapChannelPipelineHandlers
-from ...decoders import PipelineHttpDecodingConfig
 from ...requests import PipelineHttpRequestAborted
 from ...requests import PipelineHttpRequestContentChunk
 from ...requests import PipelineHttpRequestEnd
@@ -98,20 +96,12 @@ class Sha1Handler(ChannelPipelineHandler):
 
 
 def build_http_sha1_channel() -> PipelineChannel:
-    dec_cfg = dc.replace(
-        PipelineHttpDecodingConfig.DEFAULT,
-        content_chunk_header_buffer=dc.replace(
-            PipelineHttpDecodingConfig.DEFAULT.content_chunk_header_buffer,
-            max_size=1 << 20,  # FIXME: :|
-        ),
-    )
-
     return PipelineChannel(
         [
 
-            PipelineHttpRequestHeadDecoder(config=dec_cfg),
+            PipelineHttpRequestHeadDecoder(),
 
-            PipelineHttpRequestBodyStreamDecoder(config=dec_cfg),
+            PipelineHttpRequestBodyStreamDecoder(),
 
             PipelineHttpResponseEncoder(),
 

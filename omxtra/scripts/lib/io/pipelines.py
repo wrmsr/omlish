@@ -45,7 +45,7 @@ def __omlish_amalg__():  # noqa
             dict(path='bytes/queues.py', sha1='38b11596cd0fa2367825252413923f1292c14f4e'),
             dict(path='handlers/flatmap.py', sha1='4e7f009885ee35e4746d14ba22f78d7b108f42c8'),
             dict(path='../../../omlish/io/streams/segmented.py', sha1='daa4859b2f6aa04a95d870759a37223ea8b17a63'),
-            dict(path='bytes/decoders.py', sha1='a71aaee55d36c5e9b00ef7a6189a83f2e00cf599'),
+            dict(path='bytes/decoders.py', sha1='212e4f54b7bc55028ae75dfb75b3ec18cc5bad51'),
             dict(path='_amalg.py', sha1='f57d710297d549e3b788af08eeb44cf5ac1bab07'),
         ],
     )
@@ -4848,6 +4848,10 @@ def byte_stream_buffer_view_from_segments(mvs: ta.Sequence[memoryview]) -> ByteS
 
 ########################################
 # ../bytes/decoders.py
+"""
+TODO:
+ - netty 'pending_removal' trick
+"""
 
 
 ##

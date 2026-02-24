@@ -86,11 +86,13 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         out = ibq.drain()
 
         # Should get: head, chunk data, end marker
-        self.assertEqual(len(out), 3)
+        self.assertEqual(len(out), 4)
         self.assertIs(out[0], head)
         self.assertIsInstance(out[1], PipelineHttpResponseContentChunk)
-        self.assertEqual(out[1].data, b'hello')
-        self.assertIsInstance(out[2], PipelineHttpResponseEnd)
+        self.assertEqual(out[1].data, b'hel')
+        self.assertIsInstance(out[2], PipelineHttpResponseContentChunk)
+        self.assertEqual(out[2].data, b'lo')
+        self.assertIsInstance(out[3], PipelineHttpResponseEnd)
 
     def test_non_chunked_response_passes_through(self) -> None:
         """Test that non-chunked responses pass through unchanged."""
@@ -258,8 +260,10 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         out = ibq.drain()
 
         # Should get an aborted message
-        out_head, aborted, eof = out
+        out_head, chunk, aborted, eof = out
         self.assertIs(out_head, head)
+        self.assertIsInstance(chunk, PipelineHttpResponseContentChunk)
+        self.assertEqual(chunk.data.tobytes(), b'hel')
         self.assertIsInstance(aborted, PipelineHttpResponseAborted)
         self.assertIsInstance(eof, ChannelPipelineMessages.FinalInput)
 

@@ -1,5 +1,9 @@
 # ruff: noqa: FURB188 UP045
 # @omlish-lite
+"""
+TODO:
+ - netty 'pending_removal' trick
+"""
 import abc
 import typing as ta
 

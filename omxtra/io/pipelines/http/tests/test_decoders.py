@@ -597,12 +597,10 @@ class TestChunkedPipelineHttpContentChunkDecoder(unittest.TestCase):
         chunk2 = b'lo\r\n0\r\n\r\n'
 
         out1 = decoder.inbound(chunk1)
-        self.assertEqual(len(out1), 0)
+        self.assertEqual(out1, ['CHUNK:hel'])
 
         out2 = decoder.inbound(chunk2)
-        self.assertEqual(len(out2), 2)
-        self.assertEqual(out2[0], 'CHUNK:hello')
-        self.assertEqual(out2[1], 'END')
+        self.assertEqual(out2, ['CHUNK:lo', 'END'])
 
     def test_split_in_trailing_crlf(self) -> None:
         """Test split in the trailing \\r\\n after chunk data."""
@@ -617,10 +615,10 @@ class TestChunkedPipelineHttpContentChunkDecoder(unittest.TestCase):
         chunk2 = b'\n0\r\n\r\n'
 
         out1 = decoder.inbound(chunk1)
-        self.assertEqual(len(out1), 0)
+        self.assertEqual(out1, ['CHUNK:hello'])
 
         out2 = decoder.inbound(chunk2)
-        self.assertEqual(len(out2), 2)
+        self.assertEqual(out2, ['END'])
 
     def test_split_in_final_chunk(self) -> None:
         """Test split in the final chunk (0\\r\\n\\r\\n)."""
