@@ -282,6 +282,9 @@ class AsyncioStreamChannelPipelineDriver:
         finally:
             self._delay_sending_update_want_read_command = False
 
+        if self._shutdown_event.is_set():
+            return
+
         if self._want_read != prev_want_read:
             await self._send_update_want_read_command()
 
@@ -299,6 +302,8 @@ class AsyncioStreamChannelPipelineDriver:
                         self._writer.write(mv)
 
             elif isinstance(msg, ChannelPipelineMessages.FinalOutput):
+                self._shutdown_event.set()
+
                 await self._close_writer()
 
             # flow
