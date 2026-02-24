@@ -32,7 +32,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='errors.py', sha1='a6e20daf54f563f7d2aa4f28fce87fa06417facb'),
             dict(path='../../../omlish/io/streams/types.py', sha1='8a12dc29f6e483dd8df5336c0d9b58a00b64e7ed'),
-            dict(path='core.py', sha1='d68096cb5e41e9c90625c309accc4bfd546f4dc8'),
+            dict(path='core.py', sha1='f61fdf8c8879bb7f118763866327b165ba199c0d'),
             dict(path='../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -1276,58 +1276,100 @@ class ChannelPipelineMessages(NamespaceClass):
     #
 
     class Completable(Abstract, ta.Generic[T]):
+        # Management of completable state is implemented as a 'hidden' / dynamic attributes to allow mixing in with
+        # otherwise frozen dataclasses.
+
+        # _completion_state: ta.Literal['pending', 'succeeded', 'failed'] = 'pending'
+        # _completion_: _Completion
+
         @ta.final
         class _Completion:
-            state: ta.Literal['pending', 'succeeded', 'failed'] = 'pending'
             result: ta.Any
+            exc: ta.Optional[BaseException]
             listeners: ta.Optional[ta.List[ta.Callable[[ta.Any], None]]] = None
+
+        def is_done(self) -> bool:
+            try:
+                cps = self._completion_state  # type: ignore[attr-defined]
+            except AttributeError:
+                return False
+            return cps != 'pending'
+
+        def is_succeeded(self) -> bool:
+            try:
+                cps = self._completion_state  # type: ignore[attr-defined]
+            except AttributeError:
+                return False
+            return cps == 'succeeded'
+
+        def get_result(self) -> T:
+            check.state(self._completion_state == 'succeeded')  # type: ignore[attr-defined]
+
+            return self._completion_.result  # type: ignore[attr-defined]
+
+        def is_failed(self) -> bool:
+            try:
+                cps = self._completion_state  # type: ignore[attr-defined]
+            except AttributeError:
+                return False
+            return cps == 'failed'
+
+        def get_exception(self) -> ta.Optional[BaseException]:
+            check.state(self._completion_state == 'failed')  # type: ignore[attr-defined]
+
+            return self._completion_.exc  # type: ignore[attr-defined]
 
         def _completion(self) -> _Completion:
             try:
-                return getattr(self, '_completion_')
+                return self._completion_  # type: ignore[attr-defined]
             except AttributeError:
                 pass
+
             cpl = ChannelPipelineMessages.Completable._Completion()  # noqa
             object.__setattr__(self, '_completion_', cpl)
             return cpl
 
-        def is_done(self) -> bool:
-            return self._completion().state != 'pending'
-
-        def is_succeeded(self) -> bool:
-            return self._completion().state == 'succeeded'
-
-        def is_failed(self) -> bool:
-            return self._completion().state == 'failed'
-
-        def get_result(self) -> T:
-            cpl = self._completion()
-            check.state(cpl.state == 'succeeded')
-            return cpl.result
-
         def add_listener(self, fn: ta.Callable[['ChannelPipelineMessages.Completable[T]'], None]) -> None:
+            check.state(not self.is_done())
+
             cpl = self._completion()
-            check.state(cpl.state == 'pending')
             if (lst := cpl.listeners) is None:
                 lst = cpl.listeners = []
             lst.append(fn)
 
         def set_succeeded(self, result: T) -> None:
-            cpl = self._completion()
-            check.state(cpl.state == 'pending')
+            check.state(not self.is_done())
+
+            object.__setattr__(self, '_completion_state', 'succeeded')
+
+            try:
+                cpl = self._completion_  # type: ignore[attr-defined]
+            except AttributeError:
+                return
+
             cpl.result = result
-            cpl.state = 'succeeded'
             if (lst := cpl.listeners) is not None:
                 for fn in lst:
                     fn(self)
 
-        def set_failed(self) -> None:
-            cpl = self._completion()
-            check.state(cpl.state == 'pending')
-            cpl.state = 'failed'
+            object.__delattr__(self, '_completion_')
+
+        def set_failed(self, exc: ta.Optional[BaseException] = None) -> None:
+            check.state(not self.is_done())
+
+            object.__setattr__(self, '_completion_state', 'failed')
+
+            try:
+                cpl = self._completion_  # type: ignore[attr-defined]
+            except AttributeError:
+                return
+
+            cpl.exc = exc
             if (lst := cpl.listeners) is not None:
                 for fn in lst:
                     fn(self)
+
+            object.__delattr__(self, '_completion_')
 
 
 ##

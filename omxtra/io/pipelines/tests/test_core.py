@@ -5,6 +5,7 @@ import unittest
 
 from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
+from ..core import ChannelPipelineMessages
 from ..core import PipelineChannel
 from ..core import PipelineChannelMetadata
 from ..handlers.feedback import FeedbackInboundChannelPipelineHandler
@@ -162,3 +163,35 @@ class TestMetadata(unittest.TestCase):
         with self.assertRaises(KeyError):  # noqa
             ch.metadata[TestMetadata.BarMetadata]  # noqa
         assert TestMetadata.BarMetadata not in ch.metadata
+
+
+class TestCompletable(unittest.TestCase):
+    @dc.dataclass(frozen=True)
+    class CompletableFoo(ChannelPipelineMessages.Completable[str]):
+        i: int
+
+    def test_completable_no_listeners(self):
+        cf = TestCompletable.CompletableFoo(420)
+        assert cf.i == 420
+
+        assert not cf.is_done()
+        cf.set_succeeded('hiya')
+        assert cf.is_done()
+        assert not hasattr(cf, '_completion_')
+
+    def test_completable_listeners(self):
+        cf = TestCompletable.CompletableFoo(420)
+        assert cf.i == 420
+
+        l: list = []
+
+        @cf.add_listener
+        def my_listener(o):
+            l.append(o.get_result())
+
+        assert not cf.is_done()
+        cf.set_succeeded('hiya')
+
+        assert cf.is_done()
+
+        assert l == ['hiya']

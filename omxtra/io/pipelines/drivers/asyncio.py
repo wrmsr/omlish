@@ -1,6 +1,7 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
 import asyncio
+import dataclasses as dc
 import typing as ta
 
 from omlish.io.streams.utils import ByteStreamBuffers
@@ -9,6 +10,7 @@ from omlish.lite.check import check
 from omlish.logs.modules import get_module_loggers
 from omlish.logs.utils import async_exception_logging
 
+from ..asyncs import AsyncChannelPipelineMessages
 from ..core import ChannelPipelineMessages
 from ..core import PipelineChannel
 from ..flow.types import ChannelPipelineFlow
@@ -22,15 +24,18 @@ log, alog = get_module_loggers(globals())  # noqa
 
 
 class AsyncioStreamPipelineChannelDriver:
+    @dc.dataclass(frozen=True)
+    class Config:
+        read_chunk_size: int = 0x10000
+        write_chunk_max: ta.Optional[int] = None
+
     def __init__(
             self,
             channel: PipelineChannel,
             reader: asyncio.StreamReader,
             writer: ta.Optional[asyncio.StreamWriter] = None,
+            config: Config = Config(),
             *,
-            read_chunk_size: int = 0x10000,
-            write_chunk_max: ta.Optional[int] = None,
-
             on_non_bytes_output: ta.Optional[ta.Callable[[ta.Any], ta.Awaitable[None]]] = None,
     ) -> None:
         super().__init__()
@@ -38,9 +43,7 @@ class AsyncioStreamPipelineChannelDriver:
         self._channel = channel
         self._reader = reader
         self._writer = writer
-
-        self._read_chunk_size = read_chunk_size
-        self._write_chunk_max = write_chunk_max
+        self._config = config
 
         self._on_non_bytes_output = on_non_bytes_output
 
@@ -56,6 +59,10 @@ class AsyncioStreamPipelineChannelDriver:
 
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}'
+
+    @property
+    def config(self) -> Config:
+        return self._config
 
     #
 
@@ -138,7 +145,7 @@ class AsyncioStreamPipelineChannelDriver:
         if self._read_task is not None or self._shutdown_event.is_set():
             return
 
-        self._read_task = asyncio.create_task(self._reader.read(self._read_chunk_size))
+        self._read_task = asyncio.create_task(self._reader.read(self._config.read_chunk_size))
 
         def _done(task: 'asyncio.Task[bytes]') -> None:
             check.state(task is self._read_task)
@@ -253,6 +260,22 @@ class AsyncioStreamPipelineChannelDriver:
 
             self._ensure_read_task()
 
+    #
+
+    async def _handle_await_message(self, msg: AsyncChannelPipelineMessages.Await) -> None:
+        try:
+            result = await msg.obj
+
+        except Exception as e:  # noqa
+            with self._channel.enter():
+                msg.set_failed(e)
+
+        else:
+            with self._channel.enter():
+                msg.set_succeeded(result)
+
+    #
+
     async def _handle_command(self, cmd: _Command) -> None:
         if isinstance(cmd, AsyncioStreamPipelineChannelDriver._FeedInCommand):
             await self._handle_feed_in_command(cmd)
@@ -314,6 +337,11 @@ class AsyncioStreamPipelineChannelDriver:
 
             elif isinstance(msg, ChannelPipelineFlowMessages.ReadyForInput):
                 await self._set_want_read(True)
+
+            # asyncs
+
+            elif isinstance(msg, AsyncChannelPipelineMessages.Await):
+                await self._handle_await_message(msg)
 
             # other
 

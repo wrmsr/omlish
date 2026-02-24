@@ -3,6 +3,9 @@
 import asyncio
 import typing as ta
 
+from omlish.logs.modules import get_module_loggers
+from omlish.logs.std.standard import configure_standard_logging
+
 from ....core import ChannelPipelineHandler
 from ....core import ChannelPipelineHandlerContext
 from ....core import PipelineChannel
@@ -13,6 +16,9 @@ from ....handlers.flatmap import FlatMapChannelPipelineHandlers
 from ...requests import FullPipelineHttpRequest
 from ...server.requests import PipelineHttpRequestBodyAggregator
 from ...server.requests import PipelineHttpRequestHeadDecoder
+
+
+log, alog = get_module_loggers(globals())
 
 
 ##
@@ -181,6 +187,10 @@ async def serve_kv(
 
 
 def main() -> None:
+    configure_standard_logging()
+
+    log.info('Server starting')
+
     asyncio.run(serve_kv())
 
 
