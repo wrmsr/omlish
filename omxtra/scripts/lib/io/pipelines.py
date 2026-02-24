@@ -32,7 +32,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='errors.py', sha1='a6e20daf54f563f7d2aa4f28fce87fa06417facb'),
             dict(path='../../../omlish/io/streams/types.py', sha1='8a12dc29f6e483dd8df5336c0d9b58a00b64e7ed'),
-            dict(path='core.py', sha1='c74f5770462abc121788100996e7266e11699b22'),
+            dict(path='core.py', sha1='b993ca754dc7ed762e0da07f3b05728d9ddac5ad'),
             dict(path='../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -2121,9 +2121,12 @@ class PipelineChannel:
 
     def __init__(
             self,
+            # Initial handlers are optional - handlers may be freely added and removed later.
             handlers: ta.Sequence[ChannelPipelineHandler] = (),
+
             config: Config = Config(),
             *,
+            # Services are fixed for the lifetime of the channel.
             services: ta.Optional[ta.Sequence[ChannelPipelineService]] = None,
     ) -> None:
         super().__init__()

@@ -927,9 +927,12 @@ class PipelineChannel:
 
     def __init__(
             self,
+            # Initial handlers are optional - handlers may be freely added and removed later.
             handlers: ta.Sequence[ChannelPipelineHandler] = (),
+
             config: Config = Config(),
             *,
+            # Services are fixed for the lifetime of the channel.
             services: ta.Optional[ta.Sequence[ChannelPipelineService]] = None,
     ) -> None:
         super().__init__()

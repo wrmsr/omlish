@@ -6,7 +6,7 @@ import typing as ta
 from omlish.io.streams.utils import ByteStreamBuffers
 
 from ..core import PipelineChannel
-from ..flow.types import ChannelPipelineFlow  # noqa
+from ..flow.types import ChannelPipelineFlow
 
 
 ##
@@ -35,31 +35,19 @@ class AsyncioStreamChannelPipelineDriver:
 
         self._on_app_msg = on_app_msg
 
+        self._flow = channel.services.find(ChannelPipelineFlow)
+
     async def run(self) -> None:
         try:
             while True:
-                # Always flush outbound first; helps drain after handler writes.
-                await self._flush_channel()
+                action = await self._run_one()
 
-                # If channel closed, flush outbound and close transport.
-                if self._channel.saw_final_output:  # intentionally internal; this is the edge driver
-                    await self._flush_channel()
-                    await self._close_writer()
-                    return
-
-                await self._gate_inbound()
-
-                if self._channel.saw_final_output:
-                    continue  # type: ignore[unreachable]  # FIXME: ??
-
-                data = await self._reader.read(self._read_chunk_size)
-                if not data:
-                    self._channel.feed_final_input()
-                    await self._flush_channel()
-                    await self._close_writer()
-                    return
-
-                self._channel.feed_in(data)
+                if action == 'return':
+                    break
+                elif action == 'continue':
+                    continue
+                else:
+                    raise RuntimeError(f'Unknown action: {action!r}')  # noqa
 
         except BaseException as e:  # noqa
             # # FIXME: internal.. some kinda ChannelDriver interface? ChannelDriverContext?
@@ -67,6 +55,31 @@ class AsyncioStreamChannelPipelineDriver:
 
             await self._flush_channel()
             await self._close_writer()
+
+    async def _run_one(self) -> ta.Literal['continue', 'return']:
+        # Always flush outbound first; helps drain after handler writes.
+        await self._flush_channel()
+
+        # If channel closed, flush outbound and close transport.
+        if self._channel.saw_final_output:  # intentionally internal; this is the edge driver
+            await self._flush_channel()
+            await self._close_writer()
+            return 'return'
+
+        await self._gate_inbound()
+
+        if self._channel.saw_final_output:
+            return 'continue'  # type: ignore[unreachable]  # FIXME: ??
+
+        data = await self._reader.read(self._read_chunk_size)
+        if not data:
+            self._channel.feed_final_input()
+            await self._flush_channel()
+            await self._close_writer()
+            return 'return'
+
+        self._channel.feed_in(data)
+        return 'continue'
 
     async def _gate_inbound(self) -> None:
         pass
