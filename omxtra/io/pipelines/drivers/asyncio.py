@@ -293,7 +293,7 @@ class AsyncioStreamPipelineChannelDriver:
     #
 
     async def _drain_channel(self) -> None:
-        for msg in self._channel.output.drain():
+        while (msg := self._channel.output.poll()) is not None:
             # data
 
             if ByteStreamBuffers.can_bytes(msg):
