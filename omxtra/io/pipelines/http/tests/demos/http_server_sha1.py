@@ -11,8 +11,11 @@ import typing as ta
 from ....core import ChannelPipelineHandler
 from ....core import ChannelPipelineHandlerContext
 from ....core import PipelineChannel
-from ....drivers.asyncio import AsyncioStreamChannelPipelineDriver
+from ....drivers.asyncio2 import AsyncioStreamChannelPipelineDriver2
 from ....flow.stub import StubChannelPipelineFlow
+from ....flow.types import ChannelPipelineFlowMessages
+from ....handlers.flatmap import FlatMapChannelPipelineHandlers
+from ....handlers.fns import ChannelPipelineHandlerFns
 from ...requests import PipelineHttpRequestAborted
 from ...requests import PipelineHttpRequestContentChunk
 from ...requests import PipelineHttpRequestEnd
@@ -119,10 +122,15 @@ def build_http_sha1_channel(
 
             Sha1Handler(),
 
+            FlatMapChannelPipelineHandlers.drop(
+                'inbound',
+                filter=ChannelPipelineHandlerFns.isinstance(ChannelPipelineFlowMessages.FlushInput),
+            ),
+
         ],
 
         services=[
-            StubChannelPipelineFlow(),
+            StubChannelPipelineFlow(auto_read=True),
         ],
     )
 
@@ -152,7 +160,7 @@ async def serve_sha1(
 
         )
 
-        drv = AsyncioStreamChannelPipelineDriver(
+        drv = AsyncioStreamChannelPipelineDriver2(
             ch,
             reader,
             writer,

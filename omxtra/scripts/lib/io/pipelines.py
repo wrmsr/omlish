@@ -38,7 +38,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
             dict(path='bytes/buffering.py', sha1='aa8375c8ef0689db865bb4009afd3ed8dcc2bd12'),
             dict(path='flow/types.py', sha1='839f08718c67d2d84e56aee973ba1c9c34afb732'),
-            dict(path='handlers/flatmap.py', sha1='0683826c17c2f87384addca591761593a6fff515'),
+            dict(path='handlers/flatmap.py', sha1='022243a9f4a1e142f2e7ee341830fa484bed1208'),
             dict(path='handlers/fns.py', sha1='75e982604574d6ffaacf9ac1f37ab6e9edbd608d'),
             dict(path='handlers/queues.py', sha1='53be6d12d02baa192d25fe4af3a0712ce6e62d6f'),
             dict(path='../../../omlish/io/streams/direct.py', sha1='83c33460e9490a77a00ae66251617ba98128b56b'),
@@ -3244,6 +3244,22 @@ class FlatMapChannelPipelineHandlers(NamespaceClass):
     ) -> ChannelPipelineHandler:
         h_cls = cls._CLS_BY_DIRECTION[direction]
         return h_cls(fn)
+
+    #
+
+    @classmethod
+    def drop(
+            cls,
+            direction: ChannelPipelineDirectionOrDuplex,
+            *,
+            filter: ta.Optional[ChannelPipelineHandlerFn[ta.Any, bool]] = None,  # noqa
+    ) -> ChannelPipelineHandler:
+        fn = FlatMapChannelPipelineHandlerFns.drop()
+
+        if filter is not None:
+            fn = FlatMapChannelPipelineHandlerFns.filter(filter, fn)
+
+        return cls.new(direction, fn)
 
     #
 

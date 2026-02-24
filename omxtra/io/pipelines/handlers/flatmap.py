@@ -229,6 +229,22 @@ class FlatMapChannelPipelineHandlers(NamespaceClass):
     #
 
     @classmethod
+    def drop(
+            cls,
+            direction: ChannelPipelineDirectionOrDuplex,
+            *,
+            filter: ta.Optional[ChannelPipelineHandlerFn[ta.Any, bool]] = None,  # noqa
+    ) -> ChannelPipelineHandler:
+        fn = FlatMapChannelPipelineHandlerFns.drop()
+
+        if filter is not None:
+            fn = FlatMapChannelPipelineHandlerFns.filter(filter, fn)
+
+        return cls.new(direction, fn)
+
+    #
+
+    @classmethod
     def feed_out_and_drop(
             cls,
             *,

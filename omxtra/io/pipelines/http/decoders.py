@@ -80,7 +80,7 @@ class PipelineHttpHeadDecoder:
             return
 
         if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
-            if ctx.services[ChannelPipelineFlow].is_auto_read():
+            if not ctx.services[ChannelPipelineFlow].is_auto_read():
                 ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
 
             yield msg
@@ -171,7 +171,7 @@ class UntilFinalInputPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDec
             return
 
         if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
-            if ctx.services[ChannelPipelineFlow].is_auto_read():
+            if not ctx.services[ChannelPipelineFlow].is_auto_read():
                 ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
 
             yield msg
@@ -222,7 +222,7 @@ class ContentLengthPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecod
             return
 
         if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
-            if ctx.services[ChannelPipelineFlow].is_auto_read():
+            if not ctx.services[ChannelPipelineFlow].is_auto_read():
                 ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
 
             yield msg
@@ -314,7 +314,7 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
             return
 
         if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
-            if ctx.services[ChannelPipelineFlow].is_auto_read():
+            if not ctx.services[ChannelPipelineFlow].is_auto_read():
                 ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
 
             yield msg
