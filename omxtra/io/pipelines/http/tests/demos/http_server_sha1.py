@@ -11,7 +11,7 @@ import typing as ta
 from ....core import ChannelPipelineHandler
 from ....core import ChannelPipelineHandlerContext
 from ....core import PipelineChannel
-from ....drivers.asyncio import AsyncioStreamPipelineChannelDriver
+from ....drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
 from ....flow.stub import StubChannelPipelineFlow
 from ....flow.types import ChannelPipelineFlowMessages
 from ....handlers.flatmap import FlatMapChannelPipelineHandlers
@@ -156,7 +156,7 @@ async def serve_sha1(
 
         )
 
-        drv = AsyncioStreamPipelineChannelDriver(
+        drv = SimpleAsyncioStreamPipelineChannelDriver(
             ch,
             reader,
             writer,

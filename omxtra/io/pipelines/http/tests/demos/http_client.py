@@ -9,7 +9,7 @@ from ....core import ChannelPipelineHandler
 from ....core import ChannelPipelineHandlerContext
 from ....core import ChannelPipelineMessages
 from ....core import PipelineChannel
-from ....drivers.asyncio import AsyncioStreamPipelineChannelDriver
+from ....drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
 from ....handlers.flatmap import FlatMapChannelPipelineHandlers
 from ...client.requests import PipelineHttpRequestEncoder
 from ...client.responses import PipelineHttpResponseChunkedDecoder
@@ -145,7 +145,7 @@ async def fetch_url(url: str = 'http://example.com/') -> None:
         )
 
         # Run driver to process request/response
-        drv = AsyncioStreamPipelineChannelDriver(
+        drv = SimpleAsyncioStreamPipelineChannelDriver(
             channel,
             reader,
             writer,

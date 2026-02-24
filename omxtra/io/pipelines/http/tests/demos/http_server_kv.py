@@ -10,7 +10,7 @@ from ....asyncs import AsyncChannelPipelineMessages
 from ....core import ChannelPipelineHandler
 from ....core import ChannelPipelineHandlerContext
 from ....core import PipelineChannel
-from ....drivers.asyncio import AsyncioStreamPipelineChannelDriver
+from ....drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
 from ....flow.stub import StubChannelPipelineFlow
 from ....flow.types import ChannelPipelineFlowMessages
 from ....handlers.flatmap import FlatMapChannelPipelineHandlers
@@ -187,7 +187,7 @@ async def serve_kv(
     items: ta.Dict[str, str] = {}
 
     async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
-        drv = AsyncioStreamPipelineChannelDriver(
+        drv = SimpleAsyncioStreamPipelineChannelDriver(
             build_http_kv_channel(items),
             reader,
             writer,
