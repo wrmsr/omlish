@@ -230,25 +230,25 @@ class TestM2mdecMyFlow(unittest.TestCase):
         #
 
         ch.feed_in(FooMsg(123), BazMsg(True), ChannelPipelineFlowMessages.FlushInput())
-        assert ch.drain() == [ChannelPipelineFlowMessages.ReadyForInput()]
+        assert ch.output.drain() == [ChannelPipelineFlowMessages.ReadyForInput()]
         assert ibq.drain() == [
             BazMsg(True),
             ChannelPipelineFlowMessages.FlushInput(),
         ]
 
         ch.feed_in(BazMsg(420), ChannelPipelineFlowMessages.FlushInput())
-        assert ch.drain() == []
+        assert ch.output.drain() == []
         assert ibq.drain() == [
             BazMsg(420),
             ChannelPipelineFlowMessages.FlushInput(),
         ]
 
         ch.feed_in(ChannelPipelineFlowMessages.FlushInput())
-        assert ch.drain() == []
+        assert ch.output.drain() == []
         assert ibq.drain() == [ChannelPipelineFlowMessages.FlushInput()]
 
         ch.feed_in(FooMsg(420), BazMsg(421), ChannelPipelineFlowMessages.FlushInput())
-        assert ch.drain() == []
+        assert ch.output.drain() == []
         assert ibq.drain() == [
             BarMsg('123420'),
             BazMsg(421),
@@ -258,11 +258,11 @@ class TestM2mdecMyFlow(unittest.TestCase):
         #
 
         ch.feed_in(FooMsg(123), ChannelPipelineFlowMessages.FlushInput())
-        assert ch.drain() == [ChannelPipelineFlowMessages.ReadyForInput()]
+        assert ch.output.drain() == [ChannelPipelineFlowMessages.ReadyForInput()]
         assert ibq.drain() == [ChannelPipelineFlowMessages.FlushInput()]
 
         ch.feed_in(FooMsg(123), ChannelPipelineFlowMessages.FlushInput())
-        assert ch.drain() == []
+        assert ch.output.drain() == []
         assert ibq.drain() == [
             BarMsg('123123'),
             ChannelPipelineFlowMessages.FlushInput(),

@@ -54,10 +54,10 @@ def demo_sync_http_sse() -> ta.List[ta.Any]:
     out: ta.List[ta.Any] = []
     for c in (raw[:25], raw[25:60], raw[60:90], raw[90:]):
         ch.feed_in(c)
-        out.extend(ch.drain())
+        out.extend(ch.output.drain())
 
     ch.feed_final_input()
-    out.extend(ch.drain())
+    out.extend(ch.output.drain())
     return out
 
 

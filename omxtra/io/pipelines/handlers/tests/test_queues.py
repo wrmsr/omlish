@@ -14,5 +14,5 @@ class TestQueues(unittest.TestCase):
         ])
 
         ch.feed_in('abc')
-        assert not ch.poll()
+        assert not ch.output.poll()
         assert h.drain() == ['abc!']

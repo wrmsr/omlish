@@ -38,7 +38,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         )
 
         channel.feed_in(fbi.wrap(request))
-        out = channel.drain()
+        out = channel.output.drain()
 
         self.assertEqual(len(out), 1)
         encoded = out[0]
@@ -78,7 +78,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         )
 
         channel.feed_in(fbi.wrap(request))
-        out = channel.drain()
+        out = channel.output.drain()
 
         self.assertEqual(len(out), 1)
         encoded = out[0]
@@ -120,7 +120,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         )
 
         channel.feed_in(fbi.wrap(request))
-        out = channel.drain()
+        out = channel.output.drain()
 
         self.assertEqual(len(out), 1)
         encoded = out[0]
@@ -158,7 +158,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         )
 
         channel.feed_in(fbi.wrap(request))
-        out = channel.drain()
+        out = channel.output.drain()
 
         self.assertEqual(len(out), 1)
         encoded = out[0]
@@ -193,7 +193,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         )
 
         channel.feed_in(fbi.wrap(request))
-        out = channel.drain()
+        out = channel.output.drain()
 
         self.assertEqual(len(out), 1)
         encoded = out[0]
@@ -232,7 +232,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         )
 
         channel.feed_in(fbi.wrap(request))
-        out = channel.drain()
+        out = channel.output.drain()
 
         self.assertEqual(len(out), 1)
         encoded = out[0]
@@ -271,7 +271,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         )
 
         channel.feed_in(fbi.wrap(request))
-        out = channel.drain()
+        out = channel.output.drain()
 
         self.assertEqual(len(out), 1)
         encoded = out[0]
@@ -313,7 +313,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         # Send end
         channel.feed_in(fbi.wrap(PipelineHttpRequestEnd()))
 
-        out = channel.drain()
+        out = channel.output.drain()
 
         # Should get: head, then 3 data chunks, then nothing (end consumed)
         self.assertEqual(len(out), 4)
@@ -360,7 +360,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         # Send end
         channel.feed_in(fbi.wrap(PipelineHttpRequestEnd()))
 
-        out = channel.drain()
+        out = channel.output.drain()
 
         # Should get: head, chunked data, terminator
         self.assertEqual(len(out), 8)
@@ -414,7 +414,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
 
         channel.feed_in(fbi.wrap(PipelineHttpRequestEnd()))
 
-        out = channel.drain()
+        out = channel.output.drain()
 
         # Head + single data chunk
         self.assertEqual(len(out), 2)
@@ -456,7 +456,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         )
         channel.feed_in(fbi.wrap(req2))
 
-        out = channel.drain()
+        out = channel.output.drain()
 
         self.assertEqual(len(out), 2)
 
@@ -493,6 +493,6 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         msg = UnknownMessage()
         channel.feed_in(fbi.wrap(msg))
 
-        out = channel.drain()
+        out = channel.output.drain()
         self.assertEqual(len(out), 1)
         self.assertIs(out[0], msg)

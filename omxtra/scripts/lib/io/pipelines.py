@@ -32,7 +32,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='errors.py', sha1='a6e20daf54f563f7d2aa4f28fce87fa06417facb'),
             dict(path='../../../omlish/io/streams/types.py', sha1='8a12dc29f6e483dd8df5336c0d9b58a00b64e7ed'),
-            dict(path='core.py', sha1='4f2a6d935ab060715fe67b60e423f34bf0b42ade'),
+            dict(path='core.py', sha1='35087cb64f3662a25fe4f2285cc291678c5c3076'),
             dict(path='../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -1922,6 +1922,7 @@ class ChannelPipeline:
 
     #
 
+    @ta.final
     class _Outermost(ChannelPipelineHandler):
         """'Head' in Netty terms."""
 
@@ -1934,6 +1935,7 @@ class ChannelPipeline:
 
             ctx._pipeline._channel._terminal_outbound(ctx, msg)  # noqa
 
+    @ta.final
     class _Innermost(ChannelPipelineHandler):
         """'Tail' in Netty terms."""
 
@@ -1948,6 +1950,7 @@ class ChannelPipeline:
 
     #
 
+    @ta.final
     class _Caches:
         def __init__(self, p: 'ChannelPipeline') -> None:
             self._p = p
@@ -2152,7 +2155,7 @@ class PipelineChannel:
         self._metadata: ta.Final[PipelineChannel._Metadata] = PipelineChannel._Metadata(metadata or [])
         self._services: ta.Final[PipelineChannel._Services] = PipelineChannel._Services(services or [])
 
-        self._output_q: ta.Final[collections.deque[ta.Any]] = collections.deque()
+        self._output: ta.Final[PipelineChannel._Output] = PipelineChannel._Output()
 
         self._saw_final_input = False
         self._saw_final_output = False
@@ -2196,6 +2199,7 @@ class PipelineChannel:
 
     #
 
+    @ta.final
     class _Metadata:
         def __init__(self, lst: ta.Sequence[PipelineChannelMetadata]) -> None:
             dct: ta.Dict[type, ta.Any] = {}
@@ -2268,6 +2272,7 @@ class PipelineChannel:
 
     #
 
+    @ta.final
     class _Services:
         def __init__(self, lst: ta.Sequence[ChannelPipelineService]) -> None:
             self._lst = lst
@@ -2445,23 +2450,32 @@ class PipelineChannel:
         elif self._saw_final_output:
             raise FinalOutputChannelPipelineError
 
-        self._output_q.append(msg)
+        self._output._q.append(msg)  # noqa
 
     #
 
-    def poll(self) -> ta.Optional[ta.Any]:
-        if not self._output_q:
-            return None
+    @ta.final
+    class _Output:
+        def __init__(self) -> None:
+            self._q: ta.Final[collections.deque[ta.Any]] = collections.deque()
 
-        return self._output_q.popleft()
+        def poll(self) -> ta.Optional[ta.Any]:
+            if not self._q:
+                return None
 
-    def drain(self) -> ta.List[ta.Any]:
-        out: ta.List[ta.Any] = []
+            return self._q.popleft()
 
-        while self._output_q:
-            out.append(self._output_q.popleft())
+        def drain(self) -> ta.List[ta.Any]:
+            out: ta.List[ta.Any] = []
 
-        return out
+            while self._q:
+                out.append(self._q.popleft())
+
+            return out
+
+    @property
+    def output(self) -> _Output:
+        return self._output
 
     #
 

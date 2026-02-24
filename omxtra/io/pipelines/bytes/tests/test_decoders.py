@@ -100,10 +100,10 @@ def test_b2md_ar():
     print()
 
     ch.feed_in(b'abcd', ChannelPipelineFlowMessages.FlushInput())
-    print(f'{ch.drain()=} {ibq.drain()=}')
+    print(f'{ch.output.drain()=} {ibq.drain()=}')
 
     ch.feed_in(ChannelPipelineMessages.FinalInput())
-    print(f'{ch.drain()=} {ibq.drain()=}')
+    print(f'{ch.output.drain()=} {ibq.drain()=}')
 
 
 def test_b2md_nar():
@@ -118,7 +118,7 @@ def test_b2md_nar():
     print()
 
     ch.feed_in(b'abcd', ChannelPipelineFlowMessages.FlushInput())
-    print(f'{ch.drain()=} {ibq.drain()=}')
+    print(f'{ch.output.drain()=} {ibq.drain()=}')
 
     ch.feed_in(ChannelPipelineMessages.FinalInput())
-    print(f'{ch.drain()=} {ibq.drain()=}')
+    print(f'{ch.output.drain()=} {ibq.drain()=}')

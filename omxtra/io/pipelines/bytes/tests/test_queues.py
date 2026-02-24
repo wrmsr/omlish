@@ -15,7 +15,7 @@ class TestQueues(unittest.TestCase):
         ])
 
         ch.feed_in(b'abc')
-        assert not ch.poll()
+        assert not ch.output.poll()
         assert h.inbound_buffered_bytes() == 4
         assert h.drain() == [b'abc!']
         assert h.inbound_buffered_bytes() == 0
@@ -28,7 +28,7 @@ class TestQueues(unittest.TestCase):
         ])
 
         ch.feed_in(b'abc')
-        assert not ch.poll()
+        assert not ch.output.poll()
         assert h.inbound_buffered_bytes() == 4
         assert h.drain() == [b'abc!']
         assert not ibq.poll()

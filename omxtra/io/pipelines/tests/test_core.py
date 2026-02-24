@@ -73,7 +73,7 @@ class TestCore(unittest.TestCase):
         assert ibq.drain() == ['43']
 
         ch.feed_in(fbi.wrap('24'))
-        assert ch.drain() == [24]
+        assert ch.output.drain() == [24]
 
         #
 
@@ -86,7 +86,7 @@ class TestCore(unittest.TestCase):
         assert ibq.drain() == ['127']
 
         ch.feed_in(fbi.wrap('24'))
-        assert ch.drain() == [24]
+        assert ch.output.drain() == [24]
 
         #
 
@@ -96,7 +96,7 @@ class TestCore(unittest.TestCase):
         assert ibq.drain() == ['126']
 
         ch.feed_in(fbi.wrap('24'))
-        assert ch.drain() == [24]
+        assert ch.output.drain() == [24]
 
         #
 
@@ -109,7 +109,7 @@ class TestCore(unittest.TestCase):
         assert ibq.drain() == ['43']
 
         ch.feed_in(fbi.wrap('24'))
-        assert ch.drain() == [24]
+        assert ch.output.drain() == [24]
 
     def test_replace_self(self):
         ch = PipelineChannel([
@@ -135,7 +135,7 @@ class TestCore(unittest.TestCase):
         assert ibq.drain() == ['43']
 
         ch.feed_in(fbi.wrap('24'))
-        assert ch.drain() == [24]
+        assert ch.output.drain() == [24]
 
         ch.pipeline.remove(ch.pipeline.handlers_by_name()['int_inc'])
 
@@ -143,7 +143,7 @@ class TestCore(unittest.TestCase):
         assert ibq.drain() == ['42']
 
         ch.feed_in(fbi.wrap('24'))
-        assert ch.drain() == [24]
+        assert ch.output.drain() == [24]
 
 
 class TestMetadata(unittest.TestCase):

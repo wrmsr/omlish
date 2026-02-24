@@ -729,6 +729,7 @@ class ChannelPipeline:
 
     #
 
+    @ta.final
     class _Outermost(ChannelPipelineHandler):
         """'Head' in Netty terms."""
 
@@ -741,6 +742,7 @@ class ChannelPipeline:
 
             ctx._pipeline._channel._terminal_outbound(ctx, msg)  # noqa
 
+    @ta.final
     class _Innermost(ChannelPipelineHandler):
         """'Tail' in Netty terms."""
 
@@ -755,6 +757,7 @@ class ChannelPipeline:
 
     #
 
+    @ta.final
     class _Caches:
         def __init__(self, p: 'ChannelPipeline') -> None:
             self._p = p
@@ -959,7 +962,7 @@ class PipelineChannel:
         self._metadata: ta.Final[PipelineChannel._Metadata] = PipelineChannel._Metadata(metadata or [])
         self._services: ta.Final[PipelineChannel._Services] = PipelineChannel._Services(services or [])
 
-        self._output_q: ta.Final[collections.deque[ta.Any]] = collections.deque()
+        self._output: ta.Final[PipelineChannel._Output] = PipelineChannel._Output()
 
         self._saw_final_input = False
         self._saw_final_output = False
@@ -1003,6 +1006,7 @@ class PipelineChannel:
 
     #
 
+    @ta.final
     class _Metadata:
         def __init__(self, lst: ta.Sequence[PipelineChannelMetadata]) -> None:
             dct: ta.Dict[type, ta.Any] = {}
@@ -1075,6 +1079,7 @@ class PipelineChannel:
 
     #
 
+    @ta.final
     class _Services:
         def __init__(self, lst: ta.Sequence[ChannelPipelineService]) -> None:
             self._lst = lst
@@ -1252,23 +1257,32 @@ class PipelineChannel:
         elif self._saw_final_output:
             raise FinalOutputChannelPipelineError
 
-        self._output_q.append(msg)
+        self._output._q.append(msg)  # noqa
 
     #
 
-    def poll(self) -> ta.Optional[ta.Any]:
-        if not self._output_q:
-            return None
+    @ta.final
+    class _Output:
+        def __init__(self) -> None:
+            self._q: ta.Final[collections.deque[ta.Any]] = collections.deque()
 
-        return self._output_q.popleft()
+        def poll(self) -> ta.Optional[ta.Any]:
+            if not self._q:
+                return None
 
-    def drain(self) -> ta.List[ta.Any]:
-        out: ta.List[ta.Any] = []
+            return self._q.popleft()
 
-        while self._output_q:
-            out.append(self._output_q.popleft())
+        def drain(self) -> ta.List[ta.Any]:
+            out: ta.List[ta.Any] = []
 
-        return out
+            while self._q:
+                out.append(self._q.popleft())
+
+            return out
+
+    @property
+    def output(self) -> _Output:
+        return self._output
 
     #
 

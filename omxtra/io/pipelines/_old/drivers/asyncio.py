@@ -85,7 +85,7 @@ class AsyncioStreamPipelineChannelDriver:
         pass
 
     async def _flush_channel(self) -> None:
-        for m in self._channel.drain():
+        for m in self._channel.output.drain():
             if ByteStreamBuffers.can_bytes(m):
                 for mv in ByteStreamBuffers.iter_segments(m):
                     if self._writer is not None and mv:
