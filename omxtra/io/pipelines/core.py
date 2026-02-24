@@ -380,6 +380,7 @@ class ChannelPipelineHandlerContext:
         ChannelPipelineMessages.NeverInbound,
         ChannelPipelineHandlerNotification,
         type,
+        type(None),
     )
 
     def _inbound(self, msg: ta.Any) -> None:
@@ -404,6 +405,7 @@ class ChannelPipelineHandlerContext:
         ChannelPipelineMessages.NeverOutbound,
         ChannelPipelineHandlerNotification,
         type,
+        type(None),
     )
 
     def _outbound(self, msg: ta.Any) -> None:
@@ -455,6 +457,7 @@ class ChannelPipelineHandlerContext:
                 ChannelPipelineMessages.NeverInbound,
                 ChannelPipelineHandlerNotification,
                 type,
+                None,
             ],
     ) -> 'ta.Never':
         ...
@@ -476,6 +479,7 @@ class ChannelPipelineHandlerContext:
                 ChannelPipelineMessages.NeverOutbound,
                 ChannelPipelineHandlerNotification,
                 type,
+                None,
             ],
     ) -> 'ta.Never':
         ...
