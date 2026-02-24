@@ -16,7 +16,7 @@ from ....flow.stub import StubChannelPipelineFlow
 from ....flow.types import ChannelPipelineFlowMessages
 from ....handlers.flatmap import FlatMapChannelPipelineHandlers
 from ...requests import PipelineHttpRequestAborted
-from ...requests import PipelineHttpRequestContentChunk
+from ...requests import PipelineHttpRequestContentChunkData
 from ...requests import PipelineHttpRequestEnd
 from ...requests import PipelineHttpRequestHead
 from ...responses import FullPipelineHttpResponse
@@ -62,7 +62,7 @@ class Sha1Handler(ChannelPipelineHandler):
 
             return
 
-        if isinstance(msg, PipelineHttpRequestContentChunk):
+        if isinstance(msg, PipelineHttpRequestContentChunkData):
             if self._active and self._h is not None:
                 self._h.update(msg.data)
 

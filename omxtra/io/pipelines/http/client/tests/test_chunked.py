@@ -11,7 +11,7 @@ from ....core import PipelineChannel
 from ....handlers.queues import InboundQueueChannelPipelineHandler
 from ...decoders import PipelineHttpDecodingConfig
 from ...responses import PipelineHttpResponseAborted
-from ...responses import PipelineHttpResponseContentChunk
+from ...responses import PipelineHttpResponseContentChunkData
 from ...responses import PipelineHttpResponseEnd
 from ...responses import PipelineHttpResponseHead
 from ..responses import PipelineHttpResponseChunkedDecoder
@@ -46,9 +46,9 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         # Should get: head, chunk1 data, chunk2 data, end marker
         self.assertEqual(len(out), 4)
         self.assertIs(out[0], head)
-        self.assertIsInstance(out[1], PipelineHttpResponseContentChunk)
+        self.assertIsInstance(out[1], PipelineHttpResponseContentChunkData)
         self.assertEqual(out[1].data, b'hello')
-        self.assertIsInstance(out[2], PipelineHttpResponseContentChunk)
+        self.assertIsInstance(out[2], PipelineHttpResponseContentChunkData)
         self.assertEqual(out[2].data, b'world')
         self.assertIsInstance(out[3], PipelineHttpResponseEnd)
 
@@ -88,9 +88,9 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         # Should get: head, chunk data, end marker
         self.assertEqual(len(out), 4)
         self.assertIs(out[0], head)
-        self.assertIsInstance(out[1], PipelineHttpResponseContentChunk)
+        self.assertIsInstance(out[1], PipelineHttpResponseContentChunkData)
         self.assertEqual(out[1].data, b'hel')
-        self.assertIsInstance(out[2], PipelineHttpResponseContentChunk)
+        self.assertIsInstance(out[2], PipelineHttpResponseContentChunkData)
         self.assertEqual(out[2].data, b'lo')
         self.assertIsInstance(out[3], PipelineHttpResponseEnd)
 
@@ -149,7 +149,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
 
         self.assertEqual(len(out), 3)
         self.assertIs(out[0], head)
-        self.assertIsInstance(out[1], PipelineHttpResponseContentChunk)
+        self.assertIsInstance(out[1], PipelineHttpResponseContentChunkData)
         self.assertEqual(out[1].data, b'hello')
         self.assertIsInstance(out[2], PipelineHttpResponseEnd)
 
@@ -190,7 +190,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         out = ibq.drain()
 
         self.assertEqual(len(out), 3)
-        self.assertIsInstance(out[1], PipelineHttpResponseContentChunk)
+        self.assertIsInstance(out[1], PipelineHttpResponseContentChunkData)
         self.assertEqual(out[1].data, data)
         self.assertIsInstance(out[2], PipelineHttpResponseEnd)
 
@@ -224,11 +224,11 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         out = ibq.drain()
 
         self.assertEqual(len(out), 5)  # head + 3 chunks + end
-        self.assertIsInstance(out[1], PipelineHttpResponseContentChunk)
+        self.assertIsInstance(out[1], PipelineHttpResponseContentChunkData)
         self.assertEqual(out[1].data, b'0123456789')
-        self.assertIsInstance(out[2], PipelineHttpResponseContentChunk)
+        self.assertIsInstance(out[2], PipelineHttpResponseContentChunkData)
         self.assertEqual(out[2].data, b'a' * 16)
-        self.assertIsInstance(out[3], PipelineHttpResponseContentChunk)
+        self.assertIsInstance(out[3], PipelineHttpResponseContentChunkData)
         self.assertEqual(out[3].data, b'b' * 100)
         self.assertIsInstance(out[4], PipelineHttpResponseEnd)
 
@@ -262,7 +262,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         # Should get an aborted message
         out_head, chunk, aborted, eof = out
         self.assertIs(out_head, head)
-        self.assertIsInstance(chunk, PipelineHttpResponseContentChunk)
+        self.assertIsInstance(chunk, PipelineHttpResponseContentChunkData)
         self.assertEqual(chunk.data.tobytes(), b'hel')
         self.assertIsInstance(aborted, PipelineHttpResponseAborted)
         self.assertIsInstance(eof, ChannelPipelineMessages.FinalInput)
@@ -350,7 +350,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         out = ibq.drain()
 
         self.assertEqual(len(out), 3)
-        self.assertIsInstance(out[1], PipelineHttpResponseContentChunk)
+        self.assertIsInstance(out[1], PipelineHttpResponseContentChunkData)
         self.assertEqual(out[1].data, b'x' * 10)
         self.assertIsInstance(out[2], PipelineHttpResponseEnd)
 
@@ -391,7 +391,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         self.assertIs(out[0], head)
 
         for i, chunk in enumerate(chunks, 1):
-            self.assertIsInstance(out[i], PipelineHttpResponseContentChunk)
+            self.assertIsInstance(out[i], PipelineHttpResponseContentChunkData)
             self.assertEqual(out[i].data, chunk)
 
         self.assertIsInstance(out[6], PipelineHttpResponseEnd)

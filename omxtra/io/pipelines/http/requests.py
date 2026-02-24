@@ -60,7 +60,7 @@ class FullPipelineHttpRequest:
 
 
 @dc.dataclass(frozen=True)
-class PipelineHttpRequestContentChunk:
+class PipelineHttpRequestContentChunkData:
     data: BytesLikeOrMemoryview
 
 

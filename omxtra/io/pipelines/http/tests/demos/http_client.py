@@ -15,7 +15,7 @@ from ...client.requests import PipelineHttpRequestEncoder
 from ...client.responses import PipelineHttpResponseChunkedDecoder
 from ...client.responses import PipelineHttpResponseDecoder
 from ...requests import FullPipelineHttpRequest
-from ...responses import PipelineHttpResponseContentChunk
+from ...responses import PipelineHttpResponseContentChunkData
 from ...responses import PipelineHttpResponseEnd
 from ...responses import PipelineHttpResponseHead
 
@@ -50,7 +50,7 @@ class HttpClientHandler(ChannelPipelineHandler):
             return
 
         # Handle wrapped chunks
-        if isinstance(msg, PipelineHttpResponseContentChunk):
+        if isinstance(msg, PipelineHttpResponseContentChunkData):
             self._body_chunks.append(msg.data)
             return
 

@@ -25,7 +25,7 @@ from ..decoders import PipelineHttpHeadDecoder
 from ..decoders import UntilFinalInputPipelineHttpContentChunkDecoder
 from ..requests import FullPipelineHttpRequest
 from ..requests import PipelineHttpRequestAborted
-from ..requests import PipelineHttpRequestContentChunk
+from ..requests import PipelineHttpRequestContentChunkData
 from ..requests import PipelineHttpRequestEnd
 from ..requests import PipelineHttpRequestHead
 
@@ -48,8 +48,8 @@ class RequestPipelineHttpDecodingMessageAdapter(PipelineHttpDecodingMessageAdapt
     def make_aborted(self, reason: str) -> ta.Any:
         return PipelineHttpRequestAborted(reason)
 
-    def make_chunk(self, data: BytesLikeOrMemoryview) -> ta.Any:
-        return PipelineHttpRequestContentChunk(data)
+    def make_chunk_data(self, data: BytesLikeOrMemoryview) -> ta.Any:
+        return PipelineHttpRequestContentChunkData(data)
 
     def make_end(self) -> ta.Any:
         return PipelineHttpRequestEnd()

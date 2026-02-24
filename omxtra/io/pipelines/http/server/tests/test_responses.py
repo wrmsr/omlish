@@ -8,7 +8,7 @@ from omlish.http.versions import HttpVersion
 from ....core import PipelineChannel
 from ....handlers.feedback import FeedbackInboundChannelPipelineHandler
 from ...responses import FullPipelineHttpResponse
-from ...responses import PipelineHttpResponseContentChunk
+from ...responses import PipelineHttpResponseContentChunkData
 from ...responses import PipelineHttpResponseEnd
 from ...responses import PipelineHttpResponseHead
 from ..responses import PipelineHttpResponseEncoder
@@ -424,8 +424,8 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
         )))
 
         # Send body chunks
-        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunk(b'hello')))
-        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunk(b'world')))
+        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunkData(b'hello')))
+        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunkData(b'world')))
 
         # Send end
         channel.feed_in(fbi.wrap(PipelineHttpResponseEnd()))
@@ -467,8 +467,8 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
         )))
 
         # Send body chunks
-        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunk(b'hello')))
-        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunk(b'world')))
+        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunkData(b'hello')))
+        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunkData(b'world')))
 
         # Send end
         channel.feed_in(fbi.wrap(PipelineHttpResponseEnd()))
@@ -514,7 +514,7 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
             ]),
         )))
 
-        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunk(b'data')))
+        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunkData(b'data')))
         channel.feed_in(fbi.wrap(PipelineHttpResponseEnd()))
 
         out = channel.output.drain()
@@ -540,9 +540,9 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
             ]),
         )))
 
-        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunk(b'')))  # Empty - should be ignored
-        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunk(b'hello')))
-        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunk(b'')))  # Empty - should be ignored
+        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunkData(b'')))  # Empty - should be ignored
+        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunkData(b'hello')))
+        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunkData(b'')))  # Empty - should be ignored
         channel.feed_in(fbi.wrap(PipelineHttpResponseEnd()))
 
         out = channel.output.drain()
@@ -570,7 +570,7 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
                 ('Transfer-Encoding', 'chunked'),
             ]),
         )))
-        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunk(b'first')))
+        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunkData(b'first')))
         channel.feed_in(fbi.wrap(PipelineHttpResponseEnd()))
 
         # Second response (Content-Length)
@@ -582,7 +582,7 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
                 ('Content-Length', '6'),
             ]),
         )))
-        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunk(b'second')))
+        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunkData(b'second')))
         channel.feed_in(fbi.wrap(PipelineHttpResponseEnd()))
 
         out = channel.output.drain()
@@ -615,7 +615,7 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
 
         # 256 byte chunk -> 100 in hex
         data = b'x' * 256
-        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunk(data)))
+        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunkData(data)))
         channel.feed_in(fbi.wrap(PipelineHttpResponseEnd()))
 
         out = channel.output.drain()

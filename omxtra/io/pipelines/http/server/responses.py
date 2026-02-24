@@ -9,7 +9,7 @@ from omlish.http.versions import HttpVersion
 from ...core import ChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
 from ..responses import FullPipelineHttpResponse
-from ..responses import PipelineHttpResponseContentChunk
+from ..responses import PipelineHttpResponseContentChunkData
 from ..responses import PipelineHttpResponseEnd
 from ..responses import PipelineHttpResponseHead
 
@@ -49,8 +49,8 @@ class PipelineHttpResponseEncoder(ChannelPipelineHandler):
             self._handle_response_head(ctx, msg)
             return
 
-        if isinstance(msg, PipelineHttpResponseContentChunk):
-            self._handle_content_chunk(ctx, msg)
+        if isinstance(msg, PipelineHttpResponseContentChunkData):
+            self._handle_content_chunk_data(ctx, msg)
             return
 
         if isinstance(msg, PipelineHttpResponseEnd):
@@ -81,7 +81,7 @@ class PipelineHttpResponseEncoder(ChannelPipelineHandler):
 
         ctx.feed_out(buf.getvalue())
 
-    def _handle_content_chunk(self, ctx: ChannelPipelineHandlerContext, msg: PipelineHttpResponseContentChunk) -> None:
+    def _handle_content_chunk_data(self, ctx: ChannelPipelineHandlerContext, msg: PipelineHttpResponseContentChunkData) -> None:  # noqa
         """Emit body chunk (raw or chunked-encoded)."""
 
         if not self._streaming:

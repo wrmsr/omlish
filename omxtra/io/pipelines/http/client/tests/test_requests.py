@@ -8,7 +8,7 @@ from omlish.http.versions import HttpVersion
 from ....core import PipelineChannel
 from ....handlers.feedback import FeedbackInboundChannelPipelineHandler
 from ...requests import FullPipelineHttpRequest
-from ...requests import PipelineHttpRequestContentChunk
+from ...requests import PipelineHttpRequestContentChunkData
 from ...requests import PipelineHttpRequestEnd
 from ...requests import PipelineHttpRequestHead
 from ..requests import PipelineHttpRequestEncoder
@@ -306,9 +306,9 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         channel.feed_in(fbi.wrap(head))
 
         # Send chunks
-        channel.feed_in(fbi.wrap(PipelineHttpRequestContentChunk(b'hello')))
-        channel.feed_in(fbi.wrap(PipelineHttpRequestContentChunk(b' ')))
-        channel.feed_in(fbi.wrap(PipelineHttpRequestContentChunk(b'world')))
+        channel.feed_in(fbi.wrap(PipelineHttpRequestContentChunkData(b'hello')))
+        channel.feed_in(fbi.wrap(PipelineHttpRequestContentChunkData(b' ')))
+        channel.feed_in(fbi.wrap(PipelineHttpRequestContentChunkData(b'world')))
 
         # Send end
         channel.feed_in(fbi.wrap(PipelineHttpRequestEnd()))
@@ -354,8 +354,8 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         channel.feed_in(fbi.wrap(head))
 
         # Send chunks
-        channel.feed_in(fbi.wrap(PipelineHttpRequestContentChunk(b'hello')))
-        channel.feed_in(fbi.wrap(PipelineHttpRequestContentChunk(b'world')))
+        channel.feed_in(fbi.wrap(PipelineHttpRequestContentChunkData(b'hello')))
+        channel.feed_in(fbi.wrap(PipelineHttpRequestContentChunkData(b'world')))
 
         # Send end
         channel.feed_in(fbi.wrap(PipelineHttpRequestEnd()))
@@ -408,9 +408,9 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         channel.feed_in(fbi.wrap(head))
 
         # Empty chunks should not emit
-        channel.feed_in(fbi.wrap(PipelineHttpRequestContentChunk(b'')))
-        channel.feed_in(fbi.wrap(PipelineHttpRequestContentChunk(b'hello')))
-        channel.feed_in(fbi.wrap(PipelineHttpRequestContentChunk(b'')))
+        channel.feed_in(fbi.wrap(PipelineHttpRequestContentChunkData(b'')))
+        channel.feed_in(fbi.wrap(PipelineHttpRequestContentChunkData(b'hello')))
+        channel.feed_in(fbi.wrap(PipelineHttpRequestContentChunkData(b'')))
 
         channel.feed_in(fbi.wrap(PipelineHttpRequestEnd()))
 
