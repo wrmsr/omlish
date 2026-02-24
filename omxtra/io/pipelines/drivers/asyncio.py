@@ -21,7 +21,7 @@ from ..flow.types import ChannelPipelineFlowMessages
 log, alog = get_module_loggers(globals())  # noqa
 
 
-class AsyncioStreamChannelPipelineDriver:
+class AsyncioStreamPipelineChannelDriver:
     def __init__(
             self,
             channel: PipelineChannel,
@@ -50,7 +50,7 @@ class AsyncioStreamChannelPipelineDriver:
 
         #
 
-        self._command_queue: asyncio.Queue[AsyncioStreamChannelPipelineDriver._Command] = asyncio.Queue()
+        self._command_queue: asyncio.Queue[AsyncioStreamPipelineChannelDriver._Command] = asyncio.Queue()
 
         self._shutdown_event = asyncio.Event()
 
@@ -107,7 +107,7 @@ class AsyncioStreamChannelPipelineDriver:
     async def feed_in(self, *msgs: ta.Any) -> None:
         check.state(not self._shutdown_event.is_set())
 
-        self._command_queue.put_nowait(AsyncioStreamChannelPipelineDriver._FeedInCommand(*msgs))
+        self._command_queue.put_nowait(AsyncioStreamPipelineChannelDriver._FeedInCommand(*msgs))
 
     #
 
@@ -147,13 +147,13 @@ class AsyncioStreamChannelPipelineDriver:
             if self._shutdown_event.is_set():
                 return
 
-            cmd: AsyncioStreamChannelPipelineDriver._Command
+            cmd: AsyncioStreamPipelineChannelDriver._Command
             try:
                 data = task.result()
             except asyncio.CancelledError:
-                cmd = AsyncioStreamChannelPipelineDriver._ReadCancelledCommand()
+                cmd = AsyncioStreamPipelineChannelDriver._ReadCancelledCommand()
             else:
-                cmd = AsyncioStreamChannelPipelineDriver._ReadCompletedCommand(data)
+                cmd = AsyncioStreamPipelineChannelDriver._ReadCompletedCommand(data)
 
             self._command_queue.put_nowait(cmd)
 
@@ -223,7 +223,7 @@ class AsyncioStreamChannelPipelineDriver:
             return
 
         self._has_sent_update_want_read_command = True
-        await self._command_queue.put(AsyncioStreamChannelPipelineDriver._UpdateWantReadCommand())
+        await self._command_queue.put(AsyncioStreamPipelineChannelDriver._UpdateWantReadCommand())
 
     _want_read = True
 
@@ -243,7 +243,7 @@ class AsyncioStreamChannelPipelineDriver:
 
         if self._want_read:
             if self._pending_completed_reads:
-                in_cmd = AsyncioStreamChannelPipelineDriver._ReadCompletedCommand([
+                in_cmd = AsyncioStreamPipelineChannelDriver._ReadCompletedCommand([
                     b
                     for pcr_cmd in self._pending_completed_reads
                     for b in pcr_cmd.data()
@@ -254,13 +254,13 @@ class AsyncioStreamChannelPipelineDriver:
             self._ensure_read_task()
 
     async def _handle_command(self, cmd: _Command) -> None:
-        if isinstance(cmd, AsyncioStreamChannelPipelineDriver._FeedInCommand):
+        if isinstance(cmd, AsyncioStreamPipelineChannelDriver._FeedInCommand):
             await self._handle_feed_in_command(cmd)
 
-        elif isinstance(cmd, AsyncioStreamChannelPipelineDriver._ReadCompletedCommand):
+        elif isinstance(cmd, AsyncioStreamPipelineChannelDriver._ReadCompletedCommand):
             await self._handle_read_completed_command(cmd)
 
-        elif isinstance(cmd, AsyncioStreamChannelPipelineDriver._UpdateWantReadCommand):
+        elif isinstance(cmd, AsyncioStreamPipelineChannelDriver._UpdateWantReadCommand):
             await self._handle_update_want_read_command(cmd)
 
         else:
@@ -344,7 +344,7 @@ class AsyncioStreamChannelPipelineDriver:
 
         #
 
-        command_queue_task: ta.Optional[asyncio.Task[AsyncioStreamChannelPipelineDriver._Command]] = None
+        command_queue_task: ta.Optional[asyncio.Task[AsyncioStreamPipelineChannelDriver._Command]] = None
 
         try:
             while not self._shutdown_event.is_set():

@@ -6,7 +6,7 @@ import threading
 import typing as ta
 
 from ...core import PipelineChannel
-from ...drivers.asyncio import AsyncioStreamChannelPipelineDriver
+from ...drivers.asyncio import AsyncioStreamPipelineChannelDriver
 
 
 ##
@@ -88,9 +88,9 @@ class HttpServerRunner:
         """Serve requests until shutdown."""
 
         async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
-            drv: AsyncioStreamChannelPipelineDriver
+            drv: AsyncioStreamPipelineChannelDriver
 
-            drv = AsyncioStreamChannelPipelineDriver(
+            drv = AsyncioStreamPipelineChannelDriver(
                 self._channel_builder(),
                 reader,
                 writer,

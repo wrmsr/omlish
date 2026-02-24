@@ -12,7 +12,7 @@ from ...flow.types import ChannelPipelineFlow
 ##
 
 
-class AsyncioStreamChannelPipelineDriver:
+class AsyncioStreamPipelineChannelDriver:
     def __init__(
             self,
             channel: PipelineChannel,

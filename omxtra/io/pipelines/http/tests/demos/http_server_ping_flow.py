@@ -6,7 +6,7 @@ import typing as ta
 from ....core import ChannelPipelineHandler
 from ....core import ChannelPipelineHandlerContext
 from ....core import PipelineChannel
-from ....drivers.asyncio import AsyncioStreamChannelPipelineDriver
+from ....drivers.asyncio import AsyncioStreamPipelineChannelDriver
 from ....flow.stub import StubChannelPipelineFlow
 from ....flow.types import ChannelPipelineFlowMessages
 from ....handlers.flatmap import FlatMapChannelPipelineHandlers
@@ -100,7 +100,7 @@ async def serve_ping(
     """
 
     async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
-        drv = AsyncioStreamChannelPipelineDriver(
+        drv = AsyncioStreamPipelineChannelDriver(
             build_http_ping_channel(),
             reader,
             writer,

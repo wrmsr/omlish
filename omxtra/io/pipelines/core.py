@@ -141,7 +141,7 @@ class ChannelPipelineHandlerRef(ta.Generic[T]):
             f'{"!INVALIDATED" if self.invalidated else ""}'
             f'{f"<{self.name!r}>" if self.name is not None else ""}'
             f'<context@{id(self._context):x}>'
-            f'({self.handler!r}@{id(self.handler):x})'
+            f'({self.handler!r})'  # {f"@{id(self.handler):x}"})'
         )
 
 
@@ -190,7 +190,7 @@ class ChannelPipelineHandlerContext:
             f'{"!INVALIDATED" if self._invalidated else ""}'
             f'{f"<{self._name!r}>" if self._name is not None else ""}'
             f'<pipeline@{id(self.pipeline):x}>'
-            f'({self._handler!r}@{id(self._handler):x})'
+            f'({self._handler!r})'  # @{id(self._handler):x})'
         )
 
     @property
