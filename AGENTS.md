@@ -8,7 +8,24 @@
 
 - Do NOT remove an `@omlish-lite` marker from a source file if one is present. If the file is marked as lite, it is used
   in a lite context, and must remain lite-compatible.
+- Do NOT forget the **blank line** after a class or function docstring. For example, do NOT do this:
+  ```python
+  class MyClass:
+      """Some docstring"""
+      def __init__(self) -> None:
+          """My init method"""
+          super().__init__()
+  ```
+  Do NOT do that because the docstrings are missing blank after them! It SHOULD look like this:
+  ```python
+  class MyClass:
+      """Some docstring"""
 
+      def __init__(self) -> None:
+          """My init method"""
+
+          super().__init__()
+  ```
 
 ### Running stuff
 

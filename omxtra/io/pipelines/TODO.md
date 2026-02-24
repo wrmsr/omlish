@@ -6,6 +6,8 @@
   - bidirectional?
 - need to catch stray bytes falling out
   - 'Ignorable' event abstract base class? if any non-this isn't 'handled' by some 'driver', raise
+- hand optimize a bit
+  - segmented split_to should mutate seg list in place
 
 ### core
 
