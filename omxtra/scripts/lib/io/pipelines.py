@@ -32,7 +32,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='errors.py', sha1='a6e20daf54f563f7d2aa4f28fce87fa06417facb'),
             dict(path='../../../omlish/io/streams/types.py', sha1='8a12dc29f6e483dd8df5336c0d9b58a00b64e7ed'),
-            dict(path='core.py', sha1='35087cb64f3662a25fe4f2285cc291678c5c3076'),
+            dict(path='core.py', sha1='47462680239426a84db72f9f291255dbac23325e'),
             dict(path='../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -2387,6 +2387,20 @@ class PipelineChannel:
 
         if not self._execution_depth:
             self._propagation.check_and_clear()
+
+    @ta.final
+    class _EnterContextManager:
+        def __init__(self, ch: 'PipelineChannel') -> None:
+            self._ch = ch
+
+        def __enter__(self) -> None:
+            self._ch._step_in()  # noqa
+
+        def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+            self._ch._step_out()  # noqa
+
+    def enter(self) -> ta.ContextManager[None]:
+        return self._EnterContextManager(self)
 
     #
 

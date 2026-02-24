@@ -1195,6 +1195,20 @@ class PipelineChannel:
         if not self._execution_depth:
             self._propagation.check_and_clear()
 
+    @ta.final
+    class _EnterContextManager:
+        def __init__(self, ch: 'PipelineChannel') -> None:
+            self._ch = ch
+
+        def __enter__(self) -> None:
+            self._ch._step_in()  # noqa
+
+        def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+            self._ch._step_out()  # noqa
+
+    def enter(self) -> ta.ContextManager[None]:
+        return self._EnterContextManager(self)
+
     #
 
     def _notify(self, ctx: ChannelPipelineHandlerContext, no: ChannelPipelineHandlerNotification) -> None:
