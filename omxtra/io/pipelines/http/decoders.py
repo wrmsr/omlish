@@ -164,7 +164,7 @@ class PipelineHttpContentChunkDecoder(Abstract):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def inbound(self, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
+    def inbound(self, msg: ta.Any) -> ta.Sequence[ta.Any]:
         raise NotImplementedError
 
 
@@ -178,23 +178,26 @@ class UntilFinalInputPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDec
     def inbound_buffered_bytes(self) -> int:
         return 0
 
-    def inbound(self, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
+    def inbound(self, msg: ta.Any) -> ta.Sequence[ta.Any]:
         check.state(not self._done)
 
         if isinstance(msg, ChannelPipelineMessages.FinalInput):
-            yield self._make_end()
-
             self._done = True
 
-            yield msg
-            return
+            return [
+                self._make_end(),
+                msg,
+            ]
 
         if not ByteStreamBuffers.can_bytes(msg):
-            yield msg
-            return
+            return [msg]
+
+        out: ta.List[ta.Any] = []
 
         for mv in ByteStreamBuffers.iter_segments(msg):
-            yield self._make_chunk(mv)
+            out.append(self._make_chunk(mv))
+
+        return out
 
 
 class ContentLengthPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
@@ -225,43 +228,46 @@ class ContentLengthPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecod
     def inbound_buffered_bytes(self) -> int:
         return 0
 
-    def inbound(self, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
+    def inbound(self, msg: ta.Any) -> ta.Sequence[ta.Any]:
         check.state(self._remain > 0)
 
         if isinstance(msg, ChannelPipelineMessages.FinalInput):
-            yield self._make_aborted('EOF before HTTP body complete')
-
             self._remain = 0
 
-            yield msg
-            return
+            return [
+                self._make_aborted('EOF before HTTP body complete'),
+                msg,
+            ]
 
         if not ByteStreamBuffers.can_bytes(msg):
-            yield msg
-            return
+            return [msg]
+
+        out: ta.List[ta.Any] = []
 
         for mv in ByteStreamBuffers.iter_segments(msg):
             if self._remain < 1:
-                yield mv
+                out.append(mv)
                 continue
 
             mvl = len(mv)
 
             if self._remain > mvl:
-                yield self._make_chunk(mv)
+                out.append(self._make_chunk(mv))
                 self._remain -= mvl
 
             elif self._remain == mvl:
-                yield self._make_chunk(mv)
-                yield self._make_end()
+                out.append(self._make_chunk(mv))
+                out.append(self._make_end())
                 self._remain = 0
 
             else:
-                yield self._make_chunk(mv[:self._remain])
-                yield self._make_end()
+                out.append(self._make_chunk(mv[:self._remain]))
+                out.append(self._make_end())
                 ofs = self._remain
                 self._remain = 0
-                yield mv[ofs:]
+                out.append(mv[ofs:])
+
+        return out
 
 
 class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
@@ -309,21 +315,20 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
             return 0
         return len(self._buf)
 
-    def inbound(self, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
+    def inbound(self, msg: ta.Any) -> ta.Sequence[ta.Any]:
         check.state(self._state != 'done')
 
         if isinstance(msg, ChannelPipelineMessages.FinalInput):
-            yield self._make_aborted('EOF before chunked encoding complete')
-
             del self._buf
             self._state = 'done'
 
-            yield msg
-            return
+            return [
+                self._make_aborted('EOF before chunked encoding complete'),
+                msg,
+            ]
 
         if not ByteStreamBuffers.can_bytes(msg):
-            yield msg
-            return
+            return [msg]
 
         # Buffer and decode chunks
         # FIXME: lol no - ignore proper chunk boundaries, direct passthrough
@@ -331,12 +336,14 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
             if mv:
                 self._buf.write(mv)
 
+        out: ta.List[ta.Any] = []
+
         while True:
             if self._state == 'size':
                 # Parse chunk size line: <hex-size>\r\n
                 i = self._buf.find(b'\r\n')
                 if i < 0:
-                    return  # Need more data
+                    return out  # Need more data
 
                 size_line = self._buf.split_to(i + 2)
 
@@ -361,7 +368,7 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
                 # Read chunk data + trailing \r\n
                 needed = self._chunk_remaining + 2
                 if len(self._buf) < needed:
-                    return  # Need more data
+                    return out  # Need more data
 
                 # Extract chunk data
                 chunk_data = self._buf.split_to(self._chunk_remaining)
@@ -375,7 +382,7 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
 
                 # Emit chunk data (wrapped by subclass)
                 for mv in chunk_data.segments():
-                    yield self._make_chunk(mv)
+                    out.append(self._make_chunk(mv))
 
                 self._chunk_remaining = 0
                 self._state = 'size'
@@ -383,7 +390,7 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
             elif self._state == 'trailer':
                 # Final \r\n after 0-size chunk
                 if len(self._buf) < 2:
-                    return  # Need more data
+                    return out  # Need more data
 
                 trailing = self._buf.split_to(2)
                 trailing_bytes = trailing.tobytes()
@@ -392,16 +399,16 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
                     raise ValueError(f'Expected \\r\\n after final chunk, got {trailing_bytes!r}')
 
                 # Emit end marker
-                yield self._make_end()
+                out.append(self._make_end())
 
                 if len(self._buf):
                     rem_view = self._buf.split_to(len(self._buf))
-                    yield rem_view
+                    out.append(rem_view)
 
                 del self._buf
                 self._state = 'done'
 
-                return
+                return out
 
             elif self._state == 'done':
                 raise ValueError('Unexpected data after chunked encoding complete')
