@@ -39,7 +39,7 @@ def __omlish_amalg__():  # noqa
             dict(path='bytes/buffering.py', sha1='aa8375c8ef0689db865bb4009afd3ed8dcc2bd12'),
             dict(path='flow/types.py', sha1='839f08718c67d2d84e56aee973ba1c9c34afb732'),
             dict(path='handlers/fns.py', sha1='75e982604574d6ffaacf9ac1f37ab6e9edbd608d'),
-            dict(path='handlers/queues.py', sha1='53be6d12d02baa192d25fe4af3a0712ce6e62d6f'),
+            dict(path='handlers/queues.py', sha1='73f018001a9e305194ed1bf9783fc49a71c2ed49'),
             dict(path='../../../omlish/io/streams/direct.py', sha1='83c33460e9490a77a00ae66251617ba98128b56b'),
             dict(path='../../../omlish/io/streams/scanning.py', sha1='4c0323e0b11cd506f7b6b4cf28ea4d7c6064b9d3'),
             dict(path='bytes/queues.py', sha1='38b11596cd0fa2367825252413923f1292c14f4e'),
@@ -3344,8 +3344,6 @@ class QueueChannelPipelineHandler(ChannelPipelineHandler, Abstract):
 
     def _popleft(self) -> ta.Any:
         return self._q.popleft()
-
-    #
 
     def poll(self) -> ta.Optional[ta.Any]:
         if not self._q:

@@ -52,8 +52,6 @@ class QueueChannelPipelineHandler(ChannelPipelineHandler, Abstract):
     def _popleft(self) -> ta.Any:
         return self._q.popleft()
 
-    #
-
     def poll(self) -> ta.Optional[ta.Any]:
         if not self._q:
             return None
