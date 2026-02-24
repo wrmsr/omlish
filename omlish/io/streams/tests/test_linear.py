@@ -79,24 +79,24 @@ class TestLinearByteStreamBuffer(unittest.TestCase):
         b.advance(2)
         self.assertEqual(b.coalesce(2).tobytes(), b'cd')
 
-    def test_max_bytes_linear_write(self) -> None:
-        b = LinearByteStreamBuffer(max_bytes=3)
+    def test_max_size_linear_write(self) -> None:
+        b = LinearByteStreamBuffer(max_size=3)
         b.write(b'ab')
         b.write(b'c')
         with self.assertRaises(BufferTooLargeByteStreamBufferError):
             b.write(b'd')
         self.assertEqual(b.peek().tobytes(), b'abc')
 
-    def test_max_bytes_linear_commit(self) -> None:
-        b = LinearByteStreamBuffer(max_bytes=3)
+    def test_max_size_linear_commit(self) -> None:
+        b = LinearByteStreamBuffer(max_size=3)
         mv = b.reserve(4)
         mv[:] = b'abcd'
         with self.assertRaises(BufferTooLargeByteStreamBufferError):
             b.commit(4)
         self.assertEqual(len(b), 0)
 
-    def test_max_bytes_respects_consumption(self) -> None:
-        b = LinearByteStreamBuffer(max_bytes=3)
+    def test_max_size_respects_consumption(self) -> None:
+        b = LinearByteStreamBuffer(max_size=3)
         b.write(b'abc')
         b.advance(2)
         b.write(b'de')  # len now 1 + 2 == 3 ok

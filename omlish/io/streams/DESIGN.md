@@ -37,7 +37,7 @@ second-guess its behavior.
 - **Ephemeral vs. stable views** are explicitly defined
 
 ### “Everything needs a timeout / limit” All operations that can grow memory unboundedly must be limitable:
-- Per-buffer `max_bytes`
+- Per-buffer `max_size`
 - Per-frame `max_size`
 - Clear error types when limits are exceeded
 
@@ -159,7 +159,7 @@ Design choice:
 - Preserves compatibility while enabling semantic distinction
 
 ### Limits
-- `max_bytes` on buffers (optional, default None)
+- `max_size` on buffers (optional, default None)
 - `max_size` on framers/codecs
 
 These limits are enforced eagerly to prevent memory exhaustion.

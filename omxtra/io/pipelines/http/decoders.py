@@ -51,7 +51,7 @@ class PipelineHttpHeadDecoder:
         self._max_head = max_head
 
         self._buf = ScanningByteStreamBuffer(SegmentedByteStreamBuffer(
-            max_bytes=max_head,
+            max_size=max_head,
             chunk_size=buffer_chunk_size,
         ))
 
@@ -284,7 +284,7 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
         )
 
         self._buf = ScanningByteStreamBuffer(SegmentedByteStreamBuffer(
-            max_bytes=max_chunk_header,
+            max_size=max_chunk_header,
             chunk_size=buffer_chunk_size,
         ))
 

@@ -34,8 +34,8 @@ def __omlish_amalg__():  # noqa
             dict(path='direct.py', sha1='83c33460e9490a77a00ae66251617ba98128b56b'),
             dict(path='scanning.py', sha1='4c0323e0b11cd506f7b6b4cf28ea4d7c6064b9d3'),
             dict(path='adapters.py', sha1='865338413829b97be23883f713d50eb7cb62617a'),
-            dict(path='linear.py', sha1='e1669b97cf16184d479fd4589862380730236737'),
-            dict(path='segmented.py', sha1='f855d67d88ed71bbe2bbeee09321534f0ef18e24'),
+            dict(path='linear.py', sha1='968c03436f8bca7694fd278d29f40d5a7c6a4042'),
+            dict(path='segmented.py', sha1='1e556563fd4399d8e2632144615e1ff89ac7c254'),
             dict(path='_amalg.py', sha1='9c88a055447d7b37da1b356e6a1e00b7c4a9a3cb'),
         ],
     )
@@ -1782,18 +1782,18 @@ class LinearByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
     def __init__(
             self,
             *,
-            max_bytes: ta.Optional[int] = None,
+            max_size: ta.Optional[int] = None,
             initial_capacity: int = 0,
             compact_threshold: int = 0x10000,
     ) -> None:
         super().__init__()
 
-        self._max_bytes = None if max_bytes is None else int(max_bytes)
+        self._max_size = None if max_size is None else int(max_size)
 
         if initial_capacity < 0:
             raise ValueError(initial_capacity)
-        if self._max_bytes is not None and initial_capacity > self._max_bytes:
-            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_bytes')
+        if self._max_size is not None and initial_capacity > self._max_size:
+            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_size')
 
         if compact_threshold < 0:
             raise ValueError(compact_threshold)
@@ -1847,8 +1847,8 @@ class LinearByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
 
         bl = len(data)
 
-        if self._max_bytes is not None and len(self) + bl > self._max_bytes:
-            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_bytes')
+        if self._max_size is not None and len(self) + bl > self._max_size:
+            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_size')
 
         # If buffer is logically empty but backing store might still be large (e.g. compaction skipped),
         # keep indices reset and just append.
@@ -1892,8 +1892,8 @@ class LinearByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
         if not n:
             return
 
-        if self._max_bytes is not None and len(self) + n > self._max_bytes:
-            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_bytes')
+        if self._max_size is not None and len(self) + n > self._max_size:
+            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_size')
 
         # Append only what was written.
         self.write(memoryview(b)[:n])
@@ -2115,7 +2115,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
     def __init__(
             self,
             *,
-            max_bytes: ta.Optional[int] = None,
+            max_size: ta.Optional[int] = None,
             chunk_size: int = 0,
             chunk_compact_threshold: float = .25,
     ) -> None:
@@ -2123,7 +2123,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
 
         self._segs: ta.List[ta.Union[bytes, bytearray]] = []
 
-        self._max_bytes = None if max_bytes is None else int(max_bytes)
+        self._max_size = None if max_size is None else int(max_size)
 
         if chunk_size < 0:
             raise ValueError(chunk_size)
@@ -2268,8 +2268,8 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
 
         dl = len(data)
 
-        if self._max_bytes is not None and self._len + dl > self._max_bytes:
-            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_bytes')
+        if self._max_size is not None and self._len + dl > self._max_size:
+            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_size')
 
         if self._chunk_size <= 0:
             self._segs.append(data)
@@ -2341,8 +2341,8 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
             self._reserved_len = 0
             self._reserved_in_active = False
 
-            if self._max_bytes is not None and self._len + n > self._max_bytes:
-                raise BufferTooLargeByteStreamBufferError('buffer exceeded max_bytes')
+            if self._max_size is not None and self._len + n > self._max_size:
+                raise BufferTooLargeByteStreamBufferError('buffer exceeded max_size')
 
             if n:
                 self._active_used += n
@@ -2357,8 +2357,8 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         self._reserved_len = 0
         self._reserved_in_active = False
 
-        if self._max_bytes is not None and self._len + n > self._max_bytes:
-            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_bytes')
+        if self._max_size is not None and self._len + n > self._max_size:
+            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_size')
 
         if not n:
             return

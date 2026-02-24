@@ -35,18 +35,18 @@ class LinearByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
     def __init__(
             self,
             *,
-            max_bytes: ta.Optional[int] = None,
+            max_size: ta.Optional[int] = None,
             initial_capacity: int = 0,
             compact_threshold: int = 0x10000,
     ) -> None:
         super().__init__()
 
-        self._max_bytes = None if max_bytes is None else int(max_bytes)
+        self._max_size = None if max_size is None else int(max_size)
 
         if initial_capacity < 0:
             raise ValueError(initial_capacity)
-        if self._max_bytes is not None and initial_capacity > self._max_bytes:
-            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_bytes')
+        if self._max_size is not None and initial_capacity > self._max_size:
+            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_size')
 
         if compact_threshold < 0:
             raise ValueError(compact_threshold)
@@ -100,8 +100,8 @@ class LinearByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
 
         bl = len(data)
 
-        if self._max_bytes is not None and len(self) + bl > self._max_bytes:
-            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_bytes')
+        if self._max_size is not None and len(self) + bl > self._max_size:
+            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_size')
 
         # If buffer is logically empty but backing store might still be large (e.g. compaction skipped),
         # keep indices reset and just append.
@@ -145,8 +145,8 @@ class LinearByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
         if not n:
             return
 
-        if self._max_bytes is not None and len(self) + n > self._max_bytes:
-            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_bytes')
+        if self._max_size is not None and len(self) + n > self._max_size:
+            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_size')
 
         # Append only what was written.
         self.write(memoryview(b)[:n])

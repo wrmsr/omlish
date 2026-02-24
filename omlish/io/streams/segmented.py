@@ -84,7 +84,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
     def __init__(
             self,
             *,
-            max_bytes: ta.Optional[int] = None,
+            max_size: ta.Optional[int] = None,
             chunk_size: int = 0,
             chunk_compact_threshold: float = .25,
     ) -> None:
@@ -92,7 +92,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
 
         self._segs: ta.List[ta.Union[bytes, bytearray]] = []
 
-        self._max_bytes = None if max_bytes is None else int(max_bytes)
+        self._max_size = None if max_size is None else int(max_size)
 
         if chunk_size < 0:
             raise ValueError(chunk_size)
@@ -237,8 +237,8 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
 
         dl = len(data)
 
-        if self._max_bytes is not None and self._len + dl > self._max_bytes:
-            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_bytes')
+        if self._max_size is not None and self._len + dl > self._max_size:
+            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_size')
 
         if self._chunk_size <= 0:
             self._segs.append(data)
@@ -310,8 +310,8 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
             self._reserved_len = 0
             self._reserved_in_active = False
 
-            if self._max_bytes is not None and self._len + n > self._max_bytes:
-                raise BufferTooLargeByteStreamBufferError('buffer exceeded max_bytes')
+            if self._max_size is not None and self._len + n > self._max_size:
+                raise BufferTooLargeByteStreamBufferError('buffer exceeded max_size')
 
             if n:
                 self._active_used += n
@@ -326,8 +326,8 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         self._reserved_len = 0
         self._reserved_in_active = False
 
-        if self._max_bytes is not None and self._len + n > self._max_bytes:
-            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_bytes')
+        if self._max_size is not None and self._len + n > self._max_size:
+            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_size')
 
         if not n:
             return

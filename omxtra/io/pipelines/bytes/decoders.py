@@ -75,7 +75,7 @@ class DelimiterFrameDecoderChannelPipelineHandler(InboundBytesBufferingChannelPi
         self._on_incomplete_final = on_incomplete_final
 
         self._buf = ScanningByteStreamBuffer(SegmentedByteStreamBuffer(
-            max_bytes=max_buffer,
+            max_size=max_buffer,
             chunk_size=buffer_chunk_size,
         ))
 
@@ -126,11 +126,15 @@ class BytesToMessageDecoderChannelPipelineHandler(InboundBytesBufferingChannelPi
     def __init__(
             self,
             *,
-            scanning: bool = False,
+            max_buffer_size: ta.Optional[int] = None,
+            buffer_chunk_size: int = 0x10000,
+            scanning_buffer: bool = False,
     ) -> None:
         super().__init__()
 
-        self._scanning = scanning
+        self._max_buffer_size = max_buffer_size
+        self._buffer_chunk_size = buffer_chunk_size
+        self._scanning_buffer = scanning_buffer
 
     def inbound_buffered_bytes(self) -> int:
         if (buf := self._buf) is None:
@@ -152,9 +156,12 @@ class BytesToMessageDecoderChannelPipelineHandler(InboundBytesBufferingChannelPi
     _buf: ta.Optional[MutableByteStreamBuffer] = None
 
     def _new_buf(self) -> MutableByteStreamBuffer:
-        buf: MutableByteStreamBuffer = SegmentedByteStreamBuffer(chunk_size=0x4000)
+        buf: MutableByteStreamBuffer = SegmentedByteStreamBuffer(
+            max_size=self._max_buffer_size,
+            chunk_size=self._buffer_chunk_size,
+        )
 
-        if self._scanning:
+        if self._scanning_buffer:
             buf = ScanningByteStreamBuffer(buf)
 
         return buf
@@ -260,10 +267,14 @@ class FnBytesToMessageDecoderChannelPipelineHandler(BytesToMessageDecoderChannel
             self,
             decode_fn: DecodeFn,
             *,
-            scanning: bool = False,
+            max_buffer_size: ta.Optional[int] = None,
+            buffer_chunk_size: int = 0x10000,
+            scanning_buffer: bool = False,
     ) -> None:
         super().__init__(
-            scanning=scanning,
+            max_buffer_size=max_buffer_size,
+            buffer_chunk_size=buffer_chunk_size,
+            scanning_buffer=scanning_buffer,
         )
 
         self._decode_fn = decode_fn

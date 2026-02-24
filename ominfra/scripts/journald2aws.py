@@ -98,7 +98,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../../omlish/io/streams/scanning.py', sha1='4c0323e0b11cd506f7b6b4cf28ea4d7c6064b9d3'),
             dict(path='../../../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
             dict(path='../../../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
-            dict(path='../../../../omlish/io/streams/segmented.py', sha1='f855d67d88ed71bbe2bbeee09321534f0ef18e24'),
+            dict(path='../../../../omlish/io/streams/segmented.py', sha1='1e556563fd4399d8e2632144615e1ff89ac7c254'),
             dict(path='../../../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='../../../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
@@ -7515,7 +7515,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
     def __init__(
             self,
             *,
-            max_bytes: ta.Optional[int] = None,
+            max_size: ta.Optional[int] = None,
             chunk_size: int = 0,
             chunk_compact_threshold: float = .25,
     ) -> None:
@@ -7523,7 +7523,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
 
         self._segs: ta.List[ta.Union[bytes, bytearray]] = []
 
-        self._max_bytes = None if max_bytes is None else int(max_bytes)
+        self._max_size = None if max_size is None else int(max_size)
 
         if chunk_size < 0:
             raise ValueError(chunk_size)
@@ -7668,8 +7668,8 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
 
         dl = len(data)
 
-        if self._max_bytes is not None and self._len + dl > self._max_bytes:
-            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_bytes')
+        if self._max_size is not None and self._len + dl > self._max_size:
+            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_size')
 
         if self._chunk_size <= 0:
             self._segs.append(data)
@@ -7741,8 +7741,8 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
             self._reserved_len = 0
             self._reserved_in_active = False
 
-            if self._max_bytes is not None and self._len + n > self._max_bytes:
-                raise BufferTooLargeByteStreamBufferError('buffer exceeded max_bytes')
+            if self._max_size is not None and self._len + n > self._max_size:
+                raise BufferTooLargeByteStreamBufferError('buffer exceeded max_size')
 
             if n:
                 self._active_used += n
@@ -7757,8 +7757,8 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         self._reserved_len = 0
         self._reserved_in_active = False
 
-        if self._max_bytes is not None and self._len + n > self._max_bytes:
-            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_bytes')
+        if self._max_size is not None and self._len + n > self._max_size:
+            raise BufferTooLargeByteStreamBufferError('buffer exceeded max_size')
 
         if not n:
             return

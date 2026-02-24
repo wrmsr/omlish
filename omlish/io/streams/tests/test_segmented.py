@@ -324,16 +324,16 @@ class TestSegmentedByteStreamBuffer(unittest.TestCase):
         # Search from 1 to end should find second at 6.
         self.assertEqual(b.rfind(b'ABCDEF', 1), 6)
 
-    def test_max_bytes_segmented_write(self) -> None:
-        b = SegmentedByteStreamBuffer(max_bytes=3)
+    def test_max_size_segmented_write(self) -> None:
+        b = SegmentedByteStreamBuffer(max_size=3)
         b.write(b'ab')
         b.write(b'c')
         with self.assertRaises(BufferTooLargeByteStreamBufferError):
             b.write(b'd')
         self.assertEqual(b''.join(bytes(mv) for mv in b.segments()), b'abc')
 
-    def test_max_bytes_segmented_commit(self) -> None:
-        b = SegmentedByteStreamBuffer(max_bytes=3)
+    def test_max_size_segmented_commit(self) -> None:
+        b = SegmentedByteStreamBuffer(max_size=3)
         mv = b.reserve(4)
         mv[:] = b'abcd'
         with self.assertRaises(BufferTooLargeByteStreamBufferError):

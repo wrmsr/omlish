@@ -108,7 +108,7 @@ class PipelineHttpRequestBodyAggregator(InboundBytesBufferingChannelPipelineHand
         self._cur_head: ta.Optional[PipelineHttpRequestHead] = None
         self._want = 0
         self._buf = SegmentedByteStreamBuffer(
-            max_bytes=self._max_body,
+            max_size=self._max_body,
             chunk_size=buffer_chunk_size,
         )
 
