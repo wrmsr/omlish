@@ -32,7 +32,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='errors.py', sha1='a6e20daf54f563f7d2aa4f28fce87fa06417facb'),
             dict(path='../../../omlish/io/streams/types.py', sha1='8a12dc29f6e483dd8df5336c0d9b58a00b64e7ed'),
-            dict(path='core.py', sha1='47462680239426a84db72f9f291255dbac23325e'),
+            dict(path='core.py', sha1='e3ce92f57b3cc09c549db174a410f54dc2ab92c9'),
             dict(path='../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -1226,11 +1226,15 @@ class MutableByteStreamBuffer(ByteStreamBuffer, Abstract):
 class ChannelPipelineMessages(NamespaceClass):
     """Standard messages sent through a channel pipeline."""
 
+    #
+
     class NeverInbound(Abstract):
         pass
 
     class NeverOutbound(Abstract):
         pass
+
+    #
 
     class MustPropagate(Abstract):
         """
@@ -1268,6 +1272,62 @@ class ChannelPipelineMessages(NamespaceClass):
 
         direction: ta.Optional['ChannelPipelineDirection'] = None
         handler: ta.Optional['ChannelPipelineHandlerRef'] = None
+
+    #
+
+    class Completable(Abstract, ta.Generic[T]):
+        @ta.final
+        class _Completion:
+            state: ta.Literal['pending', 'succeeded', 'failed'] = 'pending'
+            result: ta.Any
+            listeners: ta.Optional[ta.List[ta.Callable[[ta.Any], None]]] = None
+
+        def _completion(self) -> _Completion:
+            try:
+                return getattr(self, '_completion_')
+            except AttributeError:
+                pass
+            cpl = ChannelPipelineMessages.Completable._Completion()  # noqa
+            object.__setattr__(self, '_completion_', cpl)
+            return cpl
+
+        def is_done(self) -> bool:
+            return self._completion().state != 'pending'
+
+        def is_succeeded(self) -> bool:
+            return self._completion().state == 'succeeded'
+
+        def is_failed(self) -> bool:
+            return self._completion().state == 'failed'
+
+        def get_result(self) -> T:
+            cpl = self._completion()
+            check.state(cpl.state == 'succeeded')
+            return cpl.result
+
+        def add_listener(self, fn: ta.Callable[['ChannelPipelineMessages.Completable[T]'], None]) -> None:
+            cpl = self._completion()
+            check.state(cpl.state == 'pending')
+            if (lst := cpl.listeners) is None:
+                lst = cpl.listeners = []
+            lst.append(fn)
+
+        def set_succeeded(self, result: T) -> None:
+            cpl = self._completion()
+            check.state(cpl.state == 'pending')
+            cpl.result = result
+            cpl.state = 'succeeded'
+            if (lst := cpl.listeners) is not None:
+                for fn in lst:
+                    fn(self)
+
+        def set_failed(self) -> None:
+            cpl = self._completion()
+            check.state(cpl.state == 'pending')
+            cpl.state = 'failed'
+            if (lst := cpl.listeners) is not None:
+                for fn in lst:
+                    fn(self)
 
 
 ##

@@ -33,11 +33,15 @@ PipelineChannelMetadataT = ta.TypeVar('PipelineChannelMetadataT', bound='Pipelin
 class ChannelPipelineMessages(NamespaceClass):
     """Standard messages sent through a channel pipeline."""
 
+    #
+
     class NeverInbound(Abstract):
         pass
 
     class NeverOutbound(Abstract):
         pass
+
+    #
 
     class MustPropagate(Abstract):
         """
@@ -75,6 +79,62 @@ class ChannelPipelineMessages(NamespaceClass):
 
         direction: ta.Optional['ChannelPipelineDirection'] = None
         handler: ta.Optional['ChannelPipelineHandlerRef'] = None
+
+    #
+
+    class Completable(Abstract, ta.Generic[T]):
+        @ta.final
+        class _Completion:
+            state: ta.Literal['pending', 'succeeded', 'failed'] = 'pending'
+            result: ta.Any
+            listeners: ta.Optional[ta.List[ta.Callable[[ta.Any], None]]] = None
+
+        def _completion(self) -> _Completion:
+            try:
+                return getattr(self, '_completion_')
+            except AttributeError:
+                pass
+            cpl = ChannelPipelineMessages.Completable._Completion()  # noqa
+            object.__setattr__(self, '_completion_', cpl)
+            return cpl
+
+        def is_done(self) -> bool:
+            return self._completion().state != 'pending'
+
+        def is_succeeded(self) -> bool:
+            return self._completion().state == 'succeeded'
+
+        def is_failed(self) -> bool:
+            return self._completion().state == 'failed'
+
+        def get_result(self) -> T:
+            cpl = self._completion()
+            check.state(cpl.state == 'succeeded')
+            return cpl.result
+
+        def add_listener(self, fn: ta.Callable[['ChannelPipelineMessages.Completable[T]'], None]) -> None:
+            cpl = self._completion()
+            check.state(cpl.state == 'pending')
+            if (lst := cpl.listeners) is None:
+                lst = cpl.listeners = []
+            lst.append(fn)
+
+        def set_succeeded(self, result: T) -> None:
+            cpl = self._completion()
+            check.state(cpl.state == 'pending')
+            cpl.result = result
+            cpl.state = 'succeeded'
+            if (lst := cpl.listeners) is not None:
+                for fn in lst:
+                    fn(self)
+
+        def set_failed(self) -> None:
+            cpl = self._completion()
+            check.state(cpl.state == 'pending')
+            cpl.state = 'failed'
+            if (lst := cpl.listeners) is not None:
+                for fn in lst:
+                    fn(self)
 
 
 ##
