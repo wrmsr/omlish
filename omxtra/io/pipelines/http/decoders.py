@@ -1,5 +1,9 @@
 # ruff: noqa: UP006 UP007 UP043 UP045
 # @omlish-lite
+"""
+TODO:
+ - fix exception handling lol - do we raise ValueError?? do we return aborted??
+"""
 import abc
 import dataclasses as dc
 import typing as ta
@@ -10,6 +14,7 @@ from omlish.http.parsing import parse_http_message
 from omlish.io.streams.scanning import ScanningByteStreamBuffer
 from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 from omlish.io.streams.types import BytesLikeOrMemoryview
+from omlish.io.streams.types import MutableByteStreamBuffer
 from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
@@ -126,7 +131,11 @@ class PipelineHttpHeadDecoder:
             i = self._buf.find(b'\r\n\r\n')
             if i < 0:
                 if rem_mv is not None:
+                    del self._buf
+                    self._done = True
+
                     return [self._make_aborted('Head exceeded max buffer size')]
+
                 continue
 
             # Extract head
@@ -319,14 +328,18 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
             config=config,
         )
 
-        self._buf = ScanningByteStreamBuffer(SegmentedByteStreamBuffer(
+        self._header_buf = self._new_header_buf()
+
+        self._chunk_remaining = 0
+        self._got_data_cr = False
+
+        self._state: ta.Literal['size', 'data', 'trailer', 'done'] = 'size'
+
+    def _new_header_buf(self) -> MutableByteStreamBuffer:
+        return ScanningByteStreamBuffer(SegmentedByteStreamBuffer(
             max_size=self._config.content_chunk_header_buffer.max_size,
             chunk_size=self._config.content_chunk_header_buffer.chunk_size,
         ))
-
-        self._chunk_remaining = 0
-
-        self._state: ta.Literal['size', 'data', 'trailer', 'done'] = 'size'
 
     @property
     def done(self) -> bool:
@@ -335,13 +348,13 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
     def inbound_buffered_bytes(self) -> int:
         if self._state == 'done':
             return 0
-        return len(self._buf)
+        return len(self._header_buf)
 
     def inbound(self, msg: ta.Any) -> ta.Sequence[ta.Any]:
         check.state(self._state != 'done')
 
         if isinstance(msg, ChannelPipelineMessages.FinalInput):
-            del self._buf
+            del self._header_buf
             self._state = 'done'
 
             return [
@@ -352,88 +365,145 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
         if not ByteStreamBuffers.can_bytes(msg):
             return [msg]
 
-        # Buffer and decode chunks
-        # FIXME: lol no - ignore proper chunk boundaries, direct passthrough
-        for mv in ByteStreamBuffers.iter_segments(msg):
-            if mv:
-                self._buf.write(mv)
-
         out: ta.List[ta.Any] = []
 
-        while True:
-            if self._state == 'size':
-                # Parse chunk size line: <hex-size>\r\n
-                i = self._buf.find(b'\r\n')
-                if i < 0:
-                    return out  # Need more data
+        for mv in ByteStreamBuffers.iter_segments(msg):
+            if not self._process(mv, out):
+                break
 
-                size_line = self._buf.split_to(i + 2)
+        return out
 
-                size_bytes = size_line.tobytes()[:-2]  # Strip \r\n
-                try:
-                    self._chunk_remaining = int(size_bytes, 16)
-                except ValueError as e:
-                    raise ValueError(f'Invalid chunk size: {size_bytes!r}') from e
+    def _process(self, mv: memoryview, out: ta.List[ta.Any]) -> bool:
+        if self._state == 'done':
+            out.append(mv)
+            return True
 
-                if (mcs := self._config.max_content_chunk_size) is not None and self._chunk_remaining > mcs:
-                    raise ValueError(
-                        f'Content chunk size {self._chunk_remaining} exceeds maximum content chunk size: {mcs}',
-                    )
+        elif self._state == 'size':
+            return self._process_size(mv, out)
 
-                if self._chunk_remaining == 0:
-                    # Final chunk
-                    self._state = 'trailer'
-                else:
-                    self._state = 'data'
+        elif self._state == 'data':
+            return self._process_data(mv, out)
 
-            elif self._state == 'data':
-                # Read chunk data + trailing \r\n
-                needed = self._chunk_remaining + 2
-                if len(self._buf) < needed:
-                    return out  # Need more data
+        elif self._state == 'trailer':
+            return self._process_trailer(mv, out)
 
-                # Extract chunk data
-                chunk_data = self._buf.split_to(self._chunk_remaining)
+        else:
+            raise RuntimeError(f'Invalid state: {self._state!r}')
 
-                # Extract trailing \r\n
-                trailing = self._buf.split_to(2)
-                trailing_bytes = trailing.tobytes()
+    def _process_size(self, mv: memoryview, out: ta.List[ta.Any]) -> bool:
+        rem_mv: ta.Optional[memoryview] = None
 
-                if trailing_bytes != b'\r\n':
-                    raise ValueError(f'Expected \\r\\n after chunk data, got {trailing_bytes!r}')
+        if (max_buf := self._header_buf.max_size) is not None:
+            rem_buf = max_buf - len(self._header_buf)
 
-                # Emit chunk data (wrapped by subclass)
-                for mv in chunk_data.segments():
-                    out.append(self._make_chunk(mv))
+            if len(mv) > rem_buf:
+                self._header_buf.write(mv[:rem_buf])
+                rem_mv = mv[rem_buf:]
+            else:
+                self._header_buf.write(mv)
 
-                self._chunk_remaining = 0
-                self._state = 'size'
-
-            elif self._state == 'trailer':
-                # Final \r\n after 0-size chunk
-                if len(self._buf) < 2:
-                    return out  # Need more data
-
-                trailing = self._buf.split_to(2)
-                trailing_bytes = trailing.tobytes()
-
-                if trailing_bytes != b'\r\n':
-                    raise ValueError(f'Expected \\r\\n after final chunk, got {trailing_bytes!r}')
-
-                # Emit end marker
-                out.append(self._make_end())
-
-                if len(self._buf):
-                    rem_view = self._buf.split_to(len(self._buf))
-                    out.append(rem_view)
-
-                del self._buf
+        # Parse chunk size line: <hex-size>\r\n
+        i = self._header_buf.find(b'\r\n')
+        if i < 0:
+            if rem_mv is not None:
+                del self._header_buf
                 self._state = 'done'
 
-                return out
+                out.append(self._make_aborted('Chunk header exceeded max buffer size'))
+                return False
 
-            elif self._state == 'done':
-                raise ValueError('Unexpected data after chunked encoding complete')
+            return True  # Need more data
 
-            else:
-                raise RuntimeError(f'Invalid state: {self._state!r}')
+        size_line = self._header_buf.split_to(i + 2)
+
+        size_bytes = size_line.tobytes()[:-2]  # Strip \r\n
+        try:
+            self._chunk_remaining = int(size_bytes, 16)
+        except ValueError as e:
+            raise ValueError(f'Invalid chunk size: {size_bytes!r}') from e
+
+        if (mcs := self._config.max_content_chunk_size) is not None and self._chunk_remaining > mcs:
+            raise ValueError(f'Content chunk size {self._chunk_remaining} exceeds maximum content chunk size: {mcs}')
+
+        if self._chunk_remaining == 0:
+            # Final chunk
+            self._state = 'trailer'
+        else:
+            self._state = 'data'
+
+        if len(self._header_buf) > 0:
+            hb = self._header_buf
+            self._header_buf = self._new_header_buf()
+
+            for hb_mv in ByteStreamBuffers.iter_segments(hb):
+                if not self._process(hb_mv, out):
+                    return False
+
+        if rem_mv is not None:
+            if not self._process(rem_mv, out):
+                return False
+
+        return True
+
+    def _process_data(self, mv: memoryview, out: ta.List[ta.Any]) -> bool:
+        mvl = len(mv)
+        if mvl < self._chunk_remaining:
+            self._chunk_remaining -= mvl
+            out.append(self._make_chunk(mv))
+            return True
+
+        if self._chunk_remaining > 0:
+            if mvl > self._chunk_remaining:
+                out.append(self._make_chunk(mv[:self._chunk_remaining]))
+                mv = mv[self._chunk_remaining:]
+                mvl = len(mv)
+            self._chunk_remaining = 0
+
+        if mvl < 1:
+            return True
+
+        if not self._got_data_cr:
+            if mv[0] != 0x0d:
+                raise ValueError(f'Expected \\r\\n after chunk data, got {bytes([mv[0]])!r}')
+            self._got_data_cr = True
+            mv = mv[1:]
+            mvl -= 1
+            if mvl < 1:
+                return True
+
+        if mv[0] != 0x0a:
+            raise ValueError(f'Expected \\r\\n after chunk data, got {bytes([mv[0]])!r}')
+        mv = mv[1:]
+        mvl -= 1
+
+        self._got_data_cr = False
+        self._state = 'size'
+
+        if mvl > 0:
+            if not self._process(mv, out):
+                return False
+
+        return True
+
+    def _process_trailer(self, mv: memoryview, out: ta.List[ta.Any]) -> bool:
+        # Final \r\n after 0-size chunk
+        if len(self._header_buf) < 2:
+            return True  # Need more data
+
+        trailing = self._header_buf.split_to(2)
+        trailing_bytes = trailing.tobytes()
+
+        if trailing_bytes != b'\r\n':
+            raise ValueError(f'Expected \\r\\n after final chunk, got {trailing_bytes!r}')
+
+        # Emit end marker
+        out.append(self._make_end())
+
+        if len(self._header_buf):
+            rem_view = self._header_buf.split_to(len(self._header_buf))
+            out.append(rem_view)
+
+        del self._header_buf
+        self._state = 'done'
+
+        return True
