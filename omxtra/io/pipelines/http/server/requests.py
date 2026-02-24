@@ -48,7 +48,7 @@ class RequestPipelineHttpDecodingMessageAdapter(PipelineHttpDecodingMessageAdapt
     def make_aborted(self, reason: str) -> ta.Any:
         return PipelineHttpRequestAborted(reason)
 
-    def make_chunk_data(self, data: BytesLikeOrMemoryview) -> ta.Any:
+    def make_content_chunk_data(self, data: BytesLikeOrMemoryview) -> ta.Any:
         return PipelineHttpRequestContentChunkData(data)
 
     def make_end(self) -> ta.Any:

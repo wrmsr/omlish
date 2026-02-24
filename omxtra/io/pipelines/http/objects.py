@@ -15,7 +15,7 @@ from omlish.lite.check import check
 ##
 
 
-class PipelineHttpHead(Abstract):
+class PipelineHttpMessageHead(Abstract):
     @property
     @abc.abstractmethod
     def version(self) -> HttpVersion:
@@ -32,10 +32,10 @@ class PipelineHttpHead(Abstract):
         raise NotImplementedError
 
 
-class FullPipelineHttpObject(Abstract):
+class FullPipelineHttpMessage(Abstract):
     @property
     @abc.abstractmethod
-    def head(self) -> PipelineHttpHead:
+    def head(self) -> PipelineHttpMessageHead:
         raise NotImplementedError
 
     @property
@@ -45,17 +45,17 @@ class FullPipelineHttpObject(Abstract):
 
 
 @dc.dataclass(frozen=True)
-class PipelineHttpContentChunkData(Abstract):
+class PipelineHttpMessageContentChunkData(Abstract):
     data: BytesLikeOrMemoryview
 
 
 @dc.dataclass(frozen=True)
-class PipelineHttpEnd(Abstract):
+class PipelineHttpMessageEnd(Abstract):
     pass
 
 
 @dc.dataclass(frozen=True)
-class PipelineHttpAborted(Abstract):
+class PipelineHttpMessageAborted(Abstract):
     reason: str
 
 
@@ -65,7 +65,7 @@ class PipelineHttpAborted(Abstract):
 def _un_abstract_pipeline_http_object_classes() -> None:
     # So this is regrettable, but I think the benefits of having the base objects be actual dataclases outweighs the
     # gnarliness here.
-    for cls in [PipelineHttpHead, FullPipelineHttpObject]:
+    for cls in [PipelineHttpMessageHead, FullPipelineHttpMessage]:
         atts = {a for a in cls.__dict__ if not a.startswith('_')}
         for att in atts:
             delattr(cls, att)

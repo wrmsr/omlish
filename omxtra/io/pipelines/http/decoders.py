@@ -3,7 +3,7 @@
 """
 TODO:
  - chunked make_chunk_header - https://datatracker.ietf.org/doc/html/rfc9112#name-chunk-extensions
-  - and make_chunk_data ...
+  - and make_content_chunk_data ...
  - fix exception handling lol - do we raise ValueError?? do we return aborted??
  - unify with pipelines.bytes.decoders
 """
@@ -60,7 +60,7 @@ class PipelineHttpDecodingMessageAdapter(Abstract):
     def make_aborted(self, reason: str) -> ta.Any:
         raise NotImplementedError
 
-    def make_chunk_data(self, data: BytesLikeOrMemoryview) -> ta.Any:
+    def make_content_chunk_data(self, data: BytesLikeOrMemoryview) -> ta.Any:
         raise NotImplementedError
 
     def make_end(self) -> ta.Any:
@@ -240,7 +240,7 @@ class UntilFinalInputPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDec
         out: ta.List[ta.Any] = []
 
         for mv in ByteStreamBuffers.iter_segments(msg):
-            out.append(self._adapter.make_chunk_data(mv))
+            out.append(self._adapter.make_content_chunk_data(mv))
 
         return out
 
@@ -293,16 +293,16 @@ class ContentLengthPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecod
             mvl = len(mv)
 
             if self._remain > mvl:
-                out.append(self._adapter.make_chunk_data(mv))
+                out.append(self._adapter.make_content_chunk_data(mv))
                 self._remain -= mvl
 
             elif self._remain == mvl:
-                out.append(self._adapter.make_chunk_data(mv))
+                out.append(self._adapter.make_content_chunk_data(mv))
                 out.append(self._adapter.make_end())
                 self._remain = 0
 
             else:
-                out.append(self._adapter.make_chunk_data(mv[:self._remain]))
+                out.append(self._adapter.make_content_chunk_data(mv[:self._remain]))
                 out.append(self._adapter.make_end())
                 ofs = self._remain
                 self._remain = 0
@@ -455,16 +455,16 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
         mvl = len(mv)
         if mvl < self._chunk_remaining:
             self._chunk_remaining -= mvl
-            out.append(self._adapter.make_chunk_data(mv))
+            out.append(self._adapter.make_content_chunk_data(mv))
             return True
 
         if self._chunk_remaining > 0:
             if mvl == self._chunk_remaining:
-                out.append(self._adapter.make_chunk_data(mv))
+                out.append(self._adapter.make_content_chunk_data(mv))
                 self._chunk_remaining = 0
                 return True
 
-            out.append(self._adapter.make_chunk_data(mv[:self._chunk_remaining]))
+            out.append(self._adapter.make_content_chunk_data(mv[:self._chunk_remaining]))
             mv = mv[self._chunk_remaining:]
             mvl = len(mv)
             self._chunk_remaining = 0

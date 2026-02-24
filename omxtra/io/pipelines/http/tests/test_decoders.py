@@ -24,7 +24,7 @@ class DummyPipelineHttpDecodingMessageAdapter(PipelineHttpDecodingMessageAdapter
 
         return f'ABORTED:{reason}'
 
-    def make_chunk_data(self, data: ta.Any) -> str:
+    def make_content_chunk_data(self, data: ta.Any) -> str:
         """Test callback that returns chunk data marker."""
 
         return f'CHUNK:{bytes(data).decode("utf-8", errors="replace")}'
