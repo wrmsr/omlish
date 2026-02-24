@@ -225,7 +225,7 @@ class TestPipelineHttpHeadDecoder(unittest.TestCase):
                 self.assertEqual(out[0], 'HEAD:request')
                 self.assertTrue(decoder.done)
 
-    def test_split_with_body_remainder(self) -> None:
+    def test_split_with_separate_body_remainder(self) -> None:
         """Test head split across chunks with body remainder."""
 
         decoder = PipelineHttpHeadDecoder(
@@ -244,6 +244,46 @@ class TestPipelineHttpHeadDecoder(unittest.TestCase):
         self.assertEqual(len(out2), 2)
         self.assertEqual(out2[0], 'HEAD:request')
         self.assertEqual(out2[1].tobytes(), b'BODYDATA')
+        self.assertTrue(decoder.done)
+
+    def test_split_with_inline_body_remainder(self) -> None:
+        decoder = PipelineHttpHeadDecoder(
+            HttpParser.Mode.REQUEST,
+            self._make_head,
+            self._make_aborted,
+        )
+
+        chunk1 = b'GET / HTTP/1.1\r\nHost: test\r\n\r\nBODYDATA'
+
+        out1 = decoder.inbound(chunk1)
+        self.assertEqual(len(out1), 2)
+        self.assertEqual(out1[0], 'HEAD:request')
+        self.assertEqual(out1[1].tobytes(), b'BODYDATA')
+        self.assertTrue(decoder.done)
+
+    def test_split_with_inline_body_remainder_and_max_size(self) -> None:
+        head_bytes = b'GET / HTTP/1.1\r\nHost: test\r\n\r\n'
+        body_bytes = b'BODYDATA'
+
+        decoder = PipelineHttpHeadDecoder(
+            HttpParser.Mode.REQUEST,
+            self._make_head,
+            self._make_aborted,
+            config=PipelineHttpDecodingConfig(
+                head_buffer=PipelineHttpDecodingConfig.BufferConfig(
+                    max_size=len(head_bytes) + 3,
+                    chunk_size=0x1000,
+                ),
+            ),
+        )
+
+        chunk1 = head_bytes + body_bytes
+
+        out1 = decoder.inbound(chunk1)
+        self.assertEqual(len(out1), 3)
+        self.assertEqual(out1[0], 'HEAD:request')
+        self.assertEqual(out1[1].tobytes(), b'BOD')
+        self.assertEqual(out1[2].tobytes(), b'YDATA')
         self.assertTrue(decoder.done)
 
     def test_eof_before_complete(self) -> None:

@@ -100,10 +100,6 @@ class Sha1Handler(ChannelPipelineHandler):
 def build_http_sha1_channel() -> PipelineChannel:
     dec_cfg = dc.replace(
         PipelineHttpDecodingConfig.DEFAULT,
-        head_buffer=dc.replace(
-            PipelineHttpDecodingConfig.DEFAULT.head_buffer,
-            max_size=1 << 20,  # FIXME: :|
-        ),
         content_chunk_header_buffer=dc.replace(
             PipelineHttpDecodingConfig.DEFAULT.content_chunk_header_buffer,
             max_size=1 << 20,  # FIXME: :|

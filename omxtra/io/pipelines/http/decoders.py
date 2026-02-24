@@ -103,34 +103,51 @@ class PipelineHttpHeadDecoder:
         if not ByteStreamBuffers.can_bytes(msg):
             return [msg]
 
-        # Buffer bytes
-        # FIXME: lol what dont write everything to buf
+        out: ta.List[ta.Any] = []
+
         for mv in ByteStreamBuffers.iter_segments(msg):
-            if mv:
-                self._buf.write(mv)
+            if self._done:
+                out.append(mv)
+                continue
 
-        # Look for end of head
-        i = self._buf.find(b'\r\n\r\n')
-        if i < 0:
-            return []
+            rem_mv: ta.Optional[memoryview] = None
 
-        # Extract head
-        head_view = self._buf.split_to(i + 4)
+            if (max_buf := self._buf.max_size) is not None:
+                rem_buf = max_buf - len(self._buf)
 
-        # Parse and emit head
-        raw = head_view.tobytes()
-        parsed = parse_http_message(raw, mode=self._parse_mode)
+                if len(mv) > rem_buf:
+                    self._buf.write(mv[:rem_buf])
+                    rem_mv = mv[rem_buf:]
+                else:
+                    self._buf.write(mv)
 
-        head = self._make_head(parsed)
-        out: ta.List[ta.Any] = [head]
+            # Look for end of head
+            i = self._buf.find(b'\r\n\r\n')
+            if i < 0:
+                if rem_mv is not None:
+                    return [self._make_aborted('Head exceeded max buffer size')]
+                continue
 
-        # Forward any remainder bytes (body bytes)
-        if len(self._buf):
-            rem_view = self._buf.split_to(len(self._buf))
-            out.append(rem_view)
+            # Extract head
+            head_view = self._buf.split_to(i + 4)
 
-        del self._buf
-        self._done = True
+            # Parse and emit head
+            raw = head_view.tobytes()
+            parsed = parse_http_message(raw, mode=self._parse_mode)
+
+            head = self._make_head(parsed)
+            out.append(head)
+
+            # Forward any remainder bytes (body bytes)
+            if len(self._buf):
+                rem_view = self._buf.split_to(len(self._buf))
+                out.append(rem_view)
+
+            if rem_mv is not None:
+                out.append(rem_mv)
+
+            del self._buf
+            self._done = True
 
         return out
 
