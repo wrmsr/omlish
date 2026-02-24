@@ -8,6 +8,8 @@ from ....core import ChannelPipelineHandlerContext
 from ....core import PipelineChannel
 from ....drivers.asyncio import AsyncioStreamChannelPipelineDriver
 from ....flow.stub import StubChannelPipelineFlow
+from ....flow.types import ChannelPipelineFlowMessages
+from ....handlers.flatmap import FlatMapChannelPipelineHandlers
 from ...requests import PipelineHttpRequestHead
 from ...server.requests import PipelineHttpRequestHeadDecoder
 
@@ -75,6 +77,7 @@ def build_http_ping_channel(
 
             PingHandler(),
 
+            FlatMapChannelPipelineHandlers.drop('inbound', filter_type=ChannelPipelineFlowMessages.FlushInput),
         ],
 
         services=[

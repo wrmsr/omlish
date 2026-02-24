@@ -8,6 +8,8 @@ from ....core import ChannelPipelineHandlerContext
 from ....core import PipelineChannel
 from ....drivers.asyncio import AsyncioStreamChannelPipelineDriver
 from ....flow.stub import StubChannelPipelineFlow
+from ....flow.types import ChannelPipelineFlowMessages
+from ....handlers.flatmap import FlatMapChannelPipelineHandlers
 from ...requests import FullPipelineHttpRequest
 from ...server.requests import PipelineHttpRequestBodyAggregator
 from ...server.requests import PipelineHttpRequestHeadDecoder
@@ -138,6 +140,7 @@ def build_http_kv_channel(
 
             KvStoreHandler(items),
 
+            FlatMapChannelPipelineHandlers.drop('inbound', filter_type=ChannelPipelineFlowMessages.FlushInput),
         ],
 
         services=[

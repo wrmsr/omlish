@@ -12,6 +12,7 @@ from ..core import ChannelPipelineDirectionOrDuplex
 from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
 from ..core import ChannelPipelineHandlerFn
+from .fns import ChannelPipelineHandlerFns
 
 
 ##
@@ -233,12 +234,16 @@ class FlatMapChannelPipelineHandlers(NamespaceClass):
             cls,
             direction: ChannelPipelineDirectionOrDuplex,
             *,
+            filter_type: ta.Optional[ta.Union[type, ta.Tuple[type, ...]]] = None,
             filter: ta.Optional[ChannelPipelineHandlerFn[ta.Any, bool]] = None,  # noqa
     ) -> ChannelPipelineHandler:
         fn = FlatMapChannelPipelineHandlerFns.drop()
 
         if filter is not None:
             fn = FlatMapChannelPipelineHandlerFns.filter(filter, fn)
+
+        if filter_type is not None:
+            fn = FlatMapChannelPipelineHandlerFns.filter(ChannelPipelineHandlerFns.isinstance(filter_type), fn)
 
         return cls.new(direction, fn)
 
@@ -248,6 +253,7 @@ class FlatMapChannelPipelineHandlers(NamespaceClass):
     def feed_out_and_drop(
             cls,
             *,
+            filter_type: ta.Optional[ta.Union[type, ta.Tuple[type, ...]]] = None,
             filter: ta.Optional[ChannelPipelineHandlerFn[ta.Any, bool]] = None,  # noqa
     ) -> ChannelPipelineHandler:
         fn = FlatMapChannelPipelineHandlerFns.compose(
@@ -257,5 +263,8 @@ class FlatMapChannelPipelineHandlers(NamespaceClass):
 
         if filter is not None:
             fn = FlatMapChannelPipelineHandlerFns.filter(filter, fn)
+
+        if filter_type is not None:
+            fn = FlatMapChannelPipelineHandlerFns.filter(ChannelPipelineHandlerFns.isinstance(filter_type), fn)
 
         return cls.new('inbound', fn)
