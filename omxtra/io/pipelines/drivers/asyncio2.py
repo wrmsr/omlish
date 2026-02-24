@@ -100,10 +100,20 @@ class AsyncioStreamChannelPipelineDriver2:
         def __repr__(self) -> str:
             return f'{self.__class__.__name__}@{id(self):x}({"..." if self._pending_data is not None else ""})'
 
-    _want_read = True
-
     _update_want_read_command: ta.Optional[_UpdateWantReadCommand] = None
     _has_sent_update_want_read_command: bool = False
+
+    async def _send_update_want_read_command(self) -> None:
+        if (cmd := self._update_want_read_command) is None:
+            cmd = self._update_want_read_command = AsyncioStreamChannelPipelineDriver2._UpdateWantReadCommand()
+
+        if not self._has_sent_update_want_read_command:
+            self._has_sent_update_want_read_command = True
+            await self._command_queue.put(cmd)
+
+    _want_read = True
+
+    _delay_sending_update_want_read_command = False
 
     async def _set_want_read(self, want_read: bool) -> None:
         if self._want_read == want_read:
@@ -111,12 +121,8 @@ class AsyncioStreamChannelPipelineDriver2:
 
         self._want_read = want_read
 
-        if (cmd := self._update_want_read_command) is None:
-            cmd = self._update_want_read_command = self._UpdateWantReadCommand()
-
-        if not self._has_sent_update_want_read_command:
-            self._has_sent_update_want_read_command = True
-            await self._command_queue.put(cmd)
+        if not self._delay_sending_update_want_read_command:
+            await self._send_update_want_read_command()
 
     #
 
@@ -130,16 +136,24 @@ class AsyncioStreamChannelPipelineDriver2:
             while True:
                 wait_tasks: ta.List[asyncio.Task] = [self._shutdown_task]
 
+                #
+
                 if self._command_queue_task is None:
                     self._command_queue_task = asyncio.create_task(self._command_queue.get())
+
                 wait_tasks.append(self._command_queue_task)
+
+                #
 
                 if self._want_read:
                     if self._read_task is None:
                         self._read_task = asyncio.create_task(self._reader.read(self._read_chunk_size))
                     wait_tasks.append(self._read_task)
+
                 else:
                     raise NotImplementedError
+
+                #
 
                 done, pending = await asyncio.wait(
                     wait_tasks,
@@ -147,8 +161,13 @@ class AsyncioStreamChannelPipelineDriver2:
                 )
 
                 winner = done.pop()
+
+                #
+
                 if winner is self._shutdown_task:
                     break
+
+                #
 
                 elif winner is self._command_queue_task:
                     cmd = self._command_queue_task.result()
@@ -158,6 +177,8 @@ class AsyncioStreamChannelPipelineDriver2:
 
                     del cmd
                     self._command_queue_task = None
+
+                #
 
                 elif winner is self._read_task:
                     data = self._read_task.result()
@@ -170,6 +191,8 @@ class AsyncioStreamChannelPipelineDriver2:
 
                     del data
 
+                #
+
                 else:
                     raise RuntimeError(f'Unexpected task: {winner!r}')
 
@@ -178,6 +201,9 @@ class AsyncioStreamChannelPipelineDriver2:
 
     async def _handle_command(self, cmd: _Command) -> None:
         if isinstance(cmd, AsyncioStreamChannelPipelineDriver2._UpdateWantReadCommand):
+            check.state(self._has_sent_update_want_read_command)
+            check.is_(cmd, self._update_want_read_command)
+
             raise NotImplementedError
 
         else:
@@ -197,7 +223,21 @@ class AsyncioStreamChannelPipelineDriver2:
         else:
             self._channel.feed_final_input()
 
-        await self._drain_channel()
+        #
+
+        prev_want_read = self._want_read
+
+        self._delay_sending_update_want_read_command = True
+        try:
+            await self._drain_channel()
+
+        finally:
+            self._delay_sending_update_want_read_command = False
+
+        if self._want_read != prev_want_read:
+            raise NotImplementedError
+
+        #
 
         if not data:
             self._shutdown_event.set()

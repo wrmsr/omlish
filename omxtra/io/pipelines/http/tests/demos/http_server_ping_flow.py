@@ -78,7 +78,7 @@ def build_http_ping_channel(
         ],
 
         services=[
-            StubChannelPipelineFlow(),
+            StubChannelPipelineFlow(auto_read=True),
         ],
     )
 
