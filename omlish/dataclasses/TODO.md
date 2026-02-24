@@ -1,0 +1,1 @@
+- `override=True` doesn't work with our early-checking `Abstract`

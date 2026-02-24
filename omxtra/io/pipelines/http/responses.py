@@ -8,23 +8,31 @@ from omlish.http.headers import HttpHeaders
 from omlish.http.parsing import ParsedHttpMessage
 from omlish.http.versions import HttpVersion
 from omlish.http.versions import HttpVersions
-from omlish.io.streams.types import BytesLikeOrMemoryview
+from omlish.lite.dataclasses import dataclass_kw_only_init
+
+from .objects import FullPipelineHttpObject
+from .objects import PipelineHttpAborted
+from .objects import PipelineHttpContentChunkData
+from .objects import PipelineHttpEnd
+from .objects import PipelineHttpHead
 
 
 ##
 
 
+@dataclass_kw_only_init()
 @dc.dataclass(frozen=True)
-class PipelineHttpResponseHead:
-    version: HttpVersion
+class PipelineHttpResponseHead(PipelineHttpHead):
     status: int
     reason: str
+
+    version: HttpVersion
     headers: HttpHeaders
     parsed: ta.Optional[ParsedHttpMessage] = None
 
 
 @dc.dataclass(frozen=True)
-class FullPipelineHttpResponse:
+class FullPipelineHttpResponse(FullPipelineHttpObject):
     head: PipelineHttpResponseHead
     body: bytes
 
@@ -66,15 +74,15 @@ class FullPipelineHttpResponse:
 
 
 @dc.dataclass(frozen=True)
-class PipelineHttpResponseContentChunkData:
-    data: BytesLikeOrMemoryview
+class PipelineHttpResponseContentChunkData(PipelineHttpContentChunkData):
+    pass
 
 
 @dc.dataclass(frozen=True)
-class PipelineHttpResponseEnd:
-    """Signals the end of a streaming HTTP response body."""
+class PipelineHttpResponseEnd(PipelineHttpEnd):
+    pass
 
 
 @dc.dataclass(frozen=True)
-class PipelineHttpResponseAborted:
-    reason: str
+class PipelineHttpResponseAborted(PipelineHttpAborted):
+    pass
