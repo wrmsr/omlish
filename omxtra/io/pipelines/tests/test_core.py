@@ -1,10 +1,12 @@
 # @omlish-lite
+import dataclasses as dc
 import typing as ta
 import unittest
 
 from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
 from ..core import PipelineChannel
+from ..core import PipelineChannelMetadata
 from ..handlers.feedback import FeedbackInboundChannelPipelineHandler
 from ..handlers.queues import InboundQueueChannelPipelineHandler
 
@@ -142,3 +144,21 @@ class TestCore(unittest.TestCase):
 
         ch.feed_in(fbi.wrap('24'))
         assert ch.drain() == [24]
+
+
+class TestMetadata(unittest.TestCase):
+    @dc.dataclass(frozen=True)
+    class FooMetadata(PipelineChannelMetadata):
+        foo: str
+
+    @dc.dataclass(frozen=True)
+    class BarMetadata(PipelineChannelMetadata):
+        bar: str
+
+    def test_metadata(self):
+        ch = PipelineChannel(metadata=[TestMetadata.FooMetadata('foo')])
+        assert ch.metadata[TestMetadata.FooMetadata] == TestMetadata.FooMetadata('foo')
+        assert TestMetadata.FooMetadata in ch.metadata
+        with self.assertRaises(KeyError):  # noqa
+            ch.metadata[TestMetadata.BarMetadata]  # noqa
+        assert TestMetadata.BarMetadata not in ch.metadata

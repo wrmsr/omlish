@@ -24,6 +24,8 @@ ChannelPipelineHandlerFn = ta.Callable[['ChannelPipelineHandlerContext', F], T] 
 ChannelPipelineHandlerT = ta.TypeVar('ChannelPipelineHandlerT', bound='ChannelPipelineHandler')
 ShareableChannelPipelineHandlerT = ta.TypeVar('ShareableChannelPipelineHandlerT', bound='ShareableChannelPipelineHandler')  # noqa
 
+PipelineChannelMetadataT = ta.TypeVar('PipelineChannelMetadataT', bound='PipelineChannelMetadata')
+
 
 ##
 
@@ -906,6 +908,13 @@ class ChannelPipelineService(Abstract):
 ##
 
 
+class PipelineChannelMetadata(Abstract):
+    pass
+
+
+##
+
+
 @ta.final
 class PipelineChannel:
     @ta.final
@@ -927,11 +936,16 @@ class PipelineChannel:
 
     def __init__(
             self,
+
             # Initial handlers are optional - handlers may be freely added and removed later.
             handlers: ta.Sequence[ChannelPipelineHandler] = (),
 
             config: Config = Config(),
+
             *,
+
+            metadata: ta.Optional[ta.Sequence[PipelineChannelMetadata]] = None,
+
             # Services are fixed for the lifetime of the channel.
             services: ta.Optional[ta.Sequence[ChannelPipelineService]] = None,
 
@@ -940,11 +954,12 @@ class PipelineChannel:
         super().__init__()
 
         self._config: ta.Final[PipelineChannel.Config] = config
-
-        self._services: ta.Final[PipelineChannel._Services] = PipelineChannel._Services(services or [])
         self._never_handle_exceptions = never_handle_exceptions
 
-        self._out_q: ta.Final[collections.deque[ta.Any]] = collections.deque()
+        self._metadata: ta.Final[PipelineChannel._Metadata] = PipelineChannel._Metadata(metadata or [])
+        self._services: ta.Final[PipelineChannel._Services] = PipelineChannel._Services(services or [])
+
+        self._output_q: ta.Final[collections.deque[ta.Any]] = collections.deque()
 
         self._saw_final_input = False
         self._saw_final_output = False
@@ -985,6 +1000,78 @@ class PipelineChannel:
     @property
     def saw_final_output(self) -> bool:
         return self._saw_final_output
+
+    #
+
+    class _Metadata:
+        def __init__(self, lst: ta.Sequence[PipelineChannelMetadata]) -> None:
+            dct: ta.Dict[type, ta.Any] = {}
+            for md in lst:
+                ty = type(md)
+                check.not_in(ty, dct)
+                dct[ty] = md
+            self._dct = dct
+
+        def __len__(self) -> int:
+            return len(self._dct)
+
+        def __contains__(self, ty: ta.Type[PipelineChannelMetadata]) -> bool:
+            return ty in self._dct
+
+        def __iter__(self) -> ta.Iterator[PipelineChannelMetadata]:
+            return iter(self._dct.values())
+
+        @dc.dataclass(frozen=True)
+        class MetadataType(ta.Generic[PipelineChannelMetadataT]):
+            """This is entirely just a workaround for mypy's `type-abstract` deficiency."""
+
+            ty: ta.Type[PipelineChannelMetadataT]
+
+        def __getitem__(
+                self,
+                ty: ta.Union[
+                    MetadataType[PipelineChannelMetadataT],
+                    ta.Type[PipelineChannelMetadataT],
+                ],
+        ) -> PipelineChannelMetadataT:
+            if isinstance(ty, self.MetadataType):
+                ty = ty.ty
+
+            return self._dct[ty]
+
+        @ta.overload
+        def get(
+                self,
+                ty: ta.Union[
+                    MetadataType[PipelineChannelMetadataT],
+                    ta.Type[PipelineChannelMetadataT],
+                ],
+                default: PipelineChannelMetadataT,
+                /,
+        ) -> PipelineChannelMetadataT:
+            ...
+
+        @ta.overload
+        def get(
+                self,
+                ty: ta.Union[
+                    MetadataType[PipelineChannelMetadataT],
+                    ta.Type[PipelineChannelMetadataT],
+                ],
+                default: ta.Optional[PipelineChannelMetadataT] = None,
+                /,
+        ) -> ta.Optional[PipelineChannelMetadataT]:
+            ...
+
+        def get(self, ty, default=None, /):
+            if isinstance(ty, self.MetadataType):
+                ty = ty.ty
+
+            return self._dct.get(ty, default)
+
+    @property
+    def metadata(self) -> _Metadata:
+        return self._metadata
 
     #
 
@@ -1165,21 +1252,21 @@ class PipelineChannel:
         elif self._saw_final_output:
             raise FinalOutputChannelPipelineError
 
-        self._out_q.append(msg)
+        self._output_q.append(msg)
 
     #
 
     def poll(self) -> ta.Optional[ta.Any]:
-        if not self._out_q:
+        if not self._output_q:
             return None
 
-        return self._out_q.popleft()
+        return self._output_q.popleft()
 
     def drain(self) -> ta.List[ta.Any]:
         out: ta.List[ta.Any] = []
 
-        while self._out_q:
-            out.append(self._out_q.popleft())
+        while self._output_q:
+            out.append(self._output_q.popleft())
 
         return out
 
