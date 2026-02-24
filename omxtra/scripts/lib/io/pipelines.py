@@ -31,7 +31,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/check.py', sha1='df0ed561b5782545e34e61dd3424f69f836a87c0'),
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='errors.py', sha1='a6e20daf54f563f7d2aa4f28fce87fa06417facb'),
-            dict(path='../../../omlish/io/streams/types.py', sha1='8a12dc29f6e483dd8df5336c0d9b58a00b64e7ed'),
+            dict(path='../../../omlish/io/streams/types.py', sha1='ab72e5d4a1e648ef79577be7d8c45853b1c5917d'),
             dict(path='core.py', sha1='f61fdf8c8879bb7f118763866327b165ba199c0d'),
             dict(path='../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
@@ -41,10 +41,10 @@ def __omlish_amalg__():  # noqa
             dict(path='handlers/fns.py', sha1='75e982604574d6ffaacf9ac1f37ab6e9edbd608d'),
             dict(path='handlers/queues.py', sha1='73f018001a9e305194ed1bf9783fc49a71c2ed49'),
             dict(path='../../../omlish/io/streams/direct.py', sha1='83c33460e9490a77a00ae66251617ba98128b56b'),
-            dict(path='../../../omlish/io/streams/scanning.py', sha1='4c0323e0b11cd506f7b6b4cf28ea4d7c6064b9d3'),
+            dict(path='../../../omlish/io/streams/scanning.py', sha1='6ab39887d0d2d3002201b786c4715e64804c66c8'),
             dict(path='bytes/queues.py', sha1='38b11596cd0fa2367825252413923f1292c14f4e'),
             dict(path='handlers/flatmap.py', sha1='4e7f009885ee35e4746d14ba22f78d7b108f42c8'),
-            dict(path='../../../omlish/io/streams/segmented.py', sha1='1e556563fd4399d8e2632144615e1ff89ac7c254'),
+            dict(path='../../../omlish/io/streams/segmented.py', sha1='daa4859b2f6aa04a95d870759a37223ea8b17a63'),
             dict(path='bytes/decoders.py', sha1='a71aaee55d36c5e9b00ef7a6189a83f2e00cf599'),
             dict(path='_amalg.py', sha1='f57d710297d549e3b788af08eeb44cf5ac1bab07'),
         ],
@@ -1167,6 +1167,11 @@ class MutableByteStreamBuffer(ByteStreamBuffer, Abstract):
 
     Implementations may be linear (single `bytearray` + indices), segmented (multiple chunks), or adaptive.
     """
+
+    @property
+    @abc.abstractmethod
+    def max_size(self) -> ta.Optional[int]:
+        raise NotImplementedError
 
     @abc.abstractmethod
     def write(self, data: BytesLikeOrMemoryview, /) -> None:
@@ -3720,6 +3725,10 @@ class ScanningByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer
         self._buf = buf
         self._scan_from_by_sub: dict[bytes, int] = {}
 
+    @property
+    def max_size(self) -> ta.Optional[int]:
+        return self._buf.max_size
+
     #
 
     def __len__(self) -> int:
@@ -4224,6 +4233,10 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
 
         self._active: ta.Optional[bytearray] = None
         self._active_used = 0
+
+    @property
+    def max_size(self) -> ta.Optional[int]:
+        return self._max_size
 
     _head_off = 0
     _len = 0

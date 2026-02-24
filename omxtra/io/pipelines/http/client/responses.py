@@ -14,6 +14,7 @@ from ...core import ChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
 from ...core import ChannelPipelineMessages
 from ..decoders import ChunkedPipelineHttpContentChunkDecoder
+from ..decoders import PipelineHttpDecodingConfig
 from ..decoders import PipelineHttpHeadDecoder
 from ..responses import PipelineHttpResponseAborted
 from ..responses import PipelineHttpResponseContentChunk
@@ -30,8 +31,7 @@ class PipelineHttpResponseDecoder(InboundBytesBufferingChannelPipelineHandler):
     def __init__(
             self,
             *,
-            max_head: int = 0x10000,
-            buffer_chunk_size: int = 0x10000,
+            config: PipelineHttpDecodingConfig = PipelineHttpDecodingConfig.DEFAULT,
     ) -> None:
         super().__init__()
 
@@ -39,8 +39,7 @@ class PipelineHttpResponseDecoder(InboundBytesBufferingChannelPipelineHandler):
             HttpParser.Mode.RESPONSE,
             lambda parsed: self._build_head(parsed),
             lambda reason: PipelineHttpResponseAborted(reason),
-            max_head=max_head,
-            buffer_chunk_size=buffer_chunk_size,
+            config=config,
         )
 
     def inbound_buffered_bytes(self) -> int:
@@ -125,13 +124,11 @@ class PipelineHttpResponseChunkedDecoder(InboundBytesBufferingChannelPipelineHan
     def __init__(
             self,
             *,
-            max_chunk_header: int = 1024,
-            buffer_chunk_size: int = 0x10000,
+            config: PipelineHttpDecodingConfig = PipelineHttpDecodingConfig.DEFAULT,
     ) -> None:
         super().__init__()
 
-        self._max_chunk_header = max_chunk_header
-        self._buffer_chunk_size = buffer_chunk_size
+        self._config = config
 
         self._decoder: ta.Optional[ChunkedPipelineHttpContentChunkDecoder] = None
 
@@ -149,8 +146,7 @@ class PipelineHttpResponseChunkedDecoder(InboundBytesBufferingChannelPipelineHan
                     lambda data: PipelineHttpResponseContentChunk(data),
                     lambda: PipelineHttpResponseEnd(),
                     lambda reason: PipelineHttpResponseAborted(reason),
-                    max_chunk_header=self._max_chunk_header,
-                    buffer_chunk_size=self._buffer_chunk_size,
+                    config=self._config,
                 )
 
             ctx.feed_in(msg)

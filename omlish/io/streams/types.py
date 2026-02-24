@@ -220,6 +220,11 @@ class MutableByteStreamBuffer(ByteStreamBuffer, Abstract):
     Implementations may be linear (single `bytearray` + indices), segmented (multiple chunks), or adaptive.
     """
 
+    @property
+    @abc.abstractmethod
+    def max_size(self) -> ta.Optional[int]:
+        raise NotImplementedError
+
     @abc.abstractmethod
     def write(self, data: BytesLikeOrMemoryview, /) -> None:
         """

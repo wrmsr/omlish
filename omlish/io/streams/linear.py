@@ -65,6 +65,10 @@ class LinearByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
         else:
             self._ba = bytearray()
 
+    @property
+    def max_size(self) -> ta.Optional[int]:
+        return self._max_size
+
     _rpos = 0
     _wpos = 0
 

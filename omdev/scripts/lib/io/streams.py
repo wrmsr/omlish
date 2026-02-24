@@ -26,16 +26,16 @@ def __omlish_amalg__():  # noqa
             dict(path='errors.py', sha1='67ca85fd8741b5bfefe76c872ce1c30c18fab06f'),
             dict(path='../../lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
-            dict(path='types.py', sha1='8a12dc29f6e483dd8df5336c0d9b58a00b64e7ed'),
+            dict(path='types.py', sha1='ab72e5d4a1e648ef79577be7d8c45853b1c5917d'),
             dict(path='base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='reading.py', sha1='7631635c46ab4b40bcaeb7c506cf15cb2d529a40'),
             dict(path='utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
             dict(path='direct.py', sha1='83c33460e9490a77a00ae66251617ba98128b56b'),
-            dict(path='scanning.py', sha1='4c0323e0b11cd506f7b6b4cf28ea4d7c6064b9d3'),
-            dict(path='adapters.py', sha1='865338413829b97be23883f713d50eb7cb62617a'),
-            dict(path='linear.py', sha1='968c03436f8bca7694fd278d29f40d5a7c6a4042'),
-            dict(path='segmented.py', sha1='1e556563fd4399d8e2632144615e1ff89ac7c254'),
+            dict(path='scanning.py', sha1='6ab39887d0d2d3002201b786c4715e64804c66c8'),
+            dict(path='adapters.py', sha1='ce4fc01bd81bb6b3402dc71e46c37849a80e476d'),
+            dict(path='linear.py', sha1='b2d82224c6a3001eb8230d6a9c4de7cb3afe7d1c'),
+            dict(path='segmented.py', sha1='daa4859b2f6aa04a95d870759a37223ea8b17a63'),
             dict(path='_amalg.py', sha1='9c88a055447d7b37da1b356e6a1e00b7c4a9a3cb'),
         ],
     )
@@ -491,6 +491,11 @@ class MutableByteStreamBuffer(ByteStreamBuffer, Abstract):
 
     Implementations may be linear (single `bytearray` + indices), segmented (multiple chunks), or adaptive.
     """
+
+    @property
+    @abc.abstractmethod
+    def max_size(self) -> ta.Optional[int]:
+        raise NotImplementedError
 
     @abc.abstractmethod
     def write(self, data: BytesLikeOrMemoryview, /) -> None:
@@ -1385,6 +1390,10 @@ class ScanningByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer
         self._buf = buf
         self._scan_from_by_sub: dict[bytes, int] = {}
 
+    @property
+    def max_size(self) -> ta.Optional[int]:
+        return self._buf.max_size
+
     #
 
     def __len__(self) -> int:
@@ -1649,6 +1658,10 @@ class BytesIoByteStreamBuffer(MutableByteStreamBuffer):
         self._resv: ta.Optional[bytearray] = None
         self._resv_len = 0
 
+    @property
+    def max_size(self) -> ta.Optional[int]:
+        return None
+
     def __len__(self) -> int:
         return self._bio.getbuffer().nbytes - self._rpos
 
@@ -1811,6 +1824,10 @@ class LinearByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
             self._ba.clear()
         else:
             self._ba = bytearray()
+
+    @property
+    def max_size(self) -> ta.Optional[int]:
+        return self._max_size
 
     _rpos = 0
     _wpos = 0
@@ -2135,6 +2152,10 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
 
         self._active: ta.Optional[bytearray] = None
         self._active_used = 0
+
+    @property
+    def max_size(self) -> ta.Optional[int]:
+        return self._max_size
 
     _head_off = 0
     _len = 0

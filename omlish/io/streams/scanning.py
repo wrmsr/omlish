@@ -34,6 +34,10 @@ class ScanningByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer
         self._buf = buf
         self._scan_from_by_sub: dict[bytes, int] = {}
 
+    @property
+    def max_size(self) -> ta.Optional[int]:
+        return self._buf.max_size
+
     #
 
     def __len__(self) -> int:

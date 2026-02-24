@@ -193,6 +193,10 @@ class BytesIoByteStreamBuffer(MutableByteStreamBuffer):
         self._resv: ta.Optional[bytearray] = None
         self._resv_len = 0
 
+    @property
+    def max_size(self) -> ta.Optional[int]:
+        return None
+
     def __len__(self) -> int:
         return self._bio.getbuffer().nbytes - self._rpos
 

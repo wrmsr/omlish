@@ -81,7 +81,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../auth.py', sha1='b1ac1a5e03d4e9e38957a54e346943c6dcc964a1'),
             dict(path='../dataclasses.py', sha1='8e950d7815904588fed284889392cbb0b1002605'),
             dict(path='../../../../omlish/configs/formats.py', sha1='3074c3e1428f9598cd0591745cb60fb3fe2b309f'),
-            dict(path='../../../../omlish/io/streams/types.py', sha1='8a12dc29f6e483dd8df5336c0d9b58a00b64e7ed'),
+            dict(path='../../../../omlish/io/streams/types.py', sha1='ab72e5d4a1e648ef79577be7d8c45853b1c5917d'),
             dict(path='../../../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
             dict(path='../../../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
             dict(path='../../../../omlish/logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
@@ -95,10 +95,10 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../../omlish/logs/std/standard.py', sha1='5c97c1b9f7ead58d6127d047b873398f708f288d'),
             dict(path='../../../../omlish/subprocesses/wrap.py', sha1='8a9b7d2255481fae15c05f5624b0cdc0766f4b3f'),
             dict(path='../../../../omlish/io/streams/direct.py', sha1='83c33460e9490a77a00ae66251617ba98128b56b'),
-            dict(path='../../../../omlish/io/streams/scanning.py', sha1='4c0323e0b11cd506f7b6b4cf28ea4d7c6064b9d3'),
+            dict(path='../../../../omlish/io/streams/scanning.py', sha1='6ab39887d0d2d3002201b786c4715e64804c66c8'),
             dict(path='../../../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
             dict(path='../../../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
-            dict(path='../../../../omlish/io/streams/segmented.py', sha1='1e556563fd4399d8e2632144615e1ff89ac7c254'),
+            dict(path='../../../../omlish/io/streams/segmented.py', sha1='daa4859b2f6aa04a95d870759a37223ea8b17a63'),
             dict(path='../../../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='../../../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
@@ -4074,6 +4074,11 @@ class MutableByteStreamBuffer(ByteStreamBuffer, Abstract):
     Implementations may be linear (single `bytearray` + indices), segmented (multiple chunks), or adaptive.
     """
 
+    @property
+    @abc.abstractmethod
+    def max_size(self) -> ta.Optional[int]:
+        raise NotImplementedError
+
     @abc.abstractmethod
     def write(self, data: BytesLikeOrMemoryview, /) -> None:
         """
@@ -6393,6 +6398,10 @@ class ScanningByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer
         self._buf = buf
         self._scan_from_by_sub: dict[bytes, int] = {}
 
+    @property
+    def max_size(self) -> ta.Optional[int]:
+        return self._buf.max_size
+
     #
 
     def __len__(self) -> int:
@@ -7535,6 +7544,10 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
 
         self._active: ta.Optional[bytearray] = None
         self._active_used = 0
+
+    @property
+    def max_size(self) -> ta.Optional[int]:
+        return self._max_size
 
     _head_off = 0
     _len = 0

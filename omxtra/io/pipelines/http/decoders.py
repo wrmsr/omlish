@@ -1,6 +1,7 @@
 # ruff: noqa: UP006 UP007 UP043 UP045
 # @omlish-lite
 import abc
+import dataclasses as dc
 import typing as ta
 
 from omlish.http.parsing import HttpParser
@@ -17,6 +18,30 @@ from ..core import ChannelPipelineHandlerContext
 from ..core import ChannelPipelineMessages
 from ..flow.types import ChannelPipelineFlow
 from ..flow.types import ChannelPipelineFlowMessages
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class PipelineHttpDecodingConfig:
+    DEFAULT: ta.ClassVar['PipelineHttpDecodingConfig']
+
+    @dc.dataclass(frozen=True)
+    class BufferConfig:
+        max_size: ta.Optional[int]
+        chunk_size: int
+
+    head_buffer: BufferConfig = BufferConfig(max_size=0x1000, chunk_size=0x1000)
+
+    max_content_chunk_size: ta.Optional[int] = None
+    # FIXME: should only apply to chunk headers but currently applies to *actual chunk bodies* ...
+    content_chunk_header_buffer: BufferConfig = BufferConfig(max_size=1024, chunk_size=0x10000)
+
+    aggregated_body_buffer: BufferConfig = BufferConfig(max_size=0x10000, chunk_size=0x10000)
+
+
+PipelineHttpDecodingConfig.DEFAULT = PipelineHttpDecodingConfig()
 
 
 ##
@@ -39,20 +64,18 @@ class PipelineHttpHeadDecoder:
             make_head: ta.Callable[[ParsedHttpMessage], ta.Any],
             make_aborted: ta.Callable[[str], ta.Any],
             *,
-            max_head: int = 0x10000,
-            buffer_chunk_size: int = 0x10000,
+            config: PipelineHttpDecodingConfig = PipelineHttpDecodingConfig.DEFAULT,
     ) -> None:
         super().__init__()
 
         self._parse_mode = parse_mode
         self._make_head = make_head
         self._make_aborted = make_aborted
-
-        self._max_head = max_head
+        self._config = config
 
         self._buf = ScanningByteStreamBuffer(SegmentedByteStreamBuffer(
-            max_size=max_head,
-            chunk_size=buffer_chunk_size,
+            max_size=config.head_buffer.max_size,
+            chunk_size=config.head_buffer.chunk_size,
         ))
 
     _done = False
@@ -91,6 +114,7 @@ class PipelineHttpHeadDecoder:
             return
 
         # Buffer bytes
+        # FIXME: lol what dont write everything to buf
         for mv in ByteStreamBuffers.iter_segments(msg):
             if mv:
                 self._buf.write(mv)
@@ -128,12 +152,15 @@ class PipelineHttpContentChunkDecoder(Abstract):
             make_chunk: ta.Callable[[BytesLikeOrMemoryview], ta.Any],
             make_end: ta.Callable[[], ta.Any],
             make_aborted: ta.Callable[[str], ta.Any],
+            *,
+            config: PipelineHttpDecodingConfig = PipelineHttpDecodingConfig.DEFAULT,
     ) -> None:
         super().__init__()
 
         self._make_chunk = make_chunk
         self._make_end = make_end
         self._make_aborted = make_aborted
+        self._config = config
 
     @property
     @abc.abstractmethod
@@ -192,6 +219,8 @@ class ContentLengthPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecod
             make_end: ta.Callable[[], ta.Any],
             make_aborted: ta.Callable[[str], ta.Any],
             content_length: int,
+            *,
+            config: PipelineHttpDecodingConfig = PipelineHttpDecodingConfig.DEFAULT,
     ) -> None:
         check.arg(content_length > 0)
 
@@ -199,6 +228,7 @@ class ContentLengthPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecod
             make_chunk,
             make_end,
             make_aborted,
+            config=config,
         )
 
         self._remain = content_length
@@ -274,18 +304,18 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
             make_end: ta.Callable[[], ta.Any],
             make_aborted: ta.Callable[[str], ta.Any],
             *,
-            max_chunk_header: int = 1024,
-            buffer_chunk_size: int = 0x10000,
+            config: PipelineHttpDecodingConfig = PipelineHttpDecodingConfig.DEFAULT,
     ) -> None:
         super().__init__(
             make_chunk,
             make_end,
             make_aborted,
+            config=config,
         )
 
         self._buf = ScanningByteStreamBuffer(SegmentedByteStreamBuffer(
-            max_size=max_chunk_header,
-            chunk_size=buffer_chunk_size,
+            max_size=self._config.content_chunk_header_buffer.max_size,
+            chunk_size=self._config.content_chunk_header_buffer.chunk_size,
         ))
 
         self._chunk_remaining = 0
@@ -325,6 +355,7 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
             return
 
         # Buffer and decode chunks
+        # FIXME: lol no - ignore proper chunk boundaries, direct passthrough
         for mv in ByteStreamBuffers.iter_segments(msg):
             if mv:
                 self._buf.write(mv)
@@ -343,6 +374,11 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
                     self._chunk_remaining = int(size_bytes, 16)
                 except ValueError as e:
                     raise ValueError(f'Invalid chunk size: {size_bytes!r}') from e
+
+                if (mcs := self._config.max_content_chunk_size) is not None and self._chunk_remaining > mcs:
+                    raise ValueError(
+                        f'Content chunk size {self._chunk_remaining} exceeds maximum content chunk size: {mcs}',
+                    )
 
                 if self._chunk_remaining == 0:
                     # Final chunk

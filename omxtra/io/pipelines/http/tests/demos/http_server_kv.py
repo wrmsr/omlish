@@ -139,24 +139,13 @@ class KvStoreHandler(ChannelPipelineHandler):
 
 def build_http_kv_channel(
         items: ta.MutableMapping[str, str],
-        *,
-        # outbound_capacity: ta.Optional[int] = 1 << 22,
-        # outbound_overflow_policy: ta.Literal['allow', 'close', 'raise', 'drop'] = 'close',
-
-        max_head: int = 64 << 10,
-
-        max_body: ta.Optional[int] = 1 << 20,
 ) -> PipelineChannel:
     return PipelineChannel(
         [
 
-            PipelineHttpRequestHeadDecoder(
-                max_head=max_head,
-            ),
+            PipelineHttpRequestHeadDecoder(),
 
-            PipelineHttpRequestBodyAggregator(
-                max_body=max_body,
-            ),
+            PipelineHttpRequestBodyAggregator(),
 
             KvStoreHandler(items),
 

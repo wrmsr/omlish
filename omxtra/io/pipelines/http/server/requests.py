@@ -16,6 +16,7 @@ from ...core import ChannelPipelineMessages
 from ..decoders import ChunkedPipelineHttpContentChunkDecoder
 from ..decoders import ContentLengthPipelineHttpContentChunkDecoder
 from ..decoders import PipelineHttpContentChunkDecoder
+from ..decoders import PipelineHttpDecodingConfig
 from ..decoders import PipelineHttpHeadDecoder
 from ..decoders import UntilFinalInputPipelineHttpContentChunkDecoder
 from ..requests import FullPipelineHttpRequest
@@ -34,8 +35,7 @@ class PipelineHttpRequestHeadDecoder(InboundBytesBufferingChannelPipelineHandler
     def __init__(
             self,
             *,
-            max_head: int = 0x10000,
-            buffer_chunk_size: int = 0x10000,
+            config: PipelineHttpDecodingConfig = PipelineHttpDecodingConfig.DEFAULT,
     ) -> None:
         super().__init__()
 
@@ -43,8 +43,7 @@ class PipelineHttpRequestHeadDecoder(InboundBytesBufferingChannelPipelineHandler
             HttpParser.Mode.REQUEST,
             lambda parsed: self._build_head(parsed),
             lambda reason: PipelineHttpRequestAborted(reason),
-            max_head=max_head,
-            buffer_chunk_size=buffer_chunk_size,
+            config=config,
         )
 
     def inbound_buffered_bytes(self) -> int:
@@ -98,18 +97,15 @@ class PipelineHttpRequestBodyAggregator(InboundBytesBufferingChannelPipelineHand
     def __init__(
             self,
             *,
-            max_body: ta.Optional[int] = 0x100000,
-            buffer_chunk_size: int = 0x10000,
+            config: PipelineHttpDecodingConfig = PipelineHttpDecodingConfig.DEFAULT,
     ) -> None:
         super().__init__()
-
-        self._max_body = max_body
 
         self._cur_head: ta.Optional[PipelineHttpRequestHead] = None
         self._want = 0
         self._buf = SegmentedByteStreamBuffer(
-            max_size=self._max_body,
-            chunk_size=buffer_chunk_size,
+            max_size=config.aggregated_body_buffer.max_size,
+            chunk_size=config.aggregated_body_buffer.chunk_size,
         )
 
     def inbound_buffered_bytes(self) -> int:
@@ -148,7 +144,7 @@ class PipelineHttpRequestBodyAggregator(InboundBytesBufferingChannelPipelineHand
                 if self._want < 0:
                     raise ValueError('bad Content-Length')
 
-                if self._max_body is not None and self._want > self._max_body:
+                if (max_body := self._buf.max_size) is not None and self._want > max_body:
                     raise FrameTooLargeByteStreamBufferError('request body exceeded max_body')
 
             if self._want == 0:
@@ -209,15 +205,11 @@ class PipelineHttpRequestBodyStreamDecoder(InboundBytesBufferingChannelPipelineH
     def __init__(
             self,
             *,
-            max_chunk: int = 0x100000,
-            max_chunk_header: int = 1024,
-            buffer_chunk_size: int = 0x10000,
+            config: PipelineHttpDecodingConfig = PipelineHttpDecodingConfig.DEFAULT,
     ) -> None:
         super().__init__()
 
-        self._max_chunk = max_chunk
-        self._max_chunk_header = max_chunk_header
-        self._buffer_chunk_size = buffer_chunk_size
+        self._config = config
 
         self._decoder: ta.Optional[PipelineHttpContentChunkDecoder] = None
 
@@ -283,6 +275,7 @@ class PipelineHttpRequestBodyStreamDecoder(InboundBytesBufferingChannelPipelineH
                 make_chunk,
                 make_end,
                 make_aborted,
+                config=self._config,
             )
 
         elif sm.mode == 'cl':
@@ -291,6 +284,7 @@ class PipelineHttpRequestBodyStreamDecoder(InboundBytesBufferingChannelPipelineH
                 make_end,
                 make_aborted,
                 check.not_none(sm.length),
+                config=self._config,
             )
 
         elif sm.mode == 'chunked':
@@ -298,7 +292,7 @@ class PipelineHttpRequestBodyStreamDecoder(InboundBytesBufferingChannelPipelineH
                 make_chunk,
                 make_end,
                 make_aborted,
-                max_chunk_header=self._max_chunk_header,
+                config=self._config,
             )
 
         else:

@@ -105,6 +105,10 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         self._active: ta.Optional[bytearray] = None
         self._active_used = 0
 
+    @property
+    def max_size(self) -> ta.Optional[int]:
+        return self._max_size
+
     _head_off = 0
     _len = 0
 

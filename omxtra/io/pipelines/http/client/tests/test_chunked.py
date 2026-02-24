@@ -1,5 +1,6 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
+import dataclasses as dc
 import unittest
 
 from omlish.http.headers import HttpHeaders
@@ -8,6 +9,7 @@ from omlish.http.versions import HttpVersion
 from ....core import ChannelPipelineMessages
 from ....core import PipelineChannel
 from ....handlers.queues import InboundQueueChannelPipelineHandler
+from ...decoders import PipelineHttpDecodingConfig
 from ...responses import PipelineHttpResponseAborted
 from ...responses import PipelineHttpResponseContentChunk
 from ...responses import PipelineHttpResponseEnd
@@ -153,7 +155,15 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         """Test decoding large chunk."""
 
         # Use larger buffer size for this test
-        decoder = PipelineHttpResponseChunkedDecoder(max_chunk_header=0x10000)
+        decoder = PipelineHttpResponseChunkedDecoder(
+            config=dc.replace(
+                PipelineHttpDecodingConfig.DEFAULT,
+                content_chunk_header_buffer=dc.replace(
+                    PipelineHttpDecodingConfig.DEFAULT.content_chunk_header_buffer,
+                    max_size=0x10000,
+                ),
+            ),
+        )
         channel = PipelineChannel([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
