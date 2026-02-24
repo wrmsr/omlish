@@ -54,6 +54,9 @@ class AsyncioStreamChannelPipelineDriver:
 
         self._shutdown_event = asyncio.Event()
 
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}@{id(self):x}'
+
     #
 
     @staticmethod
@@ -99,7 +102,7 @@ class AsyncioStreamChannelPipelineDriver:
         async def _inner() -> None:
             self._channel.feed_in(*cmd._msgs)  # noqa
 
-        await self._do_feed_in_fn(_inner)
+        await self._do_with_channel(_inner)
 
     async def feed_in(self, *msgs: ta.Any) -> None:
         check.state(not self._shutdown_event.is_set())
@@ -199,7 +202,7 @@ class AsyncioStreamChannelPipelineDriver:
         async def _inner() -> None:
             self._channel.feed_in(*in_msgs)
 
-        await self._do_feed_in_fn(_inner)
+        await self._do_with_channel(_inner)
 
         #
 
@@ -265,7 +268,7 @@ class AsyncioStreamChannelPipelineDriver:
 
     #
 
-    async def _do_feed_in_fn(self, fn: ta.Callable[[], ta.Awaitable[None]]) -> None:
+    async def _do_with_channel(self, fn: ta.Callable[[], ta.Awaitable[None]]) -> None:
         prev_want_read = self._want_read
         if self._flow is not None and not self._flow.is_auto_read():
             self._want_read = False
@@ -364,6 +367,7 @@ class AsyncioStreamChannelPipelineDriver:
 
                 else:
                     raise RuntimeError(f'Unexpected task: {winner!r}')
+        #
 
         finally:
             try:
