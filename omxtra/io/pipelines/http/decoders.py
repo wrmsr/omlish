@@ -24,6 +24,8 @@ from ..core import ChannelPipelineMessages
 class PipelineHttpDecodingConfig:
     DEFAULT: ta.ClassVar['PipelineHttpDecodingConfig']
 
+    parser_config: ta.Optional[HttpParser.Config] = None
+
     @dc.dataclass(frozen=True)
     class BufferConfig:
         max_size: ta.Optional[int]
@@ -32,7 +34,6 @@ class PipelineHttpDecodingConfig:
     head_buffer: BufferConfig = BufferConfig(max_size=0x1000, chunk_size=0x1000)
 
     max_content_chunk_size: ta.Optional[int] = None
-    # FIXME: should only apply to chunk headers but currently applies to *actual chunk bodies* ...
     content_chunk_header_buffer: BufferConfig = BufferConfig(max_size=1024, chunk_size=0x10000)
 
     aggregated_body_buffer: BufferConfig = BufferConfig(max_size=0x10000, chunk_size=0x10000)
@@ -133,7 +134,11 @@ class PipelineHttpHeadDecoder:
 
             # Parse and emit head
             raw = head_view.tobytes()
-            parsed = parse_http_message(raw, mode=self._parse_mode)
+            parsed = parse_http_message(
+                raw,
+                mode=self._parse_mode,
+                config=self._config.parser_config,
+            )
 
             head = self._make_head(parsed)
             out.append(head)

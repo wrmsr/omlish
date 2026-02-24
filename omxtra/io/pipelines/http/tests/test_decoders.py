@@ -7,6 +7,7 @@ from omlish.http.parsing import HttpParser
 from omlish.http.parsing import ParsedHttpMessage
 
 from ...core import ChannelPipelineMessages
+from ..decoders import ChunkedPipelineHttpContentChunkDecoder
 from ..decoders import PipelineHttpDecodingConfig
 from ..decoders import PipelineHttpHeadDecoder
 
@@ -485,3 +486,254 @@ class TestPipelineHttpHeadDecoder(unittest.TestCase):
                 self.assertEqual(out2[0], 'HEAD:request')
 
             self.assertTrue(decoder.done)
+
+
+class TestChunkedPipelineHttpContentChunkDecoder(unittest.TestCase):
+    """
+    Unit tests for ChunkedPipelineHttpContentChunkDecoder.
+
+    Focuses on boundary handling for HTTP/1.1 chunked transfer encoding: splitting on chunk size lines, chunk data,
+    and CRLF terminators.
+    """
+
+    def _make_chunk(self, data: ta.Any) -> str:
+        """Test callback that returns chunk data marker."""
+
+        return f'CHUNK:{bytes(data).decode("utf-8", errors="replace")}'
+
+    def _make_end(self) -> str:
+        """Test callback that returns end marker."""
+
+        return 'END'
+
+    def _make_aborted(self, reason: str) -> str:
+        """Test callback that returns abort marker."""
+
+        return f'ABORTED:{reason}'
+
+    def test_single_chunk(self) -> None:
+        """Test decoding a single chunk in one message."""
+
+        decoder = ChunkedPipelineHttpContentChunkDecoder(
+            self._make_chunk,
+            self._make_end,
+            self._make_aborted,
+        )
+
+        raw = b'5\r\nhello\r\n0\r\n\r\n'
+        out = decoder.inbound(raw)
+
+        self.assertEqual(len(out), 2)
+        self.assertEqual(out[0], 'CHUNK:hello')
+        self.assertEqual(out[1], 'END')
+        self.assertTrue(decoder.done)
+
+    def test_multiple_chunks(self) -> None:
+        """Test decoding multiple chunks."""
+
+        decoder = ChunkedPipelineHttpContentChunkDecoder(
+            self._make_chunk,
+            self._make_end,
+            self._make_aborted,
+        )
+
+        raw = b'5\r\nhello\r\n5\r\nworld\r\n0\r\n\r\n'
+        out = decoder.inbound(raw)
+
+        self.assertEqual(len(out), 3)
+        self.assertEqual(out[0], 'CHUNK:hello')
+        self.assertEqual(out[1], 'CHUNK:world')
+        self.assertEqual(out[2], 'END')
+        self.assertTrue(decoder.done)
+
+    def test_split_in_chunk_size(self) -> None:
+        """Test split in the middle of chunk size line."""
+
+        decoder = ChunkedPipelineHttpContentChunkDecoder(
+            self._make_chunk,
+            self._make_end,
+            self._make_aborted,
+        )
+
+        chunk1 = b'5\r'
+        chunk2 = b'\nhello\r\n0\r\n\r\n'
+
+        out1 = decoder.inbound(chunk1)
+        self.assertEqual(len(out1), 0)
+
+        out2 = decoder.inbound(chunk2)
+        self.assertEqual(len(out2), 2)
+        self.assertEqual(out2[0], 'CHUNK:hello')
+        self.assertEqual(out2[1], 'END')
+
+    def test_split_after_chunk_size(self) -> None:
+        """Test split right after chunk size line."""
+
+        decoder = ChunkedPipelineHttpContentChunkDecoder(
+            self._make_chunk,
+            self._make_end,
+            self._make_aborted,
+        )
+
+        chunk1 = b'5\r\n'
+        chunk2 = b'hello\r\n0\r\n\r\n'
+
+        out1 = decoder.inbound(chunk1)
+        self.assertEqual(len(out1), 0)
+
+        out2 = decoder.inbound(chunk2)
+        self.assertEqual(len(out2), 2)
+
+    def test_split_in_chunk_data(self) -> None:
+        """Test split in the middle of chunk data."""
+
+        decoder = ChunkedPipelineHttpContentChunkDecoder(
+            self._make_chunk,
+            self._make_end,
+            self._make_aborted,
+        )
+
+        chunk1 = b'5\r\nhel'
+        chunk2 = b'lo\r\n0\r\n\r\n'
+
+        out1 = decoder.inbound(chunk1)
+        self.assertEqual(len(out1), 0)
+
+        out2 = decoder.inbound(chunk2)
+        self.assertEqual(len(out2), 2)
+        self.assertEqual(out2[0], 'CHUNK:hello')
+        self.assertEqual(out2[1], 'END')
+
+    def test_split_in_trailing_crlf(self) -> None:
+        """Test split in the trailing \\r\\n after chunk data."""
+
+        decoder = ChunkedPipelineHttpContentChunkDecoder(
+            self._make_chunk,
+            self._make_end,
+            self._make_aborted,
+        )
+
+        chunk1 = b'5\r\nhello\r'
+        chunk2 = b'\n0\r\n\r\n'
+
+        out1 = decoder.inbound(chunk1)
+        self.assertEqual(len(out1), 0)
+
+        out2 = decoder.inbound(chunk2)
+        self.assertEqual(len(out2), 2)
+
+    def test_split_in_final_chunk(self) -> None:
+        """Test split in the final chunk (0\\r\\n\\r\\n)."""
+
+        decoder = ChunkedPipelineHttpContentChunkDecoder(
+            self._make_chunk,
+            self._make_end,
+            self._make_aborted,
+        )
+
+        chunk1 = b'5\r\nhello\r\n0\r'
+        chunk2 = b'\n\r\n'
+
+        out1 = decoder.inbound(chunk1)
+        self.assertEqual(len(out1), 1)
+        self.assertEqual(out1[0], 'CHUNK:hello')
+
+        out2 = decoder.inbound(chunk2)
+        self.assertEqual(len(out2), 1)
+        self.assertEqual(out2[0], 'END')
+
+    def test_byte_by_byte(self) -> None:
+        """Test feeding chunked data byte by byte."""
+
+        decoder = ChunkedPipelineHttpContentChunkDecoder(
+            self._make_chunk,
+            self._make_end,
+            self._make_aborted,
+        )
+
+        raw = b'3\r\nfoo\r\n0\r\n\r\n'
+
+        for byte in raw:
+            decoder.inbound(bytes([byte]))
+            # Only check at end
+            if decoder.done:
+                break
+
+        self.assertTrue(decoder.done)
+
+    def test_hex_chunk_sizes(self) -> None:
+        """Test various hex chunk sizes."""
+
+        decoder = ChunkedPipelineHttpContentChunkDecoder(
+            self._make_chunk,
+            self._make_end,
+            self._make_aborted,
+        )
+
+        # 0xa = 10 bytes, 0x3 = 3 bytes
+        raw = b'a\r\n0123456789\r\n3\r\nfoo\r\n0\r\n\r\n'
+        out = decoder.inbound(raw)
+
+        self.assertEqual(len(out), 3)
+        self.assertEqual(out[0], 'CHUNK:0123456789')
+        self.assertEqual(out[1], 'CHUNK:foo')
+        self.assertEqual(out[2], 'END')
+
+    def test_split_between_chunks(self) -> None:
+        """Test split between two complete chunks."""
+
+        decoder = ChunkedPipelineHttpContentChunkDecoder(
+            self._make_chunk,
+            self._make_end,
+            self._make_aborted,
+        )
+
+        chunk1 = b'3\r\nfoo\r\n'
+        chunk2 = b'3\r\nbar\r\n0\r\n\r\n'
+
+        out1 = decoder.inbound(chunk1)
+        self.assertEqual(len(out1), 1)
+        self.assertEqual(out1[0], 'CHUNK:foo')
+
+        out2 = decoder.inbound(chunk2)
+        self.assertEqual(len(out2), 2)
+        self.assertEqual(out2[0], 'CHUNK:bar')
+        self.assertEqual(out2[1], 'END')
+
+    def test_remainder_after_final_chunk(self) -> None:
+        """Test that bytes after final chunk are forwarded."""
+
+        decoder = ChunkedPipelineHttpContentChunkDecoder(
+            self._make_chunk,
+            self._make_end,
+            self._make_aborted,
+        )
+
+        raw = b'3\r\nfoo\r\n0\r\n\r\nEXTRADATA'
+        out = decoder.inbound(raw)
+
+        self.assertEqual(len(out), 3)
+        self.assertEqual(out[0], 'CHUNK:foo')
+        self.assertEqual(out[1], 'END')
+        self.assertEqual(out[2].tobytes(), b'EXTRADATA')
+
+    def test_eof_before_complete(self) -> None:
+        """Test EOF received before chunked encoding complete."""
+
+        decoder = ChunkedPipelineHttpContentChunkDecoder(
+            self._make_chunk,
+            self._make_end,
+            self._make_aborted,
+        )
+
+        chunk = b'5\r\nhello\r\n'
+        out1 = decoder.inbound(chunk)
+        self.assertEqual(len(out1), 1)
+
+        final_input = ChannelPipelineMessages.FinalInput()
+        out2 = decoder.inbound(final_input)
+
+        self.assertEqual(len(out2), 2)
+        self.assertEqual(out2[0], 'ABORTED:EOF before chunked encoding complete')
+        self.assertIs(out2[1], final_input)
+        self.assertTrue(decoder.done)
