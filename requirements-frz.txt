@@ -166,7 +166,7 @@ networkx==3.6.1
 nh3==0.3.3
 nodeenv==1.10.0
 nodejs-wheel-binaries==24.13.1
-notebook==7.5.3
+notebook==7.5.4
 notebook_shim==0.2.4
 numpy==2.4.2
 objgraph==3.6.2
@@ -188,7 +188,7 @@ pipdeptree==2.31.0
 platformdirs==4.9.2
 pluggy==1.6.0
 pprintpp==0.4.0
-primp==1.0.0
+primp==1.1.1
 priority==2.0.0
 prometheus_client==0.24.1
 prompt_toolkit==3.0.52
@@ -268,7 +268,7 @@ snowflake-connector-python==4.3.0
 socksio==1.0.0
 sortedcontainers==2.4.0
 soupsieve==2.8.3
-SQLAlchemy==2.0.46
+SQLAlchemy==2.0.47
 sqlean.py==3.50.4.5
 sqlite-vec==0.1.6
 stack-data==0.6.3

@@ -6,6 +6,7 @@ import typing as ta
 from omlish.logs.modules import get_module_loggers
 from omlish.logs.std.standard import configure_standard_logging
 
+from ....asyncs import AsyncChannelPipelineMessages
 from ....core import ChannelPipelineHandler
 from ....core import ChannelPipelineHandlerContext
 from ....core import PipelineChannel
@@ -57,6 +58,19 @@ class KvStoreHandler(ChannelPipelineHandler):
             return
 
         method = head.method.upper()
+
+        #
+
+        aw = AsyncChannelPipelineMessages.Await(alog.info(f'{method} {key}'))
+
+        @aw.add_listener
+        def after_log(_):
+            pass
+
+        ctx.feed_out(aw)
+
+        #
+
         if method == 'GET':
             if key not in self._items:
                 self._write_response(ctx, 404, b'not found')

@@ -195,7 +195,7 @@ export JDKS='zulu21-ca-jdk zulu25-ca-jdk' ;\
 set -ex ;\
 \
 sudo apt install gnupg ca-certificates curl ;\
-curl -s https://repos.azul.com/azul-repo.key | sudo gpg --dearmor -o /usr/share/keyrings/azul.gpg ;\
+curl -s 'https://repos.azul.com/azul-repo.key' | sudo gpg --dearmor -o /usr/share/keyrings/azul.gpg ;\
 echo "deb [signed-by=/usr/share/keyrings/azul.gpg] https://repos.azul.com/zulu/deb stable main" | sudo tee /etc/apt/sources.list.d/zulu.list ;\
 \
 apt-get update ;\
@@ -273,7 +273,7 @@ export NVM_VERSIONS='20 22 25' ;\
 \
 set -ex ;\
 \
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash ;\
+curl -o- 'https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh' | bash ;\
 \
 export NVM_DIR="$HOME/.nvm" ;\
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" ;\
@@ -281,6 +281,15 @@ export NVM_DIR="$HOME/.nvm" ;\
 for NV in ${NVM_VERSIONS} ; do\
   nvm install "$NV" ;\
 done\
+)
+
+
+## uv
+
+RUN (\
+set -ex ;\
+\
+curl -LsSf 'https://astral.sh/uv/install.sh' | sh ;\
 )
 
 

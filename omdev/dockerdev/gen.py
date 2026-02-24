@@ -127,6 +127,8 @@ def gen_ops(cfg: Config) -> ta.Sequence[Op]:
             static_env={'NVM_VERSIONS': cfg.nvm_versions},
         ))
 
+    ops.append(fragment_section('uv'))
+
     if cfg.pyenv_version_keys:
         ops.append(fragment_section(
             'pyenv',
