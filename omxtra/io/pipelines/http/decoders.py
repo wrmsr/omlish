@@ -14,10 +14,7 @@ from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 
-from ..core import ChannelPipelineHandlerContext
 from ..core import ChannelPipelineMessages
-from ..flow.types import ChannelPipelineFlow
-from ..flow.types import ChannelPipelineFlowMessages
 
 
 ##
@@ -89,29 +86,22 @@ class PipelineHttpHeadDecoder:
             return 0
         return len(self._buf)
 
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
+    def inbound(self, msg: ta.Any) -> ta.Sequence[ta.Any]:
         check.state(not self._done)
 
         if isinstance(msg, ChannelPipelineMessages.FinalInput):
             # EOF: if we have partial head buffered and haven't parsed head, that's an error.
-            yield self._make_aborted('EOF before HTTP head complete')
 
             del self._buf
             self._done = True
 
-            yield msg
-            return
-
-        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
-            if not ctx.services[ChannelPipelineFlow].is_auto_read():
-                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
-
-            yield msg
-            return
+            return [
+                self._make_aborted('EOF before HTTP head complete'),
+                msg,
+            ]
 
         if not ByteStreamBuffers.can_bytes(msg):
-            yield msg
-            return
+            return [msg]
 
         # Buffer bytes
         # FIXME: lol what dont write everything to buf
@@ -122,7 +112,7 @@ class PipelineHttpHeadDecoder:
         # Look for end of head
         i = self._buf.find(b'\r\n\r\n')
         if i < 0:
-            return
+            return []
 
         # Extract head
         head_view = self._buf.split_to(i + 4)
@@ -132,15 +122,17 @@ class PipelineHttpHeadDecoder:
         parsed = parse_http_message(raw, mode=self._parse_mode)
 
         head = self._make_head(parsed)
-        yield head
+        out: ta.List[ta.Any] = [head]
 
         # Forward any remainder bytes (body bytes)
         if len(self._buf):
             rem_view = self._buf.split_to(len(self._buf))
-            yield rem_view
+            out.append(rem_view)
 
         del self._buf
         self._done = True
+
+        return out
 
 
 ##
@@ -172,7 +164,7 @@ class PipelineHttpContentChunkDecoder(Abstract):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
+    def inbound(self, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
         raise NotImplementedError
 
 
@@ -186,20 +178,13 @@ class UntilFinalInputPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDec
     def inbound_buffered_bytes(self) -> int:
         return 0
 
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
+    def inbound(self, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
         check.state(not self._done)
 
         if isinstance(msg, ChannelPipelineMessages.FinalInput):
             yield self._make_end()
 
             self._done = True
-
-            yield msg
-            return
-
-        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
-            if not ctx.services[ChannelPipelineFlow].is_auto_read():
-                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
 
             yield msg
             return
@@ -240,20 +225,13 @@ class ContentLengthPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecod
     def inbound_buffered_bytes(self) -> int:
         return 0
 
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
+    def inbound(self, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
         check.state(self._remain > 0)
 
         if isinstance(msg, ChannelPipelineMessages.FinalInput):
             yield self._make_aborted('EOF before HTTP body complete')
 
             self._remain = 0
-
-            yield msg
-            return
-
-        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
-            if not ctx.services[ChannelPipelineFlow].is_auto_read():
-                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
 
             yield msg
             return
@@ -331,7 +309,7 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
             return 0
         return len(self._buf)
 
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
+    def inbound(self, msg: ta.Any) -> ta.Generator[ta.Any, None, None]:
         check.state(self._state != 'done')
 
         if isinstance(msg, ChannelPipelineMessages.FinalInput):
@@ -339,13 +317,6 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
 
             del self._buf
             self._state = 'done'
-
-            yield msg
-            return
-
-        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
-            if not ctx.services[ChannelPipelineFlow].is_auto_read():
-                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
 
             yield msg
             return

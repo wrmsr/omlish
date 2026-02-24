@@ -13,6 +13,8 @@ from ...bytes.buffering import InboundBytesBufferingChannelPipelineHandler
 from ...core import ChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
 from ...core import ChannelPipelineMessages
+from ...flow.types import ChannelPipelineFlow
+from ...flow.types import ChannelPipelineFlowMessages
 from ..decoders import ChunkedPipelineHttpContentChunkDecoder
 from ..decoders import PipelineHttpDecodingConfig
 from ..decoders import PipelineHttpHeadDecoder
@@ -61,7 +63,14 @@ class PipelineHttpResponseDecoder(InboundBytesBufferingChannelPipelineHandler):
             ctx.feed_in(msg)
             return
 
-        for dec_msg in self._decoder.inbound(ctx, msg):
+        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
+            if not ctx.services[ChannelPipelineFlow].is_auto_read():
+                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+
+            ctx.feed_in(msg)
+            return
+
+        for dec_msg in self._decoder.inbound(msg):
             ctx.feed_in(dec_msg)
 
 
@@ -156,7 +165,14 @@ class PipelineHttpResponseChunkedDecoder(InboundBytesBufferingChannelPipelineHan
             ctx.feed_in(msg)
             return
 
-        for dec_msg in dec.inbound(ctx, msg):
+        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
+            if not ctx.services[ChannelPipelineFlow].is_auto_read():
+                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+
+            ctx.feed_in(msg)
+            return
+
+        for dec_msg in dec.inbound(msg):
             ctx.feed_in(dec_msg)
 
         if dec.done:
