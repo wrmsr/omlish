@@ -53,6 +53,23 @@ PipelineHttpDecodingConfig.DEFAULT = PipelineHttpDecodingConfig()
 ##
 
 
+class PipelineHttpDecodingMessageAdapter(Abstract):
+    def make_head(self, parsed: ParsedHttpMessage) -> ta.Any:
+        raise NotImplementedError
+
+    def make_aborted(self, reason: str) -> ta.Any:
+        raise NotImplementedError
+
+    def make_chunk(self, data: BytesLikeOrMemoryview) -> ta.Any:
+        raise NotImplementedError
+
+    def make_end(self) -> ta.Any:
+        raise NotImplementedError
+
+
+##
+
+
 class PipelineHttpHeadDecoder:
     """
     Class for HTTP/1.x head decoders (request or response).
@@ -66,17 +83,15 @@ class PipelineHttpHeadDecoder:
 
     def __init__(
             self,
+            adapter: PipelineHttpDecodingMessageAdapter,
             parse_mode: HttpParser.Mode,
-            make_head: ta.Callable[[ParsedHttpMessage], ta.Any],
-            make_aborted: ta.Callable[[str], ta.Any],
             *,
             config: PipelineHttpDecodingConfig = PipelineHttpDecodingConfig.DEFAULT,
     ) -> None:
         super().__init__()
 
+        self._adapter = adapter
         self._parse_mode = parse_mode
-        self._make_head = make_head
-        self._make_aborted = make_aborted
         self._config = config
 
         self._buf = ScanningByteStreamBuffer(SegmentedByteStreamBuffer(
@@ -105,7 +120,7 @@ class PipelineHttpHeadDecoder:
             self._done = True
 
             return [
-                self._make_aborted('EOF before HTTP head complete'),
+                self._adapter.make_aborted('EOF before HTTP head complete'),
                 msg,
             ]
 
@@ -137,7 +152,7 @@ class PipelineHttpHeadDecoder:
                     del self._buf
                     self._done = True
 
-                    return [self._make_aborted('Head exceeded max buffer size')]
+                    return [self._adapter.make_aborted('Head exceeded max buffer size')]
 
                 continue
 
@@ -152,7 +167,7 @@ class PipelineHttpHeadDecoder:
                 config=self._config.parser_config,
             )
 
-            head = self._make_head(parsed)
+            head = self._adapter.make_head(parsed)
             out.append(head)
 
             # Forward any remainder bytes (body bytes)
@@ -175,17 +190,13 @@ class PipelineHttpHeadDecoder:
 class PipelineHttpContentChunkDecoder(Abstract):
     def __init__(
             self,
-            make_chunk: ta.Callable[[BytesLikeOrMemoryview], ta.Any],
-            make_end: ta.Callable[[], ta.Any],
-            make_aborted: ta.Callable[[str], ta.Any],
+            adapter: PipelineHttpDecodingMessageAdapter,
             *,
             config: PipelineHttpDecodingConfig = PipelineHttpDecodingConfig.DEFAULT,
     ) -> None:
         super().__init__()
 
-        self._make_chunk = make_chunk
-        self._make_end = make_end
-        self._make_aborted = make_aborted
+        self._adapter = adapter
         self._config = config
 
     @property
@@ -219,7 +230,7 @@ class UntilFinalInputPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDec
             self._done = True
 
             return [
-                self._make_end(),
+                self._adapter.make_end(),
                 msg,
             ]
 
@@ -229,7 +240,7 @@ class UntilFinalInputPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDec
         out: ta.List[ta.Any] = []
 
         for mv in ByteStreamBuffers.iter_segments(msg):
-            out.append(self._make_chunk(mv))
+            out.append(self._adapter.make_chunk(mv))
 
         return out
 
@@ -237,9 +248,7 @@ class UntilFinalInputPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDec
 class ContentLengthPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
     def __init__(
             self,
-            make_chunk: ta.Callable[[BytesLikeOrMemoryview], ta.Any],
-            make_end: ta.Callable[[], ta.Any],
-            make_aborted: ta.Callable[[str], ta.Any],
+            adapter: PipelineHttpDecodingMessageAdapter,
             content_length: int,
             *,
             config: PipelineHttpDecodingConfig = PipelineHttpDecodingConfig.DEFAULT,
@@ -247,9 +256,7 @@ class ContentLengthPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecod
         check.arg(content_length > 0)
 
         super().__init__(
-            make_chunk,
-            make_end,
-            make_aborted,
+            adapter,
             config=config,
         )
 
@@ -269,7 +276,7 @@ class ContentLengthPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecod
             self._remain = 0
 
             return [
-                self._make_aborted('EOF before HTTP body complete'),
+                self._adapter.make_aborted('EOF before HTTP body complete'),
                 msg,
             ]
 
@@ -286,17 +293,17 @@ class ContentLengthPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecod
             mvl = len(mv)
 
             if self._remain > mvl:
-                out.append(self._make_chunk(mv))
+                out.append(self._adapter.make_chunk(mv))
                 self._remain -= mvl
 
             elif self._remain == mvl:
-                out.append(self._make_chunk(mv))
-                out.append(self._make_end())
+                out.append(self._adapter.make_chunk(mv))
+                out.append(self._adapter.make_end())
                 self._remain = 0
 
             else:
-                out.append(self._make_chunk(mv[:self._remain]))
-                out.append(self._make_end())
+                out.append(self._adapter.make_chunk(mv[:self._remain]))
+                out.append(self._adapter.make_end())
                 ofs = self._remain
                 self._remain = 0
                 out.append(mv[ofs:])
@@ -318,16 +325,12 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
 
     def __init__(
             self,
-            make_chunk: ta.Callable[[BytesLikeOrMemoryview], ta.Any],
-            make_end: ta.Callable[[], ta.Any],
-            make_aborted: ta.Callable[[str], ta.Any],
+            adapter: PipelineHttpDecodingMessageAdapter,
             *,
             config: PipelineHttpDecodingConfig = PipelineHttpDecodingConfig.DEFAULT,
     ) -> None:
         super().__init__(
-            make_chunk,
-            make_end,
-            make_aborted,
+            adapter,
             config=config,
         )
 
@@ -361,7 +364,7 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
             self._state = 'done'
 
             return [
-                self._make_aborted('EOF before chunked encoding complete'),
+                self._adapter.make_aborted('EOF before chunked encoding complete'),
                 msg,
             ]
 
@@ -412,7 +415,7 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
                 del self._header_buf
                 self._state = 'done'
 
-                out.append(self._make_aborted('Chunk header exceeded max buffer size'))
+                out.append(self._adapter.make_aborted('Chunk header exceeded max buffer size'))
                 return False
 
             return True  # Need more data
@@ -452,16 +455,16 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
         mvl = len(mv)
         if mvl < self._chunk_remaining:
             self._chunk_remaining -= mvl
-            out.append(self._make_chunk(mv))
+            out.append(self._adapter.make_chunk(mv))
             return True
 
         if self._chunk_remaining > 0:
             if mvl == self._chunk_remaining:
-                out.append(self._make_chunk(mv))
+                out.append(self._adapter.make_chunk(mv))
                 self._chunk_remaining = 0
                 return True
 
-            out.append(self._make_chunk(mv[:self._chunk_remaining]))
+            out.append(self._adapter.make_chunk(mv[:self._chunk_remaining]))
             mv = mv[self._chunk_remaining:]
             mvl = len(mv)
             self._chunk_remaining = 0
@@ -516,7 +519,7 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
         self._state = 'done'
 
         # Emit end marker
-        out.append(self._make_end())
+        out.append(self._adapter.make_end())
 
         if mvl > 0:
             out.append(mv)

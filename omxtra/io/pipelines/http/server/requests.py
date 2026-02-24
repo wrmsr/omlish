@@ -7,6 +7,7 @@ from omlish.http.parsing import HttpParser
 from omlish.http.parsing import ParsedHttpMessage
 from omlish.io.streams.errors import FrameTooLargeByteStreamBufferError
 from omlish.io.streams.segmented import SegmentedByteStreamBuffer
+from omlish.io.streams.types import BytesLikeOrMemoryview
 from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.lite.check import check
 
@@ -19,6 +20,7 @@ from ..decoders import ChunkedPipelineHttpContentChunkDecoder
 from ..decoders import ContentLengthPipelineHttpContentChunkDecoder
 from ..decoders import PipelineHttpContentChunkDecoder
 from ..decoders import PipelineHttpDecodingConfig
+from ..decoders import PipelineHttpDecodingMessageAdapter
 from ..decoders import PipelineHttpHeadDecoder
 from ..decoders import UntilFinalInputPipelineHttpContentChunkDecoder
 from ..requests import FullPipelineHttpRequest
@@ -26,6 +28,31 @@ from ..requests import PipelineHttpRequestAborted
 from ..requests import PipelineHttpRequestContentChunk
 from ..requests import PipelineHttpRequestEnd
 from ..requests import PipelineHttpRequestHead
+
+
+##
+
+
+class RequestPipelineHttpDecodingMessageAdapter(PipelineHttpDecodingMessageAdapter):
+    def make_head(self, parsed: ParsedHttpMessage) -> ta.Any:
+        request = check.not_none(parsed.request_line)
+
+        return PipelineHttpRequestHead(
+            method=request.method,
+            target=check.not_none(request.request_target).decode('utf-8'),
+            version=request.http_version,
+            headers=HttpHeaders(parsed.headers.entries),
+            parsed=parsed,
+        )
+
+    def make_aborted(self, reason: str) -> ta.Any:
+        return PipelineHttpRequestAborted(reason)
+
+    def make_chunk(self, data: BytesLikeOrMemoryview) -> ta.Any:
+        return PipelineHttpRequestContentChunk(data)
+
+    def make_end(self) -> ta.Any:
+        return PipelineHttpRequestEnd()
 
 
 ##
@@ -42,25 +69,13 @@ class PipelineHttpRequestHeadDecoder(InboundBytesBufferingChannelPipelineHandler
         super().__init__()
 
         self._decoder = PipelineHttpHeadDecoder(
+            RequestPipelineHttpDecodingMessageAdapter(),
             HttpParser.Mode.REQUEST,
-            lambda parsed: self._build_head(parsed),
-            lambda reason: PipelineHttpRequestAborted(reason),
             config=config,
         )
 
     def inbound_buffered_bytes(self) -> int:
         return self._decoder.inbound_buffered_bytes()
-
-    def _build_head(self, parsed: ParsedHttpMessage) -> PipelineHttpRequestHead:
-        line = check.not_none(parsed.request_line)
-
-        return PipelineHttpRequestHead(
-            method=line.method,
-            target=check.not_none(line.request_target).decode('utf-8'),
-            version=line.http_version,
-            headers=HttpHeaders(parsed.headers.entries),
-            parsed=parsed,
-        )
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         if self._decoder.done:
@@ -279,35 +294,25 @@ class PipelineHttpRequestBodyStreamDecoder(InboundBytesBufferingChannelPipelineH
 
         ctx.feed_in(msg)
 
-        make_chunk = lambda data: PipelineHttpRequestContentChunk(data)  # noqa
-        make_end = lambda: PipelineHttpRequestEnd()  # noqa
-        make_aborted = lambda reason: PipelineHttpRequestAborted(reason)  # noqa
-
         if sm.mode == 'none':
             ctx.feed_in(PipelineHttpRequestEnd())
 
         elif sm.mode == 'eof':
             self._decoder = UntilFinalInputPipelineHttpContentChunkDecoder(
-                make_chunk,
-                make_end,
-                make_aborted,
+                RequestPipelineHttpDecodingMessageAdapter(),
                 config=self._config,
             )
 
         elif sm.mode == 'cl':
             self._decoder = ContentLengthPipelineHttpContentChunkDecoder(
-                make_chunk,
-                make_end,
-                make_aborted,
+                RequestPipelineHttpDecodingMessageAdapter(),
                 check.not_none(sm.length),
                 config=self._config,
             )
 
         elif sm.mode == 'chunked':
             self._decoder = ChunkedPipelineHttpContentChunkDecoder(
-                make_chunk,
-                make_end,
-                make_aborted,
+                RequestPipelineHttpDecodingMessageAdapter(),
                 config=self._config,
             )
 

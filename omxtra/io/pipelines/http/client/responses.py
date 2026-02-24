@@ -6,6 +6,7 @@ import zlib
 from omlish.http.headers import HttpHeaders
 from omlish.http.parsing import HttpParser
 from omlish.http.parsing import ParsedHttpMessage
+from omlish.io.streams.types import BytesLikeOrMemoryview
 from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.lite.check import check
 
@@ -17,11 +18,37 @@ from ...flow.types import ChannelPipelineFlow
 from ...flow.types import ChannelPipelineFlowMessages
 from ..decoders import ChunkedPipelineHttpContentChunkDecoder
 from ..decoders import PipelineHttpDecodingConfig
+from ..decoders import PipelineHttpDecodingMessageAdapter
 from ..decoders import PipelineHttpHeadDecoder
 from ..responses import PipelineHttpResponseAborted
 from ..responses import PipelineHttpResponseContentChunk
 from ..responses import PipelineHttpResponseEnd
 from ..responses import PipelineHttpResponseHead
+
+
+##
+
+
+class ResponsePipelineHttpDecodingMessageAdapter(PipelineHttpDecodingMessageAdapter):
+    def make_head(self, parsed: ParsedHttpMessage) -> ta.Any:
+        status = check.not_none(parsed.status_line)
+
+        return PipelineHttpResponseHead(
+            version=status.http_version,
+            status=status.status_code,
+            reason=status.reason_phrase,
+            headers=HttpHeaders(parsed.headers.entries),
+            parsed=parsed,
+        )
+
+    def make_aborted(self, reason: str) -> ta.Any:
+        return PipelineHttpResponseAborted(reason)
+
+    def make_chunk(self, data: BytesLikeOrMemoryview) -> ta.Any:
+        return PipelineHttpResponseContentChunk(data)
+
+    def make_end(self) -> ta.Any:
+        return PipelineHttpResponseEnd()
 
 
 ##
@@ -38,25 +65,13 @@ class PipelineHttpResponseDecoder(InboundBytesBufferingChannelPipelineHandler):
         super().__init__()
 
         self._decoder = PipelineHttpHeadDecoder(
+            ResponsePipelineHttpDecodingMessageAdapter(),
             HttpParser.Mode.RESPONSE,
-            lambda parsed: self._build_head(parsed),
-            lambda reason: PipelineHttpResponseAborted(reason),
             config=config,
         )
 
     def inbound_buffered_bytes(self) -> int:
         return self._decoder.inbound_buffered_bytes()
-
-    def _build_head(self, parsed: ParsedHttpMessage) -> PipelineHttpResponseHead:
-        status = check.not_none(parsed.status_line)
-
-        return PipelineHttpResponseHead(
-            version=status.http_version,
-            status=status.status_code,
-            reason=status.reason_phrase,
-            headers=HttpHeaders(parsed.headers.entries),
-            parsed=parsed,
-        )
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         if self._decoder.done:
@@ -152,9 +167,7 @@ class PipelineHttpResponseChunkedDecoder(InboundBytesBufferingChannelPipelineHan
 
             if msg.headers.contains_value('transfer-encoding', 'chunked', ignore_case=True):
                 self._decoder = ChunkedPipelineHttpContentChunkDecoder(
-                    lambda data: PipelineHttpResponseContentChunk(data),
-                    lambda: PipelineHttpResponseEnd(),
-                    lambda reason: PipelineHttpResponseAborted(reason),
+                    ResponsePipelineHttpDecodingMessageAdapter(),
                     config=self._config,
                 )
 

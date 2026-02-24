@@ -9,7 +9,30 @@ from omlish.http.parsing import ParsedHttpMessage
 from ...core import ChannelPipelineMessages
 from ..decoders import ChunkedPipelineHttpContentChunkDecoder
 from ..decoders import PipelineHttpDecodingConfig
+from ..decoders import PipelineHttpDecodingMessageAdapter
 from ..decoders import PipelineHttpHeadDecoder
+
+
+class DummyPipelineHttpDecodingMessageAdapter(PipelineHttpDecodingMessageAdapter):
+    def make_head(self, parsed: ParsedHttpMessage) -> str:
+        """Test callback that returns a simple marker."""
+
+        return f'HEAD:{parsed.kind.value}'
+
+    def make_aborted(self, reason: str) -> str:
+        """Test callback that returns an abort marker."""
+
+        return f'ABORTED:{reason}'
+
+    def make_chunk(self, data: ta.Any) -> str:
+        """Test callback that returns chunk data marker."""
+
+        return f'CHUNK:{bytes(data).decode("utf-8", errors="replace")}'
+
+    def make_end(self) -> str:
+        """Test callback that returns end marker."""
+
+        return 'END'
 
 
 class TestPipelineHttpHeadDecoder(unittest.TestCase):
@@ -20,23 +43,12 @@ class TestPipelineHttpHeadDecoder(unittest.TestCase):
     parsing regardless of how the bytes arrive.
     """
 
-    def _make_head(self, parsed: ParsedHttpMessage) -> str:
-        """Test callback that returns a simple marker."""
-
-        return f'HEAD:{parsed.kind.value}'
-
-    def _make_aborted(self, reason: str) -> str:
-        """Test callback that returns an abort marker."""
-
-        return f'ABORTED:{reason}'
-
     def test_complete_request_single_chunk(self) -> None:
         """Test parsing a complete HTTP request head in a single chunk."""
 
         decoder = PipelineHttpHeadDecoder(
+            DummyPipelineHttpDecodingMessageAdapter(),
             HttpParser.Mode.REQUEST,
-            self._make_head,
-            self._make_aborted,
         )
 
         raw = b'GET /path HTTP/1.1\r\nHost: example.com\r\nContent-Length: 5\r\n\r\n'
@@ -50,9 +62,8 @@ class TestPipelineHttpHeadDecoder(unittest.TestCase):
         """Test parsing a complete HTTP response head in a single chunk."""
 
         decoder = PipelineHttpHeadDecoder(
+            DummyPipelineHttpDecodingMessageAdapter(),
             HttpParser.Mode.RESPONSE,
-            self._make_head,
-            self._make_aborted,
         )
 
         raw = b'HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 12\r\n\r\n'
@@ -66,9 +77,8 @@ class TestPipelineHttpHeadDecoder(unittest.TestCase):
         """Test that remainder bytes after head are forwarded."""
 
         decoder = PipelineHttpHeadDecoder(
+            DummyPipelineHttpDecodingMessageAdapter(),
             HttpParser.Mode.REQUEST,
-            self._make_head,
-            self._make_aborted,
         )
 
         raw = b'GET / HTTP/1.1\r\nHost: test\r\n\r\nBODYDATA'
@@ -84,9 +94,8 @@ class TestPipelineHttpHeadDecoder(unittest.TestCase):
         """Test head split in the middle of the request line."""
 
         decoder = PipelineHttpHeadDecoder(
+            DummyPipelineHttpDecodingMessageAdapter(),
             HttpParser.Mode.REQUEST,
-            self._make_head,
-            self._make_aborted,
         )
 
         chunk1 = b'GET /pa'
@@ -105,9 +114,8 @@ class TestPipelineHttpHeadDecoder(unittest.TestCase):
         """Test head split right after the request line."""
 
         decoder = PipelineHttpHeadDecoder(
+            DummyPipelineHttpDecodingMessageAdapter(),
             HttpParser.Mode.REQUEST,
-            self._make_head,
-            self._make_aborted,
         )
 
         chunk1 = b'GET /path HTTP/1.1\r\n'
@@ -124,9 +132,8 @@ class TestPipelineHttpHeadDecoder(unittest.TestCase):
         """Test head split in the middle of a header line."""
 
         decoder = PipelineHttpHeadDecoder(
+            DummyPipelineHttpDecodingMessageAdapter(),
             HttpParser.Mode.REQUEST,
-            self._make_head,
-            self._make_aborted,
         )
 
         chunk1 = b'GET / HTTP/1.1\r\nHost: exa'
@@ -143,9 +150,8 @@ class TestPipelineHttpHeadDecoder(unittest.TestCase):
         """Test head split in the middle of the final \\r\\n\\r\\n delimiter."""
 
         decoder = PipelineHttpHeadDecoder(
+            DummyPipelineHttpDecodingMessageAdapter(),
             HttpParser.Mode.REQUEST,
-            self._make_head,
-            self._make_aborted,
         )
 
         chunk1 = b'GET / HTTP/1.1\r\nHost: test\r\n\r'
@@ -162,9 +168,8 @@ class TestPipelineHttpHeadDecoder(unittest.TestCase):
         """Test head split just before the final \\r\\n\\r\\n."""
 
         decoder = PipelineHttpHeadDecoder(
+            DummyPipelineHttpDecodingMessageAdapter(),
             HttpParser.Mode.REQUEST,
-            self._make_head,
-            self._make_aborted,
         )
 
         chunk1 = b'GET / HTTP/1.1\r\nHost: test\r\n'
@@ -181,9 +186,8 @@ class TestPipelineHttpHeadDecoder(unittest.TestCase):
         """Test head fed in many tiny chunks."""
 
         decoder = PipelineHttpHeadDecoder(
+            DummyPipelineHttpDecodingMessageAdapter(),
             HttpParser.Mode.REQUEST,
-            self._make_head,
-            self._make_aborted,
         )
 
         raw = b'GET / HTTP/1.1\r\nHost: test\r\nContent-Length: 10\r\n\r\n'
@@ -207,9 +211,8 @@ class TestPipelineHttpHeadDecoder(unittest.TestCase):
         """Test head fed byte by byte."""
 
         decoder = PipelineHttpHeadDecoder(
+            DummyPipelineHttpDecodingMessageAdapter(),
             HttpParser.Mode.REQUEST,
-            self._make_head,
-            self._make_aborted,
         )
 
         raw = b'GET / HTTP/1.1\r\nHost: test\r\n\r\n'
@@ -230,9 +233,8 @@ class TestPipelineHttpHeadDecoder(unittest.TestCase):
         """Test head split across chunks with body remainder."""
 
         decoder = PipelineHttpHeadDecoder(
+            DummyPipelineHttpDecodingMessageAdapter(),
             HttpParser.Mode.REQUEST,
-            self._make_head,
-            self._make_aborted,
         )
 
         chunk1 = b'GET / HTTP/1.1\r\nHost: test\r\n'
@@ -249,9 +251,8 @@ class TestPipelineHttpHeadDecoder(unittest.TestCase):
 
     def test_split_with_inline_body_remainder(self) -> None:
         decoder = PipelineHttpHeadDecoder(
+            DummyPipelineHttpDecodingMessageAdapter(),
             HttpParser.Mode.REQUEST,
-            self._make_head,
-            self._make_aborted,
         )
 
         chunk1 = b'GET / HTTP/1.1\r\nHost: test\r\n\r\nBODYDATA'
@@ -267,9 +268,8 @@ class TestPipelineHttpHeadDecoder(unittest.TestCase):
         body_bytes = b'BODYDATA'
 
         decoder = PipelineHttpHeadDecoder(
+            DummyPipelineHttpDecodingMessageAdapter(),
             HttpParser.Mode.REQUEST,
-            self._make_head,
-            self._make_aborted,
             config=PipelineHttpDecodingConfig(
                 head_buffer=PipelineHttpDecodingConfig.BufferConfig(
                     max_size=len(head_bytes) + 3,
@@ -291,9 +291,8 @@ class TestPipelineHttpHeadDecoder(unittest.TestCase):
         """Test EOF received before head is complete."""
 
         decoder = PipelineHttpHeadDecoder(
+            DummyPipelineHttpDecodingMessageAdapter(),
             HttpParser.Mode.REQUEST,
-            self._make_head,
-            self._make_aborted,
         )
 
         # Feed partial head
@@ -314,9 +313,8 @@ class TestPipelineHttpHeadDecoder(unittest.TestCase):
         """Test EOF received on empty buffer."""
 
         decoder = PipelineHttpHeadDecoder(
+            DummyPipelineHttpDecodingMessageAdapter(),
             HttpParser.Mode.REQUEST,
-            self._make_head,
-            self._make_aborted,
         )
 
         final_input = ChannelPipelineMessages.FinalInput()
@@ -331,9 +329,8 @@ class TestPipelineHttpHeadDecoder(unittest.TestCase):
         """Test that non-bytes messages are passed through."""
 
         decoder = PipelineHttpHeadDecoder(
+            DummyPipelineHttpDecodingMessageAdapter(),
             HttpParser.Mode.REQUEST,
-            self._make_head,
-            self._make_aborted,
         )
 
         msg = {'type': 'control'}
@@ -347,9 +344,8 @@ class TestPipelineHttpHeadDecoder(unittest.TestCase):
         """Test inbound_buffered_bytes returns correct count."""
 
         decoder = PipelineHttpHeadDecoder(
+            DummyPipelineHttpDecodingMessageAdapter(),
             HttpParser.Mode.REQUEST,
-            self._make_head,
-            self._make_aborted,
         )
 
         chunk1 = b'GET / HTTP/1.1\r\n'
@@ -365,9 +361,8 @@ class TestPipelineHttpHeadDecoder(unittest.TestCase):
         """Test head with multiple headers split across chunks."""
 
         decoder = PipelineHttpHeadDecoder(
+            DummyPipelineHttpDecodingMessageAdapter(),
             HttpParser.Mode.REQUEST,
-            self._make_head,
-            self._make_aborted,
         )
 
         chunk1 = b'GET /api/users HTTP/1.1\r\n'
@@ -390,9 +385,8 @@ class TestPipelineHttpHeadDecoder(unittest.TestCase):
         """Test response head split in status line."""
 
         decoder = PipelineHttpHeadDecoder(
+            DummyPipelineHttpDecodingMessageAdapter(),
             HttpParser.Mode.RESPONSE,
-            self._make_head,
-            self._make_aborted,
         )
 
         chunk1 = b'HTTP/1.1 200'
@@ -416,9 +410,8 @@ class TestPipelineHttpHeadDecoder(unittest.TestCase):
         )
 
         decoder = PipelineHttpHeadDecoder(
+            DummyPipelineHttpDecodingMessageAdapter(),
             HttpParser.Mode.REQUEST,
-            self._make_head,
-            self._make_aborted,
             config=config,
         )
 
@@ -432,9 +425,8 @@ class TestPipelineHttpHeadDecoder(unittest.TestCase):
         """Test that empty bytes are handled gracefully."""
 
         decoder = PipelineHttpHeadDecoder(
+            DummyPipelineHttpDecodingMessageAdapter(),
             HttpParser.Mode.REQUEST,
-            self._make_head,
-            self._make_aborted,
         )
 
         out1 = decoder.inbound(b'')
@@ -466,9 +458,8 @@ class TestPipelineHttpHeadDecoder(unittest.TestCase):
         # For each delimiter position, try splitting there
         for split_pos in delim_positions:
             decoder = PipelineHttpHeadDecoder(
+                DummyPipelineHttpDecodingMessageAdapter(),
                 HttpParser.Mode.REQUEST,
-                self._make_head,
-                self._make_aborted,
             )
 
             chunk1 = raw[:split_pos]
@@ -496,28 +487,11 @@ class TestChunkedPipelineHttpContentChunkDecoder(unittest.TestCase):
     and CRLF terminators.
     """
 
-    def _make_chunk(self, data: ta.Any) -> str:
-        """Test callback that returns chunk data marker."""
-
-        return f'CHUNK:{bytes(data).decode("utf-8", errors="replace")}'
-
-    def _make_end(self) -> str:
-        """Test callback that returns end marker."""
-
-        return 'END'
-
-    def _make_aborted(self, reason: str) -> str:
-        """Test callback that returns abort marker."""
-
-        return f'ABORTED:{reason}'
-
     def test_single_chunk(self) -> None:
         """Test decoding a single chunk in one message."""
 
         decoder = ChunkedPipelineHttpContentChunkDecoder(
-            self._make_chunk,
-            self._make_end,
-            self._make_aborted,
+            DummyPipelineHttpDecodingMessageAdapter(),
         )
 
         raw = b'5\r\nhello\r\n0\r\n\r\n'
@@ -532,9 +506,7 @@ class TestChunkedPipelineHttpContentChunkDecoder(unittest.TestCase):
         """Test decoding multiple chunks."""
 
         decoder = ChunkedPipelineHttpContentChunkDecoder(
-            self._make_chunk,
-            self._make_end,
-            self._make_aborted,
+            DummyPipelineHttpDecodingMessageAdapter(),
         )
 
         raw = b'5\r\nhello\r\n5\r\nworld\r\n0\r\n\r\n'
@@ -550,9 +522,7 @@ class TestChunkedPipelineHttpContentChunkDecoder(unittest.TestCase):
         """Test split in the middle of chunk size line."""
 
         decoder = ChunkedPipelineHttpContentChunkDecoder(
-            self._make_chunk,
-            self._make_end,
-            self._make_aborted,
+            DummyPipelineHttpDecodingMessageAdapter(),
         )
 
         chunk1 = b'5\r'
@@ -570,9 +540,7 @@ class TestChunkedPipelineHttpContentChunkDecoder(unittest.TestCase):
         """Test split right after chunk size line."""
 
         decoder = ChunkedPipelineHttpContentChunkDecoder(
-            self._make_chunk,
-            self._make_end,
-            self._make_aborted,
+            DummyPipelineHttpDecodingMessageAdapter(),
         )
 
         chunk1 = b'5\r\n'
@@ -588,9 +556,7 @@ class TestChunkedPipelineHttpContentChunkDecoder(unittest.TestCase):
         """Test split in the middle of chunk data."""
 
         decoder = ChunkedPipelineHttpContentChunkDecoder(
-            self._make_chunk,
-            self._make_end,
-            self._make_aborted,
+            DummyPipelineHttpDecodingMessageAdapter(),
         )
 
         chunk1 = b'5\r\nhel'
@@ -606,9 +572,7 @@ class TestChunkedPipelineHttpContentChunkDecoder(unittest.TestCase):
         """Test split in the trailing \\r\\n after chunk data."""
 
         decoder = ChunkedPipelineHttpContentChunkDecoder(
-            self._make_chunk,
-            self._make_end,
-            self._make_aborted,
+            DummyPipelineHttpDecodingMessageAdapter(),
         )
 
         chunk1 = b'5\r\nhello\r'
@@ -624,9 +588,7 @@ class TestChunkedPipelineHttpContentChunkDecoder(unittest.TestCase):
         """Test split in the final chunk (0\\r\\n\\r\\n)."""
 
         decoder = ChunkedPipelineHttpContentChunkDecoder(
-            self._make_chunk,
-            self._make_end,
-            self._make_aborted,
+            DummyPipelineHttpDecodingMessageAdapter(),
         )
 
         chunk1 = b'5\r\nhello\r\n0\r'
@@ -644,9 +606,7 @@ class TestChunkedPipelineHttpContentChunkDecoder(unittest.TestCase):
         """Test feeding chunked data byte by byte."""
 
         decoder = ChunkedPipelineHttpContentChunkDecoder(
-            self._make_chunk,
-            self._make_end,
-            self._make_aborted,
+            DummyPipelineHttpDecodingMessageAdapter(),
         )
 
         raw = b'3\r\nfoo\r\n0\r\n\r\n'
@@ -663,9 +623,7 @@ class TestChunkedPipelineHttpContentChunkDecoder(unittest.TestCase):
         """Test various hex chunk sizes."""
 
         decoder = ChunkedPipelineHttpContentChunkDecoder(
-            self._make_chunk,
-            self._make_end,
-            self._make_aborted,
+            DummyPipelineHttpDecodingMessageAdapter(),
         )
 
         # 0xa = 10 bytes, 0x3 = 3 bytes
@@ -681,9 +639,7 @@ class TestChunkedPipelineHttpContentChunkDecoder(unittest.TestCase):
         """Test split between two complete chunks."""
 
         decoder = ChunkedPipelineHttpContentChunkDecoder(
-            self._make_chunk,
-            self._make_end,
-            self._make_aborted,
+            DummyPipelineHttpDecodingMessageAdapter(),
         )
 
         chunk1 = b'3\r\nfoo\r\n'
@@ -702,9 +658,7 @@ class TestChunkedPipelineHttpContentChunkDecoder(unittest.TestCase):
         """Test that bytes after final chunk are forwarded."""
 
         decoder = ChunkedPipelineHttpContentChunkDecoder(
-            self._make_chunk,
-            self._make_end,
-            self._make_aborted,
+            DummyPipelineHttpDecodingMessageAdapter(),
         )
 
         raw = b'3\r\nfoo\r\n0\r\n\r\nEXTRADATA'
@@ -719,9 +673,7 @@ class TestChunkedPipelineHttpContentChunkDecoder(unittest.TestCase):
         """Test EOF received before chunked encoding complete."""
 
         decoder = ChunkedPipelineHttpContentChunkDecoder(
-            self._make_chunk,
-            self._make_end,
-            self._make_aborted,
+            DummyPipelineHttpDecodingMessageAdapter(),
         )
 
         chunk = b'5\r\nhello\r\n'
