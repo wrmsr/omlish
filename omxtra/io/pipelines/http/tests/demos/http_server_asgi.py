@@ -1,3 +1,5 @@
+# ruff: noqa: UP045
+# @omlish-lite
 import asyncio
 import dataclasses as dc
 import functools
@@ -5,8 +7,8 @@ import types
 import typing as ta
 
 from omlish.http.headers import HttpHeaders  # noqa
-from omlish.lite.check import check  # noqa
 from omlish.lite.abstract import Abstract
+from omlish.lite.check import check  # noqa
 
 from ....asyncs import AsyncChannelPipelineMessages  # noqa
 from ....core import ChannelPipelineHandler
@@ -111,11 +113,11 @@ class _AsgiDriver:
 
     @types.coroutine
     def _receive(self) -> ta.Any:
-        return _AsgiFuture(_ReceiveAsgiOp())
+        return _AsgiFuture(_ReceiveAsgiOp())  # type: ignore
 
     @types.coroutine
     def _send(self, msg: ta.Any) -> ta.Any:
-        return _AsgiFuture(_SendAsgiOp(msg))
+        return _AsgiFuture(_SendAsgiOp(msg))  # type: ignore
 
 
 #
@@ -139,33 +141,22 @@ class AsgiHandler(ChannelPipelineHandler):
                 'spec_version': '2.3',
                 'version': '3.0',
             },
-            'client': ('127.0.0.1', 57782),
+            # 'client': ('127.0.0.1', 57782),
             'headers': [
-                (b'host', b'localhost:8087'),
-                (b'user-agent', b'curl/8.7.1'),
-                (b'accept', b'*/*'),
+                (k.encode(), v.encode())
+                for k, v in msg.head.headers.all
             ],
             'http_version': '1.1',
-            'method': 'GET',
-            'path': '/ping',
-            'query_string': b'',
-            'raw_path': b'/ping',
-            'root_path': '',
+            'method': msg.head.method,
+            'path': msg.head.target,
+            # 'query_string': b'',
+            # 'raw_path': b'/ping',
+            # 'root_path': '',
             'scheme': 'http',
-            'server': ('127.0.0.1', 8087),
+            # 'server': ('127.0.0.1', 8087),
             'state': {},
             'type': 'http',
         }
-
-        #
-
-        @types.coroutine
-        def receive() -> ta.Any:
-            return _AsgiFuture(_ReceiveAsgiOp())
-
-        @types.coroutine
-        def send(asgi_msg: ta.Any) -> ta.Any:
-            return _AsgiFuture(_SendAsgiOp(asgi_msg))
 
         #
 
@@ -176,10 +167,47 @@ class AsgiHandler(ChannelPipelineHandler):
             f = drv.g.send(None)  # noqa
         except StopIteration as si:
             v = si.value  # noqa
+            raise NotImplementedError  # noqa
+
+        f = check.isinstance(f, _AsgiFuture)
+        am0 = check.isinstance(check.isinstance(f.arg, _SendAsgiOp).msg, dict)
+        check.equal(am0['type'], 'http.response.start')
+        f.result, f.done = None, True
+
+        try:
+            f = drv.g.send(None)  # noqa
+        except StopIteration as si:
+            v = si.value  # noqa
+            raise NotImplementedError  # noqa
+
+        f = check.isinstance(f, _AsgiFuture)
+        am1 = check.isinstance(check.isinstance(f.arg, _SendAsgiOp).msg, dict)
+        check.equal(am1['type'], 'http.response.body')
+        if am1.get('more_body', False):
+            raise NotImplementedError  # noqa
+        f.result, f.done = None, True
+
+        try:
+            f = drv.g.send(None)  # noqa
+        except StopIteration as si:
+            v = si.value  # noqa
+        else:
+            raise NotImplementedError  # noqa
+        check.state(v is None)
 
         drv.close()
 
-        raise NotImplementedError
+        resp = FullPipelineHttpResponse(
+            head=PipelineHttpResponseHead(
+                status=(status_code := am0['status']),
+                reason=PipelineHttpResponseHead.get_reason_phrase(status_code),
+                headers=HttpHeaders(am0['headers']),
+            ),
+            body=am1['body'],
+        )
+
+        ctx.feed_out(resp)
+        ctx.feed_out(ChannelPipelineMessages.FinalOutput())
 
 
 def build_asgi_channel(app: ta.Any) -> PipelineChannel.Spec:

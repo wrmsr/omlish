@@ -37,6 +37,13 @@ class PipelineHttpResponseHead(PipelineHttpMessageHead, PipelineHttpResponseObje
 
     version: HttpVersion = HttpVersions.HTTP_1_1
 
+    @staticmethod
+    def get_reason_phrase(code: int) -> str:
+        try:
+            return http.HTTPStatus(code).phrase
+        except ValueError:
+            return ''
+
 
 @dc.dataclass(frozen=True)
 class FullPipelineHttpResponse(FullPipelineHttpMessage, PipelineHttpResponseObject):
@@ -61,7 +68,7 @@ class FullPipelineHttpResponse(FullPipelineHttpMessage, PipelineHttpResponseObje
             head=PipelineHttpResponseHead(
                 version=version,
                 status=status,
-                reason=cls._get_reason_phrase(status) if reason is None else reason,
+                reason=PipelineHttpResponseHead.get_reason_phrase(status) if reason is None else reason,
                 headers=HttpHeaders([
                     ('Content-Type', content_type),
                     ('Content-Length', str(len(body))),
@@ -71,13 +78,6 @@ class FullPipelineHttpResponse(FullPipelineHttpMessage, PipelineHttpResponseObje
             ),
             body=body,
         )
-
-    @staticmethod
-    def _get_reason_phrase(code: int) -> str:
-        try:
-            return http.HTTPStatus(code).phrase
-        except ValueError:
-            return ''
 
 
 @dc.dataclass(frozen=True)
