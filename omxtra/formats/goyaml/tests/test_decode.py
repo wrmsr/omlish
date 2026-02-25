@@ -15,7 +15,7 @@ b: c
 
     d = YamlDecoder(ImmediateBytesReader(s.encode()))
     v = ta.cast(ta.Any, d.decode())
-    print(json.dumps(v.v, indent=2))
+    print(json.dumps(v, indent=2))
 
 
 def test_decode2():
@@ -61,7 +61,7 @@ services:
 
     d = YamlDecoder(ImmediateBytesReader(s.encode()))
     v = ta.cast(ta.Any, d.decode())
-    print(json.dumps(v.v, indent=2))
+    print(json.dumps(v, indent=2))
 
 
 def test_decode3():

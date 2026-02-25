@@ -204,20 +204,6 @@ class FieldError:
 ##
 
 
-@dc.dataclass()
-class YamlValueBox:
-    v: ta.Any
-    is_valid: bool = True
-    ty: ta.Optional[type] = None
-
-    @classmethod
-    def new_invalid(cls) -> 'YamlValueBox':
-        return YamlValueBox(None, False)
-
-
-##
-
-
 class YamlDecodeErrors:
     def __new__(cls, *args, **kwargs):  # noqa
         raise TypeError
@@ -242,7 +228,7 @@ class YamlDecoder:
     reader: Reader
     reference_readers: ta.List[Reader]
     anchor_node_map: ta.Dict[str, ta.Optional[YamlNode]]
-    anchor_value_map: ta.Dict[str, YamlValueBox]
+    anchor_value_map: ta.Dict[str, ta.Any]
     custom_unmarshaler_map: ta.Dict[type, ta.Callable[[Context, ta.Any, bytes], ta.Optional[YamlError]]]
     comment_maps: ta.List[CommentMap]
     to_comment_map: ta.Optional[CommentMap] = None
@@ -620,7 +606,7 @@ class YamlDecoder:
                     del self.anchor_node_map[anchor_name]
                     return anchor_value
                 self.anchor_node_map[anchor_name] = n.value
-                self.anchor_value_map[anchor_name] = YamlValueBox(anchor_value)
+                self.anchor_value_map[anchor_name] = anchor_value
                 return anchor_value
 
             elif isinstance(n, AliasYamlNode):
@@ -633,9 +619,7 @@ class YamlDecoder:
                 except KeyError:
                     pass
                 else:
-                    if not v.is_valid:
-                        return None
-                    return v.v
+                    return v
                 try:
                     node2 = self.anchor_node_map[text]
                 except KeyError:
@@ -787,38 +771,25 @@ class YamlDecoder:
         finally:
             self.step_out()
 
-    def decode_value(self, ctx: Context, dst: YamlValueBox, src: YamlNode) -> ta.Optional[YamlError]:
+    def decode_value(self, ctx: Context, src: YamlNode) -> YamlErrorOr[ta.Any]:
         self.step_in()
         try:
             if self.is_exceeded_max_depth():
                 return YamlDecodeErrors.EXCEEDED_MAX_DEPTH
-            if not dst.is_valid:
-                return None
 
             if src.type() == YamlNodeType.ANCHOR:
                 anchor = check.isinstance(src, AnchorYamlNode)
                 anchor_name = check.not_none(check.not_none(anchor.name).get_token()).value
-                if (err := self.decode_value(with_anchor(ctx, anchor_name), dst, check.not_none(anchor.value))) is not None:  # noqa
-                    return err
-                self.anchor_value_map[anchor_name] = dst
+                if isinstance(av := self.decode_value(with_anchor(ctx, anchor_name), check.not_none(anchor.value)), YamlError):  # noqa
+                    return av
+                self.anchor_value_map[anchor_name] = av
                 return None
 
-            value_type = dst.ty
+            src_val = self.node_to_value(ctx, src)
+            if isinstance(src_val, YamlError):
+                return src_val
 
-            if value_type == YamlNode:
-                dst.v = src
-                return None
-
-            elif value_type is None or value_type is ta.Any:
-                src_val = self.node_to_value(ctx, src)
-                if isinstance(src_val, YamlError):
-                    return src_val
-
-                dst.v = src_val
-                return None
-
-            else:
-                raise NotImplementedError
+            return src_val
 
         finally:
             self.step_out()
@@ -1022,16 +993,13 @@ class YamlDecoder:
         self.parsed_file = file
         return None
 
-    def _decode(self, ctx: Context, v: YamlValueBox) -> ta.Optional[YamlError]:
+    def _decode(self, ctx: Context) -> YamlErrorOr[ta.Any]:
         self.decode_depth = 0
         self.anchor_value_map = {}
         pf = check.not_none(self.parsed_file)
         if len(pf.docs) == 0:
             # empty document.
-            # dst := v.Elem()
-            # if dst.IsValid():
-            #     dst.Set(reflect.Zero(dst.Type()))
-            v.v = None
+            return None
         if len(pf.docs) <= self.stream_index:
             return EofYamlError()
         body = pf.docs[self.stream_index].body
@@ -1040,50 +1008,44 @@ class YamlDecoder:
         if len(self.comment_maps) > self.stream_index:
             if (scm := self.comment_maps[self.stream_index]):
                 check.not_none(self.to_comment_map).update(scm)
-        if (err := self.decode_value(ctx, v, body)) is not None:
-            return err
+        if isinstance(v := self.decode_value(ctx, body), YamlError):
+            return v
         self.stream_index += 1
-        return None
+        return v
 
     # Decode reads the next YAML-encoded value from its input
     # and stores it in the value pointed to by v.
     #
     # See the documentation for Unmarshal for details about the
     # conversion of YAML into a Go value.
-    def decode(self) -> YamlErrorOr[YamlValueBox]:
+    def decode(self) -> YamlErrorOr[ta.Any]:
         return self.decode_context(Context())
 
     # decode_context reads the next YAML-encoded value from its input
     # and stores it in the value pointed to by v with Context.
-    def decode_context(self, ctx: Context) -> YamlErrorOr[YamlValueBox]:
-        rv = YamlValueBox(None)
-        # if not rv.IsValid() || rv.Type().Kind() != reflect.Ptr:
-        #     return ErrDecodeRequiredPointerType
+    def decode_context(self, ctx: Context) -> YamlErrorOr[ta.Any]:
         if self.is_initialized():
-            if (err := self._decode(ctx, rv)) is not None:
-                return err
-            return rv
+            if isinstance(v := self._decode(ctx), YamlError):
+                return v
+            return v
         if (err := self.decode_init(ctx)) is not None:
             return err
-        if (err := self._decode(ctx, rv)) is not None:
-            return err
-        return rv
+        if isinstance(v := self._decode(ctx), YamlError):
+            return v
+        return v
 
     # decode_from_node decodes node into the value pointed to by v.
-    def decode_from_node(self, node: YamlNode) -> YamlErrorOr[YamlValueBox]:
+    def decode_from_node(self, node: YamlNode) -> YamlErrorOr[ta.Any]:
         return self.decode_from_node_context(Context(), node)
 
     # decode_from_node_context decodes node into the value pointed to by v with Context.
-    def decode_from_node_context(self, ctx: Context, node: YamlNode) -> YamlErrorOr[YamlValueBox]:
-        rv = YamlValueBox(None)
-        # if rv.Type().Kind() != reflect.Ptr:
-        #     return ErrDecodeRequiredPointerType
+    def decode_from_node_context(self, ctx: Context, node: YamlNode) -> YamlErrorOr[ta.Any]:
         if not self.is_initialized():
             if (err := self.decode_init(ctx)) is not None:
                 return err
         # resolve references to the anchor on the same file
         if (err := self.node_to_value(ctx, node)) is not None:
             return err
-        if (err := self.decode_value(ctx, rv, node)) is not None:
-            return err
-        return rv
+        if isinstance(v := self.decode_value(ctx, node), YamlError):
+            return v
+        return v
