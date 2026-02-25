@@ -3,7 +3,7 @@ from omlish.http import asgi
 from omlish.http.apps.routes import Route
 from omlish.http.apps.routes import RouteHandlerHolder
 from omlish.http.apps.routes import handles
-from omserv.server.resources import favicon_bytes
+from omxtra.server.resources import favicon_bytes
 
 
 ##

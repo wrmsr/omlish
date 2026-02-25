@@ -19,11 +19,11 @@ from x.app.secrets import bind_secrets
 from x.app.server.inject import bind_app
 from x.app.server.inject import bind_in_memory_user_store
 
-from ..server.config import Config
-from ..server.default import serve
-from ..server.tests.utils import get_timeout_s
-from ..server.tests.utils import headers_time_patch  # noqa
-from ..server.types import AsgiWrapper
+from ..config import Config
+from ..default import serve
+from ..tests.utils import get_timeout_s
+from ..tests.utils import headers_time_patch  # noqa
+from ..types import AsgiWrapper
 
 
 def randhex(l: int) -> str:

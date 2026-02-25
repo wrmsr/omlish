@@ -9,11 +9,11 @@ from omlish import lang
 from omlish.http.apps.tests.foo import build_foo_app
 from omlish.sockets.ports import get_available_port
 
-from ...server.config import Config
-from ...server.default import serve
-from ...server.tests.utils import get_timeout_s
-from ...server.tests.utils import headers_time_patch  # noqa
-from ...server.types import AsgiWrapper
+from ..config import Config
+from ..default import serve
+from ..tests.utils import get_timeout_s
+from ..tests.utils import headers_time_patch  # noqa
+from ..types import AsgiWrapper
 
 
 @pytest.mark.integration

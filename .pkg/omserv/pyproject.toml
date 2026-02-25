@@ -75,5 +75,4 @@ exclude = [
     'LICENSE.txt',
     'AUTHORS',
     'DESIGN.md',
-    'server/resources/*.ico',
 ]

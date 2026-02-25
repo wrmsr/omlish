@@ -15,6 +15,16 @@ class Project(ProjectBase):
     ]
 
     optional_dependencies: dict = {
+        'server': [
+            'h11 ~= 0.16',
+            'h2 ~= 4.3',
+            'priority ~= 2.0',
+            'wsproto ~= 1.3',
+        ],
+
+        'templates': [
+            'jinja2 ~= 3.1',
+        ],
     }
 
     entry_points = {

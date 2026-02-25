@@ -119,7 +119,7 @@ hf-xet==1.3.1  # @omlish-venv !14t !14dt
 
 ## NOTE: the following add a full minute to CI just setting up the deps..
 
-datasets==4.5.0; python_version < "3.14"  # !! includes arrow and pandas and shit
+datasets==4.6.0; python_version < "3.14"  # !! includes arrow and pandas and shit
 
 transformers==5.2.0  # @omlish-venv !14t !14dt
 sentence-transformers==5.2.3  # @omlish-venv !14t !14dt

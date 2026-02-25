@@ -41,7 +41,7 @@ class Project(ProjectBase):
 
         'huggingface': [
             'huggingface-hub ~= 1.4',
-            'datasets ~= 4.5',
+            'datasets ~= 4.6',
         ],
 
         'nanochat': [
