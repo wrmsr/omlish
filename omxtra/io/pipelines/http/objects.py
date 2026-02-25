@@ -22,17 +22,17 @@ class PipelineHttpMessageObject(Abstract):
 class PipelineHttpMessageHead(PipelineHttpMessageObject, Abstract):
     @property
     @abc.abstractmethod
-    def version(self) -> HttpVersion:
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
     def headers(self) -> HttpHeaders:
         raise NotImplementedError
 
     @property
     @abc.abstractmethod
     def parsed(self) -> ta.Optional[ParsedHttpMessage]:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def version(self) -> HttpVersion:
         raise NotImplementedError
 
 

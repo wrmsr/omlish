@@ -17,44 +17,32 @@ from ...server.responses import PipelineHttpResponseEncoder
 
 
 class PingHandler(ChannelPipelineHandler):
-    """
-    Responds to GET /ping with plaintext "pong" and closes the channel.
-
-    This is intentionally minimal and not a full HTTP server implementation.
-    """
-
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         if not isinstance(msg, PipelineHttpRequestHead):
             ctx.feed_in(msg)
             return
 
         if msg.method == 'GET' and msg.target == '/ping':
-            resp = FullPipelineHttpResponse.simple(
+            ctx.feed_out(FullPipelineHttpResponse.simple(
                 status=200,
                 body=b'pong',
-            )
+            ))
 
         else:
-            resp = FullPipelineHttpResponse.simple(
+            ctx.feed_out(FullPipelineHttpResponse.simple(
                 status=404,
                 body=b'not found',
-            )
+            ))
 
-        # Write response object; encoder will convert to bytes.
-        ctx.feed_out(resp)
-
-        # Request logical close; driver will close transport after flushing outbound.
         ctx.feed_final_output()
 
 
 def build_http_ping_channel() -> PipelineChannel.Spec:
-    return PipelineChannel.Spec(
-        [
-            PipelineHttpRequestHeadDecoder(),
-            PipelineHttpResponseEncoder(),
-            PingHandler(),
-        ],
-    )
+    return PipelineChannel.Spec([
+        PipelineHttpRequestHeadDecoder(),
+        PipelineHttpResponseEncoder(),
+        PingHandler(),
+    ])
 
 
 async def serve_ping(
@@ -62,14 +50,6 @@ async def serve_ping(
         host: str = '127.0.0.1',
         port: int = 8087,
 ) -> None:
-    """
-    Start a minimal HTTP/1 server with one endpoint:
-      GET /ping  -> 200 'pong'
-      otherwise -> 404
-
-    Each connection gets its own Channel and AsyncioStreamDriver.
-    """
-
     async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         drv = SimpleAsyncioStreamPipelineChannelDriver(
             build_http_ping_channel(),

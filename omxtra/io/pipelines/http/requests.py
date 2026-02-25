@@ -31,9 +31,10 @@ class PipelineHttpRequestHead(PipelineHttpMessageHead, PipelineHttpRequestObject
     method: str
     target: str
 
-    version: HttpVersion
     headers: HttpHeaders
     parsed: ta.Optional[ParsedHttpMessage] = None
+
+    version: HttpVersion = HttpVersions.HTTP_1_1
 
 
 @dc.dataclass(frozen=True)

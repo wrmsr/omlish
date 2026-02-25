@@ -30,7 +30,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../../omlish/lite/check.py', sha1='df0ed561b5782545e34e61dd3424f69f836a87c0'),
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
-            dict(path='errors.py', sha1='a6e20daf54f563f7d2aa4f28fce87fa06417facb'),
+            dict(path='errors.py', sha1='f0f9d973a1a219f790b309b043875b730b8863d4'),
             dict(path='../../../omlish/io/streams/types.py', sha1='ab72e5d4a1e648ef79577be7d8c45853b1c5917d'),
             dict(path='core.py', sha1='de337775324c4ec87cadd7bf912619c80d2802e0'),
             dict(path='../../../omlish/io/streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
@@ -927,12 +927,12 @@ class MessageChannelPipelineError(ChannelPipelineError):
         ])
 
 
-@dc.dataclass(repr=False)
+@dc.dataclass()
 class MessageNotPropagatedChannelPipelineError(MessageChannelPipelineError, UnhandleableChannelPipelineError):
     pass
 
 
-@dc.dataclass(repr=False)
+@dc.dataclass()
 class MessageReachedTerminalChannelPipelineError(MessageChannelPipelineError, UnhandleableChannelPipelineError):
     pass
 
