@@ -40,18 +40,13 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         channel.feed_in(fbi.wrap(response))
         out = channel.output.drain()
 
-        self.assertEqual(len(out), 1)
-        encoded = out[0]
-
-        expected = (
+        self.assertEqual(out, [
             b'HTTP/1.1 200 OK\r\n'
             b'Content-Type: text/plain\r\n'
             b'Content-Length: 5\r\n'
-            b'\r\n'
-            b'hello'
-        )
-
-        self.assertEqual(encoded, expected)
+            b'\r\n',
+            b'hello',
+        ])
 
     def test_404_response(self) -> None:
         """Test 404 response encoding."""
@@ -78,18 +73,13 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         channel.feed_in(fbi.wrap(response))
         out = channel.output.drain()
 
-        self.assertEqual(len(out), 1)
-        encoded = out[0]
-
-        expected = (
+        self.assertEqual(out, [
             b'HTTP/1.1 404 Not Found\r\n'
             b'Content-Type: text/plain\r\n'
             b'Content-Length: 9\r\n'
-            b'\r\n'
-            b'not found'
-        )
-
-        self.assertEqual(encoded, expected)
+            b'\r\n',
+            b'not found',
+        ])
 
     def test_empty_body(self) -> None:
         """Test response with empty body."""
@@ -154,21 +144,16 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         channel.feed_in(fbi.wrap(response))
         out = channel.output.drain()
 
-        self.assertEqual(len(out), 1)
-        encoded = out[0]
-
-        # Verify status line
-        self.assertTrue(encoded.startswith(b'HTTP/1.1 200 OK\r\n'))
-
-        # Verify all headers present
-        self.assertIn(b'Content-Type: text/html; charset=utf-8\r\n', encoded)
-        self.assertIn(b'Content-Length: 4\r\n', encoded)
-        self.assertIn(b'Connection: close\r\n', encoded)
-        self.assertIn(b'Cache-Control: no-cache\r\n', encoded)
-        self.assertIn(b'X-Custom-Header: custom-value\r\n', encoded)
-
-        # Verify body
-        self.assertTrue(encoded.endswith(b'\r\n\r\ntest'))
+        self.assertEqual(out, [
+            b'HTTP/1.1 200 OK\r\n'
+            b'Content-Type: text/html; charset=utf-8\r\n'
+            b'Content-Length: 4\r\n'
+            b'Connection: close\r\n'
+            b'Cache-Control: no-cache\r\n'
+            b'X-Custom-Header: custom-value\r\n'
+            b'\r\n',
+            b'test',
+        ])
 
     def test_http_10_version(self) -> None:
         """Test HTTP/1.0 version encoding."""
@@ -194,10 +179,12 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         channel.feed_in(fbi.wrap(response))
         out = channel.output.drain()
 
-        self.assertEqual(len(out), 1)
-        encoded = out[0]
-
-        self.assertTrue(encoded.startswith(b'HTTP/1.0 200 OK\r\n'))
+        self.assertEqual(out, [
+            b'HTTP/1.0 200 OK\r\n'
+            b'Content-Length: 2\r\n'
+            b'\r\n',
+            b'ok',
+        ])
 
     def test_large_body(self) -> None:
         """Test response with large body."""
@@ -226,12 +213,13 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         channel.feed_in(fbi.wrap(response))
         out = channel.output.drain()
 
-        self.assertEqual(len(out), 1)
-        encoded = out[0]
-
-        # Verify body is present and correct
-        self.assertTrue(encoded.endswith(body))
-        self.assertIn(b'Content-Length: 10000\r\n', encoded)
+        self.assertEqual(out, [
+            b'HTTP/1.1 200 OK\r\n'
+            b'Content-Type: application/octet-stream\r\n'
+            b'Content-Length: 10000\r\n'
+            b'\r\n',
+            body,
+        ])
 
     def test_duplicate_header_names(self) -> None:
         """Test response with duplicate header names (e.g., Set-Cookie)."""
@@ -318,13 +306,13 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
 
         out = channel.output.drain()
 
-        self.assertEqual(len(out), 2)
-
-        # First should be encoded response
-        self.assertIn(b'HTTP/1.1 200 OK\r\n', out[0])
-
-        # Second should be unchanged
-        self.assertEqual(out[1], b'other data')
+        self.assertEqual(out, [
+            b'HTTP/1.1 200 OK\r\n'
+            b'Content-Length: 2\r\n'
+            b'\r\n',
+            b'ok',
+            b'other data',
+        ])
 
     def test_redirect_response(self) -> None:
         """Test 302 redirect response."""
@@ -388,18 +376,13 @@ class TestPipelineHttpResponseEncoder(unittest.TestCase):
         channel.feed_in(fbi.wrap(response))
         out = channel.output.drain()
 
-        self.assertEqual(len(out), 1)
-        encoded = out[0]
-
-        expected = (
+        self.assertEqual(out, [
             b'HTTP/1.1 500 Internal Server Error\r\n'
             b'Content-Type: text/plain\r\n'
             b'Content-Length: 13\r\n'
-            b'\r\n'
-            b'server error!'
-        )
-
-        self.assertEqual(encoded, expected)
+            b'\r\n',
+            b'server error!',
+        ])
 
 
 class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):

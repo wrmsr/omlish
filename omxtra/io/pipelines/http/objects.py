@@ -15,7 +15,11 @@ from omlish.lite.check import check
 ##
 
 
-class PipelineHttpMessageHead(Abstract):
+class PipelineHttpMessageObject(Abstract):
+    pass
+
+
+class PipelineHttpMessageHead(PipelineHttpMessageObject, Abstract):
     @property
     @abc.abstractmethod
     def version(self) -> HttpVersion:
@@ -32,7 +36,7 @@ class PipelineHttpMessageHead(Abstract):
         raise NotImplementedError
 
 
-class FullPipelineHttpMessage(Abstract):
+class FullPipelineHttpMessage(PipelineHttpMessageObject, Abstract):
     @property
     @abc.abstractmethod
     def head(self) -> PipelineHttpMessageHead:
@@ -45,17 +49,17 @@ class FullPipelineHttpMessage(Abstract):
 
 
 @dc.dataclass(frozen=True)
-class PipelineHttpMessageContentChunkData(Abstract):
+class PipelineHttpMessageContentChunkData(PipelineHttpMessageObject, Abstract):
     data: BytesLikeOrMemoryview
 
 
 @dc.dataclass(frozen=True)
-class PipelineHttpMessageEnd(Abstract):
+class PipelineHttpMessageEnd(PipelineHttpMessageObject, Abstract):
     pass
 
 
 @dc.dataclass(frozen=True)
-class PipelineHttpMessageAborted(Abstract):
+class PipelineHttpMessageAborted(PipelineHttpMessageObject, Abstract):
     reason: str
 
 

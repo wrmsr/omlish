@@ -80,19 +80,14 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         channel.feed_in(fbi.wrap(request))
         out = channel.output.drain()
 
-        self.assertEqual(len(out), 1)
-        encoded = out[0]
-
-        expected = (
+        self.assertEqual(out, [
             b'POST /submit HTTP/1.1\r\n'
             b'Host: example.com\r\n'
             b'Content-Type: application/x-www-form-urlencoded\r\n'
             b'Content-Length: 18\r\n'
-            b'\r\n'
-            b'name=value&foo=bar'
-        )
-
-        self.assertEqual(encoded, expected)
+            b'\r\n',
+            b'name=value&foo=bar',
+        ])
 
     def test_put_request(self) -> None:
         """Test PUT request encoding."""
@@ -122,19 +117,14 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         channel.feed_in(fbi.wrap(request))
         out = channel.output.drain()
 
-        self.assertEqual(len(out), 1)
-        encoded = out[0]
-
-        expected = (
+        self.assertEqual(out, [
             b'PUT /api/resource/123 HTTP/1.1\r\n'
             b'Host: api.example.com\r\n'
             b'Content-Type: application/json\r\n'
             b'Content-Length: 16\r\n'
-            b'\r\n'
-            b'{"key": "value"}'
-        )
-
-        self.assertEqual(encoded, expected)
+            b'\r\n',
+            b'{"key": "value"}',
+        ])
 
     def test_delete_request(self) -> None:
         """Test DELETE request encoding."""
@@ -458,25 +448,18 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
 
         out = channel.output.drain()
 
-        self.assertEqual(len(out), 2)
-
-        # First request
-        self.assertEqual(
-            out[0],
+        self.assertEqual(out, [
             b'GET /first HTTP/1.1\r\n'
             b'Host: example.com\r\n'
             b'\r\n',
-        )
 
-        # Second request
-        self.assertEqual(
-            out[1],
             b'POST /second HTTP/1.1\r\n'
             b'Host: example.com\r\n'
             b'Content-Length: 4\r\n'
-            b'\r\n'
+            b'\r\n',
+
             b'data',
-        )
+        ])
 
     def test_passthrough_unknown_message(self) -> None:
         """Test that unknown messages pass through unchanged."""

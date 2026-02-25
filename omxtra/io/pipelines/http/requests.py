@@ -7,6 +7,7 @@ from omlish.http.headers import HttpHeaders
 from omlish.http.parsing import ParsedHttpMessage
 from omlish.http.versions import HttpVersion
 from omlish.http.versions import HttpVersions
+from omlish.lite.abstract import Abstract
 from omlish.lite.dataclasses import dataclass_kw_only_init
 
 from .objects import FullPipelineHttpMessage
@@ -14,14 +15,19 @@ from .objects import PipelineHttpMessageAborted
 from .objects import PipelineHttpMessageContentChunkData
 from .objects import PipelineHttpMessageEnd
 from .objects import PipelineHttpMessageHead
+from .objects import PipelineHttpMessageObject
 
 
 ##
 
 
+class PipelineHttpRequestObject(PipelineHttpMessageObject, Abstract):
+    pass
+
+
 @dataclass_kw_only_init()
 @dc.dataclass(frozen=True)
-class PipelineHttpRequestHead(PipelineHttpMessageHead):
+class PipelineHttpRequestHead(PipelineHttpMessageHead, PipelineHttpRequestObject):
     method: str
     target: str
 
@@ -31,7 +37,7 @@ class PipelineHttpRequestHead(PipelineHttpMessageHead):
 
 
 @dc.dataclass(frozen=True)
-class FullPipelineHttpRequest(FullPipelineHttpMessage):
+class FullPipelineHttpRequest(FullPipelineHttpMessage, PipelineHttpRequestObject):
     head: PipelineHttpRequestHead
     body: bytes
 
@@ -68,15 +74,15 @@ class FullPipelineHttpRequest(FullPipelineHttpMessage):
 
 
 @dc.dataclass(frozen=True)
-class PipelineHttpRequestContentChunkData(PipelineHttpMessageContentChunkData):
+class PipelineHttpRequestContentChunkData(PipelineHttpMessageContentChunkData, PipelineHttpRequestObject):
     pass
 
 
 @dc.dataclass(frozen=True)
-class PipelineHttpRequestEnd(PipelineHttpMessageEnd):
+class PipelineHttpRequestEnd(PipelineHttpMessageEnd, PipelineHttpRequestObject):
     pass
 
 
 @dc.dataclass(frozen=True)
-class PipelineHttpRequestAborted(PipelineHttpMessageAborted):
+class PipelineHttpRequestAborted(PipelineHttpMessageAborted, PipelineHttpRequestObject):
     pass

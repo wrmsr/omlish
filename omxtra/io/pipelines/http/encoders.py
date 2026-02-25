@@ -3,8 +3,8 @@
 import io
 import typing as ta
 
-from omlish.lite.abstract import Abstract
 from omlish.http.headers import HttpHeaders
+from omlish.lite.abstract import Abstract
 
 from .objects import FullPipelineHttpMessage
 from .objects import PipelineHttpMessageContentChunkData

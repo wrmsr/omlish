@@ -5,10 +5,10 @@ import zlib
 
 from omlish.io.streams.utils import ByteStreamBuffers
 
-from ...core import ChannelPipelineHandler
-from ...core import ChannelPipelineHandlerContext
-from ...core import ChannelPipelineMessages
-from ..responses import PipelineHttpResponseHead
+from ....core import ChannelPipelineHandler
+from ....core import ChannelPipelineHandlerContext
+from ....core import ChannelPipelineMessages
+from ....http.client.responses import PipelineHttpResponseHead
 
 
 ##
