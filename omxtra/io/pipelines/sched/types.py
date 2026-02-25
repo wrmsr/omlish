@@ -19,7 +19,12 @@ class ChannelPipelineScheduling(ChannelPipelineService, Abstract):
             raise NotImplementedError
 
     @abc.abstractmethod
-    def schedule(self, handler_ref: ChannelPipelineHandlerRef, msg: ta.Any) -> Handle:
+    def schedule(
+            self,
+            handler_ref: ChannelPipelineHandlerRef,
+            delay_s: float,
+            fn: ta.Callable[[], None],
+    ) -> Handle:
         raise NotImplementedError
 
     @abc.abstractmethod

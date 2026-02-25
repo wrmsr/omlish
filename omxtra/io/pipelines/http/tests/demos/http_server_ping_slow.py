@@ -13,6 +13,7 @@ from ....drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
 from ....flow.stub import StubChannelPipelineFlow
 from ....flow.types import ChannelPipelineFlowMessages
 from ....handlers.flatmap import FlatMapChannelPipelineHandlers
+from ....sched.types import ChannelPipelineScheduling
 from ...requests import PipelineHttpRequestHead
 from ...responses import FullPipelineHttpResponse
 from ...responses import PipelineHttpResponseHead
@@ -41,6 +42,17 @@ class PingHandler(ChannelPipelineHandler):
                 ]),
             ))
             ctx.feed_out(ChannelPipelineFlowMessages.FlushOutput())
+
+            def write_pong(n: int) -> None:
+                ctx.feed_out(b'pong'[n:n + 1])
+                ctx.feed_out(ChannelPipelineFlowMessages.FlushOutput())
+
+                if n < 4:
+                    ctx.services[ChannelPipelineScheduling].schedule(ctx.ref, 1, lambda: write_pong(n + 1))
+                else:
+                    ctx.feed_final_output()
+
+            ctx.services[ChannelPipelineScheduling].schedule(ctx.ref, 1, lambda: write_pong(0))
 
         else:
             ctx.feed_out(FullPipelineHttpResponse.simple(

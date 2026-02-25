@@ -12,6 +12,7 @@ TODO:
 import abc
 import asyncio
 import dataclasses as dc
+import functools
 import typing as ta
 
 from omlish.io.streams.utils import ByteStreamBuffers
@@ -150,11 +151,11 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
         self._writer = None
 
     ##
-    # command handling
 
     class _Command(Abstract):
         pass
 
+    ##
     # feed in
 
     class _FeedInCommand(_Command):
@@ -172,6 +173,7 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
 
         self._command_queue.put_nowait(AsyncioStreamPipelineChannelDriver._FeedInCommand(*msgs))
 
+    ##
     # read completed
 
     class _ReadCompletedCommand(_Command):
@@ -238,6 +240,7 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
 
             await self._close_writer()
 
+    ##
     # update want read
 
     class _UpdateWantReadCommand(_Command):
@@ -291,13 +294,67 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
     def _ensure_read_task(self) -> None:
         raise NotImplementedError
 
+    ##
+    # scheduling
+
+    class _Scheduling(ChannelPipelineScheduling):
+        def __init__(self, d: 'AsyncioStreamPipelineChannelDriver') -> None:
+            super().__init__()
+
+            self._d = d
+
+            self._pending: ta.List[ta.Tuple[float, ta.Callable[[], None]]] = []
+            self._tasks: ta.Set[asyncio.Task] = set()
+
+        class _Handle(ChannelPipelineScheduling.Handle):
+            def cancel(self) -> None:
+                raise NotImplementedError
+
+        def schedule(
+                self,
+                handler_ref: ChannelPipelineHandlerRef,
+                delay_s: float,
+                fn: ta.Callable[[], None],
+        ) -> ChannelPipelineScheduling.Handle:
+            self._pending.append((delay_s, fn))
+            return self._Handle()
+
+        def cancel_all(self, handler_ref: ta.Optional[ChannelPipelineHandlerRef] = None) -> None:
+            raise NotImplementedError
+
+        async def _task_body(self, delay: float, fn: ta.Callable[[], None]) -> None:
+            await asyncio.sleep(delay)
+
+            self._d._command_queue.put_nowait(AsyncioStreamPipelineChannelDriver._ScheduledCommand(fn))  # noqa
+
+        async def _flush_pending(self) -> None:
+            if not (lst := self._pending):
+                return
+
+            for delay, fn in lst:
+                self._tasks.add(asyncio.create_task(functools.partial(self._task_body, delay, fn)()))
+
+            self._pending = []
+
+    @dc.dataclass(frozen=True)
+    class _ScheduledCommand(_Command):
+        fn: ta.Callable[[], None]
+
+    async def _handle_scheduled_command(self, cmd: _ScheduledCommand) -> None:
+        async def _inner() -> None:
+            with self._channel.enter():
+                cmd.fn()
+
+        await self._do_with_channel(_inner)
+
     # handlers
 
-    def _build_command_handlers(self) -> ta.Mapping[type, ta.Callable[[ta.Any], ta.Awaitable[None]]]:
+    def _build_command_handlers(self) -> ta.Mapping[ta.Type[_Command], ta.Callable[[ta.Any], ta.Awaitable[None]]]:
         return {
             AsyncioStreamPipelineChannelDriver._FeedInCommand: self._handle_command_feed_in,
             AsyncioStreamPipelineChannelDriver._ReadCompletedCommand: self._handle_command_read_completed,
             AsyncioStreamPipelineChannelDriver._UpdateWantReadCommand: self._handle_command_update_want_read,
+            AsyncioStreamPipelineChannelDriver._ScheduledCommand: self._handle_scheduled_command,
         }
 
     async def _handle_command(self, cmd: _Command) -> None:
@@ -391,6 +448,8 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
         if self._shutdown_event.is_set():
             return
 
+        await self._sched._flush_pending()  # noqa
+
         if self._want_read != prev_want_read:
             await self._send_update_want_read_command()
 
@@ -399,21 +458,6 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
     async def _drain_channel_output(self) -> None:
         while (msg := self._channel.output.poll()) is not None:
             await self._handle_output(msg)
-
-    ##
-    # scheduling
-
-    class _Scheduling(ChannelPipelineScheduling):
-        def __init__(self, d: 'AsyncioStreamPipelineChannelDriver') -> None:
-            super().__init__()
-
-            self._d = d
-
-        def schedule(self, handler_ref: ChannelPipelineHandlerRef, msg: ta.Any) -> ChannelPipelineScheduling.Handle:
-            raise NotImplementedError
-
-        def cancel_all(self, handler_ref: ta.Optional[ChannelPipelineHandlerRef] = None) -> None:
-            raise NotImplementedError
 
     ##
     # shutdown
