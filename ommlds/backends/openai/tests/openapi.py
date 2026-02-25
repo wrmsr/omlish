@@ -3,7 +3,7 @@ import os.path
 from omdev.cache import data as dcache
 from omlish import marshal as msh
 from omlish.formats import json
-from omlish.formats import yaml
+from omlish.formats.yaml import all as yaml
 from omlish.specs import openapi
 
 

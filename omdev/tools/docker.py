@@ -25,7 +25,7 @@ from omlish.concurrent import all as conc
 from omlish.docker import all as dck
 from omlish.docker.ns1 import build_docker_ns1_run_cmd
 from omlish.formats import json
-from omlish.formats import yaml
+from omlish.formats.yaml import pyyaml
 from omlish.logs import all as logs
 
 from ..cli import CliModule
@@ -120,7 +120,7 @@ class Cli(ap.Cli):
 
         dct: dict[str, list[PortEntry]] = {}
 
-        with lang.disposing(yaml.WrappedLoaders.base(yml_src)) as loader:
+        with lang.disposing(pyyaml.WrappedLoaders.base(yml_src)) as loader:
             val = check.not_none(loader.get_single_data())
             root = check.isinstance(val.value, ta.Mapping)
 
@@ -221,7 +221,7 @@ class Cli(ap.Cli):
         with open(yml_file) as f:
             yml_src = f.read()
 
-        cfg_dct = yaml.safe_load(yml_src)
+        cfg_dct = pyyaml.safe_load(yml_src)
 
         print_lock = threading.Lock()
 

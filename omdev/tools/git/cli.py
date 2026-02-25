@@ -34,7 +34,7 @@ from omlish import lang
 from omlish.argparse import all as ap
 from omlish.configs.processing.merging import merge_configs
 from omlish.formats import json
-from omlish.formats import yaml
+from omlish.formats.yaml import all as yaml
 from omlish.logs import all as logs
 from omlish.subprocesses.sync import subprocesses
 

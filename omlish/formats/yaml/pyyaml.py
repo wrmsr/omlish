@@ -1,21 +1,10 @@
-"""
-TODO:
- - !! shared 'object format' node hierarchy
-  - fuse yaml and hocon - marks, *COMMENTS*, etc
- - goal: perfect rewrites (comments, whitespace)
-  - or at least comments
- - rename 'objects'? codecs/serde interplay still unresolved
- - look ma, a monad
-"""
 import datetime
 import types
 import typing as ta
 
-from .. import check
-from .. import dataclasses as dc
-from .. import lang
-from .codecs import make_object_lazy_loaded_codec
-from .codecs import make_str_object_codec
+from ... import check
+from ... import dataclasses as dc
+from ... import lang
 
 
 if ta.TYPE_CHECKING:
@@ -246,19 +235,3 @@ def full_load_all(stream):  # noqa  # noqa
 
 def dump(obj, **kwargs):
     return yaml.dump(obj, **kwargs)
-
-
-##
-
-
-YAML_CODEC = make_str_object_codec('yaml', dump, safe_load, aliases=['yml'])
-
-# @omlish-manifest
-_YAML_LAZY_CODEC = make_object_lazy_loaded_codec(__name__, 'YAML_CODEC', YAML_CODEC)
-
-#
-
-YAML_UNSAFE_CODEC = make_str_object_codec('yaml-unsafe', dump, full_load)
-
-# @omlish-manifest
-_YAML_UNSAFE_LAZY_CODEC = make_object_lazy_loaded_codec(__name__, 'YAML_UNSAFE_CODEC', YAML_UNSAFE_CODEC)

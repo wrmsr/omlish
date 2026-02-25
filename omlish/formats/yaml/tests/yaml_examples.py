@@ -1,5 +1,5 @@
 # flake8: noqa
-from ... import lang
+from .... import lang
 
 
 class Examples(lang.Namespace):

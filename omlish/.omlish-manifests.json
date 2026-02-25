@@ -178,13 +178,13 @@
     }
   },
   {
-    "module": ".formats.yaml",
+    "module": ".formats.yaml.codecs",
     "attr": "_YAML_LAZY_CODEC",
-    "file": "omlish/formats/yaml.py",
-    "line": 256,
+    "file": "omlish/formats/yaml/codecs.py",
+    "line": 17,
     "value": {
       "!.codecs.base.LazyLoadedCodec": {
-        "module": "omlish.formats.yaml",
+        "module": "omlish.formats.yaml.codecs",
         "attr": "YAML_CODEC",
         "name": "yaml",
         "aliases": [
@@ -194,13 +194,13 @@
     }
   },
   {
-    "module": ".formats.yaml",
+    "module": ".formats.yaml.codecs",
     "attr": "_YAML_UNSAFE_LAZY_CODEC",
-    "file": "omlish/formats/yaml.py",
-    "line": 263,
+    "file": "omlish/formats/yaml/codecs.py",
+    "line": 24,
     "value": {
       "!.codecs.base.LazyLoadedCodec": {
-        "module": "omlish.formats.yaml",
+        "module": "omlish.formats.yaml.codecs",
         "attr": "YAML_UNSAFE_CODEC",
         "name": "yaml-unsafe",
         "aliases": null

@@ -1,4 +1,4 @@
-from .. import yaml as yaml_
+from .. import pyyaml
 from .yaml_examples import Examples
 
 
@@ -11,7 +11,7 @@ def test_yaml():
         print()
 
         try:
-            loader = yaml_.WrappedLoaders.base(buf)
+            loader = pyyaml.WrappedLoaders.base(buf)
             vals = []
             try:
                 while loader.check_data():
@@ -24,7 +24,7 @@ def test_yaml():
             # raise
         else:
             print(vals)
-            print([yaml_.unwrap(v) for v in vals])
+            print([pyyaml.unwrap(v) for v in vals])
 
         print()
         print()

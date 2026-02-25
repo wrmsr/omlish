@@ -1,3 +1,3 @@
-- actually test
-- promote to prod
 - pull in yaml test suite
+- fix stupid Reader thing
+- promote to prod
