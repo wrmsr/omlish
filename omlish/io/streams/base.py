@@ -12,6 +12,4 @@ from .types import ByteStreamBufferLike
 class BaseByteStreamBufferLike(ByteStreamBufferLike, Abstract):
     def _norm_slice(self, start: int, end: ta.Optional[int]) -> ta.Tuple[int, int]:
         s, e, _ = slice(start, end, 1).indices(len(self))
-        if e < s:
-            e = s
-        return s, e
+        return (s, s) if e < s else (s, e)

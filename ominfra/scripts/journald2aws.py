@@ -88,7 +88,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../../omlish/logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='../../../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='../logs.py', sha1='5a4fad522508bdc1b790f1d5234a87f319c9da2d'),
-            dict(path='../../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
+            dict(path='../../../../omlish/io/streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='../../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
             dict(path='../../../../omlish/lite/configs.py', sha1='c8602e0e197ef1133e7e8e248935ac745bfd46cb'),
             dict(path='../../../../omlish/logs/contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
@@ -5692,9 +5692,7 @@ class AwsLogMessageBuilder:
 class BaseByteStreamBufferLike(ByteStreamBufferLike, Abstract):
     def _norm_slice(self, start: int, end: ta.Optional[int]) -> ta.Tuple[int, int]:
         s, e, _ = slice(start, end, 1).indices(len(self))
-        if e < s:
-            e = s
-        return s, e
+        return (s, s) if e < s else (s, e)
 
 
 ########################################

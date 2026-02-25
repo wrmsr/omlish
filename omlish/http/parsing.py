@@ -273,11 +273,25 @@ class PreparedParsedHttpHeaders:
 
     authorization: ta.Optional[AuthorizationValue] = None
 
+    def __repr__(self) -> str:
+        return ''.join([
+            f'{self.__class__.__name__}(',
+            ', '.join([
+                f'{f.name}={v!r}'
+                for f in dc.fields(self)
+                if (v := getattr(self, f.name) is not None)
+            ]),
+            ')',
+        ])
+
 
 @dc.dataclass(frozen=True)
 class RawParsedHttpHeader:
     name: bytes
     value: bytes
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self.name!r}, {self.value!r})'
 
 
 @dc.dataclass()

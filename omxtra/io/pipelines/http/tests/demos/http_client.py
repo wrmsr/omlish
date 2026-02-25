@@ -165,9 +165,9 @@ def main() -> None:
 
 
 if __name__ == '__main__':
-    try:
-        __import__('omlish.check')
-    except ImportError:
-        pass
+    # try:
+    #     __import__('omlish.check')
+    # except ImportError:
+    #     pass
 
     main()

@@ -27,7 +27,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='types.py', sha1='ab72e5d4a1e648ef79577be7d8c45853b1c5917d'),
-            dict(path='base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
+            dict(path='base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='reading.py', sha1='7631635c46ab4b40bcaeb7c506cf15cb2d529a40'),
             dict(path='utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -555,9 +555,7 @@ class MutableByteStreamBuffer(ByteStreamBuffer, Abstract):
 class BaseByteStreamBufferLike(ByteStreamBufferLike, Abstract):
     def _norm_slice(self, start: int, end: ta.Optional[int]) -> ta.Tuple[int, int]:
         s, e, _ = slice(start, end, 1).indices(len(self))
-        if e < s:
-            e = s
-        return s, e
+        return (s, s) if e < s else (s, e)
 
 
 ########################################

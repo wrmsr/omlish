@@ -25,6 +25,9 @@ class HttpVersion:
         self._str = f'HTTP/{major}.{minor}'
         self._short_str = f'{major}.{minor}'
 
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self.major}, {self.minor})'
+
     def __hash__(self) -> int:
         return self._hash
 

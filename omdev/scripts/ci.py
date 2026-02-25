@@ -95,7 +95,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/asyncs/asyncio/utils.py', sha1='34691d4d0e5bab68f14e193a6200df040cfd0136'),
             dict(path='../../omlish/docker/ports.py', sha1='a3202c69b85bc4f1034479df3400fddc86130e5c'),
             dict(path='../../omlish/http/urllib.py', sha1='25431c5bdc7dd5cbecfcb8c0bdffaabf8c1691b9'),
-            dict(path='../../omlish/http/versions.py', sha1='dbd6ee1941150b1143096eac2b02eb29c0396d30'),
+            dict(path='../../omlish/http/versions.py', sha1='5b1659b81eb197c6880fbe78684a1348595ec804'),
             dict(path='../../omlish/io/pushback.py', sha1='783fe8a40fa9f2febf035f4553c53c73b9bd58e1'),
             dict(path='../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../omlish/lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
@@ -125,7 +125,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../oci/pack/unpacking.py', sha1='f43dee9a2eee79cbbb90f0721ed234a2bc35daa7'),
             dict(path='../../omlish/argparse/cli.py', sha1='f4dc3cd353d14386b5da0306768700e396afd2b3'),
             dict(path='../../omlish/http/coro/io.py', sha1='6ccbbf6a1a6a702ce0f1dc24b4057e8264ef4641'),
-            dict(path='../../omlish/http/parsing.py', sha1='58579597eaf70a8ee409c2814481b3002a6acea1'),
+            dict(path='../../omlish/http/parsing.py', sha1='2ee187993274e697332c7df7b46a98382f4cee2a'),
             dict(path='../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
             dict(path='../../omlish/lite/maybes.py', sha1='04d2fcbea17028a5e6b8e7a7fb742375495ed233'),
             dict(path='../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
@@ -621,6 +621,9 @@ class HttpVersion:
 
         self._str = f'HTTP/{major}.{minor}'
         self._short_str = f'{major}.{minor}'
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self.major}, {self.minor})'
 
     def __hash__(self) -> int:
         return self._hash
@@ -4417,11 +4420,25 @@ class PreparedParsedHttpHeaders:
 
     authorization: ta.Optional[AuthorizationValue] = None
 
+    def __repr__(self) -> str:
+        return ''.join([
+            f'{self.__class__.__name__}(',
+            ', '.join([
+                f'{f.name}={v!r}'
+                for f in dc.fields(self)
+                if (v := getattr(self, f.name) is not None)
+            ]),
+            ')',
+        ])
+
 
 @dc.dataclass(frozen=True)
 class RawParsedHttpHeader:
     name: bytes
     value: bytes
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self.name!r}, {self.value!r})'
 
 
 @dc.dataclass()

@@ -62,4 +62,9 @@ def demo_sync_http_sse() -> ta.List[ta.Any]:
 
 
 if __name__ == '__main__':
-    print(demo_sync_http_sse())
+    # try:
+    #     __import__('omlish.check')
+    # except ImportError:
+    #     pass
+
+    print('\n'.join(map(repr, demo_sync_http_sse())))
