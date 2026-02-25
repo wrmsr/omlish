@@ -350,26 +350,43 @@ async def ping_app(scope, receive, send):
     method = scope.get('method')
     path = scope.get('path')
 
-    if method == 'GET' and path == '/ping':
-        body = b'pong'
-        status = 200
-    else:
+    if (method, path) != ('GET', '/ping'):
         body = b'not found'
-        status = 404
+
+        await send({
+            'type': 'http.response.start',
+            'status': 404,
+            'headers': [
+                (b'content-type', b'text/plain'),
+                (b'content-length', str(len(body)).encode('ascii')),
+            ],
+        })
+
+        await send({
+            'type': 'http.response.body',
+            'body': body,
+        })
+
+        return
+
+    body = b'pong'
 
     await send({
         'type': 'http.response.start',
-        'status': status,
+        'status': 200,
         'headers': [
             (b'content-type', b'text/plain'),
             (b'content-length', str(len(body)).encode('ascii')),
         ],
     })
 
-    await send({
-        'type': 'http.response.body',
-        'body': body,
-    })
+    for i in range(len(body)):
+        await send({
+            'type': 'http.response.body',
+            'body': bytes([body[i]]),
+            'more_body': i < len(body) - 1,
+        })
+        await asyncio.sleep(1)
 
 
 ##
@@ -378,8 +395,8 @@ async def ping_app(scope, receive, send):
 def _main() -> None:
     ping_spec = AsgiSpec(ping_app)
 
-    # serve_asgi_uvicorn(ping_spec)
-    serve_asgi_pipeline(ping_spec)
+    serve_asgi_uvicorn(ping_spec)
+    # serve_asgi_pipeline(ping_spec)
 
 
 if __name__ == '__main__':
