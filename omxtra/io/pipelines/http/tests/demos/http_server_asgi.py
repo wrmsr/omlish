@@ -1,5 +1,6 @@
 import asyncio
 import dataclasses as dc
+import functools
 import types
 import typing as ta
 
@@ -82,6 +83,44 @@ class _AsgiFuture(ta.Generic[T]):
 #
 
 
+class _AsgiDriver:
+    def __init__(self, fn: ta.Any) -> None:
+        super().__init__()
+
+        self.fn = fn
+
+    o: ta.Any
+    a: ta.Any
+    g: ta.Any
+
+    def start(self) -> None:
+        self.o = self.fn(self._receive, self._send)
+        self.a = self.o.__await__()
+        self.g = iter(self.a)
+
+    def close(self) -> None:
+        o = getattr(self, 'o', None)
+        a = getattr(self, 'a', None)
+        g = getattr(self, 'g', None)
+        if g is not None and g is not a:
+            g.close()
+        if a is not None:
+            a.close()
+        if o is not None:
+            o.close()
+
+    @types.coroutine
+    def _receive(self) -> ta.Any:
+        return _AsgiFuture(_ReceiveAsgiOp())
+
+    @types.coroutine
+    def _send(self, msg: ta.Any) -> ta.Any:
+        return _AsgiFuture(_SendAsgiOp(msg))
+
+
+#
+
+
 class AsgiHandler(ChannelPipelineHandler):
     def __init__(self, app: ta.Any) -> None:
         super().__init__()
@@ -130,31 +169,15 @@ class AsgiHandler(ChannelPipelineHandler):
 
         #
 
-        o = self._app(scope, receive, send)
+        drv = _AsgiDriver(functools.partial(self._app, scope))
+        drv.start()
+
         try:
-            a = o.__await__()
-            try:
-                g = iter(a)
-                try:
-                    try:
-                        f = g.send(None)  # noqa
-                    except StopIteration as ex:
-                        v = ex.value  # noqa
+            f = drv.g.send(None)  # noqa
+        except StopIteration as si:
+            v = si.value  # noqa
 
-                    raise NotImplementedError
-
-                finally:
-                    # if g is not a:
-                    #     self.ctx.run(g.close)
-                    pass
-
-            finally:
-                # self.ctx.run(a.close)
-                pass
-
-        finally:
-            # o.close()
-            pass
+        drv.close()
 
         raise NotImplementedError
 
