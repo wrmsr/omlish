@@ -1,4 +1,3 @@
 - actually test
 - promote to prod
-- final bit of actually constructing objects from asts - fully diverge from go-yaml here
-- pull in yaml test suite (needs decoder)
+- pull in yaml test suite

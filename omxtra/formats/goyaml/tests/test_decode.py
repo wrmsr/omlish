@@ -1,8 +1,6 @@
 import json
-import typing as ta
 
-from ..decode import ImmediateBytesReader
-from ..decode import YamlDecoder
+from ..decode import yaml_decode
 
 
 def test_decode():
@@ -13,8 +11,7 @@ a: 1
 b: c
 """
 
-    d = YamlDecoder(ImmediateBytesReader(s.encode()))
-    v = ta.cast(ta.Any, d.decode())
+    v = yaml_decode(s)
     print(json.dumps(v, indent=2))
 
 
@@ -59,8 +56,7 @@ services:
     url: https://api.example.com/billing
 """
 
-    d = YamlDecoder(ImmediateBytesReader(s.encode()))
-    v = ta.cast(ta.Any, d.decode())
+    v = yaml_decode(s)
     print(json.dumps(v, indent=2))
 
 
@@ -70,6 +66,5 @@ a: &a
   self: *a
 """
 
-    d = YamlDecoder(ImmediateBytesReader(s.encode()))
-    v = ta.cast(ta.Any, d.decode())
+    v = yaml_decode(s)
     print(v)

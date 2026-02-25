@@ -1,5 +1,23 @@
 # ruff: noqa: UP006 UP007 UP043 UP045
 # @omlish-lite
+##
+# MIT License
+#
+# Copyright (c) 2019 Masaaki Goshima
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+# documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+# rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+# persons to whom the Software is furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+# Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+# WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+##
 import base64
 import dataclasses as dc
 import datetime
@@ -53,58 +71,56 @@ from .tokens import YamlToken  # noqa
 ##
 
 
-class Context:
+class YamlDecodeContext:
     def __init__(self, values: ta.Optional[ta.Dict[ta.Any, ta.Any]] = None) -> None:
         super().__init__()
 
         self._values: ta.Dict[ta.Any, ta.Any] = values if values is not None else {}
 
-    def with_value(self, key: ta.Any, value: ta.Any) -> 'Context':
-        return Context({**self._values, key: value})
+    def with_value(self, key: ta.Any, value: ta.Any) -> 'YamlDecodeContext':
+        return YamlDecodeContext({**self._values, key: value})
 
     def value(self, key: ta.Any) -> ta.Any:
         return self._values.get(key)
 
+    #
 
-class CTX_MERGE_KEY:  # noqa
-    pass
+    class _MergeKey:  # noqa
+        pass
 
+    def with_merge(self) -> 'YamlDecodeContext':
+        return self.with_value(self._MergeKey, True)
 
-class CTX_ANCHOR_KEY:  # noqa
-    pass
+    def is_merge(self) -> bool:
+        if not isinstance(v := self.value(self._MergeKey), bool):
+            return False
 
+        return v
 
-def with_merge(ctx: Context) -> Context:
-    return ctx.with_value(CTX_MERGE_KEY, True)
+    #
 
+    class _AnchorKey:  # noqa
+        pass
 
-def is_merge(ctx: Context) -> bool:
-    if not isinstance(v := ctx.value(CTX_MERGE_KEY), bool):
-        return False
+    def with_anchor(self, name: str) -> 'YamlDecodeContext':
+        anchor_map = self.get_anchor_map()
+        new_map: ta.Dict[str, None] = {}
+        new_map.update(anchor_map)
+        new_map[name] = None
+        return self.with_value(self._AnchorKey, new_map)
 
-    return v
+    def get_anchor_map(self) -> ta.Dict[str, None]:
+        if not isinstance(v := self.value(self._AnchorKey), dict):
+            return {}
 
-
-def with_anchor(ctx: Context, name: str) -> Context:
-    anchor_map = get_anchor_map(ctx)
-    new_map: ta.Dict[str, None] = {}
-    new_map.update(anchor_map)
-    new_map[name] = None
-    return ctx.with_value(CTX_ANCHOR_KEY, new_map)
-
-
-def get_anchor_map(ctx: Context) -> ta.Dict[str, None]:
-    if not isinstance(v := ctx.value(CTX_ANCHOR_KEY), dict):
-        return {}
-
-    return v
+        return v
 
 
 ##
 
 
 # CommentPosition type of the position for comment.
-class CommentPosition(enum.IntEnum):
+class YamlCommentPosition(enum.IntEnum):
     HEAD = 0
     LINE = 1
     FOOT = 2
@@ -112,37 +128,37 @@ class CommentPosition(enum.IntEnum):
 
 # Comment raw data for comment.
 @dc.dataclass()
-class Comment:
+class YamlComment:
     texts: ta.List[str]
-    position: CommentPosition
+    position: YamlCommentPosition
 
 
 # LineComment create a one-line comment for CommentMap.
-def line_comment(text: str) -> Comment:
-    return Comment(
+def yaml_line_comment(text: str) -> YamlComment:
+    return YamlComment(
         texts=[text],
-        position=CommentPosition.LINE,
+        position=YamlCommentPosition.LINE,
     )
 
 
 # HeadComment create a multiline comment for CommentMap.
-def head_comment(*texts: str) -> Comment:
-    return Comment(
+def yaml_head_comment(*texts: str) -> YamlComment:
+    return YamlComment(
         texts=list(texts),
-        position=CommentPosition.HEAD,
+        position=YamlCommentPosition.HEAD,
     )
 
 
 # FootComment create a multiline comment for CommentMap.
-def foot_comment(*texts: str) -> Comment:
-    return Comment(
+def yaml_foot_comment(*texts: str) -> YamlComment:
+    return YamlComment(
         texts=list(texts),
-        position=CommentPosition.FOOT,
+        position=YamlCommentPosition.FOOT,
     )
 
 
 # CommentMap map of the position of the comment and the comment information.
-class CommentMap(ta.Dict[str, ta.List[Comment]]):
+class YamlCommentMap(ta.Dict[str, ta.List[YamlComment]]):
     pass
 
 
@@ -151,14 +167,14 @@ class CommentMap(ta.Dict[str, ta.List[Comment]]):
 
 # MapItem is an item in a MapSlice.
 @dc.dataclass()
-class MapItem:
+class YamlMapItem:
     key: ta.Any
     value: ta.Any
 
 
 # MapSlice encodes and decodes as a YAML map.
 # The order of keys is preserved when encoding and decoding.
-class MapSlice(ta.List[MapItem]):
+class YamlMapSlice(ta.List[YamlMapItem]):
     # ToMap convert to map[interface{}]interface{}.
     def to_map(self) -> ta.Dict[ta.Any, ta.Any]:
         return {item.key: item.value for item in self}
@@ -167,11 +183,11 @@ class MapSlice(ta.List[MapItem]):
 ##
 
 
-class Reader(ta.Protocol):
+class YamlBytesReader(ta.Protocol):
     def read(self) -> bytes: ...
 
 
-class ImmediateBytesReader:
+class ImmediateYamlBytesReader:
     def __init__(self, bs: bytes) -> None:
         self._bs = bs
 
@@ -184,21 +200,8 @@ class ImmediateBytesReader:
 ##
 
 
-class DecodeOption(ta.Protocol):
+class YamlDecodeOption(ta.Protocol):
     def __call__(self, d: 'YamlDecoder') -> ta.Optional[YamlError]: ...
-
-
-# StructValidator need to implement Struct method only
-# ( see https://pkg.go.dev/github.com/go-playground/validator/v10#Validate.Struct )
-class StructValidator(ta.Protocol):
-    def struct(self, v: ta.Any) -> ta.Optional[YamlError]: ...
-
-
-# FieldError need to implement StructField method only
-# ( see https://pkg.go.dev/github.com/go-playground/validator/v10#FieldError )
-class FieldError:
-    def struct_field(self) -> str:
-        raise NotImplementedError
 
 
 ##
@@ -211,7 +214,7 @@ class YamlDecodeErrors:
     EXCEEDED_MAX_DEPTH = yaml_error('exceeded max depth')
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass()
 class DuplicateKeyYamlError(YamlError):
     msg: str
     token: YamlToken
@@ -220,48 +223,42 @@ class DuplicateKeyYamlError(YamlError):
     def message(self) -> str:
         return self.msg
 
+
 ##
 
 
 # Decoder reads and decodes YAML values from an input stream.
 class YamlDecoder:
-    reader: Reader
-    reference_readers: ta.List[Reader]
+    reader: YamlBytesReader
+    reference_readers: ta.List[YamlBytesReader]
     anchor_node_map: ta.Dict[str, ta.Optional[YamlNode]]
     anchor_value_map: ta.Dict[str, ta.Any]
-    custom_unmarshaler_map: ta.Dict[type, ta.Callable[[Context, ta.Any, bytes], ta.Optional[YamlError]]]
-    comment_maps: ta.List[CommentMap]
-    to_comment_map: ta.Optional[CommentMap] = None
-    opts: ta.List[DecodeOption]
+    comment_maps: ta.List[YamlCommentMap]
+    to_comment_map: ta.Optional[YamlCommentMap] = None
+    opts: ta.List[YamlDecodeOption]
     reference_files: ta.List[str]
     reference_dirs: ta.List[str]
     is_recursive_dir: bool = False
     is_resolved_reference: bool = False
-    validator: ta.Optional[StructValidator] = None
-    disallow_unknown_field: bool = False
-    allowed_field_prefixes: ta.List[str]
     allow_duplicate_map_key: bool = False
     use_ordered_map: bool = False
-    use_json_unmarshaler: bool = False
     parsed_file: ta.Optional[YamlFile] = None
     stream_index: int = 0
     decode_depth: int = 0
 
     # NewDecoder returns a new decoder that reads from r.
-    def __init__(self, r: Reader, *opts: DecodeOption) -> None:
+    def __init__(self, r: YamlBytesReader, *opts: YamlDecodeOption) -> None:
         super().__init__()
 
         self.reader = r
         self.anchor_node_map = {}
         self.anchor_value_map = {}
-        self.custom_unmarshaler_map = {}
         self.opts = list(opts)
         self.reference_readers = []
         self.reference_files = []
         self.reference_dirs = []
         self.is_recursive_dir = False
         self.is_resolved_reference = False
-        self.disallow_unknown_field = False
         self.allow_duplicate_map_key = False
         self.use_ordered_map = False
 
@@ -291,7 +288,7 @@ class YamlDecoder:
                 return 0
         return 0
 
-    def map_key_node_to_string(self, ctx: Context, node: MapKeyYamlNode) -> YamlErrorOr[str]:
+    def map_key_node_to_string(self, ctx: YamlDecodeContext, node: MapKeyYamlNode) -> YamlErrorOr[str]:
         key = self.node_to_value(ctx, node)
         if isinstance(key, YamlError):
             return key
@@ -301,7 +298,12 @@ class YamlDecoder:
             return key
         return str(key)
 
-    def set_to_map_value(self, ctx: Context, node: YamlNode, m: ta.Dict[str, ta.Any]) -> ta.Optional[YamlError]:
+    def set_to_map_value(
+            self,
+            ctx: YamlDecodeContext,
+            node: YamlNode,
+            m: ta.Dict[str, ta.Any],
+    ) -> ta.Optional[YamlError]:
         self.step_in()
         try:
             if self.is_exceeded_max_depth():
@@ -344,7 +346,12 @@ class YamlDecoder:
         finally:
             self.step_out()
 
-    def set_to_ordered_map_value(self, ctx: Context, node: YamlNode, m: MapSlice) -> ta.Optional[YamlError]:
+    def set_to_ordered_map_value(
+            self,
+            ctx: YamlDecodeContext,
+            node: YamlNode,
+            m: YamlMapSlice,
+    ) -> ta.Optional[YamlError]:
         self.step_in()
         try:
             if self.is_exceeded_max_depth():
@@ -371,7 +378,7 @@ class YamlDecoder:
                     if isinstance(value, YamlError):
                         return value
 
-                    m.append(MapItem(key, value))
+                    m.append(YamlMapItem(key, value))
 
             elif isinstance(n, MappingYamlNode):
                 for value2 in n.values:
@@ -423,9 +430,9 @@ class YamlDecoder:
             elif isinstance(n, MappingValueYamlNode):
                 comment_path = n.key.get_path()
 
-            self.add_comment_to_map(comment_path, head_comment(*texts))
+            self.add_comment_to_map(comment_path, yaml_head_comment(*texts))
         else:
-            self.add_comment_to_map(comment_path, line_comment(texts[0]))
+            self.add_comment_to_map(comment_path, yaml_line_comment(texts[0]))
 
     def add_sequence_node_comment_to_map(self, node: SequenceYamlNode) -> None:
         if len(node.value_head_comments) != 0:
@@ -438,7 +445,7 @@ class YamlDecoder:
                     texts.append(check.not_none(comment.token).value)
 
                 if len(texts) != 0:
-                    self.add_comment_to_map(check.not_none(node.values[idx]).get_path(), head_comment(*texts))
+                    self.add_comment_to_map(check.not_none(node.values[idx]).get_path(), yaml_head_comment(*texts))
 
         first_elem_head_comment = node.get_comment()
         if first_elem_head_comment is not None:
@@ -448,7 +455,7 @@ class YamlDecoder:
 
             if len(texts) != 0:
                 if len(node.values) != 0:
-                    self.add_comment_to_map(check.not_none(node.values[0]).get_path(), head_comment(*texts))
+                    self.add_comment_to_map(check.not_none(node.values[0]).get_path(), yaml_head_comment(*texts))
 
     def add_foot_comment_to_map(self, node: YamlNode) -> None:
         fc: ta.Optional[CommentGroupYamlNode] = None
@@ -477,9 +484,9 @@ class YamlDecoder:
             texts.append(check.not_none(comment.token).value)
 
         if len(texts) != 0:
-            self.add_comment_to_map(foot_comment_path, foot_comment(*texts))
+            self.add_comment_to_map(foot_comment_path, yaml_foot_comment(*texts))
 
-    def add_comment_to_map(self, path: str, comment: Comment) -> None:
+    def add_comment_to_map(self, path: str, comment: YamlComment) -> None:
         tcm = check.not_none(self.to_comment_map)[path]
         for c in tcm:
             if c.position == comment.position:
@@ -489,7 +496,7 @@ class YamlDecoder:
         tcm.append(comment)
         tcm.sort(key=lambda c: c.position)
 
-    def node_to_value(self, ctx: Context, node: YamlNode) -> YamlErrorOr[ta.Any]:
+    def node_to_value(self, ctx: YamlDecodeContext, node: YamlNode) -> YamlErrorOr[ta.Any]:
         self.step_in()
         try:
             if self.is_exceeded_max_depth():
@@ -601,7 +608,7 @@ class YamlDecoder:
                 # To handle the case where alias is processed recursively, the result of alias can be set to nil in
                 # advance.
                 self.anchor_node_map[anchor_name] = None
-                anchor_value = self.node_to_value(with_anchor(ctx, anchor_name), check.not_none(n.value))
+                anchor_value = self.node_to_value(ctx.with_anchor(anchor_name), check.not_none(n.value))
                 if isinstance(anchor_value, YamlError):
                     del self.anchor_node_map[anchor_name]
                     return anchor_value
@@ -611,7 +618,7 @@ class YamlDecoder:
 
             elif isinstance(n, AliasYamlNode):
                 text = check.not_none(n.value).string()
-                if text in get_anchor_map(ctx):
+                if text in ctx.get_anchor_map():
                     # self recursion.
                     return None
                 try:
@@ -644,7 +651,7 @@ class YamlDecoder:
                         return value
                     it = value.map_range()
                     if self.use_ordered_map:
-                        m = MapSlice()
+                        m = YamlMapSlice()
                         while it.next():
                             if (err := self.set_to_ordered_map_value(ctx, it.key_value(), m)) is not None:
                                 return err
@@ -663,7 +670,7 @@ class YamlDecoder:
                     v = self.node_to_value(ctx, n.value)
                     if isinstance(v, YamlError):
                         return v
-                    return MapSlice([MapItem(key, v)])
+                    return YamlMapSlice([YamlMapItem(key, v)])
 
                 v = self.node_to_value(ctx, n.value)
                 if isinstance(v, YamlError):
@@ -673,7 +680,7 @@ class YamlDecoder:
 
             elif isinstance(n, MappingYamlNode):
                 if self.use_ordered_map:
-                    m3 = MapSlice()
+                    m3 = YamlMapSlice()
                     for value2 in n.values:
                         if (err := self.set_to_ordered_map_value(ctx, value2, m3)) is not None:
                             return err
@@ -699,7 +706,7 @@ class YamlDecoder:
         finally:
             self.step_out()
 
-    def cast_to_time(self, ctx: Context, src: YamlNode) -> YamlErrorOr[datetime.datetime]:
+    def cast_to_time(self, ctx: YamlDecodeContext, src: YamlNode) -> YamlErrorOr[datetime.datetime]:
         raise NotImplementedError
 
     def get_map_node(self, node: YamlNode, is_merge: bool) -> YamlErrorOr[MapYamlNode]:
@@ -771,7 +778,7 @@ class YamlDecoder:
         finally:
             self.step_out()
 
-    def decode_value(self, ctx: Context, src: YamlNode) -> YamlErrorOr[ta.Any]:
+    def decode_value(self, ctx: YamlDecodeContext, src: YamlNode) -> YamlErrorOr[ta.Any]:
         self.step_in()
         try:
             if self.is_exceeded_max_depth():
@@ -780,7 +787,7 @@ class YamlDecoder:
             if src.type() == YamlNodeType.ANCHOR:
                 anchor = check.isinstance(src, AnchorYamlNode)
                 anchor_name = check.not_none(check.not_none(anchor.name).get_token()).value
-                if isinstance(av := self.decode_value(with_anchor(ctx, anchor_name), check.not_none(anchor.value)), YamlError):  # noqa
+                if isinstance(av := self.decode_value(ctx.with_anchor(anchor_name), check.not_none(anchor.value)), YamlError):  # noqa
                     return av
                 self.anchor_value_map[anchor_name] = av
                 return None
@@ -796,7 +803,7 @@ class YamlDecoder:
 
     def key_to_node_map(
         self,
-        ctx: Context,
+        ctx: YamlDecodeContext,
         node: YamlNode,
         ignore_merge_key: bool,
         get_key_or_value_node: ta.Callable[[MapYamlNodeIter], YamlNode],
@@ -840,7 +847,7 @@ class YamlDecoder:
 
     def key_to_key_node_map(
         self,
-        ctx: Context,
+        ctx: YamlDecodeContext,
         node: YamlNode,
         ignore_merge_key: bool,
     ) -> YamlErrorOr[ta.Dict[str, YamlNode]]:
@@ -851,7 +858,7 @@ class YamlDecoder:
 
     def key_to_value_node_map(
         self,
-        ctx: Context,
+        ctx: YamlDecodeContext,
         node: YamlNode,
         ignore_merge_key: bool,
     ) -> YamlErrorOr[ta.Dict[str, YamlNode]]:
@@ -893,10 +900,10 @@ class YamlDecoder:
         key_map[k] = None
         return None
 
-    def file_to_reader(self, file: str) -> YamlErrorOr[Reader]:
+    def file_to_reader(self, file: str) -> YamlErrorOr[YamlBytesReader]:
         with open(file, 'rb') as f:
             bs = f.read()
-        return ImmediateBytesReader(bs)
+        return ImmediateYamlBytesReader(bs)
 
     def is_yaml_file(self, file: str) -> bool:
         ext = file.rsplit('.', maxsplit=1)[-1]
@@ -906,10 +913,10 @@ class YamlDecoder:
             return True
         return False
 
-    def readers_under_dir(self, d: str) -> YamlErrorOr[ta.List[Reader]]:
+    def readers_under_dir(self, d: str) -> YamlErrorOr[ta.List[YamlBytesReader]]:
         pattern = f'{d}/*'
         matches = glob.glob(pattern)
-        readers: ta.List[Reader] = []
+        readers: ta.List[YamlBytesReader] = []
         for match in matches:
             if not self.is_yaml_file(match):
                 continue
@@ -918,8 +925,8 @@ class YamlDecoder:
             readers.append(reader)
         return readers
 
-    def readers_under_dir_recursive(self, d: str) -> YamlErrorOr[ta.List[Reader]]:
-        readers: ta.List[Reader] = []
+    def readers_under_dir_recursive(self, d: str) -> YamlErrorOr[ta.List[YamlBytesReader]]:
+        readers: ta.List[YamlBytesReader] = []
         for dp, _, fns in os.walk(d):
             for fn in fns:
                 path = os.path.join(dp, fn)
@@ -932,7 +939,7 @@ class YamlDecoder:
                 readers.append(reader)
         return readers
 
-    def resolve_reference(self, ctx: Context) -> ta.Optional[YamlError]:
+    def resolve_reference(self, ctx: YamlDecodeContext) -> ta.Optional[YamlError]:
         for opt in self.opts:
             if (err := opt(self)) is not None:
                 return err
@@ -957,7 +964,7 @@ class YamlDecoder:
         self.is_resolved_reference = True
         return None
 
-    def parse(self, ctx: Context, bs: bytes) -> YamlErrorOr[YamlFile]:
+    def parse(self, ctx: YamlDecodeContext, bs: bytes) -> YamlErrorOr[YamlFile]:
         parse_mode: YamlParseMode = 0
         if self.to_comment_map is not None:
             parse_mode |= YAML_PARSE_COMMENTS
@@ -973,7 +980,7 @@ class YamlDecoder:
                 return v
             if v is not None or (doc.body is not None and doc.body.type() == YamlNodeType.NULL):
                 normalized_file.docs.append(doc)
-                cm = CommentMap()
+                cm = YamlCommentMap()
                 cm.update(self.to_comment_map or {})
                 self.comment_maps.append(cm)
             if self.to_comment_map is not None:
@@ -983,7 +990,7 @@ class YamlDecoder:
     def is_initialized(self) -> bool:
         return self.parsed_file is not None
 
-    def decode_init(self, ctx: Context) -> ta.Optional[YamlError]:
+    def decode_init(self, ctx: YamlDecodeContext) -> ta.Optional[YamlError]:
         if not self.is_resolved_reference:
             if (err := self.resolve_reference(ctx)) is not None:
                 return err
@@ -993,7 +1000,7 @@ class YamlDecoder:
         self.parsed_file = file
         return None
 
-    def _decode(self, ctx: Context) -> YamlErrorOr[ta.Any]:
+    def _decode(self, ctx: YamlDecodeContext) -> YamlErrorOr[ta.Any]:
         self.decode_depth = 0
         self.anchor_value_map = {}
         pf = check.not_none(self.parsed_file)
@@ -1019,11 +1026,11 @@ class YamlDecoder:
     # See the documentation for Unmarshal for details about the
     # conversion of YAML into a Go value.
     def decode(self) -> YamlErrorOr[ta.Any]:
-        return self.decode_context(Context())
+        return self.decode_context(YamlDecodeContext())
 
     # decode_context reads the next YAML-encoded value from its input
     # and stores it in the value pointed to by v with Context.
-    def decode_context(self, ctx: Context) -> YamlErrorOr[ta.Any]:
+    def decode_context(self, ctx: YamlDecodeContext) -> YamlErrorOr[ta.Any]:
         if self.is_initialized():
             if isinstance(v := self._decode(ctx), YamlError):
                 return v
@@ -1036,10 +1043,10 @@ class YamlDecoder:
 
     # decode_from_node decodes node into the value pointed to by v.
     def decode_from_node(self, node: YamlNode) -> YamlErrorOr[ta.Any]:
-        return self.decode_from_node_context(Context(), node)
+        return self.decode_from_node_context(YamlDecodeContext(), node)
 
     # decode_from_node_context decodes node into the value pointed to by v with Context.
-    def decode_from_node_context(self, ctx: Context, node: YamlNode) -> YamlErrorOr[ta.Any]:
+    def decode_from_node_context(self, ctx: YamlDecodeContext, node: YamlNode) -> YamlErrorOr[ta.Any]:
         if not self.is_initialized():
             if (err := self.decode_init(ctx)) is not None:
                 return err
@@ -1049,3 +1056,13 @@ class YamlDecoder:
         if isinstance(v := self.decode_value(ctx, node), YamlError):
             return v
         return v
+
+
+##
+
+
+def yaml_decode(s: str) -> ta.Any:
+    d = YamlDecoder(ImmediateYamlBytesReader(s.encode()))
+    if isinstance(v := d.decode(), YamlError):
+        raise v
+    return v

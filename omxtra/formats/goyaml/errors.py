@@ -15,7 +15,7 @@ YamlErrorOr = ta.Union['YamlError', T]  # ta.TypeAlias
 ##
 
 
-class YamlError(Abstract):
+class YamlError(Exception, Abstract):
     @property
     @abc.abstractmethod
     def message(self) -> str:
@@ -28,7 +28,7 @@ class EofYamlError(YamlError):
         return 'eof'
 
 
-@dc.dataclass(frozen=True)
+@dc.dataclass()
 class GenericYamlError(YamlError):
     obj: ta.Union[str, Exception]
 
