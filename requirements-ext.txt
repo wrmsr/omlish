@@ -60,7 +60,7 @@ blobfile==3.2.0
 ##
 # bins
 
-deno==2.7.0
+deno==2.7.1
 playwright==1.58.0
 ripgrep==15.0.0
 
