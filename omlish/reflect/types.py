@@ -19,7 +19,7 @@ import types
 import typing as ta
 
 from ..lite.abstract import Abstract
-from ..lite.dataclasses import dataclass_cache_hash
+from ..lite.dataclasses import install_dataclass_cache_hash
 
 
 _NoneType = types.NoneType  # type: ignore
@@ -49,7 +49,7 @@ if not isinstance(_Protocol, type) or not issubclass(_Protocol, _Generic):
 ##
 
 
-@dataclass_cache_hash()
+@install_dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class _Special:
     name: str
@@ -67,7 +67,7 @@ class _Special:
         )
 
 
-@dataclass_cache_hash()
+@install_dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class _LazySpecial:
     name: str
@@ -297,7 +297,7 @@ TYPES: tuple[type, ...] = (
 ##
 
 
-@dataclass_cache_hash()
+@install_dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class Union(TypeInfo):
     args: frozenset[Type]
@@ -321,7 +321,7 @@ class Union(TypeInfo):
 GenericLikeCls = ta.TypeVar('GenericLikeCls')
 
 
-@dataclass_cache_hash()
+@install_dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class GenericLike(TypeInfo, Abstract, ta.Generic[GenericLikeCls]):
     cls: GenericLikeCls
@@ -365,7 +365,7 @@ class Protocol(GenericLike[ta.Any]):
 #
 
 
-@dataclass_cache_hash()
+@install_dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class NewType(TypeInfo):
     obj: ta.Any
@@ -375,7 +375,7 @@ class NewType(TypeInfo):
 #
 
 
-@dataclass_cache_hash()
+@install_dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class Annotated(TypeInfo):
     ty: Type
@@ -387,7 +387,7 @@ class Annotated(TypeInfo):
 #
 
 
-@dataclass_cache_hash()
+@install_dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class Literal(TypeInfo):
     args: tuple[ta.Any, ...]

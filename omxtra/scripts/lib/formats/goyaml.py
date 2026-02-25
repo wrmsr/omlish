@@ -33,7 +33,7 @@ def __omlish_amalg__():  # noqa
         src_files=[
             dict(path='../../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../../omlish/lite/check.py', sha1='df0ed561b5782545e34e61dd3424f69f836a87c0'),
-            dict(path='../../../omlish/lite/dataclasses.py', sha1='73b7f5e5493c7ed12ff0ce36e37b596e5984cb08'),
+            dict(path='../../../omlish/lite/dataclasses.py', sha1='8b144d1d9474d96cf2a35f4db5cb224c30f538d6'),
             dict(path='errors.py', sha1='37ed49c07bc30bcedf4f3c059dbc994708ae2169'),
             dict(path='tokens.py', sha1='1db53ba357beede951df7fef0505ad99df269cf3'),
             dict(path='ast.py', sha1='ae655f4812f463f9f8ec246306fac009d5441014'),
@@ -807,7 +807,17 @@ def is_immediate_dataclass(cls: type) -> bool:
 ##
 
 
-def dataclass_cache_hash(
+def _install_dataclass_fn(cls: type, fn: ta.Any, fn_name: ta.Optional[str] = None) -> None:
+    if fn_name is None:
+        fn_name = fn.__name__
+    setattr(cls, fn_name, fn)
+    fn.__qualname__ = f'{cls.__qualname__}.{fn_name}'
+
+
+##
+
+
+def install_dataclass_cache_hash(
         *,
         cached_hash_attr: str = '__dataclass_hash__',
 ):
@@ -830,7 +840,7 @@ def dataclass_cache_hash(
                 object.__setattr__(self, cached_hash_attr, h := real_hash(self))  # type: ignore[call-arg]
             return h
 
-        cls.__hash__ = cached_hash  # type: ignore[method-assign]
+        _install_dataclass_fn(cls, cached_hash, '__hash__')
 
         return cls
 
@@ -854,10 +864,15 @@ def dataclass_maybe_post_init(sup: ta.Any) -> bool:
 ##
 
 
-def dataclass_repr_filtered(
+def dataclass_filtered_repr(
         obj: ta.Any,
-        fn: ta.Callable[[ta.Any, dc.Field, ta.Any], bool],
+        fn: ta.Union[ta.Callable[[ta.Any, dc.Field, ta.Any], bool], ta.Literal['omit_none', 'omit_falsey']],
 ) -> str:
+    if fn == 'omit_none':
+        fn = lambda o, f, v: v is not None  # noqa
+    elif fn == 'omit_falsey':
+        fn = lambda o, f, v: bool(v)
+
     return (
         f'{obj.__class__.__qualname__}(' +
         ', '.join([
@@ -870,11 +885,50 @@ def dataclass_repr_filtered(
 
 
 def dataclass_repr_omit_none(obj: ta.Any) -> str:
-    return dataclass_repr_filtered(obj, lambda o, f, v: v is not None)
+    return dataclass_filtered_repr(obj, 'omit_none')
 
 
 def dataclass_repr_omit_falsey(obj: ta.Any) -> str:
-    return dataclass_repr_filtered(obj, lambda o, f, v: bool(v))
+    return dataclass_filtered_repr(obj, 'omit_falsey')
+
+
+def install_dataclass_filtered_repr(
+        fn: ta.Union[ta.Callable[[ta.Any, dc.Field, ta.Any], bool], ta.Literal['omit_none', 'omit_falsey']],
+):
+    def inner(cls):
+        if not isinstance(cls, type) and dc.is_dataclass(cls):
+            raise TypeError(cls)
+
+        def filtered_repr(self) -> str:
+            return dataclass_filtered_repr(self, fn)
+
+        _install_dataclass_fn(cls, filtered_repr, '__repr__')
+
+        return cls
+
+    return inner
+
+
+#
+
+
+def dataclass_terse_repr(obj: ta.Any) -> str:
+    return f'{obj.__class__.__qualname__}({", ".join(repr(getattr(obj, f.name)) for f in dc.fields(obj))})'
+
+
+def install_dataclass_terse_repr():
+    def inner(cls):
+        if not isinstance(cls, type) and dc.is_dataclass(cls):
+            raise TypeError(cls)
+
+        def terse_repr(self) -> str:
+            return dataclass_terse_repr(self)
+
+        _install_dataclass_fn(cls, terse_repr, '__repr__')
+
+        return cls
+
+    return inner
 
 
 ##
@@ -910,7 +964,7 @@ def dataclass_descriptor_method(*bind_attrs: str, bind_owner: bool = False) -> t
 ##
 
 
-def dataclass_kw_only_init():
+def install_dataclass_kw_only_init():
     def inner(cls):
         if not isinstance(cls, type) and dc.is_dataclass(cls):
             raise TypeError(cls)
@@ -966,7 +1020,7 @@ def dataclass_kw_only_init():
 
         functools.update_wrapper(kw_only_init, real_init)
 
-        cls.__init__ = kw_only_init  # type: ignore[misc]
+        _install_dataclass_fn(cls, kw_only_init, '__init__')
 
         return cls
 

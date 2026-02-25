@@ -9,7 +9,7 @@ from omlish.http.parsing import ParsedHttpMessage
 from omlish.http.versions import HttpVersion
 from omlish.http.versions import HttpVersions
 from omlish.lite.abstract import Abstract
-from omlish.lite.dataclasses import dataclass_kw_only_init
+from omlish.lite.dataclasses import install_dataclass_kw_only_init
 
 from .objects import FullPipelineHttpMessage
 from .objects import PipelineHttpMessageAborted
@@ -26,7 +26,7 @@ class PipelineHttpResponseObject(PipelineHttpMessageObject, Abstract):
     pass
 
 
-@dataclass_kw_only_init()
+@install_dataclass_kw_only_init()
 @dc.dataclass(frozen=True)
 class PipelineHttpResponseHead(PipelineHttpMessageHead, PipelineHttpResponseObject):
     status: int

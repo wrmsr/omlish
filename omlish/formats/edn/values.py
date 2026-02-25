@@ -3,7 +3,7 @@ import typing as ta
 
 from ... import check
 from ... import lang
-from ...lite.dataclasses import dataclass_cache_hash
+from ...lite.dataclasses import install_dataclass_cache_hash
 
 
 ##
@@ -26,7 +26,7 @@ class Scalar(Value, lang.Abstract):
     pass
 
 
-@dataclass_cache_hash()
+@install_dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class Keyword(Scalar, lang.Final):
     s: str
@@ -39,7 +39,7 @@ class Keyword(Scalar, lang.Final):
             check.isinstance(self.s, str)
 
 
-@dataclass_cache_hash()
+@install_dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class Char(Scalar, lang.Final):
     c: str
@@ -53,7 +53,7 @@ class Char(Scalar, lang.Final):
             check.equal(len(self.c), 1)
 
 
-@dataclass_cache_hash()
+@install_dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class Symbol(Scalar, lang.Final):
     n: str
@@ -74,7 +74,7 @@ class Collection(Value, lang.Abstract):
     pass
 
 
-@dataclass_cache_hash()
+@install_dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class List(Collection, lang.Final):
     items: ta.Sequence[ta.Any]
@@ -91,7 +91,7 @@ class List(Collection, lang.Final):
         return cls(tuple(items), meta=meta)
 
 
-@dataclass_cache_hash()
+@install_dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class Vector(Collection, lang.Final):
     items: ta.Sequence[ta.Any]
@@ -108,7 +108,7 @@ class Vector(Collection, lang.Final):
         return cls(tuple(items), meta=meta)
 
 
-@dataclass_cache_hash()
+@install_dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class Set(Collection, lang.Final):
     items: ta.Sequence[ta.Any]
@@ -125,7 +125,7 @@ class Set(Collection, lang.Final):
         return cls(tuple(items), meta=meta)
 
 
-@dataclass_cache_hash()
+@install_dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class Map(Collection, lang.Final):
     items: ta.Sequence[tuple[ta.Any, ta.Any]]
@@ -148,7 +148,7 @@ class Map(Collection, lang.Final):
 #
 
 
-@dataclass_cache_hash()
+@install_dataclass_cache_hash()
 @dc.dataclass(frozen=True)
 class Tagged(Value, lang.Final):
     t: str

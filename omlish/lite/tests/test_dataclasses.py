@@ -1,12 +1,14 @@
-# ruff: noqa: PT009 PT027
+# ruff: noqa: PT009 PT027 UP045
 import dataclasses as dc
 import typing as ta
 import unittest
 
-from ..dataclasses import dataclass_cache_hash
 from ..dataclasses import dataclass_descriptor_method
-from ..dataclasses import dataclass_kw_only_init
 from ..dataclasses import dataclass_maybe_post_init
+from ..dataclasses import install_dataclass_cache_hash
+from ..dataclasses import install_dataclass_filtered_repr
+from ..dataclasses import install_dataclass_kw_only_init
+from ..dataclasses import install_dataclass_terse_repr
 from ..dataclasses import is_immediate_dataclass
 
 
@@ -61,7 +63,7 @@ class TestCacheHash(unittest.TestCase):
         self.assertEqual(f.thing.num_times_hashed, 2)
         self.assertEqual(h1, h2)
 
-        dataclass_cache_hash()(Foo)
+        install_dataclass_cache_hash()(Foo)
 
         f = Foo()
         h1 = hash(f)
@@ -125,7 +127,7 @@ class TestMaybePostInit(unittest.TestCase):
 
 class TestKwOnlyInit(unittest.TestCase):
     def test_kw_only_init(self):
-        @dataclass_kw_only_init()
+        @install_dataclass_kw_only_init()
         @dc.dataclass()
         class Foo:
             i: int
@@ -166,3 +168,29 @@ def test_dc_desc():
         fn = Foo(1, _fn)
 
     assert Bar().fn(1) == 3  # type: ignore  # FIXME
+
+
+##
+
+
+@install_dataclass_filtered_repr('omit_none')
+@dc.dataclass()
+class WithOmitNoneRepr:
+    a: ta.Optional[str] = None
+    b: ta.Optional[str] = None
+    c: ta.Optional[str] = None
+
+
+def test_filtered_repr():
+    assert repr(WithOmitNoneRepr(b='hi')) == "WithOmitNoneRepr(b='hi')"
+
+
+@install_dataclass_terse_repr()
+@dc.dataclass()
+class WithTerseRepr:
+    a: str
+    b: str
+
+
+def test_terse_repr():
+    assert repr(WithTerseRepr('hi', 'there')) == "WithTerseRepr('hi', 'there')"

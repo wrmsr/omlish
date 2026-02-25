@@ -102,7 +102,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
             dict(path='../../omlish/lite/check.py', sha1='df0ed561b5782545e34e61dd3424f69f836a87c0'),
             dict(path='../../omlish/lite/contextmanagers.py', sha1='993f5ed96d3410f739a20363f55670d5e5267fa3'),
-            dict(path='../../omlish/lite/dataclasses.py', sha1='73b7f5e5493c7ed12ff0ce36e37b596e5984cb08'),
+            dict(path='../../omlish/lite/dataclasses.py', sha1='8b144d1d9474d96cf2a35f4db5cb224c30f538d6'),
             dict(path='../../omlish/lite/json.py', sha1='57eeddc4d23a17931e00284ffa5cb6e3ce089486'),
             dict(path='../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
             dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
@@ -2034,7 +2034,17 @@ def is_immediate_dataclass(cls: type) -> bool:
 ##
 
 
-def dataclass_cache_hash(
+def _install_dataclass_fn(cls: type, fn: ta.Any, fn_name: ta.Optional[str] = None) -> None:
+    if fn_name is None:
+        fn_name = fn.__name__
+    setattr(cls, fn_name, fn)
+    fn.__qualname__ = f'{cls.__qualname__}.{fn_name}'
+
+
+##
+
+
+def install_dataclass_cache_hash(
         *,
         cached_hash_attr: str = '__dataclass_hash__',
 ):
@@ -2057,7 +2067,7 @@ def dataclass_cache_hash(
                 object.__setattr__(self, cached_hash_attr, h := real_hash(self))  # type: ignore[call-arg]
             return h
 
-        cls.__hash__ = cached_hash  # type: ignore[method-assign]
+        _install_dataclass_fn(cls, cached_hash, '__hash__')
 
         return cls
 
@@ -2081,10 +2091,15 @@ def dataclass_maybe_post_init(sup: ta.Any) -> bool:
 ##
 
 
-def dataclass_repr_filtered(
+def dataclass_filtered_repr(
         obj: ta.Any,
-        fn: ta.Callable[[ta.Any, dc.Field, ta.Any], bool],
+        fn: ta.Union[ta.Callable[[ta.Any, dc.Field, ta.Any], bool], ta.Literal['omit_none', 'omit_falsey']],
 ) -> str:
+    if fn == 'omit_none':
+        fn = lambda o, f, v: v is not None  # noqa
+    elif fn == 'omit_falsey':
+        fn = lambda o, f, v: bool(v)
+
     return (
         f'{obj.__class__.__qualname__}(' +
         ', '.join([
@@ -2097,11 +2112,50 @@ def dataclass_repr_filtered(
 
 
 def dataclass_repr_omit_none(obj: ta.Any) -> str:
-    return dataclass_repr_filtered(obj, lambda o, f, v: v is not None)
+    return dataclass_filtered_repr(obj, 'omit_none')
 
 
 def dataclass_repr_omit_falsey(obj: ta.Any) -> str:
-    return dataclass_repr_filtered(obj, lambda o, f, v: bool(v))
+    return dataclass_filtered_repr(obj, 'omit_falsey')
+
+
+def install_dataclass_filtered_repr(
+        fn: ta.Union[ta.Callable[[ta.Any, dc.Field, ta.Any], bool], ta.Literal['omit_none', 'omit_falsey']],
+):
+    def inner(cls):
+        if not isinstance(cls, type) and dc.is_dataclass(cls):
+            raise TypeError(cls)
+
+        def filtered_repr(self) -> str:
+            return dataclass_filtered_repr(self, fn)
+
+        _install_dataclass_fn(cls, filtered_repr, '__repr__')
+
+        return cls
+
+    return inner
+
+
+#
+
+
+def dataclass_terse_repr(obj: ta.Any) -> str:
+    return f'{obj.__class__.__qualname__}({", ".join(repr(getattr(obj, f.name)) for f in dc.fields(obj))})'
+
+
+def install_dataclass_terse_repr():
+    def inner(cls):
+        if not isinstance(cls, type) and dc.is_dataclass(cls):
+            raise TypeError(cls)
+
+        def terse_repr(self) -> str:
+            return dataclass_terse_repr(self)
+
+        _install_dataclass_fn(cls, terse_repr, '__repr__')
+
+        return cls
+
+    return inner
 
 
 ##
@@ -2137,7 +2191,7 @@ def dataclass_descriptor_method(*bind_attrs: str, bind_owner: bool = False) -> t
 ##
 
 
-def dataclass_kw_only_init():
+def install_dataclass_kw_only_init():
     def inner(cls):
         if not isinstance(cls, type) and dc.is_dataclass(cls):
             raise TypeError(cls)
@@ -2193,7 +2247,7 @@ def dataclass_kw_only_init():
 
         functools.update_wrapper(kw_only_init, real_init)
 
-        cls.__init__ = kw_only_init  # type: ignore[misc]
+        _install_dataclass_fn(cls, kw_only_init, '__init__')
 
         return cls
 
