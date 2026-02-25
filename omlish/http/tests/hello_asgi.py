@@ -47,8 +47,8 @@ def _main() -> None:
 
         case 'omserv':
             import anyio
-            omserv: ta.Any = __import__('omserv.server')
-            anyio.run(omserv.server.serve, app, omserv.server.Config())
+            omxtra: ta.Any = __import__('omxtra.server')
+            anyio.run(omxtra.server.serve, app, omxtra.server.Config())
 
         case _:
             raise Exception(server)

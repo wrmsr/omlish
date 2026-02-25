@@ -13,7 +13,6 @@ main = [
     'omlish',
     'omdev',
     'ominfra',
-    'omserv',
     'app',
 ]
 

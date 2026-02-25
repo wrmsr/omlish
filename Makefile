@@ -156,7 +156,6 @@ gen-amalg: venv
 		-m omdev \
 		-m ominfra \
 		-m omlish \
-		-m omserv \
 		-m omxtra \
 		${SRCS}
 
