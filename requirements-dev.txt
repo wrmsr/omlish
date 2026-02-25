@@ -77,6 +77,9 @@ markupsafe==3.0.3
 
 redis==7.2.0
 
+asgiref==3.11.1
+uvicorn==0.41.0
+
 sqlean.py==3.50.4.5
 # git+https://github.com/wrmsr/sqlean.py.git
 

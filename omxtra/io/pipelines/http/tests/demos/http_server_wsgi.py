@@ -115,7 +115,7 @@ def build_wsgi_channel(app: ta.Any) -> PipelineChannel.Spec:
     ])
 
 
-async def a_serve_wsgi_pipeline(spec: 'WsgiSpec') -> None:
+async def a_serve_wsgi_pipeline(spec: WsgiSpec) -> None:
     async def _handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         drv = SimpleAsyncioStreamPipelineChannelDriver(
             build_wsgi_channel(spec.app),
@@ -130,14 +130,14 @@ async def a_serve_wsgi_pipeline(spec: 'WsgiSpec') -> None:
         await srv.serve_forever()
 
 
-def serve_wsgi_pipeline(spec: 'WsgiSpec') -> None:
+def serve_wsgi_pipeline(spec: WsgiSpec) -> None:
     asyncio.run(a_serve_wsgi_pipeline(spec))
 
 
 ##
 
 
-def serve_wsgi_wsgiref(spec: 'WsgiSpec') -> None:
+def serve_wsgi_wsgiref(spec: WsgiSpec) -> None:
     from wsgiref.simple_server import make_server  # noqa
 
     httpd = make_server(spec.host, spec.port, spec.app)
