@@ -1,4 +1,3 @@
-from ..decode import Context
 from ..decode import ImmediateBytesReader
 from ..decode import YamlDecoder
 
@@ -12,5 +11,5 @@ b: c
 """
 
     d = YamlDecoder(ImmediateBytesReader(s.encode()))
-    ctx = Context()
-    d.decode_init(ctx)
+    v = d.decode()
+    print(v)
