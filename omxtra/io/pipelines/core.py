@@ -596,9 +596,14 @@ class ChannelPipeline:
     @ta.final
     @dc.dataclass(frozen=True)
     class Config:
-        DEFAULT: ta.ClassVar['ChannelPipeline.Config']
-
         raise_immediately: bool = False
+
+        #
+
+        def update(self, **kwargs: ta.Any) -> 'ChannelPipeline.Config':
+            return dc.replace(self, **kwargs)
+
+        DEFAULT: ta.ClassVar['ChannelPipeline.Config']
 
     Config.DEFAULT = Config()
 
@@ -1037,23 +1042,27 @@ class PipelineChannel:
     @ta.final
     @dc.dataclass(frozen=True)
     class Config:
-        DEFAULT: ta.ClassVar['PipelineChannel.Config']
-
         # TODO: 'close'? 'deadletter'? combination? composition? ...
         inbound_terminal: ta.Literal['drop', 'raise'] = 'raise'
 
         disable_propagation_checking: bool = False
 
-        pipeline: ChannelPipeline.Config = ChannelPipeline.Config()
+        pipeline: ChannelPipeline.Config = ChannelPipeline.Config.DEFAULT
 
         def __post_init__(self) -> None:
             check.in_(self.inbound_terminal, ('drop', 'raise'))
 
-    Config.DEFAULT = Config()
+        #
 
-    # Available here for user convenience (so configuration of a PipelineChannel's ChannelPipeline doesn't require
-    # actually importing ChannelPipeline to get to its Config class).
-    PipelineConfig: ta.ClassVar[ta.Type[ChannelPipeline.Config]] = ChannelPipeline.Config
+        DEFAULT: ta.ClassVar['PipelineChannel.Config']
+
+        def update(self, **kwargs: ta.Any) -> 'PipelineChannel.Config':
+            return dc.replace(self, **kwargs)
+
+        def update_pipeline(self, **kwargs: ta.Any) -> 'PipelineChannel.Config':
+            return self.update(pipeline=self.pipeline.update(**kwargs))
+
+    Config.DEFAULT = Config()
 
     #
 
@@ -1071,6 +1080,14 @@ class PipelineChannel:
 
         # Services are fixed for the lifetime of the channel.
         services: ta.Sequence[ChannelPipelineService] = ()
+
+        #
+
+        def update_config(self, **kwargs: ta.Any) -> 'PipelineChannel.Spec':
+            return dc.replace(self, config=self.config.update(**kwargs))
+
+        def update_pipeline_config(self, **kwargs: ta.Any) -> 'PipelineChannel.Spec':
+            return dc.replace(self, config=self.config.update_pipeline(**kwargs))
 
     @classmethod
     def new(

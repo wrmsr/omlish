@@ -32,7 +32,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='errors.py', sha1='f0f9d973a1a219f790b309b043875b730b8863d4'),
             dict(path='../../../omlish/io/streams/types.py', sha1='ab72e5d4a1e648ef79577be7d8c45853b1c5917d'),
-            dict(path='core.py', sha1='de337775324c4ec87cadd7bf912619c80d2802e0'),
+            dict(path='core.py', sha1='75f56f5068beaacc6176517bc497d6308a0d0ec5'),
             dict(path='../../../omlish/io/streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -1794,9 +1794,14 @@ class ChannelPipeline:
     @ta.final
     @dc.dataclass(frozen=True)
     class Config:
-        DEFAULT: ta.ClassVar['ChannelPipeline.Config']
-
         raise_immediately: bool = False
+
+        #
+
+        def update(self, **kwargs: ta.Any) -> 'ChannelPipeline.Config':
+            return dc.replace(self, **kwargs)
+
+        DEFAULT: ta.ClassVar['ChannelPipeline.Config']
 
     Config.DEFAULT = Config()
 
@@ -2235,23 +2240,27 @@ class PipelineChannel:
     @ta.final
     @dc.dataclass(frozen=True)
     class Config:
-        DEFAULT: ta.ClassVar['PipelineChannel.Config']
-
         # TODO: 'close'? 'deadletter'? combination? composition? ...
         inbound_terminal: ta.Literal['drop', 'raise'] = 'raise'
 
         disable_propagation_checking: bool = False
 
-        pipeline: ChannelPipeline.Config = ChannelPipeline.Config()
+        pipeline: ChannelPipeline.Config = ChannelPipeline.Config.DEFAULT
 
         def __post_init__(self) -> None:
             check.in_(self.inbound_terminal, ('drop', 'raise'))
 
-    Config.DEFAULT = Config()
+        #
 
-    # Available here for user convenience (so configuration of a PipelineChannel's ChannelPipeline doesn't require
-    # actually importing ChannelPipeline to get to its Config class).
-    PipelineConfig: ta.ClassVar[ta.Type[ChannelPipeline.Config]] = ChannelPipeline.Config
+        DEFAULT: ta.ClassVar['PipelineChannel.Config']
+
+        def update(self, **kwargs: ta.Any) -> 'PipelineChannel.Config':
+            return dc.replace(self, **kwargs)
+
+        def update_pipeline(self, **kwargs: ta.Any) -> 'PipelineChannel.Config':
+            return self.update(pipeline=self.pipeline.update(**kwargs))
+
+    Config.DEFAULT = Config()
 
     #
 
@@ -2269,6 +2278,14 @@ class PipelineChannel:
 
         # Services are fixed for the lifetime of the channel.
         services: ta.Sequence[ChannelPipelineService] = ()
+
+        #
+
+        def update_config(self, **kwargs: ta.Any) -> 'PipelineChannel.Spec':
+            return dc.replace(self, config=self.config.update(**kwargs))
+
+        def update_pipeline_config(self, **kwargs: ta.Any) -> 'PipelineChannel.Spec':
+            return dc.replace(self, config=self.config.update_pipeline(**kwargs))
 
     @classmethod
     def new(

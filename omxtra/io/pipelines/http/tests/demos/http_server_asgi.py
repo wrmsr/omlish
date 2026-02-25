@@ -85,7 +85,7 @@ class _AsgiFuture(ta.Generic[T]):
 #
 
 
-class _AsgiDriver:
+class _AsgiPump:
     def __init__(self, fn: ta.Any) -> None:
         super().__init__()
 
@@ -118,6 +118,39 @@ class _AsgiDriver:
     @types.coroutine
     def _send(self, msg: ta.Any) -> ta.Any:
         return _AsgiFuture(_SendAsgiOp(msg))  # type: ignore
+
+
+class _AsgiDriver:
+    def __init__(self, fn: ta.Any) -> None:
+        super().__init__()
+
+        self._pump = _AsgiPump(fn)
+
+    _state: ta.Literal[
+        'new',
+        'starting',
+        'started',
+        'closing',
+        'closed',
+    ] = 'new'
+
+    def start(self) -> None:
+        self._state = 'starting'
+        self._pump.start()
+        self._state = 'started'
+
+    def close(self) -> None:
+        self._state = 'closing'
+        self._pump.close()
+        self._state = 'closed'
+
+    def step(self) -> ta.Sequence[ta.Any]:
+        if self._state == 'new':
+            self.start()
+        check.state(self._state == 'started')
+
+        # return []
+        raise NotImplementedError
 
 
 #
@@ -161,7 +194,7 @@ class AsgiHandler(ChannelPipelineHandler):
         #
 
         drv = _AsgiDriver(functools.partial(self._app, scope))
-        drv.start()
+        drv.step()
 
         try:
             f = drv.g.send(None)  # noqa
@@ -211,19 +244,21 @@ class AsgiHandler(ChannelPipelineHandler):
 
 
 def build_asgi_channel(app: ta.Any) -> PipelineChannel.Spec:
-    return PipelineChannel.Spec([
-        PipelineHttpRequestHeadDecoder(),
-        PipelineHttpRequestBodyAggregator(),
-        PipelineHttpResponseEncoder(),
-        AsgiHandler(app),
-        FlatMapChannelPipelineHandlers.drop(
-            'inbound',
-            filter_type=(
-                ChannelPipelineMessages.FinalInput,
-                ChannelPipelineFlowMessages.FlushInput,
+    return PipelineChannel.Spec(
+        [
+            PipelineHttpRequestHeadDecoder(),
+            PipelineHttpRequestBodyAggregator(),
+            PipelineHttpResponseEncoder(),
+            AsgiHandler(app),
+            FlatMapChannelPipelineHandlers.drop(
+                'inbound',
+                filter_type=(
+                    ChannelPipelineMessages.FinalInput,
+                    ChannelPipelineFlowMessages.FlushInput,
+                ),
             ),
-        ),
-    ])
+        ],
+    ).update_pipeline_config(raise_immediately=True)
 
 
 async def a_serve_asgi_pipeline(spec: AsgiSpec) -> None:
