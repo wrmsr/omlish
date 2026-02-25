@@ -10,6 +10,9 @@ from ....core import ChannelPipelineHandler
 from ....core import ChannelPipelineHandlerContext
 from ....core import PipelineChannel
 from ....drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
+from ....flow.stub import StubChannelPipelineFlow
+from ....flow.types import ChannelPipelineFlowMessages
+from ....handlers.flatmap import FlatMapChannelPipelineHandlers
 from ...requests import PipelineHttpRequestHead
 from ...responses import FullPipelineHttpResponse
 from ...responses import PipelineHttpResponseHead
@@ -37,6 +40,7 @@ class PingHandler(ChannelPipelineHandler):
                     ('Connection', 'close'),
                 ]),
             ))
+            ctx.feed_out(ChannelPipelineFlowMessages.FlushOutput())
 
         else:
             ctx.feed_out(FullPipelineHttpResponse.simple(
@@ -52,6 +56,10 @@ def build_http_ping_channel() -> PipelineChannel.Spec:
             PipelineHttpRequestHeadDecoder(),
             PipelineHttpResponseEncoder(),
             PingHandler(),
+            FlatMapChannelPipelineHandlers.drop('inbound', filter_type=ChannelPipelineFlowMessages.FlushInput),
+        ],
+        services=[
+            StubChannelPipelineFlow(auto_read=True),
         ],
     )
 
