@@ -1,6 +1,7 @@
 import json
+import os.path
 
-from ..decode import yaml_decode
+from ..decoding import yaml_decode
 
 
 def test_decode():
@@ -80,4 +81,12 @@ welcome_message: "Welcome to the \\\"Example App\\\"!\\nEnjoy your stay."
     print(tks)
 
     v = yaml_decode(s)
+    print(v)
+
+
+def test_decode5():
+    with open(os.path.join(os.path.dirname(__file__), 'sample.yaml')) as f:
+        src = f.read()
+
+    v = yaml_decode(src)
     print(v)

@@ -15,11 +15,6 @@ class TestCi(unittest.IsolatedAsyncioTestCase):
         if not shutil.which('docker'):
             self.skipTest('no docker')
 
-        try:
-            import yaml  # noqa
-        except ImportError:
-            self.skipTest('no yaml')
-
         async with CiHarness() as ci_harness:
             async with ci_harness.make_ci() as ci:
                 await ci.run()

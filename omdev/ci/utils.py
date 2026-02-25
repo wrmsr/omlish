@@ -2,15 +2,15 @@
 import hashlib
 import typing as ta
 
+from omlish.formats.yaml.goyaml.decoding import yaml_decode
+
 
 ##
 
 
 def read_yaml_file(yaml_file: str) -> ta.Any:
-    import yaml  # noqa
-
     with open(yaml_file) as f:
-        return yaml.safe_load(f)
+        return yaml_decode(f.read())
 
 
 ##

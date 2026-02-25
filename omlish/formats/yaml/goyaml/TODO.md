@@ -1,3 +1,6 @@
 - pull in yaml test suite
 - fix stupid Reader thing
-- promote to prod
+- strip out globbing / file io stuff
+- abstract backends like json
+- plug-in to omlish.configs.formats - must be optional
+  - formalize default shim to try to import yaml lazily
