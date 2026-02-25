@@ -58,3 +58,14 @@ services:
     d = YamlDecoder(ImmediateBytesReader(s.encode()))
     v = ta.cast(ta.Any, d.decode())
     print(json.dumps(v.v, indent=2))
+
+
+def test_decode3():
+    s = """\
+a: &a
+  self: *a
+"""
+
+    d = YamlDecoder(ImmediateBytesReader(s.encode()))
+    v = ta.cast(ta.Any, d.decode())
+    print(v)
