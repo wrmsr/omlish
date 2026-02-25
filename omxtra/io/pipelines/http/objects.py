@@ -67,7 +67,7 @@ class PipelineHttpMessageAborted(PipelineHttpMessageObject, Abstract):
 
 
 def _un_abstract_pipeline_http_object_classes() -> None:
-    # So this is regrettable, but I think the benefits of having the base objects be actual dataclases outweighs the
+    # So this is regrettable, but I think the benefits of having the base objects be actual dataclasses outweighs the
     # gnarliness here.
     for cls in [PipelineHttpMessageHead, FullPipelineHttpMessage]:
         atts = {a for a in cls.__dict__ if not a.startswith('_')}

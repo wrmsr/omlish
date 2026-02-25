@@ -28,8 +28,8 @@ bitsandbytes==0.49.2
 black==26.1.0
 bleach==6.3.0
 blobfile==3.1.0
-boto3==1.42.55
-botocore==1.42.55
+boto3==1.42.56
+botocore==1.42.56
 botocore-stubs==1.42.41
 brotli==1.2.0
 build==1.4.0
@@ -280,7 +280,7 @@ textual-dev==1.8.0
 textual-serve==1.1.3
 textual-speedups==0.2.1
 threadpoolctl==3.6.0
-tifffile==2026.2.20
+tifffile==2026.2.24
 tiktoken==0.12.0
 tinycss2==1.4.0
 tokenizers==0.22.2
@@ -314,7 +314,7 @@ twine==6.2.0
 typer==0.24.1
 typer-slim==0.24.0
 types-awscrt==0.31.2
-types-boto3==1.42.55
+types-boto3==1.42.56
 types-greenlet==3.3.0.20251206
 types-paramiko==4.0.0.20250822
 types-psutil==7.2.2.20260130
@@ -333,7 +333,7 @@ uritemplate==4.2.0
 urllib3==2.6.3
 urwid==3.0.5
 urwid_readline==0.15.1
-uv==0.10.5
+uv==0.10.6
 watchdog==6.0.0
 wcwidth==0.6.0
 webcolors==25.10.0
