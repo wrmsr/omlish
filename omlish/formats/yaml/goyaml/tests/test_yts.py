@@ -4,30 +4,34 @@ import typing as ta
 
 import yaml
 
-from omdev.cache import data as dcache
-from omlish import check
-from omlish import lang
-from omlish import marshal as msh
-
+from ..... import check
+from ..... import lang
+from ..... import marshal as msh
 from .. import parsing
 from ..errors import YamlError
+
+
+with lang.auto_proxy_import(globals()):
+    from omdev.cache import data as dcache
 
 
 ##
 
 
-YDS_DATA = dcache.GitSpec(
-    'https://github.com/yaml/yaml-test-suite/',
-    rev='ccfa74e56afb53da960847ff6e6976c0a0825709',
-    subtrees=[
-        'src/',
-    ],
-)
+@lang.cached_function
+def yts_data():
+    return dcache.GitSpec(
+        'https://github.com/yaml/yaml-test-suite/',
+        rev='ccfa74e56afb53da960847ff6e6976c0a0825709',
+        subtrees=[
+            'src/',
+        ],
+    )
 
 
 @lang.cached_function
 def get_yts_files() -> ta.Sequence[str]:
-    yts_data_dir = dcache.default().get(YDS_DATA)
+    yts_data_dir = dcache.default().get(yts_data())
     src_dir = os.path.join(yts_data_dir, 'src')
     return sorted(
         os.path.join(root, f)

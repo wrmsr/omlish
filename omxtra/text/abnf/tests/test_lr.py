@@ -5,8 +5,8 @@ import pytest
 from .. import ops
 from ..grammars import Grammar
 from ..grammars import Rule
-from ..lr import OpToCfgConverter
-from ..lr import _LrParser
+from .lr import OpToCfgConverter
+from .lr import _LrParser
 
 
 def test_cfg_conversion_literal():

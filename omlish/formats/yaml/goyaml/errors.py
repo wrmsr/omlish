@@ -4,7 +4,7 @@ import abc
 import dataclasses as dc
 import typing as ta
 
-from omlish.lite.abstract import Abstract
+from ....lite.abstract import Abstract
 
 
 T = ta.TypeVar('T')

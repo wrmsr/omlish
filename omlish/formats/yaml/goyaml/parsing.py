@@ -23,9 +23,8 @@ import dataclasses as dc
 import enum
 import typing as ta
 
-from omlish.lite.check import check
-from omlish.lite.dataclasses import dataclass_field_required
-
+from ....lite.check import check
+from ....lite.dataclasses import dataclass_field_required
 from .ast import AliasYamlNode
 from .ast import AnchorYamlNode
 from .ast import BaseYamlNode

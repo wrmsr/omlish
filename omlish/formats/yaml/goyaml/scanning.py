@@ -22,8 +22,7 @@ import dataclasses as dc
 import enum
 import typing as ta
 
-from omlish.lite.check import check
-
+from ....lite.check import check
 from .errors import EofYamlError
 from .errors import YamlError
 from .errors import YamlErrorOr

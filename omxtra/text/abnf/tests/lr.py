@@ -14,18 +14,18 @@ import typing as ta
 from omlish import check
 from omlish import lang
 
-from .base import Op
-from .grammars import Grammar
-from .internal import Regex
-from .matches import Match
-from .ops import CaseInsensitiveStringLiteral
-from .ops import Concat
-from .ops import Either
-from .ops import RangeLiteral
-from .ops import Repeat
-from .ops import RuleRef
-from .ops import StringLiteral
-from .parsing import _Parser
+from ..base import Op
+from ..grammars import Grammar
+from ..internal import Regex
+from ..matches import Match
+from ..ops import CaseInsensitiveStringLiteral
+from ..ops import Concat
+from ..ops import Either
+from ..ops import RangeLiteral
+from ..ops import Repeat
+from ..ops import RuleRef
+from ..ops import StringLiteral
+from ..parsing import _Parser
 
 
 ##

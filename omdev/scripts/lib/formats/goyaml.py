@@ -3,7 +3,7 @@
 # @omlish-lite
 # @omlish-script
 # @omlish-generated
-# @omlish-amalg-output ../../../formats/goyaml/_amalg.py
+# @omlish-amalg-output ../../../../omlish/formats/yaml/goyaml/_amalg.py
 # @omlish-git-diff-omit
 # ruff: noqa: UP006 UP007 UP036 UP043 UP045
 import abc
@@ -34,16 +34,16 @@ if sys.version_info < (3, 8):
 def __omlish_amalg__():  # noqa
     return dict(
         src_files=[
-            dict(path='../../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
-            dict(path='../../../omlish/lite/check.py', sha1='df0ed561b5782545e34e61dd3424f69f836a87c0'),
-            dict(path='../../../omlish/lite/dataclasses.py', sha1='8b144d1d9474d96cf2a35f4db5cb224c30f538d6'),
-            dict(path='errors.py', sha1='5bdaeb6a3c04b7a3d33cccc6673fe06853ce370f'),
-            dict(path='tokens.py', sha1='ccadfd7cd379a5c9be65aa8cfb6a48f21d3bc2fc'),
-            dict(path='ast.py', sha1='a5d90507398e4586e158edbf183031f7d46a72db'),
-            dict(path='scanning.py', sha1='a0e9793354abc35d20fcb7057d061301ba88da1e'),
-            dict(path='parsing.py', sha1='6e1b467bb2e8d97a45b7a0040f58eedf511da63e'),
-            dict(path='decode.py', sha1='9d1e4955b489f1ed53a329f22205d6894aa9d82a'),
-            dict(path='_amalg.py', sha1='cd8c0e00217471457941008d9705d790b4c238f1'),
+            dict(path='../../../lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
+            dict(path='../../../lite/check.py', sha1='df0ed561b5782545e34e61dd3424f69f836a87c0'),
+            dict(path='../../../lite/dataclasses.py', sha1='8b144d1d9474d96cf2a35f4db5cb224c30f538d6'),
+            dict(path='errors.py', sha1='8fa73c90292f56f8faaedebb2f478ff6a3b95460'),
+            dict(path='tokens.py', sha1='d52876a2a525bc99eb554fe28c3d27e7e01f43a9'),
+            dict(path='ast.py', sha1='811593bad2d89bfecc4a688a8d5e92e66c026073'),
+            dict(path='scanning.py', sha1='fe21556a59a30e12a110e85ef2b201a5d81f14d0'),
+            dict(path='parsing.py', sha1='a7faf2bf497eec7087b2ee803b088af08d4b6cd0'),
+            dict(path='decode.py', sha1='c4bc1a750345f55e5f6d5a0f4569be0bfce5b5be'),
+            dict(path='_amalg.py', sha1='76808f8bb6290ee0261d550c4d01bbccb31f6eea'),
         ],
     )
 
@@ -51,10 +51,10 @@ def __omlish_amalg__():  # noqa
 ########################################
 
 
-# ../../../omlish/lite/abstract.py
+# ../../../lite/abstract.py
 T = ta.TypeVar('T')
 
-# ../../../omlish/lite/check.py
+# ../../../lite/check.py
 SizedT = ta.TypeVar('SizedT', bound=ta.Sized)
 CheckMessage = ta.Union[str, ta.Callable[..., ta.Optional[str]], None]  # ta.TypeAlias
 CheckLateConfigureFn = ta.Callable[['Checks'], None]  # ta.TypeAlias
@@ -67,7 +67,7 @@ YamlErrorOr = ta.Union['YamlError', T]  # ta.TypeAlias
 
 
 ########################################
-# ../../../../omlish/lite/abstract.py
+# ../../../../lite/abstract.py
 
 
 ##
@@ -214,7 +214,7 @@ class Abstract:
 
 
 ########################################
-# ../../../../omlish/lite/check.py
+# ../../../../lite/check.py
 """
 TODO:
  - def maybe(v: lang.Maybe[T])
@@ -785,7 +785,7 @@ check = Checks()
 
 
 ########################################
-# ../../../../omlish/lite/dataclasses.py
+# ../../../../lite/dataclasses.py
 
 
 ##

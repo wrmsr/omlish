@@ -25,8 +25,7 @@ import enum
 import functools
 import typing as ta
 
-from omlish.lite.dataclasses import dataclass_field_required
-
+from ....lite.dataclasses import dataclass_field_required
 from .errors import YamlError
 from .errors import YamlErrorOr
 from .errors import yaml_error

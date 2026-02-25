@@ -26,8 +26,7 @@ import glob
 import os.path
 import typing as ta
 
-from omlish.lite.check import check
-
+from ....lite.check import check
 from .ast import AliasYamlNode  # noqa
 from .ast import AnchorYamlNode
 from .ast import ArrayYamlNode  # noqa

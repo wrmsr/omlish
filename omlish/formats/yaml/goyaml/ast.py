@@ -25,10 +25,9 @@ import io
 import typing as ta
 import unicodedata
 
-from omlish.lite.abstract import Abstract
-from omlish.lite.check import check
-from omlish.lite.dataclasses import dataclass_field_required
-
+from ....lite.abstract import Abstract
+from ....lite.check import check
+from ....lite.dataclasses import dataclass_field_required
 from .errors import EofYamlError
 from .errors import YamlError
 from .errors import YamlErrorOr
