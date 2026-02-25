@@ -21,10 +21,12 @@ from omlish.logs.modules import get_module_loggers
 from omlish.logs.utils import async_exception_logging
 
 from ..asyncs import AsyncChannelPipelineMessages
+from ..core import ChannelPipelineHandlerRef
 from ..core import ChannelPipelineMessages
 from ..core import PipelineChannel
 from ..flow.types import ChannelPipelineFlow
 from ..flow.types import ChannelPipelineFlowMessages
+from ..sched.types import ChannelPipelineScheduling
 
 
 log, alog = get_module_loggers(globals())  # noqa
@@ -66,7 +68,14 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
 
         #
 
-        self._channel = PipelineChannel(spec)
+        self._sched = self._Scheduling(self)
+
+        #
+
+        self._channel = PipelineChannel(dc.replace(
+            spec,
+            services=(*spec.services, self._sched),
+        ))
 
         #
 
@@ -390,6 +399,21 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
     async def _drain_channel_output(self) -> None:
         while (msg := self._channel.output.poll()) is not None:
             await self._handle_output(msg)
+
+    ##
+    # scheduling
+
+    class _Scheduling(ChannelPipelineScheduling):
+        def __init__(self, d: 'AsyncioStreamPipelineChannelDriver') -> None:
+            super().__init__()
+
+            self._d = d
+
+        def schedule(self, handler_ref: ChannelPipelineHandlerRef, msg: ta.Any) -> ChannelPipelineScheduling.Handle:
+            raise NotImplementedError
+
+        def cancel_all(self, handler_ref: ta.Optional[ChannelPipelineHandlerRef] = None) -> None:
+            raise NotImplementedError
 
     ##
     # shutdown
