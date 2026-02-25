@@ -27,6 +27,10 @@ defaults: &defaults
   headers:
     User-Agent: my-client/1.0
     Accept: application/json
+  thingies:
+    - barf
+    - frab
+    - 420
 
 # Another reusable block
 auth: &auth

@@ -51,6 +51,7 @@ ddgs==9.10.0
 debugpy==1.8.20
 decorator==5.2.1
 defusedxml==0.7.1
+deno==2.6.10
 diffusers==0.36.0
 dill==0.4.0
 diskcache==5.6.3
@@ -186,6 +187,7 @@ pg8000==1.31.5
 pillow==12.1.1
 pipdeptree==2.31.0
 platformdirs==4.9.2
+playwright==1.58.0
 pluggy==1.6.0
 pprintpp==0.4.0
 primp==1.1.1
@@ -209,6 +211,7 @@ pyclipper==1.4.0
 pycodestyle==2.14.0
 pycparser==3.0
 pycryptodomex==3.23.0
+pyee==13.0.1
 pyflakes==3.4.0
 pygls==2.0.1
 Pygments==2.19.2
@@ -246,6 +249,7 @@ rfc3986==2.0.0
 rfc3986-validator==0.1.1
 rfc3987-syntax==1.1.0
 rich==14.3.3
+ripgrep==15.0.0
 rpds-py==0.30.0
 rsa==4.9.1
 ruff==0.15.2
