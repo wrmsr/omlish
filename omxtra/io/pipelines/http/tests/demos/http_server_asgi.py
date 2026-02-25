@@ -1,4 +1,4 @@
-# ruff: noqa: UP045
+# ruff: noqa: UP006 UP045
 # @omlish-lite
 import asyncio
 import dataclasses as dc
@@ -128,8 +128,13 @@ class _AsgiDriver:
 
     _state: ta.Literal[
         'new',
+
         'starting',
         'started',
+
+        'response_started',
+        'response_body_received',
+
         'closing',
         'closed',
     ] = 'new'
@@ -140,17 +145,100 @@ class _AsgiDriver:
         self._state = 'started'
 
     def close(self) -> None:
+        if self._state in ('closing', 'closed'):
+            return
         self._state = 'closing'
         self._pump.close()
         self._state = 'closed'
+
+    class _Gv(ta.NamedTuple):
+        k: ta.Literal['y', 'r']
+        v: ta.Any
 
     def step(self) -> ta.Sequence[ta.Any]:
         if self._state == 'new':
             self.start()
         check.state(self._state == 'started')
 
-        # return []
-        raise NotImplementedError
+        out: ta.List[ta.Any] = []
+
+        while True:
+            try:
+                y = self._pump.g.send(None)  # noqa
+            except StopIteration as si:
+                r = si.value  # noqa
+                check.not_isinstance(r, _AsgiFuture)
+                gv = self._Gv('r', r)
+            else:
+                gv = self._Gv('y', y)
+
+            if not self._step_one(gv, out):
+                break
+
+        return out
+
+    #
+
+    _response_start: ta.Optional[ta.Mapping[str, ta.Any]] = None
+    _response_body: ta.Optional[ta.Mapping[str, ta.Any]] = None
+
+    def _step_one(self, gv: _Gv, out: ta.List[ta.Any]) -> bool:
+        if self._state == 'started':
+            check.state(gv.k == 'y')
+            f = check.isinstance(gv.v, _AsgiFuture)
+            md = check.isinstance(check.isinstance(f.arg, _SendAsgiOp).msg, ta.Mapping)
+            check.equal(md['type'], 'http.response.start')
+
+            self._response_start = md
+            self._state = 'response_started'
+
+            f.result, f.done = None, True
+            return True
+
+        elif self._state == 'response_started':
+            check.state(gv.k == 'y')
+            f = check.isinstance(gv.v, _AsgiFuture)
+            md = check.isinstance(check.isinstance(f.arg, _SendAsgiOp).msg, ta.Mapping)
+            check.equal(md['type'], 'http.response.body')
+
+            if md.get('more_body', False):
+                raise NotImplementedError  # noqa
+
+            self._response_body = md
+            self._state = 'response_body_received'
+
+            f.result, f.done = None, True
+            return True
+
+        elif self._state == 'response_body_received':
+            check.state(gv.k == 'r')
+            check.state(gv.v is None)
+
+            resp = self._build_response()
+            out.append(resp)
+
+            out.append(ChannelPipelineMessages.FinalOutput())
+
+            self.close()
+            return False
+
+        else:
+            raise RuntimeError(f'Invalid state: {self._state!r}')
+
+    def _build_response(self) -> FullPipelineHttpResponse:
+        check.state(self._state == 'response_body_received')
+
+        rs = check.not_none(self._response_start)
+        rb = check.not_none(self._response_body)
+
+        return FullPipelineHttpResponse(
+            head=PipelineHttpResponseHead(
+                status=(status_code := rs['status']),
+                reason=PipelineHttpResponseHead.get_reason_phrase(status_code),
+                headers=HttpHeaders(rs['headers']),
+            ),
+            body=rb['body'],
+        )
 
 
 #
@@ -194,53 +282,10 @@ class AsgiHandler(ChannelPipelineHandler):
         #
 
         drv = _AsgiDriver(functools.partial(self._app, scope))
-        drv.step()
 
-        try:
-            f = drv.g.send(None)  # noqa
-        except StopIteration as si:
-            v = si.value  # noqa
-            raise NotImplementedError  # noqa
-
-        f = check.isinstance(f, _AsgiFuture)
-        am0 = check.isinstance(check.isinstance(f.arg, _SendAsgiOp).msg, dict)
-        check.equal(am0['type'], 'http.response.start')
-        f.result, f.done = None, True
-
-        try:
-            f = drv.g.send(None)  # noqa
-        except StopIteration as si:
-            v = si.value  # noqa
-            raise NotImplementedError  # noqa
-
-        f = check.isinstance(f, _AsgiFuture)
-        am1 = check.isinstance(check.isinstance(f.arg, _SendAsgiOp).msg, dict)
-        check.equal(am1['type'], 'http.response.body')
-        if am1.get('more_body', False):
-            raise NotImplementedError  # noqa
-        f.result, f.done = None, True
-
-        try:
-            f = drv.g.send(None)  # noqa
-        except StopIteration as si:
-            v = si.value  # noqa
-        else:
-            raise NotImplementedError  # noqa
-        check.state(v is None)
-
-        drv.close()
-
-        resp = FullPipelineHttpResponse(
-            head=PipelineHttpResponseHead(
-                status=(status_code := am0['status']),
-                reason=PipelineHttpResponseHead.get_reason_phrase(status_code),
-                headers=HttpHeaders(am0['headers']),
-            ),
-            body=am1['body'],
-        )
-
-        ctx.feed_out(resp)
-        ctx.feed_out(ChannelPipelineMessages.FinalOutput())
+        out_msgs = drv.step()
+        for out_msg in out_msgs:
+            ctx.feed_out(out_msg)
 
 
 def build_asgi_channel(app: ta.Any) -> PipelineChannel.Spec:
@@ -258,7 +303,7 @@ def build_asgi_channel(app: ta.Any) -> PipelineChannel.Spec:
                 ),
             ),
         ],
-    ).update_pipeline_config(raise_immediately=True)
+    )
 
 
 async def a_serve_asgi_pipeline(spec: AsgiSpec) -> None:
