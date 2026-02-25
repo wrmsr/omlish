@@ -90,10 +90,10 @@ class HttpClientHandler(ChannelPipelineHandler):
             print(f'<binary body: {len(body)} bytes>')
 
 
-def build_http_client_channel() -> PipelineChannel:
+def build_http_client_channel() -> PipelineChannel.Spec:
     """Build a client channel with encoder, decoder, and handler."""
 
-    return PipelineChannel([
+    return PipelineChannel.Spec([
         PipelineHttpResponseDecoder(),
         PipelineHttpResponseChunkedDecoder(),
         PipelineHttpRequestEncoder(),
@@ -132,9 +132,6 @@ async def fetch_url(url: str = 'http://example.com/') -> None:
     reader, writer = await asyncio.open_connection(host, port)
 
     try:
-        # Build channel and driver
-        channel = build_http_client_channel()
-
         # Send request
         request = FullPipelineHttpRequest.simple(
             host,
@@ -146,7 +143,7 @@ async def fetch_url(url: str = 'http://example.com/') -> None:
 
         # Run driver to process request/response
         drv = SimpleAsyncioStreamPipelineChannelDriver(
-            channel,
+            build_http_client_channel(),
             reader,
             writer,
         )

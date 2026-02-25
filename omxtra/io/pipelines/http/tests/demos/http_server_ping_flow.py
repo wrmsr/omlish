@@ -62,8 +62,8 @@ def build_http_ping_channel(
         # *,
         # outbound_capacity: ta.Optional[int] = 1 << 22,
         # outbound_overflow_policy: ta.Literal['allow', 'close', 'raise', 'drop'] = 'close',
-) -> PipelineChannel:
-    return PipelineChannel(
+) -> PipelineChannel.Spec:
+    return PipelineChannel.Spec(
         [
 
             # BytesFlowControlChannelPipelineHandler(

@@ -17,7 +17,7 @@ from ...sse import PipelineSseDecoder
 def build_http_sse_channel() -> PipelineChannel:
     """Example: raw bytes -> HTTP response head -> conditional gzip -> longest-match line framing -> Sse events."""
 
-    return PipelineChannel([
+    return PipelineChannel.new([
         PipelineHttpResponseDecoder(),
         PipelineHttpResponseConditionalGzipDecoder(),
         DelimiterFrameDecoderChannelPipelineHandler([b'\r\n', b'\n'], keep_ends=True, max_size=1 << 20),

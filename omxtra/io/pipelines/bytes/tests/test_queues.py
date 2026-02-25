@@ -9,7 +9,7 @@ from ..queues import InboundBytesBufferingQueueChannelPipelineHandler
 
 class TestQueues(unittest.TestCase):
     def test_inbound_queue(self):
-        ch = PipelineChannel([
+        ch = PipelineChannel.new([
             FnChannelPipelineHandler.of(inbound=lambda ctx, msg: ctx.feed_in(msg + b'!')),
             h := InboundBytesBufferingQueueChannelPipelineHandler(),
         ])
@@ -21,7 +21,7 @@ class TestQueues(unittest.TestCase):
         assert h.inbound_buffered_bytes() == 0
 
     def test_inbound_queue_filter(self):
-        ch = PipelineChannel([
+        ch = PipelineChannel.new([
             FnChannelPipelineHandler.of(inbound=lambda ctx, msg: ctx.feed_in(msg + b'!' if isinstance(msg, bytes) else msg)),  # noqa
             h := InboundBytesBufferingQueueChannelPipelineHandler(filter=True),
             ibq := InboundQueueChannelPipelineHandler(),

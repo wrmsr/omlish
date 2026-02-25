@@ -22,7 +22,7 @@ from ..decoders import UnicodeDecoderChannelPipelineHandler
 
 class TestDecoders(unittest.TestCase):
     def test_decoders(self):
-        ch = PipelineChannel([
+        ch = PipelineChannel.new([
             UnicodeDecoderChannelPipelineHandler(),
             ibq := InboundQueueChannelPipelineHandler(),
         ])
@@ -34,7 +34,7 @@ class TestDecoders(unittest.TestCase):
         assert ibq.drain() == ['hi ☃ there']
 
     def test_delim(self):
-        ch = PipelineChannel([
+        ch = PipelineChannel.new([
             DelimiterFrameDecoderChannelPipelineHandler([b'\n']),
             UnicodeDecoderChannelPipelineHandler(),
             ibq := InboundQueueChannelPipelineHandler(),
@@ -89,7 +89,7 @@ class ByteTripletsToMessageDecoder(BytesToMessageDecoderChannelPipelineHandler):
 
 
 def test_b2md_ar():
-    ch = PipelineChannel(
+    ch = PipelineChannel.new(
         [
             ByteTripletsToMessageDecoder(),
             ibq := InboundQueueChannelPipelineHandler(),
@@ -107,7 +107,7 @@ def test_b2md_ar():
 
 
 def test_b2md_nar():
-    ch = PipelineChannel(
+    ch = PipelineChannel.new(
         [
             ByteTripletsToMessageDecoder(),
             ibq := InboundQueueChannelPipelineHandler(),

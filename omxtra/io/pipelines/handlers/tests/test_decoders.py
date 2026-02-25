@@ -82,7 +82,7 @@ class AccumulatingFooToBarDecoder(MessageToMessageDecoderChannelPipelineHandler)
 
 class TestM2mdecNoFlow(unittest.TestCase):
     def test_simple(self):
-        ch = PipelineChannel([
+        ch = PipelineChannel.new([
             SIMPLE_FOO_TO_BAR_DECODER,
             ibq := InboundQueueChannelPipelineHandler(),
         ])
@@ -94,7 +94,7 @@ class TestM2mdecNoFlow(unittest.TestCase):
         ]
 
     def test_duplicating(self):
-        ch = PipelineChannel([
+        ch = PipelineChannel.new([
             DuplicatingFooToBarDecoder(),
             ibq := InboundQueueChannelPipelineHandler(),
         ])
@@ -107,7 +107,7 @@ class TestM2mdecNoFlow(unittest.TestCase):
         ]
 
     def test_accumulating(self):
-        ch = PipelineChannel([
+        ch = PipelineChannel.new([
             AccumulatingFooToBarDecoder(),
             ibq := InboundQueueChannelPipelineHandler(),
         ])
@@ -144,7 +144,7 @@ class MyFlow(ChannelPipelineFlow):
 
 class TestM2mdecMyFlow(unittest.TestCase):
     def test_m2mdec(self):
-        ch = PipelineChannel(
+        ch = PipelineChannel.new(
             [
                 SIMPLE_FOO_TO_BAR_DECODER,
                 ibq := InboundQueueChannelPipelineHandler(),
@@ -159,7 +159,7 @@ class TestM2mdecMyFlow(unittest.TestCase):
         ]
 
     def test_duplicating(self):
-        ch = PipelineChannel(
+        ch = PipelineChannel.new(
             [
                 DuplicatingFooToBarDecoder(),
                 ibq := InboundQueueChannelPipelineHandler(),
@@ -175,7 +175,7 @@ class TestM2mdecMyFlow(unittest.TestCase):
         ]
 
     def test_accumulating_auto_read(self):
-        ch = PipelineChannel(
+        ch = PipelineChannel.new(
             [
                 AccumulatingFooToBarDecoder(),
                 ibq := InboundQueueChannelPipelineHandler(),
@@ -219,7 +219,7 @@ class TestM2mdecMyFlow(unittest.TestCase):
         ]
 
     def test_accumulating_no_auto_read(self):
-        ch = PipelineChannel(
+        ch = PipelineChannel.new(
             [
                 AccumulatingFooToBarDecoder(),
                 ibq := InboundQueueChannelPipelineHandler(),

@@ -139,10 +139,9 @@ class KvStoreHandler(ChannelPipelineHandler):
 
 def build_http_kv_channel(
         items: ta.MutableMapping[str, str],
-) -> PipelineChannel:
-    return PipelineChannel(
+) -> PipelineChannel.Spec:
+    return PipelineChannel.Spec(
         [
-
             PipelineHttpRequestHeadDecoder(),
 
             PipelineHttpRequestBodyAggregator(),

@@ -8,7 +8,7 @@ from ..queues import InboundQueueChannelPipelineHandler
 
 class TestQueues(unittest.TestCase):
     def test_queues(self):
-        ch = PipelineChannel([
+        ch = PipelineChannel.new([
             FnChannelPipelineHandler.of(inbound=lambda ctx, msg: ctx.feed_in(msg + '!')),
             h := InboundQueueChannelPipelineHandler(),
         ])

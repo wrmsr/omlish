@@ -21,7 +21,7 @@ class FooServiceImpl(FooService):
 
 class TestServices(unittest.TestCase):
     def test_services(self):
-        ch = PipelineChannel(services=[FooServiceImpl()])
+        ch = PipelineChannel.new(services=[FooServiceImpl()])
         foo = ch.services[FooService]
         assert isinstance(foo, FooServiceImpl)
         assert foo.frob() == 'foo!'

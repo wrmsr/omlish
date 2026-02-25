@@ -1,5 +1,14 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
+"""
+TODO:
+ - better driver impl
+   - only ever call create_task at startup, never in inner loops
+     - nothing ever does `asyncio.wait(...)`
+   - dedicated read_task, flush_task
+     - read_task toggles back and forth between reading and waiting
+   - main task only reads from command queue
+"""
 import abc
 import asyncio
 import dataclasses as dc
@@ -27,30 +36,41 @@ log, alog = get_module_loggers(globals())  # noqa
 class AsyncioStreamPipelineChannelDriver(Abstract):
     @dc.dataclass(frozen=True)
     class Config:
+        DEFAULT: ta.ClassVar['AsyncioStreamPipelineChannelDriver.Config']
+
         read_chunk_size: int = 0x10000
         write_chunk_max: ta.Optional[int] = None
 
+    Config.DEFAULT = Config()
+
+    #
+
     def __init__(
             self,
-            channel: PipelineChannel,
+            spec: PipelineChannel.Spec,
             reader: asyncio.StreamReader,
             writer: ta.Optional[asyncio.StreamWriter] = None,
-            config: Config = Config(),
+            config: ta.Optional[Config] = None,
             *,
             on_non_bytes_output: ta.Optional[ta.Callable[[ta.Any], ta.Awaitable[None]]] = None,
     ) -> None:
         super().__init__()
 
-        self._channel = channel
         self._reader = reader
         self._writer = writer
+        if config is None:
+            config = AsyncioStreamPipelineChannelDriver.Config.DEFAULT
         self._config = config
 
         self._on_non_bytes_output = on_non_bytes_output
 
         #
 
-        self._flow = channel.services.find(ChannelPipelineFlow)
+        self._channel = PipelineChannel(spec)
+
+        #
+
+        self._flow = self._channel.services.find(ChannelPipelineFlow)
 
         #
 
@@ -70,6 +90,10 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
     @property
     def config(self) -> Config:
         return self._config
+
+    @property
+    def channel(self) -> PipelineChannel:
+        return self._channel
 
     ##
     # async utils

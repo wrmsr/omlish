@@ -22,7 +22,7 @@ class HttpServerRunner:
 
     def __init__(
             self,
-            channel_builder: ta.Callable[[], PipelineChannel],
+            channel_builder: ta.Callable[[], PipelineChannel.Spec],
             preferred_port: int = 0,
             *,
             use_flow_control: bool = False,

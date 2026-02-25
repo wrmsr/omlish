@@ -47,8 +47,8 @@ class PingHandler(ChannelPipelineHandler):
         ctx.feed_final_output()
 
 
-def build_http_ping_channel() -> PipelineChannel:
-    return PipelineChannel(
+def build_http_ping_channel() -> PipelineChannel.Spec:
+    return PipelineChannel.Spec(
         [
             PipelineHttpRequestHeadDecoder(),
             PipelineHttpResponseEncoder(),

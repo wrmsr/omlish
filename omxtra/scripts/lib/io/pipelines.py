@@ -32,7 +32,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='errors.py', sha1='a6e20daf54f563f7d2aa4f28fce87fa06417facb'),
             dict(path='../../../omlish/io/streams/types.py', sha1='ab72e5d4a1e648ef79577be7d8c45853b1c5917d'),
-            dict(path='core.py', sha1='f61fdf8c8879bb7f118763866327b165ba199c0d'),
+            dict(path='core.py', sha1='f2d149bb07996dd5a4125812ddc9c714376207d7'),
             dict(path='../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -1794,17 +1794,25 @@ class ChannelPipeline:
     @ta.final
     @dc.dataclass(frozen=True)
     class Config:
+        DEFAULT: ta.ClassVar['ChannelPipeline.Config']
+
         raise_immediately: bool = False
+
+    Config.DEFAULT = Config()
+
+    #
 
     def __init__(
             self,
             channel: 'PipelineChannel',
             handlers: ta.Sequence[ChannelPipelineHandler] = (),
-            config: Config = Config(),
+            config: ta.Optional[Config] = None,
     ) -> None:
         super().__init__()
 
         self._channel: ta.Final[PipelineChannel] = channel
+        if config is None:
+            config = ChannelPipeline.Config.DEFAULT
         self._config: ta.Final[ChannelPipeline.Config] = config
 
         self._outermost = outermost = ChannelPipelineHandlerContext(
@@ -2227,6 +2235,8 @@ class PipelineChannel:
     @ta.final
     @dc.dataclass(frozen=True)
     class Config:
+        DEFAULT: ta.ClassVar['PipelineChannel.Config']
+
         # TODO: 'close'? 'deadletter'? combination? composition? ...
         inbound_terminal: ta.Literal['drop', 'raise'] = 'raise'
 
@@ -2237,41 +2247,70 @@ class PipelineChannel:
         def __post_init__(self) -> None:
             check.in_(self.inbound_terminal, ('drop', 'raise'))
 
+    Config.DEFAULT = Config()
+
     # Available here for user convenience (so configuration of a PipelineChannel's ChannelPipeline doesn't require
     # actually importing ChannelPipeline to get to its Config class).
     PipelineConfig: ta.ClassVar[ta.Type[ChannelPipeline.Config]] = ChannelPipeline.Config
 
+    #
+
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class Spec:
+        # Initial handlers are optional - handlers may be freely added and removed later.
+        handlers: ta.Sequence[ChannelPipelineHandler] = ()
+
+        config: 'PipelineChannel.Config' = dc.field(default_factory=lambda: PipelineChannel.Config.DEFAULT)
+
+        # _: dc.KW_ONLY
+
+        metadata: ta.Sequence[PipelineChannelMetadata] = ()
+
+        # Services are fixed for the lifetime of the channel.
+        services: ta.Sequence[ChannelPipelineService] = ()
+
+    @classmethod
+    def new(
+            cls,
+            handlers: ta.Sequence[ChannelPipelineHandler] = (),
+            config: 'PipelineChannel.Config' = Config.DEFAULT,
+            *,
+            metadata: ta.Sequence[PipelineChannelMetadata] = (),
+            services: ta.Sequence[ChannelPipelineService] = (),
+    ) -> 'PipelineChannel':
+        return cls(PipelineChannel.Spec(
+            handlers=handlers,
+            config=config,
+            metadata=metadata,
+            services=services,
+        ))
+
+    #
+
     def __init__(
             self,
-
-            # Initial handlers are optional - handlers may be freely added and removed later.
-            handlers: ta.Sequence[ChannelPipelineHandler] = (),
-
-            config: Config = Config(),
-
+            spec: Spec,
             *,
-
-            metadata: ta.Optional[ta.Sequence[PipelineChannelMetadata]] = None,
-
-            # Services are fixed for the lifetime of the channel.
-            services: ta.Optional[ta.Sequence[ChannelPipelineService]] = None,
-
             never_handle_exceptions: ta.Tuple[type, ...] = (),
     ) -> None:
         super().__init__()
 
-        self._config: ta.Final[PipelineChannel.Config] = config
+        self._config: ta.Final[PipelineChannel.Config] = spec.config
         self._never_handle_exceptions = never_handle_exceptions
 
-        self._metadata: ta.Final[PipelineChannel._Metadata] = PipelineChannel._Metadata(metadata or [])
-        self._services: ta.Final[PipelineChannel._Services] = PipelineChannel._Services(services or [])
+        self._metadata: ta.Final[PipelineChannel._Metadata] = PipelineChannel._Metadata(list(spec.metadata))
+        self._services: ta.Final[PipelineChannel._Services] = PipelineChannel._Services(list(spec.services))
 
         self._output: ta.Final[PipelineChannel._Output] = PipelineChannel._Output()
 
         self._saw_final_input = False
         self._saw_final_output = False
 
-        self._all_never_handle_exceptions: ta.Tuple[type, ...] = (UnhandleableChannelPipelineError, *never_handle_exceptions)  # noqa
+        self._all_never_handle_exceptions: ta.Tuple[type, ...] = (
+            UnhandleableChannelPipelineError,
+            *never_handle_exceptions,
+        )
 
         self._execution_depth = 0
 
@@ -2283,8 +2322,8 @@ class PipelineChannel:
 
         self._pipeline: ta.Final[ChannelPipeline] = ChannelPipeline(
             self,
-            handlers,
-            config=config.pipeline,
+            spec.handlers,
+            config=spec.config.pipeline,
         )
 
     def __repr__(self) -> str:

@@ -95,8 +95,8 @@ class Sha1Handler(ChannelPipelineHandler):
         ctx.feed_in(msg)
 
 
-def build_http_sha1_channel() -> PipelineChannel:
-    return PipelineChannel(
+def build_http_sha1_channel() -> PipelineChannel.Spec:
+    return PipelineChannel.Spec(
         [
 
             PipelineHttpRequestHeadDecoder(),
@@ -138,12 +138,8 @@ async def serve_sha1(
             reader: asyncio.StreamReader,
             writer: asyncio.StreamWriter,
     ) -> None:
-        ch = build_http_sha1_channel(
-
-        )
-
         drv = SimpleAsyncioStreamPipelineChannelDriver(
-            ch,
+            build_http_sha1_channel(),
             reader,
             writer,
         )

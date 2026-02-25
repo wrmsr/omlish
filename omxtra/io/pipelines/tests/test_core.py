@@ -60,7 +60,7 @@ class ReplaceSelfInboundHandler(ChannelPipelineHandler):
 
 class TestCore(unittest.TestCase):
     def test_core(self):
-        ch = PipelineChannel([
+        ch = PipelineChannel.new([
             IntIncInboundHandler(),
             IntStrDuplexHandler(),
             fbi := FeedbackInboundChannelPipelineHandler(),
@@ -113,7 +113,7 @@ class TestCore(unittest.TestCase):
         assert ch.output.drain() == [24]
 
     def test_replace_self(self):
-        ch = PipelineChannel([
+        ch = PipelineChannel.new([
             DuplicateInboundHandler(),
             ReplaceSelfInboundHandler(IntIncInboundHandler),
             IntStrDuplexHandler(),
@@ -124,7 +124,7 @@ class TestCore(unittest.TestCase):
         assert ibq.drain() == ['43', '43']
 
     def test_named(self):
-        ch = PipelineChannel([
+        ch = PipelineChannel.new([
             fbi := FeedbackInboundChannelPipelineHandler(),
             ibq := InboundQueueChannelPipelineHandler(),
         ])
@@ -157,7 +157,7 @@ class TestMetadata(unittest.TestCase):
         bar: str
 
     def test_metadata(self):
-        ch = PipelineChannel(metadata=[TestMetadata.FooMetadata('foo')])
+        ch = PipelineChannel.new(metadata=[TestMetadata.FooMetadata('foo')])
         assert ch.metadata[TestMetadata.FooMetadata] == TestMetadata.FooMetadata('foo')
         assert TestMetadata.FooMetadata in ch.metadata
         with self.assertRaises(KeyError):  # noqa

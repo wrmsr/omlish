@@ -19,7 +19,7 @@ class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):
         """Test basic HTTP request head parsing."""
 
         decoder = PipelineHttpRequestHeadDecoder()
-        channel = PipelineChannel([
+        channel = PipelineChannel.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
         ])
@@ -40,7 +40,7 @@ class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):
         """Test request head + body bytes received together."""
 
         decoder = PipelineHttpRequestHeadDecoder()
-        channel = PipelineChannel([
+        channel = PipelineChannel.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
         ])
@@ -64,7 +64,7 @@ class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):
         """Test that after head parsed, subsequent bytes pass through."""
 
         decoder = PipelineHttpRequestHeadDecoder()
-        channel = PipelineChannel([
+        channel = PipelineChannel.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
         ])
@@ -89,7 +89,7 @@ class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):
         """Test EOF before head complete raises error."""
 
         decoder = PipelineHttpRequestHeadDecoder()
-        channel = PipelineChannel([
+        channel = PipelineChannel.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
         ])
@@ -108,7 +108,7 @@ class TestPipelineHttpRequestBodyAggregator(unittest.TestCase):
 
         head_decoder = PipelineHttpRequestHeadDecoder()
         body_agg = PipelineHttpRequestBodyAggregator()
-        channel = PipelineChannel([
+        channel = PipelineChannel.new([
             head_decoder,
             body_agg,
             ibq := InboundQueueChannelPipelineHandler(),
@@ -130,7 +130,7 @@ class TestPipelineHttpRequestBodyAggregator(unittest.TestCase):
 
         head_decoder = PipelineHttpRequestHeadDecoder()
         body_agg = PipelineHttpRequestBodyAggregator()
-        channel = PipelineChannel([
+        channel = PipelineChannel.new([
             head_decoder,
             body_agg,
             ibq := InboundQueueChannelPipelineHandler(),
@@ -152,7 +152,7 @@ class TestPipelineHttpRequestBodyAggregator(unittest.TestCase):
 
         head_decoder = PipelineHttpRequestHeadDecoder()
         body_agg = PipelineHttpRequestBodyAggregator()
-        channel = PipelineChannel([
+        channel = PipelineChannel.new([
             head_decoder,
             body_agg,
             ibq := InboundQueueChannelPipelineHandler(),
@@ -182,7 +182,7 @@ class TestPipelineHttpRequestBodyAggregator(unittest.TestCase):
 
         head_decoder = PipelineHttpRequestHeadDecoder()
         body_agg = PipelineHttpRequestBodyAggregator()
-        channel = PipelineChannel([
+        channel = PipelineChannel.new([
             head_decoder,
             body_agg,
             ibq := InboundQueueChannelPipelineHandler(),

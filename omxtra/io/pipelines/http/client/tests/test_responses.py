@@ -16,7 +16,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         """Test basic HTTP response head parsing."""
 
         decoder = PipelineHttpResponseDecoder()
-        channel = PipelineChannel([
+        channel = PipelineChannel.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
         ])
@@ -36,7 +36,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         """Test response head + body bytes received together."""
 
         decoder = PipelineHttpResponseDecoder()
-        channel = PipelineChannel([
+        channel = PipelineChannel.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
         ])
@@ -59,7 +59,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         """Test response head received incrementally."""
 
         decoder = PipelineHttpResponseDecoder()
-        channel = PipelineChannel([
+        channel = PipelineChannel.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
         ])
@@ -81,7 +81,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         """Test EOF arriving before head is complete raises ValueError."""
 
         decoder = PipelineHttpResponseDecoder()
-        channel = PipelineChannel([
+        channel = PipelineChannel.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
         ])
