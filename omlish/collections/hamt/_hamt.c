@@ -38,7 +38,7 @@
 //
 // https://github.com/python/cpython/blob/main/Python/hamt.c
 //
-// original: https://github.com/python/cpython/commit/aa18fd55d575a04e3aa782fedcd08dced26676e0
+// original: https://github.com/python/cpython/commit/a4086d7f89e5d388e4ffcdb13e4fba0255234286
 //
 #define PY_SSIZE_T_CLEAN
 
