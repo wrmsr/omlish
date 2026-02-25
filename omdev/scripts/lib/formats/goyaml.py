@@ -42,7 +42,7 @@ def __omlish_amalg__():  # noqa
             dict(path='ast.py', sha1='811593bad2d89bfecc4a688a8d5e92e66c026073'),
             dict(path='scanning.py', sha1='fe21556a59a30e12a110e85ef2b201a5d81f14d0'),
             dict(path='parsing.py', sha1='a7faf2bf497eec7087b2ee803b088af08d4b6cd0'),
-            dict(path='decoding.py', sha1='c4bc1a750345f55e5f6d5a0f4569be0bfce5b5be'),
+            dict(path='decoding.py', sha1='03e29317ab0a76549db8e6938dfe83596dfe48df'),
             dict(path='_amalg.py', sha1='85989224f581528c4a189dca142cb3ec086ecd3c'),
         ],
     )

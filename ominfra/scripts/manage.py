@@ -111,7 +111,7 @@ def __omlish_amalg__():  # noqa
             dict(path='targets/bestpython.py', sha1='75c16ab86397a8e81017f148a2ef711567b6ab27'),
             dict(path='targets/targets.py', sha1='d07f2d30c31bad89bd4a3b44bb6a5b6c95c05888'),
             dict(path='../../omlish/argparse/cli.py', sha1='f4dc3cd353d14386b5da0306768700e396afd2b3'),
-            dict(path='../../omlish/configs/formats.py', sha1='3074c3e1428f9598cd0591745cb60fb3fe2b309f'),
+            dict(path='../../omlish/configs/formats.py', sha1='ec9db26634c07a50067ff4bfdafa576f4fe7d4b4'),
             dict(path='../../omlish/lite/marshal.py', sha1='96348f5f2a26dc27d842d33cc3927e9da163436b'),
             dict(path='../../omlish/lite/maybes.py', sha1='04d2fcbea17028a5e6b8e7a7fb742375495ed233'),
             dict(path='../../omlish/lite/runtime.py', sha1='2e752a27ae2bf89b1bb79b4a2da522a3ec360c70'),
@@ -6695,6 +6695,10 @@ class ConfigData(Abstract):
 #
 
 
+class ConfigLoaderContext:
+    pass
+
+
 class ConfigLoader(Abstract, ta.Generic[ConfigDataT]):
     @property
     def file_exts(self) -> ta.Sequence[str]:
@@ -6705,16 +6709,20 @@ class ConfigLoader(Abstract, ta.Generic[ConfigDataT]):
 
     #
 
-    def load_file(self, p: str) -> ConfigDataT:
+    def load_file(self, p: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ConfigDataT:
         with open(p) as f:
-            return self.load_str(f.read())
+            return self.load_str(f.read(), ctx)
 
     @abc.abstractmethod
-    def load_str(self, s: str) -> ConfigDataT:
+    def load_str(self, s: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ConfigDataT:
         raise NotImplementedError
 
 
 #
+
+
+class ConfigRendererContext:
+    pass
 
 
 class ConfigRenderer(Abstract, ta.Generic[ConfigDataT]):
@@ -6729,7 +6737,7 @@ class ConfigRenderer(Abstract, ta.Generic[ConfigDataT]):
     #
 
     @abc.abstractmethod
-    def render(self, d: ConfigDataT) -> str:
+    def render(self, d: ConfigDataT, ctx: ta.Optional[ConfigRendererContext] = None) -> str:
         raise NotImplementedError
 
 
@@ -6755,14 +6763,14 @@ class JsonConfigData(ObjConfigData):
 class JsonConfigLoader(ConfigLoader[JsonConfigData]):
     file_exts = ('json',)
 
-    def load_str(self, s: str) -> JsonConfigData:
+    def load_str(self, s: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> JsonConfigData:
         return JsonConfigData(json.loads(s))
 
 
 class JsonConfigRenderer(ConfigRenderer[JsonConfigData]):
     data_cls = JsonConfigData
 
-    def render(self, d: JsonConfigData) -> str:
+    def render(self, d: JsonConfigData, ctx: ta.Optional[ConfigRendererContext] = None) -> str:
         return json_dumps_pretty(d.obj)
 
 
@@ -6777,14 +6785,14 @@ class TomlConfigData(ObjConfigData):
 class TomlConfigLoader(ConfigLoader[TomlConfigData]):
     file_exts = ('toml',)
 
-    def load_str(self, s: str) -> TomlConfigData:
+    def load_str(self, s: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> TomlConfigData:
         return TomlConfigData(toml_loads(s))
 
 
 class TomlConfigRenderer(ConfigRenderer[TomlConfigData]):
     data_cls = TomlConfigData
 
-    def render(self, d: TomlConfigData) -> str:
+    def render(self, d: TomlConfigData, ctx: ta.Optional[ConfigRendererContext] = None) -> str:
         return TomlWriter.write_str(d.obj)
 
 
@@ -6799,7 +6807,7 @@ class YamlConfigData(ObjConfigData):
 class YamlConfigLoader(ConfigLoader[YamlConfigData]):
     file_exts = ('yaml', 'yml')
 
-    def load_str(self, s: str) -> YamlConfigData:
+    def load_str(self, s: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> YamlConfigData:
         import yaml  # noqa
 
         return YamlConfigData(yaml.safe_load(s))
@@ -6808,7 +6816,7 @@ class YamlConfigLoader(ConfigLoader[YamlConfigData]):
 class YamlConfigRenderer(ConfigRenderer[YamlConfigData]):
     data_cls = YamlConfigData
 
-    def render(self, d: YamlConfigData) -> str:
+    def render(self, d: YamlConfigData, ctx: ta.Optional[ConfigRendererContext] = None) -> str:
         import yaml  # noqa
 
         return yaml.safe_dump(d.obj)
@@ -6828,7 +6836,7 @@ class IniConfigData(ConfigData):
 class IniConfigLoader(ConfigLoader[IniConfigData]):
     file_exts = ('ini',)
 
-    def load_str(self, s: str) -> IniConfigData:
+    def load_str(self, s: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> IniConfigData:
         cp = configparser.ConfigParser()
         cp.read_string(s)
         return IniConfigData(extract_ini_sections(cp))
@@ -6837,7 +6845,7 @@ class IniConfigLoader(ConfigLoader[IniConfigData]):
 class IniConfigRenderer(ConfigRenderer[IniConfigData]):
     data_cls = IniConfigData
 
-    def render(self, d: IniConfigData) -> str:
+    def render(self, d: IniConfigData, ctx: ta.Optional[ConfigRendererContext] = None) -> str:
         return render_ini_sections(d.sections)
 
 
@@ -6849,15 +6857,15 @@ class SwitchedConfigFileLoader:
     loaders: ta.Sequence[ConfigLoader]
     default: ta.Optional[ConfigLoader] = None
 
-    def load_file(self, p: str) -> ConfigData:
+    def load_file(self, p: str, ctx: ta.Optional[ConfigLoaderContext] = None) -> ConfigData:
         n = os.path.basename(p)
 
         for l in self.loaders:
             if l.match_file(n):
-                return l.load_file(p)
+                return l.load_file(p, ctx)
 
         if (d := self.default) is not None:
-            return d.load_file(p)
+            return d.load_file(p, ctx)
 
         raise NameError(n)
 
@@ -6884,10 +6892,10 @@ DEFAULT_CONFIG_FILE_LOADER = SwitchedConfigFileLoader(
 class SwitchedConfigRenderer:
     renderers: ta.Sequence[ConfigRenderer]
 
-    def render(self, d: ConfigData) -> str:
+    def render(self, d: ConfigData, ctx: ta.Optional[ConfigRendererContext] = None) -> str:
         for r in self.renderers:
             if r.match_data(d):
-                return r.render(d)
+                return r.render(d, ctx)
         raise TypeError(d)
 
 

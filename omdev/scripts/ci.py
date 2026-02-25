@@ -181,7 +181,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../dataserver/http.py', sha1='f85ca91015bac434281326ef7885babd9d6d834c'),
             dict(path='../oci/dataserver.py', sha1='dd147b56282b054cef264556a0ff3b3d1719bcee'),
             dict(path='../../omlish/asyncs/asyncio/subprocesses.py', sha1='b6b5f9ae3fd0b9c83593bad2e04a08f726e5904d'),
-            dict(path='../../omlish/formats/yaml/goyaml/decoding.py', sha1='c4bc1a750345f55e5f6d5a0f4569be0bfce5b5be'),
+            dict(path='../../omlish/formats/yaml/goyaml/decoding.py', sha1='03e29317ab0a76549db8e6938dfe83596dfe48df'),
             dict(path='../../omlish/http/coro/server/simple.py', sha1='27bb1e958ef2e53adf98d4e01cc5868e8b4af72c'),
             dict(path='../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='cache.py', sha1='9353e5c3b73bed47258680fd15ac49417113f0ca'),
