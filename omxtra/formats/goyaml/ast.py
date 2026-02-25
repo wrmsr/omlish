@@ -1165,7 +1165,7 @@ class MapYamlNodeIter:
 
 # MappingNode type of mapping node
 @dc.dataclass()
-class MappingYamlNode(BaseYamlNode):
+class MappingYamlNode(MapYamlNode, BaseYamlNode):
     start: YamlToken = dc.field(default_factory=dataclass_field_required('start'))
     end: ta.Optional[YamlToken] = None
     is_flow_style: bool = dc.field(default_factory=dataclass_field_required('is_flow_style'))
@@ -1320,7 +1320,7 @@ class MappingKeyYamlNode(MapKeyYamlNode, BaseYamlNode):
 
 # MappingValueNode type of mapping value
 @dc.dataclass()
-class MappingValueYamlNode(BaseYamlNode):
+class MappingValueYamlNode(MapYamlNode, BaseYamlNode):
     start: YamlToken = dc.field(default_factory=dataclass_field_required('start'))  # delimiter token ':'.
     collect_entry: ta.Optional[YamlToken] = None  # collect entry token ','.
     key: MapKeyYamlNode = dc.field(default_factory=dataclass_field_required('key'))

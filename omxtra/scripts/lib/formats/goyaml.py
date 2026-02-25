@@ -36,7 +36,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/dataclasses.py', sha1='73b7f5e5493c7ed12ff0ce36e37b596e5984cb08'),
             dict(path='errors.py', sha1='37ed49c07bc30bcedf4f3c059dbc994708ae2169'),
             dict(path='tokens.py', sha1='1db53ba357beede951df7fef0505ad99df269cf3'),
-            dict(path='ast.py', sha1='db6c6fe7a916994b62e183f1d891b6154a6d1ec1'),
+            dict(path='ast.py', sha1='ae655f4812f463f9f8ec246306fac009d5441014'),
             dict(path='scanning.py', sha1='dc1e82092762fabd4d81eefe1aa96f783b5792b6'),
             dict(path='parsing.py', sha1='e8b2d3952294f4c1ed21b7b4760a69b46b5032cc'),
             dict(path='_amalg.py', sha1='bef526864739fbfb767def62cadf0098add33b05'),
@@ -3177,7 +3177,7 @@ class MapYamlNodeIter:
 
 # MappingNode type of mapping node
 @dc.dataclass()
-class MappingYamlNode(BaseYamlNode):
+class MappingYamlNode(MapYamlNode, BaseYamlNode):
     start: YamlToken = dc.field(default_factory=dataclass_field_required('start'))
     end: ta.Optional[YamlToken] = None
     is_flow_style: bool = dc.field(default_factory=dataclass_field_required('is_flow_style'))
@@ -3332,7 +3332,7 @@ class MappingKeyYamlNode(MapKeyYamlNode, BaseYamlNode):
 
 # MappingValueNode type of mapping value
 @dc.dataclass()
-class MappingValueYamlNode(BaseYamlNode):
+class MappingValueYamlNode(MapYamlNode, BaseYamlNode):
     start: YamlToken = dc.field(default_factory=dataclass_field_required('start'))  # delimiter token ':'.
     collect_entry: ta.Optional[YamlToken] = None  # collect entry token ','.
     key: MapKeyYamlNode = dc.field(default_factory=dataclass_field_required('key'))
