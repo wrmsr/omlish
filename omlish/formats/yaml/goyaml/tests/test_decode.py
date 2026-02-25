@@ -68,3 +68,16 @@ a: &a
 
     v = yaml_decode(s)
     print(v)
+
+
+def test_decode4():
+    s = """\
+welcome_message: "Welcome to the \\\"Example App\\\"!\\nEnjoy your stay."
+"""
+
+    from ..scanning import yaml_tokenize
+    tks = yaml_tokenize(s)
+    print(tks)
+
+    v = yaml_decode(s)
+    print(v)
