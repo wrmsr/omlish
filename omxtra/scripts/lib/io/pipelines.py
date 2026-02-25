@@ -32,7 +32,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='errors.py', sha1='a6e20daf54f563f7d2aa4f28fce87fa06417facb'),
             dict(path='../../../omlish/io/streams/types.py', sha1='ab72e5d4a1e648ef79577be7d8c45853b1c5917d'),
-            dict(path='core.py', sha1='f2d149bb07996dd5a4125812ddc9c714376207d7'),
+            dict(path='core.py', sha1='de337775324c4ec87cadd7bf912619c80d2802e0'),
             dict(path='../../../omlish/io/streams/base.py', sha1='67ae88ffabae21210b5452fe49c9a3e01ca164c5'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -44,7 +44,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/io/streams/scanning.py', sha1='6ab39887d0d2d3002201b786c4715e64804c66c8'),
             dict(path='bytes/queues.py', sha1='38b11596cd0fa2367825252413923f1292c14f4e'),
             dict(path='handlers/flatmap.py', sha1='4e7f009885ee35e4746d14ba22f78d7b108f42c8'),
-            dict(path='../../../omlish/io/streams/segmented.py', sha1='daa4859b2f6aa04a95d870759a37223ea8b17a63'),
+            dict(path='../../../omlish/io/streams/segmented.py', sha1='4aeb1c22b7b5994132f0b5906d70b3e53201776b'),
             dict(path='bytes/decoders.py', sha1='212e4f54b7bc55028ae75dfb75b3ec18cc5bad51'),
             dict(path='_amalg.py', sha1='f57d710297d549e3b788af08eeb44cf5ac1bab07'),
         ],
@@ -2648,8 +2648,9 @@ class PipelineChannel:
         def __init__(self, ch: 'PipelineChannel') -> None:
             self._ch = ch
 
-            self._pending_inbound_must: ta.Final[ta.Dict[int, ta.Tuple[ta.Any, ChannelPipelineHandlerContext]]] = {}
-            self._pending_outbound_must: ta.Final[ta.Dict[int, ta.Tuple[ta.Any, ChannelPipelineHandlerContext]]] = {}
+            if not self._ch._config.disable_propagation_checking:  # noqa
+                self._pending_inbound_must: ta.Final[ta.Dict[int, ta.Tuple[ta.Any, ChannelPipelineHandlerContext]]] = {}
+                self._pending_outbound_must: ta.Final[ta.Dict[int, ta.Tuple[ta.Any, ChannelPipelineHandlerContext]]] = {}  # noqa
 
         def _get_must_dict(self, direction: ChannelPipelineDirection) -> ta.Dict[int, ta.Any]:
             if direction == 'inbound':
@@ -4347,7 +4348,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
             if len(mv):
                 out.append(mv)
 
-        return tuple(out)
+        return out
 
     #
 

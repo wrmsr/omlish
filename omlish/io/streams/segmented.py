@@ -179,7 +179,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
             if len(mv):
                 out.append(mv)
 
-        return tuple(out)
+        return out
 
     #
 

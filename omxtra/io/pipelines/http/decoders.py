@@ -42,7 +42,7 @@ class PipelineHttpDecodingConfig:
     head_buffer: BufferConfig = BufferConfig(max_size=0x1000, chunk_size=0x1000)
 
     max_content_chunk_size: ta.Optional[int] = None
-    content_chunk_header_buffer: BufferConfig = BufferConfig(max_size=1024, chunk_size=0x10000)
+    content_chunk_header_buffer: BufferConfig = BufferConfig(max_size=1024, chunk_size=1024)
 
     aggregated_body_buffer: BufferConfig = BufferConfig(max_size=0x10000, chunk_size=0x10000)
 
@@ -441,7 +441,7 @@ class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
             hb = self._header_buf
             self._header_buf = self._new_header_buf()
 
-            for hb_mv in ByteStreamBuffers.iter_segments(hb):
+            for hb_mv in hb.segments():
                 if not self._process(hb_mv, out):
                     return False
 

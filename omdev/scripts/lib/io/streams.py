@@ -35,7 +35,7 @@ def __omlish_amalg__():  # noqa
             dict(path='scanning.py', sha1='6ab39887d0d2d3002201b786c4715e64804c66c8'),
             dict(path='adapters.py', sha1='ce4fc01bd81bb6b3402dc71e46c37849a80e476d'),
             dict(path='linear.py', sha1='b2d82224c6a3001eb8230d6a9c4de7cb3afe7d1c'),
-            dict(path='segmented.py', sha1='daa4859b2f6aa04a95d870759a37223ea8b17a63'),
+            dict(path='segmented.py', sha1='4aeb1c22b7b5994132f0b5906d70b3e53201776b'),
             dict(path='_amalg.py', sha1='9c88a055447d7b37da1b356e6a1e00b7c4a9a3cb'),
         ],
     )
@@ -2227,7 +2227,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
             if len(mv):
                 out.append(mv)
 
-        return tuple(out)
+        return out
 
     #
 

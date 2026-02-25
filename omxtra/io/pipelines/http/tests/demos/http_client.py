@@ -47,6 +47,7 @@ class HttpClientHandler(ChannelPipelineHandler):
         if isinstance(msg, ChannelPipelineMessages.FinalInput):
             self._print_response()
             ctx.feed_in(msg)
+            ctx.feed_out(ChannelPipelineMessages.FinalOutput())
             return
 
         # Handle wrapped chunks
@@ -164,4 +165,9 @@ def main() -> None:
 
 
 if __name__ == '__main__':
+    try:
+        __import__('omlish.check')
+    except ImportError:
+        pass
+
     main()

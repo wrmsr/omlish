@@ -5,7 +5,7 @@ TODO:
  - better driver impl
    - only ever call create_task at startup, never in inner loops
      - nothing ever does `asyncio.wait(...)`
-   - dedicated read_task, flush_task
+   - dedicated read_task, flush_task, sched_task
      - read_task toggles back and forth between reading and waiting
    - main task only reads from command queue
 """
@@ -158,20 +158,23 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
     ##
     # feed in
 
+    @dc.dataclass(frozen=True)
     class _FeedInCommand(_Command):
-        def __init__(self, *msgs: ta.Any) -> None:
-            self._msgs = msgs
+        msgs: ta.Sequence[ta.Any]
+
+        def __repr__(self) -> str:
+            return f'{self.__class__.__name__}([{", ".join(map(repr, self.msgs))}])'
 
     async def _handle_command_feed_in(self, cmd: _FeedInCommand) -> None:
         async def _inner() -> None:
-            self._channel.feed_in(*cmd._msgs)  # noqa
+            self._channel.feed_in(*cmd.msgs)  # noqa
 
         await self._do_with_channel(_inner)
 
     async def feed_in(self, *msgs: ta.Any) -> None:
         check.state(not self._shutdown_event.is_set())
 
-        self._command_queue.put_nowait(AsyncioStreamPipelineChannelDriver._FeedInCommand(*msgs))
+        self._command_queue.put_nowait(AsyncioStreamPipelineChannelDriver._FeedInCommand(msgs))
 
     ##
     # read completed
