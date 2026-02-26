@@ -7,6 +7,7 @@ from omlish.http.headers import HttpHeaders
 from omlish.http.parsing import ParsedHttpMessage
 from omlish.http.versions import HttpVersion
 from omlish.http.versions import HttpVersions
+from omlish.io.streams.types import BytesLikeOrMemoryview
 from omlish.lite.abstract import Abstract
 from omlish.lite.dataclasses import install_dataclass_kw_only_init
 
@@ -40,7 +41,7 @@ class PipelineHttpRequestHead(PipelineHttpMessageHead, PipelineHttpRequestObject
 @dc.dataclass(frozen=True)
 class FullPipelineHttpRequest(FullPipelineHttpMessage, PipelineHttpRequestObject):
     head: PipelineHttpRequestHead
-    body: bytes
+    body: BytesLikeOrMemoryview
 
     @classmethod
     def simple(

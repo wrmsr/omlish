@@ -3,6 +3,7 @@
 import asyncio
 import typing as ta
 
+from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.logs.modules import get_module_loggers
 from omlish.logs.std.standard import configure_standard_logging
 
@@ -81,7 +82,8 @@ class KvStoreHandler(ChannelPipelineHandler):
             return
 
         if method in ('POST', 'PUT'):
-            s = msg.body.decode('utf-8', errors='replace')
+            b = ByteStreamBuffers.any_to_bytes(msg.body)
+            s = b.decode('utf-8', errors='replace')
             self._items[key] = s
             code = 201 if method == 'POST' else 200
             self._write_response(ctx, code, s.encode('utf-8'))
