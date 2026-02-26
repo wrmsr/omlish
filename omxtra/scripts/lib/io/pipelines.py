@@ -32,7 +32,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='errors.py', sha1='f0f9d973a1a219f790b309b043875b730b8863d4'),
             dict(path='../../../omlish/io/streams/types.py', sha1='ab72e5d4a1e648ef79577be7d8c45853b1c5917d'),
-            dict(path='core.py', sha1='75f56f5068beaacc6176517bc497d6308a0d0ec5'),
+            dict(path='core.py', sha1='9c148f96c971e46ef794e3408d191f2fb17beab6'),
             dict(path='../../../omlish/io/streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -1860,6 +1860,8 @@ class ChannelPipeline:
             *,
             name: ta.Optional[str] = None,
     ) -> ChannelPipelineHandler:
+        check.state(self._channel._state == 'ready')  # noqa
+
         if not isinstance(handler, ShareableChannelPipelineHandler):
             check.not_in(handler, self._unique_contexts)
 
@@ -1978,6 +1980,8 @@ class ChannelPipeline:
     def _check_can_remove(self, handler_ref: ChannelPipelineHandlerRef) -> ChannelPipelineHandler:
         ctx = handler_ref._context  # noqa
         check.is_(ctx._pipeline, self)  # noqa
+
+        check.state(self._channel._state in ('ready', 'destroying'))  # noqa
 
         check.state(not ctx._invalidated)  # noqa
 
@@ -2235,6 +2239,13 @@ class PipelineChannelMetadata(Abstract):
 ##
 
 
+PipelineChannelState = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+    'ready',
+    'destroying',
+    'destroyed',
+]
+
+
 @ta.final
 class PipelineChannel:
     @ta.final
@@ -2335,6 +2346,8 @@ class PipelineChannel:
 
         self._propagation: PipelineChannel._Propagation = PipelineChannel._Propagation(self)
 
+        self._state: PipelineChannelState = 'ready'
+
         #
 
         self._pipeline: ta.Final[ChannelPipeline] = ChannelPipeline(
@@ -2353,6 +2366,10 @@ class PipelineChannel:
     @property
     def pipeline(self) -> ChannelPipeline:
         return self._pipeline
+
+    @property
+    def state(self) -> PipelineChannelState:
+        return self._state
 
     #
 
@@ -2447,6 +2464,11 @@ class PipelineChannel:
             self._by_type_cache: ta.Dict[type, ta.Sequence[ta.Any]] = {}
             self._single_by_type_cache: ta.Dict[type, ta.Optional[ta.Any]] = {}
 
+            self._handles_handler_update: ta.Sequence[ChannelPipelineService] = [
+                svc for svc in lst
+                if type(svc).handler_update is not ChannelPipelineService.handler_update
+            ]
+
         def __len__(self) -> int:
             return len(self._lst)
 
@@ -2498,7 +2520,7 @@ class PipelineChannel:
     #
 
     def _handler_update(self, ctx: ChannelPipelineHandlerContext, kind: ChannelPipelineHandlerUpdate) -> None:
-        for svc in self._services._lst:  # noqa
+        for svc in self._services._handles_handler_update:  # noqa
             svc.handler_update(ctx._ref, kind)  # noqa
 
     #
@@ -2740,6 +2762,24 @@ class PipelineChannel:
                 inbound=inbound or None,
                 outbound=outbound or None,
             )
+
+    #
+
+    def destroy(self) -> None:
+        check.state(self._state == 'ready')
+        self._state = 'destroying'
+
+        self._step_in()
+        try:
+            im_ctx = self._pipeline._innermost  # noqa
+            om_ctx = self._pipeline._outermost  # noqa
+            while (ctx := im_ctx._next_out) is not om_ctx:  # noqa
+                self._pipeline.remove(ctx._ref)  # noqa
+
+        finally:
+            self._step_out()
+
+        self._state = 'destroyed'
 
 
 ########################################
