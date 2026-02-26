@@ -121,9 +121,10 @@ class _AsgiPump:
 
 
 class _AsgiDriver:
-    def __init__(self, fn: ta.Any) -> None:
+    def __init__(self, ctx: ChannelPipelineHandlerContext, fn: ta.Any) -> None:
         super().__init__()
 
+        self._ctx = ctx
         self._pump = _AsgiPump(fn)
 
     _state: ta.Literal[
@@ -151,14 +152,16 @@ class _AsgiDriver:
         self._pump.close()
         self._state = 'closed'
 
+    #
+
     class _Gv(ta.NamedTuple):
         k: ta.Literal['y', 'r']
         v: ta.Any
 
-    def step(self) -> ta.Sequence[ta.Any]:
+    def step(self) -> None:
         if self._state == 'new':
             self.start()
-        check.state(self._state == 'started')
+        check.state(self._state not in ('new', 'starting', 'closing', 'closed'))
 
         out: ta.List[ta.Any] = []
 
@@ -175,11 +178,18 @@ class _AsgiDriver:
             if not self._step_one(gv, out):
                 break
 
-        return out
+        for out_msg in out:
+            self._ctx.feed_out(out_msg)
 
     #
 
     def _step_one(self, gv: _Gv, out: ta.List[ta.Any]) -> bool:
+        if gv.k == 'y' and not isinstance(gv.v, _AsgiFuture):
+            awm = AsyncChannelPipelineMessages.Await(gv.v)
+            awm.add_listener(lambda _: self.step())
+            out.append(awm)
+            return False
+
         if self._state == 'started':
             check.state(gv.k == 'y')
             f = check.isinstance(gv.v, _AsgiFuture)
@@ -266,11 +276,9 @@ class AsgiHandler(ChannelPipelineHandler):
 
         #
 
-        drv = _AsgiDriver(functools.partial(self._app, scope))
+        drv = _AsgiDriver(ctx, functools.partial(self._app, scope))
 
-        out_msgs = drv.step()
-        for out_msg in out_msgs:
-            ctx.feed_out(out_msg)
+        drv.step()
 
 
 def build_asgi_channel(app: ta.Any) -> PipelineChannel.Spec:
@@ -374,7 +382,7 @@ async def ping_app(scope, receive, send):
             'more_body': i < len(body) - 1,
         })
 
-        # await asyncio.sleep(1)
+        await asyncio.sleep(1)
 
 
 ##
