@@ -115,10 +115,9 @@ def patch_for_trio_asyncio() -> None:
 
     try:
         import pydevd_nest_asyncio  # noqa
+        import trio_asyncio._base  # noqa
     except ImportError:
         return
-
-    import trio_asyncio._base  # noqa
 
     def new_call_soon(self, callback, *args, **context):
         _, callback = pydevd_nest_asyncio._PydevdAsyncioUtils.try_to_get_internal_callback(callback)  # noqa
