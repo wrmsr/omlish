@@ -18,6 +18,8 @@ from .images import ImageContent
 from .json import JsonContent
 from .link import LinkContent
 from .markdown import MarkdownContent
+from .placeholders import ContentPlaceholder
+from .placeholders import PlaceholderContent
 from .quote import QuoteContent
 from .raw import NON_STR_SINGLE_RAW_CONTENT_TYPES
 from .raw import NonStrSingleRawContent
@@ -206,6 +208,41 @@ class _RawContentUnmarshalerFactory(msh.UnmarshalerFactory):
 ##
 
 
+_PLACEHOLDER_KEY = '\\$PLACEHOLDER'
+_PLACEHOLDER_FQCN_KEY = '$'
+
+
+class _PlaceholderContentMarshaler(msh.Marshaler):
+    def marshal(self, ctx: msh.MarshalContext, o: ta.Any) -> msh.Value:
+        pc = check.isinstance(o, PlaceholderContent)
+        if isinstance(pc.k, str):
+            return {_PLACEHOLDER_KEY: pc.k}
+        elif isinstance(pc.k, type) and issubclass(pc.k, ContentPlaceholder):
+            fq = lang.get_cls_fqcn(pc.k)
+            return {_PLACEHOLDER_KEY: {_PLACEHOLDER_FQCN_KEY: fq}}
+        else:
+            raise TypeError(o)
+
+
+class _PlaceholderContentUnmarshaler(msh.Unmarshaler):
+    def unmarshal(self, ctx: msh.UnmarshalContext, v: msh.Value) -> ta.Any:
+        dct = check.isinstance(v, ta.Mapping)
+        [(k, v)] = dct.items()
+        check.equal(k, _PLACEHOLDER_KEY)
+        if isinstance(v, str):
+            return PlaceholderContent(v)
+        elif isinstance(v, ta.Mapping):
+            [(mk, fq)] = v.items()
+            check.equal(mk, _PLACEHOLDER_FQCN_KEY)
+            cl = lang.get_fqcn_cls(check.isinstance(fq, str))  # noqa
+            return PlaceholderContent(cl)
+        else:
+            raise TypeError(v)
+
+
+##
+
+
 class _ImageContentMarshaler(msh.Marshaler):
     def marshal(self, ctx: msh.MarshalContext, o: ta.Any) -> msh.Value:
         raise NotImplementedError
@@ -265,6 +302,8 @@ def _install_standard_marshaling() -> None:
 
             msh.Impl(TextContent, 'text'),
 
+            msh.Impl(PlaceholderContent, 'placeholder'),
+
         ],
     )
 
@@ -317,9 +356,11 @@ def _install_standard_marshaling() -> None:
         msh.TypeMapMarshalerFactory({
             ImageContent: _ImageContentMarshaler(),
             JsonContent: _JsonContentMarshaler(),
+            PlaceholderContent: _PlaceholderContentMarshaler(),
         }),
         msh.TypeMapUnmarshalerFactory({
             ImageContent: _ImageContentUnmarshaler(),
             JsonContent: _JsonContentUnmarshaler(),
+            PlaceholderContent: _PlaceholderContentUnmarshaler(),
         }),
     )

@@ -29,6 +29,8 @@ class ChatState:
 
     chat: 'mc.Chat' = ()
 
+    # raw_chats: ta.Sequence[ta.Any] | None = None
+
 
 ##
 

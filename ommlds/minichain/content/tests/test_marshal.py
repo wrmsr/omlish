@@ -3,6 +3,8 @@ import uuid
 from omlish import dataclasses as dc
 from omlish import marshal as msh
 
+from ...content.placeholders import ContentPlaceholder
+from ...content.placeholders import PlaceholderContent
 from ...metadata import Uuid
 from .._marshal import MarshalContent
 from .._marshal import MarshalRawContent
@@ -62,3 +64,23 @@ def test_raw_marshal():
 
     u = uuid.uuid4()
     assert msh.marshal(TextContent('hi').with_metadata(Uuid(u)), RawContent) == {'text': {'s': 'hi', 'metadata': [{'uuid': str(u)}]}}  # noqa
+
+
+class FooPlaceholder(ContentPlaceholder):
+    pass
+
+
+def test_placeholder():
+    c = PlaceholderContent('foo')
+    m = msh.marshal(c, Content)
+    print(m)
+    c2 = msh.unmarshal(m, Content)
+    print(c2)
+    assert c == c2
+
+    c = PlaceholderContent(FooPlaceholder)
+    m = msh.marshal(c, Content)
+    print(m)
+    c2 = msh.unmarshal(m, Content)
+    print(c2)
+    assert c == c2
