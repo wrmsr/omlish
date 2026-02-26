@@ -33,7 +33,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='errors.py', sha1='f0f9d973a1a219f790b309b043875b730b8863d4'),
             dict(path='../../../omlish/io/streams/types.py', sha1='ab72e5d4a1e648ef79577be7d8c45853b1c5917d'),
-            dict(path='core.py', sha1='00d80c3e34be49811e304842105b43b859aa5455'),
+            dict(path='core.py', sha1='e3cdd0927202dcfcdae1a953e1ccdbc8936d6872'),
             dict(path='../../../omlish/io/streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -1628,6 +1628,7 @@ class ChannelPipelineHandlerContext:
         if self._invalidated:
             raise ContextInvalidatedChannelPipelineError
         check.not_isinstance(msg, self._FORBIDDEN_INBOUND_TYPES)
+        check.state(self._pipeline._channel._state == PipelineChannel.State.READY)  # noqa
         check.state(self._pipeline._channel._execution_depth > 0)  # noqa
 
         if isinstance(msg, ChannelPipelineMessages.MustPropagate):
@@ -1635,8 +1636,10 @@ class ChannelPipelineHandlerContext:
 
         try:
             self._handler.inbound(self, msg)
+
         except self._pipeline._channel._all_never_handle_exceptions:  # type: ignore[misc]  # noqa
             raise
+
         except BaseException as e:
             if self._handling_error or self._pipeline._config.raise_immediately:  # noqa
                 raise
@@ -1653,6 +1656,7 @@ class ChannelPipelineHandlerContext:
         if self._invalidated:
             raise ContextInvalidatedChannelPipelineError
         check.not_isinstance(msg, self._FORBIDDEN_OUTBOUND_TYPES)
+        check.state(self._pipeline._channel._state == PipelineChannel.State.READY)  # noqa
         check.state(self._pipeline._channel._execution_depth > 0)  # noqa
 
         if isinstance(msg, ChannelPipelineMessages.MustPropagate):
@@ -1660,8 +1664,10 @@ class ChannelPipelineHandlerContext:
 
         try:
             self._handler.outbound(self, msg)
+
         except self._pipeline._channel._all_never_handle_exceptions:  # type: ignore[misc]  # noqa
             raise
+
         except BaseException as e:
             if self._handling_error or self._pipeline._config.raise_immediately:  # noqa
                 raise
@@ -1678,8 +1684,10 @@ class ChannelPipelineHandlerContext:
         try:
             try:
                 self.feed_in(ChannelPipelineMessages.Error(e, direction, self._ref))
+
             except self._pipeline._channel._all_never_handle_exceptions:  # type: ignore[misc]  # noqa
                 raise
+
             except BaseException as e2:  # noqa
                 raise
 
@@ -2337,19 +2345,25 @@ class PipelineChannel:
 
         self._propagation: PipelineChannel._Propagation = PipelineChannel._Propagation(self)
 
-        self._state = PipelineChannel.State.READY
-
-        #
-
         self._pipeline: ta.Final[ChannelPipeline] = ChannelPipeline(
             _channel=self,
             _config=spec.config.pipeline,
         )
 
+        self._state = PipelineChannel.State.READY
+
         #
 
-        for h in spec.handlers:
-            self._pipeline.add_innermost(h)
+        try:
+            for h in spec.handlers:
+                self._pipeline.add_innermost(h)
+
+        except self._all_never_handle_exceptions:  # type: ignore[misc]
+            raise
+
+        except BaseException:  # noqa
+            self.destroy()
+            raise
 
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}'

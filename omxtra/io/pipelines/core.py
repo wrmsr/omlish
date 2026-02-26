@@ -430,6 +430,7 @@ class ChannelPipelineHandlerContext:
         if self._invalidated:
             raise ContextInvalidatedChannelPipelineError
         check.not_isinstance(msg, self._FORBIDDEN_INBOUND_TYPES)
+        check.state(self._pipeline._channel._state == PipelineChannel.State.READY)  # noqa
         check.state(self._pipeline._channel._execution_depth > 0)  # noqa
 
         if isinstance(msg, ChannelPipelineMessages.MustPropagate):
@@ -437,8 +438,10 @@ class ChannelPipelineHandlerContext:
 
         try:
             self._handler.inbound(self, msg)
+
         except self._pipeline._channel._all_never_handle_exceptions:  # type: ignore[misc]  # noqa
             raise
+
         except BaseException as e:
             if self._handling_error or self._pipeline._config.raise_immediately:  # noqa
                 raise
@@ -455,6 +458,7 @@ class ChannelPipelineHandlerContext:
         if self._invalidated:
             raise ContextInvalidatedChannelPipelineError
         check.not_isinstance(msg, self._FORBIDDEN_OUTBOUND_TYPES)
+        check.state(self._pipeline._channel._state == PipelineChannel.State.READY)  # noqa
         check.state(self._pipeline._channel._execution_depth > 0)  # noqa
 
         if isinstance(msg, ChannelPipelineMessages.MustPropagate):
@@ -462,8 +466,10 @@ class ChannelPipelineHandlerContext:
 
         try:
             self._handler.outbound(self, msg)
+
         except self._pipeline._channel._all_never_handle_exceptions:  # type: ignore[misc]  # noqa
             raise
+
         except BaseException as e:
             if self._handling_error or self._pipeline._config.raise_immediately:  # noqa
                 raise
@@ -480,8 +486,10 @@ class ChannelPipelineHandlerContext:
         try:
             try:
                 self.feed_in(ChannelPipelineMessages.Error(e, direction, self._ref))
+
             except self._pipeline._channel._all_never_handle_exceptions:  # type: ignore[misc]  # noqa
                 raise
+
             except BaseException as e2:  # noqa
                 raise
 
@@ -1139,19 +1147,25 @@ class PipelineChannel:
 
         self._propagation: PipelineChannel._Propagation = PipelineChannel._Propagation(self)
 
-        self._state = PipelineChannel.State.READY
-
-        #
-
         self._pipeline: ta.Final[ChannelPipeline] = ChannelPipeline(
             _channel=self,
             _config=spec.config.pipeline,
         )
 
+        self._state = PipelineChannel.State.READY
+
         #
 
-        for h in spec.handlers:
-            self._pipeline.add_innermost(h)
+        try:
+            for h in spec.handlers:
+                self._pipeline.add_innermost(h)
+
+        except self._all_never_handle_exceptions:  # type: ignore[misc]
+            raise
+
+        except BaseException:  # noqa
+            self.destroy()
+            raise
 
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}'

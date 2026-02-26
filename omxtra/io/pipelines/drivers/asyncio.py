@@ -496,7 +496,11 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
         self._shutdown_task = asyncio.create_task(self._shutdown_task_main())
 
         try:
-            await self._run()
+            try:
+                await self._run()
+
+            finally:
+                self._channel.destroy()
 
         finally:
             await self._cancel_tasks(self._shutdown_task, check_running=True)

@@ -15,7 +15,7 @@ from omlish.formats import dotenv
 from omlish.http import asgi
 from omlish.logs import all as logs
 
-from ... import server
+from omxtra import server
 
 
 ShellTask = ta.NewType('ShellTask', lang.Func1[anyio.Event, ta.Awaitable[None]])

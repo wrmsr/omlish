@@ -1,43 +1,37 @@
 ### immed
 
-- meditate on close/eof/errors
-- evented/callback want_read, not a dumb sleep
-- meditate on flow control
+- shutdown sequence / error handling
+  - more channel states lol
+  - send FinalInput in destroy if it hasn't been?
+    - is destroy fully 'runnable'? no, it can't feed_out
+- reimpl full (bytes) flow control (watermarks)
   - bidirectional?
-- need to catch stray bytes falling out
-  - 'Ignorable' event abstract base class? if any non-this isn't 'handled' by some 'driver', raise
 - hand optimize a bit
   - segmented split_to should mutate seg list in place
 
 ### core
 
 - revive DESIGN.md
-- BytesBufferingChannelPipelineHandler or whatever - `def bytes_buffered() -> int`
-- re-add BytesChannelPipelineFlowControl unique check (without thrashing cache)?
 - ssl
+  - `ssl.MemoryBIO -> ctx.wrap_bio -> while True: sslobj.do_handshake() -> except ssl.SSLWantReadError, ssl.SSLWantWriteError, ...`
 - drivers
   - 'pure' - no io
   - sync
   - fdio
   - anyio
-- scheduler
+- scheduler goodies
   - ReadTimeoutHandler
   - idle stuff
   - keepalive
-- apps
-  - async/await interop
 - thread safety? nogil?
 - inject interop
 - interleavable inter-stage message queueing handler? usecases?
-- dont catch BaseException lol - or at least have exception reraise filter (ex. cancelled)
 - removed callbacks
-  - currently just blow up everything if they raise lol
+  - do netty ByteToMessageDecoder removal handling
   - also removing in flight might mess stuff up (STARTTLS?)
 
 ### http
 
-- cleanup / standardize / deduplicate / sane-ify buffer configs
-  - 'max_chunk_header'? really? it's not the int max it's the max bytes in the buffer..
 - ensure parity with urllib/http.server in general
 - ensure parity with netty security wise
 - request pipelining
@@ -51,6 +45,9 @@
 
 ### proto impls
 
+- websocket
 - irc lol
-- redis / memcache
 - dns?? stub
+- proto / grpc
+- redis / memcache
+- db drivers?

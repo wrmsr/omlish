@@ -24,7 +24,7 @@ class UserStoreKind(enum.Enum):
 
 @dc.dataclass(frozen=True)
 class ServerConfig:
-    user_store: UserStoreKind = UserStoreKind.DB
+    user_store: UserStoreKind = UserStoreKind.IN_MEMORY
 
     node_registry_enabled: bool = False
 
