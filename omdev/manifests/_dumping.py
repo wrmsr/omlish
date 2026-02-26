@@ -39,7 +39,7 @@ def __omlish_amalg__():  # noqa
         src_files=[
             dict(path='../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
-            dict(path='../../omlish/lite/check.py', sha1='d30cfee7f46d37c55e98fdb7c60327c521f8295e'),
+            dict(path='../../omlish/lite/check.py', sha1='df0ed561b5782545e34e61dd3424f69f836a87c0'),
             dict(path='../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
             dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
             dict(path='../../omlish/lite/strings.py', sha1='89831ecbc34ad80e118a865eceb390ed399dc4d6'),
@@ -450,8 +450,6 @@ class Checks:
     #
 
     def _unpack_isinstance_spec(self, spec: ta.Any) -> ta.Any:
-        if isinstance(spec, type):
-            return spec
         if spec == ta.Any:
             return object
         if spec is None:
