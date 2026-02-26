@@ -7,4 +7,4 @@ export NVM_DIR="$HOME/.nvm" ;
 
 for NV in ${NVM_VERSIONS} ; do
   nvm install "$NV" ;
-done
+done ;

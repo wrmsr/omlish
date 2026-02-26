@@ -303,6 +303,8 @@ def build_asgi_channel(app: ta.Any) -> PipelineChannel.Spec:
                 ),
             ),
         ],
+    ).update_pipeline_config(
+        # raise_immediately=True,
     )
 
 
@@ -395,8 +397,8 @@ async def ping_app(scope, receive, send):
 def _main() -> None:
     ping_spec = AsgiSpec(ping_app)
 
-    serve_asgi_uvicorn(ping_spec)
-    # serve_asgi_pipeline(ping_spec)
+    # serve_asgi_uvicorn(ping_spec)
+    serve_asgi_pipeline(ping_spec)
 
 
 if __name__ == '__main__':

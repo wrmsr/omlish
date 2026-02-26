@@ -39,8 +39,6 @@ deps = [
 
   # language toolchains & runtimes
   'maven',
-  'nodejs',
-  'npm',
   'perl',
   'ruby',
 

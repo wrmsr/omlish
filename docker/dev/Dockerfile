@@ -78,8 +78,6 @@ DEPS="$DEPS\
   ncdu\
   net-tools\
   netcat-openbsd\
-  nodejs\
-  npm\
   openssh-server\
   perl\
   pkg-config\
@@ -280,7 +278,7 @@ export NVM_DIR="$HOME/.nvm" ;\
 \
 for NV in ${NVM_VERSIONS} ; do\
   nvm install "$NV" ;\
-done\
+done ;\
 )
 
 
@@ -306,7 +304,7 @@ git clone 'https://github.com/pyenv/pyenv' /root/.pyenv ;\
 \
 for V in ${PYENV_VERSIONS} ; do\
   PYTHON_BUILD_CACHE_PATH=/root/.pyenv_cache /root/.pyenv/bin/pyenv install -s "$V" ;\
-done\
+done ;\
 )
 
 
