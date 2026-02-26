@@ -1,6 +1,7 @@
 # ruff: noqa: UP006 UP045
 # @omlish-lite
 import asyncio
+import collections.abc
 import dataclasses as dc
 import functools
 import types
@@ -193,7 +194,7 @@ class _AsgiDriver:
         if self._state == 'started':
             check.state(gv.k == 'y')
             f = check.isinstance(gv.v, _AsgiFuture)
-            md = check.isinstance(check.isinstance(f.arg, _SendAsgiOp).msg, ta.Mapping)
+            md = check.isinstance(check.isinstance(f.arg, _SendAsgiOp).msg, collections.abc.Mapping)
             check.equal(md['type'], 'http.response.start')
 
             out.append(PipelineHttpResponseHead(
@@ -211,7 +212,7 @@ class _AsgiDriver:
         elif self._state == 'response_started':
             check.state(gv.k == 'y')
             f = check.isinstance(gv.v, _AsgiFuture)
-            md = check.isinstance(check.isinstance(f.arg, _SendAsgiOp).msg, ta.Mapping)
+            md = check.isinstance(check.isinstance(f.arg, _SendAsgiOp).msg, collections.abc.Mapping)
             check.equal(md['type'], 'http.response.body')
 
             out.append(md['body'])
