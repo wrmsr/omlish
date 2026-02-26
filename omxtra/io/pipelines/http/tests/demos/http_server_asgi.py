@@ -133,7 +133,7 @@ class _AsgiDriver:
         'started',
 
         'response_started',
-        'response_body_received',
+        'response_finished',
 
         'closing',
         'closed',
@@ -179,9 +179,6 @@ class _AsgiDriver:
 
     #
 
-    _response_start: ta.Optional[ta.Mapping[str, ta.Any]] = None
-    _response_body: ta.Optional[ta.Mapping[str, ta.Any]] = None
-
     def _step_one(self, gv: _Gv, out: ta.List[ta.Any]) -> bool:
         if self._state == 'started':
             check.state(gv.k == 'y')
@@ -189,7 +186,13 @@ class _AsgiDriver:
             md = check.isinstance(check.isinstance(f.arg, _SendAsgiOp).msg, ta.Mapping)
             check.equal(md['type'], 'http.response.start')
 
-            self._response_start = md
+            out.append(PipelineHttpResponseHead(
+                status=(status_code := md['status']),
+                reason=PipelineHttpResponseHead.get_reason_phrase(status_code),
+                headers=HttpHeaders(md['headers']),
+            ))
+            out.append(ChannelPipelineFlowMessages.FlushOutput())
+
             self._state = 'response_started'
 
             f.result, f.done = None, True
@@ -201,21 +204,18 @@ class _AsgiDriver:
             md = check.isinstance(check.isinstance(f.arg, _SendAsgiOp).msg, ta.Mapping)
             check.equal(md['type'], 'http.response.body')
 
-            if md.get('more_body', False):
-                raise NotImplementedError  # noqa
+            out.append(md['body'])
+            out.append(ChannelPipelineFlowMessages.FlushOutput())
 
-            self._response_body = md
-            self._state = 'response_body_received'
+            if not md.get('more_body', False):
+                self._state = 'response_finished'
 
             f.result, f.done = None, True
             return True
 
-        elif self._state == 'response_body_received':
+        elif self._state == 'response_finished':
             check.state(gv.k == 'r')
             check.state(gv.v is None)
-
-            resp = self._build_response()
-            out.append(resp)
 
             out.append(ChannelPipelineMessages.FinalOutput())
 
@@ -224,21 +224,6 @@ class _AsgiDriver:
 
         else:
             raise RuntimeError(f'Invalid state: {self._state!r}')
-
-    def _build_response(self) -> FullPipelineHttpResponse:
-        check.state(self._state == 'response_body_received')
-
-        rs = check.not_none(self._response_start)
-        rb = check.not_none(self._response_body)
-
-        return FullPipelineHttpResponse(
-            head=PipelineHttpResponseHead(
-                status=(status_code := rs['status']),
-                reason=PipelineHttpResponseHead.get_reason_phrase(status_code),
-                headers=HttpHeaders(rs['headers']),
-            ),
-            body=rb['body'],
-        )
 
 
 #
@@ -388,7 +373,8 @@ async def ping_app(scope, receive, send):
             'body': bytes([body[i]]),
             'more_body': i < len(body) - 1,
         })
-        await asyncio.sleep(1)
+
+        # await asyncio.sleep(1)
 
 
 ##
