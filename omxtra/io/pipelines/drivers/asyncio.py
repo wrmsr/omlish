@@ -59,6 +59,7 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
     ) -> None:
         super().__init__()
 
+        self._spec = spec
         self._reader = reader
         self._writer = writer
         if config is None:
@@ -66,33 +67,6 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
         self._config = config
 
         self._on_non_bytes_output = on_non_bytes_output
-
-        #
-
-        self._sched = self._Scheduling(self)
-
-        #
-
-        self._channel = PipelineChannel(dc.replace(
-            spec,
-            services=(*spec.services, self._sched),
-        ))
-
-        #
-
-        self._flow = self._channel.services.find(ChannelPipelineFlow)
-
-        #
-
-        self._command_handlers = self._build_command_handlers()
-
-        self._output_handlers = self._build_output_handlers()
-
-        #
-
-        self._command_queue: asyncio.Queue[AsyncioStreamPipelineChannelDriver._Command] = asyncio.Queue()
-
-        self._shutdown_event = asyncio.Event()
 
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}'
@@ -104,6 +78,37 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
     @property
     def channel(self) -> PipelineChannel:
         return self._channel
+
+    ##
+    # init
+
+    _sched: 'AsyncioStreamPipelineChannelDriver._Scheduling'
+
+    _channel: PipelineChannel
+
+    _flow: ta.Optional[ChannelPipelineFlow]
+
+    _command_handlers: ta.Mapping[ta.Type['AsyncioStreamPipelineChannelDriver._Command'], ta.Callable[[ta.Any], ta.Awaitable[None]]]  # noqa
+    _output_handlers: ta.Mapping[type, ta.Callable[[ta.Any], ta.Awaitable[None]]]
+
+    _command_queue: 'asyncio.Queue[AsyncioStreamPipelineChannelDriver._Command]'
+    _shutdown_event: asyncio.Event
+
+    async def _init(self) -> None:
+        self._sched = self._Scheduling(self)
+
+        self._channel = PipelineChannel(dc.replace(
+            self._spec,
+            services=(*self._spec.services, self._sched),
+        ))
+
+        self._flow = self._channel.services.find(ChannelPipelineFlow)
+
+        self._command_handlers = self._build_command_handlers()
+        self._output_handlers = self._build_output_handlers()
+
+        self._command_queue: asyncio.Queue[AsyncioStreamPipelineChannelDriver._Command] = asyncio.Queue()
+        self._shutdown_event = asyncio.Event()
 
     ##
     # async utils
@@ -485,6 +490,9 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
             pass
         else:
             raise RuntimeError('Already running')
+
+        await self._init()
+
         self._shutdown_task = asyncio.create_task(self._shutdown_task_main())
 
         try:

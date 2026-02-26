@@ -2,6 +2,7 @@
 # @omlish-lite
 import collections
 import dataclasses as dc
+import enum
 import typing as ta
 
 from omlish.lite.abstract import Abstract
@@ -611,16 +612,16 @@ class ChannelPipeline:
 
     def __init__(
             self,
-            channel: 'PipelineChannel',
-            handlers: ta.Sequence[ChannelPipelineHandler] = (),
-            config: ta.Optional[Config] = None,
+            *,
+            _channel: 'PipelineChannel',
+            _config: ta.Optional[Config] = None,
     ) -> None:
         super().__init__()
 
-        self._channel: ta.Final[PipelineChannel] = channel
-        if config is None:
-            config = ChannelPipeline.Config.DEFAULT
-        self._config: ta.Final[ChannelPipeline.Config] = config
+        self._channel: ta.Final[PipelineChannel] = _channel
+        if _config is None:
+            _config = ChannelPipeline.Config.DEFAULT
+        self._config: ta.Final[ChannelPipeline.Config] = _config
 
         self._outermost = outermost = ChannelPipelineHandlerContext(
             _pipeline=self,
@@ -641,9 +642,6 @@ class ChannelPipeline:
 
         self._contexts_by_name: ta.Final[ta.Dict[str, ChannelPipelineHandlerContext]] = {}
 
-        for h in handlers:
-            self.add_innermost(h)
-
     _outermost: ta.Final[ChannelPipelineHandlerContext]
     _innermost: ta.Final[ChannelPipelineHandlerContext]
 
@@ -662,7 +660,7 @@ class ChannelPipeline:
             *,
             name: ta.Optional[str] = None,
     ) -> ChannelPipelineHandler:
-        check.state(self._channel._state == 'ready')  # noqa
+        check.state(self._channel._state == PipelineChannel.State.READY)  # noqa
 
         if not isinstance(handler, ShareableChannelPipelineHandler):
             check.not_in(handler, self._unique_contexts)
@@ -783,7 +781,7 @@ class ChannelPipeline:
         ctx = handler_ref._context  # noqa
         check.is_(ctx._pipeline, self)  # noqa
 
-        check.state(self._channel._state in ('ready', 'destroying'))  # noqa
+        check.state(self._channel._state in (PipelineChannel.State.READY, PipelineChannel.State.DESTROYING))  # noqa
 
         check.state(not ctx._invalidated)  # noqa
 
@@ -1041,13 +1039,6 @@ class PipelineChannelMetadata(Abstract):
 ##
 
 
-PipelineChannelState = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typing-no-move
-    'ready',
-    'destroying',
-    'destroyed',
-]
-
-
 @ta.final
 class PipelineChannel:
     @ta.final
@@ -1148,15 +1139,19 @@ class PipelineChannel:
 
         self._propagation: PipelineChannel._Propagation = PipelineChannel._Propagation(self)
 
-        self._state: PipelineChannelState = 'ready'
+        self._state = PipelineChannel.State.READY
 
         #
 
         self._pipeline: ta.Final[ChannelPipeline] = ChannelPipeline(
-            self,
-            spec.handlers,
-            config=spec.config.pipeline,
+            _channel=self,
+            _config=spec.config.pipeline,
         )
+
+        #
+
+        for h in spec.handlers:
+            self._pipeline.add_innermost(h)
 
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}'
@@ -1169,8 +1164,18 @@ class PipelineChannel:
     def pipeline(self) -> ChannelPipeline:
         return self._pipeline
 
+    #
+
+    class State(enum.Enum):
+        NEW = 'new'
+        READY = 'ready'
+        DESTROYING = 'destroying'
+        DESTROYED = 'destroyed'
+
+    _state: State = State.NEW
+
     @property
-    def state(self) -> PipelineChannelState:
+    def state(self) -> State:
         return self._state
 
     #
@@ -1568,8 +1573,8 @@ class PipelineChannel:
     #
 
     def destroy(self) -> None:
-        check.state(self._state == 'ready')
-        self._state = 'destroying'
+        check.state(self._state == PipelineChannel.State.READY)
+        self._state = PipelineChannel.State.DESTROYING
 
         self._step_in()
         try:
@@ -1581,4 +1586,4 @@ class PipelineChannel:
         finally:
             self._step_out()
 
-        self._state = 'destroyed'
+        self._state = PipelineChannel.State.DESTROYED

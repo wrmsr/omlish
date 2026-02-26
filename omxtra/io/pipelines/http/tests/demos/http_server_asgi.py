@@ -3,6 +3,7 @@
 import asyncio
 import collections.abc
 import dataclasses as dc
+import enum
 import functools
 import types
 import typing as ta
@@ -128,30 +129,31 @@ class _AsgiDriver:
         self._ctx = ctx
         self._pump = _AsgiPump(fn)
 
-    _state: ta.Literal[
-        'new',
+    class State(enum.Enum):
+        NEW = 'new'
 
-        'starting',
-        'started',
+        STARTING = 'starting'
+        STARTED = 'started'
 
-        'response_started',
-        'response_finished',
+        RESPONSE_STARTED = 'response_started'
+        RESPONSE_FINISHED = 'response_finished'
 
-        'closing',
-        'closed',
-    ] = 'new'
+        CLOSING = 'closing'
+        CLOSED = 'closed'
+
+    _state: State = State.NEW
 
     def start(self) -> None:
-        self._state = 'starting'
+        self._state = _AsgiDriver.State.NEW
         self._pump.start()
-        self._state = 'started'
+        self._state = _AsgiDriver.State.STARTED
 
     def close(self) -> None:
-        if self._state in ('closing', 'closed'):
+        if self._state in (_AsgiDriver.State.CLOSING, _AsgiDriver.State.CLOSED):
             return
-        self._state = 'closing'
+        self._state = _AsgiDriver.State.CLOSING
         self._pump.close()
-        self._state = 'closed'
+        self._state = _AsgiDriver.State.CLOSED
 
     #
 
@@ -160,9 +162,14 @@ class _AsgiDriver:
         v: ta.Any
 
     def step(self) -> None:
-        if self._state == 'new':
+        if self._state == _AsgiDriver.State.NEW:
             self.start()
-        check.state(self._state not in ('new', 'starting', 'closing', 'closed'))
+        check.state(self._state not in (
+            _AsgiDriver.State.NEW,
+            _AsgiDriver.State.STARTING,
+            _AsgiDriver.State.CLOSING,
+            _AsgiDriver.State.CLOSED,
+        ))
 
         out: ta.List[ta.Any] = []
 
@@ -191,7 +198,7 @@ class _AsgiDriver:
             out.append(awm)
             return False
 
-        if self._state == 'started':
+        if self._state == _AsgiDriver.State.STARTED:
             check.state(gv.k == 'y')
             f = check.isinstance(gv.v, _AsgiFuture)
             md = check.isinstance(check.isinstance(f.arg, _SendAsgiOp).msg, collections.abc.Mapping)
@@ -204,12 +211,12 @@ class _AsgiDriver:
             ))
             out.append(ChannelPipelineFlowMessages.FlushOutput())
 
-            self._state = 'response_started'
+            self._state = _AsgiDriver.State.RESPONSE_STARTED
 
             f.result, f.done = None, True
             return True
 
-        elif self._state == 'response_started':
+        elif self._state == _AsgiDriver.State.RESPONSE_STARTED:
             check.state(gv.k == 'y')
             f = check.isinstance(gv.v, _AsgiFuture)
             md = check.isinstance(check.isinstance(f.arg, _SendAsgiOp).msg, collections.abc.Mapping)
@@ -219,12 +226,12 @@ class _AsgiDriver:
             out.append(ChannelPipelineFlowMessages.FlushOutput())
 
             if not md.get('more_body', False):
-                self._state = 'response_finished'
+                self._state = _AsgiDriver.State.RESPONSE_FINISHED
 
             f.result, f.done = None, True
             return True
 
-        elif self._state == 'response_finished':
+        elif self._state == _AsgiDriver.State.RESPONSE_FINISHED:
             check.state(gv.k == 'r')
             check.state(gv.v is None)
 
@@ -383,7 +390,7 @@ async def ping_app(scope, receive, send):
             'more_body': i < len(body) - 1,
         })
 
-        await asyncio.sleep(1)
+        await asyncio.sleep(.2)
 
 
 ##

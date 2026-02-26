@@ -9,6 +9,7 @@
 import abc
 import collections
 import dataclasses as dc
+import enum
 import functools
 import inspect
 import sys
@@ -32,7 +33,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='errors.py', sha1='f0f9d973a1a219f790b309b043875b730b8863d4'),
             dict(path='../../../omlish/io/streams/types.py', sha1='ab72e5d4a1e648ef79577be7d8c45853b1c5917d'),
-            dict(path='core.py', sha1='9c148f96c971e46ef794e3408d191f2fb17beab6'),
+            dict(path='core.py', sha1='00d80c3e34be49811e304842105b43b859aa5455'),
             dict(path='../../../omlish/io/streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -1809,16 +1810,16 @@ class ChannelPipeline:
 
     def __init__(
             self,
-            channel: 'PipelineChannel',
-            handlers: ta.Sequence[ChannelPipelineHandler] = (),
-            config: ta.Optional[Config] = None,
+            *,
+            _channel: 'PipelineChannel',
+            _config: ta.Optional[Config] = None,
     ) -> None:
         super().__init__()
 
-        self._channel: ta.Final[PipelineChannel] = channel
-        if config is None:
-            config = ChannelPipeline.Config.DEFAULT
-        self._config: ta.Final[ChannelPipeline.Config] = config
+        self._channel: ta.Final[PipelineChannel] = _channel
+        if _config is None:
+            _config = ChannelPipeline.Config.DEFAULT
+        self._config: ta.Final[ChannelPipeline.Config] = _config
 
         self._outermost = outermost = ChannelPipelineHandlerContext(
             _pipeline=self,
@@ -1839,9 +1840,6 @@ class ChannelPipeline:
 
         self._contexts_by_name: ta.Final[ta.Dict[str, ChannelPipelineHandlerContext]] = {}
 
-        for h in handlers:
-            self.add_innermost(h)
-
     _outermost: ta.Final[ChannelPipelineHandlerContext]
     _innermost: ta.Final[ChannelPipelineHandlerContext]
 
@@ -1860,7 +1858,7 @@ class ChannelPipeline:
             *,
             name: ta.Optional[str] = None,
     ) -> ChannelPipelineHandler:
-        check.state(self._channel._state == 'ready')  # noqa
+        check.state(self._channel._state == PipelineChannel.State.READY)  # noqa
 
         if not isinstance(handler, ShareableChannelPipelineHandler):
             check.not_in(handler, self._unique_contexts)
@@ -1981,7 +1979,7 @@ class ChannelPipeline:
         ctx = handler_ref._context  # noqa
         check.is_(ctx._pipeline, self)  # noqa
 
-        check.state(self._channel._state in ('ready', 'destroying'))  # noqa
+        check.state(self._channel._state in (PipelineChannel.State.READY, PipelineChannel.State.DESTROYING))  # noqa
 
         check.state(not ctx._invalidated)  # noqa
 
@@ -2239,13 +2237,6 @@ class PipelineChannelMetadata(Abstract):
 ##
 
 
-PipelineChannelState = ta.Literal[  # ta.TypeAlias  # omlish-amalg-typing-no-move
-    'ready',
-    'destroying',
-    'destroyed',
-]
-
-
 @ta.final
 class PipelineChannel:
     @ta.final
@@ -2346,15 +2337,19 @@ class PipelineChannel:
 
         self._propagation: PipelineChannel._Propagation = PipelineChannel._Propagation(self)
 
-        self._state: PipelineChannelState = 'ready'
+        self._state = PipelineChannel.State.READY
 
         #
 
         self._pipeline: ta.Final[ChannelPipeline] = ChannelPipeline(
-            self,
-            spec.handlers,
-            config=spec.config.pipeline,
+            _channel=self,
+            _config=spec.config.pipeline,
         )
+
+        #
+
+        for h in spec.handlers:
+            self._pipeline.add_innermost(h)
 
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}'
@@ -2367,8 +2362,18 @@ class PipelineChannel:
     def pipeline(self) -> ChannelPipeline:
         return self._pipeline
 
+    #
+
+    class State(enum.Enum):
+        NEW = 'new'
+        READY = 'ready'
+        DESTROYING = 'destroying'
+        DESTROYED = 'destroyed'
+
+    _state: State = State.NEW
+
     @property
-    def state(self) -> PipelineChannelState:
+    def state(self) -> State:
         return self._state
 
     #
@@ -2766,8 +2771,8 @@ class PipelineChannel:
     #
 
     def destroy(self) -> None:
-        check.state(self._state == 'ready')
-        self._state = 'destroying'
+        check.state(self._state == PipelineChannel.State.READY)
+        self._state = PipelineChannel.State.DESTROYING
 
         self._step_in()
         try:
@@ -2779,7 +2784,7 @@ class PipelineChannel:
         finally:
             self._step_out()
 
-        self._state = 'destroyed'
+        self._state = PipelineChannel.State.DESTROYED
 
 
 ########################################
