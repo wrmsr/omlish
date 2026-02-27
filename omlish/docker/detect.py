@@ -9,7 +9,7 @@ import typing as ta
 ##
 
 
-# Set by pyproject, docker-dev script
+# Set by pyproject, dockerdev script
 DOCKER_HOST_PLATFORM_KEY = 'DOCKER_HOST_PLATFORM'
 
 
