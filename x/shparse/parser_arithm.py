@@ -19,21 +19,21 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 r"""
 
-// compact specifies whether we allow spaces between expressions.
-// This is true for let
+# compact specifies whether we allow spaces between expressions.
+# This is true for let
 func (p *Parser) arithmExpr(compact bool) ArithmExpr {
     return p.arithmExprComma(compact)
 }
 
-// These function names are inspired by Bash's expr.c
+# These function names are inspired by Bash's expr.c
 
 func (p *Parser) arithmExprComma(compact bool) ArithmExpr {
     return p.arithmExprBinary(compact, p.arithmExprAssign, Comma)
 }
 
 func (p *Parser) arithmExprAssign(compact bool) ArithmExpr {
-    // Assign is different from the other binary operators because it's
-    // right-associative and needs to check that it's placed after a name
+    # Assign is different from the other binary operators because it's
+    # right-associative and needs to check that it's placed after a name
     value := p.arithmExprTernary(compact)
     switch BinAritOperator(p.tok) {
     case AddAssgn, SubAssgn, MulAssgn, QuoAssgn, RemAssgn, AndAssgn,
@@ -143,7 +143,7 @@ func (p *Parser) arithmExprMultiplication(compact bool) ArithmExpr {
 }
 
 func (p *Parser) arithmExprPower(compact bool) ArithmExpr {
-    // Power is different from the other binary operators because it's right-associative
+    # Power is different from the other binary operators because it's right-associative
     value := p.arithmExprUnary(compact)
     if BinAritOperator(p.tok) != Pow || (compact && p.spaced) {
         return value
@@ -242,8 +242,8 @@ func (p *Parser) arithmExprValue(compact bool) ArithmExpr {
         p.got(_Newl)
     }
 
-    // we want real nil, not (*Word)(nil) as that
-    // sets the type to non-nil and then x != nil
+    # we want real nil, not (*Word)(nil) as that
+    # sets the type to non-nil and then x != nil
     if p.tok == addAdd || p.tok == subSub {
         if !isArithName(x) {
             p.curErr("%#q must follow a name", p.tok)
@@ -260,8 +260,8 @@ func (p *Parser) arithmExprValue(compact bool) ArithmExpr {
     return x
 }
 
-// nextArith consumes a token.
-// It returns true if compact and the token was followed by spaces
+# nextArith consumes a token.
+# It returns true if compact and the token was followed by spaces
 func (p *Parser) nextArith(compact bool) bool {
     p.next()
     if compact && p.spaced {
@@ -281,7 +281,7 @@ func (p *Parser) nextArithOp(compact bool) {
     }
 }
 
-// arithmExprBinary is used for all left-associative binary operators
+# arithmExprBinary is used for all left-associative binary operators
 func (p *Parser) arithmExprBinary(compact bool, nextOp func(bool) ArithmExpr, operators ...BinAritOperator) ArithmExpr {
     value := nextOp(compact)
     for {
