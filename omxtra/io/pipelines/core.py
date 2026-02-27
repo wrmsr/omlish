@@ -1477,7 +1477,7 @@ class PipelineChannel:
 
         elif tm == 'raise':
             if not isinstance(msg, ChannelPipelineMessages.MustPropagate):
-                raise MessageReachedTerminalChannelPipelineError(inbound=msg)
+                raise MessageReachedTerminalChannelPipelineError.new_single('inbound', msg)
 
         else:
             raise RuntimeError(f'unknown inbound terminal mode {tm}')
@@ -1569,15 +1569,17 @@ class PipelineChannel:
             try:
                 x, last_ctx = dct.pop(i)  # noqa
             except KeyError:
-                raise MessageNotPropagatedChannelPipelineError(
-                    inbound=[msg] if direction == 'inbound' else None,
-                    outbound=[msg] if direction == 'outbound' else None,
+                raise MessageNotPropagatedChannelPipelineError.new_single(
+                    direction,
+                    msg,
+                    last_seen=ctx._ref,  # noqa
                 ) from None
 
             if x is not msg:
-                raise MessageNotPropagatedChannelPipelineError(
-                    inbound=[msg] if direction == 'inbound' else None,
-                    outbound=[msg] if direction == 'outbound' else None,
+                raise MessageNotPropagatedChannelPipelineError.new_single(
+                    direction,
+                    msg,
+                    last_seen=ctx._ref,  # noqa
                 )
 
         def check_and_clear(self) -> None:
@@ -1587,12 +1589,9 @@ class PipelineChannel:
             if not (self._pending_inbound_must or self._pending_outbound_must):
                 return
 
-            inbound = [msg for msg, _ in self._pending_inbound_must.values()]
-            outbound = [msg for msg, _ in self._pending_outbound_must.values()]
-
-            e = MessageNotPropagatedChannelPipelineError(
-                inbound=inbound or None,
-                outbound=outbound or None,
+            e = MessageNotPropagatedChannelPipelineError.new(
+                inbound_with_last_seen=[(msg, ctx._ref) for msg, ctx in self._pending_inbound_must.values()],  # noqa
+                outbound_with_last_seen=[(msg, ctx._ref) for msg, ctx in self._pending_outbound_must.values()],  # noqa
             )
 
             self._pending_inbound_must.clear()

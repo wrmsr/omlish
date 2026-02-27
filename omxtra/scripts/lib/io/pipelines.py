@@ -49,14 +49,14 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='../../../omlish/logs/levels.py', sha1='91405563d082a5eba874da82aac89d83ce7b6152'),
             dict(path='../../../omlish/logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
-            dict(path='errors.py', sha1='a6e20daf54f563f7d2aa4f28fce87fa06417facb'),
+            dict(path='errors.py', sha1='0054b6d57018a34c58d67cfc7dbbb890bce7b890'),
             dict(path='../../../omlish/http/headers.py', sha1='a8204e05f535f04891ff4967f17332f4fad04f23'),
             dict(path='../../../omlish/http/parsing.py', sha1='2ee187993274e697332c7df7b46a98382f4cee2a'),
             dict(path='../../../omlish/io/streams/types.py', sha1='ab72e5d4a1e648ef79577be7d8c45853b1c5917d'),
             dict(path='../../../omlish/logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
             dict(path='../../../omlish/logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='../../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
-            dict(path='core.py', sha1='f316e8c5e7d03250db7cc842d84c6f05320e0108'),
+            dict(path='core.py', sha1='c14e2929dd46c09f08a27a81d0f0f4b09794c2c5'),
             dict(path='../../../omlish/io/streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -1585,18 +1585,65 @@ class FinalOutputChannelPipelineError(ChannelPipelineError):
 
 @dc.dataclass()
 class MessageChannelPipelineError(ChannelPipelineError):
-    inbound: ta.Optional[ta.Sequence[ta.Any]] = None
-    outbound: ta.Optional[ta.Sequence[ta.Any]] = None
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class Item:
+        direction: ta.Literal['inbound', 'outbound']
+        msg: ta.Any
+
+        # _: dc.KW_ONLY
+
+        last_seen: ta.Optional[ta.Any] = None
+
+        def __repr__(self) -> str:
+            return (
+                f'{self.__class__.__name__}('
+                f'{self.direction!r}'
+                f', {self.msg!r}' +
+                (f', last_seen={self.last_seen!r}' if self.last_seen is not None else '') +
+                ')'
+            )
+
+    items: ta.Sequence[Item]
+
+    @classmethod
+    def new(
+            cls,
+            *,
+            inbound: ta.Optional[ta.Sequence[ta.Any]] = None,
+            inbound_with_last_seen: ta.Optional[ta.Sequence[ta.Tuple[ta.Any, ta.Any]]] = None,
+            outbound: ta.Optional[ta.Sequence[ta.Any]] = None,
+            outbound_with_last_seen: ta.Optional[ta.Sequence[ta.Tuple[ta.Any, ta.Any]]] = None,
+    ) -> 'MessageChannelPipelineError':
+        items: ta.List[MessageChannelPipelineError.Item] = []
+        for msg in inbound or ():
+            items.append(MessageChannelPipelineError.Item('inbound', msg))
+        for msg, last_seen in inbound_with_last_seen or ():
+            items.append(MessageChannelPipelineError.Item('inbound', msg, last_seen=last_seen))
+        for msg in outbound or ():
+            items.append(MessageChannelPipelineError.Item('outbound', msg))
+        for msg, last_seen in outbound_with_last_seen or ():
+            items.append(MessageChannelPipelineError.Item('outbound', msg, last_seen=last_seen))
+        return cls(items)
+
+    @classmethod
+    def new_single(
+            cls,
+            direction: ta.Literal['inbound', 'outbound'],
+            msg: ta.Any,
+            *,
+            last_seen: ta.Optional[ta.Any] = None,
+    ) -> 'MessageChannelPipelineError':
+        return cls([
+            MessageChannelPipelineError.Item(
+                direction,
+                msg,
+                last_seen=last_seen,
+            ),
+        ])
 
     def __repr__(self) -> str:
-        return ''.join([
-            f'{self.__class__.__name__}(',
-            ', '.join([
-                *([f'inbound={self.inbound!r}'] if self.inbound is not None else []),
-                *([f'outbound={self.outbound!r}'] if self.outbound is not None else []),
-            ]),
-            ')',
-        ])
+        return f'{self.__class__.__name__}({self.items!r})'
 
 
 @dc.dataclass(repr=False)
@@ -5999,7 +6046,7 @@ class PipelineChannel:
 
         elif tm == 'raise':
             if not isinstance(msg, ChannelPipelineMessages.MustPropagate):
-                raise MessageReachedTerminalChannelPipelineError(inbound=msg)
+                raise MessageReachedTerminalChannelPipelineError.new_single('inbound', msg)
 
         else:
             raise RuntimeError(f'unknown inbound terminal mode {tm}')
@@ -6091,15 +6138,17 @@ class PipelineChannel:
             try:
                 x, last_ctx = dct.pop(i)  # noqa
             except KeyError:
-                raise MessageNotPropagatedChannelPipelineError(
-                    inbound=[msg] if direction == 'inbound' else None,
-                    outbound=[msg] if direction == 'outbound' else None,
+                raise MessageNotPropagatedChannelPipelineError.new_single(
+                    direction,
+                    msg,
+                    last_seen=ctx._ref,  # noqa
                 ) from None
 
             if x is not msg:
-                raise MessageNotPropagatedChannelPipelineError(
-                    inbound=[msg] if direction == 'inbound' else None,
-                    outbound=[msg] if direction == 'outbound' else None,
+                raise MessageNotPropagatedChannelPipelineError.new_single(
+                    direction,
+                    msg,
+                    last_seen=ctx._ref,  # noqa
                 )
 
         def check_and_clear(self) -> None:
@@ -6109,12 +6158,9 @@ class PipelineChannel:
             if not (self._pending_inbound_must or self._pending_outbound_must):
                 return
 
-            inbound = [msg for msg, _ in self._pending_inbound_must.values()]
-            outbound = [msg for msg, _ in self._pending_outbound_must.values()]
-
-            e = MessageNotPropagatedChannelPipelineError(
-                inbound=inbound or None,
-                outbound=outbound or None,
+            e = MessageNotPropagatedChannelPipelineError.new(
+                inbound_with_last_seen=[(msg, ctx._ref) for msg, ctx in self._pending_inbound_must.values()],  # noqa
+                outbound_with_last_seen=[(msg, ctx._ref) for msg, ctx in self._pending_outbound_must.values()],  # noqa
             )
 
             self._pending_inbound_must.clear()
