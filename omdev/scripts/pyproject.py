@@ -148,7 +148,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../interp/providers/system.py', sha1='9638a154475ca98775159d27739563ac7fb2eb16'),
             dict(path='../interp/pyenv/install.py', sha1='4a10a19717364b4ba9f3b8bf1d12621cf21ba8b8'),
             dict(path='../interp/uv/provider.py', sha1='3c3980878ad2b9fd2cd02172f9424954759c7f06'),
-            dict(path='pkg.py', sha1='fd158f4026f2e0e672f147612b46d8552f262eb3'),
+            dict(path='pkg.py', sha1='b2b63a3906d62e5911d2e5c0ee178041c53eff50'),
             dict(path='../interp/providers/inject.py', sha1='7cc9ebf58cf2ec09545321456bd9da9f9a3a79fb'),
             dict(path='../interp/pyenv/provider.py', sha1='377542ce01a35849e2a5b4a4dbafedc26882f983'),
             dict(path='../interp/uv/inject.py', sha1='e95d058c2340baa5a3155ec3440f311d1daa10a8'),
@@ -11785,28 +11785,59 @@ class BasePyprojectPackageGenerator(Abstract):
         inc: ta.List[str]
         exc: ta.List[str]
 
+    _PKG_DATA_EXCLUDE_DIRS: ta.ClassVar[ta.AbstractSet[str]] = frozenset([
+        '__pycache__',
+    ])
+
     @cached_nullary
-    def _collect_pkg_data(self) -> _PkgData:
-        inc: ta.List[str] = []
-        exc: ta.List[str] = []
+    def _collect_pkg_data(self) -> ta.Mapping[str, _PkgData]:
+        dct: ta.Dict[str, BasePyprojectPackageGenerator._PkgData] = {}
 
         for p, ds, fs in os.walk(self._dir_name):  # noqa
             for f in fs:
                 if f != '.pkgdata':
                     continue
-                rp = os.path.relpath(p, self._dir_name)
-                log.info('Found pkgdata %s for pkg %s', rp, self._dir_name)
+
+                log.info('Found pkgdata %s', p)
                 with open(os.path.join(p, f)) as fo:
                     src = fo.read()
+
+                pn = p.replace(os.sep, '.')
+                check.not_in(pn, dct)
+
+                inc: ta.List[str] = []
+                exc: ta.List[str] = []
+
                 for l in src.splitlines():
                     if not (l := l.strip()):
                         continue
+
                     if (bang := l.startswith('!')):
                         l = l[1:]
-                    rlp = os.path.join(rp, l) if rp != '.' else l
-                    (exc if bang else inc).append(rlp)
 
-        return self._PkgData(inc, exc)
+                    if '**' in l:
+                        if bang:
+                            raise ValueError('Cannot exclude recursive globs')
+                        check.state(not l.endswith(os.sep))
+                        ge = l.rsplit(os.sep, maxsplit=1)[-1]
+
+                        gds = set()
+                        for g in glob.glob(l, root_dir=p, recursive=True):
+                            if os.path.isfile(gp := os.path.join(p, g)):
+                                if any(gpp in self._PKG_DATA_EXCLUDE_DIRS for gpp in os.path.dirname(gp).split(os.sep)):
+                                    continue
+                                gd = os.path.dirname(g)
+                                gds.add(gd)
+
+                        for gd in sorted(gds):
+                            inc.append(os.path.join(gd, ge))
+
+                    else:
+                        (exc if bang else inc).append(l)
+
+                dct[pn] = self._PkgData(inc, exc)
+
+        return dct
 
     #
 
@@ -11988,10 +12019,12 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
         epd = dict(st.pop('exclude_package_data', {}))
 
         cpd = self._collect_pkg_data()
-        if cpd.inc:
-            pd['*'] = [*pd.get('*', []), *sorted(set(cpd.inc))]
-        if cpd.exc:
-            epd['*'] = [*epd.get('*', []), *sorted(set(cpd.exc))]
+        for pdk, pdv in cpd.items():
+            pdl = TomlWriter.Literal(f"'{pdk}'")
+            if pdv.inc:
+                pd.setdefault(pdl, []).extend(sorted(set(pdv.inc)))
+            if pdv.exc:
+                pd.setdefault(pdl, []).extend(sorted(set(pdv.exc)))
 
         if pd:
             pyp_dct['tool.setuptools.package-data'] = pd

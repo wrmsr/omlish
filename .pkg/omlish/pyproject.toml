@@ -162,8 +162,18 @@ exclude = [
     'LICENSE.txt',
     'AUTHORS',
     'DESIGN.md',
+]
+'omlish' = [
     'CODESTYLE.md',
-    'specs/jsonschema/schemas/draft202012/*.json',
-    'specs/jsonschema/schemas/draft202012/vocabularies/*.json',
-    'text/abnf/docs/*.txt',
+]
+'omlish.specs.jsonschema' = [
+    'schemas/*',
+    'schemas/draft202012/*',
+    'schemas/draft202012/vocabularies/*',
+]
+'omlish.cexts' = [
+    'include/omlish/*',
+]
+'omlish.text.abnf' = [
+    'docs/*',
 ]

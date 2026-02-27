@@ -103,17 +103,21 @@ exclude = [
     'LICENSE.txt',
     'AUTHORS',
     'DESIGN.md',
-    'cc/cdeps.toml',
-    'dockerdev/config.toml',
-    'dockerdev/resources/*',
-    'dockerdev/resources/.*',
-    'dockerdev/resources/configs/*',
-    'dockerdev/resources/configs/.*',
-    'dockerdev/resources/depsets/*',
-    'dockerdev/resources/fragments/*',
-    'pyproject/resources/*.sh',
-    'tools/jsonview/resources/*.css',
-    'tools/jsonview/resources/*.html',
-    'tools/jsonview/resources/*.j2',
-    'tools/jsonview/resources/*.js',
+]
+'omdev.tools.jsonview' = [
+    'resources/*',
+]
+'omdev.pyproject' = [
+    'resources/*',
+]
+'omdev.dockerdev' = [
+    'config.toml',
+    'resources/*',
+    'resources/.*',
+    'resources/configs/.*',
+    'resources/depsets/*',
+    'resources/fragments/*',
+]
+'omdev.cc' = [
+    'cdeps.toml',
 ]

@@ -27,6 +27,7 @@ vcs+protocol://repo_url/#egg=pkg&subdirectory=pkg_dir
 # ruff: noqa: UP006 UP007 UP045
 import abc
 import dataclasses as dc
+import glob
 import importlib
 import inspect
 import os.path
@@ -40,6 +41,7 @@ import typing as ta
 from omlish.formats.toml.writer import TomlWriter
 from omlish.lite.abstract import Abstract
 from omlish.lite.cached import cached_nullary
+from omlish.lite.check import check
 from omlish.logs.modules import get_module_logger
 from omlish.subprocesses.sync import subprocesses
 
@@ -150,28 +152,59 @@ class BasePyprojectPackageGenerator(Abstract):
         inc: ta.List[str]
         exc: ta.List[str]
 
+    _PKG_DATA_EXCLUDE_DIRS: ta.ClassVar[ta.AbstractSet[str]] = frozenset([
+        '__pycache__',
+    ])
+
     @cached_nullary
-    def _collect_pkg_data(self) -> _PkgData:
-        inc: ta.List[str] = []
-        exc: ta.List[str] = []
+    def _collect_pkg_data(self) -> ta.Mapping[str, _PkgData]:
+        dct: ta.Dict[str, BasePyprojectPackageGenerator._PkgData] = {}
 
         for p, ds, fs in os.walk(self._dir_name):  # noqa
             for f in fs:
                 if f != '.pkgdata':
                     continue
-                rp = os.path.relpath(p, self._dir_name)
-                log.info('Found pkgdata %s for pkg %s', rp, self._dir_name)
+
+                log.info('Found pkgdata %s', p)
                 with open(os.path.join(p, f)) as fo:
                     src = fo.read()
+
+                pn = p.replace(os.sep, '.')
+                check.not_in(pn, dct)
+
+                inc: ta.List[str] = []
+                exc: ta.List[str] = []
+
                 for l in src.splitlines():
                     if not (l := l.strip()):
                         continue
+
                     if (bang := l.startswith('!')):
                         l = l[1:]
-                    rlp = os.path.join(rp, l) if rp != '.' else l
-                    (exc if bang else inc).append(rlp)
 
-        return self._PkgData(inc, exc)
+                    if '**' in l:
+                        if bang:
+                            raise ValueError('Cannot exclude recursive globs')
+                        check.state(not l.endswith(os.sep))
+                        ge = l.rsplit(os.sep, maxsplit=1)[-1]
+
+                        gds = set()
+                        for g in glob.glob(l, root_dir=p, recursive=True):
+                            if os.path.isfile(gp := os.path.join(p, g)):
+                                if any(gpp in self._PKG_DATA_EXCLUDE_DIRS for gpp in os.path.dirname(gp).split(os.sep)):
+                                    continue
+                                gd = os.path.dirname(g)
+                                gds.add(gd)
+
+                        for gd in sorted(gds):
+                            inc.append(os.path.join(gd, ge))
+
+                    else:
+                        (exc if bang else inc).append(l)
+
+                dct[pn] = self._PkgData(inc, exc)
+
+        return dct
 
     #
 
@@ -353,10 +386,12 @@ class PyprojectPackageGenerator(BasePyprojectPackageGenerator):
         epd = dict(st.pop('exclude_package_data', {}))
 
         cpd = self._collect_pkg_data()
-        if cpd.inc:
-            pd['*'] = [*pd.get('*', []), *sorted(set(cpd.inc))]
-        if cpd.exc:
-            epd['*'] = [*epd.get('*', []), *sorted(set(cpd.exc))]
+        for pdk, pdv in cpd.items():
+            pdl = TomlWriter.Literal(f"'{pdk}'")
+            if pdv.inc:
+                pd.setdefault(pdl, []).extend(sorted(set(pdv.inc)))
+            if pdv.exc:
+                pd.setdefault(pdl, []).extend(sorted(set(pdv.exc)))
 
         if pd:
             pyp_dct['tool.setuptools.package-data'] = pd
