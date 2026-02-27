@@ -1590,13 +1590,15 @@ class PipelineChannel:
             inbound = [msg for msg, _ in self._pending_inbound_must.values()]
             outbound = [msg for msg, _ in self._pending_outbound_must.values()]
 
-            self._pending_inbound_must.clear()
-            self._pending_outbound_must.clear()
-
-            raise MessageNotPropagatedChannelPipelineError(
+            e = MessageNotPropagatedChannelPipelineError(
                 inbound=inbound or None,
                 outbound=outbound or None,
             )
+
+            self._pending_inbound_must.clear()
+            self._pending_outbound_must.clear()
+
+            raise e
 
     #
 

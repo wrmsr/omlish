@@ -54,12 +54,12 @@ class MessageChannelPipelineError(ChannelPipelineError):
         ])
 
 
-@dc.dataclass()
+@dc.dataclass(repr=False)
 class MessageNotPropagatedChannelPipelineError(MessageChannelPipelineError, UnhandleableChannelPipelineError):
     pass
 
 
-@dc.dataclass()
+@dc.dataclass(repr=False)
 class MessageReachedTerminalChannelPipelineError(MessageChannelPipelineError, UnhandleableChannelPipelineError):
     pass
 

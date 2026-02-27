@@ -49,14 +49,14 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='../../../omlish/logs/levels.py', sha1='91405563d082a5eba874da82aac89d83ce7b6152'),
             dict(path='../../../omlish/logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
-            dict(path='errors.py', sha1='f0f9d973a1a219f790b309b043875b730b8863d4'),
+            dict(path='errors.py', sha1='a6e20daf54f563f7d2aa4f28fce87fa06417facb'),
             dict(path='../../../omlish/http/headers.py', sha1='a8204e05f535f04891ff4967f17332f4fad04f23'),
             dict(path='../../../omlish/http/parsing.py', sha1='2ee187993274e697332c7df7b46a98382f4cee2a'),
             dict(path='../../../omlish/io/streams/types.py', sha1='ab72e5d4a1e648ef79577be7d8c45853b1c5917d'),
             dict(path='../../../omlish/logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
             dict(path='../../../omlish/logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='../../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
-            dict(path='core.py', sha1='e1b46db31e8ed593e17e23ebb48fa28d729ab4fa'),
+            dict(path='core.py', sha1='f316e8c5e7d03250db7cc842d84c6f05320e0108'),
             dict(path='../../../omlish/io/streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -87,7 +87,7 @@ def __omlish_amalg__():  # noqa
             dict(path='bytes/decoders.py', sha1='212e4f54b7bc55028ae75dfb75b3ec18cc5bad51'),
             dict(path='http/decoders.py', sha1='d82d2096b3016e84019bf723aeb17586e2472fd5'),
             dict(path='drivers/asyncio.py', sha1='af72109759129233c49f4f7a83ea60597d2d044a'),
-            dict(path='http/client/responses.py', sha1='fc4779c7ee74777ad67c56b9e5a4f4121fbef324'),
+            dict(path='http/client/responses.py', sha1='8ee78c9d22f899377b26184e435865ebd4e3b556'),
             dict(path='http/server/requests.py', sha1='1007de97135c4712c67e5814cb17d7bc85650dad'),
             dict(path='_amalg.py', sha1='f66657d8b3801c6e8e84db2e4cd1b593d9e029be'),
         ],
@@ -1599,12 +1599,12 @@ class MessageChannelPipelineError(ChannelPipelineError):
         ])
 
 
-@dc.dataclass()
+@dc.dataclass(repr=False)
 class MessageNotPropagatedChannelPipelineError(MessageChannelPipelineError, UnhandleableChannelPipelineError):
     pass
 
 
-@dc.dataclass()
+@dc.dataclass(repr=False)
 class MessageReachedTerminalChannelPipelineError(MessageChannelPipelineError, UnhandleableChannelPipelineError):
     pass
 
@@ -6112,13 +6112,15 @@ class PipelineChannel:
             inbound = [msg for msg, _ in self._pending_inbound_must.values()]
             outbound = [msg for msg, _ in self._pending_outbound_must.values()]
 
-            self._pending_inbound_must.clear()
-            self._pending_outbound_must.clear()
-
-            raise MessageNotPropagatedChannelPipelineError(
+            e = MessageNotPropagatedChannelPipelineError(
                 inbound=inbound or None,
                 outbound=outbound or None,
             )
+
+            self._pending_inbound_must.clear()
+            self._pending_outbound_must.clear()
+
+            raise e
 
     #
 
@@ -11600,30 +11602,181 @@ class PipelineHttpResponseDecoder(InboundBytesBufferingChannelPipelineHandler):
 ##
 
 
-class PipelineHttpResponseConditionalGzipDecoder(ChannelPipelineHandler):
+@dc.dataclass(frozen=True)
+class PipelineHttpCompressionDecodingConfig:
+    DEFAULT: ta.ClassVar['PipelineHttpCompressionDecodingConfig']
+
+    max_decomp_chunk: int = 64 * 1024  # max bytes emitted per inflate step
+
+    max_decomp_total: ta.Optional[int] = None    # max total decompressed bytes per response
+    max_expansion_ratio: ta.Optional[int] = 200  # max_out <= max(1, in_total) * ratio (+ small slack)
+
+    max_in_pending: ta.Optional[int] = 256 * 1024   # cap compressed bytes retained by this stage
+    max_out_pending: ta.Optional[int] = 256 * 1024  # cap decompressed bytes retained by this stage (if you buffer)
+
+
+PipelineHttpCompressionDecodingConfig.DEFAULT = PipelineHttpCompressionDecodingConfig()
+
+
+#
+
+
+class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPipelineHandler):
     """
     Conditional streaming gzip decompression.
 
     Watches for DecodedHttpResponseHead; if Content-Encoding includes 'gzip', enable zlib decompressor for body bytes.
     Flushes on EOF.
+
+    FIXME:
+     - flow control messages lol
     """
 
-    def __init__(self) -> None:
+    def __init__(
+            self,
+            *,
+            config: PipelineHttpCompressionDecodingConfig = PipelineHttpCompressionDecodingConfig.DEFAULT,
+    ) -> None:
         super().__init__()
+
+        self._config = config
 
         self._enabled = False
         self._z: ta.Optional[ta.Any] = None
 
-    # FIXME:
-    #  - we get obj.unconsumed_tail and unused_data, but not the full internal buffer sizes
-    # def inbound_buffered_bytes(self) -> int:
+        self._in_total_bytes = 0
+        self._out_total_bytes = 0
+
+        self._in_pending: collections.deque[BytesLikeOrMemoryview] = collections.deque()
+        self._in_pending_bytes = 0
+
+        self._out_pending: collections.deque[BytesLikeOrMemoryview] = collections.deque()
+        self._out_pending_bytes = 0
+
+    def inbound_buffered_bytes(self) -> int:
+        return self._in_pending_bytes + self._out_pending_bytes
+
+    def _reset(self) -> None:
+        self._in_total_bytes = 0
+        self._out_total_bytes = 0
+
+        self._in_pending.clear()
+        self._in_pending_bytes = 0
+
+        self._out_pending.clear()
+        self._out_pending_bytes = 0
+
+    def _check_budgets(self) -> None:
+        if (mdt := self._config.max_decomp_total) is not None and self._out_total_bytes > mdt:
+            raise ValueError('gzip output exceeds limit (possible zip bomb)')
+
+        if (mer := self._config.max_expansion_ratio) is not None:
+            slack = self._config.max_decomp_chunk
+            if self._out_total_bytes > (max(1, self._in_total_bytes) * mer + slack):
+                raise ValueError('gzip expansion ratio exceeds limit (possible zip bomb)')
+
+        if (mip := self._config.max_in_pending) is not None and self._in_pending_bytes > mip:
+            raise ValueError('gzip compressed pending exceeds limit (flow control)')
+
+        if (mop := self._config.max_out_pending) is not None and self._out_pending_bytes > mop:
+            raise ValueError('gzip output pending exceeds limit (flow control)')
+
+    def _emit_out_pending(self, ctx: ChannelPipelineHandlerContext) -> None:
+        while self._out_pending:
+            o = self._out_pending.popleft()
+            self._out_pending_bytes -= len(o)
+            ctx.feed_in(o)
+        check.state(self._out_pending_bytes == 0)
+
+    def _pump(self, ctx: ChannelPipelineHandlerContext) -> None:
+        """
+        Drain pending compressed input through zlib into output, under strict bounds. Stops when it can't make progress
+        or would exceed pending caps.
+        """
+
+        z = self._z
+        if z is None:
+            return
+
+        # First, flush any already buffered output if you buffer at all.
+        self._emit_out_pending(ctx)
+
+        # Pump while we have input and output headroom.
+        while self._in_pending:
+            # If we're buffering output, enforce some headroom; if you emit immediately, max_out_pending can be 0 and
+            # this stays trivial.
+            if (mop := self._config.max_out_pending) is not None:
+                out_headroom = mop - self._out_pending_bytes
+                if out_headroom <= 0:
+                    break
+
+                # Always bound per-call production.
+                cap = min(self._config.max_decomp_chunk, out_headroom)
+
+            else:
+                cap = self._config.max_decomp_chunk
+
+            # Feed *some* input. You can choose a slice size to avoid huge mv creation. This also makes max_in_pending
+            # meaningful.
+            chunk = self._in_pending.popleft()
+            cl = len(chunk)
+            self._in_pending_bytes -= cl
+
+            out = z.decompress(chunk, cap)
+            if out:
+                ol = len(out)
+                self._out_total_bytes += ol
+                self._out_pending.append(out)
+                self._out_pending_bytes += ol
+                self._check_budgets()
+                self._emit_out_pending(ctx)
+
+            # Now: advance input by how much zlib actually consumed.
+            #
+            # CPython doesn't directly expose "bytes consumed" from the arg, but you can infer it using unconsumed_tail:
+            # it's the portion of the provided input zlib didn't consume.
+            ut = z.unconsumed_tail
+            utl = len(ut)
+            if ut:
+                consumed = cl - utl
+                if consumed <= 0:
+                    # No input consumed; if also no output produced, we're stuck.
+                    if not out:
+                        # break
+                        raise NotImplementedError
+
+                    # If we produced output but consumed nothing, loop continues bounded by cap.
+                    self._in_pending.appendleft(b'')
+
+                else:
+                    # Keep remainder as pending
+                    self._in_pending.appendleft(ut)
+                    self._in_pending_bytes += utl
+
+            # Budget check also covers in/out pending sizes
+            self._check_budgets()
+
+            # If neither output nor input consumption happened, stop.
+            if not out and ut and utl == cl:
+                break
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         if isinstance(msg, ChannelPipelineMessages.FinalInput):
             if self._enabled and self._z is not None:
-                tail = self._z.flush()
-                if tail:
-                    ctx.feed_in(tail)
+                # Drain any remaining pending input first
+                self._pump(ctx)
+
+                while True:
+                    out = self._z.flush(self._config.max_decomp_chunk)
+                    if not out:
+                        break
+                    ol = len(out)
+                    self._out_total_bytes += ol
+                    self._out_pending.append(out)
+                    self._out_pending_bytes += ol
+                    self._check_budgets()
+                    self._emit_out_pending(ctx)
+
             ctx.feed_in(msg)
             return
 
@@ -11631,6 +11784,7 @@ class PipelineHttpResponseConditionalGzipDecoder(ChannelPipelineHandler):
             enc = msg.headers.lower.get('content-encoding', ())
             self._enabled = 'gzip' in enc
             self._z = zlib.decompressobj(16 + zlib.MAX_WBITS) if self._enabled else None
+            self._reset()
             ctx.feed_in(msg)
             return
 
@@ -11642,15 +11796,13 @@ class PipelineHttpResponseConditionalGzipDecoder(ChannelPipelineHandler):
             ctx.feed_in(msg)
             return
 
-        if not ByteStreamBuffers.can_bytes(msg):
-            ctx.feed_in(msg)
-            return
-
         for mv in ByteStreamBuffers.iter_segments(msg):
-            out = self._z.decompress(mv)  # FIXME: max_length!! zip bombs
-            # FIXME: also unconsumed_tail lol
-            if out:
-                ctx.feed_in(out)
+            mvl = len(mv)
+            self._in_total_bytes += mvl
+            self._in_pending.append(mv)
+            self._in_pending_bytes += mvl
+            self._check_budgets()
+            self._pump(ctx)
 
 
 ##
