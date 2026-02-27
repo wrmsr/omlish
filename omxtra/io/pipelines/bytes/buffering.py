@@ -17,3 +17,11 @@ class InboundBytesBufferingChannelPipelineHandler(ChannelPipelineHandler, Abstra
         """Returning `None` denotes currently unknown/unanswerable."""
 
         raise NotImplementedError
+
+
+class OutboundBytesBufferingChannelPipelineHandler(ChannelPipelineHandler, Abstract):
+    @abc.abstractmethod
+    def outbound_buffered_bytes(self) -> ta.Optional[int]:
+        """Returning `None` denotes currently unknown/unanswerable."""
+
+        raise NotImplementedError

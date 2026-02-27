@@ -63,7 +63,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/logs/contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
             dict(path='../../../omlish/logs/utils.py', sha1='9b879044cbdc3172fd7282c7f2a4880b81261cdd'),
             dict(path='asyncs.py', sha1='3c5834fe4879ebdc63d44951798ad9110ae83ad4'),
-            dict(path='bytes/buffering.py', sha1='aa8375c8ef0689db865bb4009afd3ed8dcc2bd12'),
+            dict(path='bytes/buffering.py', sha1='363d3209a49ddfc5a6bc41b4f3fd4629ddd6dbbf'),
             dict(path='flow/types.py', sha1='839f08718c67d2d84e56aee973ba1c9c34afb732'),
             dict(path='handlers/fns.py', sha1='75e982604574d6ffaacf9ac1f37ab6e9edbd608d'),
             dict(path='handlers/queues.py', sha1='73f018001a9e305194ed1bf9783fc49a71c2ed49'),
@@ -6925,6 +6925,14 @@ class AsyncChannelPipelineMessages(NamespaceClass):
 class InboundBytesBufferingChannelPipelineHandler(ChannelPipelineHandler, Abstract):
     @abc.abstractmethod
     def inbound_buffered_bytes(self) -> ta.Optional[int]:
+        """Returning `None` denotes currently unknown/unanswerable."""
+
+        raise NotImplementedError
+
+
+class OutboundBytesBufferingChannelPipelineHandler(ChannelPipelineHandler, Abstract):
+    @abc.abstractmethod
+    def outbound_buffered_bytes(self) -> ta.Optional[int]:
         """Returning `None` denotes currently unknown/unanswerable."""
 
         raise NotImplementedError

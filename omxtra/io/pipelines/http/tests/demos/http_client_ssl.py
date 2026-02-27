@@ -96,7 +96,7 @@ def build_ssl_http_client_channel(**ssl_kwargs: ta.Any) -> PipelineChannel.Spec:
     """Build a client channel with encoder, decoder, and handler."""
 
     return PipelineChannel.Spec([
-        SslChannelPipelineHandler(ssl_kwargs=ssl_kwargs),
+        SslChannelPipelineHandler(**ssl_kwargs),
         PipelineHttpResponseDecoder(),
         PipelineHttpResponseChunkedDecoder(),
         PipelineHttpRequestEncoder(),
