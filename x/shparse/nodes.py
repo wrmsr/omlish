@@ -17,7 +17,8 @@
 # SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-r"""
+import abc
+import io
 import typing as ta
 
 from omlish import dataclasses as dc
@@ -31,93 +32,105 @@ from omlish import lang
 class Node(lang.Abstract):
     # Pos returns the position of the first character of the node. Comments
     # are ignored, except if the node is a [*File].
-    Pos() Pos
+    def pos(self) -> 'Pos':
+        raise NotImplementedError
+
     # End returns the position of the character immediately after the node.
     # If the character is a newline, the line number won't cross into the
     # next line. Comments are ignored, except if the node is a [*File].
-    End() Pos
+    def end(self) -> 'Pos':
+        raise NotImplementedError
 
 
 # File represents a shell source file.
+@dc.dataclass()
 class File(Node):
-    Name string
+    name: str
 
-    Stmts []*Stmt
-    Last  []Comment
+    stmts: list['Stmt']
+    last: list['Comment']
 
-    func (f *File) Pos() Pos { return stmtsPos(f.Stmts, f.Last) }
+    def pos(self) -> 'Pos':
+        return stmts_pos(self.stmts, self.last)
     
-    func (f *File) End() Pos { return stmtsEnd(f.Stmts, f.Last) }
+    def end(self) -> 'Pos':
+        return stmts_end(self.stmts, self.last)
 
 
-func stmtsPos(stmts []*Stmt, last []Comment) Pos {
-    if len(stmts) > 0 {
-        s := stmts[0]
-        sPos := s.Pos()
-        if len(s.Comments) > 0 {
-            if cPos := s.Comments[0].Pos(); sPos.After(cPos) {
-                return cPos
-        return sPos
-    if len(last) > 0 {
-        return last[0].Pos()
-    return Pos{}
+def stmts_pos(stmts: list['Stmt'], last: list['Comment']) -> 'Pos':
+    if len(stmts) > 0:
+        s = stmts[0]
+        s_pos = s.pos()
+        if len(s.Comments) > 0:
+            c_pos = s.comments[0].pos()
+            if s_pos.after(c_pos):
+                return c_pos
+        return s_pos
+    if len(last) > 0:
+        return last[0].pos()
+    return Pos()
 
 
-func stmtsEnd(stmts []*Stmt, last []Comment) Pos {
-    if len(last) > 0 {
-        return last[len(last)-1].End()
-    if len(stmts) > 0 {
-        s := stmts[len(stmts)-1]
-        sEnd := s.End()
-        if len(s.Comments) > 0 {
-            if cEnd := s.Comments[0].End(); cEnd.After(sEnd) {
-                return cEnd
-        return sEnd
-    return Pos{}
+def stmts_end(stmts: list['Stmt'], last: list['Comment']) -> 'Pos':
+    if len(last) > 0:
+        return last[len(last)-1].end()
+    if len(stmts) > 0:
+        s = stmts[len(stmts)-1]
+        s_end = s.end()
+        if len(s.Comments) > 0:
+            c_end = s.comments[0].end()
+            if c_end.after(s_end):
+                return c_end
+        return s_end
+    return Pos()
 
 
 # Pos is a position within a shell source file.
 @dc.dataclass()
 class Pos:
-    offs: int
-    line_col: int
+    offs: int = 0
+    line_col: int = 0
 
     # Offset returns the byte offset of the position in the original source file.
     # Byte offsets start at 0. Invalid positions always report the offset 0.
     #
     # Offset has basic protection against overflows; if an input is too large,
     # offset numbers will stop increasing past a very large number.
-    func (p Pos) Offset() uint {
-        if p.offs > offsetMax {
+    def offset(self) -> int:
+        if self.offs > OFFSET_MAX:
             return 0 # invalid
-        return uint(p.offs)
+        return uint(self.offs)
 
     # Line returns the line number of the position, starting at 1.
     # Invalid positions always report the line number 0.
     #
     # Line is protected against overflows; if an input has too many lines, extra
     # lines will have a line number of 0, rendered as "?" by [Pos.String].
-    func (p Pos) Line() uint { return uint(p.lineCol >> colBitSize) }
+    def line(self) -> int:
+        return self.line_col >> COL_BIT_SIZE
 
     # Col returns the column number of the position, starting at 1. It counts in
     # bytes. Invalid positions always report the column number 0.
     #
     # Col is protected against overflows; if an input line has too many columns,
     # extra columns will have a column number of 0, rendered as "?" by [Pos.String].
-    func (p Pos) Col() uint { return uint(p.lineCol & colBitMask) }
+    def col(self) -> int:
+        return self.line_col & COL_BIT_MASK
 
-    func (p Pos) String() string {
-        var b strings.Builder
-        if line := p.Line(); line > 0 {
-            b.WriteString(strconv.FormatUint(uint64(line), 10))
-        else {
-            b.WriteByte('?')
-        b.WriteByte(':')
-        if col := p.Col(); col > 0 {
-            b.WriteString(strconv.FormatUint(uint64(col), 10))
-        else {
-            b.WriteByte('?')
-        return b.String()
+    def string(self) -> str:
+        b = io.StringIO()
+        line = self.line()
+        if line > 0:
+            b.write(str(line))
+        else:
+            b.write('?')
+        b.write(':')
+        col = self.col()
+        if col > 0:
+            b.write(str(col))
+        else:
+            b.write('?')
+        return b.getvalue()
 
     # IsValid reports whether the position contains useful position information.
     # Some positions returned via [Parse] may be invalid: for example, [Stmt.Semicolon]
@@ -125,42 +138,45 @@ class Pos:
     #
     # Recovered positions, as reported by [Pos.IsRecovered], are not considered valid
     # given that they don't contain position information.
-    func (p Pos) IsValid() bool {
-        return p.offs <= offsetMax && p.lineCol != 0
-
-    var recoveredPos = Pos{offs: offsetRecovered}
+    def is_valid(self) -> bool:
+        return self.offs <= OFFSET_MAX and self.line_col != 0
 
     # IsRecovered reports whether the position that the token or node belongs to
     # was missing in the original input and recovered via [RecoverErrors].
-    func (p Pos) IsRecovered() bool { return p == recoveredPos }
+    def is_recovered(self) -> bool:
+        return self == RECOVERED_POS
 
     # After reports whether the position p is after p2. It is a more expressive
     # version of p.Offset() > p2.Offset().
     # It always returns false if p is an invalid position.
-    func (p Pos) After(p2 Pos) bool {
-        if !p.IsValid() {
-            return false
-        return p.offs > p2.offs
+    def after(self, p2: 'Pos') -> bool:
+        if not self.is_valid():
+            return False
+        return self.offs > p2.offs
 
 
 # Offsets use 32 bits for a reasonable amount of precision.
 # We reserve a few of the highest values to represent types of invalid positions.
 # We leave some space before the real uint32 maximum so that we can easily detect
 # when arithmetic on invalid positions is done by mistake.
-offsetRecovered = math.MaxUint32 - 10
-offsetMax       = math.MaxUint32 - 11
+OFFSET_RECOVERED = (1<<32 - 1) - 10
+OFFSET_MAX       = (1<<32 - 1) - 11
 
 # We used to split line and column numbers evenly in 16 bits, but line numbers
 # are significantly more important in practice. Use more bits for them.
 
-lineBitSize = 18
-lineMax     = (1 << lineBitSize) - 1
+LINE_BIT_SIZE = 18
+LINE_MAX      = (1 << LINE_BIT_SIZE) - 1
 
-colBitSize = 32 - lineBitSize
-colMax     = (1 << colBitSize) - 1
-colBitMask = colMax
+COL_BIT_SIZE = 32 - LINE_BIT_SIZE
+COL_MAX      = (1 << COL_BIT_SIZE) - 1
+COL_BIT_MASK = COL_MAX
 
 
+RECOVERED_POS = Pos(offs=OFFSET_RECOVERED)
+
+
+r"""
 # TODO(v4): consider using uint32 for Offset/Line/Col to better represent bit sizes.
 # Or go with int64, which more closely resembles portable "sizes" elsewhere.
 # The latter is probably nicest, as then we can change the number of internal
@@ -170,31 +186,31 @@ colBitMask = colMax
 #
 # Note that [Pos] uses a limited number of bits to store these numbers.
 # If line or column overflow their allocated space, they are replaced with 0.
-func NewPos(offset, line, column uint) Pos {
+def new_pos(offset: int, line: int, column: int) -> Pos:
     # Basic protection against offset overflow;
     # note that an offset of 0 is valid, so we leave the maximum.
-    offset = min(offset, offsetMax)
-    if line > lineMax {
+    offset = min(offset, OFFSET_MAX)
+    if line > LINE_MAX:
         line = 0 # protect against overflows; rendered as "?"
-    if column > colMax {
+    if column > COL_MAX:
         column = 0 # protect against overflows; rendered as "?"
-    return Pos{
+    return Pos(
         offs:    uint32(offset),
-        lineCol: (uint32(line) << colBitSize) | uint32(column),
-    }
+        line_col: (uint32(line) << COL_BIT_SIZE) | uint32(column),
+    )
 
 
 func posAddCol(p Pos, n int) Pos {
-    if !p.IsValid() {
+    if !p.is_valid() {
         return p
     # TODO: guard against overflows
-    p.lineCol += uint32(n)
+    p.line_col += uint32(n)
     p.offs += uint32(n)
     return p
 
 
 func posMax(p1, p2 Pos) Pos {
-    if p2.After(p1) {
+    if p2.after(p1) {
         return p2
     return p1
 
@@ -226,7 +242,7 @@ class Stmt(Node):
     func (s *Stmt) Pos() Pos { return s.Position }
     
     func (s *Stmt) End() Pos {
-        if s.Semicolon.IsValid() {
+        if s.Semicolon.is_valid() {
             end := posAddCol(s.Semicolon, 1) # ';' or '&'
             if s.Coprocess {
                 end = posAddCol(end, 1) # '|&'
@@ -611,14 +627,14 @@ class ParamExp(WordPart):
     # simple returns true if the parameter expansion is of the form $name or ${name},
     # only expanding a name without any further logic.
     func (p *ParamExp) simple() bool {
-        return p.Flags == nil &&
-            !p.Excl && !p.Length && !p.Width && !p.Plus &&
-            p.NestedParam == nil && p.Index == nil &&
-            len(p.Modifiers) == 0 && p.Slice == nil &&
-            p.Repl == nil && p.Names == 0 && p.Exp == nil
+        return p.Flags == nil and
+            !p.Excl and !p.Length and !p.Width and !p.Plus and
+            p.NestedParam == nil and p.Index == nil and
+            len(p.Modifiers) == 0 and p.Slice == nil and
+            p.Repl == nil and p.Names == 0 and p.Exp == nil
 
     func (p *ParamExp) Pos() Pos {
-        if p.Dollar.IsValid() {
+        if p.Dollar.is_valid() {
             return p.Dollar
         return p.Param.Pos()
         
@@ -633,7 +649,7 @@ class ParamExp(WordPart):
     func (p *ParamExp) nakedIndex() bool {
         # A naked index is arr[x] inside arithmetic, without a leading '$'.
         # In that case Dollar is unset, unlike $arr[x] where it holds the '$' position.
-        return p.Short && p.Index != nil && !p.Dollar.IsValid()
+        return p.Short and p.Index != nil and !p.Dollar.is_valid()
 
 
 # Slice represents a character slicing expression inside a [ParamExp].
@@ -795,9 +811,9 @@ class CaseItem(Node):
     func (c *CaseItem) Pos() Pos { return c.Patterns[0].Pos() }
     
     func (c *CaseItem) End() Pos {
-        if c.OpPos.IsValid() {
+        if c.OpPos.is_valid() {
             return posAddCol(c.OpPos, len(c.Op.String()))
-        return stmtsEnd(c.Stmts, c.Last)
+        return stmts_end(c.Stmts, c.Last)
 
 
 # TestClause represents a Bash extended test clause.

@@ -308,72 +308,75 @@ func (p *Parser) Arithmetic(r io.Reader) (ArithmExpr, error) {
 
 # Parser holds the internal state of the parsing mechanism of a
 # program.
-type Parser struct {
-    src io.Reader
-    bs  []byte # current chunk of read bytes
-    bsp uint   # offset within [Parser.bs] for the rune after [Parser.r]
-    r   rune   # next rune; [utf8.RuneSelf] when it went past EOF, or we stopped
-    w   int    # width of [Parser.r]
+class Parser:
+    src: Reader
+    bs: []byte  # current chunk of read bytes
+    bsp: int    # offset within [Parser.bs] for the rune after [Parser.r]
+    r: str      # next rune; [utf8.RuneSelf] when it went past EOF, or we stopped
+    w: int      # width of [Parser.r]
 
-    f *File
+    f: File
 
-    spaced bool # whether [Parser.tok] has whitespace on its left
+    spaced: bool  # whether [Parser.tok] has whitespace on its left
 
-    err     error # lexer/parser error
-    readErr error # got a read error, but bytes left
-    readEOF bool  # [Parser.src] already gave us an [io.EOF] error
+    err: Error | None = None       # lexer/parser error
+    read_err: Error | None = None  # got a read error, but bytes left
+    read_eof: bool = False         # [Parser.src] already gave us an [io.EOF] error
 
-    tok token  # current token
-    val string # current value (valid if tok is _Lit*)
+    tok: Token  # current token
+    val: str    # current value (valid if tok is _Lit*)
 
     # position of [Parser.r], to be converted to [Parser.pos] later
-    offs, line, col int64
+    offs: int
+    line: int
+    col: int
 
-    pos Pos # position of tok
+    pos: Pos  # position of tok
 
-    quote   quoteState # current lexer state
-    eqlOffs int        # position of '=' in [Parser.val] (a literal)
+    quote: QuoteState  # current lexer state
+    eql_offs: int      # position of '=' in [Parser.val] (a literal)
 
-    keepComments bool
-    lang         LangVariant
+    keep_comments: bool
+    lang: LangVariant
 
-    stopAt []byte
+    stop_at: []byte
 
-    recoveredErrors  int
-    recoverErrorsMax int
+    recovered_errors: int
+    recover_errors_max: int
 
-    forbidNested bool
+    forbid_nested: bool
 
     # list of pending heredoc bodies
-    buriedHdocs int
-    heredocs    []*Redirect
+    buried_hdocs: int
+    heredocs: []*Redirect
 
-    hdocStops [][]byte # stack of end words for open heredocs
+    hdoc_stops: [][]byte  # stack of end words for open heredocs
 
-    parsingDoc bool # true if using [Parser.Document]
+    parsing_doc: bool  # true if using [Parser.Document]
 
     # openNodes tracks how many entire statements or words we're currently parsing.
     # A non-zero number means that we require certain tokens or words before
     # reaching EOF, used for [Parser.Incomplete].
-    openNodes int
+    open_nodes: int
     # openBquotes is how many levels of backquotes are open at the moment.
-    openBquotes int
+    open_bquotes: int
 
     # lastBquoteEsc is how many times the last backquote token was escaped
-    lastBquoteEsc int
+    last_bquote_esc: int
 
-    rxOpenParens int
-    rxFirstPart  bool
+    rx_open_parens: int
+    rx_first_part: bool
 
-    accComs []Comment
-    curComs *[]Comment
+    acc_coms: []Comment
+    cur_coms: *[]Comment
 
-    litBatch  []Lit
-    wordBatch []wordAlloc
+    lit_batch: []Lit
+    word_batch: []wordAlloc
 
-    readBuf [bufSize]byte
-    litBuf  [bufSize]byte
-    litBs   []byte
+    read_buf: [bufSize]byte
+    lit_buf: [bufSize]byte
+    lit_bs: []byte
+
 
 # Incomplete reports whether the parser needs more input bytes
 # to finish properly parsing a statement or word.
@@ -385,7 +388,9 @@ func (p *Parser) Incomplete() bool {
     # If we're constructing a literal, we need to finish it.
     return p.openNodes > 0 || len(p.litBs) > 0
 
+
 const bufSize = 1 << 10
+
 
 func (p *Parser) reset() {
     p.tok, p.val = illegalTok, ""

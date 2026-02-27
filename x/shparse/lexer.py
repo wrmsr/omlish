@@ -40,30 +40,28 @@ func reg_ops(r: str) -> bool:
 
 
 # tokenize these inside parameter expansions
-func paramOps(r rune) bool {
-    switch r {
-    case '}', '#', '!', ':', '-', '+', '=', '?', '%', '[', ']', '/', '^',
-        ',', '@', '*':
+func param_ops(r: str) -> bool:
+    if r in ('}', '#', '!', ':', '-', '+', '=', '?', '%', '[', ']', '/', '^', ',', '@', '*'):
         return True
     return False
+
 
 # tokenize these inside arithmetic expansions
-func arithmOps(r rune) bool {
-    switch r {
-    case '+', '-', '!', '~', '*', '/', '%', '(', ')', '^', '<', '>', ':', '=',
-        ',', '?', '|', '&', '[', ']', '#', '.':
+func arithm_ops(r: str) -> bool:
+    if r in ('+', '-', '!', '~', '*', '/', '%', '(', ')', '^', '<', '>', ':', '=', ',', '?', '|', '&', '[', ']', '#', '.'):  # noqa
         return True
     return False
 
-func bquoteEscaped(b byte) bool {
-    switch b {
-    case '$', '`', '\\':
+func bquote_escaped(b: str) -> bool:
+    if b in ('$', '`', '\\'):
         return True
     return False
+
 
 const escNewl rune = utf8.RuneSelf + 1
 
-func (p *Parser) rune() rune {
+
+def parser_rune(p: Parser) -> str:
     if p.r == '\n' or p.r == escNewl {
         # p.r instead of b so that newline
         # character positions don't have col 0.
@@ -112,7 +110,7 @@ retry:
             # TODO: why is this necessary to ensure correct position info?
             p.readEOF = False
             if p.openBquotes > 0 and bquotes < p.openBquotes and
-                p.bsp < uint(len(p.bs)) and bquoteEscaped(p.bs[p.bsp]) {
+                p.bsp < uint(len(p.bs)) and bquote_escaped(p.bs[p.bsp]) {
                 # We turn backquote command substitutions into $(),
                 # so we remove the extra backslashes needed by the backquotes.
                 bquotes++
@@ -149,7 +147,7 @@ decodeRune:
 # are slid into the beginning of the buffer.
 # The number of read bytes is returned, which is at least one
 # unless a read error occurred, such as [io.EOF].
-func (p *Parser) fill() (n int) {
+def parser_fill(p: Parser, n: int) -> None:
     if p.readEOF or p.r == utf8.RuneSelf {
         # If the reader already gave us [io.EOF], do not try again.
         # If we decided to stop for any reason, do not bother reading either.
@@ -346,9 +344,9 @@ skipSpace:
                 p.advanceLitNone(r)
         default:
             p.advanceLitNone(r)
-    case p.quote&allArithmExpr != 0 and arithmOps(r):
+    case p.quote&allArithmExpr != 0 and arithm_ops(r):
         p.tok = p.arithmToken(r)
-    case p.quote&allParamExp != 0 and paramOps(r):
+    case p.quote&allParamExp != 0 and param_ops(r):
         p.tok = p.paramToken(r)
     case p.quote == testExprRegexp:
         if not p.rxFirstPart and p.spaced {
