@@ -17,7 +17,6 @@
 # SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-r"""
 import enum
 
 
@@ -26,7 +25,7 @@ import enum
 
 # The list of all possible tokens.
 class Token(enum.StrEnum):
-    ILLEGAL_TOK token = '<illegal>'
+    ILLEGAL_TOK = '<illegal>'
 
     EOF_       = '<eof>'
     NEWL_      = '<newl>'
@@ -48,7 +47,7 @@ class Token(enum.StrEnum):
     OR_AND  = '|&'
 
     DOLLAR         = '$'
-    DOLL_SGL_QUOTE = '$''
+    DOLL_SGL_QUOTE = "$'"
     DOLL_DBL_QUOTE = '$"'
     DOLL_BRACE     = '${'
     DOLL_BRACK     = '$['
@@ -189,6 +188,9 @@ class Token(enum.StrEnum):
 
 
 class RedirOperator(enum.Enum):
+    def string(self) -> str:
+        return self.value.value  # noqa
+
     RDR_OUT       = Token.RDR_OUT
     APP_OUT       = Token.APP_OUT
     RDR_IN        = Token.RDR_IN
@@ -196,30 +198,36 @@ class RedirOperator(enum.Enum):
     DPL_IN        = Token.DPL_IN
     DPL_OUT       = Token.DPL_OUT
     RDR_CLOB      = Token.RDR_CLOB
-    RDR_TRUNC     = Token.RDR_TRUNC      # with [LangZsh]
-    APP_CLOB      = Token.APP_CLOB       # with [LangZsh]
-    APP_TRUNC     = Token.APP_TRUNC      # with [LangZsh]
+    RDR_TRUNC     = Token.RDR_TRUNC      # with [LANG_ZSH]
+    APP_CLOB      = Token.APP_CLOB       # with [LANG_ZSH]
+    APP_TRUNC     = Token.APP_TRUNC      # with [LANG_ZSH]
     HDOC          = Token.HDOC
     DASH_HDOC     = Token.DASH_HDOC
     WORD_HDOC     = Token.WORD_HDOC
     RDR_ALL       = Token.RDR_ALL
-    RDR_ALL_CLOB  = Token.RDR_ALL_CLOB   # with [LangZsh]
-    RDR_ALL_TRUNC = Token.RDR_ALL_TRUNC  # with [LangZsh]
+    RDR_ALL_CLOB  = Token.RDR_ALL_CLOB   # with [LANG_ZSH]
+    RDR_ALL_TRUNC = Token.RDR_ALL_TRUNC  # with [LANG_ZSH]
     APP_ALL       = Token.APP_ALL
-    APP_ALL_CLOB  = Token.APP_ALL_CLOB   # with [LangZsh]
-    APP_ALL_TRUNC = Token.APP_ALL_TRUNC  # with [LangZsh]
+    APP_ALL_CLOB  = Token.APP_ALL_CLOB   # with [LANG_ZSH]
+    APP_ALL_TRUNC = Token.APP_ALL_TRUNC  # with [LANG_ZSH]
 
     # Deprecated: use [RdrClob]
     CLB_OUT       = Token.RDR_CLOB
 
 
 class ProcOperator(enum.Enum):
+    def string(self) -> str:
+        return self.value.value  # noqa
+
     CMD_IN      = Token.CMD_IN
-    CMD_IN_TEMP = Token.CMD_IN_TEMP
+    CMD_IN_TEMP = Token.ASSGN_PAREN
     CMD_OUT     = Token.CMD_OUT
 
 
 class GlobOperator(enum.Enum):
+    def string(self) -> str:
+        return self.value.value  # noqa
+
     GLOB_ZERO_OR_ONE  = Token.GLOB_QUEST
     GLOB_ZERO_OR_MORE = Token.GLOB_STAR
     GLOB_ONE_OR_MORE  = Token.GLOB_PLUS
@@ -228,6 +236,9 @@ class GlobOperator(enum.Enum):
 
 
 class BinCmdOperator(enum.Enum):
+    def string(self) -> str:
+        return self.value.value  # noqa
+
     AND_STMT = Token.AND_AND
     OR_STMT  = Token.OR_OR
     PIPE     = Token.OR
@@ -235,6 +246,9 @@ class BinCmdOperator(enum.Enum):
 
 
 class CaseOperator(enum.Enum):
+    def string(self) -> str:
+        return self.value.value  # noqa
+
     BREAK       = Token.DBL_SEMICOLON
     FALLTHROUGH = Token.SEMI_AND
     RESUME      = Token.DBL_SEMI_AND
@@ -242,11 +256,17 @@ class CaseOperator(enum.Enum):
 
 
 class ParNamesOperator(enum.Enum):
+    def string(self) -> str:
+        return self.value.value  # noqa
+
     NAMES_PREFIX       = Token.STAR
     NAMES_PREFIX_WORDS = Token.AT
 
 
 class ParExpOperator(enum.Enum):
+    def string(self) -> str:
+        return self.value.value  # noqa
+
     ALTERNATE_UNSET         = Token.PLUS
     ALTERNATE_UNSET_OR_NULL = Token.COL_PLUS 
     DEFAULT_UNSET           = Token.MINUS    
@@ -268,6 +288,9 @@ class ParExpOperator(enum.Enum):
 
 
 class UnAritOperator(enum.Enum):
+    def string(self) -> str:
+        return self.value.value  # noqa
+
     NOT          = Token.EXCL_MARK
     BIT_NEGATION = Token.TILDE
     INC          = Token.ADD_ADD
@@ -277,108 +300,103 @@ class UnAritOperator(enum.Enum):
 
 
 class BinAritOperator(enum.Enum):
-    ADD = BinAritOperator(plus)    # +
-    SUB = BinAritOperator(minus)   # -
-    MUL = BinAritOperator(star)    # *
-    QUO = BinAritOperator(slash)   # /
-    REM = BinAritOperator(perc)    # %
-    POW = BinAritOperator(power)   # **
-    EQL = BinAritOperator(equal)   # ==
-    GTR = BinAritOperator(rdrOut)  # >
-    LSS = BinAritOperator(rdrIn)   # <
-    NEQ = BinAritOperator(nequal)  # !=
-    LEQ = BinAritOperator(lequal)  # <=
-    GEQ = BinAritOperator(gequal)  # >=
-    AND = BinAritOperator(and)     # &
-    OR  = BinAritOperator(or)      # |
-    XOR = BinAritOperator(caret)   # ^
-    SHR = BinAritOperator(appOut)  # >>
-    SHL = BinAritOperator(hdoc)    # <<
+    def string(self) -> str:
+        return self.value.value  # noqa
+
+    ADD = Token.PLUS
+    SUB = Token.MINUS
+    MUL = Token.STAR
+    QUO = Token.SLASH
+    REM = Token.PERC
+    POW = Token.POWER
+    EQL = Token.EQUAL
+    GTR = Token.RDR_OUT
+    LSS = Token.RDR_IN
+    NEQ = Token.NEQUAL
+    LEQ = Token.LEQUAL
+    GEQ = Token.GEQUAL
+    AND = Token.AND
+    OR  = Token.OR
+    XOR = Token.CARET
+    SHR = Token.APP_OUT
+    SHL = Token.HDOC
 
     # TODO: use "Bool" consistently for logical operators like AndArit and OrArit; use #go:fix inline?
 
-    AND_ARIT   = BinAritOperator(AND_AND)   # &&
-    OR_ARIT    = BinAritOperator(OR_OR)     # ||
-    XOR_BOOL   = BinAritOperator(dblCaret)  # ^^
-    COMMA      = BinAritOperator(comma)     # ,
-    TERN_QUEST = BinAritOperator(quest)     # ?
-    TERN_COLON = BinAritOperator(colon)     # :
+    AND_ARIT   = Token.AND_AND
+    OR_ARIT    = Token.OR_OR
+    XOR_BOOL   = Token.DBL_CARET
+    COMMA      = Token.COMMA
+    TERN_QUEST = Token.QUEST
+    TERN_COLON = Token.COLON
 
-    ASSGN          = BinAritOperator(assgn)         # =
-    ADD_ASSGN      = BinAritOperator(addAssgn)      # +=
-    SUB_ASSGN      = BinAritOperator(subAssgn)      # -=
-    MUL_ASSGN      = BinAritOperator(mulAssgn)      # *=
-    QUO_ASSGN      = BinAritOperator(quoAssgn)      # /=
-    REM_ASSGN      = BinAritOperator(remAssgn)      # %=
-    AND_ASSGN      = BinAritOperator(andAssgn)      # &=
-    OR_ASSGN       = BinAritOperator(orAssgn)       # |=
-    XOR_ASSGN      = BinAritOperator(xorAssgn)      # ^=
-    SHL_ASSGN      = BinAritOperator(shlAssgn)      # <<=
-    SHR_ASSGN      = BinAritOperator(shrAssgn)      # >>=
-    AND_BOOL_ASSGN = BinAritOperator(andBoolAssgn)  # &&=
-    OR_BOOL_ASSGN  = BinAritOperator(orBoolAssgn)   # ||=
-    XOR_BOOL_ASSGN = BinAritOperator(xorBoolAssgn)  # ^^=
-    POW_ASSGN      = BinAritOperator(powAssgn)      # **=
+    ASSGN          = Token.ASSGN
+    ADD_ASSGN      = Token.ADD_ASSGN
+    SUB_ASSGN      = Token.SUB_ASSGN
+    MUL_ASSGN      = Token.MUL_ASSGN
+    QUO_ASSGN      = Token.QUO_ASSGN
+    REM_ASSGN      = Token.REM_ASSGN
+    AND_ASSGN      = Token.AND_ASSGN
+    OR_ASSGN       = Token.OR_ASSGN
+    XOR_ASSGN      = Token.XOR_ASSGN
+    SHL_ASSGN      = Token.SHL_ASSGN
+    SHR_ASSGN      = Token.SHR_ASSGN
+    AND_BOOL_ASSGN = Token.AND_BOOL_ASSGN
+    OR_BOOL_ASSGN  = Token.OR_BOOL_ASSGN
+    XOR_BOOL_ASSGN = Token.XOR_BOOL_ASSGN
+    POW_ASSGN      = Token.POW_ASSGN
 
 
 class UnTestOperator(enum.Enum):
-    TS_EXISTS = UnTestOperator(tsExists) + iota  # -e
-    TS_REG_FILE                                  # -f
-    TS_DIRECT                                    # -d
-    TS_CHAR_SP                                   # -c
-    TS_BLCK_SP                                   # -b
-    TS_NM_PIPE                                   # -p
-    TS_SOCKET                                    # -S
-    TS_SMB_LINK                                  # -L
-    TS_STICKY                                    # -k
-    TS_GID_SET                                   # -g
-    TS_UID_SET                                   # -u
-    TS_GRP_OWN                                   # -G
-    TS_USR_OWN                                   # -O
-    TS_MODIF                                     # -N
-    TS_READ                                      # -r
-    TS_WRITE                                     # -w
-    TS_EXEC                                      # -x
-    TS_NO_EMPTY                                  # -s
-    TS_FD_TERM                                   # -t
-    TS_EMP_STR                                   # -z
-    TS_NEMP_STR                                  # -n
-    TS_OPT_SET                                   # -o
-    TS_VAR_SET                                   # -v
-    TS_REF_VAR                                   # -R
-    TS_NOT     = UnTestOperator(exclMark)        # !
-    TS_PAREN   = UnTestOperator(leftParen)       # (
+    def string(self) -> str:
+        return self.value.value  # noqa
+
+    TS_EXISTS   = Token.TS_EXISTS
+    TS_REG_FILE = Token.TS_REG_FILE
+    TS_DIRECT   = Token.TS_DIRECT
+    TS_CHAR_SP  = Token.TS_CHAR_SP
+    TS_BLCK_SP  = Token.TS_BLCK_SP
+    TS_NM_PIPE  = Token.TS_NM_PIPE
+    TS_SOCKET   = Token.TS_SOCKET
+    TS_SMB_LINK = Token.TS_SMB_LINK
+    TS_STICKY   = Token.TS_STICKY
+    TS_GID_SET  = Token.TS_GID_SET
+    TS_UID_SET  = Token.TS_UID_SET
+    TS_GRP_OWN  = Token.TS_GRP_OWN
+    TS_USR_OWN  = Token.TS_USR_OWN
+    TS_MODIF    = Token.TS_MODIF
+    TS_READ     = Token.TS_READ
+    TS_WRITE    = Token.TS_WRITE
+    TS_EXEC     = Token.TS_EXEC
+    TS_NO_EMPTY = Token.TS_NO_EMPTY
+    TS_FD_TERM  = Token.TS_FD_TERM
+    TS_EMP_STR  = Token.TS_EMP_STR
+    TS_NEMP_STR = Token.TS_NEMP_STR
+    TS_OPT_SET  = Token.TS_OPT_SET
+    TS_VAR_SET  = Token.TS_VAR_SET
+    TS_REF_VAR  = Token.TS_REF_VAR
+    TS_NOT      = Token.EXCL_MARK
+    TS_PAREN    = Token.LEFT_PAREN
 
 
 class BinTestOperator(enum.Enum):
-    TS_RE_MATCH = BinTestOperator(tsReMatch) + iota  # =~
-    TS_NEWER                                         # -nt
-    TS_OLDER                                         # -ot
-    TS_DEVINO                                        # -ef
-    TS_EQL                                           # -eq
-    TS_NEQ                                           # -ne
-    TS_LEQ                                           # -le
-    TS_GEQ                                           # -ge
-    TS_LSS                                           # -lt
-    TS_GTR                                           # -gt
-    AND_TEST       = BinTestOperator(AND_AND)        # &&
-    OR_TEST        = BinTestOperator(OR_OR)          # ||
-    TS_MATCH_SHORT = BinTestOperator(assgn)          # =
-    TS_MATCH       = BinTestOperator(equal)          # ==
-    TS_NO_MATCH    = BinTestOperator(nequal)         # !=
-    TS_BEFORE      = BinTestOperator(rdrIn)          # <
-    TS_AFTER       = BinTestOperator(rdrOut)         # >
+    def string(self) -> str:
+        return self.value.value  # noqa
 
-
-func (o RedirOperator) String() string    { return token(o).String() }
-func (o ProcOperator) String() string     { return token(o).String() }
-func (o GlobOperator) String() string     { return token(o).String() }
-func (o BinCmdOperator) String() string   { return token(o).String() }
-func (o CaseOperator) String() string     { return token(o).String() }
-func (o ParNamesOperator) String() string { return token(o).String() }
-func (o ParExpOperator) String() string   { return token(o).String() }
-func (o UnAritOperator) String() string   { return token(o).String() }
-func (o BinAritOperator) String() string  { return token(o).String() }
-func (o UnTestOperator) String() string   { return token(o).String() }
-func (o BinTestOperator) String() string  { return token(o).String() }
-"""  # noqa
+    TS_RE_MATCH    = Token.TS_RE_MATCH
+    TS_NEWER       = Token.TS_NEWER
+    TS_OLDER       = Token.TS_OLDER
+    TS_DEV_INO     = Token.TS_DEV_INO
+    TS_EQL         = Token.TS_EQL
+    TS_NEQ         = Token.TS_NEQ
+    TS_LEQ         = Token.TS_LEQ
+    TS_GEQ         = Token.TS_GEQ
+    TS_LSS         = Token.TS_LSS
+    TS_GTR         = Token.TS_GTR
+    AND_TEST       = Token.AND_AND
+    OR_TEST        = Token.OR_OR
+    TS_MATCH_SHORT = Token.ASSGN
+    TS_MATCH       = Token.EQUAL
+    TS_NO_MATCH    = Token.NEQUAL
+    TS_BEFORE      = Token.RDR_IN
+    TS_AFTER       = Token.RDR_OUT

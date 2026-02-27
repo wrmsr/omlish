@@ -442,7 +442,7 @@ class WordIter(Loop):
 # CStyleLoop represents the behavior of a for clause similar to the C
 # language.
 #
-# This node will only appear with [LangBash].
+# This node will only appear with [LANG_BASH].
 class CStyleLoop(Loop):
     Lparen, Rparen Pos
     # Init, Cond, Post can each be nil, if the for loop construct omits it.
@@ -471,10 +471,10 @@ class FuncDecl(CommandNode):
     Parens   bool # with () parentheses, can only be false when RsrvWord==true
 
     # Only one of these is set at a time.
-    # Neither is set when declaring an anonymous func with [LangZsh].
+    # Neither is set when declaring an anonymous func with [LANG_ZSH].
     # TODO(v4): join these, even if it's mildly annoying to non-Zsh users.
     Name  *Lit
-    Names []*Lit # When declaring many func names with [LangZsh].
+    Names []*Lit # When declaring many func names with [LANG_ZSH].
 
     Body *Stmt
 
@@ -578,7 +578,7 @@ class ParamExp(WordPart):
 
     Short bool # $a instead of ${a}
 
-    Flags *Lit # ${(flags)a} with [LangZsh]
+    Flags *Lit # ${(flags)a} with [LANG_ZSH]
 
     # Only one of these is set at a time.
     # TODO(v4): perhaps use an Operator token here,
@@ -586,23 +586,23 @@ class ParamExp(WordPart):
     Excl   bool # ${!a}
     Length bool # ${#a}
     Width  bool # mksh's ${%a}
-    Plus   bool # ${+a} with [LangZsh]
+    Plus   bool # ${+a} with [LANG_ZSH]
 
     # Only one of these is set at a time.
     # TODO(v4): consider joining Param and NestedParam into a single field,
     # even if that would be mildly annoying to non-Zsh users.
     Param *Lit
     # A nested parameter expression in the form of [*ParamExp] or [*CmdSubst],
-    # or either of those in a [*DblQuoted]. Only possible with [LangZsh].
+    # or either of those in a [*DblQuoted]. Only possible with [LANG_ZSH].
     NestedParam WordPart
 
-    Index ArithmExpr # ${a[i]}, ${a["k"]}, or a ${a[i,j]} slice with [LangZsh]
+    Index ArithmExpr # ${a[i]}, ${a["k"]}, or a ${a[i,j]} slice with [LANG_ZSH]
 
     # Only one of these is set at a time.
     # TODO(v4): consider joining these in a single "expansion" field/type,
     # because it should be impossible for multiple to be set at once,
     # and a flat structure like this takes up more space.
-    Modifiers []*Lit           # ${a:h2} with [LangZsh]
+    Modifiers []*Lit           # ${a:h2} with [LANG_ZSH]
     Slice     *Slice           # ${a:x:y}
     Repl      *Replace         # ${a/x/y}
     Names     ParNamesOperator # ${!prefix*} or ${!prefix@}
@@ -638,8 +638,8 @@ class ParamExp(WordPart):
 
 # Slice represents a character slicing expression inside a [ParamExp].
 #
-# This node will only appear with [LangBash] and [LangMirBSDKorn].
-# [LangZsh] uses a [BinaryArithm] with [Comma] in [ParamExp.Index] instead.
+# This node will only appear with [LANG_BASH] and [LANG_MIR_BSD_KORN].
+# [LANG_ZSH] uses a [BinaryArithm] with [Comma] in [ParamExp.Index] instead.
 @dc.dataclass()
 class Slice:
     offset: ArithmExpr
@@ -680,7 +680,7 @@ class ArithmExp(WordPart):
 
 # ArithmCmd represents an arithmetic command.
 #
-# This node will only appear with [LangBash] and [LangMirBSDKorn].
+# This node will only appear with [LANG_BASH] and [LANG_MIR_BSD_KORN].
 class ArithmCmd(CommandNode):
     Left, Right Pos
     Unsigned    bool # mksh's ((# expr))
@@ -755,7 +755,7 @@ class ParenArithm(ArithmExpr):
 # FlagsArithm represents zsh subscript flags attached to an arithmetic expression,
 # such as ${array[(flags)expr]}.
 #
-# This node will only appear with [LangZsh].
+# This node will only appear with [LANG_ZSH].
 class FlagsArithm(ArithmExpr):
     Flags *Lit
     X     ArithmExpr
@@ -802,7 +802,7 @@ class CaseItem(Node):
 
 # TestClause represents a Bash extended test clause.
 #
-# This node will only appear with [LangBash] and [LangMirBSDKorn].
+# This node will only appear with [LANG_BASH] and [LANG_MIR_BSD_KORN].
 class TestClause(CommandNode):
     Left, Right Pos
 
@@ -859,7 +859,7 @@ class ParenTest(TestExpr):
 # Args can contain a mix of regular and naked assignments. The naked
 # assignments can represent either options or variable names.
 #
-# This node will only appear with [LangBash].
+# This node will only appear with [LANG_BASH].
 class DeclClause(CommandNode):
     # Variant is one of "declare", "local", "export", "readonly",
     # "typeset", or "nameref".
@@ -876,7 +876,7 @@ class DeclClause(CommandNode):
 
 # ArrayExpr represents a Bash array expression.
 #
-# This node will only appear with [LangBash].
+# This node will only appear with [LANG_BASH].
 class ArrayExpr(Node):
     Lparen, Rparen Pos
 
@@ -913,7 +913,7 @@ class ArrayElem(Node):
 # parsed independently of whether or not `shopt -s extglob` has been used,
 # as the parser runs statically and independently of any interpreter.
 #
-# This node will only appear with [LangBash] and [LangMirBSDKorn].
+# This node will only appear with [LANG_BASH] and [LANG_MIR_BSD_KORN].
 class ExtGlob(WordPart):
     OpPos   Pos
     Op      GlobOperator
@@ -926,7 +926,7 @@ class ExtGlob(WordPart):
 
 # ProcSubst represents a Bash process substitution.
 #
-# This node will only appear with [LangBash].
+# This node will only appear with [LANG_BASH].
 class ProcSubst(WordPart):
     OpPos, Rparen Pos
     Op            ProcOperator
@@ -942,7 +942,7 @@ class ProcSubst(WordPart):
 # TimeClause represents a Bash time clause. PosixFormat corresponds to the -p
 # flag.
 #
-# This node will only appear with [LangBash] and [LangMirBSDKorn].
+# This node will only appear with [LANG_BASH] and [LANG_MIR_BSD_KORN].
 class TimeClause(CommandNode):
     Time        Pos
     PosixFormat bool
@@ -958,7 +958,7 @@ class TimeClause(CommandNode):
 
 # CoprocClause represents a Bash coproc clause.
 #
-# This node will only appear with [LangBash].
+# This node will only appear with [LANG_BASH].
 class CoprocClause(CommandNode):
     Coproc Pos
     Name   *Word
@@ -971,7 +971,7 @@ class CoprocClause(CommandNode):
 
 # LetClause represents a Bash let clause.
 #
-# This node will only appear with [LangBash] and [LangMirBSDKorn].
+# This node will only appear with [LANG_BASH] and [LANG_MIR_BSD_KORN].
 class LetClause(CommandNode):
     Let   Pos
     Exprs []ArithmExpr

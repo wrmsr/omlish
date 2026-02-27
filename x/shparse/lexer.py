@@ -18,46 +18,53 @@
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 r"""
+import typing as ta
 
-func asciiLetter[T rune | byte](r T) bool {
-    return ('a' <= r && r <= 'z') || ('A' <= r && r <= 'Z')
 
-func asciiDigit[T rune | byte](r T) bool {
-    return r >= '0' && r <= '9'
+##
+
+
+func ascii_letter(r: str) -> bool:
+    return ('a' <= r and r <= 'z') or ('A' <= r and r <= 'Z')
+
+
+func ascii_digit(r: str) -> bool:
+    return r >= '0' and r <= '9'
+
 
 # bytes that form or start a token
-func regOps(r rune) bool {
-    switch r {
-    case ';', '"', '\'', '(', ')', '$', '|', '&', '>', '<', '`':
-        return true
-    return false
+func reg_ops(r: str) -> bool:
+    if r in (';', '"', '\'', '(', ')', '$', '|', '&', '>', '<', '`'):
+        return True
+    return False
+
 
 # tokenize these inside parameter expansions
 func paramOps(r rune) bool {
     switch r {
     case '}', '#', '!', ':', '-', '+', '=', '?', '%', '[', ']', '/', '^',
         ',', '@', '*':
-        return true
-    return false
+        return True
+    return False
 
 # tokenize these inside arithmetic expansions
 func arithmOps(r rune) bool {
     switch r {
     case '+', '-', '!', '~', '*', '/', '%', '(', ')', '^', '<', '>', ':', '=',
         ',', '?', '|', '&', '[', ']', '#', '.':
-        return true
-    return false
+        return True
+    return False
 
 func bquoteEscaped(b byte) bool {
     switch b {
     case '$', '`', '\\':
-        return true
-    return false
+        return True
+    return False
 
 const escNewl rune = utf8.RuneSelf + 1
 
 func (p *Parser) rune() rune {
-    if p.r == '\n' || p.r == escNewl {
+    if p.r == '\n' or p.r == escNewl {
         # p.r instead of b so that newline
         # character positions don't have col 0.
         p.line++
@@ -67,7 +74,7 @@ func (p *Parser) rune() rune {
     bquotes := 0
 
 retry:
-    if p.bsp >= uint(len(p.bs)) && p.fill() == 0 {
+    if p.bsp >= uint(len(p.bs)) and p.fill() == 0 {
         if len(p.bs) == 0 {
             # Necessary for the last position to be correct.
             # TODO: this is not exactly intuitive; figure out a better way.
@@ -96,16 +103,16 @@ retry:
                 p.bsp++
                 p.w, p.r = 1, escNewl
                 return escNewl
-            else if p1, p2 := p.peekTwo(); p1 == '\r' && p2 == '\n' { # \\\r\n turns into \\\n
+            else if p1, p2 := p.peekTwo(); p1 == '\r' and p2 == '\n' { # \\\r\n turns into \\\n
                 p.col++
                 p.bsp += 2
                 p.w, p.r = 2, escNewl
                 return escNewl
 
             # TODO: why is this necessary to ensure correct position info?
-            p.readEOF = false
-            if p.openBquotes > 0 && bquotes < p.openBquotes &&
-                p.bsp < uint(len(p.bs)) && bquoteEscaped(p.bs[p.bsp]) {
+            p.readEOF = False
+            if p.openBquotes > 0 and bquotes < p.openBquotes and
+                p.bsp < uint(len(p.bs)) and bquoteEscaped(p.bs[p.bsp]) {
                 # We turn backquote command substitutions into $(),
                 # so we remove the extra backslashes needed by the backquotes.
                 bquotes++
@@ -114,7 +121,7 @@ retry:
 
         if b == '`' {
             p.lastBquoteEsc = bquotes
-        if p.litBs != nil {
+        if p.litBs is not None {
             p.litBs = append(p.litBs, b)
         p.w, p.r = 1, rune(b)
         return p.r
@@ -122,16 +129,16 @@ retry:
 decodeRune:
     var w int
     p.r, w = utf8.DecodeRune(p.bs[p.bsp:])
-    if p.r == utf8.RuneError && !utf8.FullRune(p.bs[p.bsp:]) {
+    if p.r == utf8.RuneError and not utf8.FullRune(p.bs[p.bsp:]) {
         # we need more bytes to read a full non-ascii rune
         if p.fill() > 0 {
             goto decodeRune
 
-    if p.litBs != nil {
+    if p.litBs is not None {
         p.litBs = append(p.litBs, p.bs[p.bsp:p.bsp+uint(w)]...)
 
     p.bsp += uint(w)
-    if p.r == utf8.RuneError && w == 1 {
+    if p.r == utf8.RuneError and w == 1 {
         p.posErr(p.nextPos(), "invalid UTF-8 encoding")
 
     p.w = w
@@ -143,7 +150,7 @@ decodeRune:
 # The number of read bytes is returned, which is at least one
 # unless a read error occurred, such as [io.EOF].
 func (p *Parser) fill() (n int) {
-    if p.readEOF || p.r == utf8.RuneSelf {
+    if p.readEOF or p.r == utf8.RuneSelf {
         # If the reader already gave us [io.EOF], do not try again.
         # If we decided to stop for any reason, do not bother reading either.
         return 0
@@ -158,7 +165,7 @@ readAgain:
         n, err = p.src.Read(p.readBuf[left:])
         p.readErr = err
         if err == io.EOF {
-            p.readEOF = true
+            p.readEOF = True
 
     if n == 0 {
         if err == nil {
@@ -181,7 +188,7 @@ readAgain:
 
 func (p *Parser) nextKeepSpaces() {
     r := p.r
-    if p.quote != hdocBody && p.quote != hdocBodyTabs {
+    if p.quote != hdocBody and p.quote != hdocBodyTabs {
         # Heredocs handle escaped newlines in a special way, but others do not.
         for r == escNewl {
             r = p.rune()
@@ -217,7 +224,7 @@ func (p *Parser) nextKeepSpaces() {
         default:
             p.advanceLitOther(r)
 
-    if p.err != nil {
+    if p.err is not None {
         p.tok = _EOF
 
 func (p *Parser) next() {
@@ -225,7 +232,7 @@ func (p *Parser) next() {
         p.tok = _EOF
         return
 
-    p.spaced = false
+    p.spaced = False
     if p.quote&allKeepSpaces != 0 {
         p.nextKeepSpaces()
         return
@@ -243,7 +250,7 @@ skipSpace:
         case escNewl:
             r = p.rune()
         case ' ', '\t', '\r':
-            p.spaced = true
+            p.spaced = True
             r = p.rune()
         case '\n':
             if p.tok == _Newl {
@@ -251,16 +258,16 @@ skipSpace:
                 r = p.rune()
                 continue
 
-            p.spaced = true
+            p.spaced = True
             p.tok = _Newl
-            if p.quote != hdocWord && len(p.heredocs) > p.buriedHdocs {
+            if p.quote != hdocWord and len(p.heredocs) > p.buriedHdocs {
                 p.doHeredocs()
 
             return
         default:
             break skipSpace
 
-    if p.stopAt != nil && (p.spaced || p.tok == illegalTok || p.stopToken()) {
+    if p.stopAt is not None and (p.spaced or p.tok == illegalTok or p.stopToken()) {
         w := utf8.RuneLen(r)
         if bytes.HasPrefix(p.bs[p.bsp-uint(w):], p.stopAt) {
             p.r = utf8.RuneSelf
@@ -273,14 +280,14 @@ skipSpace:
     case p.quote&allRegTokens != 0:
         switch r {
         case ';', '"', '\'', '(', ')', '$', '|', '&', '>', '<', '`':
-            if r == '<' && p.lang.in(LangZsh) && p.zshNumRange() {
+            if r == '<' and p.lang.in(LANG_ZSH) and p.zshNumRange() {
                 p.advanceLitNone(r)
                 return
             p.tok = p.regToken(r)
         case '#':
             # If we're parsing $foo#bar, ${foo}#bar, 'foo'#bar, or "foo"#bar,
             # #bar is a continuation of the same word, not a comment.
-            if p.quote == unquotedWordCont && !p.spaced {
+            if p.quote == unquotedWordCont and not p.spaced {
                 p.advanceLitNone(r)
                 return
             r = p.rune()
@@ -339,15 +346,15 @@ skipSpace:
                 p.advanceLitNone(r)
         default:
             p.advanceLitNone(r)
-    case p.quote&allArithmExpr != 0 && arithmOps(r):
+    case p.quote&allArithmExpr != 0 and arithmOps(r):
         p.tok = p.arithmToken(r)
-    case p.quote&allParamExp != 0 && paramOps(r):
+    case p.quote&allParamExp != 0 and paramOps(r):
         p.tok = p.paramToken(r)
     case p.quote == testExprRegexp:
-        if !p.rxFirstPart && p.spaced {
+        if not p.rxFirstPart and p.spaced {
             p.quote = testExpr
             goto skipSpace
-        p.rxFirstPart = false
+        p.rxFirstPart = False
         switch r {
         case ';', '"', '\'', '$', '&', '>', '<', '`':
             p.tok = p.regToken(r)
@@ -361,27 +368,27 @@ skipSpace:
                 p.rune() # we are tokenizing manually
         default: # including '(', '|'
             p.advanceLitRe(r)
-    case regOps(r):
+    case reg_ops(r):
         p.tok = p.regToken(r)
     default:
         p.advanceLitOther(r)
-    if p.err != nil {
+    if p.err is not None:
         p.tok = _EOF
 
 # extendedGlob determines whether we're parsing a Bash extended globbing expression.
 # For example, whether `*` or `@` are followed by `(` to form `@(foo)`.
 func (p *Parser) extendedGlob() bool {
-    if p.lang.in(LangZsh) {
+    if p.lang.in(LANG_ZSH) {
         # Zsh doesn't have extended globs like bash/mksh.
         # We still tokenize +( @( !( so the parser can give a clear error,
         # but not *( or ?( as those are used in zsh glob qualifiers.
         switch p.r {
         case '+', '@', '!':
         default:
-            return false
+            return False
     if p.val == "function" {
         # We don't support e.g. `function @() { ... }` at the moment, but we could.
-        return false
+        return False
     if p.peek() == '(' {
         # NOTE: empty pattern list is a valid globbing syntax like `@()`,
         # but we'll operate on the "likelihood" that it is a function;
@@ -391,7 +398,7 @@ func (p *Parser) extendedGlob() bool {
         # another byte is input.
         _, p2 := p.peekTwo()
         return p2 != ')'
-    return false
+    return False
 
 func (p *Parser) peek() byte {
     if int(p.bsp) >= len(p.bs) {
@@ -453,7 +460,7 @@ func (p *Parser) regToken(r rune) token {
             p.rune()
             return orOr
         case '&':
-            if !p.lang.in(langBashLike | LangMirBSDKorn | LangZsh) {
+            if not p.lang.in(langBashLike | LANG_MIR_BSD_KORN | LANG_ZSH) {
                 break
             p.rune()
             return orAnd
@@ -461,12 +468,12 @@ func (p *Parser) regToken(r rune) token {
     case '$':
         switch p.rune() {
         case '\'':
-            if !p.lang.in(langBashLike | LangMirBSDKorn | LangZsh) {
+            if not p.lang.in(langBashLike | LANG_MIR_BSD_KORN | LANG_ZSH) {
                 break
             p.rune()
             return dollSglQuote
         case '"':
-            if !p.lang.in(langBashLike | LangMirBSDKorn) {
+            if not p.lang.in(langBashLike | LANG_MIR_BSD_KORN) {
                 break
             p.rune()
             return dollDblQuote
@@ -474,7 +481,7 @@ func (p *Parser) regToken(r rune) token {
             p.rune()
             return dollBrace
         case '[':
-            if !p.lang.in(langBashLike) {
+            if not p.lang.in(langBashLike) {
                 # latter to not tokenise ${$[@]} as $[
                 break
             p.rune()
@@ -486,7 +493,7 @@ func (p *Parser) regToken(r rune) token {
             return dollParen
         return dollar
     case '(':
-        if p.rune() == '(' && p.lang.in(langBashLike|LangMirBSDKorn|LangZsh) && p.quote != testExpr {
+        if p.rune() == '(' and p.lang.in(langBashLike|LANG_MIR_BSD_KORN|LANG_ZSH) and p.quote != testExpr {
             p.rune()
             return dblLeftParen
         return leftParen
@@ -496,17 +503,17 @@ func (p *Parser) regToken(r rune) token {
     case ';':
         switch p.rune() {
         case ';':
-            if p.rune() == '&' && p.lang.in(langBashLike) {
+            if p.rune() == '&' and p.lang.in(langBashLike) {
                 p.rune()
                 return dblSemiAnd
             return dblSemicolon
         case '&':
-            if !p.lang.in(langBashLike | LangMirBSDKorn | LangZsh) {
+            if not p.lang.in(langBashLike | LANG_MIR_BSD_KORN | LANG_ZSH) {
                 break
             p.rune()
             return semiAnd
         case '|':
-            if !p.lang.in(LangMirBSDKorn) {
+            if not p.lang.in(LANG_MIR_BSD_KORN) {
                 break
             p.rune()
             return semiOr
@@ -528,7 +535,7 @@ func (p *Parser) regToken(r rune) token {
             p.rune()
             return dplIn
         case '(':
-            if !p.lang.in(langBashLike | LangZsh) {
+            if not p.lang.in(langBashLike | LANG_ZSH) {
                 break
             p.rune()
             return cmdIn
@@ -554,7 +561,7 @@ func (p *Parser) regToken(r rune) token {
             p.rune()
             return rdrTrunc
         case '(':
-            if !p.lang.in(langBashLike | LangZsh) {
+            if not p.lang.in(langBashLike | LANG_ZSH) {
                 break
             p.rune()
             return cmdOut
@@ -576,7 +583,7 @@ func (p *Parser) dqToken(r rune) token {
             p.rune()
             return dollBrace
         case '[':
-            if !p.lang.in(langBashLike) {
+            if not p.lang.in(langBashLike) {
                 break
             p.rune()
             return dollBrack
@@ -692,7 +699,7 @@ func (p *Parser) arithmToken(r rune) token {
     case '&':
         switch p.rune() {
         case '&':
-            if p.rune() == '=' && p.lang.in(LangZsh) {
+            if p.rune() == '=' and p.lang.in(LANG_ZSH) {
                 p.rune()
                 return andBoolAssgn
             return andAnd
@@ -703,7 +710,7 @@ func (p *Parser) arithmToken(r rune) token {
     case '|':
         switch p.rune() {
         case '|':
-            if p.rune() == '=' && p.lang.in(LangZsh) {
+            if p.rune() == '=' and p.lang.in(LANG_ZSH) {
                 p.rune()
                 return orBoolAssgn
             return orOr
@@ -759,7 +766,7 @@ func (p *Parser) arithmToken(r rune) token {
     case '*':
         switch p.rune() {
         case '*':
-            if p.rune() == '=' && p.lang.in(LangZsh) {
+            if p.rune() == '=' and p.lang.in(LANG_ZSH) {
                 p.rune()
                 return powAssgn
             return power
@@ -775,7 +782,7 @@ func (p *Parser) arithmToken(r rune) token {
     case '^':
         switch p.rune() {
         case '^':
-            if p.rune() == '=' && p.lang.in(LangZsh) {
+            if p.rune() == '=' and p.lang.in(LANG_ZSH) {
                 p.rune()
                 return xorBoolAssgn
             return dblCaret
@@ -820,7 +827,7 @@ func (p *Parser) newLit(r rune) {
         p.litBs = p.litBuf[:0]
 
 func (p *Parser) endLit() (s string) {
-    if p.r == utf8.RuneSelf || p.r == escNewl {
+    if p.r == utf8.RuneSelf or p.r == escNewl {
         s = string(p.litBs)
     else {
         s = string(p.litBs[:len(p.litBs)-p.w])
@@ -829,7 +836,7 @@ func (p *Parser) endLit() (s string) {
 
 func (p *Parser) isLitRedir() bool {
     lit := p.litBs[:len(p.litBs)-1]
-    if lit[0] == '{' && lit[len(lit)-1] == '}' {
+    if lit[0] == '{' and lit[len(lit)-1] == '}' {
         return ValidName(string(lit[1 : len(lit)-1]))
     return numberLiteral(lit)
 
@@ -837,11 +844,11 @@ func singleRuneParam[T rune | byte](r T) bool {
     switch r {
     case '@', '*', '#', '$', '?', '!', '-',
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
-        return true
-    return false
+        return True
+    return False
 
 func paramNameRune[T rune | byte](r T) bool {
-    return asciiLetter(r) || asciiDigit(r) || r == '_'
+    return ascii_letter(r) or ascii_digit(r) or r == '_'
 
 func (p *Parser) advanceLitOther(r rune) {
     tok := _LitWord
@@ -863,10 +870,10 @@ loop:
             if p.quote&allArithmExpr != 0 {
                 break loop
         case '.':
-            if !p.lang.in(LangZsh) && p.quote&allArithmExpr != 0 {
+            if not p.lang.in(LANG_ZSH) and p.quote&allArithmExpr != 0 {
                 break loop
         case '[', ']':
-            if p.lang.in(langBashLike|LangMirBSDKorn|LangZsh) && p.quote&allArithmExpr != 0 {
+            if p.lang.in(langBashLike|LANG_MIR_BSD_KORN|LANG_ZSH) and p.quote&allArithmExpr != 0 {
                 break loop
             fallthrough
         case '+', '-', ' ', '\t', ';', '&', '>', '<', '|', '(', ')', '\n', '\r':
@@ -881,12 +888,12 @@ func (p *Parser) litBsGlob() bool {
     for _, b := range p.litBs[:len(p.litBs)-1] {
         switch b {
         case '*', '?', '[':
-            return true
+            return True
         case '/':
             # Paths like /bin/sh(:t) can also have glob qualifiers;
             # function names never contain slashes.
-            return true
-    return false
+            return True
+    return False
 
 # zshNumRange peeks at the bytes after '<' to check for a zsh numeric
 # range glob pattern like <->, <5->, <-10>, or <5-10>.
@@ -897,14 +904,14 @@ func (p *Parser) zshNumRange() bool {
     if int(p.bsp) >= len(p.bs) {
         p.fill()
     rest := p.bs[p.bsp:]
-    for len(rest) > 0 && rest[0] >= '0' && rest[0] <= '9' {
+    for len(rest) > 0 and rest[0] >= '0' and rest[0] <= '9' {
         rest = rest[1:]
-    if len(rest) == 0 || rest[0] != '-' {
-        return false
+    if len(rest) == 0 or rest[0] != '-' {
+        return False
     rest = rest[1:]
-    for len(rest) > 0 && rest[0] >= '0' && rest[0] <= '9' {
+    for len(rest) > 0 and rest[0] >= '0' and rest[0] <= '9' {
         rest = rest[1:]
-    return len(rest) > 0 && rest[0] == '>'
+    return len(rest) > 0 and rest[0] == '>'
 
 func (p *Parser) advanceLitNone(r rune) {
     p.eqlOffs = -1
@@ -915,20 +922,20 @@ loop:
         case ' ', '\t', '\n', '\r', '&', '|', ';', ')':
             break loop
         case '(':
-            if p.lang.in(LangZsh) && p.litBsGlob() {
+            if p.lang.in(LANG_ZSH) and p.litBsGlob() {
                 # Zsh glob qualifiers like *(.), **(/) or *(om[1,5]); consume until ')'.
                 for {
-                    if r = p.rune(); r == utf8.RuneSelf || r == ')' {
+                    if r = p.rune(); r == utf8.RuneSelf or r == ')' {
                         break
                 continue
             break loop
         case '\\': # escaped byte follows
             p.rune()
         case '>', '<':
-            if r == '<' && p.lang.in(LangZsh) && p.zshNumRange() {
+            if r == '<' and p.lang.in(LANG_ZSH) and p.zshNumRange() {
                 # Zsh numeric range glob like <-> or <1-100>; consume until '>'.
                 for {
-                    if r = p.rune(); r == '>' || r == utf8.RuneSelf {
+                    if r = p.rune(); r == '>' or r == utf8.RuneSelf {
                         break
                 continue
             if p.peek() == '(' {
@@ -951,7 +958,7 @@ loop:
             if p.eqlOffs < 0 {
                 p.eqlOffs = len(p.litBs) - 1
         case '[':
-            if p.lang.in(langBashLike|LangMirBSDKorn|LangZsh) && len(p.litBs) > 1 && p.litBs[0] != '[' {
+            if p.lang.in(langBashLike|LANG_MIR_BSD_KORN|LANG_ZSH) and len(p.litBs) > 1 and p.litBs[0] != '[' {
                 tok = _Lit
                 break loop
     p.tok, p.val = tok, p.endLit()
@@ -982,7 +989,7 @@ func (p *Parser) advanceLitHdoc(r rune) {
 
     p.tok = _Lit
     p.newLit(r)
-    for p.quote == hdocBodyTabs && r == '\t' {
+    for p.quote == hdocBodyTabs and r == '\t' {
         r = p.rune()
     lStart := len(p.litBs) - 1
     stop := p.hdocStops[len(p.hdocStops)-1]
@@ -994,7 +1001,7 @@ func (p *Parser) advanceLitHdoc(r rune) {
         case '\\': # escaped byte follows
             p.rune()
         case '`':
-            if !p.backquoteEnd() {
+            if not p.backquoteEnd() {
                 p.val = p.endLit()
                 return
             fallthrough
@@ -1004,13 +1011,13 @@ func (p *Parser) advanceLitHdoc(r rune) {
                     p.tok = _LitWord
                     p.val = p.endLit()
                     return
-            else if lStart == 0 && lastTok == _Lit {
+            else if lStart == 0 and lastTok == _Lit {
                 # This line starts right after an escaped
                 # newline, so it should never end the heredoc.
             else if lStart >= 0 {
                 # Compare the current line with the stop word.
                 line := p.litBs[lStart:]
-                if r != utf8.RuneSelf && len(line) > 0 {
+                if r != utf8.RuneSelf and len(line) > 0 {
                     line = line[:len(line)-1] # minus trailing character
                 if bytes.Equal(line, stop) {
                     p.tok = _LitWord
@@ -1021,7 +1028,7 @@ func (p *Parser) advanceLitHdoc(r rune) {
                     return
             if r != '\n' {
                 return # hit an unexpected EOF or closing backquote
-            for p.quote == hdocBodyTabs && p.peek() == '\t' {
+            for p.quote == hdocBodyTabs and p.peek() == '\t' {
                 p.rune()
             lStart = len(p.litBs)
 
@@ -1033,7 +1040,7 @@ func (p *Parser) quotedHdocWord() *Word {
     for ; ; r = p.rune() {
         if r == utf8.RuneSelf {
             return nil
-        for p.quote == hdocBodyTabs && r == '\t' {
+        for p.quote == hdocBodyTabs and r == '\t' {
             r = p.rune()
         lStart := len(p.litBs) - 1
     runeLoop:
@@ -1052,7 +1059,7 @@ func (p *Parser) quotedHdocWord() *Word {
             continue
         # Compare the current line with the stop word.
         line := p.litBs[lStart:]
-        if r != utf8.RuneSelf && len(line) > 0 {
+        if r != utf8.RuneSelf and len(line) > 0 {
             line = line[:len(line)-1] # minus \n
         if bytes.Equal(line, stop) {
             p.hdocStops[len(p.hdocStops)-1] = nil

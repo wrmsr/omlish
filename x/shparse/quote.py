@@ -27,12 +27,12 @@ from .errors import Error
 
 @dc.dataclass()
 class QuoteError(Error):
-    byte_offset: int
+    offset: int
     s: str
     
     @property
     def message(self) -> str:
-        return f'cannot quote character at byte {self.byte_offset}: {self.s}'
+        return f'cannot quote character at offset {self.offset}: {self.s}'
 
 
 QUOTE_ERR_NULL  = 'shell strings cannot contain null bytes'
@@ -72,7 +72,7 @@ def quote(s: str, lng: LangVariant) -> str | Error:
     
     rem = s
     while len(rem) > 0:
-        r, size = utf8.DecodeRuneInString(rem)
+        r = rem[0]
         # Like regOps; token characters.
         if r in (
             ';', '"', '\'', '(', ')', '$', '|', '&', '>', '<', '`',
@@ -94,14 +94,14 @@ def quote(s: str, lng: LangVariant) -> str | Error:
             shell_chars = True
         elif r == '\x00':
             return QuoteError(offs, QUOTE_ERR_NULL)
-        if r == utf8.RuneError or not unicode.IsPrint(r):
-            if lng.in_(LangPOSIX):
+        if not r.isprintable():
+            if lng.in_(LANG_POSIX):
                 return QuoteError(offs, QUOTE_ERR_POSIX)
             non_printable = True
-        rem = rem[size:]
-        offs += size
+        rem = rem[1:]
+        offs += 1
         
-    if not shell_chars and not non_printable and not is_keyword(s)
+    if not shell_chars and not non_printable and not is_keyword(s):
         # Nothing to quote; avoid allocating.
         return s
 
@@ -122,7 +122,7 @@ def quote(s: str, lng: LangVariant) -> str | Error:
             if r == '\'' or r == '\\':
                 b.write('\\')
                 b.write(r)
-            elif unicode.IsPrint(r) and r != utf8.RuneError:
+            elif r.isprintable():
                 if last_requote_if_hex and is_hex(r):
                     b.write("'$'")
                 b.write(r)
@@ -145,12 +145,12 @@ def quote(s: str, lng: LangVariant) -> str | Error:
                 b.write("\\x%02x" % (rem[0],))
                 # Unfortunately, mksh allows \x to consume more hex characters.
                 # Ensure that we don't allow it to read more than two.
-                if lng.in_(LangMirBSDKorn):
+                if lng.in_(LANG_MIR_BSD_KORN):
                     next_requote_if_hex = True
             elif r > utf8.MaxRune:
                 # Not a valid Unicode code point?
                 return QuoteError(offs, QUOTE_ERR_RANGE)
-            elif lng.in_(LangMirBSDKorn) and r > 0xFFFD:
+            elif lng.in_(LANG_MIR_BSD_KORN) and r > 0xFFFD:
                 # From the CAVEATS section in R59's man page:
                 #
                 # mksh currently uses OPTU-16 internally, which is the same as
