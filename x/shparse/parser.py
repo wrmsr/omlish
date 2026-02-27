@@ -1403,19 +1403,19 @@ func (p *Parser) zshSubFlags() *FlagsArithm {
 func (p *Parser) stopToken() bool {
     switch p.tok {
     case
-        _EOF,
-        _Newl,
-        semicolon,
-        and,
-        or,
-        andAnd,
-        orOr,
-        orAnd,
-        dblSemicolon,
-        semiAnd,
-        dblSemiAnd,
-        semiOr,
-        rightParen:
+        Token.EOF_,
+        Token.NEWL_,
+        Token.SEMICOLON,
+        Token.AND,
+        Token.OR,
+        Token.AND_AND,
+        Token.OR_OR,
+        Token.OR_AND,
+        Token.DBL_SEMICOLON,
+        Token.SEMI_AND,
+        Token.DBL_SEMI_AND,
+        Token.SEMI_OR,
+        Token.RIGHT_PAREN:
         return True
     case bckQuote:
         return p.backquoteEnd()
@@ -1549,26 +1549,26 @@ func (p *Parser) getAssign(needEqual bool) *Assign {
 func (p *Parser) peekRedir() bool {
     switch p.tok {
     case
-        _LitRedir,
-        rdrOut,
-        appOut,
-        rdrIn,
-        rdrInOut,
-        dplIn,
-        dplOut,
-        rdrClob,
-        rdrTrunc,
-        appClob,
-        appTrunc,
-        hdoc,
-        dashHdoc,
-        wordHdoc,
-        rdrAll,
-        rdrAllClob,
-        rdrAllTrunc,
-        appAll,
-        appAllClob,
-        appAllTrunc:
+        Token.LIT_REDIR_,
+        Token.RDR_OUT,
+        Token.APP_OUT,
+        Token.RDR_IN,
+        Token.RDR_IN_OUT,
+        Token.DPL_IN,
+        Token.DPL_OUT,
+        Token.RDR_CLOB,
+        Token.RDR_TRUNC,
+        Token.APP_CLOB,
+        Token.APP_TRUNC,
+        Token.HDOC,
+        Token.DASH_HDOC,
+        Token.WORD_HDOC,
+        Token.RDR_ALL,
+        Token.RDR_ALL_CLOB,
+        Token.RDR_ALL_TRUNC,
+        Token.APP_ALL,
+        Token.APP_ALL_CLOB,
+        Token.APP_ALL_TRUNC:
         return True
     return False
 

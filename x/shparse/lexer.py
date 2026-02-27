@@ -220,7 +220,7 @@ func (p *Parser) nextKeepSpaces() {
     case paramExpExp:
         switch r {
         case '}':
-            p.tok = p.paramToken(r)
+            p.tok = p.param_token(r)
         case '`', '"', '$', '\'':
             p.tok = p.regToken(r)
         default:
@@ -282,7 +282,7 @@ skipSpace:
     case p.quote&allRegTokens != 0:
         switch r {
         case ';', '"', '\'', '(', ')', '$', '|', '&', '>', '<', '`':
-            if r == '<' and p.lang.in(LANG_ZSH) and p.zshNumRange() {
+            if r == '<' and lang_in(p.lang, LANG_ZSH) and p.zshNumRange() {
                 p.advanceLitNone(r)
                 return
             p.tok = p.regToken(r)
@@ -349,9 +349,9 @@ skipSpace:
         default:
             p.advanceLitNone(r)
     case p.quote&allArithmExpr != 0 and arithm_ops(r):
-        p.tok = p.arithmToken(r)
+        p.tok = p.arithm_token(r)
     case p.quote&allParamExp != 0 and param_ops(r):
-        p.tok = p.paramToken(r)
+        p.tok = p.param_token(r)
     case p.quote == testExprRegexp:
         if not p.rxFirstPart and p.spaced {
             p.quote = testExpr
@@ -380,7 +380,7 @@ skipSpace:
 # extendedGlob determines whether we're parsing a Bash extended globbing expression.
 # For example, whether `*` or `@` are followed by `(` to form `@(foo)`.
 func (p *Parser) extendedGlob() bool {
-    if p.lang.in(LANG_ZSH) {
+    if lang_in(p.lang, LANG_ZSH) {
         # Zsh doesn't have extended globs like bash/mksh.
         # We still tokenize +( @( !( so the parser can give a clear error,
         # but not *( or ?( as those are used in zsh glob qualifiers.
@@ -462,7 +462,7 @@ func (p *Parser) regToken(r rune) token {
             p.rune()
             return orOr
         case '&':
-            if not p.lang.in(langBashLike | LANG_MIR_BSD_KORN | LANG_ZSH) {
+            if not lang_in(p.lang, LANG_BASH_LIKE | LANG_MIR_BSD_KORN | LANG_ZSH) {
                 break
             p.rune()
             return orAnd
@@ -470,12 +470,12 @@ func (p *Parser) regToken(r rune) token {
     case '$':
         switch p.rune() {
         case '\'':
-            if not p.lang.in(langBashLike | LANG_MIR_BSD_KORN | LANG_ZSH) {
+            if not lang_in(p.lang, LANG_BASH_LIKE | LANG_MIR_BSD_KORN | LANG_ZSH) {
                 break
             p.rune()
             return dollSglQuote
         case '"':
-            if not p.lang.in(langBashLike | LANG_MIR_BSD_KORN) {
+            if not lang_in(p.lang, LANG_BASH_LIKE | LANG_MIR_BSD_KORN) {
                 break
             p.rune()
             return dollDblQuote
@@ -483,7 +483,7 @@ func (p *Parser) regToken(r rune) token {
             p.rune()
             return dollBrace
         case '[':
-            if not p.lang.in(langBashLike) {
+            if not lang_in(p.lang, LANG_BASH_LIKE) {
                 # latter to not tokenise ${$[@]} as $[
                 break
             p.rune()
@@ -495,7 +495,7 @@ func (p *Parser) regToken(r rune) token {
             return dollParen
         return dollar
     case '(':
-        if p.rune() == '(' and p.lang.in(langBashLike|LANG_MIR_BSD_KORN|LANG_ZSH) and p.quote != testExpr {
+        if p.rune() == '(' and lang_in(p.lang, LANG_BASH_LIKE|LANG_MIR_BSD_KORN|LANG_ZSH) and p.quote != testExpr {
             p.rune()
             return dblLeftParen
         return leftParen
@@ -505,17 +505,17 @@ func (p *Parser) regToken(r rune) token {
     case ';':
         switch p.rune() {
         case ';':
-            if p.rune() == '&' and p.lang.in(langBashLike) {
+            if p.rune() == '&' and lang_in(p.lang, LANG_BASH_LIKE) {
                 p.rune()
                 return dblSemiAnd
             return dblSemicolon
         case '&':
-            if not p.lang.in(langBashLike | LANG_MIR_BSD_KORN | LANG_ZSH) {
+            if not lang_in(p.lang, LANG_BASH_LIKE | LANG_MIR_BSD_KORN | LANG_ZSH) {
                 break
             p.rune()
             return semiAnd
         case '|':
-            if not p.lang.in(LANG_MIR_BSD_KORN) {
+            if not lang_in(p.lang, LANG_MIR_BSD_KORN) {
                 break
             p.rune()
             return semiOr
@@ -537,7 +537,7 @@ func (p *Parser) regToken(r rune) token {
             p.rune()
             return dplIn
         case '(':
-            if not p.lang.in(langBashLike | LANG_ZSH) {
+            if not lang_in(p.lang, LANG_BASH_LIKE | LANG_ZSH) {
                 break
             p.rune()
             return cmdIn
@@ -563,7 +563,7 @@ func (p *Parser) regToken(r rune) token {
             p.rune()
             return rdrTrunc
         case '(':
-            if not p.lang.in(langBashLike | LANG_ZSH) {
+            if not lang_in(p.lang, LANG_BASH_LIKE | LANG_ZSH) {
                 break
             p.rune()
             return cmdOut
@@ -585,7 +585,7 @@ func (p *Parser) dqToken(r rune) token {
             p.rune()
             return dollBrace
         case '[':
-            if not p.lang.in(langBashLike) {
+            if not lang_in(p.lang, LANG_BASH_LIKE) {
                 break
             p.rune()
             return dollBrack
@@ -597,7 +597,7 @@ func (p *Parser) dqToken(r rune) token {
         return dollar
     panic("unreachable")
 
-func (p *Parser) paramToken(r rune) token {
+func (p *Parser) param_token(r rune) token {
     switch r {
     case '}':
         p.rune()
@@ -677,61 +677,60 @@ func (p *Parser) paramToken(r rune) token {
     default:
         return illegalTok
 
-func (p *Parser) arithmToken(r rune) token {
-    switch r {
-    case '!':
-        if p.rune() == '=' {
+func (p *Parser) arithm_token(r: str) -> Token:
+    if r == '!':
+        if p.rune() == '=':
             p.rune()
-            return nequal
-        return exclMark
-    case '=':
-        if p.rune() == '=' {
+            return Token.NEQUAL
+        return Token.EXCL_MARK
+    elif r == '=':
+        if p.rune() == '=':
             p.rune()
-            return equal
-        return assgn
-    case '~':
+            return Token.EQUAL
+        return Token.ASSGN
+    elif r == '~':
         p.rune()
-        return tilde
-    case '(':
+        return Token.TILDE
+    elif r == '(':
         p.rune()
-        return leftParen
-    case ')':
+        return Token.LEFT_PAREN
+    elif r == ')':
         p.rune()
-        return rightParen
-    case '&':
-        switch p.rune() {
-        case '&':
-            if p.rune() == '=' and p.lang.in(LANG_ZSH) {
+        return Token.RIGHT_PAREN
+    elif r == '&':
+        pr = p.rune()
+        if pr == '&':
+            if p.rune() == '=' and lang_in(p.lang.in, LANG_ZSH):
                 p.rune()
-                return andBoolAssgn
-            return andAnd
-        case '=':
+                return Token.AND_BOOL_ASSGN
+            return Token.AND_AND
+        elif pr == '=':
             p.rune()
-            return andAssgn
-        return and
-    case '|':
-        switch p.rune() {
-        case '|':
-            if p.rune() == '=' and p.lang.in(LANG_ZSH) {
+            return Token.AND_ASSGN
+        return Token.AND
+    elif r == '|':
+        pr = p.rune()
+        if pr == '|':
+            if p.rune() == '=' and lang_in(p.lang, LANG_ZSH) {
                 p.rune()
-                return orBoolAssgn
-            return orOr
-        case '=':
+                return Token.OR_BOOL_ASSGN
+            return Token.OR_OR
+        elif pr == '=':
             p.rune()
-            return orAssgn
-        return or
-    case '<':
-        switch p.rune() {
-        case '<':
+            return Token.OR_ASSGN
+        return Token.OR
+    elif r == '<':
+        pr = p.rune()
+        if pr == '<':
             if p.rune() == '=' {
                 p.rune()
-                return shlAssgn
-            return hdoc
-        case '=':
+                return Token.SHL_ASSGN
+            return Token.HDOC
+        elif pr == '=':
             p.rune()
             return lequal
         return rdrIn
-    case '>':
+    elif r == '>':
         switch p.rune() {
         case '>':
             if p.rune() == '=' {
@@ -742,7 +741,7 @@ func (p *Parser) arithmToken(r rune) token {
             p.rune()
             return gequal
         return rdrOut
-    case '+':
+    elif r == '+':
         switch p.rune() {
         case '+':
             p.rune()
@@ -751,7 +750,7 @@ func (p *Parser) arithmToken(r rune) token {
             p.rune()
             return addAssgn
         return plus
-    case '-':
+    elif r == '-':
         switch p.rune() {
         case '-':
             p.rune()
@@ -760,15 +759,15 @@ func (p *Parser) arithmToken(r rune) token {
             p.rune()
             return subAssgn
         return minus
-    case '%':
+    elif r == '%':
         if p.rune() == '=' {
             p.rune()
             return remAssgn
         return perc
-    case '*':
+    elif r == '*':
         switch p.rune() {
         case '*':
-            if p.rune() == '=' and p.lang.in(LANG_ZSH) {
+            if p.rune() == '=' and lang_in(p.lang, LANG_ZSH) {
                 p.rune()
                 return powAssgn
             return power
@@ -776,15 +775,15 @@ func (p *Parser) arithmToken(r rune) token {
             p.rune()
             return mulAssgn
         return star
-    case '/':
+    elif r == '/':
         if p.rune() == '=' {
             p.rune()
             return quoAssgn
         return slash
-    case '^':
+    elif r == '^':
         switch p.rune() {
         case '^':
-            if p.rune() == '=' and p.lang.in(LANG_ZSH) {
+            if p.rune() == '=' and lang_in(p.lang, LANG_ZSH) {
                 p.rune()
                 return xorBoolAssgn
             return dblCaret
@@ -792,28 +791,28 @@ func (p *Parser) arithmToken(r rune) token {
             p.rune()
             return xorAssgn
         return caret
-    case '[':
+    elif r == '[':
         p.rune()
         return leftBrack
-    case ']':
+    elif r == ']':
         p.rune()
         return rightBrack
-    case ',':
+    elif r == ',':
         p.rune()
         return comma
-    case '?':
+    elif r == '?':
         p.rune()
         return quest
-    case ':':
+    elif r == ':':
         p.rune()
         return colon
-    case '#':
+    elif r == '#':
         p.rune()
         return hash
-    case '.':
+    elif r == '.':
         p.rune()
         return period
-    panic("unreachable")
+    raise RuntimeError("unreachable")
 
 func (p *Parser) newLit(r rune) {
     switch {
@@ -872,10 +871,10 @@ loop:
             if p.quote&allArithmExpr != 0 {
                 break loop
         case '.':
-            if not p.lang.in(LANG_ZSH) and p.quote&allArithmExpr != 0 {
+            if not lang_in(p.lang, LANG_ZSH) and p.quote&allArithmExpr != 0 {
                 break loop
         case '[', ']':
-            if p.lang.in(langBashLike|LANG_MIR_BSD_KORN|LANG_ZSH) and p.quote&allArithmExpr != 0 {
+            if lang_in(p.lang, LANG_BASH_LIKE|LANG_MIR_BSD_KORN|LANG_ZSH) and p.quote&allArithmExpr != 0 {
                 break loop
             fallthrough
         case '+', '-', ' ', '\t', ';', '&', '>', '<', '|', '(', ')', '\n', '\r':
@@ -924,7 +923,7 @@ loop:
         case ' ', '\t', '\n', '\r', '&', '|', ';', ')':
             break loop
         case '(':
-            if p.lang.in(LANG_ZSH) and p.litBsGlob() {
+            if lang_in(p.lang, LANG_ZSH) and p.litBsGlob() {
                 # Zsh glob qualifiers like *(.), **(/) or *(om[1,5]); consume until ')'.
                 for {
                     if r = p.rune(); r == utf8.RuneSelf or r == ')' {
@@ -934,7 +933,7 @@ loop:
         case '\\': # escaped byte follows
             p.rune()
         case '>', '<':
-            if r == '<' and p.lang.in(LANG_ZSH) and p.zshNumRange() {
+            if r == '<' and lang_in(p.lang, LANG_ZSH) and p.zshNumRange() {
                 # Zsh numeric range glob like <-> or <1-100>; consume until '>'.
                 for {
                     if r = p.rune(); r == '>' or r == utf8.RuneSelf {
@@ -960,7 +959,7 @@ loop:
             if p.eqlOffs < 0 {
                 p.eqlOffs = len(p.litBs) - 1
         case '[':
-            if p.lang.in(langBashLike|LANG_MIR_BSD_KORN|LANG_ZSH) and len(p.litBs) > 1 and p.litBs[0] != '[' {
+            if lang_in(p.lang, LANG_BASH_LIKE|LANG_MIR_BSD_KORN|LANG_ZSH) and len(p.litBs) > 1 and p.litBs[0] != '[' {
                 tok = _Lit
                 break loop
     p.tok, p.val = tok, p.endLit()

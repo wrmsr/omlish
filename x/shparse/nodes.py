@@ -589,7 +589,7 @@ class TestExpr(Node, lang.Abstract):
 # newlines, semicolons, or parentheses.
 @dc.dataclass()
 class Word(ArithmExpr, TestExpr):
-    parts: list['WordPart']
+    parts: list['WordPart'] = dc.field(default_factory=list)
 
     def pos(self) -> Pos:
         return self.parts[0].pos()
@@ -637,10 +637,10 @@ class WordPart(Node, lang.Abstract):
 # Note that a parsed string literal may not appear as-is in the original source
 # code, as it is possible to split literals by escaping newlines. The splitting
 # is lost, but the end position is not.
-@dc.dataclass()
+@dc.dataclass(kw_only=True)
 class Lit(WordPart):
-    value_pos: Pos
-    value_end: Pos
+    value_pos: Pos = Pos()
+    value_end: Pos = Pos()
     value: str
 
     def pos(self) -> Pos:

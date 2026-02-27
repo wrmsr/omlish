@@ -17,154 +17,182 @@
 # SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-r"""
+import copy
 
-import (
-    "slices"
-    "strconv"
-    "strings"
-)
+from omlish import dataclasses as dc
 
-var (
-    litLeftBrace  = &Lit{Value: "{"}
-    litComma      = &Lit{Value: ","}
-    litDots       = &Lit{Value: ".."}
-    litRightBrace = &Lit{Value: "}"}
-)
+from .nodes import Lit
+from .nodes import Word
+from .nodes import BraceExp
+
+
+##
+
+
+LIT_LEFT_BRACE  = Lit(value="{")
+LIT_COMMA       = Lit(value=",")
+LIT_DOTS        = Lit(value="..")
+LIT_RIGHT_BRACE = Lit(value="}")
+
 
 # SplitBraces parses brace expansions within a word's literal parts.
 # If any valid brace expansions are found, they are replaced with BraceExp nodes,
-# and the function returns true.
-# Otherwise, the word is left untouched and the function returns false.
+# and the function returns True.
+# Otherwise, the word is left untouched and the function returns False.
 #
 # For example, a literal word "foo{bar,baz}" will result in a word containing
 # the literal "foo", and a brace expansion with the elements "bar" and "baz".
 #
 # It does not return an error; malformed brace expansions are simply skipped.
 # For example, the literal word "a{b" is left unchanged.
-func SplitBraces(word *Word) bool {
-    if !slices.ContainsFunc(word.Parts, func(part WordPart) bool {
-        lit, ok := part.(*Lit)
-        return ok && strings.Contains(lit.Value, "{")
-    }) {
+def split_braces(word: Word) -> bool:
+    if not any(isinstance(part, Lit) and '{' in part.value for part in word.parts):
         # In the common case where a word has no braces, skip any allocs.
-        return false
-    }
-    top := &Word{}
-    acc := top
-    var cur *BraceExp
-    open := []*BraceExp{}
+        return False
 
-    pop := func() *BraceExp {
-        old := cur
-        open = open[:len(open)-1]
-        if len(open) == 0 {
-            cur = nil
+    top = Word()
+    acc = top
+    cur: BraceExp | None = None
+    opn: list[BraceExp] = []
+
+    def pop() -> BraceExp:
+        nonlocal acc
+        nonlocal cur
+        nonlocal opn
+        old = cur
+        opn = opn[:-1]
+        if len(opn) == 0:
+            cur = None
             acc = top
-        else {
-            cur = open[len(open)-1]
-            acc = cur.Elems[len(cur.Elems)-1]
+        else:
+            cur = opn[-1]
+            acc = cur.elems[-1]
         return old
-    addLit := func(lit *Lit) {
-        acc.Parts = append(acc.Parts, lit)
 
-    for _, wp := range word.Parts {
-        lit, ok := wp.(*Lit)
-        if !ok {
-            acc.Parts = append(acc.Parts, wp)
+    def add_lit(lit: Lit) -> None:
+        acc.parts.append(lit)
+
+    for wp in word.parts:
+        if not isinstance(wp, Lit):
+            acc.parts.append(wp)
             continue
-        last := 0
-        for j := 0; j < len(lit.Value); j++ {
-            addlitidx := func() {
-                if last == j {
-                    return # empty lit
-                l2 := *lit
-                l2.Value = l2.Value[last:j]
-                addLit(&l2)
-            switch lit.Value[j] {
-            case '{':
-                addlitidx()
-                acc = &Word{}
-                cur = &BraceExp{Elems: []*Word{acc}}
-                open = append(open, cur)
-            case ',':
-                if cur == nil {
+        lit = wp
+
+        last = 0
+        j = -1
+        while True:
+            j += 1
+            if j >= len(lit.value):
+                break
+
+            def add_lit_idx() -> None:
+                if last == j:
+                    return  # empty lit
+                l2 = copy.copy(lit)
+                l2.value = l2.value[last:j]
+                add_lit(l2)
+                
+            if lit.value[j] == '{':
+                add_lit_idx()
+                acc = Word()
+                cur = BraceExp(elems=[acc])
+                opn.append(cur)
+                
+            elif lit.value[j] == ',':
+                if cur is None:
                     continue
-                addlitidx()
-                acc = &Word{}
-                cur.Elems = append(cur.Elems, acc)
-            case '.':
-                if cur == nil {
+                add_lit_idx()
+                acc = Word()
+                cur.elems.append(acc)
+                
+            elif lit.value[j] == '.':
+                if cur is None:
                     continue
-                if j+1 >= len(lit.Value) || lit.Value[j+1] != '.' {
+                if j+1 >= len(lit.value) or lit.value[j+1] != '.':
                     continue
-                addlitidx()
-                cur.Sequence = true
-                acc = &Word{}
-                cur.Elems = append(cur.Elems, acc)
-                j++
-            case '}':
-                if cur == nil {
+                add_lit_idx()
+                cur.sequence = True
+                acc = Word()
+                cur.elems.append(acc)
+                j += 1
+                
+            elif lit.value[j] == '}':
+                if cur is None:
                     continue
-                addlitidx()
-                br := pop()
-                if len(br.Elems) == 1 {
+                add_lit_idx()
+                
+                br = pop()
+                if len(br.elems) == 1:
                     # return {x} to a non-brace
-                    addLit(litLeftBrace)
-                    acc.Parts = append(acc.Parts, br.Elems[0].Parts...)
-                    addLit(litRightBrace)
+                    add_lit(LIT_LEFT_BRACE)
+                    acc.parts.extend(br.elems[0].parts)
+                    add_lit(LIT_RIGHT_BRACE)
                     break
-                if !br.Sequence {
-                    acc.Parts = append(acc.Parts, br)
+                    
+                if not br.sequence:
+                    acc.parts.append(br)
                     break
-                var chars [2]bool
-                broken := false
-                for i, elem := range br.Elems[:2] {
-                    val := elem.Lit()
-                    if _, err := strconv.Atoi(val); err == nil {
-                    else if len(val) == 1 && asciiLetter(val[0]) {
-                        chars[i] = true
-                    else {
-                        broken = true
-                if len(br.Elems) == 3 {
+                    
+                chars = [False, False]
+                broken = False
+                for i, elem in enumerate(br.elems[:2]):
+                    val = elem.lit()
+                    try:
+                        int(val)  # noqa
+                    except ValueError:
+                        if len(val) == 1 and ascii_letter(val[0]):
+                            chars[i] = True
+                        else:
+                            broken = True
+                        
+                if len(br.elems) == 3:
                     # increment must be a number
-                    val := br.Elems[2].Lit()
-                    if _, err := strconv.Atoi(val); err != nil {
-                        broken = true
+                    val = br.elems[2].lit()
+                    try:
+                        int(val)  # noqa
+                    except ValueError:
+                        broken = True
+                        
                 # are start and end both chars or
                 # non-chars?
-                if chars[0] != chars[1] {
-                    broken = true
-                if !broken {
-                    acc.Parts = append(acc.Parts, br)
+                if chars[0] != chars[1]:
+                    broken = True
+                if not broken:
+                    acc.parts.append(br)
                     break
+
                 # return broken {x..y[..incr]} to a non-brace
-                addLit(litLeftBrace)
-                for i, elem := range br.Elems {
-                    if i > 0 {
-                        addLit(litDots)
-                    acc.Parts = append(acc.Parts, elem.Parts...)
-                addLit(litRightBrace)
-            default:
+                add_lit(LIT_LEFT_BRACE)
+                for i, elem in enumerate(br.elems):
+                    if i > 0:
+                        add_lit(LIT_DOTS)
+                    acc.parts.extend(elem.parts)
+                add_lit(LIT_RIGHT_BRACE)
+                
+            else:
                 continue
+                
             last = j + 1
-        if last == 0 {
-            addLit(lit)
-        else {
-            left := *lit
-            left.Value = left.Value[last:]
-            addLit(&left)
+            
+        if last == 0:
+            add_lit(lit)
+        else:
+            left = copy.copy(lit)
+            left.value = left.value[last:]
+            add_lit(left)
+            
     # open braces that were never closed fall back to non-braces
-    for acc != top {
-        br := pop()
-        addLit(litLeftBrace)
-        for i, elem := range br.Elems {
-            if i > 0 {
-                if br.Sequence {
-                    addLit(litDots)
-                else {
-                    addLit(litComma)
-            acc.Parts = append(acc.Parts, elem.Parts...)
-    *word = *top
-    return true
-"""  # noqa
+    while acc != top:
+        br = pop()
+        add_lit(LIT_LEFT_BRACE)
+        for i, elem in enumerate(br.elems):
+            if i > 0:
+                if br.sequence:
+                    add_lit(LIT_DOTS)
+                else:
+                    add_lit(LIT_COMMA)
+            acc.parts.extend(elem.parts)
+
+    for fld in dc.fields(Word):
+        setattr(word, fld.name, getattr(top, fld.name))
+    return True
