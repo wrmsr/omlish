@@ -118,7 +118,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../omlish/lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
             dict(path='../../omlish/lite/cached.py', sha1='0c33cf961ac8f0727284303c7a30c5ea98f714f2'),
-            dict(path='../../omlish/lite/check.py', sha1='df0ed561b5782545e34e61dd3424f69f836a87c0'),
+            dict(path='../../omlish/lite/check.py', sha1='5e625d74d4ad4e0492e25acac42820baa9956965'),
             dict(path='../../omlish/lite/json.py', sha1='57eeddc4d23a17931e00284ffa5cb6e3ce089486'),
             dict(path='../../omlish/lite/objects.py', sha1='9566bbf3530fd71fcc56321485216b592fae21e9'),
             dict(path='../../omlish/lite/reflect.py', sha1='c4fec44bf144e9d93293c996af06f6c65fc5e63d'),
@@ -2507,7 +2507,7 @@ class Checks:
         ...
 
     def isinstance(self, v, spec, msg=None):
-        if not isinstance(v, self._unpack_isinstance_spec(spec)):
+        if not isinstance(v, spec if type(spec) is type else self._unpack_isinstance_spec(spec)):
             self._raise(
                 TypeError,
                 'Must be instance',
@@ -2527,7 +2527,7 @@ class Checks:
         ...
 
     def of_isinstance(self, spec, msg=None, /):
-        spec = self._unpack_isinstance_spec(spec)
+        spec = spec if type(spec) is type else self._unpack_isinstance_spec(spec)
 
         def inner(v):
             return self.isinstance(v, spec, msg)
@@ -2552,7 +2552,7 @@ class Checks:
         return inner
 
     def not_isinstance(self, v: T, spec: ta.Any, msg: CheckMessage = None, /) -> T:  # noqa
-        if isinstance(v, self._unpack_isinstance_spec(spec)):
+        if isinstance(v, spec if type(spec) is type else self._unpack_isinstance_spec(spec)):
             self._raise(
                 TypeError,
                 'Must not be instance',
@@ -2564,7 +2564,7 @@ class Checks:
         return v
 
     def of_not_isinstance(self, spec: ta.Any, msg: CheckMessage = None, /) -> ta.Callable[[T], T]:
-        spec = self._unpack_isinstance_spec(spec)
+        spec = spec if type(spec) is type else self._unpack_isinstance_spec(spec)
 
         def inner(v):
             return self.not_isinstance(v, spec, msg)

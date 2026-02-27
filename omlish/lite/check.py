@@ -155,7 +155,7 @@ class Checks:
         ...
 
     def isinstance(self, v, spec, msg=None):
-        if not isinstance(v, self._unpack_isinstance_spec(spec)):
+        if not isinstance(v, spec if type(spec) is type else self._unpack_isinstance_spec(spec)):
             self._raise(
                 TypeError,
                 'Must be instance',
@@ -175,7 +175,7 @@ class Checks:
         ...
 
     def of_isinstance(self, spec, msg=None, /):
-        spec = self._unpack_isinstance_spec(spec)
+        spec = spec if type(spec) is type else self._unpack_isinstance_spec(spec)
 
         def inner(v):
             return self.isinstance(v, spec, msg)
@@ -200,7 +200,7 @@ class Checks:
         return inner
 
     def not_isinstance(self, v: T, spec: ta.Any, msg: CheckMessage = None, /) -> T:  # noqa
-        if isinstance(v, self._unpack_isinstance_spec(spec)):
+        if isinstance(v, spec if type(spec) is type else self._unpack_isinstance_spec(spec)):
             self._raise(
                 TypeError,
                 'Must not be instance',
@@ -212,7 +212,7 @@ class Checks:
         return v
 
     def of_not_isinstance(self, spec: ta.Any, msg: CheckMessage = None, /) -> ta.Callable[[T], T]:
-        spec = self._unpack_isinstance_spec(spec)
+        spec = spec if type(spec) is type else self._unpack_isinstance_spec(spec)
 
         def inner(v):
             return self.not_isinstance(v, spec, msg)

@@ -44,13 +44,13 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/io/streams/errors.py', sha1='67ca85fd8741b5bfefe76c872ce1c30c18fab06f'),
             dict(path='../../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
             dict(path='../../../omlish/lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
-            dict(path='../../../omlish/lite/check.py', sha1='df0ed561b5782545e34e61dd3424f69f836a87c0'),
+            dict(path='../../../omlish/lite/check.py', sha1='5e625d74d4ad4e0492e25acac42820baa9956965'),
             dict(path='../../../omlish/lite/dataclasses.py', sha1='8b144d1d9474d96cf2a35f4db5cb224c30f538d6'),
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='../../../omlish/logs/levels.py', sha1='91405563d082a5eba874da82aac89d83ce7b6152'),
             dict(path='../../../omlish/logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
             dict(path='errors.py', sha1='f0f9d973a1a219f790b309b043875b730b8863d4'),
-            dict(path='../../../omlish/http/headers.py', sha1='58ff154a9b790cbf66daf9f71fe2d28c7183fdf7'),
+            dict(path='../../../omlish/http/headers.py', sha1='a8204e05f535f04891ff4967f17332f4fad04f23'),
             dict(path='../../../omlish/http/parsing.py', sha1='2ee187993274e697332c7df7b46a98382f4cee2a'),
             dict(path='../../../omlish/io/streams/types.py', sha1='ab72e5d4a1e648ef79577be7d8c45853b1c5917d'),
             dict(path='../../../omlish/logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
@@ -730,7 +730,7 @@ class Checks:
         ...
 
     def isinstance(self, v, spec, msg=None):
-        if not isinstance(v, self._unpack_isinstance_spec(spec)):
+        if not isinstance(v, spec if type(spec) is type else self._unpack_isinstance_spec(spec)):
             self._raise(
                 TypeError,
                 'Must be instance',
@@ -750,7 +750,7 @@ class Checks:
         ...
 
     def of_isinstance(self, spec, msg=None, /):
-        spec = self._unpack_isinstance_spec(spec)
+        spec = spec if type(spec) is type else self._unpack_isinstance_spec(spec)
 
         def inner(v):
             return self.isinstance(v, spec, msg)
@@ -775,7 +775,7 @@ class Checks:
         return inner
 
     def not_isinstance(self, v: T, spec: ta.Any, msg: CheckMessage = None, /) -> T:  # noqa
-        if isinstance(v, self._unpack_isinstance_spec(spec)):
+        if isinstance(v, spec if type(spec) is type else self._unpack_isinstance_spec(spec)):
             self._raise(
                 TypeError,
                 'Must not be instance',
@@ -787,7 +787,7 @@ class Checks:
         return v
 
     def of_not_isinstance(self, spec: ta.Any, msg: CheckMessage = None, /) -> ta.Callable[[T], T]:
-        spec = self._unpack_isinstance_spec(spec)
+        spec = spec if type(spec) is type else self._unpack_isinstance_spec(spec)
 
         def inner(v):
             return self.not_isinstance(v, spec, msg)
@@ -1667,7 +1667,7 @@ class HttpHeaders(ta.Mapping[str, ta.Sequence[str]]):
         if isinstance(src, http.client.HTTPMessage):
             raw = list(src.items())
 
-        elif isinstance(src, ta.Mapping):
+        elif isinstance(src, collections.abc.Mapping):
             for k, v in src.items():
                 if isinstance(v, (str, bytes)):
                     raw.append((self._decode(k), self._decode(v)))

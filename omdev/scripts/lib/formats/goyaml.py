@@ -35,7 +35,7 @@ def __omlish_amalg__():  # noqa
     return dict(
         src_files=[
             dict(path='../../../lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
-            dict(path='../../../lite/check.py', sha1='df0ed561b5782545e34e61dd3424f69f836a87c0'),
+            dict(path='../../../lite/check.py', sha1='5e625d74d4ad4e0492e25acac42820baa9956965'),
             dict(path='../../../lite/dataclasses.py', sha1='8b144d1d9474d96cf2a35f4db5cb224c30f538d6'),
             dict(path='errors.py', sha1='8fa73c90292f56f8faaedebb2f478ff6a3b95460'),
             dict(path='tokens.py', sha1='d52876a2a525bc99eb554fe28c3d27e7e01f43a9'),
@@ -357,7 +357,7 @@ class Checks:
         ...
 
     def isinstance(self, v, spec, msg=None):
-        if not isinstance(v, self._unpack_isinstance_spec(spec)):
+        if not isinstance(v, spec if type(spec) is type else self._unpack_isinstance_spec(spec)):
             self._raise(
                 TypeError,
                 'Must be instance',
@@ -377,7 +377,7 @@ class Checks:
         ...
 
     def of_isinstance(self, spec, msg=None, /):
-        spec = self._unpack_isinstance_spec(spec)
+        spec = spec if type(spec) is type else self._unpack_isinstance_spec(spec)
 
         def inner(v):
             return self.isinstance(v, spec, msg)
@@ -402,7 +402,7 @@ class Checks:
         return inner
 
     def not_isinstance(self, v: T, spec: ta.Any, msg: CheckMessage = None, /) -> T:  # noqa
-        if isinstance(v, self._unpack_isinstance_spec(spec)):
+        if isinstance(v, spec if type(spec) is type else self._unpack_isinstance_spec(spec)):
             self._raise(
                 TypeError,
                 'Must not be instance',
@@ -414,7 +414,7 @@ class Checks:
         return v
 
     def of_not_isinstance(self, spec: ta.Any, msg: CheckMessage = None, /) -> ta.Callable[[T], T]:
-        spec = self._unpack_isinstance_spec(spec)
+        spec = spec if type(spec) is type else self._unpack_isinstance_spec(spec)
 
         def inner(v):
             return self.not_isinstance(v, spec, msg)

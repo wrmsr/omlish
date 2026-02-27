@@ -49,7 +49,7 @@ class HttpHeaders(ta.Mapping[str, ta.Sequence[str]]):
         if isinstance(src, http.client.HTTPMessage):
             raw = list(src.items())
 
-        elif isinstance(src, ta.Mapping):
+        elif isinstance(src, collections.abc.Mapping):
             for k, v in src.items():
                 if isinstance(v, (str, bytes)):
                     raw.append((self._decode(k), self._decode(v)))
