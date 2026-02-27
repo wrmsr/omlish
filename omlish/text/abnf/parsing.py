@@ -8,6 +8,7 @@ from .grammars import Grammar
 from .grammars import Rule
 from .internal import Regex
 from .matches import Match
+from .matches import furthest_match
 from .matches import longest_match
 from .ops import CaseInsensitiveStringLiteral
 from .ops import Concat
@@ -32,7 +33,18 @@ class _Parser(lang.Abstract):
 ##
 
 
+_ParserContext: ta.TypeAlias = tuple[Op, int, ta.Optional['_ParserContext']]
+
+
 class _ParserImpl(_Parser):
+    """
+    Packrat-ish-but-non-deterministic? 'Chart' parser?:
+    - Top-down
+    - Recursive descent
+    - Memoized
+    - Non-deterministic (yields all possible matches by default unless `Either.first_match`)
+    """
+
     def __init__(
             self,
             grammar: Grammar,
@@ -48,7 +60,7 @@ class _ParserImpl(_Parser):
 
         self._rules = self._grammar._rules  # Noqa
 
-        self._dispatch: dict[type[Op], ta.Any] = {
+        self._dispatch: dict[type[Op], ta.Callable[[_ParserContext], ta.Iterator[Match]]] = ta.cast(ta.Any, {  # noqa
             StringLiteral: self._iter_parse_string_literal,
             CaseInsensitiveStringLiteral: self._iter_parse_case_insensitive_string_literal,
             RangeLiteral: self._iter_parse_range_literal,
@@ -57,25 +69,40 @@ class _ParserImpl(_Parser):
             Either: self._iter_parse_either,
             RuleRef: self._iter_parse_rule_ref,
             Regex: self._iter_parse_regex,
-        }
+        })
 
         self._memo: dict[tuple[Op, int], tuple[Match, ...]] = {}
+        self._furthest: _ParserImpl._Furthest | None = None
 
         self._cur_step = 0
 
-    def _iter_parse_string_literal(self, op: StringLiteral, start: int) -> ta.Iterator[Match]:
+    class _Furthest(ta.NamedTuple):
+        op: Op
+        match: Match
+        ctx: _ParserContext
+
+    def _iter_parse_string_literal(self, ctx: _ParserContext) -> ta.Iterator[Match]:
+        op: StringLiteral
+        op, start, _ = ctx  # type: ignore[assignment]
+
         if start < len(self._source):  # noqa
             source = self._source[start : start + len(op._value)]  # noqa
             if source == op._value:  # noqa
                 yield Match(op, start, start + len(source), ())
 
-    def _iter_parse_case_insensitive_string_literal(self, op: CaseInsensitiveStringLiteral, start: int) -> ta.Iterator[Match]:  # noqa
+    def _iter_parse_case_insensitive_string_literal(self, ctx: _ParserContext) -> ta.Iterator[Match]:  # noqa
+        op: CaseInsensitiveStringLiteral
+        op, start, _ = ctx  # type: ignore[assignment]
+
         if start < len(self._source):  # noqa
             source = self._source[start : start + len(op._value)].casefold()  # noqa
             if source == op._value:  # noqa
                 yield Match(op, start, start + len(source), ())
 
-    def _iter_parse_range_literal(self, op: RangeLiteral, start: int) -> ta.Iterator[Match]:
+    def _iter_parse_range_literal(self, ctx: _ParserContext) -> ta.Iterator[Match]:
+        op: RangeLiteral
+        op, start, _ = ctx  # type: ignore[assignment]
+
         try:
             source = self._source[start]  # noqa
         except IndexError:
@@ -85,7 +112,10 @@ class _ParserImpl(_Parser):
         if (value := op._value).lo <= source <= value.hi:  # noqa
             yield Match(op, start, start + 1, ())
 
-    def _iter_parse_concat(self, op: Concat, start: int) -> ta.Iterator[Match]:
+    def _iter_parse_concat(self, ctx: _ParserContext) -> ta.Iterator[Match]:
+        op: Concat
+        op, start, _ = ctx  # type: ignore[assignment]
+
         match_tups: list[tuple[Match, ...]] = [()]
 
         i = 0
@@ -93,7 +123,7 @@ class _ParserImpl(_Parser):
             next_match_tups: list[tuple[Match, ...]] = []
 
             for mt in match_tups:
-                for cm in self.iter_parse(cp, mt[-1].end if mt else start):
+                for cm in self._iter_parse((cp, mt[-1].end if mt else start, ctx)):
                     next_match_tups.append((*mt, cm))
                     i += 1
 
@@ -108,7 +138,10 @@ class _ParserImpl(_Parser):
         for mt in sorted(match_tups, key=len, reverse=True):
             yield Match(op, start, mt[-1].end if mt else start, mt)
 
-    def _iter_parse_repeat(self, op: Repeat, start: int) -> ta.Iterator[Match]:
+    def _iter_parse_repeat(self, ctx: _ParserContext) -> ta.Iterator[Match]:
+        op: Repeat
+        op, start, _ = ctx  # type: ignore[assignment]
+
         # Map from (repetition_count, end_position) to longest match tuple
         matches_by_count_pos: dict[tuple[int, int], tuple[Match, ...]] = {(0, start): ()}
         max_end_by_count: dict[int, int] = {0: start}
@@ -129,7 +162,7 @@ class _ParserImpl(_Parser):
                 if count != i:
                     continue
 
-                for cm in self.iter_parse(op._child, end_pos):  # noqa
+                for cm in self._iter_parse((op._child, end_pos, ctx)):  # noqa
                     next_mt = (*mt, cm)
                     next_key = (i + 1, cm.end)
 
@@ -162,27 +195,38 @@ class _ParserImpl(_Parser):
         for end_pos, _, mt in sorted(valid_matches, key=lambda x: (x[0], x[1]), reverse=True):
             yield Match(op, start, end_pos, mt)
 
-    def _iter_parse_either(self, op: Either, start: int) -> ta.Iterator[Match]:
+    def _iter_parse_either(self, ctx: _ParserContext) -> ta.Iterator[Match]:
+        op: Either
+        op, start, _ = ctx  # type: ignore[assignment]
+
         for cp in op._children:  # noqa
             found = False
 
-            for cm in self.iter_parse(cp, start):
+            for cm in self._iter_parse((cp, start, ctx)):
                 found = True
                 yield Match(op, start, cm.end, (cm,))
 
             if found and op._first_match:  # noqa
                 return
 
-    def _iter_parse_rule_ref(self, op: RuleRef, start: int) -> ta.Iterator[Match]:
+    def _iter_parse_rule_ref(self, ctx: _ParserContext) -> ta.Iterator[Match]:
+        op: RuleRef
+        op, start, _ = ctx  # type: ignore[assignment]
+
         cp = self._rules._rules_by_name_f[op._name_f].op  # noqa
-        for cm in self.iter_parse(cp, start):
+        for cm in self._iter_parse((cp, start, ctx)):
             yield Match(op, cm.start, cm.end, (cm,))
 
-    def _iter_parse_regex(self, op: Regex, start: int) -> ta.Iterator[Match]:
+    def _iter_parse_regex(self, ctx: _ParserContext) -> ta.Iterator[Match]:
+        op: Regex
+        op, start, _ = ctx  # type: ignore[assignment]
+
         if (m := op._pat.match(self._source, start)) is not None:  # noqa
             yield Match(op, start, m.end(), ())
 
-    def iter_parse(self, op: Op, start: int) -> ta.Iterator[Match]:
+    def _iter_parse(self, ctx: _ParserContext) -> ta.Iterator[Match]:
+        op, start, _ = ctx
+
         if (key := (op, start)) in self._memo:
             yield from self._memo[key]
             return
@@ -191,10 +235,17 @@ class _ParserImpl(_Parser):
             raise _Parser.MaxStepsExceededError(self._cur_step)
         self._cur_step += 1
 
-        matches = tuple(self._dispatch[op.__class__](op, start))
+        matches = tuple(self._dispatch[op.__class__](ctx))
         self._memo[key] = matches
+
+        if matches and (fm := furthest_match(matches)) is not None:
+            if self._furthest is None or fm.end > self._furthest.match.end:
+                self._furthest = _ParserImpl._Furthest(op, fm, ctx)
+
         yield from matches
 
+    def iter_parse(self, op: Op, start: int) -> ta.Iterator[Match]:
+        return self._iter_parse((op, start, None))
 
 ##
 
@@ -228,9 +279,11 @@ class _DebugParserImpl(_ParserImpl):
 
     _depth: int = 0
 
-    def iter_parse(self, op: Op, start: int) -> ta.Iterator[Match]:
+    def _iter_parse(self, ctx: _ParserContext) -> ta.Iterator[Match]:
+        op, start, _ = ctx
+
         if self._level < 2 and not isinstance(op, RuleRef):
-            yield from super().iter_parse(op, start)
+            yield from super()._iter_parse(ctx)
             return
 
         ws = f'{"  " * self._depth} '
@@ -249,7 +302,7 @@ class _DebugParserImpl(_ParserImpl):
         try:
             self._depth += 1
 
-            for m in super().iter_parse(op, start):  # noqa
+            for m in super()._iter_parse(ctx):  # noqa
                 if self._level > 3:
                     self._write(f'{ws}! {m.start}-{m.end}:{self._source[m.start:m.end]!r}')
 
@@ -265,31 +318,26 @@ class _DebugParserImpl(_ParserImpl):
 #
 
 
-def _iter_parse(
+def _make_parser(
         grammar: Grammar,
         source: str,
-        op: Op,
-        start: int,
         *,
         debug: int = 0,
         max_steps: int | None = None,
-) -> ta.Iterator[Match]:
-    parser: _Parser
+) -> _Parser:
     if debug:
-        parser = _DebugParserImpl(
+        return _DebugParserImpl(
             grammar,
             source,
             max_steps=max_steps,
             level=debug,
         )
     else:
-        parser = _ParserImpl(
+        return _ParserImpl(
             grammar,
             source,
             max_steps=max_steps,
         )
-
-    return parser.iter_parse(op, start)
 
 
 ##
@@ -301,6 +349,8 @@ def iter_parse(
         *,
         root: str | None = None,
         start: int = 0,
+        debug: int = 0,
+        max_steps: int | None = None,
 ) -> ta.Iterator[Match]:
     if isinstance(obj, Grammar):
         gram = obj
@@ -317,6 +367,8 @@ def iter_parse(
         src,
         root,
         start=start,
+        debug=debug,
+        max_steps=max_steps,
     )
 
 
@@ -326,10 +378,14 @@ def parse(
         *,
         root: str | None = None,
         start: int = 0,
+        debug: int = 0,
+        max_steps: int | None = None,
 ) -> Match | None:
     return longest_match(iter_parse(
         obj,
         src,
         root=root,
         start=start,
+        debug=debug,
+        max_steps=max_steps,
     ))

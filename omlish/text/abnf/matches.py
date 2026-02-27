@@ -122,6 +122,16 @@ def longest_match(ms: ta.Iterable[Match]) -> Match | None:
     return bm
 
 
+def furthest_match(ms: ta.Iterable[Match]) -> Match | None:
+    bm: Match | None = None
+    be = 0
+    for m in ms:
+        e = m.end
+        if bm is None or e > be:
+            bm, be = m, e
+    return bm
+
+
 def filter_matches(
         fn: ta.Callable[[Match], bool],
         m: Match,

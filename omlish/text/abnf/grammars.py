@@ -200,13 +200,16 @@ class Grammar(lang.Final):
             else:
                 root = check.in_(check.isinstance(root, Rule), self._rules)
 
-        return parsing._iter_parse(  # noqa
+        parser = parsing._make_parser(  # noqa
             self,
             source,
-            root._op,  # noqa
-            start,
             debug=debug,
             **kwargs,
+        )
+
+        yield from parser.iter_parse(
+            root._op,  # noqa
+            start,
         )
 
     def parse(

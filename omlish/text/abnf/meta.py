@@ -618,28 +618,28 @@ def parse_grammar(
     rules: dict[str, Rule] = {}
     for cur in lst:
         if isinstance(cur, Rule):
-            check.not_in(cur.name, rules)
-            rules[cur.name] = cur
+            check.not_in(cur._name_f, rules)  # noqa
+            rules[cur._name_f] = cur  # noqa
         elif isinstance(cur, MetaGrammarRuleMatchVisitor.AltRule):
-            xr = rules[cur.rule.name]
+            xr = rules[cur.rule._name_f]  # noqa
             xo = xr.op
             if isinstance(xo, Either):
                 xo = Either(*xo.children, cur.rule.op, first_match=xo.first_match)
             else:
                 xo = Either(xo, cur.rule.op)
             xr = Rule(
-                xr.name,
+                xr._name_f,  # noqa
                 xo,
                 channel=xr.channel,
             )
-            rules[xr.name] = xr
+            rules[xr._name_f] = xr  # noqa
         else:
             raise TypeError(cur)
 
     if not no_core_rules:
         for cr in CORE_RULES:
-            if cr.name not in rules:
-                rules[cr.name] = cr
+            if cr._name_f not in rules:  # noqa
+                rules[cr._name_f] = cr  # noqa
 
     gram = Grammar(
         *rules.values(),

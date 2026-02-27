@@ -1,5 +1,7 @@
 """
 TODO:
+ - default run bash
+ - all of the below stuff
 
 ====
 
