@@ -8,10 +8,9 @@ import abc
 import re
 import typing as ta
 
-from omlish import check
-from omlish import dataclasses as dc
-from omlish import lang
-
+from ... import check
+from ... import dataclasses as dc
+from ... import lang
 from .base import CompositeOp
 from .base import Op
 from .grammars import Channel

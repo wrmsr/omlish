@@ -1,8 +1,7 @@
 import textwrap
 import typing as ta
 
-from omlish import check
-
+from ... import check
 from .grammars import Channel
 from .grammars import Grammar
 from .matches import Match

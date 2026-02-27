@@ -1,10 +1,9 @@
 import typing as ta
 
-from omlish import check
-from omlish import collections as col
-from omlish import dispatch
-from omlish import lang
-
+from ... import check
+from ... import collections as col
+from ... import dispatch
+from ... import lang
 from .base import Op
 from .matches import Match
 from .ops import RuleRef

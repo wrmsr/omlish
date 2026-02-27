@@ -11,9 +11,8 @@ import collections
 import dataclasses as dc
 import typing as ta
 
-from omlish import check
-from omlish import lang
-
+from .... import check
+from .... import lang
 from ..base import Op
 from ..grammars import Grammar
 from ..internal import Regex

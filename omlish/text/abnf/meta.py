@@ -3,10 +3,9 @@ https://datatracker.ietf.org/doc/html/rfc5234
 """
 import typing as ta
 
-from omlish import check
-from omlish import dataclasses as dc
-from omlish import lang
-
+from ... import check
+from ... import dataclasses as dc
+from ... import lang
 from .base import Op
 from .core import CORE_RULES
 from .errors import AbnfGrammarParseError
@@ -14,6 +13,7 @@ from .grammars import Channel
 from .grammars import Grammar
 from .grammars import Rule
 from .matches import Match
+from .ops import Either
 from .ops import Repeat
 from .ops import concat
 from .ops import either
@@ -446,12 +446,22 @@ class MetaGrammarRuleMatchVisitor(RuleMatchVisitor[ta.Any]):
     class QuotedString(lang.Final):
         s: str
 
+    class AltRule(ta.NamedTuple):
+        rule: Rule
+
     @RuleMatchVisitor.register('rule')
     def visit_rule_rule(self, m: Match) -> ta.Any:
-        rn_m, _, el_m = m.children
+        rn_m, da_m, el_m = m.children
+        da_s = self._source[da_m.start:da_m.end].strip()
         rn = check.isinstance(self.visit_match(rn_m), self.RuleName).s
         el = self.visit_match(el_m)
-        return Rule(rn, el)
+        r = Rule(rn, el)
+        if da_s == '=':
+            return r
+        elif da_s == '=/':
+            return self.AltRule(r)
+        else:
+            raise ValueError(da_s)
 
     @RuleMatchVisitor.register('rulename')
     def visit_rulename_rule(self, m: Match) -> ta.Any:
@@ -600,14 +610,39 @@ def parse_grammar(
     check.isinstance(mg_m.op, Repeat)
 
     mg_rmv = MetaGrammarRuleMatchVisitor(source)
-    rules = [
-        check.isinstance(mg_rmv.visit_match(gg_cm), Rule)
+    lst = [
+        mg_rmv.visit_match(gg_cm)
         for gg_cm in mg_m.children
     ]
 
+    rules: dict[str, Rule] = {}
+    for cur in lst:
+        if isinstance(cur, Rule):
+            check.not_in(cur.name, rules)
+            rules[cur.name] = cur
+        elif isinstance(cur, MetaGrammarRuleMatchVisitor.AltRule):
+            xr = rules[cur.rule.name]
+            xo = xr.op
+            if isinstance(xo, Either):
+                xo = Either(*xo.children, cur.rule.op, first_match=xo.first_match)
+            else:
+                xo = Either(xo, cur.rule.op)
+            xr = Rule(
+                xr.name,
+                xo,
+                channel=xr.channel,
+            )
+            rules[xr.name] = xr
+        else:
+            raise TypeError(cur)
+
+    if not no_core_rules:
+        for cr in CORE_RULES:
+            if cr.name not in rules:
+                rules[cr.name] = cr
+
     gram = Grammar(
-        *rules,
-        *(CORE_RULES if not no_core_rules else []),
+        *rules.values(),
         root=root,
     )
 

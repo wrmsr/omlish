@@ -2,8 +2,7 @@ import os.path
 
 import pytest
 
-from omlish import check
-
+from .... import check
 from ..utils import fix_ws
 from .demo import parse_demo_grammar
 

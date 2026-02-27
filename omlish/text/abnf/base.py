@@ -1,8 +1,8 @@
 import abc
 import typing as ta
 
-from omlish import check
-from omlish import lang
+from ... import check
+from ... import lang
 
 
 OpTuple: ta.TypeAlias = tuple['Op', ...]

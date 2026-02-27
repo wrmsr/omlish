@@ -5,16 +5,29 @@
 # @omlish-generated
 # @omlish-amalg-output ../../../io/pipelines/_amalg.py
 # @omlish-git-diff-omit
-# ruff: noqa: FURB188 UP006 UP007 UP036 UP037 UP045
+# ruff: noqa: FURB188 PYI034 UP006 UP007 UP036 UP037 UP043 UP045 UP046
 import abc
+import asyncio
 import collections
+import collections.abc
 import dataclasses as dc
+import datetime
 import enum
 import functools
+import http
+import http.client
 import inspect
+import io
+import logging
+import os.path
+import re
 import sys
 import threading
+import time
+import traceback
+import types
 import typing as ta
+import zlib
 
 
 ########################################
@@ -27,27 +40,56 @@ if sys.version_info < (3, 8):
 def __omlish_amalg__():  # noqa
     return dict(
         src_files=[
+            dict(path='../../../omlish/http/versions.py', sha1='5b1659b81eb197c6880fbe78684a1348595ec804'),
             dict(path='../../../omlish/io/streams/errors.py', sha1='67ca85fd8741b5bfefe76c872ce1c30c18fab06f'),
             dict(path='../../../omlish/lite/abstract.py', sha1='a2fc3f3697fa8de5247761e9d554e70176f37aac'),
+            dict(path='../../../omlish/lite/asyncs.py', sha1='b3f2251c56617ce548abf9c333ac996b63edb23e'),
             dict(path='../../../omlish/lite/check.py', sha1='df0ed561b5782545e34e61dd3424f69f836a87c0'),
+            dict(path='../../../omlish/lite/dataclasses.py', sha1='8b144d1d9474d96cf2a35f4db5cb224c30f538d6'),
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
+            dict(path='../../../omlish/logs/levels.py', sha1='91405563d082a5eba874da82aac89d83ce7b6152'),
+            dict(path='../../../omlish/logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
             dict(path='errors.py', sha1='f0f9d973a1a219f790b309b043875b730b8863d4'),
+            dict(path='../../../omlish/http/headers.py', sha1='58ff154a9b790cbf66daf9f71fe2d28c7183fdf7'),
+            dict(path='../../../omlish/http/parsing.py', sha1='2ee187993274e697332c7df7b46a98382f4cee2a'),
             dict(path='../../../omlish/io/streams/types.py', sha1='ab72e5d4a1e648ef79577be7d8c45853b1c5917d'),
+            dict(path='../../../omlish/logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
+            dict(path='../../../omlish/logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
+            dict(path='../../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
             dict(path='core.py', sha1='e3cdd0927202dcfcdae1a953e1ccdbc8936d6872'),
             dict(path='../../../omlish/io/streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
+            dict(path='../../../omlish/logs/contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
+            dict(path='../../../omlish/logs/utils.py', sha1='9b879044cbdc3172fd7282c7f2a4880b81261cdd'),
+            dict(path='asyncs.py', sha1='3c5834fe4879ebdc63d44951798ad9110ae83ad4'),
             dict(path='bytes/buffering.py', sha1='aa8375c8ef0689db865bb4009afd3ed8dcc2bd12'),
             dict(path='flow/types.py', sha1='839f08718c67d2d84e56aee973ba1c9c34afb732'),
             dict(path='handlers/fns.py', sha1='75e982604574d6ffaacf9ac1f37ab6e9edbd608d'),
             dict(path='handlers/queues.py', sha1='73f018001a9e305194ed1bf9783fc49a71c2ed49'),
+            dict(path='http/objects.py', sha1='f5da224c194ee16ebcc999970d2c97ce615f7e6e'),
+            dict(path='sched/types.py', sha1='a443beb7866e5e019d57093225cd44b9ea5fa58e'),
             dict(path='../../../omlish/io/streams/direct.py', sha1='83c33460e9490a77a00ae66251617ba98128b56b'),
             dict(path='../../../omlish/io/streams/scanning.py', sha1='6ab39887d0d2d3002201b786c4715e64804c66c8'),
+            dict(path='../../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
+            dict(path='../../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
             dict(path='bytes/queues.py', sha1='38b11596cd0fa2367825252413923f1292c14f4e'),
             dict(path='handlers/flatmap.py', sha1='4e7f009885ee35e4746d14ba22f78d7b108f42c8'),
+            dict(path='http/encoders.py', sha1='0659902d945aea54e367d04336792cccd4ed6374'),
+            dict(path='http/requests.py', sha1='f518ff8896cbd01d30d58088d5b429f121c1c3e7'),
+            dict(path='http/responses.py', sha1='f81688d98516bd81d2a22ba791c783404e806294'),
             dict(path='../../../omlish/io/streams/segmented.py', sha1='4aeb1c22b7b5994132f0b5906d70b3e53201776b'),
+            dict(path='../../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
+            dict(path='../../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
+            dict(path='http/client/requests.py', sha1='0d598fefb873796d64f1fe1eafa344bda83d933c'),
+            dict(path='http/server/responses.py', sha1='5b2e2af9bfdbd526f74cff138ddbb5bf03b4c0ee'),
+            dict(path='../../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='bytes/decoders.py', sha1='212e4f54b7bc55028ae75dfb75b3ec18cc5bad51'),
-            dict(path='_amalg.py', sha1='f57d710297d549e3b788af08eeb44cf5ac1bab07'),
+            dict(path='http/decoders.py', sha1='d82d2096b3016e84019bf723aeb17586e2472fd5'),
+            dict(path='drivers/asyncio.py', sha1='e599a96f507279f52783962f36e2eb9939c6539c'),
+            dict(path='http/client/responses.py', sha1='830f862d73a28624137f780ef5b02eccbaff38e6'),
+            dict(path='http/server/requests.py', sha1='1007de97135c4712c67e5814cb17d7bc85650dad'),
+            dict(path='_amalg.py', sha1='f66657d8b3801c6e8e84db2e4cd1b593d9e029be'),
         ],
     )
 
@@ -66,8 +108,21 @@ CheckOnRaiseFn = ta.Callable[[Exception], None]  # ta.TypeAlias
 CheckExceptionFactory = ta.Callable[..., Exception]  # ta.TypeAlias
 CheckArgsRenderer = ta.Callable[..., ta.Optional[str]]  # ta.TypeAlias
 
+# ../../../omlish/logs/levels.py
+LogLevel = int  # ta.TypeAlias
+
+# ../../../omlish/http/headers.py
+StrOrBytes = ta.Union[str, bytes]  # ta.TypeAlias
+
 # ../../../omlish/io/streams/types.py
 BytesLikeOrMemoryview = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
+
+# ../../../omlish/logs/infos.py
+LoggingMsgFn = ta.Callable[[], ta.Union[str, tuple]]  # ta.TypeAlias
+LoggingExcInfoTuple = ta.Tuple[ta.Type[BaseException], BaseException, ta.Optional[types.TracebackType]]  # ta.TypeAlias
+LoggingExcInfo = ta.Union[BaseException, LoggingExcInfoTuple]  # ta.TypeAlias
+LoggingExcInfoArg = ta.Union[LoggingExcInfo, bool, None]  # ta.TypeAlias
+LoggingContextInfo = ta.Any  # ta.TypeAlias
 
 # core.py
 F = ta.TypeVar('F')
@@ -75,6 +130,105 @@ ChannelPipelineHandlerFn = ta.Callable[['ChannelPipelineHandlerContext', F], T] 
 ChannelPipelineHandlerT = ta.TypeVar('ChannelPipelineHandlerT', bound='ChannelPipelineHandler')
 ShareableChannelPipelineHandlerT = ta.TypeVar('ShareableChannelPipelineHandlerT', bound='ShareableChannelPipelineHandler')  # noqa
 PipelineChannelMetadataT = ta.TypeVar('PipelineChannelMetadataT', bound='PipelineChannelMetadata')
+
+# ../../../omlish/logs/contexts.py
+LoggingContextInfoT = ta.TypeVar('LoggingContextInfoT', bound=LoggingContextInfo)
+
+
+########################################
+# ../../../../omlish/http/versions.py
+
+
+##
+
+
+class UnknownHttpVersionError(Exception):
+    pass
+
+
+@ta.final
+@functools.total_ordering
+class HttpVersion:
+    def __init__(self, major: int, minor: int) -> None:
+        self._major = major
+        self._minor = minor
+
+        self._parts = parts = (major, minor)
+
+        self._hash = hash(parts)
+
+        self._str = f'HTTP/{major}.{minor}'
+        self._short_str = f'{major}.{minor}'
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self.major}, {self.minor})'
+
+    def __hash__(self) -> int:
+        return self._hash
+
+    def __eq__(self, other: object) -> ta.Any:
+        if not isinstance(other, HttpVersion):
+            return NotImplemented
+        return self._parts == other._parts
+
+    def __lt__(self, other: object) -> ta.Any:
+        if not isinstance(other, HttpVersion):
+            return NotImplemented
+        return self._parts < other._parts
+
+    @property
+    def major(self) -> int:
+        return self._major
+
+    @property
+    def minor(self) -> int:
+        return self._minor
+
+    def __str__(self) -> str:
+        return self._str
+
+    @property
+    def short_str(self) -> str:
+        return self._short_str
+
+    def __iter__(self) -> ta.Iterator[int]:
+        return iter(self._parts)
+
+
+@ta.final
+class HttpVersions:
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
+
+    HTTP_0_9 = HttpVersion(0, 9)
+    HTTP_1_0 = HttpVersion(1, 0)
+    HTTP_1_1 = HttpVersion(1, 1)
+    HTTP_2_0 = HttpVersion(2, 0)
+
+    _FROM_STR: ta.ClassVar[ta.Mapping[str, HttpVersion]] = {
+        str(v): v for v in [
+            HTTP_0_9,
+            HTTP_1_0,
+            HTTP_1_1,
+            HTTP_2_0,
+        ]
+    }
+
+    @classmethod
+    def from_str(cls, s: str) -> HttpVersion:
+        try:
+            return cls._FROM_STR[s]
+        except KeyError:
+            raise UnknownHttpVersionError(s) from None
+
+    @classmethod
+    def of(cls, o: ta.Union[HttpVersion, str]) -> HttpVersion:
+        if isinstance(o, HttpVersion):
+            return o
+        elif isinstance(o, str):
+            return cls.from_str(o)
+        else:
+            raise TypeError(o)
 
 
 ########################################
@@ -286,6 +440,150 @@ class Abstract:
 
         if not isinstance(cls, abc.ABCMeta):
             update_abstracts(cls, force=True)
+
+
+########################################
+# ../../../../omlish/lite/asyncs.py
+
+
+##
+
+
+async def opt_await(aw: ta.Optional[ta.Awaitable[T]]) -> ta.Optional[T]:
+    return (await aw if aw is not None else None)
+
+
+async def async_list(ai: ta.AsyncIterable[T]) -> ta.List[T]:
+    return [v async for v in ai]
+
+
+async def async_enumerate(ai: ta.AsyncIterable[T]) -> ta.AsyncIterable[ta.Tuple[int, T]]:
+    i = 0
+    async for e in ai:
+        yield (i, e)
+        i += 1
+
+
+##
+
+
+def as_async(fn: ta.Callable[..., T], *, wrap: bool = False) -> ta.Callable[..., ta.Awaitable[T]]:
+    async def inner(*args, **kwargs):
+        return fn(*args, **kwargs)
+
+    return functools.wraps(fn)(inner) if wrap else inner
+
+
+##
+
+
+class SyncAwaitCoroutineNotTerminatedError(Exception):
+    pass
+
+
+def sync_await(aw: ta.Awaitable[T]) -> T:
+    """
+    Allows for the synchronous execution of async functions which will never actually *externally* await anything. These
+    functions are allowed to await any number of other functions - including contextmanagers and generators - so long as
+    nothing ever actually 'leaks' out of the function, presumably to an event loop.
+    """
+
+    ret = missing = object()
+
+    async def thunk():
+        nonlocal ret
+
+        ret = await aw
+
+    cr = thunk()
+    try:
+        try:
+            cr.send(None)
+        except StopIteration:
+            pass
+
+        if ret is missing or cr.cr_await is not None or cr.cr_running:
+            raise SyncAwaitCoroutineNotTerminatedError('Not terminated')
+
+    finally:
+        cr.close()
+
+    return ta.cast(T, ret)
+
+
+#
+
+
+def sync_aiter(ai: ta.AsyncIterator[T]) -> ta.Iterator[T]:
+    while True:
+        try:
+            o = sync_await(ai.__anext__())
+        except StopAsyncIteration:
+            break
+        yield o
+
+
+def sync_async_list(ai: ta.AsyncIterable[T]) -> ta.List[T]:
+    """
+    Uses `sync_await` to synchronously read the full contents of a function call returning an async iterator, given that
+    the function never externally awaits anything.
+    """
+
+    lst: ta.Optional[ta.List[T]] = None
+
+    async def inner():
+        nonlocal lst
+
+        lst = [v async for v in ai]
+
+    sync_await(inner())
+
+    if not isinstance(lst, list):
+        raise TypeError(lst)
+
+    return lst
+
+
+#
+
+
+@ta.final
+class SyncAwaitContextManager(ta.Generic[T]):
+    def __init__(self, acm: ta.AsyncContextManager[T]) -> None:
+        self._acm = acm
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self._acm!r})'
+
+    def __enter__(self) -> T:
+        return sync_await(self._acm.__aenter__())
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return sync_await(self._acm.__aexit__(exc_type, exc_val, exc_tb))
+
+
+sync_async_with = SyncAwaitContextManager
+
+
+##
+
+
+@ta.final
+class SyncToAsyncContextManager(ta.Generic[T]):
+    def __init__(self, cm: ta.ContextManager[T]) -> None:
+        self._cm = cm
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self._cm!r})'
+
+    async def __aenter__(self) -> T:
+        return self._cm.__enter__()
+
+    async def __aexit__(self, exc_type, exc_value, traceback, /):
+        return self._cm.__exit__(exc_type, exc_value, traceback)
+
+
+as_async_context_manager = SyncToAsyncContextManager
 
 
 ########################################
@@ -860,6 +1158,267 @@ check = Checks()
 
 
 ########################################
+# ../../../../omlish/lite/dataclasses.py
+
+
+##
+
+
+def dataclass_shallow_astuple(o: ta.Any) -> ta.Tuple[ta.Any, ...]:
+    return tuple(getattr(o, f.name) for f in dc.fields(o))
+
+
+def dataclass_shallow_asdict(o: ta.Any) -> ta.Dict[str, ta.Any]:
+    return {f.name: getattr(o, f.name) for f in dc.fields(o)}
+
+
+##
+
+
+def is_immediate_dataclass(cls: type) -> bool:
+    if not isinstance(cls, type):
+        raise TypeError(cls)
+    return dc._FIELDS in cls.__dict__  # type: ignore[attr-defined]  # noqa
+
+
+##
+
+
+def _install_dataclass_fn(cls: type, fn: ta.Any, fn_name: ta.Optional[str] = None) -> None:
+    if fn_name is None:
+        fn_name = fn.__name__
+    setattr(cls, fn_name, fn)
+    fn.__qualname__ = f'{cls.__qualname__}.{fn_name}'
+
+
+##
+
+
+def install_dataclass_cache_hash(
+        *,
+        cached_hash_attr: str = '__dataclass_hash__',
+):
+    def inner(cls):
+        if not isinstance(cls, type) and dc.is_dataclass(cls):
+            raise TypeError(cls)
+
+        if (
+                cls.__hash__ is object.__hash__ or
+                '__hash__' not in cls.__dict__
+        ):
+            raise TypeError(cls)
+
+        real_hash = cls.__hash__
+
+        def cached_hash(self) -> int:
+            try:
+                return object.__getattribute__(self, cached_hash_attr)
+            except AttributeError:
+                object.__setattr__(self, cached_hash_attr, h := real_hash(self))  # type: ignore[call-arg]
+            return h
+
+        _install_dataclass_fn(cls, cached_hash, '__hash__')
+
+        return cls
+
+    return inner
+
+
+##
+
+
+def dataclass_maybe_post_init(sup: ta.Any) -> bool:
+    if not isinstance(sup, super):
+        raise TypeError(sup)
+    try:
+        fn = sup.__post_init__  # type: ignore
+    except AttributeError:
+        return False
+    fn()
+    return True
+
+
+##
+
+
+def dataclass_filtered_repr(
+        obj: ta.Any,
+        fn: ta.Union[ta.Callable[[ta.Any, dc.Field, ta.Any], bool], ta.Literal['omit_none', 'omit_falsey']],
+) -> str:
+    if fn == 'omit_none':
+        fn = lambda o, f, v: v is not None  # noqa
+    elif fn == 'omit_falsey':
+        fn = lambda o, f, v: bool(v)
+
+    return (
+        f'{obj.__class__.__qualname__}(' +
+        ', '.join([
+            f'{f.name}={v!r}'
+            for f in dc.fields(obj)
+            if fn(obj, f, v := getattr(obj, f.name))
+        ]) +
+        ')'
+    )
+
+
+def dataclass_repr_omit_none(obj: ta.Any) -> str:
+    return dataclass_filtered_repr(obj, 'omit_none')
+
+
+def dataclass_repr_omit_falsey(obj: ta.Any) -> str:
+    return dataclass_filtered_repr(obj, 'omit_falsey')
+
+
+def install_dataclass_filtered_repr(
+        fn: ta.Union[ta.Callable[[ta.Any, dc.Field, ta.Any], bool], ta.Literal['omit_none', 'omit_falsey']],
+):
+    def inner(cls):
+        if not isinstance(cls, type) and dc.is_dataclass(cls):
+            raise TypeError(cls)
+
+        def filtered_repr(self) -> str:
+            return dataclass_filtered_repr(self, fn)
+
+        _install_dataclass_fn(cls, filtered_repr, '__repr__')
+
+        return cls
+
+    return inner
+
+
+#
+
+
+def dataclass_terse_repr(obj: ta.Any) -> str:
+    return f'{obj.__class__.__qualname__}({", ".join(repr(getattr(obj, f.name)) for f in dc.fields(obj))})'
+
+
+def install_dataclass_terse_repr():
+    def inner(cls):
+        if not isinstance(cls, type) and dc.is_dataclass(cls):
+            raise TypeError(cls)
+
+        def terse_repr(self) -> str:
+            return dataclass_terse_repr(self)
+
+        _install_dataclass_fn(cls, terse_repr, '__repr__')
+
+        return cls
+
+    return inner
+
+
+##
+
+
+def dataclass_descriptor_method(*bind_attrs: str, bind_owner: bool = False) -> ta.Callable:
+    if not bind_attrs:
+        def __get__(self, instance, owner=None):  # noqa
+            return self
+
+    elif bind_owner:
+        def __get__(self, instance, owner=None):  # noqa
+            # Guaranteed to return a new instance even with no attrs
+            return dc.replace(self, **{
+                a: v.__get__(instance, owner) if (v := getattr(self, a)) is not None else None
+                for a in bind_attrs
+            })
+
+    else:
+        def __get__(self, instance, owner=None):  # noqa
+            if instance is None:
+                return self
+
+            # Guaranteed to return a new instance even with no attrs
+            return dc.replace(self, **{
+                a: v.__get__(instance, owner) if (v := getattr(self, a)) is not None else None
+                for a in bind_attrs
+            })
+
+    return __get__
+
+
+##
+
+
+def install_dataclass_kw_only_init():
+    def inner(cls):
+        if not isinstance(cls, type) and dc.is_dataclass(cls):
+            raise TypeError(cls)
+
+        real_init = cls.__init__  # type: ignore[misc]
+
+        flds = dc.fields(cls)  # noqa
+
+        if any(f.name == 'self' for f in flds):
+            self_name = '__dataclass_self__'
+        else:
+            self_name = 'self'
+
+        src = '\n'.join([
+            'def __init__(',
+            f'    {self_name},',
+            '    *,',
+            *[
+                ''.join([
+                    f'    {f.name}: __dataclass_type_{f.name}__',
+                    f' = __dataclass_default_{f.name}__' if f.default is not dc.MISSING else '',
+                    ',',
+                ])
+                for f in flds
+            ],
+            ') -> __dataclass_None__:',
+            '    __dataclass_real_init__(',
+            f'        {self_name},',
+            *[
+                f'        {f.name}={f.name},'
+                for f in flds
+            ],
+            '    )',
+        ])
+
+        ns: dict = {
+            '__dataclass_None__': None,
+            '__dataclass_real_init__': real_init,
+            **{
+                f'__dataclass_type_{f.name}__': f.type
+                for f in flds
+            },
+            **{
+                f'__dataclass_default_{f.name}__': f.default
+                for f in flds
+                if f.default is not dc.MISSING
+            },
+        }
+
+        exec(src, ns)
+
+        kw_only_init = ns['__init__']
+
+        functools.update_wrapper(kw_only_init, real_init)
+
+        _install_dataclass_fn(cls, kw_only_init, '__init__')
+
+        return cls
+
+    return inner
+
+
+##
+
+
+@dc.dataclass()
+class DataclassFieldRequiredError(Exception):
+    name: str
+
+
+def dataclass_field_required(name: str) -> ta.Callable[[], ta.Any]:
+    def inner() -> ta.NoReturn:
+        raise DataclassFieldRequiredError(name)
+    return inner
+
+
+########################################
 # ../../../../omlish/lite/namespaces.py
 
 
@@ -872,6 +1431,118 @@ class NamespaceClass:
 
         if any(issubclass(b, NamespaceClass) and b is not NamespaceClass for b in cls.__bases__):
             raise TypeError
+
+
+########################################
+# ../../../../omlish/logs/levels.py
+
+
+##
+
+
+@ta.final
+class NamedLogLevel(int):
+    # logging.getLevelNamesMapping (or, as that is unavailable <3.11, logging._nameToLevel) includes the deprecated
+    # aliases.
+    _NAMES_BY_INT: ta.ClassVar[ta.Mapping[LogLevel, str]] = dict(sorted(logging._levelToName.items(), key=lambda t: -t[0]))  # noqa
+
+    _INTS_BY_NAME: ta.ClassVar[ta.Mapping[str, LogLevel]] = {v: k for k, v in _NAMES_BY_INT.items()}
+
+    _NAME_INT_PAIRS: ta.ClassVar[ta.Sequence[ta.Tuple[str, LogLevel]]] = list(_INTS_BY_NAME.items())
+
+    #
+
+    _CACHE: ta.ClassVar[ta.MutableMapping[int, 'NamedLogLevel']] = {}
+
+    @ta.overload
+    def __new__(cls, name: str, offset: int = 0, /) -> 'NamedLogLevel':
+        ...
+
+    @ta.overload
+    def __new__(cls, i: int, /) -> 'NamedLogLevel':
+        ...
+
+    def __new__(cls, x, offset=0, /):
+        if isinstance(x, str):
+            return cls(cls._INTS_BY_NAME[x.upper()] + offset)
+        elif not offset and (c := cls._CACHE.get(x)) is not None:
+            return c
+        else:
+            return super().__new__(cls, x + offset)
+
+    #
+
+    _name_and_offset: ta.Tuple[str, int]
+
+    @property
+    def name_and_offset(self) -> ta.Tuple[str, int]:
+        try:
+            return self._name_and_offset
+        except AttributeError:
+            pass
+
+        if (n := self._NAMES_BY_INT.get(self)) is not None:
+            t = (n, 0)
+        else:
+            for n, i in self._NAME_INT_PAIRS:  # noqa
+                if self >= i:
+                    t = (n, (self - i))
+                    break
+            else:
+                t = ('NOTSET', int(self))
+
+        self._name_and_offset = t
+        return t
+
+    @property
+    def exact_name(self) -> ta.Optional[str]:
+        n, o = self.name_and_offset
+        return n if not o else None
+
+    @property
+    def effective_name(self) -> str:
+        n, _ = self.name_and_offset
+        return n
+
+    #
+
+    def __str__(self) -> str:
+        return self.exact_name or f'{self.effective_name}{int(self):+}'
+
+    def __repr__(self) -> str:
+        n, o = self.name_and_offset
+        return f'{self.__class__.__name__}({n!r}{f", {int(o)}" if o else ""})'
+
+    #
+
+    CRITICAL: ta.ClassVar['NamedLogLevel']
+    ERROR: ta.ClassVar['NamedLogLevel']
+    WARNING: ta.ClassVar['NamedLogLevel']
+    INFO: ta.ClassVar['NamedLogLevel']
+    DEBUG: ta.ClassVar['NamedLogLevel']
+    NOTSET: ta.ClassVar['NamedLogLevel']
+
+
+NamedLogLevel.CRITICAL = NamedLogLevel(logging.CRITICAL)
+NamedLogLevel.ERROR = NamedLogLevel(logging.ERROR)
+NamedLogLevel.WARNING = NamedLogLevel(logging.WARNING)
+NamedLogLevel.INFO = NamedLogLevel(logging.INFO)
+NamedLogLevel.DEBUG = NamedLogLevel(logging.DEBUG)
+NamedLogLevel.NOTSET = NamedLogLevel(logging.NOTSET)
+
+
+NamedLogLevel._CACHE.update({i: NamedLogLevel(i) for i in NamedLogLevel._NAMES_BY_INT})  # noqa
+
+
+########################################
+# ../../../../omlish/logs/warnings.py
+
+
+##
+
+
+class LoggingSetupWarning(Warning):
+    pass
 
 
 ########################################
@@ -952,6 +1623,2093 @@ class IncompleteDecodingChannelPipelineError(DecodingChannelPipelineError):
 
 class FlowControlValidationChannelPipelineError(ChannelPipelineError):
     pass
+
+
+########################################
+# ../../../../omlish/http/headers.py
+"""
+TODO:
+ - handle secrets (but they're strs..)
+"""
+
+
+##
+
+
+CanHttpHeaders = ta.Union[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+    'HttpHeaders',
+
+    http.client.HTTPMessage,
+
+    ta.Mapping[str, ta.Union[StrOrBytes, ta.Sequence[StrOrBytes]]],
+    ta.Mapping[bytes, ta.Union[StrOrBytes, ta.Sequence[StrOrBytes]]],
+    ta.Mapping[StrOrBytes, ta.Union[StrOrBytes, ta.Sequence[StrOrBytes]]],
+
+    ta.Sequence[ta.Tuple[StrOrBytes, StrOrBytes]],
+]
+
+
+@dc.dataclass()
+class DuplicateHttpHeaderError(Exception):
+    key: str
+
+
+class HttpHeaders(ta.Mapping[str, ta.Sequence[str]]):
+    def __init__(self, src: CanHttpHeaders) -> None:
+        super().__init__()
+
+        if isinstance(src, HttpHeaders):
+            check.is_(src, self)
+            return
+
+        raw: ta.List[ta.Tuple[str, str]] = []
+
+        if isinstance(src, http.client.HTTPMessage):
+            raw = list(src.items())
+
+        elif isinstance(src, ta.Mapping):
+            for k, v in src.items():
+                if isinstance(v, (str, bytes)):
+                    raw.append((self._decode(k), self._decode(v)))
+                else:
+                    for e in v:
+                        raw.append((self._decode(k), self._decode(e)))
+
+        elif isinstance(src, (str, bytes)):  # type: ignore
+            raise TypeError(src)
+
+        elif isinstance(src, collections.abc.Sequence):
+            for t in src:
+                if isinstance(t, (str, bytes)):
+                    raise TypeError(t)
+
+                k, v = t
+                raw.append((self._decode(k), self._decode(v)))
+
+        else:
+            raise TypeError(src)
+
+        self._raw = raw
+
+        self._all = tuple((self._as_key(k), v) for k, v in self._raw)
+
+        dct: ta.Dict[str, ta.List[str]] = {}
+        for k, v in self._all:
+            dct.setdefault(k, []).append(v)
+        self._dct = {k: tuple(v) for k, v in dct.items()}
+
+    def __new__(cls, obj: CanHttpHeaders) -> 'HttpHeaders':
+        if isinstance(obj, HttpHeaders):
+            return obj
+
+        return super().__new__(cls)
+
+    #
+
+    @property
+    def raw(self) -> ta.Sequence[ta.Tuple[str, str]]:
+        return self._raw
+
+    @property
+    def all(self) -> ta.Sequence[ta.Tuple[str, str]]:
+        return self._all
+
+    #
+
+    @classmethod
+    def _decode(cls, o: StrOrBytes) -> str:
+        if isinstance(o, bytes):
+            return o.decode('latin-1')
+        elif isinstance(o, str):
+            return o
+        else:
+            raise TypeError(o)
+
+    @classmethod
+    def _as_key(cls, o: StrOrBytes) -> str:
+        return cls._decode(o).lower()
+
+    #
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self._raw!r})'
+
+    #
+
+    def __bool__(self) -> bool:
+        return len(self._dct) > 0
+
+    #
+
+    def __len__(self) -> int:
+        return len(self._dct)
+
+    def __iter__(self) -> ta.Iterator[str]:
+        return iter(self._dct)
+
+    def __getitem__(self, key: str) -> ta.Sequence[str]:
+        return self._dct[key.lower()]
+
+    #
+
+    @ta.final
+    class _SingleAccessor:
+        def __init__(self, o: 'HttpHeaders') -> None:
+            self._o = o
+
+        def __getitem__(self, key: str) -> str:
+            l = self._o._dct[key.lower()]  # noqa
+            if len(l) > 1:
+                raise DuplicateHttpHeaderError(key)
+            return l[0]
+
+        @ta.overload
+        def get(self, key: str, /, default: str) -> str:
+            ...
+
+        @ta.overload
+        def get(self, key: str, /, default: ta.Optional[str] = None) -> ta.Optional[str]:
+            ...
+
+        def get(self, key, /, default=None):
+            try:
+                return self[key]
+            except KeyError:
+                return default
+
+    _single: _SingleAccessor
+
+    @property
+    def single(self) -> _SingleAccessor:
+        try:
+            return self._single
+        except AttributeError:
+            pass
+        a = self._single = self._SingleAccessor(self)
+        return a
+
+    #
+
+    @ta.final
+    class _LowerAccessor:
+        def __init__(self, o: 'HttpHeaders') -> None:
+            self._o = o
+
+            self._cache: ta.Dict[str, ta.Sequence[str]] = {}
+
+        def __getitem__(self, key: str) -> ta.Sequence[str]:
+            key = key.lower()
+            try:
+                return self._cache[key]
+            except KeyError:
+                pass
+            x = self._o._dct[key]  # noqa
+            l = self._cache[key] = tuple(v.lower() for v in x)
+            return l
+
+        @ta.overload
+        def get(self, key: str, /, default: ta.Sequence[str]) -> ta.Sequence[str]:
+            ...
+
+        @ta.overload
+        def get(self, key: str, /, default: ta.Optional[str] = None) -> ta.Optional[ta.Sequence[str]]:
+            ...
+
+        def get(self, key, /, default=None):
+            try:
+                return self[key]
+            except KeyError:
+                return default
+
+    _lower: _LowerAccessor
+
+    @property
+    def lower(self) -> _LowerAccessor:
+        try:
+            return self._lower
+        except AttributeError:
+            pass
+        a = self._lower = self._LowerAccessor(self)
+        return a
+
+    #
+
+    def contains_value(self, key: str, value: str, *, ignore_case: bool = False) -> bool:
+        try:
+            if ignore_case:
+                vs = self.lower[key.lower()]
+            else:
+                vs = self._dct[key.lower()]
+        except KeyError:
+            return False
+        return value in vs
+
+    def update(
+            self,
+            *items: ta.Tuple[str, str],
+            override: bool = False,
+    ) -> 'HttpHeaders':
+        if override:
+            nks = {self._as_key(k) for k, v in items}
+            src = [(k, v) for k, v in self._raw if k.lower() not in nks]
+        else:
+            src = list(self._raw)
+        return HttpHeaders([
+            *src,
+            *items,
+        ])
+
+
+########################################
+# ../../../../omlish/http/parsing.py
+"""
+Parses a complete HTTP/1.x start-line + header fields + final CRLF from a ``bytes`` object. Does NOT handle message
+bodies, chunked transfer decoding, trailers, or HTTP/2+.
+
+TODO:
+ - mapping from error code to outbound http status code
+"""
+
+
+##
+
+
+class StartLineHttpParseErrorCode(enum.Enum):
+    MALFORMED_REQUEST_LINE = enum.auto()
+    MALFORMED_STATUS_LINE = enum.auto()
+    UNSUPPORTED_HTTP_VERSION = enum.auto()
+    INVALID_METHOD = enum.auto()
+    INVALID_REQUEST_TARGET = enum.auto()
+    INVALID_STATUS_CODE = enum.auto()
+
+
+class HeaderFieldHttpParseErrorCode(enum.Enum):
+    INVALID_FIELD_NAME = enum.auto()
+    INVALID_FIELD_VALUE = enum.auto()
+    OBS_FOLD_NOT_ALLOWED = enum.auto()
+    SPACE_BEFORE_COLON = enum.auto()
+    MISSING_COLON = enum.auto()
+    BARE_CARRIAGE_RETURN = enum.auto()
+    BARE_LF = enum.auto()
+    NUL_IN_HEADER = enum.auto()
+    MISSING_TERMINATOR = enum.auto()
+    TRAILING_DATA = enum.auto()
+    TOO_MANY_HEADERS = enum.auto()
+    EMPTY_FIELD_NAME = enum.auto()
+
+
+class SemanticHeaderHttpParseErrorCode(enum.Enum):
+    DUPLICATE_CONTENT_LENGTH = enum.auto()
+    CONFLICTING_CONTENT_LENGTH = enum.auto()
+    CONTENT_LENGTH_WITH_TRANSFER_ENCODING = enum.auto()
+    MISSING_HOST_HEADER = enum.auto()
+    MULTIPLE_HOST_HEADERS = enum.auto()
+    CONFLICTING_HOST_HEADERS = enum.auto()
+    INVALID_CONTENT_LENGTH = enum.auto()
+    INVALID_TRANSFER_ENCODING = enum.auto()
+    INVALID_CONTENT_TYPE = enum.auto()
+    FORBIDDEN_TRAILER_FIELD = enum.auto()
+    INVALID_HOST = enum.auto()
+    INVALID_EXPECT = enum.auto()
+    INVALID_DATE = enum.auto()
+    INVALID_CACHE_CONTROL = enum.auto()
+    INVALID_ACCEPT_ENCODING = enum.auto()
+    INVALID_ACCEPT = enum.auto()
+    INVALID_AUTHORIZATION = enum.auto()
+    TE_WITHOUT_CHUNKED_LAST = enum.auto()
+    TE_IN_HTTP10 = enum.auto()
+
+
+class EncodingHttpParseErrorCode(enum.Enum):
+    NON_ASCII_IN_FIELD_NAME = enum.auto()
+    OBS_TEXT_IN_FIELD_VALUE = enum.auto()
+
+
+HttpParseErrorCode = ta.Union[  # ta.TypeAlias  # omlish-amalg-typing-no-move
+    StartLineHttpParseErrorCode,
+    HeaderFieldHttpParseErrorCode,
+    SemanticHeaderHttpParseErrorCode,
+    EncodingHttpParseErrorCode,
+]
+
+
+##
+
+
+class HttpParseError(Exception):
+    pass
+
+
+@dc.dataclass()
+class ErrorCodeHttpParseError(HttpParseError):
+    """Base exception for all HTTP header parsing errors."""
+
+    code: HttpParseErrorCode
+    message: str = ''
+    line: int = 0
+    offset: int = 0
+
+    def __post_init__(self) -> None:
+        Exception.__init__(self, str(self))
+
+    def __str__(self) -> str:
+        return f'[{self.code.name}] line {self.line}, offset {self.offset}: {self.message}'
+
+
+@dc.dataclass()
+class StartLineHttpParseError(ErrorCodeHttpParseError):
+    """Errors in the request-line or status-line."""
+
+    code: StartLineHttpParseErrorCode = dc.field(default=StartLineHttpParseErrorCode.MALFORMED_REQUEST_LINE)
+
+
+@dc.dataclass()
+class HeaderFieldHttpParseError(ErrorCodeHttpParseError):
+    """Errors in header field syntax."""
+
+    code: HeaderFieldHttpParseErrorCode = dc.field(default=HeaderFieldHttpParseErrorCode.INVALID_FIELD_NAME)
+
+
+@dc.dataclass()
+class SemanticHeaderHttpParseError(ErrorCodeHttpParseError):
+    """Errors in header field semantics / cross-field validation."""
+
+    code: SemanticHeaderHttpParseErrorCode = dc.field(default=SemanticHeaderHttpParseErrorCode.INVALID_CONTENT_LENGTH)
+
+
+@dc.dataclass()
+class EncodingHttpParseError(ErrorCodeHttpParseError):
+    """Errors in character encoding within headers."""
+
+    code: EncodingHttpParseErrorCode = dc.field(default=EncodingHttpParseErrorCode.NON_ASCII_IN_FIELD_NAME)
+
+
+@dc.dataclass()
+class NoCombineHeaderHttpParseError(HttpParseError):
+    """Errors in headers where duplicate values are not allowed."""
+
+    name: str
+
+
+##
+
+
+@ta.final
+class ParsedHttpHeaders:
+    """
+    Normalized, case-insensitive header mapping.
+
+    Field names are stored in lowercase. Values are decoded as Latin-1. Multiple values for the same field-name are
+    stored individually and combined with ``", "`` on access (except Set-Cookie, which is never combined).
+    """
+
+    def __init__(self) -> None:
+        # normalized name -> list of individual values
+        self._entries: ta.Dict[str, ta.List[str]] = {}
+
+        # insertion-ordered unique names
+        self._order: ta.List[str] = []
+
+    def _add(self, name: str, value: str) -> None:
+        if name not in self._entries:
+            self._entries[name] = []
+            self._order.append(name)
+        self._entries[name].append(value)
+
+    @property
+    def entries(self) -> ta.Mapping[str, ta.Sequence[str]]:
+        return self._entries
+
+    def __contains__(self, name: ta.Any) -> bool:
+        if not isinstance(name, str):
+            return False
+        return name.lower() in self._entries
+
+    # Headers where duplicate values are comma-combined per RFC 7230 §3.2.2. Set-Cookie is the notable exception.
+    _NO_COMBINE_HEADERS: ta.ClassVar[ta.FrozenSet[str]] = frozenset({
+        'set-cookie',
+    })
+
+    def __getitem__(self, name: str) -> str:
+        key = name.lower()
+        values = self._entries[key]
+        if key in self._NO_COMBINE_HEADERS:
+            raise NoCombineHeaderHttpParseError(name)
+        return ', '.join(values)
+
+    def get(self, name: str, default: ta.Optional[str] = None) -> ta.Optional[str]:
+        try:
+            return self[name]
+        except KeyError:
+            return default
+
+    def get_all(self, name: str) -> ta.List[str]:
+        return list(self._entries.get(name.lower(), []))
+
+    def items(self) -> ta.List[ta.Tuple[str, str]]:
+        result: ta.List[ta.Tuple[str, str]] = []
+        for name in self._order:
+            values = self._entries[name]
+            if name in self._NO_COMBINE_HEADERS:
+                for v in values:
+                    result.append((name, v))
+            else:
+                result.append((name, ', '.join(values)))
+        return result
+
+    def keys(self) -> ta.List[str]:
+        return list(self._order)
+
+    def __iter__(self) -> ta.Iterator[str]:
+        return iter(self._order)
+
+    def __len__(self) -> int:
+        return len(self._order)
+
+    def __repr__(self) -> str:
+        return f'ParsedHttpHeaders({dict(self.items())})'
+
+
+@dc.dataclass()
+class PreparedParsedHttpHeaders:
+    content_length: ta.Optional[int] = None
+
+    transfer_encoding: ta.Optional[ta.List[str]] = None
+
+    host: ta.Optional[str] = None
+
+    connection: ta.Optional[ta.FrozenSet[str]] = None
+    keep_alive: ta.Optional[bool] = None
+
+    @dc.dataclass(frozen=True)
+    class ContentType:
+        media_type: str
+        params: ta.Dict[str, str]
+
+        @property
+        def charset(self) -> ta.Optional[str]:
+            return self.params.get('charset')
+
+    content_type: ta.Optional[ContentType] = None
+
+    te: ta.Optional[ta.List[str]] = None
+
+    upgrade: ta.Optional[ta.List[str]] = None
+
+    trailer: ta.Optional[ta.FrozenSet[str]] = None
+
+    expect: ta.Optional[str] = None
+    expect_100_continue: ta.Optional[bool] = None
+
+    date: ta.Optional[datetime.datetime] = None
+
+    cache_control: ta.Optional[ta.Dict[str, ta.Optional[str]]] = None
+
+    @dc.dataclass(frozen=True)
+    class AcceptEncodingItem:
+        coding: str
+        q: float = 1.0
+
+    accept_encoding: ta.Optional[ta.List[AcceptEncodingItem]] = None
+
+    @dc.dataclass(frozen=True)
+    class AcceptItem:
+        media_range: str
+        q: float = 1.0
+        params: ta.Dict[str, str] = dc.field(default_factory=dict)
+
+    accept: ta.Optional[ta.List[AcceptItem]] = None
+
+    @dc.dataclass(frozen=True)
+    class AuthorizationValue:
+        scheme: str
+        credentials: str
+
+    authorization: ta.Optional[AuthorizationValue] = None
+
+    def __repr__(self) -> str:
+        return ''.join([
+            f'{self.__class__.__name__}(',
+            ', '.join([
+                f'{f.name}={v!r}'
+                for f in dc.fields(self)
+                if (v := getattr(self, f.name) is not None)
+            ]),
+            ')',
+        ])
+
+
+@dc.dataclass(frozen=True)
+class RawParsedHttpHeader:
+    name: bytes
+    value: bytes
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self.name!r}, {self.value!r})'
+
+
+@dc.dataclass()
+class ParsedHttpMessage:
+    class Kind(enum.Enum):
+        REQUEST = 'request'
+        RESPONSE = 'response'
+
+    kind: Kind
+
+    @dc.dataclass(frozen=True)
+    class RequestLine:
+        method: str
+        request_target: bytes
+        http_version: HttpVersion
+
+    request_line: ta.Optional[RequestLine]
+
+    @dc.dataclass(frozen=True)
+    class StatusLine:
+        http_version: HttpVersion
+        status_code: int
+        reason_phrase: str
+
+    status_line: ta.Optional[StatusLine]
+
+    raw_headers: ta.List[RawParsedHttpHeader]
+    headers: ParsedHttpHeaders
+
+    prepared: PreparedParsedHttpHeaders
+
+
+@dc.dataclass(frozen=True)
+class ParsedHttpTrailers:
+    """Result of parsing HTTP trailer fields."""
+
+    raw_headers: ta.List[RawParsedHttpHeader]
+    headers: ParsedHttpHeaders
+
+
+##
+
+
+class HttpParser:
+    """Strict HTTP/1.x parser."""
+
+    @dc.dataclass(frozen=True)
+    class Config:
+        """Strictness knobs. Defaults are maximally strict."""
+
+        allow_obs_fold: bool = False
+        allow_space_before_colon: bool = False  # DANGEROUS - upstreams may not handle well
+        allow_multiple_content_lengths: bool = False
+        allow_content_length_with_te: bool = False
+        allow_bare_lf: bool = False
+        allow_missing_host: bool = False
+        allow_multiple_hosts: bool = False
+        allow_unknown_transfer_encoding: bool = False
+        allow_empty_header_values: bool = True
+        allow_bare_cr_in_value: bool = False
+        allow_te_without_chunked_in_response: bool = False
+        allow_transfer_encoding_http10: bool = False
+        reject_multi_value_content_length: bool = False
+        reject_obs_text: bool = False
+        reject_non_visible_ascii_request_target: bool = False
+        max_header_count: int = 128
+        max_header_length: ta.Optional[int] = 8192
+        max_content_length_str_len: ta.Optional[int] = None
+
+    def __init__(self, config: Config = Config()) -> None:
+        super().__init__()
+
+        self._config = config
+
+    # Public API
+
+    class Mode(enum.Enum):
+        REQUEST = 'request'
+        RESPONSE = 'response'
+        AUTO = 'auto'
+
+    def parse_message(self, data: bytes, mode: Mode = Mode.AUTO) -> ParsedHttpMessage:
+        if not isinstance(data, (bytes, bytearray)):
+            raise TypeError(f'Expected bytes, got {type(data).__name__}')
+
+        ctx = _HttpParseContext(
+            data=bytes(data),
+            config=self._config,
+            mode=mode,
+        )
+
+        # 1. Verify terminator
+        ctx.verify_terminator()
+
+        # 2. Split off start-line
+        start_line_end = ctx.find_line_end(0)
+        start_line_bytes = data[:start_line_end]
+
+        # 3. Determine message kind
+        kind = ctx.detect_kind(start_line_bytes)
+
+        # 4. Parse start-line
+        request_line: ta.Optional[ParsedHttpMessage.RequestLine] = None
+        status_line: ta.Optional[ParsedHttpMessage.StatusLine] = None
+        if kind == ParsedHttpMessage.Kind.REQUEST:
+            request_line = ctx.parse_request_line(start_line_bytes)
+        else:
+            status_line = ctx.parse_status_line(start_line_bytes)
+
+        http_version = (
+            request_line.http_version if request_line else
+            status_line.http_version if status_line else
+            HttpVersions.HTTP_1_1
+        )
+
+        # 5. Parse header fields
+        # Position after start-line CRLF (or LF if bare LF allowed)
+        header_start = start_line_end + ctx.line_ending_len(start_line_end)
+        raw_headers = ctx.parse_header_fields(header_start)
+
+        # 6. Build normalized headers
+        headers = ParsedHttpHeaders()
+        for rh in raw_headers:
+            name_str = rh.name.decode('ascii').lower()
+            value_str = rh.value.decode('latin-1')
+            headers._add(name_str, value_str)  # noqa
+
+        # 7. Build prepared headers
+        prepared = ctx.prepare_headers(headers, kind, http_version)
+
+        return ParsedHttpMessage(
+            kind=kind,
+            request_line=request_line,
+            status_line=status_line,
+            raw_headers=raw_headers,
+            headers=headers,
+            prepared=prepared,
+        )
+
+    def parse_trailers(
+        self,
+        data: bytes,
+    ) -> ParsedHttpTrailers:
+        if not isinstance(data, (bytes, bytearray)):
+            raise TypeError(f'Expected bytes, got {type(data).__name__}')
+
+        # Special case: empty trailers (just the terminating empty line, no fields)
+        if data == b'\r\n' or (self._config.allow_bare_lf and data == b'\n'):
+            return ParsedHttpTrailers(
+                raw_headers=[],
+                headers=ParsedHttpHeaders(),
+            )
+
+        ctx = _HttpParseContext(
+            data=bytes(data),
+            config=self._config,
+            mode=HttpParser.Mode.AUTO,
+        )
+
+        # Verify terminator (trailers end with an empty CRLF line, same as headers)
+        ctx.verify_terminator()
+
+        # Parse fields starting at position 0 (no start-line)
+        raw_headers = ctx.parse_header_fields(0)
+
+        # Build normalized headers
+        headers = ParsedHttpHeaders()
+        for rh in raw_headers:
+            name_str = rh.name.decode('ascii').lower()
+            value_str = rh.value.decode('latin-1')
+            headers._add(name_str, value_str)  # noqa
+
+        # Enforce forbidden trailer fields (RFC 7230 §4.1.2)
+        for name in headers:
+            if name in _HttpParseContext._FORBIDDEN_TRAILER_FIELDS:  # noqa
+                raise SemanticHeaderHttpParseError(
+                    code=SemanticHeaderHttpParseErrorCode.FORBIDDEN_TRAILER_FIELD,
+                    message=f'Forbidden field in trailers: {name!r}',
+                )
+
+        return ParsedHttpTrailers(
+            raw_headers=raw_headers,
+            headers=headers,
+        )
+
+
+class _HttpParseContext:
+    def __init__(
+            self,
+            data: bytes,
+            config: HttpParser.Config,
+            mode: HttpParser.Mode,
+    ) -> None:
+        super().__init__()
+
+        self.data = data
+        self.config = config
+        self.mode = mode
+        self.current_line = 0  # 0-indexed logical line number
+
+    # Character constants
+
+    # RFC 7230 §3.2.6: token = 1*tchar
+    # tchar = "!" / "#" / "$" / "%" / "&" / "'" / "*" / "+" / "-" / "." / "^" / "_" / "`" / "|" / "~" / DIGIT / ALPHA
+    _TCHAR_EXTRAS: ta.ClassVar[ta.FrozenSet[int]] = frozenset(b"!#$%&'*+-.^_`|~")
+
+    _TCHAR: ta.ClassVar[ta.FrozenSet[int]] = frozenset(
+        set(range(0x30, 0x3A)) |  # DIGIT 0-9
+        set(range(0x41, 0x5B)) |  # ALPHA A-Z
+        set(range(0x61, 0x7B)) |  # ALPHA a-z
+        _TCHAR_EXTRAS,
+    )
+
+    # VCHAR = %x21-7E
+    _VCHAR: ta.ClassVar[ta.FrozenSet[int]] = frozenset(range(0x21, 0x7F))
+
+    # obs-text = %x80-FF
+    _OBS_TEXT: ta.ClassVar[ta.FrozenSet[int]] = frozenset(range(0x80, 0x100))
+
+    _SP = 0x20
+    _HTAB = 0x09
+    _CR = 0x0D
+    _LF = 0x0A
+    _COLON = 0x3A
+    _NUL = 0x00
+
+    # OWS = *( SP / HTAB )
+    _OWS_CHARS: ta.ClassVar[ta.FrozenSet[int]] = frozenset({_SP, _HTAB})
+
+    _CRLF = b'\r\n'
+    _CRLFCRLF = b'\r\n\r\n'
+
+    # Allowed characters as raw bytes for translate()
+    _TCHAR_BYTES = bytes(sorted(_TCHAR))
+    _VCHAR_BYTES = bytes(range(0x21, 0x7F))
+
+    # Terminator verification
+
+    def verify_terminator(self) -> None:
+        data = self.data
+
+        idx = data.find(self._CRLFCRLF)
+        if idx >= 0:
+            after = idx + 4
+            if after < len(data):
+                raise HeaderFieldHttpParseError(
+                    code=HeaderFieldHttpParseErrorCode.TRAILING_DATA,
+                    message=f'Unexpected {len(data) - after} byte(s) after header terminator',
+                    line=0,
+                    offset=after,
+                )
+            return
+
+        # Bare-LF mode: require the header block to END with LF LF, not just contain it.
+        if self.config.allow_bare_lf:
+            if data.endswith(b'\n\n'):
+                return
+            raise HeaderFieldHttpParseError(
+                code=HeaderFieldHttpParseErrorCode.MISSING_TERMINATOR,
+                message='Header block does not end with LFLF',
+                line=0,
+                offset=len(data),
+            )
+
+        raise HeaderFieldHttpParseError(
+            code=HeaderFieldHttpParseErrorCode.MISSING_TERMINATOR,
+            message='Header block does not end with CRLFCRLF',
+            line=0,
+            offset=len(data),
+        )
+
+    # Line utilities
+
+    def find_line_end(self, start: int) -> int:
+        """
+        Find the end of the current line (position of CR before CRLF, or LF if bare-LF allowed). Returns the index of
+        the first byte of the line-ending sequence.
+
+        Uses bytes.find() for NUL/CR/LF rather than iterating byte-by-byte in Python. Only loops when a bare CR must be
+        skipped (allow_bare_cr_in_value mode).
+        """
+
+        data = self.data
+        length = len(data)
+        pos = start
+
+        while True:
+            # Let C-level .find() locate the first occurrence of each interesting byte.
+            nul_at = data.find(b'\x00', pos)
+            cr_at = data.find(b'\r', pos)
+            lf_at = data.find(b'\n', pos)
+
+            # Replace "not found" (-1) with length so min() picks the real hits.
+            if nul_at < 0:
+                nul_at = length
+            if cr_at < 0:
+                cr_at = length
+            if lf_at < 0:
+                lf_at = length
+
+            first = min(nul_at, cr_at, lf_at)
+
+            if first == length:
+                # None of the three bytes found before end of data.
+                break
+
+            # NUL: always an error
+            if first == nul_at and nul_at <= cr_at and nul_at <= lf_at:
+                raise HeaderFieldHttpParseError(
+                    code=HeaderFieldHttpParseErrorCode.NUL_IN_HEADER,
+                    message='NUL byte in header data',
+                    line=self.current_line,
+                    offset=nul_at,
+                )
+
+            # CR: check for CRLF vs bare CR
+            if first == cr_at and cr_at <= lf_at:
+                if cr_at + 1 < length and data[cr_at + 1] == self._LF:
+                    return cr_at  # CRLF - this is the line ending
+
+                # Bare CR (not followed by LF)
+                if not self.config.allow_bare_cr_in_value:
+                    raise HeaderFieldHttpParseError(
+                        code=HeaderFieldHttpParseErrorCode.BARE_CARRIAGE_RETURN,
+                        message='Bare CR not followed by LF',
+                        line=self.current_line,
+                        offset=cr_at,
+                    )
+
+                # Bare CR is allowed in values - skip past it and search again.
+                pos = cr_at + 1
+                continue
+
+            # LF: bare LF (if it were preceded by CR we'd have returned above)
+            if self.config.allow_bare_lf:
+                return lf_at
+
+            raise HeaderFieldHttpParseError(
+                code=HeaderFieldHttpParseErrorCode.BARE_LF,
+                message='Bare LF without preceding CR',
+                line=self.current_line,
+                offset=lf_at,
+            )
+
+        raise HeaderFieldHttpParseError(
+            code=HeaderFieldHttpParseErrorCode.MISSING_TERMINATOR,
+            message='Unexpected end of data while scanning for line ending',
+            line=self.current_line,
+            offset=length,
+        )
+
+    def line_ending_len(self, line_end_pos: int) -> int:
+        """Return the length of the line ending at *line_end_pos* (1 for LF, 2 for CRLF)."""
+
+        if line_end_pos < len(self.data) and self.data[line_end_pos] == self._LF:
+            return 1  # bare LF
+        return 2  # CRLF
+
+    # Kind detection
+
+    def detect_kind(self, start_line: bytes) -> ParsedHttpMessage.Kind:
+        if self.mode == HttpParser.Mode.REQUEST:
+            return ParsedHttpMessage.Kind.REQUEST
+
+        if self.mode == HttpParser.Mode.RESPONSE:
+            return ParsedHttpMessage.Kind.RESPONSE
+
+        # AUTO: responses start with "HTTP/"
+        if start_line.startswith(b'HTTP/'):
+            return ParsedHttpMessage.Kind.RESPONSE
+
+        return ParsedHttpMessage.Kind.REQUEST
+
+    # Start-line parsing
+
+    _REQUEST_TARGET_BYTES: ta.ClassVar[bytes] = bytes(set(_VCHAR_BYTES) | set(range(0x80, 0x100)))
+
+    def parse_request_line(self, line: bytes) -> ParsedHttpMessage.RequestLine:
+        """Parse ``method SP request-target SP HTTP-version``."""
+
+        # Must have exactly two SP separators
+
+        first_sp = line.find(b' ')
+        if first_sp < 0:
+            raise StartLineHttpParseError(
+                code=StartLineHttpParseErrorCode.MALFORMED_REQUEST_LINE,
+                message='No SP found in request-line',
+                line=0,
+                offset=0,
+            )
+
+        last_sp = line.rfind(b' ')
+        if first_sp == last_sp:
+            raise StartLineHttpParseError(
+                code=StartLineHttpParseErrorCode.MALFORMED_REQUEST_LINE,
+                message='Only one SP found in request-line; expected method SP target SP version',
+                line=0,
+                offset=first_sp,
+            )
+
+        method_bytes = line[:first_sp]
+        target_bytes = line[first_sp + 1:last_sp]
+        version_bytes = line[last_sp + 1:]
+
+        # Validate no extra SP in components: check that second SP search from first_sp+1 matches last_sp - i.e., the
+        # target does not contain the last SP. Actually the HTTP spec says request-target can contain spaces? No - it's
+        # defined as *visible ASCII*. But to find the correct split: method is a token (no SP), version is fixed format
+        # (no SP), and everything in between is the target which is VCHAR (no SP). However, some real URIs... no, VCHAR
+        # excludes SP. Let's be strict: Check there are exactly 2 SPs total.
+        if line.count(b' ') != 2:
+            raise StartLineHttpParseError(
+                code=StartLineHttpParseErrorCode.MALFORMED_REQUEST_LINE,
+                message=f'Request-line contains {line.count(b" ")} spaces; expected exactly 2',
+                line=0,
+                offset=0,
+            )
+
+        # Validate method
+
+        if not method_bytes:
+            raise StartLineHttpParseError(
+                code=StartLineHttpParseErrorCode.INVALID_METHOD,
+                message='Empty method in request-line',
+                line=0,
+                offset=0,
+            )
+
+        if method_bytes.translate(None, self._TCHAR_BYTES):
+            raise StartLineHttpParseError(
+                code=StartLineHttpParseErrorCode.INVALID_METHOD,
+                message=f'Method contains invalid character(s)',
+                line=0,
+                offset=0,
+            )
+
+        # Validate request-target (VCHAR only, non-empty)
+
+        if not target_bytes:
+            raise StartLineHttpParseError(
+                code=StartLineHttpParseErrorCode.INVALID_REQUEST_TARGET,
+                message='Empty request-target',
+                line=0,
+                offset=first_sp + 1,
+            )
+
+        if self.config.reject_non_visible_ascii_request_target:
+            if target_bytes.translate(None, self._VCHAR_BYTES):
+                raise StartLineHttpParseError(
+                    code=StartLineHttpParseErrorCode.INVALID_REQUEST_TARGET,
+                    message='Request-target contains non-visible-ASCII character(s)',
+                    line=0,
+                    offset=first_sp + 1,
+                )
+
+        else:
+            if target_bytes.translate(None, self._REQUEST_TARGET_BYTES):
+                raise StartLineHttpParseError(
+                    code=StartLineHttpParseErrorCode.INVALID_REQUEST_TARGET,
+                    message='Request-target contains invalid character(s)',
+                    line=0,
+                    offset=first_sp + 1,
+                )
+
+        # Validate HTTP version
+
+        version_str = version_bytes.decode('ascii', errors='replace')
+        if version_str == 'HTTP/1.0':
+            version = HttpVersions.HTTP_1_0
+        elif version_str == 'HTTP/1.1':
+            version = HttpVersions.HTTP_1_1
+        else:
+            raise StartLineHttpParseError(
+                code=StartLineHttpParseErrorCode.UNSUPPORTED_HTTP_VERSION,
+                message=f'Unsupported HTTP version: {version_str!r}',
+                line=0,
+                offset=last_sp + 1,
+            )
+
+        return ParsedHttpMessage.RequestLine(
+            method=method_bytes.decode('ascii'),
+            request_target=target_bytes,
+            http_version=version,
+        )
+
+    # reason-phrase: 0+ bytes of HTAB / SP / VCHAR / obs-text
+    _RE_REASON_PHRASE: ta.ClassVar[re.Pattern] = re.compile(rb'^[\x09\x20\x21-\x7e\x80-\xff]*\Z')
+
+    # reason-phrase = *( HTAB / SP / VCHAR / obs-text )
+    _REASON_PHRASE_CHARS: ta.ClassVar[ta.FrozenSet[int]] = frozenset(
+        {_HTAB, _SP} |
+        set(_VCHAR) |
+        set(_OBS_TEXT),
+    )
+
+    def parse_status_line(self, line: bytes) -> ParsedHttpMessage.StatusLine:
+        """Parse ``HTTP-version SP status-code SP reason-phrase``."""
+
+        # First SP separates version from status code
+
+        first_sp = line.find(b' ')
+        if first_sp < 0:
+            raise StartLineHttpParseError(
+                code=StartLineHttpParseErrorCode.MALFORMED_STATUS_LINE,
+                message='No SP found in status-line',
+                line=0,
+                offset=0,
+            )
+
+        version_bytes = line[:first_sp]
+        rest = line[first_sp + 1:]
+
+        # Second SP separates status code from reason phrase
+
+        second_sp = rest.find(b' ')
+        if second_sp < 0:
+            # Per RFC 7230:
+            #   `status-line = HTTP-version SP status-code SP reason-phrase`.
+            # The SP before reason-phrase is required even if reason-phrase is empty.
+            raise StartLineHttpParseError(
+                code=StartLineHttpParseErrorCode.MALFORMED_STATUS_LINE,
+                message='Missing second SP in status-line (required before reason-phrase)',
+                line=0,
+                offset=first_sp + 1 + len(rest),
+            )
+
+        status_bytes = rest[:second_sp]
+        reason_bytes = rest[second_sp + 1:]
+
+        # Validate HTTP version
+
+        version_str = version_bytes.decode('ascii', errors='replace')
+        if version_str == 'HTTP/1.0':
+            version = HttpVersions.HTTP_1_0
+        elif version_str == 'HTTP/1.1':
+            version = HttpVersions.HTTP_1_1
+        else:
+            raise StartLineHttpParseError(
+                code=StartLineHttpParseErrorCode.UNSUPPORTED_HTTP_VERSION,
+                message=f'Unsupported HTTP version: {version_str!r}',
+                line=0,
+                offset=0,
+            )
+
+        # Validate status code: exactly 3 ASCII digits
+
+        if len(status_bytes) != 3 or not status_bytes.isdigit():
+            raise StartLineHttpParseError(
+                code=StartLineHttpParseErrorCode.INVALID_STATUS_CODE,
+                message=f'Status code is not exactly 3 digits: {status_bytes!r}',
+                line=0,
+                offset=first_sp + 1,
+            )
+
+        status_code = int(status_bytes)
+        if not (100 <= status_code <= 599):
+            raise StartLineHttpParseError(
+                code=StartLineHttpParseErrorCode.INVALID_STATUS_CODE,
+                message=f'Status code {status_code} out of range 100-599',
+                line=0,
+                offset=first_sp + 1,
+            )
+
+        # Validate reason-phrase characters
+
+        if not self._RE_REASON_PHRASE.match(reason_bytes):
+            # Regex rejected - scan to find the specific bad byte for error reporting
+            reason_base_offset = first_sp + 1 + second_sp + 1
+
+            for i, b in enumerate(reason_bytes):
+                if b == self._NUL:
+                    raise HeaderFieldHttpParseError(
+                        code=HeaderFieldHttpParseErrorCode.NUL_IN_HEADER,
+                        message='NUL byte in reason-phrase',
+                        line=0,
+                        offset=reason_base_offset + i,
+                    )
+
+                if b not in self._REASON_PHRASE_CHARS:
+                    raise StartLineHttpParseError(
+                        code=StartLineHttpParseErrorCode.MALFORMED_STATUS_LINE,
+                        message=f'Invalid character 0x{b:02x} in reason-phrase',
+                        line=0,
+                        offset=reason_base_offset + i,
+                    )
+
+        return ParsedHttpMessage.StatusLine(
+            http_version=version,
+            status_code=status_code,
+            reason_phrase=reason_bytes.decode('latin-1'),
+        )
+
+    # Header field parsing
+
+    def parse_header_fields(self, start: int) -> ta.List[RawParsedHttpHeader]:
+        """Parse all header fields from *start* until the empty-line terminator."""
+
+        headers: ta.List[RawParsedHttpHeader] = []
+        pos = start
+        data = self.data
+        self.current_line = 1  # line 0 is the start-line
+
+        while pos < len(data):
+            # Check for the empty line that terminates headers
+            if data[pos] == self._CR and pos + 1 < len(data) and data[pos + 1] == self._LF:
+                # Could be the terminator (\r\n at start of a "line" = empty line)
+                break
+
+            if self.config.allow_bare_lf and data[pos] == self._LF:
+                break
+
+            # Max header count check
+            if len(headers) >= self.config.max_header_count:
+                raise HeaderFieldHttpParseError(
+                    code=HeaderFieldHttpParseErrorCode.TOO_MANY_HEADERS,
+                    message=f'Exceeded maximum header count of {self.config.max_header_count}',
+                    line=self.current_line,
+                    offset=pos,
+                )
+
+            # Find end of this header line
+            line_end = self.find_line_end(pos)
+            line_data = data[pos:line_end]
+            next_pos = line_end + self.line_ending_len(line_end)
+
+            if self.config.max_header_length is not None and len(line_data) > self.config.max_header_length:
+                raise HeaderFieldHttpParseError(
+                    code=HeaderFieldHttpParseErrorCode.INVALID_FIELD_VALUE,
+                    message='Header line exceeds maximum length',
+                    line=self.current_line,
+                    offset=next_pos,
+                )
+
+            # Handle obs-fold: if the *next* line starts with SP or HTAB, it's a continuation
+            obs_buf: ta.Optional[io.BytesIO] = None
+
+            while next_pos < len(data):
+                next_byte = data[next_pos]
+
+                if next_byte in self._OWS_CHARS:
+                    if not self.config.allow_obs_fold:
+                        raise HeaderFieldHttpParseError(
+                            code=HeaderFieldHttpParseErrorCode.OBS_FOLD_NOT_ALLOWED,
+                            message='Obsolete line folding (obs-fold) encountered but not allowed',
+                            line=self.current_line,
+                            offset=next_pos,
+                        )
+
+                    # Unfold: find the end of the continuation line
+                    cont_line_end = self.find_line_end(next_pos)
+                    cont_data = data[next_pos:cont_line_end]
+
+                    # Replace fold with single SP
+                    if obs_buf is None:
+                        obs_buf = io.BytesIO()
+                        obs_buf.write(line_data)
+                    obs_buf.write(b' ')
+                    obs_buf.write(cont_data.lstrip(b' \t'))
+
+                    next_pos = cont_line_end + self.line_ending_len(cont_line_end)
+
+                    if self.config.max_header_length is not None and obs_buf.tell() > self.config.max_header_length:
+                        raise HeaderFieldHttpParseError(
+                            code=HeaderFieldHttpParseErrorCode.INVALID_FIELD_VALUE,
+                            message='Unfolded header line exceeds maximum length',
+                            line=self.current_line,
+                            offset=next_pos,
+                        )
+
+                else:
+                    break
+
+            if obs_buf is not None:
+                line_data = obs_buf.getvalue()
+
+            # Parse field-name : field-value
+            header = self._parse_one_header(line_data, pos)
+            headers.append(header)
+
+            pos = next_pos
+            self.current_line += 1
+
+        return headers
+
+    @classmethod
+    def _strip_ows(cls, data: bytes) -> bytes:
+        """Strip leading and trailing optional whitespace (SP / HTAB)."""
+
+        return data.strip(b' \t')
+
+    # token: 1+ tchar bytes
+    _RE_TOKEN: ta.ClassVar[re.Pattern] = re.compile(rb"^[!#$%&'*+\-.^_`|~0-9A-Za-z]+\Z")
+
+    # Pre-calculate the 4 field-value variants for the translation filter (allow_bare_cr, reject_obs_text)
+    _FIELD_VALUE_ALLOWED: ta.ClassVar[ta.Mapping[ta.Tuple[bool, bool], bytes]] = {
+        (False, False): bytes({_HTAB, _SP}      | set(range(0x21, 0x7F))   | set(range(0x80, 0x100))),  # noqa
+        (False, True):  bytes({_HTAB, _SP}      | set(range(0x21, 0x7F))),  # noqa
+        (True, False):  bytes({_HTAB, _CR, _SP} | set(range(0x21, 0x7F))   | set(range(0x80, 0x100))),  # noqa
+        (True, True):   bytes({_HTAB, _CR, _SP} | set(range(0x21, 0x7F))),  # noqa
+    }
+
+    def _parse_one_header(self, line_data: bytes, line_start_offset: int) -> RawParsedHttpHeader:
+        """Parse a single ``field-name: field-value`` line (already unfolded)."""
+
+        colon_idx = line_data.find(b':')
+        if colon_idx < 0:
+            raise HeaderFieldHttpParseError(
+                code=HeaderFieldHttpParseErrorCode.MISSING_COLON,
+                message='Header line has no colon separator',
+                line=self.current_line,
+                offset=line_start_offset,
+            )
+
+        name_bytes = line_data[:colon_idx]
+        value_bytes = line_data[colon_idx + 1:]
+
+        # Validate field-name
+
+        if not name_bytes:
+            raise HeaderFieldHttpParseError(
+                code=HeaderFieldHttpParseErrorCode.EMPTY_FIELD_NAME,
+                message='Empty field-name before colon',
+                line=self.current_line,
+                offset=line_start_offset,
+            )
+
+        # Check for space before colon
+        if name_bytes[-1] in self._OWS_CHARS:
+            if not self.config.allow_space_before_colon:
+                raise HeaderFieldHttpParseError(
+                    code=HeaderFieldHttpParseErrorCode.SPACE_BEFORE_COLON,
+                    message='Whitespace between field-name and colon',
+                    line=self.current_line,
+                    offset=line_start_offset + len(name_bytes) - 1,
+                )
+
+            # Strip trailing whitespace from name if allowed
+            name_bytes = name_bytes.rstrip(b' \t')
+            if not name_bytes:
+                raise HeaderFieldHttpParseError(
+                    code=HeaderFieldHttpParseErrorCode.EMPTY_FIELD_NAME,
+                    message='Field-name is only whitespace before colon',
+                    line=self.current_line,
+                    offset=line_start_offset,
+                )
+
+        # Validate name characters (regex fast-path; fallback scan on failure)
+        if not self._RE_TOKEN.match(name_bytes):
+            for i, b in enumerate(name_bytes):
+                if b == self._NUL:
+                    raise HeaderFieldHttpParseError(
+                        code=HeaderFieldHttpParseErrorCode.NUL_IN_HEADER,
+                        message='NUL byte in field-name',
+                        line=self.current_line,
+                        offset=line_start_offset + i,
+                    )
+
+                if b >= 0x80:
+                    raise EncodingHttpParseError(
+                        code=EncodingHttpParseErrorCode.NON_ASCII_IN_FIELD_NAME,
+                        message=f'Non-ASCII byte 0x{b:02x} in field-name',
+                        line=self.current_line,
+                        offset=line_start_offset + i,
+                    )
+
+                if b not in self._TCHAR:
+                    raise HeaderFieldHttpParseError(
+                        code=HeaderFieldHttpParseErrorCode.INVALID_FIELD_NAME,
+                        message=f'Invalid character 0x{b:02x} in field-name',
+                        line=self.current_line,
+                        offset=line_start_offset + i,
+                    )
+
+        # Process field-value
+
+        # Strip OWS
+        value_stripped = self._strip_ows(value_bytes)
+
+        # Check for empty value
+        if not value_stripped and not self.config.allow_empty_header_values:
+            raise HeaderFieldHttpParseError(
+                code=HeaderFieldHttpParseErrorCode.INVALID_FIELD_VALUE,
+                message='Empty header field value not allowed',
+                line=self.current_line,
+                offset=line_start_offset + colon_idx + 1,
+            )
+
+        # Validate value characters (Translation fast-path)
+        allowed_bytes = self._FIELD_VALUE_ALLOWED[(
+            self.config.allow_bare_cr_in_value,
+            self.config.reject_obs_text,
+        )]
+
+        # This is the "Pedantic" C-speed check. translate(None, allowed_bytes) removes all valid characters. If any
+        # bytes remain, the input is invalid.
+        invalid_chars = value_stripped.translate(None, allowed_bytes)
+
+        if invalid_chars:
+            value_base_offset = line_start_offset + colon_idx + 1
+            # We only enter this Python loop if we ALREADY found an error.
+            # This keeps the "happy path" fast while maintaining detailed error reporting.
+            for i, b in enumerate(value_stripped):
+                if b == self._NUL:
+                    raise HeaderFieldHttpParseError(
+                        code=HeaderFieldHttpParseErrorCode.NUL_IN_HEADER,
+                        message='NUL byte in field-value',
+                        line=self.current_line,
+                        offset=value_base_offset + i,
+                    )
+
+                if b == self._CR:
+                    if not self.config.allow_bare_cr_in_value:
+                        raise HeaderFieldHttpParseError(
+                            code=HeaderFieldHttpParseErrorCode.BARE_CARRIAGE_RETURN,
+                            message='Bare CR in field-value',
+                            line=self.current_line,
+                            offset=value_base_offset + i,
+                        )
+                    continue
+
+                if b not in allowed_bytes:
+                    # Specific error logic for obs-text/bare CR
+                    if b >= 0x80 and self.config.reject_obs_text:
+                        raise EncodingHttpParseError(
+                            code=EncodingHttpParseErrorCode.OBS_TEXT_IN_FIELD_VALUE,
+                            message=f'obs-text byte 0x{b:02x} rejected by config',
+                            line=self.current_line,
+                            offset=value_base_offset + i,
+                        )
+
+                    # General character error
+                    raise HeaderFieldHttpParseError(
+                        code=HeaderFieldHttpParseErrorCode.INVALID_FIELD_VALUE,
+                        message=f'Invalid character 0x{b:02x} in field-value',
+                        line=self.current_line,
+                        offset=value_base_offset + i,
+                    )
+
+        return RawParsedHttpHeader(
+            name=name_bytes,
+            value=value_stripped,
+        )
+
+    # Prepared header construction
+
+    def prepare_headers(
+        self,
+        headers: ParsedHttpHeaders,
+        kind: ParsedHttpMessage.Kind,
+        http_version: HttpVersion,
+    ) -> PreparedParsedHttpHeaders:
+        prepared = PreparedParsedHttpHeaders()
+
+        self._prepare_content_length(headers, prepared)
+        self._prepare_transfer_encoding(headers, prepared, kind, http_version)
+        self._prepare_host(headers, prepared, kind, http_version)
+        self._prepare_connection(headers, prepared, http_version)
+        self._prepare_content_type(headers, prepared)
+        self._prepare_te(headers, prepared)
+        self._prepare_upgrade(headers, prepared)
+        self._prepare_trailer(headers, prepared)
+        self._prepare_expect(headers, prepared)
+        self._prepare_date(headers, prepared)
+        self._prepare_cache_control(headers, prepared)
+        self._prepare_accept_encoding(headers, prepared)
+        self._prepare_accept(headers, prepared)
+        self._prepare_authorization(headers, prepared)
+
+        # Cross-field: Content-Length + Transfer-Encoding conflict
+        if (
+            prepared.content_length is not None and
+            prepared.transfer_encoding is not None and
+            not self.config.allow_content_length_with_te
+        ):
+            raise SemanticHeaderHttpParseError(
+                code=SemanticHeaderHttpParseErrorCode.CONTENT_LENGTH_WITH_TRANSFER_ENCODING,
+                message='Content-Length and Transfer-Encoding are both present',
+            )
+
+        return prepared
+
+    def _prepare_content_length(self, headers: ParsedHttpHeaders, prepared: PreparedParsedHttpHeaders) -> None:
+        values = headers.get_all('content-length')
+        if not values:
+            return
+
+        parsed_values: ta.List[int] = []
+        for v in values:
+            # A single Content-Length header might itself be a comma-separated list (some implementations do this). We
+            # parse each element.
+            if self.config.reject_multi_value_content_length and ',' in v:
+                raise SemanticHeaderHttpParseError(
+                    code=SemanticHeaderHttpParseErrorCode.INVALID_CONTENT_LENGTH,
+                    message=f'Content-Length with multiple values is forbidden: {v!r}',
+                )
+
+            for part in v.split(','):
+                stripped = part.strip()
+
+                if not stripped.isdigit():
+                    raise SemanticHeaderHttpParseError(
+                        code=SemanticHeaderHttpParseErrorCode.INVALID_CONTENT_LENGTH,
+                        message=f'Content-Length value is not a valid non-negative integer: {stripped!r}',
+                    )
+
+                if (
+                        self.config.max_content_length_str_len is not None and
+                        len(stripped) > self.config.max_content_length_str_len
+                ):
+                    raise SemanticHeaderHttpParseError(
+                        code=SemanticHeaderHttpParseErrorCode.INVALID_CONTENT_LENGTH,
+                        message=f'Content-Length value string too long: {stripped!r}',
+                    )
+
+                parsed_values.append(int(stripped))
+
+        if not parsed_values:
+            raise SemanticHeaderHttpParseError(
+                code=SemanticHeaderHttpParseErrorCode.INVALID_CONTENT_LENGTH,
+                message='Content-Length header present but empty',
+            )
+
+        unique = set(parsed_values)
+        if len(unique) > 1:
+            raise SemanticHeaderHttpParseError(
+                code=SemanticHeaderHttpParseErrorCode.CONFLICTING_CONTENT_LENGTH,
+                message=f'Conflicting Content-Length values: {sorted(unique)}',
+            )
+
+        if len(parsed_values) > 1:
+            if not self.config.allow_multiple_content_lengths:
+                raise SemanticHeaderHttpParseError(
+                    code=SemanticHeaderHttpParseErrorCode.DUPLICATE_CONTENT_LENGTH,
+                    message=(
+                        f'Multiple Content-Length values (all {parsed_values[0]}); '
+                        f'set allow_multiple_content_lengths to accept'
+                    ),
+                )
+
+        val = parsed_values[0]
+        if val < 0:
+            raise SemanticHeaderHttpParseError(
+                code=SemanticHeaderHttpParseErrorCode.INVALID_CONTENT_LENGTH,
+                message=f'Content-Length is negative: {val}',
+            )
+
+        prepared.content_length = val
+
+    _KNOWN_CODINGS: ta.ClassVar[ta.FrozenSet[str]] = frozenset([
+        'chunked',
+        'compress',
+        'deflate',
+        'gzip',
+        'x-gzip',
+        'x-compress',
+    ])
+
+    def _prepare_transfer_encoding(
+        self,
+        headers: ParsedHttpHeaders,
+        prepared: PreparedParsedHttpHeaders,
+        kind: ParsedHttpMessage.Kind,
+        http_version: HttpVersion,
+    ) -> None:
+        if 'transfer-encoding' not in headers:
+            return
+
+        combined = headers['transfer-encoding']
+        codings = [c.strip().lower() for c in combined.split(',') if c.strip()]
+
+        if not codings:
+            raise SemanticHeaderHttpParseError(
+                code=SemanticHeaderHttpParseErrorCode.INVALID_TRANSFER_ENCODING,
+                message='Transfer-Encoding header present but empty',
+            )
+
+        # HTTP/1.0 check
+        if http_version == HttpVersions.HTTP_1_0 and not self.config.allow_transfer_encoding_http10:
+            raise SemanticHeaderHttpParseError(
+                code=SemanticHeaderHttpParseErrorCode.TE_IN_HTTP10,
+                message='Transfer-Encoding is not defined for HTTP/1.0',
+            )
+
+        # Validate known codings
+        if not self.config.allow_unknown_transfer_encoding:
+            for c in codings:
+                if c not in self._KNOWN_CODINGS:
+                    raise SemanticHeaderHttpParseError(
+                        code=SemanticHeaderHttpParseErrorCode.INVALID_TRANSFER_ENCODING,
+                        message=f'Unknown transfer-coding: {c!r}',
+                    )
+
+        # chunked positioning
+        if 'chunked' in codings:
+            if codings[-1] != 'chunked':
+                raise SemanticHeaderHttpParseError(
+                    code=SemanticHeaderHttpParseErrorCode.TE_WITHOUT_CHUNKED_LAST,
+                    message='chunked must be the last (outermost) transfer-coding',
+                )
+
+            if codings.count('chunked') > 1:
+                raise SemanticHeaderHttpParseError(
+                    code=SemanticHeaderHttpParseErrorCode.INVALID_TRANSFER_ENCODING,
+                    message='chunked appears more than once in Transfer-Encoding',
+                )
+
+        else:
+            # No chunked present
+            if kind == ParsedHttpMessage.Kind.REQUEST:
+                raise SemanticHeaderHttpParseError(
+                    code=SemanticHeaderHttpParseErrorCode.TE_WITHOUT_CHUNKED_LAST,
+                    message='Transfer-Encoding in a request must include chunked as the last coding',
+                )
+
+            elif kind == ParsedHttpMessage.Kind.RESPONSE:
+                if not self.config.allow_te_without_chunked_in_response:
+                    raise SemanticHeaderHttpParseError(
+                        code=SemanticHeaderHttpParseErrorCode.TE_WITHOUT_CHUNKED_LAST,
+                        message=(
+                            'Transfer-Encoding in a response without chunked; '
+                            'set allow_te_without_chunked_in_response to accept'
+                        ),
+                    )
+
+        prepared.transfer_encoding = codings
+
+    # Host header: reject control chars 0x00-0x1F and SP 0x20. # Operates on str (already latin-1 decoded).
+    _RE_HOST_VALID: ta.ClassVar[re.Pattern] = re.compile(r'^[^\x00-\x20]*\Z')
+
+    def _prepare_host(
+        self,
+        headers: ParsedHttpHeaders,
+        prepared: PreparedParsedHttpHeaders,
+        kind: ParsedHttpMessage.Kind,
+        http_version: HttpVersion,
+    ) -> None:
+        values = headers.get_all('host')
+
+        if kind == ParsedHttpMessage.Kind.REQUEST and http_version == HttpVersions.HTTP_1_1:
+            if not values and not self.config.allow_missing_host:
+                raise SemanticHeaderHttpParseError(
+                    code=SemanticHeaderHttpParseErrorCode.MISSING_HOST_HEADER,
+                    message='Host header is required in HTTP/1.1 requests',
+                )
+
+        if len(values) > 1:
+            if not self.config.allow_multiple_hosts:
+                raise SemanticHeaderHttpParseError(
+                    code=SemanticHeaderHttpParseErrorCode.MULTIPLE_HOST_HEADERS,
+                    message=f'Multiple Host headers found ({len(values)})',
+                )
+
+            # If allowed, all values must be identical
+            unique = set(values)
+            if len(unique) > 1:
+                raise SemanticHeaderHttpParseError(
+                    code=SemanticHeaderHttpParseErrorCode.CONFLICTING_HOST_HEADERS,
+                    message=f'Multiple Host headers with different values: {sorted(unique)}',
+                )
+
+        if values:
+            host_val = values[0].strip()
+
+            # Minimal validation: reject any whitespace/control chars. Host is an authority, and
+            # allowing OWS creates parsing inconsistencies across components.
+            if not host_val and kind == ParsedHttpMessage.Kind.REQUEST:
+                # Empty Host is technically allowed for certain request-targets (authority form, etc.), but let's just
+                # accept it - the URI layer handles that.
+                pass
+
+            # Reject any SP / HTAB anywhere.
+            if ' ' in host_val or '\t' in host_val:
+                raise SemanticHeaderHttpParseError(
+                    code=SemanticHeaderHttpParseErrorCode.INVALID_HOST,
+                    message='Whitespace not allowed in Host header',
+                )
+
+            # Reject other C0 controls (including NUL) if present (defense in depth). (Host is a str decoded as Latin-1
+            # in your ParsedHttpHeaders container.)
+            if not self._RE_HOST_VALID.match(host_val):
+                for i, ch in enumerate(host_val):
+                    if ord(ch) < 0x21:  # includes 0x00-0x20; we've already rejected SP/HTAB explicitly
+                        raise SemanticHeaderHttpParseError(
+                            code=SemanticHeaderHttpParseErrorCode.INVALID_HOST,
+                            message=f'Invalid character in Host header at position {i}',
+                        )
+
+            prepared.host = host_val
+
+    @classmethod
+    def _parse_comma_list(cls, value: str) -> ta.List[str]:
+        """Split a comma-separated header value into trimmed, non-empty tokens."""
+
+        parts: ta.List[str] = []
+        for part in value.split(','):
+            stripped = part.strip()
+            if stripped:
+                parts.append(stripped)
+        return parts
+
+    def _prepare_connection(
+        self,
+        headers: ParsedHttpHeaders,
+        prepared: PreparedParsedHttpHeaders,
+        http_version: HttpVersion,
+    ) -> None:
+        if 'connection' in headers:
+            tokens = {t.lower() for t in self._parse_comma_list(headers['connection'])}
+            prepared.connection = frozenset(tokens)
+        else:
+            prepared.connection = frozenset()
+
+        # Derive keep_alive
+        if 'close' in prepared.connection:
+            prepared.keep_alive = False
+        elif 'keep-alive' in prepared.connection:
+            prepared.keep_alive = True
+        else:
+            # Default: HTTP/1.1 = keep-alive, HTTP/1.0 = close
+            prepared.keep_alive = (http_version == HttpVersions.HTTP_1_1)
+
+    @classmethod
+    def _parse_quoted_string(cls, data: str, pos: int) -> ta.Tuple[str, int]:
+        """
+        Parse a quoted-string starting at *pos* (which must point at the opening DQUOTE). Returns (unescaped_value,
+        position_after_closing_DQUOTE).
+        """
+
+        if pos >= len(data) or data[pos] != '"':
+            raise ValueError('Expected opening double-quote')
+
+        pos += 1  # skip opening "
+
+        result: ta.List[str] = []
+        while pos < len(data):
+            ch = data[pos]
+
+            if ch == '"':
+                return ''.join(result), pos + 1
+
+            if ch == '\\':
+                pos += 1
+                if pos >= len(data):
+                    raise ValueError('Backslash at end of quoted-string')
+                result.append(data[pos])
+                pos += 1
+
+            else:
+                result.append(ch)
+                pos += 1
+
+        raise ValueError('Unterminated quoted-string')
+
+    @classmethod
+    def _parse_media_type_params(cls, params_str: str) -> ta.Dict[str, str]:
+        """
+        Parse ``;param=value`` segments from a Content-Type or Accept header. Values may be tokens or quoted-strings.
+        """
+
+        params: ta.Dict[str, str] = {}
+
+        remaining = params_str.strip()
+        while remaining:
+            if not remaining.startswith(';'):
+                break
+
+            remaining = remaining[1:].strip()
+            if not remaining:
+                break
+
+            eq_idx = remaining.find('=')
+            if eq_idx < 0:
+                # parameter name without value - skip to next semicolon or end
+                semi_idx = remaining.find(';')
+                if semi_idx < 0:
+                    break
+
+                remaining = remaining[semi_idx:]
+                continue
+
+            pname = remaining[:eq_idx].strip().lower()
+            remaining = remaining[eq_idx + 1:].strip()
+
+            if remaining.startswith('"'):
+                try:
+                    pvalue, end_pos = cls._parse_quoted_string(remaining, 0)
+                except ValueError:
+                    break
+                remaining = remaining[end_pos:].strip()
+
+            else:
+                semi_idx = remaining.find(';')
+
+                if semi_idx < 0:
+                    pvalue = remaining.strip()
+                    remaining = ''
+                else:
+                    pvalue = remaining[:semi_idx].strip()
+                    remaining = remaining[semi_idx:]
+
+            if pname:
+                params[pname] = pvalue
+
+        return params
+
+    def _prepare_content_type(self, headers: ParsedHttpHeaders, prepared: PreparedParsedHttpHeaders) -> None:
+        if 'content-type' not in headers:
+            return
+
+        raw = headers['content-type']
+
+        # media-type = type "/" subtype *( OWS ";" OWS parameter )
+        semi_idx = raw.find(';')
+        if semi_idx < 0:
+            media_type = raw.strip().lower()
+            params: ta.Dict[str, str] = {}
+        else:
+            media_type = raw[:semi_idx].strip().lower()
+            params = self._parse_media_type_params(raw[semi_idx:])
+
+        if '/' not in media_type:
+            raise SemanticHeaderHttpParseError(
+                code=SemanticHeaderHttpParseErrorCode.INVALID_CONTENT_TYPE,
+                message=f'Content-Type missing "/" in media-type: {media_type!r}',
+            )
+
+        parts = media_type.split('/', 1)
+        if not parts[0] or not parts[1]:
+            raise SemanticHeaderHttpParseError(
+                code=SemanticHeaderHttpParseErrorCode.INVALID_CONTENT_TYPE,
+                message=f'Content-Type has empty type or subtype: {media_type!r}',
+            )
+
+        prepared.content_type = PreparedParsedHttpHeaders.ContentType(
+            media_type=media_type,
+            params=params,
+        )
+
+    @classmethod
+    def _split_header_element(cls, element: str) -> ta.Tuple[str, float, ta.Dict[str, str]]:
+        """
+        Split a single header list element like ``"token;q=0.5;param=val"`` into ``(token_lower, q, params_dict)``.
+
+        *token* is lowercased.  ``q`` defaults to ``1.0`` if absent.  The ``q`` key is consumed and **not** included in
+        *params_dict*.  Raises ``ValueError`` on a malformed ``q`` value.
+        """
+
+        semi_idx = element.find(';')
+        if semi_idx < 0:
+            return element.strip().lower(), 1.0, {}
+
+        token = element[:semi_idx].strip().lower()
+        params = cls._parse_media_type_params(element[semi_idx:])
+
+        q = 1.0
+        q_str = params.pop('q', None)
+        if q_str is not None:
+            q = float(q_str)  # caller wraps ValueError
+
+        return token, q, params
+
+    def _prepare_te(self, headers: ParsedHttpHeaders, prepared: PreparedParsedHttpHeaders) -> None:
+        if 'te' not in headers:
+            return
+
+        codings = [
+            self._split_header_element(p)[0]
+            for p in self._parse_comma_list(headers['te'])
+        ]
+
+        prepared.te = [c for c in codings if c]
+
+    def _prepare_upgrade(self, headers: ParsedHttpHeaders, prepared: PreparedParsedHttpHeaders) -> None:
+        if 'upgrade' not in headers:
+            return
+
+        prepared.upgrade = self._parse_comma_list(headers['upgrade'])
+
+    # Headers that MUST NOT appear in trailers (RFC 7230 §4.1.2)
+    _FORBIDDEN_TRAILER_FIELDS: ta.ClassVar[ta.FrozenSet[str]] = frozenset({
+        'transfer-encoding',
+        'content-length',
+        'host',
+        'cache-control',
+        'expect',
+        'max-forwards',
+        'pragma',
+        'range',
+        'te',
+        'authorization',
+        'proxy-authenticate',
+        'proxy-authorization',
+        'www-authenticate',
+        'content-encoding',
+        'content-type',
+        'content-range',
+        'trailer',
+    })
+
+    def _prepare_trailer(self, headers: ParsedHttpHeaders, prepared: PreparedParsedHttpHeaders) -> None:
+        if 'trailer' not in headers:
+            return
+
+        fields = {f.lower() for f in self._parse_comma_list(headers['trailer'])}
+        for f in fields:
+            if f in self._FORBIDDEN_TRAILER_FIELDS:
+                raise SemanticHeaderHttpParseError(
+                    code=SemanticHeaderHttpParseErrorCode.FORBIDDEN_TRAILER_FIELD,
+                    message=f'Forbidden field in Trailer header: {f!r}',
+                )
+
+        prepared.trailer = frozenset(fields)
+
+    def _prepare_expect(self, headers: ParsedHttpHeaders, prepared: PreparedParsedHttpHeaders) -> None:
+        if 'expect' not in headers:
+            return
+
+        raw = headers['expect'].strip().lower()
+        if raw != '100-continue':
+            raise SemanticHeaderHttpParseError(
+                code=SemanticHeaderHttpParseErrorCode.INVALID_EXPECT,
+                message=f'Only "100-continue" is accepted for Expect; got {raw!r}',
+            )
+
+        prepared.expect = raw
+        prepared.expect_100_continue = True
+
+    _MONTH_NAMES: ta.ClassVar[ta.Mapping[str, int]] = {
+        'jan': 1,
+        'feb': 2,
+        'mar': 3,
+        'apr': 4,
+        'may': 5,
+        'jun': 6,
+        'jul': 7,
+        'aug': 8,
+        'sep': 9,
+        'oct': 10,
+        'nov': 11,
+        'dec': 12,
+    }
+
+    @classmethod
+    def _parse_http_date(cls, value: str) -> datetime.datetime:
+        """
+        Parse an HTTP-date (RFC 7231 §7.1.1.1).
+
+        Supports:
+          - IMF-fixdate:  Sun, 06 Nov 1994 08:49:37 GMT
+          - RFC 850:      Sunday, 06-Nov-94 08:49:37 GMT
+          - asctime:      Sun Nov  6 08:49:37 1994
+        """
+
+        value = value.strip()
+
+        # Try IMF-fixdate: day-name "," SP date1 SP time-of-day SP GMT
+        # date1 = day SP month SP year (4-digit)
+        if ',' in value:
+            after_comma = value.split(',', 1)[1].strip()
+            parts = after_comma.split()
+
+            if len(parts) == 3 and parts[2].upper() == 'GMT' and '-' in parts[0]:
+                # RFC 850: DD-Mon-YY HH:MM:SS GMT
+                date_pieces = parts[0].split('-')
+                if len(date_pieces) != 3:
+                    raise ValueError(f'Invalid date component: {parts[0]}')
+
+                day = int(date_pieces[0])
+                month_str = date_pieces[1].lower()
+                year_raw = int(date_pieces[2])
+
+                # Two-digit year: RFC 7231 says interpret >= 50 as 19xx, < 50 as 20xx
+                if year_raw < 100:
+                    year = year_raw + 1900 if year_raw >= 50 else year_raw + 2000
+                else:
+                    year = year_raw
+
+                time_pieces = parts[1].split(':')
+                if len(time_pieces) != 3:
+                    raise ValueError(f'Invalid time component: {parts[1]}')
+
+                hour, minute, second = int(time_pieces[0]), int(time_pieces[1]), int(time_pieces[2])
+
+                month = cls._MONTH_NAMES.get(month_str)
+                if month is None:
+                    raise ValueError(f'Invalid month: {month_str}')
+
+                return datetime.datetime(year, month, day, hour, minute, second, tzinfo=datetime.timezone.utc)  # noqa
+
+            elif len(parts) == 5 and parts[4].upper() == 'GMT':
+                # IMF-fixdate: DD Mon YYYY HH:MM:SS GMT
+                day = int(parts[0])
+                month_str = parts[1].lower()
+                year = int(parts[2])
+
+                time_pieces = parts[3].split(':')
+                if len(time_pieces) != 3:
+                    raise ValueError(f'Invalid time component: {parts[3]}')
+
+                hour, minute, second = int(time_pieces[0]), int(time_pieces[1]), int(time_pieces[2])
+
+                month = cls._MONTH_NAMES.get(month_str)
+                if month is None:
+                    raise ValueError(f'Invalid month: {month_str}')
+
+                return datetime.datetime(year, month, day, hour, minute, second, tzinfo=datetime.timezone.utc)  # noqa
+
+            raise ValueError(f'Cannot parse date: {value}')
+
+        else:
+            # asctime: Sun Nov  6 08:49:37 1994 (Strict fixed-width check)
+            # 012345678901234567890123
+            # Sun Nov  6 08:49:37 1994
+            if len(value) != 24:
+                raise ValueError(f'Invalid asctime length: {len(value)}')
+
+            month_str = value[4:7].lower()
+            # Handle the space-padded day (e.g., " 6")
+            day_str = value[8:10].replace(' ', '0')
+            day = int(day_str)
+
+            time_pieces = value[11:19].split(':')
+            if len(time_pieces) != 3:
+                raise ValueError('Invalid time component')
+            hour, minute, second = map(int, time_pieces)
+
+            year = int(value[20:24])
+            month = cls._MONTH_NAMES.get(month_str)
+            if month is None:
+                raise ValueError(f'Invalid month: {month_str}')
+
+            return datetime.datetime(year, month, day, hour, minute, second, tzinfo=datetime.timezone.utc)  # noqa
+
+    def _prepare_date(self, headers: ParsedHttpHeaders, prepared: PreparedParsedHttpHeaders) -> None:
+        if 'date' not in headers:
+            return
+
+        raw = headers['date']
+        try:
+            prepared.date = self._parse_http_date(raw)
+        except (ValueError, IndexError, OverflowError) as e:
+            raise SemanticHeaderHttpParseError(
+                code=SemanticHeaderHttpParseErrorCode.INVALID_DATE,
+                message=f'Cannot parse Date header: {e}',
+            ) from None
+
+    def _prepare_cache_control(self, headers: ParsedHttpHeaders, prepared: PreparedParsedHttpHeaders) -> None:
+        if 'cache-control' not in headers:
+            return
+
+        directives: ta.Dict[str, ta.Optional[str]] = {}
+
+        for part in self._parse_comma_list(headers['cache-control']):
+            eq_idx = part.find('=')
+            if eq_idx < 0:
+                directives[part.lower()] = None
+                continue
+
+            name = part[:eq_idx].strip().lower()
+            value = part[eq_idx + 1:].strip()
+            if value.startswith('"'):
+                try:
+                    value, _ = self._parse_quoted_string(value, 0)
+                except ValueError:
+                    raise SemanticHeaderHttpParseError(
+                        code=SemanticHeaderHttpParseErrorCode.INVALID_CACHE_CONTROL,
+                        message=f'Invalid quoted-string in Cache-Control directive: {name}',
+                    ) from None
+
+            directives[name] = value
+
+        prepared.cache_control = directives
+
+    def _prepare_accept_encoding(self, headers: ParsedHttpHeaders, prepared: PreparedParsedHttpHeaders) -> None:
+        if 'accept-encoding' not in headers:
+            return
+
+        items: ta.List[PreparedParsedHttpHeaders.AcceptEncodingItem] = []
+
+        for part in self._parse_comma_list(headers['accept-encoding']):
+            try:
+                coding, q, _ = self._split_header_element(part)
+            except ValueError:
+                raise SemanticHeaderHttpParseError(
+                    code=SemanticHeaderHttpParseErrorCode.INVALID_ACCEPT_ENCODING,
+                    message=f'Invalid q-value in Accept-Encoding: {part!r}',
+                ) from None
+
+            if coding:
+                items.append(PreparedParsedHttpHeaders.AcceptEncodingItem(
+                    coding=coding,
+                    q=q,
+                ))
+
+        prepared.accept_encoding = items
+
+    def _prepare_accept(self, headers: ParsedHttpHeaders, prepared: PreparedParsedHttpHeaders) -> None:
+        if 'accept' not in headers:
+            return
+
+        items: ta.List[PreparedParsedHttpHeaders.AcceptItem] = []
+
+        for part in self._parse_comma_list(headers['accept']):
+            try:
+                media_range, q, params = self._split_header_element(part)
+            except ValueError:
+                raise SemanticHeaderHttpParseError(
+                    code=SemanticHeaderHttpParseErrorCode.INVALID_ACCEPT,
+                    message=f'Invalid q-value in Accept: {part!r}',
+                ) from None
+
+            items.append(PreparedParsedHttpHeaders.AcceptItem(
+                media_range=media_range,
+                q=q,
+                params=params,
+            ))
+
+        prepared.accept = items
+
+    def _prepare_authorization(self, headers: ParsedHttpHeaders, prepared: PreparedParsedHttpHeaders) -> None:
+        if 'authorization' not in headers:
+            return
+
+        raw = headers['authorization'].strip()
+        if not raw:
+            raise SemanticHeaderHttpParseError(
+                code=SemanticHeaderHttpParseErrorCode.INVALID_AUTHORIZATION,
+                message='Authorization header is present but empty',
+            )
+
+        # scheme SP credentials (credentials may contain spaces for some schemes)
+        sp_idx = raw.find(' ')
+        if sp_idx < 0:
+            # Scheme only, no credentials (e.g., some edge cases)
+            prepared.authorization = PreparedParsedHttpHeaders.AuthorizationValue(
+                scheme=raw,
+                credentials='',
+            )
+        else:
+            scheme = raw[:sp_idx]
+            credentials = raw[sp_idx + 1:]
+            prepared.authorization = PreparedParsedHttpHeaders.AuthorizationValue(
+                scheme=scheme,
+                credentials=credentials,
+            )
+
+
+##
+
+
+def parse_http_message(
+        data: bytes,
+        mode: HttpParser.Mode = HttpParser.Mode.AUTO,
+        config: ta.Optional[HttpParser.Config] = None,
+) -> ParsedHttpMessage:
+    parser = HttpParser(**(dict(config=config) if config is not None else {}))
+    return parser.parse_message(data, mode=mode)
+
+
+def parse_http_trailers(
+        data: bytes,
+        config: ta.Optional[HttpParser.Config] = None,
+) -> ParsedHttpTrailers:
+    parser = HttpParser(**(dict(config=config) if config is not None else {}))
+    return parser.parse_trailers(data)
 
 
 ########################################
@@ -1220,6 +3978,572 @@ class MutableByteStreamBuffer(ByteStreamBuffer, Abstract):
         """
 
         raise NotImplementedError
+
+
+########################################
+# ../../../../omlish/logs/infos.py
+"""
+TODO:
+ - remove redundant info fields only present for std adaptation (Level.name, ...)
+"""
+
+
+##
+
+
+def logging_context_info(cls):
+    return cls
+
+
+@ta.final
+class LoggingContextInfos:
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
+
+    #
+
+    @logging_context_info
+    @ta.final
+    class Name(ta.NamedTuple):
+        name: str
+
+    @logging_context_info
+    @ta.final
+    class Level(ta.NamedTuple):
+        level: NamedLogLevel
+        name: str
+
+        @classmethod
+        def build(cls, level: int) -> 'LoggingContextInfos.Level':
+            nl: NamedLogLevel = level if level.__class__ is NamedLogLevel else NamedLogLevel(level)  # type: ignore[assignment]  # noqa
+            return cls(
+                level=nl,
+                name=logging.getLevelName(nl),
+            )
+
+    @logging_context_info
+    @ta.final
+    class Msg(ta.NamedTuple):
+        msg: str
+        args: ta.Union[tuple, ta.Mapping[ta.Any, ta.Any], None]
+
+        @classmethod
+        def build(
+                cls,
+                msg: ta.Union[str, tuple, LoggingMsgFn],
+                *args: ta.Any,
+        ) -> 'LoggingContextInfos.Msg':
+            s: str
+            a: ta.Any
+
+            if callable(msg):
+                if args:
+                    raise TypeError(f'Must not provide both a message function and args: {msg=} {args=}')
+                x = msg()
+                if isinstance(x, str):
+                    s, a = x, ()
+                elif isinstance(x, tuple):
+                    if x:
+                        s, a = x[0], x[1:]
+                    else:
+                        s, a = '', ()
+                else:
+                    raise TypeError(x)
+
+            elif isinstance(msg, tuple):
+                if args:
+                    raise TypeError(f'Must not provide both a tuple message and args: {msg=} {args=}')
+                if msg:
+                    s, a = msg[0], msg[1:]
+                else:
+                    s, a = '', ()
+
+            elif isinstance(msg, str):
+                s, a = msg, args
+
+            else:
+                raise TypeError(msg)
+
+            # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L307  # noqa
+            if a and len(a) == 1 and isinstance(a[0], collections.abc.Mapping) and a[0]:
+                a = a[0]
+
+            return cls(
+                msg=s,
+                args=a,
+            )
+
+    @logging_context_info
+    @ta.final
+    class Extra(ta.NamedTuple):
+        extra: ta.Mapping[ta.Any, ta.Any]
+
+    @logging_context_info
+    @ta.final
+    class Time(ta.NamedTuple):
+        ns: int
+        secs: float
+        msecs: float
+        relative_secs: float
+
+        @classmethod
+        def get_std_start_ns(cls) -> int:
+            x: ta.Any = logging._startTime  # type: ignore[attr-defined]  # noqa
+
+            # Before 3.13.0b1 this will be `time.time()`, a float of seconds. After that, it will be `time.time_ns()`,
+            # an int.
+            #
+            # See:
+            #  - https://github.com/python/cpython/commit/1316692e8c7c1e1f3b6639e51804f9db5ed892ea
+            #
+            if isinstance(x, float):
+                return int(x * 1e9)
+            else:
+                return x
+
+        @classmethod
+        def build(
+                cls,
+                ns: int,
+                *,
+                start_ns: ta.Optional[int] = None,
+        ) -> 'LoggingContextInfos.Time':
+            # https://github.com/python/cpython/commit/1316692e8c7c1e1f3b6639e51804f9db5ed892ea
+            secs = ns / 1e9  # ns to float seconds
+
+            # Get the number of whole milliseconds (0-999) in the fractional part of seconds.
+            # Eg: 1_677_903_920_999_998_503 ns --> 999_998_503 ns--> 999 ms
+            # Convert to float by adding 0.0 for historical reasons. See gh-89047
+            msecs = (ns % 1_000_000_000) // 1_000_000 + 0.0
+
+            # https://github.com/python/cpython/commit/1500a23f33f5a6d052ff1ef6383d9839928b8ff1
+            if msecs == 999.0 and int(secs) != ns // 1_000_000_000:
+                # ns -> sec conversion can round up, e.g:
+                # 1_677_903_920_999_999_900 ns --> 1_677_903_921.0 sec
+                msecs = 0.0
+
+            if start_ns is None:
+                start_ns = cls.get_std_start_ns()
+            relative_secs = (ns - start_ns) / 1e6
+
+            return cls(
+                ns=ns,
+                secs=secs,
+                msecs=msecs,
+                relative_secs=relative_secs,
+            )
+
+    @logging_context_info
+    @ta.final
+    class Exc(ta.NamedTuple):
+        info: LoggingExcInfo
+        info_tuple: LoggingExcInfoTuple
+
+        @classmethod
+        def build(
+                cls,
+                arg: LoggingExcInfoArg = False,
+        ) -> ta.Optional['LoggingContextInfos.Exc']:
+            if arg is True:
+                sys_exc_info = sys.exc_info()
+                if sys_exc_info[0] is not None:
+                    arg = sys_exc_info
+                else:
+                    arg = None
+            elif arg is False:
+                arg = None
+            if arg is None:
+                return None
+
+            info: LoggingExcInfo = arg
+            if isinstance(info, BaseException):
+                info_tuple: LoggingExcInfoTuple = (type(info), info, info.__traceback__)  # noqa
+            else:
+                info_tuple = info
+
+            return cls(
+                info=info,
+                info_tuple=info_tuple,
+            )
+
+    @logging_context_info
+    @ta.final
+    class Caller(ta.NamedTuple):
+        file_path: str
+        line_no: int
+        func_name: str
+        stack_info: ta.Optional[str]
+
+        @classmethod
+        def is_internal_frame(cls, frame: types.FrameType) -> bool:
+            file_path = os.path.normcase(frame.f_code.co_filename)
+
+            # Yes, really.
+            # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L204  # noqa
+            # https://github.com/python/cpython/commit/5ca6d7469be53960843df39bb900e9c3359f127f
+            if 'importlib' in file_path and '_bootstrap' in file_path:
+                return True
+
+            return False
+
+        @classmethod
+        def find_frame(cls, stack_offset: int = 0) -> ta.Optional[types.FrameType]:
+            f: ta.Optional[types.FrameType] = sys._getframe(2 + stack_offset)  # noqa
+
+            while f is not None:
+                # NOTE: We don't check __file__ like stdlib since we may be running amalgamated - we rely on careful,
+                # manual stack_offset management.
+                if hasattr(f, 'f_code'):
+                    return f
+
+                f = f.f_back
+
+            return None
+
+        @classmethod
+        def build(
+                cls,
+                stack_offset: int = 0,
+                *,
+                stack_info: bool = False,
+        ) -> ta.Optional['LoggingContextInfos.Caller']:
+            if (f := cls.find_frame(stack_offset + 1)) is None:
+                return None
+
+            # https://github.com/python/cpython/blob/08e9794517063c8cd92c48714071b1d3c60b71bd/Lib/logging/__init__.py#L1616-L1623  # noqa
+            sinfo = None
+            if stack_info:
+                sio = io.StringIO()
+                traceback.print_stack(f, file=sio)
+                sinfo = sio.getvalue()
+                sio.close()
+                if sinfo[-1] == '\n':
+                    sinfo = sinfo[:-1]
+
+            return cls(
+                file_path=f.f_code.co_filename,
+                line_no=f.f_lineno or 0,
+                func_name=f.f_code.co_name,
+                stack_info=sinfo,
+            )
+
+    @logging_context_info
+    @ta.final
+    class SourceFile(ta.NamedTuple):
+        file_name: str
+        module: str
+
+        @classmethod
+        def build(cls, caller_file_path: ta.Optional[str]) -> ta.Optional['LoggingContextInfos.SourceFile']:
+            if caller_file_path is None:
+                return None
+
+            # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L331-L336  # noqa
+            try:
+                file_name = os.path.basename(caller_file_path)
+                module = os.path.splitext(file_name)[0]
+            except (TypeError, ValueError, AttributeError):
+                return None
+
+            return cls(
+                file_name=file_name,
+                module=module,
+            )
+
+    @logging_context_info
+    @ta.final
+    class Thread(ta.NamedTuple):
+        ident: int
+        native_id: ta.Optional[int]
+        name: str
+
+        @classmethod
+        def build(cls) -> 'LoggingContextInfos.Thread':
+            return cls(
+                ident=threading.get_ident(),
+                native_id=threading.get_native_id() if hasattr(threading, 'get_native_id') else None,
+                name=threading.current_thread().name,
+            )
+
+    @logging_context_info
+    @ta.final
+    class Process(ta.NamedTuple):
+        pid: int
+
+        @classmethod
+        def build(cls) -> 'LoggingContextInfos.Process':
+            return cls(
+                pid=os.getpid(),
+            )
+
+    @logging_context_info
+    @ta.final
+    class Multiprocessing(ta.NamedTuple):
+        process_name: str
+
+        @classmethod
+        def build(cls) -> ta.Optional['LoggingContextInfos.Multiprocessing']:
+            # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L355-L364  # noqa
+            if (mp := sys.modules.get('multiprocessing')) is None:
+                return None
+
+            return cls(
+                process_name=mp.current_process().name,
+            )
+
+    @logging_context_info
+    @ta.final
+    class AsyncioTask(ta.NamedTuple):
+        name: str
+
+        @classmethod
+        def build(cls) -> ta.Optional['LoggingContextInfos.AsyncioTask']:
+            # https://github.com/python/cpython/blob/e709361fc87d0d9ab9c58033a0a7f2fef0ad43d2/Lib/logging/__init__.py#L372-L377  # noqa
+            if (asyncio := sys.modules.get('asyncio')) is None:
+                return None
+
+            try:
+                task = asyncio.current_task()
+            except Exception:  # noqa
+                return None
+
+            if task is None:
+                return None
+
+            return cls(
+                name=task.get_name(),  # Always non-None
+            )
+
+
+##
+
+
+class UnexpectedLoggingStartTimeWarning(LoggingSetupWarning):
+    pass
+
+
+def _check_logging_start_time() -> None:
+    if (x := LoggingContextInfos.Time.get_std_start_ns()) < (t := time.time()):
+        import warnings  # noqa
+
+        warnings.warn(
+            f'Unexpected logging start time detected: '
+            f'get_std_start_ns={x}, '
+            f'time.time()={t}',
+            UnexpectedLoggingStartTimeWarning,
+        )
+
+
+_check_logging_start_time()
+
+
+########################################
+# ../../../../omlish/logs/metrics/base.py
+
+
+##
+
+
+class LoggerMetricUnit(Abstract):
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        try:
+            mut = LOGGER_METRIC_UNIT_TYPES
+        except NameError:
+            pass
+        else:
+            bcs = [bc for bc in mut if issubclass(cls, bc)]
+            if len(bcs) != 1:
+                raise TypeError(f'{cls.__name__} must be a subclass of exactly one of {mut}, got {bcs}.')
+
+        try:
+            mtc = LoggerMetric
+        except NameError:
+            pass
+        else:
+            if issubclass(cls, mtc):
+                mp = cls.__mro__.index(mtc)
+                mup = cls.__mro__.index(LoggerMetricUnit)
+                if mup > mp:
+                    raise TypeError(f'{cls.__name__} must have Metric before MetricUnit in its MRO.')
+
+
+class CountLoggerMetricUnit(LoggerMetricUnit):
+    @classmethod
+    def default_value(cls) -> ta.Optional[float]:
+        return 1
+
+
+class RatioLoggerMetricUnit(LoggerMetricUnit):
+    pass
+
+
+class SecondsLoggerMetricUnit(LoggerMetricUnit):
+    pass
+
+
+class BytesLoggerMetricUnit(LoggerMetricUnit):
+    pass
+
+
+LOGGER_METRIC_UNIT_TYPES: ta.Tuple[ta.Type[LoggerMetricUnit], ...] = (
+    CountLoggerMetricUnit,
+    RatioLoggerMetricUnit,
+    SecondsLoggerMetricUnit,
+    BytesLoggerMetricUnit,
+)
+
+
+##
+
+
+class LoggerMetricTag(Abstract):
+    pass
+
+
+##
+
+
+class LoggerMetric(Abstract):
+    @ta.final
+    def __init__(self, value: ta.Optional[float] = None, *tags: LoggerMetricTag) -> None:
+        if value is None:
+            value = self.default_value()
+        if value is None:
+            raise ValueError(f'{type(self).__name__} has no default value.')
+
+        self.__value = value
+        self.__tags = tags
+
+    @property
+    def value(self) -> float:
+        return self.__value
+
+    @classmethod
+    def default_value(cls) -> ta.Optional[float]:
+        return None
+
+    @property
+    def tags(self) -> ta.Sequence[LoggerMetricTag]:
+        return self.__tags
+
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({self.value!r}, {", ".join(map(repr, self.tags))})'
+
+    def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+        super().__init_subclass__(**kwargs)
+
+        try:
+            mtt = LOGGER_METRIC_TYPES
+        except NameError:
+            pass
+        else:
+            bcs = [bc for bc in mtt if issubclass(cls, bc)]
+            if Abstract in cls.__bases__:
+                if len(bcs) > 1:
+                    raise TypeError(f'{cls.__name__} must be a subclass of at most one of {mtt}, got {bcs}.')
+            else:
+                if len(bcs) != 1:
+                    raise TypeError(f'{cls.__name__} must be a subclass of exactly one of {mtt}, got {bcs}.')
+
+        # if Abstract not in cls.__bases__ and not issubclass(cls, LoggerMetricUnit):
+        #     raise TypeError(f'{cls.__name__} must be a subclass of LoggerMetricUnit.')
+
+
+class CounterLoggerMetric(CountLoggerMetricUnit, LoggerMetric, Abstract):
+    pass
+
+
+class GaugeLoggerMetric(LoggerMetric, Abstract):
+    pass
+
+
+class HistogramLoggerMetric(LoggerMetric, Abstract):
+    pass
+
+
+LOGGER_METRIC_TYPES: ta.Tuple[ta.Type[LoggerMetric], ...] = (
+    CounterLoggerMetric,
+    GaugeLoggerMetric,
+    HistogramLoggerMetric,
+)
+
+
+##
+
+
+class AnyLoggerMetricCollector(Abstract, ta.Generic[T]):
+    @ta.final
+    def metric(self, m: LoggerMetric) -> T:
+        return self._metric(m)
+
+    @abc.abstractmethod
+    def _metric(self, m: LoggerMetric) -> T:
+        raise NotImplementedError
+
+
+class LoggerMetricCollector(AnyLoggerMetricCollector[None], Abstract):
+    @abc.abstractmethod
+    def _metric(self, m: LoggerMetric) -> None:
+        raise NotImplementedError
+
+
+class AsyncLoggerMetricCollector(AnyLoggerMetricCollector[ta.Awaitable[None]], Abstract):
+    @abc.abstractmethod
+    def _metric(self, m: LoggerMetric) -> ta.Awaitable[None]:
+        raise NotImplementedError
+
+
+##
+
+
+class AnyNopLoggerMetricCollector(AnyLoggerMetricCollector[T], Abstract):
+    pass
+
+
+class NopLoggerMetricCollector(AnyNopLoggerMetricCollector[None], LoggerMetricCollector):
+    @ta.final
+    def _metric(self, m: LoggerMetric) -> None:
+        pass
+
+
+class AsyncNopLoggerMetricCollector(AnyNopLoggerMetricCollector[ta.Awaitable[None]], AsyncLoggerMetricCollector):
+    @ta.final
+    async def _metric(self, m: LoggerMetric) -> None:
+        pass
+
+
+########################################
+# ../../../../omlish/logs/protocols.py
+
+
+##
+
+
+@ta.runtime_checkable
+class LoggerLike(ta.Protocol):
+    """Satisfied by both our Logger and stdlib logging.Logger."""
+
+    def isEnabledFor(self, level: LogLevel) -> bool: ...  # noqa
+
+    def getEffectiveLevel(self) -> LogLevel: ...  # noqa
+
+    #
+
+    def log(self, level: LogLevel, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def debug(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def info(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def warning(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def error(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def exception(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
+
+    def critical(self, msg: str, /, *args: ta.Any, **kwargs: ta.Any) -> None: ...  # noqa
 
 
 ########################################
@@ -3307,6 +6631,277 @@ class ByteStreamBuffers(NamespaceClass):
 
 
 ########################################
+# ../../../../omlish/logs/contexts.py
+
+
+##
+
+
+class LoggingContext(Abstract):
+    @abc.abstractmethod
+    def get_info(self, ty: ta.Type[LoggingContextInfoT]) -> ta.Optional[LoggingContextInfoT]:
+        raise NotImplementedError
+
+    @ta.final
+    def __getitem__(self, ty: ta.Type[LoggingContextInfoT]) -> ta.Optional[LoggingContextInfoT]:
+        return self.get_info(ty)
+
+    @ta.final
+    def must_get_info(self, ty: ta.Type[LoggingContextInfoT]) -> LoggingContextInfoT:
+        if (info := self.get_info(ty)) is None:
+            raise TypeError(f'LoggingContextInfo absent: {ty}')
+        return info
+
+
+@ta.final
+class SimpleLoggingContext(LoggingContext):
+    def __init__(self, *infos: LoggingContextInfo) -> None:
+        self._infos: ta.Dict[ta.Type[LoggingContextInfo], LoggingContextInfo] = {type(i): i for i in infos}
+
+    def get_info(self, ty: ta.Type[LoggingContextInfoT]) -> ta.Optional[LoggingContextInfoT]:
+        return self._infos.get(ty)
+
+
+##
+
+
+class CaptureLoggingContext(LoggingContext, Abstract):
+    @abc.abstractmethod
+    def set_basic(
+            self,
+            name: str,
+
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            args: tuple,
+    ) -> 'CaptureLoggingContext':
+        raise NotImplementedError
+
+    #
+
+    class AlreadyCapturedError(Exception):
+        pass
+
+    class NotCapturedError(Exception):
+        pass
+
+    @abc.abstractmethod
+    def capture(self) -> None:
+        """Must be cooperatively called only from the expected locations."""
+
+        raise NotImplementedError
+
+
+@ta.final
+class CaptureLoggingContextImpl(CaptureLoggingContext):
+    @ta.final
+    class NOT_SET:  # noqa
+        def __new__(cls, *args, **kwargs):  # noqa
+            raise TypeError
+
+    #
+
+    def __init__(
+            self,
+            level: LogLevel,
+            *,
+            time_ns: ta.Optional[int] = None,
+
+            exc_info: LoggingExcInfoArg = False,
+
+            caller: ta.Union[LoggingContextInfos.Caller, ta.Type[NOT_SET], None] = NOT_SET,
+            stack_offset: int = 0,
+            stack_info: bool = False,
+    ) -> None:
+        if time_ns is None:
+            time_ns = time.time_ns()
+
+        # Done early to not trample on sys.exc_info()
+        exc = LoggingContextInfos.Exc.build(exc_info)
+
+        self._infos: ta.Dict[ta.Type[LoggingContextInfo], LoggingContextInfo] = {}
+        self._set_info(
+            LoggingContextInfos.Level.build(level),
+            exc,
+            LoggingContextInfos.Time.build(time_ns),
+        )
+
+        if caller is not CaptureLoggingContextImpl.NOT_SET:
+            self._infos[LoggingContextInfos.Caller] = caller
+        else:
+            self._stack_offset = stack_offset
+            self._stack_info = stack_info
+
+    def _set_info(self, *infos: ta.Optional[LoggingContextInfo]) -> 'CaptureLoggingContextImpl':
+        for info in infos:
+            if info is not None:
+                self._infos[type(info)] = info
+        return self
+
+    def get_infos(self) -> ta.Mapping[ta.Type[LoggingContextInfo], LoggingContextInfo]:
+        return self._infos
+
+    def get_info(self, ty: ta.Type[LoggingContextInfoT]) -> ta.Optional[LoggingContextInfoT]:
+        return self._infos.get(ty)
+
+    ##
+
+    def set_basic(
+            self,
+            name: str,
+
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            args: tuple,
+    ) -> 'CaptureLoggingContextImpl':
+        return self._set_info(
+            LoggingContextInfos.Name(name),
+            LoggingContextInfos.Msg.build(msg, *args),
+        )
+
+    ##
+
+    _stack_offset: int
+    _stack_info: bool
+
+    def inc_stack_offset(self, ofs: int = 1) -> 'CaptureLoggingContextImpl':
+        if hasattr(self, '_stack_offset'):
+            self._stack_offset += ofs
+        return self
+
+    _has_captured: bool = False
+
+    def capture(self) -> None:
+        if self._has_captured:
+            raise CaptureLoggingContextImpl.AlreadyCapturedError
+        self._has_captured = True
+
+        if LoggingContextInfos.Caller not in self._infos:
+            self._set_info(LoggingContextInfos.Caller.build(
+                self._stack_offset + 1,
+                stack_info=self._stack_info,
+            ))
+
+        if (caller := self[LoggingContextInfos.Caller]) is not None:
+            self._set_info(LoggingContextInfos.SourceFile.build(
+                caller.file_path,
+            ))
+
+        self._set_info(
+            LoggingContextInfos.Thread.build(),
+            LoggingContextInfos.Process.build(),
+            LoggingContextInfos.Multiprocessing.build(),
+            LoggingContextInfos.AsyncioTask.build(),
+        )
+
+
+########################################
+# ../../../../omlish/logs/utils.py
+
+
+##
+
+
+def exception_logging(log, exc_cls=Exception):  # noqa
+    def outer(fn):
+        @functools.wraps(fn)
+        def inner(*args, **kwargs):
+            try:
+                return fn(*args, **kwargs)
+            except exc_cls as e:  # noqa
+                log.exception('Error in %r', fn)
+                raise
+
+        return inner
+
+    return outer
+
+
+def async_exception_logging(alog, exc_cls=Exception):  # noqa
+    def outer(fn):
+        @functools.wraps(fn)
+        async def inner(*args, **kwargs):
+            try:
+                return await fn(*args, **kwargs)
+            except exc_cls as e:  # noqa
+                await alog.exception('Error in %r', fn)
+                raise
+
+        return inner
+
+    return outer
+
+
+##
+
+
+class LogTimingContext:
+    DEFAULT_LOG: ta.ClassVar[ta.Optional[LoggerLike]] = None
+
+    class _NOT_SPECIFIED:  # noqa
+        def __new__(cls, *args, **kwargs):  # noqa
+            raise TypeError
+
+    def __init__(
+            self,
+            description: str,
+            *,
+            log: ta.Union[LoggerLike, ta.Type[_NOT_SPECIFIED], None] = _NOT_SPECIFIED,  # noqa
+            level: int = logging.DEBUG,
+    ) -> None:
+        super().__init__()
+
+        self._description = description
+        if log is self._NOT_SPECIFIED:
+            log = self.DEFAULT_LOG  # noqa
+        self._log: ta.Optional[LoggerLike] = log  # type: ignore
+        self._level = level
+
+    def set_description(self, description: str) -> 'LogTimingContext':
+        self._description = description
+        return self
+
+    _begin_time: float
+    _end_time: float
+
+    def __enter__(self) -> 'LogTimingContext':
+        self._begin_time = time.time()
+
+        if self._log is not None:
+            self._log.log(self._level, f'Begin : {self._description}')  # noqa
+
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._end_time = time.time()
+
+        if self._log is not None:
+            self._log.log(
+                self._level,
+                f'End : {self._description} - {self._end_time - self._begin_time:0.2f} s elapsed',
+            )
+
+
+log_timing_context = LogTimingContext
+
+
+########################################
+# ../asyncs.py
+
+
+##
+
+
+class AsyncChannelPipelineMessages(NamespaceClass):
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class Await(
+        ChannelPipelineMessages.Completable[T],
+        ChannelPipelineMessages.NeverInbound,
+        ta.Generic[T],
+    ):
+        obj: ta.Awaitable[T]
+
+
+########################################
 # ../bytes/buffering.py
 
 
@@ -3643,6 +7238,105 @@ class DuplexQueueChannelPipelineHandler(
 
 
 ########################################
+# ../http/objects.py
+
+
+##
+
+
+class PipelineHttpMessageObject(Abstract):
+    pass
+
+
+class PipelineHttpMessageHead(PipelineHttpMessageObject, Abstract):
+    @property
+    @abc.abstractmethod
+    def headers(self) -> HttpHeaders:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def parsed(self) -> ta.Optional[ParsedHttpMessage]:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def version(self) -> HttpVersion:
+        raise NotImplementedError
+
+
+class FullPipelineHttpMessage(PipelineHttpMessageObject, Abstract):
+    @property
+    @abc.abstractmethod
+    def head(self) -> PipelineHttpMessageHead:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def body(self) -> BytesLikeOrMemoryview:
+        raise NotImplementedError
+
+
+@dc.dataclass(frozen=True)
+class PipelineHttpMessageContentChunkData(PipelineHttpMessageObject, Abstract):
+    data: BytesLikeOrMemoryview
+
+
+@dc.dataclass(frozen=True)
+class PipelineHttpMessageEnd(PipelineHttpMessageObject, Abstract):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class PipelineHttpMessageAborted(PipelineHttpMessageObject, Abstract):
+    reason: str
+
+
+##
+
+
+def _un_abstract_pipeline_http_object_classes() -> None:
+    # So this is regrettable, but I think the benefits of having the base objects be actual dataclasses outweighs the
+    # gnarliness here.
+    for cls in [PipelineHttpMessageHead, FullPipelineHttpMessage]:
+        atts = {a for a in cls.__dict__ if not a.startswith('_')}
+        for att in atts:
+            delattr(cls, att)
+        ams = check.isinstance(getattr(cls, '__abstractmethods__'), frozenset)
+        setattr(cls, '__abstractmethods__', ams - atts)
+
+
+_un_abstract_pipeline_http_object_classes()
+
+
+########################################
+# ../sched/types.py
+
+
+##
+
+
+class ChannelPipelineScheduling(ChannelPipelineService, Abstract):
+    class Handle(Abstract):
+        @abc.abstractmethod
+        def cancel(self) -> None:
+            raise NotImplementedError
+
+    @abc.abstractmethod
+    def schedule(
+            self,
+            handler_ref: ChannelPipelineHandlerRef,
+            delay_s: float,
+            fn: ta.Callable[[], None],
+    ) -> Handle:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def cancel_all(self, handler_ref: ta.Optional[ChannelPipelineHandlerRef] = None) -> None:
+        raise NotImplementedError
+
+
+########################################
 # ../../../../omlish/io/streams/direct.py
 
 
@@ -3921,6 +7615,974 @@ class ScanningByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer
                 self._scan_from_by_sub.pop(k, None)
             else:
                 self._scan_from_by_sub[k] = nv
+
+
+########################################
+# ../../../../omlish/logs/base.py
+
+
+##
+
+
+class AnyLogger(AnyLoggerMetricCollector[T], Abstract, ta.Generic[T]):
+    def is_enabled_for(self, level: LogLevel) -> bool:
+        return level >= self.get_effective_level()
+
+    @abc.abstractmethod
+    def get_effective_level(self) -> LogLevel:
+        raise NotImplementedError
+
+    #
+
+    @ta.final
+    def isEnabledFor(self, level: LogLevel) -> bool:  # noqa
+        return self.is_enabled_for(level)
+
+    @ta.final
+    def getEffectiveLevel(self) -> LogLevel:  # noqa
+        return self.get_effective_level()
+
+    ##
+
+    # This will be 1 for [Sync]Logger and 0 for AsyncLogger - in sync loggers these methods remain present on the stack,
+    # in async loggers they return a coroutine to be awaited and thus aren't actually present when said coroutine is
+    # awaited.
+    _level_proxy_method_stack_offset: int
+
+    @ta.overload
+    def log(self, level: LogLevel, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def log(self, level: LogLevel, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def log(self, level: LogLevel, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.final
+    def log(self, level: LogLevel, *args, **kwargs):
+        return self._log(
+            CaptureLoggingContextImpl(
+                level,
+                stack_offset=self._level_proxy_method_stack_offset,
+            ),
+            *args,
+            **kwargs,
+        )
+
+    #
+
+    @ta.overload
+    def debug(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def debug(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def debug(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.final
+    def debug(self, *args, **kwargs):
+        return self._log(
+            CaptureLoggingContextImpl(
+                NamedLogLevel.DEBUG,
+                stack_offset=self._level_proxy_method_stack_offset,
+            ),
+            *args,
+            **kwargs,
+        )
+
+    #
+
+    @ta.overload
+    def info(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def info(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def info(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.final
+    def info(self, *args, **kwargs):
+        return self._log(
+            CaptureLoggingContextImpl(
+                NamedLogLevel.INFO,
+                stack_offset=self._level_proxy_method_stack_offset,
+            ),
+            *args,
+            **kwargs,
+        )
+
+    #
+
+    @ta.overload
+    def warning(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def warning(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def warning(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.final
+    def warning(self, *args, **kwargs):
+        return self._log(
+            CaptureLoggingContextImpl(
+                NamedLogLevel.WARNING,
+                stack_offset=self._level_proxy_method_stack_offset,
+            ),
+            *args,
+            **kwargs,
+        )
+
+    #
+
+    @ta.overload
+    def error(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def error(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def error(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.final
+    def error(self, *args, **kwargs):
+        return self._log(
+            CaptureLoggingContextImpl(
+                NamedLogLevel.ERROR,
+                stack_offset=self._level_proxy_method_stack_offset,
+            ),
+            *args,
+            **kwargs,
+        )
+
+    #
+
+    @ta.overload
+    def exception(self, exc: BaseException, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def exception(self, *, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def exception(self, msg: str, *args: ta.Any, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def exception(self, msg: ta.Tuple[ta.Any, ...], *, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def exception(self, msg_fn: LoggingMsgFn, *, exc_info: LoggingExcInfoArg = True, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.final
+    def exception(self, *args, exc_info=True, **kwargs):
+        if not args:
+            if not exc_info:
+                raise TypeError('exc_info=False is not allowed when no args are passed')
+            args = ((),)
+        elif len(args) == 1:
+            if isinstance(arg0 := args[0], BaseException):
+                if exc_info is not True:  # noqa
+                    raise TypeError(f'exc_info={exc_info!r} is not allowed when exc={arg0!r} is passed')
+            args, exc_info = ((),), arg0
+
+        return self._log(
+            CaptureLoggingContextImpl(
+                NamedLogLevel.ERROR,
+                exc_info=exc_info,
+                stack_offset=self._level_proxy_method_stack_offset,
+            ),
+            *args,
+            **kwargs,
+        )
+
+    #
+
+    @ta.overload
+    def critical(self, msg: str, *args: ta.Any, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def critical(self, msg: ta.Tuple[ta.Any, ...], **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.overload
+    def critical(self, msg_fn: LoggingMsgFn, **kwargs: ta.Any) -> T:
+        ...
+
+    @ta.final
+    def critical(self, *args, **kwargs):
+        return self._log(
+            CaptureLoggingContextImpl(
+                NamedLogLevel.CRITICAL,
+                stack_offset=self._level_proxy_method_stack_offset,
+            ),
+            *args,
+            **kwargs,
+        )
+
+    #
+
+    @abc.abstractmethod
+    def _log(
+            self,
+            ctx: CaptureLoggingContext,
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> T:
+        raise NotImplementedError
+
+
+class Logger(LoggerMetricCollector, AnyLogger[None], Abstract):
+    _level_proxy_method_stack_offset: int = 1
+
+    @abc.abstractmethod
+    def _log(
+            self,
+            ctx: CaptureLoggingContext,
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> None:
+        raise NotImplementedError
+
+    #
+
+    @abc.abstractmethod
+    def _metric(self, m: LoggerMetric) -> None:
+        raise NotImplementedError
+
+
+class AsyncLogger(AsyncLoggerMetricCollector, AnyLogger[ta.Awaitable[None]], Abstract):
+    _level_proxy_method_stack_offset: int = 0
+
+    @abc.abstractmethod
+    def _log(
+            self,
+            ctx: CaptureLoggingContext,
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> ta.Awaitable[None]:
+        raise NotImplementedError
+
+    #
+
+    @abc.abstractmethod
+    def _metric(self, m: LoggerMetric) -> ta.Awaitable[None]:
+        raise NotImplementedError
+
+
+##
+
+
+class AnyNopLogger(AnyNopLoggerMetricCollector[T], AnyLogger[T], Abstract):
+    @ta.final
+    def get_effective_level(self) -> LogLevel:
+        return -999
+
+
+class NopLogger(NopLoggerMetricCollector, AnyNopLogger[None], Logger):
+    @ta.final
+    def _log(
+            self,
+            ctx: CaptureLoggingContext,
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> None:
+        pass
+
+
+class AsyncNopLogger(AsyncNopLoggerMetricCollector, AnyNopLogger[ta.Awaitable[None]], AsyncLogger):
+    @ta.final
+    async def _log(
+            self,
+            ctx: CaptureLoggingContext,
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> None:
+        pass
+
+
+########################################
+# ../../../../omlish/logs/std/records.py
+"""
+TODO:
+ - TypedDict?
+"""
+
+
+##
+
+
+class LoggingContextInfoRecordAdapters:
+    # Ref:
+    #  - https://docs.python.org/3/library/logging.html#logrecord-attributes
+    #
+    # LogRecord:
+    #  - https://github.com/python/cpython/blob/39b2f82717a69dde7212bc39b673b0f55c99e6a3/Lib/logging/__init__.py#L276 (3.8)  # noqa
+    #  - https://github.com/python/cpython/blob/f070f54c5f4a42c7c61d1d5d3b8f3b7203b4a0fb/Lib/logging/__init__.py#L286 (~3.14)  # noqa
+    #
+
+    def __new__(cls, *args, **kwargs):  # noqa
+        raise TypeError
+
+    class Adapter(Abstract, ta.Generic[T]):
+        @property
+        @abc.abstractmethod
+        def info_cls(self) -> ta.Type[LoggingContextInfo]:
+            raise NotImplementedError
+
+        #
+
+        @ta.final
+        class NOT_SET:  # noqa
+            def __new__(cls, *args, **kwargs):  # noqa
+                raise TypeError
+
+        class RecordAttr(ta.NamedTuple):
+            name: str
+            type: ta.Any
+            default: ta.Any
+
+        # @abc.abstractmethod
+        record_attrs: ta.ClassVar[ta.Mapping[str, RecordAttr]]
+
+        @property
+        @abc.abstractmethod
+        def _record_attrs(self) -> ta.Union[
+            ta.Mapping[str, ta.Any],
+            ta.Mapping[str, ta.Tuple[ta.Any, ta.Any]],
+        ]:
+            raise NotImplementedError
+
+        #
+
+        @abc.abstractmethod
+        def context_to_record(self, ctx: LoggingContext) -> ta.Mapping[str, ta.Any]:
+            raise NotImplementedError
+
+        #
+
+        @abc.abstractmethod
+        def record_to_info(self, rec: logging.LogRecord) -> ta.Optional[T]:
+            raise NotImplementedError
+
+        #
+
+        def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+            super().__init_subclass__(**kwargs)
+
+            if Abstract in cls.__bases__:
+                return
+
+            if 'record_attrs' in cls.__dict__:
+                raise TypeError(cls)
+            if not isinstance(ra := cls.__dict__['_record_attrs'], collections.abc.Mapping):
+                raise TypeError(ra)
+
+            rd: ta.Dict[str, LoggingContextInfoRecordAdapters.Adapter.RecordAttr] = {}
+            for n, v in ra.items():
+                if not n or not isinstance(n, str) or n in rd:
+                    raise AttributeError(n)
+                if isinstance(v, tuple):
+                    t, d = v
+                else:
+                    t, d = v, cls.NOT_SET
+                rd[n] = cls.RecordAttr(
+                    name=n,
+                    type=t,
+                    default=d,
+                )
+            cls.record_attrs = rd
+
+    class RequiredAdapter(Adapter[T], Abstract):
+        @property
+        @abc.abstractmethod
+        def _record_attrs(self) -> ta.Mapping[str, ta.Any]:
+            raise NotImplementedError
+
+        #
+
+        @ta.final
+        def context_to_record(self, ctx: LoggingContext) -> ta.Mapping[str, ta.Any]:
+            if (info := ctx.get_info(self.info_cls)) is not None:
+                return self._info_to_record(info)
+            else:
+                raise TypeError  # FIXME: fallback?
+
+        @abc.abstractmethod
+        def _info_to_record(self, info: T) -> ta.Mapping[str, ta.Any]:
+            raise NotImplementedError
+
+        #
+
+        @abc.abstractmethod
+        def record_to_info(self, rec: logging.LogRecord) -> T:
+            raise NotImplementedError
+
+        #
+
+        def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+            super().__init_subclass__(**kwargs)
+
+            if any(a.default is not cls.NOT_SET for a in cls.record_attrs.values()):
+                raise TypeError(cls.record_attrs)
+
+    class OptionalAdapter(Adapter[T], Abstract, ta.Generic[T]):
+        @property
+        @abc.abstractmethod
+        def _record_attrs(self) -> ta.Mapping[str, ta.Tuple[ta.Any, ta.Any]]:
+            raise NotImplementedError
+
+        record_defaults: ta.ClassVar[ta.Mapping[str, ta.Any]]
+
+        #
+
+        @ta.final
+        def context_to_record(self, ctx: LoggingContext) -> ta.Mapping[str, ta.Any]:
+            if (info := ctx.get_info(self.info_cls)) is not None:
+                return self._info_to_record(info)
+            else:
+                return self.record_defaults
+
+        @abc.abstractmethod
+        def _info_to_record(self, info: T) -> ta.Mapping[str, ta.Any]:
+            raise NotImplementedError
+
+        #
+
+        def __init_subclass__(cls, **kwargs: ta.Any) -> None:
+            super().__init_subclass__(**kwargs)
+
+            dd: ta.Dict[str, ta.Any] = {a.name: a.default for a in cls.record_attrs.values()}
+            if any(d is cls.NOT_SET for d in dd.values()):
+                raise TypeError(cls.record_attrs)
+            cls.record_defaults = dd
+
+    #
+
+    class Name(RequiredAdapter[LoggingContextInfos.Name]):
+        info_cls: ta.ClassVar[ta.Type[LoggingContextInfos.Name]] = LoggingContextInfos.Name
+
+        _record_attrs: ta.ClassVar[ta.Mapping[str, ta.Any]] = dict(
+            # Name of the logger used to log the call. Unmodified by ctor.
+            name=str,
+        )
+
+        def _info_to_record(self, info: LoggingContextInfos.Name) -> ta.Mapping[str, ta.Any]:
+            return dict(
+                name=info.name,
+            )
+
+        def record_to_info(self, rec: logging.LogRecord) -> LoggingContextInfos.Name:
+            return LoggingContextInfos.Name(
+                name=rec.name,
+            )
+
+    class Level(RequiredAdapter[LoggingContextInfos.Level]):
+        info_cls: ta.ClassVar[ta.Type[LoggingContextInfos.Level]] = LoggingContextInfos.Level
+
+        _record_attrs: ta.ClassVar[ta.Mapping[str, ta.Any]] = dict(
+            # Text logging level for the message ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'). Set to
+            # `getLevelName(level)`.
+            levelname=str,
+
+            # Numeric logging level for the message (DEBUG, INFO, WARNING, ERROR, CRITICAL). Unmodified by ctor.
+            levelno=int,
+        )
+
+        def _info_to_record(self, info: LoggingContextInfos.Level) -> ta.Mapping[str, ta.Any]:
+            return dict(
+                levelname=info.name,
+                levelno=int(info.level),
+            )
+
+        def record_to_info(self, rec: logging.LogRecord) -> LoggingContextInfos.Level:
+            return LoggingContextInfos.Level.build(rec.levelno)
+
+    class Msg(RequiredAdapter[LoggingContextInfos.Msg]):
+        info_cls: ta.ClassVar[ta.Type[LoggingContextInfos.Msg]] = LoggingContextInfos.Msg
+
+        _record_attrs: ta.ClassVar[ta.Mapping[str, ta.Any]] = dict(
+            # The format string passed in the original logging call. Merged with args to produce message, or an
+            # arbitrary object (see Using arbitrary objects as messages). Unmodified by ctor.
+            msg=str,
+
+            # The tuple of arguments merged into msg to produce message, or a dict whose values are used for the merge
+            # (when there is only one argument, and it is a dictionary). Ctor will transform a 1-tuple containing a
+            # Mapping into just the mapping, but is otherwise unmodified.
+            args=ta.Union[tuple, dict, None],
+        )
+
+        def _info_to_record(self, info: LoggingContextInfos.Msg) -> ta.Mapping[str, ta.Any]:
+            return dict(
+                msg=info.msg,
+                args=info.args,
+            )
+
+        def record_to_info(self, rec: logging.LogRecord) -> LoggingContextInfos.Msg:
+            return LoggingContextInfos.Msg(
+                msg=rec.msg,
+                args=rec.args,
+            )
+
+    class Time(RequiredAdapter[LoggingContextInfos.Time]):
+        info_cls: ta.ClassVar[ta.Type[LoggingContextInfos.Time]] = LoggingContextInfos.Time
+
+        _record_attrs: ta.ClassVar[ta.Mapping[str, ta.Any]] = dict(
+            # Time when the LogRecord was created. Set to `time.time_ns() / 1e9` for >=3.13.0b1, otherwise simply
+            # `time.time()`.
+            #
+            # See:
+            #  - https://github.com/python/cpython/commit/1316692e8c7c1e1f3b6639e51804f9db5ed892ea
+            #  - https://github.com/python/cpython/commit/1500a23f33f5a6d052ff1ef6383d9839928b8ff1
+            #
+            created=float,
+
+            # Millisecond portion of the time when the LogRecord was created.
+            msecs=float,
+
+            # Time in milliseconds when the LogRecord was created, relative to the time the logging module was loaded.
+            relativeCreated=float,
+        )
+
+        def _info_to_record(self, info: LoggingContextInfos.Time) -> ta.Mapping[str, ta.Any]:
+            return dict(
+                created=info.secs,
+                msecs=info.msecs,
+                relativeCreated=info.relative_secs,
+            )
+
+        def record_to_info(self, rec: logging.LogRecord) -> LoggingContextInfos.Time:
+            return LoggingContextInfos.Time.build(
+                int(rec.created * 1e9),
+            )
+
+    class Exc(OptionalAdapter[LoggingContextInfos.Exc]):
+        info_cls: ta.ClassVar[ta.Type[LoggingContextInfos.Exc]] = LoggingContextInfos.Exc
+
+        _record_attrs: ta.ClassVar[ta.Mapping[str, ta.Tuple[ta.Any, ta.Any]]] = dict(
+            # Exception tuple (à la sys.exc_info) or, if no exception has occurred, None. Unmodified by ctor.
+            exc_info=(ta.Optional[LoggingExcInfoTuple], None),
+
+            # Used to cache the traceback text. Simply set to None by ctor, later set by Formatter.format.
+            exc_text=(ta.Optional[str], None),
+        )
+
+        def _info_to_record(self, info: LoggingContextInfos.Exc) -> ta.Mapping[str, ta.Any]:
+            return dict(
+                exc_info=info.info_tuple,
+                exc_text=None,
+            )
+
+        def record_to_info(self, rec: logging.LogRecord) -> ta.Optional[LoggingContextInfos.Exc]:
+            # FIXME:
+            # error: Argument 1 to "build" of "Exc" has incompatible type
+            # "tuple[type[BaseException], BaseException, TracebackType | None] | tuple[None, None, None] | None"; expected  # noqa
+            # "BaseException | tuple[type[BaseException], BaseException, TracebackType | None] | bool | None"  [arg-type]  # noqa
+            return LoggingContextInfos.Exc.build(rec.exc_info)  # type: ignore[arg-type]
+
+    class Caller(OptionalAdapter[LoggingContextInfos.Caller]):
+        info_cls: ta.ClassVar[ta.Type[LoggingContextInfos.Caller]] = LoggingContextInfos.Caller
+
+        _UNKNOWN_PATH_NAME: ta.ClassVar[str] = '(unknown file)'
+        _UNKNOWN_FUNC_NAME: ta.ClassVar[str] = '(unknown function)'
+
+        _STACK_INFO_PREFIX: ta.ClassVar[str] = 'Stack (most recent call last):\n'
+
+        _record_attrs: ta.ClassVar[ta.Mapping[str, ta.Tuple[ta.Any, ta.Any]]] = dict(
+            # Full pathname of the source file where the logging call was issued (if available). Unmodified by ctor. May
+            # default to "(unknown file)" by Logger.findCaller / Logger._log.
+            pathname=(str, _UNKNOWN_PATH_NAME),
+
+            # Source line number where the logging call was issued (if available). Unmodified by ctor. May default to 0
+            # by Logger.findCaller / Logger._log.
+            lineno=(int, 0),
+
+            # Name of function containing the logging call. Set by ctor to `func` arg, unmodified. May default to
+            # "(unknown function)" by Logger.findCaller / Logger._log.
+            funcName=(str, _UNKNOWN_FUNC_NAME),
+
+            # Stack frame information (where available) from the bottom of the stack in the current thread, up to and
+            # including the stack frame of the logging call which resulted in the creation of this record. Set by ctor
+            # to `sinfo` arg, unmodified. Mostly set, if requested, by `Logger.findCaller`, to
+            # `traceback.print_stack(f)`, but prepended with the literal "Stack (most recent call last):\n", and
+            # stripped of exactly one trailing `\n` if present.
+            stack_info=(ta.Optional[str], None),
+        )
+
+        def _info_to_record(self, caller: LoggingContextInfos.Caller) -> ta.Mapping[str, ta.Any]:
+            if (sinfo := caller.stack_info) is not None:
+                stack_info: ta.Optional[str] = '\n'.join([
+                    self._STACK_INFO_PREFIX,
+                    sinfo[1:] if sinfo.endswith('\n') else sinfo,
+                ])
+            else:
+                stack_info = None
+
+            return dict(
+                pathname=caller.file_path,
+
+                lineno=caller.line_no,
+                funcName=caller.func_name,
+
+                stack_info=stack_info,
+            )
+
+        def record_to_info(self, rec: logging.LogRecord) -> ta.Optional[LoggingContextInfos.Caller]:
+            # FIXME: piecemeal?
+            if (
+                    rec.pathname != self._UNKNOWN_PATH_NAME and
+                    rec.lineno != 0 and
+                    rec.funcName != self._UNKNOWN_FUNC_NAME
+            ):
+                if (sinfo := rec.stack_info) is not None and sinfo.startswith(self._STACK_INFO_PREFIX):
+                    sinfo = sinfo[len(self._STACK_INFO_PREFIX):]
+                return LoggingContextInfos.Caller(
+                    file_path=rec.pathname,
+
+                    line_no=rec.lineno,
+                    func_name=rec.funcName,
+
+                    stack_info=sinfo,
+                )
+
+            return None
+
+    class SourceFile(Adapter[LoggingContextInfos.SourceFile]):
+        info_cls: ta.ClassVar[ta.Type[LoggingContextInfos.SourceFile]] = LoggingContextInfos.SourceFile
+
+        _record_attrs: ta.ClassVar[ta.Mapping[str, ta.Any]] = dict(
+            # Filename portion of pathname. Set to `os.path.basename(pathname)` if successful, otherwise defaults to
+            # pathname.
+            filename=str,
+
+            # Module (name portion of filename). Set to `os.path.splitext(filename)[0]`, otherwise defaults to
+            # "Unknown module".
+            module=str,
+        )
+
+        _UNKNOWN_MODULE: ta.ClassVar[str] = 'Unknown module'
+
+        def context_to_record(self, ctx: LoggingContext) -> ta.Mapping[str, ta.Any]:
+            if (info := ctx.get_info(LoggingContextInfos.SourceFile)) is not None:
+                return dict(
+                    filename=info.file_name,
+                    module=info.module,
+                )
+
+            if (caller := ctx.get_info(LoggingContextInfos.Caller)) is not None:
+                return dict(
+                    filename=caller.file_path,
+                    module=self._UNKNOWN_MODULE,
+                )
+
+            return dict(
+                filename=LoggingContextInfoRecordAdapters.Caller._UNKNOWN_PATH_NAME,  # noqa
+                module=self._UNKNOWN_MODULE,
+            )
+
+        def record_to_info(self, rec: logging.LogRecord) -> ta.Optional[LoggingContextInfos.SourceFile]:
+            if (
+                    rec.module is not None and
+                    rec.module != self._UNKNOWN_MODULE
+            ):
+                return LoggingContextInfos.SourceFile(
+                    file_name=rec.filename,
+                    module=rec.module,  # FIXME: piecemeal?
+                )
+
+            return None
+
+    class Thread(OptionalAdapter[LoggingContextInfos.Thread]):
+        info_cls: ta.ClassVar[ta.Type[LoggingContextInfos.Thread]] = LoggingContextInfos.Thread
+
+        _record_attrs: ta.ClassVar[ta.Mapping[str, ta.Tuple[ta.Any, ta.Any]]] = dict(
+            # Thread ID if available, and `logging.logThreads` is truthy.
+            thread=(ta.Optional[int], None),
+
+            # Thread name if available, and `logging.logThreads` is truthy.
+            threadName=(ta.Optional[str], None),
+        )
+
+        def _info_to_record(self, info: LoggingContextInfos.Thread) -> ta.Mapping[str, ta.Any]:
+            if logging.logThreads:
+                return dict(
+                    thread=info.ident,
+                    threadName=info.name,
+                )
+
+            return self.record_defaults
+
+        def record_to_info(self, rec: logging.LogRecord) -> ta.Optional[LoggingContextInfos.Thread]:
+            if (
+                    (ident := rec.thread) is not None and
+                    (name := rec.threadName) is not None
+            ):
+                return LoggingContextInfos.Thread(
+                    ident=ident,
+                    native_id=None,
+                    name=name,
+                )
+
+            return None
+
+    class Process(OptionalAdapter[LoggingContextInfos.Process]):
+        info_cls: ta.ClassVar[ta.Type[LoggingContextInfos.Process]] = LoggingContextInfos.Process
+
+        _record_attrs: ta.ClassVar[ta.Mapping[str, ta.Tuple[ta.Any, ta.Any]]] = dict(
+            # Process ID if available - that is, if `hasattr(os, 'getpid')` - and `logging.logProcesses` is truthy,
+            # otherwise None.
+            process=(ta.Optional[int], None),
+        )
+
+        def _info_to_record(self, info: LoggingContextInfos.Process) -> ta.Mapping[str, ta.Any]:
+            if logging.logProcesses:
+                return dict(
+                    process=info.pid,
+                )
+
+            return self.record_defaults
+
+        def record_to_info(self, rec: logging.LogRecord) -> ta.Optional[LoggingContextInfos.Process]:
+            if (
+                    (pid := rec.process) is not None
+            ):
+                return LoggingContextInfos.Process(
+                    pid=pid,
+                )
+
+            return None
+
+    class Multiprocessing(OptionalAdapter[LoggingContextInfos.Multiprocessing]):
+        info_cls: ta.ClassVar[ta.Type[LoggingContextInfos.Multiprocessing]] = LoggingContextInfos.Multiprocessing
+
+        _record_attrs: ta.ClassVar[ta.Mapping[str, ta.Tuple[ta.Any, ta.Any]]] = dict(
+            # Process name if available. Set to None if `logging.logMultiprocessing` is not truthy. Otherwise, set to
+            # 'MainProcess', then `sys.modules.get('multiprocessing').current_process().name` if that works, otherwise
+            # remains as 'MainProcess'.
+            #
+            # As noted by stdlib:
+            #
+            #   Errors may occur if multiprocessing has not finished loading yet - e.g. if a custom import hook causes
+            #   third-party code to run when multiprocessing calls import. See issue 8200 for an example
+            #
+            processName=(ta.Optional[str], None),
+        )
+
+        def _info_to_record(self, info: LoggingContextInfos.Multiprocessing) -> ta.Mapping[str, ta.Any]:
+            if logging.logMultiprocessing:
+                return dict(
+                    processName=info.process_name,
+                )
+
+            return self.record_defaults
+
+        def record_to_info(self, rec: logging.LogRecord) -> ta.Optional[LoggingContextInfos.Multiprocessing]:
+            if (
+                    (process_name := rec.processName) is not None
+            ):
+                return LoggingContextInfos.Multiprocessing(
+                    process_name=process_name,
+                )
+
+            return None
+
+    class AsyncioTask(OptionalAdapter[LoggingContextInfos.AsyncioTask]):
+        info_cls: ta.ClassVar[ta.Type[LoggingContextInfos.AsyncioTask]] = LoggingContextInfos.AsyncioTask
+
+        _record_attrs: ta.ClassVar[ta.Mapping[str, ta.Union[ta.Any, ta.Tuple[ta.Any, ta.Any]]]] = dict(
+            # Absent <3.12, otherwise asyncio.Task name if available, and `logging.logAsyncioTasks` is truthy. Set to
+            # `sys.modules.get('asyncio').current_task().get_name()`, otherwise None.
+            taskName=(ta.Optional[str], None),
+        )
+
+        def _info_to_record(self, info: LoggingContextInfos.AsyncioTask) -> ta.Mapping[str, ta.Any]:
+            if getattr(logging, 'logAsyncioTasks', None):  # Absent <3.12
+                return dict(
+                    taskName=info.name,
+                )
+
+            return self.record_defaults
+
+        def record_to_info(self, rec: logging.LogRecord) -> ta.Optional[LoggingContextInfos.AsyncioTask]:
+            if (
+                    (name := getattr(rec, 'taskName', None)) is not None
+            ):
+                return LoggingContextInfos.AsyncioTask(
+                    name=name,
+                )
+
+            return None
+
+
+_LOGGING_CONTEXT_INFO_RECORD_ADAPTERS_: ta.Sequence[LoggingContextInfoRecordAdapters.Adapter] = [  # noqa
+    LoggingContextInfoRecordAdapters.Name(),
+    LoggingContextInfoRecordAdapters.Level(),
+    LoggingContextInfoRecordAdapters.Msg(),
+    LoggingContextInfoRecordAdapters.Time(),
+    LoggingContextInfoRecordAdapters.Exc(),
+    LoggingContextInfoRecordAdapters.Caller(),
+    LoggingContextInfoRecordAdapters.SourceFile(),
+    LoggingContextInfoRecordAdapters.Thread(),
+    LoggingContextInfoRecordAdapters.Process(),
+    LoggingContextInfoRecordAdapters.Multiprocessing(),
+    LoggingContextInfoRecordAdapters.AsyncioTask(),
+]
+
+_LOGGING_CONTEXT_INFO_RECORD_ADAPTERS: ta.Mapping[ta.Type[LoggingContextInfo], LoggingContextInfoRecordAdapters.Adapter] = {  # noqa
+    ad.info_cls: ad for ad in _LOGGING_CONTEXT_INFO_RECORD_ADAPTERS_
+}
+
+
+##
+
+
+# Formatter:
+#  - https://github.com/python/cpython/blob/39b2f82717a69dde7212bc39b673b0f55c99e6a3/Lib/logging/__init__.py#L514 (3.8)
+#  - https://github.com/python/cpython/blob/f070f54c5f4a42c7c61d1d5d3b8f3b7203b4a0fb/Lib/logging/__init__.py#L554 (~3.14)  # noqa
+#
+_KNOWN_STD_LOGGING_FORMATTER_RECORD_ATTRS: ta.Dict[str, ta.Any] = dict(
+    # The logged message, computed as msg % args. Set to `record.getMessage()`.
+    message=str,
+
+    # Human-readable time when the LogRecord was created. By default this is of the form '2003-07-08 16:49:45,896' (the
+    # numbers after the comma are millisecond portion of the time). Set to `self.formatTime(record, self.datefmt)` if
+    # `self.usesTime()`, otherwise unset.
+    asctime=str,
+
+    # Used to cache the traceback text. If unset (falsey) on the record and `exc_info` is truthy, set to
+    # `self.formatException(record.exc_info)` - otherwise unmodified.
+    exc_text=ta.Optional[str],
+)
+
+
+##
+
+
+_KNOWN_STD_LOGGING_RECORD_ATTR_SET: ta.FrozenSet[str] = frozenset(
+    a for ad in _LOGGING_CONTEXT_INFO_RECORD_ADAPTERS.values() for a in ad.record_attrs
+)
+
+_KNOWN_STD_LOGGING_FORMATTER_RECORD_ATTR_SET: ta.FrozenSet[str] = frozenset(_KNOWN_STD_LOGGING_FORMATTER_RECORD_ATTRS)
+
+
+class UnknownStdLoggingRecordAttrsWarning(LoggingSetupWarning):
+    pass
+
+
+def _check_std_logging_record_attrs() -> None:
+    if (
+            len([a for ad in _LOGGING_CONTEXT_INFO_RECORD_ADAPTERS.values() for a in ad.record_attrs]) !=
+            len(_KNOWN_STD_LOGGING_RECORD_ATTR_SET)
+    ):
+        raise RuntimeError('Duplicate LoggingContextInfoRecordAdapter record attrs')
+
+    rec_dct = dict(logging.makeLogRecord({}).__dict__)
+
+    if (unk_rec_fields := frozenset(rec_dct) - _KNOWN_STD_LOGGING_RECORD_ATTR_SET):
+        import warnings  # noqa
+
+        warnings.warn(
+            f'Unknown log record attrs detected: {sorted(unk_rec_fields)!r}',
+            UnknownStdLoggingRecordAttrsWarning,
+        )
+
+
+_check_std_logging_record_attrs()
+
+
+##
+
+
+class LoggingContextLogRecord(logging.LogRecord):
+    # LogRecord.__init__ args:
+    #  - name: str
+    #  - level: int
+    #  - pathname: str - Confusingly referred to as `fn` before the LogRecord ctor. May be empty or "(unknown file)".
+    #  - lineno: int - May be 0.
+    #  - msg: str
+    #  - args: tuple | dict | 1-tuple[dict]
+    #  - exc_info: LoggingExcInfoTuple | None
+    #  - func: str | None = None -> funcName
+    #  - sinfo: str | None = None -> stack_info
+    #
+
+    def __init__(self, *, _logging_context: LoggingContext) -> None:  # noqa
+        self.__dict__.update(_logging_context=_logging_context)
+
+        for ad in _LOGGING_CONTEXT_INFO_RECORD_ADAPTERS_:
+            self.__dict__.update(ad.context_to_record(_logging_context))
+
+    _logging_context: LoggingContext
+
+    # FIXME: track extra
+    # def __setattr__(self, key, value):
+    #     super().__setattr__(key, value)
+
+
+##
+
+
+@ta.final
+class LogRecordLoggingContext(LoggingContext):
+    def __init__(self, rec: logging.LogRecord) -> None:
+        if isinstance(rec, LoggingContextLogRecord):
+            raise TypeError(rec)
+
+        self._rec = rec
+
+        infos: ta.List[LoggingContextInfo] = [
+            info
+            for ad in _LOGGING_CONTEXT_INFO_RECORD_ADAPTERS_
+            if (info := ad.record_to_info(rec)) is not None
+        ]
+
+        # FIXME:
+        # if extra is not None:
+        #     for key in extra:
+        #         if (key in ["message", "asctime"]) or (key in rv.__dict__):
+        #             raise KeyError("Attempt to overwrite %r in LogRecord" % key)
+        #         rv.__dict__[key] = extra[key]
+
+        if (extra := {
+            a: v
+            for a, v in rec.__dict__.items()
+            if a not in _KNOWN_STD_LOGGING_RECORD_ATTR_SET
+        }):
+            infos.append(LoggingContextInfos.Extra(extra))
+
+        self._infos: ta.Dict[ta.Type[LoggingContextInfo], LoggingContextInfo] = {
+            type(info): info
+            for info in infos
+        }
+
+    def get_info(self, ty: ta.Type[LoggingContextInfoT]) -> ta.Optional[LoggingContextInfoT]:
+        return self._infos.get(ty)
 
 
 ########################################
@@ -4251,6 +8913,312 @@ class FlatMapChannelPipelineHandlers(NamespaceClass):
                 filter_type=filter_type,
             ),
         )
+
+
+########################################
+# ../http/encoders.py
+
+
+##
+
+
+class PipelineHttpEncodingMessageAdapter(Abstract):
+    @property
+    def head_type(self) -> ta.Optional[ta.Type[PipelineHttpMessageHead]]:
+        return None
+
+    @property
+    def full_type(self) -> ta.Optional[ta.Type[FullPipelineHttpMessage]]:
+        return None
+
+    @property
+    def content_chunk_data_type(self) -> ta.Optional[ta.Type[PipelineHttpMessageContentChunkData]]:
+        return None
+
+    @property
+    def end_type(self) -> ta.Optional[ta.Type[PipelineHttpMessageEnd]]:
+        return None
+
+    def encode_head_line(self, head: PipelineHttpMessageHead) -> bytes:
+        raise NotImplementedError
+
+
+##
+
+
+class PipelineHttpEncoder:
+    def __init__(self, adapter: PipelineHttpEncodingMessageAdapter) -> None:
+        super().__init__()
+
+        self._adapter = adapter
+
+        self._streaming = False
+        self._chunked = False
+
+    #
+
+    def outbound(self, msg: ta.Any) -> ta.Sequence[ta.Any]:
+        ty: ta.Any
+
+        if (ty := self._adapter.head_type) is not None and isinstance(msg, ty):
+            return self._handle_request_head(msg)
+
+        elif (ty := self._adapter.content_chunk_data_type) is not None and isinstance(msg, ty):
+            return self._handle_content_chunk_data(msg)
+
+        elif (ty := self._adapter.end_type) is not None and isinstance(msg, ty):
+            return self._handle_request_end(msg)
+
+        elif (ty := self._adapter.full_type) is not None and isinstance(msg, ty):
+            return self._handle_full_request(msg)
+
+        else:
+            return [msg]
+
+    def _handle_request_head(self, msg: PipelineHttpMessageHead) -> ta.Sequence[ta.Any]:
+        """Emit request line + headers, enter streaming mode."""
+
+        self._streaming = True
+        self._chunked = self._is_chunked(msg.headers)
+
+        return [self._encode_head(msg)]
+
+    def _handle_content_chunk_data(self, msg: PipelineHttpMessageContentChunkData) -> ta.Sequence[ta.Any]:
+        """Emit body chunk (raw or chunked-encoded)."""
+
+        if not self._streaming:
+            # Not in streaming mode - pass through unchanged
+            return [msg]
+
+        elif len(msg.data) < 1:
+            return []
+
+        elif self._chunked:
+            # Chunked encoding: <size-hex>\r\n<data>\r\n
+            return [
+                f'{len(msg.data):x}\r\n'.encode('ascii'),
+                msg.data,
+                b'\r\n',
+            ]
+
+        else:
+            # Raw data
+            return [msg.data]
+
+    def _handle_request_end(self, msg: PipelineHttpMessageEnd) -> ta.Sequence[ta.Any]:
+        """Emit terminator if chunked, reset state."""
+
+        if not self._streaming:
+            # Not in streaming mode - pass through
+            return [msg]
+
+        was_chunked = self._chunked
+
+        # Reset state
+        self._streaming = False
+        self._chunked = False
+
+        if was_chunked:
+            # Emit final chunk: 0\r\n\r\n
+            return [b'0\r\n\r\n']
+        else:
+            return []
+
+    def _handle_full_request(self, msg: FullPipelineHttpMessage) -> ta.Any:
+        """Emit complete request in one shot."""
+
+        return [
+            self._encode_head(msg.head),
+            *([msg.body] if len(msg.body) > 0 else []),
+        ]
+
+    #
+
+    def _encode_head(self, head: PipelineHttpMessageHead) -> bytes:
+        buf = io.BytesIO()
+
+        buf.write(self._adapter.encode_head_line(head))
+
+        for hl in self._encode_headers(head.headers):
+            buf.write(hl)
+
+        buf.write(b'\r\n')
+
+        return buf.getvalue()
+
+    def _encode_headers(self, headers: HttpHeaders) -> ta.List[bytes]:
+        """Encode headers as 'Name: value\r\n' lines."""
+
+        lines: ta.List[bytes] = []
+
+        # HttpHeaders stores entries as list of (name, value) tuples
+        for name, value in headers.raw:
+            # Header names and values should be ASCII-safe in practice
+            line = f'{name}: {value}\r\n'.encode('ascii')
+            lines.append(line)
+
+        return lines
+
+    def _is_chunked(self, headers: HttpHeaders) -> bool:
+        """Check if Transfer-Encoding includes 'chunked'."""
+
+        te = headers.lower.get('transfer-encoding', ())
+        return 'chunked' in te
+
+
+########################################
+# ../http/requests.py
+
+
+##
+
+
+class PipelineHttpRequestObject(PipelineHttpMessageObject, Abstract):
+    pass
+
+
+@install_dataclass_kw_only_init()
+@dc.dataclass(frozen=True)
+class PipelineHttpRequestHead(PipelineHttpMessageHead, PipelineHttpRequestObject):
+    method: str
+    target: str
+
+    headers: HttpHeaders
+    parsed: ta.Optional[ParsedHttpMessage] = None
+
+    version: HttpVersion = HttpVersions.HTTP_1_1
+
+
+@dc.dataclass(frozen=True)
+class FullPipelineHttpRequest(FullPipelineHttpMessage, PipelineHttpRequestObject):
+    head: PipelineHttpRequestHead
+    body: BytesLikeOrMemoryview
+
+    @classmethod
+    def simple(
+            cls,
+            host: str,
+            target: str,
+            *,
+            method: str = 'GET',
+            version: HttpVersion = HttpVersions.HTTP_1_1,
+
+            content_type: ta.Optional[str] = None,
+            body: bytes = b'',
+            connection: str = 'close',
+
+            headers: ta.Optional[ta.Mapping[str, str]] = None,
+    ) -> 'FullPipelineHttpRequest':
+        return cls(
+            head=PipelineHttpRequestHead(
+                method=method,
+                target=target,
+                version=version,
+                headers=HttpHeaders([
+                    ('Host', host),
+                    *([('Content-Type', content_type)] if content_type is not None else []),
+                    *([('Content-Length', str(len(body)))] if body else []),
+                    ('Connection', connection),
+                    *(headers.items() if headers else []),
+                ]),
+            ),
+            body=body,
+        )
+
+
+@dc.dataclass(frozen=True)
+class PipelineHttpRequestContentChunkData(PipelineHttpMessageContentChunkData, PipelineHttpRequestObject):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class PipelineHttpRequestEnd(PipelineHttpMessageEnd, PipelineHttpRequestObject):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class PipelineHttpRequestAborted(PipelineHttpMessageAborted, PipelineHttpRequestObject):
+    pass
+
+
+########################################
+# ../http/responses.py
+
+
+##
+
+
+class PipelineHttpResponseObject(PipelineHttpMessageObject, Abstract):
+    pass
+
+
+@install_dataclass_kw_only_init()
+@dc.dataclass(frozen=True)
+class PipelineHttpResponseHead(PipelineHttpMessageHead, PipelineHttpResponseObject):
+    status: int
+    reason: str
+
+    headers: HttpHeaders
+    parsed: ta.Optional[ParsedHttpMessage] = None
+
+    version: HttpVersion = HttpVersions.HTTP_1_1
+
+    @staticmethod
+    def get_reason_phrase(code: int) -> str:
+        try:
+            return http.HTTPStatus(code).phrase
+        except ValueError:
+            return ''
+
+
+@dc.dataclass(frozen=True)
+class FullPipelineHttpResponse(FullPipelineHttpMessage, PipelineHttpResponseObject):
+    head: PipelineHttpResponseHead
+    body: BytesLikeOrMemoryview
+
+    @classmethod
+    def simple(
+            cls,
+            *,
+            version: HttpVersion = HttpVersions.HTTP_1_1,
+            status: int = 200,
+            reason: ta.Optional[str] = None,
+
+            content_type: str = 'text/plain; charset=utf-8',
+            body: bytes = b'',
+            connection: str = 'close',
+
+            headers: ta.Optional[ta.Mapping[str, str]] = None,
+    ):
+        return cls(
+            head=PipelineHttpResponseHead(
+                version=version,
+                status=status,
+                reason=PipelineHttpResponseHead.get_reason_phrase(status) if reason is None else reason,
+                headers=HttpHeaders([
+                    ('Content-Type', content_type),
+                    ('Content-Length', str(len(body))),
+                    ('Connection', connection),
+                    *(headers.items() if headers else []),
+                ]),
+            ),
+            body=body,
+        )
+
+
+@dc.dataclass(frozen=True)
+class PipelineHttpResponseContentChunkData(PipelineHttpMessageContentChunkData, PipelineHttpResponseObject):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class PipelineHttpResponseEnd(PipelineHttpMessageEnd, PipelineHttpResponseObject):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class PipelineHttpResponseAborted(PipelineHttpMessageAborted, PipelineHttpResponseObject):
+    pass
 
 
 ########################################
@@ -4961,6 +9929,229 @@ def byte_stream_buffer_view_from_segments(mvs: ta.Sequence[memoryview]) -> ByteS
 
 
 ########################################
+# ../../../../omlish/logs/asyncs.py
+
+
+##
+
+
+class AsyncLoggerToLogger(Logger):
+    def __init__(self, u: AsyncLogger) -> None:
+        super().__init__()
+
+        self._u = u
+
+    def get_effective_level(self) -> LogLevel:
+        return self._u.get_effective_level()
+
+    def _log(
+            self,
+            ctx: CaptureLoggingContext,
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> None:
+        # Nope out early to avoid sync_await if possible - don't bother in the LoggerToAsyncLogger.
+        if not self.is_enabled_for(ctx.must_get_info(LoggingContextInfos.Level).level):
+            return
+
+        # Note: we hardcode the stack offset of sync_await (which is 2 - sync_await + sync_await.thunk). In non-lite
+        # code, lang.sync_await uses a cext if present to avoid being on the py stack, which would obviously complicate
+        # this, but this is lite code so we will always have the non-c version.
+        sync_await(
+            self._u._log(  # noqa
+                check.isinstance(ctx, CaptureLoggingContextImpl).inc_stack_offset(3),
+                msg,
+                *args,
+                **kwargs,
+            ),
+        )
+
+    def _metric(self, m: LoggerMetric) -> None:
+        sync_await(self._u._metric(m))  # noqa
+
+
+class LoggerToAsyncLogger(AsyncLogger):
+    def __init__(self, u: Logger) -> None:
+        super().__init__()
+
+        self._u = u
+
+    def get_effective_level(self) -> LogLevel:
+        return self._u.get_effective_level()
+
+    async def _log(
+            self,
+            ctx: CaptureLoggingContext,
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            *args: ta.Any,
+            **kwargs: ta.Any,
+    ) -> None:
+        self._u._log(  # noqa
+            check.isinstance(ctx, CaptureLoggingContextImpl).inc_stack_offset(),
+            msg,
+            *args,
+            **kwargs,
+        )
+
+    async def _metric(self, m: LoggerMetric) -> None:
+        self._u._metric(m)  # noqa
+
+
+########################################
+# ../../../../omlish/logs/std/loggers.py
+
+
+##
+
+
+class StdLogger(Logger):
+    def __init__(self, std: logging.Logger) -> None:
+        super().__init__()
+
+        self._std = std
+
+    @property
+    def std(self) -> logging.Logger:
+        return self._std
+
+    def is_enabled_for(self, level: LogLevel) -> bool:
+        return self._std.isEnabledFor(level)
+
+    def get_effective_level(self) -> LogLevel:
+        return self._std.getEffectiveLevel()
+
+    def _log(
+            self,
+            ctx: CaptureLoggingContext,
+            msg: ta.Union[str, tuple, LoggingMsgFn],
+            *args: ta.Any,
+    ) -> None:
+        if not self.is_enabled_for(ctx.must_get_info(LoggingContextInfos.Level).level):
+            return
+
+        ctx.set_basic(
+            name=self._std.name,
+
+            msg=msg,
+            args=args,
+        )
+
+        ctx.capture()
+
+        rec = LoggingContextLogRecord(_logging_context=ctx)
+
+        self._std.handle(rec)
+
+    def _metric(self, m: LoggerMetric) -> None:
+        pass
+
+
+########################################
+# ../http/client/requests.py
+
+
+##
+
+
+class RequestPipelineHttpEncodingMessageAdapter(PipelineHttpEncodingMessageAdapter):
+    head_type: ta.Final[ta.Type[PipelineHttpMessageHead]] = PipelineHttpRequestHead
+    full_type: ta.Final[ta.Type[FullPipelineHttpMessage]] = FullPipelineHttpRequest
+    content_chunk_data_type: ta.Final[ta.Type[PipelineHttpMessageContentChunkData]] = PipelineHttpRequestContentChunkData  # noqa
+    end_type: ta.Final[ta.Type[PipelineHttpMessageEnd]] = PipelineHttpRequestEnd
+
+    def encode_head_line(self, head: PipelineHttpMessageHead) -> bytes:
+        head = check.isinstance(head, PipelineHttpRequestHead)
+        version_str = f'HTTP/{head.version.major}.{head.version.minor}'
+        return f'{head.method} {head.target} {version_str}\r\n'.encode('ascii')
+
+
+##
+
+
+class PipelineHttpRequestEncoder(ChannelPipelineHandler):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._encoder = PipelineHttpEncoder(
+            RequestPipelineHttpEncodingMessageAdapter(),
+        )
+
+    def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if not isinstance(msg, PipelineHttpRequestObject):
+            ctx.feed_out(msg)
+            return
+
+        for out_msg in self._encoder.outbound(msg):
+            ctx.feed_out(out_msg)
+
+
+########################################
+# ../http/server/responses.py
+
+
+##
+
+
+class ResponsePipelineHttpEncodingMessageAdapter(PipelineHttpEncodingMessageAdapter):
+    head_type: ta.Final[ta.Type[PipelineHttpMessageHead]] = PipelineHttpResponseHead
+    full_type: ta.Final[ta.Type[FullPipelineHttpMessage]] = FullPipelineHttpResponse
+    content_chunk_data_type: ta.Final[ta.Type[PipelineHttpMessageContentChunkData]] = PipelineHttpResponseContentChunkData  # noqa
+    end_type: ta.Final[ta.Type[PipelineHttpMessageEnd]] = PipelineHttpResponseEnd
+
+    def encode_head_line(self, head: PipelineHttpMessageHead) -> bytes:
+        head = check.isinstance(head, PipelineHttpResponseHead)
+        version_str = f'HTTP/{head.version.major}.{head.version.minor}'
+        return f'{version_str} {head.status} {head.reason}\r\n'.encode('ascii')
+
+
+##
+
+
+class PipelineHttpResponseEncoder(ChannelPipelineHandler):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._encoder = PipelineHttpEncoder(
+            ResponsePipelineHttpEncodingMessageAdapter(),
+        )
+
+    def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if not isinstance(msg, PipelineHttpResponseObject):
+            ctx.feed_out(msg)
+            return
+
+        for out_msg in self._encoder.outbound(msg):
+            ctx.feed_out(out_msg)
+
+
+########################################
+# ../../../../omlish/logs/modules.py
+
+
+##
+
+
+def _get_module_std_logger(mod_globals: ta.Mapping[str, ta.Any]) -> logging.Logger:
+    return logging.getLogger(mod_globals.get('__name__'))
+
+
+def get_module_logger(mod_globals: ta.Mapping[str, ta.Any]) -> Logger:
+    return StdLogger(_get_module_std_logger(mod_globals))
+
+
+def get_module_async_logger(mod_globals: ta.Mapping[str, ta.Any]) -> AsyncLogger:
+    return LoggerToAsyncLogger(get_module_logger(mod_globals))
+
+
+def get_module_loggers(mod_globals: ta.Mapping[str, ta.Any]) -> ta.Tuple[Logger, AsyncLogger]:
+    return (
+        log := get_module_logger(mod_globals),
+        LoggerToAsyncLogger(log),
+    )
+
+
+########################################
 # ../bytes/decoders.py
 """
 TODO:
@@ -5232,6 +10423,1550 @@ class FnBytesToMessageDecoderChannelPipelineHandler(BytesToMessageDecoderChannel
             final: bool = False,
     ) -> ta.Iterable[ta.Any]:
         return self._decode_fn(ctx, buf, final=final)
+
+
+########################################
+# ../http/decoders.py
+"""
+TODO:
+ - chunked make_chunk_header - https://datatracker.ietf.org/doc/html/rfc9112#name-chunk-extensions
+  - and make_content_chunk_data ...
+ - fix exception handling lol - do we raise ValueError?? do we return aborted??
+ - unify with pipelines.bytes.decoders
+"""
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class PipelineHttpDecodingConfig:
+    DEFAULT: ta.ClassVar['PipelineHttpDecodingConfig']
+
+    parser_config: ta.Optional[HttpParser.Config] = None
+
+    @dc.dataclass(frozen=True)
+    class BufferConfig:
+        max_size: ta.Optional[int]
+        chunk_size: int
+
+    head_buffer: BufferConfig = BufferConfig(max_size=0x1000, chunk_size=0x1000)
+
+    max_content_chunk_size: ta.Optional[int] = None
+    content_chunk_header_buffer: BufferConfig = BufferConfig(max_size=1024, chunk_size=1024)
+
+    aggregated_body_buffer: BufferConfig = BufferConfig(max_size=0x10000, chunk_size=0x10000)
+
+
+PipelineHttpDecodingConfig.DEFAULT = PipelineHttpDecodingConfig()
+
+
+##
+
+
+class PipelineHttpDecodingMessageAdapter(Abstract):
+    def make_head(self, parsed: ParsedHttpMessage) -> ta.Any:
+        raise NotImplementedError
+
+    def make_aborted(self, reason: str) -> ta.Any:
+        raise NotImplementedError
+
+    def make_content_chunk_data(self, data: BytesLikeOrMemoryview) -> ta.Any:
+        raise NotImplementedError
+
+    def make_end(self) -> ta.Any:
+        raise NotImplementedError
+
+
+##
+
+
+class PipelineHttpHeadDecoder:
+    """
+    Class for HTTP/1.x head decoders (request or response).
+
+    Handles common logic:
+      - Buffering until b'\\r\\n\\r\\n'
+      - Parsing request/response line + headers
+      - Forwarding remainder bytes
+      - EOF handling
+    """
+
+    def __init__(
+            self,
+            adapter: PipelineHttpDecodingMessageAdapter,
+            parse_mode: HttpParser.Mode,
+            *,
+            config: PipelineHttpDecodingConfig = PipelineHttpDecodingConfig.DEFAULT,
+    ) -> None:
+        super().__init__()
+
+        self._adapter = adapter
+        self._parse_mode = parse_mode
+        self._config = config
+
+        self._buf = ScanningByteStreamBuffer(SegmentedByteStreamBuffer(
+            max_size=config.head_buffer.max_size,
+            chunk_size=config.head_buffer.chunk_size,
+        ))
+
+    _done = False
+
+    @property
+    def done(self) -> bool:
+        return self._done
+
+    def inbound_buffered_bytes(self) -> int:
+        if self._done:
+            return 0
+        return len(self._buf)
+
+    def inbound(self, msg: ta.Any) -> ta.Sequence[ta.Any]:
+        check.state(not self._done)
+
+        if isinstance(msg, ChannelPipelineMessages.FinalInput):
+            # EOF: if we have partial head buffered and haven't parsed head, that's an error.
+
+            del self._buf
+            self._done = True
+
+            return [
+                self._adapter.make_aborted('EOF before HTTP head complete'),
+                msg,
+            ]
+
+        if not ByteStreamBuffers.can_bytes(msg):
+            return [msg]
+
+        out: ta.List[ta.Any] = []
+
+        for mv in ByteStreamBuffers.iter_segments(msg):
+            if self._done:
+                out.append(mv)
+                continue
+
+            rem_mv: ta.Optional[memoryview] = None
+
+            if (max_buf := self._buf.max_size) is not None:
+                rem_buf = max_buf - len(self._buf)
+
+                if len(mv) > rem_buf:
+                    self._buf.write(mv[:rem_buf])
+                    rem_mv = mv[rem_buf:]
+                else:
+                    self._buf.write(mv)
+
+            # Look for end of head
+            i = self._buf.find(b'\r\n\r\n')
+            if i < 0:
+                if rem_mv is not None:
+                    del self._buf
+                    self._done = True
+
+                    return [self._adapter.make_aborted('Head exceeded max buffer size')]
+
+                continue
+
+            # Extract head
+            head_view = self._buf.split_to(i + 4)
+
+            # Parse and emit head
+            raw = head_view.tobytes()
+            parsed = parse_http_message(
+                raw,
+                mode=self._parse_mode,
+                config=self._config.parser_config,
+            )
+
+            head = self._adapter.make_head(parsed)
+            out.append(head)
+
+            # Forward any remainder bytes (body bytes)
+            if len(self._buf):
+                rem_view = self._buf.split_to(len(self._buf))
+                out.append(rem_view)
+
+            if rem_mv is not None:
+                out.append(rem_mv)
+
+            del self._buf
+            self._done = True
+
+        return out
+
+
+##
+
+
+class PipelineHttpContentChunkDecoder(Abstract):
+    def __init__(
+            self,
+            adapter: PipelineHttpDecodingMessageAdapter,
+            *,
+            config: PipelineHttpDecodingConfig = PipelineHttpDecodingConfig.DEFAULT,
+    ) -> None:
+        super().__init__()
+
+        self._adapter = adapter
+        self._config = config
+
+    @property
+    @abc.abstractmethod
+    def done(self) -> bool:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def inbound_buffered_bytes(self) -> int:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def inbound(self, msg: ta.Any) -> ta.Sequence[ta.Any]:
+        raise NotImplementedError
+
+
+class UntilFinalInputPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
+    _done: bool = False
+
+    @property
+    def done(self) -> bool:
+        return self._done
+
+    def inbound_buffered_bytes(self) -> int:
+        return 0
+
+    def inbound(self, msg: ta.Any) -> ta.Sequence[ta.Any]:
+        check.state(not self._done)
+
+        if isinstance(msg, ChannelPipelineMessages.FinalInput):
+            self._done = True
+
+            return [
+                self._adapter.make_end(),
+                msg,
+            ]
+
+        if not ByteStreamBuffers.can_bytes(msg):
+            return [msg]
+
+        out: ta.List[ta.Any] = []
+
+        for mv in ByteStreamBuffers.iter_segments(msg):
+            out.append(self._adapter.make_content_chunk_data(mv))
+
+        return out
+
+
+class ContentLengthPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
+    def __init__(
+            self,
+            adapter: PipelineHttpDecodingMessageAdapter,
+            content_length: int,
+            *,
+            config: PipelineHttpDecodingConfig = PipelineHttpDecodingConfig.DEFAULT,
+    ) -> None:
+        check.arg(content_length > 0)
+
+        super().__init__(
+            adapter,
+            config=config,
+        )
+
+        self._remain = content_length
+
+    @property
+    def done(self) -> bool:
+        return self._remain < 1
+
+    def inbound_buffered_bytes(self) -> int:
+        return 0
+
+    def inbound(self, msg: ta.Any) -> ta.Sequence[ta.Any]:
+        check.state(self._remain > 0)
+
+        if isinstance(msg, ChannelPipelineMessages.FinalInput):
+            self._remain = 0
+
+            return [
+                self._adapter.make_aborted('EOF before HTTP body complete'),
+                msg,
+            ]
+
+        if not ByteStreamBuffers.can_bytes(msg):
+            return [msg]
+
+        out: ta.List[ta.Any] = []
+
+        for mv in ByteStreamBuffers.iter_segments(msg):
+            if self._remain < 1:
+                out.append(mv)
+                continue
+
+            mvl = len(mv)
+
+            if self._remain > mvl:
+                out.append(self._adapter.make_content_chunk_data(mv))
+                self._remain -= mvl
+
+            elif self._remain == mvl:
+                out.append(self._adapter.make_content_chunk_data(mv))
+                out.append(self._adapter.make_end())
+                self._remain = 0
+
+            else:
+                out.append(self._adapter.make_content_chunk_data(mv[:self._remain]))
+                out.append(self._adapter.make_end())
+                ofs = self._remain
+                self._remain = 0
+                out.append(mv[ofs:])
+
+        return out
+
+
+class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
+    """
+    Class for HTTP/1.x chunked transfer encoding decoders.
+
+    Handles common logic:
+      - Parsing hex chunk sizes
+      - Extracting chunk data
+      - Validating CRLF delimiters
+      - Detecting terminator (0\\r\\n\\r\\n)
+      - State machine: 'size' -> 'data' -> 'size' ... -> 'trailer' -> 'done'
+    """
+
+    def __init__(
+            self,
+            adapter: PipelineHttpDecodingMessageAdapter,
+            *,
+            config: PipelineHttpDecodingConfig = PipelineHttpDecodingConfig.DEFAULT,
+    ) -> None:
+        super().__init__(
+            adapter,
+            config=config,
+        )
+
+        self._header_buf = self._new_header_buf()
+
+        self._chunk_remaining = 0
+        self._got_cr = False
+
+        self._state: ta.Literal['size', 'data', 'trailer', 'done'] = 'size'
+
+    def _new_header_buf(self) -> MutableByteStreamBuffer:
+        return ScanningByteStreamBuffer(SegmentedByteStreamBuffer(
+            max_size=self._config.content_chunk_header_buffer.max_size,
+            chunk_size=self._config.content_chunk_header_buffer.chunk_size,
+        ))
+
+    @property
+    def done(self) -> bool:
+        return self._state == 'done'
+
+    def inbound_buffered_bytes(self) -> int:
+        if self._state == 'done':
+            return 0
+        return len(self._header_buf)
+
+    def inbound(self, msg: ta.Any) -> ta.Sequence[ta.Any]:
+        check.state(self._state != 'done')
+
+        if isinstance(msg, ChannelPipelineMessages.FinalInput):
+            del self._header_buf
+            self._state = 'done'
+
+            return [
+                self._adapter.make_aborted('EOF before chunked encoding complete'),
+                msg,
+            ]
+
+        if not ByteStreamBuffers.can_bytes(msg):
+            return [msg]
+
+        out: ta.List[ta.Any] = []
+
+        for mv in ByteStreamBuffers.iter_segments(msg):
+            if not self._process(mv, out):
+                break
+
+        return out
+
+    def _process(self, mv: memoryview, out: ta.List[ta.Any]) -> bool:
+        if self._state == 'done':
+            out.append(mv)
+            return True
+
+        elif self._state == 'size':
+            return self._process_size(mv, out)
+
+        elif self._state == 'data':
+            return self._process_data(mv, out)
+
+        elif self._state == 'trailer':
+            return self._process_trailer(mv, out)
+
+        else:
+            raise RuntimeError(f'Invalid state: {self._state!r}')
+
+    def _process_size(self, mv: memoryview, out: ta.List[ta.Any]) -> bool:
+        rem_mv: ta.Optional[memoryview] = None
+
+        if (max_buf := self._header_buf.max_size) is not None:
+            rem_buf = max_buf - len(self._header_buf)
+
+            if len(mv) > rem_buf:
+                self._header_buf.write(mv[:rem_buf])
+                rem_mv = mv[rem_buf:]
+            else:
+                self._header_buf.write(mv)
+
+        # Parse chunk size line: <hex-size>\r\n
+        i = self._header_buf.find(b'\r\n')
+        if i < 0:
+            if rem_mv is not None:
+                del self._header_buf
+                self._state = 'done'
+
+                out.append(self._adapter.make_aborted('Chunk header exceeded max buffer size'))
+                return False
+
+            return True  # Need more data
+
+        size_line = self._header_buf.split_to(i + 2)
+
+        size_bytes = size_line.tobytes()[:-2]  # Strip \r\n
+        try:
+            self._chunk_remaining = int(size_bytes, 16)
+        except ValueError as e:
+            raise ValueError(f'Invalid chunk size: {size_bytes!r}') from e
+
+        if (mcs := self._config.max_content_chunk_size) is not None and self._chunk_remaining > mcs:
+            raise ValueError(f'Content chunk size {self._chunk_remaining} exceeds maximum content chunk size: {mcs}')
+
+        if self._chunk_remaining == 0:
+            # Final chunk
+            self._state = 'trailer'
+        else:
+            self._state = 'data'
+
+        if len(self._header_buf) > 0:
+            hb = self._header_buf
+            self._header_buf = self._new_header_buf()
+
+            for hb_mv in hb.segments():
+                if not self._process(hb_mv, out):
+                    return False
+
+        if rem_mv is not None:
+            if not self._process(rem_mv, out):
+                return False
+
+        return True
+
+    def _process_data(self, mv: memoryview, out: ta.List[ta.Any]) -> bool:
+        mvl = len(mv)
+        if mvl < self._chunk_remaining:
+            self._chunk_remaining -= mvl
+            out.append(self._adapter.make_content_chunk_data(mv))
+            return True
+
+        if self._chunk_remaining > 0:
+            if mvl == self._chunk_remaining:
+                out.append(self._adapter.make_content_chunk_data(mv))
+                self._chunk_remaining = 0
+                return True
+
+            out.append(self._adapter.make_content_chunk_data(mv[:self._chunk_remaining]))
+            mv = mv[self._chunk_remaining:]
+            mvl = len(mv)
+            self._chunk_remaining = 0
+
+        if mvl < 1:
+            return True
+
+        if not self._got_cr:
+            if mv[0] != 0x0d:
+                raise ValueError(f'Expected \\r\\n after chunk data, got {bytes([mv[0]])!r}')
+            self._got_cr = True
+            mv = mv[1:]
+            mvl -= 1
+            if mvl < 1:
+                return True
+
+        if mv[0] != 0x0a:
+            raise ValueError(f'Expected \\r\\n after chunk data, got {bytes([mv[0]])!r}')
+        mv = mv[1:]
+        mvl -= 1
+
+        self._got_cr = False
+        self._state = 'size'
+
+        if mvl > 0:
+            if not self._process(mv, out):
+                return False
+
+        return True
+
+    def _process_trailer(self, mv: memoryview, out: ta.List[ta.Any]) -> bool:
+        mvl = len(mv)
+        if mvl < 1:
+            return True
+
+        if not self._got_cr:
+            if mv[0] != 0x0d:
+                raise ValueError(f'Expected \\r\\n after final chunk, got {bytes([mv[0]])!r}')
+            self._got_cr = True
+            mv = mv[1:]
+            mvl -= 1
+            if mvl < 1:
+                return True
+
+        if mv[0] != 0x0a:
+            raise ValueError(f'Expected \\r\\n after final chunk, got {bytes([mv[0]])!r}')
+        mv = mv[1:]
+        mvl -= 1
+
+        del self._header_buf
+        self._got_cr = False
+        self._state = 'done'
+
+        # Emit end marker
+        out.append(self._adapter.make_end())
+
+        if mvl > 0:
+            out.append(mv)
+
+        return True
+
+
+########################################
+# ../drivers/asyncio.py
+"""
+TODO:
+ - better driver impl
+   - only ever call create_task at startup, never in inner loops
+     - nothing ever does `asyncio.wait(...)`
+   - dedicated read_task, flush_task, sched_task
+     - read_task toggles back and forth between reading and waiting
+   - main task only reads from command queue
+"""
+
+
+log, alog = get_module_loggers(globals())  # noqa
+
+
+##
+
+
+class AsyncioStreamPipelineChannelDriver(Abstract):
+    @dc.dataclass(frozen=True)
+    class Config:
+        DEFAULT: ta.ClassVar['AsyncioStreamPipelineChannelDriver.Config']
+
+        read_chunk_size: int = 0x10000
+        write_chunk_max: ta.Optional[int] = None
+
+    Config.DEFAULT = Config()
+
+    #
+
+    def __init__(
+            self,
+            spec: PipelineChannel.Spec,
+            reader: asyncio.StreamReader,
+            writer: ta.Optional[asyncio.StreamWriter] = None,
+            config: ta.Optional[Config] = None,
+            *,
+            on_non_bytes_output: ta.Optional[ta.Callable[[ta.Any], ta.Awaitable[None]]] = None,
+    ) -> None:
+        super().__init__()
+
+        self._spec = spec
+        self._reader = reader
+        self._writer = writer
+        if config is None:
+            config = AsyncioStreamPipelineChannelDriver.Config.DEFAULT
+        self._config = config
+
+        self._on_non_bytes_output = on_non_bytes_output
+
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}@{id(self):x}'
+
+    @property
+    def config(self) -> Config:
+        return self._config
+
+    @property
+    def channel(self) -> PipelineChannel:
+        return self._channel
+
+    ##
+    # init
+
+    _sched: 'AsyncioStreamPipelineChannelDriver._Scheduling'
+
+    _channel: PipelineChannel
+
+    _flow: ta.Optional[ChannelPipelineFlow]
+
+    _command_handlers: ta.Mapping[ta.Type['AsyncioStreamPipelineChannelDriver._Command'], ta.Callable[[ta.Any], ta.Awaitable[None]]]  # noqa
+    _output_handlers: ta.Mapping[type, ta.Callable[[ta.Any], ta.Awaitable[None]]]
+
+    _command_queue: 'asyncio.Queue[AsyncioStreamPipelineChannelDriver._Command]'
+    _shutdown_event: asyncio.Event
+
+    async def _init(self) -> None:
+        self._sched = self._Scheduling(self)
+
+        self._channel = PipelineChannel(dc.replace(
+            self._spec,
+            services=(*self._spec.services, self._sched),
+        ))
+
+        self._flow = self._channel.services.find(ChannelPipelineFlow)
+
+        self._command_handlers = self._build_command_handlers()
+        self._output_handlers = self._build_output_handlers()
+
+        self._command_queue: asyncio.Queue[AsyncioStreamPipelineChannelDriver._Command] = asyncio.Queue()
+        self._shutdown_event = asyncio.Event()
+
+    ##
+    # async utils
+
+    @staticmethod
+    async def _cancel_tasks(
+            *tasks: ta.Optional[asyncio.Task],
+            check_running: bool = False,
+    ) -> None:
+        if check_running:
+            try:
+                loop = asyncio.get_running_loop()
+            except RuntimeError:
+                return
+            else:
+                if not loop.is_running():
+                    return
+
+        #
+
+        cts: ta.List[asyncio.Task] = []
+
+        for t in tasks:
+            if t is not None and not t.done():
+                t.cancel()
+                cts.append(t)
+
+        if cts:
+            await asyncio.gather(*cts, return_exceptions=True)
+
+    #
+
+    async def _close_writer(self) -> None:
+        if self._writer is None:
+            return
+
+        try:
+            self._writer.close()
+            await self._writer.wait_closed()
+
+        except Exception:  # noqa
+            # Best effort; transport close errors aren't actionable at this layer.
+            pass
+
+        self._writer = None
+
+    ##
+
+    class _Command(Abstract):
+        pass
+
+    ##
+    # feed in
+
+    @dc.dataclass(frozen=True)
+    class _FeedInCommand(_Command):
+        msgs: ta.Sequence[ta.Any]
+
+        def __repr__(self) -> str:
+            return f'{self.__class__.__name__}([{", ".join(map(repr, self.msgs))}])'
+
+    async def _handle_command_feed_in(self, cmd: _FeedInCommand) -> None:
+        async def _inner() -> None:
+            self._channel.feed_in(*cmd.msgs)  # noqa
+
+        await self._do_with_channel(_inner)
+
+    async def feed_in(self, *msgs: ta.Any) -> None:
+        check.state(not self._shutdown_event.is_set())
+
+        self._command_queue.put_nowait(AsyncioStreamPipelineChannelDriver._FeedInCommand(msgs))
+
+    ##
+    # read completed
+
+    class _ReadCompletedCommand(_Command):
+        def __init__(self, data: ta.Union[bytes, ta.List[bytes]]) -> None:
+            self._data = data
+
+        def __repr__(self) -> str:
+            return (
+                f'{self.__class__.__name__}@{id(self):x}'
+                f'({"[...]" if isinstance(self._data, list) else "..." if self._data is not None else ""})'
+            )
+
+        def data(self) -> ta.Sequence[bytes]:
+            if isinstance(self._data, bytes):
+                return [self._data]
+            elif isinstance(self._data, list):
+                return self._data
+            else:
+                raise TypeError(self._data)
+
+    class _ReadCancelledCommand(_Command):
+        pass
+
+    _pending_completed_reads: ta.Optional[ta.List[_ReadCompletedCommand]] = None
+
+    async def _handle_command_read_completed(self, cmd: _ReadCompletedCommand) -> None:
+        if not self._want_read:
+            if (pl := self._pending_completed_reads) is None:
+                pl = self._pending_completed_reads = []
+
+            pl.append(cmd)
+            return
+
+        #
+
+        eof = False
+
+        in_msgs: ta.List[ta.Any] = []
+
+        for b in cmd.data():
+            check.state(not eof)
+            if not b:
+                eof = True
+            else:
+                in_msgs.append(b)
+
+        if self._flow is not None:
+            in_msgs.append(ChannelPipelineFlowMessages.FlushInput())
+
+        if eof:
+            in_msgs.append(ChannelPipelineMessages.FinalInput())
+
+        #
+
+        async def _inner() -> None:
+            self._channel.feed_in(*in_msgs)
+
+        await self._do_with_channel(_inner)
+
+        #
+
+        if eof:
+            self._shutdown_event.set()
+
+            await self._close_writer()
+
+    ##
+    # update want read
+
+    class _UpdateWantReadCommand(_Command):
+        pass
+
+    _has_sent_update_want_read_command: bool = False
+
+    async def _send_update_want_read_command(self) -> None:
+        if self._has_sent_update_want_read_command:
+            return
+
+        self._has_sent_update_want_read_command = True
+        await self._command_queue.put(AsyncioStreamPipelineChannelDriver._UpdateWantReadCommand())
+
+    _want_read = True
+
+    _delay_sending_update_want_read_command = False
+
+    async def _set_want_read(self, want_read: bool) -> None:
+        if self._want_read == want_read:
+            return
+
+        self._want_read = want_read
+
+        if not self._delay_sending_update_want_read_command:
+            await self._send_update_want_read_command()
+
+    async def _handle_command_update_want_read(self, cmd: _UpdateWantReadCommand) -> None:
+        self._sent_update_want_read_command = False
+
+        if self._want_read:
+            if self._pending_completed_reads:
+                in_cmd = AsyncioStreamPipelineChannelDriver._ReadCompletedCommand([
+                    b
+                    for pcr_cmd in self._pending_completed_reads
+                    for b in pcr_cmd.data()
+                ])
+                self._command_queue.put_nowait(in_cmd)
+                self._pending_completed_reads = None
+
+            self._ensure_read_task()
+
+    def _maybe_ensure_read_task(self) -> None:
+        if (
+                self._want_read or
+                (self._flow is not None and self._flow.is_auto_read())
+        ):
+            self._ensure_read_task()
+
+    @abc.abstractmethod
+    def _ensure_read_task(self) -> None:
+        raise NotImplementedError
+
+    ##
+    # scheduling
+
+    class _Scheduling(ChannelPipelineScheduling):
+        def __init__(self, d: 'AsyncioStreamPipelineChannelDriver') -> None:
+            super().__init__()
+
+            self._d = d
+
+            self._pending: ta.List[ta.Tuple[float, ta.Callable[[], None]]] = []
+            self._tasks: ta.Set[asyncio.Task] = set()
+
+        class _Handle(ChannelPipelineScheduling.Handle):
+            def cancel(self) -> None:
+                raise NotImplementedError
+
+        def schedule(
+                self,
+                handler_ref: ChannelPipelineHandlerRef,
+                delay_s: float,
+                fn: ta.Callable[[], None],
+        ) -> ChannelPipelineScheduling.Handle:
+            self._pending.append((delay_s, fn))
+            return self._Handle()
+
+        def cancel_all(self, handler_ref: ta.Optional[ChannelPipelineHandlerRef] = None) -> None:
+            raise NotImplementedError
+
+        async def _task_body(self, delay: float, fn: ta.Callable[[], None]) -> None:
+            await asyncio.sleep(delay)
+
+            self._d._command_queue.put_nowait(AsyncioStreamPipelineChannelDriver._ScheduledCommand(fn))  # noqa
+
+        async def _flush_pending(self) -> None:
+            if not (lst := self._pending):
+                return
+
+            for delay, fn in lst:
+                self._tasks.add(asyncio.create_task(functools.partial(self._task_body, delay, fn)()))
+
+            self._pending = []
+
+    @dc.dataclass(frozen=True)
+    class _ScheduledCommand(_Command):
+        fn: ta.Callable[[], None]
+
+    async def _handle_scheduled_command(self, cmd: _ScheduledCommand) -> None:
+        async def _inner() -> None:
+            with self._channel.enter():
+                cmd.fn()
+
+        await self._do_with_channel(_inner)
+
+    # handlers
+
+    def _build_command_handlers(self) -> ta.Mapping[ta.Type[_Command], ta.Callable[[ta.Any], ta.Awaitable[None]]]:
+        return {
+            AsyncioStreamPipelineChannelDriver._FeedInCommand: self._handle_command_feed_in,
+            AsyncioStreamPipelineChannelDriver._ReadCompletedCommand: self._handle_command_read_completed,
+            AsyncioStreamPipelineChannelDriver._UpdateWantReadCommand: self._handle_command_update_want_read,
+            AsyncioStreamPipelineChannelDriver._ScheduledCommand: self._handle_scheduled_command,
+        }
+
+    async def _handle_command(self, cmd: _Command) -> None:
+        try:
+            fn = self._command_handlers[cmd.__class__]
+        except KeyError:
+            raise TypeError(f'Unknown command type: {cmd.__class__}') from None
+
+        await fn(cmd)
+
+    ##
+    # output handling
+
+    # lifecycle
+
+    async def _handle_output_final_output(self, msg: ChannelPipelineMessages.FinalOutput) -> None:
+        self._shutdown_event.set()
+
+        await self._close_writer()
+
+    # data (special cased)
+
+    async def _handle_output_bytes(self, msg: ta.Any) -> None:
+        for mv in ByteStreamBuffers.iter_segments(msg):
+            if self._writer is not None and mv:
+                self._writer.write(mv)
+
+    # flow
+
+    async def _handle_output_flush_output(self, msg: ChannelPipelineFlowMessages.FlushOutput) -> None:
+        if self._writer is not None:
+            await self._writer.drain()
+
+    async def _handle_output_ready_for_input(self, msg: ChannelPipelineFlowMessages.ReadyForInput) -> None:
+        await self._set_want_read(True)
+
+    # async
+
+    async def _handle_output_await(self, msg: AsyncChannelPipelineMessages.Await) -> None:
+        try:
+            result = await msg.obj
+
+        except Exception as e:  # noqa
+            with self._channel.enter():
+                msg.set_failed(e)
+
+        else:
+            with self._channel.enter():
+                msg.set_succeeded(result)
+
+    # handlers
+
+    def _build_output_handlers(self) -> ta.Mapping[type, ta.Callable[[ta.Any], ta.Awaitable[None]]]:
+        return {
+            ChannelPipelineMessages.FinalOutput: self._handle_output_final_output,
+
+            ChannelPipelineFlowMessages.FlushOutput: self._handle_output_flush_output,
+            ChannelPipelineFlowMessages.ReadyForInput: self._handle_output_ready_for_input,
+
+            AsyncChannelPipelineMessages.Await: self._handle_output_await,
+        }
+
+    async def _handle_output(self, msg: ta.Any) -> None:
+        if ByteStreamBuffers.can_bytes(msg):
+            await self._handle_output_bytes(msg)
+            return
+
+        try:
+            fn = self._output_handlers[msg.__class__]
+        except KeyError:
+            raise TypeError(f'Unknown output type: {msg.__class__}') from None
+
+        await fn(msg)
+
+    # execution helpers
+
+    async def _do_with_channel(self, fn: ta.Callable[[], ta.Awaitable[None]]) -> None:
+        prev_want_read = self._want_read
+        if self._flow is not None and not self._flow.is_auto_read():
+            self._want_read = False
+
+        self._delay_sending_update_want_read_command = True
+        try:
+            await fn()
+
+            await self._drain_channel_output()
+
+        finally:
+            self._delay_sending_update_want_read_command = False
+
+        if self._shutdown_event.is_set():
+            return
+
+        await self._sched._flush_pending()  # noqa
+
+        if self._want_read != prev_want_read:
+            await self._send_update_want_read_command()
+
+        self._maybe_ensure_read_task()
+
+    async def _drain_channel_output(self) -> None:
+        while (msg := self._channel.output.poll()) is not None:
+            await self._handle_output(msg)
+
+    ##
+    # shutdown
+
+    _shutdown_task: asyncio.Task
+
+    async def _shutdown_task_main(self) -> None:
+        await self._shutdown_event.wait()
+
+    ##
+    # main loop
+
+    @abc.abstractmethod
+    def _run(self) -> ta.Awaitable[None]:
+        raise NotImplementedError
+
+    @async_exception_logging(alog)
+    async def run(self) -> None:
+        try:
+            self._shutdown_task  # noqa
+        except AttributeError:
+            pass
+        else:
+            raise RuntimeError('Already running')
+
+        await self._init()
+
+        self._shutdown_task = asyncio.create_task(self._shutdown_task_main())
+
+        try:
+            try:
+                await self._run()
+
+            finally:
+                self._channel.destroy()
+
+        finally:
+            await self._cancel_tasks(self._shutdown_task, check_running=True)
+
+
+##
+
+
+class SimpleAsyncioStreamPipelineChannelDriver(AsyncioStreamPipelineChannelDriver):
+    _read_task: ta.Optional[asyncio.Task] = None
+
+    def _ensure_read_task(self) -> None:
+        if self._read_task is not None or self._shutdown_event.is_set():
+            return
+
+        self._read_task = asyncio.create_task(self._reader.read(self._config.read_chunk_size))
+
+        def _done(task: 'asyncio.Task[bytes]') -> None:
+            check.state(task is self._read_task)
+            self._read_task = None
+
+            if self._shutdown_event.is_set():
+                return
+
+            cmd: AsyncioStreamPipelineChannelDriver._Command
+            try:
+                data = task.result()
+            except asyncio.CancelledError:
+                cmd = AsyncioStreamPipelineChannelDriver._ReadCancelledCommand()  # noqa
+            else:
+                cmd = AsyncioStreamPipelineChannelDriver._ReadCompletedCommand(data)  # noqa
+
+            self._command_queue.put_nowait(cmd)
+
+            self._maybe_ensure_read_task()
+
+        self._read_task.add_done_callback(_done)
+
+    #
+
+    async def _run(self) -> None:
+        self._ensure_read_task()
+
+        #
+
+        command_queue_task: ta.Optional[asyncio.Task[AsyncioStreamPipelineChannelDriver._Command]] = None
+
+        try:
+            while not self._shutdown_event.is_set():
+                if command_queue_task is None:
+                    command_queue_task = asyncio.create_task(self._command_queue.get())
+
+                done, pending = await asyncio.wait(
+                    [command_queue_task, self._shutdown_task],
+                    return_when=asyncio.FIRST_COMPLETED,
+                )
+
+                winner = done.pop()
+
+                if self._shutdown_event.is_set() or winner is self._shutdown_task:
+                    break
+
+                elif winner is command_queue_task:
+                    cmd = command_queue_task.result()
+                    command_queue_task = None
+
+                    await self._handle_command(cmd)
+
+                    del cmd
+                    command_queue_task = None
+
+                else:
+                    raise RuntimeError(f'Unexpected task: {winner!r}')
+        #
+
+        finally:
+            await self._cancel_tasks(
+                command_queue_task,
+                self._read_task,
+                check_running=True,
+            )
+
+
+########################################
+# ../http/client/responses.py
+
+
+##
+
+
+class ResponsePipelineHttpDecodingMessageAdapter(PipelineHttpDecodingMessageAdapter):
+    def make_head(self, parsed: ParsedHttpMessage) -> ta.Any:
+        status = check.not_none(parsed.status_line)
+
+        return PipelineHttpResponseHead(
+            version=status.http_version,
+            status=status.status_code,
+            reason=status.reason_phrase,
+            headers=HttpHeaders(parsed.headers.entries),
+            parsed=parsed,
+        )
+
+    def make_aborted(self, reason: str) -> ta.Any:
+        return PipelineHttpResponseAborted(reason)
+
+    def make_content_chunk_data(self, data: BytesLikeOrMemoryview) -> ta.Any:
+        return PipelineHttpResponseContentChunkData(data)
+
+    def make_end(self) -> ta.Any:
+        return PipelineHttpResponseEnd()
+
+
+##
+
+
+class PipelineHttpResponseDecoder(InboundBytesBufferingChannelPipelineHandler):
+    """HTTP/1.x response head decoder."""
+
+    def __init__(
+            self,
+            *,
+            config: PipelineHttpDecodingConfig = PipelineHttpDecodingConfig.DEFAULT,
+    ) -> None:
+        super().__init__()
+
+        self._decoder = PipelineHttpHeadDecoder(
+            ResponsePipelineHttpDecodingMessageAdapter(),
+            HttpParser.Mode.RESPONSE,
+            config=config,
+        )
+
+    def inbound_buffered_bytes(self) -> int:
+        return self._decoder.inbound_buffered_bytes()
+
+    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if self._decoder.done:
+            ctx.feed_in(msg)
+            return
+
+        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
+            if not ctx.services[ChannelPipelineFlow].is_auto_read():
+                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+
+            ctx.feed_in(msg)
+            return
+
+        for dec_msg in self._decoder.inbound(msg):
+            ctx.feed_in(dec_msg)
+
+
+##
+
+
+class PipelineHttpResponseConditionalGzipDecoder(ChannelPipelineHandler):
+    """
+    Conditional streaming gzip decompression.
+
+    Watches for DecodedHttpResponseHead; if Content-Encoding includes 'gzip', enable zlib decompressor for body bytes.
+    Flushes on EOF.
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self._enabled = False
+        self._z: ta.Optional[ta.Any] = None
+
+    # FIXME:
+    #  - we get obj.unconsumed_tail and unused_data, but not the full internal buffer sizes
+    # def inbound_buffered_bytes(self) -> int:
+
+    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, ChannelPipelineMessages.FinalInput):
+            if self._enabled and self._z is not None:
+                tail = self._z.flush()
+                if tail:
+                    ctx.feed_in(tail)
+            ctx.feed_in(msg)
+            return
+
+        if isinstance(msg, PipelineHttpResponseHead):
+            enc = msg.headers.lower.get('content-encoding', ())
+            self._enabled = 'gzip' in enc
+            self._z = zlib.decompressobj(16 + zlib.MAX_WBITS) if self._enabled else None
+            ctx.feed_in(msg)
+            return
+
+        if (
+                not self._enabled or
+                self._z is None or
+                not ByteStreamBuffers.can_bytes(msg)
+        ):
+            ctx.feed_in(msg)
+            return
+
+        for mv in ByteStreamBuffers.iter_segments(msg):
+            out = self._z.decompress(mv)  # FIXME: max_length!! zip bombs
+            # FIXME: also unconsumed_tail lol
+            if out:
+                ctx.feed_in(out)
+
+
+##
+
+
+class PipelineHttpResponseChunkedDecoder(InboundBytesBufferingChannelPipelineHandler):
+    def __init__(
+            self,
+            *,
+            config: PipelineHttpDecodingConfig = PipelineHttpDecodingConfig.DEFAULT,
+    ) -> None:
+        super().__init__()
+
+        self._config = config
+
+        self._decoder: ta.Optional[ChunkedPipelineHttpContentChunkDecoder] = None
+
+    def inbound_buffered_bytes(self) -> ta.Optional[int]:
+        if (dec := self._decoder) is None:
+            return 0
+        return dec.inbound_buffered_bytes()
+
+    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, PipelineHttpResponseHead):
+            check.none(self._decoder)
+
+            if msg.headers.contains_value('transfer-encoding', 'chunked', ignore_case=True):
+                self._decoder = ChunkedPipelineHttpContentChunkDecoder(
+                    ResponsePipelineHttpDecodingMessageAdapter(),
+                    config=self._config,
+                )
+
+            ctx.feed_in(msg)
+            return
+
+        if (dec := self._decoder) is None:
+            ctx.feed_in(msg)
+            return
+
+        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
+            if not ctx.services[ChannelPipelineFlow].is_auto_read():
+                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+
+            ctx.feed_in(msg)
+            return
+
+        for dec_msg in dec.inbound(msg):
+            ctx.feed_in(dec_msg)
+
+        if dec.done:
+            self._decoder = None
+
+
+########################################
+# ../http/server/requests.py
+
+
+##
+
+
+class RequestPipelineHttpDecodingMessageAdapter(PipelineHttpDecodingMessageAdapter):
+    def make_head(self, parsed: ParsedHttpMessage) -> ta.Any:
+        request = check.not_none(parsed.request_line)
+
+        return PipelineHttpRequestHead(
+            method=request.method,
+            target=check.not_none(request.request_target).decode('utf-8'),
+            version=request.http_version,
+            headers=HttpHeaders(parsed.headers.entries),
+            parsed=parsed,
+        )
+
+    def make_aborted(self, reason: str) -> ta.Any:
+        return PipelineHttpRequestAborted(reason)
+
+    def make_content_chunk_data(self, data: BytesLikeOrMemoryview) -> ta.Any:
+        return PipelineHttpRequestContentChunkData(data)
+
+    def make_end(self) -> ta.Any:
+        return PipelineHttpRequestEnd()
+
+
+##
+
+
+class PipelineHttpRequestHeadDecoder(InboundBytesBufferingChannelPipelineHandler):
+    """HTTP/1.x request head decoder."""
+
+    def __init__(
+            self,
+            *,
+            config: PipelineHttpDecodingConfig = PipelineHttpDecodingConfig.DEFAULT,
+    ) -> None:
+        super().__init__()
+
+        self._decoder = PipelineHttpHeadDecoder(
+            RequestPipelineHttpDecodingMessageAdapter(),
+            HttpParser.Mode.REQUEST,
+            config=config,
+        )
+
+    def inbound_buffered_bytes(self) -> int:
+        return self._decoder.inbound_buffered_bytes()
+
+    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if self._decoder.done:
+            ctx.feed_in(msg)
+            return
+
+        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
+            if not ctx.services[ChannelPipelineFlow].is_auto_read():
+                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+
+            ctx.feed_in(msg)
+            return
+
+        for dec_msg in self._decoder.inbound(msg):
+            ctx.feed_in(dec_msg)
+
+
+##
+
+
+class PipelineHttpRequestBodyAggregator(InboundBytesBufferingChannelPipelineHandler):
+    """
+    Aggregates an HTTP/1 request body using Content-Length.
+
+    Input:
+      - DecodedHttpRequestHead (from HttpRequestDecoder)
+      - subsequent bytes-like chunks / views (body bytes)
+
+    Output:
+      - FullPipelineHttpRequest(head, body)
+
+    Notes:
+      - This is intentionally minimal:
+        - Only supports Content-Length
+        - No chunked transfer decoding
+        - Assumes one request per connection in our server examples (we close after response)
+      - Body bytes may arrive in the same TCP read as the head; HttpRequestDecoder forwards any remainder.
+
+    TODO:
+      - Use ContentLengthPipelineHttpContentChunkDecoder
+    """
+
+    def __init__(
+            self,
+            *,
+            config: PipelineHttpDecodingConfig = PipelineHttpDecodingConfig.DEFAULT,
+    ) -> None:
+        super().__init__()
+
+        self._cur_head: ta.Optional[PipelineHttpRequestHead] = None
+        self._want = 0
+        self._buf = SegmentedByteStreamBuffer(
+            max_size=config.aggregated_body_buffer.max_size,
+            chunk_size=config.aggregated_body_buffer.chunk_size,
+        )
+
+    def inbound_buffered_bytes(self) -> int:
+        return len(self._buf)
+
+    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, ChannelPipelineMessages.FinalInput):
+            # If we were expecting body bytes, that's a protocol error.
+            if self._cur_head is not None and self._want and len(self._buf) < self._want:
+                ctx.feed_in(PipelineHttpRequestAborted('EOF before HTTP request body complete'))
+
+                self._cur_head = None
+                self._want = 0
+                self._buf.split_to(len(self._buf))
+
+            ctx.feed_in(msg)
+            return
+
+        if isinstance(msg, PipelineHttpRequestHead):
+            if self._cur_head is not None:
+                # We don't support pipelining in this minimal server.
+                raise ValueError('HTTP pipelining not supported')
+
+            self._cur_head = msg
+
+            cl = msg.headers.single.get('content-length')
+            if cl is None or cl == '':
+                self._want = 0
+
+            else:
+                try:
+                    self._want = int(cl)
+                except ValueError:
+                    raise ValueError('bad Content-Length') from None
+
+                if self._want < 0:
+                    raise ValueError('bad Content-Length')
+
+                if (max_body := self._buf.max_size) is not None and self._want > max_body:
+                    raise FrameTooLargeByteStreamBufferError('request body exceeded max_body')
+
+            if self._want == 0:
+                req = FullPipelineHttpRequest(msg, b'')
+                self._cur_head = None
+                self._want = 0
+                ctx.feed_in(req)
+
+            return
+
+        if not ByteStreamBuffers.can_bytes(msg):
+            ctx.feed_in(msg)
+            return
+
+        # Body bytes
+        if self._cur_head is None:
+            # Ignore stray bytes (or treat as error). Minimal server: ignore.
+            return
+
+        for mv in ByteStreamBuffers.iter_segments(msg):
+            if mv:
+                self._buf.write(mv)
+
+        # If still not enough, just wait.
+        if len(self._buf) < self._want:
+            return
+
+        # Extract exactly want bytes; preserve any extra (we don't support pipelining, but be correct).
+        body_view = self._buf.split_to(self._want)
+        body = body_view.tobytes()
+
+        head = self._cur_head
+        self._cur_head = None
+        self._want = 0
+
+        req = FullPipelineHttpRequest(head, body)
+        ctx.feed_in(req)
+
+        # If leftover bytes exist, treat as protocol error in our minimal server model.
+        if len(self._buf):
+            raise ValueError('unexpected extra bytes after request body')
+
+
+##
+
+
+class PipelineHttpRequestBodyStreamDecoder(InboundBytesBufferingChannelPipelineHandler):
+    """
+    Turns (PipelineHttpRequestHead + subsequent bytes) into streaming PipelineHttpContentChunk events +
+    PipelineHttpRequestEnd.
+
+    Supported body modes:
+      - Content-Length: reads exactly that many bytes
+      - Transfer-Encoding: chunked: decodes RFC 7230 chunked encoding (minimal, trailers ignored beyond terminator)
+      - Neither present: treats body as "until EOF" (useful for infinite streaming uploads)
+    """
+
+    def __init__(
+            self,
+            *,
+            config: PipelineHttpDecodingConfig = PipelineHttpDecodingConfig.DEFAULT,
+    ) -> None:
+        super().__init__()
+
+        self._config = config
+
+        self._decoder: ta.Optional[PipelineHttpContentChunkDecoder] = None
+
+    def inbound_buffered_bytes(self) -> int:
+        if (dec := self._decoder) is None:
+            return 0
+        return dec.inbound_buffered_bytes()
+
+    class _SelectedMode(ta.NamedTuple):
+        mode: ta.Literal['none', 'eof', 'cl', 'chunked']
+        length: ta.Optional[int]
+
+    def _select_mode(self, head: PipelineHttpRequestHead) -> _SelectedMode:
+        if head.headers.contains_value('transfer-encoding', 'chunked', ignore_case=True):
+            return self._SelectedMode('chunked', None)
+
+        cl = head.headers.single.get('content-length')
+        if cl is not None and cl != '':
+            try:
+                n = int(cl)
+            except ValueError:
+                raise ValueError('bad Content-Length') from None
+
+            if n < 0:
+                raise ValueError('bad Content-Length')
+
+            if n == 0:
+                return self._SelectedMode('none', None)
+
+            return self._SelectedMode('cl', n)
+
+        # No length info: treat as until EOF (supports infinite streaming).
+        return self._SelectedMode('eof', None)
+
+    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if self._decoder is not None:
+            if self._decoder.done:
+                ctx.feed_in(msg)
+                return
+
+            if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
+                if not ctx.services[ChannelPipelineFlow].is_auto_read():
+                    ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+
+                ctx.feed_in(msg)
+                return
+
+            for dec_msg in self._decoder.inbound(msg):
+                ctx.feed_in(dec_msg)
+
+            return
+
+        if not isinstance(msg, PipelineHttpRequestHead):
+            ctx.feed_in(msg)
+            return
+
+        sm = self._select_mode(msg)
+
+        ctx.feed_in(msg)
+
+        if sm.mode == 'none':
+            ctx.feed_in(PipelineHttpRequestEnd())
+
+        elif sm.mode == 'eof':
+            self._decoder = UntilFinalInputPipelineHttpContentChunkDecoder(
+                RequestPipelineHttpDecodingMessageAdapter(),
+                config=self._config,
+            )
+
+        elif sm.mode == 'cl':
+            self._decoder = ContentLengthPipelineHttpContentChunkDecoder(
+                RequestPipelineHttpDecodingMessageAdapter(),
+                check.not_none(sm.length),
+                config=self._config,
+            )
+
+        elif sm.mode == 'chunked':
+            self._decoder = ChunkedPipelineHttpContentChunkDecoder(
+                RequestPipelineHttpDecodingMessageAdapter(),
+                config=self._config,
+            )
+
+        else:
+            raise RuntimeError(f'unexpected mode {sm!r}')
 
 
 ########################################

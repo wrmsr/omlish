@@ -1,8 +1,7 @@
 import re
 import typing as ta
 
-from omlish import lang
-
+from ... import lang
 from .ops import LeafOp
 from .ops import Op
 

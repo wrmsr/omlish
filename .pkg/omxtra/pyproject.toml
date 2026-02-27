@@ -76,5 +76,4 @@ exclude = [
     'AUTHORS',
     'DESIGN.md',
     'server/resources/*.ico',
-    'text/abnf/docs/*.txt',
 ]

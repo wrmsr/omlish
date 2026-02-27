@@ -7,6 +7,8 @@ Originally based on library by Charles Yeomans (see LICENSE file):
 
 It has however been entirely rewritten.
 
+Not quite ready for production use, but ready enough for initial use.
+
 ====
 
 | Feature                   | EBNF           | ABNF             |
@@ -26,7 +28,7 @@ It has however been entirely rewritten.
 |                           | `-- `          |                  |
 | Rule names                | case-sensitive | case-insensitive |
 """
-from omlish import dataclasses as _dc  # noqa
+from ... import dataclasses as _dc  # noqa
 
 
 _dc.init_package(
@@ -100,6 +102,8 @@ from .parsing import (  # noqa
 )
 
 from .utils import (  # noqa
+    filter_match_channels,
+
     only_match_rules,
 
     fix_ws,

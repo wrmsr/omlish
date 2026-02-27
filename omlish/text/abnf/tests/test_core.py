@@ -2,8 +2,7 @@ import itertools
 
 import pytest
 
-from omlish import check
-
+from .... import check
 from .. import core as co
 
 

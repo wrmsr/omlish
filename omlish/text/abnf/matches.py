@@ -2,8 +2,7 @@ import io
 import itertools
 import typing as ta
 
-from omlish import lang
-
+from ... import lang
 from .internal import Regex
 from .ops import CaseInsensitiveStringLiteral
 from .ops import Op

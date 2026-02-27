@@ -1,8 +1,7 @@
 import os.path
 
-from omlish import check
-from omlish import lang
-
+from .... import check
+from .... import lang
 from ..grammars import Channel
 from ..grammars import Grammar
 from ..meta import parse_grammar
