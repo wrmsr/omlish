@@ -1,18 +1,11 @@
 """
 TODO:
  - per-feature config, obv
-
-====
-
-docker run --rm -it "$(docker build -q -f x/dockerdev/Dockerfile .)" bash
 """
 import io
-import tomllib
 import typing as ta
 
 from omlish import dataclasses as dc
-from omlish import lang
-from omlish import marshal as msh
 
 from .content import LazyContent
 from .content import Resource
@@ -164,14 +157,7 @@ def gen_ops(cfg: Config) -> ta.Sequence[Op]:
     return ops
 
 
-##
-
-
-def _main() -> None:
-    cfg_src = lang.get_relative_resources(globals=globals())['config.toml'].read_text()
-    cfg_dct = tomllib.loads(cfg_src)
-    cfg = msh.unmarshal(cfg_dct, Config)
-
+def gen_src(cfg: Config) -> str:
     ops = gen_ops(cfg)
 
     out = io.StringIO()
@@ -180,8 +166,4 @@ def _main() -> None:
             out.write('\n\n\n')
         out.write(render_op(section))
 
-    print(out.getvalue())
-
-
-if __name__ == '__main__':
-    _main()
+    return out.getvalue()

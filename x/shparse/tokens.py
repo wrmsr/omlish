@@ -26,372 +26,372 @@ type token uint32
 
 // The list of all possible tokens.
 const (
-	illegalTok token = iota
+    illegalTok token = iota
 
-	_EOF
-	_Newl
-	_Lit
-	_LitWord
-	_LitRedir
+    _EOF
+    _Newl
+    _Lit
+    _LitWord
+    _LitRedir
 
-	// Token values beyond this point stringify as exact source.
-	_realTokenBoundary
+    // Token values beyond this point stringify as exact source.
+    _realTokenBoundary
 
-	sglQuote // '
-	dblQuote // "
-	bckQuote // `
+    sglQuote // '
+    dblQuote // "
+    bckQuote // `
 
-	and    // &
-	andAnd // &&
-	orOr   // ||
-	or     // |
-	orAnd  // |&
+    and    // &
+    andAnd // &&
+    orOr   // ||
+    or     // |
+    orAnd  // |&
 
-	dollar       // $
-	dollSglQuote // $'
-	dollDblQuote // $"
-	dollBrace    // ${
-	dollBrack    // $[
-	dollParen    // $(
-	dollDblParen // $((
-	leftBrace    // {
-	leftBrack    // [
-	dblLeftBrack // [[
-	leftParen    // (
-	dblLeftParen // ((
+    dollar       // $
+    dollSglQuote // $'
+    dollDblQuote // $"
+    dollBrace    // ${
+    dollBrack    // $[
+    dollParen    // $(
+    dollDblParen // $((
+    leftBrace    // {
+    leftBrack    // [
+    dblLeftBrack // [[
+    leftParen    // (
+    dblLeftParen // ((
 
-	rightBrace    // }
-	rightBrack    // ]
-	dblRightBrack // ]]
-	rightParen    // )
-	dblRightParen // ))
-	semicolon     // ;
+    rightBrace    // }
+    rightBrack    // ]
+    dblRightBrack // ]]
+    rightParen    // )
+    dblRightParen // ))
+    semicolon     // ;
 
-	dblSemicolon // ;;
-	semiAnd      // ;&
-	dblSemiAnd   // ;;&
-	semiOr       // ;|
+    dblSemicolon // ;;
+    semiAnd      // ;&
+    dblSemiAnd   // ;;&
+    semiOr       // ;|
 
-	exclMark // !
-	tilde    // ~
-	addAdd   // ++
-	subSub   // --
-	star     // *
-	power    // **
-	equal    // ==
-	nequal   // !=
-	lequal   // <=
-	gequal   // >=
+    exclMark // !
+    tilde    // ~
+    addAdd   // ++
+    subSub   // --
+    star     // *
+    power    // **
+    equal    // ==
+    nequal   // !=
+    lequal   // <=
+    gequal   // >=
 
-	addAssgn     // +=
-	subAssgn     // -=
-	mulAssgn     // *=
-	quoAssgn     // /=
-	remAssgn     // %=
-	andAssgn     // &=
-	orAssgn      // |=
-	xorAssgn     // ^=
-	shlAssgn     // <<=
-	shrAssgn     // >>=
-	andBoolAssgn // &&=
-	orBoolAssgn  // ||=
-	xorBoolAssgn // ^^=
-	powAssgn     // **=
+    addAssgn     // +=
+    subAssgn     // -=
+    mulAssgn     // *=
+    quoAssgn     // /=
+    remAssgn     // %=
+    andAssgn     // &=
+    orAssgn      // |=
+    xorAssgn     // ^=
+    shlAssgn     // <<=
+    shrAssgn     // >>=
+    andBoolAssgn // &&=
+    orBoolAssgn  // ||=
+    xorBoolAssgn // ^^=
+    powAssgn     // **=
 
-	rdrOut      // >
-	appOut      // >>
-	rdrIn       // <
-	rdrInOut    // <>
-	dplIn       // <&
-	dplOut      // >&
-	rdrClob     // >|
-	rdrTrunc    // >!
-	appClob     // >>|
-	appTrunc    // >>!
-	hdoc        // <<
-	dashHdoc    // <<-
-	wordHdoc    // <<<
-	rdrAll      // &>
-	rdrAllClob  // &>|
-	rdrAllTrunc // &>!
-	appAll      // &>>
-	appAllClob  // &>>|
-	appAllTrunc // &>>!
+    rdrOut      // >
+    appOut      // >>
+    rdrIn       // <
+    rdrInOut    // <>
+    dplIn       // <&
+    dplOut      // >&
+    rdrClob     // >|
+    rdrTrunc    // >!
+    appClob     // >>|
+    appTrunc    // >>!
+    hdoc        // <<
+    dashHdoc    // <<-
+    wordHdoc    // <<<
+    rdrAll      // &>
+    rdrAllClob  // &>|
+    rdrAllTrunc // &>!
+    appAll      // &>>
+    appAllClob  // &>>|
+    appAllTrunc // &>>!
 
-	cmdIn      // <(
-	assgnParen // =(
-	cmdOut     // >(
+    cmdIn      // <(
+    assgnParen // =(
+    cmdOut     // >(
 
-	plus     // +
-	colPlus  // :+
-	minus    // -
-	colMinus // :-
-	quest    // ?
-	colQuest // :?
-	assgn    // =
-	colAssgn // :=
-	perc     // %
-	dblPerc  // %%
-	hash     // #
-	dblHash  // ##
-	colHash  // :#
-	caret    // ^
-	dblCaret // ^^
-	comma    // ,
-	dblComma // ,,
-	at       // @
-	slash    // /
-	dblSlash // //
-	period   // .
-	colon    // :
+    plus     // +
+    colPlus  // :+
+    minus    // -
+    colMinus // :-
+    quest    // ?
+    colQuest // :?
+    assgn    // =
+    colAssgn // :=
+    perc     // %
+    dblPerc  // %%
+    hash     // #
+    dblHash  // ##
+    colHash  // :#
+    caret    // ^
+    dblCaret // ^^
+    comma    // ,
+    dblComma // ,,
+    at       // @
+    slash    // /
+    dblSlash // //
+    period   // .
+    colon    // :
 
-	tsExists  // -e
-	tsRegFile // -f
-	tsDirect  // -d
-	tsCharSp  // -c
-	tsBlckSp  // -b
-	tsNmPipe  // -p
-	tsSocket  // -S
-	tsSmbLink // -L
-	tsSticky  // -k
-	tsGIDSet  // -g
-	tsUIDSet  // -u
-	tsGrpOwn  // -G
-	tsUsrOwn  // -O
-	tsModif   // -N
-	tsRead    // -r
-	tsWrite   // -w
-	tsExec    // -x
-	tsNoEmpty // -s
-	tsFdTerm  // -t
-	tsEmpStr  // -z
-	tsNempStr // -n
-	tsOptSet  // -o
-	tsVarSet  // -v
-	tsRefVar  // -R
+    tsExists  // -e
+    tsRegFile // -f
+    tsDirect  // -d
+    tsCharSp  // -c
+    tsBlckSp  // -b
+    tsNmPipe  // -p
+    tsSocket  // -S
+    tsSmbLink // -L
+    tsSticky  // -k
+    tsGIDSet  // -g
+    tsUIDSet  // -u
+    tsGrpOwn  // -G
+    tsUsrOwn  // -O
+    tsModif   // -N
+    tsRead    // -r
+    tsWrite   // -w
+    tsExec    // -x
+    tsNoEmpty // -s
+    tsFdTerm  // -t
+    tsEmpStr  // -z
+    tsNempStr // -n
+    tsOptSet  // -o
+    tsVarSet  // -v
+    tsRefVar  // -R
 
-	tsReMatch // =~
-	tsNewer   // -nt
-	tsOlder   // -ot
-	tsDevIno  // -ef
-	tsEql     // -eq
-	tsNeq     // -ne
-	tsLeq     // -le
-	tsGeq     // -ge
-	tsLss     // -lt
-	tsGtr     // -gt
+    tsReMatch // =~
+    tsNewer   // -nt
+    tsOlder   // -ot
+    tsDevIno  // -ef
+    tsEql     // -eq
+    tsNeq     // -ne
+    tsLeq     // -le
+    tsGeq     // -ge
+    tsLss     // -lt
+    tsGtr     // -gt
 
-	globQuest // ?(
-	globStar  // *(
-	globPlus  // +(
-	globAt    // @(
-	globExcl  // !(
+    globQuest // ?(
+    globStar  // *(
+    globPlus  // +(
+    globAt    // @(
+    globExcl  // !(
 )
 
 type RedirOperator token
 
 const (
-	RdrOut      = RedirOperator(rdrOut) + iota // >
-	AppOut                                     // >>
-	RdrIn                                      // <
-	RdrInOut                                   // <>
-	DplIn                                      // <&
-	DplOut                                     // >&
-	RdrClob                                    // >|
-	RdrTrunc                                   // >! with [LangZsh]
-	AppClob                                    // >>| with [LangZsh]
-	AppTrunc                                   // >>! with [LangZsh]
-	Hdoc                                       // <<
-	DashHdoc                                   // <<-
-	WordHdoc                                   // <<<
-	RdrAll                                     // &>
-	RdrAllClob                                 // &>| with [LangZsh]
-	RdrAllTrunc                                // &>! with [LangZsh]
-	AppAll                                     // &>>
-	AppAllClob                                 // &>>| with [LangZsh]
-	AppAllTrunc                                // &>>! with [LangZsh]
+    RdrOut      = RedirOperator(rdrOut) + iota // >
+    AppOut                                     // >>
+    RdrIn                                      // <
+    RdrInOut                                   // <>
+    DplIn                                      // <&
+    DplOut                                     // >&
+    RdrClob                                    // >|
+    RdrTrunc                                   // >! with [LangZsh]
+    AppClob                                    // >>| with [LangZsh]
+    AppTrunc                                   // >>! with [LangZsh]
+    Hdoc                                       // <<
+    DashHdoc                                   // <<-
+    WordHdoc                                   // <<<
+    RdrAll                                     // &>
+    RdrAllClob                                 // &>| with [LangZsh]
+    RdrAllTrunc                                // &>! with [LangZsh]
+    AppAll                                     // &>>
+    AppAllClob                                 // &>>| with [LangZsh]
+    AppAllTrunc                                // &>>! with [LangZsh]
 
-	// Deprecated: use [RdrClob]
-	//
-	//go:fix inline
-	ClbOut = RdrClob
+    // Deprecated: use [RdrClob]
+    //
+    //go:fix inline
+    ClbOut = RdrClob
 )
 
 type ProcOperator token
 
 const (
-	CmdIn     = ProcOperator(cmdIn) + iota // <(
-	CmdInTemp                              // =(
-	CmdOut                                 // >(
+    CmdIn     = ProcOperator(cmdIn) + iota // <(
+    CmdInTemp                              // =(
+    CmdOut                                 // >(
 )
 
 type GlobOperator token
 
 const (
-	GlobZeroOrOne  = GlobOperator(globQuest) + iota // ?(
-	GlobZeroOrMore                                  // *(
-	GlobOneOrMore                                   // +(
-	GlobOne                                         // @(
-	GlobExcept                                      // !(
+    GlobZeroOrOne  = GlobOperator(globQuest) + iota // ?(
+    GlobZeroOrMore                                  // *(
+    GlobOneOrMore                                   // +(
+    GlobOne                                         // @(
+    GlobExcept                                      // !(
 )
 
 type BinCmdOperator token
 
 const (
-	AndStmt = BinCmdOperator(andAnd) + iota // &&
-	OrStmt                                  // ||
-	Pipe                                    // |
-	PipeAll                                 // |&
+    AndStmt = BinCmdOperator(andAnd) + iota // &&
+    OrStmt                                  // ||
+    Pipe                                    // |
+    PipeAll                                 // |&
 )
 
 type CaseOperator token
 
 const (
-	Break       = CaseOperator(dblSemicolon) + iota // ;;
-	Fallthrough                                     // ;&
-	Resume                                          // ;;&
-	ResumeKorn                                      // ;|
+    Break       = CaseOperator(dblSemicolon) + iota // ;;
+    Fallthrough                                     // ;&
+    Resume                                          // ;;&
+    ResumeKorn                                      // ;|
 )
 
 type ParNamesOperator token
 
 const (
-	NamesPrefix      = ParNamesOperator(star) // *
-	NamesPrefixWords = ParNamesOperator(at)   // @
+    NamesPrefix      = ParNamesOperator(star) // *
+    NamesPrefixWords = ParNamesOperator(at)   // @
 )
 
 type ParExpOperator token
 
 const (
-	AlternateUnset       = ParExpOperator(plus) + iota // +
-	AlternateUnsetOrNull                               // :+
-	DefaultUnset                                       // -
-	DefaultUnsetOrNull                                 // :-
-	ErrorUnset                                         // ?
-	ErrorUnsetOrNull                                   // :?
-	AssignUnset                                        // =
-	AssignUnsetOrNull                                  // :=
-	RemSmallSuffix                                     // %
-	RemLargeSuffix                                     // %%
-	RemSmallPrefix                                     // #
-	RemLargePrefix                                     // ##
-	MatchEmpty                                         // :# with [LangZsh]
-	UpperFirst                                         // ^
-	UpperAll                                           // ^^
-	LowerFirst                                         // ,
-	LowerAll                                           // ,,
-	OtherParamOps                                      // @
+    AlternateUnset       = ParExpOperator(plus) + iota // +
+    AlternateUnsetOrNull                               // :+
+    DefaultUnset                                       // -
+    DefaultUnsetOrNull                                 // :-
+    ErrorUnset                                         // ?
+    ErrorUnsetOrNull                                   // :?
+    AssignUnset                                        // =
+    AssignUnsetOrNull                                  // :=
+    RemSmallSuffix                                     // %
+    RemLargeSuffix                                     // %%
+    RemSmallPrefix                                     // #
+    RemLargePrefix                                     // ##
+    MatchEmpty                                         // :# with [LangZsh]
+    UpperFirst                                         // ^
+    UpperAll                                           // ^^
+    LowerFirst                                         // ,
+    LowerAll                                           // ,,
+    OtherParamOps                                      // @
 )
 
 type UnAritOperator token
 
 const (
-	Not         = UnAritOperator(exclMark) + iota // !
-	BitNegation                                   // ~
-	Inc                                           // ++
-	Dec                                           // --
-	Plus        = UnAritOperator(plus)            // +
-	Minus       = UnAritOperator(minus)           // -
+    Not         = UnAritOperator(exclMark) + iota // !
+    BitNegation                                   // ~
+    Inc                                           // ++
+    Dec                                           // --
+    Plus        = UnAritOperator(plus)            // +
+    Minus       = UnAritOperator(minus)           // -
 )
 
 type BinAritOperator token
 
 const (
-	Add = BinAritOperator(plus)   // +
-	Sub = BinAritOperator(minus)  // -
-	Mul = BinAritOperator(star)   // *
-	Quo = BinAritOperator(slash)  // /
-	Rem = BinAritOperator(perc)   // %
-	Pow = BinAritOperator(power)  // **
-	Eql = BinAritOperator(equal)  // ==
-	Gtr = BinAritOperator(rdrOut) // >
-	Lss = BinAritOperator(rdrIn)  // <
-	Neq = BinAritOperator(nequal) // !=
-	Leq = BinAritOperator(lequal) // <=
-	Geq = BinAritOperator(gequal) // >=
-	And = BinAritOperator(and)    // &
-	Or  = BinAritOperator(or)     // |
-	Xor = BinAritOperator(caret)  // ^
-	Shr = BinAritOperator(appOut) // >>
-	Shl = BinAritOperator(hdoc)   // <<
+    Add = BinAritOperator(plus)   // +
+    Sub = BinAritOperator(minus)  // -
+    Mul = BinAritOperator(star)   // *
+    Quo = BinAritOperator(slash)  // /
+    Rem = BinAritOperator(perc)   // %
+    Pow = BinAritOperator(power)  // **
+    Eql = BinAritOperator(equal)  // ==
+    Gtr = BinAritOperator(rdrOut) // >
+    Lss = BinAritOperator(rdrIn)  // <
+    Neq = BinAritOperator(nequal) // !=
+    Leq = BinAritOperator(lequal) // <=
+    Geq = BinAritOperator(gequal) // >=
+    And = BinAritOperator(and)    // &
+    Or  = BinAritOperator(or)     // |
+    Xor = BinAritOperator(caret)  // ^
+    Shr = BinAritOperator(appOut) // >>
+    Shl = BinAritOperator(hdoc)   // <<
 
-	// TODO: use "Bool" consistently for logical operators like AndArit and OrArit; use //go:fix inline?
+    // TODO: use "Bool" consistently for logical operators like AndArit and OrArit; use //go:fix inline?
 
-	AndArit   = BinAritOperator(andAnd)   // &&
-	OrArit    = BinAritOperator(orOr)     // ||
-	XorBool   = BinAritOperator(dblCaret) // ^^
-	Comma     = BinAritOperator(comma)    // ,
-	TernQuest = BinAritOperator(quest)    // ?
-	TernColon = BinAritOperator(colon)    // :
+    AndArit   = BinAritOperator(andAnd)   // &&
+    OrArit    = BinAritOperator(orOr)     // ||
+    XorBool   = BinAritOperator(dblCaret) // ^^
+    Comma     = BinAritOperator(comma)    // ,
+    TernQuest = BinAritOperator(quest)    // ?
+    TernColon = BinAritOperator(colon)    // :
 
-	Assgn        = BinAritOperator(assgn)        // =
-	AddAssgn     = BinAritOperator(addAssgn)     // +=
-	SubAssgn     = BinAritOperator(subAssgn)     // -=
-	MulAssgn     = BinAritOperator(mulAssgn)     // *=
-	QuoAssgn     = BinAritOperator(quoAssgn)     // /=
-	RemAssgn     = BinAritOperator(remAssgn)     // %=
-	AndAssgn     = BinAritOperator(andAssgn)     // &=
-	OrAssgn      = BinAritOperator(orAssgn)      // |=
-	XorAssgn     = BinAritOperator(xorAssgn)     // ^=
-	ShlAssgn     = BinAritOperator(shlAssgn)     // <<=
-	ShrAssgn     = BinAritOperator(shrAssgn)     // >>=
-	AndBoolAssgn = BinAritOperator(andBoolAssgn) // &&=
-	OrBoolAssgn  = BinAritOperator(orBoolAssgn)  // ||=
-	XorBoolAssgn = BinAritOperator(xorBoolAssgn) // ^^=
-	PowAssgn     = BinAritOperator(powAssgn)     // **=
+    Assgn        = BinAritOperator(assgn)        // =
+    AddAssgn     = BinAritOperator(addAssgn)     // +=
+    SubAssgn     = BinAritOperator(subAssgn)     // -=
+    MulAssgn     = BinAritOperator(mulAssgn)     // *=
+    QuoAssgn     = BinAritOperator(quoAssgn)     // /=
+    RemAssgn     = BinAritOperator(remAssgn)     // %=
+    AndAssgn     = BinAritOperator(andAssgn)     // &=
+    OrAssgn      = BinAritOperator(orAssgn)      // |=
+    XorAssgn     = BinAritOperator(xorAssgn)     // ^=
+    ShlAssgn     = BinAritOperator(shlAssgn)     // <<=
+    ShrAssgn     = BinAritOperator(shrAssgn)     // >>=
+    AndBoolAssgn = BinAritOperator(andBoolAssgn) // &&=
+    OrBoolAssgn  = BinAritOperator(orBoolAssgn)  // ||=
+    XorBoolAssgn = BinAritOperator(xorBoolAssgn) // ^^=
+    PowAssgn     = BinAritOperator(powAssgn)     // **=
 )
 
 type UnTestOperator token
 
 const (
-	TsExists  = UnTestOperator(tsExists) + iota // -e
-	TsRegFile                                   // -f
-	TsDirect                                    // -d
-	TsCharSp                                    // -c
-	TsBlckSp                                    // -b
-	TsNmPipe                                    // -p
-	TsSocket                                    // -S
-	TsSmbLink                                   // -L
-	TsSticky                                    // -k
-	TsGIDSet                                    // -g
-	TsUIDSet                                    // -u
-	TsGrpOwn                                    // -G
-	TsUsrOwn                                    // -O
-	TsModif                                     // -N
-	TsRead                                      // -r
-	TsWrite                                     // -w
-	TsExec                                      // -x
-	TsNoEmpty                                   // -s
-	TsFdTerm                                    // -t
-	TsEmpStr                                    // -z
-	TsNempStr                                   // -n
-	TsOptSet                                    // -o
-	TsVarSet                                    // -v
-	TsRefVar                                    // -R
-	TsNot     = UnTestOperator(exclMark)        // !
-	TsParen   = UnTestOperator(leftParen)       // (
+    TsExists  = UnTestOperator(tsExists) + iota // -e
+    TsRegFile                                   // -f
+    TsDirect                                    // -d
+    TsCharSp                                    // -c
+    TsBlckSp                                    // -b
+    TsNmPipe                                    // -p
+    TsSocket                                    // -S
+    TsSmbLink                                   // -L
+    TsSticky                                    // -k
+    TsGIDSet                                    // -g
+    TsUIDSet                                    // -u
+    TsGrpOwn                                    // -G
+    TsUsrOwn                                    // -O
+    TsModif                                     // -N
+    TsRead                                      // -r
+    TsWrite                                     // -w
+    TsExec                                      // -x
+    TsNoEmpty                                   // -s
+    TsFdTerm                                    // -t
+    TsEmpStr                                    // -z
+    TsNempStr                                   // -n
+    TsOptSet                                    // -o
+    TsVarSet                                    // -v
+    TsRefVar                                    // -R
+    TsNot     = UnTestOperator(exclMark)        // !
+    TsParen   = UnTestOperator(leftParen)       // (
 )
 
 type BinTestOperator token
 
 const (
-	TsReMatch    = BinTestOperator(tsReMatch) + iota // =~
-	TsNewer                                          // -nt
-	TsOlder                                          // -ot
-	TsDevIno                                         // -ef
-	TsEql                                            // -eq
-	TsNeq                                            // -ne
-	TsLeq                                            // -le
-	TsGeq                                            // -ge
-	TsLss                                            // -lt
-	TsGtr                                            // -gt
-	AndTest      = BinTestOperator(andAnd)           // &&
-	OrTest       = BinTestOperator(orOr)             // ||
-	TsMatchShort = BinTestOperator(assgn)            // =
-	TsMatch      = BinTestOperator(equal)            // ==
-	TsNoMatch    = BinTestOperator(nequal)           // !=
-	TsBefore     = BinTestOperator(rdrIn)            // <
-	TsAfter      = BinTestOperator(rdrOut)           // >
+    TsReMatch    = BinTestOperator(tsReMatch) + iota // =~
+    TsNewer                                          // -nt
+    TsOlder                                          // -ot
+    TsDevIno                                         // -ef
+    TsEql                                            // -eq
+    TsNeq                                            // -ne
+    TsLeq                                            // -le
+    TsGeq                                            // -ge
+    TsLss                                            // -lt
+    TsGtr                                            // -gt
+    AndTest      = BinTestOperator(andAnd)           // &&
+    OrTest       = BinTestOperator(orOr)             // ||
+    TsMatchShort = BinTestOperator(assgn)            // =
+    TsMatch      = BinTestOperator(equal)            // ==
+    TsNoMatch    = BinTestOperator(nequal)           // !=
+    TsBefore     = BinTestOperator(rdrIn)            // <
+    TsAfter      = BinTestOperator(rdrOut)           // >
 )
 
 func (o RedirOperator) String() string    { return token(o).String() }

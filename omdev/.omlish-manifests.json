@@ -72,6 +72,18 @@
     }
   },
   {
+    "module": ".dockerdev.__main__",
+    "attr": "_CLI_MODULE",
+    "file": "omdev/dockerdev/__main__.py",
+    "line": 4,
+    "value": {
+      "!.cli.types.CliModule": {
+        "name": "dockerdev",
+        "module": "omdev.dockerdev.__main__"
+      }
+    }
+  },
+  {
     "module": ".imgur",
     "attr": "_CLI_MODULE",
     "file": "omdev/imgur.py",

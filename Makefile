@@ -161,7 +161,7 @@ gen-amalg: venv
 
 .PHONY: gen-docker-dev
 gen-docker-dev: venv
-	${PYTHON} -m omdev.dockerdev.gen > docker/dev/Dockerfile
+	${PYTHON} -m omdev.dockerdev gen> docker/dev/Dockerfile
 
 .PHONY: gen-cmake
 gen-cmake:
