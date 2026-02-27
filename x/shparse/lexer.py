@@ -17,47 +17,51 @@
 # SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-r"""
 import typing as ta
+
+from .tokens import UnTestOperator
+from .tokens import BinTestOperator
 
 
 ##
 
 
-func ascii_letter(r: str) -> bool:
-    return ('a' <= r and r <= 'z') or ('A' <= r and r <= 'Z')
+def ascii_letter(r: str) -> bool:
+    return ('a' <= r <= 'z') or ('A' <= r <= 'Z')
 
 
-func ascii_digit(r: str) -> bool:
-    return r >= '0' and r <= '9'
+def ascii_digit(r: str) -> bool:
+    return '0' <= r <= '9'
 
 
 # bytes that form or start a token
-func reg_ops(r: str) -> bool:
+def reg_ops(r: str) -> bool:
     if r in (';', '"', '\'', '(', ')', '$', '|', '&', '>', '<', '`'):
         return True
     return False
 
 
 # tokenize these inside parameter expansions
-func param_ops(r: str) -> bool:
+def param_ops(r: str) -> bool:
     if r in ('}', '#', '!', ':', '-', '+', '=', '?', '%', '[', ']', '/', '^', ',', '@', '*'):
         return True
     return False
 
 
 # tokenize these inside arithmetic expansions
-func arithm_ops(r: str) -> bool:
+def arithm_ops(r: str) -> bool:
     if r in ('+', '-', '!', '~', '*', '/', '%', '(', ')', '^', '<', '>', ':', '=', ',', '?', '|', '&', '[', ']', '#', '.'):  # noqa
         return True
     return False
 
-func bquote_escaped(b: str) -> bool:
+
+def bquote_escaped(b: str) -> bool:
     if b in ('$', '`', '\\'):
         return True
     return False
 
 
+r"""
 const escNewl rune = utf8.RuneSelf + 1
 
 
@@ -1090,90 +1094,90 @@ func (p *Parser) advanceLitRe(r rune) {
             p.tok, p.val = _LitWord, p.endLit()
             p.quote = noState
             return
-
-func testUnaryOp(val string) UnTestOperator {
-    switch val {
-    case "!":
-        return TsNot
-    case "-e", "-a":
-        return TsExists
-    case "-f":
-        return TsRegFile
-    case "-d":
-        return TsDirect
-    case "-c":
-        return TsCharSp
-    case "-b":
-        return TsBlckSp
-    case "-p":
-        return TsNmPipe
-    case "-S":
-        return TsSocket
-    case "-L", "-h":
-        return TsSmbLink
-    case "-k":
-        return TsSticky
-    case "-g":
-        return TsGIDSet
-    case "-u":
-        return TsUIDSet
-    case "-G":
-        return TsGrpOwn
-    case "-O":
-        return TsUsrOwn
-    case "-N":
-        return TsModif
-    case "-r":
-        return TsRead
-    case "-w":
-        return TsWrite
-    case "-x":
-        return TsExec
-    case "-s":
-        return TsNoEmpty
-    case "-t":
-        return TsFdTerm
-    case "-z":
-        return TsEmpStr
-    case "-n":
-        return TsNempStr
-    case "-o":
-        return TsOptSet
-    case "-v":
-        return TsVarSet
-    case "-R":
-        return TsRefVar
-    default:
-        return 0
-
-func testBinaryOp(val string) BinTestOperator {
-    switch val {
-    case "=":
-        return TsMatchShort
-    case "==":
-        return TsMatch
-    case "!=":
-        return TsNoMatch
-    case "=~":
-        return TsReMatch
-    case "-nt":
-        return TsNewer
-    case "-ot":
-        return TsOlder
-    case "-ef":
-        return TsDevIno
-    case "-eq":
-        return TsEql
-    case "-ne":
-        return TsNeq
-    case "-le":
-        return TsLeq
-    case "-ge":
-        return TsGeq
-    case "-lt":
-        return TsLss
-    case "-gt":
-        return TsGtr
-    default:
-        return 0
 """  # noqa
+
+
+def test_unary_op(val: str) -> UnTestOperator | None:
+    if val == "!":
+        return UnTestOperator.TS_NOT
+    elif val == "-e" or val == "-a":
+        return UnTestOperator.TS_EXISTS
+    elif val == "-f":
+        return UnTestOperator.TS_REG_FILE
+    elif val == "-d":
+        return UnTestOperator.TS_DIRECT
+    elif val == "-c":
+        return UnTestOperator.TS_CHAR_SP
+    elif val == "-b":
+        return UnTestOperator.TS_BLCK_SP
+    elif val == "-p":
+        return UnTestOperator.TS_NM_PIPE
+    elif val == "-S":
+        return UnTestOperator.TS_SOCKET
+    elif val == "-L" or val == "-h":
+        return UnTestOperator.TS_SMB_LINK
+    elif val == "-k":
+        return UnTestOperator.TS_STICKY
+    elif val == "-g":
+        return UnTestOperator.TS_GID_SET
+    elif val == "-u":
+        return UnTestOperator.TS_UID_SET
+    elif val == "-G":
+        return UnTestOperator.TS_GRP_OWN
+    elif val == "-O":
+        return UnTestOperator.TS_USR_OWN
+    elif val == "-N":
+        return UnTestOperator.TS_MODIF
+    elif val == "-r":
+        return UnTestOperator.TS_READ
+    elif val == "-w":
+        return UnTestOperator.TS_WRITE
+    elif val == "-x":
+        return UnTestOperator.TS_EXEC
+    elif val == "-s":
+        return UnTestOperator.TS_NO_EMPTY
+    elif val == "-t":
+        return UnTestOperator.TS_FD_TERM
+    elif val == "-z":
+        return UnTestOperator.TS_EMP_STR
+    elif val == "-n":
+        return UnTestOperator.TS_NEMP_STR
+    elif val == "-o":
+        return UnTestOperator.TS_OPT_SET
+    elif val == "-v":
+        return UnTestOperator.TS_VAR_SET
+    elif val == "-R":
+        return UnTestOperator.TS_REF_VAR
+    else:
+        return None
+
+
+def test_binary_op(val: str) -> BinTestOperator | None:
+    if val == '=':
+        return BinTestOperator.TS_MATCH_SHORT
+    elif val == '==':
+        return BinTestOperator.TS_MATCH
+    elif val == '!=':
+        return BinTestOperator.TS_NO_MATCH
+    elif val == '=~':
+        return BinTestOperator.TS_RE_MATCH
+    elif val == '-nt':
+        return BinTestOperator.TS_NEWER
+    elif val == '-ot':
+        return BinTestOperator.TS_OLDER
+    elif val == '-ef':
+        return BinTestOperator.TS_DEV_INO
+    elif val == '-eq':
+        return BinTestOperator.TS_EQL
+    elif val == '-ne':
+        return BinTestOperator.TS_NEQ
+    elif val == '-le':
+        return BinTestOperator.TS_LEQ
+    elif val == '-ge':
+        return BinTestOperator.TS_GEQ
+    elif val == '-lt':
+        return BinTestOperator.TS_LSS
+    elif val == '-gt':
+        return BinTestOperator.TS_GTR
+    else:
+        return None

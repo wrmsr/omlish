@@ -17,11 +17,54 @@
 # SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-r"""
 import functools
-import typng as ta
+import typing as ta
 
-from omlish import lnag
+from omlish import lang
+
+from .nodes import ArithmCmd
+from .nodes import ArithmExp
+from .nodes import ArrayElem
+from .nodes import ArrayExpr
+from .nodes import Assign
+from .nodes import BinaryArithm
+from .nodes import BinaryCmd
+from .nodes import BinaryTest
+from .nodes import Block
+from .nodes import CStyleLoop
+from .nodes import CallExpr
+from .nodes import CaseClause
+from .nodes import CaseItem
+from .nodes import CmdSubst
+from .nodes import Comment
+from .nodes import CoprocClause
+from .nodes import DblQuoted
+from .nodes import DeclClause
+from .nodes import ExtGlob
+from .nodes import File
+from .nodes import FlagsArithm
+from .nodes import ForClause
+from .nodes import FuncDecl
+from .nodes import IfClause
+from .nodes import LetClause
+from .nodes import Lit
+from .nodes import Node
+from .nodes import ParamExp
+from .nodes import ParenArithm
+from .nodes import ParenTest
+from .nodes import ProcSubst
+from .nodes import Redirect
+from .nodes import SglQuoted
+from .nodes import Stmt
+from .nodes import Subshell
+from .nodes import TestClause
+from .nodes import TestDecl
+from .nodes import TimeClause
+from .nodes import UnaryArithm
+from .nodes import UnaryTest
+from .nodes import WhileClause
+from .nodes import Word
+from .nodes import WordIter
 
 
 ##
@@ -35,11 +78,11 @@ def walk(node: Node, f: ta.Callable[[Node | None], bool]) -> None:
     if not f(node):
         return
 
-    defers: list[ta.Callable[[], None] = []
+    defers: list[ta.Callable[[], None]] = []
 
     if isinstance(node, File):
-        walk_list(node.Stmts, f)
-        walk_comments(node.Last, f)
+        walk_list(node.stmts, f)
+        walk_comments(node.last, f)
     elif isinstance(node, (Comment, Stmt)):
         for c in node.comments:
             if not node.end().after(c.pos()):
@@ -63,10 +106,10 @@ def walk(node: Node, f: ta.Callable[[Node | None], bool]) -> None:
         walk_list(node.args, f)
     elif isinstance(node, Subshell):
         walk_list(node.stmts, f)
-        walk_comments(node.Last, f)
+        walk_comments(node.last, f)
     elif isinstance(node, Block):
         walk_list(node.stmts, f)
-        walk_comments(node.Last, f)
+        walk_comments(node.last, f)
     elif isinstance(node, IfClause):
         walk_list(node.cond, f)
         walk_comments(node.cond_last, f)
@@ -113,7 +156,7 @@ def walk(node: Node, f: ta.Callable[[Node | None], bool]) -> None:
             walk_nilable(node.slice.length, f)
         if node.repl is not None:
             walk_nilable(node.repl.orig, f)
-            walk_nilable(node.repl.with, f)
+            walk_nilable(node.repl.with_, f)
         if node.exp is not None:
             walk_nilable(node.exp.word, f)
     elif isinstance(node, ArithmExp):
@@ -181,7 +224,7 @@ def walk(node: Node, f: ta.Callable[[Node | None], bool]) -> None:
     elif isinstance(node, TestDecl):
         walk(node.description, f)
         walk(node.body, f)
-    default:
+    else:
         raise TypeError(node)
 
     f(None)
@@ -190,16 +233,7 @@ def walk(node: Node, f: ta.Callable[[Node | None], bool]) -> None:
         defer()
 
 
-class NilableNode(Node, lang.Abstract):
-    Node
-
-    # comparable # pointer nodes, which can be compared to nil
-
-
-NilableNodeT = ta.TypeVar('NilableNodeT', bound=NilableNode)
-
-
-def walk_nilable(node: NilableNodeT | None, f: ta.Callable[[Node], bool]) -> None:
+def walk_nilable(node: Node | None, f: ta.Callable[[Node], bool]) -> None:
     if node is not None:
         walk(node, f)
 
@@ -218,6 +252,7 @@ def walk_comments(lst: ta.Sequence[Comment], f: ta.Callable[[Node], bool]) -> No
         walk(n, f)
 
 
+r"""
 # DebugPrint prints the provided syntax tree, spanning multiple lines and with
 # indentation. Can be useful to investigate the content of a syntax tree.
 

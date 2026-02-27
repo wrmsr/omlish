@@ -17,7 +17,6 @@
 # SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-import abc
 import io
 import typing as ta
 
@@ -26,9 +25,14 @@ from omlish import lang
 
 from .tokens import RedirOperator
 from .tokens import ProcOperator
+from .tokens import ParExpOperator
+from .tokens import ParNamesOperator
+from .tokens import UnAritOperator
+from .tokens import BinAritOperator
 from .tokens import GlobOperator
 from .tokens import BinCmdOperator
 from .tokens import UnTestOperator
+from .tokens import CaseOperator
 from .tokens import BinTestOperator
 
 
@@ -246,9 +250,9 @@ class Stmt(Node):
     position: Pos
     semicolon: Pos  # position of ';', '&', or '|&', if any
 
-    negated: bool    # ! stmt
-    background: bool # stmt &
-    coprocess: bool  # mksh's |&
+    negated: bool     # ! stmt
+    background: bool  # stmt &
+    coprocess: bool   # mksh's |&
 
     redirs: list['Redirect']  # stmt >a <b
 
@@ -308,10 +312,11 @@ class Command(Node, lang.Abstract):
 # includes parameter expansions, which may expand to assignments or options.
 @dc.dataclass()
 class Assign(Node):
-    append: bool                      # +=
-    naked: bool                       # without '='
+    append: bool  # +=
+    naked: bool   # without '='
 
-    name: ta.Optional['Lit']         = None  # must be a valid name
+    name: 'Lit'  # must be a valid name
+
     index: ta.Optional['ArithmExpr'] = None  # [i], ["k"]
     value: ta.Optional['Word']       = None  # =val
     array: ta.Optional['ArrayExpr']  = None  # =(arr)
@@ -695,7 +700,6 @@ class CmdSubst(WordPart):
         return pos_add_col(self.right, 1)
 
 
-r"""
 # ParamExp represents a parameter expansion.
 @dc.dataclass()
 class ParamExp(WordPart):
@@ -704,7 +708,7 @@ class ParamExp(WordPart):
 
     short: bool  # $a instead of ${a}
 
-    flags: Lit  # ${(flags)a} with [LANG_ZSH]
+    flags: Lit | None  # ${(flags)a} with [LANG_ZSH]
 
     # Only one of these is set at a time.
     # TODO(v4): perhaps use an Operator token here,
@@ -720,36 +724,36 @@ class ParamExp(WordPart):
     param: Lit
     # A nested parameter expression in the form of [*ParamExp] or [*CmdSubst],
     # or either of those in a [*DblQuoted]. Only possible with [LANG_ZSH].
-    nested_param: WordPart
+    nested_param: WordPart | None
 
-    index: ArithmExpr # ${a[i]}, ${a["k"]}, or a ${a[i,j]} slice with [LANG_ZSH]
+    index: ArithmExpr | None  # ${a[i]}, ${a["k"]}, or a ${a[i,j]} slice with [LANG_ZSH]
 
     # Only one of these is set at a time.
     # TODO(v4): consider joining these in a single "expansion" field/type,
     # because it should be impossible for multiple to be set at once,
     # and a flat structure like this takes up more space.
-    modifiers: list[Lit]     # ${a:h2} with [LANG_ZSH]
-    slice: Slice             # ${a:x:y}
-    repl: Replace            # ${a/x/y}
-    names: ParNamesOperator  # ${!prefix*} or ${!prefix@}
-    exp: Expansion           # ${a:-b}, ${a#b}, etc
+    modifiers: list[Lit]            # ${a:h2} with [LANG_ZSH]
+    slice: ta.Optional['Slice']     # ${a:x:y}
+    repl: ta.Optional['Replace']    # ${a/x/y}
+    names: ParNamesOperator | None  # ${!prefix*} or ${!prefix@}
+    exp: ta.Optional['Expansion']   # ${a:-b}, ${a#b}, etc
 
     # simple returns true if the parameter expansion is of the form $name or ${name},
     # only expanding a name without any further logic.
     def simple(self) -> bool:
         return (
             self.flags is None and
-            not self.Excl and
-            not self.Length and
-            not self.Width and
-            not self.Plus and
+            not self.excl and
+            not self.length and
+            not self.width and
+            not self.plus and
             self.nested_param is None and
             self.index is None and
             len(self.modifiers) == 0 and
             self.slice is None and
             self.repl is None and
-            self.names == 0 and
-            self.Exp is None
+            self.names is None and
+            self.exp is None
         )
 
     def pos(self) -> Pos:
@@ -758,17 +762,17 @@ class ParamExp(WordPart):
         return self.param.pos()
         
     def end(self) -> Pos:
-        if !self.short {
+        if not self.short:
             return pos_add_col(self.rbrace, 1)
         # In short mode, we can only end in either an index or a simple name.
-        if self.Index is not None:
-            return pos_add_col(self.Index.End(), 1)
-        return self.Param.End()
+        if self.index is not None:
+            return pos_add_col(self.index.end(), 1)
+        return self.param.end()
 
-    func (self *ParamExp) nakedIndex() bool {
+    def naked_index(self) -> bool:
         # A naked index is arr[x] inside arithmetic, without a leading '$'.
         # In that case dollar is unset, unlike $arr[x] where it holds the '$' position.
-        return self.short and self.Index is not None and !self.dollar.is_valid()
+        return self.short and self.index is not None and not self.dollar.is_valid()
 
 
 # Slice represents a character slicing expression inside a [ParamExp].
@@ -795,24 +799,25 @@ class Replace:
 class Expansion:
     op: ParExpOperator
     word: Word
-    
+
 
 # ArithmExp represents an arithmetic expansion.
 @dc.dataclass()
 class ArithmExp(WordPart):
-    left, right Pos
-    Bracket     bool # deprecated $[expr] form
-    Unsigned    bool # mksh's $((# expr))
+    left: Pos
+    right: Pos
+    bracket: bool   # deprecated $[expr] form
+    unsigned: bool  # mksh's $((# expr))
 
-    X ArithmExpr
+    x: ArithmExpr
 
     def pos(self) -> Pos:
-        return a.left
+        return self.left
     
     def end(self) -> Pos:
-        if a.Bracket {
-            return pos_add_col(a.right, 1)
-        return pos_add_col(a.right, 2)
+        if self.bracket:
+            return pos_add_col(self.right, 1)
+        return pos_add_col(self.right, 2)
 
 
 # ArithmCmd represents an arithmetic command.
@@ -820,17 +825,17 @@ class ArithmExp(WordPart):
 # This node will only appear with [LANG_BASH] and [LANG_MIR_BSD_KORN].
 @dc.dataclass()
 class ArithmCmd(Command):
-    left, right Pos
-    Unsigned    bool # mksh's ((# expr))
+    left: Pos
+    right: Pos
+    unsigned: bool  # mksh's ((# expr))
 
-    X ArithmExpr
+    x: ArithmExpr
 
     def pos(self) -> Pos:
-        return a.left
+        return self.left
     
     def end(self) -> Pos:
-        return pos_add_col(a.right, 2)
-
+        return pos_add_col(self.right, 2)
 
 
 # BinaryArithm represents a binary arithmetic expression.
@@ -843,15 +848,16 @@ class ArithmCmd(Command):
 # [TernColon] does not appear in any other scenario.
 @dc.dataclass()
 class BinaryArithm(ArithmExpr):
-    op_pos Pos
-    Op    BinAritOperator
-    X, Y  ArithmExpr
+    op_pos: Pos
+    op: BinAritOperator
+    x: ArithmExpr
+    y: ArithmExpr
 
     def pos(self) -> Pos:
-        return b.X.Pos()
+        return self.x.pos()
     
     def end(self) -> Pos:
-        return b.Y.End()
+        return self.y.end()
 
 
 # UnaryArithm represents an unary arithmetic expression. The unary operator
@@ -861,28 +867,29 @@ class BinaryArithm(ArithmExpr):
 # valid name.
 @dc.dataclass()
 class UnaryArithm(ArithmExpr):
-    op_pos Pos
-    Op    UnAritOperator
-    Post  bool
-    X     ArithmExpr
+    op_pos: Pos
+    op: UnAritOperator
+    post: bool
+    x: ArithmExpr
 
     def pos(self) -> Pos:
-        if u.Post {
-            return u.X.Pos()
-        return u.op_pos
+        if self.post:
+            return self.x.pos()
+        return self.op_pos
 
     def end(self) -> Pos:
-        if u.Post {
-            return pos_add_col(u.op_pos, 2)
-        return u.X.End()
+        if self.post:
+            return pos_add_col(self.op_pos, 2)
+        return self.x.end()
 
 
 # ParenArithm represents an arithmetic expression within parentheses.
 @dc.dataclass()
 class ParenArithm(ArithmExpr):
-    lparen, rparen Pos
+    lparen: Pos
+    rparen: Pos
 
-    X ArithmExpr
+    x: ArithmExpr
 
     def pos(self) -> Pos:
         return self.lparen
@@ -897,54 +904,55 @@ class ParenArithm(ArithmExpr):
 # This node will only appear with [LANG_ZSH].
 @dc.dataclass()
 class FlagsArithm(ArithmExpr):
-    flags *Lit
-    X     ArithmExpr
+    flags: Lit
+    x: ArithmExpr
 
     def pos(self) -> Pos:
-        return pos_add_col(z.flags.Pos(), -1)
+        return pos_add_col(self.flags.pos(), -1)
     
     def end(self) -> Pos:
-        if z.X is not None:
-            return z.X.End()
-        return pos_add_col(z.flags.End(), 1) # closing paren
+        if self.x is not None:
+            return self.x.end()
+        return pos_add_col(self.flags.end(), 1)  # closing paren
 
 
 # CaseClause represents a case (switch) clause.
 @dc.dataclass()
 class CaseClause(Command):
-    Case, In, Esac Pos
-    Braces         bool # deprecated mksh form with braces instead of in/esac
+    case: Pos
+    in_: Pos
+    esac: Pos
+    braces: bool  # deprecated mksh form with braces instead of in/esac
 
-    Word  *Word
-    items []*CaseItem
-    last  []Comment
+    word: Word
+    items: list['CaseItem']
+    last: list[Comment]
 
     def pos(self) -> Pos:
-        return self.Case
+        return self.case
     
     def end(self) -> Pos:
-        return pos_add_col(self.Esac, 4)
+        return pos_add_col(self.esac, 4)
 
 
 # CaseItem represents a pattern list (case) within a [CaseClause].
 @dc.dataclass()
 class CaseItem(Node):
-    Op       CaseOperator
-    op_pos    Pos # unset if it was finished by "esac"
-    Comments []Comment
-    Patterns []*Word
+    op: CaseOperator
+    op_pos: Pos  # unset if it was finished by "esac"
+    comments: list[Comment]
+    patterns: list[Word]
 
-    stmts []*Stmt
-    last  []Comment
+    stmts: list[Stmt]
+    last: list[Comment]
 
     def pos(self) -> Pos:
-        return self.Patterns[0].Pos()
+        return self.patterns[0].pos()
     
     def end(self) -> Pos:
-        if self.op_pos.is_valid() {
-            return pos_add_col(self.op_pos, len(self.Op.String()))
+        if self.op_pos.is_valid():
+            return pos_add_col(self.op_pos, len(self.op.string()))
         return stmts_end(self.stmts, self.last)
-"""  # noqa
 
 
 # TestClause represents a Bash extended test clause.

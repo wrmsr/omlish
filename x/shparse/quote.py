@@ -17,9 +17,15 @@
 # SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+import io
+
 from omlish import dataclasses as dc
 
 from .errors import Error
+from .langs import LANG_MIR_BSD_KORN
+from .langs import LANG_POSIX
+from .langs import LangVariant
+from .langs import lang_in
 
 
 ##
@@ -60,7 +66,7 @@ QUOTE_ERR_MKSH  = 'mksh cannot escape codepoints above 16 bits'
 #
 # Some strings do not require any quoting and are returned unchanged.
 # Those strings can be directly surrounded in single quotes as well.
-def quote(s: str, lng: LangVariant) -> str | Error:
+def quote(s: str, l: LangVariant) -> str | Error:
     if not s:
         # Special case; an empty string must always be quoted,
         # as otherwise it expands to zero fields.
@@ -95,7 +101,7 @@ def quote(s: str, lng: LangVariant) -> str | Error:
         elif r == '\x00':
             return QuoteError(offs, QUOTE_ERR_NULL)
         if not r.isprintable():
-            if lng.in_(LANG_POSIX):
+            if lang_in(l, LANG_POSIX):
                 return QuoteError(offs, QUOTE_ERR_POSIX)
             non_printable = True
         rem = rem[1:]
@@ -145,12 +151,12 @@ def quote(s: str, lng: LangVariant) -> str | Error:
                 b.write("\\x%02x" % (rem[0],))
                 # Unfortunately, mksh allows \x to consume more hex characters.
                 # Ensure that we don't allow it to read more than two.
-                if lng.in_(LANG_MIR_BSD_KORN):
+                if lang_in(l, LANG_MIR_BSD_KORN):
                     next_requote_if_hex = True
             elif r > utf8.MaxRune:
                 # Not a valid Unicode code point?
                 return QuoteError(offs, QUOTE_ERR_RANGE)
-            elif lng.in_(LANG_MIR_BSD_KORN) and r > 0xFFFD:
+            elif lang_in(l, LANG_MIR_BSD_KORN) and r > 0xFFFD:
                 # From the CAVEATS section in R59's man page:
                 #
                 # mksh currently uses OPTU-16 internally, which is the same as
