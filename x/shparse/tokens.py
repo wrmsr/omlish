@@ -18,195 +18,197 @@
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 r"""
-type token uint32
+import enum
+
+
+##
+
 
 # The list of all possible tokens.
-const (
-    ILLEGAL_TOK token = iota
+class Token(enum.StrEnum):
+    ILLEGAL_TOK token = '<illegal>'
 
-    _EOF
-    _NEWL
-    _LIT
-    _LIT_WORD
-    _LIT_REDIR
+    EOF_       = '<eof>'
+    NEWL_      = '<newl>'
+    LIT_       = '<lit>'
+    LIT_WORD_  = '<lit-word>'
+    LIT_REDIR_ = '<lit-redir>'
 
     # Token values beyond this point stringify as exact source.
-    _REAL_TOKEN_BOUNDARY
+    REAL_TOKEN_BOUNDARY_ = '<real-token-boundary>'
 
-    SGL_QUOTE  # '
-    DBL_QUOTE  # "
-    BCK_QUOTE  # `
+    SGL_QUOTE = "'"
+    DBL_QUOTE = '"'
+    BCK_QUOTE = '`'
 
-    AND      # &
-    AND_AND  # &&
-    OR_OR    # ||
-    or       # |
-    OR_AND   # |&
+    AND     = '&'
+    AND_AND = '&&'
+    OR_OR   = '||'
+    or      = '|'
+    OR_AND  = '|&'
 
-    DOLLAR          # $
-    DOLL_SGL_QUOTE  # $'
-    DOLL_DBL_QUOTE  # $"
-    DOLL_BRACE      # ${
-    DOLL_BRACK      # $[
-    DOLL_PAREN      # $(
-    DOLL_DBL_PAREN  # $((
-    LEFT_BRACE      # {
-    LEFT_BRACK      # [
-    DBL_LEFT_BRACK  # [[
-    LEFT_PAREN      # (
-    DBL_LEFT_PAREN  # ((
+    DOLLAR         = '$'
+    DOLL_SGL_QUOTE = '$''
+    DOLL_DBL_QUOTE = '$"'
+    DOLL_BRACE     = '${'
+    DOLL_BRACK     = '$['
+    DOLL_PAREN     = '$('
+    DOLL_DBL_PAREN = '$(('
+    LEFT_BRACE     = '{'
+    LEFT_BRACK     = '['
+    DBL_LEFT_BRACK = '[['
+    LEFT_PAREN     = '('
+    DBL_LEFT_PAREN = '(('
 
-    RIGHT_BRACE      # }
-    RIGHT_BRACK      # ]
-    DBL_RIGHT_BRACK  # ]]
-    RIGHT_PAREN      # )
-    DBL_RIGHT_PAREN  # ))
-    SEMICOLON        # ;
+    RIGHT_BRACE     = '}'
+    RIGHT_BRACK     = ']'
+    DBL_RIGHT_BRACK = ']]'
+    RIGHT_PAREN     = ')'
+    DBL_RIGHT_PAREN = '))'
+    SEMICOLON       = ';'
 
-    DBL_SEMICOLON  # ;;
-    SEMI_AND       # ;&
-    DBL_SEMI_AND   # ;;&
-    SEMI_OR        # ;|
+    DBL_SEMICOLON = ';;'
+    SEMI_AND      = ';&'
+    DBL_SEMI_AND  = ';;&'
+    SEMI_OR       = ';|'
 
-    EXCL_MARK  # !
-    TILDE      # ~
-    ADD_ADD    # ++
-    SUB_SUB    # --
-    STAR       # *
-    POWER      # **
-    EQUAL      # ==
-    NEQUAL     # !=
-    LEQUAL     # <=
-    GEQUAL     # >=
+    EXCL_MARK = '!'
+    TILDE     = '~'
+    ADD_ADD   = '++'
+    SUB_SUB   = '--'
+    STAR      = '*'
+    POWER     = '**'
+    EQUAL     = '=='
+    NEQUAL    = '!='
+    LEQUAL    = '<='
+    GEQUAL    = '>='
 
-    ADD_ASSGN       # +=
-    SUB_ASSGN       # -=
-    MUL_ASSGN       # *=
-    QUO_ASSGN       # /=
-    REM_ASSGN       # %=
-    AND_ASSGN       # &=
-    OR_ASSGN        # |=
-    XOR_ASSGN       # ^=
-    SHL_ASSGN       # <<=
-    SHR_ASSGN       # >>=
-    AND_BOOL_ASSGN  # &&=
-    OR_BOOL_ASSGN   # ||=
-    XOR_BOOL_ASSGN  # ^^=
-    POW_ASSGN       # **=
+    ADD_ASSGN      = '+='
+    SUB_ASSGN      = '-='
+    MUL_ASSGN      = '*='
+    QUO_ASSGN      = '/='
+    REM_ASSGN      = '%='
+    AND_ASSGN      = '&='
+    OR_ASSGN       = '|='
+    XOR_ASSGN      = '^='
+    SHL_ASSGN      = '<<='
+    SHR_ASSGN      = '>>='
+    AND_BOOL_ASSGN = '&&='
+    OR_BOOL_ASSGN  = '||='
+    XOR_BOOL_ASSGN = '^^='
+    POW_ASSGN      = '**='
 
-    RDR_OUT        # >
-    APP_OUT        # >>
-    RDR_IN         # <
-    RDR_IN_OUT     # <>
-    DPL_IN         # <&
-    DPL_OUT        # >&
-    RDR_CLOB       # >|
-    RDR_TRUNC      # >!
-    APP_CLOB       # >>|
-    APP_TRUNC      # >>!
-    HDOC           # <<
-    DASH_HDOC      # <<-
-    WORD_HDOC      # <<<
-    RDR_ALL        # &>
-    RDR_ALL_CLOB   # &>|
-    RDR_ALL_TRUNC  # &>!
-    APP_ALL        # &>>
-    APP_ALL_CLOB   # &>>|
-    APP_ALL_TRUNC  # &>>!
+    RDR_OUT       = '>'
+    APP_OUT       = '>>'
+    RDR_IN        = '<'
+    RDR_IN_OUT    = '<>'
+    DPL_IN        = '<&'
+    DPL_OUT       = '>&'
+    RDR_CLOB      = '>|'
+    RDR_TRUNC     = '>!'
+    APP_CLOB      = '>>|'
+    APP_TRUNC     = '>>!'
+    HDOC          = '<<'
+    DASH_HDOC     = '<<-'
+    WORD_HDOC     = '<<<'
+    RDR_ALL       = '&>'
+    RDR_ALL_CLOB  = '&>|'
+    RDR_ALL_TRUNC = '&>!'
+    APP_ALL       = '&>>'
+    APP_ALL_CLOB  = '&>>|'
+    APP_ALL_TRUNC = '&>>!'
 
-    CMD_IN       # <(
-    ASSGN_PAREN  # =(
-    CMD_OUT      # >(
+    CMD_IN      = '<('
+    ASSGN_PAREN = '=('
+    CMD_OUT     = '>('
 
-    PLUS       # +
-    COL_PLUS   # :+
-    MINUS      # -
-    COL_MINUS  # :-
-    QUEST      # ?
-    COL_QUEST  # :?
-    ASSGN      # =
-    COL_ASSGN  # :=
-    PERC       # %
-    DBL_PERC   # %%
-    HASH       # #
-    DBL_HASH   # ##
-    COL_HASH   # :#
-    CARET      # ^
-    DBL_CARET  # ^^
-    COMMA      # ,
-    DBL_COMMA  # ,,
-    AT         # @
-    SLASH      # /
-    DBL_SLASH  # #
-    PERIOD     # .
-    COLON      # :
+    PLUS      = '+'
+    COL_PLUS  = ':+'
+    MINUS     = '-'
+    COL_MINUS = ':-'
+    QUEST     = '?'
+    COL_QUEST = ':?'
+    ASSGN     = '='
+    COL_ASSGN = ':='
+    PERC      = '%'
+    DBL_PERC  = '%%'
+    HASH      = '#'
+    DBL_HASH  = '##'
+    COL_HASH  = ':#'
+    CARET     = '^'
+    DBL_CARET = '^^'
+    COMMA     = ','
+    DBL_COMMA = ',,'
+    AT        = '@'
+    SLASH     = '/'
+    DBL_SLASH = '#'
+    PERIOD    = '.'
+    COLON     = ':'
 
-    TS_EXISTS    # -e
-    TS_REG_FILE  # -f
-    TS_DIRECT    # -d
-    TS_CHAR_SP   # -c
-    TS_BLCK_SP   # -b
-    TS_NM_PIPE   # -p
-    TS_SOCKET    # -S
-    TS_SMB_LINK  # -L
-    TS_STICKY    # -k
-    TS_GID_SET   # -g
-    TS_UID_SET   # -u
-    TS_GRP_OWN   # -G
-    TS_USR_OWN   # -O
-    TS_MODIF     # -N
-    TS_READ      # -r
-    TS_WRITE     # -w
-    TS_EXEC      # -x
-    TS_NO_EMPTY  # -s
-    TS_FD_TERM   # -t
-    TS_EMP_STR   # -z
-    TS_NEMP_STR  # -n
-    TS_OPT_SET   # -o
-    TS_VAR_SET   # -v
-    TS_REF_VAR   # -R
+    TS_EXISTS   = '-e'
+    TS_REG_FILE = '-f'
+    TS_DIRECT   = '-d'
+    TS_CHAR_SP  = '-c'
+    TS_BLCK_SP  = '-b'
+    TS_NM_PIPE  = '-p'
+    TS_SOCKET   = '-S'
+    TS_SMB_LINK = '-L'
+    TS_STICKY   = '-k'
+    TS_GID_SET  = '-g'
+    TS_UID_SET  = '-u'
+    TS_GRP_OWN  = '-G'
+    TS_USR_OWN  = '-O'
+    TS_MODIF    = '-N'
+    TS_READ     = '-r'
+    TS_WRITE    = '-w'
+    TS_EXEC     = '-x'
+    TS_NO_EMPTY = '-s'
+    TS_FD_TERM  = '-t'
+    TS_EMP_STR  = '-z'
+    TS_NEMP_STR = '-n'
+    TS_OPT_SET  = '-o'
+    TS_VAR_SET  = '-v'
+    TS_REF_VAR  = '-R'
 
-    TS_RE_MATCH  # =~
-    TS_NEWER     # -nt
-    TS_OLDER     # -ot
-    TS_DEV_INO   # -ef
-    TS_EQL       # -eq
-    TS_NEQ       # -ne
-    TS_LEQ       # -le
-    TS_GEQ       # -ge
-    TS_LSS       # -lt
-    TS_GTR       # -gt
+    TS_RE_MATCH = '=~'
+    TS_NEWER    = '-nt'
+    TS_OLDER    = '-ot'
+    TS_DEV_INO  = '-ef'
+    TS_EQL      = '-eq'
+    TS_NEQ      = '-ne'
+    TS_LEQ      = '-le'
+    TS_GEQ      = '-ge'
+    TS_LSS      = '-lt'
+    TS_GTR      = '-gt'
 
-    GLOB_QUEST  # ?(
-    GLOB_STAR   # *(
-    GLOB_PLUS   # +(
-    GLOB_AT     # @(
-    GLOB_EXCL   # !(
-)
+    GLOB_QUEST = '?('
+    GLOB_STAR  = '*('
+    GLOB_PLUS  = '+('
+    GLOB_AT    = '@('
+    GLOB_EXCL  = '!('
 
 
-type RedirOperator token
 
-const (
-    RDR_OUT = RedirOperator(rdrOut) + iota  # >
-    APP_OUT                                 # >>
-    RDR_IN                                  # <
-    RDR_IN_OUT                              # <>
-    DPL_IN                                  # <&
-    DPL_OUT                                 # >&
-    RDR_CLOB                                # >|
-    RDR_TRUNC                               # >! with [LangZsh]
-    APP_CLOB                                # >>| with [LangZsh]
-    APP_TRUNC                               # >>! with [LangZsh]
-    HDOC                                    # <<
-    DASH_HDOC                               # <<-
-    WORD_HDOC                               # <<<
-    RDR_ALL                                 # &>
-    RDR_ALL_CLOB                            # &>| with [LangZsh]
-    RDR_ALL_TRUNC                           # &>! with [LangZsh]
-    APP_ALL                                 # &>>
-    APP_ALL_CLOB                            # &>>| with [LangZsh]
-    APP_ALL_TRUNC                           # &>>! with [LangZsh]
+class RedirOperator(enum.Enum):
+    RDR_OUT       = Tokens.RDR_OUT
+    APP_OUT       = Tokens.APP_OUT
+    RDR_IN        = Tokens.RDR_IN
+    RDR_IN_OUT    = Tokens.RDR_IN_OUT
+    DPL_IN        = Tokens.DPL_IN
+    DPL_OUT       = Tokens.DPL_OUT
+    RDR_CLOB      = Tokens.RDR_CLOB
+    RDR_TRUNC     = Tokens.RDR_TRUNC      # with [LangZsh]
+    APP_CLOB      = Tokens.APP_CLOB       # with [LangZsh]
+    APP_TRUNC     = Tokens.APP_TRUNC      # with [LangZsh]
+    HDOC          = Tokens.HDOC
+    DASH_HDOC     = Tokens.DASH_HDOC
+    WORD_HDOC     = Tokens.WORD_HDOC
+    RDR_ALL       = Tokens.RDR_ALL
+    RDR_ALL_CLOB  = Tokens.RDR_ALL_CLOB   # with [LangZsh]
+    RDR_ALL_TRUNC = Tokens.RDR_ALL_TRUNC  # with [LangZsh]
+    APP_ALL       = Tokens.APP_ALL
+    APP_ALL_CLOB  = Tokens.APP_ALL_CLOB   # with [LangZsh]
+    APP_ALL_TRUNC = Tokens.APP_ALL_TRUNC  # with [LangZsh]
 
     # Deprecated: use [RdrClob]
     CLB_OUT = RDR_CLOB
