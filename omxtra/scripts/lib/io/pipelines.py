@@ -56,7 +56,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
             dict(path='../../../omlish/logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='../../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
-            dict(path='core.py', sha1='e3cdd0927202dcfcdae1a953e1ccdbc8936d6872'),
+            dict(path='core.py', sha1='e1b46db31e8ed593e17e23ebb48fa28d729ab4fa'),
             dict(path='../../../omlish/io/streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -86,7 +86,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='bytes/decoders.py', sha1='212e4f54b7bc55028ae75dfb75b3ec18cc5bad51'),
             dict(path='http/decoders.py', sha1='d82d2096b3016e84019bf723aeb17586e2472fd5'),
-            dict(path='drivers/asyncio.py', sha1='e599a96f507279f52783962f36e2eb9939c6539c'),
+            dict(path='drivers/asyncio.py', sha1='af72109759129233c49f4f7a83ea60597d2d044a'),
             dict(path='http/client/responses.py', sha1='830f862d73a28624137f780ef5b02eccbaff38e6'),
             dict(path='http/server/requests.py', sha1='1007de97135c4712c67e5814cb17d7bc85650dad'),
             dict(path='_amalg.py', sha1='f66657d8b3801c6e8e84db2e4cd1b593d9e029be'),
@@ -4833,7 +4833,7 @@ class ChannelPipelineHandlerContext:
         return self._pipeline._channel  # noqa
 
     @property
-    def services(self) -> 'PipelineChannel._Services':  # noqa
+    def services(self) -> 'PipelineChannel.Services':  # noqa
         return self._pipeline._channel._services  # noqa
 
     @property
@@ -5608,10 +5608,10 @@ class PipelineChannel:
 
         # _: dc.KW_ONLY
 
-        metadata: ta.Sequence[PipelineChannelMetadata] = ()
+        metadata: ta.Union[ta.Sequence[PipelineChannelMetadata], 'PipelineChannel.Metadata'] = ()
 
         # Services are fixed for the lifetime of the channel.
-        services: ta.Sequence[ChannelPipelineService] = ()
+        services: ta.Union[ta.Sequence[ChannelPipelineService], 'PipelineChannel.Services'] = ()
 
         #
 
@@ -5627,8 +5627,8 @@ class PipelineChannel:
             handlers: ta.Sequence[ChannelPipelineHandler] = (),
             config: 'PipelineChannel.Config' = Config.DEFAULT,
             *,
-            metadata: ta.Sequence[PipelineChannelMetadata] = (),
-            services: ta.Sequence[ChannelPipelineService] = (),
+            metadata: ta.Union[ta.Sequence[PipelineChannelMetadata], 'PipelineChannel.Metadata'] = (),
+            services: ta.Union[ta.Sequence[ChannelPipelineService], 'PipelineChannel.Services'] = (),
     ) -> 'PipelineChannel':
         return cls(PipelineChannel.Spec(
             handlers=handlers,
@@ -5650,8 +5650,8 @@ class PipelineChannel:
         self._config: ta.Final[PipelineChannel.Config] = spec.config
         self._never_handle_exceptions = never_handle_exceptions
 
-        self._metadata: ta.Final[PipelineChannel._Metadata] = PipelineChannel._Metadata(list(spec.metadata))
-        self._services: ta.Final[PipelineChannel._Services] = PipelineChannel._Services(list(spec.services))
+        self._metadata: ta.Final[PipelineChannel.Metadata] = PipelineChannel.Metadata.of(spec.metadata)
+        self._services: ta.Final[PipelineChannel.Services] = PipelineChannel.Services.of(spec.services)
 
         self._output: ta.Final[PipelineChannel._Output] = PipelineChannel._Output()
 
@@ -5727,7 +5727,7 @@ class PipelineChannel:
     #
 
     @ta.final
-    class _Metadata:
+    class Metadata:
         def __init__(self, lst: ta.Sequence[PipelineChannelMetadata]) -> None:
             dct: ta.Dict[type, ta.Any] = {}
             for md in lst:
@@ -5735,6 +5735,13 @@ class PipelineChannel:
                 check.not_in(ty, dct)
                 dct[ty] = md
             self._dct = dct
+
+        @classmethod
+        def of(cls, obj: ta.Union['PipelineChannel.Metadata', ta.Sequence[PipelineChannelMetadata]]) -> 'PipelineChannel.Metadata':  # noqa
+            if isinstance(obj, cls):
+                return obj
+            else:
+                return cls(list(obj))
 
         def __len__(self) -> int:
             return len(self._dct)
@@ -5794,13 +5801,13 @@ class PipelineChannel:
             return self._dct.get(ty, default)
 
     @property
-    def metadata(self) -> _Metadata:
+    def metadata(self) -> Metadata:
         return self._metadata
 
     #
 
     @ta.final
-    class _Services:
+    class Services:
         def __init__(self, lst: ta.Sequence[ChannelPipelineService]) -> None:
             self._lst = lst
 
@@ -5811,6 +5818,13 @@ class PipelineChannel:
                 svc for svc in lst
                 if type(svc).handler_update is not ChannelPipelineService.handler_update
             ]
+
+        @classmethod
+        def of(cls, obj: ta.Union['PipelineChannel.Services', ta.Sequence[ChannelPipelineService]]) -> 'PipelineChannel.Services':  # noqa
+            if isinstance(obj, cls):
+                return obj
+            else:
+                return cls(list(obj))
 
         def __len__(self) -> int:
             return len(self._lst)
@@ -5857,7 +5871,7 @@ class PipelineChannel:
             return svc
 
     @property
-    def services(self) -> _Services:
+    def services(self) -> Services:
         return self._services
 
     #
@@ -10989,6 +11003,12 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
 
         self._on_non_bytes_output = on_non_bytes_output
 
+        #
+
+        self._shutdown_event = asyncio.Event()
+
+        self._command_queue: asyncio.Queue[AsyncioStreamPipelineChannelDriver._Command] = asyncio.Queue()
+
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}'
 
@@ -11012,24 +11032,21 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
     _command_handlers: ta.Mapping[ta.Type['AsyncioStreamPipelineChannelDriver._Command'], ta.Callable[[ta.Any], ta.Awaitable[None]]]  # noqa
     _output_handlers: ta.Mapping[type, ta.Callable[[ta.Any], ta.Awaitable[None]]]
 
-    _command_queue: 'asyncio.Queue[AsyncioStreamPipelineChannelDriver._Command]'
-    _shutdown_event: asyncio.Event
-
     async def _init(self) -> None:
         self._sched = self._Scheduling(self)
+
+        services = PipelineChannel.Services.of(self._spec.services)
+        self._flow = services.find(ChannelPipelineFlow)
+
+        self._command_handlers = self._build_command_handlers()
+        self._output_handlers = self._build_output_handlers()
+
+        #
 
         self._channel = PipelineChannel(dc.replace(
             self._spec,
             services=(*self._spec.services, self._sched),
         ))
-
-        self._flow = self._channel.services.find(ChannelPipelineFlow)
-
-        self._command_handlers = self._build_command_handlers()
-        self._output_handlers = self._build_output_handlers()
-
-        self._command_queue: asyncio.Queue[AsyncioStreamPipelineChannelDriver._Command] = asyncio.Queue()
-        self._shutdown_event = asyncio.Event()
 
     ##
     # async utils

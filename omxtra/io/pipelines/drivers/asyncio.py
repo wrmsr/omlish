@@ -68,6 +68,12 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
 
         self._on_non_bytes_output = on_non_bytes_output
 
+        #
+
+        self._shutdown_event = asyncio.Event()
+
+        self._command_queue: asyncio.Queue[AsyncioStreamPipelineChannelDriver._Command] = asyncio.Queue()
+
     def __repr__(self) -> str:
         return f'{type(self).__name__}@{id(self):x}'
 
@@ -91,24 +97,21 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
     _command_handlers: ta.Mapping[ta.Type['AsyncioStreamPipelineChannelDriver._Command'], ta.Callable[[ta.Any], ta.Awaitable[None]]]  # noqa
     _output_handlers: ta.Mapping[type, ta.Callable[[ta.Any], ta.Awaitable[None]]]
 
-    _command_queue: 'asyncio.Queue[AsyncioStreamPipelineChannelDriver._Command]'
-    _shutdown_event: asyncio.Event
-
     async def _init(self) -> None:
         self._sched = self._Scheduling(self)
+
+        services = PipelineChannel.Services.of(self._spec.services)
+        self._flow = services.find(ChannelPipelineFlow)
+
+        self._command_handlers = self._build_command_handlers()
+        self._output_handlers = self._build_output_handlers()
+
+        #
 
         self._channel = PipelineChannel(dc.replace(
             self._spec,
             services=(*self._spec.services, self._sched),
         ))
-
-        self._flow = self._channel.services.find(ChannelPipelineFlow)
-
-        self._command_handlers = self._build_command_handlers()
-        self._output_handlers = self._build_output_handlers()
-
-        self._command_queue: asyncio.Queue[AsyncioStreamPipelineChannelDriver._Command] = asyncio.Queue()
-        self._shutdown_event = asyncio.Event()
 
     ##
     # async utils

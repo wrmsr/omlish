@@ -311,7 +311,7 @@ class ChannelPipelineHandlerContext:
         return self._pipeline._channel  # noqa
 
     @property
-    def services(self) -> 'PipelineChannel._Services':  # noqa
+    def services(self) -> 'PipelineChannel.Services':  # noqa
         return self._pipeline._channel._services  # noqa
 
     @property
@@ -1086,10 +1086,10 @@ class PipelineChannel:
 
         # _: dc.KW_ONLY
 
-        metadata: ta.Sequence[PipelineChannelMetadata] = ()
+        metadata: ta.Union[ta.Sequence[PipelineChannelMetadata], 'PipelineChannel.Metadata'] = ()
 
         # Services are fixed for the lifetime of the channel.
-        services: ta.Sequence[ChannelPipelineService] = ()
+        services: ta.Union[ta.Sequence[ChannelPipelineService], 'PipelineChannel.Services'] = ()
 
         #
 
@@ -1105,8 +1105,8 @@ class PipelineChannel:
             handlers: ta.Sequence[ChannelPipelineHandler] = (),
             config: 'PipelineChannel.Config' = Config.DEFAULT,
             *,
-            metadata: ta.Sequence[PipelineChannelMetadata] = (),
-            services: ta.Sequence[ChannelPipelineService] = (),
+            metadata: ta.Union[ta.Sequence[PipelineChannelMetadata], 'PipelineChannel.Metadata'] = (),
+            services: ta.Union[ta.Sequence[ChannelPipelineService], 'PipelineChannel.Services'] = (),
     ) -> 'PipelineChannel':
         return cls(PipelineChannel.Spec(
             handlers=handlers,
@@ -1128,8 +1128,8 @@ class PipelineChannel:
         self._config: ta.Final[PipelineChannel.Config] = spec.config
         self._never_handle_exceptions = never_handle_exceptions
 
-        self._metadata: ta.Final[PipelineChannel._Metadata] = PipelineChannel._Metadata(list(spec.metadata))
-        self._services: ta.Final[PipelineChannel._Services] = PipelineChannel._Services(list(spec.services))
+        self._metadata: ta.Final[PipelineChannel.Metadata] = PipelineChannel.Metadata.of(spec.metadata)
+        self._services: ta.Final[PipelineChannel.Services] = PipelineChannel.Services.of(spec.services)
 
         self._output: ta.Final[PipelineChannel._Output] = PipelineChannel._Output()
 
@@ -1205,7 +1205,7 @@ class PipelineChannel:
     #
 
     @ta.final
-    class _Metadata:
+    class Metadata:
         def __init__(self, lst: ta.Sequence[PipelineChannelMetadata]) -> None:
             dct: ta.Dict[type, ta.Any] = {}
             for md in lst:
@@ -1213,6 +1213,13 @@ class PipelineChannel:
                 check.not_in(ty, dct)
                 dct[ty] = md
             self._dct = dct
+
+        @classmethod
+        def of(cls, obj: ta.Union['PipelineChannel.Metadata', ta.Sequence[PipelineChannelMetadata]]) -> 'PipelineChannel.Metadata':  # noqa
+            if isinstance(obj, cls):
+                return obj
+            else:
+                return cls(list(obj))
 
         def __len__(self) -> int:
             return len(self._dct)
@@ -1272,13 +1279,13 @@ class PipelineChannel:
             return self._dct.get(ty, default)
 
     @property
-    def metadata(self) -> _Metadata:
+    def metadata(self) -> Metadata:
         return self._metadata
 
     #
 
     @ta.final
-    class _Services:
+    class Services:
         def __init__(self, lst: ta.Sequence[ChannelPipelineService]) -> None:
             self._lst = lst
 
@@ -1289,6 +1296,13 @@ class PipelineChannel:
                 svc for svc in lst
                 if type(svc).handler_update is not ChannelPipelineService.handler_update
             ]
+
+        @classmethod
+        def of(cls, obj: ta.Union['PipelineChannel.Services', ta.Sequence[ChannelPipelineService]]) -> 'PipelineChannel.Services':  # noqa
+            if isinstance(obj, cls):
+                return obj
+            else:
+                return cls(list(obj))
 
         def __len__(self) -> int:
             return len(self._lst)
@@ -1335,7 +1349,7 @@ class PipelineChannel:
             return svc
 
     @property
-    def services(self) -> _Services:
+    def services(self) -> Services:
         return self._services
 
     #
