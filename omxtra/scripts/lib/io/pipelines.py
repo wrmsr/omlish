@@ -87,7 +87,7 @@ def __omlish_amalg__():  # noqa
             dict(path='bytes/decoders.py', sha1='212e4f54b7bc55028ae75dfb75b3ec18cc5bad51'),
             dict(path='http/decoders.py', sha1='d82d2096b3016e84019bf723aeb17586e2472fd5'),
             dict(path='drivers/asyncio.py', sha1='af72109759129233c49f4f7a83ea60597d2d044a'),
-            dict(path='http/client/responses.py', sha1='830f862d73a28624137f780ef5b02eccbaff38e6'),
+            dict(path='http/client/responses.py', sha1='fc4779c7ee74777ad67c56b9e5a4f4121fbef324'),
             dict(path='http/server/requests.py', sha1='1007de97135c4712c67e5814cb17d7bc85650dad'),
             dict(path='_amalg.py', sha1='f66657d8b3801c6e8e84db2e4cd1b593d9e029be'),
         ],
@@ -11639,6 +11639,10 @@ class PipelineHttpResponseConditionalGzipDecoder(ChannelPipelineHandler):
                 self._z is None or
                 not ByteStreamBuffers.can_bytes(msg)
         ):
+            ctx.feed_in(msg)
+            return
+
+        if not ByteStreamBuffers.can_bytes(msg):
             ctx.feed_in(msg)
             return
 

@@ -134,6 +134,10 @@ class PipelineHttpResponseConditionalGzipDecoder(ChannelPipelineHandler):
             ctx.feed_in(msg)
             return
 
+        if not ByteStreamBuffers.can_bytes(msg):
+            ctx.feed_in(msg)
+            return
+
         for mv in ByteStreamBuffers.iter_segments(msg):
             out = self._z.decompress(mv)  # FIXME: max_length!! zip bombs
             # FIXME: also unconsumed_tail lol

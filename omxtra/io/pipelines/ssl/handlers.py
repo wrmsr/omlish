@@ -6,6 +6,7 @@ import typing as ta
 
 from omlish.io.streams.utils import ByteStreamBuffers
 
+from ..bytes.buffering import InboundBytesBufferingChannelPipelineHandler
 from ..bytes.buffering import OutboundBytesBufferingChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
 from ..core import ChannelPipelineMessages
@@ -16,7 +17,10 @@ from ..flow.types import ChannelPipelineFlowMessages
 ##
 
 
-class SslChannelPipelineHandler(OutboundBytesBufferingChannelPipelineHandler):
+class SslChannelPipelineHandler(
+    InboundBytesBufferingChannelPipelineHandler,
+    OutboundBytesBufferingChannelPipelineHandler,
+):
     """
     TLS via ssl.MemoryBIO + SSLObject.
 
@@ -50,8 +54,11 @@ class SslChannelPipelineHandler(OutboundBytesBufferingChannelPipelineHandler):
         self._pending_outbound_bytes = 0
     #
 
+    def inbound_buffered_bytes(self) -> ta.Optional[int]:
+        return 0 if (st := self._state) is None else st.in_bio.pending
+
     def outbound_buffered_bytes(self) -> ta.Optional[int]:
-        return self._pending_outbound_bytes
+        return self._pending_outbound_bytes + (0 if (st := self._state) is None else st.out_bio.pending)
 
     #
 
