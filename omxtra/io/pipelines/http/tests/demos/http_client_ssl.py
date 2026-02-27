@@ -160,7 +160,9 @@ async def fetch_url(url: str = 'https://example.com/') -> None:
 
 
 def main() -> None:
-    asyncio.run(fetch_url())
+    asyncio.run(fetch_url(
+        # 'https://127.0.0.1:8443/',
+    ))
 
 
 if __name__ == '__main__':
