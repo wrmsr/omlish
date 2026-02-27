@@ -44,7 +44,7 @@ class Token(enum.StrEnum):
     AND     = '&'
     AND_AND = '&&'
     OR_OR   = '||'
-    or      = '|'
+    OR      = '|'
     OR_AND  = '|&'
 
     DOLLAR         = '$'
@@ -188,120 +188,95 @@ class Token(enum.StrEnum):
     GLOB_EXCL  = '!('
 
 
-
 class RedirOperator(enum.Enum):
-    RDR_OUT       = Tokens.RDR_OUT
-    APP_OUT       = Tokens.APP_OUT
-    RDR_IN        = Tokens.RDR_IN
-    RDR_IN_OUT    = Tokens.RDR_IN_OUT
-    DPL_IN        = Tokens.DPL_IN
-    DPL_OUT       = Tokens.DPL_OUT
-    RDR_CLOB      = Tokens.RDR_CLOB
-    RDR_TRUNC     = Tokens.RDR_TRUNC      # with [LangZsh]
-    APP_CLOB      = Tokens.APP_CLOB       # with [LangZsh]
-    APP_TRUNC     = Tokens.APP_TRUNC      # with [LangZsh]
-    HDOC          = Tokens.HDOC
-    DASH_HDOC     = Tokens.DASH_HDOC
-    WORD_HDOC     = Tokens.WORD_HDOC
-    RDR_ALL       = Tokens.RDR_ALL
-    RDR_ALL_CLOB  = Tokens.RDR_ALL_CLOB   # with [LangZsh]
-    RDR_ALL_TRUNC = Tokens.RDR_ALL_TRUNC  # with [LangZsh]
-    APP_ALL       = Tokens.APP_ALL
-    APP_ALL_CLOB  = Tokens.APP_ALL_CLOB   # with [LangZsh]
-    APP_ALL_TRUNC = Tokens.APP_ALL_TRUNC  # with [LangZsh]
+    RDR_OUT       = Token.RDR_OUT
+    APP_OUT       = Token.APP_OUT
+    RDR_IN        = Token.RDR_IN
+    RDR_IN_OUT    = Token.RDR_IN_OUT
+    DPL_IN        = Token.DPL_IN
+    DPL_OUT       = Token.DPL_OUT
+    RDR_CLOB      = Token.RDR_CLOB
+    RDR_TRUNC     = Token.RDR_TRUNC      # with [LangZsh]
+    APP_CLOB      = Token.APP_CLOB       # with [LangZsh]
+    APP_TRUNC     = Token.APP_TRUNC      # with [LangZsh]
+    HDOC          = Token.HDOC
+    DASH_HDOC     = Token.DASH_HDOC
+    WORD_HDOC     = Token.WORD_HDOC
+    RDR_ALL       = Token.RDR_ALL
+    RDR_ALL_CLOB  = Token.RDR_ALL_CLOB   # with [LangZsh]
+    RDR_ALL_TRUNC = Token.RDR_ALL_TRUNC  # with [LangZsh]
+    APP_ALL       = Token.APP_ALL
+    APP_ALL_CLOB  = Token.APP_ALL_CLOB   # with [LangZsh]
+    APP_ALL_TRUNC = Token.APP_ALL_TRUNC  # with [LangZsh]
 
     # Deprecated: use [RdrClob]
-    CLB_OUT = RDR_CLOB
-)
+    CLB_OUT       = Token.RDR_CLOB
 
 
-type ProcOperator token
-
-const (
-    CMD_IN = ProcOperator(cmdIn) + iota  # <(
-    CMD_IN_TEMP                          # =(
-    CMD_OUT                              # >(
-)
+class ProcOperator(enum.Enum):
+    CMD_IN      = Token.CMD_IN
+    CMD_IN_TEMP = Token.CMD_IN_TEMP
+    CMD_OUT     = Token.CMD_OUT
 
 
-type GlobOperator token
-
-const (
-    GLOB_ZERO_OR_ONE = GlobOperator(globQuest) + iota  # ?(
-    GLOB_ZERO_OR_MORE                                  # *(
-    GLOB_ONE_OR_MORE                                   # +(
-    GLOB_ONE                                           # @(
-    GLOB_EXCEPT                                        # !(
-)
+class GlobOperator(enum.Enum):
+    GLOB_ZERO_OR_ONE  = Token.GLOB_QUEST
+    GLOB_ZERO_OR_MORE = Token.GLOB_STAR
+    GLOB_ONE_OR_MORE  = Token.GLOB_PLUS
+    GLOB_ONE          = Token.GLOB_AT
+    GLOB_EXCEPT       = Token.GLOB_EXCL
 
 
-type BinCmdOperator token
-
-const (
-    AND_STMT = BinCmdOperator(AND_AND) + iota  # &&
-    OR_STMT                                    # ||
-    PIPE                                       # |
-    PIPE_ALL                                   # |&
-)
+class BinCmdOperator(enum.Enum):
+    AND_STMT = Token.AND_AND
+    OR_STMT  = Token.OR_OR
+    PIPE     = Token.OR
+    PIPE_ALL = Token.OR_AND
 
 
-type CaseOperator token
-
-const (
-    BREAK = CaseOperator(dblSemicolon) + iota  # ;;
-    FALLTHROUGH                                # ;&
-    RESUME                                     # ;;&
-    RESUME_KORN                                # ;|
-)
+class CaseOperator(enum.Enum):
+    BREAK       = Token.DBL_SEMICOLON
+    FALLTHROUGH = Token.SEMI_AND
+    RESUME      = Token.DBL_SEMI_AND
+    RESUME_KORN = Token.SEMI_OR
 
 
-type ParNamesOperator token
-
-const (
-    NAMES_PREFIX       = ParNamesOperator(star)  # *
-    NAMES_PREFIX_WORDS = ParNamesOperator(at)    # @
-)
+class ParNamesOperator(enum.Enum):
+    NAMES_PREFIX       = Token.STAR
+    NAMES_PREFIX_WORDS = Token.AT
 
 
-type ParExpOperator token
-
-const (
-    ALTERNATE_UNSET = ParExpOperator(plus) + iota  # +
-    ALTERNATE_UNSET_OR_NULL                        # :+
-    DEFAULT_UNSET                                  # -
-    DEFAULT_UNSET_OR_NULL                          # :-
-    ERROR_UNSET                                    # ?
-    ERROR_UNSET_OR_NULL                            # :?
-    ASSIGN_UNSET                                   # =
-    ASSIGN_UNSET_OR_NULL                           # :=
-    REM_SMALL_SUFFIX                               # %
-    REM_LARGE_SUFFIX                               # %%
-    REM_SMALL_PREFIX                               # #
-    REM_LARGE_PREFIX                               # ##
-    MATCH_EMPTY                                    # :# with [LangZsh]
-    UPPER_FIRST                                    # ^
-    UPPER_ALL                                      # ^^
-    LOWER_FIRST                                    # ,
-    LOWER_ALL                                      # ,,
-    OTHER_PARAMOPS                                 # @
-)
+class ParExpOperator(enum.Enum):
+    ALTERNATE_UNSET         = Token.PLUS
+    ALTERNATE_UNSET_OR_NULL = Token.COL_PLUS 
+    DEFAULT_UNSET           = Token.MINUS    
+    DEFAULT_UNSET_OR_NULL   = Token.COL_MINUS
+    ERROR_UNSET             = Token.QUEST    
+    ERROR_UNSET_OR_NULL     = Token.COL_QUEST
+    ASSIGN_UNSET            = Token.ASSGN    
+    ASSIGN_UNSET_OR_NULL    = Token.COL_ASSGN
+    REM_SMALL_SUFFIX        = Token.PERC     
+    REM_LARGE_SUFFIX        = Token.DBL_PERC 
+    REM_SMALL_PREFIX        = Token.HASH     
+    REM_LARGE_PREFIX        = Token.DBL_HASH 
+    MATCH_EMPTY             = Token.COL_HASH 
+    UPPER_FIRST             = Token.CARET    
+    UPPER_ALL               = Token.DBL_CARET
+    LOWER_FIRST             = Token.COMMA    
+    LOWER_ALL               = Token.DBL_COMMA
+    OTHER_PARAMOPS          = Token.AT       
 
 
-type UnAritOperator token
-
-const (
-    NOT          = UnAritOperator(exclMark) + iota  # !
-    BIT_NEGATION                                    # ~
-    INC                                             # ++
-    DEC                                             # --
-    PLUS         = UnAritOperator(plus)             # +
-    MINUS        = UnAritOperator(minus)            # -
-)
+class UnAritOperator(enum.Enum):
+    NOT          = Token.EXCL_MARK
+    BIT_NEGATION = Token.TILDE
+    INC          = Token.ADD_ADD
+    DEC          = Token.SUB_SUB
+    PLUS         = Token.PLUS
+    MINUS        = Token.MINUS
 
 
-type BinAritOperator token
-
-const (
+class BinAritOperator(enum.Enum):
     ADD = BinAritOperator(plus)    # +
     SUB = BinAritOperator(minus)   # -
     MUL = BinAritOperator(star)    # *
@@ -344,12 +319,9 @@ const (
     OR_BOOL_ASSGN  = BinAritOperator(orBoolAssgn)   # ||=
     XOR_BOOL_ASSGN = BinAritOperator(xorBoolAssgn)  # ^^=
     POW_ASSGN      = BinAritOperator(powAssgn)      # **=
-)
 
 
-type UnTestOperator token
-
-const (
+class UnTestOperator(enum.Enum):
     TS_EXISTS = UnTestOperator(tsExists) + iota  # -e
     TS_REG_FILE                                  # -f
     TS_DIRECT                                    # -d
@@ -376,12 +348,9 @@ const (
     TS_REF_VAR                                   # -R
     TS_NOT     = UnTestOperator(exclMark)        # !
     TS_PAREN   = UnTestOperator(leftParen)       # (
-)
 
 
-type BinTestOperator token
-
-const (
+class BinTestOperator(enum.Enum):
     TS_RE_MATCH = BinTestOperator(tsReMatch) + iota  # =~
     TS_NEWER                                         # -nt
     TS_OLDER                                         # -ot
@@ -399,7 +368,7 @@ const (
     TS_NO_MATCH    = BinTestOperator(nequal)         # !=
     TS_BEFORE      = BinTestOperator(rdrIn)          # <
     TS_AFTER       = BinTestOperator(rdrOut)         # >
-)
+
 
 func (o RedirOperator) String() string    { return token(o).String() }
 func (o ProcOperator) String() string     { return token(o).String() }

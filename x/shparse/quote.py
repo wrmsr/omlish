@@ -17,31 +17,29 @@
 # SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-r"""
-package syntax
+from omlish import dataclasses as dc
 
-import (
-    "fmt"
-    "strings"
-    "unicode"
-    "unicode/utf8"
-)
+from .errors import Error
 
-type QuoteError struct {
-    ByteOffset int
-    Message    string
-}
 
-func (e QuoteError) Error() string {
-    return fmt.Sprintf("cannot quote character at byte %d: %s", e.ByteOffset, e.Message)
-}
+##
 
-const (
-    quoteErrNull  = "shell strings cannot contain null bytes"
-    quoteErrPOSIX = "POSIX shell lacks escape sequences"
-    quoteErrRange = "rune out of range"
-    quoteErrMksh  = "mksh cannot escape codepoints above 16 bits"
-)
+
+@dc.dataclass()
+class QuoteError(Error):
+    byte_offset: int
+    s: str
+    
+    @property
+    def message(self) -> str:
+        return f'cannot quote character at byte {self.byte_offset}: {self.s}'
+
+
+QUOTE_ERR_NULL  = 'shell strings cannot contain null bytes'
+QUOTE_ERR_POSIX = 'POSIX shell lacks escape sequences'
+QUOTE_ERR_RANGE = 'rune out of range'
+QUOTE_ERR_MKSH  = 'mksh cannot escape codepoints above 16 bits'
+
 
 # Quote returns a quoted version of the input string,
 # so that the quoted version is expanded or interpreted
@@ -62,19 +60,22 @@ const (
 #
 # Some strings do not require any quoting and are returned unchanged.
 # Those strings can be directly surrounded in single quotes as well.
-func Quote(s string, lang LangVariant) (string, error) {
-    if s == "" {
+def quote(s: str, lng: LangVariant) -> str | Error:
+    if not s:
         # Special case; an empty string must always be quoted,
         # as otherwise it expands to zero fields.
-        return "''", nil
-    shellChars := false
-    nonPrintable := false
-    offs := 0
-    for rem := s; len(rem) > 0; {
-        r, size := utf8.DecodeRuneInString(rem)
-        switch r {
+        return "''"
+        
+    shell_chars = False
+    non_printable = False
+    offs = 0
+    
+    rem = s
+    while len(rem) > 0:
+        r, size = utf8.DecodeRuneInString(rem)
         # Like regOps; token characters.
-        case ';', '"', '\'', '(', ')', '$', '|', '&', '>', '<', '`',
+        if r in (
+            ';', '"', '\'', '(', ')', '$', '|', '&', '>', '<', '`',
             # Whitespace; might result in multiple fields.
             ' ', '\t', '\r', '\n',
             # Escape sequences would be expanded.
@@ -88,98 +89,100 @@ func Quote(s string, lang LangVariant) (string, error) {
             # Might result in globbing.
             '*', '?', '[',
             # Might result in an assignment.
-            '=':
-            shellChars = true
-        case '\x00':
-            return "", &QuoteError{ByteOffset: offs, Message: quoteErrNull}
-        if r == utf8.RuneError || !unicode.IsPrint(r) {
-            if lang.in(LangPOSIX) {
-                return "", &QuoteError{ByteOffset: offs, Message: quoteErrPOSIX}
-            nonPrintable = true
+            '='
+        ):
+            shell_chars = True
+        elif r == '\x00':
+            return QuoteError(offs, QUOTE_ERR_NULL)
+        if r == utf8.RuneError or not unicode.IsPrint(r):
+            if lng.in_(LangPOSIX):
+                return QuoteError(offs, QUOTE_ERR_POSIX)
+            non_printable = True
         rem = rem[size:]
         offs += size
-    if !shellChars && !nonPrintable && !IsKeyword(s) {
+        
+    if not shell_chars and not non_printable and not is_keyword(s)
         # Nothing to quote; avoid allocating.
-        return s, nil
+        return s
 
     # Single quotes are usually best,
     # as they don't require any escaping of characters.
     # If we have any invalid utf8 or non-printable runes,
     # use $'' so that we can escape them.
     # Note that we can't use double quotes for those.
-    var b strings.Builder
-    if nonPrintable {
-        b.WriteString("$'")
-        lastRequoteIfHex := false
-        offs := 0
-        for rem := s; len(rem) > 0; {
-            nextRequoteIfHex := false
-            r, size := utf8.DecodeRuneInString(rem)
-            switch {
-            case r == '\'', r == '\\':
-                b.WriteByte('\\')
-                b.WriteRune(r)
-            case unicode.IsPrint(r) && r != utf8.RuneError:
-                if lastRequoteIfHex && isHex(r) {
-                    b.WriteString("'$'")
-                b.WriteRune(r)
-            case r == '\a':
-                b.WriteString(`\a`)
-            case r == '\b':
-                b.WriteString(`\b`)
-            case r == '\f':
-                b.WriteString(`\f`)
-            case r == '\n':
-                b.WriteString(`\n`)
-            case r == '\r':
-                b.WriteString(`\r`)
-            case r == '\t':
-                b.WriteString(`\t`)
-            case r == '\v':
-                b.WriteString(`\v`)
-            case r < utf8.RuneSelf, r == utf8.RuneError && size == 1:
+    b = io.StringIO()
+    if non_printable:
+        b.write("$'")
+        last_requote_if_hex = False
+        offs = 0
+        rem = s
+        while len(rem) > 0:
+            next_requote_if_hex = False
+            r, size = utf8.DecodeRuneInString(rem)
+            if r == '\'' or r == '\\':
+                b.write('\\')
+                b.write(r)
+            elif unicode.IsPrint(r) and r != utf8.RuneError:
+                if last_requote_if_hex and is_hex(r):
+                    b.write("'$'")
+                b.write(r)
+            elif r == '\a':
+                b.write('\\a')
+            elif r == '\b':
+                b.write('\\b')
+            elif r == '\f':
+                b.write('\\f')
+            elif r == '\n':
+                b.write('\\n')
+            elif r == '\r':
+                b.write('\\r')
+            elif r == '\t':
+                b.write('\\t')
+            elif r == '\v':
+                b.write('\\v')
+            elif r < utf8.RuneSelf or (r == utf8.RuneError and size == 1):
                 # \xXX, fixed at two hexadecimal characters.
-                fmt.Fprintf(&b, "\\x%02x", rem[0])
+                b.write("\\x%02x" % (rem[0],))
                 # Unfortunately, mksh allows \x to consume more hex characters.
                 # Ensure that we don't allow it to read more than two.
-                if lang.in(LangMirBSDKorn) {
-                    nextRequoteIfHex = true
-            case r > utf8.MaxRune:
+                if lng.in_(LangMirBSDKorn):
+                    next_requote_if_hex = True
+            elif r > utf8.MaxRune:
                 # Not a valid Unicode code point?
-                return "", &QuoteError{ByteOffset: offs, Message: quoteErrRange}
-            case lang.in(LangMirBSDKorn) && r > 0xFFFD:
+                return QuoteError(offs, QUOTE_ERR_RANGE)
+            elif lng.in_(LangMirBSDKorn) and r > 0xFFFD:
                 # From the CAVEATS section in R59's man page:
                 #
                 # mksh currently uses OPTU-16 internally, which is the same as
                 # UTF-8 and CESU-8 with 0000..FFFD being valid codepoints.
-                return "", &QuoteError{ByteOffset: offs, Message: quoteErrMksh}
-            case r < 0x10000:
+                return QuoteError(offs, QUOTE_ERR_MKSH)
+            elif r < 0x10000:
                 # \uXXXX, fixed at four hexadecimal characters.
-                fmt.Fprintf(&b, "\\u%04x", r)
-            default:
+                b.write("\\u%04x" % (r,))
+            else:
                 # \UXXXXXXXX, fixed at eight hexadecimal characters.
-                fmt.Fprintf(&b, "\\U%08x", r)
+                b.write("\\U%08x" % (r,))
             rem = rem[size:]
-            lastRequoteIfHex = nextRequoteIfHex
+            last_requote_if_hex = next_requote_if_hex
             offs += size
-        b.WriteString("'")
-        return b.String(), nil
+
+        b.write("'")
+        return b.getvalue()
 
     # Single quotes without any need for escaping.
-    if !strings.Contains(s, "'") {
-        return "'" + s + "'", nil
+    if "'" not in s:
+        return "'" + s + "'"
 
     # The string contains single quotes,
     # so fall back to double quotes.
-    b.WriteByte('"')
-    for _, r := range s {
-        switch r {
-        case '"', '\\', '`', '$':
-            b.WriteByte('\\')
-        b.WriteRune(r)
-    b.WriteByte('"')
-    return b.String(), nil
+    b.write('"')
+    for r in s:
+        if r in ('"', '\\', '`', '$'):
+            b.write('\\')
+        b.write(r)
+    b.write('"')
+    return b.getvalue()
 
-func isHex(r rune) bool {
-    return (r >= '0' && r <= '9') || (r >= 'a' && r <= 'f') || (r >= 'A' && r <= 'F')
-"""  # noqa
+
+def is_hex(r: str) -> bool:
+    return ('0' <= r <= '9') or ('a' <= r <= 'f') or ('A' <= r <= 'F')
