@@ -18,266 +18,277 @@
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 r"""
-# Copyright (c) 2016, Daniel Martí <mvdan@mvdan.cc>
-# See LICENSE for licensing information
+import functools
+import typng as ta
 
-package syntax
+from omlish import lnag
 
-import (
-    "fmt"
-    "io"
-    "reflect"
-)
 
-# Walk traverses a syntax tree in depth-first order: It starts by calling
+##
+
+
+# walk traverses a syntax tree in depth-first order: It starts by calling
 # f(node); node must not be nil. If f returns true, Walk invokes f
 # recursively for each of the non-nil children of node, followed by
 # f(nil).
-func Walk(node Node, f func(Node) bool) {
-    if !f(node) {
+def walk(node: Node, f: ta.Callable[[Node | None], bool]) -> None:
+    if not f(node):
         return
 
-    switch node := node.(type) {
-    case *File:
-        walkList(node.Stmts, f)
-        walkComments(node.Last, f)
-    case *Comment:
-    case *Stmt:
-        for _, c := range node.Comments {
-            if !node.End().After(c.Pos()) {
-                defer Walk(&c, f)
+    defers: list[ta.Callable[[], None] = []
+
+    if isinstance(node, File):
+        walk_list(node.Stmts, f)
+        walk_comments(node.Last, f)
+    elif isinstance(node, (Comment, Stmt)):
+        for c in node.comments:
+            if not node.end().after(c.pos()):
+                defers.append(functools.partial(walk, c, f))
                 break
-            Walk(&c, f)
-        if node.Cmd != nil {
-            Walk(node.Cmd, f)
-        walkList(node.Redirs, f)
-    case *Assign:
-        walkNilable(node.Name, f)
-        walkNilable(node.Value, f)
-        walkNilable(node.Index, f)
-        walkNilable(node.Array, f)
-    case *Redirect:
-        walkNilable(node.N, f)
-        Walk(node.Word, f)
-        walkNilable(node.Hdoc, f)
-    case *CallExpr:
-        walkList(node.Assigns, f)
-        walkList(node.Args, f)
-    case *Subshell:
-        walkList(node.Stmts, f)
-        walkComments(node.Last, f)
-    case *Block:
-        walkList(node.Stmts, f)
-        walkComments(node.Last, f)
-    case *IfClause:
-        walkList(node.Cond, f)
-        walkComments(node.CondLast, f)
-        walkList(node.Then, f)
-        walkComments(node.ThenLast, f)
-        walkNilable(node.Else, f)
-    case *WhileClause:
-        walkList(node.Cond, f)
-        walkComments(node.CondLast, f)
-        walkList(node.Do, f)
-        walkComments(node.DoLast, f)
-    case *ForClause:
-        Walk(node.Loop, f)
-        walkList(node.Do, f)
-        walkComments(node.DoLast, f)
-    case *WordIter:
-        Walk(node.Name, f)
-        walkList(node.Items, f)
-    case *CStyleLoop:
-        walkNilable(node.Init, f)
-        walkNilable(node.Cond, f)
-        walkNilable(node.Post, f)
-    case *BinaryCmd:
-        Walk(node.X, f)
-        Walk(node.Y, f)
-    case *FuncDecl:
-        walkNilable(node.Name, f)
-        walkList(node.Names, f)
-        Walk(node.Body, f)
-    case *Word:
-        walkList(node.Parts, f)
-    case *Lit:
-    case *SglQuoted:
-    case *DblQuoted:
-        walkList(node.Parts, f)
-    case *CmdSubst:
-        walkList(node.Stmts, f)
-        walkComments(node.Last, f)
-    case *ParamExp:
-        walkNilable(node.Flags, f)
-        walkNilable(node.Param, f)
-        walkNilable(node.NestedParam, f)
-        walkNilable(node.Index, f)
-        if node.Slice != nil {
-            walkNilable(node.Slice.Offset, f)
-            walkNilable(node.Slice.Length, f)
-        if node.Repl != nil {
-            walkNilable(node.Repl.Orig, f)
-            walkNilable(node.Repl.With, f)
-        if node.Exp != nil {
-            walkNilable(node.Exp.Word, f)
-    case *ArithmExp:
-        Walk(node.X, f)
-    case *ArithmCmd:
-        Walk(node.X, f)
-    case *BinaryArithm:
-        Walk(node.X, f)
-        Walk(node.Y, f)
-    case *BinaryTest:
-        Walk(node.X, f)
-        Walk(node.Y, f)
-    case *UnaryArithm:
-        Walk(node.X, f)
-    case *UnaryTest:
-        Walk(node.X, f)
-    case *ParenArithm:
-        Walk(node.X, f)
-    case *FlagsArithm:
-        Walk(node.Flags, f)
-        if node.X != nil {
-            Walk(node.X, f)
-    case *ParenTest:
-        Walk(node.X, f)
-    case *CaseClause:
-        Walk(node.Word, f)
-        walkList(node.Items, f)
-        walkComments(node.Last, f)
-    case *CaseItem:
-        for _, c := range node.Comments {
-            if c.Pos().After(node.Pos()) {
-                defer Walk(&c, f)
+            walk(c, f)
+        if node.cmd is not None:
+            walk(node.cmd, f)
+        walk_list(node.redirs, f)
+    elif isinstance(node, Assign):
+        walk_nilable(node.name, f)
+        walk_nilable(node.value, f)
+        walk_nilable(node.index, f)
+        walk_nilable(node.array, f)
+    elif isinstance(node, Redirect):
+        walk_nilable(node.n, f)
+        walk(node.word, f)
+        walk_nilable(node.hdoc, f)
+    elif isinstance(node, CallExpr):
+        walk_list(node.assigns, f)
+        walk_list(node.args, f)
+    elif isinstance(node, Subshell):
+        walk_list(node.stmts, f)
+        walk_comments(node.Last, f)
+    elif isinstance(node, Block):
+        walk_list(node.stmts, f)
+        walk_comments(node.Last, f)
+    elif isinstance(node, IfClause):
+        walk_list(node.cond, f)
+        walk_comments(node.cond_last, f)
+        walk_list(node.then, f)
+        walk_comments(node.then_last, f)
+        walk_nilable(node.else_, f)
+    elif isinstance(node, WhileClause):
+        walk_list(node.cond, f)
+        walk_comments(node.cond_last, f)
+        walk_list(node.do, f)
+        walk_comments(node.do_last, f)
+    elif isinstance(node, ForClause):
+        walk(node.loop, f)
+        walk_list(node.do, f)
+        walk_comments(node.do_last, f)
+    elif isinstance(node, WordIter):
+        walk(node.name, f)
+        walk_list(node.items, f)
+    elif isinstance(node, CStyleLoop):
+        walk_nilable(node.init, f)
+        walk_nilable(node.cond, f)
+        walk_nilable(node.post, f)
+    elif isinstance(node, BinaryCmd):
+        walk(node.x, f)
+        walk(node.y, f)
+    elif isinstance(node, FuncDecl):
+        walk_nilable(node.name, f)
+        walk_list(node.names, f)
+        walk(node.body, f)
+    elif isinstance(node, Word):
+        walk_list(node.parts, f)
+    elif isinstance(node, (Lit, SglQuoted, DblQuoted)):
+        walk_list(node.parts, f)
+    elif isinstance(node, CmdSubst):
+        walk_list(node.stmts, f)
+        walk_comments(node.last, f)
+    elif isinstance(node, ParamExp):
+        walk_nilable(node.flags, f)
+        walk_nilable(node.param, f)
+        walk_nilable(node.nested_param, f)
+        walk_nilable(node.index, f)
+        if node.slice is not None:
+            walk_nilable(node.slice.offset, f)
+            walk_nilable(node.slice.length, f)
+        if node.repl is not None:
+            walk_nilable(node.repl.orig, f)
+            walk_nilable(node.repl.with, f)
+        if node.exp is not None:
+            walk_nilable(node.exp.word, f)
+    elif isinstance(node, ArithmExp):
+        walk(node.x, f)
+    elif isinstance(node, ArithmCmd):
+        walk(node.x, f)
+    elif isinstance(node, BinaryArithm):
+        walk(node.x, f)
+        walk(node.y, f)
+    elif isinstance(node, BinaryTest):
+        walk(node.x, f)
+        walk(node.y, f)
+    elif isinstance(node, UnaryArithm):
+        walk(node.x, f)
+    elif isinstance(node, UnaryTest):
+        walk(node.x, f)
+    elif isinstance(node, ParenArithm):
+        walk(node.x, f)
+    elif isinstance(node, FlagsArithm):
+        walk(node.flags, f)
+        if node.x is not None:
+            walk(node.x, f)
+    elif isinstance(node, ParenTest):
+        walk(node.x, f)
+    elif isinstance(node, CaseClause):
+        walk(node.word, f)
+        walk_list(node.items, f)
+        walk_comments(node.last, f)
+    elif isinstance(node, CaseItem):
+        for c in node.comments:
+            if c.pos().after(node.pos()):
+                defers.append(functools.partial(walk, c, f))
                 break
-            Walk(&c, f)
-        walkList(node.Patterns, f)
-        walkList(node.Stmts, f)
-        walkComments(node.Last, f)
-    case *TestClause:
-        Walk(node.X, f)
-    case *DeclClause:
-        walkList(node.Args, f)
-    case *ArrayExpr:
-        walkList(node.Elems, f)
-        walkComments(node.Last, f)
-    case *ArrayElem:
-        for _, c := range node.Comments {
-            if c.Pos().After(node.Pos()) {
-                defer Walk(&c, f)
+            walk(c, f)
+        walk_list(node.patterns, f)
+        walk_list(node.stmts, f)
+        walk_comments(node.last, f)
+    elif isinstance(node, TestClause):
+        walk(node.x, f)
+    elif isinstance(node, DeclClause):
+        walk_list(node.args, f)
+    elif isinstance(node, ArrayExpr):
+        walk_list(node.elems, f)
+        walk_comments(node.last, f)
+    elif isinstance(node, ArrayElem):
+        for c in node.comments:
+            if c.pos().after(node.pos()):
+                defers.append(functools.partial(walk, c, f))
                 break
-            Walk(&c, f)
-        walkNilable(node.Index, f)
-        walkNilable(node.Value, f)
-    case *ExtGlob:
-        Walk(node.Pattern, f)
-    case *ProcSubst:
-        walkList(node.Stmts, f)
-        walkComments(node.Last, f)
-    case *TimeClause:
-        walkNilable(node.Stmt, f)
-    case *CoprocClause:
-        walkNilable(node.Name, f)
-        Walk(node.Stmt, f)
-    case *LetClause:
-        walkList(node.Exprs, f)
-    case *TestDecl:
-        Walk(node.Description, f)
-        Walk(node.Body, f)
+            walk(c, f)
+        walk_nilable(node.index, f)
+        walk_nilable(node.value, f)
+    elif isinstance(node, ExtGlob):
+        walk(node.pattern, f)
+    elif isinstance(node, ProcSubst):
+        walk_list(node.stmts, f)
+        walk_comments(node.last, f)
+    elif isinstance(node, TimeClause):
+        walk_nilable(node.stmt, f)
+    elif isinstance(node, CoprocClause):
+        walk_nilable(node.name, f)
+        walk(node.stmt, f)
+    elif isinstance(node, LetClause):
+        walk_list(node.exprs, f)
+    elif isinstance(node, TestDecl):
+        walk(node.description, f)
+        walk(node.body, f)
     default:
-        panic(fmt.Sprintf("syntax.Walk: unexpected node type %T", node))
+        raise TypeError(node)
 
-    f(nil)
+    f(None)
+    
+    for defer in defers:
+        defer()
 
-type nilableNode interface {
+
+class NilableNode(Node, lang.Abstract):
     Node
-    comparable # pointer nodes, which can be compared to nil
 
-func walkNilable[N nilableNode](node N, f func(Node) bool) {
-    var zero N # nil
-    if node != zero {
-        Walk(node, f)
+    # comparable # pointer nodes, which can be compared to nil
 
-func walkList[N Node](list []N, f func(Node) bool) {
-    for _, node := range list {
-        Walk(node, f)
 
-func walkComments(list []Comment, f func(Node) bool) {
+NilableNodeT = ta.TypeVar('NilableNodeT', bound=NilableNode)
+
+
+def walk_nilable(node: NilableNodeT | None, f: ta.Callable[[Node], bool]) -> None:
+    if node is not None:
+        walk(node, f)
+
+
+NodeT = ta.TypeVar('NodeT', bound=Node)
+
+
+def walk_list(lst: ta.Sequence[NodeT], f: ta.Callable[[Node], bool]) -> None:
+    for node in lst:
+        walk(node, f)
+
+
+def walk_comments(lst: ta.Sequence[Comment], f: ta.Callable[[Node], bool]) -> None:
     # Note that []Comment does not satisfy the generic constraint []Node.
-    for i := range list {
-        Walk(&list[i], f)
+    for n in lst:
+        walk(n, f)
+
 
 # DebugPrint prints the provided syntax tree, spanning multiple lines and with
 # indentation. Can be useful to investigate the content of a syntax tree.
-func DebugPrint(w io.Writer, node Node) error {
-    p := debugPrinter{out: w}
-    p.print(reflect.ValueOf(node))
-    p.printf("\n")
-    return p.err
 
-type debugPrinter struct {
+class DebugPrinter:
     out   io.Writer
     level int
     err   error
 
-func (p *debugPrinter) printf(format string, args ...any) {
-    _, err := fmt.Fprintf(p.out, format, args...)
-    if err != nil && p.err == nil {
-        p.err = err
+    def __init__(self, w io.Writer, node Node) error {
+        p := debugPrinter{out: w}
+        p.print(reflect.ValueOf(node))
+        p.printf("\n")
+        return p.err
 
-func (p *debugPrinter) newline() {
-    p.printf("\n")
-    for range p.level {
-        p.printf(".  ")
+    def printf(self, format string, args ...any) -> None:
+        _, err := fmt.Fprintf(p.out, format, args...)
+        if err != nil && p.err == nil {
+            p.err = err
 
-func (p *debugPrinter) print(x reflect.Value) {
-    switch x.Kind() {
-    case reflect.Interface:
-        if x.IsNil() {
-            p.printf("nil")
-            return
-        p.print(x.Elem())
-    case reflect.Pointer:
-        if x.IsNil() {
-            p.printf("nil")
-            return
-        p.printf("*")
-        p.print(x.Elem())
-    case reflect.Slice:
-        p.printf("%s (len = %d) {", x.Type(), x.Len())
-        if x.Len() > 0 {
+    def newline(self) -> None:
+        p.printf("\n")
+        for range p.level {
+            p.printf(".  ")
+
+    def print(self, x reflect.Value) -> None:
+        switch x.Kind() {
+        case reflect.Interface:
+            if x.IsNil() {
+                p.printf("nil")
+                return
+            p.print(x.Elem())
+        case reflect.Pointer:
+            if x.IsNil() {
+                p.printf("nil")
+                return
+            p.printf("*")
+            p.print(x.Elem())
+        case reflect.Slice:
+            p.printf("%s (len = %d) {", x.Type(), x.Len())
+            if x.Len() > 0 {
+                p.level++
+                p.newline()
+                for i := range x.Len() {
+                    p.printf("%d: ", i)
+                    p.print(x.Index(i))
+                    if i == x.Len()-1 {
+                        p.level--
+                    p.newline()
+            p.printf("}")
+
+        case reflect.Struct:
+            if v, ok := x.Interface().(Pos); ok {
+                if v.IsRecovered() {
+                    p.printf("<recovered>")
+                    return
+                p.printf("%v:%v", v.Line(), v.Col())
+                return
+            t := x.Type()
+            p.printf("%s {", t)
             p.level++
             p.newline()
-            for i := range x.Len() {
-                p.printf("%d: ", i)
-                p.print(x.Index(i))
-                if i == x.Len()-1 {
+            for i := range t.NumField() {
+                p.printf("%s: ", t.Field(i).Name)
+                p.print(x.Field(i))
+                if i == x.NumField()-1 {
                     p.level--
                 p.newline()
-        p.printf("}")
-
-    case reflect.Struct:
-        if v, ok := x.Interface().(Pos); ok {
-            if v.IsRecovered() {
-                p.printf("<recovered>")
-                return
-            p.printf("%v:%v", v.Line(), v.Col())
-            return
-        t := x.Type()
-        p.printf("%s {", t)
-        p.level++
-        p.newline()
-        for i := range t.NumField() {
-            p.printf("%s: ", t.Field(i).Name)
-            p.print(x.Field(i))
-            if i == x.NumField()-1 {
-                p.level--
-            p.newline()
-        p.printf("}")
-    default:
-        if s, ok := x.Interface().(fmt.Stringer); ok && !x.IsZero() {
-            p.printf("%#v (%s)", x.Interface(), s)
-        else {
-            p.printf("%#v", x.Interface())
+            p.printf("}")
+        default:
+            if s, ok := x.Interface().(fmt.Stringer); ok && !x.IsZero() {
+                p.printf("%#v (%s)", x.Interface(), s)
+            else {
+                p.printf("%#v", x.Interface())
 """  # noqa
