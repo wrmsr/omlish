@@ -37,7 +37,7 @@ pytesseract==0.3.13
 
 ddgs==9.10.0
 
-gguf==0.17.1
+gguf==0.18.0
 
 
 ##
