@@ -24,6 +24,9 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
+from .tokens import RedirOperator
+from .tokens import BinCmdOperator
+
 
 ##
 
@@ -99,7 +102,7 @@ class Pos:
     def offset(self) -> int:
         if self.offs > OFFSET_MAX:
             return 0 # invalid
-        return uint(self.offs)
+        return self.offs
 
     # Line returns the line number of the position, starting at 1.
     # Invalid positions always report the line number 0.
@@ -176,7 +179,6 @@ COL_BIT_MASK = COL_MAX
 RECOVERED_POS = Pos(offs=OFFSET_RECOVERED)
 
 
-r"""
 # TODO(v4): consider using uint32 for Offset/Line/Col to better represent bit sizes.
 # Or go with int64, which more closely resembles portable "sizes" elsewhere.
 # The latter is probably nicest, as then we can change the number of internal
@@ -191,69 +193,76 @@ def new_pos(offset: int, line: int, column: int) -> Pos:
     # note that an offset of 0 is valid, so we leave the maximum.
     offset = min(offset, OFFSET_MAX)
     if line > LINE_MAX:
-        line = 0 # protect against overflows; rendered as "?"
+        line = 0  # protect against overflows; rendered as "?"
     if column > COL_MAX:
-        column = 0 # protect against overflows; rendered as "?"
+        column = 0  # protect against overflows; rendered as "?"
     return Pos(
-        offs:    uint32(offset),
-        line_col: (uint32(line) << COL_BIT_SIZE) | uint32(column),
+        offs=offset,
+        line_col=(line << COL_BIT_SIZE) | column,
     )
 
 
-func posAddCol(p Pos, n int) Pos {
-    if !p.is_valid() {
+def pos_add_col(p: Pos, n: int) -> Pos:
+    if not p.is_valid():
         return p
     # TODO: guard against overflows
-    p.line_col += uint32(n)
-    p.offs += uint32(n)
+    p.line_col += n
+    p.offs += n
     return p
 
 
-func posMax(p1, p2 Pos) Pos {
-    if p2.after(p1) {
+def pos_max(p1: Pos, p2: Pos) -> Pos:
+    if p2.after(p1):
         return p2
     return p1
 
 
 # Comment represents a single comment on a single line.
+@dc.dataclass()
 class Comment(Node):
-    Hash Pos
-    Text string
+    hash: Pos
+    text: str
 
-    func (c *Comment) Pos() Pos { return c.Hash }
+    def pos(self) -> Pos:
+        return self.hash
 
-    func (c *Comment) End() Pos { return posAddCol(c.Hash, 1+len(c.Text)) }
+    def end(self) -> Pos:
+        return pos_add_col(self.hash, 1 + len(self.text))
 
 
 # Stmt represents a statement, also known as a "complete command". It is
 # compromised of a command and other components that may come before or after
 # it.
+@dc.dataclass()
 class Stmt(Node):
-    Comments   []Comment
-    Cmd        Command
-    Position   Pos
-    Semicolon  Pos  # position of ';', '&', or '|&', if any
-    Negated    bool # ! stmt
-    Background bool # stmt &
-    Coprocess  bool # mksh's |&
+    comments: list['Comment']
+    cmd: ta.Optional['Command']
 
-    Redirs []*Redirect # stmt >a <b
+    position: Pos
+    semicolon: Pos  # position of ';', '&', or '|&', if any
 
-    func (s *Stmt) Pos() Pos { return s.Position }
+    negated: bool    # ! stmt
+    background: bool # stmt &
+    coprocess: bool  # mksh's |&
+
+    redirs: list['Redirect']  # stmt >a <b
+
+    def pos(self) -> Pos:
+        return self.position
     
-    func (s *Stmt) End() Pos {
-        if s.Semicolon.is_valid() {
-            end := posAddCol(s.Semicolon, 1) # ';' or '&'
-            if s.Coprocess {
-                end = posAddCol(end, 1) # '|&'
+    def end(self) -> Pos:
+        if self.semicolon.is_valid():
+            end = pos_add_col(self.semicolon, 1)  # ';' or '&'
+            if self.coprocess:
+                end = pos_add_col(end, 1)  # '|&'
             return end
-        end := s.Position
-        if s.Negated {
-            end = posAddCol(end, 1)
-        if s.Cmd != nil {
-            end = s.Cmd.End()
-        if len(s.Redirs) > 0 {
-            end = posMax(end, s.Redirs[len(s.Redirs)-1].End())
+        end = self.position
+        if self.negated:
+            end = pos_add_col(end, 1)
+        if self.cmd is not None:
+            end = self.cmd.end()
+        if self.redirs:
+            end = pos_max(end, self.redirs[-1].end())
         return end
 
 
@@ -276,8 +285,7 @@ class Stmt(Node):
 # - [*LetClause]
 # - [*TimeClause]
 # - [*CoprocClause].
-
-class Command(Node, Abstract):
+class Command(Node, lang.Abstract):
     pass
 
 
@@ -292,49 +300,51 @@ class Command(Node, Abstract):
 # If Naked is true and Name is nil, the assignment is part of a [DeclClause] and
 # the argument (in the Value field) will be evaluated at run-time. This
 # includes parameter expansions, which may expand to assignments or options.
-
+@dc.dataclass()
 class Assign(Node):
-    Append bool       # +=
-    Naked  bool       # without '='
-    Name   *Lit       # must be a valid name
-    Index  ArithmExpr # [i], ["k"]
-    Value  *Word      # =val
-    Array  *ArrayExpr # =(arr)
+    append: bool                      # +=
+    naked: bool                       # without '='
 
-    func (a *Assign) Pos() Pos {
-        if a.Name == nil {
-            return a.Value.Pos()
-        return a.Name.Pos()
+    name: ta.Optional['Lit']         = None  # must be a valid name
+    index: ta.Optional['ArithmExpr'] = None  # [i], ["k"]
+    value: ta.Optional['Word']       = None  # =val
+    array: ta.Optional['ArrayExpr']  = None  # =(arr)
 
-    func (a *Assign) End() Pos {
-        if a.Value != nil {
-            return a.Value.End()
-        if a.Array != nil {
-            return a.Array.End()
-        if a.Index != nil {
-            return posAddCol(a.Index.End(), 2)
-        if a.Naked {
-            return a.Name.End()
-        return posAddCol(a.Name.End(), 1)
+    def pos(self) -> Pos:
+        if not self.name is None:
+            return self.value.pos()
+        return self.name.pos()
+
+    def end(self) -> Pos:
+        if self.value is not None:
+            return self.value.end()
+        if self.array is not None:
+            return self.array.end()
+        if self.index is not None:
+            return pos_add_col(self.index.end(), 2)
+        if self.naked:
+            return self.name.end()
+        return pos_add_col(self.name.end(), 1)
 
 
 # Redirect represents an input/output redirection.
+@dc.dataclass()
 class Redirect(Node):
-    OpPos Pos
-    Op    RedirOperator
-    N     *Lit  # fd>, or {varname}> in Bash
-    Word  *Word # >word
-    Hdoc  *Word # here-document body
+    op_pos: Pos
+    op: RedirOperator
+    n: ta.Optional['Lit'] = None      # fd>, or {varname}> in Bash
+    word: ta.Optional['Word'] = None  # >word
+    hdoc: ta.Optional['Word'] = None  # here-document body
 
-    func (r *Redirect) Pos() Pos {
-        if r.N != nil {
-            return r.N.Pos()
-        return r.OpPos
+    def pos(self) -> Pos:
+        if self.n is not None:
+            return self.n.pos()
+        return self.op_pos
 
-    func (r *Redirect) End() Pos {
-        if r.Hdoc != nil {
-            return r.Hdoc.End()
-        return r.Word.End()
+    def end(self) -> Pos:
+        if self.hdoc is not None:
+            return self.hdoc.end()
+        return self.word.end()
 
 
 # CallExpr represents a command execution or function call, otherwise known as
@@ -342,172 +352,236 @@ class Redirect(Node):
 #
 # If Args is empty, Assigns apply to the shell environment. Otherwise, they are
 # variables that cannot be arrays and which only apply to the call.
-class CallExpr(CommandNode):
-    Assigns []*Assign # a=x b=y args
-    Args    []*Word
+@dc.dataclass()
+class CallExpr(Command):
+    assigns: list[Assign]  # a=x b=y args
+    args: list['Word']
 
-    func (c *CallExpr) Pos() Pos {
-        if len(c.Assigns) > 0 {
-            return c.Assigns[0].Pos()
-        return c.Args[0].Pos()
+    def pos(self) -> Pos:
+        if self.assigns:
+            return self.assigns[0].pos()
+        return self.args[0].pos()
 
-    func (c *CallExpr) End() Pos {
-        if len(c.Args) == 0 {
-            return c.Assigns[len(c.Assigns)-1].End()
-        return c.Args[len(c.Args)-1].End()
+    def end(self) -> Pos:
+        if len(self.args) == 0:
+            return self.assigns[-1].end()
+        return self.args[-1].end()
 
 
 # Subshell represents a series of commands that should be executed in a nested
 # shell environment.
-class Subshell(CommandNode):
-    Lparen, Rparen Pos
+@dc.dataclass()
+class Subshell(Command):
+    lparen: Pos
+    rparen: Pos
 
-    Stmts []*Stmt
-    Last  []Comment
+    stmts: list['Stmt']
+    last: list['Comment']
 
-    func (s *Subshell) Pos() Pos { return s.Lparen }
+    def pos(self) -> Pos:
+        return self.lparen
     
-    func (s *Subshell) End() Pos { return posAddCol(s.Rparen, 1) }
+    def end(self) -> Pos:
+        return pos_add_col(self.rparen, 1)
 
 
 # Block represents a series of commands that should be executed in a nested
 # scope. It is essentially a list of statements within curly braces.
-class Block(CommandNode):
-    Lbrace, Rbrace Pos
+@dc.dataclass()
+class Block(Command):
+    lbrace: Pos
+    rbrace: Pos
 
-    Stmts []*Stmt
-    Last  []Comment
+    stmts: list['Stmt']
+    last: list['Comment']
 
-    func (b *Block) Pos() Pos { return b.Lbrace }
+    def pos(self) -> Pos:
+        return self.lbrace
     
-    func (b *Block) End() Pos { return posAddCol(b.Rbrace, 1) }
+    def end(self) -> Pos:
+        return pos_add_col(self.rbrace, 1)
 
 
 # IfClause represents an if statement.
-class IfClause(CommandNode):
-    Position Pos # position of the starting "if", "elif", or "else" token
-    ThenPos  Pos # position of "then", empty if this is an "else"
-    FiPos    Pos # position of "fi", shared with .Else if non-nil
+@dc.dataclass()
+class IfClause(Command):
+    position: Pos  # position of the starting "if", "elif", or "else" token
+    then_pos: Pos  # position of "then", empty if this is an "else"
+    fi_pos: Pos    # position of "fi", shared with .Else if non-nil
 
-    Cond     []*Stmt
-    CondLast []Comment
-    Then     []*Stmt
-    ThenLast []Comment
+    cond: list['Stmt']
+    cond_last: list['Comment']
+    then: list['Stmt']
+    then_last: list['Comment']
 
-    Else *IfClause # if non-nil, an "elif" or an "else"
+    else_: ta.Optional['IfClause']  # if non-nil, an "elif" or an "else"
 
-    Last []Comment # comments on the first "elif", "else", or "fi"
+    last: list['Comment']  # comments on the first "elif", "else", or "fi"
 
-    func (c *IfClause) Pos() Pos { return c.Position }
+    def pos(self) -> Pos:
+        return self.position
     
-    func (c *IfClause) End() Pos { return posAddCol(c.FiPos, 2) }
+    def end(self) -> Pos:
+        return pos_add_col(self.fi_pos, 2)
 
 
 # WhileClause represents a while or an until clause.
-class WhileClause(CommandNode):
-    WhilePos, DoPos, DonePos Pos
-    Until                    bool
+@dc.dataclass()
+class WhileClause(Command):
+    while_pos: Pos
+    do_pos: Pos
+    done_pos: Pos
+    until: bool
 
-    Cond     []*Stmt
-    CondLast []Comment
-    Do       []*Stmt
-    DoLast   []Comment
+    cond: list['Stmt']
+    cond_last: list['Comment']
+    do: list['Stmt']
+    do_last: list['Comment']
 
-    func (w *WhileClause) Pos() Pos { return w.WhilePos }
+    def pos(self) -> Pos:
+        return self.while_pos
     
-    func (w *WhileClause) End() Pos { return posAddCol(w.DonePos, 4) }
+    def end(self) -> Pos:
+        return pos_add_col(self.done_pos, 4)
 
 
 # ForClause represents a for or a select clause. The latter is only present in
 # Bash.
-class ForClause(CommandNode):
-    ForPos, DoPos, DonePos Pos
-    Select                 bool
-    Braces                 bool # deprecated form with { } instead of do/done
-    Loop                   Loop
+@dc.dataclass()
+class ForClause(Command):
+    for_pos: Pos
+    do_pos: Pos
+    done_pos: Pos
+    select: bool
+    braces: bool  # deprecated form with { } instead of do/done
+    loop: 'Loop'
 
-    Do     []*Stmt
-    DoLast []Comment
+    do: list['Stmt']
+    do_last: list['Comment']
 
-    func (f *ForClause) Pos() Pos { return f.ForPos }
+    def pos(self) -> Pos:
+        return self.for_pos
     
-    func (f *ForClause) End() Pos { return posAddCol(f.DonePos, 4) }
+    def end(self) -> Pos:
+        return pos_add_col(self.done_pos, 4)
 
 
 # Loop holds either [*WordIter] or [*CStyleLoop].
-class Loop(Node, Abstract):
+class Loop(Node, lang.Abstract):
     pass
 
 
 # WordIter represents the iteration of a variable over a series of words in a
 # for clause. If InPos is an invalid position, the "in" token was missing, so
 # the iteration is over the shell's positional parameters.
+@dc.dataclass()
 class WordIter(Loop):
-    Name  *Lit
-    InPos Pos # position of "in"
-    Items []*Word
+    name: 'Lit'
+    in_pos: Pos  # position of "in"
+    items: list['Word']
 
-    func (w *WordIter) Pos() Pos { return w.Name.Pos() }
+    def pos(self) -> Pos:
+        return self.name.pos()
     
-    func (w *WordIter) End() Pos {
-        if len(w.Items) > 0 {
-            return wordLastEnd(w.Items)
-        return posMax(w.Name.End(), posAddCol(w.InPos, 2))
+    def end(self) -> Pos:
+        if len(self.items) > 0:
+            return word_last_end(self.items)
+        return pos_max(self.name.end(), pos_add_col(self.in_pos, 2))
 
 
 # CStyleLoop represents the behavior of a for clause similar to the C
 # language.
 #
 # This node will only appear with [LANG_BASH].
+@dc.dataclass()
 class CStyleLoop(Loop):
-    Lparen, Rparen Pos
-    # Init, Cond, Post can each be nil, if the for loop construct omits it.
-    Init, Cond, Post ArithmExpr
+    lparen: Pos
+    rparen: Pos
 
-    func (c *CStyleLoop) Pos() Pos { return c.Lparen }
+    # Init, Cond, Post can each be nil, if the for loop construct omits it.
+    init: ta.Optional['ArithmExpr'] = None
+    cond: ta.Optional['ArithmExpr'] = None
+    post: ta.Optional['ArithmExpr'] = None
+
+    def pos(self) -> Pos:
+        return self.lparen
     
-    func (c *CStyleLoop) End() Pos { return posAddCol(c.Rparen, 2) }
+    def end(self) -> Pos:
+        return pos_add_col(self.rparen, 2)
 
 
 # BinaryCmd represents a binary expression between two statements.
-class BinaryCmd(CommandNode):
-    OpPos Pos
-    Op    BinCmdOperator
-    X, Y  *Stmt
+@dc.dataclass()
+class BinaryCmd(Command):
+    op_pos: Pos
+    op: BinCmdOperator
+    x: 'Stmt'
+    y: 'Stmt'
 
-    func (b *BinaryCmd) Pos() Pos { return b.X.Pos() }
+    def pos(self) -> Pos:
+        return self.x.pos()
     
-    func (b *BinaryCmd) End() Pos { return b.Y.End() }
+    def end(self) -> Pos:
+        return self.y.end()
 
 
 # FuncDecl represents the declaration of a function.
-class FuncDecl(CommandNode):
-    Position Pos
-    RsrvWord bool # non-posix "function f" style
-    Parens   bool # with () parentheses, can only be false when RsrvWord==true
+@dc.dataclass()
+class FuncDecl(Command):
+    position: Pos
+    rsrv_word: bool  # non-posix "function f" style
+    parens: bool     # with () parentheses, can only be false when RsrvWord==true
 
     # Only one of these is set at a time.
     # Neither is set when declaring an anonymous func with [LANG_ZSH].
     # TODO(v4): join these, even if it's mildly annoying to non-Zsh users.
-    Name  *Lit
-    Names []*Lit # When declaring many func names with [LANG_ZSH].
+    name: 'Lit'
+    names: list['Lit']  # When declaring many func names with [LANG_ZSH].
 
-    Body *Stmt
+    body: Stmt
 
-    func (f *FuncDecl) Pos() Pos { return f.Position }
+    def pos(self) -> Pos:
+        return self.position
     
-    func (f *FuncDecl) End() Pos { return f.Body.End() }
+    def end(self) -> Pos:
+        return self.body.end()
+
+
+# ArithmExpr represents all nodes that form arithmetic expressions.
+#
+# These are:
+# - [*BinaryArithm]
+# - [*UnaryArithm]
+# - [*ParenArithm]
+# - [*FlagsArithm]
+# - [*Word].
+class ArithmExpr(Node, lang.Abstract):
+    pass
+
+
+# TestExpr represents all nodes that form test expressions.
+#
+# These are:
+# - [*BinaryTest]
+# - [*UnaryTest]
+# - [*ParenTest]
+# - [*Word].
+class TestExpr(Node, lang.Abstract):
+    pass
 
 
 # Word represents a shell word, containing one or more word parts contiguous to
 # each other. The word is delimited by word boundaries, such as spaces,
 # newlines, semicolons, or parentheses.
+@dc.dataclass()
 class Word(ArithmExpr, TestExpr):
-    Parts []WordPart
+    parts: list['WordPart']
 
-    func (w *Word) Pos() Pos { return w.Parts[0].Pos() }
+    def pos(self) -> Pos:
+        return self.parts[0].pos()
 
-    func (w *Word) End() Pos { return w.Parts[len(w.Parts)-1].End() }
+    def end(self) -> Pos:
+        return self.parts[-1].end()
 
     # Lit returns the word as a string when it is a simple literal,
     # made up of [*Lit] word parts only.
@@ -515,64 +589,82 @@ class Word(ArithmExpr, TestExpr):
     #
     # For example, the word "foo" will return "foo",
     # but the word "foo${bar}" will return "".
-    func (w *Word) Lit() string {
+    def lit(self) -> str:
         # In the usual case, we'll have either a single part that's a literal,
         # or one of the parts being a non-literal. Using strings.Join instead
         # of a strings.Builder avoids extra work in these cases, since a single
         # part is a shortcut, and many parts don't incur string copies.
-        lits := make([]string, 0, 1)
-        for _, part := range w.Parts {
-            lit, ok := part.(*Lit)
-            if !ok {
+        lits: list[str] = []
+        for part in self.parts:
+            if not isinstance(part, Lit):
                 return ""
-            lits = append(lits, lit.Value)
-        return strings.Join(lits, "")
+            lits.append(part.value)
+        return ''.join(lits)
 
 
 # WordPart represents all nodes that can form part of a word.
 #
-# These are [*Lit], [*SglQuoted], [*DblQuoted], [*ParamExp], [*CmdSubst], [*ArithmExp], # [*ProcSubst], and [*ExtGlob].
-class WordPart(Node, Abstract):
+# These are:
+# - [*Lit]
+# - [*SglQuoted]
+# - [*DblQuoted]
+# - [*ParamExp]
+# - [*CmdSubst]
+# - [*ArithmExp]
+# - [*ProcSubst]
+# - [*ExtGlob].
+class WordPart(Node, lang.Abstract):
     pass
 
 
+r"""
 # Lit represents a string literal.
 #
 # Note that a parsed string literal may not appear as-is in the original source
 # code, as it is possible to split literals by escaping newlines. The splitting
 # is lost, but the end position is not.
+@dc.dataclass()
 class Lit(WordPart):
     ValuePos, ValueEnd Pos
     Value              string
 
+    def pos(self) -> Pos:
     func (l *Lit) Pos() Pos { return l.ValuePos }
     
+    def end(self) -> Pos:
     func (l *Lit) End() Pos { return l.ValueEnd }
 
 
 # SglQuoted represents a string within single quotes.
+@dc.dataclass()
 class SglQuoted(WordPart):
     Left, Right Pos
     Dollar      bool # $''
     Value       string
 
+    def pos(self) -> Pos:
     func (q *SglQuoted) Pos() Pos { return q.Left }
     
-    func (q *SglQuoted) End() Pos { return posAddCol(q.Right, 1) }
+    def end(self) -> Pos:
+    func (q *SglQuoted) End() Pos { return pos_add_col(q.Right, 1) }
 
 
 # DblQuoted represents a list of nodes within double quotes.
+@dc.dataclass()
 class DblQuoted(WordPart):
     Left, Right Pos
     Dollar      bool # $""
     Parts       []WordPart
 
+    def pos(self) -> Pos:
     func (q *DblQuoted) Pos() Pos { return q.Left }
     
-    func (q *DblQuoted) End() Pos { return posAddCol(q.Right, 1) }
+    def end(self) -> Pos:
+    func (q *DblQuoted) End() Pos { return pos_add_col(q.Right, 1) }
 
 
 # CmdSubst represents a command substitution.
+@dc.dataclass()
 class CmdSubst(WordPart):
     Left, Right Pos
 
@@ -583,12 +675,15 @@ class CmdSubst(WordPart):
     TempFile   bool # mksh's ${ foo;}
     ReplyVar   bool # mksh's ${|foo;}
 
+    def pos(self) -> Pos:
     func (c *CmdSubst) Pos() Pos { return c.Left }
     
-    func (c *CmdSubst) End() Pos { return posAddCol(c.Right, 1) }
+    def end(self) -> Pos:
+    func (c *CmdSubst) End() Pos { return pos_add_col(c.Right, 1) }
 
 
 # ParamExp represents a parameter expansion.
+@dc.dataclass()
 class ParamExp(WordPart):
     Dollar, Rbrace Pos
 
@@ -633,23 +728,25 @@ class ParamExp(WordPart):
             len(p.Modifiers) == 0 and p.Slice == nil and
             p.Repl == nil and p.Names == 0 and p.Exp == nil
 
+    def pos(self) -> Pos:
     func (p *ParamExp) Pos() Pos {
         if p.Dollar.is_valid() {
             return p.Dollar
         return p.Param.Pos()
         
+    def end(self) -> Pos:
     func (p *ParamExp) End() Pos {
         if !p.Short {
-            return posAddCol(p.Rbrace, 1)
+            return pos_add_col(p.Rbrace, 1)
         # In short mode, we can only end in either an index or a simple name.
-        if p.Index != nil {
-            return posAddCol(p.Index.End(), 1)
+        if p.Index is not None:
+            return pos_add_col(p.Index.End(), 1)
         return p.Param.End()
 
     func (p *ParamExp) nakedIndex() bool {
         # A naked index is arr[x] inside arithmetic, without a leading '$'.
         # In that case Dollar is unset, unlike $arr[x] where it holds the '$' position.
-        return p.Short and p.Index != nil and !p.Dollar.is_valid()
+        return p.Short and p.Index is not None and !p.Dollar.is_valid()
 
 
 # Slice represents a character slicing expression inside a [ParamExp].
@@ -679,6 +776,7 @@ class Expansion:
     
 
 # ArithmExp represents an arithmetic expansion.
+@dc.dataclass()
 class ArithmExp(WordPart):
     Left, Right Pos
     Bracket     bool # deprecated $[expr] form
@@ -686,35 +784,32 @@ class ArithmExp(WordPart):
 
     X ArithmExpr
 
+    def pos(self) -> Pos:
     func (a *ArithmExp) Pos() Pos { return a.Left }
     
+    def end(self) -> Pos:
     func (a *ArithmExp) End() Pos {
         if a.Bracket {
-            return posAddCol(a.Right, 1)
-        return posAddCol(a.Right, 2)
+            return pos_add_col(a.Right, 1)
+        return pos_add_col(a.Right, 2)
 
 
 # ArithmCmd represents an arithmetic command.
 #
 # This node will only appear with [LANG_BASH] and [LANG_MIR_BSD_KORN].
-class ArithmCmd(CommandNode):
+@dc.dataclass()
+class ArithmCmd(Command):
     Left, Right Pos
     Unsigned    bool # mksh's ((# expr))
 
     X ArithmExpr
 
+    def pos(self) -> Pos:
     func (a *ArithmCmd) Pos() Pos { return a.Left }
     
-    func (a *ArithmCmd) End() Pos { return posAddCol(a.Right, 2) }
+    def end(self) -> Pos:
+    func (a *ArithmCmd) End() Pos { return pos_add_col(a.Right, 2) }
 
-
-# ArithmExpr represents all nodes that form arithmetic expressions.
-#
-# These are [*BinaryArithm], [*UnaryArithm], [*ParenArithm], [*FlagsArithm], and [*Word].
-class ArithmExpr(Node, Abstract):
-    pass
-
-func (*Word) arithmExprNode()         {}
 
 
 # BinaryArithm represents a binary arithmetic expression.
@@ -725,13 +820,16 @@ func (*Word) arithmExprNode()         {}
 # Ternary operators like "a ? b : c" are fit into this structure. Thus, if
 # Op==[TernQuest], Y will be a [*BinaryArithm] with Op==[TernColon].
 # [TernColon] does not appear in any other scenario.
+@dc.dataclass()
 class BinaryArithm(ArithmExpr):
-    OpPos Pos
+    op_pos Pos
     Op    BinAritOperator
     X, Y  ArithmExpr
 
+    def pos(self) -> Pos:
     func (b *BinaryArithm) Pos() Pos { return b.X.Pos() }
     
+    def end(self) -> Pos:
     func (b *BinaryArithm) End() Pos { return b.Y.End() }
 
 
@@ -740,134 +838,156 @@ class BinaryArithm(ArithmExpr):
 #
 # If Op is [Inc] or [Dec], X will be a word with a single [*Lit] whose value is a
 # valid name.
+@dc.dataclass()
 class UnaryArithm(ArithmExpr):
-    OpPos Pos
+    op_pos Pos
     Op    UnAritOperator
     Post  bool
     X     ArithmExpr
 
+    def pos(self) -> Pos:
     func (u *UnaryArithm) Pos() Pos {
         if u.Post {
             return u.X.Pos()
-        return u.OpPos
+        return u.op_pos
 
+    def end(self) -> Pos:
     func (u *UnaryArithm) End() Pos {
         if u.Post {
-            return posAddCol(u.OpPos, 2)
+            return pos_add_col(u.op_pos, 2)
         return u.X.End()
 
 
 # ParenArithm represents an arithmetic expression within parentheses.
+@dc.dataclass()
 class ParenArithm(ArithmExpr):
-    Lparen, Rparen Pos
+    lparen, rparen Pos
 
     X ArithmExpr
 
-    func (p *ParenArithm) Pos() Pos { return p.Lparen }
+    def pos(self) -> Pos:
+    func (p *ParenArithm) Pos() Pos { return p.lparen }
     
-    func (p *ParenArithm) End() Pos { return posAddCol(p.Rparen, 1) }
+    def end(self) -> Pos:
+    func (p *ParenArithm) End() Pos { return pos_add_col(p.rparen, 1) }
 
 
 # FlagsArithm represents zsh subscript flags attached to an arithmetic expression,
 # such as ${array[(flags)expr]}.
 #
 # This node will only appear with [LANG_ZSH].
+@dc.dataclass()
 class FlagsArithm(ArithmExpr):
     Flags *Lit
     X     ArithmExpr
 
-    func (z *FlagsArithm) Pos() Pos { return posAddCol(z.Flags.Pos(), -1) }
+    def pos(self) -> Pos:
+    func (z *FlagsArithm) Pos() Pos { return pos_add_col(z.Flags.Pos(), -1) }
     
+    def end(self) -> Pos:
     func (z *FlagsArithm) End() Pos {
-        if z.X != nil {
+        if z.X is not None:
             return z.X.End()
-        return posAddCol(z.Flags.End(), 1) # closing paren
+        return pos_add_col(z.Flags.End(), 1) # closing paren
 
 
 # CaseClause represents a case (switch) clause.
-class CaseClause(CommandNode):
+@dc.dataclass()
+class CaseClause(Command):
     Case, In, Esac Pos
     Braces         bool # deprecated mksh form with braces instead of in/esac
 
     Word  *Word
-    Items []*CaseItem
+    items []*CaseItem
     Last  []Comment
 
+    def pos(self) -> Pos:
     func (c *CaseClause) Pos() Pos { return c.Case }
     
-    func (c *CaseClause) End() Pos { return posAddCol(c.Esac, 4) }
+    def end(self) -> Pos:
+    func (c *CaseClause) End() Pos { return pos_add_col(c.Esac, 4) }
 
 
 # CaseItem represents a pattern list (case) within a [CaseClause].
+@dc.dataclass()
 class CaseItem(Node):
     Op       CaseOperator
-    OpPos    Pos # unset if it was finished by "esac"
+    op_pos    Pos # unset if it was finished by "esac"
     Comments []Comment
     Patterns []*Word
 
     Stmts []*Stmt
     Last  []Comment
 
+    def pos(self) -> Pos:
     func (c *CaseItem) Pos() Pos { return c.Patterns[0].Pos() }
     
+    def end(self) -> Pos:
     func (c *CaseItem) End() Pos {
-        if c.OpPos.is_valid() {
-            return posAddCol(c.OpPos, len(c.Op.String()))
+        if c.op_pos.is_valid() {
+            return pos_add_col(c.op_pos, len(c.Op.String()))
         return stmts_end(c.Stmts, c.Last)
 
 
 # TestClause represents a Bash extended test clause.
 #
 # This node will only appear with [LANG_BASH] and [LANG_MIR_BSD_KORN].
-class TestClause(CommandNode):
+@dc.dataclass()
+class TestClause(Command):
     Left, Right Pos
 
     X TestExpr
 
+    def pos(self) -> Pos:
     func (t *TestClause) Pos() Pos { return t.Left }
 
-    func (t *TestClause) End() Pos { return posAddCol(t.Right, 2) }
+    def end(self) -> Pos:
+    func (t *TestClause) End() Pos { return pos_add_col(t.Right, 2) }
 
-
-# TestExpr represents all nodes that form test expressions.
-#
-# These are [*BinaryTest], [*UnaryTest], [*ParenTest], and [*Word].
-class TestExpr(Node, Abstract):
-    pass
 
 
 # BinaryTest represents a binary test expression.
+@dc.dataclass()
 class BinaryTest(TestExpr):
-    OpPos Pos
+    op_pos Pos
     Op    BinTestOperator
     X, Y  TestExpr
 
+    def pos(self) -> Pos:
     func (b *BinaryTest) Pos() Pos { return b.X.Pos() }
     
+    def end(self) -> Pos:
     func (b *BinaryTest) End() Pos { return b.Y.End() }
 
 
 # UnaryTest represents a unary test expression. The unary operator may come
 # before or after the sub-expression.
+@dc.dataclass()
 class UnaryTest(TestExpr):
-    OpPos Pos
+    op_pos Pos
     Op    UnTestOperator
     X     TestExpr
 
-    func (u *UnaryTest) Pos() Pos { return u.OpPos }
+    def pos(self) -> Pos:
+    func (u *UnaryTest) Pos() Pos { return u.op_pos }
     
+    def end(self) -> Pos:
     func (u *UnaryTest) End() Pos { return u.X.End() }
 
 
 # ParenTest represents a test expression within parentheses.
+@dc.dataclass()
 class ParenTest(TestExpr):
-    Lparen, Rparen Pos
+    lparen: Pos
+    rparen: Pos
 
-    X TestExpr
+    x: TestExpr
 
-    func (p *ParenTest) Pos() Pos { return p.Lparen }
+    def pos(self) -> Pos:
+        return p.lparen
     
-    func (p *ParenTest) End() Pos { return posAddCol(p.Rparen, 1) }
+    def end(self) -> Pos:
+        return pos_add_col(p.rparen, 1)
 
 
 # DeclClause represents a Bash declare clause.
@@ -876,14 +996,17 @@ class ParenTest(TestExpr):
 # assignments can represent either options or variable names.
 #
 # This node will only appear with [LANG_BASH].
-class DeclClause(CommandNode):
+@dc.dataclass()
+class DeclClause(Command):
     # Variant is one of "declare", "local", "export", "readonly",
     # "typeset", or "nameref".
     Variant *Lit
     Args    []*Assign
 
+    def pos(self) -> Pos:
     func (d *DeclClause) Pos() Pos { return d.Variant.Pos() }
     
+    def end(self) -> Pos:
     func (d *DeclClause) End() Pos {
         if len(d.Args) > 0 {
             return d.Args[len(d.Args)-1].End()
@@ -893,15 +1016,18 @@ class DeclClause(CommandNode):
 # ArrayExpr represents a Bash array expression.
 #
 # This node will only appear with [LANG_BASH].
+@dc.dataclass()
 class ArrayExpr(Node):
-    Lparen, Rparen Pos
+    lparen, rparen Pos
 
     Elems []*ArrayElem
     Last  []Comment
 
-    func (a *ArrayExpr) Pos() Pos { return a.Lparen }
+    def pos(self) -> Pos:
+    func (a *ArrayExpr) Pos() Pos { return a.lparen }
     
-    func (a *ArrayExpr) End() Pos { return posAddCol(a.Rparen, 1) }
+    def end(self) -> Pos:
+    func (a *ArrayExpr) End() Pos { return pos_add_col(a.rparen, 1) }
 
 
 # ArrayElem represents a Bash array element.
@@ -909,20 +1035,23 @@ class ArrayExpr(Node):
 # Index can be nil; for example, declare -a x=(value).
 # Value can be nil; for example, declare -A x=([index]=).
 # Finally, neither can be nil; for example, declare -A x=([index]=value)
+@dc.dataclass()
 class ArrayElem(Node):
     Index    ArithmExpr
     Value    *Word
     Comments []Comment
 
+    def pos(self) -> Pos:
     func (a *ArrayElem) Pos() Pos {
-        if a.Index != nil {
+        if a.Index is not None:
             return a.Index.Pos()
         return a.Value.Pos()
 
+    def end(self) -> Pos:
     func (a *ArrayElem) End() Pos {
-        if a.Value != nil {
+        if a.Value is not None:
             return a.Value.End()
-        return posAddCol(a.Index.Pos(), 1)
+        return pos_add_col(a.Index.Pos(), 1)
 
 
 # ExtGlob represents a Bash extended globbing expression. Note that these are
@@ -930,100 +1059,123 @@ class ArrayElem(Node):
 # as the parser runs statically and independently of any interpreter.
 #
 # This node will only appear with [LANG_BASH] and [LANG_MIR_BSD_KORN].
+@dc.dataclass()
 class ExtGlob(WordPart):
-    OpPos   Pos
+    op_pos   Pos
     Op      GlobOperator
     Pattern *Lit
 
-    func (e *ExtGlob) Pos() Pos { return e.OpPos }
+    def pos(self) -> Pos:
+    func (e *ExtGlob) Pos() Pos { return e.op_pos }
     
-    func (e *ExtGlob) End() Pos { return posAddCol(e.Pattern.End(), 1) }
+    def end(self) -> Pos:
+    func (e *ExtGlob) End() Pos { return pos_add_col(e.Pattern.End(), 1) }
 
 
 # ProcSubst represents a Bash process substitution.
 #
 # This node will only appear with [LANG_BASH].
+@dc.dataclass()
 class ProcSubst(WordPart):
-    OpPos, Rparen Pos
+    op_pos, rparen Pos
     Op            ProcOperator
 
     Stmts []*Stmt
     Last  []Comment
 
-    func (s *ProcSubst) Pos() Pos { return s.OpPos }
+    def pos(self) -> Pos:
+    func (s *ProcSubst) Pos() Pos { return s.op_pos }
     
-    func (s *ProcSubst) End() Pos { return posAddCol(s.Rparen, 1) }
+    def end(self) -> Pos:
+    func (s *ProcSubst) End() Pos { return pos_add_col(s.rparen, 1) }
 
 
 # TimeClause represents a Bash time clause. PosixFormat corresponds to the -p
 # flag.
 #
 # This node will only appear with [LANG_BASH] and [LANG_MIR_BSD_KORN].
-class TimeClause(CommandNode):
+@dc.dataclass()
+class TimeClause(Command):
     Time        Pos
     PosixFormat bool
     Stmt        *Stmt
 
+    def pos(self) -> Pos:
     func (c *TimeClause) Pos() Pos { return c.Time }
     
+    def end(self) -> Pos:
     func (c *TimeClause) End() Pos {
         if c.Stmt == nil {
-            return posAddCol(c.Time, 4)
+            return pos_add_col(c.Time, 4)
         return c.Stmt.End()
 
 
 # CoprocClause represents a Bash coproc clause.
 #
 # This node will only appear with [LANG_BASH].
-class CoprocClause(CommandNode):
+@dc.dataclass()
+class CoprocClause(Command):
     Coproc Pos
     Name   *Word
     Stmt   *Stmt
 
+    def pos(self) -> Pos:
     func (c *CoprocClause) Pos() Pos { return c.Coproc }
     
+    def end(self) -> Pos:
     func (c *CoprocClause) End() Pos { return c.Stmt.End() }
 
 
 # LetClause represents a Bash let clause.
 #
 # This node will only appear with [LANG_BASH] and [LANG_MIR_BSD_KORN].
-class LetClause(CommandNode):
+@dc.dataclass()
+class LetClause(Command):
     Let   Pos
     Exprs []ArithmExpr
 
+    def pos(self) -> Pos:
     func (l *LetClause) Pos() Pos { return l.Let }
     
+    def end(self) -> Pos:
     func (l *LetClause) End() Pos { return l.Exprs[len(l.Exprs)-1].End() }
 
 
 # BraceExp represents a Bash brace expression, such as "{a,f}" or "{1..10}".
 #
 # This node will only appear as a result of [SplitBraces].
+@dc.dataclass()
 class BraceExp(WordPart):
     Sequence bool # {x..y[..incr]} instead of {x,y[,...]}
     Elems    []*Word
 
+    def pos(self) -> Pos:
     func (b *BraceExp) Pos() Pos {
-        return posAddCol(b.Elems[0].Pos(), -1)
+        return pos_add_col(b.Elems[0].Pos(), -1)
 
+    def end(self) -> Pos:
     func (b *BraceExp) End() Pos {
-        return posAddCol(wordLastEnd(b.Elems), 1)
+        return pos_add_col(word_last_end(b.Elems), 1)
 
 
 # TestDecl represents the declaration of a Bats test function.
-class TestDecl(CommandNode):
-    Position    Pos
+@dc.dataclass()
+class TestDecl(Command):
+    position    Pos
     Description *Word
     Body        *Stmt
 
-    func (f *TestDecl) Pos() Pos { return f.Position }
+    def pos(self) -> Pos:
+    func (f *TestDecl) Pos() Pos { return f.position }
     
+    def end(self) -> Pos:
     func (f *TestDecl) End() Pos { return f.Body.End() }
 
 
-func wordLastEnd(ws []*Word) Pos {
-    if len(ws) == 0 {
-        return Pos{}
-    return ws[len(ws)-1].End()
 """  # noqa
+
+
+def word_last_end(ws: list[Word]) -> Pos:
+    if len(ws) == 0:
+        return Pos()
+    return ws[-1].end()
