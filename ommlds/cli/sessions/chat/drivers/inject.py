@@ -19,6 +19,7 @@ with lang.auto_proxy_import(globals()):
     from .ai import inject as _ai
     from .events import inject as _events
     from .phases import inject as _phases
+    from .preparing import inject as _preparing
     from .state import inject as _state
     from .tools import inject as _tools
     from .user import inject as _user
@@ -40,6 +41,8 @@ def bind_driver(cfg: DriverConfig = DriverConfig()) -> inj.Elements:
         _events.bind_events(),
 
         _phases.bind_phases(),
+
+        _preparing.bind_preparing(),
 
         _state.bind_state(cfg.state),
 
