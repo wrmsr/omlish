@@ -45,7 +45,7 @@ def _main() -> None:
             if re.fullmatch(r'~=\s*\d+(\.\d+)*', str(opt_spec)):
                 opt_spec = Specifier(str(opt_spec) + '.0')
 
-            if opt_cn in pkgs:
+            if opt_cn in pkgs or opt_cn not in dist_dct:
                 continue
 
             opt_dist = dist_dct[opt_cn]

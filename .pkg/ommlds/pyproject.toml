@@ -31,7 +31,7 @@ dependencies = [
 all = [
     'omdev == 0.0.0.dev535',
     'llama-cpp-python ~= 0.3',
-    'mlx ~= 0.30; sys_platform == "darwin"',
+    'mlx ~= 0.31; sys_platform == "darwin"',
     'mlx-lm ~= 0.30; sys_platform == "darwin"',
     'sentencepiece ~= 0.2',
     'tiktoken ~= 0.12',
@@ -57,7 +57,7 @@ omdev = [
 ]
 backends = [
     'llama-cpp-python ~= 0.3',
-    'mlx ~= 0.30; sys_platform == "darwin"',
+    'mlx ~= 0.31; sys_platform == "darwin"',
     'mlx-lm ~= 0.30; sys_platform == "darwin"',
     'sentencepiece ~= 0.2',
     'tiktoken ~= 0.12',
