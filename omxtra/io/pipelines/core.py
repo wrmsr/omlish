@@ -415,6 +415,12 @@ class ChannelPipelineHandlerContext:
 
         self._handler.notify(self, no)
 
+    def _check_can_feed(self) -> None:
+        if self._invalidated:
+            raise ContextInvalidatedChannelPipelineError
+        check.state(self._pipeline._channel._state == PipelineChannel.State.READY)  # noqa
+        check.state(self._pipeline._channel._execution_depth > 0)  # noqa
+
     ##
     # Feeding `type`'s is forbidden as it's almost always going to be an error - usually forgetting to instantiate a
     # marker dataclass)
@@ -427,11 +433,8 @@ class ChannelPipelineHandlerContext:
     )
 
     def _inbound(self, msg: ta.Any) -> None:
-        if self._invalidated:
-            raise ContextInvalidatedChannelPipelineError
+        self._check_can_feed()
         check.not_isinstance(msg, self._FORBIDDEN_INBOUND_TYPES)
-        check.state(self._pipeline._channel._state == PipelineChannel.State.READY)  # noqa
-        check.state(self._pipeline._channel._execution_depth > 0)  # noqa
 
         if isinstance(msg, ChannelPipelineMessages.MustPropagate):
             self._pipeline._channel._propagation.add_must(self, 'inbound', msg)  # noqa
@@ -455,11 +458,8 @@ class ChannelPipelineHandlerContext:
     )
 
     def _outbound(self, msg: ta.Any) -> None:
-        if self._invalidated:
-            raise ContextInvalidatedChannelPipelineError
+        self._check_can_feed()
         check.not_isinstance(msg, self._FORBIDDEN_OUTBOUND_TYPES)
-        check.state(self._pipeline._channel._state == PipelineChannel.State.READY)  # noqa
-        check.state(self._pipeline._channel._execution_depth > 0)  # noqa
 
         if isinstance(msg, ChannelPipelineMessages.MustPropagate):
             self._pipeline._channel._propagation.add_must(self, 'outbound', msg)  # noqa

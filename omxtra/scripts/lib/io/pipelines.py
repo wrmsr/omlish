@@ -56,7 +56,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
             dict(path='../../../omlish/logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='../../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
-            dict(path='core.py', sha1='347ecbef6606fb6a994f96bfdf99910cea31b6eb'),
+            dict(path='core.py', sha1='a34c3fd8981911ce2ca37cf212df19bde20796eb'),
             dict(path='../../../omlish/io/streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -87,7 +87,7 @@ def __omlish_amalg__():  # noqa
             dict(path='bytes/decoders.py', sha1='212e4f54b7bc55028ae75dfb75b3ec18cc5bad51'),
             dict(path='http/decoders.py', sha1='d82d2096b3016e84019bf723aeb17586e2472fd5'),
             dict(path='drivers/asyncio.py', sha1='3ea9bc4a40922d1b97897f5ee85a4ddeb1ea8b46'),
-            dict(path='http/client/responses.py', sha1='8ee78c9d22f899377b26184e435865ebd4e3b556'),
+            dict(path='http/client/responses.py', sha1='69dd928e1b5ee2918637472d2e61b0a4324be266'),
             dict(path='http/server/requests.py', sha1='1007de97135c4712c67e5814cb17d7bc85650dad'),
             dict(path='_amalg.py', sha1='f66657d8b3801c6e8e84db2e4cd1b593d9e029be'),
         ],
@@ -4984,6 +4984,12 @@ class ChannelPipelineHandlerContext:
 
         self._handler.notify(self, no)
 
+    def _check_can_feed(self) -> None:
+        if self._invalidated:
+            raise ContextInvalidatedChannelPipelineError
+        check.state(self._pipeline._channel._state == PipelineChannel.State.READY)  # noqa
+        check.state(self._pipeline._channel._execution_depth > 0)  # noqa
+
     ##
     # Feeding `type`'s is forbidden as it's almost always going to be an error - usually forgetting to instantiate a
     # marker dataclass)
@@ -4996,11 +5002,8 @@ class ChannelPipelineHandlerContext:
     )
 
     def _inbound(self, msg: ta.Any) -> None:
-        if self._invalidated:
-            raise ContextInvalidatedChannelPipelineError
+        self._check_can_feed()
         check.not_isinstance(msg, self._FORBIDDEN_INBOUND_TYPES)
-        check.state(self._pipeline._channel._state == PipelineChannel.State.READY)  # noqa
-        check.state(self._pipeline._channel._execution_depth > 0)  # noqa
 
         if isinstance(msg, ChannelPipelineMessages.MustPropagate):
             self._pipeline._channel._propagation.add_must(self, 'inbound', msg)  # noqa
@@ -5024,11 +5027,8 @@ class ChannelPipelineHandlerContext:
     )
 
     def _outbound(self, msg: ta.Any) -> None:
-        if self._invalidated:
-            raise ContextInvalidatedChannelPipelineError
+        self._check_can_feed()
         check.not_isinstance(msg, self._FORBIDDEN_OUTBOUND_TYPES)
-        check.state(self._pipeline._channel._state == PipelineChannel.State.READY)  # noqa
-        check.state(self._pipeline._channel._execution_depth > 0)  # noqa
 
         if isinstance(msg, ChannelPipelineMessages.MustPropagate):
             self._pipeline._channel._propagation.add_must(self, 'outbound', msg)  # noqa
@@ -11678,6 +11678,8 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
 
     FIXME:
      - flow control messages lol
+    TODO:
+     - break into non-handler non-http child class like http object decoders
     """
 
     def __init__(

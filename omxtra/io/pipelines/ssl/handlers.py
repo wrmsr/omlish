@@ -29,7 +29,21 @@ class SslChannelPipelineHandler(
       - outbound bytes : TLS records to transport   <- drained from out_bio
       - decrypted plaintext bytes are fed inbound (ctx.feed_in)
       - plaintext to encrypt bytes arrive outbound (outbound())
+
+    FIXME:
+     - flow control is just wrong
+    TODO:
+     - context.set_alpn_protocols(['http/1.1'])
+     - context.post_handshake_auth = True ?
     """
+
+    @dc.dataclass(frozen=True)
+    class Config:
+        DEFAULT: ta.ClassVar['SslChannelPipelineHandler.Config']
+
+        read_chunk_size: int = 64 * 1024
+
+    Config.DEFAULT = Config()
 
     def __init__(
             self,
@@ -38,6 +52,7 @@ class SslChannelPipelineHandler(
             server_side: bool,
             server_hostname: ta.Optional[str] = None,
             ssl_session: ta.Optional[ssl.SSLSession] = None,
+            config: ta.Optional[Config] = None,
     ) -> None:
         super().__init__()
 
@@ -47,6 +62,9 @@ class SslChannelPipelineHandler(
         self._server_side = server_side
         self._server_hostname = server_hostname
         self._ssl_session = ssl_session
+        if config is None:
+            config = SslChannelPipelineHandler.Config.DEFAULT
+        self._config = config
 
         # Plaintext writes that we couldn't complete yet (usually because handshake isn't established, or write hit
         # WANT_READ and we're waiting for peer).
@@ -125,7 +143,7 @@ class SslChannelPipelineHandler(
 
         while True:
             try:
-                b = st.obj.read(65536)
+                b = st.obj.read(self._config.read_chunk_size)
             except ssl.SSLWantReadError:
                 # Need more TLS input from peer
                 self._maybe_ready_for_input(ctx)
@@ -137,8 +155,8 @@ class SslChannelPipelineHandler(
                 break
 
             if not b:
-                # TLS-level EOF (close_notify) or underlying EOF was processed.
-                # We don't force-close pipeline here; just stop pumping.
+                # TLS-level EOF (close_notify) or underlying EOF was processed. We don't force-close pipeline here; just
+                # stop pumping.
                 break
 
             fi.append(b)

@@ -121,6 +121,8 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
 
     FIXME:
      - flow control messages lol
+    TODO:
+     - break into non-handler non-http child class like http object decoders
     """
 
     def __init__(
