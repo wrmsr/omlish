@@ -54,8 +54,6 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
             reader: asyncio.StreamReader,
             writer: ta.Optional[asyncio.StreamWriter] = None,
             config: ta.Optional[Config] = None,
-            *,
-            on_non_bytes_output: ta.Optional[ta.Callable[[ta.Any], ta.Awaitable[None]]] = None,
     ) -> None:
         super().__init__()
 
@@ -65,8 +63,6 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
         if config is None:
             config = AsyncioStreamPipelineChannelDriver.Config.DEFAULT
         self._config = config
-
-        self._on_non_bytes_output = on_non_bytes_output
 
         #
 

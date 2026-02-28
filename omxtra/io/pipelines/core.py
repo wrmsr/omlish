@@ -1497,6 +1497,12 @@ class PipelineChannel:
         def __init__(self) -> None:
             self._q: ta.Final[collections.deque[ta.Any]] = collections.deque()
 
+        def peek(self) -> ta.Optional[ta.Any]:
+            if not self._q:
+                return None
+
+            return self._q[0]
+
         def poll(self) -> ta.Optional[ta.Any]:
             if not self._q:
                 return None

@@ -56,7 +56,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
             dict(path='../../../omlish/logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='../../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
-            dict(path='core.py', sha1='c14e2929dd46c09f08a27a81d0f0f4b09794c2c5'),
+            dict(path='core.py', sha1='347ecbef6606fb6a994f96bfdf99910cea31b6eb'),
             dict(path='../../../omlish/io/streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -86,7 +86,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='bytes/decoders.py', sha1='212e4f54b7bc55028ae75dfb75b3ec18cc5bad51'),
             dict(path='http/decoders.py', sha1='d82d2096b3016e84019bf723aeb17586e2472fd5'),
-            dict(path='drivers/asyncio.py', sha1='af72109759129233c49f4f7a83ea60597d2d044a'),
+            dict(path='drivers/asyncio.py', sha1='3ea9bc4a40922d1b97897f5ee85a4ddeb1ea8b46'),
             dict(path='http/client/responses.py', sha1='8ee78c9d22f899377b26184e435865ebd4e3b556'),
             dict(path='http/server/requests.py', sha1='1007de97135c4712c67e5814cb17d7bc85650dad'),
             dict(path='_amalg.py', sha1='f66657d8b3801c6e8e84db2e4cd1b593d9e029be'),
@@ -6066,6 +6066,12 @@ class PipelineChannel:
         def __init__(self) -> None:
             self._q: ta.Final[collections.deque[ta.Any]] = collections.deque()
 
+        def peek(self) -> ta.Optional[ta.Any]:
+            if not self._q:
+                return None
+
+            return self._q[0]
+
         def poll(self) -> ta.Optional[ta.Any]:
             if not self._q:
                 return None
@@ -11045,8 +11051,6 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
             reader: asyncio.StreamReader,
             writer: ta.Optional[asyncio.StreamWriter] = None,
             config: ta.Optional[Config] = None,
-            *,
-            on_non_bytes_output: ta.Optional[ta.Callable[[ta.Any], ta.Awaitable[None]]] = None,
     ) -> None:
         super().__init__()
 
@@ -11056,8 +11060,6 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
         if config is None:
             config = AsyncioStreamPipelineChannelDriver.Config.DEFAULT
         self._config = config
-
-        self._on_non_bytes_output = on_non_bytes_output
 
         #
 
