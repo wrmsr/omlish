@@ -148,7 +148,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../interp/providers/system.py', sha1='9638a154475ca98775159d27739563ac7fb2eb16'),
             dict(path='../interp/pyenv/install.py', sha1='4a10a19717364b4ba9f3b8bf1d12621cf21ba8b8'),
             dict(path='../interp/uv/provider.py', sha1='3c3980878ad2b9fd2cd02172f9424954759c7f06'),
-            dict(path='pkg.py', sha1='b2b63a3906d62e5911d2e5c0ee178041c53eff50'),
+            dict(path='pkg.py', sha1='2f0b5dc8cb359ee4d499f5a52a62b790b5557a3b'),
             dict(path='../interp/providers/inject.py', sha1='7cc9ebf58cf2ec09545321456bd9da9f9a3a79fb'),
             dict(path='../interp/pyenv/provider.py', sha1='377542ce01a35849e2a5b4a4dbafedc26882f983'),
             dict(path='../interp/uv/inject.py', sha1='e95d058c2340baa5a3155ec3440f311d1daa10a8'),
@@ -11799,6 +11799,10 @@ class BasePyprojectPackageGenerator(Abstract):
                     continue
 
                 log.info('Found pkgdata %s', p)
+
+                if not os.path.isfile(os.path.join(p, '__init__.py')):
+                    raise RuntimeError(f'Cannot find __init__.py in {p}')
+
                 with open(os.path.join(p, f)) as fo:
                     src = fo.read()
 

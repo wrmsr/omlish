@@ -9,7 +9,7 @@ from ..messages import AiMessage
 from ..messages import AnyAiMessage
 from ..messages import ToolUse
 from ..messages import ToolUseMessage
-from ..transforms.base import AiMessageTransform
+from ..transforms.messages import AiMessageTransform
 
 
 ##

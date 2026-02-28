@@ -166,6 +166,10 @@ class BasePyprojectPackageGenerator(Abstract):
                     continue
 
                 log.info('Found pkgdata %s', p)
+
+                if not os.path.isfile(os.path.join(p, '__init__.py')):
+                    raise RuntimeError(f'Cannot find __init__.py in {p}')
+
                 with open(os.path.join(p, f)) as fo:
                     src = fo.read()
 

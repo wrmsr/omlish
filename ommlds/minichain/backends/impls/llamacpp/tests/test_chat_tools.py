@@ -13,8 +13,8 @@ from .....chat.services import ChatService
 from .....chat.tools.ids import ToolUseIdAddingMessageTransform
 from .....chat.tools.parsing import ToolExecParsingMessageTransform
 from .....chat.tools.types import Tool
-from .....chat.transforms.base import CompositeMessageTransform
-from .....chat.transforms.base import MessageTransformChatTransform
+from .....chat.transforms.chats import MessageTransformChatTransform
+from .....chat.transforms.messages import CompositeMessageTransform
 from .....chat.transforms.metadata import CreatedAtAddingMessageTransform
 from .....chat.transforms.metadata import UuidAddingMessageTransform
 from .....chat.transforms.services import ResponseChatTransformingChatService

@@ -6,7 +6,7 @@ from omlish import dataclasses as dc
 from ..messages import Chat
 from ..messages import Message
 from ..messages import ToolUseMessage
-from ..transforms.base import MessageTransform
+from ..transforms.messages import MessageTransform
 
 
 ##

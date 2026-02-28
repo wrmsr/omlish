@@ -11,7 +11,7 @@ from ...metadata import Uuid
 from ..messages import Chat
 from ..messages import Message
 from ..metadata import MessageMetadata
-from .base import MessageTransform
+from .messages import MessageTransform
 
 
 MessageT = ta.TypeVar('MessageT', bound=Message)
