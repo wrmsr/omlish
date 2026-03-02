@@ -1,5 +1,6 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
+import abc
 import collections
 import dataclasses as dc
 import enum
@@ -50,6 +51,12 @@ class ChannelPipelineMessages(NamespaceClass):
         object identity - the same *instance* of the message must be seen at the end of the pipeline to be considered
         caught. This is intentional.
         """
+
+    class Pinning(Abstract):
+        @property
+        @abc.abstractmethod
+        def pinned(self) -> ta.Optional[ta.Sequence['ChannelPipelineMessages.MustPropagate']]:
+            raise NotImplementedError
 
     #
 
@@ -178,6 +185,31 @@ class ChannelPipelineMessages(NamespaceClass):
                     fn(self)
 
             object.__delattr__(self, '_completion_')
+
+    #
+
+    @ta.final
+    @dc.dataclass(frozen=True)
+    class Defer(NeverInbound, Completable, Pinning):
+        fn: ta.Union[
+            ta.Callable[['ChannelPipelineHandlerContext'], None],
+            ta.Callable[[], None],
+        ]
+
+        no_context: bool = False
+
+        def __repr__(self) -> str:
+            return f'{type(self).__name__}@{id(self):x}({self.fn!r}{", no_context=True" if self.no_context else ""})'
+
+        # _: dc.KW_ONLY
+
+        _ctx: ta.Optional['ChannelPipelineHandlerContext'] = dc.field(default=None, repr=False)
+
+        _pinned: ta.Optional[ta.Sequence['ChannelPipelineMessages.MustPropagate']] = dc.field(default=None, repr=False)
+
+        @property
+        def pinned(self) -> ta.Optional[ta.Sequence['ChannelPipelineMessages.MustPropagate']]:
+            return self._pinned
 
 
 ##
@@ -324,11 +356,21 @@ class ChannelPipelineHandlerContext:
 
     #
 
-    def defer(self, fn: ta.Callable[['ChannelPipelineHandlerContext'], None], *, first: bool = False) -> None:
-        self._pipeline._channel._defer(self, fn, first=first)  # noqa
+    def defer(
+            self,
+            fn: ta.Callable[['ChannelPipelineHandlerContext'], None],
+            *,
+            pinned: ta.Optional[ta.Sequence[ChannelPipelineMessages.MustPropagate]] = None,
+    ) -> None:
+        self._pipeline._channel._defer(self, fn, pinned=pinned)  # noqa
 
-    def defer_no_context(self, fn: ta.Callable[[], None], *, first: bool = False) -> None:
-        self._pipeline._channel._defer(self, fn, no_context=True, first=first)  # noqa
+    def defer_no_context(
+            self,
+            fn: ta.Callable[[], None],
+            *,
+            pinned: ta.Optional[ta.Sequence[ChannelPipelineMessages.MustPropagate]] = None,
+    ) -> None:
+        self._pipeline._channel._defer(self, fn, no_context=True, pinned=pinned)  # noqa
 
     #
 
@@ -1143,8 +1185,6 @@ class PipelineChannel:
 
         self._execution_depth = 0
 
-        self._deferred: collections.deque[PipelineChannel._Deferred] = collections.deque()
-
         self._propagation: PipelineChannel._Propagation = PipelineChannel._Propagation(self)
 
         self._pipeline: ta.Final[ChannelPipeline] = ChannelPipeline(
@@ -1360,54 +1400,12 @@ class PipelineChannel:
 
     #
 
-    class _Deferred(ta.NamedTuple):
-        ctx: ChannelPipelineHandlerContext
-
-        fn: ta.Union[
-            ta.Callable[[ChannelPipelineHandlerContext], None],
-            ta.Callable[[], None],
-        ]
-
-        no_context: bool
-
-    def _defer(
-            self,
-            ctx: ChannelPipelineHandlerContext,
-            fn: ta.Union[
-                ta.Callable[[ChannelPipelineHandlerContext], None],
-                ta.Callable[[], None],
-            ],
-            *,
-            no_context: bool = False,
-            first: bool = False,
-    ) -> None:
-        dfl = PipelineChannel._Deferred(ctx, fn, no_context)
-        if first:
-            self._deferred.appendleft(dfl)
-        else:
-            self._deferred.append(dfl)
-
-    def _maybe_execute_deferred(self) -> None:
-        # TODO: errors lol
-        # TODO: meditate on reentrancy lol
-        while self._deferred and not self._execution_depth:
-            dfl = self._deferred.popleft()
-
-            if dfl.no_context:
-                dfl.fn()  # type: ignore[call-arg]
-            else:
-                dfl.fn(dfl.ctx)  # type: ignore[call-arg]
-
-    #
-
     def _step_in(self) -> None:
         self._execution_depth += 1
 
     def _step_out(self) -> None:
         check.state(self._execution_depth > 0)
         self._execution_depth -= 1
-
-        self._maybe_execute_deferred()
 
         if not self._execution_depth:
             self._propagation.check_and_clear()
@@ -1471,6 +1469,62 @@ class PipelineChannel:
 
     #
 
+    def _defer(
+            self,
+            ctx: ChannelPipelineHandlerContext,
+            fn: ta.Union[
+                ta.Callable[[ChannelPipelineHandlerContext], None],
+                ta.Callable[[], None],
+            ],
+            *,
+            no_context: bool = False,
+            pinned: ta.Optional[ta.Sequence[ChannelPipelineMessages.MustPropagate]] = None,
+    ) -> None:
+        check.is_(ctx._pipeline, self._pipeline)  # noqa
+        check.state(not ctx._invalidated)  # noqa
+
+        dfl = ChannelPipelineMessages.Defer(
+            fn,
+            no_context,
+            _ctx=ctx,
+            _pinned=pinned,
+        )
+
+        if pinned:
+            raise NotImplementedError
+
+        ctx.feed_out(dfl)
+
+    def run_deferred(self, dfl: ChannelPipelineMessages.Defer) -> None:
+        ctx = check.not_none(dfl._ctx)  # noqa
+        check.is_(ctx._pipeline, self._pipeline)  # noqa
+        check.state(not ctx._invalidated)  # noqa
+
+        if dfl._pinned:  # noqa
+            raise NotImplementedError
+
+        self._step_in()
+        try:
+            try:
+                if dfl.no_context:
+                    res = dfl.fn()  # type: ignore[call-arg]
+                else:
+                    res = dfl.fn(ctx)  # type: ignore[call-arg]
+
+            except self._all_never_handle_exceptions:  # type: ignore[misc]
+                raise
+
+            except BaseException as e:  # noqa
+                dfl.set_failed(e)
+
+            else:
+                dfl.set_succeeded(res)
+
+        finally:
+            self._step_out()
+
+    #
+
     def _terminal_inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:  # noqa
         if (tm := self._config.inbound_terminal) == 'drop':
             pass
@@ -1525,20 +1579,18 @@ class PipelineChannel:
 
     @ta.final
     class _Propagation:
+        @dc.dataclass()
+        class _PendingMustEntry:
+            msg: ta.Any
+            direction: ChannelPipelineDirection
+            last_seen: ChannelPipelineHandlerContext
+            pinned_by: ta.Optional[ChannelPipelineMessages.Pinning] = None
+
         def __init__(self, ch: 'PipelineChannel') -> None:
             self._ch = ch
 
             if not self._ch._config.disable_propagation_checking:  # noqa
-                self._pending_inbound_must: ta.Final[ta.Dict[int, ta.Tuple[ta.Any, ChannelPipelineHandlerContext]]] = {}
-                self._pending_outbound_must: ta.Final[ta.Dict[int, ta.Tuple[ta.Any, ChannelPipelineHandlerContext]]] = {}  # noqa
-
-        def _get_must_dict(self, direction: ChannelPipelineDirection) -> ta.Dict[int, ta.Any]:
-            if direction == 'inbound':
-                return self._pending_inbound_must
-            elif direction == 'outbound':
-                return self._pending_outbound_must
-            else:
-                raise RuntimeError(f'Unknown direction {direction}')
+                self._pending_must: ta.Final[ta.Dict[int, PipelineChannel._Propagation._PendingMustEntry]] = {}
 
         def add_must(
                 self,
@@ -1549,16 +1601,21 @@ class PipelineChannel:
             if self._ch._config.disable_propagation_checking:  # noqa
                 return
 
-            dct = self._get_must_dict(direction)
-
             i = id(msg)
             try:
-                x, last_ctx = dct[i]  # noqa
+                x = self._pending_must[i]
             except KeyError:
-                pass
-            else:
-                check.is_(msg, x)
-            dct[i] = (msg, ctx)
+                self._pending_must[i] = PipelineChannel._Propagation._PendingMustEntry(  # noqa
+                    msg,
+                    direction,
+                    ctx,
+                )
+                return
+
+            check.is_(msg, x.msg)
+            check.equal(direction, x.direction)
+            check.state(x.pinned_by is None)
+            x.last_seen = ctx
 
         def remove_must(
                 self,
@@ -1569,11 +1626,9 @@ class PipelineChannel:
             if self._ch._config.disable_propagation_checking:  # noqa
                 return
 
-            dct = self._get_must_dict(direction)
-
             i = id(msg)
             try:
-                x, last_ctx = dct.pop(i)  # noqa
+                x = self._pending_must.pop(i)
             except KeyError:
                 raise MessageNotPropagatedChannelPipelineError.new_single(
                     direction,
@@ -1581,7 +1636,11 @@ class PipelineChannel:
                     last_seen=ctx._ref,  # noqa
                 ) from None
 
-            if x is not msg:
+            if (
+                    x.msg is not msg or
+                    x.direction != direction or
+                    x.pinned_by is not None
+            ):
                 raise MessageNotPropagatedChannelPipelineError.new_single(
                     direction,
                     msg,
@@ -1592,16 +1651,20 @@ class PipelineChannel:
             if self._ch._config.disable_propagation_checking:  # noqa
                 return
 
-            if not (self._pending_inbound_must or self._pending_outbound_must):
+            if not self._pending_must:
                 return
 
+            il: ta.List[ta.Tuple[ta.Any, ta.Any]] = []
+            ol: ta.List[ta.Tuple[ta.Any, ta.Any]] = []
+            for x in self._pending_must.values():
+                (il if x.direction == 'inbound' else ol).append((x.msg, x.last_seen._ref))  # noqa
+
             e = MessageNotPropagatedChannelPipelineError.new(
-                inbound_with_last_seen=[(msg, ctx._ref) for msg, ctx in self._pending_inbound_must.values()],  # noqa
-                outbound_with_last_seen=[(msg, ctx._ref) for msg, ctx in self._pending_outbound_must.values()],  # noqa
+                inbound_with_last_seen=il,
+                outbound_with_last_seen=ol,
             )
 
-            self._pending_inbound_must.clear()
-            self._pending_outbound_must.clear()
+            self._pending_must.clear()
 
             raise e
 
