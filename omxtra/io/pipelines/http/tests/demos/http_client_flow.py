@@ -11,9 +11,10 @@ from ....core import ChannelPipelineMessages
 from ....core import PipelineChannel
 from ....drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
 from ....flow.stub import StubChannelPipelineFlow
+from ....flow.types import ChannelPipelineFlow
 from ....flow.types import ChannelPipelineFlowMessages
 from ....handlers.flatmap import FlatMapChannelPipelineHandlers
-from ....ssl.handlers import SslChannelPipelineHandler
+from ....handlers.logs import LoggingChannelPipelineHandler  # noqa
 from ...client.requests import PipelineHttpRequestEncoder
 from ...client.responses import PipelineHttpResponseChunkedDecoder
 from ...client.responses import PipelineHttpResponseDecoder
@@ -40,6 +41,14 @@ class HttpClientHandler(ChannelPipelineHandler):
         self._body_chunks: ta.List[bytes] = []
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, FullPipelineHttpRequest):
+            ctx.feed_out(msg)
+
+            if (fc := ctx.services.find(ChannelPipelineFlow)) is not None and not fc.is_auto_read():
+                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+
+            return
+
         if isinstance(msg, PipelineHttpResponseHead):
             self._response_head = msg
             return
@@ -94,31 +103,36 @@ class HttpClientHandler(ChannelPipelineHandler):
             print(f'<binary body: {len(body)} bytes>')
 
 
-def build_ssl_http_client_channel(**ssl_kwargs: ta.Any) -> PipelineChannel.Spec:
+def build_http_client_channel(*, auto_read: bool = False) -> PipelineChannel.Spec:
     """Build a client channel with encoder, decoder, and handler."""
 
     return PipelineChannel.Spec(
         [
-            SslChannelPipelineHandler(**ssl_kwargs),
+            LoggingChannelPipelineHandler(),
             PipelineHttpResponseDecoder(),
             PipelineHttpResponseChunkedDecoder(),
             PipelineHttpRequestEncoder(),
             HttpClientHandler(),
-            FlatMapChannelPipelineHandlers.feed_out_and_drop(filter_type=FullPipelineHttpRequest),
             FlatMapChannelPipelineHandlers.drop('inbound', filter_type=ChannelPipelineFlowMessages.FlushInput),
         ],
         services=[
-            StubChannelPipelineFlow(auto_read=False),
+            StubChannelPipelineFlow(auto_read=auto_read),
         ],
     )
 
 
-async def fetch_url(url: str = 'https://example.com/') -> None:
-    # Parse URL (very simple - just extract host and path)
-    if not url.startswith('https://'):
-        raise ValueError('Only https:// URLs supported')
+async def fetch_url(url: str = 'http://example.com/') -> None:
+    """
+    Fetch a URL and print the response.
 
-    url_without_scheme = url[8:]  # Remove 'https://'
+    Currently only supports plain HTTP (no SSL).
+    """
+
+    # Parse URL (very simple - just extract host and path)
+    if not url.startswith('http://'):
+        raise ValueError('Only http:// URLs supported (no SSL yet)')
+
+    url_without_scheme = url[7:]  # Remove 'http://'
     if '/' in url_without_scheme:
         host, path = url_without_scheme.split('/', 1)
         path = '/' + path
@@ -131,7 +145,7 @@ async def fetch_url(url: str = 'https://example.com/') -> None:
         host, port_str = host.split(':', 1)
         port = int(port_str)
     else:
-        port = 443
+        port = 80
 
     # Connect
     reader, writer = await asyncio.open_connection(host, port)
@@ -148,10 +162,7 @@ async def fetch_url(url: str = 'https://example.com/') -> None:
 
         # Run driver to process request/response
         drv = SimpleAsyncioStreamPipelineChannelDriver(
-            build_ssl_http_client_channel(
-                server_side=False,
-                server_hostname=host,
-            ),
+            build_http_client_channel(),
             reader,
             writer,
         )
@@ -168,12 +179,13 @@ async def fetch_url(url: str = 'https://example.com/') -> None:
 
 
 def main() -> None:
-    asyncio.run(fetch_url(
-        # 'https://127.0.0.1:8443/',
-    ))
+    asyncio.run(fetch_url())
 
 
 if __name__ == '__main__':
+    from omlish.logs.std.standard import configure_standard_logging
+    configure_standard_logging('DEBUG')
+
     # try:
     #     __import__('omlish.check')
     # except ImportError:

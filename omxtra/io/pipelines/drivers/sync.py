@@ -56,6 +56,8 @@ class SyncSocketPipelineChannelDriver:
     _channel: PipelineChannel
 
     def _handle_output(self, msg: ta.Any) -> bool:
+        """Returns whether or not to continue running."""
+
         if ByteStreamBuffers.can_bytes(msg):
             for mv in ByteStreamBuffers.iter_segments(msg):
                 self._sock.send(mv)
@@ -63,6 +65,10 @@ class SyncSocketPipelineChannelDriver:
 
         elif isinstance(msg, ChannelPipelineMessages.FinalOutput):
             return False
+
+        elif isinstance(msg, ChannelPipelineMessages.Defer):
+            self._channel.run_deferred(msg)
+            return True
 
         else:
             raise TypeError(msg)

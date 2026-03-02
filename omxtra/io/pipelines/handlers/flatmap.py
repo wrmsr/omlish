@@ -139,20 +139,69 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
     def apply(cls, fn: ChannelPipelineHandlerFn[ta.Any, None]) -> FlatMapChannelPipelineHandlerFn:
         return cls.Apply(fn)
 
-    ##
+    #
 
     @dc.dataclass(frozen=True)
-    class FeedOut:
+    class Feed:
+        direction: ChannelPipelineDirectionOrDuplex
+
         def __repr__(self) -> str:
-            return f'{type(self).__name__}()'
+            return f'{type(self).__name__}({self.direction!r})'
 
         def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
-            ctx.feed_out(msg)
+            if self.direction == 'inbound':
+                ctx.feed_in(msg)
+            elif self.direction == 'outbound':
+                ctx.feed_out(msg)
+            else:
+                raise RuntimeError(f'Unknown direction: {self.direction!r}')
             return (msg,)
 
     @classmethod
+    def feed_in(cls) -> FlatMapChannelPipelineHandlerFn:
+        return cls.Feed('inbound')
+
+    @classmethod
     def feed_out(cls) -> FlatMapChannelPipelineHandlerFn:
-        return cls.FeedOut()
+        return cls.Feed('outbound')
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class Inject:
+        before: ta.Union[ta.Sequence[ta.Any], ta.Callable[[], ta.Sequence[ta.Any]], None] = None
+        after: ta.Union[ta.Sequence[ta.Any], ta.Callable[[], ta.Sequence[ta.Any]], None] = None
+
+        def __repr__(self) -> str:
+            return ''.join([
+                f'{type(self).__name__}(',
+                *', '.join([
+                    *([f'before={self.before!r}'] if self.before is not None else []),
+                    *([f'after={self.after!r}'] if self.after is not None else []),
+                ]),
+                ')',
+            ])
+
+        def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
+            out: ta.List[ta.Any] = []
+            if (before := self.before) is not None:
+                out.extend(before() if callable(before) else before)  # noqa
+            out.append(msg)
+            if (after := self.after) is not None:
+                out.extend(after() if callable(after) else after)  # noqa
+            return out
+
+    @classmethod
+    def inject(
+            cls,
+            *,
+            before: ta.Union[ta.Sequence[ta.Any], ta.Callable[[], ta.Sequence[ta.Any]], None] = None,
+            after: ta.Union[ta.Sequence[ta.Any], ta.Callable[[], ta.Sequence[ta.Any]], None] = None,
+    ) -> FlatMapChannelPipelineHandlerFn:
+        return cls.Inject(
+            before=before,
+            after=after,
+        )
 
     #
 

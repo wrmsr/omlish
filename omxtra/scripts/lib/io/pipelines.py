@@ -74,7 +74,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
             dict(path='../../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
             dict(path='bytes/queues.py', sha1='38b11596cd0fa2367825252413923f1292c14f4e'),
-            dict(path='handlers/flatmap.py', sha1='4e7f009885ee35e4746d14ba22f78d7b108f42c8'),
+            dict(path='handlers/flatmap.py', sha1='3b297b33dce8d85e76837456bbc86f39165a4e29'),
             dict(path='http/encoders.py', sha1='0659902d945aea54e367d04336792cccd4ed6374'),
             dict(path='http/requests.py', sha1='f518ff8896cbd01d30d58088d5b429f121c1c3e7'),
             dict(path='http/responses.py', sha1='f81688d98516bd81d2a22ba791c783404e806294'),
@@ -86,7 +86,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='bytes/decoders.py', sha1='212e4f54b7bc55028ae75dfb75b3ec18cc5bad51'),
             dict(path='http/decoders.py', sha1='d82d2096b3016e84019bf723aeb17586e2472fd5'),
-            dict(path='drivers/asyncio.py', sha1='3ea9bc4a40922d1b97897f5ee85a4ddeb1ea8b46'),
+            dict(path='drivers/asyncio.py', sha1='58e604b1f6605cb3d8e8d56db8bc0131f7cf1978'),
             dict(path='http/client/responses.py', sha1='faf90cb90d5412e92610705d2834ff177a5eae75'),
             dict(path='http/server/requests.py', sha1='1007de97135c4712c67e5814cb17d7bc85650dad'),
             dict(path='_amalg.py', sha1='f66657d8b3801c6e8e84db2e4cd1b593d9e029be'),
@@ -8971,20 +8971,69 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
     def apply(cls, fn: ChannelPipelineHandlerFn[ta.Any, None]) -> FlatMapChannelPipelineHandlerFn:
         return cls.Apply(fn)
 
-    ##
+    #
 
     @dc.dataclass(frozen=True)
-    class FeedOut:
+    class Feed:
+        direction: ChannelPipelineDirectionOrDuplex
+
         def __repr__(self) -> str:
-            return f'{type(self).__name__}()'
+            return f'{type(self).__name__}({self.direction!r})'
 
         def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
-            ctx.feed_out(msg)
+            if self.direction == 'inbound':
+                ctx.feed_in(msg)
+            elif self.direction == 'outbound':
+                ctx.feed_out(msg)
+            else:
+                raise RuntimeError(f'Unknown direction: {self.direction!r}')
             return (msg,)
 
     @classmethod
+    def feed_in(cls) -> FlatMapChannelPipelineHandlerFn:
+        return cls.Feed('inbound')
+
+    @classmethod
     def feed_out(cls) -> FlatMapChannelPipelineHandlerFn:
-        return cls.FeedOut()
+        return cls.Feed('outbound')
+
+    #
+
+    @dc.dataclass(frozen=True)
+    class Inject:
+        before: ta.Union[ta.Sequence[ta.Any], ta.Callable[[], ta.Sequence[ta.Any]], None] = None
+        after: ta.Union[ta.Sequence[ta.Any], ta.Callable[[], ta.Sequence[ta.Any]], None] = None
+
+        def __repr__(self) -> str:
+            return ''.join([
+                f'{type(self).__name__}(',
+                *', '.join([
+                    *([f'before={self.before!r}'] if self.before is not None else []),
+                    *([f'after={self.after!r}'] if self.after is not None else []),
+                ]),
+                ')',
+            ])
+
+        def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
+            out: ta.List[ta.Any] = []
+            if (before := self.before) is not None:
+                out.extend(before() if callable(before) else before)  # noqa
+            out.append(msg)
+            if (after := self.after) is not None:
+                out.extend(after() if callable(after) else after)  # noqa
+            return out
+
+    @classmethod
+    def inject(
+            cls,
+            *,
+            before: ta.Union[ta.Sequence[ta.Any], ta.Callable[[], ta.Sequence[ta.Any]], None] = None,
+            after: ta.Union[ta.Sequence[ta.Any], ta.Callable[[], ta.Sequence[ta.Any]], None] = None,
+    ) -> FlatMapChannelPipelineHandlerFn:
+        return cls.Inject(
+            before=before,
+            after=after,
+        )
 
     #
 
@@ -11239,6 +11288,9 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
             services=(*self._spec.services, self._sched),
         ))
 
+    def _is_auto_read(self) -> bool:
+        return (flow := self._flow) is None or flow.is_auto_read()
+
     ##
     # async utils
 
@@ -11337,7 +11389,7 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
     _pending_completed_reads: ta.Optional[ta.List[_ReadCompletedCommand]] = None
 
     async def _handle_command_read_completed(self, cmd: _ReadCompletedCommand) -> None:
-        if not self._want_read:
+        if not (self._want_read or self._is_auto_read()):
             if (pl := self._pending_completed_reads) is None:
                 pl = self._pending_completed_reads = []
 
@@ -11392,7 +11444,7 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
         self._has_sent_update_want_read_command = True
         await self._command_queue.put(AsyncioStreamPipelineChannelDriver._UpdateWantReadCommand())
 
-    _want_read = True
+    _want_read = False
 
     _delay_sending_update_want_read_command = False
 
@@ -11421,10 +11473,7 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
             self._ensure_read_task()
 
     def _maybe_ensure_read_task(self) -> None:
-        if (
-                self._want_read or
-                (self._flow is not None and self._flow.is_auto_read())
-        ):
+        if self._want_read or self._is_auto_read():
             self._ensure_read_task()
 
     @abc.abstractmethod
@@ -11495,6 +11544,8 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
         }
 
     async def _handle_command(self, cmd: _Command) -> None:
+        log.debug(lambda: f'Handling command: {cmd!r}')
+
         try:
             fn = self._command_handlers[cmd.__class__]
         except KeyError:
@@ -11511,6 +11562,11 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
         self._shutdown_event.set()
 
         await self._close_writer()
+
+    # defer
+
+    async def _handle_output_defer(self, msg: ChannelPipelineMessages.Defer) -> None:
+        self._channel.run_deferred(msg)
 
     # data (special cased)
 
@@ -11547,14 +11603,15 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
     def _build_output_handlers(self) -> ta.Mapping[type, ta.Callable[[ta.Any], ta.Awaitable[None]]]:
         return {
             ChannelPipelineMessages.FinalOutput: self._handle_output_final_output,
-
+            ChannelPipelineMessages.Defer: self._handle_output_defer,
             ChannelPipelineFlowMessages.FlushOutput: self._handle_output_flush_output,
             ChannelPipelineFlowMessages.ReadyForInput: self._handle_output_ready_for_input,
-
             AsyncChannelPipelineMessages.Await: self._handle_output_await,
         }
 
     async def _handle_output(self, msg: ta.Any) -> None:
+        log.debug(lambda: f'Handling output: {msg!r}')
+
         if ByteStreamBuffers.can_bytes(msg):
             await self._handle_output_bytes(msg)
             return
@@ -11570,7 +11627,7 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
 
     async def _do_with_channel(self, fn: ta.Callable[[], ta.Awaitable[None]]) -> None:
         prev_want_read = self._want_read
-        if self._flow is not None and not self._flow.is_auto_read():
+        if not self._is_auto_read():
             self._want_read = False
 
         self._delay_sending_update_want_read_command = True
@@ -11664,6 +11721,7 @@ class SimpleAsyncioStreamPipelineChannelDriver(AsyncioStreamPipelineChannelDrive
 
             self._command_queue.put_nowait(cmd)
 
+            # FIXME: disable? toggle? this pre-reads till told to stop to try to reduce stalling
             self._maybe_ensure_read_task()
 
         self._read_task.add_done_callback(_done)
@@ -11671,7 +11729,7 @@ class SimpleAsyncioStreamPipelineChannelDriver(AsyncioStreamPipelineChannelDrive
     #
 
     async def _run(self) -> None:
-        self._ensure_read_task()
+        self._maybe_ensure_read_task()
 
         #
 

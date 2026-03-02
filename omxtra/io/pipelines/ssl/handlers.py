@@ -429,6 +429,7 @@ class SslChannelPipelineHandler(
         if not established:
             self._pending_plaintext_out.append(msg)
             self._pending_outbound_bytes += len(msg)
+            self._maybe_send_ready_for_input(ctx)
             return
 
         # Write and check for WANT_READ (Renegotiation)

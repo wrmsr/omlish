@@ -109,6 +109,9 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
             services=(*self._spec.services, self._sched),
         ))
 
+    def _is_auto_read(self) -> bool:
+        return (flow := self._flow) is None or flow.is_auto_read()
+
     ##
     # async utils
 
@@ -207,7 +210,7 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
     _pending_completed_reads: ta.Optional[ta.List[_ReadCompletedCommand]] = None
 
     async def _handle_command_read_completed(self, cmd: _ReadCompletedCommand) -> None:
-        if not self._want_read:
+        if not (self._want_read or self._is_auto_read()):
             if (pl := self._pending_completed_reads) is None:
                 pl = self._pending_completed_reads = []
 
@@ -262,7 +265,7 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
         self._has_sent_update_want_read_command = True
         await self._command_queue.put(AsyncioStreamPipelineChannelDriver._UpdateWantReadCommand())
 
-    _want_read = True
+    _want_read = False
 
     _delay_sending_update_want_read_command = False
 
@@ -291,10 +294,7 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
             self._ensure_read_task()
 
     def _maybe_ensure_read_task(self) -> None:
-        if (
-                self._want_read or
-                (self._flow is not None and self._flow.is_auto_read())
-        ):
+        if self._want_read or self._is_auto_read():
             self._ensure_read_task()
 
     @abc.abstractmethod
@@ -365,6 +365,8 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
         }
 
     async def _handle_command(self, cmd: _Command) -> None:
+        log.debug(lambda: f'Handling command: {cmd!r}')
+
         try:
             fn = self._command_handlers[cmd.__class__]
         except KeyError:
@@ -381,6 +383,11 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
         self._shutdown_event.set()
 
         await self._close_writer()
+
+    # defer
+
+    async def _handle_output_defer(self, msg: ChannelPipelineMessages.Defer) -> None:
+        self._channel.run_deferred(msg)
 
     # data (special cased)
 
@@ -417,14 +424,15 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
     def _build_output_handlers(self) -> ta.Mapping[type, ta.Callable[[ta.Any], ta.Awaitable[None]]]:
         return {
             ChannelPipelineMessages.FinalOutput: self._handle_output_final_output,
-
+            ChannelPipelineMessages.Defer: self._handle_output_defer,
             ChannelPipelineFlowMessages.FlushOutput: self._handle_output_flush_output,
             ChannelPipelineFlowMessages.ReadyForInput: self._handle_output_ready_for_input,
-
             AsyncChannelPipelineMessages.Await: self._handle_output_await,
         }
 
     async def _handle_output(self, msg: ta.Any) -> None:
+        log.debug(lambda: f'Handling output: {msg!r}')
+
         if ByteStreamBuffers.can_bytes(msg):
             await self._handle_output_bytes(msg)
             return
@@ -440,7 +448,7 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
 
     async def _do_with_channel(self, fn: ta.Callable[[], ta.Awaitable[None]]) -> None:
         prev_want_read = self._want_read
-        if self._flow is not None and not self._flow.is_auto_read():
+        if not self._is_auto_read():
             self._want_read = False
 
         self._delay_sending_update_want_read_command = True
@@ -534,6 +542,7 @@ class SimpleAsyncioStreamPipelineChannelDriver(AsyncioStreamPipelineChannelDrive
 
             self._command_queue.put_nowait(cmd)
 
+            # FIXME: disable? toggle? this pre-reads till told to stop to try to reduce stalling
             self._maybe_ensure_read_task()
 
         self._read_task.add_done_callback(_done)
@@ -541,7 +550,7 @@ class SimpleAsyncioStreamPipelineChannelDriver(AsyncioStreamPipelineChannelDrive
     #
 
     async def _run(self) -> None:
-        self._ensure_read_task()
+        self._maybe_ensure_read_task()
 
         #
 
