@@ -195,3 +195,33 @@ class TestCompletable(unittest.TestCase):
         assert cf.is_done()
 
         assert l == ['hiya']
+
+
+class TestDefer(unittest.TestCase):
+    def test_defer(self):
+        class DeferThing(ChannelPipelineHandler):
+            def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+                if msg == 'hi':
+                    ctx.defer_no_context(lambda: ctx.feed_in('bye'))
+                    return
+
+                ctx.feed_in(msg)
+
+        ch = PipelineChannel.new([
+            IntStrDuplexHandler(),
+            DeferThing(),
+            ibq := InboundQueueChannelPipelineHandler(),
+        ])
+
+        ch.feed_in(240)
+        assert not ch.output.drain()
+        assert ibq.drain() == ['240']
+
+        ch.feed_in('hi')
+        assert not ibq.drain()
+        [dfl] = ch.output.drain()
+        assert isinstance(dfl, ChannelPipelineMessages.Defer)
+
+        ch.run_deferred(dfl)
+        assert not ch.output.drain()
+        assert ibq.drain() == ['bye']

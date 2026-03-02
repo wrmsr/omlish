@@ -190,10 +190,10 @@ class ChannelPipelineMessages(NamespaceClass):
 
     @ta.final
     @dc.dataclass(frozen=True)
-    class Defer(NeverInbound, Completable, Pinning):
+    class Defer(NeverInbound, Pinning, Completable[T], ta.Generic[T]):
         fn: ta.Union[
-            ta.Callable[['ChannelPipelineHandlerContext'], None],
-            ta.Callable[[], None],
+            ta.Callable[['ChannelPipelineHandlerContext'], T],
+            ta.Callable[[], T],
         ]
 
         no_context: bool = False
@@ -358,19 +358,19 @@ class ChannelPipelineHandlerContext:
 
     def defer(
             self,
-            fn: ta.Callable[['ChannelPipelineHandlerContext'], None],
+            fn: ta.Callable[['ChannelPipelineHandlerContext'], T],
             *,
             pinned: ta.Optional[ta.Sequence[ChannelPipelineMessages.MustPropagate]] = None,
-    ) -> None:
-        self._pipeline._channel._defer(self, fn, pinned=pinned)  # noqa
+    ) -> ChannelPipelineMessages.Defer[T]:
+        return self._pipeline._channel._defer(self, fn, pinned=pinned)  # noqa
 
     def defer_no_context(
             self,
-            fn: ta.Callable[[], None],
+            fn: ta.Callable[[], T],
             *,
             pinned: ta.Optional[ta.Sequence[ChannelPipelineMessages.MustPropagate]] = None,
-    ) -> None:
-        self._pipeline._channel._defer(self, fn, no_context=True, pinned=pinned)  # noqa
+    ) -> ChannelPipelineMessages.Defer[T]:
+        return self._pipeline._channel._defer(self, fn, no_context=True, pinned=pinned)  # noqa
 
     #
 
@@ -1473,13 +1473,13 @@ class PipelineChannel:
             self,
             ctx: ChannelPipelineHandlerContext,
             fn: ta.Union[
-                ta.Callable[[ChannelPipelineHandlerContext], None],
-                ta.Callable[[], None],
+                ta.Callable[[ChannelPipelineHandlerContext], T],
+                ta.Callable[[], T],
             ],
             *,
             no_context: bool = False,
             pinned: ta.Optional[ta.Sequence[ChannelPipelineMessages.MustPropagate]] = None,
-    ) -> None:
+    ) -> ChannelPipelineMessages.Defer[T]:
         check.is_(ctx._pipeline, self._pipeline)  # noqa
         check.state(not ctx._invalidated)  # noqa
 
@@ -1494,6 +1494,8 @@ class PipelineChannel:
             raise NotImplementedError
 
         ctx.feed_out(dfl)
+
+        return dfl
 
     def run_deferred(self, dfl: ChannelPipelineMessages.Defer) -> None:
         ctx = check.not_none(dfl._ctx)  # noqa
