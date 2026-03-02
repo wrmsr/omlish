@@ -519,6 +519,31 @@ class ChannelPipelineHandlerContext:
 
     #
 
+    def _run_deferred(self, dfl: ChannelPipelineMessages.Defer) -> None:
+        self._check_can_feed()
+        check.state(dfl._ctx is self)  # noqa
+
+        try:
+            if dfl.no_context:
+                res = dfl.fn()  # type: ignore[call-arg]
+            else:
+                res = dfl.fn(self)  # type: ignore[call-arg]
+
+        except self._pipeline._channel._all_never_handle_exceptions:  # type: ignore[misc]  # noqa
+            raise
+
+        except BaseException as e:  # noqa
+            dfl.set_failed(e)
+
+            if self._handling_error or self._pipeline._config.raise_immediately:  # noqa
+                raise
+            self._handle_error(e, 'inbound')
+
+        else:
+            dfl.set_succeeded(res)
+
+    #
+
     _handling_error: bool = False
 
     def _handle_error(self, e: BaseException, direction: 'ChannelPipelineDirection') -> None:
@@ -1533,20 +1558,7 @@ class PipelineChannel:
             if dfl._pinned:  # noqa
                 self._propagation.unpin_musts(dfl)
 
-            try:
-                if dfl.no_context:
-                    res = dfl.fn()  # type: ignore[call-arg]
-                else:
-                    res = dfl.fn(ctx)  # type: ignore[call-arg]
-
-            except self._all_never_handle_exceptions:  # type: ignore[misc]
-                raise
-
-            except BaseException as e:  # noqa
-                dfl.set_failed(e)
-
-            else:
-                dfl.set_succeeded(res)
+            ctx._run_deferred(dfl)  # noqa
 
         finally:
             self._step_out()

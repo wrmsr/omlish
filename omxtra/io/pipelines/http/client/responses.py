@@ -281,6 +281,7 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         if isinstance(msg, ChannelPipelineMessages.FinalInput):
             if self._enabled and self._z is not None:
+                check.none(self._pending_final_input)
                 self._pending_final_input = msg
                 self._pump(ctx)
             else:

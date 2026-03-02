@@ -56,7 +56,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
             dict(path='../../../omlish/logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='../../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
-            dict(path='core.py', sha1='f45a16c8de7331ede71cce2f1c11aa3bfa099bd0'),
+            dict(path='core.py', sha1='897751891956a90286dca6b6e3c092b829bf5f59'),
             dict(path='../../../omlish/io/streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -87,7 +87,7 @@ def __omlish_amalg__():  # noqa
             dict(path='bytes/decoders.py', sha1='212e4f54b7bc55028ae75dfb75b3ec18cc5bad51'),
             dict(path='http/decoders.py', sha1='d82d2096b3016e84019bf723aeb17586e2472fd5'),
             dict(path='drivers/asyncio.py', sha1='3ea9bc4a40922d1b97897f5ee85a4ddeb1ea8b46'),
-            dict(path='http/client/responses.py', sha1='c0ebc9d483ba5135c47e69b7e6a35e8f06d83aaf'),
+            dict(path='http/client/responses.py', sha1='faf90cb90d5412e92610705d2834ff177a5eae75'),
             dict(path='http/server/requests.py', sha1='1007de97135c4712c67e5814cb17d7bc85650dad'),
             dict(path='_amalg.py', sha1='f66657d8b3801c6e8e84db2e4cd1b593d9e029be'),
         ],
@@ -5087,6 +5087,31 @@ class ChannelPipelineHandlerContext:
 
     #
 
+    def _run_deferred(self, dfl: ChannelPipelineMessages.Defer) -> None:
+        self._check_can_feed()
+        check.state(dfl._ctx is self)  # noqa
+
+        try:
+            if dfl.no_context:
+                res = dfl.fn()  # type: ignore[call-arg]
+            else:
+                res = dfl.fn(self)  # type: ignore[call-arg]
+
+        except self._pipeline._channel._all_never_handle_exceptions:  # type: ignore[misc]  # noqa
+            raise
+
+        except BaseException as e:  # noqa
+            dfl.set_failed(e)
+
+            if self._handling_error or self._pipeline._config.raise_immediately:  # noqa
+                raise
+            self._handle_error(e, 'inbound')
+
+        else:
+            dfl.set_succeeded(res)
+
+    #
+
     _handling_error: bool = False
 
     def _handle_error(self, e: BaseException, direction: 'ChannelPipelineDirection') -> None:
@@ -6101,20 +6126,7 @@ class PipelineChannel:
             if dfl._pinned:  # noqa
                 self._propagation.unpin_musts(dfl)
 
-            try:
-                if dfl.no_context:
-                    res = dfl.fn()  # type: ignore[call-arg]
-                else:
-                    res = dfl.fn(ctx)  # type: ignore[call-arg]
-
-            except self._all_never_handle_exceptions:  # type: ignore[misc]
-                raise
-
-            except BaseException as e:  # noqa
-                dfl.set_failed(e)
-
-            else:
-                dfl.set_succeeded(res)
+            ctx._run_deferred(dfl)  # noqa
 
         finally:
             self._step_out()
@@ -11959,6 +11971,7 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         if isinstance(msg, ChannelPipelineMessages.FinalInput):
             if self._enabled and self._z is not None:
+                check.none(self._pending_final_input)
                 self._pending_final_input = msg
                 self._pump(ctx)
             else:
