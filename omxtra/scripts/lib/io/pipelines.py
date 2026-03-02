@@ -56,7 +56,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
             dict(path='../../../omlish/logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='../../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
-            dict(path='core.py', sha1='b8b3db433ef5a5c4d3959df1d9233b8280f4d47a'),
+            dict(path='core.py', sha1='2fd3d6839ae55bc2493b3e6928b00b0195f87f9f'),
             dict(path='../../../omlish/io/streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -4629,7 +4629,7 @@ class ChannelPipelineMessages(NamespaceClass):
     #
 
     @ta.final
-    @dc.dataclass(frozen=True)
+    @dc.dataclass(frozen=True, eq=False)
     class FinalInput(NeverOutbound, MustPropagate):  # ~ Netty `ChannelInboundHandler::channelInactive`
         """Signals that the inbound stream has produced its final message (`eof`)."""
 
@@ -4637,7 +4637,7 @@ class ChannelPipelineMessages(NamespaceClass):
             return f'{type(self).__name__}@{id(self):x}()'
 
     @ta.final
-    @dc.dataclass(frozen=True)
+    @dc.dataclass(frozen=True, eq=False)
     class FinalOutput(NeverInbound, MustPropagate):  # ~ Netty `ChannelOutboundHandler::close`
         """Signals that the outbound stream has produced its final message (`close`)."""
 
@@ -4928,17 +4928,17 @@ class ChannelPipelineHandlerContext:
             self,
             fn: ta.Callable[['ChannelPipelineHandlerContext'], T],
             *,
-            pinned: ta.Optional[ta.Sequence[ChannelPipelineMessages.MustPropagate]] = None,
+            pin: ta.Optional[ta.Sequence[ChannelPipelineMessages.MustPropagate]] = None,
     ) -> ChannelPipelineMessages.Defer[T]:
-        return self._pipeline._channel._defer(self, fn, pinned=pinned)  # noqa
+        return self._pipeline._channel._defer(self, fn, pin=pin)  # noqa
 
     def defer_no_context(
             self,
             fn: ta.Callable[[], T],
             *,
-            pinned: ta.Optional[ta.Sequence[ChannelPipelineMessages.MustPropagate]] = None,
+            pin: ta.Optional[ta.Sequence[ChannelPipelineMessages.MustPropagate]] = None,
     ) -> ChannelPipelineMessages.Defer[T]:
-        return self._pipeline._channel._defer(self, fn, no_context=True, pinned=pinned)  # noqa
+        return self._pipeline._channel._defer(self, fn, no_context=True, pin=pin)  # noqa
 
     #
 
@@ -6046,7 +6046,7 @@ class PipelineChannel:
             ],
             *,
             no_context: bool = False,
-            pinned: ta.Optional[ta.Sequence[ChannelPipelineMessages.MustPropagate]] = None,
+            pin: ta.Optional[ta.Sequence[ChannelPipelineMessages.MustPropagate]] = None,
     ) -> ChannelPipelineMessages.Defer[T]:
         check.is_(ctx._pipeline, self._pipeline)  # noqa
         check.state(not ctx._invalidated)  # noqa
@@ -6055,11 +6055,11 @@ class PipelineChannel:
             fn,
             no_context,
             _ctx=ctx,
-            _pinned=pinned,
+            _pinned=pin,
         )
 
-        if pinned:
-            raise NotImplementedError
+        if pin:
+            self._propagation.pin_musts(dfl)
 
         ctx.feed_out(dfl)
 
@@ -6070,11 +6070,11 @@ class PipelineChannel:
         check.is_(ctx._pipeline, self._pipeline)  # noqa
         check.state(not ctx._invalidated)  # noqa
 
-        if dfl._pinned:  # noqa
-            raise NotImplementedError
-
         self._step_in()
         try:
+            if dfl._pinned:  # noqa
+                self._propagation.unpin_musts(dfl)
+
             try:
                 if dfl.no_context:
                     res = dfl.fn()  # type: ignore[call-arg]
@@ -6187,6 +6187,30 @@ class PipelineChannel:
             check.state(x.pinned_by is None)
             x.last_seen = ctx
 
+        def pin_musts(
+                self,
+                pinning: ChannelPipelineMessages.Pinning,
+        ) -> None:
+            if self._ch._config.disable_propagation_checking or not (lst := pinning.pinned):  # noqa
+                return
+
+            for msg in lst:
+                x = self._pending_must[id(msg)]
+                check.none(x.pinned_by)
+                x.pinned_by = pinning
+
+        def unpin_musts(
+                self,
+                pinning: ChannelPipelineMessages.Pinning,
+        ) -> None:
+            if self._ch._config.disable_propagation_checking or not (lst := pinning.pinned):  # noqa
+                return
+
+            for msg in lst:
+                x = self._pending_must[id(msg)]
+                check.is_(x.pinned_by, pinning)
+                x.pinned_by = None
+
         def remove_must(
                 self,
                 ctx: ChannelPipelineHandlerContext,
@@ -6226,15 +6250,22 @@ class PipelineChannel:
 
             il: ta.List[ta.Tuple[ta.Any, ta.Any]] = []
             ol: ta.List[ta.Tuple[ta.Any, ta.Any]] = []
+
             for x in self._pending_must.values():
-                (il if x.direction == 'inbound' else ol).append((x.msg, x.last_seen._ref))  # noqa
+                if x.pinned_by is None:
+                    (il if x.direction == 'inbound' else ol).append((x.msg, x.last_seen._ref))  # noqa
+
+            if not (il or ol):
+                return
 
             e = MessageNotPropagatedChannelPipelineError.new(
                 inbound_with_last_seen=il,
                 outbound_with_last_seen=ol,
             )
 
-            self._pending_must.clear()
+            for lst in (il, ol):
+                for msg, _ in lst:
+                    del self._pending_must[id(msg)]
 
             raise e
 

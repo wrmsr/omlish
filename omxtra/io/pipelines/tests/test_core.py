@@ -3,11 +3,14 @@ import dataclasses as dc
 import typing as ta
 import unittest
 
+from omlish.lite.check import check
+
 from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
 from ..core import ChannelPipelineMessages
 from ..core import PipelineChannel
 from ..core import PipelineChannelMetadata
+from ..errors import MessageNotPropagatedChannelPipelineError
 from ..handlers.feedback import FeedbackInboundChannelPipelineHandler
 from ..handlers.queues import InboundQueueChannelPipelineHandler
 
@@ -197,6 +200,35 @@ class TestCompletable(unittest.TestCase):
         assert l == ['hiya']
 
 
+class TestMustPropagate(unittest.TestCase):
+    def test_must_propagate(self):
+        class BrokenPropagator(ChannelPipelineHandler):
+            def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+                if isinstance(msg, ChannelPipelineMessages.FinalInput):
+                    return
+
+                ctx.feed_in(msg)
+
+        ch = PipelineChannel.new([
+            IntStrDuplexHandler(),
+            bph := BrokenPropagator(),
+            ibq := InboundQueueChannelPipelineHandler(),
+        ])
+
+        ch.feed_in(240)
+        assert not ch.output.drain()
+        assert ibq.drain() == ['240']
+
+        fi = ChannelPipelineMessages.FinalInput()
+        with self.assertRaises(MessageNotPropagatedChannelPipelineError) as ex:
+            ch.feed_in(fi)
+        assert isinstance(ex.exception, MessageNotPropagatedChannelPipelineError)
+        it = ex.exception.items[0]
+        assert it.direction == 'inbound'
+        assert it.msg is fi
+        assert check.not_none(it.last_seen).handler is bph
+
+
 class TestDefer(unittest.TestCase):
     def test_defer(self):
         class DeferThing(ChannelPipelineHandler):
@@ -225,3 +257,35 @@ class TestDefer(unittest.TestCase):
         ch.run_deferred(dfl)
         assert not ch.output.drain()
         assert ibq.drain() == ['bye']
+
+    def test_defer_pinning(self):
+        class PinningDeferThing(ChannelPipelineHandler):
+            def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+                if isinstance(msg, ChannelPipelineMessages.FinalInput):
+                    def foo():
+                        ctx.feed_in(msg)
+
+                    ctx.defer_no_context(foo, pin=[msg])
+                    return
+
+                ctx.feed_in(msg)
+
+        ch = PipelineChannel.new([
+            IntStrDuplexHandler(),
+            PinningDeferThing(),
+            ibq := InboundQueueChannelPipelineHandler(),
+        ])
+
+        ch.feed_in(240)
+        assert not ch.output.drain()
+        assert ibq.drain() == ['240']
+
+        fi = ChannelPipelineMessages.FinalInput()
+        ch.feed_in(fi)
+        assert not ibq.drain()
+        [dfl] = ch.output.drain()
+        assert isinstance(dfl, ChannelPipelineMessages.Defer)
+
+        ch.run_deferred(dfl)
+        assert not ch.output.drain()
+        assert ibq.drain() == [fi]
