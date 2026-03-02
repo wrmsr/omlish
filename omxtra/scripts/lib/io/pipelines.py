@@ -86,8 +86,8 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
             dict(path='bytes/decoders.py', sha1='212e4f54b7bc55028ae75dfb75b3ec18cc5bad51'),
             dict(path='http/decoders.py', sha1='d82d2096b3016e84019bf723aeb17586e2472fd5'),
-            dict(path='drivers/asyncio.py', sha1='58e604b1f6605cb3d8e8d56db8bc0131f7cf1978'),
-            dict(path='http/client/responses.py', sha1='faf90cb90d5412e92610705d2834ff177a5eae75'),
+            dict(path='drivers/asyncio.py', sha1='1456109d282d8461d42816bba9b734d99ffd08f9'),
+            dict(path='http/client/responses.py', sha1='97872e2af9cc333c07ae23a424ca1e5fa0c45833'),
             dict(path='http/server/requests.py', sha1='1007de97135c4712c67e5814cb17d7bc85650dad'),
             dict(path='_amalg.py', sha1='f66657d8b3801c6e8e84db2e4cd1b593d9e029be'),
         ],
@@ -11413,6 +11413,8 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
             in_msgs.append(ChannelPipelineFlowMessages.FlushInput())
 
         if eof:
+            self._has_read_eof = True
+
             in_msgs.append(ChannelPipelineMessages.FinalInput())
 
         #
@@ -11472,8 +11474,10 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
 
             self._ensure_read_task()
 
+    _has_read_eof = False
+
     def _maybe_ensure_read_task(self) -> None:
-        if self._want_read or self._is_auto_read():
+        if not self._has_read_eof and (self._want_read or self._is_auto_read()):
             self._ensure_read_task()
 
     @abc.abstractmethod
@@ -11712,17 +11716,22 @@ class SimpleAsyncioStreamPipelineChannelDriver(AsyncioStreamPipelineChannelDrive
                 return
 
             cmd: AsyncioStreamPipelineChannelDriver._Command
+            eof = False
             try:
                 data = task.result()
+
             except asyncio.CancelledError:
                 cmd = AsyncioStreamPipelineChannelDriver._ReadCancelledCommand()  # noqa
+
             else:
                 cmd = AsyncioStreamPipelineChannelDriver._ReadCompletedCommand(data)  # noqa
+                eof = not data
 
             self._command_queue.put_nowait(cmd)
 
             # FIXME: disable? toggle? this pre-reads till told to stop to try to reduce stalling
-            self._maybe_ensure_read_task()
+            if not eof:
+                self._maybe_ensure_read_task()
 
         self._read_task.add_done_callback(_done)
 
@@ -11918,9 +11927,10 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
             return True
         return flow.is_auto_read()
 
-    def _emit_out_pending(self, ctx: ChannelPipelineHandlerContext) -> None:
-        """Emits buffered decompressed data according to flow control rules."""
+    def _emit_out_pending(self, ctx: ChannelPipelineHandlerContext) -> bool:
+        """Returns True if at least one message was emitted."""
 
+        emitted = False
         while self._out_pending and (self._is_auto_read(ctx) or self._read_requested):
             o = self._out_pending.popleft()
             self._out_pending_bytes -= len(o)
@@ -11929,38 +11939,32 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
                 self._read_requested = False
 
             ctx.feed_in(o)
+            emitted = True
 
-    def _defer_resume(self, ctx: ChannelPipelineHandlerContext) -> None:
-        """Yields execution to the driver while pinning MustPropagate messages."""
+            # In manual mode, we satisfy one 'read' at a time.
+            if not self._is_auto_read(ctx):
+                break
+        return emitted
 
-        pin = [self._pending_final_input] if self._pending_final_input else None
-
-        def resume(c: ChannelPipelineHandlerContext):
-            self._pump(c)
-
-        ctx.defer(resume, pin=pin)
-
-    def _pump(self, ctx: ChannelPipelineHandlerContext) -> None:
-        """
-        Drains pending compressed input through zlib into output.
-        Enforces flow control and CPU bounding.
-        """
+    def _pump(self, ctx: ChannelPipelineHandlerContext) -> bool:
+        """Returns True if it effectively satisfied a read request."""
 
         z = self._z
         if z is None:
-            return
+            return False
 
         steps = 0
         max_steps = self._config.max_steps_per_call
 
-        # 1. Clear existing output first
-        self._emit_out_pending(ctx)
+        # 1. Try to clear existing output.
+        if self._emit_out_pending(ctx):
+            return True
 
-        # 2. If blocked by downstream backpressure, stop
+        # 2. If blocked by downstream, we can't satisfy anything.
         if self._out_pending:
-            return
+            return False
 
-        # 3. Main processing loop
+        # 3. Decompression Loop
         while self._in_pending:
             # Enforce output buffer budget
             if (mop := self._config.max_out_pending) is not None:
@@ -11970,7 +11974,7 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
             # Check for CPU step limit
             if max_steps is not None and steps >= max_steps:
                 self._defer_resume(ctx)
-                return
+                return False  # We haven't satisfied it yet, we deferred.
 
             steps += 1
             chunk = self._in_pending.popleft()
@@ -11978,7 +11982,6 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
             self._in_pending_bytes -= cl
 
             out = z.decompress(chunk, self._config.max_decomp_chunk)
-
             if out:
                 ol = len(out)
                 self._out_total_bytes += ol
@@ -11986,50 +11989,52 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
                 self._out_pending_bytes += ol
                 self._check_budgets()
 
-                # Try to emit immediately if allowed
-                self._emit_out_pending(ctx)
+                if self._emit_out_pending(ctx):
+                    return True  # Satisfied!
 
-                # If buffer hit or request satisfied, stop pumping
-                if self._out_pending:
-                    break
-
-            # Handle unconsumed tail (partial gzip records)
             ut = z.unconsumed_tail
             if ut:
-                utl = len(ut)
                 self._in_pending.appendleft(ut)
-                self._in_pending_bytes += utl
-                # If we produced nothing and consumed nothing, we're stuck
+                self._in_pending_bytes += len(ut)
                 if not out:
                     break
 
-        # 4. Handle Terminal Input (FinalInput)
+        # 4. Handle EOF
         if not self._in_pending and self._pending_final_input:
-            # Final check for CPU bounding before the terminal flush
             if max_steps is not None and steps >= max_steps:
                 self._defer_resume(ctx)
-                return
+                return False
 
-            try:
-                out = z.flush()
-                if out:
-                    ol = len(out)
-                    self._out_total_bytes += ol
-                    self._out_pending.append(out)
-                    self._out_pending_bytes += ol
-                    self._check_budgets()
-                    self._emit_out_pending(ctx)
-            finally:
-                # Always clear read state and propagate the terminal message
-                self._read_requested = False
-                msg = self._pending_final_input
-                self._pending_final_input = None
-                ctx.feed_in(msg)
+            out = z.flush()
+            if out:
+                ol = len(out)
+                self._out_total_bytes += ol
+                self._out_pending.append(out)
+                self._out_pending_bytes += ol
+                self._check_budgets()
+                self._emit_out_pending(ctx)
+
+            msg = self._pending_final_input
+            self._pending_final_input = None
+            self._read_requested = False
+            ctx.feed_in(msg)
+            return True  # FinalInput counts as satisfying the last read
+
+        return False
+
+    def _defer_resume(self, ctx: ChannelPipelineHandlerContext) -> None:
+        pin = [self._pending_final_input] if self._pending_final_input else None
+
+        def resume(c: ChannelPipelineHandlerContext):
+            # If a deferred pump satisfies a read, it must provide the FlushInput
+            if self._pump(c) and not self._is_auto_read(c):
+                c.feed_in(ChannelPipelineFlowMessages.FlushInput())
+
+        ctx.defer(resume, pin=pin)
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         if isinstance(msg, ChannelPipelineMessages.FinalInput):
             if self._enabled and self._z is not None:
-                check.none(self._pending_final_input)
                 self._pending_final_input = msg
                 self._pump(ctx)
             else:
@@ -12053,7 +12058,6 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
             ctx.feed_in(msg)
             return
 
-        # Buffer compressed segments and check budgets
         for mv in ByteStreamBuffers.iter_segments(msg):
             mvl = len(mv)
             self._in_total_bytes += mvl
@@ -12067,13 +12071,12 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
         if isinstance(msg, ChannelPipelineFlowMessages.ReadyForInput):
             self._read_requested = True
 
-            # Satisfy from buffers if possible
             if self._out_pending or (self._enabled and self._in_pending):
-                self._pump(ctx)
+                if self._pump(ctx):
+                    if not self._is_auto_read(ctx):
+                        ctx.feed_in(ChannelPipelineFlowMessages.FlushInput())
 
-                # If satisfied, swallow the message
-                if not self._read_requested:
-                    return
+                    return  # Swallow since we satisfied it
 
         ctx.feed_out(msg)
 

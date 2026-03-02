@@ -146,13 +146,15 @@ class SslChannelPipelineHandler(
 
     #
 
-    def _pump_plaintext_in(self, ctx: ChannelPipelineHandlerContext, st: _State) -> None:
+    def _pump_plaintext_in(self, ctx: ChannelPipelineHandlerContext, st: _State) -> bool:
         """Read decrypted data from SSLObject -> inbound plaintext."""
 
         # We pump if we have a reason to:
         # 1. Auto-read is on.
         # 2. Downstream explicitly asked (_read_requested).
         # 3. We are handshaking (SSL engine is the consumer).
+
+        produced = False
 
         while self._is_auto_read(ctx) or self._read_requested or st.state != 'established':
             try:
@@ -174,9 +176,11 @@ class SslChannelPipelineHandler(
                 # EOF.
                 if not self._is_auto_read(ctx):
                     self._read_requested = False
-                break
+                # Even b'' (EOF) satisfies a read request
+                return produced or not self._is_auto_read(ctx)
 
             # SUCCESS: We got plaintext.
+            produced = True
             if st.state == 'established':
                 # Satisfy the 'ReadyForInput' token.
                 if not self._is_auto_read(ctx):
@@ -187,7 +191,9 @@ class SslChannelPipelineHandler(
                 # In manual mode, we stop after one successful emission to satisfy Netty's 'one-read-per-request'
                 # contract.
                 if not self._is_auto_read(ctx):
-                    break
+                    return True
+
+        return produced
 
     def _pump_tls_out(self, ctx: ChannelPipelineHandlerContext, st: _State) -> None:
         """Drain out_bio -> outbound TLS records."""
@@ -375,13 +381,12 @@ class SslChannelPipelineHandler(
             if st and st.state == 'established':
                 # Mark that downstream wants data
                 self._read_requested = True
-                # Try to satisfy from existing decrypted data or in_bio ciphertext
-                self._pump_plaintext_in(ctx, st)
 
-                # If pump_plaintext_in fed data, it would have been pushed via ctx.feed_in. In a real impl, you'd check
-                # if you actually emitted anything. If we satisfied the request, we SWALLOW this message.
-                if not self._read_requested:
-                    return
+                # Check if we actually satisfied the request
+                if self._pump_plaintext_in(ctx, st):
+                    if not self._is_auto_read(ctx):
+                        ctx.feed_in(ChannelPipelineFlowMessages.FlushInput())
+                    return  # Swallow
 
             # If we couldn't satisfy it (or we are handshaking), pass it up.
             ctx.feed_out(msg)

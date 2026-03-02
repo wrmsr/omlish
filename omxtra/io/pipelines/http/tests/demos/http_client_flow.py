@@ -13,7 +13,6 @@ from ....drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
 from ....flow.stub import StubChannelPipelineFlow
 from ....flow.types import ChannelPipelineFlow
 from ....flow.types import ChannelPipelineFlowMessages
-from ....handlers.flatmap import FlatMapChannelPipelineHandlers
 from ....handlers.logs import LoggingChannelPipelineHandler  # noqa
 from ...client.requests import PipelineHttpRequestEncoder
 from ...client.responses import PipelineHttpResponseChunkedDecoder
@@ -48,6 +47,9 @@ class HttpClientHandler(ChannelPipelineHandler):
                 ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
 
             return
+
+        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
+            raise NotImplementedError
 
         if isinstance(msg, PipelineHttpResponseHead):
             self._response_head = msg
@@ -113,7 +115,6 @@ def build_http_client_channel(*, auto_read: bool = False) -> PipelineChannel.Spe
             PipelineHttpResponseChunkedDecoder(),
             PipelineHttpRequestEncoder(),
             HttpClientHandler(),
-            FlatMapChannelPipelineHandlers.drop('inbound', filter_type=ChannelPipelineFlowMessages.FlushInput),
         ],
         services=[
             StubChannelPipelineFlow(auto_read=auto_read),

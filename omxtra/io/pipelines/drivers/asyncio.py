@@ -234,6 +234,8 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
             in_msgs.append(ChannelPipelineFlowMessages.FlushInput())
 
         if eof:
+            self._has_read_eof = True
+
             in_msgs.append(ChannelPipelineMessages.FinalInput())
 
         #
@@ -293,8 +295,10 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
 
             self._ensure_read_task()
 
+    _has_read_eof = False
+
     def _maybe_ensure_read_task(self) -> None:
-        if self._want_read or self._is_auto_read():
+        if not self._has_read_eof and (self._want_read or self._is_auto_read()):
             self._ensure_read_task()
 
     @abc.abstractmethod
@@ -533,17 +537,22 @@ class SimpleAsyncioStreamPipelineChannelDriver(AsyncioStreamPipelineChannelDrive
                 return
 
             cmd: AsyncioStreamPipelineChannelDriver._Command
+            eof = False
             try:
                 data = task.result()
+
             except asyncio.CancelledError:
                 cmd = AsyncioStreamPipelineChannelDriver._ReadCancelledCommand()  # noqa
+
             else:
                 cmd = AsyncioStreamPipelineChannelDriver._ReadCompletedCommand(data)  # noqa
+                eof = not data
 
             self._command_queue.put_nowait(cmd)
 
             # FIXME: disable? toggle? this pre-reads till told to stop to try to reduce stalling
-            self._maybe_ensure_read_task()
+            if not eof:
+                self._maybe_ensure_read_task()
 
         self._read_task.add_done_callback(_done)
 
