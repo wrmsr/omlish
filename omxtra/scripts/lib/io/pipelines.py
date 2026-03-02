@@ -87,7 +87,7 @@ def __omlish_amalg__():  # noqa
             dict(path='bytes/decoders.py', sha1='212e4f54b7bc55028ae75dfb75b3ec18cc5bad51'),
             dict(path='http/decoders.py', sha1='d82d2096b3016e84019bf723aeb17586e2472fd5'),
             dict(path='drivers/asyncio.py', sha1='3ea9bc4a40922d1b97897f5ee85a4ddeb1ea8b46'),
-            dict(path='http/client/responses.py', sha1='dd9faa49c61e87f48d388943725bf5f4891e6fbf'),
+            dict(path='http/client/responses.py', sha1='4bafb54f41f55e8402b907a4b2dc173092f889e0'),
             dict(path='http/server/requests.py', sha1='1007de97135c4712c67e5814cb17d7bc85650dad'),
             dict(path='_amalg.py', sha1='f66657d8b3801c6e8e84db2e4cd1b593d9e029be'),
         ],
@@ -11724,17 +11724,14 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
         return flow.is_auto_read()
 
     def _emit_out_pending(self, ctx: ChannelPipelineHandlerContext) -> None:
-        """Emits buffered decompressed data. If auto_read is OFF, only emits if a Read was requested."""
-
-        while self._out_pending:
-            if not self._is_auto_read(ctx) and not self._read_requested:
-                # Downstream hasn't asked for more yet
-                break
-
+        # We emit if:
+        # 1. We have data AND
+        # 2. (Auto-read is on OR downstream specifically asked via ReadyForInput)
+        while self._out_pending and (self._is_auto_read(ctx) or self._read_requested):
             o = self._out_pending.popleft()
             self._out_pending_bytes -= len(o)
 
-            # Consume the 'read request' token if we are in manual mode
+            # In manual mode, we've now satisfied the specific request that was pending
             if not self._is_auto_read(ctx):
                 self._read_requested = False
 
@@ -11787,6 +11784,24 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
                     break
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, ChannelPipelineMessages.FinalInput):
+            if self._enabled and self._z is not None:
+                # 1. Final pump of any remaining pending input
+                self._pump(ctx)
+                # 2. Extract trailing bytes from zlib (footer/checksum)
+                # We don't use _pump here because flush() doesn't take input
+                try:
+                    out = self._z.flush()
+                    if out:
+                        self._out_pending.append(out)
+                        self._out_pending_bytes += len(out)
+                        self._emit_out_pending(ctx)
+                except Exception:  # noqa
+                    raise  # or handle decompression error  # noqa
+
+            ctx.feed_in(msg)
+            return
+
         if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
             self._pump(ctx)
             ctx.feed_in(msg)
@@ -11814,17 +11829,19 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
 
     def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         if isinstance(msg, ChannelPipelineFlowMessages.ReadyForInput):
+            # Mark that downstream is hungry
             self._read_requested = True
 
-            # See if we can satisfy this request from buffers
-            if self._out_pending or self._in_pending:
+            # Try to satisfy from internal buffers (both pending out and pending in)
+            if self._out_pending or (self._enabled and self._in_pending):
                 self._pump(ctx)
 
-                # If we satisfied the request from internal buffers, do NOT propagate the ReadyForInput upstream. This
-                # is the "Backpressure" moment.
+                # If we successfully emitted data, we consumed the 'ReadyForInput'. We return early so the message
+                # doesn't go upstream.
                 if not self._read_requested:
                     return
 
+        # Otherwise, pass it up (including FlushOutput or unsatisfied ReadyForInput)
         ctx.feed_out(msg)
 
 

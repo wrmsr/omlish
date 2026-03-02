@@ -108,7 +108,7 @@ def build_ssl_http_client_channel(**ssl_kwargs: ta.Any) -> PipelineChannel.Spec:
             FlatMapChannelPipelineHandlers.drop('inbound', filter_type=ChannelPipelineFlowMessages.FlushInput),
         ],
         services=[
-            StubChannelPipelineFlow(auto_read=False),
+            StubChannelPipelineFlow(auto_read=True),
         ],
     )
 

@@ -30,9 +30,8 @@ class SslChannelPipelineHandler(
       - decrypted plaintext bytes are fed inbound (ctx.feed_in)
       - plaintext to encrypt bytes arrive outbound (outbound())
 
-    FIXME:
-     - flow control is just wrong
     TODO:
+     - shutdown timeout
      - context.set_alpn_protocols(['http/1.1'])
      - context.post_handshake_auth = True ?
     """
@@ -82,7 +81,7 @@ class SslChannelPipelineHandler(
 
     @dc.dataclass()
     class _State:
-        state: ta.Literal['new', 'handshake', 'established', 'closed']
+        state: ta.Literal['new', 'handshake', 'established', 'shutting_down', 'closed']
         obj: ssl.SSLObject
         in_bio: ssl.MemoryBIO
         out_bio: ssl.MemoryBIO
@@ -106,21 +105,89 @@ class SslChannelPipelineHandler(
 
     #
 
-    _is_ready_for_input: bool = False
-
     def _fc(self, ctx: ChannelPipelineHandlerContext) -> ta.Optional[ChannelPipelineFlow]:
         return ctx.services.find(ChannelPipelineFlow)
 
-    def _maybe_send_ready_for_input(self, ctx: ChannelPipelineHandlerContext) -> None:
-        if (
-                self._is_ready_for_input and
-                (fc := self._fc(ctx)) is not None and
-                not fc.is_auto_read()
-        ):
-            self._is_ready_for_input = False
-            ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+    def _is_auto_read(self, ctx: ChannelPipelineHandlerContext) -> bool:
+        if (flow := ctx.services.find(ChannelPipelineFlow)) is None:
+            return True
+        return flow.is_auto_read()
 
     #
+
+    _is_ready_for_input: bool = False
+    _read_requested = False
+
+    def _maybe_send_ready_for_input(self, ctx: ChannelPipelineHandlerContext) -> None:
+        st = self._state
+        if st is None:
+            return
+
+        fc = self._fc(ctx)
+        if fc is None or fc.is_auto_read():
+            return
+
+        # REASON 1: Handshake is stalled waiting for peer bytes. We must bridge this gap because the 'App' hasn't asked
+        # for data yet.
+        if st.state in ('new', 'handshake') and self._is_ready_for_input:
+            self._is_ready_for_input = False
+            ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+            return
+
+        # REASON 2: Downstream asked for data (_read_requested), but our internal BIO and SSL buffers are dry
+        # (_is_ready_for_input).
+        if st.state == 'established' and self._read_requested and self._is_ready_for_input:
+            # Only request more from transport if the BIO isn't already EOF-ed
+            if st.in_bio.pending == 0 and not st.in_bio.eof:
+                self._is_ready_for_input = False
+                # We don't reset _read_requested here! We keep it True so that when the bytes eventually arrive,
+                # inbound() knows to pump them.
+                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+
+    #
+
+    def _pump_plaintext_in(self, ctx: ChannelPipelineHandlerContext, st: _State) -> None:
+        """Read decrypted data from SSLObject -> inbound plaintext."""
+
+        # We pump if we have a reason to:
+        # 1. Auto-read is on.
+        # 2. Downstream explicitly asked (_read_requested).
+        # 3. We are handshaking (SSL engine is the consumer).
+
+        while self._is_auto_read(ctx) or self._read_requested or st.state != 'established':
+            try:
+                b = st.obj.read(self._config.read_chunk_size)
+            except ssl.SSLWantReadError:
+                # The SSL machine needs more ciphertext from the wire to progress.
+                self._is_ready_for_input = True
+                break
+            except ssl.SSLWantWriteError:
+                # Renegotiation or handshake needs to flush TLS records.
+                self._pump_tls_out(ctx, st)
+                break
+            except ssl.SSLError:
+                # Robustness: fatal SSL errors should propagate to blow up the channel.
+                raise
+
+            if not b:
+                # SSLObject returns b'' on a clean close_notify. In manual mode, this "satisfies" the read request with
+                # EOF.
+                if not self._is_auto_read(ctx):
+                    self._read_requested = False
+                break
+
+            # SUCCESS: We got plaintext.
+            if st.state == 'established':
+                # Satisfy the 'ReadyForInput' token.
+                if not self._is_auto_read(ctx):
+                    self._read_requested = False
+
+                ctx.feed_in(b)
+
+                # In manual mode, we stop after one successful emission to satisfy Netty's 'one-read-per-request'
+                # contract.
+                if not self._is_auto_read(ctx):
+                    break
 
     def _pump_tls_out(self, ctx: ChannelPipelineHandlerContext, st: _State) -> None:
         """Drain out_bio -> outbound TLS records."""
@@ -135,8 +202,14 @@ class SslChannelPipelineHandler(
             fo.append(b)
             n += 1
 
+        if st.out_bio.eof and st.state != 'closed':
+            # The SSL engine has finished its shutdown sequence (sent close_notify).
+            st.state = 'closed'
+            self._pending_plaintext_out.clear()
+            self._pending_outbound_bytes = 0
+
         if (
-                st.state == 'handshake' and
+                st.state in ('handshake', 'closed') and
                 n and
                 self._fc(ctx) is not None
         ):
@@ -144,36 +217,6 @@ class SslChannelPipelineHandler(
 
         for msg in fo:
             ctx.feed_out(msg)
-
-    def _pump_plaintext_in(self, ctx: ChannelPipelineHandlerContext, st: _State) -> None:
-        """Read decrypted data from SSLObject -> inbound plaintext."""
-
-        fi: ta.List[ta.Any] = []
-        n = 0
-
-        while True:
-            try:
-                b = st.obj.read(self._config.read_chunk_size)
-            except ssl.SSLWantReadError:
-                # Need more TLS input from peer
-                self._is_ready_for_input = True
-                break
-            except ssl.SSLWantWriteError:
-                # Need to write pending TLS output (renegotiation / handshake)
-                self._pump_tls_out(ctx, st)
-                # try again next time we get called
-                break
-
-            if not b:
-                # TLS-level EOF (close_notify) or underlying EOF was processed. We don't force-close pipeline here; just
-                # stop pumping.
-                break
-
-            fi.append(b)
-            n += 1
-
-        for msg in fi:
-            ctx.feed_in(msg)
 
     def _handshake_step(self, ctx: ChannelPipelineHandlerContext, st: _State) -> bool:
         """
@@ -247,6 +290,8 @@ class SslChannelPipelineHandler(
 
     #
 
+    _pending_final_output: ta.Any = None
+
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
             self._maybe_send_ready_for_input(ctx)
@@ -276,6 +321,16 @@ class SslChannelPipelineHandler(
             self._pump_plaintext_in(ctx, st)
             self._pump_tls_out(ctx, st)
 
+            # If the engine is still technically 'established' but the transport is gone, we must force a transition to
+            # prevent stuck buffers.
+            if st.state != 'closed':
+                st.state = 'closed'
+                self._pending_plaintext_out.clear()
+
+            # If we reach EOF, any pending manual read request is effectively satisfied by 'nothing'. Clear it so we
+            # don't try to ask the already-closed transport for more.
+            self._read_requested = False
+
             ctx.feed_in(msg)
             return
 
@@ -292,6 +347,19 @@ class SslChannelPipelineHandler(
 
         # Advance handshake if needed.
         established = self._handshake_step(ctx, st)
+
+        if st.state == 'shutting_down':
+            try:
+                st.obj.unwrap()
+                st.state = 'closed'
+                if self._pending_final_output is not None:
+                    ctx.feed_out(self._pending_final_output)
+                    self._pending_final_output = None
+            except (ssl.SSLWantReadError, ssl.SSLWantWriteError):
+                pass
+            except Exception:  # FIXME:  # noqa
+                st.state = 'closed'
+
         if established:
             # If we had buffered outbound plaintext while handshaking, try it now.
             self._drain_pending_plaintext_out(ctx, st)
@@ -301,35 +369,72 @@ class SslChannelPipelineHandler(
         self._pump_tls_out(ctx, st)
 
     def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        # Propagate flow control messages as-is.
+        # 1. Intercept ReadyForInput
+        if isinstance(msg, ChannelPipelineFlowMessages.ReadyForInput):
+            st = self._state
+            if st and st.state == 'established':
+                # Mark that downstream wants data
+                self._read_requested = True
+                # Try to satisfy from existing decrypted data or in_bio ciphertext
+                self._pump_plaintext_in(ctx, st)
+
+                # If pump_plaintext_in fed data, it would have been pushed via ctx.feed_in. In a real impl, you'd check
+                # if you actually emitted anything. If we satisfied the request, we SWALLOW this message.
+                if not self._read_requested:
+                    return
+
+            # If we couldn't satisfy it (or we are handshaking), pass it up.
+            ctx.feed_out(msg)
+            return
+
         if isinstance(msg, ChannelPipelineFlowMessages.FlushOutput):
             ctx.feed_out(msg)
             return
 
-        # If it's not bytes, pass through OUTBOUND (not inbound).
+        if isinstance(msg, ChannelPipelineMessages.FinalOutput):
+            st = self._state
+            if st and st.state in ('established', 'handshake'):
+                try:
+                    # This initiates the TLS close_notify alert
+                    st.obj.unwrap()
+                    st.state = 'closed'
+                except (ssl.SSLWantReadError, ssl.SSLWantWriteError):
+                    st.state = 'shutting_down'
+                    # Save the FinalOutput; we'll feed it once unwrap completes.
+                    self._pending_final_output = msg
+                    self._pump_tls_out(ctx, st)
+                    return
+                except Exception:  # FIXME:  # noqa
+                    pass
+                self._pump_tls_out(ctx, st)
+
+            ctx.feed_out(msg)
+            return
+
+        # 2. Handle Plaintext Writes
         if not ByteStreamBuffers.can_bytes(msg):
             ctx.feed_out(msg)
             return
 
         st = self._ensure_state()
 
-        # Ensure handshake has been started; for a client this is typically what causes "client shoots first" (we
-        # generate ClientHello in out_bio).
+        if st.state == 'closed':
+            # Handshake or close_notify already finalized. We can't encrypt more; drop or raise.
+            self._pending_plaintext_out.clear()
+            self._pending_outbound_bytes = 0
+            return
+
         established = self._handshake_step(ctx, st)
 
         if not established:
-            # Can't reliably write app-data yet; buffer and ensure handshake output is flushed.
             self._pending_plaintext_out.append(msg)
             self._pending_outbound_bytes += len(msg)
-            self._pump_tls_out(ctx, st)
             return
 
-        # Established: write plaintext -> TLS records, flush them.
+        # Write and check for WANT_READ (Renegotiation)
         ok = self._write_plaintext(ctx, st, msg)
         self._pump_tls_out(ctx, st)
 
         if not ok:
-            # We hit WANT_READ while writing; buffer and wait for peer bytes.
             self._pending_plaintext_out.append(msg)
             self._pending_outbound_bytes += len(msg)
-            return

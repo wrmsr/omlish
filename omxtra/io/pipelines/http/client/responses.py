@@ -14,6 +14,7 @@ from omlish.lite.check import check
 
 from ...bytes.buffering import InboundBytesBufferingChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
+from ...core import ChannelPipelineMessages
 from ...flow.types import ChannelPipelineFlow
 from ...flow.types import ChannelPipelineFlowMessages
 from ..decoders import ChunkedPipelineHttpContentChunkDecoder
@@ -166,17 +167,14 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
         return flow.is_auto_read()
 
     def _emit_out_pending(self, ctx: ChannelPipelineHandlerContext) -> None:
-        """Emits buffered decompressed data. If auto_read is OFF, only emits if a Read was requested."""
-
-        while self._out_pending:
-            if not self._is_auto_read(ctx) and not self._read_requested:
-                # Downstream hasn't asked for more yet
-                break
-
+        # We emit if:
+        # 1. We have data AND
+        # 2. (Auto-read is on OR downstream specifically asked via ReadyForInput)
+        while self._out_pending and (self._is_auto_read(ctx) or self._read_requested):
             o = self._out_pending.popleft()
             self._out_pending_bytes -= len(o)
 
-            # Consume the 'read request' token if we are in manual mode
+            # In manual mode, we've now satisfied the specific request that was pending
             if not self._is_auto_read(ctx):
                 self._read_requested = False
 
@@ -229,6 +227,24 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
                     break
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, ChannelPipelineMessages.FinalInput):
+            if self._enabled and self._z is not None:
+                # 1. Final pump of any remaining pending input
+                self._pump(ctx)
+                # 2. Extract trailing bytes from zlib (footer/checksum)
+                # We don't use _pump here because flush() doesn't take input
+                try:
+                    out = self._z.flush()
+                    if out:
+                        self._out_pending.append(out)
+                        self._out_pending_bytes += len(out)
+                        self._emit_out_pending(ctx)
+                except Exception:  # noqa
+                    raise  # or handle decompression error  # noqa
+
+            ctx.feed_in(msg)
+            return
+
         if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
             self._pump(ctx)
             ctx.feed_in(msg)
@@ -256,17 +272,19 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
 
     def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         if isinstance(msg, ChannelPipelineFlowMessages.ReadyForInput):
+            # Mark that downstream is hungry
             self._read_requested = True
 
-            # See if we can satisfy this request from buffers
-            if self._out_pending or self._in_pending:
+            # Try to satisfy from internal buffers (both pending out and pending in)
+            if self._out_pending or (self._enabled and self._in_pending):
                 self._pump(ctx)
 
-                # If we satisfied the request from internal buffers, do NOT propagate the ReadyForInput upstream. This
-                # is the "Backpressure" moment.
+                # If we successfully emitted data, we consumed the 'ReadyForInput'. We return early so the message
+                # doesn't go upstream.
                 if not self._read_requested:
                     return
 
+        # Otherwise, pass it up (including FlushOutput or unsatisfied ReadyForInput)
         ctx.feed_out(msg)
 
 
