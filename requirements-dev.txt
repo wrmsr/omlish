@@ -23,7 +23,7 @@ types-greenlet==3.3.0.20251206
 types-paramiko==4.0.0.20250822  # @omlish-venv !13t !13dt  # cffi ????
 types-psutil==7.2.2.20260130
 types-pyyaml==6.0.12.20250915
-types-regex==2026.2.19.20260221
+types-regex==2026.2.28.20260301
 types-setuptools==82.0.0.20260210
 types-ujson==5.10.0.20250822
 
@@ -107,8 +107,8 @@ asttokens==3.0.1
 numpy>=1.26
 
 rich==14.3.3
-textual==8.0.0  # @omlish-venv 13t 13dt 14t
-textual[syntax]==8.0.0  # @omlish-venv !13t !13dt !14t
+textual==8.0.1  # @omlish-venv 13t 13dt 14t
+textual[syntax]==8.0.1  # @omlish-venv !13t !13dt !14t
 textual-dev==1.8.0
 textual-speedups==0.2.1
 

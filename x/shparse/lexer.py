@@ -21,6 +21,9 @@ import typing as ta
 
 from .tokens import UnTestOperator
 from .tokens import BinTestOperator
+from .tokens import Token
+from .langs import lang_in
+from .langs import LANG_ZSH
 
 
 ##
@@ -222,32 +225,32 @@ func (p *Parser) nextKeepSpaces() {
         case '}':
             p.tok = p.param_token(r)
         case '`', '"', '$', '\'':
-            p.tok = p.regToken(r)
+            p.tok = p.reg_token(r)
         default:
             p.advanceLitOther(r)
 
-    if p.err is not None {
-        p.tok = _EOF
+    if p.err is not None:
+        p.tok = Token.EOF_
 
-func (p *Parser) next() {
-    if p.r == utf8.RuneSelf {
-        p.tok = _EOF
+func (p *Parser) next():
+    if p.r == utf8.RuneSelf:
+        p.tok = Token.EOF_
         return
 
     p.spaced = False
-    if p.quote&allKeepSpaces != 0 {
+    if p.quote&allKeepSpaces != 0:
         p.nextKeepSpaces()
         return
 
     r := p.r
-    for r == escNewl {
+    for r == escNewl:
         r = p.rune()
 
 skipSpace:
-    for {
-        switch r {
+    for:
+        switch r:
         case utf8.RuneSelf:
-            p.tok = _EOF
+            p.tok = Token.EOF_
             return
         case escNewl:
             r = p.rune()
@@ -255,13 +258,13 @@ skipSpace:
             p.spaced = True
             r = p.rune()
         case '\n':
-            if p.tok == _Newl {
+            if p.tok == Token.NEWL_:
                 # merge consecutive newline tokens
                 r = p.rune()
                 continue
 
             p.spaced = True
-            p.tok = _Newl
+            p.tok = Token.NEWL_
             if p.quote != hdocWord and len(p.heredocs) > p.buriedHdocs {
                 p.doHeredocs()
 
@@ -274,7 +277,7 @@ skipSpace:
         if bytes.HasPrefix(p.bs[p.bsp-uint(w):], p.stopAt) {
             p.r = utf8.RuneSelf
             p.w = 1
-            p.tok = _EOF
+            p.tok = Token.EOF_
             return
 
     p.pos = p.nextPos()
@@ -283,17 +286,17 @@ skipSpace:
         switch r {
         case ';', '"', '\'', '(', ')', '$', '|', '&', '>', '<', '`':
             if r == '<' and lang_in(p.lang, LANG_ZSH) and p.zshNumRange() {
-                p.advanceLitNone(r)
+                p.advance_lit_none(r)
                 return
-            p.tok = p.regToken(r)
+            p.tok = p.reg_token(r)
         case '#':
             # If we're parsing $foo#bar, ${foo}#bar, 'foo'#bar, or "foo"#bar,
             # #bar is a continuation of the same word, not a comment.
             if p.quote == unquotedWordCont and not p.spaced {
-                p.advanceLitNone(r)
+                p.advance_lit_none(r)
                 return
             r = p.rune()
-            p.newLit(r)
+            p.new_lit(r)
         runeLoop:
             for {
                 switch r {
@@ -309,45 +312,45 @@ skipSpace:
             if p.keepComments {
                 *p.curComs = append(*p.curComs, Comment{
                     Hash: p.pos,
-                    Text: p.endLit(),
+                    Text: p.end_lit(),
             else {
                 p.litBs = nil
             p.next()
         case '[':
             if p.quote == arrayElems {
                 p.rune()
-                p.tok = leftBrack
+                p.tok = Token.LEFT_BRACK
             else {
-                p.advanceLitNone(r)
+                p.advance_lit_none(r)
         case '=':
             if p.peek() == '(' {
                 p.rune()
                 p.rune()
-                p.tok = assgnParen
+                p.tok = Token.ASSGN_PAREN
             else if p.quote == arrayElems {
                 p.rune()
-                p.tok = assgn
+                p.tok = Token.ASSGN
             else {
-                p.advanceLitNone(r)
+                p.advance_lit_none(r)
         case '?', '*', '+', '@', '!':
-            if p.extendedGlob() {
+            if p.extended_glob() {
                 switch r {
                 case '?':
-                    p.tok = globQuest
+                    p.tok = Token.GLOB_QUEST
                 case '*':
-                    p.tok = globStar
+                    p.tok = Token.GLOB_STAR
                 case '+':
-                    p.tok = globPlus
+                    p.tok = Token.GLOB_PLUS
                 case '@':
-                    p.tok = globAt
+                    p.tok = Token.GLOB_AT
                 case '!':
-                    p.tok = globExcl
+                    p.tok = Token.GLOB_EXCL
                 p.rune()
                 p.rune()
             else {
-                p.advanceLitNone(r)
+                p.advance_lit_none(r)
         default:
-            p.advanceLitNone(r)
+            p.advance_lit_none(r)
     case p.quote&allArithmExpr != 0 and arithm_ops(r):
         p.tok = p.arithm_token(r)
     case p.quote&allParamExp != 0 and param_ops(r):
@@ -359,7 +362,7 @@ skipSpace:
         p.rxFirstPart = False
         switch r {
         case ';', '"', '\'', '$', '&', '>', '<', '`':
-            p.tok = p.regToken(r)
+            p.tok = p.reg_token(r)
         case ')':
             if p.rxOpenParens > 0 {
                 # continuation of open paren
@@ -371,15 +374,15 @@ skipSpace:
         default: # including '(', '|'
             p.advanceLitRe(r)
     case reg_ops(r):
-        p.tok = p.regToken(r)
+        p.tok = p.reg_token(r)
     default:
         p.advanceLitOther(r)
     if p.err is not None:
-        p.tok = _EOF
+        p.tok = Token.EOF_
 
-# extendedGlob determines whether we're parsing a Bash extended globbing expression.
+# extended_glob determines whether we're parsing a Bash extended globbing expression.
 # For example, whether `*` or `@` are followed by `(` to form `@(foo)`.
-func (p *Parser) extendedGlob() bool {
+def extended_glob(p: Parser) -> bool:
     if lang_in(p.lang, LANG_ZSH) {
         # Zsh doesn't have extended globs like bash/mksh.
         # We still tokenize +( @( !( so the parser can give a clear error,
@@ -420,264 +423,263 @@ func (p *Parser) peekTwo() (byte, byte) {
         return p.bs[p.bsp], utf8.RuneSelf
     return p.bs[p.bsp], p.bs[p.bsp+1]
 
-func (p *Parser) regToken(r rune) token {
-    switch r {
-    case '\'':
+def reg_token(p: Parser, r: str) -> Token:
+    if r == '\'':
         p.rune()
-        return sglQuote
-    case '"':
+        return Token.SGL_QUOTE
+    elif r == '"':
         p.rune()
-        return dblQuote
-    case '`':
+        return Token.DBL_QUOTE
+    elif r == '`':
         # Don't call p.rune, as we need to work out p.openBquotes to
         # properly handle backslashes in the lexer.
-        return bckQuote
-    case '&':
-        switch p.rune() {
-        case '&':
+        return Token.BCK_QUOTE
+    elif r == '&':
+        pr = p.rune()
+        if pr == '&':
             p.rune()
-            return andAnd
-        case '>':
-            switch p.rune() {
-            case '|':
+            return Token.AND_AND
+        elif pr == '>':
+            pr = p.rune()
+            if pr == '|':
                 p.rune()
-                return rdrAllClob
-            case '!':
+                return Token.RDR_ALL_CLOB
+            elif pr == '!':
                 p.rune()
-                return rdrAllTrunc
-            case '>':
-                switch p.rune() {
-                case '|':
+                return Token.RDR_ALL_TRUNC
+            elif pr == '>':
+                pr = p.rune()
+                if pr == '|':
                     p.rune()
-                    return appAllClob
-                case '!':
+                    return Token.APP_ALL_CLOB
+                elif pr == '!':
                     p.rune()
-                    return appAllTrunc
-                return appAll
-            return rdrAll
-        return and
-    case '|':
-        switch p.rune() {
-        case '|':
+                    return Token.APP_ALL_TRUNC
+                return Token.APP_ALL
+            return Token.RDR_ALL
+        return Token.AND
+    elif r == '|':
+        pr = p.rune()
+        if pr == '|':
             p.rune()
-            return orOr
-        case '&':
-            if not lang_in(p.lang, LANG_BASH_LIKE | LANG_MIR_BSD_KORN | LANG_ZSH) {
-                break
+            return Token.OR_OR
+        elif pr == '&':
+            if not lang_in(p.lang, LANG_BASH_LIKE | LANG_MIR_BSD_KORN | LANG_ZSH):
+                return Token.OR
             p.rune()
-            return orAnd
-        return or
-    case '$':
-        switch p.rune() {
-        case '\'':
-            if not lang_in(p.lang, LANG_BASH_LIKE | LANG_MIR_BSD_KORN | LANG_ZSH) {
-                break
+            return Token.OR_AND
+        return Token.OR
+    elif r == '$':
+        pr = p.rune()
+        if pr == '\'':
+            if not lang_in(p.lang, LANG_BASH_LIKE | LANG_MIR_BSD_KORN | LANG_ZSH):
+                return Token.DOLLAR
             p.rune()
-            return dollSglQuote
-        case '"':
-            if not lang_in(p.lang, LANG_BASH_LIKE | LANG_MIR_BSD_KORN) {
-                break
+            return Token.DOLL_SGL_QUOTE
+        elif pr == '"':
+            if not lang_in(p.lang, LANG_BASH_LIKE | LANG_MIR_BSD_KORN):
+                return Token.DOLLAR
             p.rune()
-            return dollDblQuote
-        case '{':
+            return Token.DOLL_DBL_QUOTE
+        elif pr == '{':
             p.rune()
-            return dollBrace
-        case '[':
-            if not lang_in(p.lang, LANG_BASH_LIKE) {
+            return Token.DOLL_BRACE
+        elif pr == '[':
+            if not lang_in(p.lang, LANG_BASH_LIKE):
                 # latter to not tokenise ${$[@]} as $[
-                break
+                return Token.DOLLAR
             p.rune()
-            return dollBrack
-        case '(':
-            if p.rune() == '(' {
+            return Token.DOLL_BRACK
+        elif pr == '(':
+            if p.rune() == '(':
                 p.rune()
-                return dollDblParen
-            return dollParen
-        return dollar
-    case '(':
-        if p.rune() == '(' and lang_in(p.lang, LANG_BASH_LIKE|LANG_MIR_BSD_KORN|LANG_ZSH) and p.quote != testExpr {
+                return Token.DOLL_DBL_PAREN
+            return Token.DOLL_PAREN
+        return Token.DOLLAR
+    elif r == '(':
+        if p.rune() == '(' and lang_in(p.lang, LANG_BASH_LIKE|LANG_MIR_BSD_KORN|LANG_ZSH) and p.quote != testExpr:
             p.rune()
-            return dblLeftParen
-        return leftParen
-    case ')':
+            return Token.DBL_LEFT_PAREN
+        return Token.LEFT_PAREN
+    elif r == ')':
         p.rune()
-        return rightParen
-    case ';':
-        switch p.rune() {
-        case ';':
-            if p.rune() == '&' and lang_in(p.lang, LANG_BASH_LIKE) {
+        return Token.RIGHT_PAREN
+    elif r == ';':
+        pr = p.rune()
+        if pr == ';':
+            if p.rune() == '&' and lang_in(p.lang, LANG_BASH_LIKE):
                 p.rune()
-                return dblSemiAnd
-            return dblSemicolon
-        case '&':
-            if not lang_in(p.lang, LANG_BASH_LIKE | LANG_MIR_BSD_KORN | LANG_ZSH) {
-                break
+                return Token.DBL_SEMI_AND
+            return Token.DBL_SEMICOLON
+        elif pr == '&':
+            if not lang_in(p.lang, LANG_BASH_LIKE | LANG_MIR_BSD_KORN | LANG_ZSH):
+                return Token.SEMICOLON
             p.rune()
-            return semiAnd
-        case '|':
-            if not lang_in(p.lang, LANG_MIR_BSD_KORN) {
-                break
+            return Token.SEMI_AND
+        elif pr == '|':
+            if not lang_in(p.lang, LANG_MIR_BSD_KORN):
+                return Token.SEMICOLON
             p.rune()
-            return semiOr
-        return semicolon
-    case '<':
-        switch p.rune() {
-        case '<':
-            if r = p.rune(); r == '-' {
+            return Token.SEMI_OR
+        return Token.SEMICOLON
+    elif r == '<':
+        pr = p.rune()
+        if pr == '<':
+            r = p.rune()
+            if r == '-':
                 p.rune()
-                return dashHdoc
-            else if r == '<' {
+                return Token.DASH_HDOC
+            elif r == '<':
                 p.rune()
-                return wordHdoc
-            return hdoc
-        case '>':
+                return Token.WORD_HDOC
+            return Token.HDOC
+        elif pr == '>':
             p.rune()
-            return rdrInOut
-        case '&':
+            return Token.RDR_IN_OUT
+        elif pr == '&':
             p.rune()
-            return dplIn
-        case '(':
-            if not lang_in(p.lang, LANG_BASH_LIKE | LANG_ZSH) {
-                break
+            return Token.DPL_IN
+        elif pr == '(':
+            if not lang_in(p.lang, LANG_BASH_LIKE | LANG_ZSH):
+                return Token.RDR_IN
             p.rune()
-            return cmdIn
-        return rdrIn
-    case '>':
-        switch p.rune() {
-        case '>':
-            switch p.rune() {
-            case '|':
+            return Token.CMD_IN
+        return Token.RDR_IN
+    elif r == '>':
+        pr = p.rune()
+        if pr == '>':
+            pr = p.rune()
+            if pr == '|':
                 p.rune()
-                return appClob
-            case '!':
+                return Token.APP_CLOB
+            elif pr == '!':
                 p.rune()
-                return appTrunc
-            return appOut
-        case '&':
+                return Token.APP_TRUNC
+            return Token.APP_OUT
+        elif pr == '&':
             p.rune()
-            return dplOut
-        case '|':
+            return Token.DPL_OUT
+        elif pr == '|':
             p.rune()
-            return rdrClob
-        case '!':
+            return Token.RDR_CLOB
+        elif pr == '!':
             p.rune()
-            return rdrTrunc
-        case '(':
-            if not lang_in(p.lang, LANG_BASH_LIKE | LANG_ZSH) {
-                break
+            return Token.RDR_TRUNC
+        elif pr == '(':
+            if not lang_in(p.lang, LANG_BASH_LIKE | LANG_ZSH):
+                return Token.RDR_OUT
             p.rune()
-            return cmdOut
-        return rdrOut
-    panic("unreachable")
+            return Token.CMD_OUT
+        return Token.RDR_OUT
+    raise RuntimeError('unreachable')
 
 func (p *Parser) dqToken(r rune) token {
-    switch r {
-    case '"':
+    if r == '"':
         p.rune()
-        return dblQuote
-    case '`':
+        return Token.DBL_QUOTE
+    elif r == '`':
         # Don't call p.rune, as we need to work out p.openBquotes to
         # properly handle backslashes in the lexer.
-        return bckQuote
-    case '$':
-        switch p.rune() {
-        case '{':
+        return Token.BCK_QUOTE
+    elif r == '$':
+        pr = p.rune()
+        if pr == '{':
             p.rune()
-            return dollBrace
-        case '[':
-            if not lang_in(p.lang, LANG_BASH_LIKE) {
+            return Token.DOLL_BRACE
+        elif pr == '[':
+            if not lang_in(p.lang, LANG_BASH_LIKE):
                 break
             p.rune()
-            return dollBrack
-        case '(':
-            if p.rune() == '(' {
+            return Token.DOLL_BRACK
+        elif pr == '(':
+            if p.rune() == '(':
                 p.rune()
-                return dollDblParen
-            return dollParen
-        return dollar
-    panic("unreachable")
+                return Token.DOLL_DBL_PAREN
+            return Token.DOLL_PAREN
+        return Token.DOLLAR
+    raise RuntimeError('unreachable')
 
-func (p *Parser) param_token(r rune) token {
-    switch r {
-    case '}':
+def param_token(p: Parser, r: str) -> Token:
+    if r == '}':
         p.rune()
-        return rightBrace
-    case ':':
-        switch p.rune() {
-        case '+':
+        return Token.RIGHT_BRACE
+    elif r == ':':
+        pr = p.rune()
+        if pr == '+':
             p.rune()
-            return colPlus
-        case '-':
+            return Token.COL_PLUS
+        elif pr == '-':
             p.rune()
-            return colMinus
-        case '?':
+            return Token.COL_MINUS
+        elif pr == '?':
             p.rune()
-            return colQuest
-        case '=':
+            return Token.COL_QUEST
+        elif pr == '=':
             p.rune()
-            return colAssgn
-        case '#':
+            return Token.COL_ASSIGN
+        elif pr == '#':
             p.rune()
-            return colHash
+            return Token.COL_HASH
         return colon
-    case '+':
+    elif r == '+':
         p.rune()
-        return plus
-    case '-':
+        return Token.PLUS
+    elif r == '-':
         p.rune()
-        return minus
-    case '?':
+        return Token.MINUS
+    elif r == '?':
         p.rune()
-        return quest
-    case '=':
+        return Token.QUEST
+    elif r == '=':
         p.rune()
-        return assgn
-    case '%':
-        if p.rune() == '%' {
+        return Token.ASSGN
+    elif r == '%':
+        if p.rune() == '%':
             p.rune()
-            return dblPerc
+            return Token.DBL_PERC
         return perc
-    case '#':
-        if p.rune() == '#' {
+    elif r == '#':
+        if p.rune() == '#':
             p.rune()
-            return dblHash
-        return hash
-    case '!':
+            return Token.DBL_HASH
+        return Token.HASH
+    elif r == '!':
         p.rune()
-        return exclMark
-    case ']':
+        return Token.EXCL_MARK
+    elif r == ']':
         p.rune()
-        return rightBrack
-    case '/':
-        if p.rune() == '/' {
+        return Token.RIGHT_BRACK
+    elif r == '/':
+        if p.rune() == '/':
             p.rune()
-            return dblSlash
-        return slash
-    case '^':
-        if p.rune() == '^' {
+            return Token.DBL_SLASH
+        return Token.SLASH
+    elif r == '^':
+        if p.rune() == '^':
             p.rune()
-            return dblCaret
-        return caret
-    case ',':
-        if p.rune() == ',' {
+            return Token.DBL_CARET
+        return Token.CARET
+    elif r == ',':
+        if p.rune() == ',':
             p.rune()
-            return dblComma
-        return comma
-    case '@':
+            return Token.DBL_COMMA
+        return Token.COMMA
+    elif r == '@':
         p.rune()
-        return at
-    case '*':
+        return Token.AT
+    elif r == '*':
         p.rune()
-        return star
+        return Token.STAR
 
     # This func gets called by the parser in [runeByRune] mode;
     # we need to handle EOF and unexpected runes.
     case utf8.RuneSelf:
-        return _EOF
-    default:
-        return illegalTok
+        return Token.EOF_
+    else:
+        return Tokkens.ILLEGAL_TOK_
+"""  # noqa
 
-func (p *Parser) arithm_token(r: str) -> Token:
+def arithm_token(p: Parser, r: str) -> Token:
     if r == '!':
         if p.rune() == '=':
             p.rune()
@@ -700,7 +702,7 @@ func (p *Parser) arithm_token(r: str) -> Token:
     elif r == '&':
         pr = p.rune()
         if pr == '&':
-            if p.rune() == '=' and lang_in(p.lang.in, LANG_ZSH):
+            if p.rune() == '=' and lang_in(p.lang, LANG_ZSH):
                 p.rune()
                 return Token.AND_BOOL_ASSGN
             return Token.AND_AND
@@ -711,7 +713,7 @@ func (p *Parser) arithm_token(r: str) -> Token:
     elif r == '|':
         pr = p.rune()
         if pr == '|':
-            if p.rune() == '=' and lang_in(p.lang, LANG_ZSH) {
+            if p.rune() == '=' and lang_in(p.lang, LANG_ZSH):
                 p.rune()
                 return Token.OR_BOOL_ASSGN
             return Token.OR_OR
@@ -722,101 +724,102 @@ func (p *Parser) arithm_token(r: str) -> Token:
     elif r == '<':
         pr = p.rune()
         if pr == '<':
-            if p.rune() == '=' {
+            if p.rune() == '=':
                 p.rune()
                 return Token.SHL_ASSGN
             return Token.HDOC
         elif pr == '=':
             p.rune()
-            return lequal
-        return rdrIn
+            return Token.LEQUAL
+        return Token.RDR_IN
     elif r == '>':
-        switch p.rune() {
-        case '>':
-            if p.rune() == '=' {
+        pr = p.rune()
+        if pr == '>':
+            if p.rune() == '=':
                 p.rune()
-                return shrAssgn
-            return appOut
-        case '=':
+                return Token.SHR_ASSGN
+            return Token.APP_OUT
+        elif pr == '=':
             p.rune()
-            return gequal
-        return rdrOut
+            return Token.GEQUAL
+        return Token.RDR_OUT
     elif r == '+':
-        switch p.rune() {
-        case '+':
+        pr = p.rune()
+        if pr == '+':
             p.rune()
-            return addAdd
-        case '=':
+            return Token.ADD_ADD
+        elif pr == '=':
             p.rune()
-            return addAssgn
-        return plus
+            return Token.ADD_ASSGN
+        return Token.PLUS
     elif r == '-':
-        switch p.rune() {
-        case '-':
+        pr = p.rune()
+        if pr == '-':
             p.rune()
-            return subSub
-        case '=':
+            return Token.SUB_SUB
+        elif pr == '=':
             p.rune()
-            return subAssgn
-        return minus
+            return Token.SUB_ASSGN
+        return Token.MINUS
     elif r == '%':
-        if p.rune() == '=' {
+        if p.rune() == '=':
             p.rune()
-            return remAssgn
-        return perc
+            return Token.REM_ASSGN
+        return Token.PERC
     elif r == '*':
-        switch p.rune() {
-        case '*':
-            if p.rune() == '=' and lang_in(p.lang, LANG_ZSH) {
+        pr = p.rune()
+        if pr == '*':
+            if p.rune() == '=' and lang_in(p.lang, LANG_ZSH):
                 p.rune()
-                return powAssgn
-            return power
-        case '=':
+                return Token.POW_ASSGN
+            return Token.POWER
+        elif pr == '=':
             p.rune()
-            return mulAssgn
-        return star
+            return Token.MUL_ASSGN
+        return Token.STAR
     elif r == '/':
-        if p.rune() == '=' {
+        if p.rune() == '=':
             p.rune()
-            return quoAssgn
-        return slash
+            return Token.QUO_ASSGN
+        return Token.SLASH
     elif r == '^':
-        switch p.rune() {
-        case '^':
-            if p.rune() == '=' and lang_in(p.lang, LANG_ZSH) {
+        pr = p.rune()
+        if pr == '^':
+            if p.rune() == '=' and lang_in(p.lang, LANG_ZSH):
                 p.rune()
-                return xorBoolAssgn
-            return dblCaret
-        case '=':
+                return Token.XOR_BOOL_ASSGN
+            return Token.DBL_CARET
+        elif pr == '=':
             p.rune()
-            return xorAssgn
-        return caret
+            return Token.XOR_ASSGN
+        return Token.CARET
     elif r == '[':
         p.rune()
-        return leftBrack
+        return Token.LEFT_BRACK
     elif r == ']':
         p.rune()
-        return rightBrack
+        return Token.RIGHT_BRACK
     elif r == ',':
         p.rune()
-        return comma
+        return Token.COMMA
     elif r == '?':
         p.rune()
-        return quest
+        return Token.QUEST
     elif r == ':':
         p.rune()
-        return colon
+        return Token.COLON
     elif r == '#':
         p.rune()
-        return hash
+        return Token.HASH
     elif r == '.':
         p.rune()
-        return period
-    raise RuntimeError("unreachable")
+        return Token.PERIOD
+    raise RuntimeError('unreachable')
 
-func (p *Parser) newLit(r rune) {
-    switch {
-    case r < utf8.RuneSelf:
+
+r"""
+def new_lit(p: Parser, r: str) -> None:
+    if r < utf8.RuneSelf:
         p.litBs = p.litBuf[:1]
         p.litBs[0] = byte(r)
     case r > escNewl:
@@ -827,7 +830,7 @@ func (p *Parser) newLit(r rune) {
         # would return -1
         p.litBs = p.litBuf[:0]
 
-func (p *Parser) endLit() (s string) {
+func (p *Parser) end_lit() (s string) {
     if p.r == utf8.RuneSelf or p.r == escNewl {
         s = string(p.litBs)
     else {
@@ -841,25 +844,23 @@ func (p *Parser) isLitRedir() bool {
         return ValidName(string(lit[1 : len(lit)-1]))
     return numberLiteral(lit)
 
-func singleRuneParam[T rune | byte](r T) bool {
-    switch r {
-    case '@', '*', '#', '$', '?', '!', '-',
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+def single_rune_param(r: str) -> bool:
+    if r in ('@', '*', '#', '$', '?', '!', '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'):
         return True
     return False
 
-func paramNameRune[T rune | byte](r T) bool {
+func param_name_rune[T rune | byte](r T) bool {
     return ascii_letter(r) or ascii_digit(r) or r == '_'
 
 func (p *Parser) advanceLitOther(r rune) {
-    tok := _LitWord
+    tok := Token.LIT_WORD_
 loop:
-    for p.newLit(r); r != utf8.RuneSelf; r = p.rune() {
+    for p.new_lit(r); r != utf8.RuneSelf; r = p.rune() {
         switch r {
         case '\\': # escaped byte follows
             p.rune()
         case '\'', '"', '`', '$':
-            tok = _Lit
+            tok = Token.LIT_
             break loop
         case '}':
             if p.quote&allParamExp != 0 {
@@ -880,7 +881,7 @@ loop:
         case '+', '-', ' ', '\t', ';', '&', '>', '<', '|', '(', ')', '\n', '\r':
             if p.quote&allKeepSpaces == 0 {
                 break loop
-    p.tok, p.val = tok, p.endLit()
+    p.tok, p.val = tok, p.end_lit()
 
 # litBsGlob reports whether the literal bytes accumulated so far
 # contain a glob metacharacter, excluding the last byte which is '('.
@@ -914,60 +915,59 @@ func (p *Parser) zshNumRange() bool {
         rest = rest[1:]
     return len(rest) > 0 and rest[0] == '>'
 
-func (p *Parser) advanceLitNone(r rune) {
-    p.eqlOffs = -1
-    tok := _LitWord
+func (p *Parser) advance_lit_none(r rune) {
+    p.eql_offs = -1
+    tok = Token.LIT_WORD_
 loop:
-    for p.newLit(r); r != utf8.RuneSelf; r = p.rune() {
-        switch r {
-        case ' ', '\t', '\n', '\r', '&', '|', ';', ')':
+    for p.new_lit(r); r != utf8.RuneSelf; r = p.rune():
+        if r in (' ', '\t', '\n', '\r', '&', '|', ';', ')'):
             break loop
-        case '(':
-            if lang_in(p.lang, LANG_ZSH) and p.litBsGlob() {
+        elif r == '(':
+            if lang_in(p.lang, LANG_ZSH) and p.litBsGlob():
                 # Zsh glob qualifiers like *(.), **(/) or *(om[1,5]); consume until ')'.
                 for {
-                    if r = p.rune(); r == utf8.RuneSelf or r == ')' {
+                    if r = p.rune(); r == utf8.RuneSelf or r == ')':
                         break
                 continue
             break loop
-        case '\\': # escaped byte follows
+        elif r == '\\': # escaped byte follows
             p.rune()
-        case '>', '<':
-            if r == '<' and lang_in(p.lang, LANG_ZSH) and p.zshNumRange() {
+        elif r in ('>', '<'):
+            if r == '<' and lang_in(p.lang, LANG_ZSH) and p.zshNumRange():
                 # Zsh numeric range glob like <-> or <1-100>; consume until '>'.
                 for {
-                    if r = p.rune(); r == '>' or r == utf8.RuneSelf {
+                    if r = p.rune(); r == '>' or r == utf8.RuneSelf:
                         break
                 continue
             if p.peek() == '(' {
-                tok = _Lit
+                tok = Token.LIT_
             else if p.isLitRedir() {
-                tok = _LitRedir
+                tok = Token.LIT_REDIR_
             break loop
-        case '`':
+        elif r == '`':
             if p.quote != subCmdBckquo {
-                tok = _Lit
+                tok = Token.LIT_
             break loop
-        case '"', '\'', '$':
-            tok = _Lit
+        elif r in ('"', '\'', '$'):
+            tok = Token.LIT_
             break loop
-        case '?', '*', '+', '@', '!':
-            if p.extendedGlob() {
-                tok = _Lit
+        elif r in ('?', '*', '+', '@', '!'):
+            if p.extended_glob():
+                tok = Token.LIT_
                 break loop
-        case '=':
+        elif r == '=':
             if p.eqlOffs < 0 {
                 p.eqlOffs = len(p.litBs) - 1
-        case '[':
+        elif r == '[':
             if lang_in(p.lang, LANG_BASH_LIKE|LANG_MIR_BSD_KORN|LANG_ZSH) and len(p.litBs) > 1 and p.litBs[0] != '[' {
-                tok = _Lit
+                tok = Token.LIT_
                 break loop
-    p.tok, p.val = tok, p.endLit()
+    p.tok, p.val = tok, p.end_lit()
 
 func (p *Parser) advanceLitDquote(r rune) {
-    tok := _LitWord
+    tok := Token.LIT_WORD_
 loop:
-    for p.newLit(r); r != utf8.RuneSelf; r = p.rune() {
+    for p.new_lit(r); r != utf8.RuneSelf; r = p.rune() {
         switch r {
         case '"':
             break loop
@@ -976,7 +976,7 @@ loop:
         case escNewl, '`', '$':
             tok = _Lit
             break loop
-    p.tok, p.val = tok, p.endLit()
+    p.tok, p.val = tok, p.end_lit()
 
 func (p *Parser) advanceLitHdoc(r rune) {
     # Unlike the rest of nextKeepSpaces quote states, we handle escaped
@@ -989,7 +989,7 @@ func (p *Parser) advanceLitHdoc(r rune) {
     p.pos = p.nextPos()
 
     p.tok = _Lit
-    p.newLit(r)
+    p.new_lit(r)
     for p.quote == hdocBodyTabs and r == '\t' {
         r = p.rune()
     lStart := len(p.litBs) - 1
@@ -997,20 +997,20 @@ func (p *Parser) advanceLitHdoc(r rune) {
     for ; ; r = p.rune() {
         switch r {
         case escNewl, '$':
-            p.val = p.endLit()
+            p.val = p.end_lit()
             return
         case '\\': # escaped byte follows
             p.rune()
         case '`':
             if not p.backquoteEnd() {
-                p.val = p.endLit()
+                p.val = p.end_lit()
                 return
             fallthrough
         case '\n', utf8.RuneSelf:
             if p.parsingDoc {
                 if r == utf8.RuneSelf {
-                    p.tok = _LitWord
-                    p.val = p.endLit()
+                    p.tok = Token.LIT_WORD_
+                    p.val = p.end_lit()
                     return
             else if lStart == 0 and lastTok == _Lit {
                 # This line starts right after an escaped
@@ -1021,10 +1021,10 @@ func (p *Parser) advanceLitHdoc(r rune) {
                 if r != utf8.RuneSelf and len(line) > 0 {
                     line = line[:len(line)-1] # minus trailing character
                 if bytes.Equal(line, stop) {
-                    p.tok = _LitWord
-                    p.val = p.endLit()[:lStart]
+                    p.tok = Token.LIT_WORD_
+                    p.val = p.end_lit()[:lStart]
                     if p.val == "" {
-                        p.tok = _Newl
+                        p.tok = Token.NEWL_
                     p.hdocStops[len(p.hdocStops)-1] = nil
                     return
             if r != '\n' {
@@ -1035,7 +1035,7 @@ func (p *Parser) advanceLitHdoc(r rune) {
 
 func (p *Parser) quotedHdocWord() *Word {
     r := p.r
-    p.newLit(r)
+    p.new_lit(r)
     pos := p.nextPos()
     stop := p.hdocStops[len(p.hdocStops)-1]
     for ; ; r = p.rune() {
@@ -1064,13 +1064,13 @@ func (p *Parser) quotedHdocWord() *Word {
             line = line[:len(line)-1] # minus \n
         if bytes.Equal(line, stop) {
             p.hdocStops[len(p.hdocStops)-1] = nil
-            val := p.endLit()[:lStart]
+            val := p.end_lit()[:lStart]
             if val == "" {
                 return nil
             return p.wordOne(p.lit(pos, val))
 
 func (p *Parser) advanceLitRe(r rune) {
-    for p.newLit(r); ; r = p.rune() {
+    for p.new_lit(r); ; r = p.rune() {
         switch r {
         case '\\':
             p.rune()
@@ -1078,19 +1078,19 @@ func (p *Parser) advanceLitRe(r rune) {
             p.rxOpenParens++
         case ')':
             if p.rxOpenParens--; p.rxOpenParens < 0 {
-                p.tok, p.val = _LitWord, p.endLit()
+                p.tok, p.val = Token.LIT_WORD_, p.end_lit()
                 p.quote = testExpr
                 return
         case ' ', '\t', '\r', '\n', ';', '&', '>', '<':
             if p.rxOpenParens <= 0 {
-                p.tok, p.val = _LitWord, p.endLit()
+                p.tok, p.val = Token.LIT_WORD_, p.end_lit()
                 p.quote = testExpr
                 return
         case '"', '\'', '$', '`':
-            p.tok, p.val = _Lit, p.endLit()
+            p.tok, p.val = _Lit, p.end_lit()
             return
         case utf8.RuneSelf:
-            p.tok, p.val = _LitWord, p.endLit()
+            p.tok, p.val = Token.LIT_WORD_, p.end_lit()
             p.quote = noState
             return
 """  # noqa
