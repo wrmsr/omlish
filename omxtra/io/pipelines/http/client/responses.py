@@ -14,7 +14,6 @@ from omlish.lite.check import check
 
 from ...bytes.buffering import InboundBytesBufferingChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
-from ...core import ChannelPipelineMessages
 from ...flow.types import ChannelPipelineFlow
 from ...flow.types import ChannelPipelineFlowMessages
 from ..decoders import ChunkedPipelineHttpContentChunkDecoder
@@ -102,7 +101,6 @@ class PipelineHttpCompressionDecodingConfig:
     max_decomp_total: ta.Optional[int] = None    # max total decompressed bytes per response
     max_expansion_ratio: ta.Optional[int] = 200  # max_out <= max(1, in_total) * ratio (+ small slack)
 
-    max_in_pending: ta.Optional[int] = 256 * 1024   # cap compressed bytes retained by this stage
     max_out_pending: ta.Optional[int] = 256 * 1024  # cap decompressed bytes retained by this stage (if you buffer)
 
 
@@ -118,11 +116,6 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
 
     Watches for DecodedHttpResponseHead; if Content-Encoding includes 'gzip', enable zlib decompressor for body bytes.
     Flushes on EOF.
-
-    FIXME:
-     - flow control messages lol
-    TODO:
-     - break into non-handler non-http child class like http object decoders
     """
 
     def __init__(
@@ -133,18 +126,17 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
         super().__init__()
 
         self._config = config
-
         self._enabled = False
         self._z: ta.Optional[ta.Any] = None
 
-        self._in_total_bytes = 0
-        self._out_total_bytes = 0
-
+        # Internal buffering
         self._in_pending: collections.deque[BytesLikeOrMemoryview] = collections.deque()
         self._in_pending_bytes = 0
-
         self._out_pending: collections.deque[BytesLikeOrMemoryview] = collections.deque()
         self._out_pending_bytes = 0
+
+        # Flow Control State
+        self._read_requested = False
 
     def inbound_buffered_bytes(self) -> int:
         return self._in_pending_bytes + self._out_pending_bytes
@@ -168,108 +160,77 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
             if self._out_total_bytes > (max(1, self._in_total_bytes) * mer + slack):
                 raise ValueError('gzip expansion ratio exceeds limit (possible zip bomb)')
 
-        if (mip := self._config.max_in_pending) is not None and self._in_pending_bytes > mip:
-            raise ValueError('gzip compressed pending exceeds limit (flow control)')
-
-        if (mop := self._config.max_out_pending) is not None and self._out_pending_bytes > mop:
-            raise ValueError('gzip output pending exceeds limit (flow control)')
+    def _is_auto_read(self, ctx: ChannelPipelineHandlerContext) -> bool:
+        if (flow := ctx.services.find(ChannelPipelineFlow)) is None:
+            return True
+        return flow.is_auto_read()
 
     def _emit_out_pending(self, ctx: ChannelPipelineHandlerContext) -> None:
+        """Emits buffered decompressed data. If auto_read is OFF, only emits if a Read was requested."""
+
         while self._out_pending:
+            if not self._is_auto_read(ctx) and not self._read_requested:
+                # Downstream hasn't asked for more yet
+                break
+
             o = self._out_pending.popleft()
             self._out_pending_bytes -= len(o)
+
+            # Consume the 'read request' token if we are in manual mode
+            if not self._is_auto_read(ctx):
+                self._read_requested = False
+
             ctx.feed_in(o)
-        check.state(self._out_pending_bytes == 0)
 
     def _pump(self, ctx: ChannelPipelineHandlerContext) -> None:
-        """
-        Drain pending compressed input through zlib into output, under strict bounds. Stops when it can't make progress
-        or would exceed pending caps.
-        """
-
         z = self._z
         if z is None:
             return
 
-        # First, flush any already buffered output if you buffer at all.
+        # 1. Try to clear existing output buffer first
         self._emit_out_pending(ctx)
 
-        # Pump while we have input and output headroom.
+        # 2. If we still have output pending, we are "blocked" by downstream
+        if self._out_pending:
+            return
+
+        # 3. Decompress input into output pending
         while self._in_pending:
-            # If we're buffering output, enforce some headroom; if you emit immediately, max_out_pending can be 0 and
-            # this stays trivial.
+            # Enforce output budget
             if (mop := self._config.max_out_pending) is not None:
-                out_headroom = mop - self._out_pending_bytes
-                if out_headroom <= 0:
+                if self._out_pending_bytes >= mop:
                     break
 
-                # Always bound per-call production.
-                cap = min(self._config.max_decomp_chunk, out_headroom)
-
-            else:
-                cap = self._config.max_decomp_chunk
-
-            # Feed *some* input. You can choose a slice size to avoid huge mv creation. This also makes max_in_pending
-            # meaningful.
             chunk = self._in_pending.popleft()
             cl = len(chunk)
             self._in_pending_bytes -= cl
 
-            out = z.decompress(chunk, cap)
+            # Note: Using max_decomp_chunk as a limit to prevent CPU pinning
+            out = z.decompress(chunk, self._config.max_decomp_chunk)
+
             if out:
-                ol = len(out)
-                self._out_total_bytes += ol
                 self._out_pending.append(out)
-                self._out_pending_bytes += ol
+                self._out_pending_bytes += len(out)
                 self._check_budgets()
+
+                # Try to emit immediately if allowed
                 self._emit_out_pending(ctx)
 
-            # Now: advance input by how much zlib actually consumed.
-            #
-            # CPython doesn't directly expose "bytes consumed" from the arg, but you can infer it using unconsumed_tail:
-            # it's the portion of the provided input zlib didn't consume.
+                # If we filled the output buffer or consumed a read request, stop pumping
+                if self._out_pending:
+                    break
+
+            # Handle unconsumed tail (same as your previous logic)
             ut = z.unconsumed_tail
-            utl = len(ut)
             if ut:
-                consumed = cl - utl
-                if consumed <= 0:
-                    # No input consumed; if also no output produced, we're stuck.
-                    if not out:
-                        # break
-                        raise NotImplementedError
-
-                    # If we produced output but consumed nothing, loop continues bounded by cap.
-                    self._in_pending.appendleft(b'')
-
-                else:
-                    # Keep remainder as pending
-                    self._in_pending.appendleft(ut)
-                    self._in_pending_bytes += utl
-
-            # Budget check also covers in/out pending sizes
-            self._check_budgets()
-
-            # If neither output nor input consumption happened, stop.
-            if not out and ut and utl == cl:
-                break
+                self._in_pending.appendleft(ut)
+                self._in_pending_bytes += len(ut)
+                if not out:  # Stuck
+                    break
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineMessages.FinalInput):
-            if self._enabled and self._z is not None:
-                # Drain any remaining pending input first
-                self._pump(ctx)
-
-                while True:
-                    out = self._z.flush(self._config.max_decomp_chunk)
-                    if not out:
-                        break
-                    ol = len(out)
-                    self._out_total_bytes += ol
-                    self._out_pending.append(out)
-                    self._out_pending_bytes += ol
-                    self._check_budgets()
-                    self._emit_out_pending(ctx)
-
+        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
+            self._pump(ctx)
             ctx.feed_in(msg)
             return
 
@@ -281,21 +242,32 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
             ctx.feed_in(msg)
             return
 
-        if (
-                not self._enabled or
-                self._z is None or
-                not ByteStreamBuffers.can_bytes(msg)
-        ):
+        if not self._enabled or self._z is None or not ByteStreamBuffers.can_bytes(msg):
             ctx.feed_in(msg)
             return
 
+        # Buffer new compressed data
         for mv in ByteStreamBuffers.iter_segments(msg):
-            mvl = len(mv)
-            self._in_total_bytes += mvl
             self._in_pending.append(mv)
-            self._in_pending_bytes += mvl
+            self._in_pending_bytes += len(mv)
             self._check_budgets()
-            self._pump(ctx)
+
+        self._pump(ctx)
+
+    def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, ChannelPipelineFlowMessages.ReadyForInput):
+            self._read_requested = True
+
+            # See if we can satisfy this request from buffers
+            if self._out_pending or self._in_pending:
+                self._pump(ctx)
+
+                # If we satisfied the request from internal buffers, do NOT propagate the ReadyForInput upstream. This
+                # is the "Backpressure" moment.
+                if not self._read_requested:
+                    return
+
+        ctx.feed_out(msg)
 
 
 ##
