@@ -106,12 +106,18 @@ class SslChannelPipelineHandler(
 
     #
 
+    _is_ready_for_input: bool = False
+
     def _fc(self, ctx: ChannelPipelineHandlerContext) -> ta.Optional[ChannelPipelineFlow]:
         return ctx.services.find(ChannelPipelineFlow)
 
-    def _maybe_ready_for_input(self, ctx: ChannelPipelineHandlerContext) -> None:
-        fc = self._fc(ctx)
-        if fc is not None and not fc.is_auto_read():
+    def _maybe_send_ready_for_input(self, ctx: ChannelPipelineHandlerContext) -> None:
+        if (
+                self._is_ready_for_input and
+                (fc := self._fc(ctx)) is not None and
+                not fc.is_auto_read()
+        ):
+            self._is_ready_for_input = False
             ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
 
     #
@@ -129,7 +135,11 @@ class SslChannelPipelineHandler(
             fo.append(b)
             n += 1
 
-        if n and self._fc(ctx) is not None:
+        if (
+                st.state == 'handshake' and
+                n and
+                self._fc(ctx) is not None
+        ):
             fo.append(ChannelPipelineFlowMessages.FlushOutput())
 
         for msg in fo:
@@ -146,7 +156,7 @@ class SslChannelPipelineHandler(
                 b = st.obj.read(self._config.read_chunk_size)
             except ssl.SSLWantReadError:
                 # Need more TLS input from peer
-                self._maybe_ready_for_input(ctx)
+                self._is_ready_for_input = True
                 break
             except ssl.SSLWantWriteError:
                 # Need to write pending TLS output (renegotiation / handshake)
@@ -161,9 +171,6 @@ class SslChannelPipelineHandler(
 
             fi.append(b)
             n += 1
-
-        if n and self._fc(ctx) is not None:
-            fi.append(ChannelPipelineFlowMessages.FlushInput())
 
         for msg in fi:
             ctx.feed_in(msg)
@@ -185,7 +192,7 @@ class SslChannelPipelineHandler(
             except ssl.SSLWantReadError:
                 # Need peer bytes; but we also may have generated output.
                 self._pump_tls_out(ctx, st)
-                self._maybe_ready_for_input(ctx)
+                self._is_ready_for_input = True
                 return False
             except ssl.SSLWantWriteError:
                 # Need to flush our pending handshake records.
@@ -216,7 +223,7 @@ class SslChannelPipelineHandler(
                     # retry same mv
                     continue
                 except ssl.SSLWantReadError:
-                    self._maybe_ready_for_input(ctx)
+                    self._is_ready_for_input = True
                     return False
         return True
 
@@ -241,8 +248,12 @@ class SslChannelPipelineHandler(
     #
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        # Propagate flow control messages as-is.
         if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
+            self._maybe_send_ready_for_input(ctx)
+
+            if (st := self._state) is not None and st.state in ('new', 'handshake'):
+                return
+
             ctx.feed_in(msg)
             return
 
