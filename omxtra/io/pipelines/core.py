@@ -1078,6 +1078,12 @@ class ChannelPipelineService(Abstract):
     def handler_update(self, handler_ref: ChannelPipelineHandlerRef, kind: ChannelPipelineHandlerUpdate) -> None:
         pass
 
+    def channel_enter(self, channel: 'PipelineChannel') -> None:
+        pass
+
+    def channel_exit(self, channel: 'PipelineChannel') -> None:
+        pass
+
 
 ##
 
@@ -1332,10 +1338,22 @@ class PipelineChannel:
             self._by_type_cache: ta.Dict[type, ta.Sequence[ta.Any]] = {}
             self._single_by_type_cache: ta.Dict[type, ta.Optional[ta.Any]] = {}
 
-            self._handles_handler_update: ta.Sequence[ChannelPipelineService] = [
-                svc for svc in lst
-                if type(svc).handler_update is not ChannelPipelineService.handler_update
-            ]
+            self._handles_handler_update = handles_handler_update = []
+            self._handles_channel_enter = handles_channel_enter = []
+            self._handles_channel_exit = handles_channel_exit = []
+
+            for svc in lst:
+                sty = type(svc)
+                if sty.handler_update is not ChannelPipelineService.handler_update:
+                    handles_handler_update.append(sty)
+                if sty.channel_enter is not ChannelPipelineService.channel_enter:
+                    handles_channel_enter.append(sty)
+                if sty.channel_exit is not ChannelPipelineService.channel_exit:
+                    handles_channel_exit.append(sty)
+
+        _handles_handler_update: ta.Sequence[ChannelPipelineService]
+        _handles_channel_enter: ta.Sequence[ChannelPipelineService]
+        _handles_channel_exit: ta.Sequence[ChannelPipelineService]
 
         @classmethod
         def of(cls, obj: ta.Union['PipelineChannel.Services', ta.Sequence[ChannelPipelineService]]) -> 'PipelineChannel.Services':  # noqa
@@ -1403,11 +1421,19 @@ class PipelineChannel:
     def _step_in(self) -> None:
         self._execution_depth += 1
 
+        if self._execution_depth == 1:
+            for svc in self._services._handles_channel_enter:  # noqa
+                svc.channel_enter(self)
+
     def _step_out(self) -> None:
         check.state(self._execution_depth > 0)
+
         self._execution_depth -= 1
 
         if not self._execution_depth:
+            for svc in self._services._handles_channel_exit:  # noqa
+                svc.channel_exit(self)
+
             self._propagation.check_and_clear()
 
     @ta.final
