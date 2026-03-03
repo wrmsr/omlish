@@ -1,3 +1,5 @@
+import typing as ta
+
 from omlish import check
 
 from ..content import Content
@@ -6,11 +8,14 @@ from ..namespaces import NamespaceContent
 from .visitors import VisitorContentTransform
 
 
+C = ta.TypeVar('C')
+
+
 ##
 
 
-class NamespaceContentMaterializer(VisitorContentTransform[None]):
-    def visit_namespace_content(self, c: NamespaceContent, ctx: None) -> Content:
+class NamespaceContentMaterializer(VisitorContentTransform[C]):
+    def visit_namespace_content(self, c: NamespaceContent, ctx: C) -> Content:
         check.issubclass(c.ns, ContentNamespace)
         out: list[Content] = []
         for n, e in c.ns:

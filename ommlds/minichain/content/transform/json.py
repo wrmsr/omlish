@@ -11,10 +11,13 @@ from ..text import TextContent
 from .visitors import VisitorContentTransform
 
 
+C = ta.TypeVar('C')
+
+
 ##
 
 
-class JsonContentRenderer(VisitorContentTransform[None]):
+class JsonContentRenderer(VisitorContentTransform[C]):
     def __init__(
             self,
             *,
@@ -30,7 +33,7 @@ class JsonContentRenderer(VisitorContentTransform[None]):
         self._mode = mode
         self._code = code
 
-    def visit_json_content(self, c: JsonContent, ctx: None) -> StandardContent:
+    def visit_json_content(self, c: JsonContent, ctx: C) -> StandardContent:
         match self._mode:
             case 'pretty':
                 s = self._backend.dumps_pretty(c.v)

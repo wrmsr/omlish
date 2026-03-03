@@ -21,20 +21,20 @@ C = ta.TypeVar('C')
 
 
 @dc.dataclass(frozen=True)
-class UuidAddingMessageTransform(MessageTransform[None]):
+class UuidAddingMessageTransform(MessageTransform[C]):
     uuid_factory: ta.Callable[[], uuid.UUID] = dc.field(default_factory=lambda: uuid.uuid4)
 
-    def transform(self, m: Message, ctx: None) -> Chat:
+    def transform(self, m: Message, ctx: C) -> Chat:
         if Uuid not in m.metadata:
             m = m.with_metadata(Uuid(self.uuid_factory()))
         return [m]
 
 
 @dc.dataclass(frozen=True)
-class CreatedAtAddingMessageTransform(MessageTransform[None]):
+class CreatedAtAddingMessageTransform(MessageTransform[C]):
     clock: ta.Callable[[], datetime.datetime] = dc.field(default=datetime.datetime.now)
 
-    def transform(self, m: Message, ctx: None) -> Chat:
+    def transform(self, m: Message, ctx: C) -> Chat:
         if CreatedAt not in m.metadata:
             m = m.with_metadata(CreatedAt(self.clock()))
         return [m]

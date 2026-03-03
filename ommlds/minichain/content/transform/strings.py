@@ -11,23 +11,25 @@ from .visitors import VisitorContentTransform
 
 T = ta.TypeVar('T')
 
+C = ta.TypeVar('C')
+
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class StringFnContentTransform(VisitorContentTransform[None]):
+class StringFnContentTransform(VisitorContentTransform[C]):
     fn: ta.Callable[[str], str]
 
-    def visit_str(self, c: str, ctx: None) -> TextContent:
+    def visit_str(self, c: str, ctx: C) -> TextContent:
         return TextContent(self.fn(c)).with_metadata(ContentOriginal(c))
 
-    def visit_text_content(self, c: TextContent, ctx: None) -> TextContent:
+    def visit_text_content(self, c: TextContent, ctx: C) -> TextContent:
         return c.replace(s=self.fn(c.s))
 
-    def visit_emphasis_content(self, c: EmphasisContent, ctx: None) -> EmphasisContent:
+    def visit_emphasis_content(self, c: EmphasisContent, ctx: C) -> EmphasisContent:
         return c.replace(s=self.fn(c.s))
 
 
 def transform_content_strings(fn: ta.Callable[[str], str], o: Content) -> Content:
-    return StringFnContentTransform(fn).transform(o, None)
+    return StringFnContentTransform[None](fn).transform(o, None)

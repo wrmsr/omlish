@@ -33,13 +33,13 @@ class DefaultContentMaterializer(ContentMaterializer):
     ) -> None:
         super().__init__()
 
-        self._recursive_materializer = RecursiveContentMaterializer(
-            NamespaceContentMaterializer(),
-            PlaceholderContentMaterializer(placeholder_contents),
-            ResourceContentMaterializer(),
+        self._recursive_materializer = RecursiveContentMaterializer[None](
+            NamespaceContentMaterializer[None](),
+            PlaceholderContentMaterializer[None](placeholder_contents),
+            ResourceContentMaterializer[None](),
         )
 
-        self._template_materializer = TemplateContentMaterializer(templater_context)
+        self._template_materializer = TemplateContentMaterializer[None](templater_context)
 
     def materialize(self, c: Content) -> Content:
         c = self._recursive_materializer.transform(c, None)

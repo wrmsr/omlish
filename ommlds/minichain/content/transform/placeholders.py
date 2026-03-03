@@ -8,6 +8,9 @@ from ..placeholders import PlaceholderContentKey
 from .visitors import VisitorContentTransform
 
 
+C = ta.TypeVar('C')
+
+
 ##
 
 
@@ -47,7 +50,7 @@ def _make_placeholder_content_fn(cps: PlaceholderContents | None = None) -> Plac
 ##
 
 
-class PlaceholderContentMaterializer(VisitorContentTransform[None]):
+class PlaceholderContentMaterializer(VisitorContentTransform[C]):
     def __init__(
             self,
             placeholder_contents: PlaceholderContents | None = None,
@@ -56,5 +59,5 @@ class PlaceholderContentMaterializer(VisitorContentTransform[None]):
 
         self._placeholder_content_fn = _make_placeholder_content_fn(placeholder_contents)
 
-    def visit_placeholder_content(self, c: PlaceholderContent, ctx: None) -> Content:
+    def visit_placeholder_content(self, c: PlaceholderContent, ctx: C) -> Content:
         return self._placeholder_content_fn(c.k)
