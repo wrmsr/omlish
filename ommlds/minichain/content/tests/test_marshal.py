@@ -9,10 +9,10 @@ from ...metadata import Uuid
 from .._marshal import MarshalContent
 from .._marshal import MarshalRawContent
 from .._marshal import MarshalSingleRawContent
+from ..containers import ConcatContent
 from ..content import Content
 from ..raw import RawContent
 from ..raw import SingleRawContent
-from ..sequence import ConcatContent
 from ..text import TextContent
 
 

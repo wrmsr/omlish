@@ -9,12 +9,16 @@ from omlish import reflect as rfl
 
 from .code import BlockCodeContent
 from .code import InlineCodeContent
+from .containers import BlocksContent
+from .containers import ConcatContent
+from .containers import FlowContent
 from .content import BaseContent
 from .content import Content
 from .emphasis import BoldContent
 from .emphasis import BoldItalicContent
 from .emphasis import ItalicContent
 from .images import ImageContent
+from .itemlist import ItemListContent
 from .json import JsonContent
 from .link import LinkContent
 from .markdown import MarkdownContent
@@ -26,10 +30,6 @@ from .raw import NonStrSingleRawContent
 from .raw import RawContent
 from .raw import SingleRawContent
 from .section import SectionContent
-from .sequence import BlocksContent
-from .sequence import ConcatContent
-from .sequence import FlowContent
-from .sequence import ItemListContent
 from .tag import TagContent
 from .text import TextContent
 
@@ -279,11 +279,17 @@ def _install_standard_marshaling() -> None:
             msh.Impl(InlineCodeContent, 'inline_code'),
             msh.Impl(BlockCodeContent, 'block_code'),
 
+            msh.Impl(FlowContent, 'flow'),
+            msh.Impl(ConcatContent, 'concat'),
+            msh.Impl(BlocksContent, 'blocks'),
+
             msh.Impl(BoldContent, 'bold'),
             msh.Impl(ItalicContent, 'italic'),
             msh.Impl(BoldItalicContent, 'bold_italic'),
 
             msh.Impl(ImageContent, 'image'),
+
+            msh.Impl(ItemListContent, 'item_list'),
 
             msh.Impl(JsonContent, 'json'),
 
@@ -294,11 +300,6 @@ def _install_standard_marshaling() -> None:
             msh.Impl(QuoteContent, 'quote'),
 
             msh.Impl(SectionContent, 'section'),
-
-            msh.Impl(FlowContent, 'flow'),
-            msh.Impl(ConcatContent, 'concat'),
-            msh.Impl(BlocksContent, 'blocks'),
-            msh.Impl(ItemListContent, 'item_list'),
 
             msh.Impl(TagContent, 'tag'),
 

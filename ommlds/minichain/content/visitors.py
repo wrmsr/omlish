@@ -9,6 +9,10 @@ from .code import BlockCodeContent
 from .code import CodeContent
 from .code import InlineCodeContent
 from .composite import CompositeContent
+from .containers import BlocksContent
+from .containers import ConcatContent
+from .containers import ContainerContent
+from .containers import FlowContent
 from .content import BaseContent
 from .content import Content
 from .dynamic import DynamicContent
@@ -17,6 +21,7 @@ from .emphasis import BoldItalicContent
 from .emphasis import EmphasisContent
 from .emphasis import ItalicContent
 from .images import ImageContent
+from .itemlist import ItemListContent
 from .json import JsonContent
 from .link import LinkContent
 from .markdown import MarkdownContent
@@ -26,10 +31,6 @@ from .quote import QuoteContent
 from .recursive import RecursiveContent
 from .resources import ResourceContent
 from .section import SectionContent
-from .sequence import BlocksContent
-from .sequence import ConcatContent
-from .sequence import FlowContent
-from .sequence import ItemListContent
 from .sequence import SequenceContent
 from .standard import StandardContent
 from .tag import TagContent
@@ -175,17 +176,23 @@ class ContentVisitor(lang.Abstract, ta.Generic[C, R]):
     def visit_sequence_content(self, c: SequenceContent, ctx: C) -> R:
         return self.visit_composite_content(c, ctx)
 
-    def visit_flow_content(self, c: FlowContent, ctx: C) -> R:
-        return self.visit_sequence_content(c, ctx)
-
-    def visit_concat_content(self, c: ConcatContent, ctx: C) -> R:
-        return self.visit_sequence_content(c, ctx)
-
-    def visit_blocks_content(self, c: BlocksContent, ctx: C) -> R:
-        return self.visit_sequence_content(c, ctx)
-
     def visit_item_list_content(self, c: ItemListContent, ctx: C) -> R:
         return self.visit_sequence_content(c, ctx)
+
+    ##
+    # ContainerContent
+
+    def visit_container_content(self, c: ContainerContent, ctx: C) -> R:
+        return self.visit_sequence_content(c, ctx)
+
+    def visit_flow_content(self, c: FlowContent, ctx: C) -> R:
+        return self.visit_container_content(c, ctx)
+
+    def visit_concat_content(self, c: ConcatContent, ctx: C) -> R:
+        return self.visit_container_content(c, ctx)
+
+    def visit_blocks_content(self, c: BlocksContent, ctx: C) -> R:
+        return self.visit_container_content(c, ctx)
 
 
 ContentVisitor._visit_method_map = col.make_map([  # noqa

@@ -1,5 +1,5 @@
-from ...sequence import BlocksContent
-from ...sequence import ConcatContent
+from ...containers import BlocksContent
+from ...containers import ConcatContent
 from ...tag import TagContent  # noqa
 from ..prepare import prepare_content_str  # noqa
 

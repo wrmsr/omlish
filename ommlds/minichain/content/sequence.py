@@ -2,7 +2,6 @@
 TODO:
  - ... does inline have *any* separator? generic whitespace when content is stripped?
  - track BlockContent nesting depth?
- - section names? dedicated 'section' content with header and body?
 """
 import typing as ta
 
@@ -25,25 +24,3 @@ class SequenceContent(CompositeContent, lang.Abstract):
 
     def _replace_child_content(self, new_child_content: ta.Sequence[Content]) -> ta.Self:
         return self.replace(l=new_child_content)
-
-
-@dc.dataclass(frozen=True)
-class FlowContent(SequenceContent, lang.Final):
-    pass
-
-
-@dc.dataclass(frozen=True)
-class ConcatContent(SequenceContent, lang.Final):
-    pass
-
-
-@dc.dataclass(frozen=True)
-class BlocksContent(SequenceContent, lang.Final):
-    pass
-
-
-@dc.dataclass(frozen=True)
-class ItemListContent(SequenceContent, lang.Final):
-    _: dc.KW_ONLY
-
-    style: ta.Literal['-', '#'] = '-'

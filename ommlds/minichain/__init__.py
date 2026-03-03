@@ -288,6 +288,13 @@ with _lang.auto_proxy_init(
         CompositeContent,
     )
 
+    from .content.containers import (  # noqa
+        ContainerContent,
+        FlowContent,
+        ConcatContent,
+        BlocksContent,
+    )
+
     from .content.content import (  # noqa
         BaseContent,
 
@@ -307,6 +314,10 @@ with _lang.auto_proxy_init(
 
     from .content.images import (  # noqa
         ImageContent,
+    )
+
+    from .content.itemlist import (  # noqa
+        ItemListContent,
     )
 
     from .content.json import (  # noqa
@@ -369,10 +380,6 @@ with _lang.auto_proxy_init(
 
     from .content.sequence import (  # noqa
         SequenceContent,
-        FlowContent,
-        ConcatContent,
-        BlocksContent,
-        ItemListContent,
     )
 
     from .content.standard import (  # noqa

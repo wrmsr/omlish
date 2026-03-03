@@ -2,19 +2,19 @@ import typing as ta
 
 from ...code import BlockCodeContent
 from ...code import InlineCodeContent
+from ...containers import BlocksContent
+from ...containers import ConcatContent
+from ...containers import FlowContent
 from ...emphasis import BoldContent
 from ...emphasis import BoldItalicContent
 from ...emphasis import ItalicContent
 from ...images import ImageContent
+from ...itemlist import ItemListContent
 from ...json import JsonContent
 from ...link import LinkContent
 from ...markdown import MarkdownContent
 from ...quote import QuoteContent
 from ...section import SectionContent
-from ...sequence import BlocksContent
-from ...sequence import ConcatContent
-from ...sequence import FlowContent
-from ...sequence import ItemListContent
 from ...tag import TagContent
 from ...text import TextContent
 from ...visitors import ContentVisitor
@@ -82,6 +82,12 @@ class RenderingContentVisitor(ContentVisitor[C, R]):
     ##
     # SequenceContent
 
+    def visit_item_list_content(self, c: ItemListContent, ctx: C) -> R:
+        return self.visit_sequence_content(c, ctx)
+
+    ##
+    # ContainerContent
+
     def visit_flow_content(self, c: FlowContent, ctx: C) -> R:
         return self.visit_sequence_content(c, ctx)
 
@@ -89,7 +95,4 @@ class RenderingContentVisitor(ContentVisitor[C, R]):
         return self.visit_sequence_content(c, ctx)
 
     def visit_blocks_content(self, c: BlocksContent, ctx: C) -> R:
-        return self.visit_sequence_content(c, ctx)
-
-    def visit_item_list_content(self, c: ItemListContent, ctx: C) -> R:
         return self.visit_sequence_content(c, ctx)
