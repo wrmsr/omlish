@@ -234,9 +234,7 @@ class SslChannelPipelineHandler(
             ctx.feed_out(msg)
 
     def _handshake_step(self, ctx: ChannelPipelineHandlerContext, st: _State) -> bool:
-        """
-        Try to advance handshake. Returns True if established. Always pumps TLS output after attempting handshake.
-        """
+        """Try to advance handshake. Returns True if established. Always pumps TLS output after attempting handshake."""
 
         if st.state == 'closed':
             return False
@@ -307,59 +305,51 @@ class SslChannelPipelineHandler(
 
     _pending_final_output: ta.Any = None
 
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
-            self._maybe_send_ready_for_input(ctx)
+    def _on_inbound_flush_input(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineFlowMessages.FlushInput) -> None:  # noqa
+        self._maybe_send_ready_for_input(ctx)
 
-            if (st := self._state) is not None and st.state in ('new', 'handshake'):
-                return
+        if (st := self._state) is not None and st.state in ('new', 'handshake'):
+            return
 
+        ctx.feed_in(msg)
+
+    def _on_inbound_final_input(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineMessages.FinalInput) -> None:  # noqa
+        st = self._state
+        if st is None:
             ctx.feed_in(msg)
             return
 
-        # Underlying transport EOF.
-        if isinstance(msg, ChannelPipelineMessages.FinalInput):
-            st = self._state
-            if st is None:
-                ctx.feed_in(msg)
-                return
+        # Signal EOF to the incoming BIO; this is the correct way to tell SSLObject there will be no more peer
+        # bytes.
+        try:
+            st.in_bio.write_eof()
+        except Exception as e:  # FIXME:  # noqa
+            raise
 
-            # Signal EOF to the incoming BIO; this is the correct way to tell SSLObject there will be no more peer
-            # bytes.
-            try:
-                st.in_bio.write_eof()
-            except Exception as e:  # FIXME:  # noqa
-                raise
+        # Drain what we can: may emit decrypted tail, and/or TLS close_notify output.
+        self._handshake_step(ctx, st)
+        self._pump_plaintext_in(ctx, st)
+        self._pump_tls_out(ctx, st)
 
-            # Drain what we can: may emit decrypted tail, and/or TLS close_notify output.
-            self._handshake_step(ctx, st)
-            self._pump_plaintext_in(ctx, st)
-            self._pump_tls_out(ctx, st)
+        # If the engine is still technically 'established' but the transport is gone, we must force a transition to
+        # prevent stuck buffers.
+        if st.state != 'closed':
+            st.state = 'closed'
+            self._pending_plaintext_out.clear()
 
-            # If the engine is still technically 'established' but the transport is gone, we must force a transition to
-            # prevent stuck buffers.
-            if st.state != 'closed':
-                st.state = 'closed'
-                self._pending_plaintext_out.clear()
+        # If we reach EOF, any pending manual read request is effectively satisfied by 'nothing'. Clear it so we
+        # don't try to ask the already-closed transport for more.
+        self._read_requested = False
 
-            # If we reach EOF, any pending manual read request is effectively satisfied by 'nothing'. Clear it so we
-            # don't try to ask the already-closed transport for more.
-            self._read_requested = False
+        # If an abrupt disconnect happened, ensure downstream gets an EOF
+        if not self._inbound_eof_sent:
+            self._inbound_eof_sent = True
+            ctx.feed_in(ChannelPipelineMessages.FinalInput())
 
-            # If an abrupt disconnect happened, ensure downstream gets an EOF
-            if not self._inbound_eof_sent:
-                self._inbound_eof_sent = True
-                ctx.feed_in(ChannelPipelineMessages.FinalInput())
+        # CONSUME the transport's FinalInput to prevent duplicate EOFs downstream
+        ctx.mark_propagated('inbound', msg)
 
-            # CONSUME the transport's FinalInput to prevent duplicate EOFs downstream
-            ctx.mark_propagated('inbound', msg)
-            return
-
-        # If it's not bytes, just pass through.
-        if not ByteStreamBuffers.can_bytes(msg):
-            ctx.feed_in(msg)
-            return
-
+    def _on_inbound_bytes(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         st = self._ensure_state()
 
         # Feed ciphertext into in_bio.
@@ -388,6 +378,22 @@ class SslChannelPipelineHandler(
         # Always pump: decrypted plaintext inbound, then any TLS output outbound.
         self._pump_plaintext_in(ctx, st)
         self._pump_tls_out(ctx, st)
+
+    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
+            self._on_inbound_flush_input(ctx, msg)
+            return
+
+        # Underlying transport EOF.
+        if isinstance(msg, ChannelPipelineMessages.FinalInput):
+            self._on_inbound_final_input(ctx, msg)
+            return
+
+        if ByteStreamBuffers.can_bytes(msg):
+            self._on_inbound_bytes(ctx, msg)
+            return
+
+        ctx.feed_in(msg)
 
     #
 
