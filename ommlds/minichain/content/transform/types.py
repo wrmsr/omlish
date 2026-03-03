@@ -24,7 +24,7 @@ class ContentTransform(lang.Abstract, ta.Generic[C]):
 
 @dc.dataclass(frozen=True)
 class FnContentTransform(ContentTransform[C]):
-    fn: ta.Callable[[Content], ta.Sequence[Content]]
+    fn: ta.Callable[[Content], Content]
 
-    def transform(self, message: Content, ctx: C) -> ta.Sequence[Content]:
+    def transform(self, message: Content, ctx: C) -> Content:
         return self.fn(message)

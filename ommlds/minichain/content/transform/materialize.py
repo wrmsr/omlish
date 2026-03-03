@@ -1,5 +1,7 @@
 import abc
+import typing as ta
 
+from omlish import dataclasses as dc
 from omlish import lang
 from omlish.text import templating as tpl
 
@@ -10,21 +12,36 @@ from .placeholders import PlaceholderContents
 from .recursive import RecursiveContentMaterializer
 from .resources import ResourceContentMaterializer
 from .templates import TemplateContentMaterializer
+from .types import ContentTransform
+
+
+C = ta.TypeVar('C')
 
 
 ##
 
 
-class ContentMaterializer(lang.Abstract):
+class ContentMaterializer(lang.Abstract, ta.Generic[C]):
     @abc.abstractmethod
-    def materialize(self, c: Content) -> Content:
+    def materialize(self, c: Content, ctx: C) -> Content:
         raise NotImplementedError
 
 
 ##
 
 
-class DefaultContentMaterializer(ContentMaterializer):
+@dc.dataclass(frozen=True)
+class ContentMaterializerContentTransform(ContentTransform[C]):
+    cm: ContentMaterializer[C]
+
+    def transform(self, c: Content, ctx: C) -> Content:
+        return self.cm.materialize(c, ctx)
+
+
+##
+
+
+class DefaultContentMaterializer(ContentMaterializer[C]):
     def __init__(
             self,
             *,
@@ -33,17 +50,17 @@ class DefaultContentMaterializer(ContentMaterializer):
     ) -> None:
         super().__init__()
 
-        self._recursive_materializer = RecursiveContentMaterializer[None](
-            NamespaceContentMaterializer[None](),
-            PlaceholderContentMaterializer[None](placeholder_contents),
-            ResourceContentMaterializer[None](),
+        self._recursive_materializer = RecursiveContentMaterializer[C](
+            NamespaceContentMaterializer[C](),
+            PlaceholderContentMaterializer[C](placeholder_contents),
+            ResourceContentMaterializer[C](),
         )
 
-        self._template_materializer = TemplateContentMaterializer[None](templater_context)
+        self._template_materializer = TemplateContentMaterializer[C](templater_context)
 
-    def materialize(self, c: Content) -> Content:
-        c = self._recursive_materializer.transform(c, None)
-        c = self._template_materializer.transform(c, None)
+    def materialize(self, c: Content, ctx: C) -> Content:
+        c = self._recursive_materializer.transform(c, ctx)
+        c = self._template_materializer.transform(c, ctx)
         return c
 
 
@@ -53,7 +70,7 @@ def materialize_content(
         placeholder_contents: PlaceholderContents | None = None,
         templater_context: tpl.Templater.Context | None = None,
 ) -> Content:
-    return DefaultContentMaterializer(
+    return DefaultContentMaterializer[None](
         placeholder_contents=placeholder_contents,
         templater_context=templater_context,
-    ).materialize(c)
+    ).materialize(c, None)

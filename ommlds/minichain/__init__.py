@@ -158,6 +158,10 @@ with _lang.auto_proxy_init(
         LastMessageTransformChatTransform,
     )
 
+    from .chat.transform.content import (  # noqa
+        ContentTransformMessageTransform,
+    )
+
     from .chat.transform.metadata import (  # noqa
         UuidAddingMessageTransform,
         CreatedAtAddingMessageTransform,
@@ -232,6 +236,8 @@ with _lang.auto_proxy_init(
     from .content.transform.materialize import (  # noqa
         ContentMaterializer,
 
+        ContentMaterializerContentTransform,
+
         DefaultContentMaterializer,
         materialize_content,
     )
@@ -256,6 +262,8 @@ with _lang.auto_proxy_init(
 
     from .content.transform.types import (  # noqa
         ContentTransform,
+
+        FnContentTransform,
     )
 
     from .content.transform.visitors import (  # noqa

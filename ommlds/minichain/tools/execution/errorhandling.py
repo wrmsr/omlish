@@ -16,7 +16,7 @@ class ErrorHandlingToolExecutor(ToolExecutor):
             self,
             *,
             wrapped: ToolExecutor,
-            content_materializer: ContentMaterializer = DefaultContentMaterializer(),
+            content_materializer: ContentMaterializer[None] = DefaultContentMaterializer[None](),
     ) -> None:
         super().__init__()
 
@@ -33,4 +33,4 @@ class ErrorHandlingToolExecutor(ToolExecutor):
             return await self._wrapped.execute_tool(ctx, name, args)
 
         except ToolExecutionError as txe:
-            return self._content_materializer.materialize(txe.content)
+            return self._content_materializer.materialize(txe.content, None)
