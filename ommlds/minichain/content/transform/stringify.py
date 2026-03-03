@@ -1,3 +1,8 @@
+"""
+TODO:
+ - 'rendering' not stringifying
+ - optionally return TextContent w/ origin metadata
+"""
 import io
 import typing as ta
 

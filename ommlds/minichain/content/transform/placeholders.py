@@ -1,3 +1,8 @@
+"""
+TODO:
+ - values of Content | ta.Callable[[], Content]
+  - memoize here
+"""
 import typing as ta
 
 from omlish import dataclasses as dc
