@@ -61,6 +61,8 @@ class BytesToMessageDecoderChannelPipelineHandler(ChannelPipelineHandler, Abstra
         except DecodingChannelPipelineError:
             raise
         except Exception as e:
+            if ctx.pipeline.config.raise_immediately:
+                raise
             raise DecodingChannelPipelineError from e
 
         if not out:

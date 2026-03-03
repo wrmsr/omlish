@@ -5,6 +5,7 @@ from omlish.http.headers import HttpHeaders
 from omlish.http.parsing import HttpParser
 from omlish.http.parsing import ParsedHttpMessage
 from omlish.io.streams.types import BytesLikeOrMemoryview
+from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.lite.check import check
 
 from ....core import PipelineChannel
@@ -61,3 +62,30 @@ class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):
         self.assertEqual(head.method, 'GET')
         self.assertEqual(head.target, '/path')
         self.assertEqual(head.headers.single.get('host'), 'example.com')
+
+    def test_request_with_body_in_same_chunk(self) -> None:
+        """Test request head + body bytes received together."""
+
+        decoder = PipelineHttpRequestDecoder()
+        channel = PipelineChannel(PipelineChannel.Spec([
+            decoder,
+            ibq := InboundQueueChannelPipelineHandler(),
+        ]).update_pipeline_config(raise_immediately=True))
+
+        request = b'POST /api HTTP/1.1\r\nHost: test\r\nContent-Length: 4\r\n\r\ntest'
+        channel.feed_in(request)
+
+        out = ibq.drain()
+        self.assertEqual(len(out), 3)
+
+        # First: head
+        head, body, end = out
+        self.assertEqual(head.method, 'POST')
+        self.assertEqual(head.target, '/api')
+
+        # Second: body bytes (forwarded)
+        self.assertIsInstance(body, PipelineHttpRequestContentChunkData)
+        self.assertEqual(ByteStreamBuffers.any_to_bytes(body.data), b'test')
+
+        # Second: body bytes (forwarded)
+        self.assertIsInstance(end, PipelineHttpRequestEnd)
