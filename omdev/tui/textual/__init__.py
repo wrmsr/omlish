@@ -171,6 +171,7 @@ with _lang.auto_proxy_init(globals()):
     from textual.suggestions import get_suggestions  # noqa
     from textual.timer import Timer  # noqa
     from textual.timer import TimerCallback  # noqa
+    from textual.visual import VisualType  # noqa
     from textual.widget import Widget  # noqa
     from textual.widgets import Button  # noqa
     from textual.widgets import Checkbox  # noqa
@@ -228,6 +229,10 @@ with _lang.auto_proxy_init(globals()):
     from textual_dev.client import DevtoolsConnectionError  # noqa
     from textual_dev.client import DevtoolsConsole  # noqa
     from textual_dev.client import DevtoolsLog  # noqa
+
+    ##
+
+    from rich.text import Text  # noqa
 
     ##
 

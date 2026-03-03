@@ -38,7 +38,7 @@ class Message(tx.Static, lang.Abstract):
 
 
 class WelcomeMessage(Message):
-    def __init__(self, content: str) -> None:
+    def __init__(self, content: tx.VisualType) -> None:
         super().__init__()
 
         self.add_class('welcome-message')
@@ -54,7 +54,7 @@ class WelcomeMessage(Message):
 
 
 class UserMessage(Message):
-    def __init__(self, content: str) -> None:
+    def __init__(self, content: tx.VisualType) -> None:
         super().__init__()
 
         self.add_class('user-message')
@@ -166,8 +166,8 @@ class ToolConfirmationControls(tx.Static):
 class ToolConfirmationMessage(Message):
     def __init__(
             self,
-            outer_content: str,
-            inner_content: str,
+            outer_content: tx.VisualType,
+            inner_content: tx.VisualType,
             fut: asyncio.Future[bool],
     ) -> None:
         super().__init__()
@@ -241,7 +241,7 @@ class ToolConfirmationMessage(Message):
 
 
 class UiMessage(Message):
-    def __init__(self, content: str) -> None:
+    def __init__(self, content: tx.VisualType) -> None:
         super().__init__()
 
         self.add_class('ui-message')

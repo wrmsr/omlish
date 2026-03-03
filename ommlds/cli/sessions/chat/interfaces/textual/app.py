@@ -279,7 +279,7 @@ class ChatApp(
             await self._chat_facade.handle_user_input(ac.text)
         except Exception as e:  # noqa
             # raise
-            await self.display_ui_message(repr(e))
+            await self.display_ui_message(tx.Text(repr(e)))
 
     #
 
@@ -418,8 +418,8 @@ class ChatApp(
 
     async def confirm_tool_use(
             self,
-            outer_message: str,
-            inner_message: str,
+            outer_message: tx.VisualType,
+            inner_message: tx.VisualType,
     ) -> bool:
         fut: asyncio.Future[bool] = asyncio.get_running_loop().create_future()
 
@@ -444,7 +444,7 @@ class ChatApp(
 
     async def display_ui_message(
             self,
-            content: str,
+            content: tx.VisualType,
     ) -> None:
         await self._mount_messages(UiMessage(content))
 

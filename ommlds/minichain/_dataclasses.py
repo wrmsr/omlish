@@ -518,7 +518,7 @@ def _process_dataclass__65a4fe67fac0748cfb55c6f5820bf0837c939b9d():
         ('ommlds.minichain.backends.impls.sentencepiece.tokens', 'TokenStr'),
         ('ommlds.minichain.backends.impls.transformers.transformers', 'TransformersPipelineKwargs'),
         ('ommlds.minichain.chat.templating', 'MessageTemplate'),
-        ('ommlds.minichain.chat.transforms.metadata', 'TransformedMessageOrigin'),
+        ('ommlds.minichain.chat.transform.metadata', 'TransformedMessageOrigin'),
         ('ommlds.minichain.completion', 'CreatedAt'),
         ('ommlds.minichain.completion', 'FinishReasonOutput'),
         ('ommlds.minichain.completion', 'MaxCompletionTokens'),
@@ -2324,7 +2324,7 @@ def _process_dataclass__35363258df752d37be526c05a33a4e10963d6e84():
         ('ommlds.minichain.backends.impls.anthropic.chat', 'FnContentTransform'),
         ('ommlds.minichain.chat.content', 'StringFnContentTransform'),
         ('ommlds.minichain.chat.tools.ids', 'FnMessageTransform'),
-        ('ommlds.minichain.chat.transforms.chats', 'FnChatTransform'),
+        ('ommlds.minichain.chat.transform.chats', 'FnChatTransform'),
     ),
 )
 def _process_dataclass__9c26f5e7e2496284b4ba1e1072fb3e29dc4e0ec4():
@@ -13250,7 +13250,7 @@ def _process_dataclass__ba8e1dc2838842b2168f1fd4b6c82d3b33a109da():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.chat.transforms.chats', 'CompositeChatTransform'),
+        ('ommlds.minichain.chat.transform.chats', 'CompositeChatTransform'),
     ),
 )
 def _process_dataclass__68d062858a9894949b2c170a3763346ddc35bf1d():
@@ -13384,8 +13384,8 @@ def _process_dataclass__68d062858a9894949b2c170a3763346ddc35bf1d():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.chat.transforms.chats', 'LastMessageTransformChatTransform'),
-        ('ommlds.minichain.chat.transforms.chats', 'MessageTransformChatTransform'),
+        ('ommlds.minichain.chat.transform.chats', 'LastMessageTransformChatTransform'),
+        ('ommlds.minichain.chat.transform.chats', 'MessageTransformChatTransform'),
     ),
 )
 def _process_dataclass__d3a5e675a8403dc89efd95a66ba5da2cdf738d2e():
@@ -13519,7 +13519,7 @@ def _process_dataclass__d3a5e675a8403dc89efd95a66ba5da2cdf738d2e():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.chat.transforms.content', 'ContentTransformMessageTransform'),
+        ('ommlds.minichain.chat.transform.content', 'ContentTransformMessageTransform'),
     ),
 )
 def _process_dataclass__d69d1885aa1de3f2cf7ba34fff19d7456c262eb5():
@@ -13654,7 +13654,7 @@ def _process_dataclass__d69d1885aa1de3f2cf7ba34fff19d7456c262eb5():
         '__dataclass__init__fields__0__default',
     ),
     cls_names=(
-        ('ommlds.minichain.chat.transforms.metadata', 'CreatedAtAddingMessageTransform'),
+        ('ommlds.minichain.chat.transform.metadata', 'CreatedAtAddingMessageTransform'),
     ),
 )
 def _process_dataclass__a89375a36223a889920e8b93b4e42846a4cfffa0():
@@ -13789,7 +13789,7 @@ def _process_dataclass__a89375a36223a889920e8b93b4e42846a4cfffa0():
         '__dataclass__init__fields__0__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.chat.transforms.metadata', 'OriginAddingMessageTransform'),
+        ('ommlds.minichain.chat.transform.metadata', 'OriginAddingMessageTransform'),
     ),
 )
 def _process_dataclass__9024fb7569f3cdb9de637a9068a1db5ef0178937():
@@ -13924,7 +13924,7 @@ def _process_dataclass__9024fb7569f3cdb9de637a9068a1db5ef0178937():
         '__dataclass__init__fields__0__default_factory',
     ),
     cls_names=(
-        ('ommlds.minichain.chat.transforms.metadata', 'UuidAddingMessageTransform'),
+        ('ommlds.minichain.chat.transform.metadata', 'UuidAddingMessageTransform'),
     ),
 )
 def _process_dataclass__19ef2cebd031d990f735e4c579538f81f6196e5e():
@@ -14064,8 +14064,8 @@ def _process_dataclass__19ef2cebd031d990f735e4c579538f81f6196e5e():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.chat.transforms.services', 'RequestChatTransformingChatService'),
-        ('ommlds.minichain.chat.transforms.services', 'ResponseChatTransformingChatService'),
+        ('ommlds.minichain.chat.transform.services', 'RequestChatTransformingChatService'),
+        ('ommlds.minichain.chat.transform.services', 'ResponseChatTransformingChatService'),
     ),
 )
 def _process_dataclass__5db03d7874dd018e98dde3e8e5f4d6528cc10d09():
@@ -20551,15 +20551,15 @@ def _process_dataclass__e4d635c950acb2270f4d7755e6070d0ab79058e5():
     plan_repr=(
         "Plans(tup=(CopyPlan(fields=()), EqPlan(fields=()), HashPlan(action='set_none', fields=None, cache=None), InitP"
         "lan(fields=(), self_param='self', std_params=(), kw_only_params=(), frozen=False, slots=False, post_init_param"
-        "s=None, init_fns=(), validate_fns=()), ReprPlan(fields=(), id=False, terse=False, default_fn=None)))"
+        "s=None, init_fns=(), validate_fns=())))"
     ),
-    plan_repr_sha1='71bacd53030a648c2f0136fe3d7d92425681d317',
+    plan_repr_sha1='cfe950ccb271c08a9a7ea828a272e37b1f5c9323',
     op_ref_idents=(),
     cls_names=(
         ('ommlds.minichain.wrappers.retry', 'RetryServiceMaxRetriesExceededError'),
     ),
 )
-def _process_dataclass__71bacd53030a648c2f0136fe3d7d92425681d317():
+def _process_dataclass__cfe950ccb271c08a9a7ea828a272e37b1f5c9323():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -20610,20 +20610,6 @@ def _process_dataclass__71bacd53030a648c2f0136fe3d7d92425681d317():
         if '__init__' in __dataclass__cls.__dict__:
             raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
         setattr(__dataclass__cls, '__init__', __init__)
-
-        @__dataclass___recursive_repr()
-        def __repr__(self):
-            parts = []
-            return (
-                f"{self.__class__.__qualname__}("
-                f"{', '.join(parts)}"
-                f")"
-            )
-
-        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
-        if '__repr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__repr__', __repr__)
 
     return _process_dataclass
 

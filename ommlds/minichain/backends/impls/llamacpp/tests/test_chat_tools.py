@@ -13,11 +13,11 @@ from .....chat.services import ChatService
 from .....chat.tools.ids import ToolUseIdAddingMessageTransform
 from .....chat.tools.parsing import ToolExecParsingMessageTransform
 from .....chat.tools.types import Tool
-from .....chat.transforms.chats import MessageTransformChatTransform
-from .....chat.transforms.messages import CompositeMessageTransform
-from .....chat.transforms.metadata import CreatedAtAddingMessageTransform
-from .....chat.transforms.metadata import UuidAddingMessageTransform
-from .....chat.transforms.services import ResponseChatTransformingChatService
+from .....chat.transform.chats import MessageTransformChatTransform
+from .....chat.transform.messages import CompositeMessageTransform
+from .....chat.transform.metadata import CreatedAtAddingMessageTransform
+from .....chat.transform.metadata import UuidAddingMessageTransform
+from .....chat.transform.services import ResponseChatTransformingChatService
 from .....models.configs import ModelPath
 from .....services import Request
 from .....text.toolparsing.dumb import DumbToolExecParser

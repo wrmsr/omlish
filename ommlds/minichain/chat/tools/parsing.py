@@ -10,7 +10,7 @@ from ..messages import AnyAiMessage
 from ..messages import Message
 from ..messages import ToolUse
 from ..messages import ToolUseMessage
-from ..transforms.messages import MessageTransform
+from ..transform.messages import MessageTransform
 
 
 C = ta.TypeVar('C')

@@ -1,6 +1,6 @@
 """
 FIXME:
- - -> .transforms.content
+ - -> .transform.content
 """
 import typing as ta
 

@@ -46,7 +46,8 @@ AnyRetryService: ta.TypeAlias = ta.Union[
 
 @dc.dataclass()
 class RetryServiceMaxRetriesExceededError(Exception):
-    pass
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}(__cause__={self.__cause__!r})'
 
 
 @dc.dataclass(frozen=True)

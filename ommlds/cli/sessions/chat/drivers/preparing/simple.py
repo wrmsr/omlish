@@ -7,4 +7,6 @@ from .types import ChatPreparer
 
 class SimpleChatPreparer(ChatPreparer):
     async def prepare_chat(self, chat: 'mc.Chat') -> 'mc.Chat':
+        # from ......minichain.chat.transforms import
+
         return [m for m in chat]  # noqa
