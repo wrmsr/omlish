@@ -1,7 +1,6 @@
 # ruff: noqa: UP006 UP045
 # @omlish-lite
-import errno
-import socket
+import dataclasses as dc
 import typing as ta
 
 from omlish.io.streams.utils import ByteStreamBuffers
@@ -10,11 +9,15 @@ from ....core import ChannelPipelineHandler
 from ....core import ChannelPipelineHandlerContext
 from ....core import ChannelPipelineMessages
 from ....core import PipelineChannel
-from ....drivers.sync import SyncSocketPipelineChannelDriver
+from ....flow.stub import StubChannelPipelineFlow
+from ....flow.types import ChannelPipelineFlow
+from ....flow.types import ChannelPipelineFlowMessages
 from ....handlers.flatmap import FlatMapChannelPipelineHandlers
+from ....handlers.logs import LoggingChannelPipelineHandler
 from ....ssl.handlers import SslChannelPipelineHandler
 from ...client.requests import PipelineHttpRequestEncoder
 from ...client.responses import PipelineHttpResponseChunkedDecoder
+from ...client.responses import PipelineHttpResponseConditionalGzipDecoder
 from ...client.responses import PipelineHttpResponseDecoder
 from ...requests import FullPipelineHttpRequest
 from ...responses import PipelineHttpResponseContentChunkData
@@ -39,6 +42,14 @@ class HttpClientHandler(ChannelPipelineHandler):
         self._body_chunks: ta.List[bytes] = []
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, FullPipelineHttpRequest):
+            ctx.feed_out(msg)
+
+            if (fc := ctx.services.find(ChannelPipelineFlow)) is not None and not fc.is_auto_read():
+                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+
+            return
+
         if isinstance(msg, PipelineHttpResponseHead):
             self._response_head = msg
             return
@@ -50,6 +61,12 @@ class HttpClientHandler(ChannelPipelineHandler):
             self._print_response()
             ctx.feed_in(msg)
             ctx.feed_out(ChannelPipelineMessages.FinalOutput())
+            return
+
+        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
+            if (fc := ctx.services.find(ChannelPipelineFlow)) is not None and not fc.is_auto_read():
+                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+
             return
 
         # Handle wrapped chunks
@@ -93,20 +110,57 @@ class HttpClientHandler(ChannelPipelineHandler):
             print(f'<binary body: {len(body)} bytes>')
 
 
-def build_ssl_http_client_channel(**ssl_kwargs: ta.Any) -> PipelineChannel.Spec:
-    """Build a client channel with encoder, decoder, and handler."""
-
-    return PipelineChannel.Spec([
-        SslChannelPipelineHandler(**ssl_kwargs),
-        PipelineHttpResponseDecoder(),
-        PipelineHttpResponseChunkedDecoder(),
-        PipelineHttpRequestEncoder(),
-        HttpClientHandler(),
-        FlatMapChannelPipelineHandlers.feed_out_and_drop(filter_type=FullPipelineHttpRequest),
-    ])
+##
 
 
-def fetch_url(url: str = 'https://example.com/') -> None:
+def build_http_client(
+        *,
+        with_logging: bool = False,
+
+        with_ssl: bool = False,
+        ssl_kwargs: ta.Optional[ta.Mapping[str, ta.Any]] = None,
+
+        with_gzip: bool = False,
+
+        with_flow: bool = False,
+        flow_auto_read: bool = False,
+) -> PipelineChannel.Spec:
+    return PipelineChannel.Spec(
+        [
+            *([LoggingChannelPipelineHandler()] if with_logging else []),
+
+            *([SslChannelPipelineHandler(**(ssl_kwargs or {}))] if with_ssl else []),
+
+            PipelineHttpResponseDecoder(),
+
+            *([PipelineHttpResponseConditionalGzipDecoder()] if with_gzip else []),
+
+            PipelineHttpResponseChunkedDecoder(),
+
+            PipelineHttpRequestEncoder(),
+
+            HttpClientHandler(),
+
+            *([FlatMapChannelPipelineHandlers.drop('inbound', filter_type=ChannelPipelineFlowMessages.FlushInput)] if with_flow else []),  # noqa
+        ],
+
+        services=[
+            *([StubChannelPipelineFlow(auto_read=flow_auto_read)] if with_flow else []),
+        ],
+    )
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class ParsedUrl:
+    host: str
+    port: int
+    path: str
+
+
+def parse_url(url: str) -> ParsedUrl:
     # Parse URL (very simple - just extract host and path)
     if url.startswith('http://'):
         ssl = False
@@ -134,49 +188,8 @@ def fetch_url(url: str = 'https://example.com/') -> None:
         else:
             port = 80
 
-    # Connect
-    sock = socket.create_connection((host, port))
-
-    try:
-        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-    except OSError as e:
-        if e.errno != errno.ENOPROTOOPT:
-            sock.close()
-            raise
-
-    try:
-        # Send request
-        request = FullPipelineHttpRequest.simple(
-            host,
-            path,
-            headers={
-                'User-Agent': 'omlish-http-client/0.1',
-            },
-        )
-
-        # Run driver to process request/response
-        drv = SyncSocketPipelineChannelDriver(
-            build_ssl_http_client_channel(
-                server_side=False,
-                server_hostname=host,
-            ),
-            sock,
-        )
-
-        drv.run(request)
-
-    finally:
-        sock.close()
-
-
-def main() -> None:
-    fetch_url()
-
-
-if __name__ == '__main__':
-    # try:
-    #     __import__('omlish.check')
-    # except ImportError:
-    #     pass
-
-    main()
+    return ParsedUrl(
+        host,
+        port,
+        path,
+    )
