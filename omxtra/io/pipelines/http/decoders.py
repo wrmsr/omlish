@@ -39,12 +39,12 @@ class PipelineHttpDecodingConfig:
         max_size: ta.Optional[int]
         chunk_size: int
 
-    head_buffer: BufferConfig = BufferConfig(max_size=0x1000, chunk_size=0x1000)
+    head_buffer: BufferConfig = BufferConfig(max_size=4 * 1024, chunk_size=4 * 1024)
 
     max_content_chunk_size: ta.Optional[int] = None
     content_chunk_header_buffer: BufferConfig = BufferConfig(max_size=1024, chunk_size=1024)
 
-    aggregated_body_buffer: BufferConfig = BufferConfig(max_size=0x10000, chunk_size=0x10000)
+    aggregated_body_buffer: BufferConfig = BufferConfig(max_size=64 * 1024, chunk_size=64 * 1024)
 
 
 PipelineHttpDecodingConfig.DEFAULT = PipelineHttpDecodingConfig()

@@ -41,7 +41,7 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
     class Config:
         DEFAULT: ta.ClassVar['AsyncioStreamPipelineChannelDriver.Config']
 
-        read_chunk_size: int = 0x10000
+        read_chunk_size: int = 64 * 1024
         write_chunk_max: ta.Optional[int] = None
 
     Config.DEFAULT = Config()

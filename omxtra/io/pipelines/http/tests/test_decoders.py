@@ -273,7 +273,7 @@ class TestPipelineHttpHeadDecoder(unittest.TestCase):
             config=PipelineHttpDecodingConfig(
                 head_buffer=PipelineHttpDecodingConfig.BufferConfig(
                     max_size=len(head_bytes) + 3,
-                    chunk_size=0x1000,
+                    chunk_size=4 * 1024,
                 ),
             ),
         )

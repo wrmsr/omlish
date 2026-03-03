@@ -180,7 +180,7 @@ class BytesIoByteStreamBuffer(MutableByteStreamBuffer):
     def __init__(
             self,
             *,
-            compaction_threshold: int = 0x10000,
+            compaction_threshold: int = 64 * 1024,
     ) -> None:
         super().__init__()
 

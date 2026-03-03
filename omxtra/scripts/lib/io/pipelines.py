@@ -78,18 +78,18 @@ def __omlish_amalg__():  # noqa
             dict(path='http/encoders.py', sha1='0659902d945aea54e367d04336792cccd4ed6374'),
             dict(path='http/requests.py', sha1='f518ff8896cbd01d30d58088d5b429f121c1c3e7'),
             dict(path='http/responses.py', sha1='f81688d98516bd81d2a22ba791c783404e806294'),
-            dict(path='../../../omlish/io/streams/segmented.py', sha1='4aeb1c22b7b5994132f0b5906d70b3e53201776b'),
+            dict(path='../../../omlish/io/streams/segmented.py', sha1='33bbb11f17214293a6b97d5cad02edcab58ed347'),
             dict(path='../../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='http/client/requests.py', sha1='0d598fefb873796d64f1fe1eafa344bda83d933c'),
             dict(path='http/server/responses.py', sha1='5b2e2af9bfdbd526f74cff138ddbb5bf03b4c0ee'),
             dict(path='../../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
-            dict(path='bytes/decoders.py', sha1='212e4f54b7bc55028ae75dfb75b3ec18cc5bad51'),
-            dict(path='http/decoders.py', sha1='d82d2096b3016e84019bf723aeb17586e2472fd5'),
-            dict(path='drivers/asyncio.py', sha1='1456109d282d8461d42816bba9b734d99ffd08f9'),
-            dict(path='http/client/responses.py', sha1='97872e2af9cc333c07ae23a424ca1e5fa0c45833'),
-            dict(path='http/server/requests.py', sha1='1007de97135c4712c67e5814cb17d7bc85650dad'),
-            dict(path='_amalg.py', sha1='f66657d8b3801c6e8e84db2e4cd1b593d9e029be'),
+            dict(path='bytes/decoders.py', sha1='8102fd92e369d6f33c05e26be6de040dbd137387'),
+            dict(path='http/decoders.py', sha1='6944a9c30768c8db49198f130f5c56d1260117ac'),
+            dict(path='drivers/asyncio.py', sha1='abc258eacd896ebb2a31dbbf03de8476153230ea'),
+            dict(path='http/client/responses.py', sha1='6a7d4843a2776dd6a30e552ba2ec307ed5e2338a'),
+            dict(path='http/server/requests.py', sha1='3cfef46c7d713ccd7d5e51c7f94ca24c5ff8ff96'),
+            dict(path='_amalg.py', sha1='74c164f8713be6db5958f4a390d7bd978c3e685a'),
         ],
     )
 
@@ -9527,8 +9527,8 @@ class SegmentedByteStreamBufferView(BaseByteStreamBufferLike, ByteStreamBufferVi
         if not self._segs:
             return b''
         if len(self._segs) == 1:
-            return bytes(self._segs[0])
-        return b''.join(bytes(mv) for mv in self._segs)
+            return ByteStreamBuffers.memoryview_to_bytes(self._segs[0])
+        return b''.join(ByteStreamBuffers.memoryview_to_bytes(mv) for mv in self._segs)
 
 
 class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
@@ -9693,7 +9693,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         if self._chunk_size and (float(used) / float(self._chunk_size)) < self._chunk_compact_threshold:
             if not self._segs or self._segs[-1] is not a:
                 raise RuntimeError('active not at tail')
-            self._segs[-1] = bytes(memoryview(a)[:used])
+            self._segs[-1] = ByteStreamBuffers.memoryview_to_bytes(memoryview(a)[:used])
 
         else:
             # Try to shrink in-place to used bytes. If exported views exist, this can BufferError; fall back to bytes()
@@ -9703,7 +9703,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
             try:
                 del a[used:]  # may raise BufferError if any exports exist
             except BufferError:
-                self._segs[-1] = bytes(memoryview(a)[:used])
+                self._segs[-1] = ByteStreamBuffers.memoryview_to_bytes(memoryview(a)[:used])
 
         self._active = None
         self._active_used = 0
@@ -9819,7 +9819,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
             self._segs.append(b)
             self._len += n
         else:
-            bb = bytes(memoryview(b)[:n])
+            bb = ByteStreamBuffers.memoryview_to_bytes(memoryview(b)[:n])
             self._segs.append(bb)
             self._len += n
 
@@ -10471,7 +10471,7 @@ class DelimiterFrameDecoderChannelPipelineHandler(InboundBytesBufferingChannelPi
             keep_ends: bool = False,
             max_size: ta.Optional[int] = None,
             max_buffer: ta.Optional[int] = None,
-            buffer_chunk_size: int = 0x10000,
+            buffer_chunk_size: int = 64 * 1024,
             on_incomplete_final: ta.Literal['allow', 'raise'] = 'allow',
     ) -> None:
         super().__init__()
@@ -10531,7 +10531,7 @@ class BytesToMessageDecoderChannelPipelineHandler(InboundBytesBufferingChannelPi
             self,
             *,
             max_buffer_size: ta.Optional[int] = None,
-            buffer_chunk_size: int = 0x10000,
+            buffer_chunk_size: int = 64 * 1024,
             scanning_buffer: bool = False,
     ) -> None:
         super().__init__()
@@ -10552,7 +10552,7 @@ class BytesToMessageDecoderChannelPipelineHandler(InboundBytesBufferingChannelPi
             buf: ByteStreamBuffer,
             *,
             final: bool = False,
-    ) -> ta.Iterable[ta.Any]:
+    ) -> ta.Sequence[ta.Any]:
         raise NotImplementedError
 
     #
@@ -10585,7 +10585,7 @@ class BytesToMessageDecoderChannelPipelineHandler(InboundBytesBufferingChannelPi
         self._called_decode = True
 
         try:
-            out = list(self._decode(ctx, buf, final=final))
+            out = self._decode(ctx, buf, final=final)
         except DecodingChannelPipelineError:
             raise
         except Exception as e:
@@ -10664,7 +10664,7 @@ class FnBytesToMessageDecoderChannelPipelineHandler(BytesToMessageDecoderChannel
                 buf: ByteStreamBuffer,
                 *,
                 final: bool = False,
-        ) -> ta.Iterable[ta.Any]:
+        ) -> ta.Sequence[ta.Any]:
             ...
 
     def __init__(
@@ -10672,7 +10672,7 @@ class FnBytesToMessageDecoderChannelPipelineHandler(BytesToMessageDecoderChannel
             decode_fn: DecodeFn,
             *,
             max_buffer_size: ta.Optional[int] = None,
-            buffer_chunk_size: int = 0x10000,
+            buffer_chunk_size: int = 64 * 1024,
             scanning_buffer: bool = False,
     ) -> None:
         super().__init__(
@@ -10689,7 +10689,7 @@ class FnBytesToMessageDecoderChannelPipelineHandler(BytesToMessageDecoderChannel
             buf: ByteStreamBuffer,
             *,
             final: bool = False,
-    ) -> ta.Iterable[ta.Any]:
+    ) -> ta.Sequence[ta.Any]:
         return self._decode_fn(ctx, buf, final=final)
 
 
@@ -10718,12 +10718,12 @@ class PipelineHttpDecodingConfig:
         max_size: ta.Optional[int]
         chunk_size: int
 
-    head_buffer: BufferConfig = BufferConfig(max_size=0x1000, chunk_size=0x1000)
+    head_buffer: BufferConfig = BufferConfig(max_size=4 * 1024, chunk_size=4 * 1024)
 
     max_content_chunk_size: ta.Optional[int] = None
     content_chunk_header_buffer: BufferConfig = BufferConfig(max_size=1024, chunk_size=1024)
 
-    aggregated_body_buffer: BufferConfig = BufferConfig(max_size=0x10000, chunk_size=0x10000)
+    aggregated_body_buffer: BufferConfig = BufferConfig(max_size=64 * 1024, chunk_size=64 * 1024)
 
 
 PipelineHttpDecodingConfig.DEFAULT = PipelineHttpDecodingConfig()
@@ -11230,7 +11230,7 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
     class Config:
         DEFAULT: ta.ClassVar['AsyncioStreamPipelineChannelDriver.Config']
 
-        read_chunk_size: int = 0x10000
+        read_chunk_size: int = 64 * 1024
         write_chunk_max: ta.Optional[int] = None
 
     Config.DEFAULT = Config()
@@ -11822,9 +11822,7 @@ class ResponsePipelineHttpDecodingMessageAdapter(PipelineHttpDecodingMessageAdap
 ##
 
 
-class PipelineHttpResponseDecoder(InboundBytesBufferingChannelPipelineHandler):
-    """HTTP/1.x response head decoder."""
-
+class PipelineHttpResponseHeadDecoder(InboundBytesBufferingChannelPipelineHandler):
     def __init__(
             self,
             *,
@@ -11941,6 +11939,7 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
         """Returns True if at least one message was emitted."""
 
         emitted = False
+
         while self._out_pending and (self._is_auto_read(ctx) or self._read_requested):
             o = self._out_pending.popleft()
             self._out_pending_bytes -= len(o)
@@ -11954,6 +11953,7 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
             # In manual mode, we satisfy one 'read' at a time.
             if not self._is_auto_read(ctx):
                 break
+
         return emitted
 
     def _pump(self, ctx: ChannelPipelineHandlerContext) -> bool:
@@ -11968,7 +11968,8 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
 
         # 1. Try to clear existing output.
         if self._emit_out_pending(ctx):
-            return True
+            if not self._is_auto_read(ctx):
+                return True
 
         # 2. If blocked by downstream, we can't satisfy anything.
         if self._out_pending:
@@ -12000,7 +12001,8 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
                 self._check_budgets()
 
                 if self._emit_out_pending(ctx):
-                    return True  # Satisfied!
+                    if not self._is_auto_read(ctx):
+                        return True  # Satisfied!
 
             ut = z.unconsumed_tail
             if ut:
@@ -12175,8 +12177,6 @@ class RequestPipelineHttpDecodingMessageAdapter(PipelineHttpDecodingMessageAdapt
 
 
 class PipelineHttpRequestHeadDecoder(InboundBytesBufferingChannelPipelineHandler):
-    """HTTP/1.x request head decoder."""
-
     def __init__(
             self,
             *,

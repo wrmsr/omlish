@@ -8,14 +8,14 @@ from ....core import ChannelPipelineMessages
 from ....core import PipelineChannel
 from ....handlers.queues import InboundQueueChannelPipelineHandler
 from ..responses import PipelineHttpResponseAborted
-from ..responses import PipelineHttpResponseDecoder
+from ..responses import PipelineHttpResponseHeadDecoder
 
 
 class TestPipelineHttpResponseDecoder(unittest.TestCase):
     def test_basic_response_head(self) -> None:
         """Test basic HTTP response head parsing."""
 
-        decoder = PipelineHttpResponseDecoder()
+        decoder = PipelineHttpResponseHeadDecoder()
         channel = PipelineChannel.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
@@ -35,7 +35,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
     def test_response_with_body_in_same_chunk(self) -> None:
         """Test response head + body bytes received together."""
 
-        decoder = PipelineHttpResponseDecoder()
+        decoder = PipelineHttpResponseHeadDecoder()
         channel = PipelineChannel.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
@@ -58,7 +58,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
     def test_response_incremental_head(self) -> None:
         """Test response head received incrementally."""
 
-        decoder = PipelineHttpResponseDecoder()
+        decoder = PipelineHttpResponseHeadDecoder()
         channel = PipelineChannel.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
@@ -80,7 +80,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
     def test_eof_before_head_complete(self) -> None:
         """Test EOF arriving before head is complete raises ValueError."""
 
-        decoder = PipelineHttpResponseDecoder()
+        decoder = PipelineHttpResponseHeadDecoder()
         channel = PipelineChannel.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),

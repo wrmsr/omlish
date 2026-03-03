@@ -55,9 +55,7 @@ class ResponsePipelineHttpDecodingMessageAdapter(PipelineHttpDecodingMessageAdap
 ##
 
 
-class PipelineHttpResponseDecoder(InboundBytesBufferingChannelPipelineHandler):
-    """HTTP/1.x response head decoder."""
-
+class PipelineHttpResponseHeadDecoder(InboundBytesBufferingChannelPipelineHandler):
     def __init__(
             self,
             *,
@@ -174,6 +172,7 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
         """Returns True if at least one message was emitted."""
 
         emitted = False
+
         while self._out_pending and (self._is_auto_read(ctx) or self._read_requested):
             o = self._out_pending.popleft()
             self._out_pending_bytes -= len(o)
@@ -187,6 +186,7 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
             # In manual mode, we satisfy one 'read' at a time.
             if not self._is_auto_read(ctx):
                 break
+
         return emitted
 
     def _pump(self, ctx: ChannelPipelineHandlerContext) -> bool:
@@ -201,7 +201,8 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
 
         # 1. Try to clear existing output.
         if self._emit_out_pending(ctx):
-            return True
+            if not self._is_auto_read(ctx):
+                return True
 
         # 2. If blocked by downstream, we can't satisfy anything.
         if self._out_pending:
@@ -233,7 +234,8 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
                 self._check_budgets()
 
                 if self._emit_out_pending(ctx):
-                    return True  # Satisfied!
+                    if not self._is_auto_read(ctx):
+                        return True  # Satisfied!
 
             ut = z.unconsumed_tail
             if ut:

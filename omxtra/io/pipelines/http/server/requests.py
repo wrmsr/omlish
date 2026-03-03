@@ -59,8 +59,6 @@ class RequestPipelineHttpDecodingMessageAdapter(PipelineHttpDecodingMessageAdapt
 
 
 class PipelineHttpRequestHeadDecoder(InboundBytesBufferingChannelPipelineHandler):
-    """HTTP/1.x request head decoder."""
-
     def __init__(
             self,
             *,

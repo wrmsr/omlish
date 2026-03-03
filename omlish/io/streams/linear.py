@@ -37,7 +37,7 @@ class LinearByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
             *,
             max_size: ta.Optional[int] = None,
             initial_capacity: int = 0,
-            compact_threshold: int = 0x10000,
+            compact_threshold: int = 64 * 1024,
     ) -> None:
         super().__init__()
 
@@ -181,7 +181,7 @@ class LinearByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
             return _EMPTY_DIRECT_BYTE_STREAM_BUFFER_VIEW
 
         # Copy out the split prefix to keep the view stable even if the underlying buffer compacts.
-        b = bytes(memoryview(self._ba)[self._rpos:self._rpos + n])
+        b = ByteStreamBuffers.memoryview_to_bytes(memoryview(self._ba)[self._rpos:self._rpos + n])
         self._rpos += n
 
         # If we consumed everything, reset best-effort; otherwise allow compaction policy to handle later.

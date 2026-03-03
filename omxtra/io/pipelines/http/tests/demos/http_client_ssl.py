@@ -14,7 +14,7 @@ from ....handlers.flatmap import FlatMapChannelPipelineHandlers
 from ....ssl.handlers import SslChannelPipelineHandler
 from ...client.requests import PipelineHttpRequestEncoder
 from ...client.responses import PipelineHttpResponseChunkedDecoder
-from ...client.responses import PipelineHttpResponseDecoder
+from ...client.responses import PipelineHttpResponseHeadDecoder
 from ...requests import FullPipelineHttpRequest
 from ...responses import PipelineHttpResponseContentChunkData
 from ...responses import PipelineHttpResponseEnd
@@ -97,7 +97,7 @@ def build_ssl_http_client_channel(**ssl_kwargs: ta.Any) -> PipelineChannel.Spec:
 
     return PipelineChannel.Spec([
         SslChannelPipelineHandler(**ssl_kwargs),
-        PipelineHttpResponseDecoder(),
+        PipelineHttpResponseHeadDecoder(),
         PipelineHttpResponseChunkedDecoder(),
         PipelineHttpRequestEncoder(),
         HttpClientHandler(),

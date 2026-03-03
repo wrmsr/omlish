@@ -1,3 +1,4 @@
+# ruff: noqa: UP006
 # @omlish-lite
 import dataclasses as dc
 import typing as ta
@@ -82,10 +83,12 @@ class ByteTripletsToMessageDecoder(BytesToMessageDecoderChannelPipelineHandler):
             inb: ByteStreamBuffer,
             *,
             final: bool = False,
-    ) -> ta.Iterable[ta.Any]:
+    ) -> ta.Sequence[ta.Any]:
+        out: ta.List[ta.Any] = []
         check.state(len(inb) > 0)
         while len(inb) >= 3:
-            yield DumbBytesMessage(inb.split_to(3).tobytes())
+            out.append(DumbBytesMessage(inb.split_to(3).tobytes()))
+        return out
 
 
 def test_b2md_ar():

@@ -9,7 +9,7 @@ from .handlers.flatmap import FlatMapChannelPipelineHandler  # noqa
 from .handlers.fns import FnChannelPipelineHandler  # noqa
 from .handlers.queues import QueueChannelPipelineHandler  # noqa
 from .http.client.requests import PipelineHttpRequestEncoder  # noqa
-from .http.client.responses import PipelineHttpResponseDecoder  # noqa
+from .http.client.responses import PipelineHttpResponseHeadDecoder  # noqa
 from .http.server.requests import PipelineHttpRequestHeadDecoder  # noqa
 from .http.server.responses import PipelineHttpResponseEncoder  # noqa
 

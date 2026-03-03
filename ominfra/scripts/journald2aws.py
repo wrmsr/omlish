@@ -98,7 +98,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../../omlish/io/streams/scanning.py', sha1='6ab39887d0d2d3002201b786c4715e64804c66c8'),
             dict(path='../../../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
             dict(path='../../../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
-            dict(path='../../../../omlish/io/streams/segmented.py', sha1='4aeb1c22b7b5994132f0b5906d70b3e53201776b'),
+            dict(path='../../../../omlish/io/streams/segmented.py', sha1='33bbb11f17214293a6b97d5cad02edcab58ed347'),
             dict(path='../../../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='../../../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
@@ -7494,8 +7494,8 @@ class SegmentedByteStreamBufferView(BaseByteStreamBufferLike, ByteStreamBufferVi
         if not self._segs:
             return b''
         if len(self._segs) == 1:
-            return bytes(self._segs[0])
-        return b''.join(bytes(mv) for mv in self._segs)
+            return ByteStreamBuffers.memoryview_to_bytes(self._segs[0])
+        return b''.join(ByteStreamBuffers.memoryview_to_bytes(mv) for mv in self._segs)
 
 
 class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
@@ -7660,7 +7660,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         if self._chunk_size and (float(used) / float(self._chunk_size)) < self._chunk_compact_threshold:
             if not self._segs or self._segs[-1] is not a:
                 raise RuntimeError('active not at tail')
-            self._segs[-1] = bytes(memoryview(a)[:used])
+            self._segs[-1] = ByteStreamBuffers.memoryview_to_bytes(memoryview(a)[:used])
 
         else:
             # Try to shrink in-place to used bytes. If exported views exist, this can BufferError; fall back to bytes()
@@ -7670,7 +7670,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
             try:
                 del a[used:]  # may raise BufferError if any exports exist
             except BufferError:
-                self._segs[-1] = bytes(memoryview(a)[:used])
+                self._segs[-1] = ByteStreamBuffers.memoryview_to_bytes(memoryview(a)[:used])
 
         self._active = None
         self._active_used = 0
@@ -7786,7 +7786,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
             self._segs.append(b)
             self._len += n
         else:
-            bb = bytes(memoryview(b)[:n])
+            bb = ByteStreamBuffers.memoryview_to_bytes(memoryview(b)[:n])
             self._segs.append(bb)
             self._len += n
 

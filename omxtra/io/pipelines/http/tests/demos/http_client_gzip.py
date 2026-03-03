@@ -14,7 +14,7 @@ from ....handlers.flatmap import FlatMapChannelPipelineHandlers
 from ...client.requests import PipelineHttpRequestEncoder
 from ...client.responses import PipelineHttpResponseChunkedDecoder
 from ...client.responses import PipelineHttpResponseConditionalGzipDecoder
-from ...client.responses import PipelineHttpResponseDecoder
+from ...client.responses import PipelineHttpResponseHeadDecoder
 from ...requests import FullPipelineHttpRequest
 from ...responses import PipelineHttpResponseContentChunkData
 from ...responses import PipelineHttpResponseEnd
@@ -96,7 +96,7 @@ def build_http_client_channel() -> PipelineChannel.Spec:
     """Build a client channel with encoder, decoder, and handler."""
 
     return PipelineChannel.Spec([
-        PipelineHttpResponseDecoder(),
+        PipelineHttpResponseHeadDecoder(),
         PipelineHttpResponseConditionalGzipDecoder(),
         PipelineHttpResponseChunkedDecoder(),
         PipelineHttpRequestEncoder(),

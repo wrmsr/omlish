@@ -71,7 +71,7 @@ class DelimiterFrameDecoderChannelPipelineHandler(InboundBytesBufferingChannelPi
             keep_ends: bool = False,
             max_size: ta.Optional[int] = None,
             max_buffer: ta.Optional[int] = None,
-            buffer_chunk_size: int = 0x10000,
+            buffer_chunk_size: int = 64 * 1024,
             on_incomplete_final: ta.Literal['allow', 'raise'] = 'allow',
     ) -> None:
         super().__init__()
@@ -131,7 +131,7 @@ class BytesToMessageDecoderChannelPipelineHandler(InboundBytesBufferingChannelPi
             self,
             *,
             max_buffer_size: ta.Optional[int] = None,
-            buffer_chunk_size: int = 0x10000,
+            buffer_chunk_size: int = 64 * 1024,
             scanning_buffer: bool = False,
     ) -> None:
         super().__init__()
@@ -152,7 +152,7 @@ class BytesToMessageDecoderChannelPipelineHandler(InboundBytesBufferingChannelPi
             buf: ByteStreamBuffer,
             *,
             final: bool = False,
-    ) -> ta.Iterable[ta.Any]:
+    ) -> ta.Sequence[ta.Any]:
         raise NotImplementedError
 
     #
@@ -185,7 +185,7 @@ class BytesToMessageDecoderChannelPipelineHandler(InboundBytesBufferingChannelPi
         self._called_decode = True
 
         try:
-            out = list(self._decode(ctx, buf, final=final))
+            out = self._decode(ctx, buf, final=final)
         except DecodingChannelPipelineError:
             raise
         except Exception as e:
@@ -264,7 +264,7 @@ class FnBytesToMessageDecoderChannelPipelineHandler(BytesToMessageDecoderChannel
                 buf: ByteStreamBuffer,
                 *,
                 final: bool = False,
-        ) -> ta.Iterable[ta.Any]:
+        ) -> ta.Sequence[ta.Any]:
             ...
 
     def __init__(
@@ -272,7 +272,7 @@ class FnBytesToMessageDecoderChannelPipelineHandler(BytesToMessageDecoderChannel
             decode_fn: DecodeFn,
             *,
             max_buffer_size: ta.Optional[int] = None,
-            buffer_chunk_size: int = 0x10000,
+            buffer_chunk_size: int = 64 * 1024,
             scanning_buffer: bool = False,
     ) -> None:
         super().__init__(
@@ -289,5 +289,5 @@ class FnBytesToMessageDecoderChannelPipelineHandler(BytesToMessageDecoderChannel
             buf: ByteStreamBuffer,
             *,
             final: bool = False,
-    ) -> ta.Iterable[ta.Any]:
+    ) -> ta.Sequence[ta.Any]:
         return self._decode_fn(ctx, buf, final=final)

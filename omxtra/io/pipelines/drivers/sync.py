@@ -25,7 +25,7 @@ class SyncSocketPipelineChannelDriver:
     class Config:
         DEFAULT: ta.ClassVar['SyncSocketPipelineChannelDriver.Config']
 
-        read_chunk_size: int = 0x10000
+        read_chunk_size: int = 64 * 1024
         write_chunk_max: ta.Optional[int] = None
 
     Config.DEFAULT = Config()

@@ -33,9 +33,9 @@ def __omlish_amalg__():  # noqa
             dict(path='utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
             dict(path='direct.py', sha1='83c33460e9490a77a00ae66251617ba98128b56b'),
             dict(path='scanning.py', sha1='6ab39887d0d2d3002201b786c4715e64804c66c8'),
-            dict(path='adapters.py', sha1='ce4fc01bd81bb6b3402dc71e46c37849a80e476d'),
-            dict(path='linear.py', sha1='b2d82224c6a3001eb8230d6a9c4de7cb3afe7d1c'),
-            dict(path='segmented.py', sha1='4aeb1c22b7b5994132f0b5906d70b3e53201776b'),
+            dict(path='adapters.py', sha1='f434206c6d8a0fd3961b1a44077ee69668e8bd0c'),
+            dict(path='linear.py', sha1='a6cebf552cc4d3277809eb0c63b99981e74d3731'),
+            dict(path='segmented.py', sha1='33bbb11f17214293a6b97d5cad02edcab58ed347'),
             dict(path='_amalg.py', sha1='9c88a055447d7b37da1b356e6a1e00b7c4a9a3cb'),
         ],
     )
@@ -1643,7 +1643,7 @@ class BytesIoByteStreamBuffer(MutableByteStreamBuffer):
     def __init__(
             self,
             *,
-            compaction_threshold: int = 0x10000,
+            compaction_threshold: int = 64 * 1024,
     ) -> None:
         super().__init__()
 
@@ -1795,7 +1795,7 @@ class LinearByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
             *,
             max_size: ta.Optional[int] = None,
             initial_capacity: int = 0,
-            compact_threshold: int = 0x10000,
+            compact_threshold: int = 64 * 1024,
     ) -> None:
         super().__init__()
 
@@ -1939,7 +1939,7 @@ class LinearByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
             return _EMPTY_DIRECT_BYTE_STREAM_BUFFER_VIEW
 
         # Copy out the split prefix to keep the view stable even if the underlying buffer compacts.
-        b = bytes(memoryview(self._ba)[self._rpos:self._rpos + n])
+        b = ByteStreamBuffers.memoryview_to_bytes(memoryview(self._ba)[self._rpos:self._rpos + n])
         self._rpos += n
 
         # If we consumed everything, reset best-effort; otherwise allow compaction policy to handle later.
@@ -2094,8 +2094,8 @@ class SegmentedByteStreamBufferView(BaseByteStreamBufferLike, ByteStreamBufferVi
         if not self._segs:
             return b''
         if len(self._segs) == 1:
-            return bytes(self._segs[0])
-        return b''.join(bytes(mv) for mv in self._segs)
+            return ByteStreamBuffers.memoryview_to_bytes(self._segs[0])
+        return b''.join(ByteStreamBuffers.memoryview_to_bytes(mv) for mv in self._segs)
 
 
 class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
@@ -2260,7 +2260,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         if self._chunk_size and (float(used) / float(self._chunk_size)) < self._chunk_compact_threshold:
             if not self._segs or self._segs[-1] is not a:
                 raise RuntimeError('active not at tail')
-            self._segs[-1] = bytes(memoryview(a)[:used])
+            self._segs[-1] = ByteStreamBuffers.memoryview_to_bytes(memoryview(a)[:used])
 
         else:
             # Try to shrink in-place to used bytes. If exported views exist, this can BufferError; fall back to bytes()
@@ -2270,7 +2270,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
             try:
                 del a[used:]  # may raise BufferError if any exports exist
             except BufferError:
-                self._segs[-1] = bytes(memoryview(a)[:used])
+                self._segs[-1] = ByteStreamBuffers.memoryview_to_bytes(memoryview(a)[:used])
 
         self._active = None
         self._active_used = 0
@@ -2386,7 +2386,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
             self._segs.append(b)
             self._len += n
         else:
-            bb = bytes(memoryview(b)[:n])
+            bb = ByteStreamBuffers.memoryview_to_bytes(memoryview(b)[:n])
             self._segs.append(bb)
             self._len += n
 

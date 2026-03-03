@@ -17,7 +17,7 @@ from ....handlers.flatmap import FlatMapChannelPipelineHandlers
 from ....handlers.logs import LoggingChannelPipelineHandler  # noqa
 from ...client.requests import PipelineHttpRequestEncoder
 from ...client.responses import PipelineHttpResponseChunkedDecoder
-from ...client.responses import PipelineHttpResponseDecoder
+from ...client.responses import PipelineHttpResponseHeadDecoder
 from ...requests import FullPipelineHttpRequest
 from ...responses import PipelineHttpResponseContentChunkData
 from ...responses import PipelineHttpResponseEnd
@@ -116,7 +116,7 @@ def build_http_client_channel(*, auto_read: bool = False) -> PipelineChannel.Spe
     return PipelineChannel.Spec(
         [
             LoggingChannelPipelineHandler(),
-            PipelineHttpResponseDecoder(),
+            PipelineHttpResponseHeadDecoder(),
             PipelineHttpResponseChunkedDecoder(),
             PipelineHttpRequestEncoder(),
             HttpClientHandler(),

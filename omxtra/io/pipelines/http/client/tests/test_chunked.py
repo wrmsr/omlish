@@ -162,7 +162,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
                 PipelineHttpDecodingConfig.DEFAULT,
                 content_chunk_header_buffer=dc.replace(
                     PipelineHttpDecodingConfig.DEFAULT.content_chunk_header_buffer,
-                    max_size=0x10000,
+                    max_size=64 * 1024,
                 ),
             ),
         )

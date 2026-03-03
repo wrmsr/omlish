@@ -48,8 +48,8 @@ class SegmentedByteStreamBufferView(BaseByteStreamBufferLike, ByteStreamBufferVi
         if not self._segs:
             return b''
         if len(self._segs) == 1:
-            return bytes(self._segs[0])
-        return b''.join(bytes(mv) for mv in self._segs)
+            return ByteStreamBuffers.memoryview_to_bytes(self._segs[0])
+        return b''.join(ByteStreamBuffers.memoryview_to_bytes(mv) for mv in self._segs)
 
 
 class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffer):
@@ -214,7 +214,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
         if self._chunk_size and (float(used) / float(self._chunk_size)) < self._chunk_compact_threshold:
             if not self._segs or self._segs[-1] is not a:
                 raise RuntimeError('active not at tail')
-            self._segs[-1] = bytes(memoryview(a)[:used])
+            self._segs[-1] = ByteStreamBuffers.memoryview_to_bytes(memoryview(a)[:used])
 
         else:
             # Try to shrink in-place to used bytes. If exported views exist, this can BufferError; fall back to bytes()
@@ -224,7 +224,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
             try:
                 del a[used:]  # may raise BufferError if any exports exist
             except BufferError:
-                self._segs[-1] = bytes(memoryview(a)[:used])
+                self._segs[-1] = ByteStreamBuffers.memoryview_to_bytes(memoryview(a)[:used])
 
         self._active = None
         self._active_used = 0
@@ -340,7 +340,7 @@ class SegmentedByteStreamBuffer(BaseByteStreamBufferLike, MutableByteStreamBuffe
             self._segs.append(b)
             self._len += n
         else:
-            bb = bytes(memoryview(b)[:n])
+            bb = ByteStreamBuffers.memoryview_to_bytes(memoryview(b)[:n])
             self._segs.append(bb)
             self._len += n
 
