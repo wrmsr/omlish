@@ -14,6 +14,7 @@ from ....flow.stub import StubChannelPipelineFlow
 from ....flow.types import ChannelPipelineFlow
 from ....flow.types import ChannelPipelineFlowMessages
 from ....handlers.flatmap import FlatMapChannelPipelineHandlers
+from ....handlers.logs import LoggingChannelPipelineHandler  # noqa
 from ....ssl.handlers import SslChannelPipelineHandler
 from ...client.requests import PipelineHttpRequestEncoder
 from ...client.responses import PipelineHttpResponseChunkedDecoder
@@ -107,6 +108,7 @@ def build_ssl_http_client_channel(**ssl_kwargs: ta.Any) -> PipelineChannel.Spec:
 
     return PipelineChannel.Spec(
         [
+            LoggingChannelPipelineHandler(),
             SslChannelPipelineHandler(**ssl_kwargs),
             PipelineHttpResponseDecoder(),
             PipelineHttpResponseChunkedDecoder(),
@@ -182,6 +184,9 @@ def main() -> None:
 
 
 if __name__ == '__main__':
+    from omlish.logs.std.standard import configure_standard_logging
+    configure_standard_logging('DEBUG')
+
     # try:
     #     __import__('omlish.check')
     # except ImportError:

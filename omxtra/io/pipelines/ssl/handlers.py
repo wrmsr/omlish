@@ -69,6 +69,9 @@ class SslChannelPipelineHandler(
         # WANT_READ and we're waiting for peer).
         self._pending_plaintext_out: ta.List[ta.Any] = []
         self._pending_outbound_bytes = 0
+
+        self._inbound_eof_sent = False
+
     #
 
     def inbound_buffered_bytes(self) -> ta.Optional[int]:
@@ -172,12 +175,18 @@ class SslChannelPipelineHandler(
                 raise
 
             if not b:
-                # SSLObject returns b'' on a clean close_notify. In manual mode, this "satisfies" the read request with
-                # EOF.
+                # 1. Clear the manual read token
                 if not self._is_auto_read(ctx):
                     self._read_requested = False
-                # Even b'' (EOF) satisfies a read request
-                return produced or not self._is_auto_read(ctx)
+
+                # 2. Emit the synthetic FinalInput EXACTLY ONCE
+                if not self._inbound_eof_sent:
+                    self._inbound_eof_sent = True
+                    ctx.feed_in(ChannelPipelineMessages.FinalInput())
+                    # A FinalInput satisfies the read, but we DO NOT want to trigger a FlushInput in outbound().
+                    return False
+
+                break  # Already sent EOF, stop pumping
 
             # SUCCESS: We got plaintext.
             produced = True
@@ -337,7 +346,13 @@ class SslChannelPipelineHandler(
             # don't try to ask the already-closed transport for more.
             self._read_requested = False
 
-            ctx.feed_in(msg)
+            # If an abrupt disconnect happened, ensure downstream gets an EOF
+            if not self._inbound_eof_sent:
+                self._inbound_eof_sent = True
+                ctx.feed_in(ChannelPipelineMessages.FinalInput())
+
+            # CONSUME the transport's FinalInput to prevent duplicate EOFs downstream
+            ctx.mark_propagated('inbound', msg)
             return
 
         # If it's not bytes, just pass through.
@@ -378,7 +393,11 @@ class SslChannelPipelineHandler(
         # 1. Intercept ReadyForInput
         if isinstance(msg, ChannelPipelineFlowMessages.ReadyForInput):
             st = self._state
-            if st and st.state == 'established':
+            if st is None:
+                ctx.feed_out(msg)
+                return
+
+            if st.state == 'established':
                 # Mark that downstream wants data
                 self._read_requested = True
 
@@ -387,6 +406,9 @@ class SslChannelPipelineHandler(
                     if not self._is_auto_read(ctx):
                         ctx.feed_in(ChannelPipelineFlowMessages.FlushInput())
                     return  # Swallow
+
+            if st.state == 'closed':
+                return
 
             # If we couldn't satisfy it (or we are handshaking), pass it up.
             ctx.feed_out(msg)
