@@ -125,6 +125,7 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
         super().__init__()
 
         self._config = config
+
         self._enabled = False
         self._z: ta.Optional[ta.Any] = None
 
@@ -296,7 +297,7 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
         self._pump(ctx)
         ctx.feed_in(msg)
 
-    def _on_inbound_http_response_head(self, ctx: ChannelPipelineHandlerContext, msg: PipelineHttpResponseHead) -> None:
+    def _on_inbound_http_response_head(self, ctx: ChannelPipelineHandlerContext, msg: PipelineHttpResponseHead) -> None:  # noqa
         enc = msg.headers.lower.get('content-encoding', ())
         self._enabled = 'gzip' in enc
         self._z = zlib.decompressobj(16 + zlib.MAX_WBITS) if self._enabled else None

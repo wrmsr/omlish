@@ -87,7 +87,7 @@ def __omlish_amalg__():  # noqa
             dict(path='bytes/decoders.py', sha1='02056a316cff2a7151f520f0d1c8247f313d5f24'),
             dict(path='http/decoders.py', sha1='6944a9c30768c8db49198f130f5c56d1260117ac'),
             dict(path='drivers/asyncio.py', sha1='abc258eacd896ebb2a31dbbf03de8476153230ea'),
-            dict(path='http/client/responses.py', sha1='cd061008a8e8350d1bfbf06dad752a5f73412704'),
+            dict(path='http/client/responses.py', sha1='06c726b841a90d2783c819ada5686f7046247cd6'),
             dict(path='http/server/requests.py', sha1='3cfef46c7d713ccd7d5e51c7f94ca24c5ff8ff96'),
             dict(path='_amalg.py', sha1='74c164f8713be6db5958f4a390d7bd978c3e685a'),
         ],
@@ -11907,6 +11907,7 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
         super().__init__()
 
         self._config = config
+
         self._enabled = False
         self._z: ta.Optional[ta.Any] = None
 
@@ -12078,7 +12079,7 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
         self._pump(ctx)
         ctx.feed_in(msg)
 
-    def _on_inbound_http_response_head(self, ctx: ChannelPipelineHandlerContext, msg: PipelineHttpResponseHead) -> None:
+    def _on_inbound_http_response_head(self, ctx: ChannelPipelineHandlerContext, msg: PipelineHttpResponseHead) -> None:  # noqa
         enc = msg.headers.lower.get('content-encoding', ())
         self._enabled = 'gzip' in enc
         self._z = zlib.decompressobj(16 + zlib.MAX_WBITS) if self._enabled else None
