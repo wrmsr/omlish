@@ -1,6 +1,7 @@
 # ruff: noqa: UP006 UP007 UP043 UP045
 # @omlish-lite
 import abc
+import dataclasses as dc
 import typing as ta
 
 from omlish.http.parsing import HttpParser
@@ -216,6 +217,10 @@ class PipelineHttpObjectDecoder(
         mode: ta.Literal['none', 'eof', 'cl', 'chunked']
         length: ta.Optional[int]
 
+    @dc.dataclass()
+    class _SelectTransferEncodingError(Exception):
+        reason: str
+
     def _select_transfer_encoding(self, head: PipelineHttpMessageHead) -> _SelectedTransferEncoding:
         if head.headers.contains_value('transfer-encoding', 'chunked', ignore_case=True):
             return self._SelectedTransferEncoding('chunked', None)
@@ -225,10 +230,10 @@ class PipelineHttpObjectDecoder(
             try:
                 n = int(cl)
             except ValueError:
-                raise ValueError('bad Content-Length') from None
+                raise self._SelectTransferEncodingError('bad Content-Length') from None
 
             if n < 0:
-                raise ValueError('bad Content-Length')
+                raise self._SelectTransferEncodingError('bad Content-Length')
 
             if n == 0:
                 return self._SelectedTransferEncoding('none', None)
@@ -252,11 +257,14 @@ class PipelineHttpObjectDecoder(
                 *,
                 final: bool = False,
         ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
-            sel = self._d._select_transfer_encoding(self._head)  # noqa
+            try:
+                sel = self._d._select_transfer_encoding(self._head)  # noqa
+            except PipelineHttpObjectDecoder._SelectTransferEncodingError as e:
+                return self._abort(out, f'Invalid Transfer-Encoding: {e.reason}')
 
             if sel.mode == 'none':
                 out.append(self._d._make_end())  # noqa
-                return (self._d._DoneState(self._d), None)  # noqa
+                return (self._d._DoneState(self._d, self._head), None)  # noqa
 
             elif sel.mode == 'eof':
                 return (self._d._UntilEofContentState(self._d, self._head), data)  # noqa
@@ -265,7 +273,7 @@ class PipelineHttpObjectDecoder(
                 return (self._d._ContentLengthContentState(self._d, self._head, check.not_none(sel.length)), data)  # noqa
 
             elif sel.mode == 'chunked':
-                return (self._d._ChunkedContentState(self._d, self._head), data)  # noqa
+                return (self._d._HeaderChunkedContentState(self._d, self._head), data)  # noqa
 
             else:
                 raise RuntimeError(f'unexpected mode {sel!r}')
@@ -297,7 +305,7 @@ class PipelineHttpObjectDecoder(
                 out.append(self._d._make_content_chunk_data(mv))  # noqa
 
             if final:
-                return (self._d._DoneState(self._d), None)  # noqa
+                return (self._d._DoneState(self._d, self._head), None)  # noqa
             else:
                 return None
 
@@ -353,7 +361,7 @@ class PipelineHttpObjectDecoder(
             if final and self._remaining > 0:
                 return self._abort(out, 'EOF before HTTP body complete')
             elif self._remaining == 0:
-                return (self._d._DoneState(self._d), SegmentedByteStreamBufferView.of_opt(next_mvs))  # noqa
+                return (self._d._DoneState(self._d, self._head), SegmentedByteStreamBufferView.of_opt(next_mvs))  # noqa
             else:
                 return None
 
@@ -378,8 +386,6 @@ class PipelineHttpObjectDecoder(
         def buf(self) -> ta.Optional[MutableByteStreamBuffer]:
             return self._buf
 
-        _got_cr = False
-
         def decode(
                 self,
                 ctx: ChannelPipelineHandlerContext,
@@ -388,14 +394,21 @@ class PipelineHttpObjectDecoder(
                 *,
                 final: bool = False,
         ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+            chunk_size: ta.Optional[int] = None
             next_mvs: ta.List[memoryview]
 
             for mv in ByteStreamBuffers.iter_segments(data):
+                if chunk_size is not None:
+                    next_mvs.append(mv)  # noqa
+                    continue
+
                 if (buf := self._buf) is None:
-                    buf = _buf = ScanningByteStreamBuffer(SegmentedByteStreamBuffer(
+                    buf = self._buf = ScanningByteStreamBuffer(SegmentedByteStreamBuffer(
                         max_size=self._d._config.content_chunk_header_buffer.max_size,  # noqa
                         chunk_size=self._d._config.content_chunk_header_buffer.chunk_size,  # noqa
                     ))
+
+                rem_mv: ta.Optional[memoryview] = None
 
                 if (max_buf := buf.max_size) is not None:
                     rem_buf = max_buf - len(buf)
@@ -410,44 +423,38 @@ class PipelineHttpObjectDecoder(
                 i = buf.find(b'\r\n')
                 if i < 0:
                     if rem_mv is not None:
-                        del buf
-                        self._state = 'done'
+                        return self._abort(out, 'Chunk header exceeded max buffer size')
 
-                        out.append(self._d._make_aborted('Chunk header exceeded max buffer size'))
-                        return False
-
-                    return True  # Need more data
+                    continue
 
                 size_line = buf.split_to(i + 2)
 
                 size_bytes = size_line.tobytes()[:-2]  # Strip \r\n
                 try:
-                    self._chunk_remaining = int(size_bytes, 16)
-                except ValueError as e:
-                    raise ValueError(f'Invalid chunk size: {size_bytes!r}') from e
+                    chunk_size = int(size_bytes, 16)
+                except ValueError:
+                    return self._abort(out, f'Invalid chunk size: {size_bytes!r}')
 
-                if (mcs := self._d._config.max_content_chunk_size) is not None and self._chunk_remaining > mcs:
-                    raise ValueError(f'Content chunk size {self._chunk_remaining} exceeds maximum content chunk size: {mcs}')
+                if (mcs := self._d._config.max_content_chunk_size) is not None and chunk_size > mcs:  # noqa
+                    return self._abort(out, f'Content chunk size {chunk_size} exceeds maximum content chunk size: {mcs}')  # noqa
 
-                if self._chunk_remaining == 0:
-                    # Final chunk
-                    self._state = 'trailer'
-                else:
-                    self._state = 'data'
+                next_mvs = []
 
                 if len(buf) > 0:
-                    hb = buf
-                    buf = self._new_header_buf()
+                    next_mvs.extend(buf.segments())
 
-                    for hb_mv in hb.segments():
-                        if not self._process(hb_mv, out):
-                            return False
+                self._buf = None
 
                 if rem_mv is not None:
-                    if not self._process(rem_mv, out):
-                        return False
+                    next_mvs.append(rem_mv)
 
-                return True
+            if chunk_size is not None:
+                if chunk_size == 0:
+                    return (self._d._TrailerChunkedContentState(self._d, self._head), SegmentedByteStreamBufferView.of_opt(next_mvs))  # noqa
+                else:
+                    return (self._d._DataChunkedContentState(self._d, self._head, chunk_size), SegmentedByteStreamBufferView.of_opt(next_mvs))  # noqa
+            else:
+                return None
 
     #
 
@@ -456,13 +463,15 @@ class PipelineHttpObjectDecoder(
                 self,
                 d: 'PipelineHttpObjectDecoder',
                 head: PipelineHttpMessageHead,
-                chunk_length: int,
+                chunk_size: int,
         ) -> None:
-            check.arg(chunk_length > 0)
+            check.arg(chunk_size > 0)
 
             super().__init__(d, head)
 
-            self._remaining = chunk_length
+            self._remaining = chunk_size
+
+        _got_cr = False
 
         def decode(
                 self,
@@ -472,51 +481,56 @@ class PipelineHttpObjectDecoder(
                 *,
                 final: bool = False,
         ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
-            next_mvs: ta.List[memoryview]
+            next_mvs: ta.Optional[ta.List[memoryview]] = None
 
             for mv in ByteStreamBuffers.iter_segments(data):
+                if next_mvs is not None:
+                    next_mvs.append(mv)
+                    continue
+
                 mvl = len(mv)
                 if mvl < self._remaining:
                     self._remaining -= mvl
-                    out.append(self._d._make_content_chunk_data(mv))
-                    return True
+                    out.append(self._d._make_content_chunk_data(mv))  # noqa
+                    continue
 
                 if self._remaining > 0:
                     if mvl == self._remaining:
-                        out.append(self._d._make_content_chunk_data(mv))
+                        out.append(self._d._make_content_chunk_data(mv))  # noqa
                         self._remaining = 0
-                        return True
+                        continue
 
-                    out.append(self._d._make_content_chunk_data(mv[:self._remaining]))
+                    out.append(self._d._make_content_chunk_data(mv[:self._remaining]))  # noqa
                     mv = mv[self._remaining:]
                     mvl = len(mv)
                     self._remaining = 0
 
                 if mvl < 1:
-                    return True
+                    continue
 
                 if not self._got_cr:
                     if mv[0] != 0x0d:
-                        raise ValueError(f'Expected \\r\\n after chunk data, got {bytes([mv[0]])!r}')
+                        return self._abort(out, f'Expected \\r\\n after chunk data, got {bytes([mv[0]])!r}')
                     self._got_cr = True
                     mv = mv[1:]
                     mvl -= 1
                     if mvl < 1:
-                        return True
+                        continue
 
                 if mv[0] != 0x0a:
-                    raise ValueError(f'Expected \\r\\n after chunk data, got {bytes([mv[0]])!r}')
+                    return self._abort(out, f'Expected \\r\\n after chunk data, got {bytes([mv[0]])!r}')
                 mv = mv[1:]
                 mvl -= 1
 
-                self._got_cr = False
-                self._state = 'size'
+                next_mvs = []
 
                 if mvl > 0:
-                    if not self._process(mv, out):
-                        return False
+                    next_mvs.append(mv)
 
-                return True
+            if next_mvs is not None:
+                return (self._d._HeaderChunkedContentState(self._d, self._head), SegmentedByteStreamBufferView.of_opt(next_mvs))  # noqa
+            else:
+                return None
 
     #
 
@@ -531,42 +545,56 @@ class PipelineHttpObjectDecoder(
                 *,
                 final: bool = False,
         ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
-            next_mvs: ta.List[memoryview]
+            next_mvs: ta.Optional[ta.List[memoryview]] = None
 
             for mv in ByteStreamBuffers.iter_segments(data):
+                if next_mvs is not None:
+                    next_mvs.append(mv)
+                    continue
+
                 mvl = len(mv)
                 if mvl < 1:
-                    return True
+                    continue
 
                 if not self._got_cr:
                     if mv[0] != 0x0d:
-                        raise ValueError(f'Expected \\r\\n after final chunk, got {bytes([mv[0]])!r}')
+                        return self._abort(out, f'Expected \\r\\n after final chunk, got {bytes([mv[0]])!r}')
                     self._got_cr = True
                     mv = mv[1:]
                     mvl -= 1
                     if mvl < 1:
-                        return True
+                        continue
 
                 if mv[0] != 0x0a:
-                    raise ValueError(f'Expected \\r\\n after final chunk, got {bytes([mv[0]])!r}')
+                    return self._abort(out, f'Expected \\r\\n after final chunk, got {bytes([mv[0]])!r}')
                 mv = mv[1:]
                 mvl -= 1
 
-                del self._header_buf
-                self._got_cr = False
-                self._state = 'done'
-
                 # Emit end marker
-                out.append(self._d._make_end())
+                out.append(self._d._make_end())  # noqa
+
+                next_mvs = []
 
                 if mvl > 0:
-                    out.append(mv)
+                    next_mvs.append(mv)
 
-                return True
+            if next_mvs is not None:
+                return (self._d._DoneState(self._d, self._head), SegmentedByteStreamBufferView.of_opt(next_mvs))  # noqa
+            else:
+                return None
 
     #
 
     class _DoneState(_State):
+        def __init__(
+                self,
+                d: 'PipelineHttpObjectDecoder',
+                head: ta.Optional[PipelineHttpMessageHead] = None,
+        ) -> None:
+            super().__init__(d)
+
+            self._head = head
+
         def decode(
                 self,
                 ctx: ChannelPipelineHandlerContext,

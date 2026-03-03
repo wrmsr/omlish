@@ -89,3 +89,37 @@ class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):
 
         # Second: body bytes (forwarded)
         self.assertIsInstance(end, PipelineHttpRequestEnd)
+
+    def test_chunked(self):
+        head_b = (
+            b'POST /api HTTP/1.1\r\n'
+            b'Host: test\r\n'
+            b'Transfer-Encoding: chunked\r\n'
+            b'\r\n'
+        )
+
+        body_b = (
+            b'a\r\n' + b'0123456789' + b'\r\n' +
+            b'10\r\n' + b'a' * 16 + b'\r\n' +
+            b'64\r\n' + b'b' * 100 + b'\r\n' +
+            b'0\r\n\r\n'
+        )
+
+        decoder = PipelineHttpRequestDecoder()
+        channel = PipelineChannel(PipelineChannel.Spec([
+            decoder,
+            ibq := InboundQueueChannelPipelineHandler(),
+        ]).update_pipeline_config(raise_immediately=True))
+
+        channel.feed_in(head_b + body_b)
+
+        out = ibq.drain()
+
+        self.assertEqual(len(out), 5)  # head + 3 chunks + end
+        self.assertIsInstance(out[1], PipelineHttpRequestContentChunkData)
+        self.assertEqual(out[1].data, b'0123456789')
+        self.assertIsInstance(out[2], PipelineHttpRequestContentChunkData)
+        self.assertEqual(out[2].data, b'a' * 16)
+        self.assertIsInstance(out[3], PipelineHttpRequestContentChunkData)
+        self.assertEqual(out[3].data, b'b' * 100)
+        self.assertIsInstance(out[4], PipelineHttpRequestEnd)

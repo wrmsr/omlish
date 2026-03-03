@@ -389,60 +389,53 @@ class SslChannelPipelineHandler(
         self._pump_plaintext_in(ctx, st)
         self._pump_tls_out(ctx, st)
 
-    def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        # 1. Intercept ReadyForInput
-        if isinstance(msg, ChannelPipelineFlowMessages.ReadyForInput):
-            st = self._state
-            if st is None:
-                ctx.feed_out(msg)
-                return
+    #
 
-            if st.state == 'established':
-                # Mark that downstream wants data
-                self._read_requested = True
-
-                # Check if we actually satisfied the request
-                if self._pump_plaintext_in(ctx, st):
-                    if not self._is_auto_read(ctx):
-                        ctx.feed_in(ChannelPipelineFlowMessages.FlushInput())
-                    return  # Swallow
-
-            if st.state == 'closed':
-                return
-
-            # If we couldn't satisfy it (or we are handshaking), pass it up.
+    def _on_outbound_ready_for_input(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineFlowMessages.ReadyForInput) -> None:  # noqa
+        st = self._state
+        if st is None:
             ctx.feed_out(msg)
             return
 
-        if isinstance(msg, ChannelPipelineFlowMessages.FlushOutput):
-            ctx.feed_out(msg)
+        if st.state == 'established':
+            # Mark that downstream wants data
+            self._read_requested = True
+
+            # Check if we actually satisfied the request
+            if self._pump_plaintext_in(ctx, st):
+                if not self._is_auto_read(ctx):
+                    ctx.feed_in(ChannelPipelineFlowMessages.FlushInput())
+                return  # Swallow
+
+        if st.state == 'closed':
             return
 
-        if isinstance(msg, ChannelPipelineMessages.FinalOutput):
-            st = self._state
-            if st and st.state in ('established', 'handshake'):
-                try:
-                    # This initiates the TLS close_notify alert
-                    st.obj.unwrap()
-                    st.state = 'closed'
-                except (ssl.SSLWantReadError, ssl.SSLWantWriteError):
-                    st.state = 'shutting_down'
-                    # Save the FinalOutput; we'll feed it once unwrap completes.
-                    self._pending_final_output = msg
-                    self._pump_tls_out(ctx, st)
-                    return
-                except Exception:  # FIXME:  # noqa
-                    pass
+        # If we couldn't satisfy it (or we are handshaking), pass it up.
+        ctx.feed_out(msg)
+
+    def _on_outbound_flush_output(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineFlowMessages.FlushOutput) -> None:  # noqa
+        ctx.feed_out(msg)
+
+    def _on_outbound_final_output(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineMessages.FinalOutput) -> None:  # noqa
+        st = self._state
+        if st and st.state in ('established', 'handshake'):
+            try:
+                # This initiates the TLS close_notify alert
+                st.obj.unwrap()
+                st.state = 'closed'
+            except (ssl.SSLWantReadError, ssl.SSLWantWriteError):
+                st.state = 'shutting_down'
+                # Save the FinalOutput; we'll feed it once unwrap completes.
+                self._pending_final_output = msg
                 self._pump_tls_out(ctx, st)
+                return
+            except Exception:  # FIXME:  # noqa
+                pass
+            self._pump_tls_out(ctx, st)
 
-            ctx.feed_out(msg)
-            return
+        ctx.feed_out(msg)
 
-        # 2. Handle Plaintext Writes
-        if not ByteStreamBuffers.can_bytes(msg):
-            ctx.feed_out(msg)
-            return
-
+    def _on_outbound_bytes(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         st = self._ensure_state()
 
         if st.state == 'closed':
@@ -466,3 +459,23 @@ class SslChannelPipelineHandler(
         if not ok:
             self._pending_plaintext_out.append(msg)
             self._pending_outbound_bytes += len(msg)
+
+    def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        # 1. Intercept ReadyForInput
+        if isinstance(msg, ChannelPipelineFlowMessages.ReadyForInput):
+            self._on_outbound_ready_for_input(ctx, msg)
+            return
+
+        if isinstance(msg, ChannelPipelineFlowMessages.FlushOutput):
+            self._on_outbound_flush_output(ctx, msg)
+            return
+
+        if isinstance(msg, ChannelPipelineMessages.FinalOutput):
+            self._on_outbound_final_output(ctx, msg)
+            return
+
+        if ByteStreamBuffers.can_bytes(msg):
+            self._on_outbound_bytes(ctx, msg)
+            return
+
+        ctx.feed_out(msg)
