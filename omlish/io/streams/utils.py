@@ -3,9 +3,13 @@
 import typing as ta
 
 from ...lite.namespaces import NamespaceClass
+from .types import BytesLikeOrMemoryview
 from .types import ByteStreamBuffer
 from .types import ByteStreamBufferLike
 from .types import ByteStreamBufferView
+
+
+CanByteStreamBuffer = ta.Union[BytesLikeOrMemoryview, 'ByteStreamBufferLike']  # ta.TypeAlias
 
 
 ##

@@ -3,16 +3,24 @@
 import enum
 import typing as ta
 
-from omlish.io.streams.types import ByteStreamBuffer
+from omlish.io.streams.utils import CanByteStreamBuffer
 
-from ...bytes.decoders import BytesToMessageDecoderChannelPipelineHandler
+from ...bytes.decoders2 import BytesToMessageDecoderChannelPipelineHandler
 from ...core import ChannelPipelineHandlerContext
+from ..objects import PipelineHttpMessageHead
 
 
 ##
 
 
 class PipelineHttpObjectDecoder(BytesToMessageDecoderChannelPipelineHandler):
+    def __init__(
+            self,
+    ) -> None:
+        super().__init__()
+
+    #
+
     class State(enum.Enum):
         HEAD = 'head'
 
@@ -24,11 +32,14 @@ class PipelineHttpObjectDecoder(BytesToMessageDecoderChannelPipelineHandler):
 
     #
 
+    _head: PipelineHttpMessageHead
+
     def _decode(
             self,
             ctx: ChannelPipelineHandlerContext,
-            buf: ByteStreamBuffer,
+            data: CanByteStreamBuffer,
+            out: ta.List[ta.Any],
             *,
             final: bool = False,
-    ) -> ta.Sequence[ta.Any]:
+    ) -> None:
         raise NotImplementedError

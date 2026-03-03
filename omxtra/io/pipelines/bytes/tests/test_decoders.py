@@ -81,14 +81,13 @@ class ByteTripletsToMessageDecoder(BytesToMessageDecoderChannelPipelineHandler):
             self,
             ctx: ChannelPipelineHandlerContext,
             inb: ByteStreamBuffer,
+            out: ta.List[ta.Any],
             *,
             final: bool = False,
-    ) -> ta.Sequence[ta.Any]:
-        out: ta.List[ta.Any] = []
+    ) -> None:
         check.state(len(inb) > 0)
         while len(inb) >= 3:
             out.append(DumbBytesMessage(inb.split_to(3).tobytes()))
-        return out
 
 
 def test_b2md_ar():

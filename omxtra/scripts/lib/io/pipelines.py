@@ -59,7 +59,7 @@ def __omlish_amalg__():  # noqa
             dict(path='core.py', sha1='a396f2fd3509aa6538572403e746290fde5f76d6'),
             dict(path='../../../omlish/io/streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
-            dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
+            dict(path='../../../omlish/io/streams/utils.py', sha1='b3b7ed67bff8b7f2b60d821eda9afa93ffb2ba1f'),
             dict(path='../../../omlish/logs/contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
             dict(path='../../../omlish/logs/utils.py', sha1='9b879044cbdc3172fd7282c7f2a4880b81261cdd'),
             dict(path='asyncs.py', sha1='3c5834fe4879ebdc63d44951798ad9110ae83ad4'),
@@ -84,7 +84,7 @@ def __omlish_amalg__():  # noqa
             dict(path='http/client/requests.py', sha1='0d598fefb873796d64f1fe1eafa344bda83d933c'),
             dict(path='http/server/responses.py', sha1='5b2e2af9bfdbd526f74cff138ddbb5bf03b4c0ee'),
             dict(path='../../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
-            dict(path='bytes/decoders.py', sha1='8102fd92e369d6f33c05e26be6de040dbd137387'),
+            dict(path='bytes/decoders.py', sha1='02056a316cff2a7151f520f0d1c8247f313d5f24'),
             dict(path='http/decoders.py', sha1='6944a9c30768c8db49198f130f5c56d1260117ac'),
             dict(path='drivers/asyncio.py', sha1='abc258eacd896ebb2a31dbbf03de8476153230ea'),
             dict(path='http/client/responses.py', sha1='6a7d4843a2776dd6a30e552ba2ec307ed5e2338a'),
@@ -130,6 +130,9 @@ ChannelPipelineHandlerFn = ta.Callable[['ChannelPipelineHandlerContext', F], T] 
 ChannelPipelineHandlerT = ta.TypeVar('ChannelPipelineHandlerT', bound='ChannelPipelineHandler')
 ShareableChannelPipelineHandlerT = ta.TypeVar('ShareableChannelPipelineHandlerT', bound='ShareableChannelPipelineHandler')  # noqa
 PipelineChannelMetadataT = ta.TypeVar('PipelineChannelMetadataT', bound='PipelineChannelMetadata')
+
+# ../../../omlish/io/streams/utils.py
+CanByteStreamBuffer = ta.Union[BytesLikeOrMemoryview, 'ByteStreamBufferLike']  # ta.TypeAlias
 
 # ../../../omlish/logs/contexts.py
 LoggingContextInfoT = ta.TypeVar('LoggingContextInfoT', bound=LoggingContextInfo)
@@ -10550,9 +10553,10 @@ class BytesToMessageDecoderChannelPipelineHandler(InboundBytesBufferingChannelPi
             self,
             ctx: ChannelPipelineHandlerContext,
             buf: ByteStreamBuffer,
+            out: ta.List[ta.Any],
             *,
             final: bool = False,
-    ) -> ta.Sequence[ta.Any]:
+    ) -> None:
         raise NotImplementedError
 
     #
@@ -10584,8 +10588,9 @@ class BytesToMessageDecoderChannelPipelineHandler(InboundBytesBufferingChannelPi
     ) -> None:
         self._called_decode = True
 
+        out: ta.List[ta.Any] = []
         try:
-            out = self._decode(ctx, buf, final=final)
+            self._decode(ctx, buf, out, final=final)
         except DecodingChannelPipelineError:
             raise
         except Exception as e:
@@ -10662,9 +10667,10 @@ class FnBytesToMessageDecoderChannelPipelineHandler(BytesToMessageDecoderChannel
                 self,
                 ctx: ChannelPipelineHandlerContext,
                 buf: ByteStreamBuffer,
+                out: ta.List[ta.Any],
                 *,
                 final: bool = False,
-        ) -> ta.Sequence[ta.Any]:
+        ) -> None:
             ...
 
     def __init__(
@@ -10687,10 +10693,11 @@ class FnBytesToMessageDecoderChannelPipelineHandler(BytesToMessageDecoderChannel
             self,
             ctx: ChannelPipelineHandlerContext,
             buf: ByteStreamBuffer,
+            out: ta.List[ta.Any],
             *,
             final: bool = False,
-    ) -> ta.Sequence[ta.Any]:
-        return self._decode_fn(ctx, buf, final=final)
+    ) -> None:
+        self._decode_fn(ctx, buf, out, final=final)
 
 
 ########################################

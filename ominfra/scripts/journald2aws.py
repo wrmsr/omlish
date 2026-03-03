@@ -89,7 +89,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../../omlish/logs/std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='../logs.py', sha1='5a4fad522508bdc1b790f1d5234a87f319c9da2d'),
             dict(path='../../../../omlish/io/streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
-            dict(path='../../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
+            dict(path='../../../../omlish/io/streams/utils.py', sha1='b3b7ed67bff8b7f2b60d821eda9afa93ffb2ba1f'),
             dict(path='../../../../omlish/lite/configs.py', sha1='c8602e0e197ef1133e7e8e248935ac745bfd46cb'),
             dict(path='../../../../omlish/logs/contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
             dict(path='../../../../omlish/logs/std/standard.py', sha1='5c97c1b9f7ead58d6127d047b873398f708f288d'),
@@ -160,6 +160,9 @@ LoggingExcInfoTuple = ta.Tuple[ta.Type[BaseException], BaseException, ta.Optiona
 LoggingExcInfo = ta.Union[BaseException, LoggingExcInfoTuple]  # ta.TypeAlias
 LoggingExcInfoArg = ta.Union[LoggingExcInfo, bool, None]  # ta.TypeAlias
 LoggingContextInfo = ta.Any  # ta.TypeAlias
+
+# ../../../../omlish/io/streams/utils.py
+CanByteStreamBuffer = ta.Union[BytesLikeOrMemoryview, 'ByteStreamBufferLike']  # ta.TypeAlias
 
 # ../../../../omlish/logs/contexts.py
 LoggingContextInfoT = ta.TypeVar('LoggingContextInfoT', bound=LoggingContextInfo)

@@ -30,7 +30,7 @@ def __omlish_amalg__():  # noqa
             dict(path='base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='reading.py', sha1='7631635c46ab4b40bcaeb7c506cf15cb2d529a40'),
-            dict(path='utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
+            dict(path='utils.py', sha1='b3b7ed67bff8b7f2b60d821eda9afa93ffb2ba1f'),
             dict(path='direct.py', sha1='83c33460e9490a77a00ae66251617ba98128b56b'),
             dict(path='scanning.py', sha1='6ab39887d0d2d3002201b786c4715e64804c66c8'),
             dict(path='adapters.py', sha1='f434206c6d8a0fd3961b1a44077ee69668e8bd0c'),
@@ -49,6 +49,9 @@ T = ta.TypeVar('T')
 
 # types.py
 BytesLikeOrMemoryview = ta.Union[bytes, bytearray, memoryview]  # ta.TypeAlias
+
+# utils.py
+CanByteStreamBuffer = ta.Union[BytesLikeOrMemoryview, 'ByteStreamBufferLike']  # ta.TypeAlias
 
 
 ########################################

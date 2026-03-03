@@ -1,4 +1,4 @@
-# ruff: noqa: FURB188 UP045
+# ruff: noqa: FURB188 UP006 UP045
 # @omlish-lite
 """
 TODO:
@@ -150,9 +150,10 @@ class BytesToMessageDecoderChannelPipelineHandler(InboundBytesBufferingChannelPi
             self,
             ctx: ChannelPipelineHandlerContext,
             buf: ByteStreamBuffer,
+            out: ta.List[ta.Any],
             *,
             final: bool = False,
-    ) -> ta.Sequence[ta.Any]:
+    ) -> None:
         raise NotImplementedError
 
     #
@@ -184,8 +185,9 @@ class BytesToMessageDecoderChannelPipelineHandler(InboundBytesBufferingChannelPi
     ) -> None:
         self._called_decode = True
 
+        out: ta.List[ta.Any] = []
         try:
-            out = self._decode(ctx, buf, final=final)
+            self._decode(ctx, buf, out, final=final)
         except DecodingChannelPipelineError:
             raise
         except Exception as e:
@@ -262,9 +264,10 @@ class FnBytesToMessageDecoderChannelPipelineHandler(BytesToMessageDecoderChannel
                 self,
                 ctx: ChannelPipelineHandlerContext,
                 buf: ByteStreamBuffer,
+                out: ta.List[ta.Any],
                 *,
                 final: bool = False,
-        ) -> ta.Sequence[ta.Any]:
+        ) -> None:
             ...
 
     def __init__(
@@ -287,7 +290,8 @@ class FnBytesToMessageDecoderChannelPipelineHandler(BytesToMessageDecoderChannel
             self,
             ctx: ChannelPipelineHandlerContext,
             buf: ByteStreamBuffer,
+            out: ta.List[ta.Any],
             *,
             final: bool = False,
-    ) -> ta.Sequence[ta.Any]:
-        return self._decode_fn(ctx, buf, final=final)
+    ) -> None:
+        self._decode_fn(ctx, buf, out, final=final)
