@@ -56,6 +56,13 @@ class HttpClientHandler(ChannelPipelineHandler):
         if isinstance(msg, PipelineHttpResponseEnd):
             return
 
+        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
+            if (fc := ctx.services.find(ChannelPipelineFlow)) is not None and not fc.is_auto_read():
+                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+
+            ctx.feed_in(msg)
+            return
+
         if isinstance(msg, ChannelPipelineMessages.FinalInput):
             self._print_response()
             ctx.feed_in(msg)

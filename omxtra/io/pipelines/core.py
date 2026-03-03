@@ -617,6 +617,16 @@ class ChannelPipelineHandlerContext:
     def feed_final_output(self) -> None:
         self.feed_out(ChannelPipelineMessages.FinalOutput())
 
+    #
+
+    def mark_propagated(
+            self,
+            direction: 'ChannelPipelineDirection',
+            msg: ChannelPipelineMessages.MustPropagate,
+    ) -> None:
+        self._pipeline._channel._propagation.remove_must(self, direction, msg)  # noqa
+
+
 ##
 
 

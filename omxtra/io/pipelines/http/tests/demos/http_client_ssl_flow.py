@@ -11,6 +11,7 @@ from ....core import ChannelPipelineMessages
 from ....core import PipelineChannel
 from ....drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
 from ....flow.stub import StubChannelPipelineFlow
+from ....flow.types import ChannelPipelineFlow
 from ....flow.types import ChannelPipelineFlowMessages
 from ....handlers.flatmap import FlatMapChannelPipelineHandlers
 from ....ssl.handlers import SslChannelPipelineHandler
@@ -51,6 +52,13 @@ class HttpClientHandler(ChannelPipelineHandler):
             self._print_response()
             ctx.feed_in(msg)
             ctx.feed_out(ChannelPipelineMessages.FinalOutput())
+            return
+
+        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
+            if (fc := ctx.services.find(ChannelPipelineFlow)) is not None and not fc.is_auto_read():
+                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+
+            ctx.feed_in(msg)
             return
 
         # Handle wrapped chunks

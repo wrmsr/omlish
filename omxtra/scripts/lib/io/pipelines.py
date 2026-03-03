@@ -56,7 +56,7 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
             dict(path='../../../omlish/logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='../../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
-            dict(path='core.py', sha1='897751891956a90286dca6b6e3c092b829bf5f59'),
+            dict(path='core.py', sha1='a396f2fd3509aa6538572403e746290fde5f76d6'),
             dict(path='../../../omlish/io/streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='476363dfce81e3177a66f066892ed3fcf773ead8'),
@@ -5184,6 +5184,16 @@ class ChannelPipelineHandlerContext:
 
     def feed_final_output(self) -> None:
         self.feed_out(ChannelPipelineMessages.FinalOutput())
+
+    #
+
+    def mark_propagated(
+            self,
+            direction: 'ChannelPipelineDirection',
+            msg: ChannelPipelineMessages.MustPropagate,
+    ) -> None:
+        self._pipeline._channel._propagation.remove_must(self, direction, msg)  # noqa
+
 
 ##
 
