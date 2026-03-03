@@ -35,7 +35,7 @@ def __omlish_amalg__():  # noqa
             dict(path='scanning.py', sha1='6ab39887d0d2d3002201b786c4715e64804c66c8'),
             dict(path='adapters.py', sha1='f434206c6d8a0fd3961b1a44077ee69668e8bd0c'),
             dict(path='linear.py', sha1='a6cebf552cc4d3277809eb0c63b99981e74d3731'),
-            dict(path='segmented.py', sha1='33bbb11f17214293a6b97d5cad02edcab58ed347'),
+            dict(path='segmented.py', sha1='b48b53fd9a37902c382421658b50e3054f33abe4'),
             dict(path='_amalg.py', sha1='9c88a055447d7b37da1b356e6a1e00b7c4a9a3cb'),
         ],
     )
@@ -2078,7 +2078,15 @@ class SegmentedByteStreamBufferView(BaseByteStreamBufferLike, ByteStreamBufferVi
 
         self._segs = tuple(segs)
         for mv in self._segs:
-            self._len += len(mv)
+            if (mvl := len(mv)) < 1:
+                raise ValueError('Empty segment')
+            self._len += mvl
+
+    @classmethod
+    def of_opt(cls, segs: ta.Sequence[memoryview]) -> ta.Optional['SegmentedByteStreamBufferView']:
+        if not segs:
+            return None
+        return cls(segs)
 
     _len = 0
 

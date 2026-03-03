@@ -78,7 +78,7 @@ def __omlish_amalg__():  # noqa
             dict(path='http/encoders.py', sha1='0659902d945aea54e367d04336792cccd4ed6374'),
             dict(path='http/requests.py', sha1='f518ff8896cbd01d30d58088d5b429f121c1c3e7'),
             dict(path='http/responses.py', sha1='f81688d98516bd81d2a22ba791c783404e806294'),
-            dict(path='../../../omlish/io/streams/segmented.py', sha1='33bbb11f17214293a6b97d5cad02edcab58ed347'),
+            dict(path='../../../omlish/io/streams/segmented.py', sha1='b48b53fd9a37902c382421658b50e3054f33abe4'),
             dict(path='../../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
             dict(path='http/client/requests.py', sha1='0d598fefb873796d64f1fe1eafa344bda83d933c'),
@@ -9511,7 +9511,15 @@ class SegmentedByteStreamBufferView(BaseByteStreamBufferLike, ByteStreamBufferVi
 
         self._segs = tuple(segs)
         for mv in self._segs:
-            self._len += len(mv)
+            if (mvl := len(mv)) < 1:
+                raise ValueError('Empty segment')
+            self._len += mvl
+
+    @classmethod
+    def of_opt(cls, segs: ta.Sequence[memoryview]) -> ta.Optional['SegmentedByteStreamBufferView']:
+        if not segs:
+            return None
+        return cls(segs)
 
     _len = 0
 

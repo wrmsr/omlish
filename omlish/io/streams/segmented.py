@@ -29,7 +29,15 @@ class SegmentedByteStreamBufferView(BaseByteStreamBufferLike, ByteStreamBufferVi
 
         self._segs = tuple(segs)
         for mv in self._segs:
-            self._len += len(mv)
+            if (mvl := len(mv)) < 1:
+                raise ValueError('Empty segment')
+            self._len += mvl
+
+    @classmethod
+    def of_opt(cls, segs: ta.Sequence[memoryview]) -> ta.Optional['SegmentedByteStreamBufferView']:
+        if not segs:
+            return None
+        return cls(segs)
 
     _len = 0
 
