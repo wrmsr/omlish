@@ -7,6 +7,7 @@ from ..content import Content
 from ..metadata import ContentOriginal
 from ..sequence import BlocksContent
 from ..sequence import ConcatContent
+from ..sequence import FlowContent
 from ..sequence import SequenceContent
 from ..text import TextContent
 from .visitors import VisitorContentTransform
@@ -22,7 +23,7 @@ class LiftToStandardContentTransform(VisitorContentTransform[C]):
     def __init__(
             self,
             *,
-            sequence_mode: ta.Literal['blocks', 'concat'] = 'blocks',
+            sequence_mode: ta.Literal['flow', 'concat', 'blocks'] = 'flow',
     ) -> None:
         super().__init__()
 
@@ -36,10 +37,12 @@ class LiftToStandardContentTransform(VisitorContentTransform[C]):
 
         nc: SequenceContent
         match self._sequence_mode:
-            case 'blocks':
-                nc = BlocksContent(cc)
+            case 'flow':
+                nc = FlowContent(cc)
             case 'concat':
                 nc = ConcatContent(cc)
+            case 'blocks':
+                nc = BlocksContent(cc)
             case _:
                 raise ValueError(self._sequence_mode)
 

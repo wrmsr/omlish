@@ -5527,6 +5527,7 @@ def _process_dataclass__1084ab06a48ea8a3ee231cb5371a8312352e8665():
     cls_names=(
         ('ommlds.minichain.backends.impls.mistral', 'BlocksContent'),
         ('ommlds.minichain.backends.impls.mistral', 'ConcatContent'),
+        ('ommlds.minichain.backends.impls.mistral', 'FlowContent'),
         ('ommlds.minichain.backends.impls.mistral', 'SequenceContent'),
     ),
 )

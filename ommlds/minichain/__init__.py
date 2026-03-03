@@ -369,8 +369,9 @@ with _lang.auto_proxy_init(
 
     from .content.sequence import (  # noqa
         SequenceContent,
-        BlocksContent,
+        FlowContent,
         ConcatContent,
+        BlocksContent,
         ItemListContent,
     )
 

@@ -28,6 +28,7 @@ from .raw import SingleRawContent
 from .section import SectionContent
 from .sequence import BlocksContent
 from .sequence import ConcatContent
+from .sequence import FlowContent
 from .sequence import ItemListContent
 from .tag import TagContent
 from .text import TextContent
@@ -294,8 +295,9 @@ def _install_standard_marshaling() -> None:
 
             msh.Impl(SectionContent, 'section'),
 
-            msh.Impl(BlocksContent, 'blocks'),
+            msh.Impl(FlowContent, 'flow'),
             msh.Impl(ConcatContent, 'concat'),
+            msh.Impl(BlocksContent, 'blocks'),
             msh.Impl(ItemListContent, 'item_list'),
 
             msh.Impl(TagContent, 'tag'),

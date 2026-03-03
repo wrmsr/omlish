@@ -28,12 +28,17 @@ class SequenceContent(CompositeContent, lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
-class BlocksContent(SequenceContent, lang.Final):
+class FlowContent(SequenceContent, lang.Final):
     pass
 
 
 @dc.dataclass(frozen=True)
 class ConcatContent(SequenceContent, lang.Final):
+    pass
+
+
+@dc.dataclass(frozen=True)
+class BlocksContent(SequenceContent, lang.Final):
     pass
 
 
