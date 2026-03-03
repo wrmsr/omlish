@@ -25,7 +25,9 @@ def test_response_message_transforming_chat_service():
 
     tcs = ResponseChatTransformingChatService(
         MessageTransformChatTransform(
-            FnMessageTransform(lambda m: [dc.replace(m, c=check.isinstance(m.c, str) + '?')]),
+            FnMessageTransform(lambda m: [
+                dc.replace(m, c=check.isinstance(m.c, str) + '?') if isinstance(m, UserMessage) else m,
+            ]),
         ),
         dcs,
     )

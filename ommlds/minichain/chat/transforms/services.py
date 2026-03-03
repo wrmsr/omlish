@@ -14,11 +14,11 @@ from .chats import ChatTransform
 @static_check_is_chat_service
 @dc.dataclass(frozen=True)
 class RequestChatTransformingChatService:
-    ct: ChatTransform
+    ct: ChatTransform[None]
     svc: ChatService
 
     async def invoke(self, request: ChatRequest) -> ChatResponse:
-        new_chat = self.ct.transform_chat(request.v)
+        new_chat = self.ct.transform(request.v, None)
         new_req = dc.replace(request, v=new_chat)
         return await self.svc.invoke(new_req)
 
@@ -29,10 +29,10 @@ class RequestChatTransformingChatService:
 @static_check_is_chat_service
 @dc.dataclass(frozen=True)
 class ResponseChatTransformingChatService:
-    ct: ChatTransform
+    ct: ChatTransform[None]
     svc: ChatService
 
     async def invoke(self, request: ChatRequest) -> ChatResponse:
         orig_resp = await self.svc.invoke(request)
-        new_chat = check_ai_chat(self.ct.transform_chat(orig_resp.v))
+        new_chat = check_ai_chat(self.ct.transform(orig_resp.v, None))
         return dc.replace(orig_resp, v=new_chat)

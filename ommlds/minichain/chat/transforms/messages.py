@@ -4,55 +4,51 @@ import typing as ta
 from omlish import dataclasses as dc
 from omlish import lang
 
-from ..messages import AnyAiMessage
-from ..messages import AnyUserMessage
 from ..messages import Chat
 from ..messages import Message
 
 
-MessageF = ta.TypeVar('MessageF', bound=Message)
-MessageT = ta.TypeVar('MessageT', bound=Message)
+C = ta.TypeVar('C')
 
 
 ##
 
 
-class MessageTransform(lang.Abstract, ta.Generic[MessageF, MessageT]):
+class MessageTransform(lang.Abstract, ta.Generic[C]):
     @abc.abstractmethod
-    def transform_message(self, message: MessageF) -> ta.Sequence[MessageT]:
+    def transform(self, message: Message, ctx: C) -> ta.Sequence[Message]:
         raise NotImplementedError
 
 
-AiMessageTransform: ta.TypeAlias = MessageTransform[AnyAiMessage, AnyAiMessage]
-UserMessageTransform: ta.TypeAlias = MessageTransform[AnyUserMessage, AnyUserMessage]
+##
 
 
 @dc.dataclass(frozen=True)
-class CompositeMessageTransform(MessageTransform):
-    mts: ta.Sequence[MessageTransform]
+class CompositeMessageTransform(MessageTransform[C]):
+    mts: ta.Sequence[MessageTransform[C]]
 
-    def transform_message(self, message: Message) -> Chat:
+    def transform(self, message: Message, ctx: C) -> Chat:
         chat: Chat = [message]
         for mt in self.mts:
-            chat = [o for i in chat for o in mt.transform_message(i)]
+            chat = [o for i in chat for o in mt.transform(i, ctx)]
         return chat
 
 
 @dc.dataclass(frozen=True)
-class FnMessageTransform(MessageTransform, ta.Generic[MessageF, MessageT]):
-    fn: ta.Callable[[MessageF], ta.Sequence[MessageT]]
+class FnMessageTransform(MessageTransform[C]):
+    fn: ta.Callable[[Message], ta.Sequence[Message]]
 
-    def transform_message(self, message: MessageF) -> ta.Sequence[MessageT]:
+    def transform(self, message: Message, ctx: C) -> ta.Sequence[Message]:
         return self.fn(message)
 
 
 @dc.dataclass(frozen=True)
-class TypeFilteredMessageTransform(MessageTransform, ta.Generic[MessageF, MessageT]):
+class TypeFilteredMessageTransform(MessageTransform[C]):
     ty: type | tuple[type, ...]
-    mt: MessageTransform[MessageF, MessageT]
+    mt: MessageTransform[C]
 
-    def transform_message(self, message: Message) -> Chat:
+    def transform(self, message: Message, ctx: C) -> Chat:
         if isinstance(message, self.ty):
-            return self.mt.transform_message(ta.cast(MessageF, message))
+            return self.mt.transform(message, ctx)
         else:
             return [message]

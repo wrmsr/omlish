@@ -8,50 +8,56 @@ from ..messages import Chat
 from .messages import MessageTransform
 
 
+C = ta.TypeVar('C')
+
+
 ##
 
 
-class ChatTransform(lang.Abstract):
+class ChatTransform(lang.Abstract, ta.Generic[C]):
     @abc.abstractmethod
-    def transform_chat(self, chat: Chat) -> Chat:
+    def transform(self, chat: Chat, ctx: C) -> Chat:
         raise NotImplementedError
 
 
+##
+
+
 @dc.dataclass(frozen=True)
-class CompositeChatTransform(ChatTransform):
+class CompositeChatTransform(ChatTransform[C]):
     cts: ta.Sequence[ChatTransform]
 
-    def transform_chat(self, chat: Chat) -> Chat:
+    def transform(self, chat: Chat, ctx: C) -> Chat:
         for ct in self.cts:
-            chat = ct.transform_chat(chat)
+            chat = ct.transform(chat, ctx)
         return chat
 
 
 @dc.dataclass(frozen=True)
-class FnChatTransform(ChatTransform):
+class FnChatTransform(ChatTransform[C]):
     fn: ta.Callable[[Chat], Chat]
 
-    def transform_chat(self, chat: Chat) -> Chat:
+    def transform(self, chat: Chat, ctx: C) -> Chat:
         return self.fn(chat)
 
 
-#
+##
 
 
 @dc.dataclass(frozen=True)
-class MessageTransformChatTransform(ChatTransform):
-    mt: MessageTransform
+class MessageTransformChatTransform(ChatTransform[C]):
+    mt: MessageTransform[C]
 
-    def transform_chat(self, chat: Chat) -> Chat:
-        return [o for i in chat for o in self.mt.transform_message(i)]
+    def transform(self, chat: Chat, ctx: C) -> Chat:
+        return [o for i in chat for o in self.mt.transform(i, ctx)]
 
 
 @dc.dataclass(frozen=True)
-class LastMessageTransformChatTransform(ChatTransform):
-    mt: MessageTransform
+class LastMessageTransformChatTransform(ChatTransform[C]):
+    mt: MessageTransform[C]
 
-    def transform_chat(self, chat: Chat) -> Chat:
+    def transform(self, chat: Chat, ctx: C) -> Chat:
         if chat:
-            return [*chat[:-1], *self.mt.transform_message(chat[-1])]
+            return [*chat[:-1], *self.mt.transform(chat[-1], ctx)]
         else:
             return []

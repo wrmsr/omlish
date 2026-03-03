@@ -7,19 +7,20 @@ from ...text.toolparsing.base import ParsedToolExec
 from ...text.toolparsing.base import ToolExecParser
 from ..messages import AiMessage
 from ..messages import AnyAiMessage
+from ..messages import Message
 from ..messages import ToolUse
 from ..messages import ToolUseMessage
-from ..transforms.messages import AiMessageTransform
+from ..transforms.messages import MessageTransform
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class ToolExecParsingMessageTransform(AiMessageTransform):
+class ToolExecParsingMessageTransform(MessageTransform[None]):
     parser: ToolExecParser
 
-    def transform_message(self, message: AnyAiMessage) -> ta.Sequence[AnyAiMessage]:
+    def transform(self, message: Message, ctx: None) -> ta.Sequence[Message]:
         if not isinstance(message, AiMessage):
             return [message]
 

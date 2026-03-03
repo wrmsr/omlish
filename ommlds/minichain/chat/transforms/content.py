@@ -17,5 +17,5 @@
 #
 #
 # class ContentTransformMessageTransform(lang.Abstract, ta.Generic[MessageF, MessageT]):
-#     def transform_message(self, message: MessageF) -> ta.Sequence[MessageT]:
+#     def transform(self, message: MessageF) -> ta.Sequence[MessageT]:
 #         raise NotImplementedError

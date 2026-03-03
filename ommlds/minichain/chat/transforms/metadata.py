@@ -14,27 +14,27 @@ from ..metadata import MessageMetadata
 from .messages import MessageTransform
 
 
-MessageT = ta.TypeVar('MessageT', bound=Message)
+C = ta.TypeVar('C')
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class UuidAddingMessageTransform(MessageTransform):
+class UuidAddingMessageTransform(MessageTransform[None]):
     uuid_factory: ta.Callable[[], uuid.UUID] = dc.field(default_factory=lambda: uuid.uuid4)
 
-    def transform_message(self, m: Message) -> Chat:
+    def transform(self, m: Message, ctx: None) -> Chat:
         if Uuid not in m.metadata:
             m = m.with_metadata(Uuid(self.uuid_factory()))
         return [m]
 
 
 @dc.dataclass(frozen=True)
-class CreatedAtAddingMessageTransform(MessageTransform):
+class CreatedAtAddingMessageTransform(MessageTransform[None]):
     clock: ta.Callable[[], datetime.datetime] = dc.field(default=datetime.datetime.now)
 
-    def transform_message(self, m: Message) -> Chat:
+    def transform(self, m: Message, ctx: None) -> Chat:
         if CreatedAt not in m.metadata:
             m = m.with_metadata(CreatedAt(self.clock()))
         return [m]
@@ -49,11 +49,11 @@ class TransformedMessageOrigin(tv.ScalarTypedValue[Message], MessageMetadata, la
 
 
 @dc.dataclass(frozen=True)
-class OriginAddingMessageTransform(MessageTransform):
-    child: MessageTransform
+class OriginAddingMessageTransform(MessageTransform[C]):
+    child: MessageTransform[C]
 
-    def transform_message(self, m: Message) -> Chat:
+    def transform(self, m: Message, ctx: C) -> Chat:
         return [
             o.with_metadata(TransformedMessageOrigin(m)) if TransformedMessageOrigin not in o.metadata else m
-            for o in self.child.transform_message(m)
+            for o in self.child.transform(m, ctx)
         ]
