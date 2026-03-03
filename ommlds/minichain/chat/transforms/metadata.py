@@ -2,6 +2,7 @@ import datetime
 import typing as ta
 import uuid
 
+from omlish import check
 from omlish import dataclasses as dc
 from omlish import lang
 from omlish import typedvalues as tv
@@ -10,11 +11,24 @@ from ...metadata import CreatedAt
 from ...metadata import Uuid
 from ..messages import Chat
 from ..messages import Message
+from ..messages import MessageOriginal
 from ..metadata import MessageMetadata
 from .messages import MessageTransform
 
 
 C = ta.TypeVar('C')
+
+
+##
+
+
+class OriginalMetadataStrippingMessageTransform(MessageTransform[C]):
+    def transform(self, m: Message, ctx: C) -> ta.Sequence[Message]:
+        return [m.with_metadata(discard=[MessageOriginal])]
+
+
+def strip_message_original_metadata(c: Message) -> Message:
+    return check.single(OriginalMetadataStrippingMessageTransform[None]().transform(c, None))
 
 
 ##
