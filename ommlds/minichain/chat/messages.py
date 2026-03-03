@@ -127,28 +127,3 @@ class ToolUseMessage(AnyAiMessage, lang.Final):
 @dc.dataclass(frozen=True)
 class ToolUseResultMessage(AnyUserMessage, lang.Final):
     tur: ToolUseResult
-
-
-##
-
-
-# class _MessageContentTransform(ContentTransform, lang.Final, lang.NotInstantiable):
-#     @dispatch.install_method(ContentTransform.apply)
-#     def apply_system_message(self, m: SystemMessage) -> SystemMessage:
-#         return dc.replace(m, c=self.apply(m.c))
-#
-#     @dispatch.install_method(ContentTransform.apply)
-#     def apply_user_message(self, m: UserMessage) -> UserMessage:
-#         return dc.replace(m, c=self.apply(m.c))
-#
-#     @dispatch.install_method(ContentTransform.apply)
-#     def apply_ai_message(self, m: AiMessage) -> AiMessage:
-#         return dc.replace(m, c=self.apply(m.c))
-#
-#     @dispatch.install_method(ContentTransform.apply)
-#     def apply_tool_use_message(self, m: ToolUseMessage) -> ToolUseMessage:
-#         return dc.replace(m, tu=self.apply(m.tu))
-#
-#     @dispatch.install_method(ContentTransform.apply)
-#     def apply_tool_use_result_message(self, m: ToolUseResultMessage) -> ToolUseResultMessage:
-#         return dc.replace(m, tur=self.apply(m.tur))
