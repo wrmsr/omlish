@@ -45,10 +45,10 @@ class PipelineHttpRequestDecoder(PipelineHttpObjectDecoder):
 class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):
     def test_basic_request_head(self) -> None:
         decoder = PipelineHttpRequestDecoder()
-        channel = PipelineChannel.new([
+        channel = PipelineChannel(PipelineChannel.Spec([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
-        ])
+        ]).update_pipeline_config(raise_immediately=True))
 
         request = b'GET /path HTTP/1.1\r\nHost: example.com\r\n\r\n'
         channel.feed_in(request)

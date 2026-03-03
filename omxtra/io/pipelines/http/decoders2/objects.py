@@ -14,6 +14,7 @@ from omlish.io.streams.types import MutableByteStreamBuffer
 from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.io.streams.utils import CanByteStreamBuffer
 from omlish.lite.abstract import Abstract
+from omlish.lite.check import check
 
 from ...bytes.buffering import InboundBytesBufferingChannelPipelineHandler
 from ...bytes.decoders2 import BytesToMessageDecoderChannelPipelineHandler
@@ -205,13 +206,73 @@ class PipelineHttpObjectDecoder(
                     next_mvs.append(rem_mv)
 
             if done:
-                return (self._d._BodyState(self._d, head), SegmentedByteStreamBufferView(next_mvs))  # Noqa
+                return (self._d._TransferEncodingState(self._d, head), SegmentedByteStreamBufferView(next_mvs))  # noqa
             else:
                 return None
 
     #
 
-    class _BodyState(_State):
+    class _SelectedTransferEncoding(ta.NamedTuple):
+        mode: ta.Literal['none', 'eof', 'cl', 'chunked']
+        length: ta.Optional[int]
+
+    def _select_transfer_encoding(self, head: PipelineHttpMessageHead) -> _SelectedTransferEncoding:
+        if head.headers.contains_value('transfer-encoding', 'chunked', ignore_case=True):
+            return self._SelectedTransferEncoding('chunked', None)
+
+        cl = head.headers.single.get('content-length')
+        if cl is not None and cl != '':
+            try:
+                n = int(cl)
+            except ValueError:
+                raise ValueError('bad Content-Length') from None
+
+            if n < 0:
+                raise ValueError('bad Content-Length')
+
+            if n == 0:
+                return self._SelectedTransferEncoding('none', None)
+
+            return self._SelectedTransferEncoding('cl', n)
+
+        # No length info: treat as until EOF (supports infinite streaming).
+        return self._SelectedTransferEncoding('eof', None)
+
+    class _TransferEncodingState(_State):
+        def __init__(self, d: 'PipelineHttpObjectDecoder', head: PipelineHttpMessageHead) -> None:
+            super().__init__(d)
+
+            self._head = head
+
+        def decode(
+                self,
+                ctx: ChannelPipelineHandlerContext,
+                data: CanByteStreamBuffer,
+                out: ta.List[ta.Any],
+                *,
+                final: bool = False,
+        ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+            sel = self._d._select_transfer_encoding(self._head)  # noqa
+
+            if sel.mode == 'none':
+                out.append(self._d._make_end())  # noqa
+                return (self._d._DoneState(self._d), None)  # noqa
+
+            elif sel.mode == 'eof':
+                return (self._d._UntilEofContentState(self._d, self._head), data)  # noqa
+
+            elif sel.mode == 'cl':
+                return (self._d._ContentLengthContentState(self._d, self._head, check.not_none(sel.length)), data)  # noqa
+
+            elif sel.mode == 'chunked':
+                return (self._d._ChunkedContentState(self._d, self._head), data)  # noqa
+
+            else:
+                raise RuntimeError(f'unexpected mode {sel!r}')
+
+    #
+
+    class _ContentState(_State, Abstract):
         def __init__(
                 self,
                 d: 'PipelineHttpObjectDecoder',
@@ -221,6 +282,70 @@ class PipelineHttpObjectDecoder(
 
             self._head = head
 
+        def decode(
+                self,
+                ctx: ChannelPipelineHandlerContext,
+                data: CanByteStreamBuffer,
+                out: ta.List[ta.Any],
+                *,
+                final: bool = False,
+        ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+            raise NotImplementedError
+
+    #
+
+    class _UntilEofContentState(_ContentState):
+        def decode(
+                self,
+                ctx: ChannelPipelineHandlerContext,
+                data: CanByteStreamBuffer,
+                out: ta.List[ta.Any],
+                *,
+                final: bool = False,
+        ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+            raise NotImplementedError
+
+    #
+
+    class _ContentLengthContentState(_ContentState):
+        def __init__(
+                self,
+                d: 'PipelineHttpObjectDecoder',
+                head: PipelineHttpMessageHead,
+                content_length: int,
+        ) -> None:
+            check.arg(content_length > 0)
+
+            super().__init__(d, head)
+
+            self._remain = content_length
+
+        def decode(
+                self,
+                ctx: ChannelPipelineHandlerContext,
+                data: CanByteStreamBuffer,
+                out: ta.List[ta.Any],
+                *,
+                final: bool = False,
+        ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+            raise NotImplementedError
+
+    #
+
+    class _ChunkedContentState(_ContentState):
+        def decode(
+                self,
+                ctx: ChannelPipelineHandlerContext,
+                data: CanByteStreamBuffer,
+                out: ta.List[ta.Any],
+                *,
+                final: bool = False,
+        ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+            raise NotImplementedError
+
+    #
+
+    class _DoneState(_State):
         def decode(
                 self,
                 ctx: ChannelPipelineHandlerContext,
