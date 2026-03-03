@@ -95,14 +95,16 @@ class HttpClientHandler(ChannelPipelineHandler):
 def build_http_client_channel() -> PipelineChannel.Spec:
     """Build a client channel with encoder, decoder, and handler."""
 
-    return PipelineChannel.Spec([
-        PipelineHttpResponseHeadDecoder(),
-        PipelineHttpResponseConditionalGzipDecoder(),
-        PipelineHttpResponseChunkedDecoder(),
-        PipelineHttpRequestEncoder(),
-        HttpClientHandler(),
-        FlatMapChannelPipelineHandlers.feed_out_and_drop(filter_type=FullPipelineHttpRequest),
-    ])
+    return PipelineChannel.Spec(
+        [
+            PipelineHttpResponseHeadDecoder(),
+            PipelineHttpResponseConditionalGzipDecoder(),
+            PipelineHttpResponseChunkedDecoder(),
+            PipelineHttpRequestEncoder(),
+            HttpClientHandler(),
+            FlatMapChannelPipelineHandlers.feed_out_and_drop(filter_type=FullPipelineHttpRequest),
+        ],
+    ).update_pipeline_config(raise_immediately=True)
 
 
 async def fetch_url(url: str = 'http://httpbingo.org/gzip') -> None:

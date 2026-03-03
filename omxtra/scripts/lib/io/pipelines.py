@@ -87,7 +87,7 @@ def __omlish_amalg__():  # noqa
             dict(path='bytes/decoders.py', sha1='02056a316cff2a7151f520f0d1c8247f313d5f24'),
             dict(path='http/decoders.py', sha1='6944a9c30768c8db49198f130f5c56d1260117ac'),
             dict(path='drivers/asyncio.py', sha1='abc258eacd896ebb2a31dbbf03de8476153230ea'),
-            dict(path='http/client/responses.py', sha1='6a7d4843a2776dd6a30e552ba2ec307ed5e2338a'),
+            dict(path='http/client/responses.py', sha1='cd061008a8e8350d1bfbf06dad752a5f73412704'),
             dict(path='http/server/requests.py', sha1='3cfef46c7d713ccd7d5e51c7f94ca24c5ff8ff96'),
             dict(path='_amalg.py', sha1='74c164f8713be6db5958f4a390d7bd978c3e685a'),
         ],
@@ -11924,16 +11924,22 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
         self._read_requested = False
         self._pending_final_input: ta.Optional[ChannelPipelineMessages.FinalInput] = None
 
+    #
+
     def inbound_buffered_bytes(self) -> int:
         return self._in_pending_bytes + self._out_pending_bytes
+
+    #
 
     def _reset(self) -> None:
         self._in_total_bytes = 0
         self._out_total_bytes = 0
+
         self._in_pending.clear()
         self._in_pending_bytes = 0
         self._out_pending.clear()
         self._out_pending_bytes = 0
+
         self._pending_final_input = None
 
     def _check_budgets(self) -> None:
@@ -12059,29 +12065,28 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
 
         ctx.defer(resume, pin=pin)
 
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineMessages.FinalInput):
-            if self._enabled and self._z is not None:
-                self._pending_final_input = msg
-                self._pump(ctx)
-            else:
-                ctx.feed_in(msg)
-            return
+    #
 
-        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
+    def _on_inbound_final_input(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineMessages.FinalInput) -> None:  # noqa
+        if self._enabled and self._z is not None:
+            self._pending_final_input = msg
             self._pump(ctx)
+        else:
             ctx.feed_in(msg)
-            return
 
-        if isinstance(msg, PipelineHttpResponseHead):
-            enc = msg.headers.lower.get('content-encoding', ())
-            self._enabled = 'gzip' in enc
-            self._z = zlib.decompressobj(16 + zlib.MAX_WBITS) if self._enabled else None
-            self._reset()
-            ctx.feed_in(msg)
-            return
+    def _on_inbound_flush_input(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineFlowMessages.FlushInput) -> None:  # noqa
+        self._pump(ctx)
+        ctx.feed_in(msg)
 
-        if not self._enabled or self._z is None or not ByteStreamBuffers.can_bytes(msg):
+    def _on_inbound_http_response_head(self, ctx: ChannelPipelineHandlerContext, msg: PipelineHttpResponseHead) -> None:
+        enc = msg.headers.lower.get('content-encoding', ())
+        self._enabled = 'gzip' in enc
+        self._z = zlib.decompressobj(16 + zlib.MAX_WBITS) if self._enabled else None
+        self._reset()
+        ctx.feed_in(msg)
+
+    def _on_inbound_bytes(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if not self._enabled or self._z is None:
             ctx.feed_in(msg)
             return
 
@@ -12094,16 +12099,43 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
 
         self._pump(ctx)
 
+    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, ChannelPipelineMessages.FinalInput):
+            self._on_inbound_final_input(ctx, msg)
+            return
+
+        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
+            self._on_inbound_flush_input(ctx, msg)
+            return
+
+        if isinstance(msg, PipelineHttpResponseHead):
+            self._on_inbound_http_response_head(ctx, msg)
+            return
+
+        if ByteStreamBuffers.can_bytes(msg):
+            self._on_inbound_bytes(ctx, msg)
+            return
+
+        ctx.feed_in(msg)
+
+    #
+
+    def _on_outbound_ready_for_input(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineFlowMessages.ReadyForInput) -> None:  # Noqa
+        self._read_requested = True
+
+        if self._out_pending or (self._enabled and self._in_pending):
+            if self._pump(ctx):
+                if not self._is_auto_read(ctx):
+                    ctx.feed_in(ChannelPipelineFlowMessages.FlushInput())
+
+                return  # Swallow since we satisfied it
+
+        ctx.feed_out(msg)
+
     def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         if isinstance(msg, ChannelPipelineFlowMessages.ReadyForInput):
-            self._read_requested = True
-
-            if self._out_pending or (self._enabled and self._in_pending):
-                if self._pump(ctx):
-                    if not self._is_auto_read(ctx):
-                        ctx.feed_in(ChannelPipelineFlowMessages.FlushInput())
-
-                    return  # Swallow since we satisfied it
+            self._on_outbound_ready_for_input(ctx, msg)
+            return
 
         ctx.feed_out(msg)
 
