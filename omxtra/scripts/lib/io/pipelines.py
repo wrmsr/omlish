@@ -87,7 +87,7 @@ def __omlish_amalg__():  # noqa
             dict(path='bytes/decoders.py', sha1='02056a316cff2a7151f520f0d1c8247f313d5f24'),
             dict(path='http/decoders.py', sha1='6944a9c30768c8db49198f130f5c56d1260117ac'),
             dict(path='drivers/asyncio.py', sha1='abc258eacd896ebb2a31dbbf03de8476153230ea'),
-            dict(path='http/client/responses.py', sha1='06c726b841a90d2783c819ada5686f7046247cd6'),
+            dict(path='http/client/responses.py', sha1='ef400122d352f032d36fa500f2b486d038cf1dc7'),
             dict(path='http/server/requests.py', sha1='3cfef46c7d713ccd7d5e51c7f94ca24c5ff8ff96'),
             dict(path='_amalg.py', sha1='74c164f8713be6db5958f4a390d7bd978c3e685a'),
         ],
@@ -12059,7 +12059,7 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
     def _defer_resume(self, ctx: ChannelPipelineHandlerContext) -> None:
         pin = [self._pending_final_input] if self._pending_final_input else None
 
-        def resume(c: ChannelPipelineHandlerContext):
+        def resume(c: ChannelPipelineHandlerContext) -> None:
             # If a deferred pump satisfies a read, it must provide the FlushInput
             if self._pump(c) and not self._is_auto_read(c):
                 c.feed_in(ChannelPipelineFlowMessages.FlushInput())

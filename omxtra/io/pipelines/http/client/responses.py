@@ -277,7 +277,7 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
     def _defer_resume(self, ctx: ChannelPipelineHandlerContext) -> None:
         pin = [self._pending_final_input] if self._pending_final_input else None
 
-        def resume(c: ChannelPipelineHandlerContext):
+        def resume(c: ChannelPipelineHandlerContext) -> None:
             # If a deferred pump satisfies a read, it must provide the FlushInput
             if self._pump(c) and not self._is_auto_read(c):
                 c.feed_in(ChannelPipelineFlowMessages.FlushInput())

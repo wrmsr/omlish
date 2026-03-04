@@ -72,23 +72,59 @@ class UnwrapContainersTransform(StandardContentVisitor[C, Content], VisitorConte
 
 
 class JoinContainerContentsTransform(StandardContentVisitor[C, Content], VisitorContentTransform[C]):
+    def _join_text_contents(
+            self,
+            container: ContainerContent,
+            joiner: ta.Callable[[list[TextContent]], str],
+    ) -> Content:
+        children = container.child_content()
+        if len(children) < 2:
+            return container
+
+        # Single pass: collect adjacent TextContent spans
+        new_children: list[StandardContent] = []
+        current_span: list[TextContent] = []
+
+        def flush_span() -> None:
+            if len(current_span) > 1:
+                joined_text = joiner(current_span)
+                joined_node = with_content_original(TextContent(joined_text), original=current_span[0])
+                new_children.append(joined_node)
+            elif len(current_span) == 1:
+                new_children.append(current_span[0])
+            current_span.clear()
+
+        for child in children:
+            if isinstance(child, TextContent):
+                current_span.append(child)
+            else:
+                flush_span()
+                new_children.append(check.isinstance(child, StandardContent))
+
+        # Flush any remaining span
+        flush_span()
+
+        if len(new_children) == len(children):
+            return container
+
+        return container.replace_child_content(new_children)
+
     def visit_flow_content(self, c: FlowContent, ctx: C) -> Content:
         nc = super().visit_flow_content(c, ctx)
-        if not isinstance(nc, ContainerContent):
+        if not isinstance(nc, FlowContent):
             return nc
 
-        children = nc.child_content()
-        if len(children) < 2:
-            return nc
-
-        if not any(
-            isinstance(children[i], TextContent) and
-            isinstance(children[i + 1], TextContent)
-            for i in range(len(children) - 1)
-        ):
-            pass
-
-        raise NotImplementedError
+        return self._join_text_contents(
+            nc,
+            lambda span: ' '.join(tc.s.strip() for tc in span),
+        )
 
     def visit_concat_content(self, c: ConcatContent, ctx: C) -> Content:
-        return super().visit_concat_content(c, ctx)
+        nc = super().visit_concat_content(c, ctx)
+        if not isinstance(nc, ConcatContent):
+            return nc
+
+        return self._join_text_contents(
+            nc,
+            lambda span: ''.join(tc.s for tc in span),
+        )

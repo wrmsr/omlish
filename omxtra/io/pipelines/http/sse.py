@@ -48,7 +48,7 @@ class PipelineSseDecoder(ChannelPipelineHandler):
         if line.endswith('\r'):
             line = msg[:-1]
 
-        if line == '':
+        if not line:
             self._emit_if_any(ctx)
             return
 
