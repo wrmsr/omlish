@@ -18,6 +18,9 @@ from .metadata import MessageMetadata
 from .metadata import MessageMetadatas
 
 
+MessageT = ta.TypeVar('MessageT', bound='Message')
+
+
 msh.register_global_module_import('._marshal', __package__)
 
 
@@ -41,18 +44,24 @@ class Message(  # noqa
     def replace(self, **kwargs: ta.Any) -> ta.Self:
         if (n := dc.replace_is_not(self, **kwargs)) is self:
             return self
-        return n.with_metadata(MessageOriginal(self), discard=[MessageOriginal], override=True)
+        return with_message_original(n, original=self)
 
 
 Chat: ta.TypeAlias = ta.Sequence[Message]
 
 
 ##
+# Notable asymmetry: ContentOriginal is in content.metadata, but this has to be here due to marshaling constraints:
+# putting it in chat.metadata requires a `if ta.TYPE_CHECKING` import of Message, which omlish.marshal can't handle.
 
 
 @dc.dataclass(frozen=True)
 class MessageOriginal(MessageMetadata, lang.Final):
     c: Message
+
+
+def with_message_original(m: MessageT, *, original: Message) -> MessageT:
+    return m.with_metadata(MessageOriginal(original), discard=[MessageOriginal], override=True)
 
 
 ##

@@ -10,7 +10,7 @@ from ..containers import ConcatContent
 from ..containers import ContainerContent
 from ..containers import FlowContent
 from ..content import Content
-from ..metadata import ContentOriginal
+from ..metadata import with_content_original
 from ..standard import StandardContent
 from ..visitors import StandardContentVisitor
 from .visitors import VisitorContentTransform
@@ -64,7 +64,7 @@ class UnwrapContainersTransform(StandardContentVisitor[C, Content], VisitorConte
             return nc
 
         single_child = check.isinstance(check.single(children), StandardContent)
-        return single_child.with_metadata(ContentOriginal(nc))
+        return with_content_original(single_child, original=nc)
 
 
 ##

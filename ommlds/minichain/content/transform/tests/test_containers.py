@@ -134,3 +134,7 @@ def test_mixed_nesting_levels():
 
     assert isinstance(result, FlowContent)
     assert list(result.l) == [a, b, c, d]
+
+
+def test_join_simple():
+    pass

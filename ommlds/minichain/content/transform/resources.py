@@ -3,7 +3,7 @@ import typing as ta
 from omlish import lang
 
 from ..content import Content
-from ..metadata import ContentOriginal
+from ..metadata import with_content_original
 from ..resources import ResourceContent
 from ..standard import StandardContent
 from ..text import TextContent
@@ -60,4 +60,4 @@ class ResourceContentMaterializer(VisitorContentTransform[C]):
 
     def visit_resource_content(self, c: ResourceContent, ctx: C) -> Content:
         nc = self._content_cache.get(c)
-        return nc.with_metadata(ContentOriginal(c))
+        return with_content_original(nc, original=c)

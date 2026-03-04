@@ -6,7 +6,7 @@ from omlish import lang
 from ..metadata import MetadataContainerDataclass
 from .content import BaseContent
 from .metadata import ContentMetadatas
-from .metadata import ContentOriginal
+from .metadata import with_content_original
 
 
 ##
@@ -29,4 +29,4 @@ class StandardContent(  # noqa
     def replace(self, **kwargs: ta.Any) -> ta.Self:
         if (n := dc.replace_is_not(self, **kwargs)) is self:
             return self
-        return n.with_metadata(ContentOriginal(self), discard=[ContentOriginal], override=True)
+        return with_content_original(n, original=self)
