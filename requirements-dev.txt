@@ -126,7 +126,7 @@ hf-xet==1.3.2  # @omlish-venv !14t !14dt
 
 datasets==4.6.1  # !! includes arrow and pandas and shit
 
-transformers==5.2.0  # @omlish-venv !14t !14dt
+transformers==5.3.0  # @omlish-venv !14t !14dt
 sentence-transformers==5.2.3  # @omlish-venv !14t !14dt
 
 sentencepiece==0.2.1
@@ -154,7 +154,7 @@ rapidocr-onnxruntime==1.4.4  # @omlish-venv !13t !13dt !14t
 
 pillow==12.1.1
 
-accelerate==1.12.0  # @omlish-venv !14t !14dt
+accelerate==1.13.0  # @omlish-venv !14t !14dt
 
 bitsandbytes==0.49.2
 

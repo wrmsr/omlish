@@ -1,4 +1,4 @@
-accelerate==1.12.0
+accelerate==1.13.0
 aiohappyeyeballs==2.6.1
 aiohttp==3.13.3
 aiohttp-jinja2==1.6
@@ -52,7 +52,7 @@ ddgs==9.11.1
 debugpy==1.8.20
 decorator==5.2.1
 defusedxml==0.7.1
-deno==2.7.2
+deno==2.7.3
 diffusers==0.36.0
 dill==0.4.0
 diskcache==5.6.3
@@ -295,7 +295,7 @@ torchvision==0.25.0
 tornado==6.5.4
 tqdm==4.67.3
 traitlets==5.14.3
-transformers==5.2.0
+transformers==5.3.0
 tree-sitter==0.25.2
 tree-sitter-bash==0.25.1
 tree-sitter-css==0.25.0
