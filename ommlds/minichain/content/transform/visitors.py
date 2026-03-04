@@ -33,6 +33,6 @@ class VisitorContentTransform(ContentVisitor[C, Content], ContentTransform[C], l
 
     def visit_composite_content(self, c: CompositeContent, ctx: C) -> Content:
         cc = c.child_content()
-        ncc = self.visit_sequence(cc, ctx)
+        ncc = lang.map_preserve(lambda cc2: self.visit(cc2, ctx), cc)
         nc = c.replace_child_content(check.isinstance(ncc, collections.abc.Sequence))
         return super().visit_composite_content(nc, ctx)

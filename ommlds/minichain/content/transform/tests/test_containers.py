@@ -3,7 +3,7 @@ from ....content.containers import ConcatContent
 from ....content.containers import FlowContent
 from ....content.itemlist import ItemListContent
 from ....content.text import TextContent
-from ..unnest import UnnestContainersTransform
+from ..containers import UnnestContainersTransform
 
 
 def test_flow_content_simple_unnest():

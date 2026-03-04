@@ -7,7 +7,9 @@ from omlish import lang
 
 
 class BaseContent(lang.Abstract, lang.PackageSealed):
-    pass
+    """
+    Serves only as a root class for all non-typealias Content. All real Content should extend StandardContent, not this.
+    """
 
 
 ##
