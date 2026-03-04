@@ -12,6 +12,7 @@ from ..containers import FlowContent
 from ..content import Content
 from ..metadata import with_content_original
 from ..standard import StandardContent
+from ..text import TextContent  # noqa
 from ..visitors import StandardContentVisitor
 from .visitors import VisitorContentTransform
 
@@ -72,7 +73,22 @@ class UnwrapContainersTransform(StandardContentVisitor[C, Content], VisitorConte
 
 class JoinContainerContentsTransform(StandardContentVisitor[C, Content], VisitorContentTransform[C]):
     def visit_flow_content(self, c: FlowContent, ctx: C) -> Content:
-        return super().visit_flow_content(c, ctx)
+        nc = super().visit_flow_content(c, ctx)
+        if not isinstance(nc, ContainerContent):
+            return nc
+
+        children = nc.child_content()
+        if len(children) < 2:
+            return nc
+
+        if not any(
+            isinstance(children[i], TextContent) and
+            isinstance(children[i + 1], TextContent)
+            for i in range(len(children) - 1)
+        ):
+            pass
+
+        raise NotImplementedError
 
     def visit_concat_content(self, c: ConcatContent, ctx: C) -> Content:
         return super().visit_concat_content(c, ctx)
