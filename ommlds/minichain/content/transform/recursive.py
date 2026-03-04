@@ -10,11 +10,11 @@ C = ta.TypeVar('C')
 ##
 
 
-class RecursiveContentDepthExceededError(Exception):
+class RecursiveContentTransformDepthExceededError(Exception):
     pass
 
 
-class RecursiveContentMaterializer(ContentTransform[C]):
+class RecursiveContentTransform(ContentTransform[C]):
     DEFAULT_MAX_ITERATIONS: int = 8
 
     def __init__(
@@ -41,7 +41,7 @@ class RecursiveContentMaterializer(ContentTransform[C]):
                 history.append(content)
 
             if n >= self._max_iterations:
-                raise RecursiveContentDepthExceededError
+                raise RecursiveContentTransformDepthExceededError
 
             out = content
             for child in self._children:

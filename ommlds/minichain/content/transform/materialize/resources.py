@@ -2,12 +2,12 @@ import typing as ta
 
 from omlish import lang
 
-from ..content import Content
-from ..metadata import with_content_original
-from ..resources import ResourceContent
-from ..standard import StandardContent
-from ..text import TextContent
-from .visitors import VisitorContentTransform
+from ...content import Content
+from ...metadata import with_content_original
+from ...resources import ResourceContent
+from ...standard import StandardContent
+from ...text import TextContent
+from ..visitors import VisitorContentTransform
 
 
 C = ta.TypeVar('C')

@@ -1,0 +1,68 @@
+import typing as ta
+
+from omlish import dataclasses as dc
+
+from ...content import Content
+from ...placeholders import PlaceholderContent
+from ...placeholders import PlaceholderContentKey
+from ..visitors import VisitorContentTransform
+
+
+C = ta.TypeVar('C')
+
+
+##
+
+
+PlaceholderContentMap: ta.TypeAlias = ta.Mapping[PlaceholderContentKey, Content | ta.Callable[[], Content]]
+PlaceholderContentFn: ta.TypeAlias = ta.Callable[[PlaceholderContentKey], Content]
+PlaceholderContents: ta.TypeAlias = PlaceholderContentMap | PlaceholderContentFn
+
+
+@dc.dataclass()
+class PlaceholderContentMissingError(Exception):
+    key: PlaceholderContentKey
+
+
+class PlaceholderContentMaterializer(VisitorContentTransform[C]):
+    def __init__(
+            self,
+            placeholder_contents: PlaceholderContents | None = None,
+    ) -> None:
+        super().__init__()
+
+        self._placeholder_contents = placeholder_contents
+
+        self._cache: dict[PlaceholderContentKey, Content] = {}
+
+    def _get_placeholder_content(self, key: PlaceholderContentKey) -> Content:
+        try:
+            return self._cache[key]
+        except KeyError:
+            pass
+
+        if (pcs := self._placeholder_contents) is None:
+            raise PlaceholderContentMissingError(key)
+
+        c: ta.Any
+
+        if isinstance(pcs, ta.Mapping):
+            try:
+                c = pcs[key]
+            except KeyError:
+                raise PlaceholderContentMissingError(key) from None
+
+        elif callable(pcs):
+            c = pcs(key)
+
+        else:
+            raise TypeError(pcs)
+
+        if callable(c):
+            c = c()
+
+        self._cache[key] = c
+        return c
+
+    def visit_placeholder_content(self, c: PlaceholderContent, ctx: C) -> Content:
+        return self._get_placeholder_content(c.k)

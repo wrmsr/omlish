@@ -22,7 +22,7 @@ from ....chat.stream.types import ContentAiDelta
 from ....chat.stream.types import PartialToolUseAiDelta
 from ....chat.tools.types import Tool
 from ....content.json import JsonContent
-from ....content.transform.prepare import prepare_content_str
+from ....content.render.simple import render_content_str
 from ....llms.types import MaxCompletionTokens
 from ....llms.types import MaxTokens
 from ....llms.types import Temperature
@@ -64,7 +64,7 @@ def build_oai_request_msgs(mc_chat: Chat) -> ta.Sequence[pt.ChatCompletionMessag
 
         elif isinstance(mc_msg, UserMessage):
             oai_msgs.append(pt.UserChatCompletionMessage(
-                content=prepare_content_str(mc_msg.c),
+                content=render_content_str(mc_msg.c),
             ))
 
         elif isinstance(mc_msg, ToolUseResultMessage):
@@ -217,7 +217,7 @@ class OpenaiChatRequestHandler:
             pt.ChatCompletionRequestTool(
                 function=pt.ChatCompletionRequestTool.Function(
                     name=check.not_none(ts.name),
-                    description=prepare_content_str(ts.desc) if ts.desc is not None else None,
+                    description=render_content_str(ts.desc) if ts.desc is not None else None,
                     parameters=build_tool_spec_params_json_schema(ts),
                 ),
             )

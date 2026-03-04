@@ -3,11 +3,11 @@ import typing as ta
 from omlish import check
 from omlish.text import templating as tpl
 
-from ..content import Content
-from ..metadata import with_content_original
-from ..templates import TemplateContent
-from ..text import TextContent
-from .visitors import VisitorContentTransform
+from ...content import Content
+from ...metadata import with_content_original
+from ...templates import TemplateContent
+from ...text import TextContent
+from ..visitors import VisitorContentTransform
 
 
 C = ta.TypeVar('C')

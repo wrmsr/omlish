@@ -7,8 +7,7 @@ from omlish import check
 from omlish import dataclasses as dc
 
 from .....backends.google.protocol import types as pt
-from ....content.transform.prepare import ContentStrPreparer
-from ....content.transform.prepare import default_content_str_preparer
+from ....content.render.simple import render_content_str
 from ....tools.types import EnumToolDtype
 from ....tools.types import MappingToolDtype
 from ....tools.types import NullableToolDtype
@@ -39,17 +38,6 @@ PT_TYPE_BY_PRIMITIVE_TYPE: ta.Mapping[str, pt.Type] = {
 
 
 class ToolSchemaRenderer:
-    def __init__(
-            self,
-            *,
-            content_str_preparer: ContentStrPreparer | None = None,
-    ) -> None:
-        super().__init__()
-
-        if content_str_preparer is None:
-            content_str_preparer = default_content_str_preparer()
-        self._content_str_preparer = content_str_preparer
-
     def render_type(self, t: ToolDtype) -> pt.Schema:
         if isinstance(t, PrimitiveToolDtype):
             return pt.Schema(type=PT_TYPE_BY_PRIMITIVE_TYPE[t.type])
@@ -111,7 +99,7 @@ class ToolSchemaRenderer:
             req_lst = []
             for p in ts.params or []:
                 pr_dct[check.non_empty_str(p.name)] = pt.Schema(**{
-                    **(dict(description=self._content_str_preparer.prepare_str(p.desc)) if p.desc is not None else {}),
+                    **(dict(description=render_content_str(p.desc)) if p.desc is not None else {}),
                     **(_shallow_dc_asdict_not_none(self.render_type(p.type)) if p.type is not None else {}),
                 })
                 if p.required:
@@ -125,13 +113,13 @@ class ToolSchemaRenderer:
 
     def render_tool(self, ts: ToolSpec) -> pt.FunctionDeclaration:
         ret_dct = {
-            **(dict(description=self._content_str_preparer.prepare_str(ts.returns_desc)) if ts.returns_desc is not None else {}),  # noqa
+            **(dict(description=render_content_str(ts.returns_desc)) if ts.returns_desc is not None else {}),  # noqa
             **(_shallow_dc_asdict_not_none(self.render_type(ts.returns_type)) if ts.returns_type is not None else {}),
         }
 
         return pt.FunctionDeclaration(
             name=check.non_empty_str(ts.name),
-            description=self._content_str_preparer.prepare_str(ts.desc) if ts.desc is not None else None,  # type: ignore[arg-type]  # noqa
+            description=render_content_str(ts.desc) if ts.desc is not None else None,  # type: ignore[arg-type]  # noqa
             behavior='BLOCKING',
             parameters=self.render_tool_params(ts) if ts.params else None,
             response=(pt.Schema(**ret_dct) if ret_dct else None),

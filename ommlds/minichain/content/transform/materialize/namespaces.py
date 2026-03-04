@@ -2,10 +2,10 @@ import typing as ta
 
 from omlish import check
 
-from ..content import Content
-from ..namespaces import ContentNamespace
-from ..namespaces import NamespaceContent
-from .visitors import VisitorContentTransform
+from ...content import Content
+from ...namespaces import ContentNamespace
+from ...namespaces import NamespaceContent
+from ..visitors import VisitorContentTransform
 
 
 C = ta.TypeVar('C')
