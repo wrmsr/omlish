@@ -17,10 +17,12 @@ class CodeContent(StandardContent, lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(terse_repr=True)
 class InlineCodeContent(CodeContent, lang.Final):
     pass
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(terse_repr=True)
 class BlockCodeContent(CodeContent, lang.Final):
     pass

@@ -21,5 +21,6 @@ else:
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(terse_repr=True)
 class ImageContent(StandardContent, lang.Final):
     i: 'pimg.Image' = dc.field()

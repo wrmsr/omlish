@@ -13,15 +13,18 @@ class EmphasisContent(StandardContent, lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(terse_repr=True)
 class BoldContent(EmphasisContent, lang.Final):
     pass
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(terse_repr=True)
 class ItalicContent(EmphasisContent, lang.Final):
     pass
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(terse_repr=True)
 class BoldItalicContent(EmphasisContent, lang.Final):
     pass

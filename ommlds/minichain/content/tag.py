@@ -17,6 +17,7 @@ from .content import Content
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(terse_repr=True)
 class TagContent(CompositeContent, lang.Final):
     tag: str
     body: Content

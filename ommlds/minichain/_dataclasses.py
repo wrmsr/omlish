@@ -3033,9 +3033,9 @@ def _process_dataclass__9c26f5e7e2496284b4ba1e1072fb3e29dc4e0ec4():
         ", validate=None, check_type=None)), self_param='self', std_params=('l',), kw_only_params=('_metadata', 'style'"
         "), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.F"
         "ield(name='l', kw_only=False, fn=None), ReprPlan.Field(name='style', kw_only=True, fn=None)), id=False, terse="
-        "False, default_fn=None)))"
+        "True, default_fn=None)))"
     ),
-    plan_repr_sha1='5df7f02aa96ac5e3dd094d829580f887801535df',
+    plan_repr_sha1='92981ef19f0ed4d429fe88ffe7c0f22996b15862',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__coerce',
@@ -3048,7 +3048,7 @@ def _process_dataclass__9c26f5e7e2496284b4ba1e1072fb3e29dc4e0ec4():
         ('ommlds.minichain.backends.impls.anthropic.chat', 'ItemListContent'),
     ),
 )
-def _process_dataclass__5df7f02aa96ac5e3dd094d829580f887801535df():
+def _process_dataclass__92981ef19f0ed4d429fe88ffe7c0f22996b15862():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -3170,7 +3170,7 @@ def _process_dataclass__5df7f02aa96ac5e3dd094d829580f887801535df():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"l={self.l!r}")
+            parts.append(f"{self.l!r}")
             parts.append(f"style={self.style!r}")
             return (
                 f"{self.__class__.__qualname__}("
@@ -5822,6 +5822,330 @@ def _process_dataclass__9e1d955ccb433717c9538685d2a5ad412ce027f5():
         ".2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
         "idate=None, check_type=None)), self_param='self', std_params=('s',), kw_only_params=('_metadata', 'lang'), fro"
         "zen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(n"
+        "ame='s', kw_only=False, fn=None), ReprPlan.Field(name='lang', kw_only=True, fn=None)), id=False, terse=True, d"
+        "efault_fn=None)))"
+    ),
+    plan_repr_sha1='31f198f397eadf81e409755023fd5b4ffa5427ea',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__0__coerce',
+        '__dataclass__init__fields__0__default',
+        '__dataclass__init__fields__1__annotation',
+        '__dataclass__init__fields__2__annotation',
+        '__dataclass__init__fields__2__default',
+    ),
+    cls_names=(
+        ('ommlds.minichain.backends.impls.mistral', 'BlockCodeContent'),
+        ('ommlds.minichain.backends.impls.mistral', 'InlineCodeContent'),
+    ),
+)
+def _process_dataclass__31f198f397eadf81e409755023fd5b4ffa5427ea():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__0__coerce,
+        __dataclass__init__fields__0__default,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__init__fields__2__annotation,
+        __dataclass__init__fields__2__default,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                _metadata=self._metadata,
+                s=self.s,
+                lang=self.lang,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self._metadata == other._metadata and
+                self.s == other.s and
+                self.lang == other.lang
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            '_metadata',
+            's',
+            'lang',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            '_metadata',
+            's',
+            'lang',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self._metadata,
+                self.s,
+                self.lang,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            s: __dataclass__init__fields__1__annotation,
+            *,
+            _metadata: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
+            lang: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
+        ) -> __dataclass__None:
+            _metadata = __dataclass__init__fields__0__coerce(_metadata)
+            __dataclass__object_setattr(self, '_metadata', _metadata)
+            __dataclass__object_setattr(self, 's', s)
+            __dataclass__object_setattr(self, 'lang', lang)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"{self.s!r}")
+            parts.append(f"lang={self.lang!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('_metadata', 's')), EqPlan(fields=('_metadata', 's')), FrozenPlan(fields=('_metada"
+        "ta', 's'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('_metadata', 's'), cache=False), "
+        "InitPlan(fields=(InitPlan.Field(name='_metadata', annotation=OpRef(name='init.fields.0.annotation'), default=O"
+        "pRef(name='init.fields.0.default'), default_factory=None, init=True, override=False, field_type=FieldType.INST"
+        "ANCE, coerce=OpRef(name='init.fields.0.coerce'), validate=None, check_type=None), InitPlan.Field(name='s', ann"
+        "otation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init=True, override=False,"
+        " field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=("
+        "'s',), kw_only_params=('_metadata',), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_f"
+        "ns=()), ReprPlan(fields=(ReprPlan.Field(name='s', kw_only=False, fn=None),), id=False, terse=True, default_fn="
+        "None)))"
+    ),
+    plan_repr_sha1='ddb3139fadddf306ac09e012d316caf66a5ba6de',
+    op_ref_idents=(
+        '__dataclass__init__fields__0__annotation',
+        '__dataclass__init__fields__0__coerce',
+        '__dataclass__init__fields__0__default',
+        '__dataclass__init__fields__1__annotation',
+    ),
+    cls_names=(
+        ('ommlds.minichain.backends.impls.mistral', 'BoldContent'),
+        ('ommlds.minichain.backends.impls.mistral', 'BoldItalicContent'),
+        ('ommlds.minichain.backends.impls.mistral', 'ItalicContent'),
+        ('ommlds.minichain.backends.impls.mistral', 'MarkdownContent'),
+        ('ommlds.minichain.backends.impls.mistral', 'TextContent'),
+    ),
+)
+def _process_dataclass__ddb3139fadddf306ac09e012d316caf66a5ba6de():
+    def _process_dataclass(
+        *,
+        __dataclass__cls,
+        __dataclass__init__fields__0__annotation,
+        __dataclass__init__fields__0__coerce,
+        __dataclass__init__fields__0__default,
+        __dataclass__init__fields__1__annotation,
+        __dataclass__FieldFnValidationError,  # noqa
+        __dataclass__FieldTypeValidationError,  # noqa
+        __dataclass__FnValidationError,  # noqa
+        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
+        __dataclass__FunctionType=types.FunctionType,  # noqa
+        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
+        __dataclass__MISSING=dataclasses.MISSING,  # noqa
+        __dataclass__None=None,  # noqa
+        __dataclass__TypeError=TypeError,  # noqa
+        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
+        __dataclass__isinstance=isinstance,  # noqa
+        __dataclass__object_setattr=object.__setattr__,  # noqa
+        __dataclass__property=property,  # noqa
+    ):
+        def __copy__(self):
+            if self.__class__ is not __dataclass__cls:
+                raise TypeError(self)
+            return __dataclass__cls(  # noqa
+                _metadata=self._metadata,
+                s=self.s,
+            )
+
+        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
+        if '__copy__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__copy__', __copy__)
+
+        def __eq__(self, other):
+            if self is other:
+                return True
+            if self.__class__ is not other.__class__:
+                return NotImplemented
+            return (
+                self._metadata == other._metadata and
+                self.s == other.s
+            )
+
+        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
+        if '__eq__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__eq__', __eq__)
+
+        __dataclass___setattr_frozen_fields = {
+            '_metadata',
+            's',
+        }
+
+        def __setattr__(self, name, value):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___setattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
+            super(__dataclass__cls, self).__setattr__(name, value)
+
+        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
+        if '__setattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__setattr__', __setattr__)
+
+        __dataclass___delattr_frozen_fields = {
+            '_metadata',
+            's',
+        }
+
+        def __delattr__(self, name):
+            if (
+                type(self) is __dataclass__cls
+                or name in __dataclass___delattr_frozen_fields
+            ):
+                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
+            super(__dataclass__cls, self).__delattr__(name)
+
+        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
+        if '__delattr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__delattr__', __delattr__)
+
+        def __hash__(self):
+            return hash((
+                self._metadata,
+                self.s,
+            ))
+
+        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
+        setattr(__dataclass__cls, '__hash__', __hash__)
+
+        def __init__(
+            self,
+            s: __dataclass__init__fields__1__annotation,
+            *,
+            _metadata: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
+        ) -> __dataclass__None:
+            _metadata = __dataclass__init__fields__0__coerce(_metadata)
+            __dataclass__object_setattr(self, '_metadata', _metadata)
+            __dataclass__object_setattr(self, 's', s)
+
+        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
+        if '__init__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__init__', __init__)
+
+        @__dataclass___recursive_repr()
+        def __repr__(self):
+            parts = []
+            parts.append(f"{self.s!r}")
+            return (
+                f"{self.__class__.__qualname__}("
+                f"{', '.join(parts)}"
+                f")"
+            )
+
+        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
+        if '__repr__' in __dataclass__cls.__dict__:
+            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
+        setattr(__dataclass__cls, '__repr__', __repr__)
+
+    return _process_dataclass
+
+
+@_register(
+    plan_repr=(
+        "Plans(tup=(CopyPlan(fields=('_metadata', 's', 'lang')), EqPlan(fields=('_metadata', 's', 'lang')), FrozenPlan("
+        "fields=('_metadata', 's', 'lang'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('_metadat"
+        "a', 's', 'lang'), cache=False), InitPlan(fields=(InitPlan.Field(name='_metadata', annotation=OpRef(name='init."
+        "fields.0.annotation'), default=OpRef(name='init.fields.0.default'), default_factory=None, init=True, override="
+        "False, field_type=FieldType.INSTANCE, coerce=OpRef(name='init.fields.0.coerce'), validate=None, check_type=Non"
+        "e), InitPlan.Field(name='s', annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory="
+        "None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None), "
+        "InitPlan.Field(name='lang', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(name='init.fields"
+        ".2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, val"
+        "idate=None, check_type=None)), self_param='self', std_params=('s',), kw_only_params=('_metadata', 'lang'), fro"
+        "zen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(n"
         "ame='s', kw_only=False, fn=None), ReprPlan.Field(name='lang', kw_only=True, fn=None)), id=False, terse=False, "
         "default_fn=None)))"
     ),
@@ -5835,9 +6159,7 @@ def _process_dataclass__9e1d955ccb433717c9538685d2a5ad412ce027f5():
         '__dataclass__init__fields__2__default',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.mistral', 'BlockCodeContent'),
         ('ommlds.minichain.backends.impls.mistral', 'CodeContent'),
-        ('ommlds.minichain.backends.impls.mistral', 'InlineCodeContent'),
     ),
 )
 def _process_dataclass__1084ab06a48ea8a3ee231cb5371a8312352e8665():
@@ -5999,11 +6321,7 @@ def _process_dataclass__1084ab06a48ea8a3ee231cb5371a8312352e8665():
         '__dataclass__init__fields__1__annotation',
     ),
     cls_names=(
-        ('ommlds.minichain.backends.impls.mistral', 'BoldContent'),
-        ('ommlds.minichain.backends.impls.mistral', 'BoldItalicContent'),
         ('ommlds.minichain.backends.impls.mistral', 'EmphasisContent'),
-        ('ommlds.minichain.backends.impls.mistral', 'ItalicContent'),
-        ('ommlds.minichain.backends.impls.mistral', 'MarkdownContent'),
     ),
 )
 def _process_dataclass__e28bbe95a5e6fa9335be8f6fa393bd08862be998():
@@ -6291,10 +6609,10 @@ def _process_dataclass__922e75739507bda9dce73a0d3dc05534b1cc9ae5():
         "otation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init=True, override=False,"
         " field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=("
         "'i',), kw_only_params=('_metadata',), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_f"
-        "ns=()), ReprPlan(fields=(ReprPlan.Field(name='i', kw_only=False, fn=None),), id=False, terse=False, default_fn"
-        "=None)))"
+        "ns=()), ReprPlan(fields=(ReprPlan.Field(name='i', kw_only=False, fn=None),), id=False, terse=True, default_fn="
+        "None)))"
     ),
-    plan_repr_sha1='887228244e97e7d09085da1386353f1085809224',
+    plan_repr_sha1='203bfffec4d5e8561262ac75e1ac4bdc765045b2',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__coerce',
@@ -6305,7 +6623,7 @@ def _process_dataclass__922e75739507bda9dce73a0d3dc05534b1cc9ae5():
         ('ommlds.minichain.backends.impls.mistral', 'ImageContent'),
     ),
 )
-def _process_dataclass__887228244e97e7d09085da1386353f1085809224():
+def _process_dataclass__203bfffec4d5e8561262ac75e1ac4bdc765045b2():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -6418,7 +6736,7 @@ def _process_dataclass__887228244e97e7d09085da1386353f1085809224():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"i={self.i!r}")
+            parts.append(f"{self.i!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -6443,10 +6761,10 @@ def _process_dataclass__887228244e97e7d09085da1386353f1085809224():
         "otation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init=True, override=False,"
         " field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=("
         "'v',), kw_only_params=('_metadata',), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_f"
-        "ns=()), ReprPlan(fields=(ReprPlan.Field(name='v', kw_only=False, fn=None),), id=False, terse=False, default_fn"
-        "=None)))"
+        "ns=()), ReprPlan(fields=(ReprPlan.Field(name='v', kw_only=False, fn=None),), id=False, terse=True, default_fn="
+        "None)))"
     ),
-    plan_repr_sha1='90ff130b5cc55aa45421dac2fda5e67df528bc46',
+    plan_repr_sha1='0cb672ff62c7eae81ce16ae517b9048e09aa5f32',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__coerce',
@@ -6457,7 +6775,7 @@ def _process_dataclass__887228244e97e7d09085da1386353f1085809224():
         ('ommlds.minichain.backends.impls.mistral', 'JsonContent'),
     ),
 )
-def _process_dataclass__90ff130b5cc55aa45421dac2fda5e67df528bc46():
+def _process_dataclass__0cb672ff62c7eae81ce16ae517b9048e09aa5f32():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -6570,7 +6888,7 @@ def _process_dataclass__90ff130b5cc55aa45421dac2fda5e67df528bc46():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"v={self.v!r}")
+            parts.append(f"{self.v!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -6596,12 +6914,12 @@ def _process_dataclass__90ff130b5cc55aa45421dac2fda5e67df528bc46():
         "fault_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, chec"
         "k_type=None), InitPlan.Field(name='title', annotation=OpRef(name='init.fields.2.annotation'), default=OpRef(na"
         "me='init.fields.2.default'), default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, c"
-        "oerce=None, validate=None, check_type=None)), self_param='self', std_params=('url', 'title'), kw_only_params=("
-        "'_metadata',), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields"
-        "=(ReprPlan.Field(name='url', kw_only=False, fn=None), ReprPlan.Field(name='title', kw_only=False, fn=None)), i"
-        "d=False, terse=False, default_fn=None)))"
+        "oerce=None, validate=None, check_type=None)), self_param='self', std_params=('url',), kw_only_params=('_metada"
+        "ta', 'title'), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields"
+        "=(ReprPlan.Field(name='url', kw_only=False, fn=None), ReprPlan.Field(name='title', kw_only=True, fn=None)), id"
+        "=False, terse=True, default_fn=None)))"
     ),
-    plan_repr_sha1='dd73f8dc509bd85224b58b6ca188966c37d6566c',
+    plan_repr_sha1='19fce39816e3bcd051a9ec021966904726c17a18',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__coerce',
@@ -6614,7 +6932,7 @@ def _process_dataclass__90ff130b5cc55aa45421dac2fda5e67df528bc46():
         ('ommlds.minichain.backends.impls.mistral', 'LinkContent'),
     ),
 )
-def _process_dataclass__dd73f8dc509bd85224b58b6ca188966c37d6566c():
+def _process_dataclass__19fce39816e3bcd051a9ec021966904726c17a18():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -6719,9 +7037,9 @@ def _process_dataclass__dd73f8dc509bd85224b58b6ca188966c37d6566c():
         def __init__(
             self,
             url: __dataclass__init__fields__1__annotation,
-            title: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
             *,
             _metadata: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
+            title: __dataclass__init__fields__2__annotation = __dataclass__init__fields__2__default,
         ) -> __dataclass__None:
             _metadata = __dataclass__init__fields__0__coerce(_metadata)
             __dataclass__object_setattr(self, '_metadata', _metadata)
@@ -6736,7 +7054,7 @@ def _process_dataclass__dd73f8dc509bd85224b58b6ca188966c37d6566c():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"url={self.url!r}")
+            parts.append(f"{self.url!r}")
             parts.append(f"title={self.title!r}")
             return (
                 f"{self.__class__.__qualname__}("
@@ -6908,10 +7226,10 @@ def _process_dataclass__2ded8afb50edd07329da6b7055981919a83dec56():
         ", annotation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init=True, override=F"
         "alse, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_par"
         "ams=('ns',), kw_only_params=('_metadata',), frozen=True, slots=False, post_init_params=None, init_fns=(), vali"
-        "date_fns=()), ReprPlan(fields=(ReprPlan.Field(name='ns', kw_only=False, fn=None),), id=False, terse=False, def"
-        "ault_fn=None)))"
+        "date_fns=()), ReprPlan(fields=(ReprPlan.Field(name='ns', kw_only=False, fn=None),), id=False, terse=True, defa"
+        "ult_fn=None)))"
     ),
-    plan_repr_sha1='362e74460eb8dcd41c81a6fd7a74399eff62060c',
+    plan_repr_sha1='14f245898fca28ecbd7d8f269115ed8cd09ceef1',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__coerce',
@@ -6922,7 +7240,7 @@ def _process_dataclass__2ded8afb50edd07329da6b7055981919a83dec56():
         ('ommlds.minichain.backends.impls.mistral', 'NamespaceContent'),
     ),
 )
-def _process_dataclass__362e74460eb8dcd41c81a6fd7a74399eff62060c():
+def _process_dataclass__14f245898fca28ecbd7d8f269115ed8cd09ceef1():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -7035,7 +7353,7 @@ def _process_dataclass__362e74460eb8dcd41c81a6fd7a74399eff62060c():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"ns={self.ns!r}")
+            parts.append(f"{self.ns!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -7328,10 +7646,10 @@ def _process_dataclass__178374af8c25e44a33c44ece98db0c96fe041247():
         "otation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init=True, override=False,"
         " field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=("
         "'k',), kw_only_params=('_metadata',), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_f"
-        "ns=()), ReprPlan(fields=(ReprPlan.Field(name='k', kw_only=False, fn=None),), id=False, terse=False, default_fn"
-        "=None)))"
+        "ns=()), ReprPlan(fields=(ReprPlan.Field(name='k', kw_only=False, fn=None),), id=False, terse=True, default_fn="
+        "None)))"
     ),
-    plan_repr_sha1='e2f3beaac46614f603d669e9c497bb0979815a5c',
+    plan_repr_sha1='d07643412d93a7153e2d0ffe62c9a3676cda058e',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__coerce',
@@ -7342,7 +7660,7 @@ def _process_dataclass__178374af8c25e44a33c44ece98db0c96fe041247():
         ('ommlds.minichain.backends.impls.mistral', 'PlaceholderContent'),
     ),
 )
-def _process_dataclass__e2f3beaac46614f603d669e9c497bb0979815a5c():
+def _process_dataclass__d07643412d93a7153e2d0ffe62c9a3676cda058e():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -7455,7 +7773,7 @@ def _process_dataclass__e2f3beaac46614f603d669e9c497bb0979815a5c():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"k={self.k!r}")
+            parts.append(f"{self.k!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -7616,9 +7934,9 @@ def _process_dataclass__b7657835eed1f3e17dbdae82eb197181dd5862db():
         "override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self"
         "', std_params=('body',), kw_only_params=('_metadata',), frozen=True, slots=False, post_init_params=None, init_"
         "fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='body', kw_only=False, fn=None),), id=False, te"
-        "rse=False, default_fn=None)))"
+        "rse=True, default_fn=None)))"
     ),
-    plan_repr_sha1='ef0fad925bba9f189d06f3ca8625366af9abb8a5',
+    plan_repr_sha1='66b904f7e1abd9fc45da07aa62bd6c964d104d2e',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__coerce',
@@ -7629,7 +7947,7 @@ def _process_dataclass__b7657835eed1f3e17dbdae82eb197181dd5862db():
         ('ommlds.minichain.backends.impls.mistral', 'QuoteContent'),
     ),
 )
-def _process_dataclass__ef0fad925bba9f189d06f3ca8625366af9abb8a5():
+def _process_dataclass__66b904f7e1abd9fc45da07aa62bd6c964d104d2e():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -7742,7 +8060,7 @@ def _process_dataclass__ef0fad925bba9f189d06f3ca8625366af9abb8a5():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"body={self.body!r}")
+            parts.append(f"{self.body!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -7935,10 +8253,10 @@ def _process_dataclass__96d8a115fd863c61344f44124f5175d63ed37469():
         "t=None, default_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate="
         "None, check_type=None)), self_param='self', std_params=('body',), kw_only_params=('_metadata', 'header'), froz"
         "en=True, slots=False, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(na"
-        "me='body', kw_only=False, fn=None), ReprPlan.Field(name='header', kw_only=True, fn=None)), id=False, terse=Fal"
-        "se, default_fn=None)))"
+        "me='body', kw_only=False, fn=None), ReprPlan.Field(name='header', kw_only=True, fn=None)), id=False, terse=Tru"
+        "e, default_fn=None)))"
     ),
-    plan_repr_sha1='80e9c0b4a83a9a6095585d8dd172aec53d34d1f2',
+    plan_repr_sha1='210cbafe9608360fc8ef542b57b17b0c0256004d',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__coerce',
@@ -7950,7 +8268,7 @@ def _process_dataclass__96d8a115fd863c61344f44124f5175d63ed37469():
         ('ommlds.minichain.backends.impls.mistral', 'SectionContent'),
     ),
 )
-def _process_dataclass__80e9c0b4a83a9a6095585d8dd172aec53d34d1f2():
+def _process_dataclass__210cbafe9608360fc8ef542b57b17b0c0256004d():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -8071,7 +8389,7 @@ def _process_dataclass__80e9c0b4a83a9a6095585d8dd172aec53d34d1f2():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"body={self.body!r}")
+            parts.append(f"{self.body!r}")
             parts.append(f"header={self.header!r}")
             return (
                 f"{self.__class__.__qualname__}("
@@ -8386,10 +8704,10 @@ def _process_dataclass__5cf06a8666aafbd9f13b7cc116ca35266a2043de():
         "_factory=None, init=True, override=False, field_type=FieldType.INSTANCE, coerce=None, validate=None, check_typ"
         "e=None)), self_param='self', std_params=('tag', 'body'), kw_only_params=('_metadata',), frozen=True, slots=Fal"
         "se, post_init_params=None, init_fns=(), validate_fns=()), ReprPlan(fields=(ReprPlan.Field(name='tag', kw_only="
-        "False, fn=None), ReprPlan.Field(name='body', kw_only=False, fn=None)), id=False, terse=False, default_fn=None)"
-        "))"
+        "False, fn=None), ReprPlan.Field(name='body', kw_only=False, fn=None)), id=False, terse=True, default_fn=None))"
+        ")"
     ),
-    plan_repr_sha1='2e727a39486d5da75b5f2b035bb0d91c07e28821',
+    plan_repr_sha1='c8549fd6067e8fdb702ddac1fecf583a594779ef',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__coerce',
@@ -8401,7 +8719,7 @@ def _process_dataclass__5cf06a8666aafbd9f13b7cc116ca35266a2043de():
         ('ommlds.minichain.backends.impls.mistral', 'TagContent'),
     ),
 )
-def _process_dataclass__2e727a39486d5da75b5f2b035bb0d91c07e28821():
+def _process_dataclass__c8549fd6067e8fdb702ddac1fecf583a594779ef():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -8522,8 +8840,8 @@ def _process_dataclass__2e727a39486d5da75b5f2b035bb0d91c07e28821():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"tag={self.tag!r}")
-            parts.append(f"body={self.body!r}")
+            parts.append(f"{self.tag!r}")
+            parts.append(f"{self.body!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"
@@ -8548,10 +8866,10 @@ def _process_dataclass__2e727a39486d5da75b5f2b035bb0d91c07e28821():
         "otation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init=True, override=False,"
         " field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=("
         "'t',), kw_only_params=('_metadata',), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_f"
-        "ns=()), ReprPlan(fields=(ReprPlan.Field(name='t', kw_only=False, fn=None),), id=False, terse=False, default_fn"
-        "=None)))"
+        "ns=()), ReprPlan(fields=(ReprPlan.Field(name='t', kw_only=False, fn=None),), id=False, terse=True, default_fn="
+        "None)))"
     ),
-    plan_repr_sha1='57c830149c3ca2c61665f91debc71be37c7ad297',
+    plan_repr_sha1='9c092eca370702ae8406a7273aeb5d03ce342cb9',
     op_ref_idents=(
         '__dataclass__init__fields__0__annotation',
         '__dataclass__init__fields__0__coerce',
@@ -8562,7 +8880,7 @@ def _process_dataclass__2e727a39486d5da75b5f2b035bb0d91c07e28821():
         ('ommlds.minichain.backends.impls.mistral', 'TemplateContent'),
     ),
 )
-def _process_dataclass__57c830149c3ca2c61665f91debc71be37c7ad297():
+def _process_dataclass__9c092eca370702ae8406a7273aeb5d03ce342cb9():
     def _process_dataclass(
         *,
         __dataclass__cls,
@@ -8675,159 +8993,7 @@ def _process_dataclass__57c830149c3ca2c61665f91debc71be37c7ad297():
         @__dataclass___recursive_repr()
         def __repr__(self):
             parts = []
-            parts.append(f"t={self.t!r}")
-            return (
-                f"{self.__class__.__qualname__}("
-                f"{', '.join(parts)}"
-                f")"
-            )
-
-        __repr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__repr__"
-        if '__repr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __repr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__repr__', __repr__)
-
-    return _process_dataclass
-
-
-@_register(
-    plan_repr=(
-        "Plans(tup=(CopyPlan(fields=('_metadata', 's')), EqPlan(fields=('_metadata', 's')), FrozenPlan(fields=('_metada"
-        "ta', 's'), allow_dynamic_dunder_attrs=False), HashPlan(action='add', fields=('_metadata', 's'), cache=False), "
-        "InitPlan(fields=(InitPlan.Field(name='_metadata', annotation=OpRef(name='init.fields.0.annotation'), default=O"
-        "pRef(name='init.fields.0.default'), default_factory=None, init=True, override=False, field_type=FieldType.INST"
-        "ANCE, coerce=OpRef(name='init.fields.0.coerce'), validate=None, check_type=None), InitPlan.Field(name='s', ann"
-        "otation=OpRef(name='init.fields.1.annotation'), default=None, default_factory=None, init=True, override=False,"
-        " field_type=FieldType.INSTANCE, coerce=None, validate=None, check_type=None)), self_param='self', std_params=("
-        "'s',), kw_only_params=('_metadata',), frozen=True, slots=False, post_init_params=None, init_fns=(), validate_f"
-        "ns=()), ReprPlan(fields=(ReprPlan.Field(name='s', kw_only=False, fn=None),), id=False, terse=True, default_fn="
-        "None)))"
-    ),
-    plan_repr_sha1='ddb3139fadddf306ac09e012d316caf66a5ba6de',
-    op_ref_idents=(
-        '__dataclass__init__fields__0__annotation',
-        '__dataclass__init__fields__0__coerce',
-        '__dataclass__init__fields__0__default',
-        '__dataclass__init__fields__1__annotation',
-    ),
-    cls_names=(
-        ('ommlds.minichain.backends.impls.mistral', 'TextContent'),
-    ),
-)
-def _process_dataclass__ddb3139fadddf306ac09e012d316caf66a5ba6de():
-    def _process_dataclass(
-        *,
-        __dataclass__cls,
-        __dataclass__init__fields__0__annotation,
-        __dataclass__init__fields__0__coerce,
-        __dataclass__init__fields__0__default,
-        __dataclass__init__fields__1__annotation,
-        __dataclass__FieldFnValidationError,  # noqa
-        __dataclass__FieldTypeValidationError,  # noqa
-        __dataclass__FnValidationError,  # noqa
-        __dataclass__FrozenInstanceError=dataclasses.FrozenInstanceError,  # noqa
-        __dataclass__FunctionType=types.FunctionType,  # noqa
-        __dataclass__HAS_DEFAULT_FACTORY=dataclasses._HAS_DEFAULT_FACTORY,  # noqa
-        __dataclass__MISSING=dataclasses.MISSING,  # noqa
-        __dataclass__None=None,  # noqa
-        __dataclass__TypeError=TypeError,  # noqa
-        __dataclass___recursive_repr=reprlib.recursive_repr,  # noqa
-        __dataclass__isinstance=isinstance,  # noqa
-        __dataclass__object_setattr=object.__setattr__,  # noqa
-        __dataclass__property=property,  # noqa
-    ):
-        def __copy__(self):
-            if self.__class__ is not __dataclass__cls:
-                raise TypeError(self)
-            return __dataclass__cls(  # noqa
-                _metadata=self._metadata,
-                s=self.s,
-            )
-
-        __copy__.__qualname__ = f"{__dataclass__cls.__qualname__}.__copy__"
-        if '__copy__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __copy__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__copy__', __copy__)
-
-        def __eq__(self, other):
-            if self is other:
-                return True
-            if self.__class__ is not other.__class__:
-                return NotImplemented
-            return (
-                self._metadata == other._metadata and
-                self.s == other.s
-            )
-
-        __eq__.__qualname__ = f"{__dataclass__cls.__qualname__}.__eq__"
-        if '__eq__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __eq__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__eq__', __eq__)
-
-        __dataclass___setattr_frozen_fields = {
-            '_metadata',
-            's',
-        }
-
-        def __setattr__(self, name, value):
-            if (
-                type(self) is __dataclass__cls
-                or name in __dataclass___setattr_frozen_fields
-            ):
-                raise __dataclass__FrozenInstanceError(f"cannot assign to field {name!r}")
-            super(__dataclass__cls, self).__setattr__(name, value)
-
-        __setattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__setattr__"
-        if '__setattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __setattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__setattr__', __setattr__)
-
-        __dataclass___delattr_frozen_fields = {
-            '_metadata',
-            's',
-        }
-
-        def __delattr__(self, name):
-            if (
-                type(self) is __dataclass__cls
-                or name in __dataclass___delattr_frozen_fields
-            ):
-                raise __dataclass__FrozenInstanceError(f"cannot delete field {name!r}")
-            super(__dataclass__cls, self).__delattr__(name)
-
-        __delattr__.__qualname__ = f"{__dataclass__cls.__qualname__}.__delattr__"
-        if '__delattr__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __delattr__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__delattr__', __delattr__)
-
-        def __hash__(self):
-            return hash((
-                self._metadata,
-                self.s,
-            ))
-
-        __hash__.__qualname__ = f"{__dataclass__cls.__qualname__}.__hash__"
-        setattr(__dataclass__cls, '__hash__', __hash__)
-
-        def __init__(
-            self,
-            s: __dataclass__init__fields__1__annotation,
-            *,
-            _metadata: __dataclass__init__fields__0__annotation = __dataclass__init__fields__0__default,
-        ) -> __dataclass__None:
-            _metadata = __dataclass__init__fields__0__coerce(_metadata)
-            __dataclass__object_setattr(self, '_metadata', _metadata)
-            __dataclass__object_setattr(self, 's', s)
-
-        __init__.__qualname__ = f"{__dataclass__cls.__qualname__}.__init__"
-        if '__init__' in __dataclass__cls.__dict__:
-            raise __dataclass__TypeError(f"Cannot overwrite attribute __init__ in class {__dataclass__cls.__name__}")
-        setattr(__dataclass__cls, '__init__', __init__)
-
-        @__dataclass___recursive_repr()
-        def __repr__(self):
-            parts = []
-            parts.append(f"{self.s!r}")
+            parts.append(f"{self.t!r}")
             return (
                 f"{self.__class__.__qualname__}("
                 f"{', '.join(parts)}"

@@ -16,6 +16,7 @@ from .content import Content
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(terse_repr=True)
 class QuoteContent(CompositeContent, lang.Final):
     body: Content
 

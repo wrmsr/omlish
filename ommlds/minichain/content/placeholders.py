@@ -17,5 +17,6 @@ PlaceholderContentKey: ta.TypeAlias = str | type[ContentPlaceholder]
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(terse_repr=True)
 class PlaceholderContent(RecursiveContent, lang.Final):
     k: PlaceholderContentKey
