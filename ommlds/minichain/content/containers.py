@@ -13,15 +13,18 @@ class ContainerContent(SequenceContent, lang.Abstract):
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(terse_repr=True)
 class FlowContent(ContainerContent, lang.Final):
     """~Sentences"""
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(terse_repr=True)
 class ConcatContent(ContainerContent, lang.Final):
     """~Characters"""
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(terse_repr=True)
 class BlocksContent(ContainerContent, lang.Final):
     """~Paragraphs"""

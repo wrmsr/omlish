@@ -1,8 +1,10 @@
 from ....content.containers import BlocksContent
 from ....content.containers import ConcatContent
 from ....content.containers import FlowContent
+from ....content.content import Content
 from ....content.itemlist import ItemListContent
 from ....content.text import TextContent
+from ..containers import JoinContainerContentsTransform
 from ..containers import UnnestContainersTransform
 
 
@@ -137,4 +139,6 @@ def test_mixed_nesting_levels():
 
 
 def test_join_simple():
-    pass
+    a: Content = FlowContent([TextContent('a'), TextContent('b')])
+    b: Content = JoinContainerContentsTransform[None]().transform(a, None)
+    print(b)

@@ -8,5 +8,6 @@ from .standard import StandardContent
 
 
 @dc.dataclass(frozen=True)
+@dc.extra_class_params(terse_repr=True)
 class TextContent(StandardContent, lang.Final):
     s: str
