@@ -88,7 +88,7 @@ class JoinContainerContentsTransform(StandardContentVisitor[C, Content], Visitor
         def flush_span() -> None:
             if len(current_span) > 1:
                 joined_text = joiner(current_span)
-                joined_node = with_content_original(TextContent(joined_text), original=current_span[0])
+                joined_node = with_content_original(TextContent(joined_text), original=list(current_span))
                 new_children.append(joined_node)
             elif len(current_span) == 1:
                 new_children.append(current_span[0])
