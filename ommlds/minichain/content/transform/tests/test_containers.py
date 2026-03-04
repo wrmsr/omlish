@@ -1,3 +1,4 @@
+from ....content.code import InlineCodeContent
 from ....content.containers import BlocksContent
 from ....content.containers import ConcatContent
 from ....content.containers import FlowContent
@@ -149,8 +150,6 @@ def test_join_flow_simple():
 
 
 def test_join_flow_multiple_spans():
-    from ....content.code import InlineCodeContent
-
     # Multiple spans of TextContent separated by non-TextContent
     flow = FlowContent([
         TextContent('hello  '),
@@ -172,8 +171,6 @@ def test_join_flow_multiple_spans():
 
 
 def test_join_flow_no_adjacent():
-    from ....content.code import InlineCodeContent
-
     # No adjacent TextContent -> no changes
     flow = FlowContent([
         TextContent('hello'),
@@ -200,7 +197,6 @@ def test_join_concat_simple():
 
 
 def test_join_concat_multiple_spans():
-    from ....content.code import InlineCodeContent
 
     # Multiple spans of TextContent separated by non-TextContent
     concat = ConcatContent([
