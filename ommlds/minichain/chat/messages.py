@@ -57,10 +57,12 @@ Chat: ta.TypeAlias = ta.Sequence[Message]
 
 @dc.dataclass(frozen=True)
 class MessageOriginal(MessageMetadata, lang.Final):
-    c: Message | ta.Sequence[Message]
+    c: ta.Sequence[Message]
 
 
 def with_message_original(m: MessageT, *, original: Message | ta.Sequence[Message]) -> MessageT:
+    if not isinstance(original, ta.Sequence):
+        original = [original]
     return m.with_metadata(MessageOriginal(original), discard=[MessageOriginal], override=True)
 
 

@@ -17,7 +17,7 @@ class Project(ProjectBase):
         ],
 
         'backends': [
-            # 'diffusers ~= 0.36',
+            # 'diffusers ~= 0.37',
 
             'llama-cpp-python ~= 0.3',
 

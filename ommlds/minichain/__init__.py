@@ -233,10 +233,6 @@ with _lang.auto_proxy_init(
 
     ##
 
-    from .content.transform.stringify import (  # noqa
-        stringify_content,
-    )
-
     from .content.transform.strings import (  # noqa
         StringFnContentTransform,
         transform_content_strings,

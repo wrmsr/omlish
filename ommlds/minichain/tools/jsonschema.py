@@ -4,8 +4,8 @@ TODO:
 """
 from omlish import check
 
-from ..content.transform.prepare import ContentStrPreparer
-from ..content.transform.prepare import default_content_str_preparer
+from ..content.render.simple import SimpleContentStrRenderer
+from ..content.render.types import ContentStrRenderer
 from .types import EnumToolDtype
 from .types import MappingToolDtype
 from .types import NullableToolDtype
@@ -25,13 +25,13 @@ class ToolJsonschemaRenderer:
     def __init__(
             self,
             *,
-            content_str_preparer: ContentStrPreparer | None = None,
+            content_str_renderer: ContentStrRenderer | None = None,
     ) -> None:
         super().__init__()
 
-        if content_str_preparer is None:
-            content_str_preparer = default_content_str_preparer()
-        self._content_str_preparer = content_str_preparer
+        if content_str_renderer is None:
+            content_str_renderer = SimpleContentStrRenderer()
+        self._content_str_renderer = content_str_renderer
 
     def render_type(self, t: ToolDtype) -> dict:
         if isinstance(t, PrimitiveToolDtype):
@@ -91,7 +91,7 @@ class ToolJsonschemaRenderer:
             req_lst = []
             for p in ts.params:
                 pr_dct[check.non_empty_str(p.name)] = {
-                    **({'description': self._content_str_preparer.prepare_str(p.desc)} if p.desc is not None else {}),
+                    **({'description': self._content_str_renderer.render(p.desc)} if p.desc is not None else {}),
                     **(self.render_type(p.type) if p.type is not None else {}),
                 }
                 if p.required:
@@ -110,13 +110,13 @@ class ToolJsonschemaRenderer:
         pa_dct = self.render_tool_params(ts)
 
         ret_dct = {
-            **({'description': self._content_str_preparer.prepare_str(ts.returns_desc)} if ts.returns_desc is not None else {}),  # noqa
+            **({'description': self._content_str_renderer.render(ts.returns_desc)} if ts.returns_desc is not None else {}),  # noqa
             **({'type': self.render_type(ts.returns_type)} if ts.returns_type is not None else {}),
         }
 
         return {
             'name': ts.name,
-            **({'description': self._content_str_preparer.prepare_str(ts.desc)} if ts.desc is not None else {}),
+            **({'description': self._content_str_renderer.render(ts.desc)} if ts.desc is not None else {}),
             **({'parameters': pa_dct} if pa_dct else {}),
             **({'return': ret_dct} if ret_dct else {}),
         }

@@ -37,7 +37,7 @@ gprof2dot==2025.4.14
 guppy3==3.1.6  # @omlish-venv !13t !13dt
 objgraph==3.6.2
 
-ipython==9.10.0
+ipython==9.11.0
 
 # litecli==1.15.0  # @omlish-venv  # FIXME: MAKE LLM DEP OPTIONAL
 # mycli==1.42.0  # @omlish-venv !13t !13dt !14t
@@ -138,9 +138,9 @@ llama-cpp-python; sys_platform == "darwin"
 segno==1.6.6
 
 # Used for codegen
-boto3>=1.42.60
+boto3>=1.42.61
 botocore-stubs>=1.42.41
-types-boto3>=1.42.60
+types-boto3>=1.42.61
 
 antlr4-python3-runtime==4.13.2
 

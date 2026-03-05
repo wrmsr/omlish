@@ -8,7 +8,7 @@
 ##
 # infra
 
-google-api-python-client==2.191.0
+google-api-python-client==2.192.0
 google-cloud-compute==1.44.0
 
 
@@ -21,7 +21,7 @@ torch==2.10.0
 torchvision==0.25.0
 # torchcodec==0.7.0
 
-diffusers==0.36.0  # @omlish-venv !14t !14dt
+diffusers==0.37.0  # @omlish-venv !14t !14dt
 
 scipy==1.17.1
 scikit-learn==1.8.0
@@ -35,7 +35,7 @@ sqlite-vec==0.1.6
 
 pytesseract==0.3.13
 
-ddgs==9.11.1
+ddgs==9.11.2
 
 gguf==0.18.0
 
@@ -60,7 +60,7 @@ blobfile==3.2.0
 ##
 # bins
 
-deno==2.7.3
+deno==2.7.4
 playwright==1.58.0
 ripgrep==15.0.0
 
