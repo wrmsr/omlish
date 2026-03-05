@@ -15,7 +15,7 @@ def test_flow_content_simple_unnest():
 
     # FlowContent([FlowContent([a, b]), c]) -> FlowContent([a, b, c])
     nested = FlowContent([FlowContent([a, b]), c])
-    result = UnnestContainersTransform[None]().transform(nested, None)
+    result = UnnestContainersTransform().transform(nested)
 
     assert isinstance(result, FlowContent)
     assert list(result.l) == [a, b, c]
@@ -26,7 +26,7 @@ def test_flow_content_deep_nesting():
 
     # FlowContent([FlowContent([FlowContent([a])])]) -> FlowContent([a])
     deeply_nested = FlowContent([FlowContent([FlowContent([a])])])
-    result = UnnestContainersTransform[None]().transform(deeply_nested, None)
+    result = UnnestContainersTransform().transform(deeply_nested)
 
     assert isinstance(result, FlowContent)
     assert list(result.l) == [a]
@@ -39,7 +39,7 @@ def test_flow_content_multiple_nested():
 
     # FlowContent([FlowContent([a]), FlowContent([b]), c]) -> FlowContent([a, b, c])
     nested = FlowContent([FlowContent([a]), FlowContent([b]), c])
-    result = UnnestContainersTransform[None]().transform(nested, None)
+    result = UnnestContainersTransform().transform(nested)
 
     assert isinstance(result, FlowContent)
     assert list(result.l) == [a, b, c]
@@ -52,7 +52,7 @@ def test_flow_content_different_types_preserved():
 
     # FlowContent([ConcatContent([a, b]), c]) -> unchanged
     mixed = FlowContent([ConcatContent([a, b]), c])
-    result = UnnestContainersTransform[None]().transform(mixed, None)
+    result = UnnestContainersTransform().transform(mixed)
 
     assert isinstance(result, FlowContent)
     assert len(result.l) == 2
@@ -67,7 +67,7 @@ def test_concat_content_unnest():
 
     # ConcatContent([ConcatContent([a]), b]) -> ConcatContent([a, b])
     nested = ConcatContent([ConcatContent([a]), b])
-    result = UnnestContainersTransform[None]().transform(nested, None)
+    result = UnnestContainersTransform().transform(nested)
 
     assert isinstance(result, ConcatContent)
     assert list(result.l) == [a, b]
@@ -79,7 +79,7 @@ def test_blocks_content_unnest():
 
     # BlocksContent([BlocksContent([a]), b]) -> BlocksContent([a, b])
     nested = BlocksContent([BlocksContent([a]), b])
-    result = UnnestContainersTransform[None]().transform(nested, None)
+    result = UnnestContainersTransform().transform(nested)
 
     assert isinstance(result, BlocksContent)
     assert list(result.l) == [a, b]
@@ -91,7 +91,7 @@ def test_item_list_content_not_unnested():
 
     # ItemListContent is SequenceContent but NOT ContainerContent, should not be unnested
     nested = ItemListContent([ItemListContent([a]), b])
-    result = UnnestContainersTransform[None]().transform(nested, None)
+    result = UnnestContainersTransform().transform(nested)
 
     assert isinstance(result, ItemListContent)
     assert len(result.l) == 2
@@ -106,7 +106,7 @@ def test_no_change_when_no_nesting():
 
     # FlowContent([a, b]) -> unchanged
     flat = FlowContent([a, b])
-    result = UnnestContainersTransform[None]().transform(flat, None)
+    result = UnnestContainersTransform().transform(flat)
 
     assert isinstance(result, FlowContent)
     assert list(result.l) == [a, b]
@@ -118,7 +118,7 @@ def test_empty_nested_container():
 
     # FlowContent([FlowContent([]), a]) -> FlowContent([a])
     nested = FlowContent([FlowContent([]), a])
-    result = UnnestContainersTransform[None]().transform(nested, None)
+    result = UnnestContainersTransform().transform(nested)
 
     assert isinstance(result, FlowContent)
     assert list(result.l) == [a]
@@ -132,7 +132,7 @@ def test_mixed_nesting_levels():
 
     # FlowContent([a, FlowContent([b, FlowContent([c])]), d]) -> FlowContent([a, b, c, d])
     nested = FlowContent([a, FlowContent([b, FlowContent([c])]), d])
-    result = UnnestContainersTransform[None]().transform(nested, None)
+    result = UnnestContainersTransform().transform(nested)
 
     assert isinstance(result, FlowContent)
     assert list(result.l) == [a, b, c, d]
@@ -141,7 +141,7 @@ def test_mixed_nesting_levels():
 def test_join_flow_simple():
     # FlowContent with adjacent TextContent -> joined with space-separated stripped text
     flow = FlowContent([TextContent('hello  '), TextContent('  world')])
-    result = JoinContainerContentsTransform[None]().transform(flow, None)
+    result = JoinContainerContentsTransform().transform(flow)
 
     assert isinstance(result, FlowContent)
     assert len(result.l) == 1
@@ -159,7 +159,7 @@ def test_join_flow_multiple_spans():
         TextContent('  bar  '),
         TextContent('  baz'),
     ])
-    result = JoinContainerContentsTransform[None]().transform(flow, None)
+    result = JoinContainerContentsTransform().transform(flow)
 
     assert isinstance(result, FlowContent)
     assert len(result.l) == 3
@@ -178,7 +178,7 @@ def test_join_flow_no_adjacent():
         TextContent('world'),
         InlineCodeContent('code2'),
     ])
-    result = JoinContainerContentsTransform[None]().transform(flow, None)
+    result = JoinContainerContentsTransform().transform(flow)
 
     assert isinstance(result, FlowContent)
     assert result is flow  # Should be identity
@@ -188,7 +188,7 @@ def test_join_flow_no_adjacent():
 def test_join_concat_simple():
     # ConcatContent with adjacent TextContent -> joined with direct concatenation
     concat = ConcatContent([TextContent('hello  '), TextContent('  world')])
-    result = JoinContainerContentsTransform[None]().transform(concat, None)
+    result = JoinContainerContentsTransform().transform(concat)
 
     assert isinstance(result, ConcatContent)
     assert len(result.l) == 1
@@ -206,7 +206,7 @@ def test_join_concat_multiple_spans():
         TextContent('foo  '),
         TextContent('  bar'),
     ])
-    result = JoinContainerContentsTransform[None]().transform(concat, None)
+    result = JoinContainerContentsTransform().transform(concat)
 
     assert isinstance(result, ConcatContent)
     assert len(result.l) == 3
@@ -220,7 +220,7 @@ def test_join_concat_multiple_spans():
 def test_join_single_child():
     # Single TextContent -> no changes
     flow = FlowContent([TextContent('hello')])
-    result = JoinContainerContentsTransform[None]().transform(flow, None)
+    result = JoinContainerContentsTransform().transform(flow)
 
     assert result is flow  # Should be identity
 
@@ -232,7 +232,7 @@ def test_join_empty_text():
         TextContent(''),
         TextContent('world'),
     ])
-    result = JoinContainerContentsTransform[None]().transform(flow, None)
+    result = JoinContainerContentsTransform().transform(flow)
 
     assert isinstance(result, FlowContent)
     assert len(result.l) == 1
@@ -248,7 +248,7 @@ def test_join_all_text():
         TextContent('b'),
         TextContent('c'),
     ])
-    result = JoinContainerContentsTransform[None]().transform(concat, None)
+    result = JoinContainerContentsTransform().transform(concat)
 
     assert isinstance(result, ConcatContent)
     assert len(result.l) == 1

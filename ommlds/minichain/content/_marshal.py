@@ -7,6 +7,7 @@ from omlish import lang
 from omlish import marshal as msh
 from omlish import reflect as rfl
 
+from .blank import BlankContent
 from .code import BlockCodeContent
 from .code import InlineCodeContent
 from .containers import BlocksContent
@@ -275,6 +276,8 @@ def _install_standard_marshaling() -> None:
     base_content_poly = msh.Polymorphism(
         BaseContent,
         [
+
+            msh.Impl(BlankContent, 'blank'),
 
             msh.Impl(InlineCodeContent, 'inline_code'),
             msh.Impl(BlockCodeContent, 'block_code'),

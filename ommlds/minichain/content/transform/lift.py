@@ -13,13 +13,10 @@ from ..text import TextContent
 from .visitors import VisitorContentTransform
 
 
-C = ta.TypeVar('C')
-
-
 ##
 
 
-class LiftToStandardContentTransform(VisitorContentTransform[C]):
+class LiftToStandardContentTransform(VisitorContentTransform):
     def __init__(
             self,
             *,
@@ -29,10 +26,10 @@ class LiftToStandardContentTransform(VisitorContentTransform[C]):
 
         self._container_mode = container_mode
 
-    def visit_str(self, s: str, ctx: C) -> Content:
+    def visit_str(self, s: str, ctx: None) -> Content:
         return with_content_original(TextContent(s), original=s)
 
-    def visit_sequence(self, c: ta.Sequence[Content], ctx: C) -> ContainerContent:
+    def visit_sequence(self, c: ta.Sequence[Content], ctx: None) -> ContainerContent:
         cc = check.isinstance(super().visit_sequence(c, ctx), collections.abc.Sequence)
 
         nc: ContainerContent

@@ -22,7 +22,7 @@ from ....chat.stream.types import ContentAiDelta
 from ....chat.stream.types import PartialToolUseAiDelta
 from ....chat.tools.types import Tool
 from ....content.json import JsonContent
-from ....content.render.simple import render_content_str
+from ....content.render.standard import render_content_str
 from ....llms.types import MaxCompletionTokens
 from ....llms.types import MaxTokens
 from ....llms.types import Temperature

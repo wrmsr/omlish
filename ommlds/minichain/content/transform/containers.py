@@ -17,14 +17,11 @@ from ..visitors import StandardContentVisitor
 from .visitors import VisitorContentTransform
 
 
-C = ta.TypeVar('C')
-
-
 ##
 
 
-class UnnestContainersTransform(StandardContentVisitor[C, Content], VisitorContentTransform[C]):
-    def visit_container_content(self, container: ContainerContent, ctx: C) -> Content:
+class UnnestContainersTransform(StandardContentVisitor[None, Content], VisitorContentTransform):
+    def visit_container_content(self, container: ContainerContent, ctx: None) -> Content:
         # First, recursively transform children via superclass
         nc = super().visit_container_content(container, ctx)
         if not isinstance(nc, ContainerContent):
@@ -53,8 +50,8 @@ class UnnestContainersTransform(StandardContentVisitor[C, Content], VisitorConte
 ##
 
 
-class UnwrapContainersTransform(StandardContentVisitor[C, Content], VisitorContentTransform[C]):
-    def visit_container_content(self, container: ContainerContent, ctx: C) -> Content:
+class UnwrapContainersTransform(StandardContentVisitor[None, Content], VisitorContentTransform):
+    def visit_container_content(self, container: ContainerContent, ctx: None) -> Content:
         # First, recursively transform children via superclass
         nc = super().visit_container_content(container, ctx)
         if not isinstance(nc, ContainerContent):
@@ -71,7 +68,7 @@ class UnwrapContainersTransform(StandardContentVisitor[C, Content], VisitorConte
 ##
 
 
-class JoinContainerContentsTransform(StandardContentVisitor[C, Content], VisitorContentTransform[C]):
+class JoinContainerContentsTransform(StandardContentVisitor[None, Content], VisitorContentTransform):
     def _join_text_contents(
             self,
             container: ContainerContent,
@@ -109,7 +106,7 @@ class JoinContainerContentsTransform(StandardContentVisitor[C, Content], Visitor
 
         return container.replace_child_content(new_children)
 
-    def visit_flow_content(self, c: FlowContent, ctx: C) -> Content:
+    def visit_flow_content(self, c: FlowContent, ctx: None) -> Content:
         nc = super().visit_flow_content(c, ctx)
         if not isinstance(nc, FlowContent):
             return nc
@@ -119,7 +116,7 @@ class JoinContainerContentsTransform(StandardContentVisitor[C, Content], Visitor
             lambda span: ' '.join(tc.s.strip() for tc in span),
         )
 
-    def visit_concat_content(self, c: ConcatContent, ctx: C) -> Content:
+    def visit_concat_content(self, c: ConcatContent, ctx: None) -> Content:
         nc = super().visit_concat_content(c, ctx)
         if not isinstance(nc, ConcatContent):
             return nc

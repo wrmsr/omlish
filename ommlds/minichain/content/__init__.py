@@ -11,8 +11,10 @@ _msh.register_global_module_import('._marshal', __package__)
 # These are all of the Content subtypes - it must all be imported before the conditional import.
 
 from . import (  # noqa
+    blank as _blank,
     code as _code,
     composite as _composite,
+    containers as _containers,
     content as _content,
     dynamic as _dynamic,
     emphasis as _emphasis,

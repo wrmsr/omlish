@@ -1,5 +1,3 @@
-import typing as ta
-
 from omlish import lang
 
 from ...content import Content
@@ -8,9 +6,6 @@ from ...resources import ResourceContent
 from ...standard import StandardContent
 from ...text import TextContent
 from ..visitors import VisitorContentTransform
-
-
-C = ta.TypeVar('C')
 
 
 ##
@@ -47,7 +42,7 @@ RESOURCE_CONTENT_CACHE = ResourceContentCache()
 ##
 
 
-class ResourceContentMaterializer(VisitorContentTransform[C]):
+class ResourceContentMaterializer(VisitorContentTransform):
     def __init__(
             self,
             content_cache: ResourceContentCache | None = None,
@@ -58,6 +53,6 @@ class ResourceContentMaterializer(VisitorContentTransform[C]):
             content_cache = RESOURCE_CONTENT_CACHE
         self._content_cache = content_cache
 
-    def visit_resource_content(self, c: ResourceContent, ctx: C) -> Content:
+    def visit_resource_content(self, c: ResourceContent, ctx: None) -> Content:
         nc = self._content_cache.get(c)
         return with_content_original(nc, original=c)

@@ -16,39 +16,36 @@ from ..metadata import MessageMetadata
 from .messages import MessageTransform
 
 
-C = ta.TypeVar('C')
-
-
 ##
 
 
-class OriginalMetadataStrippingMessageTransform(MessageTransform[C]):
-    def transform(self, m: Message, ctx: C) -> ta.Sequence[Message]:
+class OriginalMetadataStrippingMessageTransform(MessageTransform):
+    def transform(self, m: Message) -> ta.Sequence[Message]:
         return [m.with_metadata(discard=[MessageOriginal])]
 
 
 def strip_message_original_metadata(c: Message) -> Message:
-    return check.single(OriginalMetadataStrippingMessageTransform[None]().transform(c, None))
+    return check.single(OriginalMetadataStrippingMessageTransform().transform(c))
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class UuidAddingMessageTransform(MessageTransform[C]):
+class UuidAddingMessageTransform(MessageTransform):
     uuid_factory: ta.Callable[[], uuid.UUID] = dc.field(default_factory=lambda: uuid.uuid4)
 
-    def transform(self, m: Message, ctx: C) -> Chat:
+    def transform(self, m: Message) -> Chat:
         if Uuid not in m.metadata:
             m = m.with_metadata(Uuid(self.uuid_factory()))
         return [m]
 
 
 @dc.dataclass(frozen=True)
-class CreatedAtAddingMessageTransform(MessageTransform[C]):
+class CreatedAtAddingMessageTransform(MessageTransform):
     clock: ta.Callable[[], datetime.datetime] = dc.field(default=datetime.datetime.now)
 
-    def transform(self, m: Message, ctx: C) -> Chat:
+    def transform(self, m: Message) -> Chat:
         if CreatedAt not in m.metadata:
             m = m.with_metadata(CreatedAt(self.clock()))
         return [m]
@@ -63,11 +60,11 @@ class TransformedMessageOrigin(tv.ScalarTypedValue[Message], MessageMetadata, la
 
 
 @dc.dataclass(frozen=True)
-class OriginAddingMessageTransform(MessageTransform[C]):
-    child: MessageTransform[C]
+class OriginAddingMessageTransform(MessageTransform):
+    child: MessageTransform
 
-    def transform(self, m: Message, ctx: C) -> Chat:
+    def transform(self, m: Message) -> Chat:
         return [
             o.with_metadata(TransformedMessageOrigin(m)) if TransformedMessageOrigin not in o.metadata else m
-            for o in self.child.transform(m, ctx)
+            for o in self.child.transform(m)
         ]

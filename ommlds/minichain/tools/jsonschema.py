@@ -4,7 +4,7 @@ TODO:
 """
 from omlish import check
 
-from ..content.render.simple import SimpleContentStrRenderer
+from ..content.render.standard import StandardContentRenderer
 from ..content.render.types import ContentStrRenderer
 from .types import EnumToolDtype
 from .types import MappingToolDtype
@@ -30,7 +30,7 @@ class ToolJsonschemaRenderer:
         super().__init__()
 
         if content_str_renderer is None:
-            content_str_renderer = SimpleContentStrRenderer()
+            content_str_renderer = StandardContentRenderer()
         self._content_str_renderer = content_str_renderer
 
     def render_type(self, t: ToolDtype) -> dict:

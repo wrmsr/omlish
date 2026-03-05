@@ -1,5 +1,3 @@
-import typing as ta
-
 from omlish.text import templating as tpl
 
 from ....content import Content
@@ -18,13 +16,10 @@ from ..resources import ResourceContentMaterializer
 from ..templates import TemplateContentMaterializer
 
 
-C = ta.TypeVar('C')
-
-
 ##
 
 
-class DefaultContentMaterializer(ContentTransform[C]):
+class DefaultContentMaterializer(ContentTransform):
     def __init__(
             self,
             *,
@@ -33,17 +28,17 @@ class DefaultContentMaterializer(ContentTransform[C]):
     ) -> None:
         super().__init__()
 
-        self._recursive_materializer = RecursiveContentTransform[C](
-            NamespaceContentMaterializer[C](),
-            PlaceholderContentMaterializer[C](placeholder_contents),
-            ResourceContentMaterializer[C](),
+        self._recursive_materializer = RecursiveContentTransform(
+            NamespaceContentMaterializer(),
+            PlaceholderContentMaterializer(placeholder_contents),
+            ResourceContentMaterializer(),
         )
 
-        self._template_materializer = TemplateContentMaterializer[C](templater_context)
+        self._template_materializer = TemplateContentMaterializer(templater_context)
 
-    def transform(self, c: Content, ctx: C) -> Content:
-        c = self._recursive_materializer.transform(c, ctx)
-        c = self._template_materializer.transform(c, ctx)
+    def transform(self, c: Content) -> Content:
+        c = self._recursive_materializer.transform(c)
+        c = self._template_materializer.transform(c)
         return c
 
 
@@ -53,10 +48,10 @@ def materialize_content(
         placeholder_contents: PlaceholderContents | None = None,
         templater_context: tpl.Templater.Context | None = None,
 ) -> Content:
-    return DefaultContentMaterializer[None](
+    return DefaultContentMaterializer(
         placeholder_contents=placeholder_contents,
         templater_context=templater_context,
-    ).transform(c, None)
+    ).transform(c)
 
 
 ##

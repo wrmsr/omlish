@@ -8,15 +8,12 @@ from ..messages import Chat
 from .messages import MessageTransform
 
 
-C = ta.TypeVar('C')
-
-
 ##
 
 
-class ChatTransform(lang.Abstract, ta.Generic[C]):
+class ChatTransform(lang.Abstract):
     @abc.abstractmethod
-    def transform(self, chat: Chat, ctx: C) -> Chat:
+    def transform(self, chat: Chat) -> Chat:
         raise NotImplementedError
 
 
@@ -24,20 +21,20 @@ class ChatTransform(lang.Abstract, ta.Generic[C]):
 
 
 @dc.dataclass(frozen=True)
-class CompositeChatTransform(ChatTransform[C]):
+class CompositeChatTransform(ChatTransform):
     cts: ta.Sequence[ChatTransform]
 
-    def transform(self, chat: Chat, ctx: C) -> Chat:
+    def transform(self, chat: Chat) -> Chat:
         for ct in self.cts:
-            chat = ct.transform(chat, ctx)
+            chat = ct.transform(chat)
         return chat
 
 
 @dc.dataclass(frozen=True)
-class FnChatTransform(ChatTransform[C]):
+class FnChatTransform(ChatTransform):
     fn: ta.Callable[[Chat], Chat]
 
-    def transform(self, chat: Chat, ctx: C) -> Chat:
+    def transform(self, chat: Chat) -> Chat:
         return self.fn(chat)
 
 
@@ -45,19 +42,19 @@ class FnChatTransform(ChatTransform[C]):
 
 
 @dc.dataclass(frozen=True)
-class MessageTransformChatTransform(ChatTransform[C]):
-    mt: MessageTransform[C]
+class MessageTransformChatTransform(ChatTransform):
+    mt: MessageTransform
 
-    def transform(self, chat: Chat, ctx: C) -> Chat:
-        return [o for i in chat for o in self.mt.transform(i, ctx)]
+    def transform(self, chat: Chat) -> Chat:
+        return [o for i in chat for o in self.mt.transform(i)]
 
 
 @dc.dataclass(frozen=True)
-class LastMessageTransformChatTransform(ChatTransform[C]):
-    mt: MessageTransform[C]
+class LastMessageTransformChatTransform(ChatTransform):
+    mt: MessageTransform
 
-    def transform(self, chat: Chat, ctx: C) -> Chat:
+    def transform(self, chat: Chat) -> Chat:
         if chat:
-            return [*chat[:-1], *self.mt.transform(chat[-1], ctx)]
+            return [*chat[:-1], *self.mt.transform(chat[-1])]
         else:
             return []

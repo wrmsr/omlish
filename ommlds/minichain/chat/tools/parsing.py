@@ -13,17 +13,14 @@ from ..messages import ToolUseMessage
 from ..transform.messages import MessageTransform
 
 
-C = ta.TypeVar('C')
-
-
 ##
 
 
 @dc.dataclass(frozen=True)
-class ToolExecParsingMessageTransform(MessageTransform[C]):
+class ToolExecParsingMessageTransform(MessageTransform):
     parser: ToolExecParser
 
-    def transform(self, message: Message, ctx: C) -> ta.Sequence[Message]:
+    def transform(self, message: Message) -> ta.Sequence[Message]:
         if not isinstance(message, AiMessage):
             return [message]
 

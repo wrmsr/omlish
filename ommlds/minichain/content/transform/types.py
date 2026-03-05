@@ -7,15 +7,12 @@ from omlish import lang
 from ..content import Content
 
 
-C = ta.TypeVar('C')
-
-
 ##
 
 
-class ContentTransform(lang.Abstract, ta.Generic[C]):
+class ContentTransform(lang.Abstract):
     @abc.abstractmethod
-    def transform(self, c: Content, ctx: C) -> Content:
+    def transform(self, c: Content) -> Content:
         raise NotImplementedError
 
 
@@ -23,30 +20,30 @@ class ContentTransform(lang.Abstract, ta.Generic[C]):
 
 
 @dc.dataclass(frozen=True)
-class CompositeContentTransform(ContentTransform[C]):
-    cts: ta.Sequence[ContentTransform[C]]
+class CompositeContentTransform(ContentTransform):
+    cts: ta.Sequence[ContentTransform]
 
-    def transform(self, c: Content, ctx: C) -> Content:
+    def transform(self, c: Content) -> Content:
         for ct in self.cts:
-            c = ct.transform(c, ctx)
+            c = ct.transform(c)
         return c
 
 
 @dc.dataclass(frozen=True)
-class FnContentTransform(ContentTransform[C]):
+class FnContentTransform(ContentTransform):
     fn: ta.Callable[[Content], Content]
 
-    def transform(self, message: Content, ctx: C) -> Content:
+    def transform(self, message: Content) -> Content:
         return self.fn(message)
 
 
 @dc.dataclass(frozen=True)
-class TypeFilteredContentTransform(ContentTransform[C]):
+class TypeFilteredContentTransform(ContentTransform):
     ty: type | tuple[type, ...]
-    ct: ContentTransform[C]
+    ct: ContentTransform
 
-    def transform(self, c: Content, ctx: C) -> Content:
+    def transform(self, c: Content) -> Content:
         if isinstance(c, self.ty):
-            return self.ct.transform(c, ctx)
+            return self.ct.transform(c)
         else:
             return c

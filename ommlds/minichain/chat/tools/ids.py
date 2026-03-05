@@ -9,9 +9,6 @@ from ..messages import ToolUseMessage
 from ..transform.messages import MessageTransform
 
 
-C = ta.TypeVar('C')
-
-
 ##
 
 
@@ -20,10 +17,10 @@ def simple_uuid_tool_exec_request_id_factory(m: ToolUseMessage) -> str:  # noqa
 
 
 @dc.dataclass(frozen=True)
-class ToolUseIdAddingMessageTransform(MessageTransform[C]):
+class ToolUseIdAddingMessageTransform(MessageTransform):
     id_factory: ta.Callable[[ToolUseMessage], str] = dc.field(default=simple_uuid_tool_exec_request_id_factory)  # noqa
 
-    def transform(self, m: Message, ctx: C) -> Chat:
+    def transform(self, m: Message) -> Chat:
         if not isinstance(m, ToolUseMessage) or m.tu.id is not None:
             return [m]
 

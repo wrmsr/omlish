@@ -5,6 +5,7 @@ import typing as ta
 from omlish import collections as col
 from omlish import lang
 
+from .blank import BlankContent
 from .code import BlockCodeContent
 from .code import CodeContent
 from .code import InlineCodeContent
@@ -91,6 +92,9 @@ class ContentVisitor(lang.Abstract, ta.Generic[C, R]):
 
     ##
     # leaf StandardContent
+
+    def visit_blank_content(self, c: BlankContent, ctx: C) -> R:
+        return self.visit_standard_content(c, ctx)
 
     def visit_image_content(self, c: ImageContent, ctx: C) -> R:
         return self.visit_standard_content(c, ctx)

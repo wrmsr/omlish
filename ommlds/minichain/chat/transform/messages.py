@@ -8,15 +8,12 @@ from ..messages import Chat
 from ..messages import Message
 
 
-C = ta.TypeVar('C')
-
-
 ##
 
 
-class MessageTransform(lang.Abstract, ta.Generic[C]):
+class MessageTransform(lang.Abstract):
     @abc.abstractmethod
-    def transform(self, message: Message, ctx: C) -> ta.Sequence[Message]:
+    def transform(self, m: Message) -> ta.Sequence[Message]:
         raise NotImplementedError
 
 
@@ -24,31 +21,31 @@ class MessageTransform(lang.Abstract, ta.Generic[C]):
 
 
 @dc.dataclass(frozen=True)
-class CompositeMessageTransform(MessageTransform[C]):
-    mts: ta.Sequence[MessageTransform[C]]
+class CompositeMessageTransform(MessageTransform):
+    mts: ta.Sequence[MessageTransform]
 
-    def transform(self, message: Message, ctx: C) -> Chat:
-        chat: Chat = [message]
+    def transform(self, m: Message) -> Chat:
+        chat: Chat = [m]
         for mt in self.mts:
-            chat = [o for i in chat for o in mt.transform(i, ctx)]
+            chat = [o for i in chat for o in mt.transform(i)]
         return chat
 
 
 @dc.dataclass(frozen=True)
-class FnMessageTransform(MessageTransform[C]):
+class FnMessageTransform(MessageTransform):
     fn: ta.Callable[[Message], ta.Sequence[Message]]
 
-    def transform(self, message: Message, ctx: C) -> ta.Sequence[Message]:
-        return self.fn(message)
+    def transform(self, m: Message) -> ta.Sequence[Message]:
+        return self.fn(m)
 
 
 @dc.dataclass(frozen=True)
-class TypeFilteredMessageTransform(MessageTransform[C]):
+class TypeFilteredMessageTransform(MessageTransform):
     ty: type | tuple[type, ...]
-    mt: MessageTransform[C]
+    mt: MessageTransform
 
-    def transform(self, message: Message, ctx: C) -> Chat:
-        if isinstance(message, self.ty):
-            return self.mt.transform(message, ctx)
+    def transform(self, m: Message) -> Chat:
+        if isinstance(m, self.ty):
+            return self.mt.transform(m)
         else:
-            return [message]
+            return [m]

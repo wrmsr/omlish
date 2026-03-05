@@ -60,7 +60,7 @@ def test_openai_content(harness):
     )
 
     req = ChatChoicesRequest(
-        [UserMessage(['Is water ', [TextContent('dry?')]])],
+        [UserMessage(TextContent('Is water dry?'))],
         [
             # Temperature(.1),
             MaxCompletionTokens(64),

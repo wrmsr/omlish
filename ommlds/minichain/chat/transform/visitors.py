@@ -7,15 +7,12 @@ from ..visitors import MessageVisitor
 from .messages import MessageTransform
 
 
-C = ta.TypeVar('C')
-
-
 ##
 
 
-class VisitorMessageTransform(MessageVisitor[C, Message], MessageTransform[C], lang.Abstract):
+class VisitorMessageTransform(MessageVisitor[None, Message], MessageTransform, lang.Abstract):
     @ta.final
-    def transform(self, message: Message, ctx: C) -> ta.Sequence[Message]:
+    def transform(self, m: Message) -> ta.Sequence[Message]:
         """Final - must be identical to `visit`."""
 
-        return [self.visit(message, ctx)]
+        return [self.visit(m, None)]

@@ -8,9 +8,6 @@ from ...placeholders import PlaceholderContentKey
 from ..visitors import VisitorContentTransform
 
 
-C = ta.TypeVar('C')
-
-
 ##
 
 
@@ -24,7 +21,7 @@ class PlaceholderContentMissingError(Exception):
     key: PlaceholderContentKey
 
 
-class PlaceholderContentMaterializer(VisitorContentTransform[C]):
+class PlaceholderContentMaterializer(VisitorContentTransform):
     def __init__(
             self,
             placeholder_contents: PlaceholderContents | None = None,
@@ -64,5 +61,5 @@ class PlaceholderContentMaterializer(VisitorContentTransform[C]):
         self._cache[key] = c
         return c
 
-    def visit_placeholder_content(self, c: PlaceholderContent, ctx: C) -> Content:
+    def visit_placeholder_content(self, c: PlaceholderContent, ctx: None) -> Content:
         return self._get_placeholder_content(c.k)

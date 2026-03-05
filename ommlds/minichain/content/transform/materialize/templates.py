@@ -1,5 +1,3 @@
-import typing as ta
-
 from omlish import check
 from omlish.text import templating as tpl
 
@@ -10,13 +8,10 @@ from ...text import TextContent
 from ..visitors import VisitorContentTransform
 
 
-C = ta.TypeVar('C')
-
-
 ##
 
 
-class TemplateContentMaterializer(VisitorContentTransform[C]):
+class TemplateContentMaterializer(VisitorContentTransform):
     def __init__(
             self,
             templater_context: tpl.Templater.Context | None = None,
@@ -25,6 +20,6 @@ class TemplateContentMaterializer(VisitorContentTransform[C]):
 
         self._templater_context = templater_context
 
-    def visit_template_content(self, c: TemplateContent, ctx: C) -> Content:
+    def visit_template_content(self, c: TemplateContent, ctx: None) -> Content:
         s = c.t.render(check.not_none(self._templater_context))
         return with_content_original(TextContent(s), original=c)

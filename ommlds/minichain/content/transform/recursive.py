@@ -1,10 +1,5 @@
-import typing as ta
-
 from ..content import Content
 from .types import ContentTransform
-
-
-C = ta.TypeVar('C')
 
 
 ##
@@ -14,12 +9,12 @@ class RecursiveContentTransformDepthExceededError(Exception):
     pass
 
 
-class RecursiveContentTransform(ContentTransform[C]):
+class RecursiveContentTransform(ContentTransform):
     DEFAULT_MAX_ITERATIONS: int = 8
 
     def __init__(
             self,
-            *children: ContentTransform[C],
+            *children: ContentTransform,
             max_iterations: int = DEFAULT_MAX_ITERATIONS,
             debug: bool = False,
     ) -> None:
@@ -29,7 +24,7 @@ class RecursiveContentTransform(ContentTransform[C]):
         self._max_iterations = max_iterations
         self._debug = debug
 
-    def transform(self, content: Content, ctx: C) -> Content:
+    def transform(self, content: Content) -> Content:
         n = 0
 
         history: list[Content] | None = None
@@ -45,7 +40,7 @@ class RecursiveContentTransform(ContentTransform[C]):
 
             out = content
             for child in self._children:
-                out = child.transform(out, ctx)
+                out = child.transform(out)
 
             if out is content:
                 return content
