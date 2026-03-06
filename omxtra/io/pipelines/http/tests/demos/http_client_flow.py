@@ -14,7 +14,7 @@ async def _a_main(url: str = 'http://example.com/') -> None:
         url,
 
         with_flow=True,
-        flow_auto_read=True,
+        flow_auto_read=False,
 
         with_logging=True,
     )

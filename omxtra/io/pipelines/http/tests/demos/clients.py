@@ -176,7 +176,7 @@ def print_full_response(response: FullPipelineHttpResponse) -> None:
 
 
 async def asyncio_fetch_url(
-        url: str = 'http://example.com/',
+        url: str,
         **client_kwargs: ta.Any,
 ) -> FullPipelineHttpResponse:
     parsed_url = parse_url(url)

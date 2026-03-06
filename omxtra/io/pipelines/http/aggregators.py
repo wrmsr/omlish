@@ -149,7 +149,7 @@ class PipelineHttpObjectAggregator(
                 ):
                     return self._abort(FrameTooLargeByteStreamBufferError('aggregation body exceeded max_body'))
 
-                return (self._a._BodyState(self._a, msg, te.length), [])  # noqa
+                return (self._a._BodyState(self._a, msg), [])  # noqa
 
             elif isinstance(msg, self._a._final_type):
                 return (self, [msg])
@@ -164,12 +164,10 @@ class PipelineHttpObjectAggregator(
                 self,
                 a: 'PipelineHttpObjectAggregator',
                 head: PipelineHttpMessageHead,
-                content_length: ta.Optional[int],
         ) -> None:
             super().__init__(a)
 
             self._head = head
-            self._remaining = content_length
 
         _buf: ta.Optional[MutableByteStreamBuffer] = None
 
@@ -190,29 +188,11 @@ class PipelineHttpObjectAggregator(
                     )
 
                 for mv in ByteStreamBuffers.iter_segments(msg.data):
-                    mvl = len(mv)
-
-                    if (rem := self._remaining) is not None and mvl > rem:
-                        return self._abort('unexpected extra bytes after message body')
-
                     buf.write(mv)
 
-                    if rem is not None:
-                        self._remaining -= mvl
-
-                if self._remaining:
-                    return (self, [])
-
-                body = buf.coalesce(len(buf))
-                return (self._a._EndState(self._a, self._head, body), [])
+                return (self, [])
 
             elif isinstance(msg, self._a._end_type):
-                if self._remaining:
-                    return self._abort('incomplete message body', msg)
-
-                if self._remaining is not None:
-                    return self._abort('unexpected message sequence', msg)
-
                 body: CanByteStreamBuffer
                 if (buf := self._buf) is not None:
                     body = buf.coalesce(len(buf))
