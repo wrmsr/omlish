@@ -87,7 +87,7 @@ def __omlish_amalg__():  # noqa
             dict(path='bytes/decoders.py', sha1='02056a316cff2a7151f520f0d1c8247f313d5f24'),
             dict(path='http/decoders.py', sha1='6944a9c30768c8db49198f130f5c56d1260117ac'),
             dict(path='drivers/asyncio.py', sha1='abc258eacd896ebb2a31dbbf03de8476153230ea'),
-            dict(path='http/client/responses.py', sha1='ef400122d352f032d36fa500f2b486d038cf1dc7'),
+            dict(path='http/client/responses.py', sha1='0ec4673a64e5459c6eacd0c28b30a5265f9e2763'),
             dict(path='http/server/requests.py', sha1='3cfef46c7d713ccd7d5e51c7f94ca24c5ff8ff96'),
             dict(path='_amalg.py', sha1='74c164f8713be6db5958f4a390d7bd978c3e685a'),
         ],
@@ -11909,7 +11909,7 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
         self._config = config
 
         self._enabled = False
-        self._z: ta.Optional[ta.Any] = None
+        self._decompressor: ta.Optional[PipelineHttpResponseConditionalGzipDecoder.Decompressor] = None
 
         # Statistics for budget checks
         self._in_total_bytes = 0
@@ -11929,6 +11929,46 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
 
     def inbound_buffered_bytes(self) -> int:
         return self._in_pending_bytes + self._out_pending_bytes
+
+    #
+
+    class Decompressor:
+        @abc.abstractmethod
+        def decompress(
+                self,
+                data: BytesLikeOrMemoryview,
+                max_bytes: ta.Optional[int] = None,
+                /,
+        ) -> ta.Optional[BytesLikeOrMemoryview]:
+            raise NotImplementedError
+
+        @abc.abstractmethod
+        def unconsumed_tail(self) -> ta.Optional[BytesLikeOrMemoryview]:
+            raise NotImplementedError
+
+        @abc.abstractmethod
+        def flush(self) -> ta.Optional[BytesLikeOrMemoryview]:
+            raise NotImplementedError
+
+    #
+
+    class ZlibDecompressor(Decompressor):
+        def __init__(self, wbits: int = 16 + zlib.MAX_WBITS) -> None:
+            self._z = zlib.decompressobj(wbits)
+
+        def decompress(
+                self,
+                data: BytesLikeOrMemoryview,
+                max_bytes: ta.Optional[int] = None,
+                /,
+        ) -> ta.Optional[BytesLikeOrMemoryview]:
+            return self._z.decompress(data, max_bytes)
+
+        def unconsumed_tail(self) -> ta.Optional[BytesLikeOrMemoryview]:
+            return self._z.unconsumed_tail
+
+        def flush(self) -> ta.Optional[BytesLikeOrMemoryview]:
+            return self._z.flush()
 
     #
 
@@ -11981,7 +12021,7 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
     def _pump(self, ctx: ChannelPipelineHandlerContext) -> bool:
         """Returns True if it effectively satisfied a read request."""
 
-        z = self._z
+        z = self._decompressor
         if z is None:
             return False
 
@@ -12026,7 +12066,7 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
                     if not self._is_auto_read(ctx):
                         return True  # Satisfied!
 
-            ut = z.unconsumed_tail
+            ut = z.unconsumed_tail()
             if ut:
                 self._in_pending.appendleft(ut)
                 self._in_pending_bytes += len(ut)
@@ -12082,7 +12122,7 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
     def _on_inbound_http_response_head(self, ctx: ChannelPipelineHandlerContext, msg: PipelineHttpResponseHead) -> None:  # noqa
         enc = msg.headers.lower.get('content-encoding', ())
         self._enabled = 'gzip' in enc
-        self._z = zlib.decompressobj(16 + zlib.MAX_WBITS) if self._enabled else None
+        self._z = self.ZlibDecompressor() if self._enabled else None
         self._reset()
         ctx.feed_in(msg)
 

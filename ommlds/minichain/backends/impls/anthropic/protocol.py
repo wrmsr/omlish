@@ -12,7 +12,7 @@ from ....chat.messages import ToolUseMessage
 from ....chat.messages import ToolUseResultMessage
 from ....chat.messages import UserMessage
 from ....chat.tools.types import Tool
-from ....content.render.standard import render_content_str
+from ....content.render.simple import render_content_str
 from ....tools.jsonschema import build_tool_spec_params_json_schema
 
 

@@ -7,7 +7,7 @@ from omlish import check
 from omlish import dataclasses as dc
 
 from .....backends.google.protocol import types as pt
-from ....content.render.standard import render_content_str
+from ....content.render.simple import render_content_str
 from ....tools.types import EnumToolDtype
 from ....tools.types import MappingToolDtype
 from ....tools.types import NullableToolDtype
