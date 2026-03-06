@@ -1,113 +1,27 @@
 # ruff: noqa: UP006 UP045
 # @omlish-lite
+import asyncio
 import dataclasses as dc
 import typing as ta
 
+from omlish.lite.check import check
 from omlish.io.streams.utils import ByteStreamBuffers
 
+from ....drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
 from ....core import ChannelPipelineHandler
-from ....core import ChannelPipelineHandlerContext
-from ....core import ChannelPipelineMessages
 from ....core import PipelineChannel
 from ....flow.stub import StubChannelPipelineFlow
-from ....flow.types import ChannelPipelineFlow
 from ....flow.types import ChannelPipelineFlowMessages
 from ....handlers.flatmap import FlatMapChannelPipelineHandlers
 from ....handlers.logs import LoggingChannelPipelineHandler
 from ....ssl.handlers import SslChannelPipelineHandler
 from ...client.requests import PipelineHttpRequestEncoder
 from ...client.responses import PipelineHttpResponseDecoder
-from ...client.responses import PipelineHttpResponseChunkedDecoder
-from ...decompressors import PipelineHttpResponseDecompressor
+from ...client.responses import PipelineHttpResponseDecompressor
 from ...requests import FullPipelineHttpRequest
-from ...responses import PipelineHttpResponseContentChunkData
-from ...responses import PipelineHttpResponseEnd
-from ...responses import PipelineHttpResponseHead
-
-
-##
-
-
-class HttpClientHandler(ChannelPipelineHandler):
-    """
-    Simple HTTP client handler that sends a request and prints the response.
-
-    Accumulates response head and body, then prints on EOF.
-    """
-
-    def __init__(self) -> None:
-        super().__init__()
-
-        self._response_head: ta.Optional[PipelineHttpResponseHead] = None
-        self._body_chunks: ta.List[bytes] = []
-
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, FullPipelineHttpRequest):
-            ctx.feed_out(msg)
-
-            if (fc := ctx.services.find(ChannelPipelineFlow)) is not None and not fc.is_auto_read():
-                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
-
-            return
-
-        if isinstance(msg, PipelineHttpResponseHead):
-            self._response_head = msg
-            return
-
-        if isinstance(msg, PipelineHttpResponseEnd):
-            return
-
-        if isinstance(msg, ChannelPipelineMessages.FinalInput):
-            self._print_response()
-            ctx.feed_in(msg)
-            ctx.feed_out(ChannelPipelineMessages.FinalOutput())
-            return
-
-        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
-            if (fc := ctx.services.find(ChannelPipelineFlow)) is not None and not fc.is_auto_read():
-                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
-
-            return
-
-        # Handle wrapped chunks
-        if isinstance(msg, PipelineHttpResponseContentChunkData):
-            self._body_chunks.append(msg.data)
-            return
-
-        # Body bytes (for non-chunked responses)
-        if ByteStreamBuffers.can_bytes(msg):
-            for mv in ByteStreamBuffers.iter_segments(msg):
-                if mv:
-                    self._body_chunks.append(ByteStreamBuffers.memoryview_to_bytes(mv))
-            return
-
-        # Pass through other messages
-        ctx.feed_in(msg)
-
-    def _print_response(self) -> None:
-        """Print the accumulated response."""
-
-        if self._response_head is None:
-            print('No response received')
-            return
-
-        head = self._response_head
-        body = b''.join(self._body_chunks)
-
-        print(f'HTTP/{head.version.major}.{head.version.minor} {head.status} {head.reason}')
-        print()
-
-        # Print headers
-        for name, value in head.headers.raw:
-            print(f'{name}: {value}')
-
-        print()
-
-        # Print body (decoded if text)
-        try:
-            print(body.decode('utf-8'))
-        except UnicodeDecodeError:
-            print(f'<binary body: {len(body)} bytes>')
+from ...responses import FullPipelineHttpResponse
+from ....handlers.queues import OutboundQueueChannelPipelineHandler
+from ...client.responses import PipelineHttpResponseAggregatorDecoder
 
 
 ##
@@ -115,6 +29,8 @@ class HttpClientHandler(ChannelPipelineHandler):
 
 def build_http_client(
         *,
+        outermost_handlers: ta.Optional[ta.Sequence[ChannelPipelineHandler]] = None,
+
         with_logging: bool = False,
 
         with_ssl: bool = False,
@@ -122,25 +38,34 @@ def build_http_client(
 
         with_gzip: bool = False,
 
+        with_aggregator: bool = False,
+
         with_flow: bool = False,
         flow_auto_read: bool = False,
+
+        raise_immediately: bool = False,
 ) -> PipelineChannel.Spec:
     return PipelineChannel.Spec(
         [
+            *(outermost_handlers or []),
+
             *([LoggingChannelPipelineHandler()] if with_logging else []),
 
             *([SslChannelPipelineHandler(**(ssl_kwargs or {}))] if with_ssl else []),
 
-            PipelineHttpResponseDecoder(),
-
-            *([PipelineHttpResponseDecompressor()] if with_gzip else []),
-
             PipelineHttpRequestEncoder(),
+            FlatMapChannelPipelineHandlers.feed_out_and_drop(filter_type=FullPipelineHttpRequest),
 
-            HttpClientHandler(),
+            PipelineHttpResponseDecoder(),
+            *([PipelineHttpResponseDecompressor()] if with_gzip else []),
+            *([PipelineHttpResponseAggregatorDecoder()] if with_aggregator else []),
 
             *([FlatMapChannelPipelineHandlers.drop('inbound', filter_type=ChannelPipelineFlowMessages.FlushInput)] if with_flow else []),  # noqa
         ],
+
+        config=PipelineChannel.Config.DEFAULT.update_pipeline(
+            raise_immediately=raise_immediately,
+        ),
 
         services=[
             *([StubChannelPipelineFlow(auto_read=flow_auto_read)] if with_flow else []),
@@ -191,3 +116,78 @@ def parse_url(url: str) -> ParsedUrl:
         port,
         path,
     )
+
+
+##
+
+
+def print_full_response(response: FullPipelineHttpResponse) -> None:
+    """Print the accumulated response."""
+
+    head = response.head
+    body = ByteStreamBuffers.any_to_bytes(response.body)
+
+    print(f'HTTP/{head.version.major}.{head.version.minor} {head.status} {head.reason}')
+    print()
+
+    # Print headers
+    for name, value in head.headers.raw:
+        print(f'{name}: {value}')
+
+    print()
+
+    # Print body (decoded if text)
+    try:
+        print(body.decode('utf-8'))
+    except UnicodeDecodeError:
+        print(f'<binary body: {len(body)} bytes>')
+
+
+##
+
+
+async def asyncio_fetch_url(url: str = 'http://example.com/') -> FullPipelineHttpResponse:
+    parsed_url = parse_url(url)
+
+    # Connect
+    reader, writer = await asyncio.open_connection(parsed_url.host, parsed_url.port)
+
+    try:
+        # Send request
+        request = FullPipelineHttpRequest.simple(
+            parsed_url.host,
+            parsed_url.path,
+            headers={
+                'User-Agent': 'omlish-http-client/0.1',
+            },
+        )
+
+        response_queue = OutboundQueueChannelPipelineHandler(filter_type=FullPipelineHttpResponse)
+
+        pipeline_spec = build_http_client(
+            outermost_handlers=[response_queue],
+
+            with_aggregator=True,
+
+            raise_immediately=True,
+        )
+
+        # Run driver to process request/response
+        drv = SimpleAsyncioStreamPipelineChannelDriver(
+            pipeline_spec,
+            reader,
+            writer,
+        )
+
+        drv_run_task = asyncio.create_task(drv.run())
+
+        await drv.feed_in(request)
+
+        await drv_run_task
+
+    finally:
+        writer.close()
+        await writer.wait_closed()
+
+    out = check.single(response_queue)
+    return check.isinstance(out, FullPipelineHttpResponse)

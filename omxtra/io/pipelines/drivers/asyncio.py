@@ -169,6 +169,8 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
     class _FeedInCommand(_Command):
         msgs: ta.Sequence[ta.Any]
 
+        fut: ta.Optional[asyncio.Future[None]] = None
+
         def __repr__(self) -> str:
             return f'{self.__class__.__name__}([{", ".join(map(repr, self.msgs))}])'
 
@@ -176,9 +178,25 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
         async def _inner() -> None:
             self._channel.feed_in(*cmd.msgs)  # noqa
 
-        await self._do_with_channel(_inner)
+        if (fut := cmd.fut) is None:
+            await self._do_with_channel(_inner)
+            return
+
+        try:
+            await self._do_with_channel(_inner)
+            fut.set_result(None)
+        except BaseException as e:  # noqa
+            fut.set_exception(e)
+            raise
 
     async def feed_in(self, *msgs: ta.Any) -> None:
+        check.state(not self._shutdown_event.is_set())
+
+        fut = asyncio.Future()
+        self._command_queue.put_nowait(AsyncioStreamPipelineChannelDriver._FeedInCommand(msgs, fut=fut))
+        await fut
+
+    def feed_in_nowait(self, *msgs: ta.Any) -> None:
         check.state(not self._shutdown_event.is_set())
 
         self._command_queue.put_nowait(AsyncioStreamPipelineChannelDriver._FeedInCommand(msgs))

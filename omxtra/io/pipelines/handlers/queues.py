@@ -23,11 +23,13 @@ class QueueChannelPipelineHandler(ChannelPipelineHandler, Abstract):
             self,
             *,
             filter: ta.Optional[ChannelPipelineHandlerFn[ta.Any, bool]] = None,  # noqa
+            filter_type: ta.Optional[ta.Union[type, ta.Tuple[type, ...]]] = None,
             passthrough: ta.Union[bool, ta.Literal['must_propagate']] = 'must_propagate',
     ) -> None:
         super().__init__()
 
         self._filter = filter
+        self._filter_type = filter_type
         self._passthrough = passthrough
 
         self._q: collections.deque[ta.Any] = collections.deque()
@@ -39,6 +41,7 @@ class QueueChannelPipelineHandler(ChannelPipelineHandler, Abstract):
             '(',
             ', '.join([
                 *([f'filter={self._filter!r}'] if self._filter is not None else []),
+                *([f'filter_type={self._filter_type!r}'] if self._filter_type is not None else []),
                 *([f'passthrough={self._passthrough!r}'] if self._passthrough else []),
             ]),
             ')',
@@ -68,6 +71,15 @@ class QueueChannelPipelineHandler(ChannelPipelineHandler, Abstract):
 
     #
 
+    def _should_enqueue(self, msg: ta.Any) -> bool:
+        if self._filter is not None and not self._filter(msg):
+            return False
+
+        if self._filter_type is not None and not isinstance(msg, self._filter_type):
+            return False
+
+        return True
+
     def _should_passthrough(self, msg: ta.Any) -> bool:
         if isinstance(pt := self._passthrough, bool):
             return pt
@@ -78,29 +90,25 @@ class QueueChannelPipelineHandler(ChannelPipelineHandler, Abstract):
         else:
             raise RuntimeError(f'Unknown passthrough mode {self._passthrough!r} for {self!r}')
 
-
-class InboundQueueChannelPipelineHandler(QueueChannelPipelineHandler):
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if (self._filter is not None and not self._filter(ctx, msg)):
-            ctx.feed_in(msg)
+    def _handle(self, msg: ta.Any, feed: ta.Callable[[ta.Any], None]) -> None:
+        if not self._should_enqueue(msg):
+            feed(msg)
             return
 
         self._append(msg)
 
         if self._should_passthrough(msg):
-            ctx.feed_in(msg)
+            feed(msg)
+
+
+class InboundQueueChannelPipelineHandler(QueueChannelPipelineHandler):
+    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        self._handle(msg, ctx.feed_in)
 
 
 class OutboundQueueChannelPipelineHandler(QueueChannelPipelineHandler):
     def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if (self._filter is not None and not self._filter(ctx, msg)):
-            ctx.feed_out(msg)
-            return
-
-        self._append(msg)
-
-        if self._should_passthrough(msg):
-            ctx.feed_out(msg)
+        self._handle(msg, ctx.feed_out)
 
 
 class DuplexQueueChannelPipelineHandler(

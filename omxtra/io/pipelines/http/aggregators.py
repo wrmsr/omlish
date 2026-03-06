@@ -196,7 +196,9 @@ class PipelineHttpObjectAggregator(
                         return self._abort('unexpected extra bytes after message body')
 
                     buf.write(mv)
-                    self._remaining -= mvl
+
+                    if rem is not None:
+                        self._remaining -= mvl
 
                 if self._remaining:
                     return (self, [])
