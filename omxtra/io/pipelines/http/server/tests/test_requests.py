@@ -94,8 +94,11 @@ class TestPipelineHttpRequestAggregator(unittest.TestCase):
         request = b'GET / HTTP/1.1\r\nHost: test\r\n\r\n'
         channel.feed_in(request)
 
+        self.assertEqual(ibq.drain(), [])
+
+        channel.feed_in(ChannelPipelineMessages.FinalInput())
         out = ibq.drain()
-        self.assertEqual(len(out), 1)
+        self.assertEqual(len(out), 2)
 
         req = out[0]
         self.assertIsInstance(req, FullPipelineHttpRequest)

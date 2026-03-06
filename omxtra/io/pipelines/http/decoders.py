@@ -11,12 +11,10 @@ import dataclasses as dc
 import typing as ta
 
 from omlish.http.parsing import HttpParser
-from omlish.http.parsing import ParsedHttpMessage
 from omlish.http.parsing import parse_http_message
 from omlish.io.streams.scanning import ScanningByteStreamBuffer
 from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 from omlish.io.streams.segmented import SegmentedByteStreamBufferView
-from omlish.io.streams.types import BytesLikeOrMemoryview
 from omlish.io.streams.types import MutableByteStreamBuffer
 from omlish.io.streams.utils import ByteStreamBuffers
 from omlish.io.streams.utils import CanByteStreamBuffer
@@ -26,9 +24,10 @@ from omlish.lite.check import check
 from ..bytes.buffering import InboundBytesBufferingChannelPipelineHandler
 from ..bytes.decoders import BytesToMessageDecoderChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
-from .objects import PipelineHttpMessageAborted
-from .objects import PipelineHttpMessageContentChunkData
 from .objects import PipelineHttpMessageHead
+from .transferencoding import PipelineHttpTransferEncoding
+from .transferencoding import PipelineHttpTransferEncodingError
+from .objects import PipelineHttpMessageObjects
 
 
 ##
@@ -60,6 +59,7 @@ PipelineHttpDecodingConfig.DEFAULT = PipelineHttpDecodingConfig()
 
 
 class PipelineHttpObjectDecoder(
+    PipelineHttpMessageObjects,
     InboundBytesBufferingChannelPipelineHandler,
     BytesToMessageDecoderChannelPipelineHandler,
     Abstract,
@@ -87,22 +87,6 @@ class PipelineHttpObjectDecoder(
     @property
     @abc.abstractmethod
     def _parse_mode(self) -> HttpParser.Mode:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def _make_head(self, parsed: ParsedHttpMessage) -> PipelineHttpMessageHead:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def _make_aborted(self, reason: str) -> PipelineHttpMessageAborted:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def _make_content_chunk_data(self, data: BytesLikeOrMemoryview) -> PipelineHttpMessageContentChunkData:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def _make_end(self) -> ta.Any:
         raise NotImplementedError
 
     #
@@ -141,7 +125,7 @@ class PipelineHttpObjectDecoder(
         def _abort(
                 self,
                 out: ta.List[ta.Any],
-                reason: str,
+                reason: ta.Union[str, BaseException],
                 data: ta.Optional[CanByteStreamBuffer] = None,
         ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
             out.append(self._d._make_aborted(reason))  # noqa
@@ -243,36 +227,6 @@ class PipelineHttpObjectDecoder(
 
     #
 
-    class _SelectedTransferEncoding(ta.NamedTuple):
-        mode: ta.Literal['none', 'eof', 'cl', 'chunked']
-        length: ta.Optional[int]
-
-    @dc.dataclass()
-    class _SelectTransferEncodingError(Exception):
-        reason: str
-
-    def _select_transfer_encoding(self, head: PipelineHttpMessageHead) -> _SelectedTransferEncoding:
-        if head.headers.contains_value('transfer-encoding', 'chunked', ignore_case=True):
-            return self._SelectedTransferEncoding('chunked', None)
-
-        cl = head.headers.single.get('content-length')
-        if cl is not None and cl != '':
-            try:
-                n = int(cl)
-            except ValueError:
-                raise self._SelectTransferEncodingError('bad Content-Length') from None
-
-            if n < 0:
-                raise self._SelectTransferEncodingError('bad Content-Length')
-
-            if n == 0:
-                return self._SelectedTransferEncoding('none', None)
-
-            return self._SelectedTransferEncoding('cl', n)
-
-        # No length info: treat as until EOF (supports infinite streaming).
-        return self._SelectedTransferEncoding('eof', None)
-
     class _TransferEncodingState(_State):
         def __init__(self, d: 'PipelineHttpObjectDecoder', head: PipelineHttpMessageHead) -> None:
             super().__init__(d)
@@ -288,25 +242,25 @@ class PipelineHttpObjectDecoder(
                 final: bool = False,
         ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
             try:
-                sel = self._d._select_transfer_encoding(self._head)  # noqa
-            except PipelineHttpObjectDecoder._SelectTransferEncodingError as e:
+                te = PipelineHttpTransferEncoding.select(self._head.headers)  # noqa
+            except PipelineHttpTransferEncodingError as e:
                 return self._abort(out, f'Invalid Transfer-Encoding: {e.reason}')
 
-            if sel.mode == 'none':
+            if te.mode == 'none':
                 out.append(self._d._make_end())  # noqa
                 return (self._d._DoneState(self._d, self._head), None)  # noqa
 
-            elif sel.mode == 'eof':
+            elif te.mode == 'eof':
                 return (self._d._UntilEofContentState(self._d, self._head), data)  # noqa
 
-            elif sel.mode == 'cl':
-                return (self._d._ContentLengthContentState(self._d, self._head, check.not_none(sel.length)), data)  # noqa
+            elif te.mode == 'cl':
+                return (self._d._ContentLengthContentState(self._d, self._head, check.not_none(te.length)), data)  # noqa
 
-            elif sel.mode == 'chunked':
+            elif te.mode == 'chunked':
                 return (self._d._HeaderChunkedContentState(self._d, self._head), data)  # noqa
 
             else:
-                raise RuntimeError(f'unexpected mode {sel!r}')
+                raise RuntimeError(f'unexpected mode {te!r}')
 
     #
 

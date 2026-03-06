@@ -11,12 +11,19 @@ from .objects import FullPipelineHttpMessage
 from .objects import PipelineHttpMessageContentChunkData
 from .objects import PipelineHttpMessageEnd
 from .objects import PipelineHttpMessageHead
+from .objects import PipelineHttpMessageObjects
+from ..core import ChannelPipelineHandler
+from ..core import ChannelPipelineHandlerContext
 
 
 ##
 
 
-class PipelineHttpObjectEncoder(Abstract):
+class PipelineHttpObjectEncoder(
+    PipelineHttpMessageObjects,
+    ChannelPipelineHandler,
+    Abstract,
+):
     def __init__(self) -> None:
         super().__init__()
 
@@ -25,86 +32,78 @@ class PipelineHttpObjectEncoder(Abstract):
 
     #
 
-    @property
-    @abc.abstractmethod
-    def _head_type(self) -> ta.Optional[ta.Type[PipelineHttpMessageHead]]:
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def _full_type(self) -> ta.Optional[ta.Type[FullPipelineHttpMessage]]:
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def _content_chunk_data_type(self) -> ta.Optional[ta.Type[PipelineHttpMessageContentChunkData]]:
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def _end_type(self) -> ta.Optional[ta.Type[PipelineHttpMessageEnd]]:
-        raise NotImplementedError
-
     @abc.abstractmethod
     def _encode_head_line(self, head: PipelineHttpMessageHead) -> bytes:
         raise NotImplementedError
 
     #
 
-    def outbound(self, msg: ta.Any) -> ta.Sequence[ta.Any]:
-        ty: ta.Any
+    def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, self._head_type):
+            self._handle_request_head(ctx, msg)
 
-        if (ty := self._head_type) is not None and isinstance(msg, ty):
-            return self._handle_request_head(msg)
+        elif isinstance(msg, self._full_type):
+            self._handle_full_request(ctx, msg)
 
-        elif (ty := self._content_chunk_data_type) is not None and isinstance(msg, ty):
-            return self._handle_content_chunk_data(msg)
+        elif isinstance(msg, self._content_chunk_data_type):
+            self._handle_content_chunk_data(ctx, msg)
 
-        elif (ty := self._end_type) is not None and isinstance(msg, ty):
-            return self._handle_request_end(msg)
-
-        elif (ty := self._full_type) is not None and isinstance(msg, ty):
-            return self._handle_full_request(msg)
+        elif isinstance(msg, self._end_type):
+            self._handle_request_end(ctx, msg)
 
         else:
-            return [msg]
+            ctx.feed_out(msg)
 
-    def _handle_request_head(self, msg: PipelineHttpMessageHead) -> ta.Sequence[ta.Any]:
+    #
+
+    def _handle_request_head(self, ctx: ChannelPipelineHandlerContext, msg: PipelineHttpMessageHead) -> None:  # noqa
         """Emit request line + headers, enter streaming mode."""
 
         self._streaming = True
         self._chunked = self._is_chunked(msg.headers)
 
-        return [self._encode_head(msg)]
+        ctx.feed_out(self._encode_head(msg))
 
-    def _handle_content_chunk_data(self, msg: PipelineHttpMessageContentChunkData) -> ta.Sequence[ta.Any]:
+    #
+
+    def _handle_full_request(self, ctx: ChannelPipelineHandlerContext, msg: FullPipelineHttpMessage) -> ta.Any:
+        """Emit complete request in one shot."""
+
+        ctx.feed_out(self._encode_head(msg.head))
+        if len(msg.body) > 0:
+            ctx.feed_out(msg.body)
+
+    #
+
+    def _handle_content_chunk_data(self, ctx: ChannelPipelineHandlerContext, msg: PipelineHttpMessageContentChunkData) -> None:  # noqa
         """Emit body chunk (raw or chunked-encoded)."""
 
         if not self._streaming:
             # Not in streaming mode - pass through unchanged
-            return [msg]
+            ctx.feed_out(msg)
 
         elif len(msg.data) < 1:
-            return []
+            pass
 
         elif self._chunked:
             # Chunked encoding: <size-hex>\r\n<data>\r\n
-            return [
-                f'{len(msg.data):x}\r\n'.encode('ascii'),
-                msg.data,
-                b'\r\n',
-            ]
+            ctx.feed_out(f'{len(msg.data):x}\r\n'.encode('ascii'))
+            ctx.feed_out(msg.data)
+            ctx.feed_out(b'\r\n')
 
         else:
             # Raw data
-            return [msg.data]
+            ctx.feed_out(msg.data)
 
-    def _handle_request_end(self, msg: PipelineHttpMessageEnd) -> ta.Sequence[ta.Any]:
+    #
+
+    def _handle_request_end(self, ctx: ChannelPipelineHandlerContext, msg: PipelineHttpMessageEnd) -> None:  # noqa
         """Emit terminator if chunked, reset state."""
 
         if not self._streaming:
             # Not in streaming mode - pass through
-            return [msg]
+            ctx.feed_out(msg)
+            return
 
         was_chunked = self._chunked
 
@@ -114,17 +113,7 @@ class PipelineHttpObjectEncoder(Abstract):
 
         if was_chunked:
             # Emit final chunk: 0\r\n\r\n
-            return [b'0\r\n\r\n']
-        else:
-            return []
-
-    def _handle_full_request(self, msg: FullPipelineHttpMessage) -> ta.Any:
-        """Emit complete request in one shot."""
-
-        return [
-            self._encode_head(msg.head),
-            *([msg.body] if len(msg.body) > 0 else []),
-        ]
+            ctx.feed_out(b'0\r\n\r\n')
 
     #
 

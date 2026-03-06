@@ -10,6 +10,7 @@ from omlish.http.versions import HttpVersion
 from omlish.http.versions import HttpVersions
 from omlish.io.streams.types import BytesLikeOrMemoryview
 from omlish.lite.abstract import Abstract
+from omlish.lite.check import check
 from omlish.lite.dataclasses import install_dataclass_kw_only_init
 
 from .objects import FullPipelineHttpMessage
@@ -18,6 +19,7 @@ from .objects import PipelineHttpMessageContentChunkData
 from .objects import PipelineHttpMessageEnd
 from .objects import PipelineHttpMessageHead
 from .objects import PipelineHttpMessageObject
+from .objects import PipelineHttpMessageObjects
 
 
 ##
@@ -25,6 +27,9 @@ from .objects import PipelineHttpMessageObject
 
 class PipelineHttpResponseObject(PipelineHttpMessageObject, Abstract):
     pass
+
+
+#
 
 
 @install_dataclass_kw_only_init()
@@ -44,6 +49,9 @@ class PipelineHttpResponseHead(PipelineHttpMessageHead, PipelineHttpResponseObje
             return http.HTTPStatus(code).phrase
         except ValueError:
             return ''
+
+
+#
 
 
 @dc.dataclass(frozen=True)
@@ -81,9 +89,15 @@ class FullPipelineHttpResponse(FullPipelineHttpMessage, PipelineHttpResponseObje
         )
 
 
+#
+
+
 @dc.dataclass(frozen=True)
 class PipelineHttpResponseContentChunkData(PipelineHttpMessageContentChunkData, PipelineHttpResponseObject):
     pass
+
+
+#
 
 
 @dc.dataclass(frozen=True)
@@ -91,6 +105,55 @@ class PipelineHttpResponseEnd(PipelineHttpMessageEnd, PipelineHttpResponseObject
     pass
 
 
+#
+
+
 @dc.dataclass(frozen=True)
 class PipelineHttpResponseAborted(PipelineHttpMessageAborted, PipelineHttpResponseObject):
     pass
+
+
+##
+
+
+class PipelineHttpResponseObjects(PipelineHttpMessageObjects):
+    _head_type: ta.Final[ta.Type[PipelineHttpResponseHead]] = PipelineHttpResponseHead
+
+    def _make_head(self, parsed: ParsedHttpMessage) -> ta.Any:
+        status = check.not_none(parsed.status_line)
+
+        return PipelineHttpResponseHead(
+            version=status.http_version,
+            status=status.status_code,
+            reason=status.reason_phrase,
+            headers=HttpHeaders(parsed.headers.entries),
+            parsed=parsed,
+        )
+
+    #
+
+    _full_type: ta.Final[ta.Type[FullPipelineHttpResponse]] = FullPipelineHttpResponse
+
+    def _make_full(self, head: PipelineHttpMessageHead, body: BytesLikeOrMemoryview) -> FullPipelineHttpResponse:
+        return FullPipelineHttpResponse(check.isinstance(head, PipelineHttpResponseHead), body)
+
+    #
+
+    _content_chunk_data_type: ta.Final[ta.Type[PipelineHttpResponseContentChunkData]] = PipelineHttpResponseContentChunkData  # noqa
+
+    def _make_content_chunk_data(self, data: BytesLikeOrMemoryview) -> PipelineHttpResponseContentChunkData:
+        return PipelineHttpResponseContentChunkData(data)
+
+    #
+
+    _end_type: ta.Final[ta.Type[PipelineHttpResponseEnd]] = PipelineHttpResponseEnd
+
+    def _make_end(self) -> PipelineHttpResponseEnd:
+        return PipelineHttpResponseEnd()
+
+    #
+
+    _aborted_type: ta.Final[ta.Type[PipelineHttpResponseAborted]] = PipelineHttpResponseAborted
+
+    def _make_aborted(self, reason: ta.Union[str, BaseException]) -> PipelineHttpResponseAborted:
+        return PipelineHttpResponseAborted(reason)

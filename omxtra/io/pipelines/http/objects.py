@@ -19,6 +19,9 @@ class PipelineHttpMessageObject(Abstract):
     pass
 
 
+#
+
+
 class PipelineHttpMessageHead(PipelineHttpMessageObject, Abstract):
     @property
     @abc.abstractmethod
@@ -36,6 +39,9 @@ class PipelineHttpMessageHead(PipelineHttpMessageObject, Abstract):
         raise NotImplementedError
 
 
+#
+
+
 class FullPipelineHttpMessage(PipelineHttpMessageObject, Abstract):
     @property
     @abc.abstractmethod
@@ -48,14 +54,23 @@ class FullPipelineHttpMessage(PipelineHttpMessageObject, Abstract):
         raise NotImplementedError
 
 
+#
+
+
 @dc.dataclass(frozen=True)
 class PipelineHttpMessageContentChunkData(PipelineHttpMessageObject, Abstract):
     data: BytesLikeOrMemoryview
 
 
+#
+
+
 @dc.dataclass(frozen=True)
 class PipelineHttpMessageEnd(PipelineHttpMessageObject, Abstract):
     pass
+
+
+#
 
 
 @dc.dataclass(frozen=True)
@@ -87,3 +102,61 @@ def _un_abstract_pipeline_http_object_classes() -> None:
 
 
 _un_abstract_pipeline_http_object_classes()
+
+
+##
+
+
+class PipelineHttpMessageObjects(Abstract):
+    @property
+    @abc.abstractmethod
+    def _head_type(self) -> ta.Type[PipelineHttpMessageHead]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _make_head(self, parsed: ParsedHttpMessage) -> PipelineHttpMessageHead:
+        raise NotImplementedError
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def _full_type(self) -> ta.Type[FullPipelineHttpMessage]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _make_full(self, head: PipelineHttpMessageHead, body: BytesLikeOrMemoryview) -> FullPipelineHttpMessage:
+        raise NotImplementedError
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def _content_chunk_data_type(self) -> ta.Type[PipelineHttpMessageContentChunkData]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _make_content_chunk_data(self, data: BytesLikeOrMemoryview) -> PipelineHttpMessageContentChunkData:
+        raise NotImplementedError
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def _end_type(self) -> ta.Type[PipelineHttpMessageEnd]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _make_end(self) -> ta.Any:
+        raise NotImplementedError
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def _aborted_type(self) -> ta.Type[PipelineHttpMessageAborted]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _make_aborted(self, reason: ta.Union[str, BaseException]) -> PipelineHttpMessageAborted:
+        raise NotImplementedError
