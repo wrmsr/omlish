@@ -186,7 +186,10 @@ class SslChannelPipelineHandler(
                 self._pump_tls_out(ctx)
                 break
 
-            except ssl.SSLError:
+            except ssl.SSLZeroReturnError:
+                b = b''
+
+            except ssl.SSLError as e:  # noqa
                 # Robustness: fatal SSL errors should propagate to blow up the channel.
                 raise
 

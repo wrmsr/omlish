@@ -57,6 +57,10 @@ def build_http_client(
 
             *([SslChannelPipelineHandler(**(ssl_kwargs or {}))] if with_ssl else []),
 
+            PipelineHttpResponseDecoder(),
+            *([PipelineHttpResponseDecompressor()] if with_gzip else []),
+            *([PipelineHttpResponseAggregatorDecoder()] if with_aggregator else []),
+
             PipelineHttpRequestEncoder(),
             InboundFlatMapChannelPipelineHandler(
                 (ffn := FlatMapChannelPipelineHandlerFns).filter_type(
@@ -68,10 +72,6 @@ def build_http_client(
                     ),
                 ),
             ),
-
-            PipelineHttpResponseDecoder(),
-            *([PipelineHttpResponseDecompressor()] if with_gzip else []),
-            *([PipelineHttpResponseAggregatorDecoder()] if with_aggregator else []),
 
             InboundFlatMapChannelPipelineHandler(
                 ffn.filter_type(
@@ -111,14 +111,16 @@ class ParsedUrl:
     port: int
     path: str
 
+    is_ssl: bool = False
+
 
 def parse_url(url: str) -> ParsedUrl:
     # Parse URL (very simple - just extract host and path)
     if url.startswith('http://'):
-        ssl = False
+        is_ssl = False
         url_without_scheme = url[7:]
     elif url.startswith('https://'):
-        ssl = True
+        is_ssl = True
         url_without_scheme = url[8:]
     else:
         raise ValueError(url)
@@ -135,7 +137,7 @@ def parse_url(url: str) -> ParsedUrl:
         host, port_str = host.split(':', 1)
         port = int(port_str)
     else:
-        if ssl:
+        if is_ssl:
             port = 443
         else:
             port = 80
@@ -144,6 +146,7 @@ def parse_url(url: str) -> ParsedUrl:
         host,
         port,
         path,
+        is_ssl=is_ssl,
     )
 
 
@@ -175,47 +178,80 @@ def print_full_response(response: FullPipelineHttpResponse) -> None:
 ##
 
 
+class _PreparedUrlFetch(ta.NamedTuple):
+    parsed_url: ParsedUrl
+    request: FullPipelineHttpRequest
+    pipeline_spec: PipelineChannel.Spec
+    get_response: ta.Callable[[], FullPipelineHttpResponse]
+
+
+def _prepare_url_fetch(
+        url: str,
+        **client_kwargs: ta.Any,
+) -> _PreparedUrlFetch:
+    parsed_url = parse_url(url)
+
+    request = FullPipelineHttpRequest.simple(
+        parsed_url.host,
+        parsed_url.path,
+        headers={
+            'User-Agent': 'omlish-http-client/0.1',
+        },
+    )
+
+    response_queue = InboundQueueChannelPipelineHandler(
+        filter_type=FullPipelineHttpResponse,
+    )
+
+    pipeline_spec = build_http_client(
+        innermost_handlers=[response_queue],
+
+        with_aggregator=True,
+
+        **(dict(
+            with_ssl=True,
+            ssl_kwargs=dict(
+                server_side=False,
+                server_hostname=parsed_url.host,
+            ),
+        ) if parsed_url.is_ssl else {}),
+
+        **client_kwargs,
+    )
+
+    def get_response() -> FullPipelineHttpResponse:
+        out = check.single(response_queue.drain())
+        return check.isinstance(out, FullPipelineHttpResponse)
+
+    return _PreparedUrlFetch(
+        parsed_url,
+        request,
+        pipeline_spec,
+        get_response,
+    )
+
+
+##
+
+
 async def asyncio_fetch_url(
         url: str,
         **client_kwargs: ta.Any,
 ) -> FullPipelineHttpResponse:
-    parsed_url = parse_url(url)
+    puf = _prepare_url_fetch(url, **client_kwargs)
 
-    # Connect
-    reader, writer = await asyncio.open_connection(parsed_url.host, parsed_url.port)
+    reader, writer = await asyncio.open_connection(puf.parsed_url.host, puf.parsed_url.port)
 
     try:
-        # Send request
-        request = FullPipelineHttpRequest.simple(
-            parsed_url.host,
-            parsed_url.path,
-            headers={
-                'User-Agent': 'omlish-http-client/0.1',
-            },
-        )
-
-        response_queue = InboundQueueChannelPipelineHandler(
-            filter_type=FullPipelineHttpResponse,
-        )
-
-        pipeline_spec = build_http_client(
-            innermost_handlers=[response_queue],
-
-            with_aggregator=True,
-
-            **client_kwargs,
-        )
-
-        # Run driver to process request/response
         drv = SimpleAsyncioStreamPipelineChannelDriver(
-            pipeline_spec,
+            puf.pipeline_spec,
             reader,
             writer,
         )
 
         drv_run_task = asyncio.create_task(drv.run())
 
-        await drv.feed_in(request)
+        await drv.feed_in(puf.request)
 
         await drv_run_task
 
@@ -223,5 +259,4 @@ async def asyncio_fetch_url(
         writer.close()
         await writer.wait_closed()
 
-    out = check.single(response_queue.drain())
-    return check.isinstance(out, FullPipelineHttpResponse)
+    return puf.get_response()

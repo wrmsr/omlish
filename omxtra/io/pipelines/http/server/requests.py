@@ -10,6 +10,7 @@ from ...core import ChannelPipelineMessages
 from ..aggregators import PipelineHttpObjectAggregator
 from ..decoders import PipelineHttpObjectDecoder
 from ..requests import PipelineHttpRequestObjects
+from ..decompressors import PipelineHttpObjectDecompressor
 
 
 ##
@@ -38,3 +39,10 @@ class PipelineHttpRequestAggregatorDecoder(
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         self._handle(ctx, msg, ctx.feed_in)
+
+
+##
+
+
+class PipelineHttpRequestDecompressor(PipelineHttpRequestObjects, PipelineHttpObjectDecompressor):
+    pass

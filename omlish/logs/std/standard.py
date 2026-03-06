@@ -125,7 +125,7 @@ def configure_standard_logging(
         #
 
         if level is not None:
-            target.setLevel(level.upper())
+            target.setLevel(level.upper() if isinstance(level, str) else level)
 
         #
 

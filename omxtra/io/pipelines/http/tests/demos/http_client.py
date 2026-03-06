@@ -23,7 +23,7 @@ def _main() -> None:
 
 if __name__ == '__main__':
     from omlish.logs.std.standard import configure_standard_logging
-    configure_standard_logging()
+    configure_standard_logging('debug')
 
     # try:
     #     __import__('omlish.check')
