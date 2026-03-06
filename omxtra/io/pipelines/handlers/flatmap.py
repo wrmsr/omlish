@@ -55,6 +55,15 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
     ) -> FlatMapChannelPipelineHandlerFn:
         return cls.Filter(pred, fn, else_fn)
 
+    @classmethod
+    def filter_type(
+            cls,
+            ty: ta.Union[type, ta.Tuple[type, ...]],
+            fn: FlatMapChannelPipelineHandlerFn,
+            else_fn: ta.Optional[FlatMapChannelPipelineHandlerFn] = None,
+    ) -> FlatMapChannelPipelineHandlerFn:
+        return cls.filter(ChannelPipelineHandlerFns.isinstance(ty), fn, else_fn)
+
     #
 
     @dc.dataclass(frozen=True)
@@ -217,6 +226,20 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
     def drop(cls) -> FlatMapChannelPipelineHandlerFn:
         return cls.Drop()
 
+    #
+
+    @dc.dataclass(frozen=True)
+    class Nop:
+        def __repr__(self) -> str:
+            return f'{type(self).__name__}()'
+
+        def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
+            return (msg,)
+
+    @classmethod
+    def nop(cls) -> FlatMapChannelPipelineHandlerFn:
+        return cls.Nop()
+
 
 #
 
@@ -295,10 +318,7 @@ class FlatMapChannelPipelineHandlers(NamespaceClass):
             fn = FlatMapChannelPipelineHandlerFns.filter(filter, fn)
 
         if filter_type is not None:
-            fn = FlatMapChannelPipelineHandlerFns.filter(
-                ChannelPipelineHandlerFns.isinstance(filter_type),
-                fn,
-            )
+            fn = FlatMapChannelPipelineHandlerFns.filter_type(filter_type, fn)
 
         fn = FlatMapChannelPipelineHandlerFns.filter(cls._NOT_MUST_PROPAGATE, fn)
 

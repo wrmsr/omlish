@@ -9,10 +9,13 @@ from omlish.io.streams.utils import ByteStreamBuffers
 
 from ....drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
 from ....core import ChannelPipelineHandler
+from ....core import ChannelPipelineMessages
 from ....core import PipelineChannel
 from ....flow.stub import StubChannelPipelineFlow
 from ....flow.types import ChannelPipelineFlowMessages
+from ....handlers.flatmap import InboundFlatMapChannelPipelineHandler
 from ....handlers.flatmap import FlatMapChannelPipelineHandlers
+from ....handlers.flatmap import FlatMapChannelPipelineHandlerFns
 from ....handlers.logs import LoggingChannelPipelineHandler
 from ....ssl.handlers import SslChannelPipelineHandler
 from ...client.requests import PipelineHttpRequestEncoder
@@ -20,7 +23,7 @@ from ...client.responses import PipelineHttpResponseDecoder
 from ...client.responses import PipelineHttpResponseDecompressor
 from ...requests import FullPipelineHttpRequest
 from ...responses import FullPipelineHttpResponse
-from ....handlers.queues import OutboundQueueChannelPipelineHandler
+from ....handlers.queues import InboundQueueChannelPipelineHandler
 from ...client.responses import PipelineHttpResponseAggregatorDecoder
 
 
@@ -30,6 +33,7 @@ from ...client.responses import PipelineHttpResponseAggregatorDecoder
 def build_http_client(
         *,
         outermost_handlers: ta.Optional[ta.Sequence[ChannelPipelineHandler]] = None,
+        innermost_handlers: ta.Optional[ta.Sequence[ChannelPipelineHandler]] = None,
 
         with_logging: bool = False,
 
@@ -54,13 +58,38 @@ def build_http_client(
             *([SslChannelPipelineHandler(**(ssl_kwargs or {}))] if with_ssl else []),
 
             PipelineHttpRequestEncoder(),
-            FlatMapChannelPipelineHandlers.feed_out_and_drop(filter_type=FullPipelineHttpRequest),
+            InboundFlatMapChannelPipelineHandler(
+                (ffn := FlatMapChannelPipelineHandlerFns).filter_type(
+                    FullPipelineHttpRequest,
+                    ffn.compose(
+                        *([ffn.inject(after=[ChannelPipelineFlowMessages.ReadyForInput()])] if with_flow and not flow_auto_read else []),  # noqa,
+                        ffn.feed_out(),
+                        ffn.drop(),
+                    ),
+                ),
+            ),
 
             PipelineHttpResponseDecoder(),
             *([PipelineHttpResponseDecompressor()] if with_gzip else []),
             *([PipelineHttpResponseAggregatorDecoder()] if with_aggregator else []),
 
+            InboundFlatMapChannelPipelineHandler(
+                ffn.filter_type(
+                    FullPipelineHttpResponse,
+                    ffn.concat(
+                        ffn.compose(
+                            lambda _ctx, _msg: [ChannelPipelineMessages.FinalOutput()],
+                            ffn.feed_out(),
+                            ffn.drop(),
+                        ),
+                        ffn.nop(),
+                    ),
+                ),
+            ),
+
             *([FlatMapChannelPipelineHandlers.drop('inbound', filter_type=ChannelPipelineFlowMessages.FlushInput)] if with_flow else []),  # noqa
+
+            *(innermost_handlers or []),
         ],
 
         config=PipelineChannel.Config.DEFAULT.update_pipeline(
@@ -146,7 +175,10 @@ def print_full_response(response: FullPipelineHttpResponse) -> None:
 ##
 
 
-async def asyncio_fetch_url(url: str = 'http://example.com/') -> FullPipelineHttpResponse:
+async def asyncio_fetch_url(
+        url: str = 'http://example.com/',
+        **client_kwargs: ta.Any,
+) -> FullPipelineHttpResponse:
     parsed_url = parse_url(url)
 
     # Connect
@@ -162,14 +194,16 @@ async def asyncio_fetch_url(url: str = 'http://example.com/') -> FullPipelineHtt
             },
         )
 
-        response_queue = OutboundQueueChannelPipelineHandler(filter_type=FullPipelineHttpResponse)
+        response_queue = InboundQueueChannelPipelineHandler(
+            filter_type=FullPipelineHttpResponse,
+        )
 
         pipeline_spec = build_http_client(
-            outermost_handlers=[response_queue],
+            innermost_handlers=[response_queue],
 
             with_aggregator=True,
 
-            raise_immediately=True,
+            **client_kwargs,
         )
 
         # Run driver to process request/response
@@ -189,5 +223,5 @@ async def asyncio_fetch_url(url: str = 'http://example.com/') -> FullPipelineHtt
         writer.close()
         await writer.wait_closed()
 
-    out = check.single(response_queue)
+    out = check.single(response_queue.drain())
     return check.isinstance(out, FullPipelineHttpResponse)

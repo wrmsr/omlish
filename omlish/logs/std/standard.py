@@ -125,7 +125,7 @@ def configure_standard_logging(
         #
 
         if level is not None:
-            target.setLevel(level)
+            target.setLevel(level.upper())
 
         #
 

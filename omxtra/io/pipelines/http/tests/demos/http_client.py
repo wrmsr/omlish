@@ -10,7 +10,10 @@ from .clients import print_full_response
 
 
 async def _a_main(url: str = 'http://example.com/') -> None:
-    resp = await asyncio_fetch_url(url)
+    resp = await asyncio_fetch_url(
+        url,
+    )
+
     print_full_response(resp)
 
 
@@ -19,6 +22,9 @@ def _main() -> None:
 
 
 if __name__ == '__main__':
+    from omlish.logs.std.standard import configure_standard_logging
+    configure_standard_logging()
+
     # try:
     #     __import__('omlish.check')
     # except ImportError:
