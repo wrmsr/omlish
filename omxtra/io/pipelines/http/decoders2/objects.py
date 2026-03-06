@@ -368,14 +368,7 @@ class PipelineHttpObjectDecoder(
     #
 
     class _ChunkedContentState(_ContentState, Abstract):
-        def __init__(
-                self,
-                d: 'PipelineHttpObjectDecoder',
-                head: PipelineHttpMessageHead,
-        ) -> None:
-            super().__init__(d, head)
-
-            self._head = head
+        pass
 
     #
 
