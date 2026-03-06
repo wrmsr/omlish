@@ -1,30 +1,30 @@
 # ruff: noqa: UP006 UP045
 # @omlish-lite
-import asyncio
 import dataclasses as dc
 import typing as ta
 
 from omlish.lite.check import check
 from omlish.io.streams.utils import ByteStreamBuffers
 
-from ....drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
 from ....core import ChannelPipelineHandler
 from ....core import ChannelPipelineMessages
 from ....core import PipelineChannel
+from ....drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
+from ....drivers.sync import SyncSocketPipelineChannelDriver
 from ....flow.stub import StubChannelPipelineFlow
 from ....flow.types import ChannelPipelineFlowMessages
-from ....handlers.flatmap import InboundFlatMapChannelPipelineHandler
-from ....handlers.flatmap import FlatMapChannelPipelineHandlers
 from ....handlers.flatmap import FlatMapChannelPipelineHandlerFns
+from ....handlers.flatmap import FlatMapChannelPipelineHandlers
+from ....handlers.flatmap import InboundFlatMapChannelPipelineHandler
 from ....handlers.logs import LoggingChannelPipelineHandler
+from ....handlers.queues import InboundQueueChannelPipelineHandler
 from ....ssl.handlers import SslChannelPipelineHandler
 from ...client.requests import PipelineHttpRequestEncoder
+from ...client.responses import PipelineHttpResponseAggregatorDecoder
 from ...client.responses import PipelineHttpResponseDecoder
 from ...client.responses import PipelineHttpResponseDecompressor
 from ...requests import FullPipelineHttpRequest
 from ...responses import FullPipelineHttpResponse
-from ....handlers.queues import InboundQueueChannelPipelineHandler
-from ...client.responses import PipelineHttpResponseAggregatorDecoder
 
 
 ##
@@ -240,6 +240,8 @@ async def asyncio_fetch_url(
 ) -> FullPipelineHttpResponse:
     puf = _prepare_url_fetch(url, **client_kwargs)
 
+    import asyncio
+
     reader, writer = await asyncio.open_connection(puf.parsed_url.host, puf.parsed_url.port)
 
     try:
@@ -258,5 +260,40 @@ async def asyncio_fetch_url(
     finally:
         writer.close()
         await writer.wait_closed()
+
+    return puf.get_response()
+
+
+##
+
+
+def sync_fetch_url(
+        url: str,
+        **client_kwargs: ta.Any,
+) -> FullPipelineHttpResponse:
+    puf = _prepare_url_fetch(url, **client_kwargs)
+
+    import errno
+    import socket
+
+    sock = socket.create_connection((puf.parsed_url.host, puf.parsed_url.port))
+
+    try:
+        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+    except OSError as e:
+        if e.errno != errno.ENOPROTOOPT:
+            raise
+
+    try:
+        # Run driver to process request/response
+        drv = SyncSocketPipelineChannelDriver(
+            puf.pipeline_spec,
+            sock,
+        )
+
+        drv.run(puf.request)
+
+    finally:
+        sock.close()
 
     return puf.get_response()

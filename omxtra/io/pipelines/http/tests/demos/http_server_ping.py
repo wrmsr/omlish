@@ -9,7 +9,7 @@ from ....core import PipelineChannel
 from ....drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
 from ...requests import PipelineHttpRequestHead
 from ...responses import FullPipelineHttpResponse
-from ...server.requests import PipelineHttpRequestHeadDecoder
+from ...server.requests import PipelineHttpRequestDecoder
 from ...server.responses import PipelineHttpResponseEncoder
 
 
@@ -39,7 +39,7 @@ class PingHandler(ChannelPipelineHandler):
 
 def build_http_ping_channel() -> PipelineChannel.Spec:
     return PipelineChannel.Spec([
-        PipelineHttpRequestHeadDecoder(),
+        PipelineHttpRequestDecoder(),
         PipelineHttpResponseEncoder(),
         PingHandler(),
     ])

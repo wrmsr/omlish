@@ -17,7 +17,7 @@ from ....flow.types import ChannelPipelineFlowMessages
 from ....handlers.flatmap import FlatMapChannelPipelineHandlers
 from ...requests import FullPipelineHttpRequest
 from ...server.requests import PipelineHttpRequestAggregator
-from ...server.requests import PipelineHttpRequestHeadDecoder
+from ...server.requests import PipelineHttpRequestDecoder
 
 
 log, alog = get_module_loggers(globals())
@@ -144,7 +144,7 @@ def build_http_kv_channel(
 ) -> PipelineChannel.Spec:
     return PipelineChannel.Spec(
         [
-            PipelineHttpRequestHeadDecoder(),
+            PipelineHttpRequestDecoder(),
 
             PipelineHttpRequestAggregator(),
 

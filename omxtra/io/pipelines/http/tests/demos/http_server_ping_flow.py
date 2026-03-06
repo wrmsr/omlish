@@ -11,7 +11,7 @@ from ....flow.stub import StubChannelPipelineFlow
 from ....flow.types import ChannelPipelineFlowMessages
 from ....handlers.flatmap import FlatMapChannelPipelineHandlers
 from ...requests import PipelineHttpRequestHead
-from ...server.requests import PipelineHttpRequestHeadDecoder
+from ...server.requests import PipelineHttpRequestDecoder
 
 
 ##
@@ -73,7 +73,7 @@ def build_http_ping_channel(
             #     ),
             # ),
 
-            PipelineHttpRequestHeadDecoder(),
+            PipelineHttpRequestDecoder(),
 
             PingHandler(),
 
@@ -81,7 +81,7 @@ def build_http_ping_channel(
         ],
 
         services=[
-            StubChannelPipelineFlow(auto_read=True),
+            StubChannelPipelineFlow(auto_read=False),
         ],
     )
 
