@@ -25,9 +25,9 @@ from ..bytes.buffering import InboundBytesBufferingChannelPipelineHandler
 from ..bytes.decoders import BytesToMessageDecoderChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
 from .objects import PipelineHttpMessageHead
+from .objects import PipelineHttpMessageObjects
 from .transferencoding import PipelineHttpTransferEncoding
 from .transferencoding import PipelineHttpTransferEncodingError
-from .objects import PipelineHttpMessageObjects
 
 
 ##
@@ -48,8 +48,6 @@ class PipelineHttpDecodingConfig:
 
     max_content_chunk_size: ta.Optional[int] = None
     content_chunk_header_buffer: BufferConfig = BufferConfig(max_size=1024, chunk_size=1024)
-
-    aggregated_body_buffer: BufferConfig = BufferConfig(max_size=64 * 1024, chunk_size=64 * 1024)
 
 
 PipelineHttpDecodingConfig.DEFAULT = PipelineHttpDecodingConfig()
@@ -105,7 +103,7 @@ class PipelineHttpObjectDecoder(
 
             self._state, next_data = ret
 
-            if next_data is None or len(next_data) == 0:
+            if next_data is None:
                 return
 
             data = next_data
@@ -248,7 +246,7 @@ class PipelineHttpObjectDecoder(
 
             if te.mode == 'none':
                 out.append(self._d._make_end())  # noqa
-                return (self._d._DoneState(self._d, self._head), None)  # noqa
+                return (self._d._DoneState(self._d, self._head), data)  # noqa
 
             elif te.mode == 'eof':
                 return (self._d._UntilEofContentState(self._d, self._head), data)  # noqa
@@ -289,7 +287,8 @@ class PipelineHttpObjectDecoder(
                 out.append(self._d._make_content_chunk_data(mv))  # noqa
 
             if final:
-                return (self._d._DoneState(self._d, self._head), None)  # noqa
+                out.append(self._d._make_end())  # noqa
+                return (self._d._DoneState(self._d, self._head), b'')  # noqa
             else:
                 return None
 
@@ -580,6 +579,9 @@ class PipelineHttpObjectDecoder(
                 *,
                 final: bool = False,
         ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+            if not len(data):
+                return
+
             raise NotImplementedError
 
     #

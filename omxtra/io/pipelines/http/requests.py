@@ -3,13 +3,13 @@
 import dataclasses as dc
 import typing as ta
 
-from omlish.lite.check import check
 from omlish.http.headers import HttpHeaders
 from omlish.http.parsing import ParsedHttpMessage
 from omlish.http.versions import HttpVersion
 from omlish.http.versions import HttpVersions
 from omlish.io.streams.types import BytesLikeOrMemoryview
 from omlish.lite.abstract import Abstract
+from omlish.lite.check import check
 from omlish.lite.dataclasses import install_dataclass_kw_only_init
 
 from .objects import FullPipelineHttpMessage

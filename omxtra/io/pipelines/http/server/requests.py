@@ -22,7 +22,7 @@ class PipelineHttpRequestDecoder(PipelineHttpRequestObjects, PipelineHttpObjectD
 ##
 
 
-class PipelineHttpRequestAggregator(
+class PipelineHttpRequestAggregatorDecoder(
     PipelineHttpRequestObjects,
     InboundBytesBufferingChannelPipelineHandler,
     PipelineHttpObjectAggregator,

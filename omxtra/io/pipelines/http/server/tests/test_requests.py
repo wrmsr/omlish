@@ -7,13 +7,13 @@ from omlish.io.streams.utils import ByteStreamBuffers
 from ....core import ChannelPipelineMessages
 from ....core import PipelineChannel
 from ....handlers.queues import InboundQueueChannelPipelineHandler
+from ...requests import FullPipelineHttpRequest
+from ...requests import PipelineHttpRequestAborted
 from ...requests import PipelineHttpRequestContentChunkData
 from ...requests import PipelineHttpRequestEnd
-from ..requests import FullPipelineHttpRequest
-from ..requests import PipelineHttpRequestAborted
-from ..requests import PipelineHttpRequestAggregator
+from ...requests import PipelineHttpRequestHead
+from ..requests import PipelineHttpRequestAggregatorDecoder
 from ..requests import PipelineHttpRequestDecoder
-from ..requests import PipelineHttpRequestHead
 
 
 class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):
@@ -79,12 +79,12 @@ class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):
         self.assertIsInstance(eof, ChannelPipelineMessages.FinalInput)
 
 
-class TestPipelineHttpRequestAggregator(unittest.TestCase):
+class TestPipelineHttpRequestAggregatorDecoder(unittest.TestCase):
     def test_request_with_no_body(self) -> None:
         """Test request with no Content-Length."""
 
         head_decoder = PipelineHttpRequestDecoder()
-        body_agg = PipelineHttpRequestAggregator()
+        body_agg = PipelineHttpRequestAggregatorDecoder()
         channel = PipelineChannel.new([
             head_decoder,
             body_agg,
@@ -109,7 +109,7 @@ class TestPipelineHttpRequestAggregator(unittest.TestCase):
         """Test request with body in same chunk as head."""
 
         head_decoder = PipelineHttpRequestDecoder()
-        body_agg = PipelineHttpRequestAggregator()
+        body_agg = PipelineHttpRequestAggregatorDecoder()
         channel = PipelineChannel.new([
             head_decoder,
             body_agg,
@@ -131,7 +131,7 @@ class TestPipelineHttpRequestAggregator(unittest.TestCase):
         """Test request body received in multiple chunks."""
 
         head_decoder = PipelineHttpRequestDecoder()
-        body_agg = PipelineHttpRequestAggregator()
+        body_agg = PipelineHttpRequestAggregatorDecoder()
         channel = PipelineChannel.new([
             head_decoder,
             body_agg,
@@ -161,7 +161,7 @@ class TestPipelineHttpRequestAggregator(unittest.TestCase):
         """Test EOF before body complete raises error."""
 
         head_decoder = PipelineHttpRequestDecoder()
-        body_agg = PipelineHttpRequestAggregator()
+        body_agg = PipelineHttpRequestAggregatorDecoder()
         channel = PipelineChannel.new([
             head_decoder,
             body_agg,
