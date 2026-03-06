@@ -16,9 +16,9 @@ from ....handlers.flatmap import FlatMapChannelPipelineHandlers
 from ....handlers.logs import LoggingChannelPipelineHandler
 from ....ssl.handlers import SslChannelPipelineHandler
 from ...client.requests import PipelineHttpRequestEncoder
+from ...client.responses import PipelineHttpResponseDecoder
 from ...client.responses import PipelineHttpResponseChunkedDecoder
-from ...client.responses import PipelineHttpResponseDecompressor
-from ...client.responses import PipelineHttpResponseHeadDecoder
+from ...decompressors import PipelineHttpResponseDecompressor
 from ...requests import FullPipelineHttpRequest
 from ...responses import PipelineHttpResponseContentChunkData
 from ...responses import PipelineHttpResponseEnd
@@ -131,11 +131,9 @@ def build_http_client(
 
             *([SslChannelPipelineHandler(**(ssl_kwargs or {}))] if with_ssl else []),
 
-            PipelineHttpResponseHeadDecoder(),
+            PipelineHttpResponseDecoder(),
 
             *([PipelineHttpResponseDecompressor()] if with_gzip else []),
-
-            PipelineHttpResponseChunkedDecoder(),
 
             PipelineHttpRequestEncoder(),
 

@@ -8,13 +8,16 @@ import zlib
 
 from omlish.io.streams.types import BytesLikeOrMemoryview
 from omlish.io.streams.utils import ByteStreamBuffers
+from omlish.lite.abstract import Abstract
 
 from ..bytes.buffering import InboundBytesBufferingChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
 from ..core import ChannelPipelineMessages
 from ..flow.types import ChannelPipelineFlow
 from ..flow.types import ChannelPipelineFlowMessages
-from .responses import PipelineHttpResponseHead
+from .objects import PipelineHttpMessageObjects
+from .objects import PipelineHttpMessageHead
+from .objects import PipelineHttpMessageContentChunkData
 
 
 ##
@@ -26,7 +29,7 @@ class PipelineHttpDecompressionConfig:
 
     max_decomp_chunk: int = 64 * 1024  # max bytes emitted per inflate step
 
-    max_decomp_total: ta.Optional[int] = None    # max total decompressed bytes per response
+    max_decomp_total: ta.Optional[int] = None    # max total decompressed bytes per object
     max_expansion_ratio: ta.Optional[int] = 200  # max_out <= max(1, in_total) * ratio (+ small slack)
 
     max_out_pending: ta.Optional[int] = 256 * 1024  # cap decompressed bytes retained by this stage (if you buffer)
@@ -41,7 +44,11 @@ PipelineHttpDecompressionConfig.DEFAULT = PipelineHttpDecompressionConfig()
 #
 
 
-class PipelineHttpResponseDecompressor(InboundBytesBufferingChannelPipelineHandler):
+class PipelineHttpObjectDecompressor(
+    PipelineHttpMessageObjects,
+    InboundBytesBufferingChannelPipelineHandler,
+    Abstract,
+):
     """Conditional streaming gzip decompression with CPU-bounding and flow control."""
 
     def __init__(
@@ -54,7 +61,7 @@ class PipelineHttpResponseDecompressor(InboundBytesBufferingChannelPipelineHandl
         self._config = config
 
         self._enabled = False
-        self._decompressor: ta.Optional[PipelineHttpResponseDecompressor.Decompressor] = None
+        self._decompressor: ta.Optional[PipelineHttpObjectDecompressor.Decompressor] = None
 
         # Statistics for budget checks
         self._in_total_bytes = 0
@@ -77,7 +84,7 @@ class PipelineHttpResponseDecompressor(InboundBytesBufferingChannelPipelineHandl
 
     #
 
-    class Decompressor:
+    class Decompressor(Abstract):
         @abc.abstractmethod
         def decompress(
                 self,
@@ -154,7 +161,7 @@ class PipelineHttpResponseDecompressor(InboundBytesBufferingChannelPipelineHandl
             if not self._is_auto_read(ctx):
                 self._read_requested = False
 
-            ctx.feed_in(o)
+            ctx.feed_in(self._make_content_chunk_data(o))
             emitted = True
 
             # In manual mode, we satisfy one 'read' at a time.
@@ -264,19 +271,19 @@ class PipelineHttpResponseDecompressor(InboundBytesBufferingChannelPipelineHandl
         self._pump(ctx)
         ctx.feed_in(msg)
 
-    def _on_inbound_http_response_head(self, ctx: ChannelPipelineHandlerContext, msg: PipelineHttpResponseHead) -> None:  # noqa
+    def _on_inbound_head(self, ctx: ChannelPipelineHandlerContext, msg: PipelineHttpMessageHead) -> None:  # noqa
         enc = msg.headers.lower.get('content-encoding', ())
         self._enabled = 'gzip' in enc
         self._decompressor = self.ZlibDecompressor() if self._enabled else None
         self._reset()
         ctx.feed_in(msg)
 
-    def _on_inbound_bytes(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+    def _on_inbound_content_chunk_data(self, ctx: ChannelPipelineHandlerContext, msg: PipelineHttpMessageContentChunkData) -> None:  # noqa
         if not self._enabled or self._decompressor is None:
             ctx.feed_in(msg)
             return
 
-        for mv in ByteStreamBuffers.iter_segments(msg):
+        for mv in ByteStreamBuffers.iter_segments(msg.data):
             mvl = len(mv)
             self._in_total_bytes += mvl
             self._in_pending.append(mv)
@@ -294,12 +301,12 @@ class PipelineHttpResponseDecompressor(InboundBytesBufferingChannelPipelineHandl
             self._on_inbound_flush_input(ctx, msg)
             return
 
-        if isinstance(msg, PipelineHttpResponseHead):
-            self._on_inbound_http_response_head(ctx, msg)
+        if isinstance(msg, self._head_type):
+            self._on_inbound_head(ctx, msg)
             return
 
-        if ByteStreamBuffers.can_bytes(msg):
-            self._on_inbound_bytes(ctx, msg)
+        if isinstance(msg, self._content_chunk_data_type):
+            self._on_inbound_content_chunk_data(ctx, msg)
             return
 
         ctx.feed_in(msg)

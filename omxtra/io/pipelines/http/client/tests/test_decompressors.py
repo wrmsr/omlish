@@ -11,8 +11,10 @@ from ....core import ChannelPipelineMessages
 from ....core import PipelineChannel
 from ....handlers.queues import InboundQueueChannelPipelineHandler
 from ...responses import PipelineHttpResponseHead
-from ...decompressors import PipelineHttpResponseDecompressor
+from ..responses import PipelineHttpResponseDecompressor
 from ...decompressors import PipelineHttpDecompressionConfig
+from ...responses import PipelineHttpResponseContentChunkData
+from ...responses import PipelineHttpResponseEnd
 
 
 class TestGzipDecompressorFlow(unittest.TestCase):
