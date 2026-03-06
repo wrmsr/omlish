@@ -17,6 +17,7 @@ from ..flow.types import ChannelPipelineFlow
 from ..flow.types import ChannelPipelineFlowMessages
 from .objects import PipelineHttpMessageObjects
 from .objects import PipelineHttpMessageHead
+from .objects import PipelineHttpMessageEnd
 from .objects import PipelineHttpMessageContentChunkData
 
 
@@ -60,7 +61,6 @@ class PipelineHttpObjectDecompressor(
 
         self._config = config
 
-        self._enabled = False
         self._decompressor: ta.Optional[PipelineHttpObjectDecompressor.Decompressor] = None
 
         # Statistics for budget checks
@@ -75,7 +75,7 @@ class PipelineHttpObjectDecompressor(
 
         # Flow Control and Deferral State
         self._read_requested = False
-        self._pending_final_input: ta.Optional[ChannelPipelineMessages.FinalInput] = None
+        self._pending_end: ta.Optional[PipelineHttpMessageEnd] = None
 
     #
 
@@ -125,6 +125,8 @@ class PipelineHttpObjectDecompressor(
     #
 
     def _reset(self) -> None:
+        self._decompressor = None
+
         self._in_total_bytes = 0
         self._out_total_bytes = 0
 
@@ -133,7 +135,7 @@ class PipelineHttpObjectDecompressor(
         self._out_pending.clear()
         self._out_pending_bytes = 0
 
-        self._pending_final_input = None
+        self._pending_end = None
 
     def _check_budgets(self) -> None:
         if (mdt := self._config.max_decomp_total) is not None and self._out_total_bytes > mdt:
@@ -226,7 +228,7 @@ class PipelineHttpObjectDecompressor(
                     break
 
         # 4. Handle EOF
-        if not self._in_pending and self._pending_final_input:
+        if not self._in_pending and self._pending_end is not None:
             if max_steps is not None and steps >= max_steps:
                 self._defer_resume(ctx)
                 return False
@@ -240,8 +242,8 @@ class PipelineHttpObjectDecompressor(
                 self._check_budgets()
                 self._emit_out_pending(ctx)
 
-            msg = self._pending_final_input
-            self._pending_final_input = None
+            msg = self._pending_end
+            self._pending_end = None
             self._read_requested = False
             ctx.feed_in(msg)
             return True  # FinalInput counts as satisfying the last read
@@ -249,37 +251,43 @@ class PipelineHttpObjectDecompressor(
         return False
 
     def _defer_resume(self, ctx: ChannelPipelineHandlerContext) -> None:
-        pin = [self._pending_final_input] if self._pending_final_input else None
-
         def resume(c: ChannelPipelineHandlerContext) -> None:
             # If a deferred pump satisfies a read, it must provide the FlushInput
             if self._pump(c) and not self._is_auto_read(c):
                 c.feed_in(ChannelPipelineFlowMessages.FlushInput())
 
-        ctx.defer(resume, pin=pin)
+        ctx.defer(resume)
 
     #
 
     def _on_inbound_final_input(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineMessages.FinalInput) -> None:  # noqa
-        if self._enabled and self._decompressor is not None:
-            self._pending_final_input = msg
-            self._pump(ctx)
-        else:
+        if self._decompressor is None:
             ctx.feed_in(msg)
+            return
+
+        self._reset()
+
+        ctx.feed_in(self._make_aborted('eof before end of message'))
+        ctx.feed_in(msg)
 
     def _on_inbound_flush_input(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineFlowMessages.FlushInput) -> None:  # noqa
         self._pump(ctx)
         ctx.feed_in(msg)
 
     def _on_inbound_head(self, ctx: ChannelPipelineHandlerContext, msg: PipelineHttpMessageHead) -> None:  # noqa
+        if self._decompressor is not None:
+            ctx.feed_in(self._make_aborted('unexpected message sequence'))
+            return
+
         enc = msg.headers.lower.get('content-encoding', ())
-        self._enabled = 'gzip' in enc
-        self._decompressor = self.ZlibDecompressor() if self._enabled else None
-        self._reset()
+
+        if 'gzip' in enc:
+            self._decompressor = self.ZlibDecompressor()
+
         ctx.feed_in(msg)
 
     def _on_inbound_content_chunk_data(self, ctx: ChannelPipelineHandlerContext, msg: PipelineHttpMessageContentChunkData) -> None:  # noqa
-        if not self._enabled or self._decompressor is None:
+        if self._decompressor is None:
             ctx.feed_in(msg)
             return
 
@@ -292,31 +300,39 @@ class PipelineHttpObjectDecompressor(
 
         self._pump(ctx)
 
+    def _on_inbound_end(self, ctx: ChannelPipelineHandlerContext, msg: PipelineHttpMessageEnd) -> None:
+        if self._decompressor is None:
+            ctx.feed_in(msg)
+            return
+
+        self._pending_end = msg
+        self._pump(ctx)
+
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         if isinstance(msg, ChannelPipelineMessages.FinalInput):
             self._on_inbound_final_input(ctx, msg)
-            return
 
-        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
+        elif isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
             self._on_inbound_flush_input(ctx, msg)
-            return
 
-        if isinstance(msg, self._head_type):
+        elif isinstance(msg, self._head_type):
             self._on_inbound_head(ctx, msg)
-            return
 
-        if isinstance(msg, self._content_chunk_data_type):
+        elif isinstance(msg, self._content_chunk_data_type):
             self._on_inbound_content_chunk_data(ctx, msg)
-            return
 
-        ctx.feed_in(msg)
+        elif isinstance(msg, self._end_type):
+            self._on_inbound_end(ctx, msg)
+
+        else:
+            ctx.feed_in(msg)
 
     #
 
     def _on_outbound_ready_for_input(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineFlowMessages.ReadyForInput) -> None:  # Noqa
         self._read_requested = True
 
-        if self._out_pending or (self._enabled and self._in_pending):
+        if self._out_pending or (self._decompressor is not None and self._in_pending):
             if self._pump(ctx):
                 if not self._is_auto_read(ctx):
                     ctx.feed_in(ChannelPipelineFlowMessages.FlushInput())
@@ -328,6 +344,6 @@ class PipelineHttpObjectDecompressor(
     def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         if isinstance(msg, ChannelPipelineFlowMessages.ReadyForInput):
             self._on_outbound_ready_for_input(ctx, msg)
-            return
 
-        ctx.feed_out(msg)
+        else:
+            ctx.feed_out(msg)

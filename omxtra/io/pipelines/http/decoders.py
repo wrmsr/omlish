@@ -505,6 +505,8 @@ class PipelineHttpObjectDecoder(
 
             if next_mvs is not None:
                 return (self._d._HeaderChunkedContentState(self._d, self._head), SegmentedByteStreamBufferView.of_opt(next_mvs))  # noqa
+            elif final:
+                return self._abort(out, 'EOF before HTTP chunk complete')
             else:
                 return None
 
@@ -556,6 +558,8 @@ class PipelineHttpObjectDecoder(
 
             if next_mvs is not None:
                 return (self._d._DoneState(self._d, self._head), SegmentedByteStreamBufferView.of_opt(next_mvs))  # noqa
+            elif final:
+                return self._abort(out, 'EOF before HTTP trailer complete')
             else:
                 return None
 

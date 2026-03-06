@@ -28,13 +28,10 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         ])
 
         # Send response head with chunked encoding
-        head = PipelineHttpResponseHead(
-            version=HttpVersion(1, 1),
-            status=200,
-            reason='OK',
-            headers=HttpHeaders([
-                ('Transfer-Encoding', 'chunked'),
-            ]),
+        head = (
+            b'HTTP/1.1 200 OK\r\n'
+            b'Transfer-Encoding: chunked\r\n'
+            b'\r\n'
         )
         channel.feed_in(head)
 
@@ -45,7 +42,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
 
         # Should get: head, chunk1 data, chunk2 data, end marker
         self.assertEqual(len(out), 4)
-        self.assertIs(out[0], head)
+        self.assertIsInstance(out[0], PipelineHttpResponseHead)
         self.assertIsInstance(out[1], PipelineHttpResponseContentChunkData)
         self.assertEqual(out[1].data, b'hello')
         self.assertIsInstance(out[2], PipelineHttpResponseContentChunkData)
@@ -61,13 +58,10 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
             ibq := InboundQueueChannelPipelineHandler(),
         ])
 
-        head = PipelineHttpResponseHead(
-            version=HttpVersion(1, 1),
-            status=200,
-            reason='OK',
-            headers=HttpHeaders([
-                ('Transfer-Encoding', 'chunked'),
-            ]),
+        head = (
+            b'HTTP/1.1 200 OK\r\n'
+            b'Transfer-Encoding: chunked\r\n'
+            b'\r\n'
         )
         channel.feed_in(head)
 
@@ -87,7 +81,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
 
         # Should get: head, chunk data, end marker
         self.assertEqual(len(out), 4)
-        self.assertIs(out[0], head)
+        self.assertIsInstance(out[0], PipelineHttpResponseHead)
         self.assertIsInstance(out[1], PipelineHttpResponseContentChunkData)
         self.assertEqual(out[1].data, b'hel')
         self.assertIsInstance(out[2], PipelineHttpResponseContentChunkData)
@@ -95,21 +89,16 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         self.assertIsInstance(out[3], PipelineHttpResponseEnd)
 
     def test_non_chunked_response_passes_through(self) -> None:
-        """Test that non-chunked responses pass through unchanged."""
-
         decoder = PipelineHttpResponseDecoder()
         channel = PipelineChannel.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
         ])
 
-        head = PipelineHttpResponseHead(
-            version=HttpVersion(1, 1),
-            status=200,
-            reason='OK',
-            headers=HttpHeaders([
-                ('Content-Length', '5'),
-            ]),
+        head = (
+            b'HTTP/1.1 200 OK\r\n'
+            b'Content-Length: 5\r\n'
+            b'\r\n'
         )
         channel.feed_in(head)
 
@@ -119,9 +108,11 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         out = ibq.drain()
 
         # Should pass through unchanged
-        self.assertEqual(len(out), 2)
-        self.assertIs(out[0], head)
-        self.assertEqual(out[1], b'hello')
+        self.assertEqual(len(out), 3)
+        self.assertIsInstance(out[0], PipelineHttpResponseHead)
+        self.assertIsInstance(out[1], PipelineHttpResponseContentChunkData)
+        self.assertEqual(out[1].data, b'hello')
+        self.assertIsInstance(out[2], PipelineHttpResponseEnd)
 
     def test_empty_chunks_skipped(self) -> None:
         """Test that zero-size chunks before final chunk work correctly."""
@@ -132,13 +123,10 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
             ibq := InboundQueueChannelPipelineHandler(),
         ])
 
-        head = PipelineHttpResponseHead(
-            version=HttpVersion(1, 1),
-            status=200,
-            reason='OK',
-            headers=HttpHeaders([
-                ('Transfer-Encoding', 'chunked'),
-            ]),
+        head = (
+            b'HTTP/1.1 200 OK\r\n'
+            b'Transfer-Encoding: chunked\r\n'
+            b'\r\n'
         )
         channel.feed_in(head)
 
@@ -148,7 +136,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         out = ibq.drain()
 
         self.assertEqual(len(out), 3)
-        self.assertIs(out[0], head)
+        self.assertIsInstance(out[0], PipelineHttpResponseHead)
         self.assertIsInstance(out[1], PipelineHttpResponseContentChunkData)
         self.assertEqual(out[1].data, b'hello')
         self.assertIsInstance(out[2], PipelineHttpResponseEnd)
@@ -171,13 +159,10 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
             ibq := InboundQueueChannelPipelineHandler(),
         ])
 
-        head = PipelineHttpResponseHead(
-            version=HttpVersion(1, 1),
-            status=200,
-            reason='OK',
-            headers=HttpHeaders([
-                ('Transfer-Encoding', 'chunked'),
-            ]),
+        head = (
+            b'HTTP/1.1 200 OK\r\n'
+            b'Transfer-Encoding: chunked\r\n'
+            b'\r\n'
         )
         channel.feed_in(head)
 
@@ -203,13 +188,10 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
             ibq := InboundQueueChannelPipelineHandler(),
         ])
 
-        head = PipelineHttpResponseHead(
-            version=HttpVersion(1, 1),
-            status=200,
-            reason='OK',
-            headers=HttpHeaders([
-                ('Transfer-Encoding', 'chunked'),
-            ]),
+        head = (
+            b'HTTP/1.1 200 OK\r\n'
+            b'Transfer-Encoding: chunked\r\n'
+            b'\r\n'
         )
         channel.feed_in(head)
 
@@ -241,13 +223,10 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
             ibq := InboundQueueChannelPipelineHandler(),
         ])
 
-        head = PipelineHttpResponseHead(
-            version=HttpVersion(1, 1),
-            status=200,
-            reason='OK',
-            headers=HttpHeaders([
-                ('Transfer-Encoding', 'chunked'),
-            ]),
+        head = (
+            b'HTTP/1.1 200 OK\r\n'
+            b'Transfer-Encoding: chunked\r\n'
+            b'\r\n'
         )
         channel.feed_in(head)
 
@@ -261,7 +240,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
 
         # Should get an aborted message
         out_head, chunk, aborted, eof = out
-        self.assertIs(out_head, head)
+        self.assertIsInstance(out_head, PipelineHttpResponseHead)
         self.assertIsInstance(chunk, PipelineHttpResponseContentChunkData)
         self.assertEqual(chunk.data.tobytes(), b'hel')
         self.assertIsInstance(aborted, PipelineHttpResponseAborted)
@@ -276,13 +255,10 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
             ibq := InboundQueueChannelPipelineHandler(),
         ])
 
-        head = PipelineHttpResponseHead(
-            version=HttpVersion(1, 1),
-            status=200,
-            reason='OK',
-            headers=HttpHeaders([
-                ('Transfer-Encoding', 'chunked'),
-            ]),
+        head = (
+            b'HTTP/1.1 200 OK\r\n'
+            b'Transfer-Encoding: chunked\r\n'
+            b'\r\n'
         )
         channel.feed_in(head)
 
@@ -292,9 +268,9 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         out = ibq.drain()
 
         # Should get head and Error event
-        self.assertIs(out[0], head)
-        self.assertIsInstance(out[1], ChannelPipelineMessages.Error)
-        self.assertIn('Invalid chunk size', str(out[1].exc))
+        self.assertIsInstance(out[0], PipelineHttpResponseHead)
+        self.assertIsInstance(out[1], PipelineHttpResponseAborted)
+        self.assertIn('Invalid chunk size', out[1].reason_str)
 
     def test_missing_trailing_crlf_raises(self) -> None:
         """Test that missing trailing CRLF after chunk data raises error."""
@@ -305,13 +281,10 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
             ibq := InboundQueueChannelPipelineHandler(),
         ])
 
-        head = PipelineHttpResponseHead(
-            version=HttpVersion(1, 1),
-            status=200,
-            reason='OK',
-            headers=HttpHeaders([
-                ('Transfer-Encoding', 'chunked'),
-            ]),
+        head = (
+            b'HTTP/1.1 200 OK\r\n'
+            b'Transfer-Encoding: chunked\r\n'
+            b'\r\n'
         )
         channel.feed_in(head)
 
@@ -321,9 +294,11 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         out = ibq.drain()
 
         # Should get head and Error event
-        self.assertIs(out[0], head)
-        self.assertIsInstance(out[1], ChannelPipelineMessages.Error)
-        self.assertIn('Expected \\r\\n after chunk data', str(out[1].exc))
+        self.assertIsInstance(out[0], PipelineHttpResponseHead)
+        self.assertIsInstance(out[1], PipelineHttpResponseContentChunkData)
+        self.assertEqual(out[1].data.tobytes(), b'hello')
+        self.assertIsInstance(out[2], PipelineHttpResponseAborted)
+        self.assertIn('Expected \\r\\n after chunk data', out[2].reason_str)
 
     def test_uppercase_hex_chunk_size(self) -> None:
         """Test that uppercase hex chunk sizes work."""
@@ -334,13 +309,10 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
             ibq := InboundQueueChannelPipelineHandler(),
         ])
 
-        head = PipelineHttpResponseHead(
-            version=HttpVersion(1, 1),
-            status=200,
-            reason='OK',
-            headers=HttpHeaders([
-                ('Transfer-Encoding', 'chunked'),
-            ]),
+        head = (
+            b'HTTP/1.1 200 OK\r\n'
+            b'Transfer-Encoding: chunked\r\n'
+            b'\r\n'
         )
         channel.feed_in(head)
 
@@ -363,13 +335,10 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
             ibq := InboundQueueChannelPipelineHandler(),
         ])
 
-        head = PipelineHttpResponseHead(
-            version=HttpVersion(1, 1),
-            status=200,
-            reason='OK',
-            headers=HttpHeaders([
-                ('Transfer-Encoding', 'chunked'),
-            ]),
+        head = (
+            b'HTTP/1.1 200 OK\r\n'
+            b'Transfer-Encoding: chunked\r\n'
+            b'\r\n'
         )
         channel.feed_in(head)
 
@@ -388,7 +357,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
 
         # head + 5 chunks + end
         self.assertEqual(len(out), 7)
-        self.assertIs(out[0], head)
+        self.assertIsInstance(out[0], PipelineHttpResponseHead)
 
         for i, chunk in enumerate(chunks, 1):
             self.assertIsInstance(out[i], PipelineHttpResponseContentChunkData)
@@ -405,13 +374,10 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
             ibq := InboundQueueChannelPipelineHandler(),
         ])
 
-        head = PipelineHttpResponseHead(
-            version=HttpVersion(1, 1),
-            status=200,
-            reason='OK',
-            headers=HttpHeaders([
-                ('Transfer-Encoding', 'chunked'),
-            ]),
+        head = (
+            b'HTTP/1.1 200 OK\r\n'
+            b'Transfer-Encoding: chunked\r\n'
+            b'\r\n'
         )
         channel.feed_in(head)
 

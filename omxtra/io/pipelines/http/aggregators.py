@@ -193,7 +193,7 @@ class PipelineHttpObjectAggregator(
                     mvl = len(mv)
 
                     if (rem := self._remaining) is not None and mvl > rem:
-                        return self._abort('unexpected extra bytes after request body')
+                        return self._abort('unexpected extra bytes after message body')
 
                     buf.write(mv)
                     self._remaining -= mvl
@@ -206,10 +206,10 @@ class PipelineHttpObjectAggregator(
 
             elif isinstance(msg, self._a._end_type):
                 if self._remaining:
-                    return self._abort('incomplete request body', msg)
+                    return self._abort('incomplete message body', msg)
 
                 if self._remaining is not None:
-                    return self._abort('unexpected request sequence', msg)
+                    return self._abort('unexpected message sequence', msg)
 
                 body: CanByteStreamBuffer
                 if (buf := self._buf) is not None:
@@ -221,7 +221,7 @@ class PipelineHttpObjectAggregator(
                 return (self._a._HeadState(self._a), [full])
 
             elif isinstance(msg, self._a._final_type):
-                return self._abort('incomplete request body', msg)
+                return self._abort('incomplete message body', msg)
 
             else:
                 raise TypeError(f'unexpected message type: {type(msg)}')
@@ -250,7 +250,7 @@ class PipelineHttpObjectAggregator(
                 return (self._a._HeadState(self._a), [full])
 
             elif isinstance(msg, self._a._final_type):
-                return self._abort('incomplete request sequence', msg)
+                return self._abort('incomplete message sequence', msg)
 
             else:
                 raise TypeError(f'unexpected message type: {type(msg)}')
