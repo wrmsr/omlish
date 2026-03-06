@@ -26,6 +26,10 @@ class ContextInvalidatedChannelPipelineError(ChannelPipelineError):
     pass
 
 
+class SawInitialInputChannelPipelineError(ChannelPipelineError):
+    pass
+
+
 class SawFinalInputChannelPipelineError(ChannelPipelineError):
     pass
 

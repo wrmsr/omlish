@@ -14,6 +14,7 @@ from .errors import ContextInvalidatedChannelPipelineError
 from .errors import FinalOutputChannelPipelineError
 from .errors import MessageNotPropagatedChannelPipelineError
 from .errors import MessageReachedTerminalChannelPipelineError
+from .errors import SawInitialInputChannelPipelineError
 from .errors import SawFinalInputChannelPipelineError
 from .errors import UnhandleableChannelPipelineError
 
@@ -59,6 +60,14 @@ class ChannelPipelineMessages(NamespaceClass):
             raise NotImplementedError
 
     #
+
+    @ta.final
+    @dc.dataclass(frozen=True, eq=False)
+    class InitialInput(NeverOutbound, MustPropagate):  # ~ Netty `ChannelInboundHandler::channelActive`
+        """Signals that the inbound stream has begun producing input (`connected`)."""
+
+        def __repr__(self) -> str:
+            return f'{type(self).__name__}@{id(self):x}()'
 
     @ta.final
     @dc.dataclass(frozen=True, eq=False)
@@ -1216,6 +1225,8 @@ class PipelineChannel:
 
         self._output: ta.Final[PipelineChannel._Output] = PipelineChannel._Output()
 
+        self._saw_any_input = False
+        self._saw_initial_input = False
         self._saw_final_input = False
         self._saw_final_output = False
 
@@ -1274,6 +1285,14 @@ class PipelineChannel:
         return self._state
 
     #
+
+    @property
+    def saw_any_input(self) -> bool:
+        return self._saw_any_input
+
+    @property
+    def saw_initial_input(self) -> bool:
+        return self._saw_initial_input
 
     @property
     def saw_final_input(self) -> bool:
@@ -1506,10 +1525,17 @@ class PipelineChannel:
         self._step_in()
         try:
             for msg in msgs:
-                if isinstance(msg, ChannelPipelineMessages.FinalInput):
+                if self._saw_final_input:
+                    raise SawFinalInputChannelPipelineError
+                elif isinstance(msg, ChannelPipelineMessages.FinalInput):
                     self._saw_final_input = True
-                elif self._saw_final_input:
-                    raise SawFinalInputChannelPipelineError  # noqa
+
+                if isinstance(msg, ChannelPipelineMessages.InitialInput):
+                    if self._saw_any_input:
+                        raise SawInitialInputChannelPipelineError
+                    check.state(not self._saw_initial_input)
+                    self._saw_initial_input = True
+                self._saw_any_input = True
 
                 ctx._inbound(msg)  # noqa
 
@@ -1524,6 +1550,9 @@ class PipelineChannel:
 
     def feed_in(self, *msgs: ta.Any) -> None:
         self._feed_in_to(self._pipeline._outermost, msgs)  # noqa
+
+    def feed_initial_input(self) -> None:
+        self._feed_in_to(self._pipeline._outermost, (ChannelPipelineMessages.InitialInput(),))  # noqa
 
     def feed_final_input(self) -> None:
         self._feed_in_to(self._pipeline._outermost, (ChannelPipelineMessages.FinalInput(),))  # noqa
