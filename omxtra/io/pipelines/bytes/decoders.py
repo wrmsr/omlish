@@ -14,6 +14,7 @@ from omlish.io.streams.segmented import SegmentedByteStreamBuffer
 from omlish.io.streams.types import ByteStreamBuffer
 from omlish.io.streams.types import MutableByteStreamBuffer
 from omlish.io.streams.utils import ByteStreamBuffers
+from omlish.io.streams.utils import CanByteStreamBuffer
 from omlish.lite.abstract import Abstract
 from omlish.lite.check import check
 
@@ -126,50 +127,17 @@ class DelimiterFrameDecoderChannelPipelineHandler(InboundBytesBufferingChannelPi
 ##
 
 
-class BytesToMessageDecoderChannelPipelineHandler(InboundBytesBufferingChannelPipelineHandler, Abstract):
-    def __init__(
-            self,
-            *,
-            max_buffer_size: ta.Optional[int] = None,
-            buffer_chunk_size: int = 64 * 1024,
-            scanning_buffer: bool = False,
-    ) -> None:
-        super().__init__()
-
-        self._max_buffer_size = max_buffer_size
-        self._buffer_chunk_size = buffer_chunk_size
-        self._scanning_buffer = scanning_buffer
-
-    def inbound_buffered_bytes(self) -> int:
-        if (buf := self._buf) is None:
-            return 0
-        return len(buf)
-
+class BytesToMessageDecoderChannelPipelineHandler(ChannelPipelineHandler, Abstract):
     @abc.abstractmethod
     def _decode(
             self,
             ctx: ChannelPipelineHandlerContext,
-            buf: ByteStreamBuffer,
+            data: CanByteStreamBuffer,
             out: ta.List[ta.Any],
             *,
             final: bool = False,
     ) -> None:
         raise NotImplementedError
-
-    #
-
-    _buf: ta.Optional[MutableByteStreamBuffer] = None
-
-    def _new_buf(self) -> MutableByteStreamBuffer:
-        buf: MutableByteStreamBuffer = SegmentedByteStreamBuffer(
-            max_size=self._max_buffer_size,
-            chunk_size=self._buffer_chunk_size,
-        )
-
-        if self._scanning_buffer:
-            buf = ScanningByteStreamBuffer(buf)
-
-        return buf
 
     #
 
@@ -179,7 +147,7 @@ class BytesToMessageDecoderChannelPipelineHandler(InboundBytesBufferingChannelPi
     def _call_decode(
             self,
             ctx: ChannelPipelineHandlerContext,
-            buf: ByteStreamBuffer,
+            data: CanByteStreamBuffer,
             *,
             final: bool = False,
     ) -> None:
@@ -187,10 +155,12 @@ class BytesToMessageDecoderChannelPipelineHandler(InboundBytesBufferingChannelPi
 
         out: ta.List[ta.Any] = []
         try:
-            self._decode(ctx, buf, out, final=final)
+            self._decode(ctx, data, out, final=final)
         except DecodingChannelPipelineError:
             raise
         except Exception as e:
+            if ctx.pipeline.config.raise_immediately:
+                raise
             raise DecodingChannelPipelineError from e
 
         if not out:
@@ -202,6 +172,11 @@ class BytesToMessageDecoderChannelPipelineHandler(InboundBytesBufferingChannelPi
             ctx.feed_in(out_msg)
 
     #
+
+    def _on_bytes_input(self, ctx: ChannelPipelineHandlerContext, data: CanByteStreamBuffer) -> None:
+        check.arg(len(data) > 0)
+
+        self._call_decode(ctx, data)
 
     def _on_flush_input(self, ctx: ChannelPipelineHandlerContext) -> None:
         if (
@@ -217,26 +192,9 @@ class BytesToMessageDecoderChannelPipelineHandler(InboundBytesBufferingChannelPi
         ctx.feed_in(ChannelPipelineFlowMessages.FlushInput())
 
     def _on_final_input(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineMessages.FinalInput) -> None:
-        dec_buf: ByteStreamBuffer
-        if self._buf is not None:
-            dec_buf = self._buf
-        else:
-            dec_buf = DirectByteStreamBuffer(b'')
-
-        self._call_decode(ctx, dec_buf, final=True)
+        self._call_decode(ctx, DirectByteStreamBuffer(b''), final=True)
 
         ctx.feed_in(msg)
-
-    def _on_bytes_input(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        check.arg(len(msg) > 0)
-
-        if self._buf is None:
-            self._buf = self._new_buf()
-
-        for seg in ByteStreamBuffers.iter_segments(msg):
-            self._buf.write(seg)
-
-        self._call_decode(ctx, self._buf)
 
     #
 
@@ -263,7 +221,7 @@ class FnBytesToMessageDecoderChannelPipelineHandler(BytesToMessageDecoderChannel
         def __call__(
                 self,
                 ctx: ChannelPipelineHandlerContext,
-                buf: ByteStreamBuffer,
+                data: CanByteStreamBuffer,
                 out: ta.List[ta.Any],
                 *,
                 final: bool = False,
@@ -273,20 +231,97 @@ class FnBytesToMessageDecoderChannelPipelineHandler(BytesToMessageDecoderChannel
     def __init__(
             self,
             decode_fn: DecodeFn,
+    ) -> None:
+        super().__init__()
+
+        self._decode_fn = decode_fn
+
+    def _decode(
+            self,
+            ctx: ChannelPipelineHandlerContext,
+            buf: CanByteStreamBuffer,
+            out: ta.List[ta.Any],
+            *,
+            final: bool = False,
+    ) -> None:
+        self._decode_fn(ctx, buf, out, final=final)
+
+
+##
+
+
+class BufferedBytesToMessageDecoderChannelPipelineHandler(
+    InboundBytesBufferingChannelPipelineHandler,
+    BytesToMessageDecoderChannelPipelineHandler,
+    Abstract,
+):
+    def __init__(
+            self,
             *,
             max_buffer_size: ta.Optional[int] = None,
             buffer_chunk_size: int = 64 * 1024,
             scanning_buffer: bool = False,
     ) -> None:
-        super().__init__(
-            max_buffer_size=max_buffer_size,
-            buffer_chunk_size=buffer_chunk_size,
-            scanning_buffer=scanning_buffer,
+        super().__init__()
+
+        self._max_buffer_size = max_buffer_size
+        self._buffer_chunk_size = buffer_chunk_size
+        self._scanning_buffer = scanning_buffer
+
+    #
+
+    def inbound_buffered_bytes(self) -> int:
+        if (buf := self._buf) is None:
+            return 0
+        return len(buf)
+
+    _buf: ta.Optional[MutableByteStreamBuffer] = None
+
+    def _new_buf(self) -> MutableByteStreamBuffer:
+        buf: MutableByteStreamBuffer = SegmentedByteStreamBuffer(
+            max_size=self._max_buffer_size,
+            chunk_size=self._buffer_chunk_size,
         )
 
-        self._decode_fn = decode_fn
+        if self._scanning_buffer:
+            buf = ScanningByteStreamBuffer(buf)
+
+        return buf
+
+    #
 
     def _decode(
+            self,
+            ctx: ChannelPipelineHandlerContext,
+            data: CanByteStreamBuffer,
+            out: ta.List[ta.Any],
+            *,
+            final: bool = False,
+    ) -> None:
+        if final:
+            check.arg(len(data) == 0)
+
+            if not isinstance(data, ByteStreamBuffer):
+                data = DirectByteStreamBuffer(b'')
+
+            self._decode_buffer(ctx, data, out, final=final)
+
+            return
+
+        check.arg(len(data) > 0)
+
+        if (buf := self._buf) is None:
+            buf = self._buf = self._new_buf()
+
+        for seg in ByteStreamBuffers.iter_segments(data):
+            buf.write(seg)
+
+        self._decode_buffer(ctx, buf, out, final=final)
+
+    #
+
+    @abc.abstractmethod
+    def _decode_buffer(
             self,
             ctx: ChannelPipelineHandlerContext,
             buf: ByteStreamBuffer,
@@ -294,4 +329,4 @@ class FnBytesToMessageDecoderChannelPipelineHandler(BytesToMessageDecoderChannel
             *,
             final: bool = False,
     ) -> None:
-        self._decode_fn(ctx, buf, out, final=final)
+        raise NotImplementedError

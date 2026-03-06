@@ -13,7 +13,7 @@ from ....drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
 from ....handlers.flatmap import FlatMapChannelPipelineHandlers
 from ...client.requests import PipelineHttpRequestEncoder
 from ...client.responses import PipelineHttpResponseChunkedDecoder
-from ...client.responses import PipelineHttpResponseConditionalGzipDecoder
+from ...client.responses import PipelineHttpResponseDecompressor
 from ...client.responses import PipelineHttpResponseHeadDecoder
 from ...requests import FullPipelineHttpRequest
 from ...responses import PipelineHttpResponseContentChunkData
@@ -98,7 +98,7 @@ def build_http_client_channel() -> PipelineChannel.Spec:
     return PipelineChannel.Spec(
         [
             PipelineHttpResponseHeadDecoder(),
-            PipelineHttpResponseConditionalGzipDecoder(),
+            PipelineHttpResponseDecompressor(),
             PipelineHttpResponseChunkedDecoder(),
             PipelineHttpRequestEncoder(),
             HttpClientHandler(),

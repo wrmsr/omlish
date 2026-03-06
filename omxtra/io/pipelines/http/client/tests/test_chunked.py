@@ -14,14 +14,14 @@ from ...responses import PipelineHttpResponseAborted
 from ...responses import PipelineHttpResponseContentChunkData
 from ...responses import PipelineHttpResponseEnd
 from ...responses import PipelineHttpResponseHead
-from ..responses import PipelineHttpResponseChunkedDecoder
+from ..responses import PipelineHttpResponseDecoder
 
 
-class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
+class TestPipelineHttpResponseDecoder(unittest.TestCase):
     def test_simple_chunked_response(self) -> None:
         """Test decoding simple chunked response."""
 
-        decoder = PipelineHttpResponseChunkedDecoder()
+        decoder = PipelineHttpResponseDecoder()
         channel = PipelineChannel.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
@@ -55,7 +55,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
     def test_chunked_response_split_across_reads(self) -> None:
         """Test chunked response split across multiple reads."""
 
-        decoder = PipelineHttpResponseChunkedDecoder()
+        decoder = PipelineHttpResponseDecoder()
         channel = PipelineChannel.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
@@ -97,7 +97,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
     def test_non_chunked_response_passes_through(self) -> None:
         """Test that non-chunked responses pass through unchanged."""
 
-        decoder = PipelineHttpResponseChunkedDecoder()
+        decoder = PipelineHttpResponseDecoder()
         channel = PipelineChannel.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
@@ -126,7 +126,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
     def test_empty_chunks_skipped(self) -> None:
         """Test that zero-size chunks before final chunk work correctly."""
 
-        decoder = PipelineHttpResponseChunkedDecoder()
+        decoder = PipelineHttpResponseDecoder()
         channel = PipelineChannel.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
@@ -157,7 +157,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
         """Test decoding large chunk."""
 
         # Use larger buffer size for this test
-        decoder = PipelineHttpResponseChunkedDecoder(
+        decoder = PipelineHttpResponseDecoder(
             config=dc.replace(
                 PipelineHttpDecodingConfig.DEFAULT,
                 content_chunk_header_buffer=dc.replace(
@@ -197,7 +197,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
     def test_hex_chunk_sizes(self) -> None:
         """Test that hex chunk sizes are properly decoded."""
 
-        decoder = PipelineHttpResponseChunkedDecoder()
+        decoder = PipelineHttpResponseDecoder()
         channel = PipelineChannel.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
@@ -235,7 +235,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
     def test_eof_before_complete_raises(self) -> None:
         """Test that EOF before chunked encoding completes raises error."""
 
-        decoder = PipelineHttpResponseChunkedDecoder()
+        decoder = PipelineHttpResponseDecoder()
         channel = PipelineChannel.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
@@ -270,7 +270,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
     def test_invalid_chunk_size_raises(self) -> None:
         """Test that invalid chunk size raises error."""
 
-        decoder = PipelineHttpResponseChunkedDecoder()
+        decoder = PipelineHttpResponseDecoder()
         channel = PipelineChannel.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
@@ -299,7 +299,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
     def test_missing_trailing_crlf_raises(self) -> None:
         """Test that missing trailing CRLF after chunk data raises error."""
 
-        decoder = PipelineHttpResponseChunkedDecoder()
+        decoder = PipelineHttpResponseDecoder()
         channel = PipelineChannel.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
@@ -328,7 +328,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
     def test_uppercase_hex_chunk_size(self) -> None:
         """Test that uppercase hex chunk sizes work."""
 
-        decoder = PipelineHttpResponseChunkedDecoder()
+        decoder = PipelineHttpResponseDecoder()
         channel = PipelineChannel.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
@@ -357,7 +357,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
     def test_multiple_chunks(self) -> None:
         """Test multiple chunks in sequence."""
 
-        decoder = PipelineHttpResponseChunkedDecoder()
+        decoder = PipelineHttpResponseDecoder()
         channel = PipelineChannel.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
@@ -399,7 +399,7 @@ class TestPipelineHttpResponseChunkedDecoder(unittest.TestCase):
     def test_eof_after_complete_ok(self) -> None:
         """Test that EOF after complete chunked response is OK."""
 
-        decoder = PipelineHttpResponseChunkedDecoder()
+        decoder = PipelineHttpResponseDecoder()
         channel = PipelineChannel.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),

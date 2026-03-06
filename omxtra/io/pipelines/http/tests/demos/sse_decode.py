@@ -6,7 +6,7 @@ from ....bytes.decoders import DelimiterFrameDecoderChannelPipelineHandler
 from ....bytes.decoders import UnicodeDecoderChannelPipelineHandler
 from ....core import PipelineChannel
 from ....handlers.flatmap import FlatMapChannelPipelineHandlers
-from ...client.responses import PipelineHttpResponseConditionalGzipDecoder
+from ...client.responses import PipelineHttpResponseDecompressor
 from ...client.responses import PipelineHttpResponseHeadDecoder
 from ...sse import PipelineSseDecoder
 
@@ -19,7 +19,7 @@ def build_http_sse_channel() -> PipelineChannel:
 
     return PipelineChannel.new([
         PipelineHttpResponseHeadDecoder(),
-        PipelineHttpResponseConditionalGzipDecoder(),
+        PipelineHttpResponseDecompressor(),
         DelimiterFrameDecoderChannelPipelineHandler([b'\r\n', b'\n'], keep_ends=True, max_size=1 << 20),
         UnicodeDecoderChannelPipelineHandler(),
         PipelineSseDecoder(),

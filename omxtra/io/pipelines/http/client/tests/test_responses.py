@@ -12,17 +12,17 @@ from ....core import ChannelPipelineMessages
 from ....core import PipelineChannel
 from ....handlers.queues import InboundQueueChannelPipelineHandler
 from ...responses import PipelineHttpResponseHead
-from ..responses import PipelineHttpCompressionDecodingConfig
+from ..responses import PipelineHttpDecompressionConfig
 from ..responses import PipelineHttpResponseAborted
-from ..responses import PipelineHttpResponseConditionalGzipDecoder
-from ..responses import PipelineHttpResponseHeadDecoder
+from ..responses import PipelineHttpResponseDecompressor
+from ..responses import PipelineHttpResponseDecoder
 
 
 class TestPipelineHttpResponseDecoder(unittest.TestCase):
     def test_basic_response_head(self) -> None:
         """Test basic HTTP response head parsing."""
 
-        decoder = PipelineHttpResponseHeadDecoder()
+        decoder = PipelineHttpResponseDecoder()
         channel = PipelineChannel.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
@@ -42,7 +42,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
     def test_response_with_body_in_same_chunk(self) -> None:
         """Test response head + body bytes received together."""
 
-        decoder = PipelineHttpResponseHeadDecoder()
+        decoder = PipelineHttpResponseDecoder()
         channel = PipelineChannel.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
@@ -65,7 +65,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
     def test_response_incremental_head(self) -> None:
         """Test response head received incrementally."""
 
-        decoder = PipelineHttpResponseHeadDecoder()
+        decoder = PipelineHttpResponseDecoder()
         channel = PipelineChannel.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
@@ -87,7 +87,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
     def test_eof_before_head_complete(self) -> None:
         """Test EOF arriving before head is complete raises ValueError."""
 
-        decoder = PipelineHttpResponseHeadDecoder()
+        decoder = PipelineHttpResponseDecoder()
         channel = PipelineChannel.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
@@ -108,7 +108,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
 
 
 class TestGzipDecompressorFlow(unittest.TestCase):
-    config = PipelineHttpCompressionDecodingConfig(
+    config = PipelineHttpDecompressionConfig(
         max_steps_per_call=2,      # Very low for testing
         max_decomp_chunk=10,       # Tiny chunks to force multiple steps
         max_out_pending=100,
@@ -129,7 +129,7 @@ class TestGzipDecompressorFlow(unittest.TestCase):
         raw_data = b'This is a reasonably long string that should exceed the tiny chunk limit.'
         data = compressor.compress(raw_data) + compressor.flush()
 
-        handler = PipelineHttpResponseConditionalGzipDecoder(config=self.config)
+        handler = PipelineHttpResponseDecompressor(config=self.config)
 
         channel = PipelineChannel.new(
             [
@@ -173,7 +173,7 @@ class TestGzipDecompressorFlow(unittest.TestCase):
         """Test that budget checks trigger even during deferred steps."""
 
         config = dc.replace(self.config, max_expansion_ratio=2)
-        handler = PipelineHttpResponseConditionalGzipDecoder(config=config)
+        handler = PipelineHttpResponseDecompressor(config=config)
 
         # 10 bytes compressed -> 1000 bytes uncompressed (ratio 100)
         compressor = zlib.compressobj(wbits=16 + zlib.MAX_WBITS)

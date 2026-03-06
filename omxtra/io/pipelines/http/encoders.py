@@ -1,5 +1,6 @@
 # ruff: noqa: UP006 UP007 UP045
 # @omlish-lite
+import abc
 import io
 import typing as ta
 
@@ -15,54 +16,54 @@ from .objects import PipelineHttpMessageHead
 ##
 
 
-class PipelineHttpEncodingMessageAdapter(Abstract):
-    @property
-    def head_type(self) -> ta.Optional[ta.Type[PipelineHttpMessageHead]]:
-        return None
-
-    @property
-    def full_type(self) -> ta.Optional[ta.Type[FullPipelineHttpMessage]]:
-        return None
-
-    @property
-    def content_chunk_data_type(self) -> ta.Optional[ta.Type[PipelineHttpMessageContentChunkData]]:
-        return None
-
-    @property
-    def end_type(self) -> ta.Optional[ta.Type[PipelineHttpMessageEnd]]:
-        return None
-
-    def encode_head_line(self, head: PipelineHttpMessageHead) -> bytes:
-        raise NotImplementedError
-
-
-##
-
-
-class PipelineHttpEncoder:
-    def __init__(self, adapter: PipelineHttpEncodingMessageAdapter) -> None:
+class PipelineHttpObjectEncoder(Abstract):
+    def __init__(self) -> None:
         super().__init__()
-
-        self._adapter = adapter
 
         self._streaming = False
         self._chunked = False
 
     #
 
+    @property
+    @abc.abstractmethod
+    def _head_type(self) -> ta.Optional[ta.Type[PipelineHttpMessageHead]]:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def _full_type(self) -> ta.Optional[ta.Type[FullPipelineHttpMessage]]:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def _content_chunk_data_type(self) -> ta.Optional[ta.Type[PipelineHttpMessageContentChunkData]]:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def _end_type(self) -> ta.Optional[ta.Type[PipelineHttpMessageEnd]]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _encode_head_line(self, head: PipelineHttpMessageHead) -> bytes:
+        raise NotImplementedError
+
+    #
+
     def outbound(self, msg: ta.Any) -> ta.Sequence[ta.Any]:
         ty: ta.Any
 
-        if (ty := self._adapter.head_type) is not None and isinstance(msg, ty):
+        if (ty := self._head_type) is not None and isinstance(msg, ty):
             return self._handle_request_head(msg)
 
-        elif (ty := self._adapter.content_chunk_data_type) is not None and isinstance(msg, ty):
+        elif (ty := self._content_chunk_data_type) is not None and isinstance(msg, ty):
             return self._handle_content_chunk_data(msg)
 
-        elif (ty := self._adapter.end_type) is not None and isinstance(msg, ty):
+        elif (ty := self._end_type) is not None and isinstance(msg, ty):
             return self._handle_request_end(msg)
 
-        elif (ty := self._adapter.full_type) is not None and isinstance(msg, ty):
+        elif (ty := self._full_type) is not None and isinstance(msg, ty):
             return self._handle_full_request(msg)
 
         else:
@@ -130,7 +131,7 @@ class PipelineHttpEncoder:
     def _encode_head(self, head: PipelineHttpMessageHead) -> bytes:
         buf = io.BytesIO()
 
-        buf.write(self._adapter.encode_head_line(head))
+        buf.write(self._encode_head_line(head))
 
         for hl in self._encode_headers(head.headers):
             buf.write(hl)

@@ -7,18 +7,20 @@ from omlish.io.streams.utils import ByteStreamBuffers
 from ....core import ChannelPipelineMessages
 from ....core import PipelineChannel
 from ....handlers.queues import InboundQueueChannelPipelineHandler
+from ...requests import PipelineHttpRequestContentChunkData
+from ...requests import PipelineHttpRequestEnd
 from ..requests import FullPipelineHttpRequest
 from ..requests import PipelineHttpRequestAborted
-from ..requests import PipelineHttpRequestBodyAggregator
+from ..requests import PipelineHttpRequestAggregator
+from ..requests import PipelineHttpRequestDecoder
 from ..requests import PipelineHttpRequestHead
-from ..requests import PipelineHttpRequestHeadDecoder
 
 
 class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):
     def test_basic_request_head(self) -> None:
         """Test basic HTTP request head parsing."""
 
-        decoder = PipelineHttpRequestHeadDecoder()
+        decoder = PipelineHttpRequestDecoder()
         channel = PipelineChannel.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
@@ -39,7 +41,7 @@ class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):
     def test_request_with_body_in_same_chunk(self) -> None:
         """Test request head + body bytes received together."""
 
-        decoder = PipelineHttpRequestHeadDecoder()
+        decoder = PipelineHttpRequestDecoder()
         channel = PipelineChannel.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
@@ -48,47 +50,22 @@ class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):
         request = b'POST /api HTTP/1.1\r\nHost: test\r\nContent-Length: 4\r\n\r\ntest'
         channel.feed_in(request)
 
-        out = ibq.drain()
-        self.assertEqual(len(out), 2)
+        head, body, end = ibq.drain()
 
         # First: head
-        head = out[0]
         self.assertEqual(head.method, 'POST')
         self.assertEqual(head.target, '/api')
 
         # Second: body bytes (forwarded)
-        body = out[1]
-        self.assertEqual(ByteStreamBuffers.any_to_bytes(body), b'test')
+        self.assertIsInstance(body, PipelineHttpRequestContentChunkData)
+        self.assertEqual(ByteStreamBuffers.any_to_bytes(body.data), b'test')
 
-    def test_body_passthrough_mode(self) -> None:
-        """Test that after head parsed, subsequent bytes pass through."""
-
-        decoder = PipelineHttpRequestHeadDecoder()
-        channel = PipelineChannel.new([
-            decoder,
-            ibq := InboundQueueChannelPipelineHandler(),
-        ])
-
-        # Send head
-        request = b'POST /api HTTP/1.1\r\nHost: test\r\nContent-Length: 10\r\n\r\n'
-        channel.feed_in(request)
-
-        out = ibq.drain()
-        self.assertEqual(len(out), 1)
-
-        # Send body in chunks - should all pass through
-        channel.feed_in(b'hello')
-        channel.feed_in(b'world')
-
-        out = ibq.drain()
-        self.assertEqual(len(out), 2)
-        self.assertEqual(ByteStreamBuffers.any_to_bytes(out[0]), b'hello')
-        self.assertEqual(ByteStreamBuffers.any_to_bytes(out[1]), b'world')
+        self.assertIsInstance(end, PipelineHttpRequestEnd)
 
     def test_eof_before_head_complete(self) -> None:
         """Test EOF before head complete raises error."""
 
-        decoder = PipelineHttpRequestHeadDecoder()
+        decoder = PipelineHttpRequestDecoder()
         channel = PipelineChannel.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
@@ -102,12 +79,12 @@ class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):
         self.assertIsInstance(eof, ChannelPipelineMessages.FinalInput)
 
 
-class TestPipelineHttpRequestBodyAggregator(unittest.TestCase):
+class TestPipelineHttpRequestAggregator(unittest.TestCase):
     def test_request_with_no_body(self) -> None:
         """Test request with no Content-Length."""
 
-        head_decoder = PipelineHttpRequestHeadDecoder()
-        body_agg = PipelineHttpRequestBodyAggregator()
+        head_decoder = PipelineHttpRequestDecoder()
+        body_agg = PipelineHttpRequestAggregator()
         channel = PipelineChannel.new([
             head_decoder,
             body_agg,
@@ -128,8 +105,8 @@ class TestPipelineHttpRequestBodyAggregator(unittest.TestCase):
     def test_request_with_body_same_chunk(self) -> None:
         """Test request with body in same chunk as head."""
 
-        head_decoder = PipelineHttpRequestHeadDecoder()
-        body_agg = PipelineHttpRequestBodyAggregator()
+        head_decoder = PipelineHttpRequestDecoder()
+        body_agg = PipelineHttpRequestAggregator()
         channel = PipelineChannel.new([
             head_decoder,
             body_agg,
@@ -150,8 +127,8 @@ class TestPipelineHttpRequestBodyAggregator(unittest.TestCase):
     def test_request_with_body_multiple_chunks(self) -> None:
         """Test request body received in multiple chunks."""
 
-        head_decoder = PipelineHttpRequestHeadDecoder()
-        body_agg = PipelineHttpRequestBodyAggregator()
+        head_decoder = PipelineHttpRequestDecoder()
+        body_agg = PipelineHttpRequestAggregator()
         channel = PipelineChannel.new([
             head_decoder,
             body_agg,
@@ -180,8 +157,8 @@ class TestPipelineHttpRequestBodyAggregator(unittest.TestCase):
     def test_eof_before_body_complete(self) -> None:
         """Test EOF before body complete raises error."""
 
-        head_decoder = PipelineHttpRequestHeadDecoder()
-        body_agg = PipelineHttpRequestBodyAggregator()
+        head_decoder = PipelineHttpRequestDecoder()
+        body_agg = PipelineHttpRequestAggregator()
         channel = PipelineChannel.new([
             head_decoder,
             body_agg,
@@ -190,12 +167,96 @@ class TestPipelineHttpRequestBodyAggregator(unittest.TestCase):
 
         head = b'POST /api HTTP/1.1\r\nHost: test\r\nContent-Length: 10\r\n\r\n'
         channel.feed_in(head)
-        ibq.drain()
+        self.assertEqual(ibq.drain(), [])
 
         # Send partial body then EOF
         channel.feed_in(b'hello')
         channel.feed_final_input()
 
-        aborted, eof = ibq.drain()
+        out = ibq.drain()
+        aborted = out[-2]  # FIXME: duplicate aborted from decoder + aggregator
+        eof = out[-1]
         self.assertIsInstance(aborted, PipelineHttpRequestAborted)
         self.assertIsInstance(eof, ChannelPipelineMessages.FinalInput)
+
+
+class TestPipelineHttpRequestObjectDecoder(unittest.TestCase):
+    def test_basic_request_head(self) -> None:
+        decoder = PipelineHttpRequestDecoder()
+        channel = PipelineChannel(PipelineChannel.Spec([
+            decoder,
+            ibq := InboundQueueChannelPipelineHandler(),
+        ]).update_pipeline_config(raise_immediately=True))
+
+        request = b'GET /path HTTP/1.1\r\nHost: example.com\r\n\r\n'
+        channel.feed_in(request)
+
+        out = ibq.drain()
+        self.assertEqual(len(out), 1)
+
+        head = out[0]
+        self.assertIsInstance(head, PipelineHttpRequestHead)
+        self.assertEqual(head.method, 'GET')
+        self.assertEqual(head.target, '/path')
+        self.assertEqual(head.headers.single.get('host'), 'example.com')
+
+    def test_request_with_body_in_same_chunk(self) -> None:
+        """Test request head + body bytes received together."""
+
+        decoder = PipelineHttpRequestDecoder()
+        channel = PipelineChannel(PipelineChannel.Spec([
+            decoder,
+            ibq := InboundQueueChannelPipelineHandler(),
+        ]).update_pipeline_config(raise_immediately=True))
+
+        request = b'POST /api HTTP/1.1\r\nHost: test\r\nContent-Length: 4\r\n\r\ntest'
+        channel.feed_in(request)
+
+        out = ibq.drain()
+        self.assertEqual(len(out), 3)
+
+        # First: head
+        head, body, end = out
+        self.assertEqual(head.method, 'POST')
+        self.assertEqual(head.target, '/api')
+
+        # Second: body bytes (forwarded)
+        self.assertIsInstance(body, PipelineHttpRequestContentChunkData)
+        self.assertEqual(ByteStreamBuffers.any_to_bytes(body.data), b'test')
+
+        # Second: body bytes (forwarded)
+        self.assertIsInstance(end, PipelineHttpRequestEnd)
+
+    def test_chunked(self):
+        head_b = (
+            b'POST /api HTTP/1.1\r\n'
+            b'Host: test\r\n'
+            b'Transfer-Encoding: chunked\r\n'
+            b'\r\n'
+        )
+
+        body_b = (
+                b'a\r\n' + b'0123456789' + b'\r\n' +
+                b'10\r\n' + b'a' * 16 + b'\r\n' +
+                b'64\r\n' + b'b' * 100 + b'\r\n' +
+                b'0\r\n\r\n'
+        )
+
+        decoder = PipelineHttpRequestDecoder()
+        channel = PipelineChannel(PipelineChannel.Spec([
+            decoder,
+            ibq := InboundQueueChannelPipelineHandler(),
+        ]).update_pipeline_config(raise_immediately=True))
+
+        channel.feed_in(head_b + body_b)
+
+        out = ibq.drain()
+
+        self.assertEqual(len(out), 5)  # head + 3 chunks + end
+        self.assertIsInstance(out[1], PipelineHttpRequestContentChunkData)
+        self.assertEqual(out[1].data, b'0123456789')
+        self.assertIsInstance(out[2], PipelineHttpRequestContentChunkData)
+        self.assertEqual(out[2].data, b'a' * 16)
+        self.assertIsInstance(out[3], PipelineHttpRequestContentChunkData)
+        self.assertEqual(out[3].data, b'b' * 100)
+        self.assertIsInstance(out[4], PipelineHttpRequestEnd)

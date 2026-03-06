@@ -60,7 +60,16 @@ class PipelineHttpMessageEnd(PipelineHttpMessageObject, Abstract):
 
 @dc.dataclass(frozen=True)
 class PipelineHttpMessageAborted(PipelineHttpMessageObject, Abstract):
-    reason: str
+    reason: ta.Union[str, BaseException]
+
+    @property
+    def reason_str(self) -> str:
+        if isinstance(r := self.reason, str):
+            return self.reason
+        elif isinstance(r, BaseException):
+            return repr(r)
+        else:
+            raise TypeError(r)
 
 
 ##

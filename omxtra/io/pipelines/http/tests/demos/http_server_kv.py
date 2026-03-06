@@ -16,7 +16,7 @@ from ....flow.stub import StubChannelPipelineFlow
 from ....flow.types import ChannelPipelineFlowMessages
 from ....handlers.flatmap import FlatMapChannelPipelineHandlers
 from ...requests import FullPipelineHttpRequest
-from ...server.requests import PipelineHttpRequestBodyAggregator
+from ...server.requests import PipelineHttpRequestAggregator
 from ...server.requests import PipelineHttpRequestHeadDecoder
 
 
@@ -146,7 +146,7 @@ def build_http_kv_channel(
         [
             PipelineHttpRequestHeadDecoder(),
 
-            PipelineHttpRequestBodyAggregator(),
+            PipelineHttpRequestAggregator(),
 
             KvStoreHandler(items),
 
