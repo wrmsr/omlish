@@ -18,7 +18,7 @@ from ....chat.stream.types import AiDelta
 from ....chat.stream.types import ContentAiDelta
 from ....chat.stream.types import ToolUseAiDelta
 from ....chat.tools.types import Tool
-from ....content.render.simple import render_content_str
+from ....content.render.standard import render_content_str
 from ....tools.jsonschema import build_tool_spec_params_json_schema
 from ....tools.types import ToolUse
 

@@ -181,7 +181,7 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
                 max_bytes: ta.Optional[int] = None,
                 /,
         ) -> ta.Optional[BytesLikeOrMemoryview]:
-            return self._z.decompress(data, max_bytes)
+            return self._z.decompress(data, max_bytes or 0)
 
         def unconsumed_tail(self) -> ta.Optional[BytesLikeOrMemoryview]:
             return self._z.unconsumed_tail
@@ -328,7 +328,7 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
     #
 
     def _on_inbound_final_input(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineMessages.FinalInput) -> None:  # noqa
-        if self._enabled and self._z is not None:
+        if self._enabled and self._decompressor is not None:
             self._pending_final_input = msg
             self._pump(ctx)
         else:
@@ -341,12 +341,12 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
     def _on_inbound_http_response_head(self, ctx: ChannelPipelineHandlerContext, msg: PipelineHttpResponseHead) -> None:  # noqa
         enc = msg.headers.lower.get('content-encoding', ())
         self._enabled = 'gzip' in enc
-        self._z = self.ZlibDecompressor() if self._enabled else None
+        self._decompressor = self.ZlibDecompressor() if self._enabled else None
         self._reset()
         ctx.feed_in(msg)
 
     def _on_inbound_bytes(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if not self._enabled or self._z is None:
+        if not self._enabled or self._decompressor is None:
             ctx.feed_in(msg)
             return
 

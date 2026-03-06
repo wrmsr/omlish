@@ -87,7 +87,7 @@ def __omlish_amalg__():  # noqa
             dict(path='bytes/decoders.py', sha1='02056a316cff2a7151f520f0d1c8247f313d5f24'),
             dict(path='http/decoders.py', sha1='6944a9c30768c8db49198f130f5c56d1260117ac'),
             dict(path='drivers/asyncio.py', sha1='abc258eacd896ebb2a31dbbf03de8476153230ea'),
-            dict(path='http/client/responses.py', sha1='0ec4673a64e5459c6eacd0c28b30a5265f9e2763'),
+            dict(path='http/client/responses.py', sha1='7d5ab9557745f4b7d2148a38d00689865dbe1b1b'),
             dict(path='http/server/requests.py', sha1='3cfef46c7d713ccd7d5e51c7f94ca24c5ff8ff96'),
             dict(path='_amalg.py', sha1='74c164f8713be6db5958f4a390d7bd978c3e685a'),
         ],
@@ -11962,7 +11962,7 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
                 max_bytes: ta.Optional[int] = None,
                 /,
         ) -> ta.Optional[BytesLikeOrMemoryview]:
-            return self._z.decompress(data, max_bytes)
+            return self._z.decompress(data, max_bytes or 0)
 
         def unconsumed_tail(self) -> ta.Optional[BytesLikeOrMemoryview]:
             return self._z.unconsumed_tail
@@ -12109,7 +12109,7 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
     #
 
     def _on_inbound_final_input(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineMessages.FinalInput) -> None:  # noqa
-        if self._enabled and self._z is not None:
+        if self._enabled and self._decompressor is not None:
             self._pending_final_input = msg
             self._pump(ctx)
         else:
@@ -12122,12 +12122,12 @@ class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPip
     def _on_inbound_http_response_head(self, ctx: ChannelPipelineHandlerContext, msg: PipelineHttpResponseHead) -> None:  # noqa
         enc = msg.headers.lower.get('content-encoding', ())
         self._enabled = 'gzip' in enc
-        self._z = self.ZlibDecompressor() if self._enabled else None
+        self._decompressor = self.ZlibDecompressor() if self._enabled else None
         self._reset()
         ctx.feed_in(msg)
 
     def _on_inbound_bytes(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if not self._enabled or self._z is None:
+        if not self._enabled or self._decompressor is None:
             ctx.feed_in(msg)
             return
 
