@@ -46,6 +46,7 @@
 ### proto impls
 
 - websocket
+- jsonrpc
 - irc lol
 - dns?? stub
 - proto / grpc

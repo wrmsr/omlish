@@ -8,10 +8,10 @@ from .drivers.asyncio import AsyncioStreamPipelineChannelDriver  # noqa
 from .handlers.flatmap import FlatMapChannelPipelineHandler  # noqa
 from .handlers.fns import FnChannelPipelineHandler  # noqa
 from .handlers.queues import QueueChannelPipelineHandler  # noqa
-from .http.client.requests import PipelineHttpRequestEncoder  # noqa
-from .http.client.responses import PipelineHttpResponseDecoder  # noqa
-from .http.server.requests import PipelineHttpRequestDecoder  # noqa
-from .http.server.responses import PipelineHttpResponseEncoder  # noqa
+# from .http.client.requests import PipelineHttpRequestEncoder  # noqa
+# from .http.client.responses import PipelineHttpResponseDecoder  # noqa
+# from .http.server.requests import PipelineHttpRequestDecoder  # noqa
+# from .http.server.responses import PipelineHttpResponseEncoder  # noqa
 
 
 ##
