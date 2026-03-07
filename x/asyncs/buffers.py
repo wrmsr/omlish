@@ -2,7 +2,7 @@
 # @omlish-lite
 import typing as ta
 
-from ..io.buffers import ReadableListBuffer
+from omlish.io.buffers import ReadableListBuffer
 
 
 ##
