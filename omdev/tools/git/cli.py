@@ -1,5 +1,4 @@
 # ruff: noqa: UP006 UP007 UP045
-# @omlish-precheck-allow-any-unicode
 """
 TODO:
  - Handle:
@@ -480,12 +479,6 @@ class Cli(ap.Cli):
 
     #
 
-    BUILTIN_COMMIT_MESSAGES: ta.Mapping[str, str] = {
-        'tableflip': '(╯°□°)╯︵ ┻━┻',
-        'tableunflip': '┬─┬ノ(º _ ºノ)',
-        'shrug': r'¯\_(ツ)_/¯',
-    }
-
     @ap.cmd(
         ap.arg('-M', '--builtin-message', nargs='?'),
         accepts_unknown=True,
@@ -494,7 +487,7 @@ class Cli(ap.Cli):
         args: list[str] = []
 
         if (bim := self.args.builtin_message) is not None:
-            args.extend(['-m', self.BUILTIN_COMMIT_MESSAGES[bim]])
+            args.extend(['-m', consts.BUILTIN_COMMIT_MESSAGES[bim]])
 
         subprocesses.check_call(
             'git',

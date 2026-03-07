@@ -523,9 +523,9 @@ class TestPipelineHttpResponseEncoderStreaming(unittest.TestCase):
             ]),
         )))
 
-        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunkData(b'')))  # Empty - should be ignored
+        # channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunkData(b'')))  # Empty - should be ignored
         channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunkData(b'hello')))
-        channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunkData(b'')))  # Empty - should be ignored
+        # channel.feed_in(fbi.wrap(PipelineHttpResponseContentChunkData(b'')))  # Empty - should be ignored
         channel.feed_in(fbi.wrap(PipelineHttpResponseEnd()))
 
         out = channel.output.drain()

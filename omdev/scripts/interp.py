@@ -74,7 +74,7 @@ def __omlish_amalg__():  # noqa
             dict(path='types.py', sha1='caf068a6e81fb6e221d777b341ac5777d92b8091'),
             dict(path='../../omlish/asyncs/asyncio/timeouts.py', sha1='4d31b02b3c39b8f2fa7e94db36552fde6942e36a'),
             dict(path='../../omlish/lite/inject.py', sha1='6f097e3170019a34ff6834d36fcc9cbeed3a7ab4'),
-            dict(path='../../omlish/logs/std/standard.py', sha1='5c97c1b9f7ead58d6127d047b873398f708f288d'),
+            dict(path='../../omlish/logs/std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
             dict(path='../../omlish/subprocesses/run.py', sha1='8200e48f0c49d164df3503cd0143038d0c4d30aa'),
             dict(path='../../omlish/subprocesses/wrap.py', sha1='8a9b7d2255481fae15c05f5624b0cdc0766f4b3f'),
             dict(path='providers/base.py', sha1='f5d068c21f230d742e9015b033cd6320f4c68898'),
@@ -4647,7 +4647,7 @@ def configure_standard_logging(
         #
 
         if level is not None:
-            target.setLevel(level)
+            target.setLevel(level.upper() if isinstance(level, str) else level)
 
         #
 

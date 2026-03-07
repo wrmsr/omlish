@@ -3,8 +3,8 @@
 import dataclasses as dc
 import typing as ta
 
-from omlish.lite.check import check
 from omlish.io.streams.utils import ByteStreamBuffers
+from omlish.lite.check import check
 
 from ....core import ChannelPipelineHandler
 from ....core import ChannelPipelineMessages

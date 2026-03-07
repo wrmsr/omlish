@@ -9,8 +9,8 @@ from ...core import ChannelPipelineHandlerContext
 from ...core import ChannelPipelineMessages
 from ..aggregators import PipelineHttpObjectAggregator
 from ..decoders import PipelineHttpObjectDecoder
-from ..responses import PipelineHttpResponseObjects
 from ..decompressors import PipelineHttpObjectDecompressor
+from ..responses import PipelineHttpResponseObjects
 
 
 ##

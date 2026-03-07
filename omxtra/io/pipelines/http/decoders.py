@@ -490,6 +490,9 @@ class PipelineHttpObjectDecoder(
                     continue
 
                 mvl = len(mv)
+                if mvl < 1:
+                    continue
+
                 if mvl < self._remaining:
                     self._remaining -= mvl
                     out.append(self._d._make_content_chunk_data(mv))  # noqa

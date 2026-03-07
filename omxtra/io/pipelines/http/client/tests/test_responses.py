@@ -8,8 +8,8 @@ from ....core import ChannelPipelineMessages
 from ....core import PipelineChannel
 from ....handlers.queues import InboundQueueChannelPipelineHandler
 from ...responses import PipelineHttpResponseAborted
-from ...responses import PipelineHttpResponseEnd
 from ...responses import PipelineHttpResponseContentChunkData
+from ...responses import PipelineHttpResponseEnd
 from ..responses import PipelineHttpResponseDecoder
 
 

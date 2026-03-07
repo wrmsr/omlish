@@ -12,7 +12,7 @@ from ...core import PipelineChannel
 from ...flow.types import ChannelPipelineFlow
 from ...flow.types import ChannelPipelineFlowMessages
 from ...handlers.queues import InboundQueueChannelPipelineHandler
-from ..decoders import BytesToMessageDecoderChannelPipelineHandler
+from ..decoders import BufferedBytesToMessageDecoderChannelPipelineHandler
 from ..decoders import ChannelPipelineHandlerContext
 from ..decoders import DelimiterFrameDecoderChannelPipelineHandler
 from ..decoders import UnicodeDecoderChannelPipelineHandler
@@ -76,8 +76,8 @@ class DumbBytesMessage:
     b: bytes
 
 
-class ByteTripletsToMessageDecoder(BytesToMessageDecoderChannelPipelineHandler):
-    def _decode(
+class ByteTripletsToMessageDecoder(BufferedBytesToMessageDecoderChannelPipelineHandler):
+    def _decode_buffer(
             self,
             ctx: ChannelPipelineHandlerContext,
             inb: ByteStreamBuffer,
@@ -85,6 +85,10 @@ class ByteTripletsToMessageDecoder(BytesToMessageDecoderChannelPipelineHandler):
             *,
             final: bool = False,
     ) -> None:
+        if final:
+            check.state(len(inb) == 0)
+            return
+
         check.state(len(inb) > 0)
         while len(inb) >= 3:
             out.append(DumbBytesMessage(inb.split_to(3).tobytes()))

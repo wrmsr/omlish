@@ -3,9 +3,9 @@
 import asyncio
 import typing as ta
 
-from ....core import ChannelPipelineMessages
 from ....core import ChannelPipelineHandler
 from ....core import ChannelPipelineHandlerContext
+from ....core import ChannelPipelineMessages
 from ....core import PipelineChannel
 from ....drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
 from ....flow.stub import StubChannelPipelineFlow
@@ -13,6 +13,7 @@ from ....flow.types import ChannelPipelineFlow
 from ....flow.types import ChannelPipelineFlowMessages
 from ....handlers.flatmap import FlatMapChannelPipelineHandlers
 from ...requests import PipelineHttpRequestHead
+from ...requests import PipelineHttpRequestObject
 from ...server.requests import PipelineHttpRequestDecoder
 
 
@@ -36,7 +37,8 @@ class PingHandler(ChannelPipelineHandler):
             return
 
         if not isinstance(msg, PipelineHttpRequestHead):
-            ctx.feed_in(msg)
+            if not isinstance(msg, PipelineHttpRequestObject):
+                ctx.feed_in(msg)
             return
 
         if msg.method == 'GET' and msg.target == '/ping':

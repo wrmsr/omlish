@@ -1,7 +1,7 @@
 # ruff: noqa: UP006 UP045
 # @omlish-lite
-from .clients import sync_fetch_url
 from .clients import print_full_response
+from .clients import sync_fetch_url
 
 
 ##

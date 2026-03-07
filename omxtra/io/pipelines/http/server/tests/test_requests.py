@@ -29,14 +29,12 @@ class TestPipelineHttpRequestHeadDecoder(unittest.TestCase):
         request = b'GET /path HTTP/1.1\r\nHost: example.com\r\n\r\n'
         channel.feed_in(request)
 
-        out = ibq.drain()
-        self.assertEqual(len(out), 1)
-
-        head = out[0]
+        head, end = ibq.drain()
         self.assertIsInstance(head, PipelineHttpRequestHead)
         self.assertEqual(head.method, 'GET')
         self.assertEqual(head.target, '/path')
         self.assertEqual(head.headers.single.get('host'), 'example.com')
+        self.assertIsInstance(end, PipelineHttpRequestEnd)
 
     def test_request_with_body_in_same_chunk(self) -> None:
         """Test request head + body bytes received together."""
@@ -94,13 +92,7 @@ class TestPipelineHttpRequestAggregatorDecoder(unittest.TestCase):
         request = b'GET / HTTP/1.1\r\nHost: test\r\n\r\n'
         channel.feed_in(request)
 
-        self.assertEqual(ibq.drain(), [])
-
-        channel.feed_in(ChannelPipelineMessages.FinalInput())
-        out = ibq.drain()
-        self.assertEqual(len(out), 2)
-
-        req = out[0]
+        [req] = ibq.drain()
         self.assertIsInstance(req, FullPipelineHttpRequest)
         self.assertEqual(req.head.method, 'GET')
         self.assertEqual(req.body, b'')
@@ -194,14 +186,12 @@ class TestPipelineHttpRequestObjectDecoder(unittest.TestCase):
         request = b'GET /path HTTP/1.1\r\nHost: example.com\r\n\r\n'
         channel.feed_in(request)
 
-        out = ibq.drain()
-        self.assertEqual(len(out), 1)
-
-        head = out[0]
+        head, end = ibq.drain()
         self.assertIsInstance(head, PipelineHttpRequestHead)
         self.assertEqual(head.method, 'GET')
         self.assertEqual(head.target, '/path')
         self.assertEqual(head.headers.single.get('host'), 'example.com')
+        self.assertIsInstance(end, PipelineHttpRequestEnd)
 
     def test_request_with_body_in_same_chunk(self) -> None:
         """Test request head + body bytes received together."""
@@ -239,10 +229,10 @@ class TestPipelineHttpRequestObjectDecoder(unittest.TestCase):
         )
 
         body_b = (
-                b'a\r\n' + b'0123456789' + b'\r\n' +
-                b'10\r\n' + b'a' * 16 + b'\r\n' +
-                b'64\r\n' + b'b' * 100 + b'\r\n' +
-                b'0\r\n\r\n'
+            b'a\r\n' + b'0123456789' + b'\r\n' +
+            b'10\r\n' + b'a' * 16 + b'\r\n' +
+            b'64\r\n' + b'b' * 100 + b'\r\n' +
+            b'0\r\n\r\n'
         )
 
         decoder = PipelineHttpRequestDecoder()

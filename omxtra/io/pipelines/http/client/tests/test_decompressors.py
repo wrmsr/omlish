@@ -10,11 +10,11 @@ from omlish.lite.check import check
 from ....core import ChannelPipelineMessages
 from ....core import PipelineChannel
 from ....handlers.queues import InboundQueueChannelPipelineHandler
-from ...responses import PipelineHttpResponseHead
-from ..responses import PipelineHttpResponseDecompressor
 from ...decompressors import PipelineHttpDecompressionConfig
 from ...responses import PipelineHttpResponseContentChunkData
 from ...responses import PipelineHttpResponseEnd
+from ...responses import PipelineHttpResponseHead
+from ..responses import PipelineHttpResponseDecompressor
 
 
 class TestGzipDecompressorFlow(unittest.TestCase):

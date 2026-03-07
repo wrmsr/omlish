@@ -11,11 +11,11 @@ from omlish.lite.check import check
 from omlish.lite.namespaces import NamespaceClass
 
 from .errors import ContextInvalidatedChannelPipelineError
-from .errors import SawFinalOutputChannelPipelineError
 from .errors import MessageNotPropagatedChannelPipelineError
 from .errors import MessageReachedTerminalChannelPipelineError
-from .errors import SawInitialInputChannelPipelineError
 from .errors import SawFinalInputChannelPipelineError
+from .errors import SawFinalOutputChannelPipelineError
+from .errors import SawInitialInputChannelPipelineError
 from .errors import UnhandleableChannelPipelineError
 
 

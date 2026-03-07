@@ -15,10 +15,10 @@ from ..core import ChannelPipelineHandlerContext
 from ..core import ChannelPipelineMessages
 from ..flow.types import ChannelPipelineFlow
 from ..flow.types import ChannelPipelineFlowMessages
-from .objects import PipelineHttpMessageObjects
-from .objects import PipelineHttpMessageHead
-from .objects import PipelineHttpMessageEnd
 from .objects import PipelineHttpMessageContentChunkData
+from .objects import PipelineHttpMessageEnd
+from .objects import PipelineHttpMessageHead
+from .objects import PipelineHttpMessageObjects
 
 
 ##

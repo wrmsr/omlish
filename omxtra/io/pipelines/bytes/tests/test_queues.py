@@ -25,7 +25,7 @@ class TestQueues(unittest.TestCase):
             FnChannelPipelineHandler.of(inbound=lambda ctx, msg: ctx.feed_in(msg + b'!' if isinstance(msg, bytes) else msg)),  # noqa
             h := InboundBytesBufferingQueueChannelPipelineHandler(filter=True),
             ibq := InboundQueueChannelPipelineHandler(),
-        ])
+        ], config=PipelineChannel.Config.DEFAULT.update_pipeline(raise_immediately=True))
 
         ch.feed_in(b'abc')
         assert not ch.output.poll()

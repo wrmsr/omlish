@@ -43,7 +43,7 @@ def __omlish_amalg__():  # noqa
             dict(path='metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='std/json.py', sha1='2a75553131e4d5331bb0cedde42aa183f403fc3b'),
             dict(path='contexts.py', sha1='1000a6d5ddfb642865ca532e34b1d50759781cf0'),
-            dict(path='std/standard.py', sha1='5c97c1b9f7ead58d6127d047b873398f708f288d'),
+            dict(path='std/standard.py', sha1='472f1f0623d6bcd301612551432afa7e3a661a34'),
             dict(path='base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
             dict(path='std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
             dict(path='std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
@@ -1355,7 +1355,7 @@ def configure_standard_logging(
         #
 
         if level is not None:
-            target.setLevel(level)
+            target.setLevel(level.upper() if isinstance(level, str) else level)
 
         #
 

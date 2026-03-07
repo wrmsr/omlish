@@ -8,6 +8,7 @@ from ....core import ChannelPipelineHandlerContext
 from ....core import PipelineChannel
 from ....drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
 from ...requests import PipelineHttpRequestHead
+from ...requests import PipelineHttpRequestObject
 from ...responses import FullPipelineHttpResponse
 from ...server.requests import PipelineHttpRequestDecoder
 from ...server.responses import PipelineHttpResponseEncoder
@@ -19,7 +20,8 @@ from ...server.responses import PipelineHttpResponseEncoder
 class PingHandler(ChannelPipelineHandler):
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         if not isinstance(msg, PipelineHttpRequestHead):
-            ctx.feed_in(msg)
+            if not isinstance(msg, PipelineHttpRequestObject):
+                ctx.feed_in(msg)
             return
 
         if msg.method == 'GET' and msg.target == '/ping':

@@ -61,6 +61,9 @@ class FullPipelineHttpMessage(PipelineHttpMessageObject, Abstract):
 class PipelineHttpMessageContentChunkData(PipelineHttpMessageObject, Abstract):
     data: BytesLikeOrMemoryview
 
+    def __post_init__(self) -> None:
+        check.arg(len(self.data) > 0)
+
 
 #
 

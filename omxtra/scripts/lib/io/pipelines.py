@@ -49,14 +49,14 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/lite/namespaces.py', sha1='27b12b6592403c010fb8b2a0af7c24238490d3a1'),
             dict(path='../../../omlish/logs/levels.py', sha1='91405563d082a5eba874da82aac89d83ce7b6152'),
             dict(path='../../../omlish/logs/warnings.py', sha1='c4eb694b24773351107fcc058f3620f1dbfb6799'),
-            dict(path='errors.py', sha1='0054b6d57018a34c58d67cfc7dbbb890bce7b890'),
+            dict(path='errors.py', sha1='7e5d3eef07f298a7ec7d23ca0d3f32df70c879b3'),
             dict(path='../../../omlish/http/headers.py', sha1='a8204e05f535f04891ff4967f17332f4fad04f23'),
             dict(path='../../../omlish/http/parsing.py', sha1='2ee187993274e697332c7df7b46a98382f4cee2a'),
             dict(path='../../../omlish/io/streams/types.py', sha1='ab72e5d4a1e648ef79577be7d8c45853b1c5917d'),
             dict(path='../../../omlish/logs/infos.py', sha1='4dd104bd468a8c438601dd0bbda619b47d2f1620'),
             dict(path='../../../omlish/logs/metrics/base.py', sha1='95120732c745ceec5333f81553761ab6ff4bb3fb'),
             dict(path='../../../omlish/logs/protocols.py', sha1='05ca4d1d7feb50c4e3b9f22ee371aa7bf4b3dbd1'),
-            dict(path='core.py', sha1='a396f2fd3509aa6538572403e746290fde5f76d6'),
+            dict(path='core.py', sha1='e505bd9d87c40517b0cbfc3db1712121543424b3'),
             dict(path='../../../omlish/io/streams/base.py', sha1='bdeaff419684dec34fd0dc59808a9686131992bc'),
             dict(path='../../../omlish/io/streams/framing.py', sha1='dc2d7f638b042619fd3d95789c71532a29fd5fe4'),
             dict(path='../../../omlish/io/streams/utils.py', sha1='b3b7ed67bff8b7f2b60d821eda9afa93ffb2ba1f'),
@@ -64,31 +64,34 @@ def __omlish_amalg__():  # noqa
             dict(path='../../../omlish/logs/utils.py', sha1='9b879044cbdc3172fd7282c7f2a4880b81261cdd'),
             dict(path='asyncs.py', sha1='3c5834fe4879ebdc63d44951798ad9110ae83ad4'),
             dict(path='bytes/buffering.py', sha1='363d3209a49ddfc5a6bc41b4f3fd4629ddd6dbbf'),
-            dict(path='flow/types.py', sha1='839f08718c67d2d84e56aee973ba1c9c34afb732'),
+            dict(path='flow/types.py', sha1='58a5934eedf84f2ef6c0fe509f2874828c72d391'),
             dict(path='handlers/fns.py', sha1='75e982604574d6ffaacf9ac1f37ab6e9edbd608d'),
-            dict(path='handlers/queues.py', sha1='73f018001a9e305194ed1bf9783fc49a71c2ed49'),
-            dict(path='http/objects.py', sha1='f5da224c194ee16ebcc999970d2c97ce615f7e6e'),
+            dict(path='handlers/queues.py', sha1='7e6aa42c2989ef6643363210a64aaaca20c256a2'),
+            dict(path='http/objects.py', sha1='c34805b7133cacd136bd1a595be36bce09d86162'),
+            dict(path='http/transferencoding.py', sha1='6eb8c84a1aa69bed60e33b9a2b0b6c8a7bce4de0'),
             dict(path='sched/types.py', sha1='a443beb7866e5e019d57093225cd44b9ea5fa58e'),
             dict(path='../../../omlish/io/streams/direct.py', sha1='83c33460e9490a77a00ae66251617ba98128b56b'),
             dict(path='../../../omlish/io/streams/scanning.py', sha1='6ab39887d0d2d3002201b786c4715e64804c66c8'),
             dict(path='../../../omlish/logs/base.py', sha1='eaa2ce213235815e2f86c50df6c41cfe26a43ba2'),
             dict(path='../../../omlish/logs/std/records.py', sha1='67e552537d9268d4df6939b8a92be885fda35238'),
             dict(path='bytes/queues.py', sha1='38b11596cd0fa2367825252413923f1292c14f4e'),
-            dict(path='handlers/flatmap.py', sha1='3b297b33dce8d85e76837456bbc86f39165a4e29'),
-            dict(path='http/encoders.py', sha1='0659902d945aea54e367d04336792cccd4ed6374'),
-            dict(path='http/requests.py', sha1='f518ff8896cbd01d30d58088d5b429f121c1c3e7'),
-            dict(path='http/responses.py', sha1='f81688d98516bd81d2a22ba791c783404e806294'),
-            dict(path='../../../omlish/io/streams/segmented.py', sha1='b48b53fd9a37902c382421658b50e3054f33abe4'),
+            dict(path='handlers/flatmap.py', sha1='3e5fae70e01ee2694719dd200b366536c930c858'),
+            dict(path='http/decompressors.py', sha1='4ded11442969486e7619b4eae3f0fe73766c7221'),
+            dict(path='http/encoders.py', sha1='eb0b41f9aa971bb32080c326f4e3b3094f6d05d2'),
+            dict(path='http/requests.py', sha1='a07795d0a425482871d5e357c1afaec9c9250574'),
+            dict(path='http/responses.py', sha1='365b819f2cd7137d948ad89efa749067af19179a'),
+            dict(path='../../../omlish/io/streams/segmented.py', sha1='f388312774f1d7f8f80e91c4e07c0e10d9b54522'),
             dict(path='../../../omlish/logs/asyncs.py', sha1='8376df395029a9d0957e2338adede895a9364215'),
             dict(path='../../../omlish/logs/std/loggers.py', sha1='dbdfc66188e6accb75d03454e43221d3fba0f011'),
-            dict(path='http/client/requests.py', sha1='0d598fefb873796d64f1fe1eafa344bda83d933c'),
-            dict(path='http/server/responses.py', sha1='5b2e2af9bfdbd526f74cff138ddbb5bf03b4c0ee'),
+            dict(path='http/client/requests.py', sha1='6b5bbc68f2dc8b19589e7f8721bc8960ac773609'),
+            dict(path='http/server/responses.py', sha1='4ec57def38b996880f6802d5766cd726f708cc73'),
             dict(path='../../../omlish/logs/modules.py', sha1='dd7d5f8e63fe8829dfb49460f3929ab64b68ee14'),
-            dict(path='bytes/decoders.py', sha1='02056a316cff2a7151f520f0d1c8247f313d5f24'),
-            dict(path='http/decoders.py', sha1='6944a9c30768c8db49198f130f5c56d1260117ac'),
-            dict(path='drivers/asyncio.py', sha1='abc258eacd896ebb2a31dbbf03de8476153230ea'),
-            dict(path='http/client/responses.py', sha1='7d5ab9557745f4b7d2148a38d00689865dbe1b1b'),
-            dict(path='http/server/requests.py', sha1='3cfef46c7d713ccd7d5e51c7f94ca24c5ff8ff96'),
+            dict(path='bytes/decoders.py', sha1='f5a1a1180e6cb0ad4fbef816aeec2b8a1b7050ff'),
+            dict(path='http/aggregators.py', sha1='6c1cae367e825da4b4720ab2364b6518e1df2e7f'),
+            dict(path='drivers/asyncio.py', sha1='f926d631b48758b819747e50204c081969a03dbc'),
+            dict(path='http/decoders.py', sha1='5092f353c3ad1022be5549799dcb5478f824ab61'),
+            dict(path='http/client/responses.py', sha1='1f31e4fe1ffe245cfd5c2e447ce448e5904cbb2b'),
+            dict(path='http/server/requests.py', sha1='52f2fd9592027bf554c10162bcef24a6efb1395c'),
             dict(path='_amalg.py', sha1='74c164f8713be6db5958f4a390d7bd978c3e685a'),
         ],
     )
@@ -1570,15 +1573,23 @@ class UnhandleableChannelPipelineError(ChannelPipelineError):
 # state
 
 
-class ContextInvalidatedChannelPipelineError(ChannelPipelineError):
+class StateChannelPipelineError(ChannelPipelineError):
     pass
 
 
-class SawFinalInputChannelPipelineError(ChannelPipelineError):
+class ContextInvalidatedChannelPipelineError(StateChannelPipelineError):
     pass
 
 
-class FinalOutputChannelPipelineError(ChannelPipelineError):
+class SawInitialInputChannelPipelineError(StateChannelPipelineError):
+    pass
+
+
+class SawFinalInputChannelPipelineError(StateChannelPipelineError):
+    pass
+
+
+class SawFinalOutputChannelPipelineError(StateChannelPipelineError):
     pass
 
 
@@ -4633,6 +4644,14 @@ class ChannelPipelineMessages(NamespaceClass):
 
     @ta.final
     @dc.dataclass(frozen=True, eq=False)
+    class InitialInput(NeverOutbound, MustPropagate):  # ~ Netty `ChannelInboundHandler::channelActive`
+        """Signals that the inbound stream has begun producing input (`connected`)."""
+
+        def __repr__(self) -> str:
+            return f'{type(self).__name__}@{id(self):x}()'
+
+    @ta.final
+    @dc.dataclass(frozen=True, eq=False)
     class FinalInput(NeverOutbound, MustPropagate):  # ~ Netty `ChannelInboundHandler::channelInactive`
         """Signals that the inbound stream has produced its final message (`eof`)."""
 
@@ -5787,6 +5806,8 @@ class PipelineChannel:
 
         self._output: ta.Final[PipelineChannel._Output] = PipelineChannel._Output()
 
+        self._saw_any_input = False
+        self._saw_initial_input = False
         self._saw_final_input = False
         self._saw_final_output = False
 
@@ -5845,6 +5866,14 @@ class PipelineChannel:
         return self._state
 
     #
+
+    @property
+    def saw_any_input(self) -> bool:
+        return self._saw_any_input
+
+    @property
+    def saw_initial_input(self) -> bool:
+        return self._saw_initial_input
 
     @property
     def saw_final_input(self) -> bool:
@@ -6077,10 +6106,17 @@ class PipelineChannel:
         self._step_in()
         try:
             for msg in msgs:
-                if isinstance(msg, ChannelPipelineMessages.FinalInput):
+                if self._saw_final_input:
+                    raise SawFinalInputChannelPipelineError
+                elif isinstance(msg, ChannelPipelineMessages.FinalInput):
                     self._saw_final_input = True
-                elif self._saw_final_input:
-                    raise SawFinalInputChannelPipelineError  # noqa
+
+                if isinstance(msg, ChannelPipelineMessages.InitialInput):
+                    if self._saw_any_input:
+                        raise SawInitialInputChannelPipelineError
+                    check.state(not self._saw_initial_input)
+                    self._saw_initial_input = True
+                self._saw_any_input = True
 
                 ctx._inbound(msg)  # noqa
 
@@ -6095,6 +6131,9 @@ class PipelineChannel:
 
     def feed_in(self, *msgs: ta.Any) -> None:
         self._feed_in_to(self._pipeline._outermost, msgs)  # noqa
+
+    def feed_initial_input(self) -> None:
+        self._feed_in_to(self._pipeline._outermost, (ChannelPipelineMessages.InitialInput(),))  # noqa
 
     def feed_final_input(self) -> None:
         self._feed_in_to(self._pipeline._outermost, (ChannelPipelineMessages.FinalInput(),))  # noqa
@@ -6161,7 +6200,7 @@ class PipelineChannel:
         if isinstance(msg, ChannelPipelineMessages.FinalOutput):
             self._saw_final_output = True
         elif self._saw_final_output:
-            raise FinalOutputChannelPipelineError
+            raise SawFinalOutputChannelPipelineError
 
         self._output._q.append(msg)  # noqa
 
@@ -7189,6 +7228,10 @@ class ChannelPipelineFlow(ChannelPipelineService, Abstract):
     def is_auto_read(self) -> bool:
         raise NotImplementedError
 
+    @staticmethod
+    def is_auto_read_context(ctx: ChannelPipelineHandlerContext) -> bool:
+        return (fc := ctx.services.find(ChannelPipelineFlow)) is None or fc.is_auto_read()
+
 
 ########################################
 # ../handlers/fns.py
@@ -7372,11 +7415,13 @@ class QueueChannelPipelineHandler(ChannelPipelineHandler, Abstract):
             self,
             *,
             filter: ta.Optional[ChannelPipelineHandlerFn[ta.Any, bool]] = None,  # noqa
+            filter_type: ta.Optional[ta.Union[type, ta.Tuple[type, ...]]] = None,
             passthrough: ta.Union[bool, ta.Literal['must_propagate']] = 'must_propagate',
     ) -> None:
         super().__init__()
 
         self._filter = filter
+        self._filter_type = filter_type
         self._passthrough = passthrough
 
         self._q: collections.deque[ta.Any] = collections.deque()
@@ -7388,6 +7433,7 @@ class QueueChannelPipelineHandler(ChannelPipelineHandler, Abstract):
             '(',
             ', '.join([
                 *([f'filter={self._filter!r}'] if self._filter is not None else []),
+                *([f'filter_type={self._filter_type!r}'] if self._filter_type is not None else []),
                 *([f'passthrough={self._passthrough!r}'] if self._passthrough else []),
             ]),
             ')',
@@ -7417,6 +7463,15 @@ class QueueChannelPipelineHandler(ChannelPipelineHandler, Abstract):
 
     #
 
+    def _should_enqueue(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> bool:
+        if self._filter is not None and not self._filter(ctx, msg):
+            return False
+
+        if self._filter_type is not None and not isinstance(msg, self._filter_type):
+            return False
+
+        return True
+
     def _should_passthrough(self, msg: ta.Any) -> bool:
         if isinstance(pt := self._passthrough, bool):
             return pt
@@ -7427,29 +7482,25 @@ class QueueChannelPipelineHandler(ChannelPipelineHandler, Abstract):
         else:
             raise RuntimeError(f'Unknown passthrough mode {self._passthrough!r} for {self!r}')
 
-
-class InboundQueueChannelPipelineHandler(QueueChannelPipelineHandler):
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if (self._filter is not None and not self._filter(ctx, msg)):
-            ctx.feed_in(msg)
+    def _handle(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any, feed: ta.Callable[[ta.Any], None]) -> None:
+        if not self._should_enqueue(ctx, msg):
+            feed(msg)
             return
 
         self._append(msg)
 
         if self._should_passthrough(msg):
-            ctx.feed_in(msg)
+            feed(msg)
+
+
+class InboundQueueChannelPipelineHandler(QueueChannelPipelineHandler):
+    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        self._handle(ctx, msg, ctx.feed_in)
 
 
 class OutboundQueueChannelPipelineHandler(QueueChannelPipelineHandler):
     def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if (self._filter is not None and not self._filter(ctx, msg)):
-            ctx.feed_out(msg)
-            return
-
-        self._append(msg)
-
-        if self._should_passthrough(msg):
-            ctx.feed_out(msg)
+        self._handle(ctx, msg, ctx.feed_out)
 
 
 class DuplexQueueChannelPipelineHandler(
@@ -7470,6 +7521,9 @@ class PipelineHttpMessageObject(Abstract):
     pass
 
 
+#
+
+
 class PipelineHttpMessageHead(PipelineHttpMessageObject, Abstract):
     @property
     @abc.abstractmethod
@@ -7487,6 +7541,9 @@ class PipelineHttpMessageHead(PipelineHttpMessageObject, Abstract):
         raise NotImplementedError
 
 
+#
+
+
 class FullPipelineHttpMessage(PipelineHttpMessageObject, Abstract):
     @property
     @abc.abstractmethod
@@ -7499,9 +7556,18 @@ class FullPipelineHttpMessage(PipelineHttpMessageObject, Abstract):
         raise NotImplementedError
 
 
+#
+
+
 @dc.dataclass(frozen=True)
 class PipelineHttpMessageContentChunkData(PipelineHttpMessageObject, Abstract):
     data: BytesLikeOrMemoryview
+
+    def __post_init__(self) -> None:
+        check.arg(len(self.data) > 0)
+
+
+#
 
 
 @dc.dataclass(frozen=True)
@@ -7509,9 +7575,21 @@ class PipelineHttpMessageEnd(PipelineHttpMessageObject, Abstract):
     pass
 
 
+#
+
+
 @dc.dataclass(frozen=True)
 class PipelineHttpMessageAborted(PipelineHttpMessageObject, Abstract):
-    reason: str
+    reason: ta.Union[str, BaseException]
+
+    @property
+    def reason_str(self) -> str:
+        if isinstance(r := self.reason, str):
+            return self.reason
+        elif isinstance(r, BaseException):
+            return repr(r)
+        else:
+            raise TypeError(r)
 
 
 ##
@@ -7529,6 +7607,110 @@ def _un_abstract_pipeline_http_object_classes() -> None:
 
 
 _un_abstract_pipeline_http_object_classes()
+
+
+##
+
+
+class PipelineHttpMessageObjects(Abstract):
+    @property
+    @abc.abstractmethod
+    def _head_type(self) -> ta.Type[PipelineHttpMessageHead]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _make_head(self, parsed: ParsedHttpMessage) -> PipelineHttpMessageHead:
+        raise NotImplementedError
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def _full_type(self) -> ta.Type[FullPipelineHttpMessage]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _make_full(self, head: PipelineHttpMessageHead, body: BytesLikeOrMemoryview) -> FullPipelineHttpMessage:
+        raise NotImplementedError
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def _content_chunk_data_type(self) -> ta.Type[PipelineHttpMessageContentChunkData]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _make_content_chunk_data(self, data: BytesLikeOrMemoryview) -> PipelineHttpMessageContentChunkData:
+        raise NotImplementedError
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def _end_type(self) -> ta.Type[PipelineHttpMessageEnd]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _make_end(self) -> ta.Any:
+        raise NotImplementedError
+
+    #
+
+    @property
+    @abc.abstractmethod
+    def _aborted_type(self) -> ta.Type[PipelineHttpMessageAborted]:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _make_aborted(self, reason: ta.Union[str, BaseException]) -> PipelineHttpMessageAborted:
+        raise NotImplementedError
+
+
+########################################
+# ../http/transferencoding.py
+
+
+##
+
+
+@dc.dataclass()
+class PipelineHttpTransferEncodingError(Exception):
+    reason: str
+
+
+@ta.final
+@dc.dataclass(frozen=True)
+class PipelineHttpTransferEncoding:
+    mode: ta.Literal['none', 'eof', 'cl', 'chunked']
+    length: ta.Optional[int]
+
+    @classmethod
+    def select(
+            cls,
+            headers: HttpHeaders,
+            *,
+            if_length_missing: ta.Literal['none', 'eof'],
+    ) -> 'PipelineHttpTransferEncoding':
+        if headers.contains_value('transfer-encoding', 'chunked', ignore_case=True):
+            return cls('chunked', None)
+
+        cl = headers.single.get('content-length')
+        if not cl:
+            return cls(if_length_missing, None)
+
+        try:
+            n = int(cl)
+        except ValueError:
+            raise PipelineHttpTransferEncodingError('bad Content-Length') from None
+
+        if n < 0:
+            raise PipelineHttpTransferEncodingError('bad Content-Length')
+
+        if n == 0:
+            return cls('none', None)
+
+        return cls('cl', n)
 
 
 ########################################
@@ -8900,6 +9082,15 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
     ) -> FlatMapChannelPipelineHandlerFn:
         return cls.Filter(pred, fn, else_fn)
 
+    @classmethod
+    def filter_type(
+            cls,
+            ty: ta.Union[type, ta.Tuple[type, ...]],
+            fn: FlatMapChannelPipelineHandlerFn,
+            else_fn: ta.Optional[FlatMapChannelPipelineHandlerFn] = None,
+    ) -> FlatMapChannelPipelineHandlerFn:
+        return cls.filter(ChannelPipelineHandlerFns.isinstance(ty), fn, else_fn)
+
     #
 
     @dc.dataclass(frozen=True)
@@ -9062,6 +9253,20 @@ class FlatMapChannelPipelineHandlerFns(NamespaceClass):
     def drop(cls) -> FlatMapChannelPipelineHandlerFn:
         return cls.Drop()
 
+    #
+
+    @dc.dataclass(frozen=True)
+    class Nop:
+        def __repr__(self) -> str:
+            return f'{type(self).__name__}()'
+
+        def __call__(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> ta.Iterable[ta.Any]:
+            return (msg,)
+
+    @classmethod
+    def nop(cls) -> FlatMapChannelPipelineHandlerFn:
+        return cls.Nop()
+
 
 #
 
@@ -9140,10 +9345,7 @@ class FlatMapChannelPipelineHandlers(NamespaceClass):
             fn = FlatMapChannelPipelineHandlerFns.filter(filter, fn)
 
         if filter_type is not None:
-            fn = FlatMapChannelPipelineHandlerFns.filter(
-                ChannelPipelineHandlerFns.isinstance(filter_type),
-                fn,
-            )
+            fn = FlatMapChannelPipelineHandlerFns.filter_type(filter_type, fn)
 
         fn = FlatMapChannelPipelineHandlerFns.filter(cls._NOT_MUST_PROPAGATE, fn)
 
@@ -9187,101 +9389,429 @@ class FlatMapChannelPipelineHandlers(NamespaceClass):
 
 
 ########################################
+# ../http/decompressors.py
+
+
+##
+
+
+@dc.dataclass(frozen=True)
+class PipelineHttpDecompressionConfig:
+    DEFAULT: ta.ClassVar['PipelineHttpDecompressionConfig']
+
+    max_decomp_chunk: int = 64 * 1024  # max bytes emitted per inflate step
+
+    max_decomp_total: ta.Optional[int] = None    # max total decompressed bytes per object
+    max_expansion_ratio: ta.Optional[int] = 200  # max_out <= max(1, in_total) * ratio (+ small slack)
+
+    max_out_pending: ta.Optional[int] = 256 * 1024  # cap decompressed bytes retained by this stage (if you buffer)
+
+    # CPU Bounding: how many decompress steps to perform before yielding to the driver
+    max_steps_per_call: ta.Optional[int] = 10
+
+
+PipelineHttpDecompressionConfig.DEFAULT = PipelineHttpDecompressionConfig()
+
+
+#
+
+
+class PipelineHttpObjectDecompressor(
+    PipelineHttpMessageObjects,
+    InboundBytesBufferingChannelPipelineHandler,
+    Abstract,
+):
+    """Conditional streaming gzip decompression with CPU-bounding and flow control."""
+
+    def __init__(
+            self,
+            *,
+            config: PipelineHttpDecompressionConfig = PipelineHttpDecompressionConfig.DEFAULT,
+    ) -> None:
+        super().__init__()
+
+        self._config = config
+
+        self._decompressor: ta.Optional[PipelineHttpObjectDecompressor.Decompressor] = None
+
+        # Statistics for budget checks
+        self._in_total_bytes = 0
+        self._out_total_bytes = 0
+
+        # Internal buffering
+        self._in_pending: collections.deque[BytesLikeOrMemoryview] = collections.deque()
+        self._in_pending_bytes = 0
+        self._out_pending: collections.deque[BytesLikeOrMemoryview] = collections.deque()
+        self._out_pending_bytes = 0
+
+        # Flow Control and Deferral State
+        self._read_requested = False
+        self._pending_end: ta.Optional[PipelineHttpMessageEnd] = None
+
+    #
+
+    def inbound_buffered_bytes(self) -> int:
+        return self._in_pending_bytes + self._out_pending_bytes
+
+    #
+
+    class Decompressor(Abstract):
+        @abc.abstractmethod
+        def decompress(
+                self,
+                data: BytesLikeOrMemoryview,
+                max_bytes: ta.Optional[int] = None,
+                /,
+        ) -> ta.Optional[BytesLikeOrMemoryview]:
+            raise NotImplementedError
+
+        @abc.abstractmethod
+        def unconsumed_tail(self) -> ta.Optional[BytesLikeOrMemoryview]:
+            raise NotImplementedError
+
+        @abc.abstractmethod
+        def flush(self) -> ta.Optional[BytesLikeOrMemoryview]:
+            raise NotImplementedError
+
+    #
+
+    class ZlibDecompressor(Decompressor):
+        def __init__(self, wbits: int = 16 + zlib.MAX_WBITS) -> None:
+            self._z = zlib.decompressobj(wbits)
+
+        def decompress(
+                self,
+                data: BytesLikeOrMemoryview,
+                max_bytes: ta.Optional[int] = None,
+                /,
+        ) -> ta.Optional[BytesLikeOrMemoryview]:
+            return self._z.decompress(data, max_bytes or 0)
+
+        def unconsumed_tail(self) -> ta.Optional[BytesLikeOrMemoryview]:
+            return self._z.unconsumed_tail
+
+        def flush(self) -> ta.Optional[BytesLikeOrMemoryview]:
+            return self._z.flush()
+
+    #
+
+    def _reset(self) -> None:
+        self._decompressor = None
+
+        self._in_total_bytes = 0
+        self._out_total_bytes = 0
+
+        self._in_pending.clear()
+        self._in_pending_bytes = 0
+        self._out_pending.clear()
+        self._out_pending_bytes = 0
+
+        self._pending_end = None
+
+    def _check_budgets(self) -> None:
+        if (mdt := self._config.max_decomp_total) is not None and self._out_total_bytes > mdt:
+            raise ValueError('gzip output exceeds limit (possible zip bomb)')
+
+        if (mer := self._config.max_expansion_ratio) is not None:
+            slack = self._config.max_decomp_chunk
+            if self._out_total_bytes > (max(1, self._in_total_bytes) * mer + slack):
+                raise ValueError('gzip expansion ratio exceeds limit (possible zip bomb)')
+
+    def _is_auto_read(self, ctx: ChannelPipelineHandlerContext) -> bool:
+        if (flow := ctx.services.find(ChannelPipelineFlow)) is None:
+            return True
+        return flow.is_auto_read()
+
+    def _emit_out_pending(self, ctx: ChannelPipelineHandlerContext) -> bool:
+        """Returns True if at least one message was emitted."""
+
+        emitted = False
+
+        while self._out_pending and (self._is_auto_read(ctx) or self._read_requested):
+            o = self._out_pending.popleft()
+            self._out_pending_bytes -= len(o)
+
+            if not self._is_auto_read(ctx):
+                self._read_requested = False
+
+            ctx.feed_in(self._make_content_chunk_data(o))
+            emitted = True
+
+            # In manual mode, we satisfy one 'read' at a time.
+            if not self._is_auto_read(ctx):
+                break
+
+        return emitted
+
+    def _pump(self, ctx: ChannelPipelineHandlerContext) -> bool:
+        """Returns True if it effectively satisfied a read request."""
+
+        z = self._decompressor
+        if z is None:
+            return False
+
+        steps = 0
+        max_steps = self._config.max_steps_per_call
+
+        # 1. Try to clear existing output.
+        if self._emit_out_pending(ctx):
+            if not self._is_auto_read(ctx):
+                return True
+
+        # 2. If blocked by downstream, we can't satisfy anything.
+        if self._out_pending:
+            return False
+
+        # 3. Decompression Loop
+        while self._in_pending:
+            # Enforce output buffer budget
+            if (mop := self._config.max_out_pending) is not None:
+                if self._out_pending_bytes >= mop:
+                    break
+
+            # Check for CPU step limit
+            if max_steps is not None and steps >= max_steps:
+                self._defer_resume(ctx)
+                return False  # We haven't satisfied it yet, we deferred.
+
+            steps += 1
+            chunk = self._in_pending.popleft()
+            cl = len(chunk)
+            self._in_pending_bytes -= cl
+
+            out = z.decompress(chunk, self._config.max_decomp_chunk)
+            if out:
+                ol = len(out)
+                self._out_total_bytes += ol
+                self._out_pending.append(out)
+                self._out_pending_bytes += ol
+                self._check_budgets()
+
+                if self._emit_out_pending(ctx):
+                    if not self._is_auto_read(ctx):
+                        return True  # Satisfied!
+
+            ut = z.unconsumed_tail()
+            if ut:
+                self._in_pending.appendleft(ut)
+                self._in_pending_bytes += len(ut)
+                if not out:
+                    break
+
+        # 4. Handle EOF
+        if not self._in_pending and self._pending_end is not None:
+            if max_steps is not None and steps >= max_steps:
+                self._defer_resume(ctx)
+                return False
+
+            out = z.flush()
+            if out:
+                ol = len(out)
+                self._out_total_bytes += ol
+                self._out_pending.append(out)
+                self._out_pending_bytes += ol
+                self._check_budgets()
+                self._emit_out_pending(ctx)
+
+            msg = self._pending_end
+            self._pending_end = None
+            self._read_requested = False
+            ctx.feed_in(msg)
+            return True  # FinalInput counts as satisfying the last read
+
+        return False
+
+    def _defer_resume(self, ctx: ChannelPipelineHandlerContext) -> None:
+        def resume(c: ChannelPipelineHandlerContext) -> None:
+            # If a deferred pump satisfies a read, it must provide the FlushInput
+            if self._pump(c) and not self._is_auto_read(c):
+                c.feed_in(ChannelPipelineFlowMessages.FlushInput())
+
+        ctx.defer(resume)
+
+    #
+
+    def _on_inbound_final_input(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineMessages.FinalInput) -> None:  # noqa
+        if self._decompressor is None:
+            ctx.feed_in(msg)
+            return
+
+        self._reset()
+
+        ctx.feed_in(self._make_aborted('eof before end of message'))
+        ctx.feed_in(msg)
+
+    def _on_inbound_flush_input(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineFlowMessages.FlushInput) -> None:  # noqa
+        self._pump(ctx)
+        ctx.feed_in(msg)
+
+    def _on_inbound_head(self, ctx: ChannelPipelineHandlerContext, msg: PipelineHttpMessageHead) -> None:  # noqa
+        if self._decompressor is not None:
+            ctx.feed_in(self._make_aborted('unexpected message sequence'))
+            return
+
+        enc = msg.headers.lower.get('content-encoding', ())
+
+        if 'gzip' in enc:
+            self._decompressor = self.ZlibDecompressor()
+
+        ctx.feed_in(msg)
+
+    def _on_inbound_content_chunk_data(self, ctx: ChannelPipelineHandlerContext, msg: PipelineHttpMessageContentChunkData) -> None:  # noqa
+        if self._decompressor is None:
+            ctx.feed_in(msg)
+            return
+
+        for mv in ByteStreamBuffers.iter_segments(msg.data):
+            mvl = len(mv)
+            self._in_total_bytes += mvl
+            self._in_pending.append(mv)
+            self._in_pending_bytes += mvl
+            self._check_budgets()
+
+        self._pump(ctx)
+
+    def _on_inbound_end(self, ctx: ChannelPipelineHandlerContext, msg: PipelineHttpMessageEnd) -> None:
+        if self._decompressor is None:
+            ctx.feed_in(msg)
+            return
+
+        self._pending_end = msg
+        self._pump(ctx)
+
+    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, ChannelPipelineMessages.FinalInput):
+            self._on_inbound_final_input(ctx, msg)
+
+        elif isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
+            self._on_inbound_flush_input(ctx, msg)
+
+        elif isinstance(msg, self._head_type):
+            self._on_inbound_head(ctx, msg)
+
+        elif isinstance(msg, self._content_chunk_data_type):
+            self._on_inbound_content_chunk_data(ctx, msg)
+
+        elif isinstance(msg, self._end_type):
+            self._on_inbound_end(ctx, msg)
+
+        else:
+            ctx.feed_in(msg)
+
+    #
+
+    def _on_outbound_ready_for_input(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineFlowMessages.ReadyForInput) -> None:  # Noqa
+        self._read_requested = True
+
+        if self._out_pending or (self._decompressor is not None and self._in_pending):
+            if self._pump(ctx):
+                if not self._is_auto_read(ctx):
+                    ctx.feed_in(ChannelPipelineFlowMessages.FlushInput())
+
+                return  # Swallow since we satisfied it
+
+        ctx.feed_out(msg)
+
+    def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, ChannelPipelineFlowMessages.ReadyForInput):
+            self._on_outbound_ready_for_input(ctx, msg)
+
+        else:
+            ctx.feed_out(msg)
+
+
+########################################
 # ../http/encoders.py
 
 
 ##
 
 
-class PipelineHttpEncodingMessageAdapter(Abstract):
-    @property
-    def head_type(self) -> ta.Optional[ta.Type[PipelineHttpMessageHead]]:
-        return None
-
-    @property
-    def full_type(self) -> ta.Optional[ta.Type[FullPipelineHttpMessage]]:
-        return None
-
-    @property
-    def content_chunk_data_type(self) -> ta.Optional[ta.Type[PipelineHttpMessageContentChunkData]]:
-        return None
-
-    @property
-    def end_type(self) -> ta.Optional[ta.Type[PipelineHttpMessageEnd]]:
-        return None
-
-    def encode_head_line(self, head: PipelineHttpMessageHead) -> bytes:
-        raise NotImplementedError
-
-
-##
-
-
-class PipelineHttpEncoder:
-    def __init__(self, adapter: PipelineHttpEncodingMessageAdapter) -> None:
+class PipelineHttpObjectEncoder(
+    PipelineHttpMessageObjects,
+    ChannelPipelineHandler,
+    Abstract,
+):
+    def __init__(self) -> None:
         super().__init__()
-
-        self._adapter = adapter
 
         self._streaming = False
         self._chunked = False
 
     #
 
-    def outbound(self, msg: ta.Any) -> ta.Sequence[ta.Any]:
-        ty: ta.Any
+    @abc.abstractmethod
+    def _encode_head_line(self, head: PipelineHttpMessageHead) -> bytes:
+        raise NotImplementedError
 
-        if (ty := self._adapter.head_type) is not None and isinstance(msg, ty):
-            return self._handle_request_head(msg)
+    #
 
-        elif (ty := self._adapter.content_chunk_data_type) is not None and isinstance(msg, ty):
-            return self._handle_content_chunk_data(msg)
+    def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        if isinstance(msg, self._head_type):
+            self._handle_request_head(ctx, msg)
 
-        elif (ty := self._adapter.end_type) is not None and isinstance(msg, ty):
-            return self._handle_request_end(msg)
+        elif isinstance(msg, self._full_type):
+            self._handle_full_request(ctx, msg)
 
-        elif (ty := self._adapter.full_type) is not None and isinstance(msg, ty):
-            return self._handle_full_request(msg)
+        elif isinstance(msg, self._content_chunk_data_type):
+            self._handle_content_chunk_data(ctx, msg)
+
+        elif isinstance(msg, self._end_type):
+            self._handle_request_end(ctx, msg)
 
         else:
-            return [msg]
+            ctx.feed_out(msg)
 
-    def _handle_request_head(self, msg: PipelineHttpMessageHead) -> ta.Sequence[ta.Any]:
+    #
+
+    def _handle_request_head(self, ctx: ChannelPipelineHandlerContext, msg: PipelineHttpMessageHead) -> None:  # noqa
         """Emit request line + headers, enter streaming mode."""
 
         self._streaming = True
         self._chunked = self._is_chunked(msg.headers)
 
-        return [self._encode_head(msg)]
+        ctx.feed_out(self._encode_head(msg))
 
-    def _handle_content_chunk_data(self, msg: PipelineHttpMessageContentChunkData) -> ta.Sequence[ta.Any]:
+    #
+
+    def _handle_full_request(self, ctx: ChannelPipelineHandlerContext, msg: FullPipelineHttpMessage) -> ta.Any:
+        """Emit complete request in one shot."""
+
+        ctx.feed_out(self._encode_head(msg.head))
+        if len(msg.body) > 0:
+            ctx.feed_out(msg.body)
+
+    #
+
+    def _handle_content_chunk_data(self, ctx: ChannelPipelineHandlerContext, msg: PipelineHttpMessageContentChunkData) -> None:  # noqa
         """Emit body chunk (raw or chunked-encoded)."""
 
         if not self._streaming:
             # Not in streaming mode - pass through unchanged
-            return [msg]
+            ctx.feed_out(msg)
 
         elif len(msg.data) < 1:
-            return []
+            pass
 
         elif self._chunked:
             # Chunked encoding: <size-hex>\r\n<data>\r\n
-            return [
-                f'{len(msg.data):x}\r\n'.encode('ascii'),
-                msg.data,
-                b'\r\n',
-            ]
+            ctx.feed_out(f'{len(msg.data):x}\r\n'.encode('ascii'))
+            ctx.feed_out(msg.data)
+            ctx.feed_out(b'\r\n')
 
         else:
             # Raw data
-            return [msg.data]
+            ctx.feed_out(msg.data)
 
-    def _handle_request_end(self, msg: PipelineHttpMessageEnd) -> ta.Sequence[ta.Any]:
+    #
+
+    def _handle_request_end(self, ctx: ChannelPipelineHandlerContext, msg: PipelineHttpMessageEnd) -> None:  # noqa
         """Emit terminator if chunked, reset state."""
 
         if not self._streaming:
             # Not in streaming mode - pass through
-            return [msg]
+            ctx.feed_out(msg)
+            return
 
         was_chunked = self._chunked
 
@@ -9291,24 +9821,14 @@ class PipelineHttpEncoder:
 
         if was_chunked:
             # Emit final chunk: 0\r\n\r\n
-            return [b'0\r\n\r\n']
-        else:
-            return []
-
-    def _handle_full_request(self, msg: FullPipelineHttpMessage) -> ta.Any:
-        """Emit complete request in one shot."""
-
-        return [
-            self._encode_head(msg.head),
-            *([msg.body] if len(msg.body) > 0 else []),
-        ]
+            ctx.feed_out(b'0\r\n\r\n')
 
     #
 
     def _encode_head(self, head: PipelineHttpMessageHead) -> bytes:
         buf = io.BytesIO()
 
-        buf.write(self._adapter.encode_head_line(head))
+        buf.write(self._encode_head_line(head))
 
         for hl in self._encode_headers(head.headers):
             buf.write(hl)
@@ -9348,6 +9868,9 @@ class PipelineHttpRequestObject(PipelineHttpMessageObject, Abstract):
     pass
 
 
+#
+
+
 @install_dataclass_kw_only_init()
 @dc.dataclass(frozen=True)
 class PipelineHttpRequestHead(PipelineHttpMessageHead, PipelineHttpRequestObject):
@@ -9358,6 +9881,9 @@ class PipelineHttpRequestHead(PipelineHttpMessageHead, PipelineHttpRequestObject
     parsed: ta.Optional[ParsedHttpMessage] = None
 
     version: HttpVersion = HttpVersions.HTTP_1_1
+
+
+#
 
 
 @dc.dataclass(frozen=True)
@@ -9397,9 +9923,15 @@ class FullPipelineHttpRequest(FullPipelineHttpMessage, PipelineHttpRequestObject
         )
 
 
+#
+
+
 @dc.dataclass(frozen=True)
 class PipelineHttpRequestContentChunkData(PipelineHttpMessageContentChunkData, PipelineHttpRequestObject):
     pass
+
+
+#
 
 
 @dc.dataclass(frozen=True)
@@ -9407,9 +9939,58 @@ class PipelineHttpRequestEnd(PipelineHttpMessageEnd, PipelineHttpRequestObject):
     pass
 
 
+#
+
+
 @dc.dataclass(frozen=True)
 class PipelineHttpRequestAborted(PipelineHttpMessageAborted, PipelineHttpRequestObject):
     pass
+
+
+##
+
+
+class PipelineHttpRequestObjects(PipelineHttpMessageObjects):
+    _head_type: ta.Final[ta.Type[PipelineHttpRequestHead]] = PipelineHttpRequestHead
+
+    def _make_head(self, parsed: ParsedHttpMessage) -> PipelineHttpRequestHead:
+        request = check.not_none(parsed.request_line)
+
+        return PipelineHttpRequestHead(
+            method=request.method,
+            target=check.not_none(request.request_target).decode('utf-8'),
+            version=request.http_version,
+            headers=HttpHeaders(parsed.headers.entries),
+            parsed=parsed,
+        )
+
+    #
+
+    _full_type: ta.Final[ta.Type[FullPipelineHttpRequest]] = FullPipelineHttpRequest
+
+    def _make_full(self, head: PipelineHttpMessageHead, body: BytesLikeOrMemoryview) -> FullPipelineHttpRequest:
+        return FullPipelineHttpRequest(check.isinstance(head, PipelineHttpRequestHead), body)
+
+    #
+
+    _content_chunk_data_type: ta.Final[ta.Type[PipelineHttpRequestContentChunkData]] = PipelineHttpRequestContentChunkData  # noqa
+
+    def _make_content_chunk_data(self, data: BytesLikeOrMemoryview) -> PipelineHttpRequestContentChunkData:
+        return PipelineHttpRequestContentChunkData(data)
+
+    #
+
+    _end_type: ta.Final[ta.Type[PipelineHttpRequestEnd]] = PipelineHttpRequestEnd
+
+    def _make_end(self) -> PipelineHttpRequestEnd:
+        return PipelineHttpRequestEnd()
+
+    #
+
+    _aborted_type: ta.Final[ta.Type[PipelineHttpRequestAborted]] = PipelineHttpRequestAborted
+
+    def _make_aborted(self, reason: ta.Union[str, BaseException]) -> PipelineHttpRequestAborted:
+        return PipelineHttpRequestAborted(reason)
 
 
 ########################################
@@ -9421,6 +10002,9 @@ class PipelineHttpRequestAborted(PipelineHttpMessageAborted, PipelineHttpRequest
 
 class PipelineHttpResponseObject(PipelineHttpMessageObject, Abstract):
     pass
+
+
+#
 
 
 @install_dataclass_kw_only_init()
@@ -9440,6 +10024,9 @@ class PipelineHttpResponseHead(PipelineHttpMessageHead, PipelineHttpResponseObje
             return http.HTTPStatus(code).phrase
         except ValueError:
             return ''
+
+
+#
 
 
 @dc.dataclass(frozen=True)
@@ -9477,9 +10064,15 @@ class FullPipelineHttpResponse(FullPipelineHttpMessage, PipelineHttpResponseObje
         )
 
 
+#
+
+
 @dc.dataclass(frozen=True)
 class PipelineHttpResponseContentChunkData(PipelineHttpMessageContentChunkData, PipelineHttpResponseObject):
     pass
+
+
+#
 
 
 @dc.dataclass(frozen=True)
@@ -9487,9 +10080,58 @@ class PipelineHttpResponseEnd(PipelineHttpMessageEnd, PipelineHttpResponseObject
     pass
 
 
+#
+
+
 @dc.dataclass(frozen=True)
 class PipelineHttpResponseAborted(PipelineHttpMessageAborted, PipelineHttpResponseObject):
     pass
+
+
+##
+
+
+class PipelineHttpResponseObjects(PipelineHttpMessageObjects):
+    _head_type: ta.Final[ta.Type[PipelineHttpResponseHead]] = PipelineHttpResponseHead
+
+    def _make_head(self, parsed: ParsedHttpMessage) -> ta.Any:
+        status = check.not_none(parsed.status_line)
+
+        return PipelineHttpResponseHead(
+            version=status.http_version,
+            status=status.status_code,
+            reason=status.reason_phrase,
+            headers=HttpHeaders(parsed.headers.entries),
+            parsed=parsed,
+        )
+
+    #
+
+    _full_type: ta.Final[ta.Type[FullPipelineHttpResponse]] = FullPipelineHttpResponse
+
+    def _make_full(self, head: PipelineHttpMessageHead, body: BytesLikeOrMemoryview) -> FullPipelineHttpResponse:
+        return FullPipelineHttpResponse(check.isinstance(head, PipelineHttpResponseHead), body)
+
+    #
+
+    _content_chunk_data_type: ta.Final[ta.Type[PipelineHttpResponseContentChunkData]] = PipelineHttpResponseContentChunkData  # noqa
+
+    def _make_content_chunk_data(self, data: BytesLikeOrMemoryview) -> PipelineHttpResponseContentChunkData:
+        return PipelineHttpResponseContentChunkData(data)
+
+    #
+
+    _end_type: ta.Final[ta.Type[PipelineHttpResponseEnd]] = PipelineHttpResponseEnd
+
+    def _make_end(self) -> PipelineHttpResponseEnd:
+        return PipelineHttpResponseEnd()
+
+    #
+
+    _aborted_type: ta.Final[ta.Type[PipelineHttpResponseAborted]] = PipelineHttpResponseAborted
+
+    def _make_aborted(self, reason: ta.Union[str, BaseException]) -> PipelineHttpResponseAborted:
+        return PipelineHttpResponseAborted(reason)
 
 
 ########################################
@@ -9519,6 +10161,12 @@ class SegmentedByteStreamBufferView(BaseByteStreamBufferLike, ByteStreamBufferVi
     def of_opt(cls, segs: ta.Sequence[memoryview]) -> ta.Optional['SegmentedByteStreamBufferView']:
         if not segs:
             return None
+        return cls(segs)
+
+    @classmethod
+    def or_else(cls, segs: ta.Sequence[memoryview], default: T) -> ta.Union['SegmentedByteStreamBufferView', T]:
+        if not segs:
+            return default
         return cls(segs)
 
     _len = 0
@@ -10333,36 +10981,11 @@ class StdLogger(Logger):
 ##
 
 
-class RequestPipelineHttpEncodingMessageAdapter(PipelineHttpEncodingMessageAdapter):
-    head_type: ta.Final[ta.Type[PipelineHttpMessageHead]] = PipelineHttpRequestHead
-    full_type: ta.Final[ta.Type[FullPipelineHttpMessage]] = FullPipelineHttpRequest
-    content_chunk_data_type: ta.Final[ta.Type[PipelineHttpMessageContentChunkData]] = PipelineHttpRequestContentChunkData  # noqa
-    end_type: ta.Final[ta.Type[PipelineHttpMessageEnd]] = PipelineHttpRequestEnd
-
-    def encode_head_line(self, head: PipelineHttpMessageHead) -> bytes:
+class PipelineHttpRequestEncoder(PipelineHttpRequestObjects, PipelineHttpObjectEncoder):
+    def _encode_head_line(self, head: PipelineHttpMessageHead) -> bytes:
         head = check.isinstance(head, PipelineHttpRequestHead)
         version_str = f'HTTP/{head.version.major}.{head.version.minor}'
         return f'{head.method} {head.target} {version_str}\r\n'.encode('ascii')
-
-
-##
-
-
-class PipelineHttpRequestEncoder(ChannelPipelineHandler):
-    def __init__(self) -> None:
-        super().__init__()
-
-        self._encoder = PipelineHttpEncoder(
-            RequestPipelineHttpEncodingMessageAdapter(),
-        )
-
-    def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if not isinstance(msg, PipelineHttpRequestObject):
-            ctx.feed_out(msg)
-            return
-
-        for out_msg in self._encoder.outbound(msg):
-            ctx.feed_out(out_msg)
 
 
 ########################################
@@ -10372,36 +10995,11 @@ class PipelineHttpRequestEncoder(ChannelPipelineHandler):
 ##
 
 
-class ResponsePipelineHttpEncodingMessageAdapter(PipelineHttpEncodingMessageAdapter):
-    head_type: ta.Final[ta.Type[PipelineHttpMessageHead]] = PipelineHttpResponseHead
-    full_type: ta.Final[ta.Type[FullPipelineHttpMessage]] = FullPipelineHttpResponse
-    content_chunk_data_type: ta.Final[ta.Type[PipelineHttpMessageContentChunkData]] = PipelineHttpResponseContentChunkData  # noqa
-    end_type: ta.Final[ta.Type[PipelineHttpMessageEnd]] = PipelineHttpResponseEnd
-
-    def encode_head_line(self, head: PipelineHttpMessageHead) -> bytes:
+class PipelineHttpResponseEncoder(PipelineHttpResponseObjects, PipelineHttpObjectEncoder):
+    def _encode_head_line(self, head: PipelineHttpMessageHead) -> bytes:
         head = check.isinstance(head, PipelineHttpResponseHead)
         version_str = f'HTTP/{head.version.major}.{head.version.minor}'
         return f'{version_str} {head.status} {head.reason}\r\n'.encode('ascii')
-
-
-##
-
-
-class PipelineHttpResponseEncoder(ChannelPipelineHandler):
-    def __init__(self) -> None:
-        super().__init__()
-
-        self._encoder = PipelineHttpEncoder(
-            ResponsePipelineHttpEncodingMessageAdapter(),
-        )
-
-    def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if not isinstance(msg, PipelineHttpResponseObject):
-            ctx.feed_out(msg)
-            return
-
-        for out_msg in self._encoder.outbound(msg):
-            ctx.feed_out(out_msg)
 
 
 ########################################
@@ -10537,50 +11135,17 @@ class DelimiterFrameDecoderChannelPipelineHandler(InboundBytesBufferingChannelPi
 ##
 
 
-class BytesToMessageDecoderChannelPipelineHandler(InboundBytesBufferingChannelPipelineHandler, Abstract):
-    def __init__(
-            self,
-            *,
-            max_buffer_size: ta.Optional[int] = None,
-            buffer_chunk_size: int = 64 * 1024,
-            scanning_buffer: bool = False,
-    ) -> None:
-        super().__init__()
-
-        self._max_buffer_size = max_buffer_size
-        self._buffer_chunk_size = buffer_chunk_size
-        self._scanning_buffer = scanning_buffer
-
-    def inbound_buffered_bytes(self) -> int:
-        if (buf := self._buf) is None:
-            return 0
-        return len(buf)
-
+class BytesToMessageDecoderChannelPipelineHandler(ChannelPipelineHandler, Abstract):
     @abc.abstractmethod
     def _decode(
             self,
             ctx: ChannelPipelineHandlerContext,
-            buf: ByteStreamBuffer,
+            data: CanByteStreamBuffer,
             out: ta.List[ta.Any],
             *,
             final: bool = False,
     ) -> None:
         raise NotImplementedError
-
-    #
-
-    _buf: ta.Optional[MutableByteStreamBuffer] = None
-
-    def _new_buf(self) -> MutableByteStreamBuffer:
-        buf: MutableByteStreamBuffer = SegmentedByteStreamBuffer(
-            max_size=self._max_buffer_size,
-            chunk_size=self._buffer_chunk_size,
-        )
-
-        if self._scanning_buffer:
-            buf = ScanningByteStreamBuffer(buf)
-
-        return buf
 
     #
 
@@ -10590,19 +11155,14 @@ class BytesToMessageDecoderChannelPipelineHandler(InboundBytesBufferingChannelPi
     def _call_decode(
             self,
             ctx: ChannelPipelineHandlerContext,
-            buf: ByteStreamBuffer,
+            data: CanByteStreamBuffer,
             *,
             final: bool = False,
     ) -> None:
         self._called_decode = True
 
         out: ta.List[ta.Any] = []
-        try:
-            self._decode(ctx, buf, out, final=final)
-        except DecodingChannelPipelineError:
-            raise
-        except Exception as e:
-            raise DecodingChannelPipelineError from e
+        self._decode(ctx, data, out, final=final)
 
         if not out:
             return
@@ -10613,6 +11173,11 @@ class BytesToMessageDecoderChannelPipelineHandler(InboundBytesBufferingChannelPi
             ctx.feed_in(out_msg)
 
     #
+
+    def _on_bytes_input(self, ctx: ChannelPipelineHandlerContext, data: CanByteStreamBuffer) -> None:
+        check.arg(len(data) > 0)
+
+        self._call_decode(ctx, data)
 
     def _on_flush_input(self, ctx: ChannelPipelineHandlerContext) -> None:
         if (
@@ -10628,26 +11193,9 @@ class BytesToMessageDecoderChannelPipelineHandler(InboundBytesBufferingChannelPi
         ctx.feed_in(ChannelPipelineFlowMessages.FlushInput())
 
     def _on_final_input(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineMessages.FinalInput) -> None:
-        dec_buf: ByteStreamBuffer
-        if self._buf is not None:
-            dec_buf = self._buf
-        else:
-            dec_buf = DirectByteStreamBuffer(b'')
-
-        self._call_decode(ctx, dec_buf, final=True)
+        self._call_decode(ctx, DirectByteStreamBuffer(b''), final=True)
 
         ctx.feed_in(msg)
-
-    def _on_bytes_input(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        check.arg(len(msg) > 0)
-
-        if self._buf is None:
-            self._buf = self._new_buf()
-
-        for seg in ByteStreamBuffers.iter_segments(msg):
-            self._buf.write(seg)
-
-        self._call_decode(ctx, self._buf)
 
     #
 
@@ -10674,7 +11222,7 @@ class FnBytesToMessageDecoderChannelPipelineHandler(BytesToMessageDecoderChannel
         def __call__(
                 self,
                 ctx: ChannelPipelineHandlerContext,
-                buf: ByteStreamBuffer,
+                data: CanByteStreamBuffer,
                 out: ta.List[ta.Any],
                 *,
                 final: bool = False,
@@ -10684,23 +11232,15 @@ class FnBytesToMessageDecoderChannelPipelineHandler(BytesToMessageDecoderChannel
     def __init__(
             self,
             decode_fn: DecodeFn,
-            *,
-            max_buffer_size: ta.Optional[int] = None,
-            buffer_chunk_size: int = 64 * 1024,
-            scanning_buffer: bool = False,
     ) -> None:
-        super().__init__(
-            max_buffer_size=max_buffer_size,
-            buffer_chunk_size=buffer_chunk_size,
-            scanning_buffer=scanning_buffer,
-        )
+        super().__init__()
 
         self._decode_fn = decode_fn
 
     def _decode(
             self,
             ctx: ChannelPipelineHandlerContext,
-            buf: ByteStreamBuffer,
+            buf: CanByteStreamBuffer,
             out: ta.List[ta.Any],
             *,
             final: bool = False,
@@ -10708,517 +11248,330 @@ class FnBytesToMessageDecoderChannelPipelineHandler(BytesToMessageDecoderChannel
         self._decode_fn(ctx, buf, out, final=final)
 
 
+##
+
+
+class BufferedBytesToMessageDecoderChannelPipelineHandler(
+    InboundBytesBufferingChannelPipelineHandler,
+    BytesToMessageDecoderChannelPipelineHandler,
+    Abstract,
+):
+    def __init__(
+            self,
+            *,
+            max_buffer_size: ta.Optional[int] = None,
+            buffer_chunk_size: int = 64 * 1024,
+            scanning_buffer: bool = False,
+    ) -> None:
+        super().__init__()
+
+        self._max_buffer_size = max_buffer_size
+        self._buffer_chunk_size = buffer_chunk_size
+        self._scanning_buffer = scanning_buffer
+
+    #
+
+    def inbound_buffered_bytes(self) -> int:
+        if (buf := self._buf) is None:
+            return 0
+        return len(buf)
+
+    _buf: ta.Optional[MutableByteStreamBuffer] = None
+
+    def _new_buf(self) -> MutableByteStreamBuffer:
+        buf: MutableByteStreamBuffer = SegmentedByteStreamBuffer(
+            max_size=self._max_buffer_size,
+            chunk_size=self._buffer_chunk_size,
+        )
+
+        if self._scanning_buffer:
+            buf = ScanningByteStreamBuffer(buf)
+
+        return buf
+
+    #
+
+    def _decode(
+            self,
+            ctx: ChannelPipelineHandlerContext,
+            data: CanByteStreamBuffer,
+            out: ta.List[ta.Any],
+            *,
+            final: bool = False,
+    ) -> None:
+        if final:
+            check.arg(len(data) == 0)
+
+            if not isinstance(data, ByteStreamBuffer):
+                data = DirectByteStreamBuffer(b'')
+
+            self._decode_buffer(ctx, data, out, final=final)
+
+            return
+
+        check.arg(len(data) > 0)
+
+        if (buf := self._buf) is None:
+            buf = self._buf = self._new_buf()
+
+        for seg in ByteStreamBuffers.iter_segments(data):
+            buf.write(seg)
+
+        self._decode_buffer(ctx, buf, out, final=final)
+
+    #
+
+    @abc.abstractmethod
+    def _decode_buffer(
+            self,
+            ctx: ChannelPipelineHandlerContext,
+            buf: ByteStreamBuffer,
+            out: ta.List[ta.Any],
+            *,
+            final: bool = False,
+    ) -> None:
+        raise NotImplementedError
+
+
 ########################################
-# ../http/decoders.py
-"""
-TODO:
- - chunked make_chunk_header - https://datatracker.ietf.org/doc/html/rfc9112#name-chunk-extensions
-  - and make_content_chunk_data ...
- - fix exception handling lol - do we raise ValueError?? do we return aborted??
- - unify with pipelines.bytes.decoders
-"""
+# ../http/aggregators.py
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class PipelineHttpDecodingConfig:
-    DEFAULT: ta.ClassVar['PipelineHttpDecodingConfig']
-
-    parser_config: ta.Optional[HttpParser.Config] = None
+class PipelineHttpAggregationConfig:
+    DEFAULT: ta.ClassVar['PipelineHttpAggregationConfig']
 
     @dc.dataclass(frozen=True)
     class BufferConfig:
         max_size: ta.Optional[int]
         chunk_size: int
 
-    head_buffer: BufferConfig = BufferConfig(max_size=4 * 1024, chunk_size=4 * 1024)
-
-    max_content_chunk_size: ta.Optional[int] = None
-    content_chunk_header_buffer: BufferConfig = BufferConfig(max_size=1024, chunk_size=1024)
-
-    aggregated_body_buffer: BufferConfig = BufferConfig(max_size=64 * 1024, chunk_size=64 * 1024)
+    body_buffer: BufferConfig = BufferConfig(max_size=64 * 1024, chunk_size=64 * 1024)
 
 
-PipelineHttpDecodingConfig.DEFAULT = PipelineHttpDecodingConfig()
+PipelineHttpAggregationConfig.DEFAULT = PipelineHttpAggregationConfig()
 
 
-##
+#
 
 
-class PipelineHttpDecodingMessageAdapter(Abstract):
-    def make_head(self, parsed: ParsedHttpMessage) -> ta.Any:
-        raise NotImplementedError
-
-    def make_aborted(self, reason: str) -> ta.Any:
-        raise NotImplementedError
-
-    def make_content_chunk_data(self, data: BytesLikeOrMemoryview) -> ta.Any:
-        raise NotImplementedError
-
-    def make_end(self) -> ta.Any:
-        raise NotImplementedError
-
-
-##
-
-
-class PipelineHttpHeadDecoder:
-    """
-    Class for HTTP/1.x head decoders (request or response).
-
-    Handles common logic:
-      - Buffering until b'\\r\\n\\r\\n'
-      - Parsing request/response line + headers
-      - Forwarding remainder bytes
-      - EOF handling
-    """
-
+class PipelineHttpObjectAggregator(
+    PipelineHttpMessageObjects,
+    ChannelPipelineHandler,
+    Abstract,
+):
     def __init__(
             self,
-            adapter: PipelineHttpDecodingMessageAdapter,
-            parse_mode: HttpParser.Mode,
             *,
-            config: PipelineHttpDecodingConfig = PipelineHttpDecodingConfig.DEFAULT,
+            config: PipelineHttpAggregationConfig = PipelineHttpAggregationConfig.DEFAULT,
     ) -> None:
         super().__init__()
 
-        self._adapter = adapter
-        self._parse_mode = parse_mode
         self._config = config
 
-        self._buf = ScanningByteStreamBuffer(SegmentedByteStreamBuffer(
-            max_size=config.head_buffer.max_size,
-            chunk_size=config.head_buffer.chunk_size,
-        ))
+        self._handled_types: ta.Tuple[type, ...] = (
+            self._head_type,
+            self._content_chunk_data_type,
+            self._end_type,
+            self._final_type,
+        )
 
-    _done = False
+        self._state: PipelineHttpObjectAggregator._State = self._HeadState(self)
+
+    #
 
     @property
-    def done(self) -> bool:
-        return self._done
+    @abc.abstractmethod
+    def _if_content_length_missing(self) -> ta.Literal['none', 'eof']:
+        raise NotImplementedError
 
-    def inbound_buffered_bytes(self) -> int:
-        if self._done:
+    @property
+    @abc.abstractmethod
+    def _final_type(self) -> type:
+        raise NotImplementedError
+
+    #
+
+    def buffered_bytes(self) -> int:
+        if (buf := self._state.buf) is None:
             return 0
-        return len(self._buf)
+        return len(buf)
 
-    def inbound(self, msg: ta.Any) -> ta.Sequence[ta.Any]:
-        check.state(not self._done)
+    #
 
-        if isinstance(msg, ChannelPipelineMessages.FinalInput):
-            # EOF: if we have partial head buffered and haven't parsed head, that's an error.
+    def _handle(
+            self,
+            ctx: ChannelPipelineHandlerContext,
+            msg: CanByteStreamBuffer,
+            feed: ta.Callable[[ta.Any], None],
+    ) -> None:
+        if not isinstance(msg, self._handled_types):
+            feed(msg)
+            return
 
-            del self._buf
-            self._done = True
+        self._state, out = self._state.handle(ctx, msg)
 
-            return [
-                self._adapter.make_aborted('EOF before HTTP head complete'),
-                msg,
-            ]
+        for out_msg in out:
+            feed(out_msg)
 
-        if not ByteStreamBuffers.can_bytes(msg):
-            return [msg]
+    #
 
-        out: ta.List[ta.Any] = []
+    class _State(Abstract):
+        def __init__(self, a: 'PipelineHttpObjectAggregator') -> None:
+            super().__init__()
 
-        for mv in ByteStreamBuffers.iter_segments(msg):
-            if self._done:
-                out.append(mv)
-                continue
+            self._a = a
 
-            rem_mv: ta.Optional[memoryview] = None
+        @property
+        def buf(self) -> ta.Optional[MutableByteStreamBuffer]:
+            return None
 
-            if (max_buf := self._buf.max_size) is not None:
-                rem_buf = max_buf - len(self._buf)
+        def _abort(
+                self,
+                reason: ta.Union[str, BaseException],
+                msg: ta.Optional[ta.Any] = None,
+        ) -> ta.Tuple['PipelineHttpObjectAggregator._State', ta.Sequence[ta.Any]]:
+            nxt_state = self._a._AbortedState(self._a)  # noqa
+            out: ta.List[ta.Any] = [self._a._make_aborted(reason)]
+            if msg is not None:
+                out.append(msg)
+            return (nxt_state, out)
 
-                if len(mv) > rem_buf:
-                    self._buf.write(mv[:rem_buf])
-                    rem_mv = mv[rem_buf:]
+        @abc.abstractmethod
+        def handle(
+                self,
+                ctx: ChannelPipelineHandlerContext,
+                msg: ta.Any,
+        ) -> ta.Tuple['PipelineHttpObjectAggregator._State', ta.Sequence[ta.Any]]:
+            raise NotImplementedError
+
+    #
+
+    class _HeadState(_State):
+        def handle(
+                self,
+                ctx: ChannelPipelineHandlerContext,
+                msg: ta.Any,
+        ) -> ta.Tuple['PipelineHttpObjectAggregator._State', ta.Sequence[ta.Any]]:
+            if isinstance(msg, self._a._head_type):
+                try:
+                    te = PipelineHttpTransferEncoding.select(
+                        msg.headers,
+                        if_length_missing=self._a._if_content_length_missing,  # noqa
+                    )
+                except PipelineHttpTransferEncodingError as e:
+                    return self._abort(f'Invalid Transfer-Encoding: {e.reason}')
+
+                if te.mode in 'none':
+                    return (self._a._EndState(self._a, msg, b''), [])  # noqa
+
+                if (
+                        te.length is not None and
+                        (max_body := self._a._config.body_buffer.max_size) is not None and
+                        te.length > max_body
+                ):
+                    return self._abort(FrameTooLargeByteStreamBufferError('aggregation body exceeded max_body'))
+
+                return (self._a._BodyState(self._a, msg), [])  # noqa
+
+            elif isinstance(msg, self._a._final_type):
+                return (self, [msg])
+
+            else:
+                raise TypeError(f'unexpected message type: {type(msg)}')
+
+    #
+
+    class _BodyState(_State):
+        def __init__(
+                self,
+                a: 'PipelineHttpObjectAggregator',
+                head: PipelineHttpMessageHead,
+        ) -> None:
+            super().__init__(a)
+
+            self._head = head
+
+        _buf: ta.Optional[MutableByteStreamBuffer] = None
+
+        @property
+        def buf(self) -> ta.Optional[MutableByteStreamBuffer]:
+            return self._buf
+
+        def handle(
+                self,
+                ctx: ChannelPipelineHandlerContext,
+                msg: ta.Any,
+        ) -> ta.Tuple['PipelineHttpObjectAggregator._State', ta.Sequence[ta.Any]]:
+            if isinstance(msg, self._a._content_chunk_data_type):
+                if (buf := self._buf) is None:
+                    buf = self._buf = SegmentedByteStreamBuffer(
+                        max_size=self._a._config.body_buffer.max_size,  # noqa
+                        chunk_size=self._a._config.body_buffer.chunk_size,  # noqa
+                    )
+
+                for mv in ByteStreamBuffers.iter_segments(msg.data):
+                    buf.write(mv)
+
+                return (self, [])
+
+            elif isinstance(msg, self._a._end_type):
+                body: CanByteStreamBuffer
+                if (buf := self._buf) is not None:
+                    body = buf.coalesce(len(buf))
                 else:
-                    self._buf.write(mv)
+                    body = b''
 
-            # Look for end of head
-            i = self._buf.find(b'\r\n\r\n')
-            if i < 0:
-                if rem_mv is not None:
-                    del self._buf
-                    self._done = True
+                full = self._a._make_full(self._head, body)
+                return (self._a._HeadState(self._a), [full])
 
-                    return [self._adapter.make_aborted('Head exceeded max buffer size')]
-
-                continue
-
-            # Extract head
-            head_view = self._buf.split_to(i + 4)
-
-            # Parse and emit head
-            raw = head_view.tobytes()
-            parsed = parse_http_message(
-                raw,
-                mode=self._parse_mode,
-                config=self._config.parser_config,
-            )
-
-            head = self._adapter.make_head(parsed)
-            out.append(head)
-
-            # Forward any remainder bytes (body bytes)
-            if len(self._buf):
-                rem_view = self._buf.split_to(len(self._buf))
-                out.append(rem_view)
-
-            if rem_mv is not None:
-                out.append(rem_mv)
-
-            del self._buf
-            self._done = True
-
-        return out
-
-
-##
-
-
-class PipelineHttpContentChunkDecoder(Abstract):
-    def __init__(
-            self,
-            adapter: PipelineHttpDecodingMessageAdapter,
-            *,
-            config: PipelineHttpDecodingConfig = PipelineHttpDecodingConfig.DEFAULT,
-    ) -> None:
-        super().__init__()
-
-        self._adapter = adapter
-        self._config = config
-
-    @property
-    @abc.abstractmethod
-    def done(self) -> bool:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def inbound_buffered_bytes(self) -> int:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def inbound(self, msg: ta.Any) -> ta.Sequence[ta.Any]:
-        raise NotImplementedError
-
-
-class UntilFinalInputPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
-    _done: bool = False
-
-    @property
-    def done(self) -> bool:
-        return self._done
-
-    def inbound_buffered_bytes(self) -> int:
-        return 0
-
-    def inbound(self, msg: ta.Any) -> ta.Sequence[ta.Any]:
-        check.state(not self._done)
-
-        if isinstance(msg, ChannelPipelineMessages.FinalInput):
-            self._done = True
-
-            return [
-                self._adapter.make_end(),
-                msg,
-            ]
-
-        if not ByteStreamBuffers.can_bytes(msg):
-            return [msg]
-
-        out: ta.List[ta.Any] = []
-
-        for mv in ByteStreamBuffers.iter_segments(msg):
-            out.append(self._adapter.make_content_chunk_data(mv))
-
-        return out
-
-
-class ContentLengthPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
-    def __init__(
-            self,
-            adapter: PipelineHttpDecodingMessageAdapter,
-            content_length: int,
-            *,
-            config: PipelineHttpDecodingConfig = PipelineHttpDecodingConfig.DEFAULT,
-    ) -> None:
-        check.arg(content_length > 0)
-
-        super().__init__(
-            adapter,
-            config=config,
-        )
-
-        self._remain = content_length
-
-    @property
-    def done(self) -> bool:
-        return self._remain < 1
-
-    def inbound_buffered_bytes(self) -> int:
-        return 0
-
-    def inbound(self, msg: ta.Any) -> ta.Sequence[ta.Any]:
-        check.state(self._remain > 0)
-
-        if isinstance(msg, ChannelPipelineMessages.FinalInput):
-            self._remain = 0
-
-            return [
-                self._adapter.make_aborted('EOF before HTTP body complete'),
-                msg,
-            ]
-
-        if not ByteStreamBuffers.can_bytes(msg):
-            return [msg]
-
-        out: ta.List[ta.Any] = []
-
-        for mv in ByteStreamBuffers.iter_segments(msg):
-            if self._remain < 1:
-                out.append(mv)
-                continue
-
-            mvl = len(mv)
-
-            if self._remain > mvl:
-                out.append(self._adapter.make_content_chunk_data(mv))
-                self._remain -= mvl
-
-            elif self._remain == mvl:
-                out.append(self._adapter.make_content_chunk_data(mv))
-                out.append(self._adapter.make_end())
-                self._remain = 0
+            elif isinstance(msg, self._a._final_type):
+                return self._abort('incomplete message body', msg)
 
             else:
-                out.append(self._adapter.make_content_chunk_data(mv[:self._remain]))
-                out.append(self._adapter.make_end())
-                ofs = self._remain
-                self._remain = 0
-                out.append(mv[ofs:])
+                raise TypeError(f'unexpected message type: {type(msg)}')
 
-        return out
+    #
 
+    class _EndState(_State):
+        def __init__(
+                self,
+                a: 'PipelineHttpObjectAggregator',
+                head: PipelineHttpMessageHead,
+                body: CanByteStreamBuffer,
+        ) -> None:
+            super().__init__(a)
 
-class ChunkedPipelineHttpContentChunkDecoder(PipelineHttpContentChunkDecoder):
-    """
-    Class for HTTP/1.x chunked transfer encoding decoders.
+            self._head = head
+            self._body = body
 
-    Handles common logic:
-      - Parsing hex chunk sizes
-      - Extracting chunk data
-      - Validating CRLF delimiters
-      - Detecting terminator (0\\r\\n\\r\\n)
-      - State machine: 'size' -> 'data' -> 'size' ... -> 'trailer' -> 'done'
-    """
+        def handle(
+                self,
+                ctx: ChannelPipelineHandlerContext,
+                msg: ta.Any,
+        ) -> ta.Tuple['PipelineHttpObjectAggregator._State', ta.Sequence[ta.Any]]:
+            if isinstance(msg, self._a._end_type):
+                full = self._a._make_full(self._head, self._body)
+                return (self._a._HeadState(self._a), [full])
 
-    def __init__(
-            self,
-            adapter: PipelineHttpDecodingMessageAdapter,
-            *,
-            config: PipelineHttpDecodingConfig = PipelineHttpDecodingConfig.DEFAULT,
-    ) -> None:
-        super().__init__(
-            adapter,
-            config=config,
-        )
+            elif isinstance(msg, self._a._final_type):
+                return self._abort('incomplete message sequence', msg)
 
-        self._header_buf = self._new_header_buf()
-
-        self._chunk_remaining = 0
-        self._got_cr = False
-
-        self._state: ta.Literal['size', 'data', 'trailer', 'done'] = 'size'
-
-    def _new_header_buf(self) -> MutableByteStreamBuffer:
-        return ScanningByteStreamBuffer(SegmentedByteStreamBuffer(
-            max_size=self._config.content_chunk_header_buffer.max_size,
-            chunk_size=self._config.content_chunk_header_buffer.chunk_size,
-        ))
-
-    @property
-    def done(self) -> bool:
-        return self._state == 'done'
-
-    def inbound_buffered_bytes(self) -> int:
-        if self._state == 'done':
-            return 0
-        return len(self._header_buf)
-
-    def inbound(self, msg: ta.Any) -> ta.Sequence[ta.Any]:
-        check.state(self._state != 'done')
-
-        if isinstance(msg, ChannelPipelineMessages.FinalInput):
-            del self._header_buf
-            self._state = 'done'
-
-            return [
-                self._adapter.make_aborted('EOF before chunked encoding complete'),
-                msg,
-            ]
-
-        if not ByteStreamBuffers.can_bytes(msg):
-            return [msg]
-
-        out: ta.List[ta.Any] = []
-
-        for mv in ByteStreamBuffers.iter_segments(msg):
-            if not self._process(mv, out):
-                break
-
-        return out
-
-    def _process(self, mv: memoryview, out: ta.List[ta.Any]) -> bool:
-        if self._state == 'done':
-            out.append(mv)
-            return True
-
-        elif self._state == 'size':
-            return self._process_size(mv, out)
-
-        elif self._state == 'data':
-            return self._process_data(mv, out)
-
-        elif self._state == 'trailer':
-            return self._process_trailer(mv, out)
-
-        else:
-            raise RuntimeError(f'Invalid state: {self._state!r}')
-
-    def _process_size(self, mv: memoryview, out: ta.List[ta.Any]) -> bool:
-        rem_mv: ta.Optional[memoryview] = None
-
-        if (max_buf := self._header_buf.max_size) is not None:
-            rem_buf = max_buf - len(self._header_buf)
-
-            if len(mv) > rem_buf:
-                self._header_buf.write(mv[:rem_buf])
-                rem_mv = mv[rem_buf:]
             else:
-                self._header_buf.write(mv)
+                raise TypeError(f'unexpected message type: {type(msg)}')
 
-        # Parse chunk size line: <hex-size>\r\n
-        i = self._header_buf.find(b'\r\n')
-        if i < 0:
-            if rem_mv is not None:
-                del self._header_buf
-                self._state = 'done'
+    #
 
-                out.append(self._adapter.make_aborted('Chunk header exceeded max buffer size'))
-                return False
-
-            return True  # Need more data
-
-        size_line = self._header_buf.split_to(i + 2)
-
-        size_bytes = size_line.tobytes()[:-2]  # Strip \r\n
-        try:
-            self._chunk_remaining = int(size_bytes, 16)
-        except ValueError as e:
-            raise ValueError(f'Invalid chunk size: {size_bytes!r}') from e
-
-        if (mcs := self._config.max_content_chunk_size) is not None and self._chunk_remaining > mcs:
-            raise ValueError(f'Content chunk size {self._chunk_remaining} exceeds maximum content chunk size: {mcs}')
-
-        if self._chunk_remaining == 0:
-            # Final chunk
-            self._state = 'trailer'
-        else:
-            self._state = 'data'
-
-        if len(self._header_buf) > 0:
-            hb = self._header_buf
-            self._header_buf = self._new_header_buf()
-
-            for hb_mv in hb.segments():
-                if not self._process(hb_mv, out):
-                    return False
-
-        if rem_mv is not None:
-            if not self._process(rem_mv, out):
-                return False
-
-        return True
-
-    def _process_data(self, mv: memoryview, out: ta.List[ta.Any]) -> bool:
-        mvl = len(mv)
-        if mvl < self._chunk_remaining:
-            self._chunk_remaining -= mvl
-            out.append(self._adapter.make_content_chunk_data(mv))
-            return True
-
-        if self._chunk_remaining > 0:
-            if mvl == self._chunk_remaining:
-                out.append(self._adapter.make_content_chunk_data(mv))
-                self._chunk_remaining = 0
-                return True
-
-            out.append(self._adapter.make_content_chunk_data(mv[:self._chunk_remaining]))
-            mv = mv[self._chunk_remaining:]
-            mvl = len(mv)
-            self._chunk_remaining = 0
-
-        if mvl < 1:
-            return True
-
-        if not self._got_cr:
-            if mv[0] != 0x0d:
-                raise ValueError(f'Expected \\r\\n after chunk data, got {bytes([mv[0]])!r}')
-            self._got_cr = True
-            mv = mv[1:]
-            mvl -= 1
-            if mvl < 1:
-                return True
-
-        if mv[0] != 0x0a:
-            raise ValueError(f'Expected \\r\\n after chunk data, got {bytes([mv[0]])!r}')
-        mv = mv[1:]
-        mvl -= 1
-
-        self._got_cr = False
-        self._state = 'size'
-
-        if mvl > 0:
-            if not self._process(mv, out):
-                return False
-
-        return True
-
-    def _process_trailer(self, mv: memoryview, out: ta.List[ta.Any]) -> bool:
-        mvl = len(mv)
-        if mvl < 1:
-            return True
-
-        if not self._got_cr:
-            if mv[0] != 0x0d:
-                raise ValueError(f'Expected \\r\\n after final chunk, got {bytes([mv[0]])!r}')
-            self._got_cr = True
-            mv = mv[1:]
-            mvl -= 1
-            if mvl < 1:
-                return True
-
-        if mv[0] != 0x0a:
-            raise ValueError(f'Expected \\r\\n after final chunk, got {bytes([mv[0]])!r}')
-        mv = mv[1:]
-        mvl -= 1
-
-        del self._header_buf
-        self._got_cr = False
-        self._state = 'done'
-
-        # Emit end marker
-        out.append(self._adapter.make_end())
-
-        if mvl > 0:
-            out.append(mv)
-
-        return True
+    class _AbortedState(_State):
+        def handle(
+                self,
+                ctx: ChannelPipelineHandlerContext,
+                msg: ta.Any,
+        ) -> ta.Tuple['PipelineHttpObjectAggregator._State', ta.Sequence[ta.Any]]:
+            raise NotImplementedError
 
 
 ########################################
@@ -11373,6 +11726,8 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
     class _FeedInCommand(_Command):
         msgs: ta.Sequence[ta.Any]
 
+        fut: ta.Optional[asyncio.Future[None]] = None
+
         def __repr__(self) -> str:
             return f'{self.__class__.__name__}([{", ".join(map(repr, self.msgs))}])'
 
@@ -11380,9 +11735,25 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
         async def _inner() -> None:
             self._channel.feed_in(*cmd.msgs)  # noqa
 
-        await self._do_with_channel(_inner)
+        if (fut := cmd.fut) is None:
+            await self._do_with_channel(_inner)
+            return
+
+        try:
+            await self._do_with_channel(_inner)
+            fut.set_result(None)
+        except BaseException as e:  # noqa
+            fut.set_exception(e)
+            raise
 
     async def feed_in(self, *msgs: ta.Any) -> None:
+        check.state(not self._shutdown_event.is_set())
+
+        fut = asyncio.Future()
+        self._command_queue.put_nowait(AsyncioStreamPipelineChannelDriver._FeedInCommand(msgs, fut=fut))
+        await fut
+
+    def feed_in_nowait(self, *msgs: ta.Any) -> None:
         check.state(not self._shutdown_event.is_set())
 
         self._command_queue.put_nowait(AsyncioStreamPipelineChannelDriver._FeedInCommand(msgs))
@@ -11770,6 +12141,11 @@ class SimpleAsyncioStreamPipelineChannelDriver(AsyncioStreamPipelineChannelDrive
         command_queue_task: ta.Optional[asyncio.Task[AsyncioStreamPipelineChannelDriver._Command]] = None
 
         try:
+            if not self._shutdown_event.is_set():
+                await self._handle_command(AsyncioStreamPipelineChannelDriver._FeedInCommand([
+                    ChannelPipelineMessages.InitialInput(),
+                ]))
+
             while not self._shutdown_event.is_set():
                 if command_queue_task is None:
                     command_queue_task = asyncio.create_task(self._command_queue.get())
@@ -11806,385 +12182,47 @@ class SimpleAsyncioStreamPipelineChannelDriver(AsyncioStreamPipelineChannelDrive
 
 
 ########################################
-# ../http/client/responses.py
-
-
-##
-
-
-class ResponsePipelineHttpDecodingMessageAdapter(PipelineHttpDecodingMessageAdapter):
-    def make_head(self, parsed: ParsedHttpMessage) -> ta.Any:
-        status = check.not_none(parsed.status_line)
-
-        return PipelineHttpResponseHead(
-            version=status.http_version,
-            status=status.status_code,
-            reason=status.reason_phrase,
-            headers=HttpHeaders(parsed.headers.entries),
-            parsed=parsed,
-        )
-
-    def make_aborted(self, reason: str) -> ta.Any:
-        return PipelineHttpResponseAborted(reason)
-
-    def make_content_chunk_data(self, data: BytesLikeOrMemoryview) -> ta.Any:
-        return PipelineHttpResponseContentChunkData(data)
-
-    def make_end(self) -> ta.Any:
-        return PipelineHttpResponseEnd()
-
-
-##
-
-
-class PipelineHttpResponseHeadDecoder(InboundBytesBufferingChannelPipelineHandler):
-    def __init__(
-            self,
-            *,
-            config: PipelineHttpDecodingConfig = PipelineHttpDecodingConfig.DEFAULT,
-    ) -> None:
-        super().__init__()
-
-        self._decoder = PipelineHttpHeadDecoder(
-            ResponsePipelineHttpDecodingMessageAdapter(),
-            HttpParser.Mode.RESPONSE,
-            config=config,
-        )
-
-    def inbound_buffered_bytes(self) -> int:
-        return self._decoder.inbound_buffered_bytes()
-
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if self._decoder.done:
-            ctx.feed_in(msg)
-            return
-
-        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
-            if not ctx.services[ChannelPipelineFlow].is_auto_read():
-                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
-
-            ctx.feed_in(msg)
-            return
-
-        for dec_msg in self._decoder.inbound(msg):
-            ctx.feed_in(dec_msg)
+# ../http/decoders.py
+"""
+TODO:
+ - chunked make_chunk_header - https://datatracker.ietf.org/doc/html/rfc9112#name-chunk-extensions
+  - and make_content_chunk_data ...
+ - fix exception handling lol - do we raise ValueError?? do we return aborted??
+"""
 
 
 ##
 
 
 @dc.dataclass(frozen=True)
-class PipelineHttpCompressionDecodingConfig:
-    DEFAULT: ta.ClassVar['PipelineHttpCompressionDecodingConfig']
+class PipelineHttpDecodingConfig:
+    DEFAULT: ta.ClassVar['PipelineHttpDecodingConfig']
 
-    max_decomp_chunk: int = 64 * 1024  # max bytes emitted per inflate step
+    parser_config: ta.Optional[HttpParser.Config] = None
 
-    max_decomp_total: ta.Optional[int] = None    # max total decompressed bytes per response
-    max_expansion_ratio: ta.Optional[int] = 200  # max_out <= max(1, in_total) * ratio (+ small slack)
+    @dc.dataclass(frozen=True)
+    class BufferConfig:
+        max_size: ta.Optional[int]
+        chunk_size: int
 
-    max_out_pending: ta.Optional[int] = 256 * 1024  # cap decompressed bytes retained by this stage (if you buffer)
+    head_buffer: BufferConfig = BufferConfig(max_size=4 * 1024, chunk_size=4 * 1024)
 
-    # CPU Bounding: how many decompress steps to perform before yielding to the driver
-    max_steps_per_call: ta.Optional[int] = 10
+    max_content_chunk_size: ta.Optional[int] = None
+    content_chunk_header_buffer: BufferConfig = BufferConfig(max_size=1024, chunk_size=1024)
 
 
-PipelineHttpCompressionDecodingConfig.DEFAULT = PipelineHttpCompressionDecodingConfig()
+PipelineHttpDecodingConfig.DEFAULT = PipelineHttpDecodingConfig()
 
 
 #
 
 
-class PipelineHttpResponseConditionalGzipDecoder(InboundBytesBufferingChannelPipelineHandler):
-    """
-    Conditional streaming gzip decompression with CPU-bounding and flow control.
-    """
-
-    def __init__(
-            self,
-            *,
-            config: PipelineHttpCompressionDecodingConfig = PipelineHttpCompressionDecodingConfig.DEFAULT,
-    ) -> None:
-        super().__init__()
-
-        self._config = config
-
-        self._enabled = False
-        self._decompressor: ta.Optional[PipelineHttpResponseConditionalGzipDecoder.Decompressor] = None
-
-        # Statistics for budget checks
-        self._in_total_bytes = 0
-        self._out_total_bytes = 0
-
-        # Internal buffering
-        self._in_pending: collections.deque[BytesLikeOrMemoryview] = collections.deque()
-        self._in_pending_bytes = 0
-        self._out_pending: collections.deque[BytesLikeOrMemoryview] = collections.deque()
-        self._out_pending_bytes = 0
-
-        # Flow Control and Deferral State
-        self._read_requested = False
-        self._pending_final_input: ta.Optional[ChannelPipelineMessages.FinalInput] = None
-
-    #
-
-    def inbound_buffered_bytes(self) -> int:
-        return self._in_pending_bytes + self._out_pending_bytes
-
-    #
-
-    class Decompressor:
-        @abc.abstractmethod
-        def decompress(
-                self,
-                data: BytesLikeOrMemoryview,
-                max_bytes: ta.Optional[int] = None,
-                /,
-        ) -> ta.Optional[BytesLikeOrMemoryview]:
-            raise NotImplementedError
-
-        @abc.abstractmethod
-        def unconsumed_tail(self) -> ta.Optional[BytesLikeOrMemoryview]:
-            raise NotImplementedError
-
-        @abc.abstractmethod
-        def flush(self) -> ta.Optional[BytesLikeOrMemoryview]:
-            raise NotImplementedError
-
-    #
-
-    class ZlibDecompressor(Decompressor):
-        def __init__(self, wbits: int = 16 + zlib.MAX_WBITS) -> None:
-            self._z = zlib.decompressobj(wbits)
-
-        def decompress(
-                self,
-                data: BytesLikeOrMemoryview,
-                max_bytes: ta.Optional[int] = None,
-                /,
-        ) -> ta.Optional[BytesLikeOrMemoryview]:
-            return self._z.decompress(data, max_bytes or 0)
-
-        def unconsumed_tail(self) -> ta.Optional[BytesLikeOrMemoryview]:
-            return self._z.unconsumed_tail
-
-        def flush(self) -> ta.Optional[BytesLikeOrMemoryview]:
-            return self._z.flush()
-
-    #
-
-    def _reset(self) -> None:
-        self._in_total_bytes = 0
-        self._out_total_bytes = 0
-
-        self._in_pending.clear()
-        self._in_pending_bytes = 0
-        self._out_pending.clear()
-        self._out_pending_bytes = 0
-
-        self._pending_final_input = None
-
-    def _check_budgets(self) -> None:
-        if (mdt := self._config.max_decomp_total) is not None and self._out_total_bytes > mdt:
-            raise ValueError('gzip output exceeds limit (possible zip bomb)')
-
-        if (mer := self._config.max_expansion_ratio) is not None:
-            slack = self._config.max_decomp_chunk
-            if self._out_total_bytes > (max(1, self._in_total_bytes) * mer + slack):
-                raise ValueError('gzip expansion ratio exceeds limit (possible zip bomb)')
-
-    def _is_auto_read(self, ctx: ChannelPipelineHandlerContext) -> bool:
-        if (flow := ctx.services.find(ChannelPipelineFlow)) is None:
-            return True
-        return flow.is_auto_read()
-
-    def _emit_out_pending(self, ctx: ChannelPipelineHandlerContext) -> bool:
-        """Returns True if at least one message was emitted."""
-
-        emitted = False
-
-        while self._out_pending and (self._is_auto_read(ctx) or self._read_requested):
-            o = self._out_pending.popleft()
-            self._out_pending_bytes -= len(o)
-
-            if not self._is_auto_read(ctx):
-                self._read_requested = False
-
-            ctx.feed_in(o)
-            emitted = True
-
-            # In manual mode, we satisfy one 'read' at a time.
-            if not self._is_auto_read(ctx):
-                break
-
-        return emitted
-
-    def _pump(self, ctx: ChannelPipelineHandlerContext) -> bool:
-        """Returns True if it effectively satisfied a read request."""
-
-        z = self._decompressor
-        if z is None:
-            return False
-
-        steps = 0
-        max_steps = self._config.max_steps_per_call
-
-        # 1. Try to clear existing output.
-        if self._emit_out_pending(ctx):
-            if not self._is_auto_read(ctx):
-                return True
-
-        # 2. If blocked by downstream, we can't satisfy anything.
-        if self._out_pending:
-            return False
-
-        # 3. Decompression Loop
-        while self._in_pending:
-            # Enforce output buffer budget
-            if (mop := self._config.max_out_pending) is not None:
-                if self._out_pending_bytes >= mop:
-                    break
-
-            # Check for CPU step limit
-            if max_steps is not None and steps >= max_steps:
-                self._defer_resume(ctx)
-                return False  # We haven't satisfied it yet, we deferred.
-
-            steps += 1
-            chunk = self._in_pending.popleft()
-            cl = len(chunk)
-            self._in_pending_bytes -= cl
-
-            out = z.decompress(chunk, self._config.max_decomp_chunk)
-            if out:
-                ol = len(out)
-                self._out_total_bytes += ol
-                self._out_pending.append(out)
-                self._out_pending_bytes += ol
-                self._check_budgets()
-
-                if self._emit_out_pending(ctx):
-                    if not self._is_auto_read(ctx):
-                        return True  # Satisfied!
-
-            ut = z.unconsumed_tail()
-            if ut:
-                self._in_pending.appendleft(ut)
-                self._in_pending_bytes += len(ut)
-                if not out:
-                    break
-
-        # 4. Handle EOF
-        if not self._in_pending and self._pending_final_input:
-            if max_steps is not None and steps >= max_steps:
-                self._defer_resume(ctx)
-                return False
-
-            out = z.flush()
-            if out:
-                ol = len(out)
-                self._out_total_bytes += ol
-                self._out_pending.append(out)
-                self._out_pending_bytes += ol
-                self._check_budgets()
-                self._emit_out_pending(ctx)
-
-            msg = self._pending_final_input
-            self._pending_final_input = None
-            self._read_requested = False
-            ctx.feed_in(msg)
-            return True  # FinalInput counts as satisfying the last read
-
-        return False
-
-    def _defer_resume(self, ctx: ChannelPipelineHandlerContext) -> None:
-        pin = [self._pending_final_input] if self._pending_final_input else None
-
-        def resume(c: ChannelPipelineHandlerContext) -> None:
-            # If a deferred pump satisfies a read, it must provide the FlushInput
-            if self._pump(c) and not self._is_auto_read(c):
-                c.feed_in(ChannelPipelineFlowMessages.FlushInput())
-
-        ctx.defer(resume, pin=pin)
-
-    #
-
-    def _on_inbound_final_input(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineMessages.FinalInput) -> None:  # noqa
-        if self._enabled and self._decompressor is not None:
-            self._pending_final_input = msg
-            self._pump(ctx)
-        else:
-            ctx.feed_in(msg)
-
-    def _on_inbound_flush_input(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineFlowMessages.FlushInput) -> None:  # noqa
-        self._pump(ctx)
-        ctx.feed_in(msg)
-
-    def _on_inbound_http_response_head(self, ctx: ChannelPipelineHandlerContext, msg: PipelineHttpResponseHead) -> None:  # noqa
-        enc = msg.headers.lower.get('content-encoding', ())
-        self._enabled = 'gzip' in enc
-        self._decompressor = self.ZlibDecompressor() if self._enabled else None
-        self._reset()
-        ctx.feed_in(msg)
-
-    def _on_inbound_bytes(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if not self._enabled or self._decompressor is None:
-            ctx.feed_in(msg)
-            return
-
-        for mv in ByteStreamBuffers.iter_segments(msg):
-            mvl = len(mv)
-            self._in_total_bytes += mvl
-            self._in_pending.append(mv)
-            self._in_pending_bytes += mvl
-            self._check_budgets()
-
-        self._pump(ctx)
-
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineMessages.FinalInput):
-            self._on_inbound_final_input(ctx, msg)
-            return
-
-        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
-            self._on_inbound_flush_input(ctx, msg)
-            return
-
-        if isinstance(msg, PipelineHttpResponseHead):
-            self._on_inbound_http_response_head(ctx, msg)
-            return
-
-        if ByteStreamBuffers.can_bytes(msg):
-            self._on_inbound_bytes(ctx, msg)
-            return
-
-        ctx.feed_in(msg)
-
-    #
-
-    def _on_outbound_ready_for_input(self, ctx: ChannelPipelineHandlerContext, msg: ChannelPipelineFlowMessages.ReadyForInput) -> None:  # Noqa
-        self._read_requested = True
-
-        if self._out_pending or (self._enabled and self._in_pending):
-            if self._pump(ctx):
-                if not self._is_auto_read(ctx):
-                    ctx.feed_in(ChannelPipelineFlowMessages.FlushInput())
-
-                return  # Swallow since we satisfied it
-
-        ctx.feed_out(msg)
-
-    def outbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineFlowMessages.ReadyForInput):
-            self._on_outbound_ready_for_input(ctx, msg)
-            return
-
-        ctx.feed_out(msg)
-
-
-##
-
-
-class PipelineHttpResponseChunkedDecoder(InboundBytesBufferingChannelPipelineHandler):
+class PipelineHttpObjectDecoder(
+    PipelineHttpMessageObjects,
+    InboundBytesBufferingChannelPipelineHandler,
+    BytesToMessageDecoderChannelPipelineHandler,
+    Abstract,
+):
     def __init__(
             self,
             *,
@@ -12194,42 +12232,610 @@ class PipelineHttpResponseChunkedDecoder(InboundBytesBufferingChannelPipelineHan
 
         self._config = config
 
-        self._decoder: ta.Optional[ChunkedPipelineHttpContentChunkDecoder] = None
+        self._state: PipelineHttpObjectDecoder._State = self._HeadState(self)
 
-    def inbound_buffered_bytes(self) -> ta.Optional[int]:
-        if (dec := self._decoder) is None:
+    #
+
+    def inbound_buffered_bytes(self) -> int:
+        if (buf := self._state.buf) is None:
             return 0
-        return dec.inbound_buffered_bytes()
+        return len(buf)
 
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, PipelineHttpResponseHead):
-            check.none(self._decoder)
+    #
 
-            if msg.headers.contains_value('transfer-encoding', 'chunked', ignore_case=True):
-                self._decoder = ChunkedPipelineHttpContentChunkDecoder(
-                    ResponsePipelineHttpDecodingMessageAdapter(),
-                    config=self._config,
+    @property
+    @abc.abstractmethod
+    def _parse_mode(self) -> HttpParser.Mode:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def _if_content_length_missing(self) -> ta.Literal['none', 'eof']:
+        raise NotImplementedError
+
+    #
+
+    def _decode(
+            self,
+            ctx: ChannelPipelineHandlerContext,
+            data: CanByteStreamBuffer,
+            out: ta.List[ta.Any],
+            *,
+            final: bool = False,
+    ) -> None:
+        while True:
+            if (ret := self._state.decode(ctx, data, out, final=final)) is None:
+                return
+
+            self._state, next_data = ret
+
+            if next_data is None:
+                return
+
+            data = next_data
+
+    #
+
+    class _State(Abstract):
+        def __init__(self, d: 'PipelineHttpObjectDecoder') -> None:
+            super().__init__()
+
+            self._d = d
+
+        @property
+        def buf(self) -> ta.Optional[MutableByteStreamBuffer]:
+            return None
+
+        def _abort(
+                self,
+                out: ta.List[ta.Any],
+                reason: ta.Union[str, BaseException],
+                data: ta.Optional[CanByteStreamBuffer] = None,
+        ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+            out.append(self._d._make_aborted(reason))  # noqa
+            return (self._d._AbortedState(self._d), data)  # noqa
+
+        @abc.abstractmethod
+        def decode(
+                self,
+                ctx: ChannelPipelineHandlerContext,
+                data: CanByteStreamBuffer,
+                out: ta.List[ta.Any],
+                *,
+                final: bool = False,
+        ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+            raise NotImplementedError
+
+    #
+
+    class _HeadState(_State):
+        _buf: ta.Optional[MutableByteStreamBuffer] = None
+
+        @property
+        def buf(self) -> ta.Optional[MutableByteStreamBuffer]:
+            return self._buf
+
+        def decode(
+                self,
+                ctx: ChannelPipelineHandlerContext,
+                data: CanByteStreamBuffer,
+                out: ta.List[ta.Any],
+                *,
+                final: bool = False,
+        ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+            if final:
+                return self._abort(out, 'EOF before HTTP head complete')
+
+            done = False
+            next_mvs: ta.List[memoryview]
+
+            for mv in ByteStreamBuffers.iter_segments(data):
+                if done:
+                    next_mvs.append(mv)  # noqa
+                    continue
+
+                if (buf := self._buf) is None:
+                    buf = self._buf = ScanningByteStreamBuffer(SegmentedByteStreamBuffer(
+                        max_size=self._d._config.head_buffer.max_size,  # noqa
+                        chunk_size=self._d._config.head_buffer.chunk_size,  # noqa
+                    ))
+
+                rem_mv: ta.Optional[memoryview] = None
+
+                if (max_buf := buf.max_size) is not None:
+                    rem_buf = max_buf - len(buf)
+
+                    if len(mv) > rem_buf:
+                        buf.write(mv[:rem_buf])
+                        rem_mv = mv[rem_buf:]
+                    else:
+                        buf.write(mv)
+
+                # Look for end of head
+                i = buf.find(b'\r\n\r\n')
+                if i < 0:
+                    if rem_mv is not None:
+                        return self._abort(out, 'Head exceeded max buffer size')
+
+                    continue
+
+                # Extract head
+                head_view = buf.split_to(i + 4)
+
+                # Parse and emit head
+                raw = head_view.tobytes()
+                parsed = parse_http_message(
+                    raw,
+                    mode=self._d._parse_mode,  # noqa
+                    config=self._d._config.parser_config,  # noqa
                 )
 
-            ctx.feed_in(msg)
-            return
+                head = self._d._make_head(parsed)  # noqa
+                out.append(head)
 
-        if (dec := self._decoder) is None:
-            ctx.feed_in(msg)
-            return
+                done = True
+                next_mvs = []
 
-        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
-            if not ctx.services[ChannelPipelineFlow].is_auto_read():
-                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
+                # Forward any remainder bytes (body bytes)
+                if len(buf):
+                    rem_view = buf.split_to(len(buf))
+                    next_mvs.extend(rem_view.segments())
 
-            ctx.feed_in(msg)
-            return
+                if rem_mv is not None:
+                    next_mvs.append(rem_mv)
 
-        for dec_msg in dec.inbound(msg):
-            ctx.feed_in(dec_msg)
+            if done:
+                return (
+                    self._d._TransferEncodingState(self._d, head),  # noqa
+                    SegmentedByteStreamBufferView.or_else(next_mvs, b''),
+                )
+            else:
+                return None
 
-        if dec.done:
-            self._decoder = None
+    #
+
+    class _TransferEncodingState(_State):
+        def __init__(self, d: 'PipelineHttpObjectDecoder', head: PipelineHttpMessageHead) -> None:
+            super().__init__(d)
+
+            self._head = head
+
+        def decode(
+                self,
+                ctx: ChannelPipelineHandlerContext,
+                data: CanByteStreamBuffer,
+                out: ta.List[ta.Any],
+                *,
+                final: bool = False,
+        ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+            try:
+                te = PipelineHttpTransferEncoding.select(
+                    self._head.headers,
+                    if_length_missing=self._d._if_content_length_missing,  # noqa
+                )
+            except PipelineHttpTransferEncodingError as e:
+                return self._abort(out, f'Invalid Transfer-Encoding: {e.reason}')
+
+            if te.mode == 'none':
+                out.append(self._d._make_end())  # noqa
+                return (self._d._DoneState(self._d, self._head), data)  # noqa
+
+            elif te.mode == 'eof':
+                return (self._d._UntilEofContentState(self._d, self._head), data)  # noqa
+
+            elif te.mode == 'cl':
+                return (self._d._ContentLengthContentState(self._d, self._head, check.not_none(te.length)), data)  # noqa
+
+            elif te.mode == 'chunked':
+                return (self._d._HeaderChunkedContentState(self._d, self._head), data)  # noqa
+
+            else:
+                raise RuntimeError(f'unexpected mode {te!r}')
+
+    #
+
+    class _ContentState(_State, Abstract):
+        def __init__(
+                self,
+                d: 'PipelineHttpObjectDecoder',
+                head: PipelineHttpMessageHead,
+        ) -> None:
+            super().__init__(d)
+
+            self._head = head
+
+    #
+
+    class _UntilEofContentState(_ContentState):
+        def decode(
+                self,
+                ctx: ChannelPipelineHandlerContext,
+                data: CanByteStreamBuffer,
+                out: ta.List[ta.Any],
+                *,
+                final: bool = False,
+        ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+            for mv in ByteStreamBuffers.iter_segments(data):
+                if len(data):
+                    out.append(self._d._make_content_chunk_data(mv))  # noqa
+
+            if final:
+                out.append(self._d._make_end())  # noqa
+                return (self._d._DoneState(self._d, self._head), b'')  # noqa
+            else:
+                return None
+
+    #
+
+    class _ContentLengthContentState(_ContentState):
+        def __init__(
+                self,
+                d: 'PipelineHttpObjectDecoder',
+                head: PipelineHttpMessageHead,
+                content_length: int,
+        ) -> None:
+            check.arg(content_length > 0)
+
+            super().__init__(d, head)
+
+            self._remaining = content_length
+
+        def decode(
+                self,
+                ctx: ChannelPipelineHandlerContext,
+                data: CanByteStreamBuffer,
+                out: ta.List[ta.Any],
+                *,
+                final: bool = False,
+        ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+            next_mvs: ta.List[memoryview]
+
+            for mv in ByteStreamBuffers.iter_segments(data):
+                mvl = len(mv)
+                if not mvl:
+                    continue
+
+                if self._remaining < 1:
+                    next_mvs.append(mv)  # noqa
+                    continue
+
+                if self._remaining > mvl:
+                    out.append(self._d._make_content_chunk_data(mv))  # noqa
+                    self._remaining -= mvl
+
+                elif self._remaining == mvl:
+                    out.append(self._d._make_content_chunk_data(mv))  # noqa
+                    out.append(self._d._make_end())  # noqa
+                    self._remaining = 0
+                    next_mvs = []
+
+                else:
+                    out.append(self._d._make_content_chunk_data(mv[:self._remaining]))  # noqa
+                    out.append(self._d._make_end())  # noqa
+                    ofs = self._remaining
+                    self._remaining = 0
+                    next_mvs = [mv[ofs:]]
+
+            if final and self._remaining > 0:
+                return self._abort(out, 'EOF before HTTP body complete')
+            elif self._remaining == 0:
+                return (
+                    self._d._DoneState(self._d, self._head),  # noqa
+                    SegmentedByteStreamBufferView.or_else(next_mvs, b''),
+                )
+            else:
+                return None
+
+    #
+
+    class _ChunkedContentState(_ContentState, Abstract):
+        pass
+
+    #
+
+    class _HeaderChunkedContentState(_ChunkedContentState):
+        _buf: ta.Optional[MutableByteStreamBuffer] = None
+
+        @property
+        def buf(self) -> ta.Optional[MutableByteStreamBuffer]:
+            return self._buf
+
+        def decode(
+                self,
+                ctx: ChannelPipelineHandlerContext,
+                data: CanByteStreamBuffer,
+                out: ta.List[ta.Any],
+                *,
+                final: bool = False,
+        ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+            chunk_size: ta.Optional[int] = None
+            next_mvs: ta.List[memoryview]
+
+            for mv in ByteStreamBuffers.iter_segments(data):
+                if chunk_size is not None:
+                    next_mvs.append(mv)  # noqa
+                    continue
+
+                if (buf := self._buf) is None:
+                    buf = self._buf = ScanningByteStreamBuffer(SegmentedByteStreamBuffer(
+                        max_size=self._d._config.content_chunk_header_buffer.max_size,  # noqa
+                        chunk_size=self._d._config.content_chunk_header_buffer.chunk_size,  # noqa
+                    ))
+
+                rem_mv: ta.Optional[memoryview] = None
+
+                if (max_buf := buf.max_size) is not None:
+                    rem_buf = max_buf - len(buf)
+
+                    if len(mv) > rem_buf:
+                        buf.write(mv[:rem_buf])
+                        rem_mv = mv[rem_buf:]
+                    else:
+                        buf.write(mv)
+
+                # Parse chunk size line: <hex-size>\r\n
+                i = buf.find(b'\r\n')
+                if i < 0:
+                    if rem_mv is not None:
+                        return self._abort(out, 'Chunk header exceeded max buffer size')
+
+                    continue
+
+                size_line = buf.split_to(i + 2)
+
+                size_bytes = size_line.tobytes()[:-2]  # Strip \r\n
+                try:
+                    chunk_size = int(size_bytes, 16)
+                except ValueError:
+                    return self._abort(out, f'Invalid chunk size: {size_bytes!r}')
+
+                if (mcs := self._d._config.max_content_chunk_size) is not None and chunk_size > mcs:  # noqa
+                    return self._abort(out, f'Content chunk size {chunk_size} exceeds maximum content chunk size: {mcs}')  # noqa
+
+                next_mvs = []
+
+                if len(buf) > 0:
+                    next_mvs.extend(buf.segments())
+
+                self._buf = None
+
+                if rem_mv is not None:
+                    next_mvs.append(rem_mv)
+
+            if chunk_size is not None:
+                if chunk_size == 0:
+                    return (
+                        self._d._TrailerChunkedContentState(self._d, self._head),  # noqa
+                        SegmentedByteStreamBufferView.or_else(next_mvs, b''),
+                    )
+                else:
+                    return (
+                        self._d._DataChunkedContentState(self._d, self._head, chunk_size),  # noqa
+                        SegmentedByteStreamBufferView.or_else(next_mvs, b''),
+                    )
+            elif final:
+                return self._abort(out, 'EOF before HTTP chunk header complete')
+            else:
+                return None
+
+    #
+
+    class _DataChunkedContentState(_ChunkedContentState):
+        def __init__(
+                self,
+                d: 'PipelineHttpObjectDecoder',
+                head: PipelineHttpMessageHead,
+                chunk_size: int,
+        ) -> None:
+            check.arg(chunk_size > 0)
+
+            super().__init__(d, head)
+
+            self._remaining = chunk_size
+
+        _got_cr = False
+
+        def decode(
+                self,
+                ctx: ChannelPipelineHandlerContext,
+                data: CanByteStreamBuffer,
+                out: ta.List[ta.Any],
+                *,
+                final: bool = False,
+        ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+            next_mvs: ta.Optional[ta.List[memoryview]] = None
+
+            for mv in ByteStreamBuffers.iter_segments(data):
+                if next_mvs is not None:
+                    next_mvs.append(mv)
+                    continue
+
+                mvl = len(mv)
+                if mvl < 1:
+                    continue
+
+                if mvl < self._remaining:
+                    self._remaining -= mvl
+                    out.append(self._d._make_content_chunk_data(mv))  # noqa
+                    continue
+
+                if self._remaining > 0:
+                    if mvl == self._remaining:
+                        out.append(self._d._make_content_chunk_data(mv))  # noqa
+                        self._remaining = 0
+                        continue
+
+                    out.append(self._d._make_content_chunk_data(mv[:self._remaining]))  # noqa
+                    mv = mv[self._remaining:]
+                    mvl = len(mv)
+                    self._remaining = 0
+
+                if mvl < 1:
+                    continue
+
+                if not self._got_cr:
+                    if mv[0] != 0x0d:
+                        return self._abort(out, f'Expected \\r\\n after chunk data, got {bytes([mv[0]])!r}')
+                    self._got_cr = True
+                    mv = mv[1:]
+                    mvl -= 1
+                    if mvl < 1:
+                        continue
+
+                if mv[0] != 0x0a:
+                    return self._abort(out, f'Expected \\r\\n after chunk data, got {bytes([mv[0]])!r}')
+                mv = mv[1:]
+                mvl -= 1
+
+                next_mvs = []
+
+                if mvl > 0:
+                    next_mvs.append(mv)
+
+            if next_mvs is not None:
+                return (
+                    self._d._HeaderChunkedContentState(self._d, self._head),  # noqa
+                    SegmentedByteStreamBufferView.or_else(next_mvs, b''),
+                )
+            elif final:
+                return self._abort(out, 'EOF before HTTP chunk complete')
+            else:
+                return None
+
+    #
+
+    class _TrailerChunkedContentState(_ChunkedContentState):
+        _got_cr = False
+
+        def decode(
+                self,
+                ctx: ChannelPipelineHandlerContext,
+                data: CanByteStreamBuffer,
+                out: ta.List[ta.Any],
+                *,
+                final: bool = False,
+        ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+            next_mvs: ta.Optional[ta.List[memoryview]] = None
+
+            for mv in ByteStreamBuffers.iter_segments(data):
+                if next_mvs is not None:
+                    next_mvs.append(mv)
+                    continue
+
+                mvl = len(mv)
+                if mvl < 1:
+                    continue
+
+                if not self._got_cr:
+                    if mv[0] != 0x0d:
+                        return self._abort(out, f'Expected \\r\\n after final chunk, got {bytes([mv[0]])!r}')
+                    self._got_cr = True
+                    mv = mv[1:]
+                    mvl -= 1
+                    if mvl < 1:
+                        continue
+
+                if mv[0] != 0x0a:
+                    return self._abort(out, f'Expected \\r\\n after final chunk, got {bytes([mv[0]])!r}')
+                mv = mv[1:]
+                mvl -= 1
+
+                # Emit end marker
+                out.append(self._d._make_end())  # noqa
+
+                next_mvs = []
+
+                if mvl > 0:
+                    next_mvs.append(mv)
+
+            if next_mvs is not None:
+                return (
+                    self._d._DoneState(self._d, self._head),  # noqa
+                    SegmentedByteStreamBufferView.of_opt(next_mvs),
+                )
+            elif final:
+                return self._abort(out, 'EOF before HTTP trailer complete')
+            else:
+                return None
+
+    #
+
+    class _DoneState(_State):
+        def __init__(
+                self,
+                d: 'PipelineHttpObjectDecoder',
+                head: ta.Optional[PipelineHttpMessageHead] = None,
+        ) -> None:
+            super().__init__(d)
+
+            self._head = head
+
+        def decode(
+                self,
+                ctx: ChannelPipelineHandlerContext,
+                data: CanByteStreamBuffer,
+                out: ta.List[ta.Any],
+                *,
+                final: bool = False,
+        ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+            if not len(data):
+                return
+
+            raise NotImplementedError
+
+    #
+
+    class _AbortedState(_State):
+        def decode(
+                self,
+                ctx: ChannelPipelineHandlerContext,
+                data: CanByteStreamBuffer,
+                out: ta.List[ta.Any],
+                *,
+                final: bool = False,
+        ) -> ta.Optional[ta.Tuple['PipelineHttpObjectDecoder._State', ta.Optional[CanByteStreamBuffer]]]:
+            raise NotImplementedError
+
+
+########################################
+# ../http/client/responses.py
+
+
+##
+
+
+class PipelineHttpResponseDecoder(PipelineHttpResponseObjects, PipelineHttpObjectDecoder):
+    _parse_mode: ta.Final[HttpParser.Mode] = HttpParser.Mode.RESPONSE
+    _if_content_length_missing: ta.Final[ta.Literal['eof']] = 'eof'
+
+
+##
+
+
+class PipelineHttpResponseAggregatorDecoder(
+    PipelineHttpResponseObjects,
+    InboundBytesBufferingChannelPipelineHandler,
+    PipelineHttpObjectAggregator,
+):
+    _if_content_length_missing: ta.Final[ta.Literal['eof']] = 'eof'
+    _final_type: ta.Final[type] = ChannelPipelineMessages.FinalInput
+
+    #
+
+    def inbound_buffered_bytes(self) -> int:
+        return self.buffered_bytes()
+
+    #
+
+    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
+        self._handle(ctx, msg, ctx.feed_in)
+
+
+##
+
+
+class PipelineHttpResponseDecompressor(PipelineHttpResponseObjects, PipelineHttpObjectDecompressor):
+    pass
 
 
 ########################################
@@ -12239,289 +12845,38 @@ class PipelineHttpResponseChunkedDecoder(InboundBytesBufferingChannelPipelineHan
 ##
 
 
-class RequestPipelineHttpDecodingMessageAdapter(PipelineHttpDecodingMessageAdapter):
-    def make_head(self, parsed: ParsedHttpMessage) -> ta.Any:
-        request = check.not_none(parsed.request_line)
-
-        return PipelineHttpRequestHead(
-            method=request.method,
-            target=check.not_none(request.request_target).decode('utf-8'),
-            version=request.http_version,
-            headers=HttpHeaders(parsed.headers.entries),
-            parsed=parsed,
-        )
-
-    def make_aborted(self, reason: str) -> ta.Any:
-        return PipelineHttpRequestAborted(reason)
-
-    def make_content_chunk_data(self, data: BytesLikeOrMemoryview) -> ta.Any:
-        return PipelineHttpRequestContentChunkData(data)
-
-    def make_end(self) -> ta.Any:
-        return PipelineHttpRequestEnd()
+class PipelineHttpRequestDecoder(PipelineHttpRequestObjects, PipelineHttpObjectDecoder):
+    _parse_mode: ta.Final[HttpParser.Mode] = HttpParser.Mode.REQUEST
+    _if_content_length_missing: ta.Final[ta.Literal['none']] = 'none'
 
 
 ##
 
 
-class PipelineHttpRequestHeadDecoder(InboundBytesBufferingChannelPipelineHandler):
-    def __init__(
-            self,
-            *,
-            config: PipelineHttpDecodingConfig = PipelineHttpDecodingConfig.DEFAULT,
-    ) -> None:
-        super().__init__()
+class PipelineHttpRequestAggregatorDecoder(
+    PipelineHttpRequestObjects,
+    InboundBytesBufferingChannelPipelineHandler,
+    PipelineHttpObjectAggregator,
+):
+    _if_content_length_missing: ta.Final[ta.Literal['none']] = 'none'
+    _final_type: ta.Final[type] = ChannelPipelineMessages.FinalInput
 
-        self._decoder = PipelineHttpHeadDecoder(
-            RequestPipelineHttpDecodingMessageAdapter(),
-            HttpParser.Mode.REQUEST,
-            config=config,
-        )
+    #
 
     def inbound_buffered_bytes(self) -> int:
-        return self._decoder.inbound_buffered_bytes()
+        return self.buffered_bytes()
+
+    #
 
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if self._decoder.done:
-            ctx.feed_in(msg)
-            return
-
-        if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
-            if not ctx.services[ChannelPipelineFlow].is_auto_read():
-                ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
-
-            ctx.feed_in(msg)
-            return
-
-        for dec_msg in self._decoder.inbound(msg):
-            ctx.feed_in(dec_msg)
+        self._handle(ctx, msg, ctx.feed_in)
 
 
 ##
 
 
-class PipelineHttpRequestBodyAggregator(InboundBytesBufferingChannelPipelineHandler):
-    """
-    Aggregates an HTTP/1 request body using Content-Length.
-
-    Input:
-      - DecodedHttpRequestHead (from HttpRequestDecoder)
-      - subsequent bytes-like chunks / views (body bytes)
-
-    Output:
-      - FullPipelineHttpRequest(head, body)
-
-    Notes:
-      - This is intentionally minimal:
-        - Only supports Content-Length
-        - No chunked transfer decoding
-        - Assumes one request per connection in our server examples (we close after response)
-      - Body bytes may arrive in the same TCP read as the head; HttpRequestDecoder forwards any remainder.
-
-    TODO:
-      - Use ContentLengthPipelineHttpContentChunkDecoder
-    """
-
-    def __init__(
-            self,
-            *,
-            config: PipelineHttpDecodingConfig = PipelineHttpDecodingConfig.DEFAULT,
-    ) -> None:
-        super().__init__()
-
-        self._cur_head: ta.Optional[PipelineHttpRequestHead] = None
-        self._want = 0
-        self._buf = SegmentedByteStreamBuffer(
-            max_size=config.aggregated_body_buffer.max_size,
-            chunk_size=config.aggregated_body_buffer.chunk_size,
-        )
-
-    def inbound_buffered_bytes(self) -> int:
-        return len(self._buf)
-
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if isinstance(msg, ChannelPipelineMessages.FinalInput):
-            # If we were expecting body bytes, that's a protocol error.
-            if self._cur_head is not None and self._want and len(self._buf) < self._want:
-                ctx.feed_in(PipelineHttpRequestAborted('EOF before HTTP request body complete'))
-
-                self._cur_head = None
-                self._want = 0
-                self._buf.split_to(len(self._buf))
-
-            ctx.feed_in(msg)
-            return
-
-        if isinstance(msg, PipelineHttpRequestHead):
-            if self._cur_head is not None:
-                # We don't support pipelining in this minimal server.
-                raise ValueError('HTTP pipelining not supported')
-
-            self._cur_head = msg
-
-            cl = msg.headers.single.get('content-length')
-            if cl is None or cl == '':
-                self._want = 0
-
-            else:
-                try:
-                    self._want = int(cl)
-                except ValueError:
-                    raise ValueError('bad Content-Length') from None
-
-                if self._want < 0:
-                    raise ValueError('bad Content-Length')
-
-                if (max_body := self._buf.max_size) is not None and self._want > max_body:
-                    raise FrameTooLargeByteStreamBufferError('request body exceeded max_body')
-
-            if self._want == 0:
-                req = FullPipelineHttpRequest(msg, b'')
-                self._cur_head = None
-                self._want = 0
-                ctx.feed_in(req)
-
-            return
-
-        if not ByteStreamBuffers.can_bytes(msg):
-            ctx.feed_in(msg)
-            return
-
-        # Body bytes
-        if self._cur_head is None:
-            # Ignore stray bytes (or treat as error). Minimal server: ignore.
-            return
-
-        for mv in ByteStreamBuffers.iter_segments(msg):
-            if mv:
-                self._buf.write(mv)
-
-        # If still not enough, just wait.
-        if len(self._buf) < self._want:
-            return
-
-        # Extract exactly want bytes; preserve any extra (we don't support pipelining, but be correct).
-        body_view = self._buf.split_to(self._want)
-        body = body_view.tobytes()
-
-        head = self._cur_head
-        self._cur_head = None
-        self._want = 0
-
-        req = FullPipelineHttpRequest(head, body)
-        ctx.feed_in(req)
-
-        # If leftover bytes exist, treat as protocol error in our minimal server model.
-        if len(self._buf):
-            raise ValueError('unexpected extra bytes after request body')
-
-
-##
-
-
-class PipelineHttpRequestBodyStreamDecoder(InboundBytesBufferingChannelPipelineHandler):
-    """
-    Turns (PipelineHttpRequestHead + subsequent bytes) into streaming PipelineHttpContentChunk events +
-    PipelineHttpRequestEnd.
-
-    Supported body modes:
-      - Content-Length: reads exactly that many bytes
-      - Transfer-Encoding: chunked: decodes RFC 7230 chunked encoding (minimal, trailers ignored beyond terminator)
-      - Neither present: treats body as "until EOF" (useful for infinite streaming uploads)
-    """
-
-    def __init__(
-            self,
-            *,
-            config: PipelineHttpDecodingConfig = PipelineHttpDecodingConfig.DEFAULT,
-    ) -> None:
-        super().__init__()
-
-        self._config = config
-
-        self._decoder: ta.Optional[PipelineHttpContentChunkDecoder] = None
-
-    def inbound_buffered_bytes(self) -> int:
-        if (dec := self._decoder) is None:
-            return 0
-        return dec.inbound_buffered_bytes()
-
-    class _SelectedMode(ta.NamedTuple):
-        mode: ta.Literal['none', 'eof', 'cl', 'chunked']
-        length: ta.Optional[int]
-
-    def _select_mode(self, head: PipelineHttpRequestHead) -> _SelectedMode:
-        if head.headers.contains_value('transfer-encoding', 'chunked', ignore_case=True):
-            return self._SelectedMode('chunked', None)
-
-        cl = head.headers.single.get('content-length')
-        if cl is not None and cl != '':
-            try:
-                n = int(cl)
-            except ValueError:
-                raise ValueError('bad Content-Length') from None
-
-            if n < 0:
-                raise ValueError('bad Content-Length')
-
-            if n == 0:
-                return self._SelectedMode('none', None)
-
-            return self._SelectedMode('cl', n)
-
-        # No length info: treat as until EOF (supports infinite streaming).
-        return self._SelectedMode('eof', None)
-
-    def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
-        if self._decoder is not None:
-            if self._decoder.done:
-                ctx.feed_in(msg)
-                return
-
-            if isinstance(msg, ChannelPipelineFlowMessages.FlushInput):
-                if not ctx.services[ChannelPipelineFlow].is_auto_read():
-                    ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
-
-                ctx.feed_in(msg)
-                return
-
-            for dec_msg in self._decoder.inbound(msg):
-                ctx.feed_in(dec_msg)
-
-            return
-
-        if not isinstance(msg, PipelineHttpRequestHead):
-            ctx.feed_in(msg)
-            return
-
-        sm = self._select_mode(msg)
-
-        ctx.feed_in(msg)
-
-        if sm.mode == 'none':
-            ctx.feed_in(PipelineHttpRequestEnd())
-
-        elif sm.mode == 'eof':
-            self._decoder = UntilFinalInputPipelineHttpContentChunkDecoder(
-                RequestPipelineHttpDecodingMessageAdapter(),
-                config=self._config,
-            )
-
-        elif sm.mode == 'cl':
-            self._decoder = ContentLengthPipelineHttpContentChunkDecoder(
-                RequestPipelineHttpDecodingMessageAdapter(),
-                check.not_none(sm.length),
-                config=self._config,
-            )
-
-        elif sm.mode == 'chunked':
-            self._decoder = ChunkedPipelineHttpContentChunkDecoder(
-                RequestPipelineHttpDecodingMessageAdapter(),
-                config=self._config,
-            )
-
-        else:
-            raise RuntimeError(f'unexpected mode {sm!r}')
+class PipelineHttpRequestDecompressor(PipelineHttpRequestObjects, PipelineHttpObjectDecompressor):
+    pass
 
 
 ########################################
