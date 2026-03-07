@@ -6,8 +6,8 @@ import unittest
 
 from .....lite.check import check
 from ....streams.types import ByteStreamBuffer
+from ...core import ChannelPipeline
 from ...core import ChannelPipelineMessages
-from ...core import PipelineChannel
 from ...flow.types import ChannelPipelineFlow
 from ...flow.types import ChannelPipelineFlowMessages
 from ...handlers.queues import InboundQueueChannelPipelineHandler
@@ -22,7 +22,7 @@ from ..decoders import UnicodeDecoderChannelPipelineHandler
 
 class TestDecoders(unittest.TestCase):
     def test_decoders(self):
-        ch = PipelineChannel.new([
+        ch = ChannelPipeline.new([
             UnicodeDecoderChannelPipelineHandler(),
             ibq := InboundQueueChannelPipelineHandler(),
         ])
@@ -34,7 +34,7 @@ class TestDecoders(unittest.TestCase):
         assert ibq.drain() == ['hi ☃ there']
 
     def test_delim(self):
-        ch = PipelineChannel.new([
+        ch = ChannelPipeline.new([
             DelimiterFrameDecoderChannelPipelineHandler([b'\n']),
             UnicodeDecoderChannelPipelineHandler(),
             ibq := InboundQueueChannelPipelineHandler(),
@@ -94,7 +94,7 @@ class ByteTripletsToMessageDecoder(BufferedBytesToMessageDecoderChannelPipelineH
 
 
 def test_b2md_ar():
-    ch = PipelineChannel.new(
+    ch = ChannelPipeline.new(
         [
             ByteTripletsToMessageDecoder(),
             ibq := InboundQueueChannelPipelineHandler(),
@@ -112,7 +112,7 @@ def test_b2md_ar():
 
 
 def test_b2md_nar():
-    ch = PipelineChannel.new(
+    ch = ChannelPipeline.new(
         [
             ByteTripletsToMessageDecoder(),
             ibq := InboundQueueChannelPipelineHandler(),

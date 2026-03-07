@@ -4,9 +4,9 @@ import asyncio
 import typing as ta
 
 from .....io.pipelines.asyncs import AsyncChannelPipelineMessages
+from .....io.pipelines.core import ChannelPipeline
 from .....io.pipelines.core import ChannelPipelineHandler
 from .....io.pipelines.core import ChannelPipelineHandlerContext
-from .....io.pipelines.core import PipelineChannel
 from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
 from .....io.pipelines.flow.stub import StubChannelPipelineFlow
 from .....io.streams.utils import ByteStreamBuffers
@@ -138,8 +138,8 @@ class KvStoreHandler(ChannelPipelineHandler):
 
 def build_http_kv_channel(
         items: ta.MutableMapping[str, str],
-) -> PipelineChannel.Spec:
-    return PipelineChannel.Spec(
+) -> ChannelPipeline.Spec:
+    return ChannelPipeline.Spec(
         [
             PipelineHttpRequestDecoder(),
             PipelineHttpRequestAggregatorDecoder(),

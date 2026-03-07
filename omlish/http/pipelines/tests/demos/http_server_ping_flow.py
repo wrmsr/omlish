@@ -3,10 +3,10 @@
 import asyncio
 import typing as ta
 
+from .....io.pipelines.core import ChannelPipeline
 from .....io.pipelines.core import ChannelPipelineHandler
 from .....io.pipelines.core import ChannelPipelineHandlerContext
 from .....io.pipelines.core import ChannelPipelineMessages
-from .....io.pipelines.core import PipelineChannel
 from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
 from .....io.pipelines.flow.stub import StubChannelPipelineFlow
 from .....io.pipelines.flow.types import ChannelPipelineFlow
@@ -73,8 +73,8 @@ def build_http_ping_channel(
         # *,
         # outbound_capacity: ta.Optional[int] = 1 << 22,
         # outbound_overflow_policy: ta.Literal['allow', 'close', 'raise', 'drop'] = 'close',
-) -> PipelineChannel.Spec:
-    return PipelineChannel.Spec(
+) -> ChannelPipeline.Spec:
+    return ChannelPipeline.Spec(
         [
             PipelineHttpRequestDecoder(),
             PingHandler(),

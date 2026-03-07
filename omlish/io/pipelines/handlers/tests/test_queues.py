@@ -1,14 +1,14 @@
 # @omlish-lite
 import unittest
 
-from ...core import PipelineChannel
+from ...core import ChannelPipeline
 from ..fns import FnChannelPipelineHandler
 from ..queues import InboundQueueChannelPipelineHandler
 
 
 class TestQueues(unittest.TestCase):
     def test_queues(self):
-        ch = PipelineChannel.new([
+        ch = ChannelPipeline.new([
             FnChannelPipelineHandler.of(inbound=lambda ctx, msg: ctx.feed_in(msg + '!')),
             h := InboundQueueChannelPipelineHandler(),
         ])

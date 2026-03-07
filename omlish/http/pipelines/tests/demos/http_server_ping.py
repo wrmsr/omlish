@@ -3,9 +3,9 @@
 import asyncio
 import typing as ta
 
+from .....io.pipelines.core import ChannelPipeline
 from .....io.pipelines.core import ChannelPipelineHandler
 from .....io.pipelines.core import ChannelPipelineHandlerContext
-from .....io.pipelines.core import PipelineChannel
 from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
 from ...requests import PipelineHttpRequestHead
 from ...requests import PipelineHttpRequestObject
@@ -39,8 +39,8 @@ class PingHandler(ChannelPipelineHandler):
         ctx.feed_final_output()
 
 
-def build_http_ping_channel() -> PipelineChannel.Spec:
-    return PipelineChannel.Spec([
+def build_http_ping_channel() -> ChannelPipeline.Spec:
+    return ChannelPipeline.Spec([
         PipelineHttpRequestDecoder(),
         PipelineHttpResponseEncoder(),
         PingHandler(),

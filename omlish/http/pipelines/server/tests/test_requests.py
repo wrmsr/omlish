@@ -2,8 +2,8 @@
 # @omlish-lite
 import unittest
 
+from .....io.pipelines.core import ChannelPipeline
 from .....io.pipelines.core import ChannelPipelineMessages
-from .....io.pipelines.core import PipelineChannel
 from .....io.pipelines.handlers.queues import InboundQueueChannelPipelineHandler
 from .....io.streams.utils import ByteStreamBuffers
 from ...requests import FullPipelineHttpRequest
@@ -20,7 +20,7 @@ class TestPipelineHttpRequestDecoder(unittest.TestCase):
         """Test basic HTTP request head parsing."""
 
         decoder = PipelineHttpRequestDecoder()
-        channel = PipelineChannel.new([
+        channel = ChannelPipeline.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
         ])
@@ -39,7 +39,7 @@ class TestPipelineHttpRequestDecoder(unittest.TestCase):
         """Test request head + body bytes received together."""
 
         decoder = PipelineHttpRequestDecoder()
-        channel = PipelineChannel.new([
+        channel = ChannelPipeline.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
         ])
@@ -63,7 +63,7 @@ class TestPipelineHttpRequestDecoder(unittest.TestCase):
         """Test EOF before head complete raises error."""
 
         decoder = PipelineHttpRequestDecoder()
-        channel = PipelineChannel.new([
+        channel = ChannelPipeline.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
         ])
@@ -82,7 +82,7 @@ class TestPipelineHttpRequestAggregatorDecoder(unittest.TestCase):
 
         head_decoder = PipelineHttpRequestDecoder()
         body_agg = PipelineHttpRequestAggregatorDecoder()
-        channel = PipelineChannel.new([
+        channel = ChannelPipeline.new([
             head_decoder,
             body_agg,
             ibq := InboundQueueChannelPipelineHandler(),
@@ -101,7 +101,7 @@ class TestPipelineHttpRequestAggregatorDecoder(unittest.TestCase):
 
         head_decoder = PipelineHttpRequestDecoder()
         body_agg = PipelineHttpRequestAggregatorDecoder()
-        channel = PipelineChannel.new([
+        channel = ChannelPipeline.new([
             head_decoder,
             body_agg,
             ibq := InboundQueueChannelPipelineHandler(),
@@ -123,7 +123,7 @@ class TestPipelineHttpRequestAggregatorDecoder(unittest.TestCase):
 
         head_decoder = PipelineHttpRequestDecoder()
         body_agg = PipelineHttpRequestAggregatorDecoder()
-        channel = PipelineChannel.new([
+        channel = ChannelPipeline.new([
             head_decoder,
             body_agg,
             ibq := InboundQueueChannelPipelineHandler(),
@@ -153,7 +153,7 @@ class TestPipelineHttpRequestAggregatorDecoder(unittest.TestCase):
 
         head_decoder = PipelineHttpRequestDecoder()
         body_agg = PipelineHttpRequestAggregatorDecoder()
-        channel = PipelineChannel.new([
+        channel = ChannelPipeline.new([
             head_decoder,
             body_agg,
             ibq := InboundQueueChannelPipelineHandler(),
@@ -177,10 +177,10 @@ class TestPipelineHttpRequestAggregatorDecoder(unittest.TestCase):
 class TestPipelineHttpRequestObjectDecoder(unittest.TestCase):
     def test_basic_request_head(self) -> None:
         decoder = PipelineHttpRequestDecoder()
-        channel = PipelineChannel(PipelineChannel.Spec([
+        channel = ChannelPipeline(ChannelPipeline.Spec([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
-        ]).update_pipeline_config(raise_immediately=True))
+        ]).update_config(raise_immediately=True))
 
         request = b'GET /path HTTP/1.1\r\nHost: example.com\r\n\r\n'
         channel.feed_in(request)
@@ -196,10 +196,10 @@ class TestPipelineHttpRequestObjectDecoder(unittest.TestCase):
         """Test request head + body bytes received together."""
 
         decoder = PipelineHttpRequestDecoder()
-        channel = PipelineChannel(PipelineChannel.Spec([
+        channel = ChannelPipeline(ChannelPipeline.Spec([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
-        ]).update_pipeline_config(raise_immediately=True))
+        ]).update_config(raise_immediately=True))
 
         request = b'POST /api HTTP/1.1\r\nHost: test\r\nContent-Length: 4\r\n\r\ntest'
         channel.feed_in(request)
@@ -235,10 +235,10 @@ class TestPipelineHttpRequestObjectDecoder(unittest.TestCase):
         )
 
         decoder = PipelineHttpRequestDecoder()
-        channel = PipelineChannel(PipelineChannel.Spec([
+        channel = ChannelPipeline(ChannelPipeline.Spec([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
-        ]).update_pipeline_config(raise_immediately=True))
+        ]).update_config(raise_immediately=True))
 
         channel.feed_in(head_b + body_b)
 

@@ -4,8 +4,8 @@ import dataclasses as dc
 import unittest
 import zlib
 
+from .....io.pipelines.core import ChannelPipeline
 from .....io.pipelines.core import ChannelPipelineMessages
-from .....io.pipelines.core import PipelineChannel
 from .....io.pipelines.handlers.queues import InboundQueueChannelPipelineHandler
 from .....lite.check import check
 from ....headers import HttpHeaders
@@ -40,7 +40,7 @@ class TestGzipDecompressorFlow(unittest.TestCase):
 
         handler = PipelineHttpResponseDecompressor(config=self.config)
 
-        channel = PipelineChannel.new(
+        channel = ChannelPipeline.new(
             [
                 handler,
                 ibq := InboundQueueChannelPipelineHandler(),
@@ -88,7 +88,7 @@ class TestGzipDecompressorFlow(unittest.TestCase):
         compressor = zlib.compressobj(wbits=16 + zlib.MAX_WBITS)
         bomb_data = compressor.compress(b'A' * 1000) + compressor.flush()
 
-        channel = PipelineChannel.new(
+        channel = ChannelPipeline.new(
             [
                 handler,
                 ibq := InboundQueueChannelPipelineHandler(),  # noqa

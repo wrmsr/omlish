@@ -9,8 +9,8 @@ import typing as ta
 
 from ....io.streams.utils import ByteStreamBuffers
 from ....logs.modules import get_module_loggers
+from ..core import ChannelPipeline
 from ..core import ChannelPipelineMessages
-from ..core import PipelineChannel
 
 
 log, alog = get_module_loggers(globals())  # noqa
@@ -33,7 +33,7 @@ class SyncSocketPipelineChannelDriver:
 
     def __init__(
             self,
-            spec: PipelineChannel.Spec,
+            spec: ChannelPipeline.Spec,
             sock: ta.Any,
             config: ta.Optional[Config] = None,
     ) -> None:
@@ -52,7 +52,7 @@ class SyncSocketPipelineChannelDriver:
     def config(self) -> Config:
         return self._config
 
-    _channel: PipelineChannel
+    _channel: ChannelPipeline
 
     def _handle_output(self, msg: ta.Any) -> bool:
         """Returns whether or not to continue running."""
@@ -80,7 +80,7 @@ class SyncSocketPipelineChannelDriver:
         else:
             raise RuntimeError('Already running')
 
-        self._channel = PipelineChannel(self._spec)
+        self._channel = ChannelPipeline(self._spec)
 
         try:
             self._channel.feed_initial_input()

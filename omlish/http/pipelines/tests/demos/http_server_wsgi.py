@@ -3,8 +3,8 @@
 import asyncio
 import typing as ta
 
+from .....io.pipelines.core import ChannelPipeline
 from .....io.pipelines.core import ChannelPipelineMessages
-from .....io.pipelines.core import PipelineChannel
 from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
 from .....io.pipelines.flow.types import ChannelPipelineFlowMessages
 from .....io.pipelines.handlers.flatmap import FlatMapChannelPipelineHandlers
@@ -18,8 +18,8 @@ from ...server.responses import PipelineHttpResponseEncoder
 ##
 
 
-def build_wsgi_channel(app: ta.Any) -> PipelineChannel.Spec:
-    return PipelineChannel.Spec([
+def build_wsgi_channel(app: ta.Any) -> ChannelPipeline.Spec:
+    return ChannelPipeline.Spec([
         PipelineHttpRequestDecoder(),
         PipelineHttpRequestAggregatorDecoder(),
         PipelineHttpResponseEncoder(),

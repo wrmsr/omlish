@@ -5,8 +5,8 @@ import typing as ta
 import unittest
 
 from .....lite.check import check
+from ...core import ChannelPipeline
 from ...core import ChannelPipelineHandlerContext
-from ...core import PipelineChannel
 from ...flow.types import ChannelPipelineFlow
 from ...flow.types import ChannelPipelineFlowMessages
 from ...handlers.fns import ChannelPipelineHandlerFns
@@ -92,7 +92,7 @@ class AccumulatingFooToBarDecoder(MessageToMessageDecoderChannelPipelineHandler)
 
 class TestM2mdecNoFlow(unittest.TestCase):
     def test_simple(self):
-        ch = PipelineChannel.new([
+        ch = ChannelPipeline.new([
             SIMPLE_FOO_TO_BAR_DECODER,
             ibq := InboundQueueChannelPipelineHandler(),
         ])
@@ -104,7 +104,7 @@ class TestM2mdecNoFlow(unittest.TestCase):
         ]
 
     def test_duplicating(self):
-        ch = PipelineChannel.new([
+        ch = ChannelPipeline.new([
             DuplicatingFooToBarDecoder(),
             ibq := InboundQueueChannelPipelineHandler(),
         ])
@@ -117,7 +117,7 @@ class TestM2mdecNoFlow(unittest.TestCase):
         ]
 
     def test_accumulating(self):
-        ch = PipelineChannel.new([
+        ch = ChannelPipeline.new([
             AccumulatingFooToBarDecoder(),
             ibq := InboundQueueChannelPipelineHandler(),
         ])
@@ -154,7 +154,7 @@ class MyFlow(ChannelPipelineFlow):
 
 class TestM2mdecMyFlow(unittest.TestCase):
     def test_m2mdec(self):
-        ch = PipelineChannel.new(
+        ch = ChannelPipeline.new(
             [
                 SIMPLE_FOO_TO_BAR_DECODER,
                 ibq := InboundQueueChannelPipelineHandler(),
@@ -169,7 +169,7 @@ class TestM2mdecMyFlow(unittest.TestCase):
         ]
 
     def test_duplicating(self):
-        ch = PipelineChannel.new(
+        ch = ChannelPipeline.new(
             [
                 DuplicatingFooToBarDecoder(),
                 ibq := InboundQueueChannelPipelineHandler(),
@@ -185,7 +185,7 @@ class TestM2mdecMyFlow(unittest.TestCase):
         ]
 
     def test_accumulating_auto_read(self):
-        ch = PipelineChannel.new(
+        ch = ChannelPipeline.new(
             [
                 AccumulatingFooToBarDecoder(),
                 ibq := InboundQueueChannelPipelineHandler(),
@@ -229,7 +229,7 @@ class TestM2mdecMyFlow(unittest.TestCase):
         ]
 
     def test_accumulating_no_auto_read(self):
-        ch = PipelineChannel.new(
+        ch = ChannelPipeline.new(
             [
                 AccumulatingFooToBarDecoder(),
                 ibq := InboundQueueChannelPipelineHandler(),

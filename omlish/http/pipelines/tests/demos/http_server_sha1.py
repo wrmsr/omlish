@@ -8,9 +8,9 @@ import asyncio
 import hashlib
 import typing as ta
 
+from .....io.pipelines.core import ChannelPipeline
 from .....io.pipelines.core import ChannelPipelineHandler
 from .....io.pipelines.core import ChannelPipelineHandlerContext
-from .....io.pipelines.core import PipelineChannel
 from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
 from .....io.pipelines.flow.stub import StubChannelPipelineFlow
 from ...requests import PipelineHttpRequestAborted
@@ -92,8 +92,8 @@ class Sha1Handler(ChannelPipelineHandler):
         ctx.feed_in(msg)
 
 
-def build_http_sha1_channel() -> PipelineChannel.Spec:
-    return PipelineChannel.Spec(
+def build_http_sha1_channel() -> ChannelPipeline.Spec:
+    return ChannelPipeline.Spec(
         [
             PipelineHttpRequestDecoder(),
             PipelineHttpResponseEncoder(),

@@ -4,7 +4,7 @@ import typing as ta
 
 from .....io.pipelines.bytes.decoders import DelimiterFrameDecoderChannelPipelineHandler
 from .....io.pipelines.bytes.decoders import UnicodeDecoderChannelPipelineHandler
-from .....io.pipelines.core import PipelineChannel
+from .....io.pipelines.core import ChannelPipeline
 from .....io.pipelines.handlers.flatmap import FlatMapChannelPipelineHandlers
 from ...client.responses import PipelineHttpResponseDecoder
 from ...client.responses import PipelineHttpResponseDecompressor
@@ -14,10 +14,10 @@ from ...sse import PipelineSseDecoder
 ##
 
 
-def build_http_sse_channel() -> PipelineChannel:
+def build_http_sse_channel() -> ChannelPipeline:
     """Example: raw bytes -> HTTP response head -> conditional gzip -> longest-match line framing -> Sse events."""
 
-    return PipelineChannel.new([
+    return ChannelPipeline.new([
         PipelineHttpResponseDecoder(),
         PipelineHttpResponseDecompressor(),
         DelimiterFrameDecoderChannelPipelineHandler([b'\r\n', b'\n'], keep_ends=True, max_size=1 << 20),

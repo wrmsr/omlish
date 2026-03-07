@@ -2,8 +2,8 @@
 # @omlish-lite
 import unittest
 
+from .....io.pipelines.core import ChannelPipeline
 from .....io.pipelines.core import ChannelPipelineMessages
-from .....io.pipelines.core import PipelineChannel
 from .....io.pipelines.handlers.queues import InboundQueueChannelPipelineHandler
 from .....io.streams.utils import ByteStreamBuffers
 from ...responses import PipelineHttpResponseAborted
@@ -17,7 +17,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         """Test basic HTTP response head parsing."""
 
         decoder = PipelineHttpResponseDecoder()
-        channel = PipelineChannel.new([
+        channel = ChannelPipeline.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
         ])
@@ -37,7 +37,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         """Test response head + body bytes received together."""
 
         decoder = PipelineHttpResponseDecoder()
-        channel = PipelineChannel.new([
+        channel = ChannelPipeline.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
         ])
@@ -60,7 +60,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         """Test response head received incrementally."""
 
         decoder = PipelineHttpResponseDecoder()
-        channel = PipelineChannel.new([
+        channel = ChannelPipeline.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
         ])
@@ -82,7 +82,7 @@ class TestPipelineHttpResponseDecoder(unittest.TestCase):
         """Test EOF arriving before head is complete raises ValueError."""
 
         decoder = PipelineHttpResponseDecoder()
-        channel = PipelineChannel.new([
+        channel = ChannelPipeline.new([
             decoder,
             ibq := InboundQueueChannelPipelineHandler(),
         ])

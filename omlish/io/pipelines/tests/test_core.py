@@ -4,10 +4,10 @@ import typing as ta
 import unittest
 
 from ....lite.check import check
+from ..core import ChannelPipeline
 from ..core import ChannelPipelineHandler
 from ..core import ChannelPipelineHandlerContext
 from ..core import ChannelPipelineMessages
-from ..core import PipelineChannel
 from ..core import PipelineChannelMetadata
 from ..errors import ContextInvalidatedChannelPipelineError
 from ..errors import MessageNotPropagatedChannelPipelineError
@@ -58,12 +58,12 @@ class ReplaceSelfInboundHandler(ChannelPipelineHandler):
     def inbound(self, ctx: ChannelPipelineHandlerContext, msg: ta.Any) -> None:
         h = self.fn()
         hr = ctx.pipeline.replace(ctx.ref, h)
-        ctx.channel.feed_in_to(hr, msg)
+        ctx.pipeline.feed_in_to(hr, msg)
 
 
 class TestCore(unittest.TestCase):
     def test_core(self):
-        ch = PipelineChannel.new([
+        ch = ChannelPipeline.new([
             IntIncInboundHandler(),
             IntStrDuplexHandler(),
             fbi := FeedbackInboundChannelPipelineHandler(),
@@ -81,8 +81,8 @@ class TestCore(unittest.TestCase):
 
         #
 
-        ch.pipeline.add_outer_to(
-            ch.pipeline.handlers()[0],
+        ch.add_outer_to(
+            ch.handlers()[0],
             IntMulThreeInboundHandler(),
         )
 
@@ -94,8 +94,8 @@ class TestCore(unittest.TestCase):
 
         #
 
-        rem = ch.pipeline.handlers()[1]
-        ch.pipeline.remove(ch.pipeline.handlers()[1])
+        rem = ch.handlers()[1]
+        ch.remove(ch.handlers()[1])
 
         with ch.enter():
             with self.assertRaises(ContextInvalidatedChannelPipelineError):
@@ -111,7 +111,7 @@ class TestCore(unittest.TestCase):
 
         #
 
-        ch.pipeline.replace(ch.pipeline.handlers()[0], IntIncInboundHandler())
+        ch.replace(ch.handlers()[0], IntIncInboundHandler())
 
         ch.feed_in('hi')
         assert ibq.drain() == ['hi']
@@ -123,7 +123,7 @@ class TestCore(unittest.TestCase):
         assert ch.output.drain() == [24]
 
     def test_replace_self(self):
-        ch = PipelineChannel.new([
+        ch = ChannelPipeline.new([
             DuplicateInboundHandler(),
             ReplaceSelfInboundHandler(IntIncInboundHandler),
             IntStrDuplexHandler(),
@@ -134,13 +134,13 @@ class TestCore(unittest.TestCase):
         assert ibq.drain() == ['43', '43']
 
     def test_named(self):
-        ch = PipelineChannel.new([
+        ch = ChannelPipeline.new([
             fbi := FeedbackInboundChannelPipelineHandler(),
             ibq := InboundQueueChannelPipelineHandler(),
         ])
 
-        ch.pipeline.add_outermost(IntStrDuplexHandler(), name='int_str')
-        ch.pipeline.add_outermost(IntIncInboundHandler(), name='int_inc')
+        ch.add_outermost(IntStrDuplexHandler(), name='int_str')
+        ch.add_outermost(IntIncInboundHandler(), name='int_inc')
 
         ch.feed_in(42)
         assert ibq.drain() == ['43']
@@ -148,7 +148,7 @@ class TestCore(unittest.TestCase):
         ch.feed_in(fbi.wrap('24'))
         assert ch.output.drain() == [24]
 
-        ch.pipeline.remove(ch.pipeline.handlers_by_name()['int_inc'])
+        ch.remove(ch.handlers_by_name()['int_inc'])
 
         ch.feed_in(42)
         assert ibq.drain() == ['42']
@@ -167,7 +167,7 @@ class TestMetadata(unittest.TestCase):
         bar: str
 
     def test_metadata(self):
-        ch = PipelineChannel.new(metadata=[TestMetadata.FooMetadata('foo')])
+        ch = ChannelPipeline.new(metadata=[TestMetadata.FooMetadata('foo')])
         assert ch.metadata[TestMetadata.FooMetadata] == TestMetadata.FooMetadata('foo')
         assert TestMetadata.FooMetadata in ch.metadata
         with self.assertRaises(KeyError):  # noqa
@@ -216,7 +216,7 @@ class TestMustPropagate(unittest.TestCase):
 
                 ctx.feed_in(msg)
 
-        ch = PipelineChannel.new([
+        ch = ChannelPipeline.new([
             IntStrDuplexHandler(),
             bph := BrokenPropagator(),
             ibq := InboundQueueChannelPipelineHandler(),
@@ -246,7 +246,7 @@ class TestDefer(unittest.TestCase):
 
                 ctx.feed_in(msg)
 
-        ch = PipelineChannel.new([
+        ch = ChannelPipeline.new([
             IntStrDuplexHandler(),
             DeferThing(),
             ibq := InboundQueueChannelPipelineHandler(),
@@ -277,7 +277,7 @@ class TestDefer(unittest.TestCase):
 
                 ctx.feed_in(msg)
 
-        ch = PipelineChannel.new([
+        ch = ChannelPipeline.new([
             IntStrDuplexHandler(),
             PinningDeferThing(),
             ibq := InboundQueueChannelPipelineHandler(),

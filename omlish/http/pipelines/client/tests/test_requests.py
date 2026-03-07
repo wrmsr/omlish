@@ -2,7 +2,7 @@
 # @omlish-lite
 import unittest
 
-from .....io.pipelines.core import PipelineChannel
+from .....io.pipelines.core import ChannelPipeline
 from .....io.pipelines.handlers.feedback import FeedbackInboundChannelPipelineHandler
 from ....headers import HttpHeaders
 from ....versions import HttpVersion
@@ -18,7 +18,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         """Test basic GET request encoding."""
 
         encoder = PipelineHttpRequestEncoder()
-        channel = PipelineChannel.new([
+        channel = ChannelPipeline.new([
             encoder,
             fbi := FeedbackInboundChannelPipelineHandler(),
         ])
@@ -55,7 +55,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         """Test POST request with body."""
 
         encoder = PipelineHttpRequestEncoder()
-        channel = PipelineChannel.new([
+        channel = ChannelPipeline.new([
             encoder,
             fbi := FeedbackInboundChannelPipelineHandler(),
         ])
@@ -92,7 +92,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         """Test PUT request encoding."""
 
         encoder = PipelineHttpRequestEncoder()
-        channel = PipelineChannel.new([
+        channel = ChannelPipeline.new([
             encoder,
             fbi := FeedbackInboundChannelPipelineHandler(),
         ])
@@ -129,7 +129,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         """Test DELETE request encoding."""
 
         encoder = PipelineHttpRequestEncoder()
-        channel = PipelineChannel.new([
+        channel = ChannelPipeline.new([
             encoder,
             fbi := FeedbackInboundChannelPipelineHandler(),
         ])
@@ -164,7 +164,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         """Test HTTP/1.0 request."""
 
         encoder = PipelineHttpRequestEncoder()
-        channel = PipelineChannel.new([
+        channel = ChannelPipeline.new([
             encoder,
             fbi := FeedbackInboundChannelPipelineHandler(),
         ])
@@ -199,7 +199,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         """Test request with multiple headers."""
 
         encoder = PipelineHttpRequestEncoder()
-        channel = PipelineChannel.new([
+        channel = ChannelPipeline.new([
             encoder,
             fbi := FeedbackInboundChannelPipelineHandler(),
         ])
@@ -242,7 +242,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         """Test request with absolute URI as target."""
 
         encoder = PipelineHttpRequestEncoder()
-        channel = PipelineChannel.new([
+        channel = ChannelPipeline.new([
             encoder,
             fbi := FeedbackInboundChannelPipelineHandler(),
         ])
@@ -277,7 +277,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         """Test streaming request without chunked encoding."""
 
         encoder = PipelineHttpRequestEncoder()
-        channel = PipelineChannel.new([
+        channel = ChannelPipeline.new([
             encoder,
             fbi := FeedbackInboundChannelPipelineHandler(),
         ])
@@ -325,7 +325,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         """Test streaming request with chunked encoding."""
 
         encoder = PipelineHttpRequestEncoder()
-        channel = PipelineChannel.new([
+        channel = ChannelPipeline.new([
             encoder,
             fbi := FeedbackInboundChannelPipelineHandler(),
         ])
@@ -380,7 +380,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         """Test that empty chunks don't emit data."""
 
         encoder = PipelineHttpRequestEncoder()
-        channel = PipelineChannel.new([
+        channel = ChannelPipeline.new([
             encoder,
             fbi := FeedbackInboundChannelPipelineHandler(),
         ])
@@ -413,7 +413,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         """Test encoding multiple sequential requests."""
 
         encoder = PipelineHttpRequestEncoder()
-        channel = PipelineChannel.new([
+        channel = ChannelPipeline.new([
             encoder,
             fbi := FeedbackInboundChannelPipelineHandler(),
         ])
@@ -464,7 +464,7 @@ class TestPipelineHttpRequestEncoder(unittest.TestCase):
         """Test that unknown messages pass through unchanged."""
 
         encoder = PipelineHttpRequestEncoder()
-        channel = PipelineChannel.new([
+        channel = ChannelPipeline.new([
             encoder,
             fbi := FeedbackInboundChannelPipelineHandler(),
         ])

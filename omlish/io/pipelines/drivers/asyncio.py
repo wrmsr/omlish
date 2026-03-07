@@ -22,10 +22,10 @@ from ....logs.modules import get_module_loggers
 from ....logs.utils import async_exception_logging
 from ...streams.utils import ByteStreamBuffers
 from ..asyncs import AsyncChannelPipelineMessages
+from ..core import ChannelPipeline
 from ..core import ChannelPipelineHandlerRef
 from ..core import ChannelPipelineMessages
 from ..core import ChannelPipelineServices
-from ..core import PipelineChannel
 from ..flow.types import ChannelPipelineFlow
 from ..flow.types import ChannelPipelineFlowMessages
 from ..sched.types import ChannelPipelineScheduling
@@ -51,7 +51,7 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
 
     def __init__(
             self,
-            spec: PipelineChannel.Spec,
+            spec: ChannelPipeline.Spec,
             reader: asyncio.StreamReader,
             writer: ta.Optional[asyncio.StreamWriter] = None,
             config: ta.Optional[Config] = None,
@@ -79,7 +79,7 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
         return self._config
 
     @property
-    def channel(self) -> PipelineChannel:
+    def channel(self) -> ChannelPipeline:
         return self._channel
 
     ##
@@ -87,7 +87,7 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
 
     _sched: 'AsyncioStreamPipelineChannelDriver._Scheduling'
 
-    _channel: PipelineChannel
+    _channel: ChannelPipeline
 
     _flow: ta.Optional[ChannelPipelineFlow]
 
@@ -105,7 +105,7 @@ class AsyncioStreamPipelineChannelDriver(Abstract):
 
         #
 
-        self._channel = PipelineChannel(dc.replace(
+        self._channel = ChannelPipeline(dc.replace(
             self._spec,
             services=(*self._spec.services, self._sched),
         ))

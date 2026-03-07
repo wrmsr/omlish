@@ -4,7 +4,7 @@ import asyncio
 import typing as ta
 
 from .....io.pipelines.asyncs import AsyncChannelPipelineMessages  # noqa
-from .....io.pipelines.core import PipelineChannel
+from .....io.pipelines.core import ChannelPipeline
 from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
 from ...responses import FullPipelineHttpResponse  # noqa
 from ...responses import PipelineHttpResponseHead  # noqa
@@ -18,15 +18,15 @@ from ...server.responses import PipelineHttpResponseEncoder
 ##
 
 
-def build_asgi_channel(app: ta.Any) -> PipelineChannel.Spec:
-    return PipelineChannel.Spec(
+def build_asgi_channel(app: ta.Any) -> ChannelPipeline.Spec:
+    return ChannelPipeline.Spec(
         [
             PipelineHttpRequestDecoder(),
             PipelineHttpRequestAggregatorDecoder(),
             PipelineHttpResponseEncoder(),
             AsgiHandler(app),
         ],
-    ).update_pipeline_config(
+    ).update_config(
         # raise_immediately=True,
     )
 

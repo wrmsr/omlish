@@ -1,7 +1,7 @@
 # @omlish-lite
 import unittest
 
-from ...core import PipelineChannel
+from ...core import ChannelPipeline
 from ...handlers.fns import FnChannelPipelineHandler
 from ...handlers.queues import InboundQueueChannelPipelineHandler
 from ..queues import InboundBytesBufferingQueueChannelPipelineHandler
@@ -9,7 +9,7 @@ from ..queues import InboundBytesBufferingQueueChannelPipelineHandler
 
 class TestQueues(unittest.TestCase):
     def test_inbound_queue(self):
-        ch = PipelineChannel.new([
+        ch = ChannelPipeline.new([
             FnChannelPipelineHandler.of(inbound=lambda ctx, msg: ctx.feed_in(msg + b'!')),
             h := InboundBytesBufferingQueueChannelPipelineHandler(),
         ])
@@ -21,11 +21,11 @@ class TestQueues(unittest.TestCase):
         assert h.inbound_buffered_bytes() == 0
 
     def test_inbound_queue_filter(self):
-        ch = PipelineChannel.new([
+        ch = ChannelPipeline.new([
             FnChannelPipelineHandler.of(inbound=lambda ctx, msg: ctx.feed_in(msg + b'!' if isinstance(msg, bytes) else msg)),  # noqa
             h := InboundBytesBufferingQueueChannelPipelineHandler(filter=True),
             ibq := InboundQueueChannelPipelineHandler(),
-        ], config=PipelineChannel.Config.DEFAULT.update_pipeline(raise_immediately=True))
+        ], config=ChannelPipeline.Config.DEFAULT.update(raise_immediately=True))
 
         ch.feed_in(b'abc')
         assert not ch.output.poll()

@@ -3,8 +3,8 @@ import abc
 import unittest
 
 from ....lite.abstract import Abstract
+from ..core import ChannelPipeline
 from ..core import ChannelPipelineService
-from ..core import PipelineChannel
 
 
 class FooService(ChannelPipelineService, Abstract):
@@ -20,7 +20,7 @@ class FooServiceImpl(FooService):
 
 class TestServices(unittest.TestCase):
     def test_services(self):
-        ch = PipelineChannel.new(services=[FooServiceImpl()])
+        ch = ChannelPipeline.new(services=[FooServiceImpl()])
         foo = ch.services[FooService]
         assert isinstance(foo, FooServiceImpl)
         assert foo.frob() == 'foo!'

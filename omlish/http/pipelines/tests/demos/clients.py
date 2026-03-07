@@ -3,11 +3,11 @@
 import dataclasses as dc
 import typing as ta
 
+from .....io.pipelines.core import ChannelPipeline
 from .....io.pipelines.core import ChannelPipelineHandler
 from .....io.pipelines.core import ChannelPipelineHandlerContext
 from .....io.pipelines.core import ChannelPipelineHandlerFn
 from .....io.pipelines.core import ChannelPipelineMessages
-from .....io.pipelines.core import PipelineChannel
 from .....io.pipelines.drivers.asyncio import SimpleAsyncioStreamPipelineChannelDriver
 from .....io.pipelines.drivers.sync import SyncSocketPipelineChannelDriver
 from .....io.pipelines.flow.stub import StubChannelPipelineFlow
@@ -115,8 +115,8 @@ def build_http_client(
         flow_auto_read: bool = False,
 
         raise_immediately: bool = False,
-) -> PipelineChannel.Spec:
-    return PipelineChannel.Spec(
+) -> ChannelPipeline.Spec:
+    return ChannelPipeline.Spec(
         [
             *(outermost_handlers or []),
 
@@ -135,7 +135,7 @@ def build_http_client(
             *(innermost_handlers or []),
         ],
 
-        config=PipelineChannel.Config.DEFAULT.update_pipeline(
+        config=ChannelPipeline.Config.DEFAULT.update(
             raise_immediately=raise_immediately,
         ),
 
@@ -224,7 +224,7 @@ def print_full_response(response: FullPipelineHttpResponse) -> None:
 class _PreparedUrlFetch(ta.NamedTuple):
     parsed_url: ParsedUrl
     request: FullPipelineHttpRequest
-    pipeline_spec: PipelineChannel.Spec
+    pipeline_spec: ChannelPipeline.Spec
 
 
 def _prepare_url_fetch(
@@ -280,7 +280,7 @@ async def asyncio_fetch_url(
             check.none(response)
             response = msg
 
-            ctx.channel.feed_in(HttpClientClose())
+            ctx.pipeline.feed_in(HttpClientClose())
 
     #
 
@@ -330,7 +330,7 @@ def sync_fetch_url(
             check.none(response)
             response = msg
 
-            ctx.channel.feed_in(HttpClientClose())
+            ctx.feed_in(HttpClientClose())
 
     #
 
