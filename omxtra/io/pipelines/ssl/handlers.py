@@ -32,6 +32,7 @@ class SslChannelPipelineHandler(
       - plaintext to encrypt bytes arrive outbound (outbound())
 
     TODO:
+     - overhaul this thing gawd
      - shutdown timeout
      - context.set_alpn_protocols(['http/1.1'])
      - context.post_handshake_auth = True ?
@@ -249,6 +250,10 @@ class SslChannelPipelineHandler(
         ):
             fo.append(ChannelPipelineFlowMessages.FlushOutput())
 
+        if self._state == self.State.CLOSED and self._pending_final_output is not None:
+            fo.append(self._pending_final_output)
+            self._pending_final_output = None
+
         for msg in fo:
             ctx.feed_out(msg)
 
@@ -386,9 +391,6 @@ class SslChannelPipelineHandler(
             try:
                 self._ssl_obj.unwrap()
                 self._state = self.State.CLOSED
-                if self._pending_final_output is not None:
-                    ctx.feed_out(self._pending_final_output)
-                    self._pending_final_output = None
             except (ssl.SSLWantReadError, ssl.SSLWantWriteError):
                 pass
             except Exception:  # FIXME:  # noqa
@@ -451,10 +453,14 @@ class SslChannelPipelineHandler(
                 self._ssl_obj.unwrap()
                 self._state = self.State.CLOSED
 
-            except (ssl.SSLWantReadError, ssl.SSLWantWriteError):
+            except (ssl.SSLWantReadError, ssl.SSLWantWriteError) as se:
                 self._state = self.State.SHUTTING_DOWN
+                if isinstance(se, ssl.SSLWantReadError):
+                    self._is_ready_for_input = False
+                    ctx.feed_out(ChannelPipelineFlowMessages.ReadyForInput())
                 # Save the FinalOutput; we'll feed it once unwrap completes.
                 self._pending_final_output = msg
+                ctx.mark_propagated('outbound', msg)
                 self._pump_tls_out(ctx)
                 return
 
